@@ -2,6 +2,8 @@ import { isRejectedWithValue, Middleware } from "@reduxjs/toolkit";
 import { createStandaloneToast } from "fidesui";
 
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
+import { selectApplicationConfig } from "~/features/config-settings/config-settings.slice";
+import { ErrorNotificationMode } from "~/types/api";
 
 const printReduxError = (action: unknown) =>
   // eslint-disable-next-line no-console
@@ -11,25 +13,33 @@ const { toast } = createStandaloneToast({
   defaultOptions: DEFAULT_TOAST_PARAMS,
 });
 
-export const rtkQueryErrorLogger: Middleware = () => (next) => (action) => {
-  if (isRejectedWithValue(action)) {
-    const payload = action?.payload as any;
+const errorLoggingFunctions: Record<
+  ErrorNotificationMode,
+  (action: unknown) => void
+> = {
+  console_only: printReduxError,
+  toast: (action) => {
     toast({
       status: "error",
-      title: payload?.status ?? "An error occured",
+      title: "An error occured",
       description:
-        action?.error?.message ??
-        payload?.error ??
         "An error occurred please check the console for more detail.",
     });
     printReduxError(action);
-  }
-  next(action);
+  },
 };
 
-export const testRtkQueryErrorLogger: Middleware = () => (next) => (action) => {
-  if (isRejectedWithValue(action)) {
-    printReduxError(action);
-  }
-  next(action);
-};
+export const rtkQueryErrorLogger: Middleware =
+  (state) => (next) => (action) => {
+    if (isRejectedWithValue(action)) {
+      const applicationState = selectApplicationConfig({ api_set: false })(
+        state.getState(),
+      );
+      const loggingMode =
+        applicationState?.admin_ui?.error_notification_mode ??
+        ErrorNotificationMode.CONSOLE_ONLY;
+
+      errorLoggingFunctions[loggingMode](action);
+    }
+    next(action);
+  };

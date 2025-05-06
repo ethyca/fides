@@ -166,6 +166,7 @@ export type { EmbeddedPurpose } from "./models/EmbeddedPurpose";
 export type { EmbeddedVendor } from "./models/EmbeddedVendor";
 export type { Endpoint } from "./models/Endpoint";
 export { EnforcementLevel } from "./models/EnforcementLevel";
+export { ErrorNotificationMode } from "./models/ErrorNotificationMode";
 export type { Evaluation } from "./models/Evaluation";
 export type { ExecutionAndAuditLogResponse } from "./models/ExecutionAndAuditLogResponse";
 export type { ExecutionApplicationConfig } from "./models/ExecutionApplicationConfig";
