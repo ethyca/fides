@@ -35,10 +35,3 @@ export enum ConnectionType {
   TIMESCALE = "timescale",
   WEBSITE = "website",
 }
-
-/**
- * Supported SAAS connection types in Fides.
- */
-export enum SaasConnectionTypes {
-  SALESFORCE = "salesforce",
-}

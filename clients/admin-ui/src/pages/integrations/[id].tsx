@@ -26,9 +26,9 @@ import ConnectionStatusNotice from "~/features/integrations/ConnectionStatusNoti
 import { useIntegrationAuthorization } from "~/features/integrations/hooks/useIntegrationAuthorization";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
 import { IntegrationSetupSteps } from "~/features/integrations/setup-steps/IntegrationSetupSteps";
+import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
 import { ConnectionType } from "~/types/api";
-import { SaasConnectionTypes } from "~/types/api/models/ConnectionType";
 
 const IntegrationDetailView: NextPage = () => {
   const { query } = useRouter();

@@ -2,9 +2,9 @@ import { UseDisclosureReturn } from "fidesui";
 
 import FormModal from "~/features/common/modals/FormModal";
 import ConfigureIntegrationForm from "~/features/integrations/add-integration/ConfigureIntegrationForm";
+import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
 import { ConnectionConfigurationResponse } from "~/types/api";
-import { SaasConnectionTypes } from "~/types/api/models/ConnectionType";
 
 const ConfigureIntegrationModal = ({
   isOpen,

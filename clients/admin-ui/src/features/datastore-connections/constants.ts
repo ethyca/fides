@@ -1,7 +1,5 @@
-import {
-  ConnectionType,
-  SaasConnectionTypes,
-} from "../../types/api/models/ConnectionType";
+import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
+import { ConnectionType } from "~/types/api/models/ConnectionType";
 
 /**
  * Enums

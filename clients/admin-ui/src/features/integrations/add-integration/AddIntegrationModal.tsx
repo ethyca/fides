@@ -8,8 +8,8 @@ import getIntegrationTypeInfo, {
 import ConfigureIntegrationForm from "~/features/integrations/add-integration/ConfigureIntegrationForm";
 import IntegrationTypeDetail from "~/features/integrations/add-integration/IntegrationTypeDetail";
 import SelectIntegrationType from "~/features/integrations/add-integration/SelectIntegrationType";
+import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
-import { SaasConnectionTypes } from "~/types/api/models/ConnectionType";
 
 enum IntegrationModalStep {
   LIST_VIEW = "list-view",

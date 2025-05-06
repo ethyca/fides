@@ -7,11 +7,9 @@ import {
 } from "~/features/common/copy/components";
 import ShowMoreContent from "~/features/common/copy/ShowMoreContent";
 import { ConnectionCategory } from "~/features/integrations/ConnectionCategory";
+import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
 import { AccessLevel } from "~/types/api";
-import {
-  ConnectionType,
-  SaasConnectionTypes,
-} from "~/types/api/models/ConnectionType";
+import { ConnectionType } from "~/types/api/models/ConnectionType";
 
 export const SALESFORCE_PLACEHOLDER = {
   name: "Salesforce",

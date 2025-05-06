@@ -14,9 +14,9 @@ import useTestConnection from "~/features/datastore-connections/useTestConnectio
 import getIntegrationTypeInfo from "~/features/integrations/add-integration/allIntegrationTypes";
 import ConnectionStatusNotice from "~/features/integrations/ConnectionStatusNotice";
 import { useIntegrationAuthorization } from "~/features/integrations/hooks/useIntegrationAuthorization";
+import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
 import { ConnectionConfigurationResponse, ConnectionType } from "~/types/api";
-import { SaasConnectionTypes } from "~/types/api/models/ConnectionType";
 
 const IntegrationBox = ({
   integration,

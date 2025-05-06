@@ -1,12 +1,10 @@
 import { Image, ImageProps } from "fidesui";
 import React from "react";
 
-import {
-  ConnectionConfigurationResponse,
-  ConnectionSystemTypeMap,
-  ConnectionType,
-} from "~/types/api";
-import { SaasConnectionTypes } from "~/types/api/models/ConnectionType";
+import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
+import { ConnectionConfigurationResponse } from "~/types/api";
+import type { ConnectionSystemTypeMap } from "~/types/api/models/ConnectionSystemTypeMap";
+import { ConnectionType as ConnectionTypeModel } from "~/types/api/models/ConnectionType";
 
 import { getDomain, getWebsiteIconUrl } from "../common/utils";
 import {
@@ -21,7 +19,8 @@ type ConnectionTypeLogoProps = {
 };
 
 const FALLBACK_WEBSITE_LOGO_PATH =
-  CONNECTOR_LOGOS_PATH + CONNECTION_TYPE_LOGO_MAP.get(ConnectionType.WEBSITE);
+  CONNECTOR_LOGOS_PATH +
+  CONNECTION_TYPE_LOGO_MAP.get(ConnectionTypeModel.WEBSITE);
 
 const isDatastoreConnection = (
   obj: any,
@@ -34,11 +33,11 @@ const isConnectionSystemTypeMap = (obj: any): obj is ConnectionSystemTypeMap =>
 const isWebsiteConnection = (
   obj: any,
 ): obj is ConnectionConfigurationResponse => {
-  return obj?.connection_type === ConnectionType.WEBSITE;
+  return obj?.connection_type === ConnectionTypeModel.WEBSITE;
 };
 
 const isSaasConnection = (obj: any): obj is ConnectionConfigurationResponse => {
-  return obj?.connection_type === ConnectionType.SAAS;
+  return obj?.connection_type === ConnectionTypeModel.SAAS;
 };
 
 const ConnectionTypeLogo = ({
@@ -71,7 +70,7 @@ const ConnectionTypeLogo = ({
         // If no specific SAAS logo found, use the generic SAAS logo
         return (
           CONNECTOR_LOGOS_PATH +
-          CONNECTION_TYPE_LOGO_MAP.get(ConnectionType.SAAS)
+          CONNECTION_TYPE_LOGO_MAP.get(ConnectionTypeModel.SAAS)
         );
       }
 
