@@ -1,13 +1,16 @@
+import { ConnectionConfigurationResponse } from "~/types/api/models/ConnectionConfigurationResponse";
+
 import { BaseStepHookParams, Step } from "./types";
 
-export const useLinkSystemStep = (
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _params: BaseStepHookParams,
-): Step => {
-  // For now, assume the system is not linked
-  // This would typically be determined by some property in the API response
-  // or connection data, but we'll use a placeholder for now
-  const isComplete = false;
+export interface LinkSystemStepParams extends BaseStepHookParams {
+  connection?: ConnectionConfigurationResponse;
+}
+
+export const useLinkSystemStep = ({
+  connection,
+}: LinkSystemStepParams): Step => {
+  // Check if the connection has a system_id property to determine if it's linked
+  const isComplete = !!connection?.system_id;
 
   return {
     title: "Link System",

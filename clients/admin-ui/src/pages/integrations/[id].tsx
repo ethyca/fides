@@ -178,6 +178,7 @@ const IntegrationDetailView: NextPage = () => {
                 testData={testData}
                 testIsLoading={testIsLoading}
                 connectionOption={integrationOption}
+                connection={connection}
               />
             </div>
           )}

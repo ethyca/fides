@@ -2,6 +2,7 @@ import { AntCard as Card, AntSteps as Steps } from "fidesui";
 import { useMemo } from "react";
 
 import { ConnectionSystemTypeMap } from "~/types/api";
+import { ConnectionConfigurationResponse } from "~/types/api/models/ConnectionConfigurationResponse";
 
 import type { ConnectionStatusData } from "../ConnectionStatusNotice";
 import {
@@ -16,12 +17,14 @@ interface IntegrationSetupStepsProps {
   testData?: ConnectionStatusData;
   testIsLoading?: boolean;
   connectionOption?: ConnectionSystemTypeMap;
+  connection?: ConnectionConfigurationResponse;
 }
 
 export const IntegrationSetupSteps = ({
   testData,
   testIsLoading,
   connectionOption,
+  connection,
 }: IntegrationSetupStepsProps) => {
   // Call hooks at the component level, not inside useMemo
   const addIntegrationStep = useCreateIntegrationStep();
@@ -42,6 +45,7 @@ export const IntegrationSetupSteps = ({
     testData,
     testIsLoading,
     connectionOption,
+    connection,
   });
 
   // Use useMemo just to combine and filter the steps
