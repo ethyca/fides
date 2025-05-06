@@ -24,7 +24,12 @@ export const useLinkSystemStep = ({
   return {
     title: "Link System",
     description: isComplete ? (
-      "System linked successfully"
+      <>
+        <Link href={linkUrl} passHref>
+          <AntLink>System linked</AntLink>
+        </Link>{" "}
+        successfully
+      </>
     ) : (
       <>
         Link this integration to{" "}
