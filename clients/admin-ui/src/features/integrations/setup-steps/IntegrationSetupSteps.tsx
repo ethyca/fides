@@ -11,8 +11,6 @@ import {
   useCreateMonitorStep,
   useLabelResultsStep,
   useTestConnectionStep,
-  useTestDatasetsStep,
-  useTestDSRStep,
 } from "./hooks";
 
 interface IntegrationSetupStepsProps {
@@ -63,18 +61,6 @@ export const IntegrationSetupSteps = ({
     connectionOption,
   });
 
-  const testDatasetsStep = useTestDatasetsStep({
-    testData,
-    testIsLoading,
-    connectionOption,
-  });
-
-  const testDSRStep = useTestDSRStep({
-    testData,
-    testIsLoading,
-    connectionOption,
-  });
-
   // Use useMemo just to combine and filter the steps
   const steps = useMemo(() => {
     const allSteps: (Step | null)[] = [
@@ -83,8 +69,6 @@ export const IntegrationSetupSteps = ({
       testConnectionStep,
       createMonitorStep,
       labelResultsStep,
-      testDatasetsStep,
-      testDSRStep,
     ];
 
     // Filter out null steps (e.g., authorization step may be null if not required)
@@ -95,8 +79,6 @@ export const IntegrationSetupSteps = ({
     testConnectionStep,
     createMonitorStep,
     labelResultsStep,
-    testDatasetsStep,
-    testDSRStep,
   ]);
 
   const getCurrentStep = () => {
@@ -113,7 +95,7 @@ export const IntegrationSetupSteps = ({
   };
 
   return (
-    <Card title="Integration Setup">
+    <Card title="DSR Automation Setup">
       <Steps
         direction="vertical"
         current={getCurrentStep()}
