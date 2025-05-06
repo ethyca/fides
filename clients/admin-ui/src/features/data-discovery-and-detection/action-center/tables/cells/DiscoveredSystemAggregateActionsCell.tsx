@@ -85,7 +85,9 @@ export const DiscoveredSystemActionsCell = ({
       toast(
         successToastParams(
           successToastContent(
-            `${totalUpdates} assets from ${systemName} have been ignored and will not appear in future scans.`,
+            systemName
+              ? `${totalUpdates} assets from ${systemName} have been ignored and will not appear in future scans.`
+              : `${totalUpdates} uncategorized assets have been ignored and will not appear in future scans.`,
             () => onTabChange(getIndexFromHash("#ignored")!),
           ),
         ),
