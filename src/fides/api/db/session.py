@@ -24,7 +24,7 @@ def get_db_engine(
     keepalives_interval: int | None = None,
     keepalives_count: int | None = None,
     disable_pooling: bool = False,
-    pool_recycle: int | None = None,
+    pool_recycle: int = -1,
 ) -> Engine:
     """Return a database engine.
 
