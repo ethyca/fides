@@ -28,10 +28,8 @@ export const FidesCell = <T,>({
   let isFirstRowOfGroupedRows = false;
   let isLastRowOfGroupedRows = false;
   let hasOneSubRow = false;
-  const rows = cell
-    .getContext()
-    .table.getRowModel()
-    .rows.filter((r) => !r.id.includes(":"));
+  const { rows } = cell.getContext().table.getRowModel();
+  // .rows.filter((r) => !r.id.includes(":"));
   const isFirstRowOfPage = rows[0].id === cell.row.id;
   const isLastRowOfPage = rows[rows.length - 1].id === cell.row.id;
   if (cell.getValue() && isGroupedColumn) {

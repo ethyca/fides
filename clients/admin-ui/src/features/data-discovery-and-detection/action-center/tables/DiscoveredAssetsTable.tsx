@@ -156,6 +156,7 @@ export const DiscoveredAssetsTable = ({
     data: data?.items || [],
     columnResizeMode: "onChange",
     onRowSelectionChange: setRowSelection,
+    getRowId: (row) => row.urn,
     state: {
       rowSelection,
     },
@@ -163,6 +164,8 @@ export const DiscoveredAssetsTable = ({
 
   const selectedRows = tableInstance.getSelectedRowModel().rows;
   const selectedUrns = selectedRows.map((row) => row.original.urn);
+
+  console.log(rowSelection);
 
   const handleBulkAdd = async () => {
     const result = await addMonitorResultAssetsMutation({
