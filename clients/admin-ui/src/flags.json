@@ -30,6 +30,12 @@
     "test": true,
     "production": false
   },
+  "oktaMonitor": {
+    "description": "Monitor Okta for activity",
+    "development": true,
+    "test": true,
+    "production": false
+  },
   "ssoAuthentication": {
     "description": "SSO Authentication Providers (OpenID)",
     "development": true,

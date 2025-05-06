@@ -15,6 +15,7 @@ import type {
   TCFFeatureRecord,
   TCFFeatureSave,
   TcfOtherConsent,
+  TcfPublisherRestriction,
   TCFPurposeConsentRecord,
   TCFPurposeLegitimateInterestsRecord,
   TCFPurposeSave,
@@ -449,6 +450,7 @@ export type PrivacyExperience = {
   tcf_system_legitimate_interests?: Array<TCFVendorLegitimateInterestsRecord>;
   tcf_system_relationships?: Array<TCFVendorRelationships>;
   tcf_publisher_country_code?: string;
+  tcf_publisher_restrictions?: Array<TcfPublisherRestriction>;
 
   /**
    * @deprecated For backwards compatibility purposes, whether the Experience should show a banner.
@@ -501,6 +503,7 @@ export interface PrivacyExperienceMinimal
     | "gvl"
     | "tcf_publisher_country_code"
     | "non_applicable_privacy_notices"
+    | "tcf_publisher_restrictions"
   > {
   experience_config: ExperienceConfigMinimal;
   vendor_count?: number;
@@ -782,6 +785,7 @@ export enum ConsentMethod {
   GPC = "gpc",
   INDIVIDUAL_NOTICE = "individual_notice",
   ACKNOWLEDGE = "acknowledge",
+  OT_MIGRATION = "ot_migration",
 }
 
 export type PrivacyPreferencesRequest = {
