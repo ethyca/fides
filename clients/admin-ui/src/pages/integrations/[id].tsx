@@ -60,7 +60,7 @@ const IntegrationDetailView: NextPage = () => {
 
   const { onOpen, isOpen, onClose } = useDisclosure();
 
-  const { overview, instructions, description } = getIntegrationTypeInfo(
+  const { overview, instructions, description, tags } = getIntegrationTypeInfo(
     connection?.connection_type,
   );
 
@@ -71,6 +71,9 @@ const IntegrationDetailView: NextPage = () => {
   ) {
     router.push(INTEGRATION_MANAGEMENT_ROUTE);
   }
+
+  // Check if the integration has DSR automation capability
+  const hasDsrAutomation = tags?.includes("DSR Automation");
 
   const tabs: TabData[] = [
     {
@@ -169,15 +172,17 @@ const IntegrationDetailView: NextPage = () => {
               )
             )}
           </div>
-          <div className="w-[350px] shrink-0">
-            <IntegrationSetupSteps
-              testData={testData}
-              testIsLoading={testIsLoading}
-              onTestConnection={testConnection}
-              onAuthorize={handleAuthorize}
-              connectionOption={integrationOption}
-            />
-          </div>
+          {hasDsrAutomation && (
+            <div className="w-[350px] shrink-0">
+              <IntegrationSetupSteps
+                testData={testData}
+                testIsLoading={testIsLoading}
+                onTestConnection={testConnection}
+                onAuthorize={handleAuthorize}
+                connectionOption={integrationOption}
+              />
+            </div>
+          )}
         </AntFlex>
       </PageHeader>
     </Layout>
