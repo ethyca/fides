@@ -75,7 +75,6 @@ class MySQLConnector(SQLConnector):
             uri,
             hide_parameters=self.hide_parameters,
             echo=not self.hide_parameters,
-            # connect_args={}
             connect_args=connect_args,
         )
 
@@ -88,7 +87,7 @@ class MySQLConnector(SQLConnector):
 
         connect_args = {}
 
-        ssl_mode = self.configuration.secrets.get("ssl_mode", MySQLSSLMode.preferred)
+        ssl_mode = self.configuration.secrets.get("ssl_mode")
 
         # if SSL mode was assigned in the connector configuration
         # otherwise connect_args remains empty
