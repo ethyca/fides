@@ -1,5 +1,6 @@
 import type { FidesEvent as DocsFidesEvent, FidesEventType } from "../docs";
 import { FidesCookie } from "./consent-types";
+import { applyOverridesToConsent } from "./shared-consent-utils";
 
 // Bonus points: update the WindowEventMap interface with our custom event types
 declare global {
@@ -72,10 +73,11 @@ export type { FidesEventType };
  */
 export const dispatchFidesEvent = (
   type: FidesEventType,
-  cookie: FidesCookie | undefined,
+  fidesCookie: FidesCookie | undefined,
   debug: boolean,
   extraDetails?: FidesEventExtraDetails,
 ) => {
+  const cookie = fidesCookie ? { ...fidesCookie } : undefined;
   if (typeof window !== "undefined" && typeof CustomEvent !== "undefined") {
     // Extracts consentMethod directly from the cookie instead of having to pass in duplicate data to this method
     const constructedExtraDetails: FidesEventExtraDetails = {
@@ -85,9 +87,17 @@ export const dispatchFidesEvent = (
     };
     const perfMark = performance?.mark?.(type);
     const timestamp = perfMark?.startTime;
+    const normalizedCookie: FidesCookie | undefined = cookie;
+    if (normalizedCookie && cookie?.consent) {
+      normalizedCookie.consent = applyOverridesToConsent(
+        cookie.consent,
+        window.Fides?.experience?.non_applicable_privacy_notices,
+        window.Fides?.experience?.privacy_notices,
+      );
+    }
     const event = new CustomEvent(type, {
       detail: {
-        ...cookie,
+        ...normalizedCookie,
         debug,
         extraDetails: constructedExtraDetails,
         timestamp,
