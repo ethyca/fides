@@ -71,7 +71,7 @@ export const VendorSourceCell = ({ value }: { value: string }) => {
 };
 
 const ADDED_VENDOR_TOOLTIP_LABEL =
-  "This vendor has already been added. You can view the properties of this vendor by going to View Systems.";
+  "This vendor has already been added. You can view the properties of this vendor by going to the System Inventory.";
 
 type MultipleSystemTable = DictSystems;
 
