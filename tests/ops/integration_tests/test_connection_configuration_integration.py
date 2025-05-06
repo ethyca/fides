@@ -1518,7 +1518,7 @@ class TestOktaConnector:
     ) -> None:
         connector = get_connector(okta_connection_config)
         assert connector.__class__ == OktaConnector
-        assert connector.okta_client
+        assert connector.client()
 
     def test_test_connection(
         self,
