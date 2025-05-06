@@ -1,4 +1,4 @@
-import { AntTypography } from "fidesui";
+import { AntLink } from "fidesui";
 import Link from "next/link";
 
 import { EDIT_SYSTEM_ROUTE, SYSTEM_ROUTE } from "~/features/common/nav/routes";
@@ -22,14 +22,18 @@ export const useLinkSystemStep = ({
     : SYSTEM_ROUTE;
 
   return {
-    title: (
-      <Link href={linkUrl} passHref>
-        <AntTypography.Link>Link System</AntTypography.Link>
-      </Link>
+    title: "Link System",
+    description: isComplete ? (
+      "System linked successfully"
+    ) : (
+      <>
+        Link this integration to{" "}
+        <Link href={linkUrl} passHref>
+          <AntLink>one of your systems</AntLink>
+        </Link>
+        . Use the &apos;Link integration&apos; button in the Integrations tab.
+      </>
     ),
-    description: isComplete
-      ? "System linked successfully"
-      : "Link this integration to one of your systems. Use the 'Link integration' button in the Integrations tab.",
     state: isComplete ? "finish" : "process",
   };
 };
