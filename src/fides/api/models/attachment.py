@@ -20,10 +20,7 @@ from fides.api.service.storage.s3 import (
     generic_retrieve_from_s3,
     generic_upload_to_s3,
 )
-from fides.api.service.storage.util import (
-    LOCAL_FIDES_UPLOAD_DIRECTORY,
-    get_local_filename,
-)
+from fides.api.service.storage.util import get_local_filename
 
 if TYPE_CHECKING:
     from fides.api.models.comment import Comment
@@ -126,7 +123,7 @@ class Attachment(Base):
             generic_upload_to_s3(
                 storage_secrets=self.config.secrets,
                 bucket_name=bucket_name,
-                file_key=self.id,
+                file_key=f"{self.id}/{self.file_name}",
                 document=attachment,
                 auth_method=auth_method,
             )
@@ -134,7 +131,7 @@ class Attachment(Base):
             return
 
         if self.config.type == StorageType.local:
-            filename = get_local_filename(self.id)
+            filename = get_local_filename(f"{self.id}/{self.file_name}")
 
             # Validate that attachment is a file-like object
             if not hasattr(attachment, "read"):
@@ -145,6 +142,9 @@ class Attachment(Base):
                 attachment.seek(0)
             except Exception as e:
                 raise ValueError(f"Failed to reset file pointer for attachment: {e}")
+
+            # Create directory if it doesn't exist
+            os.makedirs(os.path.dirname(filename), exist_ok=True)
 
             # Write the file in chunks to avoid loading the entire content into memory
             with open(filename, "wb") as file:
@@ -170,14 +170,14 @@ class Attachment(Base):
             return generic_retrieve_from_s3(
                 storage_secrets=self.config.secrets,
                 bucket_name=bucket_name,
-                file_key=self.id,
+                file_key=f"{self.id}/{self.file_name}",
                 auth_method=auth_method,
             )
 
         if self.config.type == StorageType.local:
-            filename = f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{self.id}"
+            filename = get_local_filename(f"{self.id}/{self.file_name}")
             with open(filename, "rb") as file:
-                return file.read(), filename
+                return len(file.read()), filename
 
         raise ValueError(f"Unsupported storage type: {self.config.type}")
 
@@ -189,13 +189,13 @@ class Attachment(Base):
             generic_delete_from_s3(
                 storage_secrets=self.config.secrets,
                 bucket_name=bucket_name,
-                file_key=self.id,
+                file_key=f"{self.id}/{self.file_name}",
                 auth_method=auth_method,
             )
             return
 
         if self.config.type == StorageType.local:
-            filename = f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{self.id}"
+            filename = get_local_filename(f"{self.id}/{self.file_name}")
             os.remove(filename)
             return
 

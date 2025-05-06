@@ -1,9 +1,10 @@
+import warnings
 from io import BytesIO
 from tempfile import SpooledTemporaryFile
 
 import pytest
+from sqlalchemy import exc as sa_exc
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
 
 from fides.api.models.attachment import (
     Attachment,
@@ -14,7 +15,7 @@ from fides.api.models.attachment import (
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.storage import StorageConfig
 from fides.api.schemas.storage.storage import StorageDetails
-from fides.api.service.storage.util import LOCAL_FIDES_UPLOAD_DIRECTORY
+from fides.api.service.storage.util import get_local_filename
 
 
 @pytest.fixture(
@@ -39,15 +40,18 @@ def attachment_file(request):
 
 
 def verify_attachment_created_uploaded_s3(attachment, attachment_file_copy):
-    retrieved_file, download_url = attachment.retrieve_attachment()
-    assert retrieved_file == attachment_file_copy
+    retrieved_file_size, download_url = attachment.retrieve_attachment()
+    assert retrieved_file_size == len(attachment_file_copy)
     assert attachment.config.details[StorageDetails.BUCKET.value] in download_url
+    assert f"{attachment.id}/{attachment.file_name}" in download_url
 
 
 def verify_attachment_created_uploaded_local(attachment, attachment_file_copy):
-    retrieved_attachment, download_path = attachment.retrieve_attachment()
-    assert retrieved_attachment == attachment_file_copy
-    assert download_path == f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{attachment.id}"
+    retrieved_attachment_size, download_path = attachment.retrieve_attachment()
+    assert retrieved_attachment_size == len(attachment_file_copy)
+    assert download_path == get_local_filename(
+        f"{attachment.id}/{attachment.file_name}"
+    )
 
 
 def test_create_attachment_without_attachement_file_raises_error(db, attachment_data):
@@ -84,7 +88,7 @@ def test_create_attachment_with_S3_storage(
     assert (
         s3_client.get_object(
             Bucket=attachment.config.details[StorageDetails.BUCKET.value],
-            Key=attachment.id,
+            Key=f"{attachment.id}/{attachment.file_name}",
         )
         is not None
     )
@@ -189,7 +193,7 @@ def test_delete_attachment_from_s3(
     with pytest.raises(s3_client.exceptions.NoSuchKey):
         s3_client.get_object(
             Bucket=attachment.config.details[StorageDetails.BUCKET.value],
-            Key=attachment.id,
+            Key=f"{attachment.id}/{attachment.file_name}",
         ) is None
     attachment.delete(db)
 
@@ -393,9 +397,6 @@ def test_attachment_relationship_warnings(
     s3_client, db, attachment, comment, privacy_request, monkeypatch
 ):
     """Test that no SQLAlchemy relationship warnings occur when creating and accessing Attachment relationships."""
-    import warnings
-
-    from sqlalchemy import exc as sa_exc
 
     def mock_get_s3_client(auth_method, storage_secrets):
         return s3_client
