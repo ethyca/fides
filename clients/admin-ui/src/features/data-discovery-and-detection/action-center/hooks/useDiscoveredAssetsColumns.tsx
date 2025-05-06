@@ -18,8 +18,10 @@ import { SystemCell } from "../tables/cells/SystemCell";
 
 export const useDiscoveredAssetsColumns = ({
   readonly,
+  onTabChange,
 }: {
   readonly: boolean;
+  onTabChange: (index: number) => void;
 }) => {
   const columnHelper = createColumnHelper<StagedResourceAPIResponse>();
 
@@ -158,7 +160,10 @@ export const useDiscoveredAssetsColumns = ({
     columnHelper.display({
       id: "actions",
       cell: (props) => (
-        <DiscoveredAssetActionsCell asset={props.row.original} />
+        <DiscoveredAssetActionsCell
+          asset={props.row.original}
+          onTabChange={onTabChange}
+        />
       ),
       header: "Actions",
       meta: {
