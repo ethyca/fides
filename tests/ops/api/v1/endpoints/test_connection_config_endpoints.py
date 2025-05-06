@@ -1227,6 +1227,7 @@ class TestGetConnection:
             "secrets",
             "authorized",
             "enabled_actions",
+            "system_key",
         }
 
         assert response_body["key"] == "my_postgres_db_1"
