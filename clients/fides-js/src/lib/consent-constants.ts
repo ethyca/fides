@@ -2,8 +2,8 @@ import {
   FidesExperienceLanguageValidatorMap,
   FidesOverrideValidatorMap,
 } from "./consent-types";
-import { parseFidesDisabledNotices } from "./consent-utils";
 import { LOCALE_REGEX } from "./i18n/i18n-constants";
+import { parseFidesDisabledNotices } from "./shared-consent-utils";
 
 /**
  * Regex to validate a [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) code:

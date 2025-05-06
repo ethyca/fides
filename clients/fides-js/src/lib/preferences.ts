@@ -11,9 +11,9 @@ import {
   SaveConsentPreference,
   UserConsentPreference,
 } from "./consent-types";
+import { applyOverridesToConsent } from "./consent-utils";
 import { removeCookiesFromBrowser, saveFidesCookie } from "./cookie";
 import { dispatchFidesEvent } from "./events";
-import { applyOverridesToConsent } from "./shared-consent-utils";
 import { TcfSavePreferences } from "./tcf/types";
 
 /**

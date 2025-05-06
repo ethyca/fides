@@ -5,8 +5,8 @@ import {
   FidesGlobal,
   NoticeConsent,
 } from "../lib/consent-types";
+import { applyOverridesToConsent } from "../lib/consent-utils";
 import { FidesEventDetail } from "../lib/events";
-import { applyOverridesToConsent } from "../lib/shared-consent-utils";
 
 declare global {
   interface Window {

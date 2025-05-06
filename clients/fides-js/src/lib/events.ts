@@ -1,6 +1,6 @@
 import type { FidesEvent as DocsFidesEvent, FidesEventType } from "../docs";
 import { FidesCookie } from "./consent-types";
-import { applyOverridesToConsent } from "./shared-consent-utils";
+import { applyOverridesToConsent } from "./consent-utils";
 
 // Bonus points: update the WindowEventMap interface with our custom event types
 declare global {
