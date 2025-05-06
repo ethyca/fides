@@ -50,8 +50,8 @@ class OktaConnector(BaseConnector):
             _, _, err = self._list_applications()
             return ConnectionTestStatus.succeeded
         except OktaAPIException as e:
-            error_json = ast.literal_eval(str(e))
-            raise ConnectionException(f"Failed to connect to Okta: {error_json['errorSummary']}")
+            error = e.args[0]
+            raise ConnectionException(f"Failed to connect to Okta: {error['errorSummary']}")
         except Exception as e:
             raise ConnectionException(
                 f"Unexpected error testing Okta connection: {str(e)}"
