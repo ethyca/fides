@@ -3,6 +3,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Dict, List, Optional
 
+from fides.config.admin_ui_settings import ErrorNotificationMode
 from pydantic import ConfigDict, Field, SerializeAsAny, field_validator, model_validator
 
 from fides.api.custom_types import AnyHttpUrlStringRemovesSlash, URLOriginString
@@ -67,6 +68,9 @@ class ExecutionApplicationConfig(FidesSchema):
 class AdminUIConfig(FidesSchema):
     enabled: Optional[bool] = None
     url: SerializeAsAny[Optional[AnyHttpUrlStringRemovesSlash]] = None
+    error_notification_mode: Optional[ErrorNotificationMode] = (
+        ErrorNotificationMode.CONSOLE_ONLY
+    )
 
     model_config = ConfigDict(extra="forbid")
 
