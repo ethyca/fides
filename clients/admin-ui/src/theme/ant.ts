@@ -48,6 +48,9 @@ export const antTheme: AntThemeConfig = {
       dangerShadow: undefined,
       defaultBg: palette.FIDESUI_FULL_WHITE,
     },
+    Card: {
+      colorBorderSecondary: palette.FIDESUI_NEUTRAL_200,
+    },
     Input: {
       colorBgContainer: palette.FIDESUI_FULL_WHITE,
     },

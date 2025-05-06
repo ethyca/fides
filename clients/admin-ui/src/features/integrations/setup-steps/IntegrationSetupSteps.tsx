@@ -95,7 +95,7 @@ export const IntegrationSetupSteps = ({
   };
 
   return (
-    <Card title="DSR Automation Setup">
+    <Card title="Integration Setup">
       <Steps
         direction="vertical"
         current={getCurrentStep()}
