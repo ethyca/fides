@@ -66,5 +66,5 @@ CONFIG_KEY_ALLOWLIST = {
         "active_default_storage_type",
     ],
     "consent": ["override_vendor_purposes"],
-    "admin_ui": ["enabled", "url"],
+    "admin_ui": ["enabled", "url", "error_notification_mode"],
 }

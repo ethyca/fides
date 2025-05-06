@@ -24,6 +24,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Added
 - Added Recorded URL to Consent Report [#6077](https://github.com/ethyca/fides/pull/6077)
 - Added ConnectionType.okta, OktaSchema, OktaConnector as support for the Okta Monitor [#6078](https://github.com/ethyca/fides/pull/6078)
+- Added "View" detail links to success toasts in action center [#6113](https://github.com/ethyca/fides/pull/6113)
+- Setting to allow Admin UI errors to be surfaced to a toast. [#6121](https://github.com/ethyca/fides/pull/6121)
 
 ### Changed
 - Abstract OT consent migration logic, allow write to Fides preferences api [#6099](https://github.com/ethyca/fides/pull/6099)
@@ -37,6 +39,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Suppressing SQLAlchemy logging related to caching queries [#6089](https://github.com/ethyca/fides/pull/6089)
 - FidesJS css variable `--fides-overlay-container-border-width` now applies to banner (only applied to modal before) [#6097](https://github.com/ethyca/fides/pull/6097) https://github.com/ethyca/fides/labels/high-risk
 - Fixed vendor restriction form validation and input handling [#6101](https://github.com/ethyca/fides/pull/6101)
+- Fixed special purpose vendor check in Fides JS logic [#6118](https://github.com/ethyca/fides/pull/6118)
+- Update Add Vendor tooltip to match navigation option [#6111](https://github.com/ethyca/fides/pull/6111)
 
 ## [2.60.0](https://github.com/ethyca/fides/compare/2.59.2...2.60.0)
 

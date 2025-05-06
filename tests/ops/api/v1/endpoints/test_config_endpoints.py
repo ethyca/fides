@@ -1342,5 +1342,10 @@ class TestGetConfig:
 
         execution_keys = set(config["admin_ui"].keys())
         assert (
-            len(execution_keys.difference(set(["enabled", "url"]))) == 0
+            len(
+                execution_keys.difference(
+                    set(["enabled", "url", "error_notification_mode"])
+                )
+            )
+            == 0
         ), "Unexpected config API change, please review with Ethyca security team"
