@@ -145,6 +145,18 @@ export const getOrMakeFidesCookie = (
 
   // Check for an existing cookie for this device
   let parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
+
+  // If the cookie is saved using consent mechanism because of the fidesConsentFlagType override, we need to convert it to boolean for internal use
+  if (parsedCookie?.consent) {
+    const { consent } = parsedCookie;
+    Object.keys(consent).forEach((key) => {
+      const value = consent[key];
+      if (typeof value === "string") {
+        consent[key] = transformUserPreferenceToBoolean(value);
+      }
+    });
+  }
+
   if (!parsedCookie) {
     fidesDebugger(
       `No existing Fides consent cookie found, returning defaults.`,
