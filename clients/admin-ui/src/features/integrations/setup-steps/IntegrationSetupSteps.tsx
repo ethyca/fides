@@ -9,14 +9,11 @@ import {
   useAuthorizeIntegrationStep,
   useCreateIntegrationStep,
   useCreateMonitorStep,
-  useLabelResultsStep,
-  useTestConnectionStep,
 } from "./hooks";
 
 interface IntegrationSetupStepsProps {
   testData?: ConnectionStatusData;
   testIsLoading?: boolean;
-  onTestConnection?: () => void;
   onAuthorize?: () => void;
   connectionOption?: ConnectionSystemTypeMap;
 }
@@ -24,13 +21,9 @@ interface IntegrationSetupStepsProps {
 export const IntegrationSetupSteps = ({
   testData,
   testIsLoading,
-  onTestConnection,
   onAuthorize,
   connectionOption,
 }: IntegrationSetupStepsProps) => {
-  const needsAuthorization =
-    connectionOption?.authorization_required && !testData?.authorized;
-
   // Call hooks at the component level, not inside useMemo
   const addIntegrationStep = useCreateIntegrationStep();
 
@@ -41,21 +34,7 @@ export const IntegrationSetupSteps = ({
     onAuthorize,
   });
 
-  const testConnectionStep = useTestConnectionStep({
-    testData,
-    testIsLoading,
-    connectionOption,
-    onTestConnection,
-    needsAuthorization: needsAuthorization || false,
-  });
-
   const createMonitorStep = useCreateMonitorStep({
-    testData,
-    testIsLoading,
-    connectionOption,
-  });
-
-  const labelResultsStep = useLabelResultsStep({
     testData,
     testIsLoading,
     connectionOption,
@@ -66,20 +45,12 @@ export const IntegrationSetupSteps = ({
     const allSteps: (Step | null)[] = [
       addIntegrationStep,
       authorizeIntegrationStep,
-      testConnectionStep,
       createMonitorStep,
-      labelResultsStep,
     ];
 
     // Filter out null steps (e.g., authorization step may be null if not required)
     return allSteps.filter((step): step is Step => step !== null);
-  }, [
-    addIntegrationStep,
-    authorizeIntegrationStep,
-    testConnectionStep,
-    createMonitorStep,
-    labelResultsStep,
-  ]);
+  }, [addIntegrationStep, authorizeIntegrationStep, createMonitorStep]);
 
   const getCurrentStep = () => {
     return steps.findIndex((step) => step.state !== "finish");
