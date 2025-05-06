@@ -32,7 +32,9 @@ const errorLoggingFunctions: Record<
 export const rtkQueryErrorLogger: Middleware =
   (state) => (next) => (action) => {
     if (isRejectedWithValue(action)) {
-      const applicationState = selectApplicationConfig()(state.getState());
+      const applicationState = selectApplicationConfig({ api_set: false })(
+        state.getState(),
+      );
       const loggingMode =
         applicationState?.admin_ui?.error_notification_mode ??
         ErrorNotificationMode.CONSOLE_ONLY;

@@ -10,7 +10,7 @@ const useCommonSubscriptions = () => {
   useGetPlusHealthQuery();
   useGetSystemsQuery({ page: 1, size: 1 }); // used to preload systems count on selectSystemsCount
   useAppSelector(selectThisUsersScopes);
-  useGetConfigurationSettingsQuery({ api_set: true });
+  useGetConfigurationSettingsQuery({ api_set: false });
 };
 
 /**
