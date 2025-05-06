@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Optional
 
-from pydantic import Field, SerializeAsAny, field_validator
+from pydantic import Field, SerializeAsAny
 from pydantic_settings import SettingsConfigDict
 
 from fides.api.custom_types import AnyHttpUrlStringRemovesSlash
