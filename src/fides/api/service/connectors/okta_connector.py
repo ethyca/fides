@@ -1,4 +1,3 @@
-import ast
 from typing import Any, Dict, List, Optional
 
 from okta.client import Client as OktaClient
@@ -47,18 +46,20 @@ class OktaConnector(BaseConnector):
         Validates the connection to Okta by attempting to list users.
         """
         try:
-            _, _, err = self._list_applications()
+            self._list_applications()
             return ConnectionTestStatus.succeeded
         except OktaAPIException as e:
             error = e.args[0]
-            raise ConnectionException(f"Failed to connect to Okta: {error['errorSummary']}")
+            raise ConnectionException(
+                f"Failed to connect to Okta: {error['errorSummary']}"
+            )
         except Exception as e:
             raise ConnectionException(
                 f"Unexpected error testing Okta connection: {str(e)}"
             )
 
     @sync
-    async def _list_applications(self):
+    async def _list_applications(self) -> List[Dict[str, Any]]:
         """List all applications in Okta"""
         client = self.client()
         return await client.list_applications()

@@ -30,9 +30,7 @@ def okta_connection_config(db: Session) -> Generator:
     # Pulling from integration config file or GitHub secrets
     okta_integration_config = integration_config.get("okta", {})
 
-    org_url = okta_integration_config.get("org_url") or os.environ.get(
-        "OKTA_ORG_URL"
-    )
+    org_url = okta_integration_config.get("org_url") or os.environ.get("OKTA_ORG_URL")
     api_token = okta_integration_config.get("api_token") or os.environ.get(
         "OKTA_API_TOKEN"
     )

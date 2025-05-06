@@ -1508,7 +1508,6 @@ class TestRDSPostgresConnector:
             connector.test_connection()
 
 
-
 @pytest.mark.integration_external
 @pytest.mark.integration_okta
 class TestOktaConnector:
@@ -1538,4 +1537,3 @@ class TestOktaConnector:
         connector = get_connector(okta_connection_config)
         with pytest.raises(ConnectionException):
             connector.test_connection()
-
