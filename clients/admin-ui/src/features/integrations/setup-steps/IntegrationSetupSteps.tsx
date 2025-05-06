@@ -1,4 +1,9 @@
-import { AntCard as Card, AntSteps as Steps } from "fidesui";
+import {
+  AntCard as Card,
+  AntSteps as Steps,
+  Icons,
+  StepperCircleCheckmarkIcon,
+} from "fidesui";
 import { useMemo } from "react";
 
 import { ConnectionSystemTypeMap } from "~/types/api";
@@ -92,13 +97,24 @@ export const IntegrationSetupSteps = ({
     return steps[incompleteStepIndex].state;
   };
 
+  // Add carbon icon to completed steps
+  const stepsWithIcons = useMemo(() => {
+    return steps.map((step) => ({
+      ...step,
+      icon:
+        step.state === "finish" ? (
+          <Icons.CheckmarkOutline size={24} />
+        ) : undefined,
+    }));
+  }, [steps]);
+
   return (
     <Card title="Integration Setup">
       <Steps
         direction="vertical"
         current={getCurrentStep()}
         status={getStepStatus()}
-        items={steps}
+        items={stepsWithIcons}
         size="small"
       />
     </Card>
