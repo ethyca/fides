@@ -22,6 +22,7 @@ import { rtkQueryErrorLogger, testRtkQueryErrorLogger } from "~/app/middleware";
 import { STORAGE_ROOT_KEY } from "~/constants";
 import { authSlice } from "~/features/auth";
 import { baseApi } from "~/features/common/api.slice";
+import { applicationConfigSlice } from "~/features/common/config.slice";
 import { featuresSlice } from "~/features/common/features";
 import { healthApi } from "~/features/common/health.slice";
 import { dirtyFormsSlice } from "~/features/common/hooks/dirty-forms.slice";
@@ -99,6 +100,7 @@ const reducer = {
   [taxonomySlice.name]: taxonomySlice.reducer,
   [userManagementSlice.name]: userManagementSlice.reducer,
   [dictSuggestionsSlice.name]: dictSuggestionsSlice.reducer,
+  [applicationConfigSlice.name]: applicationConfigSlice.reducer,
 };
 
 export type RootState = StateFromReducersMapObject<typeof reducer>;
