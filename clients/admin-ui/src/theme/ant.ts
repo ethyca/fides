@@ -47,6 +47,8 @@ export const antTheme: AntThemeConfig = {
       defaultShadow: undefined,
       dangerShadow: undefined,
       defaultBg: palette.FIDESUI_FULL_WHITE,
+      colorLink: palette.FIDESUI_MINOS,
+      colorLinkHover: palette.FIDESUI_NEUTRAL_500,
     },
     Input: {
       colorBgContainer: palette.FIDESUI_FULL_WHITE,
