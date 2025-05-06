@@ -295,6 +295,7 @@ export type { NoticeTranslationCreate } from "./models/NoticeTranslationCreate";
 export type { NoticeTranslationResponse } from "./models/NoticeTranslationResponse";
 export type { NotificationApplicationConfig } from "./models/NotificationApplicationConfig";
 export type { OktaConfig } from "./models/OktaConfig";
+export type { OktaDocsSchema } from "./models/OktaDocsSchema";
 export type { OpenIDProvider } from "./models/OpenIDProvider";
 export type { OpenIDProviderCreate } from "./models/OpenIDProviderCreate";
 export type { OpenIDProviderSimple } from "./models/OpenIDProviderSimple";

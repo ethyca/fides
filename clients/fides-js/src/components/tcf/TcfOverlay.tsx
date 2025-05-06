@@ -467,6 +467,7 @@ export const TcfOverlay = ({
       ) {
         // Do not reject legitimate interests if the reject all mechanism is set to "Reject Consent Only"
         enabledIds.purposesLegint = draftIds.purposesLegint;
+        enabledIds.vendorsLegint = draftIds.vendorsLegint;
         fidesDebugger(
           "Reject all mechanism is set to 'Reject Consent Only'. Ignoring legitimate interests during opt out.",
           enabledIds,

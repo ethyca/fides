@@ -17,6 +17,7 @@ import type { MariaDBDocsSchema } from "./MariaDBDocsSchema";
 import type { MongoDBDocsSchema } from "./MongoDBDocsSchema";
 import type { MSSQLDocsSchema } from "./MSSQLDocsSchema";
 import type { MySQLDocsSchema } from "./MySQLDocsSchema";
+import type { OktaDocsSchema } from "./OktaDocsSchema";
 import type { PostgreSQLDocsSchema } from "./PostgreSQLDocsSchema";
 import type { RDSMySQLDocsSchema } from "./RDSMySQLDocsSchema";
 import type { RDSPostgresDocsSchema } from "./RDSPostgresDocsSchema";
@@ -55,6 +56,7 @@ export type CreateConnectionConfigurationWithSecrets = {
     | MySQLDocsSchema
     | RDSMySQLDocsSchema
     | RDSPostgresDocsSchema
+    | OktaDocsSchema
     | PostgreSQLDocsSchema
     | RedshiftDocsSchema
     | S3DocsSchema
