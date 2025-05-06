@@ -38,6 +38,10 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - FidesJS css variable `--fides-overlay-container-border-width` now applies to banner (only applied to modal before) [#6097](https://github.com/ethyca/fides/pull/6097) https://github.com/ethyca/fides/labels/high-risk
 - Fixed vendor restriction form validation and input handling [#6101](https://github.com/ethyca/fides/pull/6101)
 
+### Removed
+- Removed unused libxslt-dev dependency [#6119](https://github.com/ethyca/fides/pull/6119)
+
+
 ## [2.60.0](https://github.com/ethyca/fides/compare/2.59.2...2.60.0)
 
 ### Added
