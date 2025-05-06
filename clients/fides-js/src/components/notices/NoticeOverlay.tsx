@@ -34,6 +34,7 @@ import {
 } from "../../lib/i18n";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { updateConsentPreferences } from "../../lib/preferences";
+import { transformUserPreferenceToBoolean } from "../../lib/shared-consent-utils";
 import ConsentBanner from "../ConsentBanner";
 import { NoticeConsentButtons } from "../ConsentButtons";
 import Overlay from "../Overlay";
@@ -141,7 +142,14 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
 
   window.addEventListener("FidesUpdating", (event) => {
     // If GPC is being applied after initialization, we need to update the initial overlay to reflect the new state. This is especially important for Firefox browsers (Gecko) because GPC gets applied rather late due to how it handles queuing the `setTimeout` on the last step of our `initialize` function.
-    setDraftEnabledNoticeKeys(initialEnabledNoticeKeys(event.detail.consent));
+    const { consent } = event.detail;
+    Object.keys(consent).forEach((key) => {
+      const value = consent[key];
+      if (typeof value === "string") {
+        consent[key] = transformUserPreferenceToBoolean(value);
+      }
+    });
+    setDraftEnabledNoticeKeys(initialEnabledNoticeKeys(consent));
   });
 
   const isAllNoticeOnly = privacyNoticeItems.every(
