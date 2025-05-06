@@ -53,16 +53,29 @@ export const IntegrationSetupSteps = ({
   }, [addIntegrationStep, authorizeIntegrationStep, createMonitorStep]);
 
   const getCurrentStep = () => {
-    return steps.findIndex((step) => step.state !== "finish");
+    const index = steps.findIndex((step) => step.state !== "finish");
+
+    // If all steps are finished, return the index of the last step
+    // instead of -1, to correctly highlight the last step as completed
+    if (index === -1 && steps.length > 0) {
+      return steps.length - 1;
+    }
+
+    return index;
   };
 
   const getStepStatus = () => {
-    const currentStep = getCurrentStep();
-    if (currentStep === -1) {
-      return "finish"; // All steps complete
+    const incompleteStepIndex = steps.findIndex(
+      (step) => step.state !== "finish",
+    );
+
+    // If all steps are complete, return 'finish'
+    if (incompleteStepIndex === -1) {
+      return "finish";
     }
 
-    return steps[currentStep].state;
+    // Otherwise, return the status of the current incomplete step
+    return steps[incompleteStepIndex].state;
   };
 
   return (
