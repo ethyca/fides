@@ -3,12 +3,12 @@ from __future__ import annotations
 from enum import Enum
 from typing import Dict, List, Optional
 
-from fides.config.admin_ui_settings import ErrorNotificationMode
 from pydantic import ConfigDict, Field, SerializeAsAny, field_validator, model_validator
 
 from fides.api.custom_types import AnyHttpUrlStringRemovesSlash, URLOriginString
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.messaging.messaging import MessagingServiceType
+from fides.config.admin_ui_settings import ErrorNotificationMode
 
 
 class StorageTypeApiAccepted(Enum):
