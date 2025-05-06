@@ -5,7 +5,7 @@ import type { ConnectionStatusData } from "../../ConnectionStatusNotice";
 export type StepState = "finish" | "process" | "wait" | "error";
 
 export interface Step {
-  title: string;
+  title: React.ReactNode;
   description: React.ReactNode;
   state: StepState;
 }
