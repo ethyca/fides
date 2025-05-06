@@ -2,10 +2,15 @@ import {
   AntButton as Button,
   AntSpace as Space,
   AntTooltip as Tooltip,
+  useToast,
 } from "fidesui";
+import { useRouter } from "next/router";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { useAlert } from "~/features/common/hooks";
+import { SYSTEM_ROUTE } from "~/features/common/nav/routes";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
+import { getIndexFromHash } from "~/features/data-discovery-and-detection/action-center/tables/useActionCenterTabs";
+import { successToastContent } from "~/features/data-discovery-and-detection/action-center/utils/successToastContent";
 import { DiffStatus } from "~/types/api";
 import { StagedResourceAPIResponse } from "~/types/api/models/StagedResourceAPIResponse";
 
@@ -17,10 +22,12 @@ import {
 
 interface DiscoveredAssetActionsCellProps {
   asset: StagedResourceAPIResponse;
+  onTabChange: (index: number) => void;
 }
 
 export const DiscoveredAssetActionsCell = ({
   asset,
+  onTabChange,
 }: DiscoveredAssetActionsCellProps) => {
   const [addMonitorResultAssetsMutation, { isLoading: isAddingResults }] =
     useAddMonitorResultAssetsMutation();
@@ -31,24 +38,38 @@ export const DiscoveredAssetActionsCell = ({
     { isLoading: isRestoringResults },
   ] = useRestoreMonitorResultAssetsMutation();
 
-  const { successAlert, errorAlert } = useAlert();
+  const toast = useToast();
+
+  const router = useRouter();
 
   const anyActionIsLoading =
     isAddingResults || isIgnoringResults || isRestoringResults;
 
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  const { urn, name, resource_type: type, diff_status } = asset;
+  const {
+    urn,
+    name,
+    resource_type: type,
+    diff_status: diffStatus,
+    system_key: systemKey,
+    user_assigned_system_key: userAssignedSystemKey,
+  } = asset;
 
   const handleAdd = async () => {
+    const systemToLink = userAssignedSystemKey || systemKey;
+    const href = `${SYSTEM_ROUTE}/configure/${systemToLink}#assets`;
     const result = await addMonitorResultAssetsMutation({
       urnList: [urn],
     });
     if (isErrorResult(result)) {
-      errorAlert(getErrorMessage(result.error));
+      toast(errorToastParams(getErrorMessage(result.error)));
     } else {
-      successAlert(
-        `${type} "${name}" has been added to the system inventory.`,
-        `Confirmed`,
+      toast(
+        successToastParams(
+          successToastContent(
+            `${type} "${name}" has been added to the system inventory.`,
+            systemToLink ? () => router.push(href) : undefined,
+          ),
+        ),
       );
     }
   };
@@ -58,11 +79,15 @@ export const DiscoveredAssetActionsCell = ({
       urnList: [urn],
     });
     if (isErrorResult(result)) {
-      errorAlert(getErrorMessage(result.error));
+      toast(errorToastParams(getErrorMessage(result.error)));
     } else {
-      successAlert(
-        `${type} "${name}" has been ignored and will not appear in future scans.`,
-        `Ignored`,
+      toast(
+        successToastParams(
+          successToastContent(
+            `${type} "${name}" has been ignored and will not appear in future scans.`,
+            () => onTabChange(getIndexFromHash("#ignored")!),
+          ),
+        ),
       );
     }
   };
@@ -72,11 +97,12 @@ export const DiscoveredAssetActionsCell = ({
       urnList: [urn],
     });
     if (isErrorResult(result)) {
-      errorAlert(getErrorMessage(result.error));
+      toast(errorToastParams(getErrorMessage(result.error)));
     } else {
-      successAlert(
-        `${type} "${name}" is no longer ignored and will appear in future scans.`,
-        `Restored`,
+      toast(
+        successToastParams(
+          `${type} "${name}" is no longer ignored and will appear in future scans.`,
+        ),
       );
     }
   };
@@ -84,7 +110,7 @@ export const DiscoveredAssetActionsCell = ({
   // TODO [HJ-369] update disabled and tooltip logic once the categories of consent feature is implemented
   return (
     <Space>
-      {diff_status !== DiffStatus.MUTED && (
+      {diffStatus !== DiffStatus.MUTED && (
         <>
           <Tooltip
             title={
@@ -114,7 +140,7 @@ export const DiscoveredAssetActionsCell = ({
           </Button>
         </>
       )}
-      {diff_status === DiffStatus.MUTED && (
+      {diffStatus === DiffStatus.MUTED && (
         <Button
           data-testid="restore-btn"
           size="small"
