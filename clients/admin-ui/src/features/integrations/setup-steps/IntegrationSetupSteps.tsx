@@ -9,6 +9,7 @@ import {
   useAuthorizeIntegrationStep,
   useCreateIntegrationStep,
   useCreateMonitorStep,
+  useLinkSystemStep,
 } from "./hooks";
 
 interface IntegrationSetupStepsProps {
@@ -37,17 +38,29 @@ export const IntegrationSetupSteps = ({
     connectionOption,
   });
 
+  const linkSystemStep = useLinkSystemStep({
+    testData,
+    testIsLoading,
+    connectionOption,
+  });
+
   // Use useMemo just to combine and filter the steps
   const steps = useMemo(() => {
     const allSteps: (Step | null)[] = [
       addIntegrationStep,
       authorizeIntegrationStep,
       createMonitorStep,
+      linkSystemStep,
     ];
 
     // Filter out null steps (e.g., authorization step may be null if not required)
     return allSteps.filter((step): step is Step => step !== null);
-  }, [addIntegrationStep, authorizeIntegrationStep, createMonitorStep]);
+  }, [
+    addIntegrationStep,
+    authorizeIntegrationStep,
+    createMonitorStep,
+    linkSystemStep,
+  ]);
 
   const getCurrentStep = () => {
     const index = steps.findIndex((step) => step.state !== "finish");
