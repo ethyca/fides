@@ -92,8 +92,8 @@ class MySQLConnector(SQLConnector):
 
         # if SSL mode was assigned in the connector configuration
         # otherwise connect_args remains empty
-        if (ssl_mode):
-            connect_args["ssl"] = { "mode": ssl_mode }
+        if ssl_mode:
+            connect_args["ssl"] = {"mode": ssl_mode}
 
         return connect_args
 
