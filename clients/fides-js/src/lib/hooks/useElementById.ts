@@ -1,6 +1,6 @@
 import { useEffect, useState } from "preact/hooks";
 
-import { searchForElement } from "../ui-utils";
+import { searchForElementById } from "../ui-utils";
 
 /**
  * Hook that searches for a DOM element by ID and returns it when found
@@ -19,7 +19,7 @@ const useElementById = <T extends HTMLElement = HTMLElement>(
     if (isDisabled) {
       return () => {};
     }
-    searchForElement(elementId).then((foundElement) => {
+    searchForElementById(elementId).then((foundElement) => {
       setElement(foundElement as T);
     });
   }, [elementId, isDisabled]); // Only re-run if ID changes

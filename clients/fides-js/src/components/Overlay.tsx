@@ -2,7 +2,13 @@
 import "./fides.css";
 
 import { FunctionComponent, h, VNode } from "preact";
-import { useCallback, useEffect, useRef, useState } from "preact/hooks";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "preact/hooks";
 
 import { useA11yDialog } from "../lib/a11y-dialog";
 import { FIDES_OVERLAY_WRAPPER } from "../lib/consent-constants";
@@ -15,7 +21,11 @@ import {
 } from "../lib/consent-types";
 import { defaultShowModal, shouldResurfaceBanner } from "../lib/consent-utils";
 import { dispatchFidesEvent } from "../lib/events";
-import { useElementById, useHasMounted } from "../lib/hooks";
+import {
+  useElementById,
+  useElementsByQuerySelector,
+  useHasMounted,
+} from "../lib/hooks";
 import { useI18n } from "../lib/i18n/i18n-context";
 import { blockPageScrolling, unblockPageScrolling } from "../lib/ui-utils";
 import ConsentContent from "./ConsentContent";
@@ -63,11 +73,33 @@ const Overlay: FunctionComponent<Props> = ({
   const { i18n } = useI18n();
   const delayBannerMilliseconds = 100;
   const hasMounted = useHasMounted();
+
+  // Forces Modal Link to have an ID.
   const modalLinkId = options.modalLinkId || "fides-modal-link";
-  const modalLinkIsDisabled =
-    !experience || !!options.fidesEmbed || options.modalLinkId === "";
-  const modalLink = useElementById(modalLinkId, modalLinkIsDisabled);
-  const modalLinkRef = useRef<HTMLElement | null>(null);
+  const modalLinkByIdIsDisabled =
+    !experience ||
+    !!options.fidesEmbed ||
+    // This can't ever be true?
+    options.modalLinkId === "";
+  const modalLink = useElementById(modalLinkId, modalLinkByIdIsDisabled);
+  const modalLinkRef = useRef<HTMLElement[]>([]);
+
+  const modalLinkByQuerySelectorIsDisabled =
+    !experience || !!options.fidesEmbed || !options.modalLinkQuerySelector;
+  const modalLinkByQuerySelector = options.modalLinkQuerySelector;
+  const modalLinks = useElementsByQuerySelector(
+    modalLinkByQuerySelector ?? "",
+    modalLinkByQuerySelectorIsDisabled,
+  );
+
+  const modalLinkElements = useMemo(() => {
+    const elements = [...modalLinks];
+    if (modalLink) {
+      elements.push(modalLink);
+    }
+    return elements;
+  }, [modalLinks, modalLink]);
+
   const [disableBanner, setDisableBanner] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -163,33 +195,52 @@ const Overlay: FunctionComponent<Props> = ({
   }, [experience, handleOpenModal, options.fidesEmbed]);
 
   useEffect(() => {
+    if (modalLinkByIdIsDisabled && modalLinkByQuerySelectorIsDisabled) {
+      fidesDebugger("Modal Link is disabled for this experience.");
+    }
+  }, [modalLinkByQuerySelectorIsDisabled, modalLinkByIdIsDisabled]);
+
+  useEffect(() => {
     document.body.classList.add("fides-overlay-modal-link-shown");
     // If empty string is explicitly set, do not attempt to bind the modal link to the click handler.
     // developers using `Fides.showModal();` can use this to prevent polling for the modal link. Developers should always be able to rely on the .fides-overlay-modal-link-shown classname to show their custom modal link.
-    if (!modalLinkIsDisabled) {
-      if (modalLink) {
-        fidesDebugger(
-          "Modal link element found, updating it to show and trigger modal on click.",
-        );
-        modalLinkRef.current = modalLink;
-        modalLinkRef.current.addEventListener("click", window.Fides.showModal);
-        // show the modal link in the DOM
-        modalLinkRef.current.classList.add("fides-modal-link-shown");
-      } else {
-        fidesDebugger(`Searching for Modal link element #${modalLinkId}...`);
-      }
+
+    if (modalLinks.length > 0) {
+      fidesDebugger(
+        "Modal link elements found, updating them to show and trigger modal on click.",
+      );
+      modalLinkRef.current = modalLinkElements;
+      modalLinkRef.current.forEach((element) =>
+        element.addEventListener("click", window.Fides.showModal),
+      );
+      // show the modal link in the DOM
+      modalLinkRef.current.forEach((element) =>
+        element.classList.add("fides-modal-link-shown"),
+      );
     } else {
-      fidesDebugger("Modal Link is disabled for this experience.");
+      fidesDebugger(`Searching for Modal link element #${modalLinkId}...`);
+      if (modalLinkByQuerySelector) {
+        fidesDebugger(
+          `Searching for Modal link elements ${modalLinkByQuerySelector}...`,
+        );
+      }
     }
+
     return () => {
       if (modalLinkRef.current) {
-        modalLinkRef.current.removeEventListener(
-          "click",
-          window.Fides.showModal,
+        modalLinkRef.current.forEach((element) =>
+          element.removeEventListener("click", window.Fides.showModal),
         );
       }
     };
-  }, [modalLink, modalLinkIsDisabled, modalLinkId]);
+  }, [
+    modalLink,
+    modalLinkByQuerySelector,
+    modalLinkByIdIsDisabled,
+    modalLinkElements,
+    modalLinkId,
+    modalLinks,
+  ]);
 
   const handleManagePreferencesClick = (): void => {
     handleOpenModal();

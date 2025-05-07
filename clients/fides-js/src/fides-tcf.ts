@@ -261,6 +261,7 @@ const _Fides: FidesGlobal = {
     showFidesBrandLink: false,
     fidesConsentOverride: null,
     fidesDisabledNotices: null,
+    modalLinkQuerySelector: null,
   },
   fides_meta: {},
   identity: {},

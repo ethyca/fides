@@ -315,6 +315,7 @@ const _Fides: FidesGlobal = {
     fidesConsentOverride: null,
     otFidesMapping: null,
     fidesDisabledNotices: null,
+    modalLinkQuerySelector: null,
   },
   fides_meta: {},
   identity: {},
