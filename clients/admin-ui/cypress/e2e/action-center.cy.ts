@@ -9,6 +9,7 @@ import {
 import {
   ACTION_CENTER_ROUTE,
   INTEGRATION_MANAGEMENT_ROUTE,
+  UNCATEGORIZED_SEGMENT,
 } from "~/features/common/nav/routes";
 
 describe("Action center", () => {
@@ -124,6 +125,13 @@ describe("Action center", () => {
 
   describe("Action center system aggregate results", () => {
     const webMonitorKey = "my_web_monitor_1";
+    const rowIds = [
+      UNCATEGORIZED_SEGMENT,
+      "system_key-8fe42cdb-af2e-4b9e-9b38-f75673180b88",
+      "system_key-652c8984-ade7-470b-bce4-7e184621be9d",
+      "fds.1047",
+    ];
+
     beforeEach(() => {
       cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}`);
       cy.wait("@getSystemAggregateResults");
@@ -146,47 +154,52 @@ describe("Action center", () => {
       cy.getByTestId("column-locations").should("exist");
       cy.getByTestId("column-domains").should("exist");
       cy.getByTestId("column-actions").should("exist");
-      cy.getByTestId("row-0-col-system_name").within(() => {
+      cy.getByTestId(`row-${rowIds[0]}-col-system_name`).within(() => {
         cy.getByTestId("change-icon").should("exist");
         cy.contains("Uncategorized assets").should("exist");
       });
-      cy.getByTestId("row-3-col-system_name").within(() => {
+      cy.getByTestId(`row-${rowIds[3]}-col-system_name`).within(() => {
         cy.getByTestId("change-icon").should("exist"); // new system
       });
       // data use column should be empty for uncategorized assets
-      cy.getByTestId("row-0-col-data_use").should("be.empty");
+      cy.getByTestId(`row-${rowIds[0]}-col-data_use`).should("be.empty");
       // cy.getByTestId("row-1-col-system_name").within(() => {
       //   cy.getByTestId("change-icon").should("not.exist"); // existing result
       //   cy.contains("Google Tag Manager").should("exist");
       // });
       // data use column should not be empty for other assets
-      cy.getByTestId("row-1-col-data_use").children().should("have.length", 1);
+      cy.getByTestId(`row-${rowIds[1]}-col-data_use`)
+        .children()
+        .should("have.length", 1);
 
       // multiple locations
-      cy.getByTestId("row-2-col-locations")
+      cy.getByTestId(`row-${rowIds[2]}-col-locations`)
         .should("contain", "United States")
         .and("contain", "Canada");
       // single location
-      cy.getByTestId("row-3-col-locations").should("contain", "United States");
+      cy.getByTestId(`row-${rowIds[3]}-col-locations`).should(
+        "contain",
+        "United States",
+      );
 
       // multiple domains
-      cy.getByTestId("row-0-col-domains")
+      cy.getByTestId(`row-${rowIds[0]}-col-domains`)
         .should("contain", "29 domains")
         .within(() => {
           cy.get("button").click({ force: true });
           cy.get("li").should("have.length", 29);
         });
       // single domain
-      cy.getByTestId("row-3-col-domains").should(
+      cy.getByTestId(`row-${rowIds[3]}-col-domains`).should(
         "contain",
         "analytics.google.com",
       );
-      cy.getByTestId("row-0-col-actions").within(() => {
+      cy.getByTestId(`row-${rowIds[0]}-col-actions`).within(() => {
         cy.getByTestId("add-btn").should("be.disabled");
       });
     });
     it("should ignore all assets in an uncategorized system", () => {
-      cy.getByTestId("row-0-col-actions").within(() => {
+      cy.getByTestId(`row-${rowIds[0]}-col-actions`).within(() => {
         cy.getByTestId("ignore-btn").click({ force: true });
       });
       cy.wait("@ignoreMonitorResultSystem").then((interception) => {
@@ -198,7 +211,7 @@ describe("Action center", () => {
       );
     });
     it("should add all assets in a categorized system", () => {
-      cy.getByTestId("row-1-col-actions").within(() => {
+      cy.getByTestId(`row-${rowIds[1]}-col-actions`).within(() => {
         cy.getByTestId("add-btn").click({ force: true });
       });
       cy.wait("@addMonitorResultSystem");
@@ -208,7 +221,7 @@ describe("Action center", () => {
       );
     });
     it("should ignore all assets in a categorized system", () => {
-      cy.getByTestId("row-1-col-actions").within(() => {
+      cy.getByTestId(`row-${rowIds[1]}-col-actions`).within(() => {
         cy.getByTestId("ignore-btn").click({ force: true });
       });
       cy.wait("@ignoreMonitorResultSystem");
@@ -218,15 +231,15 @@ describe("Action center", () => {
       );
     });
     it("shouldn't allow bulk add when uncategorized system is selected", () => {
-      cy.getByTestId("row-0-col-select").find("label").click();
+      cy.getByTestId(`row-${rowIds[0]}-col-select`).find("label").click();
       cy.getByTestId("selected-count").should("contain", "1 selected");
       cy.getByTestId("bulk-actions-menu").click();
       cy.getByTestId("bulk-add").should("be.disabled");
     });
     it("should bulk add results from categorized systems", () => {
       cy.getByTestId("bulk-actions-menu").should("be.disabled");
-      cy.getByTestId("row-1-col-select").find("label").click();
-      cy.getByTestId("row-2-col-select").find("label").click();
+      cy.getByTestId(`row-${rowIds[1]}-col-select`).find("label").click();
+      cy.getByTestId(`row-${rowIds[2]}-col-select`).find("label").click();
       cy.getByTestId("selected-count").should("contain", "2 selected");
       cy.getByTestId("bulk-actions-menu").should("not.be.disabled");
       cy.getByTestId("bulk-actions-menu").click();
@@ -238,9 +251,9 @@ describe("Action center", () => {
       );
     });
     it("should bulk ignore results from all systems", () => {
-      cy.getByTestId("row-0-col-select").find("label").click();
-      cy.getByTestId("row-1-col-select").find("label").click();
-      cy.getByTestId("row-2-col-select").find("label").click();
+      cy.getByTestId(`row-${rowIds[0]}-col-select`).find("label").click();
+      cy.getByTestId(`row-${rowIds[1]}-col-select`).find("label").click();
+      cy.getByTestId(`row-${rowIds[2]}-col-select`).find("label").click();
       cy.getByTestId("selected-count").should("contain", "3 selected");
       cy.getByTestId("bulk-actions-menu").should("not.be.disabled");
       cy.getByTestId("bulk-actions-menu").click();
@@ -252,7 +265,7 @@ describe("Action center", () => {
       );
     });
     it("should navigate to table view on row click", () => {
-      cy.getByTestId("row-1-col-system_name").click();
+      cy.getByTestId(`row-${rowIds[1]}-col-system_name`).click();
       cy.url().should(
         "contain",
         "system_key-8fe42cdb-af2e-4b9e-9b38-f75673180b88",
@@ -275,17 +288,17 @@ describe("Action center", () => {
 
         // "recent activity" tab should be read-only
         cy.getByTestId("bulk-actions-menu").should("be.disabled");
-        cy.getByTestId("row-0-col-select").should("not.exist");
-        cy.getByTestId("row-0-col-actions").should("not.exist");
+        cy.getByTestId(`row-${rowIds[0]}-col-select`).should("not.exist");
+        cy.getByTestId(`row-${rowIds[0]}-col-actions`).should("not.exist");
 
         // eslint-disable-next-line cypress/no-unnecessary-waiting
         cy.wait(500);
         cy.getByTestId("tab-Ignored").click({ force: true });
         cy.location("hash").should("eq", "#ignored");
         // "ignore" option should not show in bulk actions menu
-        cy.getByTestId("row-0-col-select").find("label").click();
-        cy.getByTestId("row-2-col-select").find("label").click();
-        cy.getByTestId("row-3-col-select").find("label").click();
+        cy.getByTestId(`row-${rowIds[0]}-col-select`).find("label").click();
+        cy.getByTestId(`row-${rowIds[2]}-col-select`).find("label").click();
+        cy.getByTestId(`row-${rowIds[3]}-col-select`).find("label").click();
         cy.getByTestId("bulk-actions-menu").click();
         cy.getByTestId("bulk-ignore").should("not.exist");
       });
@@ -293,25 +306,25 @@ describe("Action center", () => {
       it("maintains hash when clicking on a row", () => {
         // no hash
         cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}`);
-        cy.getByTestId("row-0-col-system_name").click();
+        cy.getByTestId(`row-${rowIds[0]}-col-system_name`).click();
         cy.location("hash").should("eq", "");
 
         // eslint-disable-next-line cypress/no-unnecessary-waiting
         cy.wait(500);
         cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}#attention-required`);
-        cy.getByTestId("row-0-col-system_name").click();
+        cy.getByTestId(`row-${rowIds[0]}-col-system_name`).click();
         cy.location("hash").should("eq", "#attention-required");
 
         // eslint-disable-next-line cypress/no-unnecessary-waiting
         cy.wait(500);
         cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}#recent-activity`);
-        cy.getByTestId("row-0-col-system_name").click();
+        cy.getByTestId(`row-${rowIds[0]}-col-system_name`).click();
         cy.location("hash").should("eq", "#recent-activity");
 
         // eslint-disable-next-line cypress/no-unnecessary-waiting
         cy.wait(500);
         cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}#ignored`);
-        cy.getByTestId("row-0-col-system_name").click();
+        cy.getByTestId(`row-${rowIds[0]}-col-system_name`).click();
         cy.location("hash").should("eq", "#ignored");
       });
     });
@@ -320,6 +333,8 @@ describe("Action center", () => {
   describe("Action center assets uncategorized results", () => {
     const webMonitorKey = "my_web_monitor_1";
     const systemId = "[undefined]";
+    const firstRowUrn =
+      "my_web_monitor_1.forms.hubspot.com.https://forms.hubspot.com/submissions-validation/v1/validate/7252764/0d22c925-3a81-4f10-bfdc-69a5d67e93bc";
     beforeEach(() => {
       cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}/${systemId}`);
       cy.wait("@getSystemAssetsUncategorized");
@@ -346,13 +361,13 @@ describe("Action center", () => {
         .realHover();
       cy.get(".ant-tooltip-inner").should("contain", "January"); */
       cy.getByTestId("column-actions").should("exist");
-      cy.getByTestId("row-0-col-actions").within(() => {
+      cy.getByTestId(`row-${firstRowUrn}-col-actions`).within(() => {
         cy.getByTestId("add-btn").should("be.disabled");
         cy.getByTestId("ignore-btn").should("exist");
       });
     });
     it("should allow adding a system on uncategorized assets", () => {
-      cy.getByTestId("row-0-col-system").within(() => {
+      cy.getByTestId(`row-${firstRowUrn}-col-system`).within(() => {
         cy.getByTestId("add-system-btn").click();
       });
       cy.wait("@getSystemsPaginated");
@@ -370,6 +385,14 @@ describe("Action center", () => {
     const webMonitorKey = "my_web_monitor_1";
     const systemId = "system_key-8fe42cdb-af2e-4b9e-9b38-f75673180b88";
     const systemName = "Google Tag Manager";
+    const rowUrns = [
+      "my_web_monitor_1.GET.td.doubleclick.net.https://td.doubleclick.net/td/rul/11020051272",
+      "my_web_monitor_1.GET.td.doubleclick.net.https://td.doubleclick.net/td/rul/697301175",
+      "my_web_monitor_1.POST.www.google.com.https://www.google.com/ccm/collect",
+      "my_web_monitor_1.GET.www.googletagmanager.com.https://www.googletagmanager.com/gtag/destination",
+      "my_web_monitor_1.GET.www.googletagmanager.com.https://www.googletagmanager.com/gtm.js",
+    ];
+
     beforeEach(() => {
       cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}/${systemId}`);
       cy.wait("@getSystemAssetResults");
@@ -396,23 +419,26 @@ describe("Action center", () => {
         .realHover();
       cy.get(".ant-tooltip-inner").should("contain", "January"); */
       cy.getByTestId("column-page").should("exist");
-      cy.getByTestId("row-0-col-page").should("contain", "single_page");
-      cy.getByTestId("row-1-col-page").within(() => {
+      cy.getByTestId(`row-${rowUrns[0]}-col-page`).should(
+        "contain",
+        "single_page",
+      );
+      cy.getByTestId(`row-${rowUrns[1]}-col-page`).within(() => {
         cy.get("p").should("contain", "3 pages");
         cy.get("button").click({ force: true });
         cy.get("li").should("have.length", 3);
       });
       // show nothing when page field is undefined or []
-      cy.getByTestId("row-2-col-page").should("be.empty");
-      cy.getByTestId("row-3-col-page").should("be.empty");
+      cy.getByTestId(`row-${rowUrns[2]}-col-page`).should("be.empty");
+      cy.getByTestId(`row-${rowUrns[3]}-col-page`).should("be.empty");
       cy.getByTestId("column-actions").should("exist");
-      cy.getByTestId("row-0-col-actions").within(() => {
+      cy.getByTestId(`row-${rowUrns[0]}-col-actions`).within(() => {
         cy.getByTestId("add-btn").should("exist");
         cy.getByTestId("ignore-btn").should("exist");
       });
     });
     it("should allow editing a system on categorized assets", () => {
-      cy.getByTestId("row-3-col-system").within(() => {
+      cy.getByTestId(`row-${rowUrns[3]}-col-system`).within(() => {
         cy.getByTestId("system-badge").click();
       });
       cy.wait("@getSystemsPaginated");
@@ -429,7 +455,7 @@ describe("Action center", () => {
       cy.wait(100);
 
       // Now test with search
-      cy.getByTestId("row-2-col-system").within(() => {
+      cy.getByTestId(`row-${rowUrns[2]}-col-system`).within(() => {
         cy.getByTestId("system-badge").click({ force: true });
         cy.getByTestId("system-select").find("input").type("demo m");
         cy.wait("@getSystemsWithSearch").then((interception) => {
@@ -449,7 +475,7 @@ describe("Action center", () => {
     it("should allow creating a new system and assigning an asset to it", () => {
       stubVendorList();
       stubSystemVendors();
-      cy.getByTestId("row-4-col-system").within(() => {
+      cy.getByTestId(`row-${rowUrns[4]}-col-system`).within(() => {
         cy.getByTestId("system-badge").click();
       });
       cy.wait("@getSystemsPaginated");
@@ -467,7 +493,7 @@ describe("Action center", () => {
       );
     });
     it("should add individual assets", () => {
-      cy.getByTestId("row-0-col-actions").within(() => {
+      cy.getByTestId(`row-${rowUrns[0]}-col-actions`).within(() => {
         cy.getByTestId("add-btn").click({ force: true });
       });
       cy.wait("@addAssets");
@@ -477,7 +503,7 @@ describe("Action center", () => {
       );
     });
     it("should ignore individual assets", () => {
-      cy.getByTestId("row-0-col-actions").within(() => {
+      cy.getByTestId(`row-${rowUrns[0]}-col-actions`).within(() => {
         cy.getByTestId("ignore-btn").click({ force: true });
       });
       cy.wait("@ignoreAssets");
@@ -488,7 +514,7 @@ describe("Action center", () => {
     });
 
     it("should restore individual ignored assets", () => {
-      cy.getByTestId("row-1-col-actions").within(() => {
+      cy.getByTestId(`row-${rowUrns[1]}-col-actions`).within(() => {
         cy.getByTestId("restore-btn").click({ force: true });
       });
       cy.wait("@restoreAssets");
@@ -499,9 +525,9 @@ describe("Action center", () => {
     });
     it("should bulk add assets", () => {
       cy.getByTestId("bulk-actions-menu").should("be.disabled");
-      cy.getByTestId("row-0-col-select").find("label").click();
-      cy.getByTestId("row-2-col-select").find("label").click();
-      cy.getByTestId("row-3-col-select").find("label").click();
+      cy.getByTestId(`row-${rowUrns[0]}-col-select`).find("label").click();
+      cy.getByTestId(`row-${rowUrns[2]}-col-select`).find("label").click();
+      cy.getByTestId(`row-${rowUrns[3]}-col-select`).find("label").click();
       cy.getByTestId("selected-count").should("contain", "3 selected");
       cy.getByTestId("bulk-actions-menu").should("not.be.disabled");
       cy.getByTestId("bulk-actions-menu").click();
@@ -514,9 +540,9 @@ describe("Action center", () => {
     });
     it("should bulk ignore assets", () => {
       cy.getByTestId("bulk-actions-menu").should("be.disabled");
-      cy.getByTestId("row-0-col-select").find("label").click();
-      cy.getByTestId("row-2-col-select").find("label").click();
-      cy.getByTestId("row-3-col-select").find("label").click();
+      cy.getByTestId(`row-${rowUrns[0]}-col-select`).find("label").click();
+      cy.getByTestId(`row-${rowUrns[2]}-col-select`).find("label").click();
+      cy.getByTestId(`row-${rowUrns[3]}-col-select`).find("label").click();
       cy.getByTestId("selected-count").should("contain", "3 selected");
       cy.getByTestId("bulk-actions-menu").should("not.be.disabled");
       cy.getByTestId("bulk-actions-menu").click();
@@ -531,8 +557,8 @@ describe("Action center", () => {
     it("should bulk restore ignored assets", () => {
       cy.getByTestId("tab-Ignored").click({ force: true });
       cy.getByTestId("bulk-actions-menu").should("be.disabled");
-      cy.getByTestId("row-0-col-select").find("label").click();
-      cy.getByTestId("row-2-col-select").find("label").click();
+      cy.getByTestId(`row-${rowUrns[0]}-col-select`).find("label").click();
+      cy.getByTestId(`row-${rowUrns[2]}-col-select`).find("label").click();
       cy.getByTestId("selected-count").should("contain", "2 selected");
       cy.getByTestId("bulk-actions-menu").should("not.be.disabled");
       cy.getByTestId("bulk-actions-menu").click();
@@ -566,9 +592,9 @@ describe("Action center", () => {
 
     it("should bulk assign assets to a system", () => {
       cy.getByTestId("bulk-actions-menu").should("be.disabled");
-      cy.getByTestId("row-0-col-select").find("label").click();
-      cy.getByTestId("row-2-col-select").find("label").click();
-      cy.getByTestId("row-3-col-select").find("label").click();
+      cy.getByTestId(`row-${rowUrns[0]}-col-select`).find("label").click();
+      cy.getByTestId(`row-${rowUrns[2]}-col-select`).find("label").click();
+      cy.getByTestId(`row-${rowUrns[3]}-col-select`).find("label").click();
       cy.getByTestId("selected-count").should("contain", "3 selected");
       cy.getByTestId("bulk-actions-menu").should("not.be.disabled");
       cy.getByTestId("bulk-actions-menu").click();
@@ -586,9 +612,9 @@ describe("Action center", () => {
     it("should bulk add data uses to assets", () => {
       stubTaxonomyEntities();
       cy.getByTestId("bulk-actions-menu").should("be.disabled");
-      cy.getByTestId("row-0-col-select").find("label").click();
-      cy.getByTestId("row-2-col-select").find("label").click();
-      cy.getByTestId("row-3-col-select").find("label").click();
+      cy.getByTestId(`row-${rowUrns[0]}-col-select`).find("label").click();
+      cy.getByTestId(`row-${rowUrns[2]}-col-select`).find("label").click();
+      cy.getByTestId(`row-${rowUrns[3]}-col-select`).find("label").click();
       cy.getByTestId("selected-count").should("contain", "3 selected");
       cy.getByTestId("bulk-actions-menu").should("not.be.disabled");
       cy.getByTestId("bulk-actions-menu").click();
@@ -626,16 +652,16 @@ describe("Action center", () => {
 
         // "recent activity" tab should be read-only
         cy.getByTestId("bulk-actions-menu").should("be.disabled");
-        cy.getByTestId("row-0-col-system").within(() => {
+        cy.getByTestId(`row-${rowUrns[0]}-col-system`).within(() => {
           cy.getByTestId("system-badge")
             .should("exist")
             .should("not.have.attr", "onClick");
           cy.getByTestId("add-system-btn").should("not.exist");
         });
-        cy.getByTestId("row-0-col-data_use").within(() => {
+        cy.getByTestId(`row-${rowUrns[0]}-col-data_use`).within(() => {
           cy.getByTestId("taxonomy-add-btn").should("not.exist");
         });
-        cy.getByTestId("row-0-col-select").should("not.exist");
+        cy.getByTestId(`row-${rowUrns[0]}-col-select`).should("not.exist");
         cy.getByTestId("col-actions").should("not.exist");
 
         // eslint-disable-next-line cypress/no-unnecessary-waiting
@@ -643,9 +669,9 @@ describe("Action center", () => {
         cy.getByTestId("tab-Ignored").click({ force: true });
         cy.location("hash").should("eq", "#ignored");
         // "ignore" option should not show in bulk actions menu
-        cy.getByTestId("row-0-col-select").find("label").click();
-        cy.getByTestId("row-2-col-select").find("label").click();
-        cy.getByTestId("row-3-col-select").find("label").click();
+        cy.getByTestId(`row-${rowUrns[0]}-col-select`).find("label").click();
+        cy.getByTestId(`row-${rowUrns[2]}-col-select`).find("label").click();
+        cy.getByTestId(`row-${rowUrns[3]}-col-select`).find("label").click();
         cy.getByTestId("bulk-actions-menu").click();
         cy.getByTestId("bulk-ignore").should("not.exist");
       });
