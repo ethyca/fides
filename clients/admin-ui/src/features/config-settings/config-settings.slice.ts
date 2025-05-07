@@ -111,12 +111,14 @@ export const selectCORSOrigins: (state: RootState) => CORSOriginsSettings =
     },
   );
 
-export const selectApplicationConfig = () =>
+export const selectApplicationConfig = (
+  { api_set = true }: { api_set: boolean } = { api_set: true },
+) =>
   createSelector(
     [
       (state) => state,
       configSettingsApi.endpoints.getConfigurationSettings.select({
-        api_set: true,
+        api_set,
       }),
     ],
     (_, { data }) => data as ApplicationConfig,

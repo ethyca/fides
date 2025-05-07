@@ -15,15 +15,16 @@ import {
   MenuItem,
   MenuList,
   Text,
+  useToast,
 } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
 import DataTabsHeader from "~/features/common/DataTabsHeader";
 import { getErrorMessage } from "~/features/common/helpers";
-import { useAlert } from "~/features/common/hooks";
 import {
   ACTION_CENTER_ROUTE,
+  SYSTEM_ROUTE,
   UNCATEGORIZED_SEGMENT,
 } from "~/features/common/nav/routes";
 import {
@@ -33,12 +34,16 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   useAddMonitorResultSystemsMutation,
   useGetDiscoveredSystemAggregateQuery,
   useIgnoreMonitorResultSystemsMutation,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
-import useActionCenterTabs from "~/features/data-discovery-and-detection/action-center/tables/useActionCenterTabs";
+import useActionCenterTabs, {
+  getIndexFromHash,
+} from "~/features/data-discovery-and-detection/action-center/tables/useActionCenterTabs";
+import { successToastContent } from "~/features/data-discovery-and-detection/action-center/utils/successToastContent";
 import { DiffStatus } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
@@ -78,7 +83,7 @@ export const DiscoveredSystemAggregateTable = ({
 
   const anyBulkActionIsLoading = isAddingResults || isIgnoringResults;
 
-  const { successAlert, errorAlert } = useAlert();
+  const toast = useToast();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
@@ -109,8 +114,14 @@ export const DiscoveredSystemAggregateTable = ({
     }
   }, [data, setTotalPages]);
 
+  const handleTabChange = (index: number) => {
+    onTabChange(index);
+    setRowSelection({});
+  };
+
   const { columns } = useDiscoveredSystemAggregateColumns({
     monitorId,
+    onTabChange: handleTabChange,
     readonly: actionsDisabled,
     allowIgnore: !activeParams.diff_status.includes(DiffStatus.MUTED),
   });
@@ -154,10 +165,15 @@ export const DiscoveredSystemAggregateTable = ({
     });
 
     if (isErrorResult(result)) {
-      errorAlert(getErrorMessage(result.error));
+      toast(errorToastParams(getErrorMessage(result.error)));
     } else {
-      successAlert(
-        `${totalUpdates} assets have been added to the system inventory.`,
+      toast(
+        successToastParams(
+          successToastContent(
+            `${totalUpdates} assets have been added to the system inventory.`,
+            () => router.push(SYSTEM_ROUTE),
+          ),
+        ),
       );
       setRowSelection({});
     }
@@ -177,18 +193,18 @@ export const DiscoveredSystemAggregateTable = ({
     });
 
     if (isErrorResult(result)) {
-      errorAlert(getErrorMessage(result.error));
+      toast(errorToastParams(getErrorMessage(result.error)));
     } else {
-      successAlert(
-        `${totalUpdates} assets have been ignored and will not appear in future scans.`,
+      toast(
+        successToastParams(
+          successToastContent(
+            `${totalUpdates} assets have been ignored and will not appear in future scans.`,
+            () => onTabChange(getIndexFromHash("#ignored")!),
+          ),
+        ),
       );
       setRowSelection({});
     }
-  };
-
-  const handleTabChange = (index: number) => {
-    onTabChange(index);
-    setRowSelection({});
   };
 
   return (
