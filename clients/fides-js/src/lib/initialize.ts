@@ -126,7 +126,17 @@ const automaticallyApplyPreferences = async ({
   if (noticeConsentString) {
     fidesDebugger("Notice consent string found", noticeConsentString);
   }
-  if (!context.globalPrivacyControl && !noticeConsentString) {
+
+  // Check for migrated consent from OneTrust
+  const { consent: migratedConsent, method: migrationMethod } =
+    readConsentFromAnyProvider(fidesOptions);
+  const hasMigratedConsent = !!migratedConsent && !!migrationMethod;
+
+  if (
+    !context.globalPrivacyControl &&
+    !noticeConsentString &&
+    !hasMigratedConsent
+  ) {
     return false;
   }
 
@@ -148,10 +158,30 @@ const automaticallyApplyPreferences = async ({
 
   let gpcApplied = false;
   let noticeConsentApplied = false;
+  let migratedConsentApplied = false;
+
   const consentPreferencesToSave = effectiveExperience.privacy_notices.map(
     (notice) => {
       const hasPriorConsent = noticeHasConsentInCookie(notice, savedConsent);
       const bestNoticeTranslation = selectBestNoticeTranslation(i18n, notice);
+
+      // First check for migrated consent
+      if (hasMigratedConsent && migratedConsent) {
+        const preference = migratedConsent[notice.notice_key];
+        if (preference !== undefined) {
+          migratedConsentApplied = true;
+          return new SaveConsentPreference(
+            notice,
+            transformConsentToFidesUserPreference(
+              preference,
+              notice.consent_mechanism,
+            ),
+            bestNoticeTranslation?.privacy_notice_history_id,
+          );
+        }
+      }
+
+      // Then check for notice consent string
       const noticeConsent = decodeNoticeConsentString(noticeConsentString);
 
       if (notice.consent_mechanism !== ConsentMechanism.NOTICE_ONLY) {
@@ -199,13 +229,15 @@ const automaticallyApplyPreferences = async ({
     },
   );
 
-  if (gpcApplied || noticeConsentApplied) {
+  if (gpcApplied || noticeConsentApplied || migratedConsentApplied) {
     let consentMethod: ConsentMethod = ConsentMethod.SCRIPT;
-    if (noticeConsentApplied) {
+    if (migratedConsentApplied && migrationMethod) {
+      fidesDebugger("Updating consent preferences with migrated consent");
+      consentMethod = migrationMethod;
+    } else if (noticeConsentApplied) {
       fidesDebugger("Updating consent preferences with Notice Consent string");
       consentMethod = ConsentMethod.SCRIPT;
-    }
-    if (gpcApplied) {
+    } else if (gpcApplied) {
       fidesDebugger("Updating consent preferences with GPC");
       consentMethod = ConsentMethod.GPC;
     }
