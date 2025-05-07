@@ -2,9 +2,9 @@ import { CONSENT_COOKIE_NAME } from "fides-js";
 import { stubConfig, stubTCFExperience } from "support/stubs";
 
 import {
-  GtmFlagType,
-  GtmNonApplicableFlagMode,
-} from "~/../fides-js/src/integrations/gtm";
+  ConsentFlagType,
+  ConsentNonApplicableFlagMode,
+} from "../../../fides-js/src/lib/consent-types";
 
 const PRIVACY_NOTICE_KEY_1 = "advertising";
 const PRIVACY_NOTICE_KEY_2 = "essential";
@@ -147,7 +147,7 @@ describe("Consent third party extensions", () => {
               includeCustomPurposes: true,
               demoPageWindowParams: {
                 gtmOptions: {
-                  flag_type: GtmFlagType.CONSENT_MECHANISM,
+                  flag_type: ConsentFlagType.CONSENT_MECHANISM,
                 },
               },
             });
@@ -163,7 +163,7 @@ describe("Consent third party extensions", () => {
               undefined,
               {
                 gtmOptions: {
-                  flag_type: GtmFlagType.CONSENT_MECHANISM,
+                  flag_type: ConsentFlagType.CONSENT_MECHANISM,
                 },
               },
             );
@@ -278,7 +278,8 @@ describe("Consent third party extensions", () => {
               },
               demoPageWindowParams: {
                 gtmOptions: {
-                  non_applicable_flag_mode: GtmNonApplicableFlagMode.INCLUDE,
+                  non_applicable_flag_mode:
+                    ConsentNonApplicableFlagMode.INCLUDE,
                 },
               },
             });
@@ -300,7 +301,8 @@ describe("Consent third party extensions", () => {
               undefined,
               {
                 gtmOptions: {
-                  non_applicable_flag_mode: GtmNonApplicableFlagMode.INCLUDE,
+                  non_applicable_flag_mode:
+                    ConsentNonApplicableFlagMode.INCLUDE,
                 },
               },
             );
