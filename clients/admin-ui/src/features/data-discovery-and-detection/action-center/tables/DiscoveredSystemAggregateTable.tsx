@@ -136,6 +136,8 @@ export const DiscoveredSystemAggregateTable = ({
     state: {
       rowSelection,
     },
+    getRowId: (row) =>
+      row.id ?? row.vendor_id ?? row.name ?? UNCATEGORIZED_SEGMENT,
   });
 
   const selectedRows = tableInstance.getSelectedRowModel().rows;

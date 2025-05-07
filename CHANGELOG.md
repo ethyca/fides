@@ -41,6 +41,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed vendor restriction form validation and input handling [#6101](https://github.com/ethyca/fides/pull/6101)
 - Fixed special purpose vendor check in Fides JS logic [#6118](https://github.com/ethyca/fides/pull/6118)
 - Update Add Vendor tooltip to match navigation option [#6111](https://github.com/ethyca/fides/pull/6111)
+- Fixed UX issues with action center tables [#6116](https://github.com/ethyca/fides/pull/6116)
 
 ### Removed
 - Removed unused libxslt-dev dependency [#6119](https://github.com/ethyca/fides/pull/6119)

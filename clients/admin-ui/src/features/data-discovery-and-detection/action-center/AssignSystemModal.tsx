@@ -67,6 +67,7 @@ export const AssignSystemModal = ({
           loading={isSaving}
           onClick={() => {
             onSave(selectedSystem);
+            handleClose();
           }}
           data-testid="save-btn"
         >
