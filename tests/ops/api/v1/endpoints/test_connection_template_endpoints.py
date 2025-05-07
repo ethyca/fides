@@ -1067,7 +1067,7 @@ class TestGetConnectionSecretSchema:
                 },
                 "ssl_mode": {
                     "title": "SSL Mode",
-                    "description": "The SSL mode to use for the connection. Valid values are 'required', 'preferred', and 'disabled'.",
+                    "description": "The SSL mode to use for the connection. Accepted values are: 'required', 'preferred', 'disabled', or an empty value.",
                     "allOf": [{"$ref": "#/definitions/MySQLSSLMode"}],
                 },
             },
@@ -1076,7 +1076,7 @@ class TestGetConnectionSecretSchema:
                 "MySQLSSLMode": {
                     "title": "MySQLSSLMode",
                     "type": "string",
-                    "enum": ["preferred", "required", "disabled"],
+                    "enum": ["preferred", "required", "disabled", ""],
                 }
             },
         }
