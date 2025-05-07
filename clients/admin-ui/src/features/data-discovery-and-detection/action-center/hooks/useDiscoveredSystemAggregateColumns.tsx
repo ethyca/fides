@@ -8,6 +8,7 @@ import {
 } from "~/features/common/table/v2";
 import {
   BadgeCellExpandable,
+  DefaultHeaderCell,
   ListCellExpandable,
 } from "~/features/common/table/v2/cells";
 import DiscoveredSystemDataUseCell from "~/features/data-discovery-and-detection/action-center/tables/cells/DiscoveredSystemDataUseCell";
@@ -106,7 +107,7 @@ export const useDiscoveredSystemAggregateColumns = ({
         }))}
       />
     ),
-    header: "Locations",
+    header: (props) => <DefaultHeaderCell value="Locations" {...props} />,
     size: 300,
     meta: {
       showHeaderMenu: true,
@@ -123,7 +124,7 @@ export const useDiscoveredSystemAggregateColumns = ({
         cellProps={props}
       />
     ),
-    header: "Domains",
+    header: (props) => <DefaultHeaderCell value="Domains" {...props} />,
     meta: {
       showHeaderMenu: true,
       disableRowClick: true,
