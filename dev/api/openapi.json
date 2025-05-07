@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.60.2b1.post0.dev7"
+    "version": "2.60.2b1.post0.dev8"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -20160,7 +20160,7 @@
               }
             ],
             "title": "SSL Mode",
-            "description": "The SSL mode to use for the connection. Valid values are 'required', 'preferred', and 'disabled'."
+            "description": "The SSL mode to use for the connection. Accepted values are: 'required', 'preferred', 'disabled', or an empty value."
           }
         },
         "type": "object",
@@ -20176,7 +20176,8 @@
         "enum": [
           "preferred",
           "required",
-          "disabled"
+          "disabled",
+          ""
         ],
         "title": "MySQLSSLMode"
       },
