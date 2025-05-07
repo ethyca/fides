@@ -1,6 +1,6 @@
 import { MARKETING_CONSENT_KEYS } from "../lib/consent-constants";
 import { NoticeConsent } from "../lib/consent-types";
-import { transformUserPreferenceToBoolean } from "../lib/shared-consent-utils";
+import { processExternalConsentValue } from "../lib/shared-consent-utils";
 
 declare global {
   interface Window {
@@ -48,24 +48,21 @@ type ShopifyConsent = {
 };
 
 function createShopifyConsent(fidesConsent: NoticeConsent): ShopifyConsent {
-  const consent = Object.fromEntries(
-    Object.entries(CONSENT_MAP).map(([key, values]) => [
-      key,
-      values.some((value) => {
-        const consentValue = fidesConsent[value];
-        return typeof consentValue === "string"
-          ? transformUserPreferenceToBoolean(consentValue)
-          : consentValue;
-      }) ||
-        (values.some((value) => {
-          const consentValue = fidesConsent[value];
-          return typeof consentValue === "string"
-            ? !transformUserPreferenceToBoolean(consentValue)
-            : !consentValue;
-        })
-          ? false
-          : undefined),
+  const processedConsent = Object.fromEntries(
+    Object.entries(fidesConsent).map(([k, v]) => [
+      k,
+      processExternalConsentValue(v),
     ]),
+  );
+  const consent = Object.fromEntries(
+    Object.entries(CONSENT_MAP).map(([key, values]) => {
+      const hasTrue = values.some((value) => processedConsent[value] === true);
+      const hasFalse = values.some(
+        (value) => processedConsent[value] === false,
+      );
+
+      return [key, hasTrue || (hasFalse ? false : undefined)];
+    }),
   ) as Partial<ShopifyConsent>;
 
   // Ensure sale_of_data is always boolean

@@ -15,6 +15,7 @@ import {
 } from "./consent-types";
 import { resolveLegacyConsentValue } from "./consent-value";
 import {
+  processExternalConsentValue,
   transformConsentToFidesUserPreference,
   transformUserPreferenceToBoolean,
 } from "./shared-consent-utils";
@@ -149,11 +150,8 @@ export const getOrMakeFidesCookie = (
   // If the cookie is saved using consent mechanism because of the fidesConsentFlagType override, we need to convert it to boolean for internal use
   if (parsedCookie?.consent) {
     const { consent } = parsedCookie;
-    Object.keys(consent).forEach((key) => {
-      const value = consent[key];
-      if (typeof value === "string") {
-        consent[key] = transformUserPreferenceToBoolean(value);
-      }
+    Object.entries(consent).forEach(([key, value]) => {
+      consent[key] = processExternalConsentValue(value);
     });
   }
 

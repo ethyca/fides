@@ -31,8 +31,8 @@ import {
 } from "./consent-types";
 import {
   noticeHasConsentInCookie,
+  processExternalConsentValue,
   transformConsentToFidesUserPreference,
-  transformUserPreferenceToBoolean,
 } from "./shared-consent-utils";
 import { TcfModelsRecord } from "./tcf/types";
 
@@ -520,18 +520,12 @@ const normalizeConsentValues = ({
 
   // For boolean case, we need to transform any consent mechanism strings to booleans
   if (flagType !== ConsentFlagType.CONSENT_MECHANISM) {
-    Object.keys(consent).forEach((key) => {
-      const value = consent[key];
-      if (typeof value === "string") {
-        // Transform consent mechanism strings to booleans
-        normalizedConsentValues[key] = transformUserPreferenceToBoolean(
-          value as UserConsentPreference,
-        );
-      } else {
-        normalizedConsentValues[key] = value;
-      }
-    });
-    return normalizedConsentValues;
+    return Object.fromEntries(
+      Object.entries(consent).map(([key, value]) => [
+        key,
+        processExternalConsentValue(value),
+      ]),
+    );
   }
 
   // For consent mechanism case, we need the consent mechanisms to transform booleans
