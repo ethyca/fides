@@ -25,6 +25,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added Recorded URL to Consent Report [#6077](https://github.com/ethyca/fides/pull/6077)
 - Added ConnectionType.okta, OktaSchema, OktaConnector as support for the Okta Monitor [#6078](https://github.com/ethyca/fides/pull/6078)
 - Added "View" detail links to success toasts in action center [#6113](https://github.com/ethyca/fides/pull/6113)
+- Setting to allow Admin UI errors to be surfaced to a toast. [#6121](https://github.com/ethyca/fides/pull/6121)
 
 ### Changed
 - Abstract OT consent migration logic, allow write to Fides preferences api [#6099](https://github.com/ethyca/fides/pull/6099)
