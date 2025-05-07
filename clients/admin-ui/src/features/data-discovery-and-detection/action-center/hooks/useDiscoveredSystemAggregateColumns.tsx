@@ -65,12 +65,16 @@ export const useDiscoveredSystemAggregateColumns = ({
     header: "System",
     size: 300,
     meta: {
-      headerProps: {
-        paddingLeft: "0px",
-      },
-      cellProps: {
-        padding: "0 !important",
-      },
+      headerProps: !readonly
+        ? {
+            paddingLeft: "0px",
+          }
+        : undefined,
+      cellProps: !readonly
+        ? {
+            padding: "0 !important",
+          }
+        : undefined,
     },
   });
 
