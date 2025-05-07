@@ -42,6 +42,10 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed special purpose vendor check in Fides JS logic [#6118](https://github.com/ethyca/fides/pull/6118)
 - Update Add Vendor tooltip to match navigation option [#6111](https://github.com/ethyca/fides/pull/6111)
 
+### Removed
+- Removed unused libxslt-dev dependency [#6119](https://github.com/ethyca/fides/pull/6119)
+
+
 ## [2.60.0](https://github.com/ethyca/fides/compare/2.59.2...2.60.0)
 
 ### Added
