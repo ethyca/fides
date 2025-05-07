@@ -71,11 +71,11 @@ def generate_route_file_map(ui_directory: Union[str, Path]) -> Dict[re.Pattern, 
     if not ui_path.exists():
         return {}
 
-    exact_pattern = r"\[[a-zA-Z]+\]"
-    nested_pattern = r"\[...[a-zA-Z]+\]"
+    exact_pattern = r"\[[a-zA-Z\.\[\]]+\]"
+    nested_pattern = r"\[...[a-zA-Z\.\[\]]+\]"
 
-    exact_pattern_replacement = r"[a-zA-Z10-9-_]+"
-    nested_pattern_replacement = r"[a-zA-Z10-9-_/]+"
+    exact_pattern_replacement = r"[a-zA-Z10-9-_\.\[\]]+"
+    nested_pattern_replacement = r"[a-zA-Z10-9-_\.\[\]]+"
 
     route_file_map = {}
 
@@ -101,7 +101,7 @@ def generate_route_file_map(ui_directory: Union[str, Path]) -> Dict[re.Pattern, 
         pattern = re.compile(r"^" + route + r"/?$")
 
         route_file_map[pattern] = filepath
-
+    logger.info(f"Route file map: {route_file_map}")
     return route_file_map
 
 
