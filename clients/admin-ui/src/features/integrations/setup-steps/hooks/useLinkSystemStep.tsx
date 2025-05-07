@@ -13,12 +13,12 @@ export interface LinkSystemStepParams extends BaseStepHookParams {
 export const useLinkSystemStep = ({
   connection,
 }: LinkSystemStepParams): Step => {
-  // Check if the connection has a system_id property to determine if it's linked
-  const isComplete = !!connection?.system_id;
+  // Check if the connection has a system_key property to determine if it's linked
+  const isComplete = !!connection?.system_key;
 
   // Determine the appropriate link URL
   const linkUrl = isComplete
-    ? EDIT_SYSTEM_ROUTE.replace("[id]", connection!.system_id!)
+    ? EDIT_SYSTEM_ROUTE.replace("[id]", connection!.system_key!)
     : SYSTEM_ROUTE;
 
   return {
