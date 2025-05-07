@@ -21,7 +21,11 @@ LOCAL_FIDES_UPLOAD_DIRECTORY = "fides_uploads"
 
 # Default to 5MB if not specified in environment
 DEFAULT_LARGE_FILE_THRESHOLD = 5 * 1024 * 1024  # 5 MB threshold
-LARGE_FILE_THRESHOLD = int(os.getenv("FIDES_LARGE_FILE_THRESHOLD", DEFAULT_LARGE_FILE_THRESHOLD))
+# This checks to see if the environment variable is set and if it is, it uses that value
+# Otherwise, it uses the default value
+LARGE_FILE_THRESHOLD = int(
+    os.getenv("FIDES__LARGE_FILE_THRESHOLD", str(DEFAULT_LARGE_FILE_THRESHOLD))
+)
 
 
 def get_local_filename(file_key: str) -> str:
