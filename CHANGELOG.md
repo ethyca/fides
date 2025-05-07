@@ -46,6 +46,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Update Add Vendor tooltip to match navigation option [#6111](https://github.com/ethyca/fides/pull/6111)
 - Fixed UX issues with action center tables [#6116](https://github.com/ethyca/fides/pull/6116)
 - Fixed incorrect font styling on some table headers [#6129](https://github.com/ethyca/fides/pull/6129)
+- Fixed a bug with refreshing or deep-linking to pages sometimes redirecting to homepage [#6125](https://github.com/ethyca/fides/pull/6125)
 
 ### Removed
 - Removed unused libxslt-dev dependency [#6119](https://github.com/ethyca/fides/pull/6119)
