@@ -13,6 +13,7 @@ class MySQLSSLMode(str, Enum):
     preferred = "preferred"
     required = "required"
     disabled = "disabled"
+    none = ""
 
 
 class MySQLSchema(ConnectionConfigSecretsSchema):
@@ -50,7 +51,7 @@ class MySQLSchema(ConnectionConfigSecretsSchema):
     ssl_mode: Optional[MySQLSSLMode] = Field(
         None,  # TODO: support for verify-ca and verify-full
         title="SSL Mode",
-        description="The SSL mode to use for the connection. Valid values are 'required', 'preferred', and 'disabled'.",
+        description="The SSL mode to use for the connection. Accepted values are: 'required', 'preferred', 'disabled', or an empty value.",
     )
 
     _required_components: ClassVar[List[str]] = ["host", "dbname"]
