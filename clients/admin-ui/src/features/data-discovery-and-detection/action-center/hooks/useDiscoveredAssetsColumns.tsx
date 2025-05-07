@@ -90,7 +90,7 @@ export const useDiscoveredAssetsColumns = ({
           cellProps={props}
         />
       ),
-      header: "Locations",
+      header: (props) => <DefaultHeaderCell value="Locations" {...props} />,
       size: 300,
       meta: {
         showHeaderMenu: true,

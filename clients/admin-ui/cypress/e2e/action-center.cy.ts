@@ -288,17 +288,17 @@ describe("Action center", () => {
 
         // "recent activity" tab should be read-only
         cy.getByTestId("bulk-actions-menu").should("be.disabled");
-        cy.getByTestId("row-0-col-select").should("not.exist");
-        cy.getByTestId("row-0-col-actions").should("not.exist");
+        cy.getByTestId(`row-${rowIds[0]}-col-select`).should("not.exist");
+        cy.getByTestId(`row-${rowIds[0]}-col-actions`).should("not.exist");
 
         // eslint-disable-next-line cypress/no-unnecessary-waiting
         cy.wait(500);
         cy.getByTestId("tab-Ignored").click({ force: true });
         cy.location("hash").should("eq", "#ignored");
         // "ignore" option should not show in bulk actions menu
-        cy.getByTestId("row-0-col-select").find("label").click();
-        cy.getByTestId("row-2-col-select").find("label").click();
-        cy.getByTestId("row-3-col-select").find("label").click();
+        cy.getByTestId(`row-${rowIds[0]}-col-select`).find("label").click();
+        cy.getByTestId(`row-${rowIds[2]}-col-select`).find("label").click();
+        cy.getByTestId(`row-${rowIds[3]}-col-select`).find("label").click();
         cy.getByTestId("bulk-actions-menu").click();
         cy.getByTestId("bulk-ignore").should("not.exist");
       });
