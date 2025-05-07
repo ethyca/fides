@@ -355,7 +355,7 @@ class TestGetConnections:
         resp = api_client.get(url + "system_type=database", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 18
+        assert len(data) == 19
 
     def test_search_system_type_and_connection_type(
         self,
@@ -1067,7 +1067,7 @@ class TestGetConnectionSecretSchema:
                 },
                 "ssl_mode": {
                     "title": "SSL Mode",
-                    "description": "The SSL mode to use for the connection. Valid values are 'required', 'preferred', and 'disabled'.",
+                    "description": "The SSL mode to use for the connection. Accepted values are: 'required', 'preferred', 'disabled', or an empty value.",
                     "allOf": [{"$ref": "#/definitions/MySQLSSLMode"}],
                 },
             },
@@ -1076,7 +1076,7 @@ class TestGetConnectionSecretSchema:
                 "MySQLSSLMode": {
                     "title": "MySQLSSLMode",
                     "type": "string",
-                    "enum": ["preferred", "required", "disabled"],
+                    "enum": ["preferred", "required", "disabled", ""],
                 }
             },
         }

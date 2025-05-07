@@ -8,6 +8,7 @@ export enum IntegrationFilterTabs {
   DATA_CATALOG = "Data Catalog",
   DATABASE = "Database",
   DATA_WAREHOUSE = "Data Warehouse",
+  IDENTITY_PROVIDER = "Identity Provider",
   WEBSITE = "Website",
 }
 

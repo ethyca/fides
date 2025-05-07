@@ -35,6 +35,9 @@ describe("OneTrust to Fides consent migration", () => {
     cy.clearCookie("fides_consent");
     // Clear OT cookie between tests
     cy.clearCookie("OptanonConsent");
+
+    // Intercept the API call for saving preferences
+    cy.intercept("PATCH", "**/privacy/preference").as("patchPrivacyPreference");
   });
 
   describe("when user has OneTrust cookie but no Fides cookie", () => {
@@ -62,6 +65,39 @@ describe("OneTrust to Fides consent migration", () => {
       cy.waitUntilFidesInitialized().then(() => {
         // Banner should not exist since all notices have consents
         cy.get("div#fides-banner").should("not.exist");
+
+        // Verify that the preferences were saved to the API with the correct method
+        cy.wait("@patchPrivacyPreference").then((interception) => {
+          // Check method separately since order doesn't matter for that
+          expect(interception.request.body.method).to.equal(
+            ConsentMethod.OT_MIGRATION,
+          );
+
+          // Check that all expected preferences exist, regardless of order
+          const expectedPreferences = [
+            {
+              privacy_notice_history_id: "pri_notice-history-essential-en-000",
+              preference: "acknowledge",
+            },
+            {
+              privacy_notice_history_id: "pri_notice-history-analytics-en-000",
+              preference: "opt_in",
+            },
+            {
+              privacy_notice_history_id:
+                "pri_notice-history-advertising-en-000",
+              preference: "opt_in",
+            },
+          ];
+
+          const actualPreferences = interception.request.body.preferences;
+          expect(actualPreferences).to.have.length(expectedPreferences.length);
+
+          // For each expected preference, ensure it exists in the actual preferences
+          expectedPreferences.forEach((expected) => {
+            expect(actualPreferences).to.deep.include(expected);
+          });
+        });
 
         cy.get("#fides-modal-link").click();
 
@@ -95,7 +131,7 @@ describe("OneTrust to Fides consent migration", () => {
               .is.eql(true);
             expect(cookieKeyConsent.fides_meta)
               .property("consentMethod")
-              .is.eql(ConsentMethod.SCRIPT);
+              .is.eql(ConsentMethod.OT_MIGRATION);
           });
         });
 
@@ -137,6 +173,38 @@ describe("OneTrust to Fides consent migration", () => {
       // Banner should not exist since all notices have consents
       cy.get("div#fides-banner").should("not.exist");
 
+      // Verify that the preferences were saved to the API with the correct method
+      cy.wait("@patchPrivacyPreference").then((interception) => {
+        // Check method separately since order doesn't matter for that
+        expect(interception.request.body.method).to.equal(
+          ConsentMethod.OT_MIGRATION,
+        );
+
+        // Check that all expected preferences exist, regardless of order
+        const expectedPreferences = [
+          {
+            privacy_notice_history_id: "pri_notice-history-essential-en-000",
+            preference: "acknowledge",
+          },
+          {
+            privacy_notice_history_id: "pri_notice-history-analytics-en-000",
+            preference: "opt_in",
+          },
+          {
+            privacy_notice_history_id: "pri_notice-history-advertising-en-000",
+            preference: "opt_out",
+          },
+        ];
+
+        const actualPreferences = interception.request.body.preferences;
+        expect(actualPreferences).to.have.length(expectedPreferences.length);
+
+        // For each expected preference, ensure it exists in the actual preferences
+        expectedPreferences.forEach((expected) => {
+          expect(actualPreferences).to.deep.include(expected);
+        });
+      });
+
       cy.get("#fides-modal-link").click();
 
       // Verify Fides UI matches expected migration
@@ -165,7 +233,7 @@ describe("OneTrust to Fides consent migration", () => {
           expect(cookieKeyConsent.consent).property(ANALYTICS_KEY).is.eql(true);
           expect(cookieKeyConsent.fides_meta)
             .property("consentMethod")
-            .is.eql(ConsentMethod.SCRIPT);
+            .is.eql(ConsentMethod.OT_MIGRATION);
         });
       });
 
@@ -206,6 +274,38 @@ describe("OneTrust to Fides consent migration", () => {
       // Banner should not exist since all notices have consents
       cy.get("div#fides-banner").should("not.exist");
 
+      // Verify that the preferences were saved to the API with the correct method
+      cy.wait("@patchPrivacyPreference").then((interception) => {
+        // Check method separately since order doesn't matter for that
+        expect(interception.request.body.method).to.equal(
+          ConsentMethod.OT_MIGRATION,
+        );
+
+        // Check that all expected preferences exist, regardless of order
+        const expectedPreferences = [
+          {
+            privacy_notice_history_id: "pri_notice-history-essential-en-000",
+            preference: "opt_out",
+          },
+          {
+            privacy_notice_history_id: "pri_notice-history-analytics-en-000",
+            preference: "opt_out",
+          },
+          {
+            privacy_notice_history_id: "pri_notice-history-advertising-en-000",
+            preference: "opt_out",
+          },
+        ];
+
+        const actualPreferences = interception.request.body.preferences;
+        expect(actualPreferences).to.have.length(expectedPreferences.length);
+
+        // For each expected preference, ensure it exists in the actual preferences
+        expectedPreferences.forEach((expected) => {
+          expect(actualPreferences).to.deep.include(expected);
+        });
+      });
+
       cy.get("#fides-modal-link").click();
 
       // Verify Fides UI matches expected migration
@@ -240,7 +340,7 @@ describe("OneTrust to Fides consent migration", () => {
             .is.eql(false);
           expect(cookieKeyConsent.fides_meta)
             .property("consentMethod")
-            .is.eql(ConsentMethod.SCRIPT);
+            .is.eql(ConsentMethod.OT_MIGRATION);
         });
       });
 
@@ -412,7 +512,7 @@ describe("Fides cookie precedence", () => {
 
       cy.waitUntilFidesInitialized().then(() => {
         // Open the modal
-        cy.contains("button", "Manage preferences").click();
+        cy.contains("button", "Manage").click();
 
         // Verify Fides UI matches expected defaults
         cy.getByTestId("toggle-Advertising").within(() => {
@@ -493,7 +593,7 @@ describe("Fides cookie precedence", () => {
 
       cy.waitUntilFidesInitialized().then(() => {
         // Open the modal
-        cy.contains("button", "Manage preferences").click();
+        cy.contains("button", "Manage").click();
 
         // Verify Fides UI matches expected defaults
         cy.getByTestId("toggle-Advertising").within(() => {

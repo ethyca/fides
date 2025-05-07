@@ -8,6 +8,7 @@ import {
 } from "~/features/common/table/v2";
 import {
   BadgeCellExpandable,
+  DefaultHeaderCell,
   ListCellExpandable,
 } from "~/features/common/table/v2/cells";
 import DiscoveredSystemDataUseCell from "~/features/data-discovery-and-detection/action-center/tables/cells/DiscoveredSystemDataUseCell";
@@ -21,12 +22,14 @@ interface UseDiscoveredSystemAggregateColumnsProps {
   monitorId: string;
   readonly: boolean;
   allowIgnore?: boolean;
+  onTabChange: (index: number) => void;
 }
 
 export const useDiscoveredSystemAggregateColumns = ({
   monitorId,
   readonly,
   allowIgnore,
+  onTabChange,
 }: UseDiscoveredSystemAggregateColumnsProps) => {
   const columnHelper = createColumnHelper<MonitorSystemAggregate>();
 
@@ -62,12 +65,16 @@ export const useDiscoveredSystemAggregateColumns = ({
     header: "System",
     size: 300,
     meta: {
-      headerProps: {
-        paddingLeft: "0px",
-      },
-      cellProps: {
-        padding: "0 !important",
-      },
+      headerProps: !readonly
+        ? {
+            paddingLeft: "0px",
+          }
+        : undefined,
+      cellProps: !readonly
+        ? {
+            padding: "0 !important",
+          }
+        : undefined,
     },
   });
 
@@ -100,7 +107,7 @@ export const useDiscoveredSystemAggregateColumns = ({
         }))}
       />
     ),
-    header: "Locations",
+    header: (props) => <DefaultHeaderCell value="Locations" {...props} />,
     size: 300,
     meta: {
       showHeaderMenu: true,
@@ -117,7 +124,7 @@ export const useDiscoveredSystemAggregateColumns = ({
         cellProps={props}
       />
     ),
-    header: "Domains",
+    header: (props) => <DefaultHeaderCell value="Domains" {...props} />,
     meta: {
       showHeaderMenu: true,
       disableRowClick: true,
@@ -131,6 +138,7 @@ export const useDiscoveredSystemAggregateColumns = ({
         system={props.row.original}
         monitorId={monitorId}
         allowIgnore={allowIgnore}
+        onTabChange={onTabChange}
       />
     ),
     header: "Actions",

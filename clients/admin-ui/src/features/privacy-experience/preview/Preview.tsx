@@ -6,6 +6,7 @@ import Script from "next/script";
 import React, { useEffect, useMemo, useState } from "react";
 
 import { PREVIEW_CONTAINER_ID } from "~/constants";
+import { useGetVendorReportQuery } from "~/features/plus/plus.slice";
 import { TranslationWithLanguageName } from "~/features/privacy-experience/form/helpers";
 import {
   buildBaseConfig,
@@ -21,7 +22,6 @@ import {
   PrivacyNoticeResponse,
 } from "~/types/api";
 
-import { useFeatures } from "../../common/features";
 import { COMPONENT_MAP } from "../constants";
 
 declare global {
@@ -83,7 +83,18 @@ const Preview = ({
     ComponentType.TCF_OVERLAY,
   ].includes(values.component);
 
-  const { systemsCount } = useFeatures();
+  /**
+   * Selects the number of vendors
+   * By using the paginated getVendorReport endpoint, we can get the total number of vendors
+   */
+  const { data: vendorReport } = useGetVendorReportQuery({
+    pageIndex: 1,
+    pageSize: 1,
+  });
+  const vendorCount = useMemo(
+    () => vendorReport?.total || 0,
+    [vendorReport?.total],
+  );
 
   useEffect(() => {
     if (
@@ -192,7 +203,7 @@ const Preview = ({
         ? values.layer1_button_options
         : Layer1ButtonOption.OPT_IN_OPT_OUT;
     updatedConfig.options.preventDismissal = !values.dismissable;
-    updatedConfig.experience.vendor_count = systemsCount;
+    updatedConfig.experience.vendor_count = vendorCount;
     updatedConfig.experience.experience_config.component = values.component;
     // reinitialize fides.js each time the form changes
     window.Fides.init(updatedConfig);
@@ -207,7 +218,7 @@ const Preview = ({
     baseConfig,
     allPrivacyNotices,
     isPreviewAvailable,
-    systemsCount,
+    vendorCount,
     fidesScriptLoaded,
     previewMode,
     values.privacy_notice_ids,
