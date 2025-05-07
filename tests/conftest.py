@@ -76,6 +76,7 @@ from tests.fixtures.messaging_fixtures import *
 from tests.fixtures.mongodb_fixtures import *
 from tests.fixtures.mssql_fixtures import *
 from tests.fixtures.mysql_fixtures import *
+from tests.fixtures.okta_fixtures import *
 from tests.fixtures.postgres_fixtures import *
 from tests.fixtures.rds_mysql_fixtures import *
 from tests.fixtures.rds_postgres_fixtures import *
