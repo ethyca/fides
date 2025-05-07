@@ -5,7 +5,6 @@ import {
   ChevronDownIcon,
   ConfirmationModal,
   HStack,
-  IconButton,
   Input,
   InputGroup,
   Popover,
