@@ -32,12 +32,16 @@ export const useDiscoveredAssetsColumns = ({
       header: "Asset",
       size: 300,
       meta: {
-        headerProps: {
-          paddingLeft: "0px",
-        },
-        cellProps: {
-          padding: "0 !important",
-        },
+        headerProps: readonly
+          ? undefined
+          : {
+              paddingLeft: "0px",
+            },
+        cellProps: readonly
+          ? undefined
+          : {
+              padding: "0 !important",
+            },
       },
     }),
     columnHelper.accessor((row) => row.resource_type, {
