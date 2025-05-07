@@ -23,15 +23,20 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Added
 - Added Recorded URL to Consent Report [#6077](https://github.com/ethyca/fides/pull/6077)
+- Added support for consent mechanism string values and non-applicable notices in FidesJS [#6115](https://github.com/ethyca/fides/pull/6115)
 - Added ConnectionType.okta, OktaSchema, OktaConnector as support for the Okta Monitor [#6078](https://github.com/ethyca/fides/pull/6078)
 - Added "View" detail links to success toasts in action center [#6113](https://github.com/ethyca/fides/pull/6113)
 - Setting to allow Admin UI errors to be surfaced to a toast. [#6121](https://github.com/ethyca/fides/pull/6121)
 
 ### Changed
 - Abstract OT consent migration logic, allow write to Fides preferences api [#6099](https://github.com/ethyca/fides/pull/6099)
+- Tweaked discovered assets table so rows remain selected after bulk actions [#6108](https://github.com/ethyca/fides/pull/6108)
+- Migrated some dropdown menus to use Ant's Dropdown component [#6107](https://github.com/ethyca/fides/pull/6107)
+- Refactor OT consent migration [#6099](https://github.com/ethyca/fides/pull/6126)
 
 ### Developer Experience
 - Cleaning up test fixtures [#6008](https://github.com/ethyca/fides/pull/6008)
+- Migrated last remaining Chakra icon button to Ant [#6127](https://github.com/ethyca/fides/pull/6127)
 
 ### Fixed
 - Fixed GTM integration to properly handle duplicate notice keys [#6090](https://github.com/ethyca/fides/pull/6090)
@@ -41,6 +46,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed vendor restriction form validation and input handling [#6101](https://github.com/ethyca/fides/pull/6101)
 - Fixed special purpose vendor check in Fides JS logic [#6118](https://github.com/ethyca/fides/pull/6118)
 - Update Add Vendor tooltip to match navigation option [#6111](https://github.com/ethyca/fides/pull/6111)
+- Fixed UX issues with action center tables [#6116](https://github.com/ethyca/fides/pull/6116)
+- Fixed incorrect font styling on some table headers [#6129](https://github.com/ethyca/fides/pull/6129)
+- Fixed a bug with refreshing or deep-linking to pages sometimes redirecting to homepage [#6125](https://github.com/ethyca/fides/pull/6125)
 
 ### Removed
 - Removed unused libxslt-dev dependency [#6119](https://github.com/ethyca/fides/pull/6119)

@@ -36,7 +36,7 @@ existence of Fides *or* subscribe to the global `FidesInitialized` event (see
 
 ### consent
 
-> **consent**: `Record`\<`string`, `boolean`\>
+> **consent**: `Record`\<`string`, `string` \| `boolean`\>
 
 User's current consent preferences, formatted as a key/value object with:
 - key: the applicable Fides `notice_key` (e.g. `data_sales_and_sharing`, `analytics`)
@@ -68,6 +68,13 @@ A `Fides.consent` value showing the user has opted-in to analytics, but not mark
   "marketing": false
 }
 ```
+
+A `Fides.consent` value showing the user has opted-in to analytics, but not marketing using a consent mechanism string:
+```ts
+{
+  "analytics": "opt_in",
+  "marketing": "opt_out"
+}
 
 ***
 
