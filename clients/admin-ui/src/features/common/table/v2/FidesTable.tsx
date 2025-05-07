@@ -125,6 +125,7 @@ const HeaderContent = <T,>({
             ...getTableTHandTDStyles(header.column.id === "select"),
             ...tableHeaderButtonStyles,
           }}
+          letterSpacing="0.6px"
         >
           {flexRender(header.column.columnDef.header, header.getContext())}
         </Button>
@@ -163,6 +164,7 @@ const HeaderContent = <T,>({
           ...tableHeaderButtonStyles,
         }}
         data-testid={`${header.id}-header-menu`}
+        letterSpacing="0.6px"
       >
         {flexRender(header.column.columnDef.header, header.getContext())}
       </MenuButton>

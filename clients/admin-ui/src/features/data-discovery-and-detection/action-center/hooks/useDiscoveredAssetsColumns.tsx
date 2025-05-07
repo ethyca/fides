@@ -86,7 +86,7 @@ export const useDiscoveredAssetsColumns = ({
           cellProps={props}
         />
       ),
-      header: "Locations",
+      header: (props) => <DefaultHeaderCell value="Locations" {...props} />,
       size: 300,
       meta: {
         showHeaderMenu: true,
@@ -96,7 +96,7 @@ export const useDiscoveredAssetsColumns = ({
     columnHelper.accessor((row) => row.domain, {
       id: "domain",
       cell: (props) => <DefaultCell value={props.getValue()} />,
-      header: "Domain",
+      header: (props) => <DefaultHeaderCell value="Domain" {...props} />,
     }),
     /*
     // TODO: [HJ-344] uncomment when monitor supports discovery status
