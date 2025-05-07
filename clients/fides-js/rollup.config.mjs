@@ -188,7 +188,11 @@ SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
     ],
   };
 
-  rollupOptions.push(...[js, mjs, declaration]);
+  if (IS_DEV) {
+    rollupOptions.push(...[js, declaration]);
+  } else {
+    rollupOptions.push(...[js, mjs, declaration]);
+  }
 });
 
 // Add preview script build configuration

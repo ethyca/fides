@@ -4,12 +4,14 @@ import {
   ConsentOptionCreate,
   FidesCookie,
   FidesInitOptions,
+  NoticeValues,
   PrivacyExperience,
   PrivacyExperienceMinimal,
   PrivacyPreferencesRequest,
   SaveConsentPreference,
   UserConsentPreference,
 } from "./consent-types";
+import { applyOverridesToConsent } from "./consent-utils";
 import { removeCookiesFromBrowser, saveFidesCookie } from "./cookie";
 import { dispatchFidesEvent } from "./events";
 import { TcfSavePreferences } from "./tcf/types";
@@ -105,14 +107,22 @@ export const updateConsentPreferences = async ({
 
   // 3. Update the window.Fides object
   fidesDebugger("Updating window.Fides");
-  window.Fides.consent = cookie.consent;
+  const normalizedConsent = applyOverridesToConsent(
+    cookie.consent,
+    window.Fides?.experience?.non_applicable_privacy_notices,
+    window.Fides?.experience?.privacy_notices,
+  );
+  window.Fides.consent = normalizedConsent;
   window.Fides.fides_string = cookie.fides_string;
   window.Fides.tcf_consent = cookie.tcf_consent;
 
   // 4. Save preferences to the cookie in the browser
   fidesDebugger("Saving preferences to cookie");
-  saveFidesCookie(cookie, options.base64Cookie);
-  window.Fides.saved_consent = cookie.consent;
+  saveFidesCookie(
+    { ...cookie, consent: normalizedConsent },
+    options.base64Cookie,
+  );
+  window.Fides.saved_consent = cookie.consent as NoticeValues;
 
   // 5. Save preferences to API (if not disabled)
   if (!options.fidesDisableSaveApi) {
