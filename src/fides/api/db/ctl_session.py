@@ -1,5 +1,5 @@
 import ssl
-from typing import AsyncGenerator
+from typing import Any, AsyncGenerator, Dict
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
@@ -11,11 +11,20 @@ from fides.config import CONFIG
 
 # Associated with a workaround in fides.core.config.database_settings
 # ref: https://github.com/sqlalchemy/sqlalchemy/discussions/5975
-connect_args = {}
+connect_args: Dict[str, Any] = {}
 if CONFIG.database.params.get("sslrootcert"):
     ssl_ctx = ssl.create_default_context(cafile=CONFIG.database.params["sslrootcert"])
     ssl_ctx.verify_mode = ssl.CERT_REQUIRED
     connect_args["ssl"] = ssl_ctx
+
+if CONFIG.database.api_async_engine_keepalives_idle:
+    connect_args["keepalives_idle"] = CONFIG.database.api_async_engine_keepalives_idle
+if CONFIG.database.api_async_engine_keepalives_interval:
+    connect_args["keepalives_interval"] = (
+        CONFIG.database.api_async_engine_keepalives_interval
+    )
+if CONFIG.database.api_async_engine_keepalives_count:
+    connect_args["keepalives_count"] = CONFIG.database.api_async_engine_keepalives_count
 
 # Parameters are hidden for security
 async_engine = create_async_engine(

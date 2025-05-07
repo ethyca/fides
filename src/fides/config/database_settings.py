@@ -23,6 +23,7 @@ class DatabaseSettings(FidesSettings):
         default=True,
         description="Automatically runs migrations on webserver startup. If set to `false`, will require the user to run migrations manually via the CLI or API. WARNING: Must be set to `true` for first-time startup.",
     )
+    # API Engine Settings
     api_engine_pool_size: int = Field(
         default=50,
         description="Number of concurrent database connections Fides will use for API requests. Note that the pool begins with no connections, but as they are requested the connections are maintained and reused up to this limit.",
@@ -43,10 +44,24 @@ class DatabaseSettings(FidesSettings):
         default=5,
         description="Maximum number of TCP keepalive retries before the client considers the connection dead and closes it.",
     )
+    # Async Engine Settings
+    api_async_engine_keepalives_idle: int | None = Field(
+        default=None,
+        description="Number of seconds of inactivity before the client sends a TCP keepalive packet to verify the database connection is still alive.",
+    )
+    api_async_engine_keepalives_interval: int | None = Field(
+        default=None,
+        description="Number of seconds between TCP keepalive retries if the initial keepalive packet receives no response. These are client-side retries.",
+    )
+    api_async_engine_keepalives_count: int | None = Field(
+        default=None,
+        description="Maximum number of TCP keepalive retries before the client considers the connection dead and closes it.",
+    )
     api_async_engine_pool_pre_ping: bool = Field(
         default=False,
         description="If true, the async engine will pre-ping connections to ensure they are still valid before using them.",
     )
+
     db: str = Field(
         default="default_db", description="The name of the application database."
     )
