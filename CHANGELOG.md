@@ -29,6 +29,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Changed
 - Abstract OT consent migration logic, allow write to Fides preferences api [#6099](https://github.com/ethyca/fides/pull/6099)
+- Tweaked discovered assets table so rows remain selected after bulk actions [#6108](https://github.com/ethyca/fides/pull/6108)
 
 ### Developer Experience
 - Cleaning up test fixtures [#6008](https://github.com/ethyca/fides/pull/6008)
