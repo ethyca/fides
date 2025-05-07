@@ -26,6 +26,7 @@ async_engine = create_async_engine(
     logging_name="AsyncEngine",
     json_serializer=custom_json_serializer,
     json_deserializer=custom_json_deserializer,
+    pool_pre_ping=CONFIG.database.api_async_engine_pool_pre_ping,
 )
 async_session = sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
 
