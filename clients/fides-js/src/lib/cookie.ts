@@ -11,9 +11,11 @@ import {
   PrivacyExperience,
   PrivacyNoticeWithPreference,
   SaveConsentPreference,
+  UserConsentPreference,
 } from "./consent-types";
 import { resolveLegacyConsentValue } from "./consent-value";
 import {
+  processExternalConsentValue,
   transformConsentToFidesUserPreference,
   transformUserPreferenceToBoolean,
 } from "./shared-consent-utils";
@@ -50,7 +52,7 @@ export const consentCookieObjHasSomeConsentSet = (
     return false;
   }
   return Object.values(consent).some(
-    (val: boolean | undefined) => val !== undefined,
+    (val: boolean | UserConsentPreference | undefined) => val !== undefined,
   );
 };
 
@@ -144,6 +146,15 @@ export const getOrMakeFidesCookie = (
 
   // Check for an existing cookie for this device
   let parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
+
+  // If the cookie is saved using consent mechanism because of the fidesConsentFlagType override, we need to convert it to boolean for internal use
+  if (parsedCookie?.consent) {
+    const { consent } = parsedCookie;
+    Object.entries(consent).forEach(([key, value]) => {
+      consent[key] = processExternalConsentValue(value);
+    });
+  }
+
   if (!parsedCookie) {
     fidesDebugger(
       `No existing Fides consent cookie found, returning defaults.`,
@@ -384,7 +395,7 @@ export const updateCookieFromNoticePreferences = async (
  * default values). This is used during initialization to override saved cookie
  * values with newer values from the experience.
  */
-export const getConsentStateFromExperience = (
+const getConsentStateFromExperience = (
   experience: PrivacyExperience,
 ): NoticeConsent => {
   const consent: NoticeConsent = {};

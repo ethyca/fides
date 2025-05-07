@@ -149,6 +149,12 @@ export interface FidesInitOptions {
 
   // List of notice_keys to disable their respective Toggle elements in the CMP Overlay
   fidesDisabledNotices: string[] | null;
+
+  // Determines how non-applicable privacy notices are handled (omit or include)
+  fidesConsentNonApplicableFlagMode: ConsentNonApplicableFlagMode | null;
+
+  // The type of value to use for consent (boolean or consent_mechanism)
+  fidesConsentFlagType: ConsentFlagType | null;
 }
 
 /**
@@ -158,7 +164,7 @@ export interface FidesInitOptions {
  * ensure that the documented interface isn't overly specific in areas we may
  * need to change.
  */
-export interface FidesGlobal extends Omit<Fides, "gtm"> {
+export interface FidesGlobal extends Omit<Fides, "gtm" | "consent"> {
   cookie?: FidesCookie;
   config?: FidesConfig;
   consent: NoticeConsent;
@@ -180,7 +186,7 @@ export interface FidesGlobal extends Omit<Fides, "gtm"> {
   identity: FidesJSIdentity;
   initialized: boolean;
   options: FidesInitOptions;
-  saved_consent: NoticeConsent;
+  saved_consent: NoticeValues;
   tcf_consent: TcfOtherConsent;
   blueconic: typeof blueconic;
   gtm: typeof gtm;
@@ -209,14 +215,35 @@ export interface OtToFidesConsentMapping {
 }
 
 /**
- * Store the user's consent preferences as notice_key -> boolean pairs, e.g.
+ * Store the user's consent preferences as well as implicit consent preferences if applicable
+ * as notice_key -> boolean pairs or notice_key -> consent_mechanism pairs, depending on
+ * the value of `Fides.options.fidesConsentFlagType` and `Fides.options.fidesConsentNonApplicableFlagMode`.
+ * eg.
+ * {
+ *   "data_sales": false,
+ *   "analytics": true,
+ *   ...
+ * }
+ * or
+ * {
+ *   "data_sales": "opt_out",
+ *   "analytics": "not_applicable",
+ *   ...
+ * }
+ */
+export type NoticeConsent = Record<string, boolean | UserConsentPreference>;
+
+/**
+ * Store the user's explicit consent preferences as notice_key -> boolean pairs,
+ * regardless of the value of `Fides.options.fidesConsentFlagType` and
+ * `Fides.options.fidesConsentNonApplicableFlagMode`.
  * {
  *   "data_sales": false,
  *   "analytics": true,
  *   ...
  * }
  */
-export type NoticeConsent = Record<string, boolean>;
+export type NoticeValues = Record<string, boolean>;
 
 /**
  * Store the user's identity values, e.g.
@@ -675,7 +702,18 @@ export enum UserConsentPreference {
   OPT_IN = "opt_in",
   OPT_OUT = "opt_out",
   ACKNOWLEDGE = "acknowledge",
+  NOT_APPLICABLE = "not_applicable",
   TCF = "tcf",
+}
+
+export enum ConsentNonApplicableFlagMode {
+  OMIT = "omit",
+  INCLUDE = "include",
+}
+
+export enum ConsentFlagType {
+  BOOLEAN = "boolean",
+  CONSENT_MECHANISM = "consent_mechanism",
 }
 
 // NOTE: This (and most enums!) could reasonably be replaced by string union
@@ -736,6 +774,8 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesConsentOverride"
   | "otFidesMapping"
   | "fidesDisabledNotices"
+  | "fidesConsentNonApplicableFlagMode"
+  | "fidesConsentFlagType"
 >;
 
 export type FidesExperienceTranslationOverrides = {

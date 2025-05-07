@@ -25,6 +25,7 @@ import {
   FidesOverrides,
   GetPreferencesFnResp,
   NoticeConsent,
+  NoticeValues,
   OverrideType,
   PrivacyExperience,
   SaveConsentPreference,
@@ -162,7 +163,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     ...config,
     options: { ...config.options, ...overrides.optionsOverrides },
   };
-  this.cookie = getInitialCookie(config);
+  this.cookie = getInitialCookie(config); // also adds legacy consent values to the cookie
   this.cookie.consent = {
     ...this.cookie.consent,
     ...migratedConsent,
@@ -171,7 +172,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   // Keep a copy of saved consent from the cookie, since we update the "cookie"
   // value during initialization based on overrides, experience, etc.
   this.saved_consent = {
-    ...this.cookie.consent,
+    ...(this.cookie.consent as NoticeValues),
   };
 
   // Update the fidesString if we have an override and the NC portion is valid
@@ -249,11 +250,11 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
         if (!notice) {
           return null;
         }
-        return new SaveConsentPreference(
-          notice,
-          transformConsentToFidesUserPreference(value),
-          key,
-        );
+        const userPreference =
+          typeof value === "boolean"
+            ? transformConsentToFidesUserPreference(value)
+            : value;
+        return new SaveConsentPreference(notice, userPreference, key);
       })
       .filter((pref): pref is SaveConsentPreference => pref !== null);
 
@@ -315,6 +316,8 @@ const _Fides: FidesGlobal = {
     fidesConsentOverride: null,
     otFidesMapping: null,
     fidesDisabledNotices: null,
+    fidesConsentNonApplicableFlagMode: null,
+    fidesConsentFlagType: null,
   },
   fides_meta: {},
   identity: {},

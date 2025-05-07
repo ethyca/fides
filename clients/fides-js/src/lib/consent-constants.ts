@@ -2,8 +2,8 @@ import {
   FidesExperienceLanguageValidatorMap,
   FidesOverrideValidatorMap,
 } from "./consent-types";
-import { parseFidesDisabledNotices } from "./consent-utils";
 import { LOCALE_REGEX } from "./i18n/i18n-constants";
+import { parseFidesDisabledNotices } from "./shared-consent-utils";
 
 /**
  * Regex to validate a [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) code:
@@ -98,6 +98,18 @@ export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: FidesOverrideValidatorMap[] =
       overrideKey: "fides_disabled_notices",
       validationRegex: /(.*)/,
       transform: parseFidesDisabledNotices,
+    },
+    {
+      overrideName: "fidesConsentNonApplicableFlagMode",
+      overrideType: "string",
+      overrideKey: "fides_consent_non_applicable_flag_mode",
+      validationRegex: /^(omit|include)$/,
+    },
+    {
+      overrideName: "fidesConsentFlagType",
+      overrideType: "string",
+      overrideKey: "fides_consent_flag_type",
+      validationRegex: /^(boolean|consent_mechanism)$/,
     },
   ];
 

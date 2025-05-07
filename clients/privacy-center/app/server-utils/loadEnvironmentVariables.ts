@@ -1,5 +1,9 @@
 import { PrivacyCenterSettings } from "~/app/server-utils/PrivacyCenterSettings";
-import { ConsentMethod } from "~/types/api";
+import type { ConsentMethod } from "~/types/api";
+import type {
+  ConsentFlagType,
+  ConsentNonApplicableFlagMode,
+} from "~/types/config";
 
 /**
  * Default value for how long to cache the /fides.js bundle for, in seconds.
@@ -102,6 +106,14 @@ const loadEnvironmentVariables = () => {
         | ConsentMethod.REJECT) || null,
     FIDES_DISABLED_NOTICES:
       process.env.FIDES_PRIVACY_CENTER__FIDES_DISABLED_NOTICES || null,
+    FIDES_CONSENT_NON_APPLICABLE_FLAG_MODE:
+      (process.env
+        .FIDES_PRIVACY_CENTER__FIDES_CONSENT_NON_APPLICABLE_FLAG_MODE as ConsentNonApplicableFlagMode) ||
+      null,
+    FIDES_CONSENT_FLAG_TYPE:
+      (process.env
+        .FIDES_PRIVACY_CENTER__FIDES_CONSENT_FLAG_TYPE as ConsentFlagType) ||
+      null,
   };
   return settings;
 };

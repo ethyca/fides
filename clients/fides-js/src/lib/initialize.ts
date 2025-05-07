@@ -20,6 +20,7 @@ import {
   FidesOverrides,
   FidesWindowOverrides,
   NoticeConsent,
+  NoticeValues,
   OverrideType,
   PrivacyExperience,
   SaveConsentPreference,
@@ -311,7 +312,7 @@ export const getInitialFides = ({
   updateExperienceFromCookieConsent,
 }: {
   cookie: FidesCookie;
-  savedConsent: NoticeConsent;
+  savedConsent: NoticeValues;
 } & FidesConfig & {
     updateExperienceFromCookieConsent: (props: {
       experience: PrivacyExperience;
