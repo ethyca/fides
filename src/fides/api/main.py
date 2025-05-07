@@ -282,11 +282,8 @@ def read_other_paths(request: Request) -> Response:
         # if a maliscious URL is detected, route the user to the index
         return get_admin_index_as_response()
 
-    file_map = get_ui_file_map()
-    logger.info(f"File map: {file_map}")
-
     # search for matching route in package (i.e. /dataset)
-    ui_file = match_route(file_map, path)
+    ui_file = match_route(get_ui_file_map(), path)
 
     # if not, check if the requested file is an asset (i.e. /_next/static/...)
     if not ui_file:
