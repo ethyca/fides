@@ -630,6 +630,16 @@ describe("Action center", () => {
         "contain",
         "Consent categories added to 3 assets from Google Tag Manager.",
       );
+      cy.getByTestId(`row-${rowUrns[0]}-col-select`).within(() => {
+        cy.get("input").should("have.attr", "checked");
+      });
+      cy.getByTestId(`row-${rowUrns[2]}-col-select`).within(() => {
+        cy.get("input").should("have.attr", "checked");
+      });
+      cy.getByTestId(`row-${rowUrns[3]}-col-select`).within(() => {
+        cy.get("input").should("have.attr", "checked");
+      });
+      cy.getByTestId("bulk-actions-menu").should("not.be.disabled");
     });
 
     describe("tab navigation", () => {

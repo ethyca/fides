@@ -213,7 +213,6 @@ export const DiscoveredAssetsTable = ({
       if (isErrorResult(result)) {
         toast(errorToastParams(getErrorMessage(result.error)));
       } else {
-        tableInstance.resetRowSelection();
         toast(
           successToastParams(
             `${selectedUrns.length} assets have been assigned to ${selectedSystem.label}.`,
@@ -250,7 +249,6 @@ export const DiscoveredAssetsTable = ({
     if (isErrorResult(result)) {
       toast(errorToastParams(getErrorMessage(result.error)));
     } else {
-      tableInstance.resetRowSelection();
       toast(
         successToastParams(
           `Consent categories added to ${selectedUrns.length} assets${
