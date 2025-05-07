@@ -2,7 +2,6 @@ import {
   AnyAction,
   combineReducers,
   configureStore,
-  Middleware,
   StateFromReducersMapObject,
 } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query/react";
@@ -18,7 +17,7 @@ import {
 } from "redux-persist";
 import createWebStorage from "redux-persist/lib/storage/createWebStorage";
 
-import { rtkQueryErrorLogger, testRtkQueryErrorLogger } from "~/app/middleware";
+import { rtkQueryErrorLogger } from "~/app/middleware";
 import { STORAGE_ROOT_KEY } from "~/constants";
 import { authSlice } from "~/features/auth";
 import { baseApi } from "~/features/common/api.slice";
@@ -129,15 +128,6 @@ const persistConfig = {
   ],
 };
 
-const errorLoggingMiddlewares: Record<
-  NodeJS.ProcessEnv["NEXT_PUBLIC_APP_ENV"],
-  Middleware
-> = {
-  development: rtkQueryErrorLogger,
-  production: rtkQueryErrorLogger,
-  test: testRtkQueryErrorLogger,
-};
-
 export const persistedReducer = persistReducer(persistConfig, rootReducer);
 export const makeStore = (
   preloadedState?: Parameters<typeof persistedReducer>[0],
@@ -149,11 +139,7 @@ export const makeStore = (
         serializableCheck: {
           ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
         },
-      }).concat(
-        baseApi.middleware,
-        healthApi.middleware,
-        errorLoggingMiddlewares[process.env.NEXT_PUBLIC_APP_ENV],
-      ),
+      }).concat(baseApi.middleware, healthApi.middleware, rtkQueryErrorLogger),
     devTools: true,
     preloadedState,
   });

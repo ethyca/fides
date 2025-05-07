@@ -192,7 +192,7 @@ describe("Action center", () => {
       cy.wait("@ignoreMonitorResultSystem").then((interception) => {
         expect(interception.request.url).to.contain("[undefined]");
       });
-      cy.getByTestId("success-alert").should(
+      cy.getByTestId("toast-success-msg").should(
         "contain",
         "108 uncategorized assets have been ignored and will not appear in future scans.",
       );
@@ -202,7 +202,7 @@ describe("Action center", () => {
         cy.getByTestId("add-btn").click({ force: true });
       });
       cy.wait("@addMonitorResultSystem");
-      cy.getByTestId("success-alert").should(
+      cy.getByTestId("toast-success-msg").should(
         "contain",
         "10 assets from Google Tag Manager have been added to the system inventory.",
       );
@@ -212,7 +212,7 @@ describe("Action center", () => {
         cy.getByTestId("ignore-btn").click({ force: true });
       });
       cy.wait("@ignoreMonitorResultSystem");
-      cy.getByTestId("success-alert").should(
+      cy.getByTestId("toast-success-msg").should(
         "contain",
         "10 assets from Google Tag Manager have been ignored and will not appear in future scans.",
       );
@@ -232,7 +232,7 @@ describe("Action center", () => {
       cy.getByTestId("bulk-actions-menu").click();
       cy.getByTestId("bulk-add").click();
       cy.wait("@addMonitorResultSystem");
-      cy.getByTestId("success-alert").should(
+      cy.getByTestId("toast-success-msg").should(
         "contain",
         "16 assets have been added to the system inventory.",
       );
@@ -246,7 +246,7 @@ describe("Action center", () => {
       cy.getByTestId("bulk-actions-menu").click();
       cy.getByTestId("bulk-ignore").click();
       cy.wait("@ignoreMonitorResultSystem");
-      cy.getByTestId("success-alert").should(
+      cy.getByTestId("toast-success-msg").should(
         "contain",
         "124 assets have been ignored and will not appear in future scans.",
       );
@@ -430,7 +430,7 @@ describe("Action center", () => {
 
       // Now test with search
       cy.getByTestId("row-2-col-system").within(() => {
-        cy.getByTestId("system-badge").click();
+        cy.getByTestId("system-badge").click({ force: true });
         cy.getByTestId("system-select").find("input").type("demo m");
         cy.wait("@getSystemsWithSearch").then((interception) => {
           expect(interception.request.query.search).to.eq("demo m");
@@ -471,7 +471,7 @@ describe("Action center", () => {
         cy.getByTestId("add-btn").click({ force: true });
       });
       cy.wait("@addAssets");
-      cy.getByTestId("success-alert").should(
+      cy.getByTestId("toast-success-msg").should(
         "contain",
         'Browser request "11020051272" has been added to the system inventory.',
       );
@@ -481,7 +481,7 @@ describe("Action center", () => {
         cy.getByTestId("ignore-btn").click({ force: true });
       });
       cy.wait("@ignoreAssets");
-      cy.getByTestId("success-alert").should(
+      cy.getByTestId("toast-success-msg").should(
         "contain",
         'Browser request "11020051272" has been ignored and will not appear in future scans.',
       );
@@ -492,7 +492,7 @@ describe("Action center", () => {
         cy.getByTestId("restore-btn").click({ force: true });
       });
       cy.wait("@restoreAssets");
-      cy.getByTestId("success-alert").should(
+      cy.getByTestId("toast-success-msg").should(
         "contain",
         'Browser request "697301175" is no longer ignored and will appear in future scans.',
       );
@@ -507,7 +507,7 @@ describe("Action center", () => {
       cy.getByTestId("bulk-actions-menu").click();
       cy.getByTestId("bulk-add").click();
       cy.wait("@addAssets");
-      cy.getByTestId("success-alert").should(
+      cy.getByTestId("toast-success-msg").should(
         "contain",
         "3 assets from Google Tag Manager have been added to the system inventory.",
       );
@@ -522,7 +522,7 @@ describe("Action center", () => {
       cy.getByTestId("bulk-actions-menu").click();
       cy.getByTestId("bulk-ignore").click();
       cy.wait("@ignoreAssets");
-      cy.getByTestId("success-alert").should(
+      cy.getByTestId("toast-success-msg").should(
         "contain",
         "3 assets from Google Tag Manager have been ignored and will not appear in future scans.",
       );
@@ -538,7 +538,7 @@ describe("Action center", () => {
       cy.getByTestId("bulk-actions-menu").click();
       cy.getByTestId("bulk-restore").click();
       cy.wait("@restoreAssets");
-      cy.getByTestId("success-alert").should(
+      cy.getByTestId("toast-success-msg").should(
         "contain",
         "2 assets have been restored and will appear in future scans.",
       );
@@ -558,7 +558,7 @@ describe("Action center", () => {
       cy.getByTestId("add-all").should("have.class", "ant-btn-loading");
       cy.wait("@slowRequest");
       cy.url().should("not.contain", systemId);
-      cy.getByTestId("success-alert").should(
+      cy.getByTestId("toast-success-msg").should(
         "contain",
         "11 assets from Google Tag Manager have been added to the system inventory.",
       );
@@ -577,7 +577,7 @@ describe("Action center", () => {
       cy.getByTestId("system-select").antSelect("Fidesctl System");
       cy.getByTestId("save-btn").click();
       cy.wait("@patchAssets");
-      cy.getByTestId("success-alert").should(
+      cy.getByTestId("toast-success-msg").should(
         "contain",
         "3 assets have been assigned to Fidesctl System.",
       );
@@ -596,7 +596,7 @@ describe("Action center", () => {
       cy.getByTestId("taxonomy-select").antSelect("essential");
       cy.getByTestId("save-btn").click({ force: true });
       cy.wait("@patchAssets");
-      cy.getByTestId("success-alert").should(
+      cy.getByTestId("toast-success-msg").should(
         "contain",
         "Consent categories added to 3 assets from Google Tag Manager.",
       );
