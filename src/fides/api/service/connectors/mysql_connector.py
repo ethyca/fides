@@ -87,7 +87,7 @@ class MySQLConnector(SQLConnector):
 
         connect_args = {}
 
-        ssl_mode = self.configuration.secrets.get("ssl_mode")
+        self.configuration.secrets.get("ssl_mode", MySQLSSLMode.preferred)
 
         # if SSL mode was assigned in the connector configuration
         # otherwise connect_args remains empty
