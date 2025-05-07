@@ -22,6 +22,7 @@ from fides.api.schemas.connection_configuration import connection_secrets_schema
 from fides.api.schemas.connection_configuration.connection_config import (
     BulkPutConnectionConfiguration,
     ConnectionConfigurationResponse,
+    ConnectionConfigurationResponseWithSystemKey,
     CreateConnectionConfigurationWithSecrets,
 )
 from fides.api.schemas.connection_configuration.connection_secrets import (
@@ -154,7 +155,7 @@ def get_connections(
 @router.get(
     CONNECTION_BY_KEY,
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_READ])],
-    response_model=ConnectionConfigurationResponse,
+    response_model=ConnectionConfigurationResponseWithSystemKey,
 )
 def get_connection_detail(
     connection_key: FidesKey, db: Session = Depends(deps.get_db)

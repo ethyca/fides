@@ -111,10 +111,10 @@ class ConnectionConfigSecretsMixin(BaseModel):
         return self
 
 
-class ConnectionConfigurationResponse(ConnectionConfigSecretsMixin):
+class ConnectionConfigurationResponseBase(ConnectionConfigSecretsMixin):
     """
-    Describes the returned schema for a ConnectionConfiguration.
-
+    Base schema for ConnectionConfiguration responses,
+    excluding fields that might be conditionally omitted.
     The mixin base class ensures that `secrets` sensitive values are masked.
     """
 
@@ -129,9 +129,23 @@ class ConnectionConfigurationResponse(ConnectionConfigSecretsMixin):
     last_test_succeeded: Optional[bool] = None
     authorized: Optional[bool] = False
     enabled_actions: Optional[List[ActionType]] = None
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ConnectionConfigurationResponseWithSystemKey(ConnectionConfigurationResponseBase):
+    """
+    Describes the full returned schema for a ConnectionConfiguration.
+    """
+
+    # Using this response with models returned from an async DB session will error
+    # because the system_key is lazy loaded. Just a quirk of SQLAlchemy 1.4.
     system_key: Optional[str] = None
 
-    model_config = ConfigDict(from_attributes=True)
+
+class ConnectionConfigurationResponse(ConnectionConfigurationResponseBase):
+    """
+    Describes the returned schema for a ConnectionConfiguration.
+    """
 
 
 class BulkPutConnectionConfiguration(BulkResponse):
