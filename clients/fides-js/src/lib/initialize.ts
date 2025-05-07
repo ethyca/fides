@@ -37,6 +37,7 @@ import {
 import { resolveConsentValue } from "./consent-value";
 import {
   getCookieByName,
+  getFidesConsentCookie,
   getOrMakeFidesCookie,
   isNewFidesCookie,
   makeConsentDefaultsLegacy,
@@ -130,7 +131,8 @@ const automaticallyApplyPreferences = async ({
   // Check for migrated consent from OneTrust
   const { consent: migratedConsent, method: migrationMethod } =
     readConsentFromAnyProvider(fidesOptions);
-  const hasMigratedConsent = !!migratedConsent && !!migrationMethod;
+  const hasMigratedConsent =
+    !!migratedConsent && !!migrationMethod && !getFidesConsentCookie();
 
   if (
     !context.globalPrivacyControl &&

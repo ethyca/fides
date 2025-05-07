@@ -15,7 +15,6 @@ import {
   registerDefaultProviders,
 } from "./lib/consent-migration";
 import {
-  ConsentMethod,
   FidesConfig,
   FidesCookie,
   FidesExperienceTranslationOverrides,
@@ -37,7 +36,6 @@ import {
 import {
   consentCookieObjHasSomeConsentSet,
   getFidesConsentCookie,
-  saveFidesCookie,
   updateExperienceFromCookieConsentNotices,
 } from "./lib/cookie";
 import { initializeDebugger } from "./lib/debugger";
@@ -143,13 +141,11 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
 
   // Check for migrated consent from any registered providers
   let migratedConsent: NoticeConsent | undefined;
-  let migrationMethod: ConsentMethod | undefined;
 
   if (!getFidesConsentCookie()) {
     const { consent, method } = readConsentFromAnyProvider(optionsOverrides);
     if (consent && method) {
       migratedConsent = consent;
-      migrationMethod = method;
     }
   }
 
@@ -186,15 +182,6 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
         `Could not decode ncString from ${fidesString}, it may be invalid. ${error}`,
       );
     }
-  }
-
-  if (migratedConsent && migrationMethod) {
-    // If we have migrated consent, we need to write the cookie to the browser
-    Object.assign(this.cookie.fides_meta, {
-      consentMethod: migrationMethod,
-    });
-    fidesDebugger("Saving migrated preferences to Fides cookie");
-    saveFidesCookie(this.cookie, config.options.base64Cookie);
   }
 
   const initialFides = getInitialFides({
