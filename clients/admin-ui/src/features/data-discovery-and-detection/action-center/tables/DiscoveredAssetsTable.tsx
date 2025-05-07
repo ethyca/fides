@@ -6,16 +6,12 @@ import {
 import {
   AntButton as Button,
   AntDefaultOptionType as DefaultOptionType,
+  AntDropdown as Dropdown,
   AntEmpty as Empty,
   AntTooltip as Tooltip,
   Flex,
   HStack,
   Icons,
-  Menu,
-  MenuButton,
-  MenuDivider,
-  MenuItem,
-  MenuList,
   Text,
   useToast,
 } from "fidesui";
@@ -362,9 +358,47 @@ export const DiscoveredAssetsTable = ({
             >{`${selectedUrns.length} selected`}</Text>
           )}
           <HStack>
-            <Menu>
-              <MenuButton
-                as={Button}
+            <Dropdown
+              menu={{
+                items: [
+                  {
+                    key: "add",
+                    label: "Add",
+                    onClick: handleBulkAdd,
+                  },
+                  {
+                    key: "add-data-use",
+                    label: "Add consent category",
+                    onClick: () => setIsAddDataUseModalOpen(true),
+                  },
+                  {
+                    key: "assign-system",
+                    label: "Assign system",
+                    onClick: () => setIsAssignSystemModalOpen(true),
+                  },
+                  ...(activeParams.diff_status.includes(DiffStatus.MUTED)
+                    ? [
+                        {
+                          key: "restore",
+                          label: "Restore",
+                          onClick: handleBulkRestore,
+                        },
+                      ]
+                    : [
+                        {
+                          type: "divider" as const,
+                        },
+                        {
+                          key: "ignore",
+                          label: "Ignore",
+                          onClick: handleBulkIgnore,
+                        },
+                      ]),
+                ],
+              }}
+              trigger={["click"]}
+            >
+              <Button
                 icon={<Icons.ChevronDown />}
                 iconPosition="end"
                 loading={anyBulkActionIsLoading}
@@ -374,58 +408,11 @@ export const DiscoveredAssetsTable = ({
                   anyBulkActionIsLoading ||
                   actionsDisabled
                 }
-                // @ts-ignore - `type` prop is for Ant button, not Chakra MenuButton
                 type="primary"
               >
                 Actions
-              </MenuButton>
-              <MenuList>
-                <MenuItem
-                  fontSize="small"
-                  onClick={handleBulkAdd}
-                  data-testid="bulk-add"
-                >
-                  Add
-                </MenuItem>
-                <MenuItem
-                  fontSize="small"
-                  onClick={() => setIsAddDataUseModalOpen(true)}
-                  data-testid="bulk-add-data-use"
-                >
-                  Add consent category
-                </MenuItem>
-                <MenuItem
-                  fontSize="small"
-                  onClick={() => {
-                    setIsAssignSystemModalOpen(true);
-                  }}
-                  data-testid="bulk-assign-system"
-                >
-                  Assign system
-                </MenuItem>
-                {!activeParams.diff_status.includes(DiffStatus.MUTED) && (
-                  <>
-                    <MenuDivider />
-                    <MenuItem
-                      fontSize="small"
-                      onClick={handleBulkIgnore}
-                      data-testid="bulk-ignore"
-                    >
-                      Ignore
-                    </MenuItem>
-                  </>
-                )}
-                {activeParams.diff_status.includes(DiffStatus.MUTED) && (
-                  <MenuItem
-                    fontSize="small"
-                    onClick={handleBulkRestore}
-                    data-testid="bulk-restore"
-                  >
-                    Restore
-                  </MenuItem>
-                )}
-              </MenuList>
-            </Menu>
+              </Button>
+            </Dropdown>
 
             <Tooltip
               title={

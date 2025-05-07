@@ -234,7 +234,9 @@ describe("Action center", () => {
       cy.getByTestId(`row-${rowIds[0]}-col-select`).find("label").click();
       cy.getByTestId("selected-count").should("contain", "1 selected");
       cy.getByTestId("bulk-actions-menu").click();
-      cy.getByTestId("bulk-add").should("be.disabled");
+      cy.get(".ant-dropdown-menu-item")
+        .first()
+        .should("have.class", "ant-dropdown-menu-item-disabled");
     });
     it("should bulk add results from categorized systems", () => {
       cy.getByTestId("bulk-actions-menu").should("be.disabled");
@@ -243,7 +245,7 @@ describe("Action center", () => {
       cy.getByTestId("selected-count").should("contain", "2 selected");
       cy.getByTestId("bulk-actions-menu").should("not.be.disabled");
       cy.getByTestId("bulk-actions-menu").click();
-      cy.getByTestId("bulk-add").click();
+      cy.get(".ant-dropdown-menu-item").contains("Add").click();
       cy.wait("@addMonitorResultSystem");
       cy.getByTestId("toast-success-msg").should(
         "contain",
@@ -257,7 +259,7 @@ describe("Action center", () => {
       cy.getByTestId("selected-count").should("contain", "3 selected");
       cy.getByTestId("bulk-actions-menu").should("not.be.disabled");
       cy.getByTestId("bulk-actions-menu").click();
-      cy.getByTestId("bulk-ignore").click();
+      cy.get(".ant-dropdown-menu-item").contains("Ignore").click();
       cy.wait("@ignoreMonitorResultSystem");
       cy.getByTestId("toast-success-msg").should(
         "contain",
@@ -531,7 +533,7 @@ describe("Action center", () => {
       cy.getByTestId("selected-count").should("contain", "3 selected");
       cy.getByTestId("bulk-actions-menu").should("not.be.disabled");
       cy.getByTestId("bulk-actions-menu").click();
-      cy.getByTestId("bulk-add").click();
+      cy.get(".ant-dropdown-menu-item").contains("Add").click();
       cy.wait("@addAssets");
       cy.getByTestId("toast-success-msg").should(
         "contain",
@@ -546,7 +548,7 @@ describe("Action center", () => {
       cy.getByTestId("selected-count").should("contain", "3 selected");
       cy.getByTestId("bulk-actions-menu").should("not.be.disabled");
       cy.getByTestId("bulk-actions-menu").click();
-      cy.getByTestId("bulk-ignore").click();
+      cy.get(".ant-dropdown-menu-item").contains("Ignore").click();
       cy.wait("@ignoreAssets");
       cy.getByTestId("toast-success-msg").should(
         "contain",
@@ -562,7 +564,7 @@ describe("Action center", () => {
       cy.getByTestId("selected-count").should("contain", "2 selected");
       cy.getByTestId("bulk-actions-menu").should("not.be.disabled");
       cy.getByTestId("bulk-actions-menu").click();
-      cy.getByTestId("bulk-restore").click();
+      cy.get(".ant-dropdown-menu-item").contains("Restore").click();
       cy.wait("@restoreAssets");
       cy.getByTestId("toast-success-msg").should(
         "contain",
@@ -598,7 +600,7 @@ describe("Action center", () => {
       cy.getByTestId("selected-count").should("contain", "3 selected");
       cy.getByTestId("bulk-actions-menu").should("not.be.disabled");
       cy.getByTestId("bulk-actions-menu").click();
-      cy.getByTestId("bulk-assign-system").click();
+      cy.get(".ant-dropdown-menu-item").contains("Assign system").click();
       cy.getByTestId("add-modal-content").should("be.visible");
       cy.getByTestId("system-select").antSelect("Fidesctl System");
       cy.getByTestId("save-btn").click();
@@ -618,7 +620,9 @@ describe("Action center", () => {
       cy.getByTestId("selected-count").should("contain", "3 selected");
       cy.getByTestId("bulk-actions-menu").should("not.be.disabled");
       cy.getByTestId("bulk-actions-menu").click();
-      cy.getByTestId("bulk-add-data-use").click();
+      cy.get(".ant-dropdown-menu-item")
+        .contains("Add consent category")
+        .click();
       cy.getByTestId("taxonomy-select").antSelect("essential");
       cy.getByTestId("save-btn").click({ force: true });
       cy.wait("@patchAssets");
@@ -673,7 +677,9 @@ describe("Action center", () => {
         cy.getByTestId(`row-${rowUrns[2]}-col-select`).find("label").click();
         cy.getByTestId(`row-${rowUrns[3]}-col-select`).find("label").click();
         cy.getByTestId("bulk-actions-menu").click();
-        cy.getByTestId("bulk-ignore").should("not.exist");
+        cy.get(".ant-dropdown-menu-item")
+          .contains("Ignore")
+          .should("not.exist");
       });
     });
   });
