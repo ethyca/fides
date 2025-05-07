@@ -176,6 +176,9 @@ export const generateFidesString = async ({
               vendor &&
               vendor.specialPurposes?.length &&
               (!vendor.purposes || vendor.purposes.length === 0) &&
+              (!vendor.flexiblePurposes ||
+                vendor.flexiblePurposes.length === 0) &&
+              (!vendor.legIntPurposes || vendor.legIntPurposes.length === 0) &&
               !isInVendorConsents
             ) {
               tcModel.vendorLegitimateInterests.set(+id);

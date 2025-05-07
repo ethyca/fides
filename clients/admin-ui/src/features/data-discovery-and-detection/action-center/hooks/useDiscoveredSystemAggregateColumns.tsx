@@ -21,12 +21,14 @@ interface UseDiscoveredSystemAggregateColumnsProps {
   monitorId: string;
   readonly: boolean;
   allowIgnore?: boolean;
+  onTabChange: (index: number) => void;
 }
 
 export const useDiscoveredSystemAggregateColumns = ({
   monitorId,
   readonly,
   allowIgnore,
+  onTabChange,
 }: UseDiscoveredSystemAggregateColumnsProps) => {
   const columnHelper = createColumnHelper<MonitorSystemAggregate>();
 
@@ -135,6 +137,7 @@ export const useDiscoveredSystemAggregateColumns = ({
         system={props.row.original}
         monitorId={monitorId}
         allowIgnore={allowIgnore}
+        onTabChange={onTabChange}
       />
     ),
     header: "Actions",

@@ -17,6 +17,7 @@ import {
   MenuItem,
   MenuList,
   Text,
+  useToast,
 } from "fidesui";
 import { uniq } from "lodash";
 import { useRouter } from "next/router";
@@ -24,9 +25,9 @@ import { useEffect, useState } from "react";
 
 import DataTabsHeader from "~/features/common/DataTabsHeader";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { useAlert } from "~/features/common/hooks";
 import {
   ACTION_CENTER_ROUTE,
+  SYSTEM_ROUTE,
   UNCATEGORIZED_SEGMENT,
 } from "~/features/common/nav/routes";
 import {
@@ -36,6 +37,7 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   useAddMonitorResultAssetsMutation,
   useAddMonitorResultSystemsMutation,
@@ -47,6 +49,7 @@ import {
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import AddDataUsesModal from "~/features/data-discovery-and-detection/action-center/AddDataUsesModal";
 import useActionCenterTabs from "~/features/data-discovery-and-detection/action-center/tables/useActionCenterTabs";
+import { successToastContent } from "~/features/data-discovery-and-detection/action-center/utils/successToastContent";
 import { DiffStatus } from "~/types/api";
 
 import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
@@ -113,7 +116,8 @@ export const DiscoveredAssetsTable = ({
     resetPageIndexToDefault,
   } = useServerSidePagination();
   const [searchQuery, setSearchQuery] = useState("");
-  const { successAlert, errorAlert } = useAlert();
+
+  const toast = useToast();
 
   useEffect(() => {
     resetPageIndexToDefault();
@@ -147,6 +151,7 @@ export const DiscoveredAssetsTable = ({
 
   const { columns } = useDiscoveredAssetsColumns({
     readonly: actionsDisabled,
+    onTabChange,
   });
 
   const tableInstance = useReactTable({
@@ -170,13 +175,34 @@ export const DiscoveredAssetsTable = ({
     const result = await addMonitorResultAssetsMutation({
       urnList: selectedUrns,
     });
+    const selectedAssets =
+      data?.items.filter((asset) => selectedUrns.includes(asset.urn)) ?? [];
+
+    const systemKey =
+      selectedAssets[0]?.user_assigned_system_key ||
+      selectedAssets[0]?.system_key;
+    const allAssetsHaveSameSystemKey = selectedAssets.every((a) => {
+      const assetKey = a.user_assigned_system_key || a.system_key;
+      return assetKey === systemKey;
+    });
+    const systemToLink = allAssetsHaveSameSystemKey ? systemKey : undefined;
+
     if (isErrorResult(result)) {
-      errorAlert(getErrorMessage(result.error));
+      toast(errorToastParams(getErrorMessage(result.error)));
     } else {
       tableInstance.resetRowSelection();
-      successAlert(
-        `${selectedUrns.length} assets from ${systemName} have been added to the system inventory.`,
-        `Confirmed`,
+      toast(
+        successToastParams(
+          successToastContent(
+            `${selectedUrns.length} assets from ${systemName} have been added to the system inventory.`,
+            systemToLink
+              ? () =>
+                  router.push(
+                    `${SYSTEM_ROUTE}/configure/${systemToLink}#assets`,
+                  )
+              : () => router.push(SYSTEM_ROUTE),
+          ),
+        ),
       );
     }
   };
@@ -189,12 +215,14 @@ export const DiscoveredAssetsTable = ({
         systemKey: selectedSystem.value,
       });
       if (isErrorResult(result)) {
-        errorAlert(getErrorMessage(result.error));
+        toast(errorToastParams(getErrorMessage(result.error)));
       } else {
         tableInstance.resetRowSelection();
-        successAlert(
-          `${selectedUrns.length} assets have been assigned to ${selectedSystem.label}.`,
-          `Confirmed`,
+        toast(
+          successToastParams(
+            `${selectedUrns.length} assets have been assigned to ${selectedSystem.label}.`,
+            `Confirmed`,
+          ),
         );
       }
     }
@@ -224,32 +252,37 @@ export const DiscoveredAssetsTable = ({
       assets,
     });
     if (isErrorResult(result)) {
-      errorAlert(getErrorMessage(result.error));
+      toast(errorToastParams(getErrorMessage(result.error)));
     } else {
       tableInstance.resetRowSelection();
-      successAlert(
-        `Consent categories added to ${selectedUrns.length} assets${
-          systemName ? ` from ${systemName}` : ""
-        }.`,
-        `Confirmed`,
+      toast(
+        successToastParams(
+          `Consent categories added to ${selectedUrns.length} assets${
+            systemName ? ` from ${systemName}` : ""
+          }.`,
+          `Confirmed`,
+        ),
       );
     }
     setIsAddDataUseModalOpen(false);
   };
 
+  // TODO: add toast link to ignored tab
   const handleBulkIgnore = async () => {
     const result = await ignoreMonitorResultAssetsMutation({
       urnList: selectedUrns,
     });
     if (isErrorResult(result)) {
-      errorAlert(getErrorMessage(result.error));
+      toast(errorToastParams(getErrorMessage(result.error)));
     } else {
       tableInstance.resetRowSelection();
-      successAlert(
-        systemName === UNCATEGORIZED_SEGMENT
-          ? `${selectedUrns.length} uncategorized assets have been ignored and will not appear in future scans.`
-          : `${selectedUrns.length} assets from ${systemName} have been ignored and will not appear in future scans.`,
-        `Confirmed`,
+      toast(
+        successToastParams(
+          systemName === UNCATEGORIZED_SEGMENT
+            ? `${selectedUrns.length} uncategorized assets have been ignored and will not appear in future scans.`
+            : `${selectedUrns.length} assets from ${systemName} have been ignored and will not appear in future scans.`,
+          `Confirmed`,
+        ),
       );
     }
   };
@@ -259,12 +292,14 @@ export const DiscoveredAssetsTable = ({
       urnList: selectedUrns,
     });
     if (isErrorResult(result)) {
-      errorAlert(getErrorMessage(result.error));
+      toast(errorToastParams(getErrorMessage(result.error)));
     } else {
       tableInstance.resetRowSelection();
-      successAlert(
-        `${selectedUrns.length} assets have been restored and will appear in future scans.`,
-        `Confirmed`,
+      toast(
+        successToastParams(
+          `${selectedUrns.length} assets have been restored and will appear in future scans.`,
+          `Confirmed`,
+        ),
       );
     }
   };
@@ -277,12 +312,14 @@ export const DiscoveredAssetsTable = ({
     });
 
     if (isErrorResult(result)) {
-      errorAlert(getErrorMessage(result.error));
+      toast(errorToastParams(getErrorMessage(result.error)));
     } else {
       router.push(`${ACTION_CENTER_ROUTE}/${monitorId}`);
-      successAlert(
-        `${assetCount} assets from ${systemName} have been added to the system inventory.`,
-        `Confirmed`,
+      toast(
+        successToastParams(
+          `${assetCount} assets from ${systemName} have been added to the system inventory.`,
+          `Confirmed`,
+        ),
       );
     }
   };
