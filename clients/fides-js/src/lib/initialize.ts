@@ -173,12 +173,16 @@ const automaticallyApplyPreferences = async ({
         const preference = migratedConsent[notice.notice_key];
         if (preference !== undefined) {
           migratedConsentApplied = true;
+          const userPreference =
+            typeof preference === "boolean"
+              ? transformConsentToFidesUserPreference(
+                  preference,
+                  notice.consent_mechanism,
+                )
+              : preference;
           return new SaveConsentPreference(
             notice,
-            transformConsentToFidesUserPreference(
-              preference,
-              notice.consent_mechanism,
-            ),
+            userPreference,
             bestNoticeTranslation?.privacy_notice_history_id,
           );
         }
