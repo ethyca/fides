@@ -45,15 +45,15 @@ class DatabaseSettings(FidesSettings):
         description="Maximum number of TCP keepalive retries before the client considers the connection dead and closes it.",
     )
     # Async Engine Settings
-    api_async_engine_keepalives_idle: int | None = Field(
+    api_async_engine_keepalives_idle: Optional[int] = Field(
         default=None,
         description="Number of seconds of inactivity before the client sends a TCP keepalive packet to verify the database connection is still alive.",
     )
-    api_async_engine_keepalives_interval: int | None = Field(
+    api_async_engine_keepalives_interval: Optional[int] = Field(
         default=None,
         description="Number of seconds between TCP keepalive retries if the initial keepalive packet receives no response. These are client-side retries.",
     )
-    api_async_engine_keepalives_count: int | None = Field(
+    api_async_engine_keepalives_count: Optional[int] = Field(
         default=None,
         description="Maximum number of TCP keepalive retries before the client considers the connection dead and closes it.",
     )
