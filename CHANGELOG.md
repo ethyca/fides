@@ -45,6 +45,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Migrated last remaining Chakra icon button to Ant [#6127](https://github.com/ethyca/fides/pull/6127)
 
 ### Fixed
+- Fixed handling of empty SSL mode in the MySQL connector [#6123](https://github.com/ethyca/fides/pull/6123)
 - Suppressing SQLAlchemy logging related to caching queries [#6089](https://github.com/ethyca/fides/pull/6089)
 - FidesJS css variable `--fides-overlay-container-border-width` now applies to banner (only applied to modal before) [#6097](https://github.com/ethyca/fides/pull/6097) https://github.com/ethyca/fides/labels/high-risk
 - Fixed vendor restriction form validation and input handling [#6101](https://github.com/ethyca/fides/pull/6101)
