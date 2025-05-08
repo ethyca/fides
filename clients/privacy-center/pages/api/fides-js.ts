@@ -462,3 +462,9 @@ async function fetchCustomFidesCss(
   }
   return cachedCustomFidesCss;
 }
+
+export const config = {
+  api: {
+    responseLimit: false,
+  },
+};
