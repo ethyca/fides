@@ -35,6 +35,43 @@ let lastFetched: number = 0;
 // used to disable auto-refreshing if the /custom-asset endpoint is unreachable
 let autoRefresh: boolean = true;
 
+async function retry<T>(
+  func: () => Promise<T> | T,
+  delay: number,
+  retries: number,
+): Promise<T> {
+  try {
+    return await func();
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      `Attempt at getting privacy experience failed, ${retries} remain.`,
+      error,
+    );
+    if (retries > 1) {
+      await new Promise((resolve) => {
+        setTimeout(resolve, delay);
+      });
+      return retry(func, delay, retries - 1);
+    }
+    throw error;
+  }
+}
+
+async function fetchExperienceWithRetry(
+  ...args: Parameters<typeof fetchExperience>
+) {
+  try {
+    return await retry(() => fetchExperience(...args), 100, 10);
+  } catch (error) {
+    console.error(
+      "Privacy Center was not able to prefetch an experience.",
+      error,
+    );
+    throw error;
+  }
+}
+
 /**
  * @swagger
  * /fides.js:
@@ -190,7 +227,7 @@ export default async function handler(
        * we supply the minimal request to the api endpoint with the understanding that if
        * TCF is being returned, we want the minimal version. It will be ignored otherwise.
        */
-      experience = await fetchExperience({
+      experience = await fetchExperienceWithRetry({
         userLocationString: fidesRegionString,
         userLanguageString,
         fidesApiUrl: getFidesApiUrl(),
@@ -417,9 +454,3 @@ async function fetchCustomFidesCss(
   }
   return cachedCustomFidesCss;
 }
-
-export const config = {
-  api: {
-    responseLimit: false,
-  },
-};

@@ -44,20 +44,13 @@ export const fetchExperience = async <T = PrivacyExperience>({
 }: FetchExperienceOptions): Promise<T | EmptyExperience> => {
   if (apiOptions?.getPrivacyExperienceFn) {
     fidesDebugger("Calling custom fetch experience fn");
-    try {
-      return await apiOptions.getPrivacyExperienceFn<T>(
-        userLocationString,
-        // We no longer support handling user preferences on the experience using fidesUserDeviceId.
-        // For backwards compatibility, we keep fidesUserDeviceId in fn signature but pass in null here.
-        null,
-      );
-    } catch (e) {
-      fidesDebugger(
-        "Error fetching experience from custom API, returning {}. Error: ",
-        e,
-      );
-      return {};
-    }
+
+    return apiOptions.getPrivacyExperienceFn<T>(
+      userLocationString,
+      // We no longer support handling user preferences on the experience using fidesUserDeviceId.
+      // For backwards compatibility, we keep fidesUserDeviceId in fn signature but pass in null here.
+      null,
+    );
   }
 
   const headers = [
