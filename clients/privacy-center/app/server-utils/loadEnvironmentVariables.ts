@@ -12,6 +12,16 @@ import type {
  */
 export const DEFAULT_FIDES_JS_MAX_AGE_SECONDS = 60 * 60;
 
+const defaultMissingExperienceBehavior = (
+  setting: string | undefined,
+): PrivacyCenterSettings["MISSING_EXPERIENCE_BEHAVIOR"] => {
+  if (setting === "throw") {
+    return "throw";
+  }
+
+  return "empty_experience";
+};
+
 const loadEnvironmentVariables = () => {
   // Load environment variables
   const settings: PrivacyCenterSettings = {
@@ -34,6 +44,9 @@ const loadEnvironmentVariables = () => {
     FIDES_JS_MAX_AGE_SECONDS:
       Number(process.env.FIDES_PRIVACY_CENTER__FIDES_JS_MAX_AGE_SECONDS) ||
       DEFAULT_FIDES_JS_MAX_AGE_SECONDS,
+    MISSING_EXPERIENCE_BEHAVIOR: defaultMissingExperienceBehavior(
+      process.env.FIDES_PRIVACY_CENTER__MISSING_EXPERIENCE_BEHAVIOR,
+    ),
 
     // Overlay options
     DEBUG: process.env.FIDES_PRIVACY_CENTER__DEBUG
