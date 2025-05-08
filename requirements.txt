@@ -10,6 +10,7 @@ click_default_group==1.2.2
 cloud-sql-python-connector==1.9.2
 colorama>=0.4.3
 cryptography==44.0.1
+Cython==3.0.12
 dask==2022.9.2
 deepdiff==6.3.0
 defusedxml==0.7.1
@@ -71,3 +72,4 @@ twilio==7.15.0
 typing-extensions==4.12.2
 versioneer==0.19
 fideslang===3.1.0
+cython==3.0.11
