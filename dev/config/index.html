@@ -1533,7 +1533,11 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">418</span>
 <span class="normal">419</span>
 <span class="normal">420</span>
-<span class="normal">421</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">421</span>
+<span class="normal">422</span>
+<span class="normal">423</span>
+<span class="normal">424</span>
+<span class="normal">425</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -1574,7 +1578,7 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># A fully anonymized unique identifier that is automatically generated</span>
 <span class="c1"># by the application. Used for anonymous analytics when opted-in.</span>
-<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;9b6304bf211b4f47f8321103447083ac&quot;</span><span class="w"> </span><span class="c1"># string</span>
+<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;b5942f6b2f2661f051b3ca6b68b614d9&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># When set to True, disables functionality that requires making calls</span>
 <span class="c1"># to a Fides webserver.</span>
@@ -1638,6 +1642,10 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1"># Maximum number of TCP keepalive retries before the client considers</span>
 <span class="c1"># the connection dead and closes it.</span>
 <span class="n">api_engine_keepalives_count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="c1"># integer</span>
+
+<span class="c1"># If true, the async engine will pre-ping connections to ensure they</span>
+<span class="c1"># are still valid before using them.</span>
+<span class="n">api_async_engine_pool_pre_ping</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="c1"># boolean</span>
 
 <span class="c1"># The name of the application database.</span>
 <span class="n">db</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;default_db&quot;</span><span class="w"> </span><span class="c1"># string</span>

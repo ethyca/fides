@@ -39,7 +39,7 @@ task_always_eager = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "9b6304bf211b4f47f8321103447083ac" # string
+analytics_id = "b5942f6b2f2661f051b3ca6b68b614d9" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -103,6 +103,10 @@ api_engine_keepalives_interval = 10 # integer
 # Maximum number of TCP keepalive retries before the client considers
 # the connection dead and closes it.
 api_engine_keepalives_count = 5 # integer
+
+# If true, the async engine will pre-ping connections to ensure they
+# are still valid before using them.
+api_async_engine_pool_pre_ping = false # boolean
 
 # The name of the application database.
 db = "default_db" # string
