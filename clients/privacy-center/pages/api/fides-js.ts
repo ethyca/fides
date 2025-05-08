@@ -22,6 +22,7 @@ import {
   createLoggingContext,
   LoggerContext,
 } from "~/app/server-utils/loggerContext";
+import { MissingExperienceBehavior } from "~/app/server-utils/PrivacyCenterSettings";
 import { LOCATION_HEADERS, lookupGeolocation } from "~/common/geolocation";
 import { safeLookupPropertyId } from "~/common/property-id";
 
@@ -35,6 +36,18 @@ let cachedCustomFidesCss: string = "";
 let lastFetched: number = 0;
 // used to disable auto-refreshing if the /custom-asset endpoint is unreachable
 let autoRefresh: boolean = true;
+
+const missingExperienceBehaviors: Record<
+  MissingExperienceBehavior,
+  (error: unknown) => Record<string, never>
+> = {
+  throw: (error) => {
+    throw error;
+  },
+  empty_experience: () => {
+    return {};
+  },
+};
 
 const PREFETCH_RETRY_DELAY = 100;
 const PREFETCH_MAX_RETRIES = 10;
@@ -147,6 +160,8 @@ export default async function handler(
   res: NextApiResponse,
 ) {
   const loggingContext = createLoggingContext(req);
+  const serverSettings = loadServerSettings();
+  console.log({ serverSettings });
   // eslint-disable-next-line no-console, @typescript-eslint/no-explicit-any
   // Load the configured consent options (data uses, defaults, etc.) from environment
   const environment = await getPrivacyCenterEnvironmentCached({
@@ -224,6 +239,13 @@ export default async function handler(
         `Fetching relevant experiences from server-side (${userLanguageString})...`,
       );
 
+      // Define how we want to handle the scenario when the API fails to gives us an experience.
+      // By default the behavior is to return an empty experience, we can override that with
+      // the `MISSING_EXPERIENCE_BEHAVIOR` setting. This allows us to explicitly throw an
+      // error in certain cases.
+      const missingExperienceHandler =
+        missingExperienceBehaviors[serverSettings.MISSING_EXPERIENCE_BEHAVIOR];
+
       /*
        * Since we don't know what the experience will be when the initial call is made,
        * we supply the minimal request to the api endpoint with the understanding that if
@@ -237,6 +259,7 @@ export default async function handler(
             fidesApiUrl: getFidesApiUrl(),
             propertyId,
             requestMinimalTCF: true,
+            missingExperienceHandler,
           }),
         {
           delay: PREFETCH_RETRY_DELAY,
@@ -399,7 +422,6 @@ export default async function handler(
   `;
 
   // Instruct any caches to store this response, since these bundles do not change often
-  const serverSettings = loadServerSettings();
   const cacheHeaders: CacheControl = {
     "max-age": serverSettings.FIDES_JS_MAX_AGE_SECONDS,
     public: true,

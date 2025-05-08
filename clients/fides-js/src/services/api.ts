@@ -28,14 +28,14 @@ interface FetchExperienceOptions {
   apiOptions?: FidesApiOptions | null;
   propertyId: string | null | undefined;
   requestMinimalTCF?: boolean;
-  missingExperienceHandler?: () => Record<string, never>;
+  missingExperienceHandler?: (error: unknown) => Record<string, never>;
 }
 
 /**
  * We allow this to be overriden in cases where falling back to an
  * empty experience is undesirable.
  */
-function createEmptyExperience() {
+export function createEmptyExperience() {
   return {};
 }
 
@@ -63,7 +63,7 @@ export const fetchExperience = async <T = PrivacyExperience>({
       );
     } catch (e) {
       fidesDebugger("Error fetching experience from custom API. Error: ", e);
-      return missingExperienceHandler();
+      return missingExperienceHandler(e);
     }
   }
 
@@ -117,7 +117,7 @@ export const fetchExperience = async <T = PrivacyExperience>({
     }
   } catch (error) {
     fidesDebugger("Error getting experience from Fides API. Error:", error);
-    return missingExperienceHandler();
+    return missingExperienceHandler(error);
   }
 
   try {
@@ -145,7 +145,7 @@ export const fetchExperience = async <T = PrivacyExperience>({
       "Error parsing experience response body from Fides API. Response:",
       response,
     );
-    return missingExperienceHandler();
+    return missingExperienceHandler(e);
   }
 };
 
