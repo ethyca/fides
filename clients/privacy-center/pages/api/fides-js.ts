@@ -17,10 +17,8 @@ import { promises as fsPromises } from "fs";
 import type { NextApiRequest, NextApiResponse } from "next";
 
 import { getFidesApiUrl, loadServerSettings } from "~/app/server-environment";
-import {
-  debugLogServer,
-  getPrivacyCenterEnvironmentCached,
-} from "~/app/server-utils";
+import { getPrivacyCenterEnvironmentCached } from "~/app/server-utils";
+import { createLoggingContext } from "~/app/server-utils/loggerContext";
 import { LOCATION_HEADERS, lookupGeolocation } from "~/common/geolocation";
 import { safeLookupPropertyId } from "~/common/property-id";
 
@@ -37,7 +35,11 @@ let autoRefresh: boolean = true;
 
 async function retry<T>(
   func: () => Promise<T> | T,
-  { delay, retries }: { delay: number; retries: number },
+  {
+    delay,
+    retries,
+    timeout = setTimeout,
+  }: { delay: number; retries: number; timeout?: typeof setTimeout },
 ): Promise<T> {
   try {
     return await func();
@@ -49,9 +51,9 @@ async function retry<T>(
     );
     if (retries > 1) {
       await new Promise((resolve) => {
-        setTimeout(resolve, delay);
+        timeout(resolve, delay);
       });
-      return retry(func, { delay, retries: retries - 1 });
+      return retry(func, { delay, retries: retries - 1, timeout });
     }
     throw error;
   }
@@ -151,6 +153,8 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
+  const loggingContext = createLoggingContext(req);
+  // eslint-disable-next-line no-console, @typescript-eslint/no-explicit-any
   // Load the configured consent options (data uses, defaults, etc.) from environment
   const environment = await getPrivacyCenterEnvironmentCached({
     skipGeolocation: true,
@@ -223,7 +227,7 @@ export default async function handler(
       const userLanguageString =
         fidesLocale || req.headers["accept-language"] || DEFAULT_LOCALE;
 
-      debugLogServer(
+      loggingContext.debug(
         `Fetching relevant experiences from server-side (${userLanguageString})...`,
       );
 
@@ -239,7 +243,7 @@ export default async function handler(
         propertyId,
         requestMinimalTCF: true,
       });
-      debugLogServer(
+      loggingContext.debug(
         `Fetched relevant experiences from server-side (${userLanguageString}).`,
       );
       experienceIsValid(experience);
@@ -247,7 +251,11 @@ export default async function handler(
   }
 
   if (!geolocation) {
-    debugLogServer("No geolocation found, unable to prefetch experience.");
+    loggingContext.debug(
+      "No geolocation found, unable to prefetch experience.",
+    );
+  } else {
+    loggingContext.debug("Using geolocation", geolocation);
   }
 
   // This query param is used for testing purposes only, and should not be used
@@ -325,15 +333,17 @@ export default async function handler(
   };
   const fidesConfigJSON = JSON.stringify(fidesConfig);
 
-  debugLogServer("Bundling js & Privacy Center configuration together...");
+  loggingContext.debug(
+    "Bundling js & Privacy Center configuration together...",
+  );
   const isHeadlessExperience =
     experience?.experience_config?.component === ComponentType.HEADLESS;
   let fidesJsFile = "public/lib/fides.js";
   if (tcfEnabled) {
-    debugLogServer("TCF extension enabled, bundling fides-tcf.js...");
+    loggingContext.debug("TCF extension enabled, bundling fides-tcf.js...");
     fidesJsFile = "public/lib/fides-tcf.js";
   } else if (isHeadlessExperience) {
-    debugLogServer(
+    loggingContext.debug(
       "Headless experience detected, bundling fides-headless.js...",
     );
     fidesJsFile = "public/lib/fides-headless.js";
@@ -345,7 +355,7 @@ export default async function handler(
   }
   let fidesGPP: string = "";
   if (gppEnabled) {
-    debugLogServer(
+    loggingContext.debug(
       `GPP extension ${
         forcedGppQuery === "true" ? "forced" : "enabled"
       }, bundling fides-ext-gpp.js...`,
@@ -410,6 +420,8 @@ export default async function handler(
 async function fetchCustomFidesCss(
   req: NextApiRequest,
 ): Promise<string | null> {
+  const loggingContext = createLoggingContext(req);
+
   const currentTime = Date.now();
   const forceRefresh = "refresh" in req.query;
 
@@ -430,7 +442,7 @@ async function fetchCustomFidesCss(
 
       if (!response.ok) {
         if (response.status === 404) {
-          debugLogServer("No custom-fides.css found, skipping...");
+          loggingContext.debug("No custom-fides.css found, skipping...");
           autoRefresh = false;
           return null;
         }
@@ -447,7 +459,7 @@ async function fetchCustomFidesCss(
         throw new Error("No data returned by the server");
       }
 
-      debugLogServer("Successfully retrieved custom-fides.css");
+      loggingContext.debug("Successfully retrieved custom-fides.css");
       autoRefresh = true;
       cachedCustomFidesCss = data;
       lastFetched = currentTime;
