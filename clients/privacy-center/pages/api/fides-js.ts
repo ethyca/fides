@@ -18,7 +18,10 @@ import type { NextApiRequest, NextApiResponse } from "next";
 
 import { getFidesApiUrl, loadServerSettings } from "~/app/server-environment";
 import { getPrivacyCenterEnvironmentCached } from "~/app/server-utils";
-import { createLoggingContext } from "~/app/server-utils/loggerContext";
+import {
+  createLoggingContext,
+  LoggerContext,
+} from "~/app/server-utils/loggerContext";
 import { LOCATION_HEADERS, lookupGeolocation } from "~/common/geolocation";
 import { safeLookupPropertyId } from "~/common/property-id";
 
@@ -33,6 +36,8 @@ let lastFetched: number = 0;
 // used to disable auto-refreshing if the /custom-asset endpoint is unreachable
 let autoRefresh: boolean = true;
 
+const PREFETCH_RETRY_DELAY = 100;
+const PREFETCH_MAX_RETRIES = 10;
 async function retry<T>(
   func: () => Promise<T> | T,
   {
@@ -40,41 +45,29 @@ async function retry<T>(
     retries,
     timeout = setTimeout,
   }: { delay: number; retries: number; timeout?: typeof setTimeout },
+  loggingContext: LoggerContext,
 ): Promise<T> {
   try {
     return await func();
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.warn(
-      `Attempt at getting privacy experience failed, ${retries} remain.`,
-      error,
+    let message;
+    if (error instanceof Error) {
+      message = error.message;
+    }
+    loggingContext.warn(
+      `Attempt to get privacy experience failed, ${retries} remain. Error message was: `,
+      message,
     );
     if (retries > 1) {
       await new Promise((resolve) => {
         timeout(resolve, delay);
       });
-      return retry(func, { delay, retries: retries - 1, timeout });
+      return retry(
+        func,
+        { delay, retries: retries - 1, timeout },
+        loggingContext,
+      );
     }
-    throw error;
-  }
-}
-
-const PREFETCH_RETRY_DELAY = 100;
-const PREFETCH_MAX_RETRIES = 10;
-async function fetchExperienceWithRetry(
-  ...args: Parameters<typeof fetchExperience>
-) {
-  try {
-    return await retry(() => fetchExperience(...args), {
-      delay: PREFETCH_RETRY_DELAY,
-      retries: PREFETCH_MAX_RETRIES,
-    });
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error(
-      "Privacy Center was not able to prefetch an experience.",
-      error,
-    );
     throw error;
   }
 }
@@ -236,13 +229,21 @@ export default async function handler(
        * we supply the minimal request to the api endpoint with the understanding that if
        * TCF is being returned, we want the minimal version. It will be ignored otherwise.
        */
-      experience = await fetchExperienceWithRetry({
-        userLocationString: fidesRegionString,
-        userLanguageString,
-        fidesApiUrl: getFidesApiUrl(),
-        propertyId,
-        requestMinimalTCF: true,
-      });
+      experience = await retry(
+        () =>
+          fetchExperience({
+            userLocationString: fidesRegionString,
+            userLanguageString,
+            fidesApiUrl: getFidesApiUrl(),
+            propertyId,
+            requestMinimalTCF: true,
+          }),
+        {
+          delay: PREFETCH_RETRY_DELAY,
+          retries: PREFETCH_MAX_RETRIES,
+        },
+        loggingContext,
+      );
       loggingContext.debug(
         `Fetched relevant experiences from server-side (${userLanguageString}).`,
       );
