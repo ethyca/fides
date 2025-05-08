@@ -29,14 +29,14 @@ LARGE_FILE_THRESHOLD = int(
 
 
 def get_local_filename(file_key: str) -> str:
-    """Verifies that the local storage directory exists"""
+    """Verifies that the local storage directory exists and returns the local filepath"""
     if not os.path.exists(LOCAL_FIDES_UPLOAD_DIRECTORY):
         os.makedirs(LOCAL_FIDES_UPLOAD_DIRECTORY)
     return f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{file_key}"
 
 
-def get_file_type(file_key: str) -> Optional[str]:
-    """Returns the file type of the file"""
+def get_allowed_file_type_or_raise(file_key: str) -> Optional[str]:
+    """Verifies that the file type is allowed and returns the file type"""
     if "." not in file_key:
         logger.warning(f"File key {file_key} does not have a file extension")
         return None

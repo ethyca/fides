@@ -8,7 +8,10 @@ from fideslang.validation import AnyHttpUrlString
 from loguru import logger
 
 from fides.api.schemas.storage.storage import StorageSecrets
-from fides.api.service.storage.util import LARGE_FILE_THRESHOLD, get_file_type
+from fides.api.service.storage.util import (
+    LARGE_FILE_THRESHOLD,
+    get_allowed_file_type_or_raise,
+)
 from fides.api.util.aws_util import get_s3_client
 from fides.config import CONFIG
 
@@ -97,7 +100,7 @@ def generic_upload_to_s3(  # pylint: disable=R0913
 
     # Use upload_fileobj for efficient uploads (handles both small and large files)
     try:
-        file_type = get_file_type(file_key)
+        file_type = get_allowed_file_type_or_raise(file_key)
         # Use upload_fileobj for efficient uploads (handles both small and large files)
         s3_client.upload_fileobj(
             Fileobj=document,
@@ -137,7 +140,7 @@ def generic_retrieve_from_s3(
 
     s3_client = maybe_get_s3_client(auth_method, storage_secrets)
     try:
-        file_type = get_file_type(file_key)
+        file_type = get_allowed_file_type_or_raise(file_key)
         file_size = s3_client.head_object(Bucket=bucket_name, Key=file_key)[
             "ContentLength"
         ]

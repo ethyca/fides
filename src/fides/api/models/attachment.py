@@ -11,7 +11,6 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
 
 from fides.api.db.base_class import Base
-
 from fides.api.schemas.storage.storage import StorageDetails, StorageType
 from fides.api.service.storage.s3 import (
     generic_delete_from_s3,
