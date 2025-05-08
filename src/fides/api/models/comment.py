@@ -112,8 +112,7 @@ class Comment(Base):
         Attachment.delete_attachments_for_reference_and_type(
             db, self.id, AttachmentReferenceType.comment
         )
-        while self.references:
-            reference = self.references.pop()
+        for reference in self.references:
             reference.delete(db)
         db.delete(self)
 
@@ -147,6 +146,5 @@ class Comment(Base):
             .all()
         )
 
-        while comments:
-            comment = comments.pop()
+        for comment in comments:
             comment.delete(db)

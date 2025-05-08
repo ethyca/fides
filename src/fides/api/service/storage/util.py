@@ -3,6 +3,8 @@ from typing import Optional
 
 from loguru import logger
 
+from fides.config import CONFIG
+
 ALLOWED_FILE_TYPES = {
     "pdf": "application/pdf",
     "doc": "application/msword",
@@ -22,9 +24,9 @@ LOCAL_FIDES_UPLOAD_DIRECTORY = "fides_uploads"
 # Default to 5MB if not specified in environment
 DEFAULT_LARGE_FILE_THRESHOLD = 5 * 1024 * 1024  # 5 MB threshold
 # This checks to see if the environment variable is set and if it is, it uses that value
-# Otherwise, it uses the default value
-LARGE_FILE_THRESHOLD = int(
-    os.getenv("FIDES__LARGE_FILE_THRESHOLD", str(DEFAULT_LARGE_FILE_THRESHOLD))
+# Otherwise, it uses the default value - corresponds to FIDES__STORAGE__LARGE_FILE_THRESHOLD
+LARGE_FILE_THRESHOLD = CONFIG.storage.get(
+    "large_file_threshold", DEFAULT_LARGE_FILE_THRESHOLD
 )
 
 

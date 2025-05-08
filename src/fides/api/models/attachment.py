@@ -174,17 +174,19 @@ class Attachment(Base):
         if self.config.type == StorageType.s3:
             bucket_name = f"{self.config.details[StorageDetails.BUCKET.value]}"
             auth_method = self.config.details[StorageDetails.AUTH_METHOD.value]
-            return generic_retrieve_from_s3(
+            size, url = generic_retrieve_from_s3(
                 storage_secrets=self.config.secrets,
                 bucket_name=bucket_name,
                 file_key=f"{self.id}/{self.file_name}",
                 auth_method=auth_method,
             )
+            return size, url
 
         if self.config.type == StorageType.local:
             filename = get_local_filename(f"{self.id}/{self.file_name}")
             with open(filename, "rb") as file:
-                return len(file.read()), filename
+                size = len(file.read())
+                return size, filename
 
         raise ValueError(f"Unsupported storage type: {self.config.type}")
 
@@ -244,8 +246,7 @@ class Attachment(Base):
         self.delete_attachment_from_storage()
 
         # Delete all references to the attachment
-        while self.references:
-            reference = self.references.pop()
+        for reference in self.references:
             reference.delete(db)
         super().delete(db=db)
 
@@ -284,6 +285,5 @@ class Attachment(Base):
             .all()
         )
 
-        while attachments:
-            attachment = attachments.pop()
+        for attachment in attachments:
             attachment.delete(db)
