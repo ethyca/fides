@@ -67,5 +67,3 @@ notification_service_type = "mailgun"
 tcf_enabled = false
 ac_enabled = false
 override_vendor_purposes = false
-
-[storage]

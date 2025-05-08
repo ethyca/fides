@@ -57,6 +57,13 @@ def create_presigned_url_for_s3(
     return response
 
 
+def get_file_size(s3_client: Any, bucket_name: str, file_key: str) -> int:
+    """
+    Returns the size of a file in bytes.
+    """
+    return s3_client.head_object(Bucket=bucket_name, Key=file_key)["ContentLength"]
+
+
 def generic_upload_to_s3(  # pylint: disable=R0913
     storage_secrets: Dict[StorageSecrets, Any],
     bucket_name: str,
@@ -109,9 +116,7 @@ def generic_upload_to_s3(  # pylint: disable=R0913
             Config=transfer_config,
             ExtraArgs={"ContentType": file_type} if file_type else {},
         )
-        file_size = s3_client.head_object(Bucket=bucket_name, Key=file_key)[
-            "ContentLength"
-        ]
+        file_size = get_file_size(s3_client, bucket_name, file_key)
     except Exception as e:
         logger.error(f"Failed to upload file {file_key} to bucket {bucket_name}: {e}")
         raise e  # Re-raise the exception if you want it to propagate
@@ -141,9 +146,7 @@ def generic_retrieve_from_s3(
     s3_client = maybe_get_s3_client(auth_method, storage_secrets)
     try:
         file_type = get_allowed_file_type_or_raise(file_key)
-        file_size = s3_client.head_object(Bucket=bucket_name, Key=file_key)[
-            "ContentLength"
-        ]
+        file_size = get_file_size(s3_client, bucket_name, file_key)
         return file_size, create_presigned_url_for_s3(
             s3_client, bucket_name, file_key, file_type
         )

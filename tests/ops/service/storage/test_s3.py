@@ -15,7 +15,7 @@ from fides.api.service.storage.s3 import (
     generic_upload_to_s3,
     maybe_get_s3_client,
 )
-from fides.api.service.storage.util import ALLOWED_FILE_TYPES, LARGE_FILE_THRESHOLD
+from fides.api.service.storage.util import LARGE_FILE_THRESHOLD, AllowedFileTypes
 
 TEST_DOCUMENT = b"This is a test document."
 TEST_SPOOLED_DOC = SpooledTemporaryFile()
@@ -49,7 +49,9 @@ NON_ALLOWED_FILE_TYPES = [
     "app",
 ]
 
-FILE_TYPES = NON_ALLOWED_FILE_TYPES + list(ALLOWED_FILE_TYPES.keys())
+
+ALLOWED_FILE_TYPES = [ft.name for ft in AllowedFileTypes]
+FILE_TYPES = NON_ALLOWED_FILE_TYPES + ALLOWED_FILE_TYPES
 
 
 @pytest.fixture
@@ -332,7 +334,7 @@ class TestS3Retrieve:
 
     @pytest.mark.parametrize(
         "file_type",
-        list(ALLOWED_FILE_TYPES.keys()),
+        ALLOWED_FILE_TYPES,
     )
     def test_retrieve_file_types(
         self,
@@ -355,7 +357,6 @@ class TestS3Retrieve:
         document = BytesIO(TEST_DOCUMENT)
         # Getting the value of the document to compare after upload, to avoid closed file error
         copy_document = document.getvalue()
-        expected_content_type = ALLOWED_FILE_TYPES[file_type]
         _, _ = generic_upload_to_s3(
             storage_secrets=storage_config.secrets,
             bucket_name=bucket_name,

@@ -154,6 +154,10 @@ class SecuritySettings(FidesSettings):
         default=10,
         description="The timeout in seconds for tunnel connection (open_channel timeout)",
     )
+    large_file_threshold: Optional[int] = Field(
+        default=None,
+        description="The threshold in bytes for a file to be considered large. If the file is larger than this threshold, it will be uploaded to S3.",
+    )
 
     @field_validator("app_encryption_key", mode="before")
     @classmethod

@@ -1,23 +1,29 @@
 import os
+from enum import Enum as EnumType
 from typing import Optional
 
 from loguru import logger
 
 from fides.config import CONFIG
 
-ALLOWED_FILE_TYPES = {
-    "pdf": "application/pdf",
-    "doc": "application/msword",
-    "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    "txt": "text/plain",
-    "jpg": "image/jpeg",
-    "jpeg": "image/jpeg",
-    "png": "image/png",
-    "xls": "application/vnd.ms-excel",
-    "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    "csv": "text/csv",
-    "zip": "application/zip",
-}
+
+class AllowedFileTypes(EnumType):
+    """
+    A class that contains the allowed file types and their MIME types.
+    """
+
+    pdf = "application/pdf"
+    doc = "application/msword"
+    docx = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    txt = "text/plain"
+    jpg = "image/jpeg"
+    jpeg = "image/jpeg"
+    png = "image/png"
+    xls = "application/vnd.ms-excel"
+    xlsx = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    csv = "text/csv"
+    zip = "application/zip"
+
 
 LOCAL_FIDES_UPLOAD_DIRECTORY = "fides_uploads"
 
@@ -25,8 +31,8 @@ LOCAL_FIDES_UPLOAD_DIRECTORY = "fides_uploads"
 DEFAULT_LARGE_FILE_THRESHOLD = 5 * 1024 * 1024  # 5 MB threshold
 # This checks to see if the environment variable is set and if it is, it uses that value
 # Otherwise, it uses the default value - corresponds to FIDES__STORAGE__LARGE_FILE_THRESHOLD
-LARGE_FILE_THRESHOLD = CONFIG.storage.get(
-    "large_file_threshold", DEFAULT_LARGE_FILE_THRESHOLD
+LARGE_FILE_THRESHOLD = (
+    CONFIG.security.large_file_threshold or DEFAULT_LARGE_FILE_THRESHOLD
 )
 
 
@@ -43,6 +49,6 @@ def get_allowed_file_type_or_raise(file_key: str) -> Optional[str]:
         logger.warning(f"File key {file_key} does not have a file extension")
         return None
     file_type = file_key.split(".")[-1]
-    if file_type not in ALLOWED_FILE_TYPES:
+    if file_type not in [ft.name for ft in AllowedFileTypes]:
         raise ValueError(f"File type {file_type} is not allowed")
     return file_type
