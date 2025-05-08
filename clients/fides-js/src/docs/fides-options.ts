@@ -212,9 +212,9 @@ export interface FidesOptions {
   fides_consent_override: "accept" | "reject";
 
   /**
-   * Given a OneTrust → Fides notice mapping exists and the OneTrust cookie exists, Fides will “migrate” those consents to Fides privacy notices, and write to the Fides cookie.
+   * Given a OneTrust → Fides notice mapping exists and the OneTrust cookie exists, Fides will "migrate" those consents to Fides privacy notices, and write to the Fides cookie.
    *
-   * This way, Fides customers that are migrating away from OneTrust don’t need to show their users new consent dialogues when switching to Fides.
+   * This way, Fides customers that are migrating away from OneTrust don't need to show their users new consent dialogues when switching to Fides.
    * that those preferences are respected.
    *
    * Example original otFidesMapping data:
@@ -234,6 +234,29 @@ export interface FidesOptions {
    *
    */
   ot_fides_mapping: string;
+
+  /**
+   * Define how non-applicable privacy notices are handled.
+   *
+   * When set to "include", consent preferences will include notices in the system that are not applicable
+   * to the current experience, and will set the notice as implicitly consented.
+   *
+   * When set to "omit" (default), non-applicable notices will be omitted.
+   *
+   * Defaults to "omit".
+   */
+  fides_consent_non_applicable_flag_mode: "omit" | "include";
+
+  /**
+   * Define the type of flag to use for consent values.
+   *
+   * When set to "boolean", consent preferences will be set as boolean values.
+   * When set to "consent_mechanism", consent preferences will be set as string values based on the
+   * consent mechanism (e.g. "opt-in", "opt-out", "non-applicable").
+   *
+   * Defaults to "boolean".
+   */
+  fides_consent_flag_type: "boolean" | "consent_mechanism";
 
   /**
    * A comma-separated list of notice_keys to disable their respective Toggle elements in the CMP Overlay.

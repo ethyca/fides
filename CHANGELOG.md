@@ -19,24 +19,50 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.60.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.61.0...main)
+
+### Added
+- Exposes configuration settings for the async db engine connection [#6128](https://github.com/ethyca/fides/pull/6128)
+
+
+## [2.61.0](https://github.com/ethyca/fides/compare/2.60.1...2.61.0)
 
 ### Added
 - Added Recorded URL to Consent Report [#6077](https://github.com/ethyca/fides/pull/6077)
+- Added support for consent mechanism string values and non-applicable notices in FidesJS [#6115](https://github.com/ethyca/fides/pull/6115)
 - Added ConnectionType.okta, OktaSchema, OktaConnector as support for the Okta Monitor [#6078](https://github.com/ethyca/fides/pull/6078)
+- Added "View" detail links to success toasts in action center [#6113](https://github.com/ethyca/fides/pull/6113)
+- Setting to allow Admin UI errors to be surfaced to a toast. [#6121](https://github.com/ethyca/fides/pull/6121)
 
 ### Changed
 - Abstract OT consent migration logic, allow write to Fides preferences api [#6099](https://github.com/ethyca/fides/pull/6099)
+- Tweaked discovered assets table so rows remain selected after bulk actions [#6108](https://github.com/ethyca/fides/pull/6108)
+- Migrated some dropdown menus to use Ant's Dropdown component [#6107](https://github.com/ethyca/fides/pull/6107)
+- Refactor OT consent migration [#6099](https://github.com/ethyca/fides/pull/6126)
 
 ### Developer Experience
 - Cleaning up test fixtures [#6008](https://github.com/ethyca/fides/pull/6008)
+- Migrated last remaining Chakra icon button to Ant [#6127](https://github.com/ethyca/fides/pull/6127)
+
+### Fixed
+- Fixed handling of empty SSL mode in the MySQL connector [#6123](https://github.com/ethyca/fides/pull/6123)
+- Suppressing SQLAlchemy logging related to caching queries [#6089](https://github.com/ethyca/fides/pull/6089)
+- FidesJS css variable `--fides-overlay-container-border-width` now applies to banner (only applied to modal before) [#6097](https://github.com/ethyca/fides/pull/6097) https://github.com/ethyca/fides/labels/high-risk
+- Fixed vendor restriction form validation and input handling [#6101](https://github.com/ethyca/fides/pull/6101)
+- Fixed special purpose vendor check in Fides JS logic [#6118](https://github.com/ethyca/fides/pull/6118)
+- Update Add Vendor tooltip to match navigation option [#6111](https://github.com/ethyca/fides/pull/6111)
+- Fixed UX issues with action center tables [#6116](https://github.com/ethyca/fides/pull/6116)
+- Fixed incorrect font styling on some table headers [#6129](https://github.com/ethyca/fides/pull/6129)
+- Fixed a bug with refreshing or deep-linking to pages sometimes redirecting to homepage [#6125](https://github.com/ethyca/fides/pull/6125)
+
+### Removed
+- Removed unused libxslt-dev dependency [#6119](https://github.com/ethyca/fides/pull/6119)
+
+## [2.60.1](https://github.com/ethyca/fides/compare/2.60.0...2.60.1)
 
 ### Fixed
 - Fixed GTM integration to properly handle duplicate notice keys [#6090](https://github.com/ethyca/fides/pull/6090)
 - Fix Special-purpose only vendors not correctly encoded in TC string [#6086](https://github.com/ethyca/fides/pull/6086)
-- Suppressing SQLAlchemy logging related to caching queries [#6089](https://github.com/ethyca/fides/pull/6089)
-- FidesJS css variable `--fides-overlay-container-border-width` now applies to banner (only applied to modal before) [#6097](https://github.com/ethyca/fides/pull/6097) https://github.com/ethyca/fides/labels/high-risk
-- Fixed vendor restriction form validation and input handling [#6101](https://github.com/ethyca/fides/pull/6101)
 
 ## [2.60.0](https://github.com/ethyca/fides/compare/2.59.2...2.60.0)
 

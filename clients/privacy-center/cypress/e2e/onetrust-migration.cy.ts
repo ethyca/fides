@@ -76,15 +76,16 @@ describe("OneTrust to Fides consent migration", () => {
           // Check that all expected preferences exist, regardless of order
           const expectedPreferences = [
             {
-              privacy_notice_history_id: "essential",
+              privacy_notice_history_id: "pri_notice-history-essential-en-000",
+              preference: "acknowledge",
+            },
+            {
+              privacy_notice_history_id: "pri_notice-history-analytics-en-000",
               preference: "opt_in",
             },
             {
-              privacy_notice_history_id: "analytics_opt_out",
-              preference: "opt_in",
-            },
-            {
-              privacy_notice_history_id: "advertising",
+              privacy_notice_history_id:
+                "pri_notice-history-advertising-en-000",
               preference: "opt_in",
             },
           ];
@@ -182,15 +183,15 @@ describe("OneTrust to Fides consent migration", () => {
         // Check that all expected preferences exist, regardless of order
         const expectedPreferences = [
           {
-            privacy_notice_history_id: "essential",
+            privacy_notice_history_id: "pri_notice-history-essential-en-000",
+            preference: "acknowledge",
+          },
+          {
+            privacy_notice_history_id: "pri_notice-history-analytics-en-000",
             preference: "opt_in",
           },
           {
-            privacy_notice_history_id: "analytics_opt_out",
-            preference: "opt_in",
-          },
-          {
-            privacy_notice_history_id: "advertising",
+            privacy_notice_history_id: "pri_notice-history-advertising-en-000",
             preference: "opt_out",
           },
         ];
@@ -283,15 +284,15 @@ describe("OneTrust to Fides consent migration", () => {
         // Check that all expected preferences exist, regardless of order
         const expectedPreferences = [
           {
-            privacy_notice_history_id: "essential",
+            privacy_notice_history_id: "pri_notice-history-essential-en-000",
             preference: "opt_out",
           },
           {
-            privacy_notice_history_id: "analytics_opt_out",
+            privacy_notice_history_id: "pri_notice-history-analytics-en-000",
             preference: "opt_out",
           },
           {
-            privacy_notice_history_id: "advertising",
+            privacy_notice_history_id: "pri_notice-history-advertising-en-000",
             preference: "opt_out",
           },
         ];

@@ -62,8 +62,16 @@ export interface Fides {
    *   "marketing": false
    * }
    * ```
+   *
+   * @example
+   * A `Fides.consent` value showing the user has opted-in to analytics, but not marketing using a consent mechanism string:
+   * ```ts
+   * {
+   *   "analytics": "opt_in",
+   *   "marketing": "opt_out"
+   * }
    */
-  consent: Record<string, boolean>;
+  consent: Record<string, boolean | string>;
 
   /**
    * User's current consent string(s) combined into a single value. This is used by
@@ -200,7 +208,7 @@ export interface Fides {
    * they occur, which can then be used to trigger/block tags in GTM based on
    * `Fides.consent` preferences or other business logic.
    *
-   * See the [Google Tag Manager tutorial](/docs/tutorials/consent-management/consent-management-configuration/google-tag-manager-consent-mode) for more.
+   * See the [Google Tag Manager tutorial](/tutorials/consent-management/consent-management-configuration/google-tag-manager-consent-mode) for more.
    *
    * @param options - Optional configuration for the GTM integration
    * @param options.non_applicable_flag_mode - Controls how non-applicable privacy notices are handled in the data layer. Can be "omit" (default) to exclude non-applicable notices, or "include" to include them with a default value.
@@ -246,7 +254,7 @@ export interface Fides {
    * initialization until after your own custom JavaScript has run to set up some
    * config options. In this case, you can disable the automatic initialization
    * by including the query param `initialize=false` in the Fides script URL
-   * (see [Privacy Center FidesJS Hosting](/docs/dev-docs/js/privacy-center-fidesjs-hosting) for details).
+   * (see [Privacy Center FidesJS Hosting](/dev-docs/js/privacy-center-fidesjs-hosting) for details).
    * You will then need to call `Fides.init()` manually at the appropriate time.
    *
    * This function can also be used to reinitialize FidesJS. This is useful when
@@ -412,6 +420,8 @@ export interface Fides {
   config?: any;
 
   /**
+   * Helps keep track of the real time values to be saved to the cookie. Gets updated during initialization, when the user toggles consent preferences, etc. and ultimately is used to update the browser cookie, the Fides.consent object, and the Fides.saved_consent object which represent more persistent values.
+   *
    * @internal
    */
   cookie?: any;
@@ -434,11 +444,14 @@ export interface Fides {
   options: any;
 
   /**
+   * Represents the initial cookie consent values whether default or saved in the browser cookie. Compare to cookie.consent which represents the unsaved consent values we're going to end up saving to the browser cookie. In some cases we need to access the initial values saved in the cookie, rather than the current unsaved values.
+   *
    * @internal
    */
   saved_consent: Record<string, boolean>;
 
   /**
+   * @deprecated
    * @internal
    */
   tcf_consent: any;

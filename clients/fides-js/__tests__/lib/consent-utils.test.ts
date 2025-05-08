@@ -1,21 +1,33 @@
 import {
   ComponentType,
+  ConsentFlagType,
   ConsentMechanism,
   ConsentMethod,
+  ConsentNonApplicableFlagMode,
   FidesCookie,
+  FidesGlobal,
   NoticeConsent,
   PrivacyExperience,
+  UserConsentPreference,
 } from "~/lib/consent-types";
 import {
+  applyOverridesToConsent,
   decodeNoticeConsentString,
   encodeNoticeConsentString,
   getWindowObjFromPath,
   isPrivacyExperience,
-  parseFidesDisabledNotices,
   shouldResurfaceBanner,
 } from "~/lib/consent-utils";
+import { parseFidesDisabledNotices } from "~/lib/shared-consent-utils";
 
 import mockExperienceJSON from "../__fixtures__/mock_experience.json";
+
+// Add Fides to Window interface for testing
+declare global {
+  interface Window {
+    Fides: FidesGlobal;
+  }
+}
 
 describe("isPrivacyExperience", () => {
   it.each([
@@ -407,5 +419,210 @@ describe("shouldResurfaceBanner", () => {
         options as any,
       ),
     ).toBe(expected);
+  });
+});
+
+describe("applyOverridesToConsent", () => {
+  // Store original window.Fides
+  let originalFides: any;
+
+  beforeEach(() => {
+    // Store original and set up mock
+    originalFides = window.Fides;
+    window.Fides = {
+      options: {
+        fidesConsentFlagType: null,
+        fidesConsentNonApplicableFlagMode: null,
+      },
+    } as any;
+  });
+
+  afterEach(() => {
+    // Restore original
+    window.Fides = originalFides;
+  });
+
+  it("should return the original consent values when no overrides are applied", () => {
+    const consent = { analytics: true, marketing: false };
+    const result = applyOverridesToConsent(consent, [], []);
+    expect(result).toEqual(consent);
+  });
+
+  it("should handle non-applicable notices with OMIT mode (default)", () => {
+    const consent = { analytics: true, marketing: false };
+    const nonApplicableNotices = ["essential", "personalization"];
+    const result = applyOverridesToConsent(consent, nonApplicableNotices, []);
+
+    // Non-applicable notices should be omitted by default
+    expect(result).toEqual(consent);
+    expect(result.essential).toBeUndefined();
+    expect(result.personalization).toBeUndefined();
+  });
+
+  it("should handle non-applicable notices with INCLUDE mode", () => {
+    const consent = { analytics: true, marketing: false };
+    const nonApplicableNotices = ["essential", "personalization"];
+    const result = applyOverridesToConsent(
+      consent,
+      nonApplicableNotices,
+      [],
+      undefined,
+      ConsentNonApplicableFlagMode.INCLUDE,
+    );
+
+    // Non-applicable notices should be included with true values
+    expect(result).toEqual({
+      analytics: true,
+      marketing: false,
+      essential: true,
+      personalization: true,
+    });
+  });
+
+  it("should use the window.Fides options for non-applicable flag mode if not explicitly provided", () => {
+    window.Fides = {
+      options: {
+        fidesConsentNonApplicableFlagMode: ConsentNonApplicableFlagMode.INCLUDE,
+      },
+    } as any;
+
+    const consent = { analytics: true, marketing: false };
+    const nonApplicableNotices = ["essential", "personalization"];
+    const result = applyOverridesToConsent(consent, nonApplicableNotices, []);
+
+    // Non-applicable notices should be included because of window.Fides options
+    expect(result).toEqual({
+      analytics: true,
+      marketing: false,
+      essential: true,
+      personalization: true,
+    });
+  });
+
+  it("should convert boolean consent values to consent mechanism strings when flagType is CONSENT_MECHANISM", () => {
+    const consent = { analytics: true, marketing: false };
+    const privacyNotices = [
+      {
+        notice_key: "analytics",
+        consent_mechanism: ConsentMechanism.OPT_IN,
+      },
+      {
+        notice_key: "marketing",
+        consent_mechanism: ConsentMechanism.OPT_OUT,
+      },
+    ] as any;
+
+    const result = applyOverridesToConsent(
+      consent,
+      [],
+      privacyNotices,
+      ConsentFlagType.CONSENT_MECHANISM,
+    );
+
+    // Boolean values should be converted to consent mechanism strings
+    expect(result).toEqual({
+      analytics: UserConsentPreference.OPT_IN,
+      marketing: UserConsentPreference.OPT_OUT,
+    });
+  });
+
+  it("should use consent_mechanism strings for non-applicable notices when both flagType and mode are set", () => {
+    const consent = { analytics: true, marketing: false };
+    const nonApplicableNotices = ["essential", "personalization"];
+    const privacyNotices = [
+      {
+        notice_key: "analytics",
+        consent_mechanism: ConsentMechanism.OPT_IN,
+      },
+      {
+        notice_key: "marketing",
+        consent_mechanism: ConsentMechanism.OPT_OUT,
+      },
+    ] as any;
+
+    const result = applyOverridesToConsent(
+      consent,
+      nonApplicableNotices,
+      privacyNotices,
+      ConsentFlagType.CONSENT_MECHANISM,
+      ConsentNonApplicableFlagMode.INCLUDE,
+    );
+
+    // Non-applicable notices should be included as NOT_APPLICABLE
+    expect(result).toEqual({
+      analytics: UserConsentPreference.OPT_IN,
+      marketing: UserConsentPreference.OPT_OUT,
+      essential: UserConsentPreference.NOT_APPLICABLE,
+      personalization: UserConsentPreference.NOT_APPLICABLE,
+    });
+  });
+
+  it("should use the window.Fides options for flag type if not explicitly provided", () => {
+    window.Fides = {
+      options: {
+        fidesConsentFlagType: ConsentFlagType.CONSENT_MECHANISM,
+      },
+    } as any;
+
+    const consent = { analytics: true, marketing: false };
+    const privacyNotices = [
+      {
+        notice_key: "analytics",
+        consent_mechanism: ConsentMechanism.OPT_IN,
+      },
+      {
+        notice_key: "marketing",
+        consent_mechanism: ConsentMechanism.OPT_OUT,
+      },
+    ] as any;
+
+    const result = applyOverridesToConsent(consent, [], privacyNotices);
+
+    // Boolean values should be converted to consent mechanism strings because of window.Fides options
+    expect(result).toEqual({
+      analytics: UserConsentPreference.OPT_IN,
+      marketing: UserConsentPreference.OPT_OUT,
+    });
+  });
+
+  it("should handle string consent values already formatted as consent mechanism strings", () => {
+    const consent = {
+      analytics: UserConsentPreference.OPT_IN,
+      marketing: UserConsentPreference.OPT_OUT,
+    };
+
+    const result = applyOverridesToConsent(
+      consent,
+      [],
+      [],
+      ConsentFlagType.CONSENT_MECHANISM,
+    );
+
+    // String values should remain unchanged
+    expect(result).toEqual(consent);
+  });
+
+  it("should convert consent mechanism strings to boolean values when flagType is BOOLEAN", () => {
+    const consent = {
+      analytics: UserConsentPreference.OPT_IN,
+      marketing: UserConsentPreference.OPT_OUT,
+      essential: UserConsentPreference.ACKNOWLEDGE,
+      tracking: UserConsentPreference.NOT_APPLICABLE,
+    };
+
+    const result = applyOverridesToConsent(
+      consent,
+      [],
+      [],
+      ConsentFlagType.BOOLEAN,
+    );
+
+    // String values should be converted to booleans
+    expect(result).toEqual({
+      analytics: true,
+      marketing: false,
+      essential: true,
+      tracking: false,
+    });
   });
 });
