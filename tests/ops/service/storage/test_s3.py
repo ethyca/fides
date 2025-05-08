@@ -15,7 +15,7 @@ from fides.api.service.storage.s3 import (
     generic_upload_to_s3,
     maybe_get_s3_client,
 )
-from fides.api.service.storage.util import LARGE_FILE_THRESHOLD, AllowedFileTypes
+from fides.api.service.storage.util import LARGE_FILE_THRESHOLD, AllowedFileType
 
 TEST_DOCUMENT = b"This is a test document."
 TEST_SPOOLED_DOC = SpooledTemporaryFile()
@@ -50,7 +50,7 @@ NON_ALLOWED_FILE_TYPES = [
 ]
 
 
-ALLOWED_FILE_TYPES = [ft.name for ft in AllowedFileTypes]
+ALLOWED_FILE_TYPES = [ft.name for ft in AllowedFileType]
 FILE_TYPES = NON_ALLOWED_FILE_TYPES + ALLOWED_FILE_TYPES
 
 
@@ -365,6 +365,10 @@ class TestS3Retrieve:
             document=document,
         )
 
+        # Verify the content type was set correctly during upload
+        head_response = s3_client.head_object(Bucket=bucket_name, Key=file_key)
+        assert head_response["ContentType"] == AllowedFileType[file_type].value
+
         file_size, presigned_url = generic_retrieve_from_s3(
             storage_secrets=storage_config.secrets,
             bucket_name=bucket_name,
@@ -374,8 +378,6 @@ class TestS3Retrieve:
 
         assert file_size == len(copy_document)
         assert bucket_name in presigned_url
-        # Verify the content type is correctly set in the presigned URL
-        assert f"response-content-type={file_type}" in presigned_url.lower()
 
 
 class TestS3Delete:

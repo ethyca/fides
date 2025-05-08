@@ -1,13 +1,12 @@
 import os
 from enum import Enum as EnumType
-from typing import Optional
 
 from loguru import logger
 
 from fides.config import CONFIG
 
 
-class AllowedFileTypes(EnumType):
+class AllowedFileType(EnumType):
     """
     A class that contains the allowed file types and their MIME types.
     """
@@ -43,12 +42,13 @@ def get_local_filename(file_key: str) -> str:
     return f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{file_key}"
 
 
-def get_allowed_file_type_or_raise(file_key: str) -> Optional[str]:
-    """Verifies that the file type is allowed and returns the file type"""
+def get_allowed_file_type_or_raise(file_key: str) -> str:
+    """Verifies that the file type is allowed and returns the MIME type"""
+    error_msg = f"Invalid or unallowed file extension: {file_key}"
     if "." not in file_key:
         logger.warning(f"File key {file_key} does not have a file extension")
-        return None
+        raise ValueError(error_msg)
     file_type = file_key.split(".")[-1]
-    if file_type not in [ft.name for ft in AllowedFileTypes]:
-        raise ValueError(f"File type {file_type} is not allowed")
-    return file_type
+    if file_type not in [ft.name for ft in AllowedFileType]:
+        raise ValueError(error_msg)
+    return AllowedFileType[file_type].value

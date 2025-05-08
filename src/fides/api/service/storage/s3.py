@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import IO, Any, Dict, Optional, Tuple
+from typing import IO, Any, Dict, Tuple
 
 from boto3.s3.transfer import TransferConfig
 from botocore.exceptions import ClientError, ParamValidationError
@@ -34,7 +34,7 @@ def maybe_get_s3_client(
 
 
 def create_presigned_url_for_s3(
-    s3_client: Any, bucket_name: str, file_key: str, file_type: Optional[str] = None
+    s3_client: Any, bucket_name: str, file_key: str
 ) -> AnyHttpUrlString:
     """
     Generates a presigned URL to share an S3 object
@@ -45,8 +45,6 @@ def create_presigned_url_for_s3(
     :return: Presigned URL as string.
     """
     params = {"Bucket": bucket_name, "Key": file_key}
-    if file_type is not None:
-        params["ResponseContentType"] = file_type
     response = s3_client.generate_presigned_url(
         "get_object",
         Params=params,
@@ -107,7 +105,7 @@ def generic_upload_to_s3(  # pylint: disable=R0913
 
     # Use upload_fileobj for efficient uploads (handles both small and large files)
     try:
-        file_type = get_allowed_file_type_or_raise(file_key)
+        file_type: str = get_allowed_file_type_or_raise(file_key)
         # Use upload_fileobj for efficient uploads (handles both small and large files)
         s3_client.upload_fileobj(
             Fileobj=document,
@@ -145,11 +143,9 @@ def generic_retrieve_from_s3(
 
     s3_client = maybe_get_s3_client(auth_method, storage_secrets)
     try:
-        file_type = get_allowed_file_type_or_raise(file_key)
+        get_allowed_file_type_or_raise(file_key)
         file_size = get_file_size(s3_client, bucket_name, file_key)
-        return file_size, create_presigned_url_for_s3(
-            s3_client, bucket_name, file_key, file_type
-        )
+        return file_size, create_presigned_url_for_s3(s3_client, bucket_name, file_key)
     except Exception as e:
         logger.error("Encountered error while retrieving S3 object: {}", e)
         raise e

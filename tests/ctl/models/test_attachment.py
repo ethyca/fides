@@ -4,6 +4,7 @@ from tempfile import SpooledTemporaryFile
 
 import pytest
 from botocore.exceptions import ClientError
+from moto import mock_aws
 from sqlalchemy import exc as sa_exc
 from sqlalchemy.exc import IntegrityError
 
@@ -57,8 +58,13 @@ def verify_attachment_created_uploaded_local(attachment, attachment_file_copy):
 
 def test_create_attachment_without_attachement_file_raises_error(db, attachment_data):
     """Test creating an attachment without an attachment file raises an error."""
-    with pytest.raises(ClientError):
-        Attachment.create_and_upload(db, data=attachment_data, attachment_file=None)
+    with mock_aws():
+        with pytest.raises(ClientError) as excinfo:
+            Attachment.create_and_upload(db, data=attachment_data, attachment_file=None)
+            assert (
+                "Failed to upload attachment: The 'document' parameter must be a file-like object"
+                in str(excinfo.value)
+            )
 
 
 def test_create_attachment_with_S3_storage(
