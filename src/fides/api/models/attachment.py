@@ -12,8 +12,6 @@ from sqlalchemy.orm import Session, relationship
 
 from fides.api.db.base_class import Base
 
-# from fides.api.models.fides_user import FidesUser  # pylint: disable=unused-import
-# from fides.api.models.storage import StorageConfig  # pylint: disable=unused-import
 from fides.api.schemas.storage.storage import StorageDetails, StorageType
 from fides.api.service.storage.s3 import (
     generic_delete_from_s3,
