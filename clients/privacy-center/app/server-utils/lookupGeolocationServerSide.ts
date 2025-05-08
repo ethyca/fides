@@ -2,7 +2,6 @@
 
 import { headers } from "next/headers";
 
-import debugLogServer from "~/app/server-utils/debugLogServer";
 import { NextSearchParams } from "~/types/next";
 
 import {
@@ -11,6 +10,7 @@ import {
   VALID_ISO_3166_2_REGION_REGEX,
   VALID_ISO_3166_LOCATION_REGEX,
 } from "../../common/geolocation";
+import debugLogServer from "./debugLogServer";
 
 /**
  * Lookup the "geolocation" (ie country and region) for the given request by looking for either:
