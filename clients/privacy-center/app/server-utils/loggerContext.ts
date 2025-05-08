@@ -9,10 +9,14 @@ export const createLoggingContext = (request: NextApiRequest) => {
   const log = (...args: Parameters<typeof console.log>) =>
     // eslint-disable-next-line no-console
     console.log(...args, logSuffix);
+  const warn = (...args: Parameters<typeof console.warn>) =>
+    // eslint-disable-next-line no-console
+    console.warn(...args, logSuffix);
 
   return {
     debug,
     log,
+    warn,
   };
 };
 
