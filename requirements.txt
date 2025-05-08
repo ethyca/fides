@@ -72,4 +72,3 @@ twilio==7.15.0
 typing-extensions==4.12.2
 versioneer==0.19
 fideslang===3.1.0
-cython==3.0.11
