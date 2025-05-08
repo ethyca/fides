@@ -26,6 +26,10 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Changed
 - Attachment uploads now check for file extension types, retrieving and attachment also returns the file size. [#6124](https://github.com/ethyca/fides/pull/6124)
+- Locked down the version for @iabtechlabtcf packages for better control [#LJ-415](https://github.com/ethyca/fides/pull/LJ-415)
+
+### Fixed
+- Fix Special-purpose vendors with restricted purposes not correctly encoded in TC string [#LJ-415](https://github.com/ethyca/fides/pull/LJ-415)
 
 
 ## [2.61.0](https://github.com/ethyca/fides/compare/2.60.1...2.61.0)
