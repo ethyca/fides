@@ -64,6 +64,7 @@ async function fetchExperienceWithRetry(
   try {
     return await retry(() => fetchExperience(...args), 100, 10);
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error(
       "Privacy Center was not able to prefetch an experience.",
       error,
