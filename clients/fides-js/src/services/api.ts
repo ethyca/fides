@@ -44,13 +44,17 @@ export const fetchExperience = async <T = PrivacyExperience>({
 }: FetchExperienceOptions): Promise<T | EmptyExperience> => {
   if (apiOptions?.getPrivacyExperienceFn) {
     fidesDebugger("Calling custom fetch experience fn");
-
-    return apiOptions.getPrivacyExperienceFn<T>(
-      userLocationString,
-      // We no longer support handling user preferences on the experience using fidesUserDeviceId.
-      // For backwards compatibility, we keep fidesUserDeviceId in fn signature but pass in null here.
-      null,
-    );
+    try {
+      return await apiOptions.getPrivacyExperienceFn<T>(
+        userLocationString,
+        // We no longer support handling user preferences on the experience using fidesUserDeviceId.
+        // For backwards compatibility, we keep fidesUserDeviceId in fn signature but pass in null here.
+        null,
+      );
+    } catch (e) {
+      fidesDebugger("Error fetching experience from custom API. Error: ", e);
+      throw e;
+    }
   }
 
   const headers = [
@@ -102,34 +106,36 @@ export const fetchExperience = async <T = PrivacyExperience>({
       throw new Error("Error fetching experience from Fides API");
     }
   } catch (error) {
-    fidesDebugger(
-      "Error getting experience from Fides API, returning {}. Error:",
-      error,
-    );
-    return {};
+    fidesDebugger("Error getting experience from Fides API. Error:", error);
+    throw error;
   }
 
   try {
     const body = await response.json();
+
     // returning empty obj instead of undefined ensures we can properly cache on
     // server-side for locations that have no relevant experiences.
+    if (body.items?.length < 1) {
+      return {};
+    }
+
     const experience:
       | PrivacyExperience
       | PrivacyExperienceMinimal
-      | EmptyExperience = (body.items && body.items[0]) ?? {};
+      | EmptyExperience = body.items && body.items[0];
 
     const firstLanguage =
       experience.experience_config?.translations?.[0].language;
     fidesDebugger(
-      `Recieved ${experience.minimal_tcf ? "minimal TCF " : ""}experience response from Fides API${experience.minimal_tcf ? ` (${firstLanguage})` : ""}`,
+      `Received ${experience.minimal_tcf ? "minimal TCF " : ""}experience response from Fides API${experience.minimal_tcf ? ` (${firstLanguage})` : ""}`,
     );
     return experience as T;
   } catch (e) {
     fidesDebugger(
-      "Error parsing experience response body from Fides API, returning {}. Response:",
+      "Error parsing experience response body from Fides API. Response:",
       response,
     );
-    return {};
+    throw e;
   }
 };
 
@@ -163,7 +169,7 @@ export const fetchGvlTranslations = async (
   }
   const gvlTranslations: GVLTranslations = await response.json();
   fidesDebugger(
-    `Recieved GVL languages response from Fides API (${
+    `Received GVL languages response from Fides API (${
       Object.keys(gvlTranslations).length
     })`,
     gvlTranslations,

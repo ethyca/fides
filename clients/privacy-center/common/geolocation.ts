@@ -1,6 +1,8 @@
 import { UserGeolocation } from "fides-js";
 import type { NextApiRequest } from "next";
 
+import { debugLogServer } from "~/app/server-utils";
+
 /**
  * Regex to validate a [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) code:
  * 1. Starts with a 2 letter country code (e.g. "US", "GB") (see [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2))
@@ -41,6 +43,7 @@ export const lookupGeolocation = async (
   // Check for a provided "geolocation" query param
   const { geolocation: geolocationQuery } = req.query;
   if (typeof geolocationQuery === "string") {
+    debugLogServer(`Geolocation found in query: ${geolocationQuery}`);
     if (!VALID_ISO_3166_LOCATION_REGEX.test(geolocationQuery)) {
       throw new Error(
         `Provided location (${geolocationQuery}) query parameter is not in ISO 3166 format.`,
@@ -56,13 +59,17 @@ export const lookupGeolocation = async (
   }
 
   // Check for CloudFront viewer location headers
-  if (typeof req.headers[CLOUDFRONT_HEADER_COUNTRY] === "string") {
+  const countryHeader = req.headers[CLOUDFRONT_HEADER_COUNTRY];
+  if (typeof countryHeader === "string") {
+    debugLogServer(`Country found in header: ${countryHeader}`);
     let geolocation;
     let region;
-    const country = req.headers[CLOUDFRONT_HEADER_COUNTRY].split(",")[0];
+    const country = countryHeader.split(",")[0];
     geolocation = country;
-    if (typeof req.headers[CLOUDFRONT_HEADER_REGION] === "string") {
-      [region] = req.headers[CLOUDFRONT_HEADER_REGION].split(",");
+    const regionHeader = req.headers[CLOUDFRONT_HEADER_REGION];
+    if (typeof regionHeader === "string") {
+      debugLogServer(`Region found in header: ${countryHeader}`);
+      [region] = regionHeader.split(",");
       // Check if the region header is valid; otherwise discard (it's optional!)
       if (VALID_ISO_3166_2_REGION_REGEX.test(region)) {
         geolocation = `${country}-${region}`;
@@ -77,6 +84,9 @@ export const lookupGeolocation = async (
         region,
       };
     }
+    debugLogServer(
+      "Geolocation found in header was not a valid ISO 3166 location",
+    );
   }
   return null;
 };
