@@ -37,8 +37,7 @@ let autoRefresh: boolean = true;
 
 async function retry<T>(
   func: () => Promise<T> | T,
-  delay: number,
-  retries: number,
+  { delay, retries }: { delay: number; retries: number },
 ): Promise<T> {
   try {
     return await func();
@@ -52,17 +51,22 @@ async function retry<T>(
       await new Promise((resolve) => {
         setTimeout(resolve, delay);
       });
-      return retry(func, delay, retries - 1);
+      return retry(func, { delay, retries: retries - 1 });
     }
     throw error;
   }
 }
 
+const PREFETCH_RETRY_DELAY = 100;
+const PREFETCH_MAX_RETRIES = 10;
 async function fetchExperienceWithRetry(
   ...args: Parameters<typeof fetchExperience>
 ) {
   try {
-    return await retry(() => fetchExperience(...args), 100, 10);
+    return await retry(() => fetchExperience(...args), {
+      delay: PREFETCH_RETRY_DELAY,
+      retries: PREFETCH_MAX_RETRIES,
+    });
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error(
