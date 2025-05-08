@@ -17,7 +17,10 @@ import { promises as fsPromises } from "fs";
 import type { NextApiRequest, NextApiResponse } from "next";
 
 import { getFidesApiUrl, loadServerSettings } from "~/app/server-environment";
-import { getPrivacyCenterEnvironmentCached } from "~/app/server-utils";
+import {
+  debugLogServer,
+  getPrivacyCenterEnvironmentCached,
+} from "~/app/server-utils";
 import { LOCATION_HEADERS, lookupGeolocation } from "~/common/geolocation";
 import { safeLookupPropertyId } from "~/common/property-id";
 
@@ -178,7 +181,7 @@ export default async function handler(
       const userLanguageString =
         fidesLocale || req.headers["accept-language"] || DEFAULT_LOCALE;
 
-      fidesDebugger(
+      debugLogServer(
         `Fetching relevant experiences from server-side (${userLanguageString})...`,
       );
 
@@ -194,7 +197,7 @@ export default async function handler(
         propertyId,
         requestMinimalTCF: true,
       });
-      fidesDebugger(
+      debugLogServer(
         `Fetched relevant experiences from server-side (${userLanguageString}).`,
       );
       experienceIsValid(experience);
@@ -202,7 +205,7 @@ export default async function handler(
   }
 
   if (!geolocation) {
-    fidesDebugger("No geolocation found, unable to prefetch experience.");
+    debugLogServer("No geolocation found, unable to prefetch experience.");
   }
 
   // This query param is used for testing purposes only, and should not be used
@@ -277,15 +280,15 @@ export default async function handler(
   };
   const fidesConfigJSON = JSON.stringify(fidesConfig);
 
-  fidesDebugger("Bundling js & Privacy Center configuration together...");
+  debugLogServer("Bundling js & Privacy Center configuration together...");
   const isHeadlessExperience =
     experience?.experience_config?.component === ComponentType.HEADLESS;
   let fidesJsFile = "public/lib/fides.js";
   if (tcfEnabled) {
-    fidesDebugger("TCF extension enabled, bundling fides-tcf.js...");
+    debugLogServer("TCF extension enabled, bundling fides-tcf.js...");
     fidesJsFile = "public/lib/fides-tcf.js";
   } else if (isHeadlessExperience) {
-    fidesDebugger(
+    debugLogServer(
       "Headless experience detected, bundling fides-headless.js...",
     );
     fidesJsFile = "public/lib/fides-headless.js";
@@ -297,7 +300,7 @@ export default async function handler(
   }
   let fidesGPP: string = "";
   if (gppEnabled) {
-    fidesDebugger(
+    debugLogServer(
       `GPP extension ${
         forcedGppQuery === "true" ? "forced" : "enabled"
       }, bundling fides-ext-gpp.js...`,
@@ -382,7 +385,7 @@ async function fetchCustomFidesCss(
 
       if (!response.ok) {
         if (response.status === 404) {
-          fidesDebugger("No custom-fides.css found, skipping...");
+          debugLogServer("No custom-fides.css found, skipping...");
           autoRefresh = false;
           return null;
         }
@@ -399,7 +402,7 @@ async function fetchCustomFidesCss(
         throw new Error("No data returned by the server");
       }
 
-      fidesDebugger("Successfully retrieved custom-fides.css");
+      debugLogServer("Successfully retrieved custom-fides.css");
       autoRefresh = true;
       cachedCustomFidesCss = data;
       lastFetched = currentTime;
