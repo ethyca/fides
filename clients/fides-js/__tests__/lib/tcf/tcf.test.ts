@@ -477,20 +477,33 @@ describe("generateFidesString", () => {
     expect(decodedTCString.publisherCountryCode).toBe("US");
   });
 
-  it("saves special purpose only vendor to legitimate interest regardless of consent choice", async () => {
-    // Add a vendor that only has special purposes
-    const experienceWithSpecialPurposeVendor = {
+  it("saves special purpose vendor to legitimate interest appropriately", async () => {
+    // This test only check for opt out, but is applicable regardless of consent choice
+    const experienceWithSpecialPurposeVendors = {
       ...experience,
       tcf_vendor_relationships: [
         {
+          id: "gvl.777",
+          name: "Vendor with Purposes but no Special Purposes",
+          special_purposes: [],
+          features: [],
+          special_features: [],
+          url: "https://test.com/privacy",
+        },
+        {
+          id: "gvl.888",
+          name: "Special Purpose Vendor with Purposes",
+          special_purposes: [1, 2, 3],
+          features: [],
+          special_features: [],
+          url: "https://test.com/privacy",
+        },
+        {
           id: "gvl.999",
           name: "Special Purpose Only Vendor",
-          purposes: [],
-          legitimate_interest_purposes: [],
           special_purposes: [1, 2],
           features: [],
           special_features: [],
-          flexible_purposes: [],
           url: "https://test.com/privacy",
         },
       ],
@@ -498,13 +511,43 @@ describe("generateFidesString", () => {
         ...mockGvl,
         vendors: {
           ...mockGvl.vendors,
+          777: {
+            id: 777,
+            name: "Vendor with Purposes but no Special Purposes",
+            purposes: [1, 2, 3],
+            legIntPurposes: [],
+            flexiblePurposes: [],
+            specialPurposes: [],
+            features: [],
+            specialFeatures: [],
+            policyUrl: "https://test.com/privacy",
+            usesCookies: true,
+            cookieMaxAgeSeconds: 86400,
+            cookieRefresh: false,
+            usesNonCookieAccess: false,
+          },
+          888: {
+            id: 888,
+            name: "Special Purpose Vendor with Purposes",
+            purposes: [1, 2, 3, 4, 7, 10],
+            legIntPurposes: [],
+            flexiblePurposes: [],
+            specialPurposes: [1, 2],
+            features: [],
+            specialFeatures: [],
+            policyUrl: "https://test.com/privacy",
+            usesCookies: true,
+            cookieMaxAgeSeconds: 86400,
+            cookieRefresh: false,
+            usesNonCookieAccess: false,
+          },
           999: {
             id: 999,
             name: "Special Purpose Only Vendor",
-            purposes: [], // No regular purposes
-            legIntPurposes: [], // No legitimate interest purposes
+            purposes: [],
+            legIntPurposes: [],
             flexiblePurposes: [],
-            specialPurposes: [1, 2], // Only special purposes
+            specialPurposes: [1, 2],
             features: [],
             specialFeatures: [],
             policyUrl: "https://test.com/privacy",
@@ -518,7 +561,7 @@ describe("generateFidesString", () => {
     } as unknown as PrivacyExperience;
 
     const fidesString = await generateFidesString({
-      experience: experienceWithSpecialPurposeVendor,
+      experience: experienceWithSpecialPurposeVendors,
       tcStringPreferences: {
         customPurposesConsent: [],
         features: [],
@@ -538,7 +581,10 @@ describe("generateFidesString", () => {
     const [tcfString] = fidesString.split(FIDES_SEPARATOR);
     const decodedTCString = TCString.decode(tcfString);
 
-    // Verify the special purpose vendor is in legitimate interest section regardless of user choice
+    // Verify the special purpose only vendors are appropriately added to the legitimate interest section
+    expect(decodedTCString.vendorConsents.size).toBe(0);
+    expect(decodedTCString.vendorLegitimateInterests.has(777)).toBe(false);
+    expect(decodedTCString.vendorLegitimateInterests.has(888)).toBe(true);
     expect(decodedTCString.vendorLegitimateInterests.has(999)).toBe(true);
   });
 });
