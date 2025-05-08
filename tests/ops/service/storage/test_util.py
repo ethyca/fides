@@ -3,7 +3,7 @@ from typing import Optional
 import pytest
 from pytest import param
 
-from fides.api.service.storage.util import get_file_type
+from fides.api.service.storage.util import get_allowed_file_type_or_raise
 
 
 @pytest.mark.parametrize(
@@ -21,6 +21,6 @@ def test_get_file_type(file_key: str, expected_file_type: Optional[str]):
     """Test that the get_file_type function returns the correct file type"""
     if expected_file_type is None and "." in file_key:
         with pytest.raises(ValueError):
-            get_file_type(file_key)
+            get_allowed_file_type_or_raise(file_key)
     else:
-        assert get_file_type(file_key) == expected_file_type
+        assert get_allowed_file_type_or_raise(file_key) == expected_file_type
