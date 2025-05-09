@@ -1,0 +1,27 @@
+{
+  "name": "Salesforce Integration 2",
+  "key": "salesforce_integration_2",
+  "description": "Salesforce CRM Integration",
+  "connection_type": "saas",
+  "access": "write",
+  "created_at": "2024-06-03T15:35:57.509826+00:00",
+  "updated_at": "2024-06-03T15:35:57.509826+00:00",
+  "disabled": false,
+  "last_test_timestamp": null,
+  "last_test_succeeded": null,
+  "saas_config": {
+    "fides_key": "salesforce",
+    "name": "Salesforce",
+    "type": "salesforce"
+  },
+  "secrets": {
+    "domain": "ethyca.my.salesforce.com",
+    "client_id": "**********",
+    "client_secret": "**********",
+    "redirect_uri": "https://app.ethyca.com/callback",
+    "access_token": "**********",
+    "refresh_token": "**********"
+  },
+  "authorized": true,
+  "enabled_actions": ["access", "erasure"]
+}

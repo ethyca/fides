@@ -593,5 +593,34 @@ describe("Integration management for data detection & discovery", () => {
         });
       });
     });
+
+    describe("data discovery tab for API integration", () => {
+      beforeEach(() => {
+        cy.intercept("GET", "/api/v1/connection/*", {
+          fixture: "connectors/salesforce_connection_2.json",
+        }).as("getSalesforceIntegration");
+        cy.intercept("GET", "/api/v1/plus/discovery-monitor*", {
+          fixture: "detection-discovery/monitors/salesforce_monitor_list.json",
+        }).as("getSalesforceMonitors");
+        cy.intercept("GET", "/api/v1/connection_type", {
+          fixture: "connectors/connection_types.json",
+        }).as("getConnectionTypes");
+        cy.intercept("POST", "/api/v1/plus/discovery-monitor/databases", {
+          statusCode: 200,
+          body: { items: [], total: 0, page: 1, size: 50, pages: 0 },
+        }).as("getEmptyDatabases");
+        cy.visit("/integrations/salesforce_integration_2");
+        cy.getByTestId("tab-Data discovery").click();
+        cy.wait("@getSalesforceMonitors");
+      });
+
+      it("should disable Add Monitor button when a monitor already exists for API integration", () => {
+        // Verify that the existing monitor is displayed
+        cy.getByTestId("row-teststeststst").should("exist");
+
+        // Verify that the Add Monitor button is disabled
+        cy.getByTestId("add-monitor-btn").should("be.disabled");
+      });
+    });
   });
 });
