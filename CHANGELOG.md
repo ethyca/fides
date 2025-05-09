@@ -24,6 +24,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Added
 - Exposes configuration settings for the async db engine connection [#6128](https://github.com/ethyca/fides/pull/6128)
 
+### Changed
+- Attachment uploads now check for file extension types, retrieving and attachment also returns the file size. [#6124](https://github.com/ethyca/fides/pull/6124)
+
 
 ## [2.61.0](https://github.com/ethyca/fides/compare/2.60.1...2.61.0)
 
