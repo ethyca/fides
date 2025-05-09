@@ -6,14 +6,8 @@ from fides.api.models.attachment import (
     AttachmentReference,
     AttachmentReferenceType,
 )
-from fides.api.models.comment import (
-    Comment,
-    CommentReference,
-    CommentReferenceType,
-    CommentType,
-)
+from fides.api.models.comment import Comment, CommentReference, CommentReferenceType
 from fides.api.models.fides_user import FidesUser
-from fides.api.models.privacy_request import PrivacyRequest
 
 
 @pytest.fixture
