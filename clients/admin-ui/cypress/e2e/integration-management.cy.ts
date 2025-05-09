@@ -95,6 +95,20 @@ describe("Integration management for data detection & discovery", () => {
         cy.intercept("GET", "/api/v1/connection_type", {
           fixture: "connectors/connection_types.json",
         }).as("getConnectionTypes");
+        cy.intercept("GET", "/api/v1/connection_type/*/secret", {
+          fixture: "connectors/salesforce_secret.json",
+        }).as("getSecretsSchema");
+        // Empty dataset responses for API integration tests
+        cy.intercept("GET", "/api/v1/connection/datasetconfig", {
+          fixture: "connectors/empty_datasetconfig.json",
+        }).as("getDatasetConfig");
+        cy.intercept("GET", "/api/v1/dataset?only_unlinked_datasets=true", {
+          fixture: "connectors/empty_unlinked_datasets.json",
+        }).as("getUnlinkedDatasets");
+        cy.intercept("GET", "/api/v1/dataset?minimal=true&connection_type=*", {
+          fixture: "connectors/empty_minimal_datasets.json",
+        }).as("getMinimalDatasets");
+
         cy.visit(INTEGRATION_MANAGEMENT_ROUTE);
         cy.wait("@getConnections");
       });
@@ -162,6 +176,56 @@ describe("Integration management for data detection & discovery", () => {
         );
         cy.getByTestId("save-btn").click();
         cy.wait("@patchSystemConnection");
+      });
+
+      it("should display an API integration under the CRM tab", () => {
+        cy.getByTestId("add-integration-btn").click();
+        cy.getByTestId("add-modal-content").within(() => {
+          // Click on the CRM tab
+          cy.contains("CRM").click();
+          // Verify Salesforce appears
+          cy.getByTestId("integration-info-salesforce_placeholder").should(
+            "exist",
+          );
+        });
+      });
+
+      it("should be able to instantiate an API integration by filling out the form", () => {
+        // API-specific intercepts
+        cy.intercept("POST", "/api/v1/connection/instantiate/salesforce", {
+          statusCode: 200,
+        }).as("instantiateConnection");
+        cy.intercept("PATCH", "/api/v1/connection/*/secret*", {
+          response: 200,
+        }).as("patchConnectionSecrets");
+
+        cy.getByTestId("add-integration-btn").click();
+        cy.getByTestId("add-modal-content").within(() => {
+          // Click on the CRM tab
+          cy.contains("CRM").click();
+          // Click on configure for Salesforce
+          cy.getByTestId("integration-info-salesforce_placeholder").within(
+            () => {
+              cy.getByTestId("configure-btn").click();
+            },
+          );
+        });
+
+        // Fill out the form with fields from the salesforce_secret schema
+        cy.getByTestId("input-name").type("My Salesforce Integration");
+        cy.getByTestId("input-secrets.client_id").type("test_client_id");
+        cy.getByTestId("input-secrets.client_secret").type(
+          "test_client_secret",
+        );
+        cy.getByTestId("input-secrets.domain").type("mycompany.salesforce.com");
+        cy.getByTestId("input-secrets.redirect_uri").type(
+          "https://example.com/callback",
+        );
+
+        // Submit the form
+        cy.getByTestId("save-btn").click();
+        cy.wait("@instantiateConnection");
+        cy.wait("@patchConnectionSecrets");
       });
     });
   });
