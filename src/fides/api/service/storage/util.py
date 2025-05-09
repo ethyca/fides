@@ -42,6 +42,6 @@ def get_allowed_file_type_or_raise(file_key: str) -> str:
         logger.warning(f"File key {file_key} does not have a file extension")
         raise ValueError(error_msg)
     file_type = file_key.split(".")[-1]
-    if file_type not in [ft.name for ft in AllowedFileType]:
+    if file_type not in [ft for ft in AllowedFileType.__members__.keys()]:
         raise ValueError(error_msg)
     return AllowedFileType[file_type].value
