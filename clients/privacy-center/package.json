@@ -47,6 +47,7 @@
     "react-phone-number-input": "^3.4.1",
     "react-redux": "^9.2.0",
     "redux-persist": "^6.0.0",
+    "uuid": "^9.0.0",
     "yup": "^0.32.11"
   },
   "devDependencies": {

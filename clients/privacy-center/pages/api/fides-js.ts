@@ -18,6 +18,11 @@ import type { NextApiRequest, NextApiResponse } from "next";
 
 import { getFidesApiUrl, loadServerSettings } from "~/app/server-environment";
 import { getPrivacyCenterEnvironmentCached } from "~/app/server-utils";
+import {
+  createLoggingContext,
+  LoggerContext,
+} from "~/app/server-utils/loggerContext";
+import { MissingExperienceBehavior } from "~/app/server-utils/PrivacyCenterSettings";
 import { LOCATION_HEADERS, lookupGeolocation } from "~/common/geolocation";
 import { safeLookupPropertyId } from "~/common/property-id";
 
@@ -31,6 +36,54 @@ let cachedCustomFidesCss: string = "";
 let lastFetched: number = 0;
 // used to disable auto-refreshing if the /custom-asset endpoint is unreachable
 let autoRefresh: boolean = true;
+
+const missingExperienceBehaviors: Record<
+  MissingExperienceBehavior,
+  (error: unknown) => Record<string, never>
+> = {
+  throw: (error) => {
+    throw error;
+  },
+  empty_experience: () => {
+    return {};
+  },
+};
+
+const PREFETCH_RETRY_DELAY = 100;
+const PREFETCH_MAX_RETRIES = 10;
+async function retry<T>(
+  func: () => Promise<T> | T,
+  {
+    delay,
+    retries,
+    timeout = setTimeout,
+  }: { delay: number; retries: number; timeout?: typeof setTimeout },
+  loggingContext: LoggerContext,
+): Promise<T> {
+  try {
+    return await func();
+  } catch (error) {
+    let message;
+    if (error instanceof Error) {
+      message = error.message;
+    }
+    loggingContext.warn(
+      `Attempt to get privacy experience failed, ${retries} remain. Error message was: `,
+      message,
+    );
+    if (retries > 1) {
+      await new Promise((resolve) => {
+        timeout(resolve, delay);
+      });
+      return retry(
+        func,
+        { delay, retries: retries - 1, timeout },
+        loggingContext,
+      );
+    }
+    throw error;
+  }
+}
 
 /**
  * @swagger
@@ -106,6 +159,10 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
+  const loggingContext = createLoggingContext(req);
+  const serverSettings = loadServerSettings();
+  console.log({ serverSettings });
+  // eslint-disable-next-line no-console, @typescript-eslint/no-explicit-any
   // Load the configured consent options (data uses, defaults, etc.) from environment
   const environment = await getPrivacyCenterEnvironmentCached({
     skipGeolocation: true,
@@ -178,23 +235,39 @@ export default async function handler(
       const userLanguageString =
         fidesLocale || req.headers["accept-language"] || DEFAULT_LOCALE;
 
-      fidesDebugger(
+      loggingContext.debug(
         `Fetching relevant experiences from server-side (${userLanguageString})...`,
       );
+
+      // Define how we want to handle the scenario when the API fails to gives us an experience.
+      // By default the behavior is to return an empty experience, we can override that with
+      // the `MISSING_EXPERIENCE_BEHAVIOR` setting. This allows us to explicitly throw an
+      // error in certain cases.
+      const missingExperienceHandler =
+        missingExperienceBehaviors[serverSettings.MISSING_EXPERIENCE_BEHAVIOR];
 
       /*
        * Since we don't know what the experience will be when the initial call is made,
        * we supply the minimal request to the api endpoint with the understanding that if
        * TCF is being returned, we want the minimal version. It will be ignored otherwise.
        */
-      experience = await fetchExperience({
-        userLocationString: fidesRegionString,
-        userLanguageString,
-        fidesApiUrl: getFidesApiUrl(),
-        propertyId,
-        requestMinimalTCF: true,
-      });
-      fidesDebugger(
+      experience = await retry(
+        () =>
+          fetchExperience({
+            userLocationString: fidesRegionString,
+            userLanguageString,
+            fidesApiUrl: getFidesApiUrl(),
+            propertyId,
+            requestMinimalTCF: true,
+            missingExperienceHandler,
+          }),
+        {
+          delay: PREFETCH_RETRY_DELAY,
+          retries: PREFETCH_MAX_RETRIES,
+        },
+        loggingContext,
+      );
+      loggingContext.debug(
         `Fetched relevant experiences from server-side (${userLanguageString}).`,
       );
       experienceIsValid(experience);
@@ -202,7 +275,11 @@ export default async function handler(
   }
 
   if (!geolocation) {
-    fidesDebugger("No geolocation found, unable to prefetch experience.");
+    loggingContext.debug(
+      "No geolocation found, unable to prefetch experience.",
+    );
+  } else {
+    loggingContext.debug("Using geolocation", geolocation);
   }
 
   // This query param is used for testing purposes only, and should not be used
@@ -277,15 +354,17 @@ export default async function handler(
   };
   const fidesConfigJSON = JSON.stringify(fidesConfig);
 
-  fidesDebugger("Bundling js & Privacy Center configuration together...");
+  loggingContext.debug(
+    "Bundling js & Privacy Center configuration together...",
+  );
   const isHeadlessExperience =
     experience?.experience_config?.component === ComponentType.HEADLESS;
   let fidesJsFile = "public/lib/fides.js";
   if (tcfEnabled) {
-    fidesDebugger("TCF extension enabled, bundling fides-tcf.js...");
+    loggingContext.debug("TCF extension enabled, bundling fides-tcf.js...");
     fidesJsFile = "public/lib/fides-tcf.js";
   } else if (isHeadlessExperience) {
-    fidesDebugger(
+    loggingContext.debug(
       "Headless experience detected, bundling fides-headless.js...",
     );
     fidesJsFile = "public/lib/fides-headless.js";
@@ -297,7 +376,7 @@ export default async function handler(
   }
   let fidesGPP: string = "";
   if (gppEnabled) {
-    fidesDebugger(
+    loggingContext.debug(
       `GPP extension ${
         forcedGppQuery === "true" ? "forced" : "enabled"
       }, bundling fides-ext-gpp.js...`,
@@ -340,7 +419,6 @@ export default async function handler(
   `;
 
   // Instruct any caches to store this response, since these bundles do not change often
-  const serverSettings = loadServerSettings();
   const cacheHeaders: CacheControl = {
     "max-age": serverSettings.FIDES_JS_MAX_AGE_SECONDS,
     public: true,
@@ -362,6 +440,8 @@ export default async function handler(
 async function fetchCustomFidesCss(
   req: NextApiRequest,
 ): Promise<string | null> {
+  const loggingContext = createLoggingContext(req);
+
   const currentTime = Date.now();
   const forceRefresh = "refresh" in req.query;
 
@@ -382,7 +462,7 @@ async function fetchCustomFidesCss(
 
       if (!response.ok) {
         if (response.status === 404) {
-          fidesDebugger("No custom-fides.css found, skipping...");
+          loggingContext.debug("No custom-fides.css found, skipping...");
           autoRefresh = false;
           return null;
         }
@@ -399,7 +479,7 @@ async function fetchCustomFidesCss(
         throw new Error("No data returned by the server");
       }
 
-      fidesDebugger("Successfully retrieved custom-fides.css");
+      loggingContext.debug("Successfully retrieved custom-fides.css");
       autoRefresh = true;
       cachedCustomFidesCss = data;
       lastFetched = currentTime;

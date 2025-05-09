@@ -1,5 +1,7 @@
 import { ConsentMethod } from "~/types/api";
 
+export type MissingExperienceBehavior = "throw" | "empty_experience";
+
 /**
  * Settings that can be controlled using ENV vars on the server.
  *
@@ -16,6 +18,7 @@ export interface PrivacyCenterSettings {
   ROOT_PROPERTY_PATH: string | null; // (optional) force a property path to be fetched from the API. If "/foo" is set, it will attempt to return the property with "/foo" path.
   USE_API_CONFIG: boolean; // (optional) (default: false) when set to true, the privacy center will attempt to fetch a property from the API before falling back to the static config.
   FIDES_JS_MAX_AGE_SECONDS: number; // (optional) how long to cache the /fides.js bundle for, in seconds. Defaults to 1 hour (DEFAULT_FIDES_JS_MAX_AGE_SECONDS)
+  MISSING_EXPERIENCE_BEHAVIOR: MissingExperienceBehavior; // (optional) controls what Privacy Center does when the api call to fetch an experience fails
 
   // Fides.js options
   DEBUG: boolean; // whether console logs are enabled for consent components
