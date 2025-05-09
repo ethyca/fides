@@ -24,6 +24,12 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Added
 - Exposes configuration settings for the async db engine connection [#6128](https://github.com/ethyca/fides/pull/6128)
 
+### Changed
+- Locked down the version for @iabtechlabtcf packages for better control [#LJ-415](https://github.com/ethyca/fides/pull/LJ-415)
+
+### Fixed
+- Fix Special-purpose vendors with restricted purposes not correctly encoded in TC string [#LJ-415](https://github.com/ethyca/fides/pull/LJ-415)
+
 
 ## [2.61.0](https://github.com/ethyca/fides/compare/2.60.1...2.61.0)
 
