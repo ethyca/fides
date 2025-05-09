@@ -104,7 +104,7 @@ export const IntegrationSetupSteps = ({
   }, [steps]);
 
   return (
-    <Card title="Integration Setup">
+    <Card title="Integration Setup" data-testid="integration-setup-card">
       <Steps
         direction="vertical"
         current={getCurrentStep()}

@@ -622,5 +622,196 @@ describe("Integration management for data detection & discovery", () => {
         cy.getByTestId("add-monitor-btn").should("be.disabled");
       });
     });
+
+    describe("integration setup steps", () => {
+      beforeEach(() => {
+        stubPlus(true);
+        cy.intercept("GET", "/api/v1/connection_type", {
+          fixture: "connectors/connection_types.json",
+        }).as("getConnectionTypes");
+        // Default intercepts for the BigQuery tests
+        cy.intercept("GET", "/api/v1/connection/*", {
+          fixture: "connectors/bigquery_connection.json",
+        }).as("getConnection");
+        cy.intercept("GET", "/api/v1/plus/discovery-monitor*", {
+          fixture: "detection-discovery/monitors/empty_monitors.json",
+        }).as("getEmptyMonitors");
+      });
+
+      it("shows create integration step as done", () => {
+        cy.visit("/integrations/bq_integration");
+        cy.wait("@getConnection");
+        cy.wait("@getConnectionTypes");
+
+        cy.getByTestId("integration-setup-card").within(() => {
+          cy.contains("Create Integration")
+            .closest(".ant-steps-item")
+            .should("have.class", "ant-steps-item-finish");
+          cy.contains("Integration created successfully").should("exist");
+        });
+      });
+
+      it("doesn't show authorize step for integration that doesn't require authorization", () => {
+        cy.visit("/integrations/bq_integration");
+        cy.wait("@getConnection");
+        cy.wait("@getConnectionTypes");
+
+        cy.getByTestId("integration-setup-card").within(() => {
+          cy.contains("Authorize Integration").should("not.exist");
+        });
+      });
+
+      it("shows unchecked create monitor step when no monitors", () => {
+        cy.visit("/integrations/bq_integration");
+        cy.wait("@getConnection");
+        cy.wait("@getConnectionTypes");
+        cy.wait("@getEmptyMonitors");
+
+        cy.getByTestId("integration-setup-card").within(() => {
+          cy.contains("Create Monitor")
+            .closest(".ant-steps-item")
+            .should("not.have.class", "ant-steps-item-finish");
+          cy.contains(
+            "Use the Data discovery tab in this page to add a new monitor",
+          ).should("exist");
+        });
+      });
+
+      it("shows checked create monitor step when monitor exists", () => {
+        cy.intercept("GET", "/api/v1/plus/discovery-monitor*", {
+          fixture: "detection-discovery/monitors/monitor_list.json",
+        }).as("getMonitors");
+
+        cy.visit("/integrations/bq_integration");
+        cy.wait("@getConnection");
+        cy.wait("@getConnectionTypes");
+        cy.wait("@getMonitors");
+
+        cy.getByTestId("integration-setup-card").should("exist");
+        cy.getByTestId("integration-setup-card").should(
+          "contain.text",
+          "Data monitor created successfully",
+          { timeout: 10000 },
+        );
+
+        cy.getByTestId("integration-setup-card").within(() => {
+          cy.contains("Create Monitor")
+            .closest(".ant-steps-item")
+            .should("have.class", "ant-steps-item-finish");
+          cy.contains("Data monitor created successfully").should("exist");
+        });
+      });
+
+      it("shows unchecked link system step when no system linked", () => {
+        cy.visit("/integrations/bq_integration");
+        cy.wait("@getConnection");
+        cy.wait("@getConnectionTypes");
+
+        cy.getByTestId("integration-setup-card").within(() => {
+          cy.contains("Link System")
+            .closest(".ant-steps-item")
+            .should("not.have.class", "ant-steps-item-finish");
+          cy.contains("Link this integration to").should("exist");
+        });
+      });
+
+      it("shows checked link system step when system is linked", () => {
+        // Set up intercepts before visiting the page
+        cy.intercept("GET", "/api/v1/connection/*", (req) => {
+          const fixtureData = require("../fixtures/connectors/salesforce_connection.json");
+          fixtureData.system_key = "fidesctl_system";
+          req.reply(fixtureData);
+        }).as("getConnectionWithSystem");
+
+        cy.intercept("GET", "/api/v1/plus/discovery-monitor*", {
+          fixture: "detection-discovery/monitors/monitor_list.json",
+        }).as("getMonitors");
+
+        cy.visit("/integrations/salesforce_integration");
+        cy.wait("@getConnectionWithSystem");
+        cy.wait("@getMonitors");
+        cy.wait("@getConnectionTypes");
+
+        cy.getByTestId("integration-setup-card").should("exist");
+        cy.getByTestId("integration-setup-card")
+          .should("contain.text", "System linked", { timeout: 10000 })
+          .should("contain.text", "Data monitor created successfully", {
+            timeout: 10000,
+          });
+
+        cy.getByTestId("integration-setup-card").within(() => {
+          cy.contains("Link System")
+            .closest(".ant-steps-item")
+            .should("have.class", "ant-steps-item-finish", { timeout: 10000 });
+
+          cy.contains("System linked").should("exist");
+        });
+      });
+
+      it("shows unchecked authorize step for unauthorized Salesforce integration", () => {
+        // Use direct fixture modification approach instead of fixture reference
+        cy.intercept("GET", "/api/v1/connection/*", (req) => {
+          const fixtureData = require("../fixtures/connectors/salesforce_connection.json");
+          // Ensure authorized is explicitly set to false
+          fixtureData.authorized = false;
+          req.reply(fixtureData);
+        }).as("getSalesforceConnection");
+
+        cy.visit("/integrations/salesforce_integration");
+        cy.wait("@getSalesforceConnection");
+        cy.wait("@getConnectionTypes");
+
+        // Wait for the authorization text to appear to ensure component has loaded
+        cy.getByTestId("integration-setup-card")
+          .should("exist")
+          .should("contain.text", "Authorize Integration", { timeout: 10000 })
+          .should("contain.text", "Authorize access to your integration", {
+            timeout: 10000,
+          });
+
+        cy.getByTestId("integration-setup-card").within(() => {
+          cy.contains("Authorize Integration")
+            .closest(".ant-steps-item")
+            .should("not.have.class", "ant-steps-item-finish");
+          cy.contains("Authorize access to your integration").should("exist");
+        });
+      });
+
+      it("shows checked authorize step for authorized Salesforce integration", () => {
+        cy.intercept("GET", "/api/v1/connection/*", {
+          fixture: "connectors/salesforce_connection.json",
+          onRequest: (req) => {
+            req.on("response", (res) => {
+              const body = res.body;
+              body.authorized = true;
+              res.send({ body });
+            });
+          },
+        }).as("getAuthorizedSalesforceConnection");
+
+        cy.intercept("GET", "/api/v1/plus/discovery-monitor*", {
+          fixture: "detection-discovery/monitors/monitor_list.json",
+        }).as("getMonitors");
+
+        cy.visit("/integrations/salesforce_integration");
+        cy.wait("@getAuthorizedSalesforceConnection");
+        cy.wait("@getConnectionTypes");
+        cy.wait("@getMonitors");
+
+        cy.getByTestId("integration-setup-card")
+          .should("exist")
+          .should("contain.text", "Authorize Integration", { timeout: 10000 })
+          .should("contain.text", "Data monitor created successfully", {
+            timeout: 10000,
+          });
+
+        cy.getByTestId("integration-setup-card").within(() => {
+          cy.contains("Authorize Integration")
+            .closest(".ant-steps-item")
+            .should("have.class", "ant-steps-item-finish");
+          cy.contains("Integration authorized successfully").should("exist");
+        });
+      });
+    });
   });
 });
