@@ -40,7 +40,8 @@ class AttachmentReferenceType(str, EnumType):
     Enum for attachment reference types. Indicates where attachment is referenced.
     """
 
-    manual_step = "manual_step"
+    access_manual_webhook = "access_manual_webhook"
+    erasure_manual_webhook = "erasure_manual_webhook"
     privacy_request = "privacy_request"
     comment = "comment"
 

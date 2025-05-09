@@ -33,7 +33,8 @@ class CommentReferenceType(str, EnumType):
     Enum for comment reference types. Indicates where the comment is referenced.
     """
 
-    manual_step = "manual_step"
+    access_manual_webhook = "access_manual_webhook"
+    erasure_manual_webhook = "erasure_manual_webhook"
     privacy_request = "privacy_request"
 
 

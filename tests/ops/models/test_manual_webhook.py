@@ -78,7 +78,7 @@ class TestManualWebhook:
         comment_ref = CommentReference(
             comment_id=comment.id,
             reference_id=access_manual_webhook.id,
-            reference_type="manual_step",
+            reference_type="access_manual_webhook",
         )
         db.add(comment_ref)
         db.commit()
@@ -97,7 +97,7 @@ class TestManualWebhook:
         attachment_ref = AttachmentReference(
             attachment_id=attachment.id,
             reference_id=access_manual_webhook.id,
-            reference_type="manual_step",
+            reference_type="access_manual_webhook",
         )
         db.add(attachment_ref)
         db.commit()
@@ -118,7 +118,7 @@ class TestManualWebhook:
         attachment_ref = AttachmentReference(
             attachment_id=attachment.id,
             reference_id=access_manual_webhook.id,
-            reference_type="manual_step",
+            reference_type="access_manual_webhook",
         )
         db.add(attachment_ref)
         db.commit()
@@ -135,12 +135,12 @@ class TestManualWebhook:
         comment_ref = CommentReference(
             comment_id=comment.id,
             reference_id=access_manual_webhook.id,
-            reference_type="manual_step",
+            reference_type="access_manual_webhook",
         )
         attachment_ref = AttachmentReference(
             attachment_id=attachment.id,
             reference_id=access_manual_webhook.id,
-            reference_type="manual_step",
+            reference_type="access_manual_webhook",
         )
         db.add_all([comment_ref, attachment_ref])
         db.commit()

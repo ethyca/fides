@@ -26,13 +26,8 @@ class AllowedFileType(EnumType):
 
 LOCAL_FIDES_UPLOAD_DIRECTORY = "fides_uploads"
 
-# Default to 5MB if not specified in environment
-DEFAULT_LARGE_FILE_THRESHOLD = 5 * 1024 * 1024  # 5 MB threshold
-# This checks to see if the environment variable is set and if it is, it uses that value
-# Otherwise, it uses the default value - corresponds to FIDES__STORAGE__LARGE_FILE_THRESHOLD
-LARGE_FILE_THRESHOLD = (
-    CONFIG.security.large_file_threshold or DEFAULT_LARGE_FILE_THRESHOLD
-)
+# Default to 10MB if not specified in environment
+LARGE_FILE_THRESHOLD = 10 * 1024 * 1024  # 10 MB threshold
 
 
 def get_local_filename(file_key: str) -> str:

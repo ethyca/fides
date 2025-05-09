@@ -143,7 +143,7 @@ class TestS3Upload:
             TEST_SPOOLED_DOC,
         ],
     )
-    def test_upload_with_different_file_types(
+    def test_upload_with_spooled_and_bytes_types(
         self,
         s3_client,
         document,
@@ -153,7 +153,7 @@ class TestS3Upload:
         auth_method,
         monkeypatch,
     ):
-        """Test uploading different types of file objects (BytesIO and SpooledTemporaryFile)."""
+        """Test uploading BytesIO and SpooledTemporaryFile types."""
 
         def mock_get_s3_client(auth_method, storage_secrets):
             return s3_client
@@ -214,7 +214,7 @@ class TestS3Upload:
         "file_type",
         FILE_TYPES,
     )
-    def test_upload_with_different_file_types(
+    def test_upload_with_allowed_file_types(
         self,
         file_type,
         s3_client,
@@ -223,7 +223,7 @@ class TestS3Upload:
         auth_method,
         monkeypatch,
     ):
-        """Test uploading different types of file objects (BytesIO and SpooledTemporaryFile)."""
+        """Test uploading allowed file types."""
 
         def mock_get_s3_client(auth_method, storage_secrets):
             return s3_client
@@ -246,16 +246,35 @@ class TestS3Upload:
 
             assert file_size == len(copy_document)
             assert bucket_name in presigned_url
-        else:
-            with pytest.raises(Exception) as e:
-                generic_upload_to_s3(
-                    storage_secrets=storage_config.secrets,
-                    bucket_name=bucket_name,
-                    file_key=file_key,
-                    auth_method=auth_method,
-                    document=document,
-                )
-                assert "Invalid file type" in str(e.value)
+
+    def test_upload_with_disallowed_file_types(
+        self,
+        file_type,
+        s3_client,
+        storage_config,
+        bucket_name,
+        auth_method,
+        monkeypatch,
+    ):
+        """Test uploading disallowed file types."""
+
+        def mock_get_s3_client(auth_method, storage_secrets):
+            return s3_client
+
+        monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
+
+        file_key = f"test-file.{file_type}"
+        document = BytesIO(TEST_DOCUMENT)
+
+        with pytest.raises(Exception) as e:
+            generic_upload_to_s3(
+                storage_secrets=storage_config.secrets,
+                bucket_name=bucket_name,
+                file_key=file_key,
+                auth_method=auth_method,
+                document=document,
+            )
+        assert "Invalid file type" in str(e.value)
 
 
 class TestS3Retrieve:
