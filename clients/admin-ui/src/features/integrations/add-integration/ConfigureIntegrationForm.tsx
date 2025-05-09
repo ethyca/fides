@@ -11,6 +11,7 @@ import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-typ
 import type { ConnectionTypeSecretSchemaResponse } from "~/features/connection-type/types";
 import { useGetAllFilteredDatasetsQuery } from "~/features/dataset";
 import {
+  useCreateUnlinkedSassConnectionConfigMutation,
   usePatchDatastoreConnectionMutation,
   usePatchDatastoreConnectionSecretsMutation,
 } from "~/features/datastore-connections";
@@ -28,6 +29,7 @@ import {
   ConnectionType,
   DynamoDBDocsSchema,
   ScyllaDocsSchema,
+  SystemType,
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
@@ -63,6 +65,9 @@ const ConfigureIntegrationForm = ({
   const [patchSystemConnectionsTrigger, { isLoading: systemPatchIsLoading }] =
     usePatchSystemConnectionConfigsMutation();
 
+  const [createUnlinkedSassConnectionConfigTrigger] =
+    useCreateUnlinkedSassConnectionConfigMutation();
+
   const { data: secrets, isLoading: secretsSchemaIsLoading } =
     useGetConnectionTypeSecretSchemaQuery(connectionOption.identifier);
 
@@ -95,7 +100,7 @@ const ConfigureIntegrationForm = ({
     description: connection?.description ?? "",
     secrets: mapValues(
       secrets?.properties,
-      (s, key) => connection?.secrets?.[key] ?? "",
+      (s, key) => connection?.secrets?.[key] ?? s.default ?? "",
     ),
     dataset: initialDatasets,
   };
@@ -117,6 +122,7 @@ const ConfigureIntegrationForm = ({
 
   const handleSubmit = async (values: FormValues) => {
     const newSecretsValues = excludeUnchangedSecrets(values.secrets!);
+    const isSaas = connectionOption.type === SystemType.SAAS;
 
     const connectionPayload = isEditing
       ? {
@@ -143,6 +149,13 @@ const ConfigureIntegrationForm = ({
       patchResult = await patchSystemConnectionsTrigger({
         systemFidesKey: values.system_fides_key,
         connectionConfigs: [connectionPayload],
+      });
+    } else if (isSaas && !isEditing) {
+      patchResult = await createUnlinkedSassConnectionConfigTrigger({
+        ...connectionPayload,
+        instance_key: formatKey(values.name),
+        saas_connector_type: connectionOption.identifier,
+        secrets: values.secrets || {},
       });
     } else {
       patchResult = await patchDatastoreConnectionsTrigger(connectionPayload);
