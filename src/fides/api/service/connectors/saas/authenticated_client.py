@@ -7,6 +7,7 @@ from functools import wraps
 from time import sleep
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
 from urllib.parse import urlparse
+
 import certifi
 from loguru import logger
 from requests import PreparedRequest, Request, Response, Session
