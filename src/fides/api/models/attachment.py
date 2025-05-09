@@ -1,7 +1,6 @@
 import os
 from enum import Enum as EnumType
-from io import BytesIO
-from typing import IO, TYPE_CHECKING, Any, Optional, Tuple, Union
+from typing import IO, TYPE_CHECKING, Any, Tuple
 
 from fideslang.validation import AnyHttpUrlString
 from loguru import logger as log
@@ -12,22 +11,19 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
 
 from fides.api.db.base_class import Base
-from fides.api.models.fides_user import FidesUser  # pylint: disable=unused-import
-from fides.api.models.storage import StorageConfig  # pylint: disable=unused-import
 from fides.api.schemas.storage.storage import StorageDetails, StorageType
 from fides.api.service.storage.s3 import (
     generic_delete_from_s3,
     generic_retrieve_from_s3,
     generic_upload_to_s3,
 )
-from fides.api.service.storage.util import (
-    LOCAL_FIDES_UPLOAD_DIRECTORY,
-    get_local_filename,
-)
+from fides.api.service.storage.util import get_local_filename
 
 if TYPE_CHECKING:
     from fides.api.models.comment import Comment
+    from fides.api.models.fides_user import FidesUser
     from fides.api.models.privacy_request import PrivacyRequest
+    from fides.api.models.storage import StorageConfig
 
 
 class AttachmentType(str, EnumType):
@@ -44,7 +40,8 @@ class AttachmentReferenceType(str, EnumType):
     Enum for attachment reference types. Indicates where attachment is referenced.
     """
 
-    manual_step = "manual_step"
+    access_manual_webhook = "access_manual_webhook"
+    erasure_manual_webhook = "erasure_manual_webhook"
     privacy_request = "privacy_request"
     comment = "comment"
 
@@ -126,7 +123,7 @@ class Attachment(Base):
             generic_upload_to_s3(
                 storage_secrets=self.config.secrets,
                 bucket_name=bucket_name,
-                file_key=self.id,
+                file_key=f"{self.id}/{self.file_name}",
                 document=attachment,
                 auth_method=auth_method,
             )
@@ -134,7 +131,7 @@ class Attachment(Base):
             return
 
         if self.config.type == StorageType.local:
-            filename = get_local_filename(self.id)
+            filename = get_local_filename(f"{self.id}/{self.file_name}")
 
             # Validate that attachment is a file-like object
             if not hasattr(attachment, "read"):
@@ -145,6 +142,9 @@ class Attachment(Base):
                 attachment.seek(0)
             except Exception as e:
                 raise ValueError(f"Failed to reset file pointer for attachment: {e}")
+
+            # Create directory if it doesn't exist
+            os.makedirs(os.path.dirname(filename), exist_ok=True)
 
             # Write the file in chunks to avoid loading the entire content into memory
             with open(filename, "wb") as file:
@@ -162,22 +162,32 @@ class Attachment(Base):
 
     def retrieve_attachment(
         self,
-    ) -> Optional[Tuple[BytesIO, Union[AnyHttpUrlString, str]]]:
-        """Returns the attachment from S3 in bytes form."""
+    ) -> Tuple[int, AnyHttpUrlString]:
+        """
+        Retrieves a the size of the attachment and the presigned URL to retrieve it.
+        - For s3:
+          - the size is retrieved from the s3 object metadata
+          - the presigned URL is retrieved from the s3 client
+        - For local:
+          - the size is retrieved from the file size
+          - the URL is the local file path
+        """
         if self.config.type == StorageType.s3:
             bucket_name = f"{self.config.details[StorageDetails.BUCKET.value]}"
             auth_method = self.config.details[StorageDetails.AUTH_METHOD.value]
-            return generic_retrieve_from_s3(
+            size, url = generic_retrieve_from_s3(
                 storage_secrets=self.config.secrets,
                 bucket_name=bucket_name,
-                file_key=self.id,
+                file_key=f"{self.id}/{self.file_name}",
                 auth_method=auth_method,
             )
+            return size, url
 
         if self.config.type == StorageType.local:
-            filename = f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{self.id}"
+            filename = get_local_filename(f"{self.id}/{self.file_name}")
             with open(filename, "rb") as file:
-                return file.read(), filename
+                size = len(file.read())
+                return size, filename
 
         raise ValueError(f"Unsupported storage type: {self.config.type}")
 
@@ -189,13 +199,13 @@ class Attachment(Base):
             generic_delete_from_s3(
                 storage_secrets=self.config.secrets,
                 bucket_name=bucket_name,
-                file_key=self.id,
+                file_key=f"{self.id}/{self.file_name}",
                 auth_method=auth_method,
             )
             return
 
         if self.config.type == StorageType.local:
-            filename = f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{self.id}"
+            filename = get_local_filename(f"{self.id}/{self.file_name}")
             os.remove(filename)
             return
 
@@ -210,9 +220,7 @@ class Attachment(Base):
         attachment_file: IO[bytes],
         check_name: bool = False,
     ) -> "Attachment":
-        """Creates a new attachment record in the database and uploads the attachment to S3."""
-        if attachment_file is None:
-            raise ValueError("Attachment is required")
+        """Creates a new attachment record in the database and uploads the attachment via the upload method."""
         attachment_model = super().create(db=db, data=data, check_name=check_name)
 
         try:
@@ -237,8 +245,10 @@ class Attachment(Base):
     def delete(self, db: Session) -> None:
         """Deletes an attachment record from the database and deletes the attachment from S3."""
         self.delete_attachment_from_storage()
-        for attachment_reference in self.references:
-            attachment_reference.delete(db)
+
+        # Delete all references to the attachment
+        for reference in self.references:
+            reference.delete(db)
         super().delete(db=db)
 
     @staticmethod

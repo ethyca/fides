@@ -21,7 +21,11 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.61.0...main)
 
+### Added
+- Exposes configuration settings for the async db engine connection [#6128](https://github.com/ethyca/fides/pull/6128)
 
+### Changed
+- Attachment uploads now check for file extension types, retrieving and attachment also returns the file size. [#6124](https://github.com/ethyca/fides/pull/6124)
 
 
 ## [2.61.0](https://github.com/ethyca/fides/compare/2.60.1...2.61.0)
@@ -44,6 +48,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Migrated last remaining Chakra icon button to Ant [#6127](https://github.com/ethyca/fides/pull/6127)
 
 ### Fixed
+- Fixed handling of empty SSL mode in the MySQL connector [#6123](https://github.com/ethyca/fides/pull/6123)
 - Suppressing SQLAlchemy logging related to caching queries [#6089](https://github.com/ethyca/fides/pull/6089)
 - FidesJS css variable `--fides-overlay-container-border-width` now applies to banner (only applied to modal before) [#6097](https://github.com/ethyca/fides/pull/6097) https://github.com/ethyca/fides/labels/high-risk
 - Fixed vendor restriction form validation and input handling [#6101](https://github.com/ethyca/fides/pull/6101)
@@ -52,6 +57,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed UX issues with action center tables [#6116](https://github.com/ethyca/fides/pull/6116)
 - Fixed incorrect font styling on some table headers [#6129](https://github.com/ethyca/fides/pull/6129)
 - Fixed a bug with refreshing or deep-linking to pages sometimes redirecting to homepage [#6125](https://github.com/ethyca/fides/pull/6125)
+- Fixed a bug that prevented from showing all the integrations when on the system page [#6138](https://github.com/ethyca/fides/pull/6138)
 
 ### Removed
 - Removed unused libxslt-dev dependency [#6119](https://github.com/ethyca/fides/pull/6119)
