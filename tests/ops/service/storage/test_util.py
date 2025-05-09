@@ -20,6 +20,13 @@ from fides.api.service.storage.util import (
             AllowedFileType.txt.value,
             id="not_a_file_type_dot_txt",
         ),
+        param("test.jpg", AllowedFileType.jpg.value, id="jpg"),
+        param("test.jpeg", AllowedFileType.jpeg.value, id="jpeg"),
+        param("test.png", AllowedFileType.png.value, id="png"),
+        param("test.xls", AllowedFileType.xls.value, id="xls"),
+        param("test.xlsx", AllowedFileType.xlsx.value, id="xlsx"),
+        param("test.csv", AllowedFileType.csv.value, id="csv"),
+        param("test.zip", AllowedFileType.zip.value, id="zip"),
         param(
             "test.not_a_file_type.txt.pdf",
             AllowedFileType.pdf.value,
