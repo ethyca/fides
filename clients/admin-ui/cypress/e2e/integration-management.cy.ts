@@ -624,6 +624,33 @@ describe("Integration management for data detection & discovery", () => {
     });
 
     describe("integration setup steps", () => {
+      /**
+       * Helper function to check if a step in the integration setup card is completed
+       * @param stepName The exact text of the step to check
+       * @param isCompleted Whether the step should be completed or not
+       * @param successMessage The message expected when a step is completed (optional)
+       */
+      const checkStepStatus = (
+        stepName: string,
+        isCompleted: boolean,
+        successMessage?: string,
+      ) => {
+        cy.getByTestId("integration-setup-card").within(() => {
+          // Check if the step is marked as completed
+          cy.contains(stepName)
+            .closest(".ant-steps-item")
+            .should(
+              isCompleted ? "have.class" : "not.have.class",
+              "ant-steps-item-finish",
+            );
+
+          // If a success message is provided, check that it exists
+          if (successMessage) {
+            cy.contains(successMessage).should("exist");
+          }
+        });
+      };
+
       beforeEach(() => {
         stubPlus(true);
         cy.intercept("GET", "/api/v1/connection_type", {
@@ -643,12 +670,11 @@ describe("Integration management for data detection & discovery", () => {
         cy.wait("@getConnection");
         cy.wait("@getConnectionTypes");
 
-        cy.getByTestId("integration-setup-card").within(() => {
-          cy.contains("Create Integration")
-            .closest(".ant-steps-item")
-            .should("have.class", "ant-steps-item-finish");
-          cy.contains("Integration created successfully").should("exist");
-        });
+        checkStepStatus(
+          "Create Integration",
+          true,
+          "Integration created successfully",
+        );
       });
 
       it("doesn't show authorize step for integration that doesn't require authorization", () => {
@@ -667,10 +693,8 @@ describe("Integration management for data detection & discovery", () => {
         cy.wait("@getConnectionTypes");
         cy.wait("@getEmptyMonitors");
 
+        checkStepStatus("Create Monitor", false);
         cy.getByTestId("integration-setup-card").within(() => {
-          cy.contains("Create Monitor")
-            .closest(".ant-steps-item")
-            .should("not.have.class", "ant-steps-item-finish");
           cy.contains(
             "Use the Data discovery tab in this page to add a new monitor",
           ).should("exist");
@@ -694,12 +718,11 @@ describe("Integration management for data detection & discovery", () => {
           { timeout: 10000 },
         );
 
-        cy.getByTestId("integration-setup-card").within(() => {
-          cy.contains("Create Monitor")
-            .closest(".ant-steps-item")
-            .should("have.class", "ant-steps-item-finish");
-          cy.contains("Data monitor created successfully").should("exist");
-        });
+        checkStepStatus(
+          "Create Monitor",
+          true,
+          "Data monitor created successfully",
+        );
       });
 
       it("shows unchecked link system step when no system linked", () => {
@@ -707,10 +730,8 @@ describe("Integration management for data detection & discovery", () => {
         cy.wait("@getConnection");
         cy.wait("@getConnectionTypes");
 
+        checkStepStatus("Link System", false);
         cy.getByTestId("integration-setup-card").within(() => {
-          cy.contains("Link System")
-            .closest(".ant-steps-item")
-            .should("not.have.class", "ant-steps-item-finish");
           cy.contains("Link this integration to").should("exist");
         });
       });
@@ -739,13 +760,7 @@ describe("Integration management for data detection & discovery", () => {
             timeout: 10000,
           });
 
-        cy.getByTestId("integration-setup-card").within(() => {
-          cy.contains("Link System")
-            .closest(".ant-steps-item")
-            .should("have.class", "ant-steps-item-finish", { timeout: 10000 });
-
-          cy.contains("System linked").should("exist");
-        });
+        checkStepStatus("Link System", true, "System linked");
       });
 
       it("shows unchecked authorize step for unauthorized Salesforce integration", () => {
@@ -769,10 +784,8 @@ describe("Integration management for data detection & discovery", () => {
             timeout: 10000,
           });
 
+        checkStepStatus("Authorize Integration", false);
         cy.getByTestId("integration-setup-card").within(() => {
-          cy.contains("Authorize Integration")
-            .closest(".ant-steps-item")
-            .should("not.have.class", "ant-steps-item-finish");
           cy.contains("Authorize access to your integration").should("exist");
         });
       });
@@ -805,12 +818,11 @@ describe("Integration management for data detection & discovery", () => {
             timeout: 10000,
           });
 
-        cy.getByTestId("integration-setup-card").within(() => {
-          cy.contains("Authorize Integration")
-            .closest(".ant-steps-item")
-            .should("have.class", "ant-steps-item-finish");
-          cy.contains("Integration authorized successfully").should("exist");
-        });
+        checkStepStatus(
+          "Authorize Integration",
+          true,
+          "Integration authorized successfully",
+        );
       });
     });
   });
