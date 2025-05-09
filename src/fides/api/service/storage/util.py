@@ -3,8 +3,6 @@ from enum import Enum as EnumType
 
 from loguru import logger
 
-from fides.config import CONFIG
-
 
 class AllowedFileType(EnumType):
     """
