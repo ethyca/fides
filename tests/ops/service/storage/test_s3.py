@@ -51,7 +51,6 @@ NON_ALLOWED_FILE_TYPES = [
 
 
 ALLOWED_FILE_TYPES = [ft.name for ft in AllowedFileType]
-FILE_TYPES = NON_ALLOWED_FILE_TYPES + ALLOWED_FILE_TYPES
 
 
 @pytest.fixture
@@ -212,7 +211,7 @@ class TestS3Upload:
 
     @pytest.mark.parametrize(
         "file_type",
-        FILE_TYPES,
+        ALLOWED_FILE_TYPES,
     )
     def test_upload_with_allowed_file_types(
         self,
@@ -235,18 +234,21 @@ class TestS3Upload:
         # Getting the value of the document to compare after upload, to avoid closed file error
         copy_document = document.getvalue()
 
-        if file_type in ALLOWED_FILE_TYPES:
-            file_size, presigned_url = generic_upload_to_s3(
-                storage_secrets=storage_config.secrets,
-                bucket_name=bucket_name,
-                file_key=file_key,
-                auth_method=auth_method,
-                document=document,
-            )
+        file_size, presigned_url = generic_upload_to_s3(
+            storage_secrets=storage_config.secrets,
+            bucket_name=bucket_name,
+            file_key=file_key,
+            auth_method=auth_method,
+            document=document,
+        )
 
-            assert file_size == len(copy_document)
-            assert bucket_name in presigned_url
+        assert file_size == len(copy_document)
+        assert bucket_name in presigned_url
 
+    @pytest.mark.parametrize(
+        "file_type",
+        NON_ALLOWED_FILE_TYPES,
+    )
     def test_upload_with_disallowed_file_types(
         self,
         file_type,
@@ -274,7 +276,7 @@ class TestS3Upload:
                 auth_method=auth_method,
                 document=document,
             )
-        assert "Invalid file type" in str(e.value)
+        assert "Invalid or unallowed file extension" in str(e.value)
 
 
 class TestS3Retrieve:
