@@ -31,6 +31,10 @@ const getTabFromIndex = (index: number) => {
   );
 };
 
+export const getIndexFromHash = (hash: string) => {
+  return getTabFromHash(hash)?.index;
+};
+
 const useActionCenterTabs = ({
   systemId,
   initialHash,

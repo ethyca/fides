@@ -83,6 +83,7 @@ const tableHeaderButtonStyles = {
   "&:focus": {
     outline: "none",
   },
+  letterSpacing: "0.6px",
 };
 
 interface HeaderContentProps<T> {
