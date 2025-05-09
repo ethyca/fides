@@ -95,9 +95,7 @@ describe("Integration management for data detection & discovery", () => {
         cy.intercept("GET", "/api/v1/connection_type", {
           fixture: "connectors/connection_types.json",
         }).as("getConnectionTypes");
-        cy.intercept("GET", "/api/v1/connection_type/*/secret", {
-          fixture: "connectors/salesforce_secret.json",
-        }).as("getSecretsSchema");
+
         // Empty dataset responses for API integration tests
         cy.intercept("GET", "/api/v1/connection/datasetconfig", {
           fixture: "connectors/empty_datasetconfig.json",
@@ -129,6 +127,10 @@ describe("Integration management for data detection & discovery", () => {
         cy.intercept("PATCH", "/api/v1/connection/*/secret*", {
           response: 200,
         }).as("patchConnectionSecrets");
+        cy.intercept("GET", "/api/v1/connection_type/*/secret", {
+          fixture: "connectors/bigquery_secret.json",
+        }).as("getBigquerySecretsSchema");
+
         cy.getByTestId("add-integration-btn").click();
         cy.getByTestId("add-modal-content").within(() => {
           cy.getByTestId("integration-info-bq_placeholder").within(() => {
@@ -158,6 +160,10 @@ describe("Integration management for data detection & discovery", () => {
         cy.intercept("GET", "/api/v1/system", {
           fixture: "systems/systems.json",
         }).as("getSystems");
+        cy.intercept("GET", "/api/v1/connection_type/*/secret", {
+          fixture: "connectors/bigquery_secret.json",
+        }).as("getBigquerySecretsSchema");
+
         cy.getByTestId("add-integration-btn").click();
         cy.getByTestId("add-modal-content").within(() => {
           cy.getByTestId("integration-info-bq_placeholder").within(() => {
@@ -179,6 +185,10 @@ describe("Integration management for data detection & discovery", () => {
       });
 
       it("should display an API integration under the CRM tab", () => {
+        cy.intercept("GET", "/api/v1/connection_type/*/secret", {
+          fixture: "connectors/salesforce_secret.json",
+        }).as("getSalesforceSecretsSchema");
+
         cy.getByTestId("add-integration-btn").click();
         cy.getByTestId("add-modal-content").within(() => {
           // Click on the CRM tab
@@ -198,6 +208,9 @@ describe("Integration management for data detection & discovery", () => {
         cy.intercept("PATCH", "/api/v1/connection/*/secret*", {
           response: 200,
         }).as("patchConnectionSecrets");
+        cy.intercept("GET", "/api/v1/connection_type/*/secret", {
+          fixture: "connectors/salesforce_secret.json",
+        }).as("getSalesforceSecretsSchema");
 
         cy.getByTestId("add-integration-btn").click();
         cy.getByTestId("add-modal-content").within(() => {
