@@ -7,7 +7,7 @@ from functools import wraps
 from time import sleep
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
 from urllib.parse import urlparse
-
+import certifi
 from loguru import logger
 from requests import PreparedRequest, Request, Response, Session
 
@@ -224,7 +224,7 @@ class AuthenticatedClient:
         if isinstance(prepared_request.body, str):
             prepared_request.body = prepared_request.body.encode("utf-8")
 
-        response = self.session.send(prepared_request)
+        response = self.session.send(prepared_request, verify=certifi.where())
 
         ignore_error = self._should_ignore_error(
             status_code=response.status_code, errors_to_ignore=ignore_errors
