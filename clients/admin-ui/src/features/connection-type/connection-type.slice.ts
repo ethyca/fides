@@ -18,6 +18,8 @@ import {
   ConnectionTypeState,
 } from "./types";
 
+const DEFAULT_PAGE_SIZE = 100;
+
 // Helpers
 const mapFiltersToSearchParams = ({
   search,
@@ -122,7 +124,7 @@ export const connectionTypeApi = baseApi.injectEndpoints({
     >({
       async queryFn(filters, api, extraOptions, baseQuery) {
         const firstPage = await baseQuery({
-          url: `${CONNECTION_TYPE_ROUTE}${mapFiltersToSearchParams({ ...filters, page: 1, size: 100 })}`,
+          url: `${CONNECTION_TYPE_ROUTE}${mapFiltersToSearchParams({ ...filters, page: 1, size: DEFAULT_PAGE_SIZE })}`,
         });
 
         if (firstPage.error) {
@@ -142,8 +144,9 @@ export const connectionTypeApi = baseApi.injectEndpoints({
             baseQuery({
               url: `${CONNECTION_TYPE_ROUTE}${mapFiltersToSearchParams({
                 ...filters,
+                // i starts at 0, and we already fetched page 1, so add 2 to get page 2, 3, etc.
                 page: i + 2,
-                size: 100,
+                size: DEFAULT_PAGE_SIZE,
               })}`,
             }),
           ),
