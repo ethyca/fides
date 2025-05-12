@@ -53,5 +53,11 @@
     "development": true,
     "test": true,
     "production": false
+  },
+  "monitorConfig": {
+    "description": "Page for shared configurations across monitors",
+    "development": true,
+    "test": true,
+    "production": false
   }
 }

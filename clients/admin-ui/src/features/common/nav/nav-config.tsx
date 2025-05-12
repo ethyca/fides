@@ -208,6 +208,13 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         ],
       },
       {
+        title: "Monitor configs",
+        path: routes.MONITOR_CONFIG_ROUTE,
+        scopes: [],
+        requiresPlus: true,
+        requiresFlag: "monitorConfig",
+      },
+      {
         title: "Organization",
         path: routes.ORGANIZATION_MANAGEMENT_ROUTE,
         requiresFlag: "organizationManagement",
