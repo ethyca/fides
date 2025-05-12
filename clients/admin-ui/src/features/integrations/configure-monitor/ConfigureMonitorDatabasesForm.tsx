@@ -1,13 +1,24 @@
-import { Button, ButtonGroup, Flex, Text, Tooltip } from "fidesui";
+import {
+  AntButton as Button,
+  AntTooltip as Tooltip,
+  Flex,
+  Text,
+  useToast,
+} from "fidesui";
 
+import FidesSpinner from "~/features/common/FidesSpinner";
 import { usePaginatedPicker } from "~/features/common/hooks/usePicker";
-import QuestionTooltip from "~/features/common/QuestionTooltip";
+import { InfoTooltip } from "~/features/common/InfoTooltip";
+import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import MonitorDatabasePicker from "~/features/integrations/configure-monitor/MonitorDatabasePicker";
 import useCumulativeGetDatabases from "~/features/integrations/configure-monitor/useCumulativeGetDatabases";
 import { MonitorConfig } from "~/types/api";
 
 const TOOLTIP_COPY =
   "Selecting a project will monitor all current and future datasets within that project.";
+const TIMEOUT_COPY =
+  "Loading resources is taking longer than expected. The monitor has been saved and is tracking all available resources. You can return later to limit its scope if needed";
+
 const ConfigureMonitorDatabasesForm = ({
   monitor,
   isEditing,
@@ -23,13 +34,26 @@ const ConfigureMonitorDatabasesForm = ({
   onSubmit: (monitor: MonitorConfig) => void;
   onClose: () => void;
 }) => {
+  const toast = useToast();
+
+  const handleTimeout = () => {
+    onSubmit({ ...monitor, databases: [] });
+    toast({
+      ...DEFAULT_TOAST_PARAMS,
+      status: "info",
+      description: TIMEOUT_COPY,
+    });
+    onClose();
+  };
+
   const {
     databases,
     totalDatabases: totalRows,
     fetchMore,
     reachedEnd,
     isLoading: refetchPending,
-  } = useCumulativeGetDatabases(integrationKey);
+    initialIsLoading,
+  } = useCumulativeGetDatabases(integrationKey, handleTimeout);
 
   const initialSelected = monitor?.databases ?? [];
 
@@ -58,12 +82,16 @@ const ConfigureMonitorDatabasesForm = ({
 
   const saveIsDisabled = !allSelected && selected.length === 0;
 
+  if (initialIsLoading) {
+    return <FidesSpinner my={12} />;
+  }
+
   return (
     <>
       <Flex p={4} direction="column">
         <Flex direction="row" mb={4} gap={1} align="center">
           <Text fontSize="sm">Select projects to monitor</Text>
-          <QuestionTooltip label={TOOLTIP_COPY} />
+          <InfoTooltip label={TOOLTIP_COPY} />
         </Flex>
         <MonitorDatabasePicker
           items={databases}
@@ -78,25 +106,24 @@ const ConfigureMonitorDatabasesForm = ({
           onMoreClick={!reachedEnd ? fetchMore : undefined}
         />
       </Flex>
-      <ButtonGroup size="sm" w="full" justifyContent="space-between" mt={4}>
-        <Button onClick={onClose} variant="outline">
-          Cancel
-        </Button>
+      <div className="mt-4 flex w-full justify-between">
+        <Button onClick={onClose}>Cancel</Button>
         <Tooltip
-          label="Select one or more projects to save"
-          isDisabled={!saveIsDisabled}
+          title={
+            saveIsDisabled ? "Select one or more projects to save" : undefined
+          }
         >
           <Button
             onClick={handleSave}
-            isLoading={isSubmitting}
-            variant="primary"
+            loading={isSubmitting}
+            type="primary"
             data-testid="save-btn"
-            isDisabled={saveIsDisabled}
+            disabled={saveIsDisabled}
           >
             Save
           </Button>
         </Tooltip>
-      </ButtonGroup>
+      </div>
     </>
   );
 };

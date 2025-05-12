@@ -17,9 +17,11 @@ import {
   PrivacyExperienceResponse,
   PrivacyNoticeRegion,
   PrivacyPreferencesRequest,
+  Property,
   RecordConsentServedRequest,
 } from "~/types/api";
 
+import { selectPropertyId } from "../common/property.slice";
 import { selectSettings } from "../common/settings.slice";
 import { FidesKeyToConsent } from "./types";
 
@@ -73,7 +75,7 @@ export const consentApi = baseApi.injectEndpoints({
     }),
     getPrivacyExperience: build.query<
       PagePrivacyExperienceResponse,
-      { region: PrivacyNoticeRegion }
+      { region: PrivacyNoticeRegion; property_id: Property["id"] }
     >({
       query: (payload) => ({
         url: "privacy-experience/",
@@ -231,25 +233,33 @@ export const selectUserRegion = createSelector(
       let geolocation: UserGeolocation | undefined = {
         location: consentState.location,
       };
+
       if (!geolocation.location) {
         geolocation = consentApi.endpoints.getUserGeolocation.select(
           settings.GEOLOCATION_API_URL,
         )(RootState)?.data;
+        return constructFidesRegionString(geolocation) as PrivacyNoticeRegion;
       }
-      return constructFidesRegionString(geolocation) as PrivacyNoticeRegion;
+      return geolocation.location as PrivacyNoticeRegion;
     }
     return undefined;
   },
 );
 
 export const selectPrivacyExperience = createSelector(
-  [(RootState) => RootState, selectUserRegion, selectFidesUserDeviceId],
-  (RootState, region) => {
+  [
+    (RootState) => RootState,
+    selectUserRegion,
+    selectFidesUserDeviceId,
+    selectPropertyId,
+  ],
+  (RootState, region, _deviceId, propertyId) => {
     if (!region) {
       return undefined;
     }
     return consentApi.endpoints.getPrivacyExperience.select({
       region,
-    })(RootState)?.data?.items[0];
+      property_id: propertyId,
+    })(RootState).data?.items[0];
   },
 );

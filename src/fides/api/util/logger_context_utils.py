@@ -1,3 +1,4 @@
+import inspect
 from abc import abstractmethod
 from enum import Enum
 from functools import wraps
@@ -16,7 +17,7 @@ from requests.exceptions import (  # pylint: disable=redefined-builtin
 from fides.config import CONFIG
 
 
-class LoggerContextKeys(Enum):
+class LoggerContextKeys(str, Enum):
     action_type = "action_type"
     status_code = "status_code"
     body = "body"
@@ -29,9 +30,11 @@ class LoggerContextKeys(Enum):
     response = "response"
     system_key = "system_key"
     url = "url"
+    task_id = "task_id"
+    privacy_request_source = "privacy_request_source"
 
 
-class ErrorGroup(Enum):
+class ErrorGroup(str, Enum):
     """A collection of user-friendly error labels to be used in contextualized logs."""
 
     network_error = "NetworkError"
@@ -57,18 +60,68 @@ class Contextualizable:
 
 
 def log_context(
-    _func: Optional[Callable] = None, **additional_context: Any
+    _func: Optional[Callable] = None,
+    capture_args: Optional[dict[str, LoggerContextKeys]] = None,
+    **additional_context: Any,
 ) -> Callable:
     """
-    A decorator that adds context information to log messages. It extracts context from
-    the arguments of the decorated function and from any specified additional context.
-    Optional additional context is provided through keyword arguments.
+    A decorator that adds context information to log messages. It extracts:
+    1. Values from function arguments, mapping them to standardized context names via capture_args dict
+    2. Context from any Contextualizable arguments
+    3. Additional context provided as decorator kwargs
+
+    Example:
+       @log_context(capture_args={"user_id": "standard_user_id"}, tenant="example")
+       def process_user(user_id: str) -> None:
+
+    Logs will include standard_user_id=<user_id> and tenant="example"
     """
 
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             context = dict(additional_context)
+
+            # extract specified param values from kwargs and args
+            if capture_args:
+                # First, process kwargs as they're explicitly named
+                for arg_name, context_name in capture_args.items():
+                    if arg_name in kwargs:
+                        context[context_name.value] = kwargs[arg_name]
+
+                # Process args using signature binding for more robust parameter mapping
+                if args:
+                    try:
+                        # Get the signature and bind the arguments
+                        sig = inspect.signature(func)
+                        # This will map positional args to their parameter names correctly
+                        bound_args = sig.bind_partial(*args, **kwargs)
+
+                        # Now we can iterate through the bound arguments
+                        for param_name, arg_value in bound_args.arguments.items():
+                            # Only process if this parameter is in capture_args and wasn't already found in kwargs
+                            if param_name in capture_args and param_name not in kwargs:
+                                context_name = capture_args[param_name]
+                                context[context_name.value] = arg_value
+                    except TypeError:
+                        # Handle the case where the arguments don't match the signature
+                        pass
+
+                # Handle default parameters that weren't provided in args or kwargs
+                if capture_args:
+                    sig = inspect.signature(func)
+                    for param_name, param in sig.parameters.items():
+                        # Check if parameter has a default value and is in capture_args
+                        # and hasn't been processed yet (not in context)
+                        if (
+                            param.default is not param.empty
+                            and param_name in capture_args
+                            and capture_args[param_name].value not in context
+                        ):
+                            context_name = capture_args[param_name]
+                            context[context_name.value] = param.default
+
+            # Process Contextualizable args
             for arg in args:
                 if isinstance(arg, Contextualizable):
                     arg_context = arg.get_log_context()

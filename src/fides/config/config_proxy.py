@@ -106,6 +106,7 @@ class ExecutionSettingsProxy(ConfigProxyBase):
     subject_identity_verification_required: bool
     disable_consent_identity_verification: bool
     require_manual_request_approval: bool
+    masking_strict: bool
 
     def __getattribute__(self, name: str) -> Any:
         """

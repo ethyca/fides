@@ -1,3 +1,8 @@
+/**
+ * NOTE: This component relates to the Spatial Datamap.
+ * For the Data Map Report component, see DatamapReportTable.tsx.
+ */
+
 import { Box, Center, Flex, Spinner } from "fidesui";
 import dynamic from "next/dynamic";
 import { useCallback, useContext, useState } from "react";

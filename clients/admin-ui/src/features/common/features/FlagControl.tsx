@@ -1,4 +1,10 @@
-import { Box, FormControl, FormLabel, Switch, Text } from "fidesui";
+import {
+  AntSwitch as Switch,
+  Box,
+  FormControl,
+  FormLabel,
+  Text,
+} from "fidesui";
 
 import { camelToSentenceCase } from "~/features/common/utils";
 
@@ -8,12 +14,10 @@ import { FlagValue } from "./types";
 export const FlagControl = ({
   flag,
   value,
-  defaultValue,
   override,
 }: {
   flag: (typeof FLAG_NAMES)[number];
   value: FlagValue;
-  defaultValue: FlagValue;
   override: (args: {
     flag: (typeof FLAG_NAMES)[number];
     value: boolean;
@@ -38,9 +42,8 @@ export const FlagControl = ({
     <FormControl display="contents">
       <Box justifySelf="center">
         <Switch
-          colorScheme={value !== defaultValue ? "yellow" : "blue"}
           id={`flag-${flag}`}
-          isChecked={value}
+          checked={value}
           onChange={() =>
             override({
               flag,

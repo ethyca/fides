@@ -17,26 +17,40 @@
         window.render_delay = 0; // increment the delay to test/mimic a slow loading or dynamic page
         const params = new URLSearchParams(window.location.search);
         const geolocation = params.get("geolocation");
+        const gpp = params.get("gpp");
         const src = `/fides.js${!!params.size ? `?${params.toString()}` : ""}`;
-
         document.write('<script src="' + src + '"><\/script>');
-        document.write("<script>Fides.gtm();<\/script>");
+        if (gpp === "debug") {
+          document.write('<script src="/fides-ext-gpp.js"><\/script>');
+        }
+        document.write(
+          "<script>Fides.gtm(!!window.fides_overrides && window.fides_overrides.gtmOptions);<\/script>",
+        );
       })();
       var deleteCookie = function () {
         document.cookie =
-          "fides_consent=;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+          "fides_consent=;Path=/;expires='Thu, 01 Jan 1970 00:00:01 GMT';";
         location.reload();
       };
     </script>
+    <script src="./scripts/jsonview.js"></script>
     <style>
       body {
-        margin: 16px;
+        margin: 16px 16px 64px 16px;
+        background-color: #fafafa;
+        font-family: "Inter", Arial, Helvetica, sans-serif;
+      }
+      h2 {
+        margin-bottom: 8px;
       }
       pre {
-        background-color: #eee;
+        background-color: #e6e6e8;
         padding: 16px;
         white-space: pre-wrap;
         overflow-y: auto;
+        margin: 0px;
+        border-radius: 4px;
+        box-shadow: 0 2px 2px inset rgba(0, 0, 0, 0.05);
       }
       #fides-modal-link {
         border: none;
@@ -44,6 +58,21 @@
         background: none;
         cursor: pointer;
         text-decoration: underline;
+      }
+      .json-container {
+        font-family: unset;
+        font-size: unset;
+        background-color: unset;
+        color: unset;
+        box-sizing: unset;
+      }
+      .delete-cookie {
+        background-color: #2b2e35;
+        color: #fafafa;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
       }
     </style>
   </head>
@@ -54,7 +83,7 @@
       <p>This page exists to demonstrate the fides.js script.</p>
 
       <div>
-        <button type="button" onclick="deleteCookie()">
+        <button class="delete-cookie" type="button" onclick="deleteCookie()">
           delete cookie and reload
         </button>
       </div>
@@ -92,7 +121,7 @@
       <pre id="consent-json"></pre>
 
       <h2>Consent Modal Link</h2>
-      <div id="render-link-here"></div>
+      <pre><div id="render-link-here"></div></pre>
       <script>
         setTimeout(() => {
           /** NOTE: normally you would add the `<button>` with "fides-modal-link" id directly to
@@ -142,9 +171,14 @@
           2,
         );
 
-        // Pretty-print the fides experience config object and add it to the page.
-        document.getElementById("consent-experience").textContent =
-          JSON.stringify(Fides.experience, null, 2);
+        // Generate a tree view of the fides experience config object and add it to the page.
+        if (Fides.experience && Object.keys(Fides.experience).length > 10) {
+          const tree = jsonview.create(Fides.experience);
+          jsonview.render(tree, document.getElementById("consent-experience"));
+        } else {
+          document.getElementById("consent-experience").textContent =
+            JSON.stringify(Fides.experience, null, 2);
+        }
 
         // Pretty-print the fides geolocation object and add it to the page.
         document.getElementById("consent-geolocation").textContent =
@@ -169,6 +203,12 @@
           consent: Fides.consent.tracking,
           dataUse: Fides.consent.data_sales,
         });
+
+        // update the modal link label if it's not already set. This is useful for displaying the correct language after fides has initialized and the user's language has been detected.
+        const modalLink = document.getElementById("fides-modal-link");
+        if (!!modalLink) {
+          modalLink.innerText = Fides.getModalLinkLabel();
+        }
       };
 
       // Handle both synchronous & asynchronous initialization
@@ -177,6 +217,14 @@
       } else {
         window.addEventListener("FidesInitialized", onInitialized);
       }
+      window.addEventListener("FidesUpdated", () => {
+        console.log("Fides has been updated");
+        document.getElementById("consent-json").textContent = JSON.stringify(
+          Fides.consent,
+          null,
+          2,
+        );
+      });
 
       window.addEventListener("FidesUIShown", () => {
         // Log event timing

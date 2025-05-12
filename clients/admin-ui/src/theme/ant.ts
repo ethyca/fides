@@ -1,44 +1,87 @@
 import { AntThemeConfig } from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
+
+/**
+ * Order of priority for styling
+ * 1. Ant Design default theme
+ * 2. FidesUI palette colors
+ * 3. Ant Design custom theme (this file, which also includes some custom override colors not found in the palette)
+ * 4. global CSS variables (as a last resort when styling Ant components, should rely on the palette vars)
+ * 5. tailwindcss (for layout and spacing only)
+ * 6. SCSS modules (for custom-component-specific styles)
+ */
 
 export const antTheme: AntThemeConfig = {
+  cssVar: true,
   token: {
-    colorPrimary: "#2b2e35",
-    colorInfo: "#2b2e35",
-    colorSuccess: "#5a9a68",
-    colorWarning: "#e59d47",
-    colorError: "#d9534f",
-    colorLink: "#2272ce",
-    colorBgBase: "#fafafa",
+    fontFamily: `Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"`,
+    colorTextBase: palette.FIDESUI_MINOS,
+    colorTextHeading: palette.FIDESUI_MINOS,
+    colorTextDescription: palette.FIDESUI_NEUTRAL_400,
+    colorTextDisabled: palette.FIDESUI_NEUTRAL_300,
+    colorPrimary: palette.FIDESUI_MINOS,
+    colorInfo: palette.FIDESUI_MINOS,
+    colorSuccess: palette.FIDESUI_SUCCESS,
+    colorWarning: palette.FIDESUI_WARNING,
+    colorError: palette.FIDESUI_ERROR,
+    colorLink: palette.FIDESUI_LINK,
+    colorBgBase: palette.FIDESUI_FULL_WHITE,
     borderRadius: 4,
     wireframe: true,
-    colorTextBase: "#2b2e35",
-    colorErrorBg: "#ffdcd6",
-    colorErrorBorder: "#f2aca5",
-    colorWarningBg: "#ffecc9",
-    colorWarningBorder: "#ffdba1",
-    colorSuccessBorder: "#5a9a68",
-    colorPrimaryBg: "#e3e0d9",
+    colorErrorBg: "#ffdcd6", // custom override
+    colorErrorBorder: "#f2aca5", // custom override
+    colorWarningBg: "#ffecc9", // custom override
+    colorWarningBorder: "#ffdba1", // custom override
+    colorSuccessBorder: palette.FIDESUI_SUCCESS,
+    colorPrimaryBg: palette.FIDESUI_NEUTRAL_75,
+    colorBorder: palette.FIDESUI_NEUTRAL_100,
+    zIndexPopupBase: 1500, // supersede Chakra's modal z-index
   },
   components: {
+    Alert: {
+      colorInfoBg: palette.FIDESUI_FULL_WHITE,
+      colorInfo: palette.FIDESUI_NEUTRAL_500,
+    },
     Button: {
-      primaryShadow: "",
-      defaultShadow: "",
-      dangerShadow: "",
+      primaryShadow: undefined,
+      defaultShadow: undefined,
+      dangerShadow: undefined,
+      defaultBg: palette.FIDESUI_FULL_WHITE,
+      colorLink: palette.FIDESUI_MINOS,
+      colorLinkHover: palette.FIDESUI_NEUTRAL_500,
+    },
+    Input: {
+      colorBgContainer: palette.FIDESUI_FULL_WHITE,
     },
     Layout: {
-      bodyBg: "rgb(250,250,250)",
+      bodyBg: palette.FIDESUI_NEUTRAL_50,
     },
-    Alert: {
-      colorInfoBg: "rgb(255,255,255)",
-      colorInfo: "rgb(147,150,154)",
+    Select: {
+      optionActiveBg: palette.FIDESUI_NEUTRAL_50,
+    },
+    Menu: {
+      itemHoverBg: palette.FIDESUI_NEUTRAL_50,
+      darkItemBg: palette.FIDESUI_MINOS,
+      darkItemColor: palette.FIDESUI_CORINTH,
+      darkSubMenuItemBg: palette.FIDESUI_MINOS,
+      darkItemSelectedBg: palette.FIDESUI_SANDSTONE,
     },
     Tooltip: {
-      colorBgSpotlight: "rgb(43,46,53)",
-      colorText: "rgb(250,250,250)",
-      colorTextLightSolid: "rgb(250,250,250)",
+      colorBgSpotlight: palette.FIDESUI_MINOS,
+      colorText: palette.FIDESUI_NEUTRAL_50,
+      colorTextLightSolid: palette.FIDESUI_NEUTRAL_50,
     },
     Transfer: {
-      controlItemBgActiveHover: "rgb(206,202,194)",
+      controlItemBgActiveHover: palette.FIDESUI_SANDSTONE,
+    },
+    Typography: {
+      fontSizeHeading1: 24,
+      fontSizeHeading2: 20,
+      fontSizeHeading3: 16,
+      fontSizeXL: 24,
+      fontSizeLG: 18,
+      fontSizeSM: 12,
+      titleMarginBottom: 0,
     },
   },
 };

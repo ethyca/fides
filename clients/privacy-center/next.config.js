@@ -1,18 +1,15 @@
-const path = require("path");
-const { version } = require("./package.json");
+const isDebugMode = process.env.FIDES_PRIVACY_CENTER__DEBUG === "true";
+const debugMarker = "=>";
+globalThis.fidesDebugger = isDebugMode
+  ? (...args) => console.log(`\x1b[33m${debugMarker}\x1b[0m`, ...args)
+  : () => {};
+globalThis.fidesError = isDebugMode
+  ? (...args) => console.log(`\x1b[31m${debugMarker}\x1b[0m`, ...args)
+  : () => {};
 
 const withBundleAnalyzer = require("@next/bundle-analyzer")({
   enabled: process.env.ANALYZE === "true",
 });
-
-// DEFER (PROD-1981): Replace with `transpilePackages` after upgrading to 13.0.0
-// Transpile the modules needed for Swagger UI
-const withTM = require("next-transpile-modules")([
-  "react-syntax-highlighter",
-  "swagger-client",
-  "swagger-ui-react",
-  "fidesui",
-]);
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -22,15 +19,8 @@ const nextConfig = {
   env: {
     version: "1.2.3",
   },
-  webpack: (config, { isServer }) => {
-    // Provide an empty fallback for the "fs" module for the client-side bundle
-    // This is needed to ensure the dynamic import("fs") in loadConfigFromFile()
-    // doesn't attempt to import the "fs" module when the client code runs!
-    if (!isServer) {
-      config.resolve.fallback.fs = false;
-    }
-    return config;
-  },
+  transpilePackages: ["react-syntax-highlighter", "fidesui"],
+
   async rewrites() {
     return [
       {
@@ -50,4 +40,4 @@ const nextConfig = {
   },
 };
 
-module.exports = withTM(withBundleAnalyzer(nextConfig));
+module.exports = withBundleAnalyzer(nextConfig);

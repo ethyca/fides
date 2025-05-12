@@ -1,7 +1,6 @@
 import {
+  AntButton as Button,
   Box,
-  Button,
-  ButtonGroup,
   CloseIcon,
   Drawer,
   DrawerBody,
@@ -9,7 +8,6 @@ import {
   DrawerFooter,
   DrawerHeader,
   DrawerOverlay,
-  IconButton,
   Text,
 } from "fidesui";
 import { ReactNode } from "react";
@@ -50,35 +48,29 @@ export const EditDrawerFooter = ({
 } & Pick<Props, "onClose">) => (
   <DrawerFooter justifyContent="space-between">
     {onDelete ? (
-      <IconButton
-        variant="outline"
+      <Button
         aria-label="delete"
         icon={<TrashCanOutlineIcon fontSize="small" />}
-        size="sm"
         onClick={onDelete}
         data-testid="delete-btn"
       />
     ) : null}
-    <ButtonGroup size="sm">
+    <div className="flex gap-2">
       {onEditYaml && (
-        <Button
-          variant="outline"
-          onClick={onEditYaml}
-          data-testid="edit-yaml-btn"
-        >
+        <Button onClick={onEditYaml} data-testid="edit-yaml-btn">
           Edit YAML
         </Button>
       )}
       <Button
-        type="submit"
-        colorScheme="primary"
+        htmlType="submit"
+        type="primary"
         data-testid="save-btn"
         form={formId}
-        isLoading={isSaving}
+        loading={isSaving}
       >
         Save
       </Button>
-    </ButtonGroup>
+    </div>
   </DrawerFooter>
 );
 
@@ -105,12 +97,10 @@ const EditDrawer = ({
           {header}
         </Box>
         <Box display="flex" justifyContent="flex-end" mr={2}>
-          <IconButton
+          <Button
             aria-label="Close editor"
-            variant="outline"
             onClick={onClose}
             data-testid="close-drawer-btn"
-            size="sm"
             icon={<CloseIcon fontSize="smaller" />}
           />
         </Box>

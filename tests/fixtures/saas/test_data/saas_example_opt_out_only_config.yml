@@ -1,0 +1,44 @@
+saas_config:
+  fides_key: saas_connector_opt_out_only_example
+  name: SaaS Example Opt Out Config
+  type: custom
+  description: A sample schema representing a SaaS opt out only for Fides
+  version: 0.0.1
+
+  connector_params:
+    - name: domain
+      default_value: localhost
+    - name: username
+    - name: api_key
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: basic
+      configuration:
+        username: <username>
+        password: <api_key>
+
+  test_request:
+    method: GET
+    path: /3.0/lists
+
+  consent_requests:
+    opt_out:
+      - method: POST
+        skip_missing_param_values: true
+        path: /allowlists/delete
+        body: |
+          {
+            "first_name": "<custom_privacy_request_fields.first_name>"
+          }
+      - method: POST
+        skip_missing_param_values: true
+        path: /rejects/add
+        body: |
+          {
+            "first_name": "<custom_privacy_request_fields.first_name>"
+          }
+
+  endpoints: []

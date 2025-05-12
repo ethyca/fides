@@ -1,7 +1,6 @@
 import { useHasPermission } from "common/Restrict";
 import {
-  Button,
-  ButtonGroup,
+  AntButton as Button,
   Flex,
   Spinner,
   Stack,
@@ -10,14 +9,14 @@ import {
   useToast,
 } from "fidesui";
 import { Form, Formik } from "formik";
-import NextLink from "next/link";
+import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
-import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
-import QuestionTooltip from "~/features/common/QuestionTooltip";
+import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { ROLES } from "~/features/user-management/constants";
 import { RoleRegistryEnum, ScopeRegistryEnum, System } from "~/types/api";
@@ -40,6 +39,7 @@ export type FormValues = typeof defaultInitialValues;
 
 const PermissionsForm = () => {
   const toast = useToast();
+  const router = useRouter();
   const activeUserId = useAppSelector(selectActiveUserId);
   useGetUserManagedSystemsQuery(activeUserId as string, {
     skip: !activeUserId,
@@ -166,7 +166,7 @@ const PermissionsForm = () => {
                 <Text fontSize="sm" fontWeight="semibold" mr={1}>
                   User role
                 </Text>
-                <QuestionTooltip label="A user's role in the organization determines what parts of the UI they can access and which functions are available to them." />
+                <InfoTooltip label="A user's role in the organization determines what parts of the UI they can access and which functions are available to them." />
               </Flex>
               {ROLES.map((role) => {
                 const isSelected = values.roles.indexOf(role.roleKey) >= 0;
@@ -186,24 +186,20 @@ const PermissionsForm = () => {
                 );
               })}
             </Stack>
-            <ButtonGroup size="sm">
-              <Button
-                as={NextLink}
-                href={USER_MANAGEMENT_ROUTE}
-                variant="outline"
-              >
+            <div>
+              <Button onClick={() => router.push(USER_MANAGEMENT_ROUTE)}>
                 Cancel
               </Button>
               <Button
-                colorScheme="primary"
-                type="submit"
-                isLoading={isSubmitting}
-                isDisabled={!dirty && assignedSystems === initialManagedSystems}
+                type="primary"
+                htmlType="submit"
+                loading={isSubmitting}
+                disabled={!dirty && assignedSystems === initialManagedSystems}
                 data-testid="save-btn"
               >
                 Save
               </Button>
-            </ButtonGroup>
+            </div>
           </Stack>
           <ConfirmationModal
             isOpen={chooseApproverIsOpen}

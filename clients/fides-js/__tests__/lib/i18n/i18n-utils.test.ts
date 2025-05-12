@@ -39,6 +39,9 @@ import mockExperienceJSON from "../../__fixtures__/mock_experience.json";
 import mockGVLTranslationsJSON from "../../__fixtures__/mock_gvl_translations.json";
 
 describe("i18n-utils", () => {
+  beforeAll(() => {
+    window.fidesDebugger = () => {};
+  });
   // Define a mock implementation of the i18n singleton for tests
   let mockCurrentLocale = "";
   let mockDefaultLocale = DEFAULT_LOCALE;
@@ -316,12 +319,11 @@ describe("i18n-utils", () => {
       expect(mockI18n.load).toHaveBeenCalledWith("en", mockI18nCatalogLoad[0]);
     });
 
-    it("sets overrides experience_config translations when no locale match", () => {
+    it("sets overrides experience_config translations when locale matches", () => {
       const experienceTranslationOverrides: Partial<FidesExperienceTranslationOverrides> =
         {
           title: "My override title",
           description: "My override description",
-          privacy_policy_url: "https://example.com/privacy",
           override_language: "en",
         };
       loadMessagesFromExperience(
@@ -335,8 +337,6 @@ describe("i18n-utils", () => {
         ...mockI18nCatalogLoad[0],
         ...{
           "exp.description": experienceTranslationOverrides.description,
-          "exp.privacy_policy_url":
-            experienceTranslationOverrides.privacy_policy_url,
           "exp.title": experienceTranslationOverrides.title,
         },
       });
@@ -344,6 +344,24 @@ describe("i18n-utils", () => {
     });
 
     it("does not set overrides experience_config translations when no locale match", () => {
+      const experienceTranslationOverrides: Partial<FidesExperienceTranslationOverrides> =
+        {
+          title: "My override title",
+          description: "My override description",
+          override_language: "ja",
+        };
+      loadMessagesFromExperience(
+        mockI18n,
+        mockExperience,
+        experienceTranslationOverrides,
+      );
+      const EXPECTED_NUM_TRANSLATIONS = 2;
+      expect(mockI18n.load).toHaveBeenCalledTimes(EXPECTED_NUM_TRANSLATIONS);
+      expect(mockI18n.load).toHaveBeenCalledWith("en", mockI18nCatalogLoad[0]);
+      expect(mockI18n.load).toHaveBeenCalledWith("es", mockI18nCatalogLoad[1]);
+    });
+
+    it("always override privacy_policy_url, even if locale doesn't match", () => {
       const experienceTranslationOverrides: Partial<FidesExperienceTranslationOverrides> =
         {
           title: "My override title",
@@ -358,8 +376,16 @@ describe("i18n-utils", () => {
       );
       const EXPECTED_NUM_TRANSLATIONS = 2;
       expect(mockI18n.load).toHaveBeenCalledTimes(EXPECTED_NUM_TRANSLATIONS);
-      expect(mockI18n.load).toHaveBeenCalledWith("en", mockI18nCatalogLoad[0]);
-      expect(mockI18n.load).toHaveBeenCalledWith("es", mockI18nCatalogLoad[1]);
+      expect(mockI18n.load).toHaveBeenCalledWith("en", {
+        ...mockI18nCatalogLoad[0],
+        "exp.privacy_policy_url":
+          experienceTranslationOverrides.privacy_policy_url,
+      });
+      expect(mockI18n.load).toHaveBeenCalledWith("es", {
+        ...mockI18nCatalogLoad[1],
+        "exp.privacy_policy_url":
+          experienceTranslationOverrides.privacy_policy_url,
+      });
     });
 
     describe("when loading from a tcf_overlay experience", () => {
@@ -784,10 +810,8 @@ describe("i18n-utils", () => {
         const expectedResults = tests[locale];
         const match = locale.match(LOCALE_REGEX);
         if (match) {
-          // eslint-disable-next-line jest/no-conditional-expect
           expect(Array.from(match)).toEqual(expectedResults);
         } else {
-          // eslint-disable-next-line jest/no-conditional-expect
           expect(match).toEqual(expectedResults);
         }
       });
@@ -886,10 +910,11 @@ describe("i18n-utils", () => {
       component: string;
       experience_config: Omit<
         ExperienceConfig,
-        "component" | "layer1_button_options"
+        "component" | "layer1_button_options" | "reject_all_mechanism"
       > & {
         component: string;
         layer1_button_options: string;
+        reject_all_mechanism: string;
       };
       privacy_notices: Array<
         Omit<

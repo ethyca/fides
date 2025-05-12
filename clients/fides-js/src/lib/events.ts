@@ -1,6 +1,6 @@
-import type { FidesEventType } from "../docs";
+import type { FidesEvent as DocsFidesEvent, FidesEventType } from "../docs";
 import { FidesCookie } from "./consent-types";
-import { debugLog } from "./consent-utils";
+import { applyOverridesToConsent } from "./consent-utils";
 
 // Bonus points: update the WindowEventMap interface with our custom event types
 declare global {
@@ -9,23 +9,39 @@ declare global {
 
 /**
  * Defines the type of "extra" details that can be optionally added to certain
- * events. This is intentionally vague, but constrained to be basic (primitive)
- * values for simplicity.
+ * events. This is intentionally vague. See the /docs/fides-event.ts
  */
 export type FidesEventExtraDetails = Record<
   string,
-  string | number | boolean | undefined
+  string | number | boolean | Record<string, unknown> | undefined
 >;
 
 /**
- * Defines the properties available on event.detail. Currently the FidesCookie
- * and an extra field `meta` for any other details that the event wants to pass
- * around.
+ * Defines the properties available on event.detail. Currently includes:
+ * - FidesCookie properties
+ * - debug flag
+ * - extraDetails for additional event context
+ * - timestamp from performance.mark() if available
  */
 export type FidesEventDetail = FidesCookie & {
   debug?: boolean;
   extraDetails?: FidesEventExtraDetails;
+  timestamp?: number;
 };
+
+/**
+ * Defines the properties available on event.detail.extraDetails.trigger
+ */
+export type FidesEventDetailsTrigger = NonNullable<
+  DocsFidesEvent["detail"]["extraDetails"]
+>["trigger"];
+
+/**
+ * Defines the properties available on event.detail.extraDetails.preference
+ */
+export type FidesEventDetailsPreference = NonNullable<
+  DocsFidesEvent["detail"]["extraDetails"]
+>["preference"];
 
 /**
  * TODO (PROD-1815): Replace this type with this: import { FidesEvent } from "../types"
@@ -33,6 +49,11 @@ export type FidesEventDetail = FidesCookie & {
  * However, this will require locking down some types and refactoring usage.
  */
 export type FidesEvent = CustomEvent<FidesEventDetail>;
+
+/**
+ * Export the FidesEventType type from the docs module, for usage in tests.
+ */
+export type { FidesEventType };
 
 /**
  * Dispatch a custom event on the window object, providing the current Fides
@@ -52,22 +73,38 @@ export type FidesEvent = CustomEvent<FidesEventDetail>;
  */
 export const dispatchFidesEvent = (
   type: FidesEventType,
-  cookie: FidesCookie | undefined,
+  fidesCookie: FidesCookie | undefined,
   debug: boolean,
   extraDetails?: FidesEventExtraDetails,
 ) => {
+  const cookie = fidesCookie ? { ...fidesCookie } : undefined;
   if (typeof window !== "undefined" && typeof CustomEvent !== "undefined") {
     // Extracts consentMethod directly from the cookie instead of having to pass in duplicate data to this method
     const constructedExtraDetails: FidesEventExtraDetails = {
-      consentMethod: cookie?.fides_meta.consentMethod,
+      consentMethod: cookie?.fides_meta
+        .consentMethod as FidesEventExtraDetails["consentMethod"],
       ...extraDetails,
     };
+    const perfMark = performance?.mark?.(type);
+    const timestamp = perfMark?.startTime;
+    const normalizedCookie: FidesCookie | undefined = cookie;
+    if (normalizedCookie && cookie?.consent) {
+      normalizedCookie.consent = applyOverridesToConsent(
+        cookie.consent,
+        window.Fides?.experience?.non_applicable_privacy_notices,
+        window.Fides?.experience?.privacy_notices,
+      );
+    }
     const event = new CustomEvent(type, {
-      detail: { ...cookie, debug, extraDetails: constructedExtraDetails },
+      detail: {
+        ...normalizedCookie,
+        debug,
+        extraDetails: constructedExtraDetails,
+        timestamp,
+      },
+      bubbles: true,
     });
-    const perfMark = performance?.mark(type);
-    debugLog(
-      debug,
+    fidesDebugger(
       `Dispatching event type ${type} ${
         constructedExtraDetails?.servingComponent
           ? `from ${constructedExtraDetails.servingComponent} `
@@ -76,7 +113,7 @@ export const dispatchFidesEvent = (
         constructedExtraDetails
           ? `with extra details ${JSON.stringify(constructedExtraDetails)} `
           : ""
-      } (${perfMark?.startTime?.toFixed(2)}ms)`,
+      } (${timestamp?.toFixed(2)}ms)`,
     );
     window.dispatchEvent(event);
   }

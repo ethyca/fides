@@ -54,11 +54,7 @@ from fides.api.schemas.user import (
     UserResponse,
     UserUpdate,
 )
-from fides.api.service.user.fides_user_service import (
-    accept_invite,
-    invite_user,
-    perform_login,
-)
+from fides.api.service.deps import get_user_service
 from fides.api.util.api_router import APIRouter
 from fides.common.api.scope_registry import (
     SCOPE_REGISTRY,
@@ -75,6 +71,7 @@ from fides.common.api.v1 import urn_registry as urls
 from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 from fides.config import CONFIG, FidesConfig, get_config
 from fides.config.config_proxy import ConfigProxy
+from fides.service.user.user_service import UserService
 
 router = APIRouter(tags=["Users"], prefix=V1_URL_PREFIX)
 
@@ -173,7 +170,7 @@ def update_user_password(
             status_code=HTTP_401_UNAUTHORIZED, detail="Incorrect password."
         )
 
-    current_user.update_password(db=db, new_password=b64_str_to_str(data.new_password))
+    current_user.update_password(db=db, new_password=data.new_password)
 
     logger.info("Updated user with id: '{}'.", current_user.id)
     return current_user
@@ -202,7 +199,7 @@ def force_update_password(
             detail=f"User with ID {user_id} does not exist.",
         )
 
-    user.update_password(db=db, new_password=b64_str_to_str(data.new_password))
+    user.update_password(db=db, new_password=data.new_password)
     logger.info("Updated user with id: '{}'.", user.id)
     return user
 
@@ -423,6 +420,7 @@ def create_user(
     db: Session = Depends(get_db),
     user_data: UserCreate,
     config_proxy: ConfigProxy = Depends(get_config_proxy),
+    user_service: UserService = Depends(get_user_service),
 ) -> FidesUser:
     """
     Create a user given a username and password.
@@ -461,7 +459,7 @@ def create_user(
     user = FidesUser.create(db=db, data=user_data.model_dump(mode="json"))
 
     # invite user via email
-    invite_user(db=db, config_proxy=config_proxy, user=user)
+    user_service.invite_user(user)
 
     logger.info("Created user with id: '{}'.", user.id)
     FidesUserPermissions.create(
@@ -509,7 +507,7 @@ def get_user(*, db: Session = Depends(get_db), user_id: str) -> FidesUser:
     if user is None:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="User not found")
 
-    logger.info("Returning user with id: '{}'.", user_id)
+    logger.debug("Returning user with id: '{}'.", user_id)
     return user
 
 
@@ -529,7 +527,7 @@ def get_users(
     if username:
         query = query.filter(FidesUser.username.ilike(f"%{escape_like(username)}%"))
 
-    logger.info("Returning a paginated list of users.")
+    logger.debug("Returning a paginated list of users.")
 
     return paginate(query.order_by(FidesUser.created_at.desc()), params=params)
 
@@ -544,6 +542,7 @@ def user_login(
     db: Session = Depends(get_db),
     config: FidesConfig = Depends(get_config),
     user_data: UserLogin,
+    user_service: UserService = Depends(get_user_service),
 ) -> UserLoginResponse:
     """Login the user by creating a client if it doesn't exist, and have that client
     generate a token."""
@@ -602,8 +601,7 @@ def user_login(
         # from complaining.
         user = user_check
 
-        client = perform_login(
-            db,
+        client = user_service.perform_login(
             config.security.oauth_client_id_length_bytes,
             config.security.oauth_client_secret_length_bytes,
             user,
@@ -666,9 +664,9 @@ def verify_invite_code(
 def accept_user_invite(
     *,
     db: Session = Depends(get_db),
-    config: FidesConfig = Depends(get_config),
     user_data: UserForcePasswordReset,
     verified_invite: FidesUserInvite = Depends(verify_invite_code),
+    user_service: UserService = Depends(get_user_service),
 ) -> UserLoginResponse:
     """Sets the password and enables the user if a valid username and invite code are provided."""
 
@@ -681,9 +679,7 @@ def accept_user_invite(
             detail=f"User with username {verified_invite.username} does not exist.",
         )
 
-    user, access_code = accept_invite(
-        db=db, config=config, user=user, new_password=user_data.new_password
-    )
+    user, access_code = user_service.accept_invite(user, user_data.new_password)
 
     return UserLoginResponse(
         user_data=user,

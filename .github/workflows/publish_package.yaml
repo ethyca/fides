@@ -35,6 +35,9 @@ jobs:
           cd clients
           npm run prod-export-admin-ui
 
+      - name: Install setuptools
+        run: pip install setuptools -U
+
       - name: Install Twine and wheel
         run: pip install twine wheel
 
@@ -47,7 +50,6 @@ jobs:
 
       - name: Build the wheel
         run: python setup.py bdist_wheel
-
 
       - name: Check Prod Tag
         id: check-prod-tag
@@ -110,7 +112,7 @@ jobs:
       - name: Send Repository Dispatch Event
         # only run on an alpha or beta tag
         if: steps.check-alpha-tag.outputs.match == 'true' || steps.check-beta-tag.outputs.match == 'true'
-        uses: peter-evans/repository-dispatch@v2
+        uses: peter-evans/repository-dispatch@v3
         with:
           client-payload: '{"tag": "${{ github.ref_name }}"}'
           event-type: new-fides-feature-tag

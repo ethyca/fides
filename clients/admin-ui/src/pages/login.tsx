@@ -1,8 +1,8 @@
 import Head from "common/Head";
 import Image from "common/Image";
 import {
+  AntButton as Button,
   Box,
-  Button,
   Center,
   chakra,
   Flex,
@@ -27,6 +27,7 @@ import {
   login,
   selectToken,
   useAcceptInviteMutation,
+  useGetAuthenticationMethodsQuery,
   useLoginMutation,
 } from "~/features/auth";
 import { CustomTextInput } from "~/features/common/form/inputs";
@@ -180,18 +181,27 @@ const useLogin = () => {
   };
 };
 
-const OAuthLoginButtons = () => {
-  const { data: openidProviders } = useGetAllOpenIDProvidersSimpleQuery();
+type OAuthLoginButtonsProps = {
+  openidProviders: Array<{
+    identifier: string;
+    provider: string;
+    name: string;
+  }>;
+};
+
+const OAuthLoginButtons = ({ openidProviders }: OAuthLoginButtonsProps) => {
+  if (!openidProviders?.length) {
+    return null;
+  }
 
   return (
     <Center>
       <Stack spacing={4} width="100%">
-        {openidProviders?.map((provider) => (
+        {openidProviders.map((provider) => (
           <Button
             key={provider.identifier}
-            as="a"
             href={`/api/v1/plus/openid-provider/${provider.identifier}/authorize`}
-            leftIcon={
+            icon={
               <Image
                 src={`/images/oauth-login/${provider.provider}.svg`}
                 alt={`${provider.provider} icon`}
@@ -199,9 +209,7 @@ const OAuthLoginButtons = () => {
                 height={20}
               />
             }
-            width="100%"
-            colorScheme="gray"
-            variant="outline"
+            className="w-full"
           >
             Sign in with {provider.name}
           </Button>
@@ -214,8 +222,27 @@ const OAuthLoginButtons = () => {
 const Login: NextPage = () => {
   const { isFromInvite, showAnimation, inviteCode, ...formikProps } =
     useLogin();
+  const {
+    data: authMethods,
+    isLoading: authMethodsLoading,
+    error: authMethodsError,
+  } = useGetAuthenticationMethodsQuery();
+  const { data: openidProviders, isLoading: providersLoading } =
+    useGetAllOpenIDProvidersSimpleQuery();
 
   const submitButtonText = isFromInvite ? "Setup user" : "Sign in";
+
+  // Determine if we should show username/password inputs
+  // Show them if there was an error fetching auth methods or username/password auth is enabled
+  const showUsernamePasswordInputs =
+    authMethodsError || authMethods?.username_password;
+
+  // Determine if we should show SSO login buttons
+  const showSSOButtons = authMethods?.sso;
+
+  if (authMethodsLoading || providersLoading) {
+    return null;
+  }
 
   return (
     <Formik {...formikProps} enableReinitialize>
@@ -237,9 +264,9 @@ const Login: NextPage = () => {
               <Box display={["none", "none", "block"]}>
                 <Image
                   src="/logo.svg"
-                  alt="FidesUI logo"
-                  width={156}
-                  height={48}
+                  alt="Fides logo"
+                  width={205}
+                  height={46}
                 />
               </Box>
               <Stack align="center" spacing={[0, 0, 6]}>
@@ -268,9 +295,9 @@ const Login: NextPage = () => {
                       <Flex justifyContent="center">
                         <Image
                           src="/logo.svg"
-                          alt="FidesUI logo"
-                          width={156}
-                          height={48}
+                          alt="Fides logo"
+                          width={205}
+                          height={46}
                         />
                       </Flex>
                       <Heading fontSize="3xl" colorScheme="primary">
@@ -283,49 +310,61 @@ const Login: NextPage = () => {
                       width="100%"
                     >
                       <Stack spacing={6}>
-                        <CustomTextInput
-                          name="username"
-                          label="Username"
-                          variant="stacked"
-                          size="md"
-                          disabled={isFromInvite}
-                        />
-                        <CustomTextInput
-                          name="password"
-                          label={isFromInvite ? "Set new password" : "Password"}
-                          autoComplete={
-                            isFromInvite ? "new-password" : "current-password"
-                          }
-                          type="password"
-                          variant="stacked"
-                          size="md"
-                        />
-                        <Center>
-                          <Button
-                            type="submit"
-                            bg="primary.800"
-                            _hover={{ bg: "primary.400" }}
-                            _active={{ bg: "primary.500" }}
-                            isDisabled={!isValid || !dirty}
-                            colorScheme="primary"
-                            data-testid="sign-in-btn"
-                            isLoading={isSubmitting}
-                            width="100%"
-                            as={motion.button}
-                            animate={
-                              showAnimation
-                                ? {
-                                    width: ["100%", "10%"],
-                                    borderRadius: ["5%", "0%"],
-                                  }
-                                : undefined
-                            }
-                          >
-                            {showAnimation ? "" : submitButtonText}
-                          </Button>
-                          {showAnimation ? <Animation /> : null}
-                        </Center>
-                        <OAuthLoginButtons />
+                        {showUsernamePasswordInputs && (
+                          <>
+                            <CustomTextInput
+                              name="username"
+                              label="Username"
+                              variant="stacked"
+                              size="md"
+                              disabled={isFromInvite}
+                            />
+                            <CustomTextInput
+                              name="password"
+                              label={
+                                isFromInvite ? "Set new password" : "Password"
+                              }
+                              autoComplete={
+                                isFromInvite
+                                  ? "new-password"
+                                  : "current-password"
+                              }
+                              type="password"
+                              variant="stacked"
+                              size="md"
+                            />
+                            <Center>
+                              <motion.div
+                                className="w-full"
+                                animate={
+                                  showAnimation
+                                    ? {
+                                        width: ["100%", "10%"],
+                                        borderRadius: ["5%", "0%"],
+                                      }
+                                    : undefined
+                                }
+                              >
+                                <Button
+                                  htmlType="submit"
+                                  type="primary"
+                                  disabled={!isValid || !dirty}
+                                  data-testid="sign-in-btn"
+                                  loading={isSubmitting}
+                                  className="w-full"
+                                >
+                                  {showAnimation ? "" : submitButtonText}
+                                </Button>
+                              </motion.div>
+                              {showAnimation ? <Animation /> : null}
+                            </Center>
+                          </>
+                        )}
+                        {showSSOButtons && openidProviders && (
+                          <OAuthLoginButtons
+                            openidProviders={openidProviders}
+                          />
+                        )}
                       </Stack>
                     </chakra.form>
                   </Stack>

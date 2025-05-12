@@ -94,7 +94,7 @@ class TestGetConnections:
     ) -> None:
         """Test to ensure size param works as expected since it overrides default value"""
 
-        # ensure default size is 100 (effectively testing that here since we have > 50 connectors)
+        # ensure default size is 100 (effectively testing that here since we have > 20 connectors)
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
         resp = api_client.get(url, headers=auth_header)
         data = resp.json()["items"]
@@ -103,17 +103,18 @@ class TestGetConnections:
             len(data)
             == len(ConnectionType) + len(ConnectorRegistry.connector_types()) - 4
         )  # there are 4 connection types that are not returned by the endpoint
-        # this value is > 50, so we've efectively tested our "default" size is
-        # > than the default of 50 (it's 100!)
+        # this value is > 20, so we've efectively tested our "default" size is
+        # > than the default of 20 (it's 100!)
 
         # ensure specifying size works as expected
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
-        resp = api_client.get(url + "size=50", headers=auth_header)
+        resp = api_client.get(url + "size=20", headers=auth_header)
         data = resp.json()["items"]
+
         assert resp.status_code == 200
         assert (
-            len(data) == 50
-        )  # should be 50 items in response since we explicitly set size=50
+            len(data) == 20
+        )  # should be 20 items in response since we explicitly set size=20
 
         # ensure specifying size and page works as expected
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
@@ -200,7 +201,7 @@ class TestGetConnections:
         data = resp.json()["items"]
 
         # 5 constant non-saas connection types match the search string
-        assert len(data) == len(expected_saas_templates) + 5
+        assert len(data) == len(expected_saas_templates) + 6
 
         assert {
             "identifier": ConnectionType.postgres.value,
@@ -266,7 +267,7 @@ class TestGetConnections:
         assert resp.status_code == 200
         data = resp.json()["items"]
         # 2 constant non-saas connection types match the search string
-        assert len(data) == len(expected_saas_types) + 2
+        assert len(data) == len(expected_saas_types) + 3
         assert {
             "identifier": ConnectionType.postgres.value,
             "type": SystemType.database.value,
@@ -308,7 +309,7 @@ class TestGetConnections:
         assert resp.status_code == 200
         data = resp.json()["items"]
         # 5 constant non-saas connection types match the search string
-        assert len(data) == len(expected_saas_types) + 5
+        assert len(data) == len(expected_saas_types) + 6
         assert {
             "identifier": ConnectionType.postgres.value,
             "type": SystemType.database.value,
@@ -354,7 +355,7 @@ class TestGetConnections:
         resp = api_client.get(url + "system_type=database", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 15
+        assert len(data) == 19
 
     def test_search_system_type_and_connection_type(
         self,
@@ -382,7 +383,7 @@ class TestGetConnections:
         )
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 3
+        assert len(data) == 4
 
     def test_search_manual_system_type(self, api_client, generate_auth_header, url):
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
@@ -416,8 +417,8 @@ class TestGetConnections:
         assert data == [
             {
                 "encoded_icon": None,
-                "human_readable": "Attentive",
-                "identifier": "attentive",
+                "human_readable": "Attentive Email",
+                "identifier": "attentive_email",
                 "type": "email",
                 "authorization_required": False,
                 "user_guide": None,
@@ -462,12 +463,9 @@ class TestGetConnections:
         ]
 
 
-DOORDASH = "doordash"
-GOOGLE_ANALYTICS = "google_analytics"
-MAILCHIMP_TRANSACTIONAL = "mailchimp_transactional"
-SEGMENT = "segment"
+HUBSPOT = "hubspot"
+MAILCHIMP = "mailchimp"
 STRIPE = "stripe"
-ZENDESK = "zendesk"
 
 
 class TestGetConnectionsActionTypeParams:
@@ -496,16 +494,9 @@ class TestGetConnectionsActionTypeParams:
 
     @pytest.fixture
     def connection_type_objects(self):
-        google_analytics_template = ConnectorRegistry.get_connector_template(
-            GOOGLE_ANALYTICS
-        )
-        mailchimp_transactional_template = ConnectorRegistry.get_connector_template(
-            MAILCHIMP_TRANSACTIONAL
-        )
-        stripe_template = ConnectorRegistry.get_connector_template("stripe")
-        zendesk_template = ConnectorRegistry.get_connector_template("zendesk")
-        doordash_template = ConnectorRegistry.get_connector_template(DOORDASH)
-        segment_template = ConnectorRegistry.get_connector_template(SEGMENT)
+        hubspot_template = ConnectorRegistry.get_connector_template(HUBSPOT)
+        mailchimp_template = ConnectorRegistry.get_connector_template(MAILCHIMP)
+        stripe_template = ConnectorRegistry.get_connector_template(STRIPE)
 
         return {
             ConnectionType.postgres.value: {
@@ -532,39 +523,26 @@ class TestGetConnectionsActionTypeParams:
                     ActionType.erasure.value,
                 ],
             },
-            GOOGLE_ANALYTICS: {
-                "identifier": GOOGLE_ANALYTICS,
+            HUBSPOT: {
+                "identifier": HUBSPOT,
                 "type": SystemType.saas.value,
-                "human_readable": google_analytics_template.human_readable,
-                "encoded_icon": google_analytics_template.icon,
-                "authorization_required": True,
-                "user_guide": google_analytics_template.user_guide,
+                "human_readable": hubspot_template.human_readable,
+                "encoded_icon": hubspot_template.icon,
+                "authorization_required": False,
+                "user_guide": hubspot_template.user_guide,
                 "supported_actions": [
-                    action.value
-                    for action in google_analytics_template.supported_actions
+                    action.value for action in hubspot_template.supported_actions
                 ],
             },
-            MAILCHIMP_TRANSACTIONAL: {
-                "identifier": MAILCHIMP_TRANSACTIONAL,
+            MAILCHIMP: {
+                "identifier": MAILCHIMP,
                 "type": SystemType.saas.value,
-                "human_readable": mailchimp_transactional_template.human_readable,
-                "encoded_icon": mailchimp_transactional_template.icon,
+                "human_readable": mailchimp_template.human_readable,
+                "encoded_icon": mailchimp_template.icon,
                 "authorization_required": False,
-                "user_guide": mailchimp_transactional_template.user_guide,
+                "user_guide": mailchimp_template.user_guide,
                 "supported_actions": [
-                    action.value
-                    for action in mailchimp_transactional_template.supported_actions
-                ],
-            },
-            SEGMENT: {
-                "identifier": SEGMENT,
-                "type": SystemType.saas.value,
-                "human_readable": segment_template.human_readable,
-                "encoded_icon": segment_template.icon,
-                "authorization_required": False,
-                "user_guide": segment_template.user_guide,
-                "supported_actions": [
-                    action.value for action in segment_template.supported_actions
+                    action.value for action in mailchimp_template.supported_actions
                 ],
             },
             STRIPE: {
@@ -578,28 +556,6 @@ class TestGetConnectionsActionTypeParams:
                     action.value for action in stripe_template.supported_actions
                 ],
             },
-            ZENDESK: {
-                "identifier": ZENDESK,
-                "type": SystemType.saas.value,
-                "human_readable": zendesk_template.human_readable,
-                "encoded_icon": zendesk_template.icon,
-                "authorization_required": False,
-                "user_guide": zendesk_template.user_guide,
-                "supported_actions": [
-                    action.value for action in zendesk_template.supported_actions
-                ],
-            },
-            DOORDASH: {
-                "identifier": DOORDASH,
-                "type": SystemType.saas.value,
-                "human_readable": doordash_template.human_readable,
-                "encoded_icon": doordash_template.icon,
-                "authorization_required": False,
-                "user_guide": doordash_template.user_guide,
-                "supported_actions": [
-                    action.value for action in doordash_template.supported_actions
-                ],
-            },
             ConnectionType.sovrn.value: {
                 "identifier": ConnectionType.sovrn.value,
                 "type": SystemType.email.value,
@@ -609,10 +565,10 @@ class TestGetConnectionsActionTypeParams:
                 "user_guide": None,
                 "supported_actions": [ActionType.consent.value],
             },
-            ConnectionType.attentive.value: {
-                "identifier": ConnectionType.attentive.value,
+            ConnectionType.attentive_email.value: {
+                "identifier": ConnectionType.attentive_email.value,
                 "type": SystemType.email.value,
-                "human_readable": "Attentive",
+                "human_readable": "Attentive Email",
                 "encoded_icon": None,
                 "authorization_required": False,
                 "user_guide": None,
@@ -628,28 +584,24 @@ class TestGetConnectionsActionTypeParams:
                 [
                     ConnectionType.postgres.value,
                     ConnectionType.manual_webhook.value,
-                    DOORDASH,
+                    HUBSPOT,
                     STRIPE,
-                    ZENDESK,
-                    SEGMENT,
-                    ConnectionType.attentive.value,
-                    GOOGLE_ANALYTICS,
-                    MAILCHIMP_TRANSACTIONAL,
+                    MAILCHIMP,
+                    ConnectionType.attentive_email.value,
                     ConnectionType.sovrn.value,
                 ],
                 [],
             ),
             (
                 [ActionType.consent],
-                [GOOGLE_ANALYTICS, MAILCHIMP_TRANSACTIONAL, ConnectionType.sovrn.value],
+                [ConnectionType.sovrn.value],
                 [
                     ConnectionType.postgres.value,
                     ConnectionType.manual_webhook.value,
-                    DOORDASH,
+                    HUBSPOT,
                     STRIPE,
-                    ZENDESK,
-                    SEGMENT,
-                    ConnectionType.attentive.value,
+                    MAILCHIMP,
+                    ConnectionType.attentive_email.value,
                 ],
             ),
             (
@@ -657,83 +609,67 @@ class TestGetConnectionsActionTypeParams:
                 [
                     ConnectionType.postgres.value,
                     ConnectionType.manual_webhook.value,
-                    DOORDASH,
-                    SEGMENT,
+                    HUBSPOT,
+                    MAILCHIMP,
                     STRIPE,
-                    ZENDESK,
                 ],
                 [
-                    GOOGLE_ANALYTICS,
-                    MAILCHIMP_TRANSACTIONAL,
                     ConnectionType.sovrn.value,
-                    ConnectionType.attentive.value,
+                    ConnectionType.attentive_email.value,
                 ],
             ),
             (
                 [ActionType.erasure],
                 [
                     ConnectionType.postgres.value,
-                    SEGMENT,  # segment has DPR so it is an erasure
+                    HUBSPOT,
                     STRIPE,
-                    ZENDESK,
-                    ConnectionType.attentive.value,
+                    MAILCHIMP,
+                    ConnectionType.attentive_email.value,
                     ConnectionType.manual_webhook.value,
                 ],
                 [
-                    GOOGLE_ANALYTICS,
-                    MAILCHIMP_TRANSACTIONAL,
-                    DOORDASH,  # doordash does not have erasures
                     ConnectionType.sovrn.value,
                 ],
             ),
             (
                 [ActionType.consent, ActionType.access],
                 [
-                    GOOGLE_ANALYTICS,
-                    MAILCHIMP_TRANSACTIONAL,
                     ConnectionType.sovrn.value,
                     ConnectionType.postgres.value,
                     ConnectionType.manual_webhook.value,
-                    DOORDASH,
-                    SEGMENT,
+                    HUBSPOT,
                     STRIPE,
-                    ZENDESK,
+                    MAILCHIMP,
                 ],
                 [
-                    ConnectionType.attentive.value,
+                    ConnectionType.attentive_email.value,
                 ],
             ),
             (
                 [ActionType.consent, ActionType.erasure],
                 [
-                    GOOGLE_ANALYTICS,
-                    MAILCHIMP_TRANSACTIONAL,
+                    HUBSPOT,
+                    STRIPE,
+                    MAILCHIMP,
                     ConnectionType.sovrn.value,
                     ConnectionType.postgres.value,
-                    SEGMENT,  # segment has DPR so it is an erasure
-                    STRIPE,
-                    ZENDESK,
-                    ConnectionType.attentive.value,
+                    ConnectionType.attentive_email.value,
                     ConnectionType.manual_webhook.value,
                 ],
-                [
-                    DOORDASH,  # doordash does not have erasures
-                ],
+                [],
             ),
             (
                 [ActionType.access, ActionType.erasure],
                 [
                     ConnectionType.postgres.value,
                     ConnectionType.manual_webhook.value,
-                    DOORDASH,
-                    SEGMENT,
+                    HUBSPOT,
                     STRIPE,
-                    ZENDESK,
-                    ConnectionType.attentive.value,
+                    MAILCHIMP,
+                    ConnectionType.attentive_email.value,
                 ],
                 [
-                    GOOGLE_ANALYTICS,
-                    MAILCHIMP_TRANSACTIONAL,
                     ConnectionType.sovrn.value,
                 ],
             ),
@@ -839,14 +775,14 @@ class TestGetConnectionSecretSchema:
             "type": "object",
             "properties": {
                 "keyfile_creds": {
-                    "title": "Keyfile Creds",
+                    "title": "Keyfile creds",
                     "description": "The contents of the key file that contains authentication credentials for a service account in GCP.",
                     "sensitive": True,
                     "allOf": [{"$ref": "#/definitions/KeyfileCreds"}],
                 },
                 "dataset": {
-                    "title": "BigQuery Dataset",
-                    "description": "The dataset within your BigQuery project that contains the tables you want to access.",
+                    "title": "Dataset",
+                    "description": "Only provide a dataset to scope discovery monitors and privacy request automation to a specific BigQuery dataset. In most cases, this can be left blank.",
                     "type": "string",
                 },
             },
@@ -860,16 +796,16 @@ class TestGetConnectionSecretSchema:
                         "type": {"title": "Type", "type": "string"},
                         "project_id": {"title": "Project ID", "type": "string"},
                         "private_key_id": {
-                            "title": "Private Key ID",
+                            "title": "Private key ID",
                             "type": "string",
                         },
                         "private_key": {
-                            "title": "Private Key",
+                            "title": "Private key",
                             "sensitive": True,
                             "type": "string",
                         },
                         "client_email": {
-                            "title": "Client Email",
+                            "title": "Client email",
                             "type": "string",
                             "format": "email",
                         },
@@ -877,11 +813,11 @@ class TestGetConnectionSecretSchema:
                         "auth_uri": {"title": "Auth URI", "type": "string"},
                         "token_uri": {"title": "Token URI", "type": "string"},
                         "auth_provider_x509_cert_url": {
-                            "title": "Auth Provider X509 Cert URL",
+                            "title": "Auth provider X509 cert URL",
                             "type": "string",
                         },
                         "client_x509_cert_url": {
-                            "title": "Client X509 Cert URL",
+                            "title": "Client X509 cert URL",
                             "type": "string",
                         },
                     },
@@ -1081,7 +1017,7 @@ class TestGetConnectionSecretSchema:
                     "type": "string",
                 },
             },
-            "required": ["host", "username", "password", "dbname"],
+            "required": ["host", "username", "password"],
         }
 
     def test_get_connection_secret_schema_mysql(
@@ -1129,8 +1065,20 @@ class TestGetConnectionSecretSchema:
                     "default": False,
                     "type": "boolean",
                 },
+                "ssl_mode": {
+                    "title": "SSL Mode",
+                    "description": "The SSL mode to use for the connection. Accepted values are: 'required', 'preferred', 'disabled', or an empty value.",
+                    "allOf": [{"$ref": "#/definitions/MySQLSSLMode"}],
+                },
             },
             "required": ["host", "dbname"],
+            "definitions": {
+                "MySQLSSLMode": {
+                    "title": "MySQLSSLMode",
+                    "type": "string",
+                    "enum": ["preferred", "required", "disabled", ""],
+                }
+            },
         }
 
     def test_get_connection_secret_schema_postgres(
@@ -1183,8 +1131,114 @@ class TestGetConnectionSecretSchema:
                     "default": False,
                     "type": "boolean",
                 },
+                "ssl_mode": {
+                    "title": "SSL Mode",
+                    "type": "string",
+                },
             },
-            "required": ["host", "dbname"],
+            "required": ["host"],
+        }
+
+    def test_get_connection_secret_schema_google_cloud_sql_postgres(
+        self, api_client: TestClient, generate_auth_header, base_url
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+        resp = api_client.get(
+            base_url.format(connection_type="google_cloud_sql_postgres"),
+            headers=auth_header,
+        )
+
+        assert resp.json() == {
+            "definitions": {
+                "GoogleCloudSQLIPType": {
+                    "description": "Enum for Google " "Cloud SQL IP types",
+                    "enum": ["public", "private", "psc"],
+                    "title": "GoogleCloudSQLIPType",
+                    "type": "string",
+                },
+                "KeyfileCreds": {
+                    "description": "Schema that holds Google "
+                    "Cloud SQL for Postgres "
+                    "keyfile key/vals",
+                    "properties": {
+                        "auth_provider_x509_cert_url": {
+                            "title": "Auth provider X509 cert URL",
+                            "type": "string",
+                        },
+                        "auth_uri": {"title": "Auth URI", "type": "string"},
+                        "client_email": {
+                            "format": "email",
+                            "title": "Client Email",
+                            "type": "string",
+                        },
+                        "client_id": {"title": "Client ID", "type": "string"},
+                        "client_x509_cert_url": {
+                            "title": "Client X509 cert URL",
+                            "type": "string",
+                        },
+                        "private_key": {
+                            "sensitive": True,
+                            "title": "Private Key",
+                            "type": "string",
+                        },
+                        "private_key_id": {
+                            "title": "Private key ID",
+                            "type": "string",
+                        },
+                        "project_id": {"title": "Project ID", "type": "string"},
+                        "token_uri": {"title": "Token URI", "type": "string"},
+                        "type": {"title": "Type", "type": "string"},
+                        "universe_domain": {
+                            "title": "Universe domain",
+                            "type": "string",
+                        },
+                    },
+                    "required": ["project_id", "universe_domain"],
+                    "title": "KeyfileCreds",
+                    "type": "object",
+                },
+            },
+            "description": "Schema to validate the secrets needed to connect to Google "
+            "Cloud SQL for Postgres",
+            "properties": {
+                "db_iam_user": {
+                    "description": "example: "
+                    "service-account@test.iam.gserviceaccount.com",
+                    "title": "DB IAM user",
+                    "type": "string",
+                },
+                "db_schema": {
+                    "description": "The default schema to be used "
+                    "for the database connection "
+                    "(defaults to public).",
+                    "title": "Schema",
+                    "type": "string",
+                },
+                "dbname": {"title": "Database name", "type": "string"},
+                "instance_connection_name": {
+                    "description": "example: "
+                    "friendly-tower-424214-n8:us-central1:test-ethyca",
+                    "title": "Instance connection name",
+                    "type": "string",
+                },
+                "keyfile_creds": {
+                    "allOf": [{"$ref": "#/definitions/KeyfileCreds"}],
+                    "description": "The contents of the key file "
+                    "that contains authentication "
+                    "credentials for a service "
+                    "account in GCP.",
+                    "sensitive": True,
+                    "title": "Keyfile creds",
+                },
+                "ip_type": {
+                    "allOf": [{"$ref": "#/definitions/GoogleCloudSQLIPType"}],
+                    "description": "Specify the IP Address type required for your database (defaults to public). See the Google Cloud documentation for more information about connection options: https://cloud.google.com/sql/docs/postgres/connect-overview",
+                    "title": "IP type",
+                },
+            },
+            "required": ["db_iam_user", "instance_connection_name", "keyfile_creds"],
+            "title": "GoogleCloudSQLPostgresSchema",
+            "type": "object",
         }
 
     def test_get_connection_secret_schema_redshift(
@@ -1298,7 +1352,7 @@ class TestGetConnectionSecretSchema:
             "type": "object",
         }
 
-    def test_get_connection_secret_schema_rds(
+    def test_get_connection_secret_schema_rds_mysql(
         self, api_client: TestClient, generate_auth_header, base_url
     ) -> None:
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
@@ -1361,12 +1415,84 @@ class TestGetConnectionSecretSchema:
                     "description": "The user account used to "
                     "authenticate and access the "
                     "databases.",
-                    "title": "Username",
+                    "title": "DB Username",
                     "type": "string",
                 },
             },
             "required": ["auth_method", "region"],
             "title": "RDSMySQLSchema",
+            "type": "object",
+        }
+
+    def test_get_connection_secret_schema_rds_postgres(
+        self, api_client: TestClient, generate_auth_header, base_url
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
+        resp = api_client.get(
+            base_url.format(connection_type="rds_postgres"), headers=auth_header
+        )
+        assert resp.json() == {
+            "definitions": {
+                "AWSAuthMethod": {
+                    "enum": ["automatic", "secret_keys"],
+                    "title": "AWSAuthMethod",
+                    "type": "string",
+                }
+            },
+            "description": "Schema to validate the secrets needed to connect to a RDS "
+            "Postgres Database",
+            "properties": {
+                "auth_method": {
+                    "allOf": [{"$ref": "#/definitions/AWSAuthMethod"}],
+                    "description": "Determines which type of "
+                    "authentication method to use "
+                    "for connecting to Amazon Web "
+                    "Services. Currently accepted "
+                    "values are: `secret_keys` or "
+                    "`automatic`.",
+                    "title": "Authentication Method",
+                },
+                "aws_access_key_id": {
+                    "description": "Part of the credentials "
+                    "that provide access to "
+                    "your AWS account.",
+                    "title": "Access Key ID",
+                    "type": "string",
+                },
+                "aws_assume_role_arn": {
+                    "description": "If provided, the ARN "
+                    "of the role that "
+                    "should be assumed to "
+                    "connect to AWS.",
+                    "title": "Assume Role ARN",
+                    "type": "string",
+                },
+                "aws_secret_access_key": {
+                    "description": "Part of the "
+                    "credentials that "
+                    "provide access to "
+                    "your AWS account.",
+                    "sensitive": True,
+                    "title": "Secret Access Key",
+                    "type": "string",
+                },
+                "region": {
+                    "description": "The AWS region where the RDS "
+                    "instances are located.",
+                    "title": "Region",
+                    "type": "string",
+                },
+                "db_username": {
+                    "default": "fides_service_user",
+                    "description": "The user account used to "
+                    "authenticate and access the "
+                    "databases.",
+                    "title": "DB Username",
+                    "type": "string",
+                },
+            },
+            "required": ["auth_method", "region"],
+            "title": "RDSPostgresSchema",
             "type": "object",
         }
 
@@ -1378,24 +1504,22 @@ class TestGetConnectionSecretSchema:
             base_url.format(connection_type="snowflake"), headers=auth_header
         )
         assert resp.json() == {
-            "title": "SnowflakeSchema",
             "description": "Schema to validate the secrets needed to connect to Snowflake",
-            "type": "object",
             "properties": {
                 "account_identifier": {
-                    "title": "Account Name",
                     "description": "The unique identifier for your Snowflake account.",
+                    "title": "Account Name",
                     "type": "string",
                 },
                 "user_login_name": {
-                    "title": "Username",
                     "description": "The user account used to authenticate and access the database.",
+                    "title": "Username",
                     "type": "string",
                 },
                 "password": {
-                    "title": "Password",
                     "description": "The password used to authenticate and access the database. You can use a password or a private key, but not both.",
                     "sensitive": True,
+                    "title": "Password",
                     "type": "string",
                 },
                 "private_key": {
@@ -1411,33 +1535,29 @@ class TestGetConnectionSecretSchema:
                     "type": "string",
                 },
                 "warehouse_name": {
-                    "title": "Warehouse",
                     "description": "The name of the Snowflake warehouse where your queries will be executed.",
+                    "title": "Warehouse",
                     "type": "string",
                 },
                 "database_name": {
+                    "description": "Only provide a database name to scope discovery monitors and privacy request automation to a specific database. In most cases, this can be left blank.",
                     "title": "Database",
-                    "description": "The name of the Snowflake database you want to connect to.",
                     "type": "string",
                 },
                 "schema_name": {
+                    "description": "Only provide a schema to scope discovery monitors and privacy request automation to a specific schema. In most cases, this can be left blank.",
                     "title": "Schema",
-                    "description": "The name of the Snowflake schema within the selected database.",
                     "type": "string",
                 },
                 "role_name": {
-                    "title": "Role",
                     "description": "The Snowflake role to assume for the session, if different than Username.",
+                    "title": "Role",
                     "type": "string",
                 },
             },
-            "required": [
-                "account_identifier",
-                "user_login_name",
-                "warehouse_name",
-                "database_name",
-                "schema_name",
-            ],
+            "required": ["account_identifier", "user_login_name", "warehouse_name"],
+            "title": "SnowflakeSchema",
+            "type": "object",
         }
 
     def test_get_connection_secret_schema_hubspot(
@@ -1489,7 +1609,7 @@ class TestGetConnectionSecretSchema:
     ):
         auth_header = generate_auth_header(scopes=[CONNECTION_TYPE_READ])
         resp = api_client.get(
-            base_url.format(connection_type="attentive"), headers=auth_header
+            base_url.format(connection_type="attentive_email"), headers=auth_header
         )
         assert resp.status_code == 200
 
@@ -1497,7 +1617,7 @@ class TestGetConnectionSecretSchema:
             "additionalProperties": False,
             "properties": {
                 "third_party_vendor_name": {
-                    "default": "Attentive",
+                    "default": "Attentive Email",
                     "title": "Third Party Vendor Name",
                     "type": "string",
                 },

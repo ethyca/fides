@@ -9,7 +9,6 @@
  */
 import { URL } from "url";
 
-import getPropertyFromUrl from "~/app/server-utils/getPropertyFromUrl";
 import loadEnvironmentVariables from "~/app/server-utils/loadEnvironmentVariables";
 import { PrivacyCenterSettings } from "~/app/server-utils/PrivacyCenterSettings";
 import {
@@ -32,7 +31,7 @@ import {
 
 export type PrivacyCenterServerSettings = Pick<
   PrivacyCenterSettings,
-  "SERVER_SIDE_FIDES_API_URL"
+  "SERVER_SIDE_FIDES_API_URL" | "FIDES_JS_MAX_AGE_SECONDS"
 >;
 
 /**
@@ -51,6 +50,7 @@ export type PrivacyCenterClientSettings = Pick<
   | "OVERLAY_PARENT_ID"
   | "MODAL_LINK_ID"
   | "PRIVACY_CENTER_URL"
+  | "SHOW_BRAND_LINK"
   | "FIDES_EMBED"
   | "FIDES_DISABLE_SAVE_API"
   | "FIDES_DISABLE_NOTICES_SERVED_API"
@@ -65,6 +65,10 @@ export type PrivacyCenterClientSettings = Pick<
   | "BASE_64_COOKIE"
   | "FIDES_PRIMARY_COLOR"
   | "FIDES_CLEAR_COOKIE"
+  | "FIDES_CONSENT_OVERRIDE"
+  | "FIDES_DISABLED_NOTICES"
+  | "FIDES_CONSENT_NON_APPLICABLE_FLAG_MODE"
+  | "FIDES_CONSENT_FLAG_TYPE"
 >;
 
 export type Styles = string;
@@ -76,7 +80,12 @@ export interface PrivacyCenterEnvironment {
   settings: PrivacyCenterClientSettings;
   config?: Config | PrivacyCenterConfig;
   styles?: Styles;
-  property?: Property;
+  property?: Property | null;
+  location?: {
+    country?: string;
+    location?: string;
+    region?: string;
+  };
 }
 
 /**
@@ -116,9 +125,7 @@ const loadConfigFile = async (
         path = urlString.replace("file:", "");
       }
       const file = await fsPromises.readFile(path || url, "utf-8");
-      if (process.env.NODE_ENV === "development") {
-        console.log(`Loaded configuration file: ${urlString}`);
-      }
+      console.debug(`Loaded configuration file: ${urlString}`);
       return file;
     } catch (err: any) {
       // Catch "file not found" errors (ENOENT)
@@ -126,7 +133,7 @@ const loadConfigFile = async (
         continue;
       }
       // Log everything else and continue
-      console.log(
+      console.error(
         `Failed to load configuration file from ${urlString}. Error: `,
         err,
       );
@@ -275,51 +282,23 @@ export const loadServerSettings = (): PrivacyCenterServerSettings => {
   const serverSideSettings: PrivacyCenterServerSettings = {
     SERVER_SIDE_FIDES_API_URL:
       settings.SERVER_SIDE_FIDES_API_URL || settings.FIDES_API_URL,
+    FIDES_JS_MAX_AGE_SECONDS: settings.FIDES_JS_MAX_AGE_SECONDS,
   };
 
   return serverSideSettings;
 };
 
+export const getFidesApiUrl = () => {
+  const settings = loadEnvironmentVariables();
+  return settings.SERVER_SIDE_FIDES_API_URL || settings.FIDES_API_URL;
+};
+
 /**
- * Loads all the ENV variable settings, configuration files, etc. to initialize the environment
+ * Returns the env variables that should be shared with the client
  */
-// eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
-
-export const loadPrivacyCenterEnvironment = async ({
-  customPropertyPath = undefined,
-}: { customPropertyPath?: string } = {}): Promise<PrivacyCenterEnvironment> => {
-  if (typeof window !== "undefined") {
-    throw new Error(
-      "Unexpected error, cannot load server environment from client code!",
-    );
-  }
-  // DEFER: Log a version number here (see https://github.com/ethyca/fides/issues/3171)
-  if (process.env.NODE_ENV === "development") {
-    console.log("Load Privacy Center environment for session...");
-  }
-
+export const getClientSettings = (): PrivacyCenterClientSettings => {
   // Load environment variables
   const settings = loadEnvironmentVariables();
-
-  let property;
-  if (settings.CUSTOM_PROPERTIES && customPropertyPath) {
-    const result = await getPropertyFromUrl({
-      customPropertyPath,
-      fidesApiUrl: settings.SERVER_SIDE_FIDES_API_URL || settings.FIDES_API_URL,
-    });
-    if (result) {
-      property = result;
-    }
-  }
-
-  // Load configuration file (if it exists)
-  const config =
-    property?.privacy_center_config ||
-    (await loadConfigFromFile(settings.CONFIG_JSON_URL));
-
-  // Load styling file (if it exists)
-  const styles =
-    property?.stylesheet || (await loadStylesFromFile(settings.CONFIG_CSS_URL));
 
   // Load client settings (ensuring we only pass-along settings that are safe for the client)
   const clientSettings: PrivacyCenterClientSettings = {
@@ -332,6 +311,7 @@ export const loadPrivacyCenterEnvironment = async ({
     OVERLAY_PARENT_ID: settings.OVERLAY_PARENT_ID,
     MODAL_LINK_ID: settings.MODAL_LINK_ID,
     PRIVACY_CENTER_URL: settings.PRIVACY_CENTER_URL,
+    SHOW_BRAND_LINK: settings.SHOW_BRAND_LINK,
     FIDES_EMBED: settings.FIDES_EMBED,
     FIDES_DISABLE_SAVE_API: settings.FIDES_DISABLE_SAVE_API,
     FIDES_DISABLE_NOTICES_SERVED_API: settings.FIDES_DISABLE_NOTICES_SERVED_API,
@@ -346,35 +326,12 @@ export const loadPrivacyCenterEnvironment = async ({
     BASE_64_COOKIE: settings.BASE_64_COOKIE,
     FIDES_PRIMARY_COLOR: settings.FIDES_PRIMARY_COLOR,
     FIDES_CLEAR_COOKIE: settings.FIDES_CLEAR_COOKIE,
+    FIDES_CONSENT_OVERRIDE: settings.FIDES_CONSENT_OVERRIDE,
+    FIDES_DISABLED_NOTICES: settings.FIDES_DISABLED_NOTICES,
+    FIDES_CONSENT_NON_APPLICABLE_FLAG_MODE:
+      settings.FIDES_CONSENT_NON_APPLICABLE_FLAG_MODE,
+    FIDES_CONSENT_FLAG_TYPE: settings.FIDES_CONSENT_FLAG_TYPE,
   };
 
-  // For backwards-compatibility, override FIDES_API_URL with the value from the config file if present
-  // DEFER: remove backwards compatibility (see https://github.com/ethyca/fides/issues/1264)
-  if (
-    config &&
-    (config?.server_url_production ||
-      config?.server_url_development ||
-      (config as any)?.fidesops_host_production ||
-      (config as any)?.fidesops_host_development)
-  ) {
-    console.warn(
-      "Using deprecated 'server_url_production' or 'server_url_development' config. " +
-        "Please update to using FIDES_PRIVACY_CENTER__FIDES_API_URL environment variable instead.",
-    );
-    const legacyApiUrl =
-      process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test"
-        ? config.server_url_development ||
-          (config as any).fidesops_host_development
-        : config.server_url_production ||
-          (config as any).fidesops_host_production;
-
-    clientSettings.FIDES_API_URL = legacyApiUrl;
-  }
-
-  return {
-    settings: clientSettings,
-    config,
-    styles,
-    property,
-  };
+  return clientSettings;
 };

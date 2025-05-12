@@ -4,7 +4,8 @@ import { Field, FieldInputProps } from "formik";
 import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
 import { AllowedTypes, ResourceTypes } from "~/types/api";
 
-import { CustomSelect, CustomTextInput } from "../form/inputs";
+import { ControlledSelect } from "../form/ControlledSelect";
+import { CustomTextInput } from "../form/inputs";
 import { useCustomFields } from "./hooks";
 
 type CustomFieldsListProps = {
@@ -81,27 +82,21 @@ export const CustomFieldsList = ({
                   const { options } = allowList;
 
                   return (
-                    <Field key={definitionId} name={name}>
-                      {({
-                        field,
-                      }: {
-                        field: FieldInputProps<string | string[]>;
-                      }) => (
-                        <CustomSelect
-                          {...field}
-                          isClearable
-                          isFormikOnChange
-                          isMulti={
-                            customFieldDefinition.field_type !==
-                            AllowedTypes.STRING
-                          }
-                          label={customFieldDefinition.name}
-                          options={options}
-                          tooltip={customFieldDefinition.description}
-                          variant="stacked"
-                        />
-                      )}
-                    </Field>
+                    <ControlledSelect
+                      key={definitionId}
+                      name={name}
+                      allowClear
+                      mode={
+                        customFieldDefinition.field_type !== AllowedTypes.STRING
+                          ? "multiple"
+                          : undefined
+                      }
+                      label={customFieldDefinition.name}
+                      options={options}
+                      tooltip={customFieldDefinition.description}
+                      layout="stacked"
+                      className="w-full"
+                    />
                   );
                 })}
               </Flex>

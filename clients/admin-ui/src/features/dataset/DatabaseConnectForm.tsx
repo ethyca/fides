@@ -1,4 +1,4 @@
-import { Box, Button, Text, useToast, VStack } from "fidesui";
+import { AntButton as Button, Box, Text, useToast, VStack } from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import { useDispatch } from "react-redux";
@@ -6,9 +6,9 @@ import * as Yup from "yup";
 
 import { useFeatures } from "~/features/common/features";
 import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
-import { getErrorMessage } from "~/features/common/helpers";
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
-import { DATASET_DETAIL_ROUTE } from "~/features/common/nav/v2/routes";
+import { DATASET_DETAIL_ROUTE } from "~/features/common/nav/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
 import { useCreateClassifyInstanceMutation } from "~/features/plus/plus.slice";
@@ -74,7 +74,7 @@ const DatabaseConnectForm = () => {
       },
     });
 
-    if ("error" in result) {
+    if (isErrorResult(result)) {
       return {
         error: getErrorMessage(result.error),
       };
@@ -108,7 +108,7 @@ const DatabaseConnectForm = () => {
   > => {
     const result = await createMutation(datasetBody);
 
-    if ("error" in result) {
+    if (isErrorResult(result)) {
       return {
         error: getErrorMessage(result.error),
       };
@@ -152,7 +152,7 @@ const DatabaseConnectForm = () => {
       },
     });
 
-    if ("error" in result) {
+    if (isErrorResult(result)) {
       return {
         error: getErrorMessage(result.error),
       };
@@ -245,11 +245,10 @@ const DatabaseConnectForm = () => {
 
             <Box>
               <Button
-                size="sm"
-                colorScheme="primary"
-                type="submit"
-                isLoading={isSubmitting || isLoading}
-                isDisabled={isSubmitting || isLoading}
+                type="primary"
+                htmlType="submit"
+                loading={isSubmitting || isLoading}
+                disabled={isSubmitting || isLoading}
                 data-testid="create-dataset-btn"
               >
                 Generate dataset

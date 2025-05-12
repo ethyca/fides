@@ -1,7 +1,6 @@
 import {
+  AntButton as Button,
   Box,
-  Button,
-  ButtonGroup,
   Divider,
   Flex,
   useToast,
@@ -13,7 +12,7 @@ import { useRef, useState } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
-import { DATASET_DETAIL_ROUTE } from "~/features/common/nav/v2/routes";
+import { DATASET_DETAIL_ROUTE } from "~/features/common/nav/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { Editor, isYamlException } from "~/features/common/yaml/helpers";
 import YamlError from "~/features/common/yaml/YamlError";
@@ -73,6 +72,8 @@ const DatasetYamlForm = () => {
     let dataset;
     if (isDatasetArray(value)) {
       [dataset] = value.dataset;
+    } else if (Array.isArray(value)) {
+      [dataset] = value;
     } else {
       dataset = value;
     }
@@ -131,28 +132,16 @@ const DatasetYamlForm = () => {
             theme="light"
           />
           <Divider color="gray.100" />
-          <ButtonGroup
-            mt="24px !important"
-            size="sm"
-            spacing="8px"
-            variant="outline"
+          <Button
+            type="primary"
+            disabled={isEmptyState || !!yamlError || isSubmitting}
+            loading={isSubmitting}
+            onClick={handleSubmit}
+            htmlType="submit"
+            className="mt-6 w-fit"
           >
-            <Button
-              bg="primary.800"
-              color="white"
-              isDisabled={isEmptyState || !!yamlError || isSubmitting}
-              isLoading={isSubmitting}
-              loadingText="Saving Yaml system"
-              onClick={handleSubmit}
-              size="sm"
-              variant="solid"
-              type="submit"
-              _active={{ bg: "primary.500" }}
-              _hover={{ bg: "primary.400" }}
-            >
-              Create dataset
-            </Button>
-          </ButtonGroup>
+            Create dataset
+          </Button>
         </VStack>
       </Box>
       <Box>

@@ -1,12 +1,8 @@
-import { Button, ButtonGroup, Stack } from "fidesui";
+import { AntButton as Button, Stack } from "fidesui";
 import { Form, Formik } from "formik";
 import { lazy } from "yup";
 
-import {
-  CustomCheckbox,
-  CustomSelect,
-  CustomTextInput,
-} from "~/features/common/form/inputs";
+import { CustomCheckbox, CustomTextInput } from "~/features/common/form/inputs";
 import {
   findActionFromPolicyKey,
   generateValidationSchemaFromAction,
@@ -18,6 +14,8 @@ import {
   PrivacyRequestCreate,
   PrivacyRequestOption,
 } from "~/types/api";
+
+import { ControlledSelect } from "../common/form/ControlledSelect";
 
 export type PrivacyRequestSubmitFormValues = PrivacyRequestCreate & {
   is_verified: boolean;
@@ -113,10 +111,10 @@ const SubmitPrivacyRequestForm = ({
           config?.actions,
         );
 
-        const handleResetCustomFields = (e: any) => {
+        const handleResetCustomFields = (value: string) => {
           // when selecting a new request type, populate the Formik state with
           // labels and default values for the corresponding custom fields
-          const newAction = findActionFromPolicyKey(e.value, config?.actions);
+          const newAction = findActionFromPolicyKey(value, config?.actions);
           if (!newAction?.custom_privacy_request_fields) {
             setFieldValue(`custom_privacy_request_fields`, undefined);
             return;
@@ -137,7 +135,7 @@ const SubmitPrivacyRequestForm = ({
         return (
           <Form>
             <Stack spacing={6} mb={2}>
-              <CustomSelect
+              <ControlledSelect
                 name="policy_key"
                 label="Request type"
                 options={
@@ -146,8 +144,8 @@ const SubmitPrivacyRequestForm = ({
                     value: action.policy_key,
                   })) ?? []
                 }
-                onChange={(e: any) => handleResetCustomFields(e)}
-                variant="stacked"
+                onChange={handleResetCustomFields}
+                layout="stacked"
                 isRequired
               />
               <IdentityFields identityInputs={currentAction?.identity_inputs} />
@@ -158,21 +156,18 @@ const SubmitPrivacyRequestForm = ({
                 name="is_verified"
                 label="I confirm that I have verified this user information"
               />
-              <ButtonGroup alignSelf="end" spacing={0}>
-                <Button variant="outline" size="sm" onClick={onCancel} mr={4}>
-                  Cancel
-                </Button>
+              <div className="flex gap-4 self-end">
+                <Button onClick={onCancel}>Cancel</Button>
                 <Button
-                  type="submit"
-                  colorScheme="primary"
-                  size="sm"
-                  isDisabled={!values.is_verified || !dirty || !isValid}
-                  isLoading={isSubmitting}
+                  htmlType="submit"
+                  type="primary"
+                  disabled={!values.is_verified || !dirty || !isValid}
+                  loading={isSubmitting}
                   data-testid="submit-btn"
                 >
                   Create
                 </Button>
-              </ButtonGroup>
+              </div>
             </Stack>
           </Form>
         );

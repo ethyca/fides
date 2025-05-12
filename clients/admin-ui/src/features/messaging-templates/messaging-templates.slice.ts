@@ -1,4 +1,5 @@
 import { baseApi } from "~/features/common/api.slice";
+import { CustomizableMessagingTemplatesEnum } from "~/features/messaging-templates/CustomizableMessagingTemplatesEnum";
 import { MinimalProperty } from "~/types/api";
 import { BulkUpdateFailed } from "~/types/api/models/BulkUpdateFailed";
 
@@ -28,7 +29,7 @@ export type MessagingTemplateResponse = {
 };
 
 export type MessagingTemplateDefaultResponse = {
-  type: string;
+  type: CustomizableMessagingTemplatesEnum;
   is_enabled: boolean;
   content: {
     subject: string;

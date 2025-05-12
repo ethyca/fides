@@ -2,13 +2,13 @@
  * Helper functions to set the GPP CMP API based on Fides values
  */
 
-import { CmpApi, UsNatV1Field } from "@iabgpp/cmpapi";
+import { CmpApi, UsNatField } from "@iabgpp/cmpapi";
 
 import { FidesCookie, PrivacyExperience } from "../consent-types";
-import { FIDES_REGION_TO_GPP_SECTION } from "./constants";
+import { FIDES_US_REGION_TO_GPP_SECTION } from "./constants";
 import { GPPSection, GPPSettings, GPPUSApproach } from "./types";
 
-const US_NATIONAL_REGION = "us";
+export const US_NATIONAL_REGION = "us";
 
 const setMspaSections = ({
   cmpApi,
@@ -26,19 +26,34 @@ const setMspaSections = ({
   const mspaFields = [
     {
       gppSettingField: gppSettings.mspa_covered_transactions,
-      cmpApiField: UsNatV1Field.MSPA_COVERED_TRANSACTION,
+      cmpApiField: UsNatField.MSPA_COVERED_TRANSACTION,
     },
     {
-      gppSettingField: gppSettings.mspa_opt_out_option_mode,
-      cmpApiField: UsNatV1Field.MSPA_OPT_OUT_OPTION_MODE,
+      gppSettingField:
+        gppSettings.mspa_covered_transactions &&
+        gppSettings.mspa_opt_out_option_mode,
+      cmpApiField: UsNatField.MSPA_OPT_OUT_OPTION_MODE,
     },
     {
-      gppSettingField: gppSettings.mspa_service_provider_mode,
-      cmpApiField: UsNatV1Field.MSPA_SERVICE_PROVIDER_MODE,
+      gppSettingField:
+        gppSettings.mspa_covered_transactions &&
+        gppSettings.mspa_service_provider_mode,
+      cmpApiField: UsNatField.MSPA_SERVICE_PROVIDER_MODE,
     },
   ];
+
   mspaFields.forEach(({ gppSettingField, cmpApiField }) => {
-    cmpApi.setFieldValue(sectionName, cmpApiField, gppSettingField ? 1 : 2);
+    const isCoveredTransactions =
+      cmpApiField === UsNatField.MSPA_COVERED_TRANSACTION;
+    let value = 2; // Default to No
+
+    if (!gppSettings.mspa_covered_transactions && !isCoveredTransactions) {
+      value = 0; // When covered transactions is false, other fields should be disabled
+    } else if (gppSettingField) {
+      value = 1; // Yes
+    }
+
+    cmpApi.setFieldValue(sectionName, cmpApiField, value);
   });
 };
 
@@ -53,7 +68,7 @@ const isUsRegion = (region: string) => region?.toLowerCase().startsWith("us");
  * However, the GPP field mapping will only contain "us", so make sure we use "us" (US_NATIONAL_REGION) when we are configured for the national case.
  * Otherwise, we can use the experience region directly.
  */
-const deriveGppFieldRegion = ({
+export const deriveGppFieldRegion = ({
   experienceRegion,
   usApproach,
 }: {
@@ -85,11 +100,17 @@ export const setGppNoticesProvidedFromExperience = ({
     gpp_settings: gppSettings,
   } = experience;
   const usApproach = gppSettings?.us_approach;
-  const gppRegion = deriveGppFieldRegion({
+  let gppRegion = deriveGppFieldRegion({
     experienceRegion,
     usApproach,
   });
-  const gppSection = FIDES_REGION_TO_GPP_SECTION[gppRegion];
+  let gppSection = FIDES_US_REGION_TO_GPP_SECTION[gppRegion];
+
+  if (!gppSection && usApproach === GPPUSApproach.ALL) {
+    // if we're using the "all" approach, and the user's state isn't supported yet, we should default to national.
+    gppRegion = US_NATIONAL_REGION;
+    gppSection = FIDES_US_REGION_TO_GPP_SECTION[gppRegion];
+  }
 
   if (
     !gppSection ||
@@ -142,11 +163,17 @@ export const setGppOptOutsFromCookieAndExperience = ({
     gpp_settings: gppSettings,
   } = experience;
   const usApproach = gppSettings?.us_approach;
-  const gppRegion = deriveGppFieldRegion({
+  let gppRegion = deriveGppFieldRegion({
     experienceRegion,
     usApproach,
   });
-  const gppSection = FIDES_REGION_TO_GPP_SECTION[gppRegion];
+  let gppSection = FIDES_US_REGION_TO_GPP_SECTION[gppRegion];
+
+  if (!gppSection && usApproach === GPPUSApproach.ALL) {
+    // if we're using the all approach, and the current state isn't supported, we should default to national
+    gppRegion = US_NATIONAL_REGION;
+    gppSection = FIDES_US_REGION_TO_GPP_SECTION[gppRegion];
+  }
 
   if (
     !gppSection ||

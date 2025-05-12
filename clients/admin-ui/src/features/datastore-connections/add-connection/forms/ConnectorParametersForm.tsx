@@ -6,9 +6,7 @@ import {
 } from "connection-type/types";
 import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
 import {
-  Button,
-  ButtonGroup,
-  CircleHelpIcon,
+  AntButton as Button,
   Flex,
   FormControl,
   FormErrorMessage,
@@ -21,13 +19,13 @@ import {
   NumberInputField,
   NumberInputStepper,
   Textarea,
-  Tooltip,
   VStack,
 } from "fidesui";
 import { Field, FieldInputProps, Form, Formik, FormikProps } from "formik";
 import React, { useEffect, useRef } from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { ConnectionType } from "~/types/api";
 
 import {
@@ -64,7 +62,7 @@ const ConnectorParametersForm = ({
   isSubmitting = false,
   onSaveClick,
   onTestConnectionClick,
-  testButtonLabel = "Test connection",
+  testButtonLabel = "Test integration",
 }: ConnectorParametersFormProps) => {
   const mounted = useRef(false);
   const { handleError } = useAPIHelper();
@@ -173,21 +171,9 @@ const ConnectorParametersForm = ({
             )}
             <FormErrorMessage>{form.errors[key]}</FormErrorMessage>
           </VStack>
-          <Tooltip
-            aria-label={item.description}
-            hasArrow
-            label={item.description}
-            placement="right-start"
-            openDelay={500}
-          >
-            <Flex
-              alignItems="center"
-              h="32px"
-              visibility={item.description ? "visible" : "hidden"}
-            >
-              <CircleHelpIcon marginLeft="8px" _hover={{ cursor: "pointer" }} />
-            </Flex>
-          </Tooltip>
+          <Flex alignItems="center" h={8} ml={2}>
+            <InfoTooltip label={item.description} />
+          </Flex>
         </FormControl>
       )}
     </Field>
@@ -266,7 +252,7 @@ const ConnectorParametersForm = ({
                   isInvalid={props.errors.name && props.touched.name}
                 >
                   {getFormLabel("name", "Name")}
-                  <VStack align="flex-start" w="inherit">
+                  <VStack align="flex-start" w="inherit" mr="6">
                     <Input
                       {...field}
                       autoComplete="off"
@@ -280,9 +266,6 @@ const ConnectorParametersForm = ({
                     />
                     <FormErrorMessage>{props.errors.name}</FormErrorMessage>
                   </VStack>
-                  <Flex alignItems="center" h="32px" visibility="hidden">
-                    <CircleHelpIcon marginLeft="8px" />
-                  </Flex>
                 </FormControl>
               )}
             </Field>
@@ -300,10 +283,8 @@ const ConnectorParametersForm = ({
                     resize="none"
                     size="sm"
                     value={field.value || ""}
+                    mr="6"
                   />
-                  <Flex alignItems="center" h="32px" visibility="hidden">
-                    <CircleHelpIcon marginLeft="8px" />
-                  </Flex>
                 </FormControl>
               )}
             </Field>
@@ -337,20 +318,9 @@ const ConnectorParametersForm = ({
                       {props.errors.instance_key}
                     </FormErrorMessage>
                   </VStack>
-                  <Tooltip
-                    aria-label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this connection."
-                    hasArrow
-                    label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this connection."
-                    placement="right-start"
-                    openDelay={500}
-                  >
-                    <Flex alignItems="center" h="32px">
-                      <CircleHelpIcon
-                        marginLeft="8px"
-                        _hover={{ cursor: "pointer" }}
-                      />
-                    </Flex>
-                  </Tooltip>
+                  <Flex alignItems="center" h={8} ml={2}>
+                    <InfoTooltip label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this connection." />
+                  </Flex>
                 </FormControl>
               )}
             </Field>
@@ -362,33 +332,24 @@ const ConnectorParametersForm = ({
               }
               return getFormField(key, item);
             })}
-            <ButtonGroup size="sm" spacing="8px" variant="outline">
+            <Flex gap={2}>
               <Button
-                colorScheme="gray.700"
-                isDisabled={!connection?.key}
-                isLoading={result.isLoading || result.isFetching}
-                loadingText="Testing"
+                disabled={!connection?.key}
+                loading={result.isLoading || result.isFetching}
                 onClick={handleTestConnectionClick}
-                variant="outline"
+                data-testid="test-connection-button"
               >
                 {testButtonLabel}
               </Button>
               <Button
-                bg="primary.800"
-                color="white"
-                isDisabled={isSubmitting}
-                isLoading={isSubmitting}
-                loadingText="Submitting"
-                size="sm"
-                variant="solid"
-                type="submit"
-                _active={{ bg: "primary.500" }}
-                _disabled={{ opacity: "inherit" }}
-                _hover={{ bg: "primary.400" }}
+                htmlType="submit"
+                type="primary"
+                disabled={isSubmitting}
+                loading={isSubmitting}
               >
                 Save
               </Button>
-            </ButtonGroup>
+            </Flex>
           </VStack>
         </Form>
       )}

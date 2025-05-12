@@ -1,4 +1,9 @@
-import { IconButton, IconButtonProps, Tooltip, useClipboard } from "fidesui";
+import {
+  AntButton as Button,
+  AntButtonProps as ButtonProps,
+  AntTooltip as Tooltip,
+  useClipboard,
+} from "fidesui";
 import React, { useState } from "react";
 
 import { CopyIcon } from "./Icon";
@@ -10,80 +15,48 @@ enum TooltipText {
 
 const useClipboardButton = (copyText: string) => {
   const { onCopy } = useClipboard(copyText);
-
-  const [highlighted, setHighlighted] = useState(false);
   const [tooltipText, setTooltipText] = useState(TooltipText.COPY);
 
-  const handleMouseDown = () => {
+  const handleClick = () => {
     setTooltipText(TooltipText.COPIED);
     onCopy();
-  };
-  const handleMouseUp = () => {
-    setHighlighted(false);
-  };
-
-  const handleMouseEnter = () => {
-    setHighlighted(true);
-  };
-  const handleMouseLeave = () => {
-    setHighlighted(false);
   };
 
   return {
     tooltipText,
-    highlighted,
-    handleMouseDown,
-    handleMouseUp,
-    handleMouseEnter,
-    handleMouseLeave,
+    handleClick,
     setTooltipText,
   };
 };
 
 interface ClipboardButtonProps
   extends Omit<
-    IconButtonProps,
+    ButtonProps,
     "aria-label" | "onClick" | "onMouseUp" | "onMouseEnter" | "onMouseLeave"
   > {
   copyText: string;
 }
 
 const ClipboardButton = ({ copyText, ...props }: ClipboardButtonProps) => {
-  const {
-    tooltipText,
-    highlighted,
-    handleMouseDown,
-    handleMouseUp,
-    handleMouseEnter,
-    handleMouseLeave,
-    setTooltipText,
-  } = useClipboardButton(copyText);
-
-  const iconColor = !highlighted ? "gray.600" : "complimentary.500";
+  const { tooltipText, handleClick, setTooltipText } =
+    useClipboardButton(copyText);
 
   return (
     <Tooltip
-      label={tooltipText}
+      title={tooltipText}
       placement="top"
-      closeDelay={500}
-      onOpen={() => {
-        setTooltipText(TooltipText.COPY);
-      }}
-      onClose={() => {
-        setTooltipText(TooltipText.COPY);
+      mouseLeaveDelay={0.5}
+      onOpenChange={(value) => {
+        setTooltipText(value ? TooltipText.COPY : TooltipText.COPIED);
       }}
     >
-      <IconButton
+      <Button
         icon={<CopyIcon />}
-        color={iconColor}
         aria-label="copy"
-        variant="ghost"
+        type="text"
         data-testid="clipboard-btn"
         {...props}
-        onClick={handleMouseDown}
-        onMouseUp={handleMouseUp}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
+        onClick={handleClick}
       />
     </Tooltip>
   );

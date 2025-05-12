@@ -1,5 +1,6 @@
 import { formatDate } from "common/utils";
 import {
+  AntTag,
   Box,
   Table,
   TableContainer,
@@ -10,29 +11,60 @@ import {
   Thead,
   Tr,
 } from "fidesui";
-import { ExecutionLog, ExecutionLogStatus } from "privacy-requests/types";
+import palette from "fidesui/src/palette/palette.module.scss";
+import {
+  ExecutionLog,
+  ExecutionLogStatus,
+  ExecutionLogStatusColors,
+  ExecutionLogStatusLabels,
+} from "privacy-requests/types";
+
+import { ActionType } from "~/types/api";
 
 type EventDetailsProps = {
   eventLogs: ExecutionLog[];
-  openErrorPanel: (message: string) => void;
+  openErrorPanel: (message: string, status?: ExecutionLogStatus) => void;
+};
+
+const actionTypeToLabel = (actionType: string) => {
+  switch (actionType) {
+    case ActionType.ACCESS:
+      return "Data Retrieval";
+    case ActionType.ERASURE:
+      return "Data Deletion";
+    case ActionType.CONSENT:
+      return "Consent";
+    case ActionType.UPDATE:
+      return "Data Update";
+    default:
+      return actionType;
+  }
 };
 
 const EventLog = ({ eventLogs, openErrorPanel }: EventDetailsProps) => {
   const tableItems = eventLogs?.map((detail) => (
     <Tr
       key={detail.updated_at}
-      _hover={{
-        backgroundColor:
-          detail.status === ExecutionLogStatus.ERROR ? "#F7FAFC" : "unset",
-      }}
+      backgroundColor={
+        detail.status === ExecutionLogStatus.ERROR ||
+        (detail.status === ExecutionLogStatus.SKIPPED && detail.message)
+          ? palette.FIDESUI_NEUTRAL_50
+          : "unset"
+      }
       onClick={() => {
-        if (detail.status === ExecutionLogStatus.ERROR) {
-          openErrorPanel(detail.message);
+        if (
+          detail.status === ExecutionLogStatus.ERROR ||
+          (detail.status === ExecutionLogStatus.SKIPPED && detail.message)
+        ) {
+          openErrorPanel(detail.message, detail.status);
         }
       }}
       style={{
         cursor:
-          detail.status === ExecutionLogStatus.ERROR ? "pointer" : "unset",
+          detail.status === ExecutionLogStatus.ERROR ||
+          (detail.status === ExecutionLogStatus.SKIPPED && detail.message)
+            ? "pointer"
+            : "unset",
       }}
     >
       <Td>
@@ -42,8 +74,13 @@ const EventLog = ({ eventLogs, openErrorPanel }: EventDetailsProps) => {
       </Td>
       <Td>
         <Text color="gray.600" fontSize="xs" lineHeight="4" fontWeight="medium">
-          {detail.status}
+          {actionTypeToLabel(detail.action_type)}
         </Text>
+      </Td>
+      <Td>
+        <AntTag color={ExecutionLogStatusColors[detail.status]}>
+          {ExecutionLogStatusLabels[detail.status]}
+        </AntTag>
       </Td>
       <Td>
         <Text color="gray.600" fontSize="xs" lineHeight="4" fontWeight="medium">
@@ -52,6 +89,7 @@ const EventLog = ({ eventLogs, openErrorPanel }: EventDetailsProps) => {
       </Td>
     </Tr>
   ));
+
   return (
     <Box width="100%" paddingTop="0px" height="100%">
       <TableContainer
@@ -86,6 +124,16 @@ const EventLog = ({ eventLogs, openErrorPanel }: EventDetailsProps) => {
                   lineHeight="4"
                   fontWeight="medium"
                 >
+                  Action Type
+                </Text>
+              </Th>
+              <Th>
+                <Text
+                  color="black"
+                  fontSize="xs"
+                  lineHeight="4"
+                  fontWeight="medium"
+                >
                   Status
                 </Text>
               </Th>
@@ -102,7 +150,7 @@ const EventLog = ({ eventLogs, openErrorPanel }: EventDetailsProps) => {
             </Tr>
           </Thead>
 
-          <Tbody id="tabelBody">{tableItems}</Tbody>
+          <Tbody id="tableBody">{tableItems}</Tbody>
         </Table>
       </TableContainer>
     </Box>

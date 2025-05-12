@@ -1,7 +1,7 @@
 import {
+  AntButton as Button,
   ArrowDownLineIcon,
   Box,
-  Button,
   Checkbox,
   CheckboxGroup,
   Menu,
@@ -21,7 +21,7 @@ interface Props<T> {
   selectedColumns: ColumnMetadata<T>[];
   onChange: (columns: ColumnMetadata<T>[]) => void;
 }
-export const ColumnDropdown = <T extends Record<string, unknown>>({
+const ColumnDropdown = <T extends Record<string, unknown>>({
   allColumns,
   selectedColumns,
   onChange,
@@ -55,8 +55,7 @@ export const ColumnDropdown = <T extends Record<string, unknown>>({
         <>
           <MenuButton
             as={Button}
-            rightIcon={<ArrowDownLineIcon />}
-            variant="outline"
+            icon={<ArrowDownLineIcon />}
             fontWeight="normal"
             data-testid="column-dropdown"
           >
@@ -66,16 +65,15 @@ export const ColumnDropdown = <T extends Record<string, unknown>>({
             <Box px={2}>
               <Box display="flex" justifyContent="space-between" mb={2}>
                 <Button
-                  variant="outline"
-                  size="xs"
+                  size="small"
                   onClick={handleClear}
                   data-testid="column-clear-btn"
                 >
                   Clear
                 </Button>
                 <Button
-                  size="xs"
-                  colorScheme="primary"
+                  type="primary"
+                  size="small"
                   onClick={onClose}
                   data-testid="column-done-btn"
                 >

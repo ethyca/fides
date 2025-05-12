@@ -86,7 +86,7 @@ The Fides core team is committed to providing a variety of documentation to help
 
 For more information on getting started with Fides, how to configure and set up Fides, and more about the Fides ecosystem of open source projects:
 
-* Documentation: <https://docs.ethyca.com>
+* Documentation: <https://ethyca.com/docs>
 * Website: www.ethyca.com/fides
 
 ### Support
@@ -135,15 +135,15 @@ By default, running `pip install ethyca-fides` locally will not install the opti
 
 For local development setup on macOS, follow these steps:
 1. Install the required development libraries from Homebrew:
-```bash
+```zsh
 brew install freetds openssl
 ```
 2. Add the following to your shell (i.e. `.zshrc`) to ensure your compiler can access the `freetds` and `openssl` libraries, updating the paths & versions to match your local install:
-```bash
-export LDFLAGS="-L/opt/homebrew/Cellar/freetds/1.3.18/lib -L/opt/homebrew/Cellar/openssl@1.1/1.1.1u/lib"
-export CFLAGS="-I/opt/homebrew/Cellar/freetds/1.3.18/include"
+```zsh
+export LDFLAGS="-L/opt/homebrew/opt/freetds/lib -L/opt/homebrew/opt/openssl/lib"
+export CFLAGS="-I/opt/homebrew/opt/freetds/include"
 ```
 3. Reinstall Fides with MSSQL support by including the `all` extra requirement:
-```bash
-pip install ethyca-fides[all]
+```zsh
+pip install "ethyca-fides[all]"
 ```

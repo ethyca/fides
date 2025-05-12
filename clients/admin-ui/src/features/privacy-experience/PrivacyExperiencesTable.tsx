@@ -17,12 +17,11 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "common/table/v2";
-import { Button, Flex, HStack, Text, VStack } from "fidesui";
-import NextLink from "next/link";
+import { AntButton as Button, Flex, HStack, Text, VStack } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useMemo } from "react";
 
-import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
+import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/routes";
 import Restrict, { useHasPermission } from "~/features/common/Restrict";
 import CustomAssetUploadButton from "~/features/custom-assets/CustomAssetUploadButton";
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
@@ -47,42 +46,44 @@ const emptyExperienceResponse = {
   pages: 1,
 };
 
-const EmptyTableExperience = () => (
-  <VStack
-    mt={6}
-    p={10}
-    spacing={4}
-    borderRadius="base"
-    maxW="70%"
-    data-testid="empty-state"
-    alignSelf="center"
-    margin="auto"
-  >
-    <VStack>
-      <Text fontSize="md" fontWeight="600">
-        No privacy experiences found.
-      </Text>
-      <Text fontSize="sm">
-        Click &quot;Create new experience&quot; to add your first privacy
-        experience to Fides.
-      </Text>
-    </VStack>
-    <Button
-      as={NextLink}
-      href={`${PRIVACY_EXPERIENCE_ROUTE}/new`}
-      size="xs"
-      colorScheme="primary"
-      data-testid="add-privacy-experience-btn"
+const EmptyTableExperience = () => {
+  const router = useRouter();
+  return (
+    <VStack
+      mt={6}
+      p={10}
+      spacing={4}
+      borderRadius="base"
+      maxW="70%"
+      data-testid="empty-state"
+      alignSelf="center"
+      margin="auto"
     >
-      Create new experience
-    </Button>
-  </VStack>
-);
+      <VStack>
+        <Text fontSize="md" fontWeight="600">
+          No privacy experiences found.
+        </Text>
+        <Text fontSize="sm">
+          Click &quot;Create new experience&quot; to add your first privacy
+          experience to Fides.
+        </Text>
+      </VStack>
+      <Button
+        onClick={() => router.push(`${PRIVACY_EXPERIENCE_ROUTE}/new`)}
+        size="small"
+        type="primary"
+        data-testid="add-privacy-experience-btn"
+      >
+        Create new experience
+      </Button>
+    </VStack>
+  );
+};
 const columnHelper = createColumnHelper<ExperienceConfigListViewResponse>();
 
 export const PrivacyExperiencesTable = () => {
-  const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
   const router = useRouter();
+  const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
 
   // Permissions
   const userCanUpdate = useHasPermission([
@@ -149,7 +150,6 @@ export const PrivacyExperiencesTable = () => {
           ),
           header: (props) => <DefaultHeaderCell value="Locations" {...props} />,
           meta: {
-            displayText: "Locations",
             showHeaderMenu: true,
           },
         }),
@@ -168,7 +168,6 @@ export const PrivacyExperiencesTable = () => {
               <DefaultHeaderCell value="Properties" {...props} />
             ),
             meta: {
-              displayText: "Properties",
               showHeaderMenu: true,
             },
           },
@@ -203,6 +202,7 @@ export const PrivacyExperiencesTable = () => {
     state: {
       expanded: true,
     },
+    columnResizeMode: "onChange",
   });
 
   const onRowClick = ({ id }: ExperienceConfigListViewResponse) => {
@@ -219,7 +219,7 @@ export const PrivacyExperiencesTable = () => {
       <Flex flex={1} direction="column" overflow="auto">
         {userCanUpdate && (
           <TableActionBar>
-            <HStack alignItems="center" spacing={4}>
+            <HStack alignItems="center" spacing={2}>
               <JavaScriptTag />
               <Restrict scopes={[ScopeRegistryEnum.CUSTOM_ASSET_UPDATE]}>
                 <CustomAssetUploadButton
@@ -228,10 +228,8 @@ export const PrivacyExperiencesTable = () => {
               </Restrict>
             </HStack>
             <Button
-              as={NextLink}
-              href={`${PRIVACY_EXPERIENCE_ROUTE}/new`}
-              size="xs"
-              colorScheme="primary"
+              onClick={() => router.push(`${PRIVACY_EXPERIENCE_ROUTE}/new`)}
+              type="primary"
               data-testid="add-privacy-experience-btn"
             >
               Create new experience

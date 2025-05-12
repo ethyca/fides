@@ -1,7 +1,10 @@
 import { CheckIcon, HStack } from "fidesui";
 
+import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
-import { DiffStatus, StagedResource } from "~/types/api";
+import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
+import { DiffStatus, StagedResourceTypeValue } from "~/types/api";
+import { isErrorResult } from "~/types/errors";
 
 import { MonitorOffIcon } from "../../../common/Icon/MonitorOffIcon";
 import { MonitorOnIcon } from "../../../common/Icon/MonitorOnIcon";
@@ -11,11 +14,10 @@ import {
   useMuteResourceMutation,
   useUnmuteResourceMutation,
 } from "../../discovery-detection.slice";
-import { StagedResourceType } from "../../types/StagedResourceType";
 import { findResourceType } from "../../utils/findResourceType";
 
 interface DetectionItemActionProps {
-  resource: StagedResource;
+  resource: DiscoveryMonitorItem;
   ignoreChildActions?: boolean;
 }
 
@@ -30,7 +32,82 @@ const DetectionItemActionsCell = ({
     useMuteResourceMutation();
   const [unmuteResourceMutation, { isLoading: unmuteIsLoading }] =
     useUnmuteResourceMutation();
-  const { successAlert } = useAlert();
+
+  const { successAlert, errorAlert } = useAlert();
+
+  const handleMonitor = async () => {
+    const result = await confirmResourceMutation({
+      staged_resource_urn: resource.urn,
+      monitor_config_id: resource.monitor_config_id!,
+    });
+    if (isErrorResult(result)) {
+      errorAlert(getErrorMessage(result.error, "Failed to confirm resource"));
+    } else {
+      successAlert(
+        "Data discovery has started. The results may take some time to appear in the “Data discovery“ tab.",
+        `${resource.name || "The resource"} is now being monitored.`,
+      );
+    }
+  };
+
+  const handleUnMute = async () => {
+    const result = await unmuteResourceMutation({
+      staged_resource_urn: resource.urn,
+    });
+    if (isErrorResult(result)) {
+      errorAlert(getErrorMessage(result.error), "Failed to un-mute resource");
+    } else {
+      successAlert(
+        `${resource.name || "The resource"} has been un-muted and is now being monitored.`,
+      );
+    }
+  };
+
+  const handleStartMonitoringOnMutedParent = async () => {
+    const result = await confirmResourceMutation({
+      staged_resource_urn: resource.urn,
+      monitor_config_id: resource.monitor_config_id!,
+      unmute_children: true,
+      classify_monitored_resources: true,
+    });
+    if (isErrorResult(result)) {
+      errorAlert(getErrorMessage(result.error), "Failed to un-mute resource");
+    } else {
+      successAlert(
+        "Data discovery has started. The results may take some time to appear in the “Data discovery“ tab.",
+        `${resource.name || "The resource"} is now being monitored.`,
+      );
+    }
+  };
+
+  const handleConfirm = async () => {
+    const result = await confirmResourceMutation({
+      staged_resource_urn: resource.urn,
+      monitor_config_id: resource.monitor_config_id!,
+    });
+    if (isErrorResult(result)) {
+      errorAlert(getErrorMessage(result.error), "Failed to confirm resource");
+    } else {
+      successAlert(
+        `These changes have been added to a Fides dataset. To view, navigate to "Manage datasets".`,
+        `Table changes confirmed`,
+      );
+    }
+  };
+
+  const handleMute = async () => {
+    const result = await muteResourceMutation({
+      staged_resource_urn: resource.urn,
+    });
+    if (isErrorResult(result)) {
+      errorAlert(getErrorMessage(result.error), "Failed to mute resource");
+    } else {
+      successAlert(
+        `Ignored data will not be monitored for changes or added to Fides datasets.`,
+        `${resource.name || "Resource"} ignored`,
+      );
+    }
+  };
 
   const anyActionIsLoading =
     confirmIsLoading || muteIsLoading || unmuteIsLoading;
@@ -39,15 +116,18 @@ const DetectionItemActionsCell = ({
     resource;
 
   // We enable monitor / stop monitoring at the schema level only
-  // Tables and field levels can mute/unmute
-  const isSchemaType = resourceType === StagedResourceType.SCHEMA;
-  const isFieldType = resourceType === StagedResourceType.FIELD;
+  // Table levels can mute/monitor
+  // Field levels can mute/un-mute
+  const isSchemaType = resourceType === StagedResourceTypeValue.SCHEMA;
+  const isFieldType = resourceType === StagedResourceTypeValue.FIELD;
 
   const showStartMonitoringAction =
     (isSchemaType && diffStatus === undefined) ||
     (!isFieldType && diffStatus === DiffStatus.ADDITION);
   const showMuteAction = diffStatus !== DiffStatus.MUTED;
-  const showUnmuteAction = diffStatus === DiffStatus.MUTED;
+  const showStartMonitoringActionOnMutedParent =
+    diffStatus === DiffStatus.MUTED && !isFieldType;
+  const showUnMuteAction = diffStatus === DiffStatus.MUTED && isFieldType;
 
   const childDiffHasChanges =
     childDiffStatus &&
@@ -59,58 +139,43 @@ const DetectionItemActionsCell = ({
     childDiffHasChanges;
 
   return (
-    <HStack onClick={(e) => e.stopPropagation()}>
+    <HStack>
       {showStartMonitoringAction && (
         <ActionButton
           title="Monitor"
           icon={<MonitorOnIcon />}
-          onClick={async () => {
-            await confirmResourceMutation({
-              staged_resource_urn: resource.urn,
-              monitor_config_id: resource.monitor_config_id!,
-            });
-            successAlert(
-              "Data discovery has started. The results may take some time to appear in the “Data discovery“ tab.",
-              `${resource.name || "The resource"} is now being monitored.`,
-            );
-          }}
-          isDisabled={anyActionIsLoading}
-          isLoading={confirmIsLoading}
+          onClick={handleMonitor}
+          disabled={anyActionIsLoading}
+          loading={confirmIsLoading}
         />
       )}
-      {showUnmuteAction && (
+      {showUnMuteAction && (
+        <ActionButton
+          title="Un-Mute"
+          icon={<MonitorOnIcon />}
+          // Un-mute a field (marks field as monitored)
+          onClick={handleUnMute}
+          disabled={anyActionIsLoading}
+          loading={confirmIsLoading}
+        />
+      )}
+      {showStartMonitoringActionOnMutedParent && (
         <ActionButton
           title="Monitor"
           icon={<MonitorOnIcon />}
-          onClick={async () => {
-            await unmuteResourceMutation({
-              staged_resource_urn: resource.urn,
-            });
-            successAlert(
-              "Data discovery has started. The results may take some time to appear in the “Data discovery“ tab.",
-              `${resource.name || "The resource"} is now being monitored.`,
-            );
-          }}
-          isDisabled={anyActionIsLoading}
-          isLoading={unmuteIsLoading}
+          // This is a special case where we are monitoring a muted schema/table, we need to un-mute all children
+          onClick={handleStartMonitoringOnMutedParent}
+          disabled={anyActionIsLoading}
+          loading={confirmIsLoading}
         />
       )}
       {showConfirmAction && (
         <ActionButton
           title="Confirm"
           icon={<CheckIcon />}
-          onClick={async () => {
-            await confirmResourceMutation({
-              staged_resource_urn: resource.urn,
-              monitor_config_id: resource.monitor_config_id!,
-            });
-            successAlert(
-              `These changes have been added to a Fides dataset. To view, navigate to "Manage datasets".`,
-              `Table changes confirmed`,
-            );
-          }}
-          isDisabled={anyActionIsLoading}
-          isLoading={confirmIsLoading}
+          onClick={handleConfirm}
+          disabled={anyActionIsLoading}
+          loading={confirmIsLoading}
         />
       )}
       {/* Positive Actions (Monitor, Confirm) goes first. Negative actions such as ignore should be last */}
@@ -118,17 +183,9 @@ const DetectionItemActionsCell = ({
         <ActionButton
           title="Ignore"
           icon={<MonitorOffIcon />}
-          onClick={async () => {
-            await muteResourceMutation({
-              staged_resource_urn: resource.urn,
-            });
-            successAlert(
-              `Ignored data will not be monitored for changes or added to Fides datasets.`,
-              `${resource.name || "Resource"} ignored`,
-            );
-          }}
-          isDisabled={anyActionIsLoading}
-          isLoading={muteIsLoading}
+          onClick={handleMute}
+          disabled={anyActionIsLoading}
+          loading={muteIsLoading}
         />
       )}
     </HStack>

@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from fides.api.graph.config import Field
 from fides.api.models.policy import Policy
-from fides.api.service.connectors.query_config import SQLLikeQueryConfig
+from fides.api.service.connectors.query_configs.query_config import SQLLikeQueryConfig
 
 ScyllaDBStatement = Tuple[str, Dict[str, Any]]
 """
@@ -70,21 +70,27 @@ class ScyllaDBQueryConfig(SQLLikeQueryConfig[ScyllaDBStatement]):
     ) -> Optional[ScyllaDBStatement]:
         return self.generate_query_without_tuples(input_data, policy)
 
-    def format_key_map_for_update_stmt(self, fields: List[str]) -> List[str]:
+    def format_key_map_for_update_stmt(self, param_map: Dict[str, Any]) -> List[str]:
         """Adds the appropriate formatting for update statements in this datastore."""
-        fields.sort()
-        return [f"{k} = %({k})s" for k in fields]
+        return [f"{k} = %({v})s" for k, v in sorted(param_map.items())]
 
     def get_update_clauses(
-        self, update_value_map: Dict[str, Any], non_empty_primary_keys: Dict[str, Field]
+        self,
+        update_value_map: Dict[str, Any],
+        where_clause_fields: Dict[str, Field],
     ) -> List[str]:
-        """Returns a list of update clauses for the update statement."""
+        """Returns a list of update clauses for the update statement.
+
+        Omits primary key fields from updates since ScyllaDB prohibits
+        updating primary key fields.
+        """
+
         return self.format_key_map_for_update_stmt(
-            [
-                key
-                for key in update_value_map.keys()
-                if key not in non_empty_primary_keys
-            ]
+            {
+                key: value
+                for key, value in update_value_map.items()
+                if key not in where_clause_fields
+            }
         )
 
     def format_query_data_name(self, query_data_name: str) -> str:

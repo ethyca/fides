@@ -1,7 +1,6 @@
 import {
+  AntButton as Button,
   Box,
-  Button,
-  Heading,
   HStack,
   Stack,
   Text,
@@ -11,8 +10,7 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import {
-  ColumnDropdown,
+import ColumnDropdown, {
   ColumnMetadata,
 } from "~/features/common/ColumnDropdown";
 import { isErrorResult } from "~/features/common/helpers";
@@ -23,6 +21,7 @@ import { SystemsCheckboxTable } from "~/features/common/SystemsCheckboxTable";
 import { useUpsertSystemsMutation } from "~/features/system";
 import { System } from "~/types/api";
 
+import { NextBreadcrumb } from "../common/nav/NextBreadcrumb";
 import {
   changeStep,
   reset,
@@ -96,10 +95,22 @@ const ScanResults = () => {
 
   return (
     <Box maxW="full">
-      <Stack spacing={10}>
-        <Heading as="h3" size="lg" data-testid="scan-results">
-          Scan results
-        </Heading>
+      <Stack spacing={10} data-testid="scan-results">
+        <NextBreadcrumb
+          className="mb-4"
+          items={[
+            {
+              title: "Add systems",
+              href: "",
+              onClick: (e) => {
+                e.preventDefault();
+                handleCancel();
+              },
+            },
+            { title: "Authenticate" },
+            { title: "Scan results" },
+          ]}
+        />
 
         {systems.length === 0 ? (
           <>
@@ -107,11 +118,7 @@ const ScanResults = () => {
               No results were found for your infrastructure scan.
             </Text>
             <HStack>
-              <Button
-                variant="outline"
-                onClick={handleCancel}
-                data-testid="back-btn"
-              >
+              <Button onClick={handleCancel} data-testid="back-btn">
                 Back
               </Button>
             </HStack>
@@ -140,14 +147,12 @@ const ScanResults = () => {
             />
 
             <HStack>
-              <Button variant="outline" onClick={handleCancel}>
-                Back
-              </Button>
+              <Button onClick={handleCancel}>Back</Button>
               <Button
-                variant="primary"
-                isDisabled={selectedSystems.length === 0}
-                data-testid="register-btn"
                 onClick={handleSubmit}
+                type="primary"
+                disabled={selectedSystems.length === 0}
+                data-testid="register-btn"
               >
                 Register selected systems
               </Button>

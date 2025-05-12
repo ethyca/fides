@@ -21,12 +21,9 @@ from fides.api.models.privacy_notice import (
     PrivacyNoticeHistory,
     UserConsentPreference,
 )
-from fides.api.models.privacy_request import (
-    ExecutionLogStatus,
-    PrivacyRequest,
-    ProvidedIdentity,
-)
+from fides.api.models.privacy_request import PrivacyRequest, ProvidedIdentity
 from fides.api.schemas.language import SupportedLanguage
+from fides.api.schemas.privacy_request import ExecutionLogStatus
 from fides.api.schemas.redis_cache import MultiValue
 from fides.config import CONFIG
 
@@ -55,6 +52,7 @@ class ConsentMethod(Enum):
     button = "button"  # deprecated- keeping for backwards-compatibility
     reject = "reject"
     accept = "accept"
+    script = "script"
     save = "save"
     dismiss = "dismiss"
     gpc = "gpc"

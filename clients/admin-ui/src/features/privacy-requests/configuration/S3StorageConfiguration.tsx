@@ -1,8 +1,9 @@
-import { Box, Button, Divider, Heading, Stack } from "fidesui";
+import { AntButton as Button, Box, Divider, Heading, Stack } from "fidesui";
 import { Form, Formik } from "formik";
 import { useState } from "react";
 
-import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
+import { ControlledSelect } from "~/features/common/form/ControlledSelect";
+import { CustomTextInput } from "~/features/common/form/inputs";
 import { isErrorResult } from "~/features/common/helpers";
 import { useAlert, useAPIHelper } from "~/features/common/hooks";
 import { storageTypes } from "~/features/privacy-requests/constants";
@@ -10,6 +11,7 @@ import {
   useCreateStorageMutation,
   useCreateStorageSecretsMutation,
 } from "~/features/privacy-requests/privacy-requests.slice";
+import { S3SecretsDetails } from "~/features/privacy-requests/types";
 
 interface SavedStorageDetails {
   storageDetails: {
@@ -26,10 +28,6 @@ interface StorageDetails {
     bucket: string;
     format: string;
   };
-}
-interface SecretsStorageData {
-  aws_access_key_id: string;
-  aws_secret_access_key: string;
 }
 
 const S3StorageConfiguration = ({ storageDetails }: SavedStorageDetails) => {
@@ -72,7 +70,7 @@ const S3StorageConfiguration = ({ storageDetails }: SavedStorageDetails) => {
     }
   };
 
-  const handleSubmitStorageSecrets = async (newValues: SecretsStorageData) => {
+  const handleSubmitStorageSecrets = async (newValues: S3SecretsDetails) => {
     const result = await setStorageSecrets({
       details: {
         aws_access_key_id: newValues.aws_access_key_id,
@@ -102,7 +100,7 @@ const S3StorageConfiguration = ({ storageDetails }: SavedStorageDetails) => {
           {({ isSubmitting, handleReset }) => (
             <Form>
               <Stack mt={5} spacing={5}>
-                <CustomSelect
+                <ControlledSelect
                   name="format"
                   label="Format"
                   options={[
@@ -112,7 +110,7 @@ const S3StorageConfiguration = ({ storageDetails }: SavedStorageDetails) => {
                   data-testid="format"
                   isRequired
                 />
-                <CustomSelect
+                <ControlledSelect
                   name="auth_method"
                   label="Auth method"
                   options={[
@@ -130,21 +128,14 @@ const S3StorageConfiguration = ({ storageDetails }: SavedStorageDetails) => {
                 />
               </Stack>
 
-              <Button
-                onClick={() => handleReset()}
-                mt={5}
-                mr={2}
-                size="sm"
-                variant="outline"
-              >
+              <Button onClick={() => handleReset()} className="mr-2 mt-5">
                 Cancel
               </Button>
               <Button
-                mt={5}
-                isDisabled={isSubmitting}
-                type="submit"
-                colorScheme="primary"
-                size="sm"
+                htmlType="submit"
+                className="mt-5"
+                disabled={isSubmitting}
+                type="primary"
                 data-testid="save-btn"
               >
                 Save
@@ -179,21 +170,14 @@ const S3StorageConfiguration = ({ storageDetails }: SavedStorageDetails) => {
                     />
                   </Stack>
                   <Box mt={10}>
-                    <Button
-                      onClick={() => handleReset()}
-                      mt={5}
-                      mr={2}
-                      size="sm"
-                      variant="outline"
-                    >
+                    <Button onClick={() => handleReset()} className="mr-2 mt-5">
                       Cancel
                     </Button>
                     <Button
-                      mt={5}
-                      isDisabled={isSubmitting}
-                      type="submit"
-                      colorScheme="primary"
-                      size="sm"
+                      disabled={isSubmitting}
+                      htmlType="submit"
+                      type="primary"
+                      className="mt-5"
                       data-testid="save-btn"
                     >
                       Save

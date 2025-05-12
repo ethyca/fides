@@ -10,6 +10,7 @@ from loguru import logger
 from ordered_set import OrderedSet
 from sqlalchemy.orm import Session
 
+from fides.api.api.deps import get_autoclose_db_session as get_db
 from fides.api.common_exceptions import (
     ActionDisabled,
     AwaitingAsyncTaskCallback,
@@ -35,14 +36,11 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.models.policy import CurrentStep, Policy
-from fides.api.models.privacy_request import (
-    ExecutionLog,
-    ExecutionLogStatus,
-    PrivacyRequest,
-    RequestTask,
-)
-from fides.api.schemas.policy import ActionType
+from fides.api.models.policy import Policy, Rule
+from fides.api.models.privacy_preference import PrivacyPreferenceHistory
+from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest, RequestTask
+from fides.api.schemas.policy import ActionType, CurrentStep
+from fides.api.schemas.privacy_request import ExecutionLogStatus
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.task.consolidate_query_matches import consolidate_query_matches
 from fides.api.task.filter_element_match import filter_element_match
@@ -57,8 +55,11 @@ from fides.api.util.collection_util import (
     make_immutable,
     make_mutable,
 )
-from fides.api.util.consent_util import add_errored_system_status_for_consent_reporting
+from fides.api.util.consent_util import (
+    add_errored_system_status_for_consent_reporting_on_preferences,
+)
 from fides.api.util.logger import Pii
+from fides.api.util.logger_context_utils import LoggerContextKeys
 from fides.api.util.saas_util import FIDESOPS_GROUPED_INPUTS
 from fides.config import CONFIG
 
@@ -124,29 +125,22 @@ def retry(
                     ActionDisabled,
                     NotSupportedForCollection,
                 ) as exc:
-                    traceback.print_exc()
                     logger.warning(
-                        "Skipping collection {} for privacy_request: {}",
+                        "{} - Skipping collection {} for privacy_request: {}",
+                        exc.__class__.__name__,
                         self.execution_node.address,
                         self.resources.request.id,
                     )
                     self.log_skipped(action_type, exc)
                     return default_return
                 except SkippingConsentPropagation as exc:
-                    traceback.print_exc()
                     logger.warning(
                         "Skipping consent propagation on collection {} for privacy_request: {}",
                         self.execution_node.address,
                         self.resources.request.id,
                     )
                     self.log_skipped(action_type, exc)
-                    for pref in self.resources.request.privacy_preferences:
-                        # For consent reporting, also caching the given system as skipped for all historical privacy preferences.
-                        pref.cache_system_status(
-                            self.resources.session,
-                            self.connector.configuration.system_key,
-                            ExecutionLogStatus.skipped,
-                        )
+                    self.cache_system_status_for_preferences()
                     return default_return
                 except BaseException as ex:  # pylint: disable=W0703
                     traceback.print_exc()
@@ -166,11 +160,7 @@ def retry(
                     action_type.value
                 ]  # Convert ActionType into a CurrentStep, no longer coerced with Pydantic V2
             )
-            add_errored_system_status_for_consent_reporting(
-                self.resources.session,
-                self.resources.request,
-                self.connector.configuration,
-            )
+            self.add_error_status_for_consent_reporting()
             if not self.request_task.id:
                 # TODO Remove when we stop support for DSR 2.0
                 # Re-raise to stop privacy request execution on failure for
@@ -368,29 +358,34 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         """Update status activities - create an execution log (which stores historical logs)
         and update the Request Task's current status.
         """
-        ExecutionLog.create(
-            db=self.resources.session,
-            data={
-                "connection_key": self.execution_node.connection_key,
-                "dataset_name": self.execution_node.address.dataset,
-                "collection_name": self.execution_node.address.collection,
-                "fields_affected": fields_affected,
-                "action_type": action_type,
-                "status": status,
-                "privacy_request_id": self.resources.request.id,
-                "message": msg,
-            },
-        )
+        with get_db() as db:
+            ExecutionLog.create(
+                db=db,
+                data={
+                    "connection_key": self.execution_node.connection_key,
+                    "dataset_name": self.execution_node.address.dataset,
+                    "collection_name": self.execution_node.address.collection,
+                    "fields_affected": fields_affected,
+                    "action_type": action_type,
+                    "status": status,
+                    "privacy_request_id": self.resources.request.id,
+                    "message": msg,
+                },
+            )
 
-        if self.request_task.id:
             # For DSR 3.0, updating the Request Task status when the ExecutionLog is
             # created to keep these in sync.
             # TODO remove conditional above alongside deprecating DSR 2.0
-            self.request_task.update_status(self.resources.session, status)
+            if self.request_task.id:
+                # Merge the request task to ensure we keep the changes made
+                # to self.request_task that haven't yet been committed to the database
+                request_task = db.merge(self.request_task)
+                request_task.update_status(db, status)
+                self.request_task = request_task
 
     def log_start(self, action_type: ActionType) -> None:
         """Task start activities"""
-        logger.info("Starting {}, node {}", self.resources.request.id, self.key)
+        logger.info("Starting node {}", self.key)
 
         self.update_status(
             "starting", [], action_type, ExecutionLogStatus.in_processing
@@ -398,7 +393,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
     def log_retry(self, action_type: ActionType) -> None:
         """Task retry activities"""
-        logger.info("Retrying {}, node {}", self.resources.request.id, self.key)
+        logger.info("Retrying node {}", self.key)
 
         self.update_status("retrying", [], action_type, ExecutionLogStatus.retrying)
 
@@ -406,7 +401,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         self, action_type: ActionType, ex: Optional[BaseException]
     ) -> None:
         """On paused activities"""
-        logger.info("Pausing {}, node {}", self.resources.request.id, self.key)
+        logger.info("Pausing node {}", self.key)
 
         self.update_status(
             str(ex), [], action_type, ExecutionLogStatus.awaiting_processing
@@ -414,7 +409,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
     def log_skipped(self, action_type: ActionType, ex: str) -> None:
         """Log that a collection was skipped.  For now, this is because a collection has been disabled."""
-        logger.info("Skipping {}, node {}", self.resources.request.id, self.key)
+        logger.info("Skipping node {}", self.key)
         if action_type == ActionType.consent and self.request_task.id:
             self.request_task.consent_sent = False
         self.update_status(str(ex), [], action_type, ExecutionLogStatus.skipped)
@@ -437,9 +432,10 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             # For DSR 3.0, Hooking into the GraphTask.log_end method to also mark the current
             # Request Task and every Request Task that can be reached from the current
             # task as errored.
-            mark_current_and_downstream_nodes_as_failed(
-                self.request_task, self.resources.session
-            )
+
+            with get_db() as db:
+                request_task = db.merge(self.request_task)
+                mark_current_and_downstream_nodes_as_failed(request_task, db)
         else:
             logger.info("Ending {}, {}", self.resources.request.id, self.key)
             self.update_status(
@@ -546,9 +542,34 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         # Return filtered rows with non-matched array data removed.
         return output
 
+    def get_connection_config(self) -> ConnectionConfig:
+        """
+        Retrieves the connection configuration for the current connector.
+        This method attempts to fetch the connection configuration from the database
+        using the connector's configuration ID. If the configuration is found in the
+        database, it is returned. Otherwise, the method returns the connector's
+        current configuration.
+        Returns:
+            ConnectionConfig: The connection configuration object from the database
+            if found, otherwise the connector's current configuration.
+        """
+        connection_config_id = self.connector.configuration.id
+
+        with get_db() as db:
+            connection_config = (
+                db.query(ConnectionConfig)
+                .filter(ConnectionConfig.id == connection_config_id)
+                .first()
+            )
+            if connection_config:
+                return connection_config
+
+        return self.connector.configuration
+
     def skip_if_disabled(self) -> None:
         """Skip execution for the given collection if it is attached to a disabled ConnectionConfig."""
-        connection_config: ConnectionConfig = self.connector.configuration
+        connection_config: ConnectionConfig = self.get_connection_config()
+
         if connection_config.disabled:
             raise CollectionDisabled(
                 f"Skipping collection {self.execution_node.address}. "
@@ -562,7 +583,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         if action_type == ActionType.access:
             return
 
-        connection_config: ConnectionConfig = self.connector.configuration
+        connection_config: ConnectionConfig = self.get_connection_config()
         if (
             connection_config.enabled_actions is not None
             and action_type not in connection_config.enabled_actions
@@ -575,21 +596,25 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
     @retry(action_type=ActionType.access, default_return=[])
     def access_request(self, *inputs: List[Row]) -> List[Row]:
         """Run an access request on a single node."""
-        formatted_input_data: NodeInput = self.pre_process_input_data(
-            *inputs, group_dependent_fields=True
-        )
-        output: List[Row] = self.connector.retrieve_data(
-            self.execution_node,
-            self.resources.policy,
-            self.resources.request,
-            self.resources.privacy_request_task,
-            formatted_input_data,
-        )
-        filtered_output: List[Row] = self.access_results_post_processing(
-            self.pre_process_input_data(*inputs, group_dependent_fields=False), output
-        )
-        self.log_end(ActionType.access)
-        return filtered_output
+        with logger.contextualize(
+            **{LoggerContextKeys.privacy_request_id.value: self.resources.request.id}
+        ):
+            formatted_input_data: NodeInput = self.pre_process_input_data(
+                *inputs, group_dependent_fields=True
+            )
+            output: List[Row] = self.connector.retrieve_data(
+                self.execution_node,
+                self.resources.policy,
+                self.resources.request,
+                self.resources.privacy_request_task,
+                formatted_input_data,
+            )
+            filtered_output: List[Row] = self.access_results_post_processing(
+                self.pre_process_input_data(*inputs, group_dependent_fields=False),
+                output,
+            )
+            self.log_end(ActionType.access)
+            return filtered_output
 
     @retry(action_type=ActionType.erasure, default_return=0)
     def erasure_request(
@@ -598,12 +623,19 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         *erasure_prereqs: int,  # TODO Remove when we stop support for DSR 2.0. DSR 3.0 enforces with downstream_tasks.
     ) -> int:
         """Run erasure request"""
+
         # if there is no primary key specified in the graph node configuration
         # note this in the execution log and perform no erasures on this node
-        if not self.execution_node.collection.contains_field(lambda f: f.primary_key):
+        if (
+            self.connector.requires_primary_keys
+            and not self.execution_node.collection.contains_field(
+                lambda f: f.primary_key
+            )
+        ):
             logger.warning(
-                "No erasures on {} as there is no primary_key defined.",
+                'Skipping erasures on "{}" as the "{}" connector requires a primary key to be defined in one of the collection fields, but none was found.',
                 self.execution_node.address,
+                self.connector.configuration.connection_type,
             )
             if self.request_task.id:
                 # For DSR 3.0, largely for testing. DSR 3.0 uses Request Task status
@@ -612,7 +644,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             # TODO Remove when we stop support for DSR 2.0
             self.resources.cache_erasure(self.key.value, 0)
             self.update_status(
-                "No values were erased since no primary key was defined for this collection",
+                "No values were erased since no primary key was defined in any of the fields for this collection",
                 None,
                 ActionType.erasure,
                 ExecutionLogStatus.complete,
@@ -689,6 +721,48 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         self.request_task.consent_sent = output
         self.log_end(ActionType.consent)
         return output
+
+    def cache_system_status_for_preferences(self) -> None:
+        """
+        Calls cache_system_status for all historical privacy preferences for the given request.
+
+        Purposely uses a new session.
+        """
+
+        privacy_request_id = self.resources.request.id
+
+        with get_db() as db:
+
+            privacy_preferences = db.query(PrivacyPreferenceHistory).filter(
+                PrivacyPreferenceHistory.privacy_request_id == privacy_request_id
+            )
+            for pref in privacy_preferences:
+                # For consent reporting, also caching the given system as skipped for all historical privacy preferences.
+                pref.cache_system_status(
+                    db,
+                    self.connector.configuration.system_key,  # type: ignore[arg-type]
+                    ExecutionLogStatus.skipped,
+                )
+
+    def add_error_status_for_consent_reporting(self) -> None:
+        """
+        Adds the errored system status for all historical privacy preferences for the given request that
+        are deemed relevant for the connector failure (i.e if they had a "pending" log added to them).
+
+        Purposely uses a new session.
+        """
+        privacy_request_id = self.resources.request.id
+        with get_db() as db:
+            privacy_preferences = (
+                db.query(PrivacyPreferenceHistory)
+                .filter(
+                    PrivacyPreferenceHistory.privacy_request_id == privacy_request_id
+                )
+                .all()
+            )
+            add_errored_system_status_for_consent_reporting_on_preferences(
+                db, privacy_preferences, self.connector.configuration
+            )
 
 
 def collect_queries(
@@ -776,39 +850,45 @@ def build_affected_field_logs(
     }]
     """
 
-    targeted_field_paths: Dict[FieldAddress, str] = {}
+    policy_id = policy.id
 
-    for rule in policy.rules:  # type: ignore[attr-defined]
-        if rule.action_type != action_type:
-            continue
-        rule_categories: List[str] = rule.get_target_data_categories()
-        if not rule_categories:
-            continue
+    with get_db() as db:
 
-        collection_categories: Dict[
-            str, List[FieldPath]
-        ] = node.collection.field_paths_by_category  # type: ignore
-        for rule_cat in rule_categories:
-            for collection_cat, field_paths in collection_categories.items():
-                if collection_cat.startswith(rule_cat):
-                    targeted_field_paths.update(
-                        {
-                            node.address.field_address(field_path): collection_cat
-                            for field_path in field_paths
-                        }
-                    )
+        rules = db.query(Rule).filter(Rule.policy_id == policy_id)
 
-    ret: List[Dict[str, Any]] = []
-    for field_address, data_categories in targeted_field_paths.items():
-        ret.append(
-            {
-                "path": field_address.value,
-                "field_name": field_address.field_path.string_path,
-                "data_categories": [data_categories],
-            }
-        )
+        targeted_field_paths: Dict[FieldAddress, str] = {}
 
-    return ret
+        for rule in rules:  # type: ignore[attr-defined]
+            if rule.action_type != action_type:
+                continue
+            rule_categories: List[str] = rule.get_target_data_categories()
+            if not rule_categories:
+                continue
+
+            collection_categories: Dict[
+                str, List[FieldPath]
+            ] = node.collection.field_paths_by_category  # type: ignore
+            for rule_cat in rule_categories:
+                for collection_cat, field_paths in collection_categories.items():
+                    if collection_cat.startswith(rule_cat):
+                        targeted_field_paths.update(
+                            {
+                                node.address.field_address(field_path): collection_cat
+                                for field_path in field_paths
+                            }
+                        )
+
+        ret: List[Dict[str, Any]] = []
+        for field_address, data_categories in targeted_field_paths.items():
+            ret.append(
+                {
+                    "path": field_address.value,
+                    "field_name": field_address.field_path.string_path,
+                    "data_categories": [data_categories],
+                }
+            )
+
+        return ret
 
 
 def build_consent_dataset_graph(datasets: List[DatasetConfig]) -> DatasetGraph:

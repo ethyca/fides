@@ -1,0 +1,11 @@
+@use "sass:string";
+@use "fidesui/src/palette/palette.module.scss" as palette;
+
+/**
+ * Adds the color variables from the palette to the root element
+ */
+:root {
+  @each $color, $value in palette.$colors {
+    #{palette.getPrefixedColor("--fidesui-", string.unquote($color))}: $value;
+  }
+}

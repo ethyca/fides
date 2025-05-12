@@ -1,9 +1,8 @@
 import {
-  ButtonGroup,
+  AntButton as Button,
+  AntTooltip as Tooltip,
   DeleteIcon,
   EditIcon,
-  IconButton,
-  Tooltip,
   useDisclosure,
 } from "fidesui";
 
@@ -15,11 +14,16 @@ import {
   useExecuteDiscoveryMonitorMutation,
 } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 
+const WEBSITE_SCAN_SUCCESS_MESSAGE =
+  "Scanning your website now. Once the monitor is finished, results can be found in the action center.";
+
 const MonitorConfigActionsCell = ({
   monitorId,
+  isWebsiteMonitor,
   onEditClick,
 }: {
   monitorId: string;
+  isWebsiteMonitor?: boolean;
   onEditClick: () => void;
 }) => {
   const [deleteMonitor] = useDeleteDiscoveryMonitorMutation();
@@ -32,7 +36,9 @@ const MonitorConfigActionsCell = ({
     useExecuteDiscoveryMonitorMutation();
   const { toastResult: toastExecuteResult } = useQueryResultToast({
     defaultErrorMsg: "A problem occurred initiating monitor execution",
-    defaultSuccessMsg: "Monitor execution successfully started",
+    defaultSuccessMsg: isWebsiteMonitor
+      ? WEBSITE_SCAN_SUCCESS_MESSAGE
+      : "Monitor execution successfully started",
   });
 
   const handleDelete = async () => {
@@ -62,18 +68,20 @@ const MonitorConfigActionsCell = ({
         continueButtonText="Delete"
         isCentered
       />
-      <ButtonGroup variant="outline" size="xs">
-        <Tooltip label="Edit">
-          <IconButton
+      <div className="flex gap-2">
+        <Tooltip title="Edit">
+          <Button
             onClick={onEditClick}
+            size="small"
             icon={<EditIcon />}
             data-testid="edit-monitor-btn"
             aria-label="Edit monitor"
           />
         </Tooltip>
-        <Tooltip label="Delete">
-          <IconButton
+        <Tooltip title="Delete">
+          <Button
             onClick={onOpen}
+            size="small"
             icon={<DeleteIcon />}
             aria-label="Delete monitor"
             data-testid="delete-monitor-btn"
@@ -82,9 +90,9 @@ const MonitorConfigActionsCell = ({
         <ActionButton
           onClick={handleExecute}
           title="Scan"
-          isLoading={executeIsLoading}
+          loading={executeIsLoading}
         />
-      </ButtonGroup>
+      </div>
     </>
   );
 };

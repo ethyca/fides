@@ -1,52 +1,21 @@
-import {
-  Box,
-  ButtonProps,
-  CloseIcon,
-  EditIcon,
-  IconButton,
-  SmallAddIcon,
-  Wrap,
-} from "fidesui";
-import { useCallback, useState } from "react";
+import { AntTag as Tag, Box, Icons } from "fidesui";
+import { useState } from "react";
 
+import DataCategorySelect from "~/features/common/dropdown/DataCategorySelect";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
-import { SparkleIcon } from "~/features/common/Icon/SparkleIcon";
-import ClassificationCategoryBadge from "~/features/data-discovery-and-detection/ClassificationCategoryBadge";
+import TaxonomyCellContainer from "~/features/data-discovery-and-detection/tables/cells/TaxonomyCellContainer";
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 
-import TaxonomySelectDropdown, {
-  TaxonomySelectOption,
-} from "../../../common/dropdown/TaxonomySelectDropdown";
-import { useOutsideClick } from "../../../common/hooks";
 import { useUpdateResourceCategoryMutation } from "../../discovery-detection.slice";
-
-const AddCategoryButton = (props: ButtonProps) => (
-  <IconButton
-    variant="outline"
-    w="20px"
-    h="20px"
-    minW="20px"
-    borderRadius="sm"
-    icon={<SmallAddIcon />}
-    data-testid="add-category-btn"
-    aria-label="Add category"
-    {...props}
-  />
-);
 
 interface EditCategoryCellProps {
   resource: DiscoveryMonitorItem;
 }
 
-const EditCategoriesCell = ({ resource }: EditCategoryCellProps) => {
+const EditCategoryCell = ({ resource }: EditCategoryCellProps) => {
   const [isAdding, setIsAdding] = useState(false);
   const { getDataCategoryDisplayName } = useTaxonomies();
   const [updateResourceCategoryMutation] = useUpdateResourceCategoryMutation();
-
-  const handleClickOutside = useCallback(() => {
-    setIsAdding(false);
-  }, []);
-  const { ref } = useOutsideClick(handleClickOutside);
 
   const bestClassifiedCategory = resource.classifications?.length
     ? resource.classifications[0].label
@@ -58,11 +27,11 @@ const EditCategoriesCell = ({ resource }: EditCategoryCellProps) => {
 
   const hasSubfields = resource.sub_field_urns?.length;
 
-  const handleAddCategory = (option: TaxonomySelectOption) => {
+  const handleAddCategory = (value: string) => {
     updateResourceCategoryMutation({
       staged_resource_urn: resource.urn,
       monitor_config_id: resource.monitor_config_id!,
-      user_assigned_data_categories: [...userCategories, option.value],
+      user_assigned_data_categories: [...userCategories, value],
     });
   };
 
@@ -81,23 +50,20 @@ const EditCategoriesCell = ({ resource }: EditCategoryCellProps) => {
     !isAdding && !!bestClassifiedCategory && !userCategories.length;
 
   return (
-    <Wrap
-      py={2}
-      alignItems="center"
-      position="relative"
-      width="100%"
-      gap={2}
-      overflowX="auto"
-      ref={ref}
-    >
+    <TaxonomyCellContainer data-testid="edit-category-cell">
       {noCategories && (
         <>
-          <ClassificationCategoryBadge data-testid="no-classifications">
+          <Tag data-testid="no-classifications" color="white">
             None
-          </ClassificationCategoryBadge>
+          </Tag>
           {/* resources with child fields can't have data categories */}
           {!hasSubfields && (
-            <AddCategoryButton onClick={() => setIsAdding(true)} />
+            <Tag
+              onClick={() => setIsAdding(true)}
+              addable
+              data-testid="taxonomy-add-btn"
+              aria-label="Add category"
+            />
           )}
         </>
       )}
@@ -105,36 +71,36 @@ const EditCategoriesCell = ({ resource }: EditCategoryCellProps) => {
       {showUserCategories && (
         <>
           {userCategories.map((category) => (
-            <ClassificationCategoryBadge
-              classification={getDataCategoryDisplayName(category)}
+            <Tag
               key={category}
               data-testid={`user-classification-${category}`}
+              color="white"
+              closable
+              onClose={() => handleRemoveCategory(category)}
+              closeButtonLabel="Remove category"
             >
               {getDataCategoryDisplayName(category)}
-              <IconButton
-                variant="ghost"
-                onClick={() => handleRemoveCategory(category)}
-                icon={<CloseIcon boxSize={2} />}
-                size="2xs"
-                ml={1}
-                aria-label="Remove category"
-              />
-            </ClassificationCategoryBadge>
+            </Tag>
           ))}
-          <AddCategoryButton onClick={() => setIsAdding(true)} />
+          <Tag
+            onClick={() => setIsAdding(true)}
+            addable
+            data-testid="taxonomy-add-btn"
+            aria-label="Add category"
+          />
         </>
       )}
 
       {showClassificationResult && (
-        <ClassificationCategoryBadge
+        <Tag
           onClick={() => setIsAdding(true)}
-          cursor="pointer"
+          color="white"
           data-testid={`classification-${bestClassifiedCategory}`}
+          hasSparkle
         >
-          <SparkleIcon mt={0.5} />
           {getDataCategoryDisplayName(bestClassifiedCategory)}
-          <EditIcon />
-        </ClassificationCategoryBadge>
+          <Icons.Edit size={10} />
+        </Tag>
       )}
 
       {isAdding && (
@@ -149,10 +115,18 @@ const EditCategoriesCell = ({ resource }: EditCategoryCellProps) => {
           height="max"
           bgColor="#fff"
         >
-          <TaxonomySelectDropdown onChange={handleAddCategory} menuIsOpen />
+          <DataCategorySelect
+            selectedTaxonomies={userCategories}
+            onChange={(o) => {
+              setIsAdding(false);
+              handleAddCategory(o);
+            }}
+            onBlur={() => setIsAdding(false)}
+            open
+          />
         </Box>
       )}
-    </Wrap>
+    </TaxonomyCellContainer>
   );
 };
-export default EditCategoriesCell;
+export default EditCategoryCell;

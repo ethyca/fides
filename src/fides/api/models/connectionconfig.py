@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import enum
 from datetime import datetime
-from typing import Any, Dict, Optional, Type
+from typing import TYPE_CHECKING, Any, List, Optional, Type
 
+from loguru import logger
 from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, String, event
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.ext.mutable import MutableDict
@@ -21,6 +22,10 @@ from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.config import CONFIG
 
+if TYPE_CHECKING:
+    from fides.api.models.detection_discovery import MonitorConfig
+    from fides.api.schemas.connection_configuration.enums.system_type import SystemType
+
 
 class ConnectionTestStatus(enum.Enum):
     """Enum for supplying statuses of validating credentials for a Connection Config to the user"""
@@ -35,8 +40,9 @@ class ConnectionType(enum.Enum):
     Supported types to which we can connect Fides.
     """
 
-    attentive = "attentive"
+    attentive_email = "attentive_email"
     bigquery = "bigquery"
+    datahub = "datahub"
     dynamodb = "dynamodb"
     fides = "fides"
     generic_consent_email = "generic_consent_email"  # Run after the traversal
@@ -51,8 +57,10 @@ class ConnectionType(enum.Enum):
     mongodb = "mongodb"
     mssql = "mssql"
     mysql = "mysql"
+    okta = "okta"
     postgres = "postgres"
     rds_mysql = "rds_mysql"
+    rds_postgres = "rds_postgres"
     redshift = "redshift"
     s3 = "s3"
     saas = "saas"
@@ -60,15 +68,17 @@ class ConnectionType(enum.Enum):
     snowflake = "snowflake"
     sovrn = "sovrn"
     timescale = "timescale"
+    website = "website"
 
     @property
     def human_readable(self) -> str:
         """Human-readable mapping for ConnectionTypes
         Add to this mapping if you add a new ConnectionType
         """
-        readable_mapping: Dict[str, str] = {
-            ConnectionType.attentive.value: "Attentive",
+        readable_mapping: dict[str, str] = {
+            ConnectionType.attentive_email.value: "Attentive Email",
             ConnectionType.bigquery.value: "BigQuery",
+            ConnectionType.datahub.value: "DataHub",
             ConnectionType.dynamic_erasure_email.value: "Dynamic Erasure Email",
             ConnectionType.dynamodb.value: "DynamoDB",
             ConnectionType.fides.value: "Fides Connector",
@@ -83,8 +93,10 @@ class ConnectionType(enum.Enum):
             ConnectionType.mongodb.value: "MongoDB",
             ConnectionType.mssql.value: "Microsoft SQL Server",
             ConnectionType.mysql.value: "MySQL",
+            ConnectionType.okta.value: "Okta",
             ConnectionType.postgres.value: "PostgreSQL",
             ConnectionType.rds_mysql.value: "RDS MySQL",
+            ConnectionType.rds_postgres.value: "RDS Postgres",
             ConnectionType.redshift.value: "Amazon Redshift",
             ConnectionType.s3.value: "Amazon S3",
             ConnectionType.saas.value: "SaaS",
@@ -92,6 +104,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.snowflake.value: "Snowflake",
             ConnectionType.sovrn.value: "Sovrn",
             ConnectionType.timescale.value: "TimescaleDB",
+            ConnectionType.website.value: "Website",
         }
         try:
             return readable_mapping[self.value]
@@ -99,6 +112,49 @@ class ConnectionType(enum.Enum):
             raise NotImplementedError(
                 "Add new ConnectionType to human_readable mapping"
             )
+
+    @property
+    def system_type(self) -> "SystemType":
+        from fides.api.schemas.connection_configuration.enums.system_type import (
+            SystemType,
+        )
+
+        system_type_mapping: dict[str, SystemType] = {
+            ConnectionType.attentive_email.value: SystemType.email,
+            ConnectionType.bigquery.value: SystemType.database,
+            ConnectionType.datahub.value: SystemType.data_catalog,
+            ConnectionType.dynamic_erasure_email.value: SystemType.email,
+            ConnectionType.dynamodb.value: SystemType.database,
+            ConnectionType.fides.value: SystemType.manual,
+            ConnectionType.generic_consent_email.value: SystemType.email,
+            ConnectionType.generic_erasure_email.value: SystemType.email,
+            ConnectionType.google_cloud_sql_mysql.value: SystemType.database,
+            ConnectionType.google_cloud_sql_postgres.value: SystemType.database,
+            ConnectionType.https.value: SystemType.manual,
+            ConnectionType.manual_webhook.value: SystemType.manual,
+            ConnectionType.manual.value: SystemType.manual,
+            ConnectionType.mariadb.value: SystemType.database,
+            ConnectionType.mongodb.value: SystemType.database,
+            ConnectionType.mssql.value: SystemType.database,
+            ConnectionType.mysql.value: SystemType.database,
+            ConnectionType.okta.value: SystemType.system,
+            ConnectionType.postgres.value: SystemType.database,
+            ConnectionType.rds_mysql.value: SystemType.database,
+            ConnectionType.rds_postgres.value: SystemType.database,
+            ConnectionType.redshift.value: SystemType.database,
+            ConnectionType.s3.value: SystemType.database,
+            ConnectionType.saas.value: SystemType.saas,
+            ConnectionType.scylla.value: SystemType.database,
+            ConnectionType.snowflake.value: SystemType.database,
+            ConnectionType.sovrn.value: SystemType.email,
+            ConnectionType.timescale.value: SystemType.database,
+            ConnectionType.website.value: SystemType.website,
+        }
+
+        try:
+            return system_type_mapping[self.value]
+        except KeyError:
+            raise NotImplementedError("Add new ConnectionType to system_type mapping")
 
 
 class AccessLevel(enum.Enum):
@@ -133,11 +189,15 @@ class ConnectionConfig(Base):
             )
         ),
         nullable=True,
-    )  # Type bytea in the db
+    )  # Type bytes in the db
     last_test_timestamp = Column(DateTime(timezone=True))
     last_test_succeeded = Column(Boolean)
     disabled = Column(Boolean, server_default="f", default=False)
     disabled_at = Column(DateTime(timezone=True))
+
+    # Optional column to store the last time the connection was "ran"
+    # Each integration can determine the semantics of what "being run" is
+    last_run_timestamp = Column(DateTime(timezone=True), nullable=True)
 
     # only applicable to ConnectionConfigs of connection type saas
     saas_config = Column(
@@ -150,6 +210,14 @@ class ConnectionConfig(Base):
 
     datasets = relationship(  # type: ignore[misc]
         "DatasetConfig",
+        back_populates="connection_config",
+        cascade="all, delete",
+    )
+
+    # Monitor configs related to this connection config.
+    # If the connection config is deleted, the monitor configs will be deleted as well.
+    monitors: RelationshipProperty[List["MonitorConfig"]] = relationship(
+        "MonitorConfig",
         back_populates="connection_config",
         cascade="all, delete",
     )
@@ -200,10 +268,13 @@ class ConnectionConfig(Base):
             return False
 
         # hard-coding to avoid cyclic dependency
-        if authentication.strategy != "oauth2_authorization_code":
+        if authentication.strategy not in [
+            "oauth2_authorization_code",
+            "oauth2_client_credentials",
+        ]:
             return False
 
-        return bool(self.secrets and self.secrets.get("access_token"))
+        return bool(self.secrets and "access_token" in self.secrets.keys())
 
     @property
     def name_or_key(self) -> str:
@@ -268,8 +339,20 @@ class ConnectionConfig(Base):
 
     def delete(self, db: Session) -> Optional[FidesBase]:
         """Hard deletes datastores that map this ConnectionConfig."""
+        logger.info(
+            "Deleting connection config {}...",
+            self.key,
+        )
         for dataset in self.datasets:
             dataset.delete(db=db)
+
+        for monitor in self.monitors:
+            logger.info(
+                "Deleting monitor config {} associated with connection config {}...",
+                monitor.key,
+                self.key,
+            )
+            monitor.delete(db=db)
 
         return super().delete(db=db)
 

@@ -1,3 +1,4 @@
+from time import sleep
 from typing import Any, Dict, Generator
 
 import pydash
@@ -5,7 +6,6 @@ import pytest
 import requests
 from sqlalchemy.orm import Session
 
-from fides.api.cryptography import cryptographic_util
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -16,6 +16,10 @@ from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
+)
+from tests.ops.integration_tests.saas.connector_runner import (
+    ConnectorRunner,
+    generate_random_email,
 )
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 from tests.ops.test_helpers.vault_client import get_secrets
@@ -32,16 +36,9 @@ def hubspot_secrets(saas_config):
     }
 
 
-@pytest.fixture(scope="function")
-def hubspot_identity_email(saas_config):
-    return (
-        pydash.get(saas_config, "hubspot.identity_email") or secrets["identity_email"]
-    )
-
-
-@pytest.fixture(scope="session")
-def hubspot_erasure_identity_email():
-    return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
+@pytest.fixture
+def hubspot_identity_email():
+    return generate_random_email()
 
 
 @pytest.fixture
@@ -115,8 +112,7 @@ class HubspotTestClient:
     headers: object = {}
     base_url: str = ""
 
-    def __init__(self, connection_config_hubspot: ConnectionConfig):
-        hubspot_secrets = connection_config_hubspot.secrets
+    def __init__(self, hubspot_secrets: Dict[str, str]):
         self.headers = {
             "Authorization": f"Bearer {hubspot_secrets['private_app_token']}",
         }
@@ -192,19 +188,52 @@ class HubspotTestClient:
         )
         return contact_response
 
+    def delete_user(self, user_id: str) -> requests.Response:
+        user_response: requests.Response = requests.delete(
+            url=f"{self.base_url}/settings/v3/users/{user_id}",
+            headers=self.headers,
+        )
+        return user_response
+
+    def opt_in_subscription_preferences(
+        self, email: str, subscription_id: str
+    ) -> requests.Response:
+        body = {
+            "emailAddress": f"{email}",
+            "subscriptionId": f"{subscription_id}",
+            "statusState": "SUBSCRIBED",
+            "channel": "EMAIL",
+            "legalBasis": "LEGITIMATE_INTEREST_CLIENT",
+            "legalBasisExplanation": "At users request, we opted them in",
+        }
+        subscription_response: requests.Response = requests.post(
+            url=f"{self.base_url}/communication-preferences/v4/statuses/{email}",
+            headers=self.headers,
+            json=body,
+        )
+        assert subscription_response.ok
+        return subscription_response.json()
+
     def get_email_subscriptions(self, email: str) -> requests.Response:
         email_subscriptions: requests.Response = requests.get(
-            url=f"{self.base_url}/communication-preferences/v3/status/email/{email}",
+            url=f"{self.base_url}/communication-preferences/v4/statuses/{email}?channel=EMAIL",
             headers=self.headers,
         )
         return email_subscriptions
 
+    def get_all_subscriptions(self) -> requests.Response:
+        subscriptions_responses: requests.Response = requests.get(
+            url=f"{self.base_url}/communication-preferences/v4/definitions",
+            headers=self.headers,
+        )
+        return subscriptions_responses.json()
 
-@pytest.fixture(scope="function")
+
+@pytest.fixture
 def hubspot_test_client(
-    connection_config_hubspot: HubspotTestClient,
+    hubspot_secrets,
 ) -> Generator:
-    test_client = HubspotTestClient(connection_config_hubspot=connection_config_hubspot)
+    test_client = HubspotTestClient(hubspot_secrets)
     yield test_client
 
 
@@ -236,27 +265,16 @@ def user_exists(user_id: str, hubspot_test_client: HubspotTestClient) -> Any:
         return user_body
 
 
-@pytest.fixture(scope="function")
-def hubspot_erasure_data(
-    hubspot_test_client: HubspotTestClient,
-    hubspot_erasure_identity_email: str,
-) -> Generator:
-    """
-    Gets the current value of the resource and restores it after the test is complete.
-    Used for erasure tests.
-    """
+def create_hubspot_data(test_client: HubspotTestClient, email):
     # create contact
-    contacts_response = hubspot_test_client.create_contact(
-        email=hubspot_erasure_identity_email
-    )
+    contacts_response = test_client.create_contact(email=email)
     contacts_body = contacts_response.json()
     contact_id = contacts_body["id"]
 
     # create user
-    users_response = hubspot_test_client.create_user(
-        email=hubspot_erasure_identity_email
-    )
+    users_response = test_client.create_user(email=email)
     users_body = users_response.json()
+
     user_id = users_body["id"]
 
     # no need to subscribe contact, since creating a contact auto-subscribes them
@@ -266,7 +284,7 @@ def hubspot_erasure_data(
     )
     poll_for_existence(
         _contact_exists,
-        (contact_id, hubspot_erasure_identity_email, hubspot_test_client),
+        (contact_id, email, test_client),
         error_message=error_message,
         interval=60,
     )
@@ -274,14 +292,37 @@ def hubspot_erasure_data(
     error_message = f"User with user id {user_id} could not be added to Hubspot"
     poll_for_existence(
         user_exists,
-        (user_id, hubspot_test_client),
+        (user_id, test_client),
         error_message=error_message,
+    )
+    subscriptions = test_client.get_all_subscriptions()
+    for subscription in subscriptions["results"]:
+        test_client.opt_in_subscription_preferences(
+            email=email, subscription_id=subscription["id"]
+        )
+    sleep(3)
+    return contact_id, user_id
+
+
+@pytest.fixture
+def hubspot_data(
+    hubspot_test_client: HubspotTestClient,
+    hubspot_identity_email: str,
+) -> Generator:
+
+    contact_id, user_id = create_hubspot_data(
+        hubspot_test_client, email=hubspot_identity_email
+    )
+    random_email = generate_random_email()
+    random_contact_id, random_user_id = create_hubspot_data(
+        hubspot_test_client, email=random_email
     )
 
     yield contact_id, user_id
 
     # delete contact
     hubspot_test_client.delete_contact(contact_id=contact_id)
+    hubspot_test_client.delete_user(user_id=user_id)
 
     # verify contact is deleted
     error_message = (
@@ -289,7 +330,36 @@ def hubspot_erasure_data(
     )
     poll_for_existence(
         _contact_exists,
-        (contact_id, hubspot_erasure_identity_email, hubspot_test_client),
+        (contact_id, hubspot_identity_email, hubspot_test_client),
         error_message=error_message,
         existence_desired=False,
+    )
+
+    # delete random contact
+    hubspot_test_client.delete_contact(contact_id=random_contact_id)
+    hubspot_test_client.delete_user(user_id=random_user_id)
+
+    # verify random contact is deleted
+    error_message = (
+        f"Contact with contact id {random_contact_id} could not be deleted from Hubspot"
+    )
+    poll_for_existence(
+        _contact_exists,
+        (random_contact_id, random_email, hubspot_test_client),
+        error_message=error_message,
+        existence_desired=False,
+    )
+
+
+@pytest.fixture
+def hubspot_runner(
+    db,
+    cache,
+    hubspot_secrets,
+) -> ConnectorRunner:
+    return ConnectorRunner(
+        db,
+        cache,
+        "hubspot",
+        hubspot_secrets,
     )

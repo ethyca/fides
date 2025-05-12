@@ -46,12 +46,7 @@ const DEFAULT_ACTIVE_COLUMNS = [
   SYSTEM_DESCRIPTION,
 ];
 
-const DEPRECATED_COLUMNS = [
-  "third_country_combined",
-  "system.third_country_safeguards",
-  "dataset.fides_key",
-  "system.link_to_processor_contract",
-];
+const DEPRECATED_COLUMNS = ["third_country_combined", "dataset.fides_key"];
 
 // API endpoints
 const datamapApi = baseApi.injectEndpoints({
@@ -107,6 +102,8 @@ const datamapApi = baseApi.injectEndpoints({
         dataCategories?: string;
         dataSubjects?: string;
         format?: ExportFormat;
+        report_id?: string;
+        report?: object;
       }
     >({
       query: ({
@@ -118,6 +115,8 @@ const datamapApi = baseApi.injectEndpoints({
         dataCategories,
         dataSubjects,
         format,
+        report_id,
+        report,
       }) => {
         let queryString = `page=${pageIndex}&size=${pageSize}&group_by=${groupBy}`;
         if (dataUses) {
@@ -132,8 +131,13 @@ const datamapApi = baseApi.injectEndpoints({
         if (search) {
           queryString += `&search=${search}`;
         }
+        if (report_id) {
+          queryString += `&report_id=${report_id}`;
+        }
         return {
           url: `plus/datamap/minimal/${format}?${queryString}`,
+          method: "POST",
+          body: { report },
           responseHandler: async (response) => {
             const filename = await getFileNameFromContentDisposition(
               response.headers.get("content-disposition"),

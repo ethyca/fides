@@ -1,0 +1,154 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: HubSpot
+  type: hubspot
+  description: A sample schema representing the HubSpot connector for Fides
+  user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/hubspot
+  version: 0.0.1
+  replaceable: True
+
+  connector_params:
+    - name: domain
+      default_value: api.hubapi.com
+      description: Your HubSpot domain
+    - name: private_app_token
+      sensitive: True
+      label: Private app token
+      description: Your HubSpot Private Apps access token
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: bearer
+      configuration:
+        token: <private_app_token>
+
+  test_request:
+    method: GET
+    path: /settings/v3/users
+
+  endpoints:
+    - name: contacts
+      requests:
+        read:
+          path: /crm/v3/objects/contacts/search
+          method: POST
+          body: |
+            {
+              "filterGroups": [{
+                "filters": [{
+                  "value": "<email>",
+                  "propertyName": "email",
+                  "operator": "EQ"
+                }]
+              }]
+            }
+          query_params:
+            - name: limit
+              value: 100
+          param_values:
+            - name: email
+              identity: email
+          data_path: results
+          pagination:
+            strategy: link
+            configuration:
+              source: body
+              path: paging.next.link
+        update:
+          request_override: hubspot_contacts_update
+          param_values:
+            - name: contactId
+              references:
+                - dataset: <instance_fides_key>
+                  field: contacts.id
+                  direction: from
+    - name: owners
+      requests:
+        read:
+          path: /crm/v3/owners
+          method: GET
+          query_params:
+            - name: limit
+              value: 100
+          param_values:
+            - name: placeholder
+              identity: email
+          data_path: results
+          postprocessors:
+            - strategy: filter
+              configuration:
+                field: email
+                value:
+                  identity: email
+          pagination:
+            strategy: link
+            configuration:
+              source: body
+              path: paging.next.link
+    - name: subscription_preferences
+      requests:
+        read:
+          path: /communication-preferences/v3/status/email/<email>
+          method: GET
+          param_values:
+            - name: email
+              identity: email
+        update:
+          path: /communication-preferences/v3/unsubscribe
+          method: POST
+          body: |
+            {
+              "emailAddress": "<email>",
+              "subscriptionId": "<subscriptionId>",
+              "legalBasis": "LEGITIMATE_INTEREST_CLIENT",
+              "legalBasisExplanation": "At users request, we opted them out"
+            }
+          data_path: subscriptionStatuses
+          ignore_errors: [400]
+          param_values:
+            - name: email
+              identity: email
+            - name: subscriptionId
+              references:
+                - dataset: <instance_fides_key>
+                  field: subscription_preferences.id
+                  direction: from
+          postprocessors:
+            - strategy: filter
+              configuration:
+                field: status
+                value: SUBSCRIBED
+    - name: users
+      requests:
+        read:
+          path: /settings/v3/users/
+          method: GET
+          query_params:
+            - name: limit
+              value: 100
+          param_values:
+            - name: placeholder
+              identity: email
+          data_path: results
+          postprocessors:
+            - strategy: filter
+              configuration:
+                field: email
+                value:
+                  identity: email
+          pagination:
+            strategy: link
+            configuration:
+              source: body
+              path: paging.next.link
+        delete:
+          path: /settings/v3/users/<userId>
+          method: DELETE
+          param_values:
+            - name: userId
+              references:
+                - dataset: <instance_fides_key>
+                  field: users.id
+                  direction: from

@@ -1,8 +1,8 @@
 import {
-  Badge,
+  AntButton as Button,
+  AntSwitch as Switch,
+  AntTag as Tag,
   Box,
-  Button,
-  ButtonGroup,
   Flex,
   FormControl,
   FormLabel,
@@ -14,12 +14,11 @@ import {
   ModalOverlay,
   ModalProps,
   Stack,
-  Switch,
   Text,
 } from "fidesui";
-import { ChangeEvent, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
-import SearchBar from "~/features/common/SearchBar";
+import SearchInput from "~/features/common/SearchInput";
 import { useGetAllSystemsQuery } from "~/features/system";
 import { System } from "~/types/api";
 
@@ -58,8 +57,7 @@ const AssignSystemsModal = ({
     return allSystems.filter((s) => SEARCH_FILTER(s, searchFilter));
   }, [allSystems, searchFilter]);
 
-  const handleToggleAllSystems = (event: ChangeEvent<HTMLInputElement>) => {
-    const { checked } = event.target;
+  const handleToggleAllSystems = (checked: boolean) => {
     if (checked && allSystems) {
       setSelectedSystems(filteredSystems);
     } else {
@@ -86,9 +84,9 @@ const AssignSystemsModal = ({
           alignItems="center"
         >
           <Text>Assign systems</Text>
-          <Badge bg="green.500" color="white" px={1}>
+          <Tag color="success">
             Assigned to {assignedSystems.length} systems
-          </Badge>
+          </Tag>
         </ModalHeader>
         <ModalBody data-testid="assign-systems-modal-body">
           {emptySystems ? (
@@ -109,17 +107,17 @@ const AssignSystemsModal = ({
                       Assign all systems
                     </FormLabel>
                     <Switch
-                      size="sm"
+                      size="small"
                       id="assign-all-systems"
-                      isChecked={allSystemsAssigned}
+                      checked={allSystemsAssigned}
                       onChange={handleToggleAllSystems}
                       data-testid="assign-all-systems-toggle"
                     />
                   </FormControl>
                 </Box>
               </Flex>
-              <SearchBar
-                search={searchFilter}
+              <SearchInput
+                value={searchFilter}
                 onChange={setSearchFilter}
                 placeholder="Search for systems"
                 data-testid="system-search"
@@ -134,25 +132,20 @@ const AssignSystemsModal = ({
           )}
         </ModalBody>
         <ModalFooter justifyContent="flex-start">
-          <ButtonGroup size="sm">
-            <Button
-              variant="outline"
-              mr={2}
-              onClick={onClose}
-              data-testid="cancel-btn"
-            >
+          <div>
+            <Button onClick={onClose} className="mr-2" data-testid="cancel-btn">
               Cancel
             </Button>
             {!emptySystems ? (
               <Button
-                colorScheme="primary"
+                type="primary"
                 onClick={handleConfirm}
                 data-testid="confirm-btn"
               >
                 Confirm
               </Button>
             ) : null}
-          </ButtonGroup>
+          </div>
         </ModalFooter>
       </ModalContent>
     </Modal>

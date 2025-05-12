@@ -1,18 +1,21 @@
-import { Button, ButtonGroup, useToast, VStack } from "fidesui";
+import { AntButton as Button, Box, useToast, VStack } from "fidesui";
 import { Form, Formik } from "formik";
 import { isEmpty, isUndefined, mapValues, omitBy } from "lodash";
 import * as Yup from "yup";
 
 import FidesSpinner from "~/features/common/FidesSpinner";
-import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
+import { ControlledSelect } from "~/features/common/form/ControlledSelect";
+import { CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage } from "~/features/common/helpers";
 import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
 import type { ConnectionTypeSecretSchemaResponse } from "~/features/connection-type/types";
+import { useGetAllFilteredDatasetsQuery } from "~/features/dataset";
 import {
   usePatchDatastoreConnectionMutation,
   usePatchDatastoreConnectionSecretsMutation,
 } from "~/features/datastore-connections";
-import { formatKey } from "~/features/datastore-connections/add-connection/helpers";
+import { useDatasetConfigField } from "~/features/datastore-connections/system_portal_config/forms/fields/DatasetConfigField/useDatasetConfigField";
+import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
 import {
   useGetAllSystemsQuery,
   usePatchSystemConnectionConfigsMutation,
@@ -37,16 +40,19 @@ type FormValues = {
   description: string;
   system_fides_key?: string;
   secrets?: ConnectionSecrets;
+  dataset?: string[];
 };
 
 const ConfigureIntegrationForm = ({
   connection,
   connectionOption,
   onCancel,
+  description,
 }: {
   connection?: ConnectionConfigurationResponse;
   connectionOption: ConnectionSystemTypeMap;
   onCancel: () => void;
+  description: React.ReactNode;
 }) => {
   const [
     patchConnectionSecretsMutationTrigger,
@@ -67,6 +73,20 @@ const ConfigureIntegrationForm = ({
     value: s.fides_key,
   }));
 
+  const { data: allDatasets } = useGetAllFilteredDatasetsQuery({
+    minimal: true,
+    connection_type: ConnectionType.BIGQUERY,
+  });
+  const datasetOptions = allDatasets?.map((d) => ({
+    label: d.name ?? d.fides_key,
+    value: d.fides_key,
+  }));
+
+  const { patchConnectionDatasetConfig, initialDatasets } =
+    useDatasetConfigField({
+      connectionConfig: connection,
+    });
+
   const submitPending =
     secretsIsLoading || patchIsLoading || systemPatchIsLoading;
 
@@ -77,6 +97,7 @@ const ConfigureIntegrationForm = ({
       secrets?.properties,
       (s, key) => connection?.secrets?.[key] ?? "",
     ),
+    dataset: initialDatasets,
   };
 
   const toast = useToast();
@@ -113,6 +134,7 @@ const ConfigureIntegrationForm = ({
           disabled: false,
           description: values.description,
           secrets: values.secrets,
+          dataset: values.dataset,
         };
 
     // if system is attached, use patch request that attaches to system
@@ -171,6 +193,16 @@ const ConfigureIntegrationForm = ({
       } successfully`,
     });
     onCancel();
+
+    if (
+      connectionPayload &&
+      values.dataset &&
+      connectionOption.identifier === ConnectionType.DATAHUB
+    ) {
+      await patchConnectionDatasetConfig(values, connectionPayload.key, {
+        showSuccessAlert: false,
+      });
+    }
   };
 
   if (secretsSchemaIsLoading) {
@@ -212,65 +244,89 @@ const ConfigureIntegrationForm = ({
       secrets: Yup.object().shape(Object.fromEntries(fieldsFromSchema)),
     });
   };
-
   return (
-    <Formik
-      initialValues={initialValues}
-      enableReinitialize
-      onSubmit={handleSubmit}
-      validationSchema={generateValidationSchema(secrets!)}
-    >
-      {({ dirty, isValid, resetForm }) => (
-        <Form>
-          <VStack alignItems="start" spacing={6} mt={4}>
-            <CustomTextInput
-              id="name"
-              name="name"
-              label="Name"
-              variant="stacked"
-              isRequired
-            />
-            <CustomTextInput
-              id="description"
-              name="description"
-              label="Description"
-              variant="stacked"
-            />
-            {generateFields(secrets!)}
-            {!isEditing && (
-              <CustomSelect
-                id="system_fides_key"
-                name="system_fides_key"
-                options={systemOptions ?? []}
-                label="System"
-                tooltip="The system to associate with the integration"
+    <>
+      {description && (
+        <Box
+          padding="20px 24px"
+          backgroundColor="gray.50"
+          borderRadius="md"
+          border="1px solid"
+          borderColor="gray.200"
+          fontSize="sm"
+          marginTop="16px"
+        >
+          {description}
+        </Box>
+      )}
+      <Formik
+        initialValues={initialValues}
+        enableReinitialize
+        onSubmit={handleSubmit}
+        validationSchema={generateValidationSchema(secrets!)}
+      >
+        {({ dirty, isValid, resetForm }) => (
+          <Form>
+            <VStack alignItems="start" spacing={6} mt={4}>
+              <CustomTextInput
+                id="name"
+                name="name"
+                label="Name"
+                variant="stacked"
+                isRequired
+              />
+              <CustomTextInput
+                id="description"
+                name="description"
+                label="Description"
                 variant="stacked"
               />
-            )}
-            <ButtonGroup size="sm" width="100%" justifyContent="space-between">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  onCancel();
-                  resetForm();
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                variant="primary"
-                isDisabled={!dirty || !isValid}
-                isLoading={submitPending}
-                data-testid="save-btn"
-              >
-                Save
-              </Button>
-            </ButtonGroup>
-          </VStack>
-        </Form>
-      )}
-    </Formik>
+              {generateFields(secrets!)}
+              {!isEditing && (
+                <ControlledSelect
+                  id="system_fides_key"
+                  name="system_fides_key"
+                  options={systemOptions ?? []}
+                  label="System"
+                  tooltip="The system to associate with the integration"
+                  layout="stacked"
+                />
+              )}
+              {connectionOption.identifier === ConnectionType.DATAHUB && (
+                <ControlledSelect
+                  id="dataset"
+                  name="dataset"
+                  options={datasetOptions ?? []}
+                  label="Datasets"
+                  tooltip="Only BigQuery datasets are supported. Selected datasets will sync with matching DataHub datasets. If none are selected, all datasets will be included by default."
+                  layout="stacked"
+                  mode="multiple"
+                />
+              )}
+              <div className="flex w-full justify-between">
+                <Button
+                  onClick={() => {
+                    onCancel();
+                    resetForm();
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  htmlType="submit"
+                  type="primary"
+                  disabled={!dirty || !isValid}
+                  loading={submitPending}
+                  data-testid="save-btn"
+                >
+                  Save
+                </Button>
+              </div>
+            </VStack>
+          </Form>
+        )}
+      </Formik>
+    </>
   );
 };
 

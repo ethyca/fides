@@ -46,8 +46,8 @@ const DomainRecordsPage: NextPage = () => {
         cell: ({ row }) => (
           <ClipboardButton
             copyText={row.original.data}
-            variant="outline"
-            size="xs"
+            type="default"
+            size="small"
           />
         ),
         header: "Actions",
@@ -75,6 +75,7 @@ const DomainRecordsPage: NextPage = () => {
     getCoreRowModel: getCoreRowModel(),
     columns,
     data,
+    columnResizeMode: "onChange",
   });
 
   return (

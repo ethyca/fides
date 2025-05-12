@@ -3,7 +3,10 @@ import "@fontsource/inter/500.css";
 import "@fontsource/inter/600.css";
 import "@fontsource/inter/700.css";
 import "../theme/tailwind.css";
+import "../theme/global.scss";
 
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import { FidesUIProvider, Flex } from "fidesui";
 import type { AppProps } from "next/app";
 import React, { ReactNode } from "react";
@@ -14,13 +17,15 @@ import { PersistGate } from "redux-persist/integration/react";
 
 import ProtectedRoute from "~/features/auth/ProtectedRoute";
 import CommonSubscriptions from "~/features/common/CommonSubscriptions";
-import MainSideNav from "~/features/common/nav/v2/MainSideNav";
+import MainSideNav from "~/features/common/nav/MainSideNav";
 import { antTheme } from "~/theme/ant";
 
 import store, { persistor } from "../app/store";
 import theme from "../theme";
 import Login from "./login";
 import LoginWithOIDC from "./login/[provider]";
+
+dayjs.extend(utc);
 
 if (process.env.NEXT_PUBLIC_MOCK_API) {
   // eslint-disable-next-line global-require

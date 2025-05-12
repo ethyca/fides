@@ -14,11 +14,11 @@ const RoleDescriptionDrawer = () => (
           key={role.roleKey}
           padding={4}
           borderRadius="md"
-          backgroundColor="blue.50"
+          backgroundColor="gray.75"
           fontSize="14px"
         >
           <Box fontWeight="semibold">{role.label}</Box>
-          <Box color="gray.500">{role.description}</Box>
+          <Box color="gray.700">{role.description}</Box>
         </Box>
       ))}
     </VStack>

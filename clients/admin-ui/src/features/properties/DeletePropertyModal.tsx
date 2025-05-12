@@ -1,10 +1,16 @@
-import { Text, Tooltip, useDisclosure, useToast, WarningIcon } from "fidesui";
+import {
+  AntTooltip as Tooltip,
+  Text,
+  useDisclosure,
+  useToast,
+  WarningIcon,
+} from "fidesui";
 import router from "next/router";
 import React from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
-import { PROPERTIES_ROUTE } from "~/features/common/nav/v2/routes";
+import { PROPERTIES_ROUTE } from "~/features/common/nav/routes";
 import Restrict from "~/features/common/Restrict";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useDeletePropertyMutation } from "~/features/properties/property.slice";
@@ -34,11 +40,11 @@ const DeletePropertyModal = ({ property, triggerComponent }: Props) => {
   const confirmationModal = useDisclosure();
   const [deletePropertyMutationTrigger] = useDeletePropertyMutation();
 
-  const isDisabled = property.experiences.length > 0;
+  const disabled = property.experiences.length > 0;
 
   const handleModalOpen = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     e.stopPropagation();
-    if (!isDisabled) {
+    if (!disabled) {
       confirmationModal.onOpen();
     }
   };
@@ -57,14 +63,17 @@ const DeletePropertyModal = ({ property, triggerComponent }: Props) => {
   return (
     <Restrict scopes={[ScopeRegistryEnum.PROPERTY_DELETE]}>
       <Tooltip
-        label="All of the experiences on this property must be unlinked before the property can be deleted."
+        title={
+          !disabled
+            ? undefined
+            : "All of the experiences on this property must be unlinked before the property can be deleted."
+        }
         placement="right"
-        isDisabled={!isDisabled}
       >
         <span>
           {React.cloneElement(triggerComponent, {
             onClick: handleModalOpen,
-            isDisabled,
+            disabled,
           })}
         </span>
       </Tooltip>

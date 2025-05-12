@@ -1,9 +1,9 @@
 import { useAlert } from "common/hooks/useAlert";
 import {
-  Button,
-  ButtonGroup,
+  AntButton as Button,
   ConfirmationModal,
   Flex,
+  HStack,
   Text,
   useDisclosure,
   VStack,
@@ -113,21 +113,19 @@ const YamlEditorForm = ({
           }}
           theme="light"
         />
-        <ButtonGroup size="sm">
-          {onCancel ? <Button onClick={onCancel}>Cancel</Button> : null}
+        <HStack justifyContent="flex-end" pr={6}>
+          {onCancel && <Button onClick={onCancel}>Cancel</Button>}
           <Button
-            colorScheme="primary"
-            isDisabled={disabled || isEmptyState || !!yamlError || isSubmitting}
-            isLoading={isSubmitting}
-            loadingText="Saving"
+            type="primary"
+            disabled={disabled || isEmptyState || !!yamlError || isSubmitting}
+            loading={isSubmitting}
             onClick={handleConfirmation}
-            type="submit"
+            htmlType="submit"
             data-testid="save-yaml-btn"
-            width="fit-content"
           >
             Save
           </Button>
-        </ButtonGroup>
+        </HStack>
       </VStack>
       {isTouched && (isEmptyState || yamlError) && (
         <YamlError isEmptyState={isEmptyState} yamlError={yamlError} />

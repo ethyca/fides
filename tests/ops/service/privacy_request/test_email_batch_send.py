@@ -7,16 +7,15 @@ from fides.api.common_exceptions import MessageDispatchException
 from fides.api.models.messaging import MessagingConfig
 from fides.api.models.policy import ActionType, Policy
 from fides.api.models.privacy_preference import UserConsentPreference
-from fides.api.models.privacy_request import (
-    ExecutionLog,
-    ExecutionLogStatus,
-    PrivacyRequest,
-    PrivacyRequestStatus,
-)
+from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest
 from fides.api.schemas.messaging.messaging import ConsentPreferencesByUser
 from fides.api.schemas.privacy_notice import PrivacyNoticeHistorySchema
 from fides.api.schemas.privacy_preference import MinimalPrivacyPreferenceHistorySchema
-from fides.api.schemas.privacy_request import Consent
+from fides.api.schemas.privacy_request import (
+    Consent,
+    ExecutionLogStatus,
+    PrivacyRequestStatus,
+)
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.privacy_request.email_batch_service import (
     EmailExitState,
@@ -1007,7 +1006,7 @@ class TestErasureEmailBatchSend:
 
         assert not call_kwargs["db"] == db
         assert call_kwargs["subject_email"] == "attentive@example.com"
-        assert call_kwargs["subject_name"] == "Attentive"
+        assert call_kwargs["subject_name"] == "Attentive Email"
         assert call_kwargs["batch_identities"] == [
             "test@example.com",
         ]
@@ -1098,7 +1097,7 @@ class TestErasureEmailBatchSend:
 
         assert not call_kwargs["db"] == db
         assert call_kwargs["subject_email"] == "attentive@example.com"
-        assert call_kwargs["subject_name"] == "Attentive"
+        assert call_kwargs["subject_name"] == "Attentive Email"
         assert call_kwargs["batch_identities"] == [
             "test@example.com",
         ]

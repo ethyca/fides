@@ -2,6 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import { RejectAllMechanism } from "./RejectAllMechanism";
 import type { ComponentType } from "./ComponentType";
 import type { ExperienceTranslationResponse } from "./ExperienceTranslationResponse";
 import type { Layer1ButtonOption } from "./Layer1ButtonOption";
@@ -21,6 +22,7 @@ export type ExperienceConfigResponseNoNotices = {
   layer1_button_options?: Layer1ButtonOption | null;
   allow_language_selection?: boolean | null;
   auto_detect_language?: boolean | null;
+  auto_subdomain_cookie_deletion?: boolean | null;
   regions: Array<PrivacyNoticeRegion>;
   id: string;
   created_at: string;
@@ -28,4 +30,5 @@ export type ExperienceConfigResponseNoNotices = {
   component: ComponentType;
   translations?: Array<ExperienceTranslationResponse>;
   properties?: Array<MinimalProperty>;
+  reject_all_mechanism?: RejectAllMechanism | null;
 };

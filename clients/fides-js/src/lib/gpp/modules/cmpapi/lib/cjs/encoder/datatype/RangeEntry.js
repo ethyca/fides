@@ -1,0 +1,1 @@
+"use strict";Object.defineProperty(exports,"__esModule",{value:!0}),exports.RangeEntry=void 0;class RangeEntry{constructor(e,t,s){this.key=e,this.type=t,this.ids=s}getKey(){return this.key}setKey(e){this.key=e}getType(){return this.type}setType(e){this.type=e}getIds(){return this.ids}setIds(e){this.ids=e}}exports.RangeEntry=RangeEntry;

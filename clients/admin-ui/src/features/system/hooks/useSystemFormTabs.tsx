@@ -6,14 +6,21 @@ import { useCallback, useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { type TabData } from "~/features/common/DataTabs";
-import { useFeatures, useFlags } from "~/features/common/features";
+import { useFeatures } from "~/features/common/features";
 import {
   DirtyFormConfirmationModal,
   useIsAnyFormDirty,
 } from "~/features/common/hooks/useIsAnyFormDirty";
 import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
-import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
-import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
+import {
+  EDIT_SYSTEM_ROUTE,
+  INTEGRATION_MANAGEMENT_ROUTE,
+} from "~/features/common/nav/routes";
+import {
+  DEFAULT_TOAST_PARAMS,
+  errorToastParams,
+  successToastParams,
+} from "~/features/common/toast";
 import ToastLink from "~/features/common/ToastLink";
 import ConnectionForm from "~/features/datastore-connections/system_portal_config/ConnectionForm";
 import { ConsentAutomationForm } from "~/features/datastore-connections/system_portal_config/ConsentAutomationForm";
@@ -29,7 +36,44 @@ import {
   useGetSystemByFidesKeyQuery,
 } from "~/features/system/system.slice";
 import SystemInformationForm from "~/features/system/SystemInformationForm";
+import SystemAssetsTable from "~/features/system/tabs/system-assets/SystemAssetsTable";
 import { SystemResponse } from "~/types/api";
+
+const SYSTEM_TABS = {
+  INFORMATION: {
+    index: 0,
+    hash: "#information",
+  },
+  DATA_USES: {
+    index: 1,
+    hash: "#data-uses",
+  },
+  DATA_FLOW: {
+    index: 2,
+    hash: "#data-flow",
+  },
+  INTEGRATIONS: {
+    index: 3,
+    hash: "#integrations",
+  },
+  ASSETS: {
+    index: 4,
+    hash: "#assets",
+  },
+  HISTORY: {
+    index: 5,
+    hash: "#history",
+  },
+} as const;
+
+const getTabFromHash = (hash: string) => {
+  const normalizedHash = hash.startsWith("#") ? hash : `#${hash}`;
+  return Object.values(SYSTEM_TABS).find((tab) => tab.hash === normalizedHash);
+};
+
+const getTabFromIndex = (index: number) => {
+  return Object.values(SYSTEM_TABS).find((tab) => tab.index === index);
+};
 
 // The toast doesn't seem to handle next links well, so use buttons with onClick
 // handlers instead
@@ -44,10 +88,9 @@ const ToastMessage = ({
     <Text fontWeight="700">System has been saved successfully</Text>
     <Text textColor="gray.700" whiteSpace="inherit">
       Your system has been added to your data map. You can{" "}
-      <ToastLink onClick={onViewDatamap}>view it now</ToastLink> and come back
-      to finish this setup when you’re ready. Or you can progress to{" "}
+      <ToastLink onClick={onViewDatamap}>view it now</ToastLink> or{" "}
       <ToastLink onClick={onAddPrivacyDeclaration}>
-        adding your privacy declarations in the next tab
+        add privacy declarations in the next tab
       </ToastLink>
       .
     </Text>
@@ -56,25 +99,31 @@ const ToastMessage = ({
 
 const useSystemFormTabs = ({
   isCreate,
-  initialTabIndex,
 }: {
   initialTabIndex?: number;
   /** If true, then some editing features will not be enabled */
   isCreate?: boolean;
 }) => {
-  const [tabIndex, setTabIndex] = useState(initialTabIndex);
+  const router = useRouter();
+
+  // Get initial tab index based on URL hash
+  const getInitialTabIndex = (): number => {
+    const hash: string = router.asPath.split("#")[1];
+    return hash
+      ? (getTabFromHash(hash)?.index ?? SYSTEM_TABS.INFORMATION.index)
+      : SYSTEM_TABS.INFORMATION.index;
+  };
+
+  const [tabIndex, setTabIndex] = useState(getInitialTabIndex());
+
   const [showSaveMessage, setShowSaveMessage] = useState(false);
   const { systemOrDatamapRoute } = useSystemOrDatamapRoute();
-  const router = useRouter();
   const toast = useToast();
   const dispatch = useAppDispatch();
   const activeSystem = useAppSelector(selectActiveSystem) as SystemResponse;
   const [systemProcessesPersonalData, setSystemProcessesPersonalData] =
     useState<boolean | undefined>(undefined);
   const { plus: isPlusEnabled } = useFeatures();
-  const {
-    flags: { dataDiscoveryAndDetection },
-  } = useFlags();
   const { plus: hasPlus } = useFeatures();
 
   // Once we have saved the system basics, subscribe to the query so that activeSystem
@@ -101,6 +150,11 @@ const useSystemFormTabs = ({
         setShowSaveMessage(true);
       }
       dispatch(setActiveSystem(system));
+      router.push({
+        pathname: EDIT_SYSTEM_ROUTE,
+        query: { id: system.fides_key },
+      });
+
       const toastParams = {
         ...DEFAULT_TOAST_PARAMS,
         description: (
@@ -143,16 +197,52 @@ const useSystemFormTabs = ({
 
   const onTabChange = useCallback(
     (index: number) => {
-      attemptAction().then((modalConfirmed: boolean) => {
+      attemptAction().then(async (modalConfirmed: boolean) => {
         if (modalConfirmed) {
+          const { status } = router.query;
+          if (status) {
+            if (status === "succeeded") {
+              toast(successToastParams(`Integration successfully authorized.`));
+            } else {
+              toast(errorToastParams(`Failed to authorize integration.`));
+            }
+          }
+
+          // Update local state first
           setTabIndex(index);
+
+          // Update URL if router is ready
+          if (router.isReady) {
+            const tab = getTabFromIndex(index);
+            if (tab) {
+              const newQuery = { ...router.query };
+              delete newQuery.status;
+
+              await router.replace(
+                {
+                  pathname: router.pathname,
+                  query: newQuery,
+                  hash: tab.hash,
+                },
+                undefined,
+                { shallow: true },
+              );
+            }
+          }
         }
       });
     },
-    [attemptAction],
+    [attemptAction, router, toast],
   );
 
-  const showNewIntegrationNotice = hasPlus && dataDiscoveryAndDetection;
+  useEffect(() => {
+    const { status } = router.query;
+    if (status) {
+      onTabChange(SYSTEM_TABS.INTEGRATIONS.index);
+    }
+  }, [router.query, onTabChange]);
+
+  const showNewIntegrationNotice = hasPlus;
 
   const tabData: TabData[] = [
     {
@@ -169,7 +259,7 @@ const useSystemFormTabs = ({
           {showSaveMessage ? (
             <Box backgroundColor="gray.100" px={6} py={3}>
               <Text
-                color="gray.500"
+                color="primary.900"
                 fontSize="sm"
                 data-testid="save-help-message"
               >
@@ -234,7 +324,7 @@ const useSystemFormTabs = ({
                 <>
                   Add an integration to start managing privacy requests and
                   consent. Visit{" "}
-                  <Link href={INTEGRATION_MANAGEMENT_ROUTE} color="purple.500">
+                  <Link href={INTEGRATION_MANAGEMENT_ROUTE} color="link.900">
                     Integration Management
                   </Link>{" "}
                   to set up monitoring on databases.
@@ -259,6 +349,16 @@ const useSystemFormTabs = ({
       isDisabled: !activeSystem,
     },
   ];
+
+  if (isPlusEnabled) {
+    tabData.push({
+      label: "Assets",
+      content: activeSystem ? (
+        <SystemAssetsTable system={activeSystem} />
+      ) : null,
+      isDisabled: !activeSystem,
+    });
+  }
 
   if (isPlusEnabled) {
     tabData.push({

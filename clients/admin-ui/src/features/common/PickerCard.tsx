@@ -1,7 +1,7 @@
 import {
-  Badge,
+  AntButton as Button,
+  AntTag as Tag,
   Box,
-  Button,
   Checkbox,
   CheckboxGroup,
   Flex,
@@ -87,14 +87,9 @@ export const PickerCheckboxList = <T extends { id: string; name: string }>({
         {toggle ?? null}
       </Flex>
       {numSelected > 0 ? (
-        <Badge
-          colorScheme="purple"
-          variant="solid"
-          width="fit-content"
-          data-testid="num-selected-badge"
-        >
+        <Tag className="w-fit" data-testid="num-selected-badge">
           {numSelected} selected
-        </Badge>
+        </Tag>
       ) : null}
       <VStack paddingLeft="6" fontSize="sm" alignItems="start" spacing="2">
         <CheckboxGroup colorScheme="complimentary">
@@ -117,9 +112,9 @@ export const PickerCheckboxList = <T extends { id: string; name: string }>({
       </VStack>
       {onViewMore ? (
         <Button
-          size="xs"
-          variant="ghost"
+          size="small"
           onClick={onViewMore}
+          type="text"
           data-testid="view-more-btn"
         >
           View more

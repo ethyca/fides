@@ -5,7 +5,7 @@ import {
 } from "cypress/support/stubs";
 
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
-import { RoleRegistryEnum } from "~/types/api";
+import { PrivacyRequestStatus, RoleRegistryEnum } from "~/types/api";
 
 describe("Privacy Requests", () => {
   beforeEach(() => {
@@ -78,6 +78,18 @@ describe("Privacy Requests", () => {
         .its("request.body.request_ids")
         .should("have.length", 1);
     });
+
+    it("allows deleting a new request", () => {
+      cy.get("@rowsNew")
+        .first()
+        .within(() => {
+          cy.getByTestId("privacy-request-delete-btn").click();
+        });
+      cy.getByTestId("confirmation-modal");
+      cy.getByTestId("continue-btn").click();
+
+      cy.wait("@softDeletePrivacyRequest");
+    });
   });
 
   describe("The request details page", () => {
@@ -90,12 +102,77 @@ describe("Privacy Requests", () => {
 
     it("shows the request details", () => {
       cy.getByTestId("privacy-request-details").within(() => {
-        cy.contains("Request ID").parent().contains(/pri_/);
+        cy.getByTestId("request-detail-value-id")
+          .should("have.prop", "value")
+          .should("match", /pri_/);
         cy.getByTestId("request-status-badge").contains("New");
       });
     });
 
+    describe("Activity Timeline", () => {
+      beforeEach(() => {
+        // Override the privacy request with our fixture that has logs
+        cy.intercept("GET", "/api/v1/privacy-request*", {
+          fixture: "privacy-requests/with-logs.json",
+        }).as("getPrivacyRequestWithLogs");
+        cy.visit("/privacy-requests/pri_96bb91d3-cdb9-46c3-9546-0c276eb05a5c");
+        cy.wait("@getPrivacyRequestWithLogs");
+      });
+
+      it("displays activity timeline entries with logs", () => {
+        // Verify timeline entries are visible
+        cy.getByTestId("activity-timeline-list").should("exist");
+        cy.getByTestId("activity-timeline-item").should(
+          "have.length.at.least",
+          1,
+        );
+
+        // Check first entry details
+        cy.getByTestId("activity-timeline-item")
+          .first()
+          .within(() => {
+            cy.getByTestId("activity-timeline-author").should(
+              "contain",
+              "Fides:",
+            );
+            cy.getByTestId("activity-timeline-title").should("exist");
+            cy.getByTestId("activity-timeline-timestamp").should("exist");
+            cy.getByTestId("activity-timeline-type").should(
+              "contain",
+              "Request update",
+            );
+          });
+
+        // Check the item with error has View Log
+        cy.getByTestId("activity-timeline-item")
+          .contains("klavyio_klaviyo_api")
+          .parent()
+          .within(() => {
+            cy.getByTestId("activity-timeline-view-logs").should(
+              "contain",
+              "View Log",
+            );
+          });
+      });
+
+      it("opens and closes the log details drawer", () => {
+        // Click on the item with error to open drawer
+        cy.getByTestId("activity-timeline-item")
+          .contains("klavyio_klaviyo_api")
+          .click();
+
+        // Verify drawer opens with correct content
+        cy.get("[data-testid=log-drawer]").should("be.visible");
+        cy.get("[data-testid=log-drawer]").should("exist");
+
+        // Close drawer
+        cy.getByTestId("log-drawer-close").click();
+        cy.get("[data-testid=log-drawer]").should("not.exist");
+      });
+    });
+
     it("allows approving a new request", () => {
+      cy.getByTestId("privacy-request-actions-dropdown-btn").click();
       cy.getByTestId("privacy-request-approve-btn").click();
       cy.getByTestId("continue-btn").click();
 
@@ -105,6 +182,7 @@ describe("Privacy Requests", () => {
     });
 
     it("allows denying a new request", () => {
+      cy.getByTestId("privacy-request-actions-dropdown-btn").click();
       cy.getByTestId("privacy-request-deny-btn").click();
 
       cy.getByTestId("deny-privacy-request-modal").within(() => {
@@ -115,6 +193,57 @@ describe("Privacy Requests", () => {
       cy.wait("@denyPrivacyRequest")
         .its("request.body.request_ids")
         .should("have.length", 1);
+    });
+
+    it("shouldn't show the download button for pending requests", () => {
+      cy.getByTestId("privacy-request-actions-dropdown-btn").click();
+      cy.getByTestId("download-results-btn").should("not.exist");
+    });
+  });
+
+  describe("downloading access requests", () => {
+    beforeEach(() => {
+      cy.assumeRole(RoleRegistryEnum.OWNER);
+      cy.get<PrivacyRequestEntity>("@privacyRequest").then((privacyRequest) => {
+        cy.visit(`/privacy-requests/${privacyRequest.id}`);
+      });
+    });
+
+    it("can download completed access request results", () => {
+      cy.intercept("GET", "/api/v1/privacy-request/*/access-results", {
+        body: { access_result_urls: ["https://example.com/"] },
+      }).as("getAccessResultURL");
+      stubPrivacyRequests(PrivacyRequestStatus.COMPLETE);
+      cy.wait("@getAccessResultURL");
+      cy.getByTestId("privacy-request-actions-dropdown-btn").click();
+      cy.getByTestId("download-results-btn")
+        .parents(".ant-dropdown-menu-item")
+        .should("not.have.class", "ant-dropdown-menu-item-disabled")
+        .should("have.attr", "aria-disabled", "false");
+    });
+
+    it("can't download when request info is stored locally", () => {
+      cy.intercept("GET", "/api/v1/privacy-request/*/access-results", {
+        body: { access_result_urls: ["your local fides_uploads folder"] },
+      }).as("getAccessResultURL");
+      stubPrivacyRequests(PrivacyRequestStatus.COMPLETE);
+      cy.wait("@getAccessResultURL");
+      cy.getByTestId("privacy-request-actions-dropdown-btn").click();
+      cy.getByTestId("download-results-btn")
+        .parents(".ant-dropdown-menu-item")
+        .should("have.class", "ant-dropdown-menu-item-disabled")
+        .should("have.attr", "aria-disabled", "true");
+    });
+
+    it("doesn't show the button for non-access requests", () => {
+      stubPrivacyRequests(PrivacyRequestStatus.COMPLETE, {
+        name: "test",
+        rules: [],
+        key: "test",
+      });
+      cy.wait("@getPrivacyRequest");
+      cy.getByTestId("privacy-request-actions-dropdown-btn").click();
+      cy.getByTestId("download-results-btn").should("not.exist");
     });
   });
 
@@ -221,7 +350,10 @@ describe("Privacy Requests", () => {
       it("shows configured fields and values", () => {
         cy.getByTestId("submit-request-btn").click();
         cy.wait("@getPrivacyCenterConfig");
-        cy.getSelectValueContainer("input-policy_key").type("a{enter}");
+
+        cy.getByTestId("controlled-select-policy_key").antSelect(
+          "Access your data",
+        );
         cy.getByTestId("input-identity.phone").should("not.exist");
         cy.getByTestId("input-identity.email").should("exist");
         cy.getByTestId(
@@ -239,7 +371,7 @@ describe("Privacy Requests", () => {
       it("can submit a privacy request", () => {
         cy.getByTestId("submit-request-btn").click();
         cy.wait("@getPrivacyCenterConfig");
-        cy.getSelectValueContainer("input-policy_key").type("a{enter}");
+        cy.getByTestId("controlled-select-policy_key").type("a{enter}");
         cy.getByTestId("input-identity.email").type("email@ethyca.com");
         cy.getByTestId(
           "input-custom_privacy_request_fields.required_field.value",

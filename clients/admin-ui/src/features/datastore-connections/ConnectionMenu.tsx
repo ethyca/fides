@@ -10,7 +10,7 @@ import {
 import NextLink from "next/link";
 import React from "react";
 
-import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/v2/routes";
+import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/routes";
 import { ConnectionType } from "~/types/api";
 
 import { AccessLevel } from "./constants";

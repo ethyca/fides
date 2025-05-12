@@ -1,9 +1,7 @@
 import { produce } from "immer";
 
-import {
-  loadPrivacyCenterEnvironment,
-  validateConfig,
-} from "~/app/server-environment";
+import { validateConfig } from "~/app/server-environment";
+import { getPrivacyCenterEnvironmentCached } from "~/app/server-utils";
 import customFields from "~/config/examples/customFields.json";
 import fullJson from "~/config/examples/full.json";
 import minimalJson from "~/config/examples/minimal.json";
@@ -80,16 +78,18 @@ const mockAsServerSide = () => {
     .mockImplementation(() => undefined as any);
 };
 
-const mockAsClientSide = () => {
-  jest.spyOn(globalThis, "window", "get").mockImplementation(() => ({}) as any);
-};
-
-const getPropertyFromUrlMock = jest.fn();
+const fetchPropertyFromApiMock = jest.fn();
 const loadEnvironmentVariablesMock = jest.fn();
+const lookupGeolocationServerSideMock = jest.fn();
 
 jest.mock(
-  "~/app/server-utils/getPropertyFromUrl",
-  () => (arg: any) => getPropertyFromUrlMock(arg),
+  "~/app/server-utils/fetchPropertyFromApi",
+  () => (arg: any) => fetchPropertyFromApiMock(arg),
+);
+
+jest.mock(
+  "~/app/server-utils/lookupGeolocationServerSide",
+  () => (arg: any) => lookupGeolocationServerSideMock(arg),
 );
 
 jest.mock(
@@ -98,10 +98,18 @@ jest.mock(
 );
 
 describe("loadPrivacyCenterEnvironment", () => {
+  beforeAll(() => {
+    (globalThis as any).fidesDebugger = () => {};
+  });
   beforeEach(() => {
     mockAsServerSide();
     loadEnvironmentVariablesMock.mockReturnValue({
-      CUSTOM_PROPERTIES: true,
+      USE_API_CONFIG: false,
+    });
+    lookupGeolocationServerSideMock.mockResolvedValue({
+      location: "us-ca",
+      country: "us",
+      region: "ca",
     });
   });
 
@@ -109,38 +117,53 @@ describe("loadPrivacyCenterEnvironment", () => {
     jest.clearAllMocks();
   });
 
-  it("throws when trying to run in window environment", () => {
-    mockAsClientSide();
-    expect(() => loadPrivacyCenterEnvironment({})).rejects.toThrow();
-  });
-
-  it("doesn't fetch properties when env variable CUSTOM_PROPERTIES is false", () => {
+  it("doesn't call API when env variable USE_API_CONFIG is false and visits root privacy center ", async () => {
     loadEnvironmentVariablesMock.mockReturnValue({
-      CUSTOM_PROPERTIES: false,
+      USE_API_CONFIG: false,
     });
 
-    loadPrivacyCenterEnvironment({ customPropertyPath: "mycustompath" });
-    expect(getPropertyFromUrlMock).toHaveBeenCalledTimes(0);
+    await getPrivacyCenterEnvironmentCached({});
+    expect(fetchPropertyFromApiMock).toHaveBeenCalledTimes(0);
   });
 
-  it("calls getPropertyFromUrl with the correct path when called with a path", () => {
-    loadPrivacyCenterEnvironment({ customPropertyPath: "mycustompath" });
-    expect(getPropertyFromUrlMock).toHaveBeenCalledTimes(1);
-    expect(getPropertyFromUrlMock).toHaveBeenCalledWith({
-      customPropertyPath: "mycustompath",
+  it("does call API when env variable USE_API_CONFIG is false but visits another privacy center path ", async () => {
+    loadEnvironmentVariablesMock.mockReturnValue({
+      USE_API_CONFIG: true,
     });
+
+    await getPrivacyCenterEnvironmentCached({ propertyPath: "/myproperty" });
+    expect(fetchPropertyFromApiMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("does call API when env variable USE_API_CONFIG is true and visits root privacy center ", async () => {
+    loadEnvironmentVariablesMock.mockReturnValue({
+      USE_API_CONFIG: true,
+    });
+
+    await getPrivacyCenterEnvironmentCached({});
+    expect(fetchPropertyFromApiMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("calls fetchPropertyFromApi with the correct path when called with a path", async () => {
+    await getPrivacyCenterEnvironmentCached({ propertyPath: "mycustompath" });
+    expect(fetchPropertyFromApiMock).toHaveBeenCalledTimes(1);
+    expect(fetchPropertyFromApiMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: "mycustompath",
+      }),
+    );
   });
 
   it("returns property config and stylesheet if a property was found by it's path", async () => {
-    getPropertyFromUrlMock.mockReturnValue({
+    fetchPropertyFromApiMock.mockReturnValue({
       privacy_center_config: { some: "config" },
       stylesheet: "some stylesheet",
     });
 
-    const result = await loadPrivacyCenterEnvironment({
-      customPropertyPath: "mycustompath",
+    const result = await getPrivacyCenterEnvironmentCached({
+      propertyPath: "mycustompath",
     });
-    expect(getPropertyFromUrlMock).toHaveBeenCalledTimes(1);
+    expect(fetchPropertyFromApiMock).toHaveBeenCalledTimes(1);
 
     expect(result.config).toEqual({ some: "config" });
     expect(result.styles).toEqual("some stylesheet");

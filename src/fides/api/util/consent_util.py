@@ -12,13 +12,13 @@ from fides.api.models.privacy_notice import (
 )
 from fides.api.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import (
-    ExecutionLogStatus,
     PrivacyRequest,
     ProvidedIdentity,
     ProvidedIdentityType,
 )
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
+from fides.api.schemas.privacy_request import ExecutionLogStatus
 from fides.api.schemas.redis_cache import Identity
 
 
@@ -64,7 +64,7 @@ def build_user_consent_and_filtered_preferences_for_service(
     session: Session,
     is_notice_based: bool = False,
 ) -> Tuple[
-    Optional[Union[bool, Dict[str, UserConsentPreference]]],
+    Optional[Union[bool, Dict[str, Dict[str, Any]]]],
     List[PrivacyPreferenceHistory],
 ]:
     """
@@ -109,7 +109,7 @@ def build_user_consent_and_filtered_preferences_for_service(
 
     # 1. NOTICE-BASED WORKFLOW
     if is_notice_based:
-        notice_id_to_preference_map: Dict[str, UserConsentPreference] = {}
+        notice_preference_map: Dict[str, Dict[str, Any]] = {}
         # retrieve notices from the DB if they are associated with a relevant preference
         notices_with_preference: Query = session.query(PrivacyNotice).filter(
             PrivacyNotice.notice_key.in_(
@@ -125,10 +125,16 @@ def build_user_consent_and_filtered_preferences_for_service(
             ]
             # we only expect max 1 preference in this list
             if preference and preference[0]:
-                notice_id_to_preference_map[notice.id] = preference[0].preference  # type: ignore[assignment]
+                notice_preference_map[notice.id] = {
+                    "preference": preference[0].preference,
+                    "notice_key": notice.notice_key,
+                }
                 filtered_preferences.append(preference[0])
 
-        return notice_id_to_preference_map, filtered_preferences
+        return (
+            notice_preference_map,
+            filtered_preferences,
+        )
 
     # 2. GLOBAL (OPT-IN/OUT) WORKFLOW
     preference_to_propagate: UserConsentPreference = (
@@ -214,15 +220,30 @@ def add_errored_system_status_for_consent_reporting(
 
     Deeming them relevant if they already had a "pending" log added to them.
     """
-    for pref in privacy_request.privacy_preferences:  # type: ignore[attr-defined]
+    add_errored_system_status_for_consent_reporting_on_preferences(db, privacy_request.privacy_preferences, connection_config)  # type: ignore[attr-defined]
+
+
+def add_errored_system_status_for_consent_reporting_on_preferences(
+    db: Session,
+    privacy_preferences: List[PrivacyPreferenceHistory],
+    connection_config: ConnectionConfig,
+) -> None:
+    """
+    Cache an errored system status for consent reporting on just the subset
+    of preferences that were deemed relevant for the connector on failure,
+    from the provided list of preferences.
+
+    Deeming them relevant if they already had a "pending" log added to them.
+    """
+    for preference in privacy_preferences:
         if (
-            pref.affected_system_status
-            and pref.affected_system_status.get(connection_config.system_key)
+            preference.affected_system_status
+            and preference.affected_system_status.get(connection_config.system_key)
             == ExecutionLogStatus.pending.value
         ):
-            pref.cache_system_status(
+            preference.cache_system_status(
                 db,
-                connection_config.system_key,
+                connection_config.system_key,  # type: ignore[arg-type]
                 ExecutionLogStatus.error,
             )
 

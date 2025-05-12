@@ -2,17 +2,26 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import "cypress-wait-until";
 
-import type { FidesConfig } from "fides-js";
+import type { FidesConfig, FidesEventType } from "fides-js";
 
-import type { PrivacyCenterClientSettings } from "~/app/server-environment";
+import {
+  getClientSettings,
+  PrivacyCenterClientSettings,
+} from "~/app/server-environment";
 import type { AppDispatch } from "~/app/store";
 import VisitOptions = Cypress.VisitOptions;
+
+declare global {
+  interface Window {
+    config: any;
+  }
+}
 
 Cypress.Commands.add("getByTestId", (selector, ...args) =>
   cy.get(`[data-testid='${selector}']`, ...args),
 );
 
-Cypress.Commands.add("getToggle", (...args) =>
+Cypress.Commands.add("getToggle", (_, ...args) =>
   cy.get(`input[type="checkbox"]`, ...args),
 );
 
@@ -69,61 +78,98 @@ Cypress.Commands.add("visitWithLanguage", (url: string, language: string) => {
 });
 
 Cypress.Commands.add(
+  "visitConsent",
+  ({ settingsOverride, urlParams = {}, language }) => {
+    const urlSearchParams = new URLSearchParams({
+      ...urlParams,
+      redirect: "false",
+    });
+    const url = `/consent?${urlSearchParams.toString()}`;
+
+    if (language) {
+      cy.visitWithLanguage(url, language);
+    } else {
+      cy.visit(url);
+    }
+
+    const envVariables = getClientSettings();
+    cy.dispatch({
+      type: "settings/overrideSettings",
+      payload: {
+        ...envVariables,
+        ...settingsOverride,
+      },
+    });
+    cy.fixture("config/config.css").then((config) => {
+      cy.dispatch({ type: "styles/loadStyles", payload: config }).then(
+        () => config,
+      );
+    });
+    cy.fixture("config/config_consent.json").then((config) => {
+      cy.dispatch({ type: "config/loadConfig", payload: config }).then(
+        () => config,
+      );
+    });
+  },
+);
+
+Cypress.Commands.add(
   "visitConsentDemo",
-  (
-    options?: FidesConfig,
-    queryParams?: Cypress.VisitOptions["qs"] | null,
-    windowParams?: any,
-  ) => {
+  (options?: FidesConfig, queryParams?: any, windowParams?: any) => {
     const visitOptions: Partial<VisitOptions> = {
       onBeforeLoad: (win) => {
-        // eslint-disable-next-line no-param-reassign
         win.fidesConfig = options;
 
         if (windowParams) {
-          // @ts-ignore
-          // eslint-disable-next-line no-param-reassign
           if (options?.options.customOptionsPath) {
             // hard-code path for now, as dynamically assigning to win obj is challenging in Cypress
-            // @ts-ignore
-            // eslint-disable-next-line no-param-reassign
             win.config = {
               tc_info: undefined,
               overrides: windowParams,
             };
           } else {
-            // eslint-disable-next-line no-param-reassign
             win.fides_overrides = windowParams;
           }
         }
 
-        // Add event listeners for Fides.js events
-        win.addEventListener(
-          "FidesInitializing",
-          cy.stub().as("FidesInitializing"),
-        );
-        win.addEventListener(
-          "FidesInitialized",
-          cy.stub().as("FidesInitialized"),
-        );
-        win.addEventListener("FidesUpdating", cy.stub().as("FidesUpdating"));
-        win.addEventListener("FidesUpdated", cy.stub().as("FidesUpdated"));
-        win.addEventListener("FidesUIShown", cy.stub().as("FidesUIShown"));
-        win.addEventListener("FidesUIChanged", cy.stub().as("FidesUIChanged"));
+        // List all Fides events and stub them all in tests.
+        // NOTE: If you add a new FidesEventType but don't include it here, this
+        // will fail to compile. That's the point!
+        const fidesEvents: Record<FidesEventType, true> = {
+          FidesInitializing: true,
+          FidesInitialized: true,
+          FidesUpdating: true,
+          FidesUpdated: true,
+          FidesUIChanged: true,
+          FidesUIShown: true,
+          FidesModalClosed: true,
+        };
+
+        // Add event listeners for all Fides.js events
+        const allEventsStub = cy.stub().as("AllFidesEvents");
+        Object.keys(fidesEvents).forEach((eventName) => {
+          const eventStub = cy.stub().as(eventName);
+          win.addEventListener(eventName, (event) => {
+            eventStub(event);
+            allEventsStub(event);
+          });
+        });
 
         // Add GTM stub
-        // eslint-disable-next-line no-param-reassign
         win.dataLayer = [];
         cy.stub(win.dataLayer, "push").as("dataLayerPush");
       },
     };
+    if (!queryParams || !queryParams.disable_animations) {
+      if (!queryParams) {
+        queryParams = {};
+      }
+      queryParams.disable_animations = "true";
+    }
     if (queryParams) {
       visitOptions.qs = queryParams;
     }
     cy.visit("/fides-js-components-demo.html", visitOptions);
-    if (options?.options?.tcfEnabled) {
-      cy.wait("@getPrivacyExperience");
-    }
   },
 );
 
@@ -219,6 +265,27 @@ declare global {
         queryParams?: Cypress.VisitOptions["qs"] | null,
         windowParams?: any,
       ): Chainable<any>;
+
+      /**
+       * Custom command to visit the consent page with the specified settings.
+       *
+       * The consent page is client only, normally if you try accessing it directly
+       * you will get redirected to the home page.
+       *
+       * This command adds a redirect=false query parameter to the URL to prevent that.
+       * And then injects all the missing store state that the page needs to render.
+       *
+       * @example cy.visitConsent({ settingsOverride: SETTINGS });
+       */
+      visitConsent({
+        settingsOverride,
+        urlParams,
+        language,
+      }: {
+        settingsOverride: Partial<PrivacyCenterClientSettings>;
+        urlParams?: Record<string, string>;
+        language?: string;
+      }): Chainable<any>;
       /**
        * Custom command to load a Privacy Center settings object into the app
        *

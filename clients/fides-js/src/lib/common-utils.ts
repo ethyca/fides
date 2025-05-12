@@ -1,3 +1,5 @@
+import { ConsentMethod, FidesInitOptions } from "./consent-types";
+
 export const raise = (message: string) => {
   throw new Error(message);
 };
@@ -13,4 +15,11 @@ export const extractIds = <T extends { id: string | number }[]>(
     return [];
   }
   return modelList.map((model) => model.id);
+};
+
+export const isConsentOverride = (options: FidesInitOptions) => {
+  return (
+    options.fidesConsentOverride === ConsentMethod.ACCEPT ||
+    options.fidesConsentOverride === ConsentMethod.REJECT
+  );
 };

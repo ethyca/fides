@@ -1,6 +1,6 @@
 import {
+  AntButton as Button,
   Box,
-  Button,
   SimpleGrid,
   Text,
   useDisclosure,
@@ -14,8 +14,8 @@ import { useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
-import { LOCATIONS_ROUTE } from "~/features/common/nav/v2/routes";
-import SearchBar from "~/features/common/SearchBar";
+import { LOCATIONS_ROUTE } from "~/features/common/nav/routes";
+import SearchInput from "~/features/common/SearchInput";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import ToastLink from "~/features/common/ToastLink";
 import {
@@ -98,12 +98,11 @@ const RegulationManagement = ({
   return (
     <VStack alignItems="start" spacing={4}>
       <Box maxWidth="510px" width="100%">
-        <SearchBar
+        <SearchInput
           onChange={setSearch}
           placeholder="Search"
-          search={search}
+          value={search}
           onClear={() => setSearch("")}
-          data-testid="search-bar"
         />
       </Box>
       <SimpleGrid columns={{ base: 1, md: 2, xl: 3 }} spacing={6} width="100%">
@@ -147,17 +146,16 @@ const RegulationManagement = ({
         isCentered
         icon={<WarningIcon color="orange" />}
       />
-      {showSave ? (
+      {showSave && (
         <Button
-          colorScheme="primary"
-          size="sm"
+          type="primary"
           onClick={confirmationDisclosure.onOpen}
-          isLoading={isSaving}
+          loading={isSaving}
           data-testid="save-btn"
         >
           Save
         </Button>
-      ) : null}
+      )}
     </VStack>
   );
 };

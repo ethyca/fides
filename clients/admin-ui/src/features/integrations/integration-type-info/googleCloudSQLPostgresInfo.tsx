@@ -17,12 +17,7 @@ export const GOOGLE_CLOUD_SQL_POSTGRES_PLACEHOLDER = {
   created_at: "",
 };
 
-export const GOOGLE_CLOUD_SQL_POSTGRES_TAGS = [
-  "Database",
-  "Detection",
-  "Discovery",
-  "DSR automation",
-];
+export const GOOGLE_CLOUD_SQL_POSTGRES_TAGS = ["Discovery", "Detection"];
 
 export const GoogleCloudSQLPostgresOverview = () => (
   <>
@@ -39,7 +34,7 @@ export const GoogleCloudSQLPostgresOverview = () => (
       <InfoHeading text="Categories" />
       <InfoUnorderedList>
         <ListItem>Database</ListItem>
-        <ListItem>NoSQL database</ListItem>
+        <ListItem>SQL database</ListItem>
         <ListItem>Storage system</ListItem>
         <ListItem>Data detection</ListItem>
         <ListItem>Data discovery</ListItem>

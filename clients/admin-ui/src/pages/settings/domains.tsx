@@ -2,12 +2,10 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import {
+  AntButton as Button,
   Box,
-  Button,
   DeleteIcon,
   Flex,
-  Heading,
-  IconButton,
   Spinner,
   Text,
   useToast,
@@ -22,6 +20,7 @@ import FormSection from "~/features/common/form/FormSection";
 import { CustomTextInput, TextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
+import PageHeader from "~/features/common/PageHeader";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   CORSOrigins,
@@ -29,7 +28,7 @@ import {
   selectCORSOrigins,
   useGetConfigurationSettingsQuery,
   usePutConfigurationSettingsMutation,
-} from "~/features/privacy-requests/privacy-requests.slice";
+} from "~/features/config-settings/config-settings.slice";
 import { PlusApplicationConfig } from "~/types/api";
 
 type FormValues = CORSOrigins;
@@ -162,11 +161,9 @@ const CORSConfigurationPage: NextPage = () => {
   return (
     <Layout title="Domains">
       <Box data-testid="management-domains">
-        <Heading marginBottom={4} fontSize="2xl">
-          Domains
-        </Heading>
-        <Box maxWidth="600px">
-          <Text marginBottom={3} fontSize="sm">
+        <PageHeader heading="Domains" />
+        <Box maxW="600px">
+          <Text fontSize="sm" pb={6}>
             For Fides to work on your website(s), each of your domains must be
             listed below. You can add and remove domains at any time up to the
             quantity included in your license. For more information on managing
@@ -176,9 +173,6 @@ const CORSConfigurationPage: NextPage = () => {
             </DocsLink>
             .
           </Text>
-        </Box>
-
-        <Box maxW="600px" paddingY={3}>
           <FormSection
             data-testid="api-set-domains-form"
             title="Organization domains"
@@ -211,18 +205,14 @@ const CORSConfigurationPage: NextPage = () => {
                                   placeholder="https://subdomain.example.com:9090"
                                 />
 
-                                <IconButton
-                                  ml={8}
+                                <Button
                                   aria-label="delete-domain"
-                                  variant="outline"
-                                  zIndex={2}
-                                  size="sm"
+                                  className="z-[2] ml-4"
+                                  icon={<DeleteIcon />}
                                   onClick={() => {
                                     arrayHelpers.remove(index);
                                   }}
-                                >
-                                  <DeleteIcon />
-                                </IconButton>
+                                />
                               </Flex>
                             ),
                           )}
@@ -230,9 +220,7 @@ const CORSConfigurationPage: NextPage = () => {
                           <Flex justifyContent="center" mt={3}>
                             <Button
                               aria-label="add-domain"
-                              width="100%"
-                              variant="outline"
-                              size="sm"
+                              className="w-full"
                               onClick={() => {
                                 arrayHelpers.push("");
                               }}
@@ -246,11 +234,10 @@ const CORSConfigurationPage: NextPage = () => {
 
                     <Box mt={6}>
                       <Button
-                        type="submit"
-                        variant="primary"
-                        size="sm"
-                        isDisabled={isLoadingPutMutation || !dirty || !isValid}
-                        isLoading={isLoadingPutMutation}
+                        htmlType="submit"
+                        type="primary"
+                        disabled={isLoadingPutMutation || !dirty || !isValid}
+                        loading={isLoadingPutMutation}
                         data-testid="save-btn"
                       >
                         Save

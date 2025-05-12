@@ -28,10 +28,7 @@ export const FidesCell = <T,>({
   let isFirstRowOfGroupedRows = false;
   let isLastRowOfGroupedRows = false;
   let hasOneSubRow = false;
-  const rows = cell
-    .getContext()
-    .table.getRowModel()
-    .rows.filter((r) => !r.id.includes(":"));
+  const { rows } = cell.getContext().table.getRowModel();
   const isFirstRowOfPage = rows[0].id === cell.row.id;
   const isLastRowOfPage = rows[rows.length - 1].id === cell.row.id;
   if (cell.getValue() && isGroupedColumn) {
@@ -64,7 +61,7 @@ export const FidesCell = <T,>({
           ? cell.column.columnDef.meta.width
           : "unset"
       }
-      overflowX={
+      overflow={
         cell.column.columnDef.meta?.overflow
           ? cell.column.columnDef.meta?.overflow
           : "auto"
@@ -78,7 +75,9 @@ export const FidesCell = <T,>({
           borderTopWidth: "2x",
           borderTopColor: "red",
         },
-        ...getTableTHandTDStyles(cell.column.id),
+        ...getTableTHandTDStyles(
+          cell.column.id === "select" || cell.column.columnDef.meta?.noPadding,
+        ),
         // Fancy CSS memoization magic https://tanstack.com/table/v8/docs/framework/react/examples/column-resizing-performant
         maxWidth: `calc(var(--col-${cell.column.id}-size) * 1px)`,
         minWidth: `calc(var(--col-${cell.column.id}-size) * 1px)`,
@@ -95,8 +94,8 @@ export const FidesCell = <T,>({
       _first={{
         borderBottomWidth:
           (!isTableGrouped && !isLastRowOfPage) ||
-          (isLastRowOfGroupedRows && !isFirstRowOfPage) ||
-          (isFirstRowOfGroupedRows && hasOneSubRow)
+          (isLastRowOfGroupedRows && !isFirstRowOfPage && !isLastRowOfPage) ||
+          (isFirstRowOfGroupedRows && hasOneSubRow && !isLastRowOfPage)
             ? "1px"
             : "0px",
       }}
@@ -106,6 +105,7 @@ export const FidesCell = <T,>({
       height="inherit"
       onClick={handleCellClick}
       data-testid={`row-${cell.row.id}-col-${cell.column.id}`}
+      {...cell.column.columnDef.meta?.cellProps}
     >
       {!cell.getIsPlaceholder() || isFirstRowOfGroupedRows
         ? flexRender(cell.column.columnDef.cell, {

@@ -1,7 +1,6 @@
 import {
+  AntButton as Button,
   Box,
-  Button,
-  ButtonProps,
   forwardRef,
   RepeatClockIcon,
   Text,
@@ -9,7 +8,7 @@ import {
 import { ForwardedRef, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import { getErrorMessage } from "~/features/common/helpers";
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
 
 import {
@@ -21,13 +20,12 @@ import {
 import { PrivacyRequestEntity } from "../types";
 
 type ReprocessButtonProps = {
-  buttonProps?: ButtonProps;
   handleBlur?: (ref: ForwardedRef<any>) => void;
   subjectRequest?: PrivacyRequestEntity;
 };
 
 const ReprocessButton = forwardRef(
-  ({ buttonProps, handleBlur, subjectRequest }: ReprocessButtonProps, ref) => {
+  ({ handleBlur, subjectRequest }: ReprocessButtonProps, ref) => {
     const dispatch = useAppDispatch();
     const [isReprocessing, setIsReprocessing] = useState(false);
     const { errorAlert, successAlert } = useAlert();
@@ -39,7 +37,7 @@ const ReprocessButton = forwardRef(
     const handleBulkReprocessClick = async () => {
       setIsReprocessing(true);
       const payload = await bulkRetry(errorRequests);
-      if ("error" in payload) {
+      if (isErrorResult(payload)) {
         dispatch(setRetryRequests({ checkAll: false, errorRequests: [] }));
         errorAlert(
           getErrorMessage(payload.error),
@@ -74,7 +72,7 @@ const ReprocessButton = forwardRef(
       }
       setIsReprocessing(true);
       const payload = await retry(subjectRequest);
-      if ("error" in payload) {
+      if (isErrorResult(payload)) {
         errorAlert(
           getErrorMessage(payload.error),
           `DSR automation has failed for this privacy request due to the following:`,
@@ -92,21 +90,14 @@ const ReprocessButton = forwardRef(
 
     return (
       <Button
-        {...buttonProps}
-        isDisabled={isReprocessing}
-        isLoading={isReprocessing}
-        loadingText="Reprocessing"
+        disabled={isReprocessing}
+        loading={isReprocessing}
         onClick={
           subjectRequest ? handleSingleReprocessClick : handleBulkReprocessClick
         }
         ref={ref}
-        spinnerPlacement="end"
-        leftIcon={<RepeatClockIcon />}
-        variant="outline"
-        _loading={{
-          opacity: 1,
-          div: { opacity: 0.4 },
-        }}
+        size="small"
+        icon={<RepeatClockIcon />}
       >
         Reprocess
       </Button>

@@ -1,8 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 import {
+  AntButton as Button,
   Box,
-  Button,
-  ButtonGroup,
   Modal,
   ModalBody,
   ModalContent,
@@ -95,14 +94,11 @@ const CustomAssetUploadModal = ({
             To customize the appearance of your consent experiences, you may
             upload a CSS stylesheet. To download a template as a helpful
             starting point, click{" "}
-            <DocsLink
-              href="https://raw.githubusercontent.com/ethyca/fides/main/clients/fides-js/src/components/fides.css"
-              isExternal
-            >
+            <DocsLink href="https://raw.githubusercontent.com/ethyca/fides/main/clients/fides-js/src/components/fides.css">
               here
             </DocsLink>
             .{" "}
-            <DocsLink href="https://fid.es/customize-styles" isExternal>
+            <DocsLink href="https://fid.es/customize-styles">
               Learn more
             </DocsLink>
             .
@@ -124,32 +120,23 @@ const CustomAssetUploadModal = ({
             {renderFileText()}
           </Box>
         </ModalBody>
-        <ModalFooter>
-          <ButtonGroup
-            size="sm"
-            spacing="2"
-            width="100%"
-            display="flex"
-            justifyContent="right"
+        <ModalFooter className="flex w-full justify-end gap-2">
+          <Button
+            onClick={onClose}
+            data-testid="cancel-btn"
+            disabled={isLoading}
           >
-            <Button
-              variant="outline"
-              onClick={onClose}
-              data-testid="cancel-btn"
-              isDisabled={isLoading}
-            >
-              Cancel
-            </Button>
-            <Button
-              colorScheme="primary"
-              type="submit"
-              isDisabled={!uploadedFile || isLoading}
-              onClick={handleSubmit}
-              data-testid="submit-btn"
-            >
-              Submit
-            </Button>
-          </ButtonGroup>
+            Cancel
+          </Button>
+          <Button
+            type="primary"
+            htmlType="submit"
+            disabled={!uploadedFile || isLoading}
+            onClick={handleSubmit}
+            data-testid="submit-btn"
+          >
+            Submit
+          </Button>
         </ModalFooter>
       </ModalContent>
     </Modal>

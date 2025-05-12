@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import re
 import socket
-from collections import defaultdict, deque
+from collections import defaultdict
 from ipaddress import IPv4Address, IPv6Address, ip_address
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
@@ -256,60 +256,6 @@ def merge_datasets(dataset: GraphDataset, config_dataset: GraphDataset) -> Graph
     )
 
 
-def unflatten_dict(flat_dict: Dict[str, Any], separator: str = ".") -> Dict[str, Any]:
-    """
-    Converts a dictionary of paths/values into a nested dictionary
-
-    example:
-
-    {"A.B": "1", "A.C": "2"}
-
-    becomes
-
-    {
-        "A": {
-            "B": "1",
-            "C": "2"
-        }
-    }
-    """
-    output: Dict[Any, Any] = {}
-    queue = deque(flat_dict.items())
-
-    while queue:
-        path, value = queue.popleft()
-        keys = path.split(separator)
-        target = output
-        for i, current_key in enumerate(keys[:-1]):
-            next_key = keys[i + 1]
-            if next_key.isdigit():
-                target = target.setdefault(current_key, [])
-            else:
-                if isinstance(target, dict):
-                    target = target.setdefault(current_key, {})
-                elif isinstance(target, list):
-                    while len(target) <= int(current_key):
-                        target.append({})
-                    target = target[int(current_key)]
-        try:
-            if isinstance(target, list):
-                target.append(value)
-            else:
-                # If the value is a dictionary, add its components to the queue for processing
-                if isinstance(value, dict):
-                    target = target.setdefault(keys[-1], {})
-                    for inner_key, inner_value in value.items():
-                        new_key = f"{path}{separator}{inner_key}"
-                        queue.append((new_key, inner_value))
-                else:
-                    target[keys[-1]] = value
-        except TypeError as exc:
-            raise FidesopsException(
-                f"Error unflattening dictionary, conflicting levels detected: {exc}"
-            )
-    return output
-
-
 def format_body(
     headers: Dict[str, Any],
     body: Optional[str],
@@ -339,7 +285,7 @@ def format_body(
     if content_type == "application/json":
         output = body
     elif content_type == "application/x-www-form-urlencoded":
-        output = multidimensional_urlencode(json.loads(body))
+        output = nullsafe_urlencode(json.loads(body))
     elif content_type == "text/plain":
         output = body
     else:
@@ -470,3 +416,33 @@ def replace_version(saas_config: str, new_version: str) -> str:
         version_pattern, f"version: {new_version}", saas_config, count=1
     )
     return updated_config
+
+
+def nullsafe_urlencode(data: Any) -> str:
+    """
+    Wrapper around multidimensional_urlencode that preserves null values as empty strings.
+
+    This is useful for APIs that expect keys with empty values (e.g., "name=") to represent
+    null values, rather than omitting the field entirely.
+
+    Args:
+        data: The data to encode (can be a dict, list, or other nested structure)
+
+    Returns:
+        URL-encoded string with null values properly handled
+    """
+
+    def prepare_null_values(data: Any) -> Any:
+        """
+        Recursively process data for URL encoding, converting None values to empty strings.
+        """
+        if data is None:
+            return ""
+        if isinstance(data, dict):
+            return {k: prepare_null_values(v) for k, v in data.items()}
+        if isinstance(data, list):
+            return [prepare_null_values(item) for item in data]
+        return data
+
+    processed_data = prepare_null_values(data)
+    return multidimensional_urlencode(processed_data)

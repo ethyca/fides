@@ -1,6 +1,6 @@
 import { stubOrganizationCrud } from "cypress/support/stubs";
 
-import { ORGANIZATION_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
+import { ORGANIZATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 
 describe("Organization page", () => {
   beforeEach(() => {
@@ -12,6 +12,8 @@ describe("Organization page", () => {
 
   it("can navigate to the Organization page", () => {
     cy.visit("/");
+    cy.getByTestId("Settings-nav-group").click();
+    cy.getByTestId("Organization-nav-link").click();
     cy.getByTestId("Organization-nav-link").click();
     cy.getByTestId("organization-management");
   });
@@ -31,7 +33,7 @@ describe("Organization page", () => {
         cy.getByTestId("input-name").should("be.disabled");
         cy.getByTestId("input-description").should("be.empty");
         cy.getByTestId("save-btn").should("be.disabled");
-        cy.getByTestId("save-btn").get(".chakra-spinner");
+        cy.getByTestId("save-btn").get(".ant-btn-loading-icon");
       });
       cy.wait("@getOrganization");
       cy.getByTestId("input-name").should("be.enabled");

@@ -1,9 +1,15 @@
-import { Button, Flex, Tag, Text, useDisclosure } from "fidesui";
+import {
+  AntButton as Button,
+  AntTag as Tag,
+  Flex,
+  Text,
+  useDisclosure,
+} from "fidesui";
 import { uniq } from "lodash";
 import React, { useContext, useMemo } from "react";
 
 import { useFeatures } from "~/features/common/features";
-import QuestionTooltip from "~/features/common/QuestionTooltip";
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { GlobalFilterV2 } from "~/features/common/table/v2";
 import DatamapTableContext from "~/features/datamap/datamap-table/DatamapTableContext";
 import FilterModal from "~/features/datamap/modals/FilterModal";
@@ -66,21 +72,14 @@ const SettingsBar = () => {
                 {filteredSystemsCount} of {totalSystemsCount} systems displayed
               </Text>
               {compassEnabled ? (
-                <QuestionTooltip label="Note that Global Vendor List (GVL) and Additional Consent (AC) systems are not currently included in these reports" />
+                <InfoTooltip label="Note that Global Vendor List (GVL) and Additional Consent (AC) systems are not currently included in these reports" />
               ) : null}
             </Flex>
           ) : null}
-          <Button
-            aria-label="Open Filter Settings"
-            variant="outline"
-            size="xs"
-            onClick={onFilterModalOpen}
-          >
+          <Button aria-label="Open Filter Settings" onClick={onFilterModalOpen}>
             Filter
             {totalFiltersApplied > 0 ? (
-              <Tag ml={2} borderRadius="full" size="sm">
-                {totalFiltersApplied}
-              </Tag>
+              <Tag className="ml-2">{totalFiltersApplied}</Tag>
             ) : null}
           </Button>
         </Flex>

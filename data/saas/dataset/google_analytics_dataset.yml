@@ -1,5 +1,0 @@
-dataset:
-  - fides_key: <instance_fides_key>
-    name: Google Analytics (GA4) Dataset
-    description: A sample dataset representing the Google Analytics (GA4) connector for Fides
-    collections: []

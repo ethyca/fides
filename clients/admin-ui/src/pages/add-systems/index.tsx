@@ -3,6 +3,7 @@ import { useEffect } from "react";
 
 import { useAppDispatch } from "~/app/hooks";
 import Layout from "~/features/common/Layout";
+import PageHeader from "~/features/common/PageHeader";
 import { changeStep } from "~/features/config-wizard/config-wizard.slice";
 import ConfigWizardWalkthrough from "~/features/config-wizard/ConfigWizardWalkthrough";
 
@@ -15,7 +16,8 @@ const ConfigWizard: NextPage = () => {
   }, [dispatch]);
 
   return (
-    <Layout title="Config Wizard">
+    <Layout title="Add systems">
+      <PageHeader heading="Add systems" />
       <ConfigWizardWalkthrough />
     </Layout>
   );

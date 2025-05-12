@@ -6,7 +6,7 @@ Contains utility functions that set up the application webserver.
 from logging import DEBUG
 from typing import AsyncGenerator, List
 
-from fastapi import APIRouter, FastAPI
+from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.routing import APIRoute
 from loguru import logger
@@ -16,15 +16,20 @@ from slowapi.extension import _rate_limit_exceeded_handler  # type: ignore
 from slowapi.middleware import SlowAPIMiddleware  # type: ignore
 
 import fides
-from fides.api.api.deps import get_api_session
+from fides.api.api.deps import (
+    get_api_session,
+    get_async_autoclose_db_session,
+    get_autoclose_db_session,
+)
 from fides.api.api.v1 import CTL_ROUTER
 from fides.api.api.v1.api import api_router
 from fides.api.api.v1.endpoints.admin import ADMIN_ROUTER
 from fides.api.api.v1.endpoints.generic_overrides import GENERIC_OVERRIDES_ROUTER
 from fides.api.api.v1.endpoints.health import HEALTH_ROUTER
 from fides.api.api.v1.exception_handlers import ExceptionHandlers
-from fides.api.common_exceptions import FunctionalityNotConfigured, RedisConnectionError
-from fides.api.db.database import configure_db
+from fides.api.common_exceptions import RedisConnectionError, RedisNotConfigured
+from fides.api.db import seed
+from fides.api.db.database import configure_db, seed_db
 from fides.api.db.seed import create_or_update_parent_user
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.oauth.system_manager_oauth_util import (
@@ -40,6 +45,7 @@ from fides.api.service.connectors.saas.connector_registry_service import (
 
 # pylint: disable=wildcard-import, unused-wildcard-import
 from fides.api.service.saas_request.override_implementations import *
+from fides.api.util.api_router import APIRouter
 from fides.api.util.cache import get_cache
 from fides.api.util.consent_util import create_default_tcf_purpose_overrides_on_startup
 from fides.api.util.endpoint_utils import fides_limiter
@@ -81,7 +87,7 @@ def create_fides_app(
     fastapi_app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore
     for handler in ExceptionHandlers.get_handlers():
         # Starlette bug causing this to fail mypy
-        fastapi_app.add_exception_handler(FunctionalityNotConfigured, handler)  # type: ignore
+        fastapi_app.add_exception_handler(RedisNotConfigured, handler)  # type: ignore
     fastapi_app.add_middleware(SlowAPIMiddleware)
     fastapi_app.add_middleware(
         GZipMiddleware, minimum_size=1000, compresslevel=5
@@ -163,9 +169,15 @@ async def run_database_startup(app: FastAPI) -> None:
         raise FidesError("No database uri provided")
 
     if CONFIG.database.automigrate:
-        await configure_db(
-            CONFIG.database.sync_database_uri, samples=CONFIG.database.load_samples
-        )
+        try:
+            configure_db(CONFIG.database.sync_database_uri)
+            with get_autoclose_db_session() as session:
+                seed_db(session)
+            if CONFIG.database.load_samples:
+                async with get_async_autoclose_db_session() as async_session:
+                    await seed.load_samples(async_session)
+        except Exception as e:
+            logger.error("Error occurred during database configuration: {}", str(e))
     else:
         logger.info("Skipping auto-migration due to 'automigrate' configuration value.")
 
@@ -201,7 +213,7 @@ async def run_database_startup(app: FastAPI) -> None:
         update_saas_configs(db)
         logger.info("Finished loading SaaS templates")
     except Exception as e:
-        logger.error(
+        logger.exception(
             "Error occurred during SaaS connector template validation: {}",
             str(e),
         )

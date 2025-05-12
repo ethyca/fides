@@ -25,9 +25,10 @@ from fides.api.models.connectionconfig import (
 )
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import Policy, Rule, RuleTarget
-from fides.api.models.privacy_request import ExecutionLog, ExecutionLogStatus
+from fides.api.models.privacy_request import ExecutionLog
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.schemas.policy import ActionType
+from fides.api.schemas.privacy_request import ExecutionLogStatus
 from fides.api.task.deprecated_graph_task import (
     _evaluate_erasure_dependencies,
     format_data_use_map_for_caching,
@@ -431,22 +432,22 @@ def test_sql_dry_run_queries(db) -> None:
 
     assert (
         env[CollectionAddress("mysql", "Customer")]
-        == 'SELECT customer_id, name, email, contact_address_id FROM "Customer" WHERE email = ?'
+        == 'SELECT customer_id, name, email, contact_address_id FROM "Customer" WHERE (email = ?)'
     )
 
     assert (
         env[CollectionAddress("mysql", "User")]
-        == 'SELECT id, user_id, name FROM "User" WHERE user_id = ?'
+        == 'SELECT id, user_id, name FROM "User" WHERE (user_id = ?)'
     )
 
     assert (
         env[CollectionAddress("postgres", "Order")]
-        == 'SELECT order_id, customer_id, shipping_address_id, billing_address_id FROM "Order" WHERE customer_id IN (?, ?)'
+        == 'SELECT order_id, customer_id, shipping_address_id, billing_address_id FROM "Order" WHERE (customer_id IN (?, ?))'
     )
 
     assert (
         env[CollectionAddress("mysql", "Address")]
-        == 'SELECT id, street, city, state, zip FROM "Address" WHERE id IN (?, ?)'
+        == 'SELECT id, street, city, state, zip FROM "Address" WHERE (id IN (?, ?))'
     )
 
     assert (
@@ -928,20 +929,18 @@ class TestGraphTaskAffectedConsentSystems:
     def mock_graph_task(
         self,
         db,
-        mailchimp_transactional_connection_config_no_secrets,
+        saas_example_connection_config,
         privacy_request_with_consent_policy,
     ):
         task_resources = TaskResources(
             privacy_request_with_consent_policy,
             privacy_request_with_consent_policy.policy,
-            [mailchimp_transactional_connection_config_no_secrets],
+            [saas_example_connection_config],
             EMPTY_REQUEST_TASK,
             db,
         )
         tn = TraversalNode(generate_node("a", "b", "c", "c2"))
-        tn.node.dataset.connection_key = (
-            mailchimp_transactional_connection_config_no_secrets.key
-        )
+        tn.node.dataset.connection_key = saas_example_connection_config.key
         task_resources.privacy_request_task = tn.to_mock_request_task()
         return GraphTask(task_resources)
 
@@ -978,10 +977,10 @@ class TestGraphTaskAffectedConsentSystems:
         db.refresh(privacy_preference_history_us_ca_provide)
 
         assert privacy_preference_history.affected_system_status == {
-            "mailchimp_transactional_instance": "skipped"
+            "saas_connector_example": "skipped"
         }
         assert privacy_preference_history_us_ca_provide.affected_system_status == {
-            "mailchimp_transactional_instance": "skipped"
+            "saas_connector_example": "skipped"
         }
 
         logs = (
@@ -1002,7 +1001,7 @@ class TestGraphTaskAffectedConsentSystems:
         self,
         mock_run_consent_request,
         mark_current_and_downstream_nodes_as_failed_mock,
-        mailchimp_transactional_connection_config_no_secrets,
+        saas_example_connection_config,
         mock_graph_task,
         db,
         privacy_request_with_consent_policy,
@@ -1023,22 +1022,24 @@ class TestGraphTaskAffectedConsentSystems:
         cache_initial_status_and_identities_for_consent_reporting(
             db,
             privacy_request_with_consent_policy,
-            mailchimp_transactional_connection_config_no_secrets,
+            saas_example_connection_config,
             relevant_preferences=[privacy_preference_history_us_ca_provide],
             relevant_user_identities={"email": "customer-1@example.com"},
         )
-        with pytest.raises(BaseException):
+        with pytest.raises(BaseException) as exc:
             ret = mock_graph_task.consent_request({"email": "customer-1@example.com"})
             assert ret is False
+
+        assert str(exc.value) == "Request failed"
 
         db.refresh(privacy_preference_history)
         db.refresh(privacy_preference_history_us_ca_provide)
 
         assert privacy_preference_history.affected_system_status == {
-            "mailchimp_transactional_instance": "skipped"
+            "saas_connector_example": "skipped"
         }
         assert privacy_preference_history_us_ca_provide.affected_system_status == {
-            "mailchimp_transactional_instance": "error"
+            "saas_connector_example": "error"
         }
 
         logs = (

@@ -25,6 +25,7 @@ export type PrivacyRequestFilter = {
   verbose?: boolean | null;
   include_identities?: boolean | null;
   include_custom_privacy_request_fields?: boolean | null;
+  include_deleted_requests?: boolean | null;
   download_csv?: boolean | null;
   sort_field?: string;
   sort_direction?: ColumnSort;

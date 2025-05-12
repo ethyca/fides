@@ -119,13 +119,68 @@ services:
 
   worker:
     image: ethyca/fides:local
-    command: fides worker
+    command: fides worker --exclude-queues=fides.dsr,fides.privacy_preferences  # exclude DSRs and privacy preferences queues
     depends_on:
       redis:
         condition: service_started
     restart: always
+    healthcheck:
+      test: ["CMD", "celery", "-A", "fides.api.tasks", "inspect", "ping"]
+      start_period: 60s
+      interval: 20s
+      timeout: 5s
+      retries: 10
     environment:
       FIDES__CONFIG_PATH: ${FIDES__CONFIG_PATH:-/fides/.fides/fides.toml}
+      FIDES__LOGGING__COLORIZE: "True"
+      FIDES__USER__ANALYTICS_OPT_OUT: "True"
+    volumes:
+      - type: bind
+        source: ./
+        target: /fides
+        read_only: False
+      - /fides/src/fides.egg-info
+
+  worker-privacy-preferences:
+    image: ethyca/fides:local
+    command: fides worker --queues=fides.privacy_preferences
+    depends_on:
+      redis:
+        condition: service_started
+    restart: always
+    healthcheck:
+      test: ["CMD", "celery", "-A", "fides.api.tasks", "inspect", "ping"]
+      start_period: 60s
+      interval: 20s
+      timeout: 5s
+      retries: 10
+    environment:
+      FIDES__CONFIG_PATH: ${FIDES__CONFIG_PATH:-/fides/.fides/fides.toml}
+      FIDES__LOGGING__COLORIZE: "True"
+      FIDES__USER__ANALYTICS_OPT_OUT: "True"
+    volumes:
+      - type: bind
+        source: ./
+        target: /fides
+        read_only: False
+      - /fides/src/fides.egg-info
+
+  worker-dsr:
+    image: ethyca/fides:local
+    command: fides worker --queues=fides.dsr
+    depends_on:
+      redis:
+        condition: service_started
+    restart: always
+    healthcheck:
+      test: ["CMD", "celery", "-A", "fides.api.tasks", "inspect", "ping"]
+      start_period: 60s
+      interval: 20s
+      timeout: 5s
+      retries: 10
+    environment:
+      FIDES__CONFIG_PATH: ${FIDES__CONFIG_PATH:-/fides/.fides/fides.toml}
+      FIDES__LOGGING__COLORIZE: "True"
       FIDES__USER__ANALYTICS_OPT_OUT: "True"
     volumes:
       - type: bind
@@ -135,7 +190,7 @@ services:
       - /fides/src/fides.egg-info
 
   redis:
-    image: "redis:6.2.5-alpine"
+    image: "redis:6.2-alpine"
     # AUTH option #1: no authentication at all
     # command: redis-server
     # AUTH option #2: require password
@@ -153,6 +208,18 @@ services:
         source: ./docker/redis
         target: /usr/local/etc/redis
         read_only: False
+
+  flower:
+    image: mher/flower:2.0
+    command: celery flower --broker=redis://:redispassword@redis:6379/0
+    ports:
+      - "5555:5555"
+    depends_on:
+      - redis
+      - worker
+    environment:
+      - CELERY_BROKER_URL=redis://:redispassword@redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://:redispassword@redis:6379/0
 
 volumes:
   postgres: null

@@ -1,6 +1,7 @@
-import { Button, Flex, Spacer, TabList, Tabs } from "fidesui";
+import { AntButton as Button, Flex, Spacer, TabList, Tabs } from "fidesui";
 
 import { FidesTab } from "~/features/common/DataTabs";
+import { useFlags } from "~/features/common/features";
 import FidesSpinner from "~/features/common/FidesSpinner";
 import {
   INTEGRATION_TYPE_LIST,
@@ -23,6 +24,10 @@ const SelectIntegrationType = ({
   const { tabIndex, onChangeFilter, isFiltering, filteredTypes, tabs } =
     useIntegrationFilterTabs(INTEGRATION_TYPE_LIST);
 
+  const {
+    flags: { oktaMonitor },
+  } = useFlags();
+
   return (
     <>
       <Tabs index={tabIndex} onChange={onChangeFilter} mb={4}>
@@ -36,25 +41,26 @@ const SelectIntegrationType = ({
         <FidesSpinner />
       ) : (
         <Flex direction="column">
-          {filteredTypes.map((i) => (
-            <IntegrationBox
-              integration={i.placeholder}
-              key={i.placeholder.key}
-              onConfigureClick={() => onConfigureClick(i)}
-              otherButtons={
-                <Button onClick={() => onDetailClick(i)} variant="outline">
-                  Details
-                </Button>
-              }
-            />
-          ))}
+          {filteredTypes.map((i) => {
+            if (!oktaMonitor && i.placeholder.connection_type === "okta") {
+              return null;
+            }
+            return (
+              <IntegrationBox
+                integration={i.placeholder}
+                key={i.placeholder.key}
+                onConfigureClick={() => onConfigureClick(i)}
+                otherButtons={
+                  <Button onClick={() => onDetailClick(i)}>Details</Button>
+                }
+              />
+            );
+          })}
         </Flex>
       )}
       <Flex>
         <Spacer />
-        <Button variant="outline" onClick={onCancel} size="sm">
-          Cancel
-        </Button>
+        <Button onClick={onCancel}>Cancel</Button>
       </Flex>
     </>
   );

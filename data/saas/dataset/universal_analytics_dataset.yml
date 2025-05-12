@@ -1,5 +1,0 @@
-dataset:
-  - fides_key: <instance_fides_key>
-    name: Google Analytics - Universal Analytics (UA) Dataset
-    description: A sample dataset representing the Universal Analytics connector for Fides
-    collections: []

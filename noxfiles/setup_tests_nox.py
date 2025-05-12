@@ -13,7 +13,12 @@ from constants_nox import (
     START_APP,
     START_APP_WITH_EXTERNAL_POSTGRES,
 )
-from run_infrastructure import API_TEST_DIR, OPS_TEST_DIR, run_infrastructure
+from run_infrastructure import (
+    API_TEST_DIR,
+    OPS_API_TEST_DIRS,
+    OPS_TEST_DIR,
+    run_infrastructure,
+)
 
 
 def pytest_lib(session: Session, coverage_arg: str) -> None:
@@ -97,6 +102,7 @@ def pytest_ctl(session: Session, mark: str, coverage_arg: str) -> None:
             "tests/ctl/",
             "-m",
             mark,
+            "--full-trace",
         )
         session.run(*run_command, external=True)
 
@@ -116,19 +122,24 @@ def pytest_ops(
                 *EXEC,
                 "pytest",
                 coverage_arg,
-                API_TEST_DIR,
+                *OPS_API_TEST_DIRS,
                 "-m",
                 "not integration and not integration_external and not integration_saas",
+                "-n",
+                "4",
             )
         elif subset_dir == "non-api":
+            ignore_args = [f"--ignore={dir}" for dir in OPS_API_TEST_DIRS]
             run_command = (
                 *EXEC,
                 "pytest",
                 coverage_arg,
                 OPS_TEST_DIR,
-                f"--ignore={API_TEST_DIR}",
+                *ignore_args,
                 "-m",
                 "not integration and not integration_external and not integration_saas",
+                "-n",
+                "4",
             )
         else:
             run_command = (
@@ -188,6 +199,10 @@ def pytest_ops(
             "-e",
             "BIGQUERY_DATASET",
             "-e",
+            "BIGQUERY_ENTERPRISE_KEYFILE_CREDS",
+            "-e",
+            "BIGQUERY_ENTERPRISE_DATASET",
+            "-e",
             "GOOGLE_CLOUD_SQL_MYSQL_DB_IAM_USER",
             "-e",
             "GOOGLE_CLOUD_SQL_MYSQL_INSTANCE_CONNECTION_NAME",
@@ -206,11 +221,37 @@ def pytest_ops(
             "-e",
             "GOOGLE_CLOUD_SQL_POSTGRES_KEYFILE_CREDS",
             "-e",
+            "OKTA_ORG_URL",
+            "-e",
+            "OKTA_API_TOKEN",
+            "-e",
+            "RDS_MYSQL_AWS_ACCESS_KEY_ID",
+            "-e",
+            "RDS_MYSQL_AWS_SECRET_ACCESS_KEY",
+            "-e",
+            "RDS_MYSQL_DB_USERNAME",
+            "-e",
+            "RDS_MYSQL_DB_INSTANCE",
+            "-e",
+            "RDS_MYSQL_DB_NAME",
+            "-e",
+            "RDS_MYSQL_REGION",
+            "-e",
+            "RDS_POSTGRES_AWS_ACCESS_KEY_ID",
+            "-e",
+            "RDS_POSTGRES_AWS_SECRET_ACCESS_KEY",
+            "-e",
+            "RDS_POSTGRES_DB_USERNAME",
+            "-e",
+            "RDS_POSTGRES_REGION",
+            "-e",
             "DYNAMODB_REGION",
             "-e",
             "DYNAMODB_ACCESS_KEY_ID",
             "-e",
             "DYNAMODB_ACCESS_KEY",
+            "-e",
+            "DYNAMODB_ASSUME_ROLE_ARN",
             CI_ARGS_EXEC,
             CONTAINER_NAME,
             "pytest",
@@ -255,3 +296,18 @@ def pytest_ops(
             "--tb=no",
         )
         session.run(*run_command, external=True)
+
+
+def pytest_api(session: Session, coverage_arg: str) -> None:
+    """Runs tests under /tests/api/"""
+    session.notify("teardown")
+    session.run(*START_APP, external=True)
+    run_command = (
+        *EXEC,
+        "pytest",
+        coverage_arg,
+        API_TEST_DIR,
+        "-m",
+        "not integration and not integration_external and not integration_saas",
+    )
+    session.run(*run_command, external=True)

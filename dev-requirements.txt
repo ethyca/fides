@@ -61,6 +61,7 @@ idna==3.8
 iniconfig==2.0.0
     # via pytest
 isort==5.12.0
+<<<<<<< HEAD
     # via
     #   -r dev-requirements.in
     #   pylint
@@ -70,6 +71,9 @@ markupsafe==2.1.5
     # via werkzeug
 mccabe==0.7.0
     # via pylint
+=======
+moto[s3]==5.1.0
+>>>>>>> main
 mypy==1.10.0
     # via
     #   -r dev-requirements.in
@@ -104,7 +108,16 @@ py==1.11.0
 pycparser==2.22
     # via cffi
 pylint==3.2.5
+<<<<<<< HEAD
     # via -r dev-requirements.in
+=======
+pytest-asyncio==0.19.0
+pytest-cov==4.0.0
+pytest-env==0.7.0
+pytest-mock==3.14.0
+pytest-rerunfailures==14.0
+pytest-xdist==3.6.1
+>>>>>>> main
 pytest==7.2.2
     # via
     #   -r dev-requirements.in
@@ -189,9 +202,13 @@ virtualenv==20.26.3
     #   nox
     #   pre-commit
 watchfiles==0.19.0
+<<<<<<< HEAD
     # via -r dev-requirements.in
 werkzeug==3.0.3
     # via -r dev-requirements.in
+=======
+werkzeug==3.0.6
+>>>>>>> main
 xenon==0.9.0
     # via -r dev-requirements.in
 

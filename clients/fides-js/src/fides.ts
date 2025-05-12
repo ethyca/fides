@@ -5,32 +5,44 @@
  *
  * See the overall package docs in ./docs/README.md for more!
  */
+import { blueconic } from "./integrations/blueconic";
 import { gtm } from "./integrations/gtm";
 import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
 import { raise } from "./lib/common-utils";
 import {
+  readConsentFromAnyProvider,
+  registerDefaultProviders,
+} from "./lib/consent-migration";
+import {
   FidesConfig,
+  FidesCookie,
   FidesExperienceTranslationOverrides,
   FidesGlobal,
   FidesInitOptionsOverrides,
   FidesOptions,
   FidesOverrides,
   GetPreferencesFnResp,
+  NoticeConsent,
+  NoticeValues,
   OverrideType,
   PrivacyExperience,
 } from "./lib/consent-types";
 import {
+  decodeNoticeConsentString,
   defaultShowModal,
-  isPrivacyExperience,
-  shouldResurfaceConsent,
+  encodeNoticeConsentString,
+  shouldResurfaceBanner,
 } from "./lib/consent-utils";
 import {
   consentCookieObjHasSomeConsentSet,
+  getFidesConsentCookie,
   updateExperienceFromCookieConsentNotices,
 } from "./lib/cookie";
+import { initializeDebugger } from "./lib/debugger";
 import { dispatchFidesEvent, onFidesEvent } from "./lib/events";
-import { DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
+import { DecodedFidesString, decodeFidesString } from "./lib/fides-string";
+import { DEFAULT_LOCALE, DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
 import {
   getInitialCookie,
   getInitialFides,
@@ -38,13 +50,15 @@ import {
   initialize,
   UpdateExperienceFn,
 } from "./lib/initialize";
+import { initOverlay } from "./lib/initOverlay";
 import { renderOverlay } from "./lib/renderOverlay";
 import { customGetConsentPreferences } from "./services/external/preferences";
 
 declare global {
   interface Window {
     Fides: FidesGlobal;
-    fides_overrides: FidesOptions;
+    fides_overrides: Partial<FidesOptions>;
+    fidesDebugger: (...args: unknown[]) => void;
   }
 }
 
@@ -57,20 +71,17 @@ const updateWindowFides = (fidesGlobal: FidesGlobal) => {
 const updateExperience: UpdateExperienceFn = ({
   cookie,
   experience,
-  debug,
-  isExperienceClientSideFetched,
 }): Partial<PrivacyExperience> => {
   let updatedExperience: PrivacyExperience = experience;
   const preferencesExistOnCookie = consentCookieObjHasSomeConsentSet(
     cookie.consent,
   );
-  if (isExperienceClientSideFetched && preferencesExistOnCookie) {
+  if (preferencesExistOnCookie) {
     // If we have some preferences on the cookie, we update client-side experience with those preferences
     // if the name matches. This is used for client-side UI.
     updatedExperience = updateExperienceFromCookieConsentNotices({
       experience,
       cookie,
-      debug,
     });
   }
   return updatedExperience;
@@ -87,6 +98,8 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     providedConfig ??
     (this.config as FidesConfig) ??
     raise("Fides must be initialized with a configuration object");
+
+  initializeDebugger(!!config.options?.debug);
 
   this.config = config; // no matter how the config is set, we want to store it on the global object
 
@@ -114,26 +127,63 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     );
   const consentPrefsOverrides: GetPreferencesFnResp | null =
     await customGetConsentPreferences(config);
-  // DEFER: not implemented - ability to override notice-based consent with the consentPrefsOverrides.consent obj
+  // if we don't already have a fidesString override, use fidesString from consent prefs if they exist
+  if (!optionsOverrides.fidesString && consentPrefsOverrides?.fides_string) {
+    optionsOverrides.fidesString = consentPrefsOverrides.fides_string;
+  }
   const overrides: Partial<FidesOverrides> = {
     optionsOverrides,
     consentPrefsOverrides,
     experienceTranslationOverrides,
   };
+
+  // Register any configured consent migration providers
+  registerDefaultProviders(optionsOverrides);
+
+  // Check for migrated consent from any registered providers
+  let migratedConsent: NoticeConsent | undefined;
+
+  if (!getFidesConsentCookie()) {
+    const { consent, method } = readConsentFromAnyProvider(optionsOverrides);
+    if (consent && method) {
+      migratedConsent = consent;
+    }
+  }
+
   config = {
     ...config,
     options: { ...config.options, ...overrides.optionsOverrides },
   };
-  this.cookie = {
-    ...getInitialCookie(config),
-    ...overrides.consentPrefsOverrides?.consent,
+  this.cookie = getInitialCookie(config); // also adds legacy consent values to the cookie
+  this.cookie.consent = {
+    ...this.cookie.consent,
+    ...migratedConsent,
   };
 
   // Keep a copy of saved consent from the cookie, since we update the "cookie"
   // value during initialization based on overrides, experience, etc.
   this.saved_consent = {
-    ...this.cookie.consent,
+    ...(this.cookie.consent as NoticeValues),
   };
+
+  // Update the fidesString if we have an override and the NC portion is valid
+  const { fidesString } = config.options;
+  if (fidesString) {
+    try {
+      // Make sure Notice Consent string is valid before we assign it
+      const { nc: ncString }: DecodedFidesString =
+        decodeFidesString(fidesString);
+      this.decodeNoticeConsentString(ncString);
+      const updatedCookie: Partial<FidesCookie> = {
+        fides_string: fidesString,
+      };
+      this.cookie = { ...this.cookie, ...updatedCookie };
+    } catch (error) {
+      fidesDebugger(
+        `Could not decode ncString from ${fidesString}, it may be invalid. ${error}`,
+      );
+    }
+  }
 
   const initialFides = getInitialFides({
     ...config,
@@ -152,6 +202,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   const updatedFides = await initialize({
     ...config,
     fides: this,
+    initOverlay,
     renderOverlay,
     updateExperience,
     overrides,
@@ -159,6 +210,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   });
   Object.assign(this, updatedFides);
   updateWindowFides(this);
+
   // Dispatch the "FidesInitialized" event to update listeners with the initial state.
   dispatchFidesEvent("FidesInitialized", this.cookie, config.options.debug, {
     shouldShowExperience: this.shouldShowExperience(),
@@ -171,6 +223,7 @@ const _Fides: FidesGlobal = {
   consent: {},
   experience: undefined,
   geolocation: {},
+  locale: DEFAULT_LOCALE,
   options: {
     debug: true,
     isOverlayEnabled: false,
@@ -197,11 +250,18 @@ const _Fides: FidesGlobal = {
     base64Cookie: false,
     fidesPrimaryColor: null,
     fidesClearCookie: false,
+    showFidesBrandLink: true,
+    fidesConsentOverride: null,
+    otFidesMapping: null,
+    fidesDisabledNotices: null,
+    fidesConsentNonApplicableFlagMode: null,
+    fidesConsentFlagType: null,
   },
   fides_meta: {},
   identity: {},
   tcf_consent: {},
   saved_consent: {},
+  blueconic,
   gtm,
   init,
   config: undefined,
@@ -214,23 +274,19 @@ const _Fides: FidesGlobal = {
   initialized: false,
   onFidesEvent,
   shouldShowExperience() {
-    if (!isPrivacyExperience(this.experience)) {
-      // Nothing to show if there's no experience
-      return false;
-    }
-    if (!this.cookie) {
-      throw new Error("Should have a cookie");
-    }
-    return shouldResurfaceConsent(
+    return shouldResurfaceBanner(
       this.experience,
       this.cookie,
       this.saved_consent,
+      this.options,
     );
   },
   meta,
   shopify,
   showModal: defaultShowModal,
   getModalLinkLabel: () => DEFAULT_MODAL_LINK_LABEL,
+  encodeNoticeConsentString,
+  decodeNoticeConsentString,
 };
 
 updateWindowFides(_Fides);

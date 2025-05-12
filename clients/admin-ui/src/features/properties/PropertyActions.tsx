@@ -1,9 +1,9 @@
-import { Box, EditIcon, IconButton } from "fidesui";
+import { AntButton as Button, Box, EditIcon } from "fidesui";
 import { useRouter } from "next/router";
 import React from "react";
 
 import { TrashCanOutlineIcon } from "~/features/common/Icon/TrashCanOutlineIcon";
-import { PROPERTIES_ROUTE } from "~/features/common/nav/v2/routes";
+import { PROPERTIES_ROUTE } from "~/features/common/nav/routes";
 import Restrict from "~/features/common/Restrict";
 import NewJavaScriptTag from "~/features/privacy-experience/NewJavaScriptTag";
 import { Property, ScopeRegistryEnum } from "~/types/api";
@@ -25,12 +25,11 @@ const PropertyActions = ({ property }: Props) => {
     <Box py={2}>
       <NewJavaScriptTag property={property} />
       <Restrict scopes={[ScopeRegistryEnum.PROPERTY_UPDATE]}>
-        <IconButton
+        <Button
           aria-label="Edit property"
           data-testid="edit-property-button"
-          variant="outline"
-          size="xs"
-          marginRight="10px"
+          size="small"
+          className="mr-[10px]"
           icon={<EditIcon />}
           onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
             e.stopPropagation();
@@ -41,12 +40,11 @@ const PropertyActions = ({ property }: Props) => {
       <DeletePropertyModal
         property={property}
         triggerComponent={
-          <IconButton
+          <Button
             aria-label="Delete property"
             data-testid="delete-property-button"
-            variant="outline"
-            size="xs"
-            marginRight="10px"
+            size="small"
+            className="mr-[10px]"
             icon={<TrashCanOutlineIcon />}
           />
         }

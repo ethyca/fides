@@ -1,6 +1,7 @@
 import cytoscape from "cytoscape";
 import klay from "cytoscape-klay";
 import { Box } from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 import dynamic from "next/dynamic";
 import React, { useContext, useEffect, useMemo, useState } from "react";
 
@@ -57,8 +58,8 @@ const useCytoscapeGraph = ({ data }: { data: SpatialData }) => {
     }),
     [],
   );
-  const backgroundColor = "#f7fafc";
-  const styleSheet: cytoscape.Stylesheet[] = useMemo(
+  const backgroundColor = palette.FIDESUI_NEUTRAL_50;
+  const styleSheet: cytoscape.StylesheetStyle[] = useMemo(
     () => [
       {
         selector: "node[label]",
@@ -128,7 +129,7 @@ const useCytoscapeGraph = ({ data }: { data: SpatialData }) => {
         },
       },
     ],
-    [],
+    [backgroundColor],
   );
 
   return {

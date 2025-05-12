@@ -6,15 +6,15 @@ import {
   ExperienceTranslationCreate,
   ExperienceTranslationResponse,
   Language,
+  Layer1ButtonOption,
   PrivacyNoticeRegion,
   SupportedLanguage,
 } from "~/types/api";
 
-import { Layer1ButtonOption } from "./constants";
-
 interface LocationOrLocationGroup {
   selected?: boolean;
   id: string;
+  name: string;
 }
 
 export const getSelectedRegionIds = (
@@ -23,6 +23,9 @@ export const getSelectedRegionIds = (
   allLocations
     ?.filter((loc) => loc.selected)
     .map((loc) => loc.id as PrivacyNoticeRegion) ?? [];
+
+export const getSelectedRegions = (allLocations?: LocationOrLocationGroup[]) =>
+  allLocations?.filter((loc) => loc.selected) ?? [];
 
 export const defaultTranslations: ExperienceTranslationCreate[] = [
   {
@@ -48,6 +51,7 @@ export const defaultInitialValues: Omit<ExperienceConfigCreate, "component"> = {
   regions: [],
   translations: defaultTranslations,
   auto_detect_language: true,
+  auto_subdomain_cookie_deletion: true,
 };
 // utility type to pass as a prop to the translation form
 export type TranslationWithLanguageName = ExperienceTranslation &
@@ -177,6 +181,7 @@ export const getTranslationFormFields = (
       acknowledge_button_label: { included: true, required: true },
       privacy_policy_link_label: { included: true },
       privacy_policy_url: { included: true },
+      privacy_preferences_link_label: { included: true, required: true },
       modal_link_label: { included: true },
     };
   }

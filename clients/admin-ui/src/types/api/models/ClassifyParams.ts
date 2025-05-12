@@ -8,7 +8,7 @@
  * and can rely on the defaults
  */
 export type ClassifyParams = {
-  possible_targets?: null;
+  possible_targets?: Array<string> | null;
   top_n?: number;
   remove_stop_words?: boolean;
   pii_threshold?: number;

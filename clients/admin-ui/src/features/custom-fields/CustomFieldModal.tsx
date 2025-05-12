@@ -1,5 +1,5 @@
 import { FieldTypes } from "common/custom-fields";
-import { getErrorMessage } from "common/helpers";
+import { getErrorMessage, isErrorResult } from "common/helpers";
 import { useAlert } from "common/hooks";
 import {
   Modal,
@@ -187,7 +187,7 @@ export const CustomFieldModal = ({
       }
 
       const result = await upsertAllowList(allowListPayload);
-      if (!("error" in result) && !values.allow_list_id) {
+      if (!isErrorResult(result) && !values.allow_list_id) {
         // Handles the creation case. Only assigns ID if new
         // eslint-disable-next-line no-param-reassign
         values.allow_list_id = result.data?.id;
@@ -221,7 +221,7 @@ export const CustomFieldModal = ({
       ? await updateCustomFieldDefinition(payload)
       : await addCustomFieldDefinition(payload);
 
-    if ("error" in result) {
+    if (isErrorResult(result)) {
       errorAlert(
         getErrorMessage(result.error),
         `Custom field has failed to save due to the following:`,
@@ -244,7 +244,6 @@ export const CustomFieldModal = ({
       <ModalOverlay />
       <ModalContent
         id="modal-content"
-        textAlign="center"
         data-testid="custom-field-modal"
         maxHeight="80%"
         overflowY="auto"
@@ -254,7 +253,6 @@ export const CustomFieldModal = ({
           fontWeight="semibold"
           lineHeight={5}
           fontSize="sm"
-          textAlign="left"
           py="18px"
           px={6}
           height="56px"

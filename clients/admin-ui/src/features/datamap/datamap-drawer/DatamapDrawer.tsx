@@ -1,5 +1,13 @@
 import { DataFlowAccordion } from "common/system-data-flow/DataFlowAccordion";
-import { Box, CloseIcon, Flex, IconButton, Slide, Spacer, Text } from "fidesui";
+import {
+  AntButton as Button,
+  Box,
+  CloseIcon,
+  Flex,
+  Slide,
+  Spacer,
+  Text,
+} from "fidesui";
 import React, { useMemo } from "react";
 
 import { usePrivacyDeclarationData } from "~/features/system/privacy-declarations/hooks";
@@ -87,16 +95,10 @@ const DatamapDrawer = ({
               </Flex>
               <Spacer />
               <Flex alignItems="center">
-                <IconButton
+                <Button
                   icon={<CloseIcon />}
                   aria-label="Close error message"
-                  size="sm"
-                  style={{
-                    height: "24px",
-                    width: "24px",
-                    minWidth: "14px",
-                    backgroundColor: "#00000000",
-                  }}
+                  type="text"
                   onClick={resetSelectedSystemId}
                   data-testid="datamap-drawer-close"
                 />
@@ -125,11 +127,7 @@ const DatamapDrawer = ({
                 </Text>
                 <Box borderTop="1px solid" borderColor="gray.200">
                   <Box pb={3}>
-                    <PrivacyDeclarationManager
-                      system={system}
-                      addButtonProps={{ ml: 4 }}
-                      {...dataProps}
-                    />
+                    <PrivacyDeclarationManager system={system} {...dataProps} />
                   </Box>
                 </Box>
                 <Text

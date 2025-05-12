@@ -1,7 +1,6 @@
 import {
+  AntButton as Button,
   Box,
-  Button,
-  ButtonGroup,
   Flex,
   Spacer,
   Spinner,
@@ -12,7 +11,7 @@ import { useRouter } from "next/router";
 
 import DataTabs, { TabData } from "~/features/common/DataTabs";
 import Layout from "~/features/common/Layout";
-import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
+import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { useGetDatastoreConnectionByKeyQuery } from "~/features/datastore-connections";
 import useTestConnection from "~/features/datastore-connections/useTestConnection";
@@ -20,10 +19,12 @@ import getIntegrationTypeInfo, {
   SUPPORTED_INTEGRATIONS,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
 import MonitorConfigTab from "~/features/integrations/configure-monitor/MonitorConfigTab";
+import DatahubDataSyncTab from "~/features/integrations/configure-scan/DatahubDataSyncTab";
 import ConfigureIntegrationModal from "~/features/integrations/ConfigureIntegrationModal";
 import ConnectionStatusNotice from "~/features/integrations/ConnectionStatusNotice";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
+import { ConnectionType } from "~/types/api";
 
 const IntegrationDetailView: NextPage = () => {
   const { query } = useRouter();
@@ -41,7 +42,7 @@ const IntegrationDetailView: NextPage = () => {
 
   const { onOpen, isOpen, onClose } = useDisclosure();
 
-  const { overview, instructions } = getIntegrationTypeInfo(
+  const { overview, instructions, description } = getIntegrationTypeInfo(
     connection?.connection_type,
   );
 
@@ -69,10 +70,10 @@ const IntegrationDetailView: NextPage = () => {
               <ConnectionStatusNotice testData={testData} />
             </Flex>
             <Spacer />
-            <ButtonGroup size="sm" variant="outline">
+            <div className="flex gap-4">
               <Button
                 onClick={testConnection}
-                isLoading={testIsLoading}
+                loading={testIsLoading}
                 data-testid="test-connection-btn"
               >
                 Test connection
@@ -80,19 +81,28 @@ const IntegrationDetailView: NextPage = () => {
               <Button onClick={onOpen} data-testid="manage-btn">
                 Manage
               </Button>
-            </ButtonGroup>
+            </div>
           </Flex>
           <ConfigureIntegrationModal
             isOpen={isOpen}
             onClose={onClose}
             connection={connection!}
+            description={description}
           />
           {overview}
           {instructions}
         </Box>
       ),
     },
-    {
+  ];
+
+  if (connection?.connection_type === ConnectionType.DATAHUB) {
+    tabs.push({
+      label: "Data sync",
+      content: <DatahubDataSyncTab integration={connection!} />,
+    });
+  } else {
+    tabs.push({
       label: "Data discovery",
       content: (
         <MonitorConfigTab
@@ -100,16 +110,17 @@ const IntegrationDetailView: NextPage = () => {
           integrationOption={integrationOption}
         />
       ),
-    },
-  ];
+    });
+  }
 
   return (
     <Layout title="Integrations">
       <PageHeader
-        breadcrumbs={[
+        heading="Integrations"
+        breadcrumbItems={[
           {
-            title: "Integrations",
-            link: INTEGRATION_MANAGEMENT_ROUTE,
+            title: "All integrations",
+            href: INTEGRATION_MANAGEMENT_ROUTE,
           },
           {
             title: connection?.name ?? connection?.key ?? "",

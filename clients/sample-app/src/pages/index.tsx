@@ -7,6 +7,13 @@ import Home from "../components/Home";
 import pool from "../lib/db";
 import { Product } from "../types";
 
+declare global {
+  interface Window {
+    Fides: any;
+    fides_overrides: any;
+  }
+}
+
 interface Props {
   gtmContainerId: string | null;
   privacyCenterUrl: string;
@@ -82,7 +89,9 @@ const IndexPage = ({ gtmContainerId, privacyCenterUrl, products }: Props) => {
         onReady={() => {
           // Enable the GTM integration, if GTM is configured
           if (gtmContainerId) {
-            (window as any).Fides.gtm();
+            window.Fides.gtm(
+              !!window.fides_overrides && window.fides_overrides.gtmOptions,
+            );
           }
         }}
       />
@@ -98,6 +107,15 @@ const IndexPage = ({ gtmContainerId, privacyCenterUrl, products }: Props) => {
           `}
         </Script>
       ) : null}
+      {/* Support for Flutter InAppWebView communication https://inappwebview.dev/docs/webview/javascript/communication */}
+      {/* eslint-disable-next-line @next/next/no-before-interactive-script-outside-document */}
+      <Script id="flutter-inappwebview" strategy="beforeInteractive">
+        {`window.addEventListener("FidesInitialized", function() {
+            Fides.onFidesEvent("FidesUpdated", (detail) => {
+              window.flutter_inappwebview?.callHandler('FidesUpdated', detail);
+            });
+          }, {once: true});`}
+      </Script>
       <Home privacyCenterUrl={privacyCenterUrl} products={products} />
     </>
   );

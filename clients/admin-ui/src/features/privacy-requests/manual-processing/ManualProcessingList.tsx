@@ -1,11 +1,9 @@
 import { useAlert, useAPIHelper } from "common/hooks";
 import { useGetAllEnabledAccessManualHooksQuery } from "datastore-connections/datastore-connection.slice";
 import {
+  AntButton as Button,
   Box,
-  Button,
   Center,
-  Divider,
-  Heading,
   Spinner,
   Table,
   TableContainer,
@@ -72,10 +70,12 @@ const getActionConfig = (
 
 type ManualProcessingListProps = {
   subjectRequest: PrivacyRequestEntity;
+  onComplete: () => void;
 };
 
 const ManualProcessingList = ({
   subjectRequest,
+  onComplete,
 }: ManualProcessingListProps) => {
   const dispatch = useAppDispatch();
   const { errorAlert, successAlert } = useAlert();
@@ -111,6 +111,7 @@ const ManualProcessingList = ({
       setIsCompleteDSRLoading(true);
       await resumePrivacyRequestFromRequiresInput(subjectRequest.id).unwrap();
       successAlert(`Manual request has been received. Request now processing.`);
+      onComplete();
     } catch (error) {
       handleError(error);
     } finally {
@@ -219,12 +220,6 @@ const ManualProcessingList = ({
   return (
     <VStack align="stretch" spacing={8}>
       <Box>
-        <Heading color="gray.900" fontSize="lg" fontWeight="semibold" mb={4}>
-          Manual Processing
-        </Heading>
-        <Divider />
-      </Box>
-      <Box>
         <Text color="gray.700" fontSize="sm">
           The following table details the integrations that require manual input
           from you.
@@ -293,16 +288,10 @@ const ManualProcessingList = ({
                   <Tr>
                     <Th pl="0px">
                       <Button
-                        color="white"
-                        bg="primary.800"
-                        fontSize="xs"
-                        h="24px"
-                        isLoading={isCompleteDSRLoading}
-                        loadingText="Completing DSR"
+                        type="primary"
+                        loading={isCompleteDSRLoading}
                         onClick={handleCompleteDSRClick}
-                        w="127px"
-                        _hover={{ bg: "primary.400" }}
-                        _active={{ bg: "primary.500" }}
+                        className="mt-2"
                       >
                         Complete DSR
                       </Button>

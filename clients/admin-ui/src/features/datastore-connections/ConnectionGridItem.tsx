@@ -1,5 +1,5 @@
 import { formatDate } from "common/utils";
-import { Box, Button, Flex, Spacer, Text } from "fidesui";
+import { AntButton as Button, Box, Flex, Spacer, Text } from "fidesui";
 import React, { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -76,14 +76,11 @@ const ConnectionGridItem = ({ connectionData }: ConnectionGridItemProps) => {
         />
         <Spacer />
         <Button
-          size="xs"
-          variant="outline"
+          size="small"
           onClick={() => {
             trigger(connectionData.key);
           }}
-          loadingText="Test"
-          isLoading={result.isLoading || result.isFetching}
-          spinnerPlacement="end"
+          loading={result.isLoading || result.isFetching}
         >
           Test
         </Button>

@@ -57,7 +57,6 @@ module = [
   "okta.*",
   "pandas.*",
   "pg8000.*",
-  "plotly.*",
   "pydash.*",
   "pygtrie.*",
   "pymongo.*",
@@ -70,7 +69,6 @@ module = [
   "sqlalchemy.future.*",
   "twilio.*",
   "uvicorn.*",
-  "validators.*",
 ]
 ignore_missing_imports = true
 
@@ -192,6 +190,8 @@ markers = [
     "integration_mssql",
     "integration_google_cloud_sql_mysql",
     "integration_google_cloud_sql_postgres",
+    "integration_rds_mysql",
+    "integration_rds_postgres",
     "integration_redshift",
     "integration_snowflake",
     "integration_mariadb",

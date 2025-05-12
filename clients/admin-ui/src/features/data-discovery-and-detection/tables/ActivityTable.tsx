@@ -23,8 +23,8 @@ import {
 import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import IconLegendTooltip from "~/features/data-discovery-and-detection/IndicatorLegend";
-import ResultStatusBadgeCell from "~/features/data-discovery-and-detection/tables/cells/ResultStatusBadgeCell";
 import ResultStatusCell from "~/features/data-discovery-and-detection/tables/cells/ResultStatusCell";
+import ResultStatusBadgeCell from "~/features/data-discovery-and-detection/tables/cells/StagedResourceStatusBadgeCell";
 import getResourceRowName from "~/features/data-discovery-and-detection/utils/getResourceRowName";
 import {
   DiffStatus,
@@ -32,7 +32,7 @@ import {
   StagedResourceAPIResponse,
 } from "~/types/api";
 
-import { SearchInput } from "../SearchInput";
+import { DebouncedSearchInput } from "../../common/DebouncedSearchInput";
 import { ResourceActivityTypeEnum } from "../types/ResourceActivityTypeEnum";
 import findProjectFromUrn from "../utils/findProjectFromUrn";
 import findActivityType from "../utils/getResourceActivityLabel";
@@ -175,6 +175,7 @@ const ActivityTable = ({
     columns: resourceColumns,
     manualPagination: true,
     data,
+    columnResizeMode: "onChange",
   });
 
   if (isLoading) {
@@ -185,8 +186,11 @@ const ActivityTable = ({
     <>
       <TableActionBar>
         <Flex gap={6} align="center">
-          <Box w={400} flexShrink={0}>
-            <SearchInput value={searchQuery} onChange={setSearchQuery} />
+          <Box flexShrink={0}>
+            <DebouncedSearchInput
+              value={searchQuery}
+              onChange={setSearchQuery}
+            />
           </Box>
           <IconLegendTooltip />
         </Flex>

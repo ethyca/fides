@@ -1,5 +1,7 @@
 import ast
 import os
+import random
+from datetime import datetime
 from typing import Dict, Generator, List
 from uuid import uuid4
 
@@ -35,7 +37,7 @@ def bigquery_connection_config_without_secrets(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
-def bigquery_connection_config(db: Session) -> Generator:
+def bigquery_connection_config(db: Session, bigquery_keyfile_creds) -> Generator:
     connection_config = ConnectionConfig.create(
         db=db,
         data={
@@ -46,14 +48,11 @@ def bigquery_connection_config(db: Session) -> Generator:
         },
     )
     # Pulling from integration config file or GitHub secrets
-    keyfile_creds = integration_config.get("bigquery", {}).get(
-        "keyfile_creds"
-    ) or ast.literal_eval(os.environ.get("BIGQUERY_KEYFILE_CREDS"))
     dataset = integration_config.get("bigquery", {}).get("dataset") or os.environ.get(
         "BIGQUERY_DATASET"
     )
-    if keyfile_creds:
-        schema = BigQuerySchema(keyfile_creds=keyfile_creds, dataset=dataset)
+    if bigquery_keyfile_creds:
+        schema = BigQuerySchema(keyfile_creds=bigquery_keyfile_creds, dataset=dataset)
         connection_config.secrets = schema.model_dump(mode="json")
         connection_config.save(db=db)
 
@@ -62,7 +61,86 @@ def bigquery_connection_config(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
-def bigquery_connection_config_without_default_dataset(db: Session) -> Generator:
+def bigquery_enterprise_test_dataset_collections(
+    example_datasets: List[Dict],
+) -> List[str]:
+    """Returns the names of collections in the BigQuery Enterprise dataset"""
+    bigquery_enterprise_dataset = example_datasets[16]
+    return [
+        collection["name"] for collection in bigquery_enterprise_dataset["collections"]
+    ]
+
+
+@pytest.fixture(scope="function")
+def bigquery_enterprise_connection_config(
+    db: Session, bigquery_enterprise_keyfile_creds
+) -> Generator:
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "name": str(uuid4()),
+            "key": "my_bigquery_enterprise_config",
+            "connection_type": ConnectionType.bigquery,
+            "access": AccessLevel.write,
+        },
+    )
+    # Pulling from integration config file or GitHub secrets
+    dataset = integration_config.get("bigquery_enterprise", {}).get(
+        "dataset"
+    ) or os.environ.get("BIGQUERY_ENTERPRISE_DATASET")
+    if bigquery_enterprise_keyfile_creds:
+        schema = BigQuerySchema(
+            keyfile_creds=bigquery_enterprise_keyfile_creds, dataset=dataset
+        )
+        connection_config.secrets = schema.model_dump(mode="json")
+        connection_config.save(db=db)
+
+    yield connection_config
+    connection_config.delete(db)
+
+
+@pytest.fixture(scope="session")
+def bigquery_keyfile_creds():
+    """
+    Pulling from integration config file or GitHub secrets
+    """
+    keyfile_creds = integration_config.get("bigquery", {}).get("keyfile_creds")
+
+    if not keyfile_creds and "BIGQUERY_KEYFILE_CREDS" in os.environ:
+        keyfile_creds = ast.literal_eval(os.environ.get("BIGQUERY_KEYFILE_CREDS"))
+
+    if not keyfile_creds:
+        raise RuntimeError("Missing keyfile_creds for BigQuery")
+
+    yield keyfile_creds
+
+
+@pytest.fixture(scope="session")
+def bigquery_enterprise_keyfile_creds():
+    """
+    Pulling from integration config file or GitHub secrets
+    """
+    keyfile_creds = integration_config.get("bigquery_enterprise", {}).get(
+        "keyfile_creds"
+    )
+    if keyfile_creds:
+        return keyfile_creds
+
+    if "BIGQUERY_ENTERPRISE_KEYFILE_CREDS" in os.environ:
+        keyfile_creds = ast.literal_eval(
+            os.environ.get("BIGQUERY_ENTERPRISE_KEYFILE_CREDS")
+        )
+
+    if not keyfile_creds:
+        raise RuntimeError("Missing keyfile_creds for BigQuery Enterprise")
+
+    yield keyfile_creds
+
+
+@pytest.fixture(scope="function")
+def bigquery_connection_config_without_default_dataset(
+    db: Session, bigquery_keyfile_creds
+) -> Generator:
     connection_config = ConnectionConfig.create(
         db=db,
         data={
@@ -72,12 +150,8 @@ def bigquery_connection_config_without_default_dataset(db: Session) -> Generator
             "access": AccessLevel.write,
         },
     )
-    # Pulling from integration config file or GitHub secrets
-    keyfile_creds = integration_config.get("bigquery", {}).get(
-        "keyfile_creds"
-    ) or ast.literal_eval(os.environ.get("BIGQUERY_KEYFILE_CREDS"))
-    if keyfile_creds:
-        schema = BigQuerySchema(keyfile_creds=keyfile_creds)
+    if bigquery_keyfile_creds:
+        schema = BigQuerySchema(keyfile_creds=bigquery_keyfile_creds)
         connection_config.secrets = schema.model_dump(mode="json")
         connection_config.save(db=db)
 
@@ -113,6 +187,83 @@ def bigquery_example_test_dataset_config(
 
 
 @pytest.fixture
+def bigquery_enterprise_test_dataset_config(
+    bigquery_enterprise_connection_config: ConnectionConfig,
+    db: Session,
+    example_datasets: List[Dict],
+) -> Generator:
+    bigquery_enterprise_dataset = example_datasets[16]
+    fides_key = bigquery_enterprise_dataset["fides_key"]
+    bigquery_enterprise_connection_config.name = fides_key
+    bigquery_enterprise_connection_config.key = fides_key
+    bigquery_enterprise_connection_config.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, bigquery_enterprise_dataset)
+
+    dataset = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": bigquery_enterprise_connection_config.id,
+            "fides_key": fides_key,
+            "ctl_dataset_id": ctl_dataset.id,
+        },
+    )
+    yield dataset
+    dataset.delete(db=db)
+    ctl_dataset.delete(db=db)
+
+
+@pytest.fixture
+def bigquery_enterprise_test_dataset_config_with_partitioning_meta(
+    bigquery_enterprise_connection_config: ConnectionConfig,
+    db: Session,
+    example_datasets: List[Dict],
+) -> Generator:
+    bigquery_enterprise_dataset = example_datasets[16]
+    fides_key = bigquery_enterprise_dataset["fides_key"]
+    bigquery_enterprise_connection_config.name = fides_key
+    bigquery_enterprise_connection_config.key = fides_key
+
+    # Update stackoverflow_posts_partitioned collection to have partition meta_data
+    # It is already set up as a partitioned table in BigQuery itself
+    stackoverflow_posts_partitioned_collection = next(
+        collection
+        for collection in bigquery_enterprise_dataset["collections"]
+        if collection["name"] == "stackoverflow_posts_partitioned"
+    )
+    bigquery_enterprise_dataset["collections"].remove(
+        stackoverflow_posts_partitioned_collection
+    )
+    stackoverflow_posts_partitioned_collection["fides_meta"] = {
+        "partitioning": {
+            "where_clauses": [
+                "`creation_date` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `creation_date` <= CURRENT_TIMESTAMP()",
+                "`creation_date` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2000 DAY) AND `creation_date` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)",
+            ]
+        }
+    }
+    bigquery_enterprise_dataset["collections"].append(
+        stackoverflow_posts_partitioned_collection
+    )
+
+    bigquery_enterprise_connection_config.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, bigquery_enterprise_dataset)
+
+    dataset = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": bigquery_enterprise_connection_config.id,
+            "fides_key": fides_key,
+            "ctl_dataset_id": ctl_dataset.id,
+        },
+    )
+    yield dataset
+    dataset.delete(db=db)
+    ctl_dataset.delete(db=db)
+
+
+@pytest.fixture
 def bigquery_example_test_dataset_config_with_namespace_meta(
     bigquery_connection_config_without_default_dataset: ConnectionConfig,
     db: Session,
@@ -123,8 +274,60 @@ def bigquery_example_test_dataset_config_with_namespace_meta(
         "namespace": {
             "project_id": "silken-precinct-284918",
             "dataset_id": "fidesopstest",
+            "connection_type": "bigquery",
         }
     }
+    fides_key = bigquery_dataset["fides_key"]
+    bigquery_connection_config_without_default_dataset.name = fides_key
+    bigquery_connection_config_without_default_dataset.key = fides_key
+    bigquery_connection_config_without_default_dataset.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, bigquery_dataset)
+
+    dataset = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": bigquery_connection_config_without_default_dataset.id,
+            "fides_key": fides_key,
+            "ctl_dataset_id": ctl_dataset.id,
+        },
+    )
+    yield dataset
+    dataset.delete(db=db)
+    ctl_dataset.delete(db=db)
+
+
+@pytest.fixture
+def bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta(
+    bigquery_connection_config_without_default_dataset: ConnectionConfig,
+    db: Session,
+    example_datasets: List[Dict],
+) -> Generator[DatasetConfig, None, None]:
+    bigquery_dataset = example_datasets[7]
+    bigquery_dataset["fides_meta"] = {
+        "namespace": {
+            "project_id": "silken-precinct-284918",
+            "dataset_id": "fidesopstest",
+            "connection_type": "bigquery",
+        },
+    }
+    # update customer collection to have a partition
+    customer_collection = next(
+        collection
+        for collection in bigquery_dataset["collections"]
+        if collection["name"] == "customer"
+    )
+    bigquery_dataset["collections"].remove(customer_collection)
+    customer_collection["fides_meta"] = {
+        "partitioning": {
+            "where_clauses": [
+                "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `created` <= CURRENT_TIMESTAMP()",
+                "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2000 DAY) AND `created` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)",
+            ]
+        }
+    }
+    bigquery_dataset["collections"].append(customer_collection)
+
     fides_key = bigquery_dataset["fides_key"]
     bigquery_connection_config_without_default_dataset.name = fides_key
     bigquery_connection_config_without_default_dataset.key = fides_key
@@ -149,6 +352,8 @@ def bigquery_example_test_dataset_config_with_namespace_meta(
 def bigquery_resources(
     bigquery_example_test_dataset_config,
 ):
+    # Increment the ids by a random number to avoid conflicts on concurrent test runs
+    random_increment = random.randint(1, 99999)
     bigquery_connection_config = bigquery_example_test_dataset_config.connection_config
     connector = BigQueryConnector(bigquery_connection_config)
     bigquery_client = connector.client()
@@ -159,11 +364,11 @@ def bigquery_resources(
 
         stmt = "select max(id) from customer;"
         res = connection.execute(stmt)
-        customer_id = res.all()[0][0] + 1
+        customer_id = res.all()[0][0] + random_increment
 
         stmt = "select max(id) from address;"
         res = connection.execute(stmt)
-        address_id = res.all()[0][0] + 1
+        address_id = res.all()[0][0] + random_increment
 
         city = "Test City"
         state = "TX"
@@ -174,15 +379,30 @@ def bigquery_resources(
         connection.execute(stmt)
 
         stmt = f"""
-            insert into customer (id, email, name, address_id)
-            values ({customer_id}, '{customer_email}', '{customer_name}', {address_id});
+            insert into customer (id, email, name, address_id, custom_id, extra_address_data, tags, purchase_history)
+            values ({customer_id}, '{customer_email}', '{customer_name}', {address_id}, 'custom_{customer_id}', STRUCT('{city}' as city, '111' as house, {customer_id} as id, '{state}' as state, 'Test Street' as street, {address_id} as address_id), ['VIP', 'Rewards', 'Premium'], [STRUCT('ITEM-1' as item_id, 29.99 as price, '2023-01-15' as purchase_date, ['electronics', 'gadgets'] as item_tags), STRUCT('ITEM-2' as item_id, 49.99 as price, '2023-02-20' as purchase_date, ['clothing', 'accessories'] as item_tags)]);
+        """
+
+        connection.execute(stmt)
+
+        # Insert into customer_profile table
+        stmt = f"""
+            insert into customer_profile (id, contact_info, address)
+            values ({customer_id}, STRUCT('{customer_email}', '555-{customer_id}-1234'), '{111} Test Street, {city}, {state} 55555');
+        """
+        connection.execute(stmt)
+
+        last_visit_date = "2024-10-03 01:00:00"
+        stmt = f"""
+            insert into visit_partitioned (email, last_visit)
+            values ('{customer_email}', '{last_visit_date}');
         """
 
         connection.execute(stmt)
 
         stmt = "select max(id) from employee;"
         res = connection.execute(stmt)
-        employee_id = res.all()[0][0] + 1
+        employee_id = res.all()[0][0] + random_increment
         employee_email = f"employee-{uuid}@example.com"
         employee_name = f"Jane {uuid}"
 
@@ -208,6 +428,12 @@ def bigquery_resources(
         stmt = f"delete from customer where email = '{customer_email}';"
         connection.execute(stmt)
 
+        stmt = f"delete from customer_profile where contact_info.primary_email = '{customer_email}';"
+        connection.execute(stmt)
+
+        stmt = f"delete from visit_partitioned where email = '{customer_email}' and last_visit = '{last_visit_date}';"
+        connection.execute(stmt)
+
         stmt = f"delete from address where id = {address_id};"
         connection.execute(stmt)
 
@@ -219,6 +445,8 @@ def bigquery_resources(
 def bigquery_resources_with_namespace_meta(
     bigquery_example_test_dataset_config_with_namespace_meta,
 ):
+    # Increment the ids by a random number to avoid conflicts on concurrent test runs
+    random_increment = random.randint(1, 99999)
     bigquery_connection_config = (
         bigquery_example_test_dataset_config_with_namespace_meta.connection_config
     )
@@ -231,11 +459,11 @@ def bigquery_resources_with_namespace_meta(
 
         stmt = "select max(id) from fidesopstest.customer;"
         res = connection.execute(stmt)
-        customer_id = res.all()[0][0] + 1
+        customer_id = res.all()[0][0] + random_increment
 
         stmt = "select max(id) from fidesopstest.address;"
         res = connection.execute(stmt)
-        address_id = res.all()[0][0] + 1
+        address_id = res.all()[0][0] + random_increment
 
         city = "Test City"
         state = "TX"
@@ -246,15 +474,30 @@ def bigquery_resources_with_namespace_meta(
         connection.execute(stmt)
 
         stmt = f"""
-            insert into fidesopstest.customer (id, email, name, address_id)
-            values ({customer_id}, '{customer_email}', '{customer_name}', {address_id});
+            insert into fidesopstest.customer (id, email, name, address_id, custom_id, extra_address_data, tags, purchase_history)
+            values ({customer_id}, '{customer_email}', '{customer_name}', {address_id}, 'custom_{customer_id}', STRUCT('{city}' as city, '111' as house, {customer_id} as id, '{state}' as state, 'Test Street' as street, {address_id} as address_id), ['VIP', 'Rewards', 'Premium'], [STRUCT('ITEM-1' as item_id, 29.99 as price, '2023-01-15' as purchase_date, ['electronics', 'gadgets'] as item_tags), STRUCT('ITEM-2' as item_id, 49.99 as price, '2023-02-20' as purchase_date, ['clothing', 'accessories'] as item_tags)]);
+        """
+
+        connection.execute(stmt)
+
+        # Insert into customer_profile table
+        stmt = f"""
+            insert into fidesopstest.customer_profile (id, contact_info, address)
+            values ({customer_id}, STRUCT('{customer_email}', '555-{customer_id}-1234'), '{111} Test Street, {city}, {state} 55555');
+        """
+        connection.execute(stmt)
+
+        last_visit_date = "2024-10-03 01:00:00"
+        stmt = f"""
+            insert into fidesopstest.visit_partitioned (email, last_visit)
+            values ('{customer_email}', '{last_visit_date}');
         """
 
         connection.execute(stmt)
 
         stmt = "select max(id) from fidesopstest.employee;"
         res = connection.execute(stmt)
-        employee_id = res.all()[0][0] + 1
+        employee_id = res.all()[0][0] + random_increment
         employee_email = f"employee-{uuid}@example.com"
         employee_name = f"Jane {uuid}"
 
@@ -280,6 +523,12 @@ def bigquery_resources_with_namespace_meta(
         stmt = f"delete from fidesopstest.customer where email = '{customer_email}';"
         connection.execute(stmt)
 
+        stmt = f"delete from fidesopstest.customer_profile where contact_info.primary_email = '{customer_email}';"
+        connection.execute(stmt)
+
+        stmt = f"delete from fidesopstest.visit_partitioned where email = '{customer_email}' and last_visit = '{last_visit_date}';"
+        connection.execute(stmt)
+
         stmt = f"delete from fidesopstest.address where id = {address_id};"
         connection.execute(stmt)
 
@@ -287,8 +536,195 @@ def bigquery_resources_with_namespace_meta(
         connection.execute(stmt)
 
 
+@pytest.fixture(scope="function")
+def bigquery_enterprise_resources(
+    bigquery_enterprise_test_dataset_config,
+):
+    # Increment the ids by a random number to avoid conflicts on concurrent test runs
+    random_increment = random.randint(1, 99999)
+    bigquery_connection_config = (
+        bigquery_enterprise_test_dataset_config.connection_config
+    )
+    connector = BigQueryConnector(bigquery_connection_config)
+    bigquery_client = connector.client()
+    with bigquery_client.connect() as connection:
+
+        # Real max id in the Stackoverflow dataset is 20081052, so we purposefully generate and id above this max
+        stmt = "select max(id) from enterprise_dsr_testing.users;"
+        res = connection.execute(stmt)
+        user_id = res.all()[0][0] + random_increment
+        display_name = (
+            f"fides_testing_{user_id}"  # prefix to do manual cleanup if needed
+        )
+        about_me = "HI hello"
+        age = 25
+        down_votes = 9
+        last_access_date = datetime.now()
+        creation_date = datetime.now()
+        location = "Dream World"
+
+        # Create test user data
+        stmt = f"""
+            insert into enterprise_dsr_testing.users (id, display_name, about_me, age, down_votes, last_access_date, creation_date, location, account_internal)
+            values ({user_id}, '{display_name}', '{about_me}', '{age}', {down_votes}, '{last_access_date}', '{creation_date}', '{location}', [STRUCT('SILVER' as account_type, 1.04 as score, '2029-01-15' as expiry_date, ['mysql', 'html'] as tags), STRUCT('GOLD' as account_type, 0.87 as score, '2029-02-20' as expiry_date, ['css', 'html'] as tags)]);
+        """
+        connection.execute(stmt)
+
+        # Create test stackoverflow_posts_partitioned data. Posts are responses to questions on Stackoverflow, and does not include original question.
+        post_body = "For me, the solution was to adopt 3 cats and dance with them under the full moon at midnight."
+        stmt = "select max(id) from enterprise_dsr_testing.stackoverflow_posts_partitioned;"
+        res = connection.execute(stmt)
+        post_id = res.all()[0][0] + random_increment
+        stmt = f"""
+            insert into enterprise_dsr_testing.stackoverflow_posts_partitioned (body, creation_date, id, owner_user_id, owner_display_name)
+            values ('{post_body}', '{creation_date}', {post_id}, {user_id}, '{display_name}');
+        """
+        connection.execute(stmt)
+
+        # Create test comments data. Comments are responses to posts or questions on Stackoverflow, and does not include original question or post itself.
+        stmt = "select max(id) from enterprise_dsr_testing.comments;"
+        res = connection.execute(stmt)
+        comment_id = res.all()[0][0] + random_increment
+        comment_text = "FYI this only works if you have pytest installed locally."
+        stmt = f"""
+            insert into enterprise_dsr_testing.comments (id, text, creation_date, post_id, user_id, user_display_name)
+            values ({comment_id}, '{comment_text}', '{creation_date}', {post_id}, {user_id}, '{display_name}');
+        """
+        connection.execute(stmt)
+
+        # Create test post_history data
+        stmt = "select max(id) from enterprise_dsr_testing.post_history;"
+        res = connection.execute(stmt)
+        post_history_id = res.all()[0][0] + random_increment
+        revision_text = "this works if you have pytest"
+        uuid = str(uuid4())
+        stmt = f"""
+            insert into enterprise_dsr_testing.post_history (id, text, creation_date, post_id, user_id, post_history_type_id, revision_guid)
+            values ({post_history_id}, '{revision_text}', '{creation_date}', {post_id}, {user_id}, 1, '{uuid}');
+        """
+        connection.execute(stmt)
+
+        yield {
+            "name": display_name,
+            "user_id": user_id,
+            "comment_id": comment_id,
+            "post_history_id": post_history_id,
+            "post_id": post_id,
+            "client": bigquery_client,
+            "connector": connector,
+            "first_comment_text": comment_text,
+            "first_post_body": post_body,
+            "revision_text": revision_text,
+            "display_name": display_name,
+        }
+        # Remove test data and close BigQuery connection in teardown
+        stmt = f"delete from enterprise_dsr_testing.post_history where id = {post_history_id};"
+        connection.execute(stmt)
+
+        stmt = f"delete from enterprise_dsr_testing.comments where id = {comment_id};"
+        connection.execute(stmt)
+
+        stmt = f"delete from enterprise_dsr_testing.stackoverflow_posts_partitioned where id = {post_id};"
+        connection.execute(stmt)
+
+        stmt = f"delete from enterprise_dsr_testing.users where id = {user_id};"
+        connection.execute(stmt)
+
+
+@pytest.fixture(scope="function")
+def bigquery_enterprise_resources_with_partitioning(
+    bigquery_enterprise_test_dataset_config_with_partitioning_meta,
+):
+    # Increment the ids by a random number to avoid conflicts on concurrent test runs
+    random_increment = random.randint(1, 99999)
+    bigquery_connection_config = (
+        bigquery_enterprise_test_dataset_config_with_partitioning_meta.connection_config
+    )
+    connector = BigQueryConnector(bigquery_connection_config)
+    bigquery_client = connector.client()
+    with bigquery_client.connect() as connection:
+
+        # Real max id in the Stackoverflow dataset is 20081052, so we purposefully generate and id above this max
+        stmt = "select max(id) from enterprise_dsr_testing.users;"
+        res = connection.execute(stmt)
+        user_id = res.all()[0][0] + random_increment
+        display_name = (
+            f"fides_testing_{user_id}"  # prefix to do manual cleanup if needed
+        )
+        last_access_date = datetime.now()
+        creation_date = datetime.now()
+        location = "Dream World"
+
+        # Create test user data
+        stmt = f"""
+            insert into enterprise_dsr_testing.users (id, display_name, last_access_date, creation_date, location, account_internal)
+            values ({user_id}, '{display_name}', '{last_access_date}', '{creation_date}', '{location}', [STRUCT('SILVER' as account_type, 1.04 as score, '2029-01-15' as expiry_date, ['mysql', 'html'] as tags), STRUCT('GOLD' as account_type, 0.87 as score, '2029-02-20' as expiry_date, ['css', 'html'] as tags)]);
+        """
+        connection.execute(stmt)
+
+        # Create test stackoverflow_posts_partitioned data. Posts are responses to questions on Stackoverflow, and does not include original question.
+        post_body = "For me, the solution was to adopt 3 cats and dance with them under the full moon at midnight."
+        stmt = "select max(id) from enterprise_dsr_testing.stackoverflow_posts_partitioned;"
+        res = connection.execute(stmt)
+        post_id = res.all()[0][0] + random_increment
+        stmt = f"""
+            insert into enterprise_dsr_testing.stackoverflow_posts_partitioned (body, creation_date, id, owner_user_id, owner_display_name)
+            values ('{post_body}', '{creation_date}', {post_id}, {user_id}, '{display_name}');
+        """
+        connection.execute(stmt)
+
+        # Create test comments data. Comments are responses to posts or questions on Stackoverflow, and does not include original question or post itself.
+        stmt = "select max(id) from enterprise_dsr_testing.comments;"
+        res = connection.execute(stmt)
+        comment_id = res.all()[0][0] + random_increment
+        comment_text = "FYI this only works if you have pytest installed locally."
+        stmt = f"""
+            insert into enterprise_dsr_testing.comments (id, text, creation_date, post_id, user_id, user_display_name)
+            values ({comment_id}, '{comment_text}', '{creation_date}', {post_id}, {user_id}, '{display_name}');
+        """
+        connection.execute(stmt)
+
+        # Create test post_history data
+        stmt = "select max(id) from enterprise_dsr_testing.post_history;"
+        res = connection.execute(stmt)
+        post_history_id = res.all()[0][0] + random_increment
+        revision_text = "this works if you have pytest"
+        uuid = str(uuid4())
+        stmt = f"""
+            insert into enterprise_dsr_testing.post_history (id, text, creation_date, post_id, user_id, post_history_type_id, revision_guid)
+            values ({post_history_id}, '{revision_text}', '{creation_date}', {post_id}, {user_id}, 1, '{uuid}');
+        """
+        connection.execute(stmt)
+
+        yield {
+            "name": display_name,
+            "user_id": user_id,
+            "comment_id": comment_id,
+            "post_history_id": post_history_id,
+            "post_id": post_id,
+            "client": bigquery_client,
+            "connector": connector,
+            "first_comment_text": comment_text,
+            "first_post_body": post_body,
+            "revision_text": revision_text,
+            "display_name": display_name,
+        }
+        # Remove test data and close BigQuery connection in teardown
+        stmt = f"delete from enterprise_dsr_testing.post_history where id = {post_history_id};"
+        connection.execute(stmt)
+
+        stmt = f"delete from enterprise_dsr_testing.comments where id = {comment_id};"
+        connection.execute(stmt)
+
+        stmt = f"delete from enterprise_dsr_testing.stackoverflow_posts_partitioned where id = {post_id};"
+        connection.execute(stmt)
+
+        stmt = f"delete from enterprise_dsr_testing.users where id = {user_id};"
+        connection.execute(stmt)
+
+
 @pytest.fixture(scope="session")
-def bigquery_test_engine() -> Generator:
+def bigquery_test_engine(bigquery_keyfile_creds) -> Generator:
     """Return a connection to a Google BigQuery Warehouse"""
 
     connection_config = ConnectionConfig(
@@ -298,14 +734,11 @@ def bigquery_test_engine() -> Generator:
     )
 
     # Pulling from integration config file or GitHub secrets
-    keyfile_creds = integration_config.get("bigquery", {}).get(
-        "keyfile_creds"
-    ) or ast.literal_eval(os.environ.get("BIGQUERY_KEYFILE_CREDS"))
     dataset = integration_config.get("bigquery", {}).get("dataset") or os.environ.get(
         "BIGQUERY_DATASET"
     )
-    if keyfile_creds:
-        schema = BigQuerySchema(keyfile_creds=keyfile_creds, dataset=dataset)
+    if bigquery_keyfile_creds:
+        schema = BigQuerySchema(keyfile_creds=bigquery_keyfile_creds, dataset=dataset)
         connection_config.secrets = schema.model_dump(mode="json")
 
     connector: BigQueryConnector = get_connector(connection_config)
@@ -313,6 +746,33 @@ def bigquery_test_engine() -> Generator:
     connector.test_connection()
     yield engine
     engine.dispose()
+
+
+def seed_bigquery_enterprise_integration_db(
+    bigquery_enterprise_test_dataset_config,
+) -> None:
+    """
+    Currently unused.
+    This helper function has already been run once, and data has been populated in the test BigQuery enterprise dataset.
+    We may need this later in case tables are accidentally removed.
+    """
+    bigquery_connection_config = (
+        bigquery_enterprise_test_dataset_config.connection_config
+    )
+    connector = BigQueryConnector(bigquery_connection_config)
+    bigquery_client = connector.client()
+    with bigquery_client.connect() as connection:
+
+        stmt = f"CREATE TABLE enterprise_dsr_testing.stackoverflow_posts_partitioned partition by date(creation_date) as select * from enterprise_dsr_testing.stackoverflow_posts;"
+        connection.execute(stmt)
+
+        stmt = f"ALTER TABLE enterprise_dsr_testing.users ADD COLUMN IF NOT EXISTS account_internal ARRAY<STRUCT<account_type STRING, score FLOAT64, expiry_date STRING, tags ARRAY<STRING>>;"
+        connection.execute(stmt)
+
+    print(
+        f"Created table enterprise_dsr_testing.stackoverflow_posts_partitioned, "
+        f"partitioned on column creation_date."
+    )
 
 
 def seed_bigquery_integration_db(bigquery_integration_engine) -> None:
@@ -333,6 +793,9 @@ def seed_bigquery_integration_db(bigquery_integration_engine) -> None:
         """,
         """
         DROP TABLE IF EXISTS fidesopstest.visit;
+        """,
+        """
+        DROP TABLE IF EXISTS fidesopstest.visit_partitioned;
         """,
         """
         DROP TABLE IF EXISTS fidesopstest.order_item;
@@ -357,10 +820,23 @@ def seed_bigquery_integration_db(bigquery_integration_engine) -> None:
 
         """,
         """
+        DROP TABLE IF EXISTS fidesopstest.customer_profile;
+        """,
+        """
         CREATE TABLE fidesopstest.product (
             id INT,
             name STRING,
             price DECIMAL(10,2)
+        );
+        """,
+        """
+        CREATE TABLE fidesopstest.customer_profile (
+            id INT,
+            contact_info STRUCT<
+                primary_email STRING,
+                phone_number STRING
+            >,
+            address STRING
         );
         """,
         """
@@ -377,9 +853,25 @@ def seed_bigquery_integration_db(bigquery_integration_engine) -> None:
         CREATE TABLE fidesopstest.customer (
             id INT,
             email STRING,
-            name  STRING,
+            name STRING,
             created TIMESTAMP,
-            address_id BIGINT
+            address_id BIGINT,
+            custom_id STRING,
+            extra_address_data STRUCT<
+                city STRING,
+                house STRING,
+                id INT,
+                state STRING,
+                street STRING,
+                address_id BIGINT
+            >,
+            tags ARRAY<STRING>,
+            purchase_history ARRAY<STRUCT<
+                item_id STRING,
+                price FLOAT64,
+                purchase_date STRING,
+                item_tags ARRAY<STRING>
+            >>
         );
         """,
         """
@@ -424,6 +916,18 @@ def seed_bigquery_integration_db(bigquery_integration_engine) -> None:
         );
         """,
         """
+        CREATE TABLE fidesopstest.visit_partitioned (
+            email STRING,
+            last_visit TIMESTAMP
+        )
+        PARTITION BY
+            DATE(last_visit)
+            OPTIONS(
+                require_partition_filter = TRUE
+            )
+        ;
+        """,
+        """
         CREATE TABLE fidesopstest.login (
             id INT,
             customer_id INT,
@@ -464,8 +968,15 @@ def seed_bigquery_integration_db(bigquery_integration_engine) -> None:
         """,
         """
         INSERT INTO fidesopstest.customer VALUES
-        (1, 'customer-1@example.com', 'John Customer', '2020-04-01 11:47:42', 1),
-        (2, 'customer-2@example.com', 'Jill Customer', '2020-04-01 11:47:42', 2);
+        (1, 'customer-1@example.com', 'John Customer', '2020-04-01 11:47:42', 1, 'custom_id_1', STRUCT('Exampletown' as city, '123' as house, 1 as id, 'NY' as state, 'Example Street' as street, 1 as address_id),
+         ['VIP', 'Rewards', 'Premium'],
+         [STRUCT('ITEM-1' as item_id, 29.99 as price, '2023-01-15' as purchase_date, ['electronics', 'gadgets'] as item_tags),
+          STRUCT('ITEM-2' as item_id, 49.99 as price, '2023-02-20' as purchase_date, ['clothing', 'accessories'] as item_tags)]
+        ),
+        (2, 'customer-2@example.com', 'Jill Customer', '2020-04-01 11:47:42', 2, 'custom_id_2', STRUCT('Exampletown' as city, '4' as house, 2 as id, 'NY' as state, 'Example Lane' as street, 2 as address_id),
+         ['Standard', 'New'],
+         [STRUCT('ITEM-3' as item_id, 19.99 as price, '2023-03-10' as purchase_date, ['books', 'education'] as item_tags)]
+        );
         """,
         """
         INSERT INTO fidesopstest.employee VALUES
@@ -498,6 +1009,12 @@ def seed_bigquery_integration_db(bigquery_integration_engine) -> None:
         ('customer-2@example.com', '2021-01-06 01:00:00');
         """,
         """
+        INSERT INTO fidesopstest.visit_partitioned VALUES
+        ('customer-1@example.com', '2021-01-06 01:00:00'),
+        ('customer-2@example.com', '2021-01-06 01:00:00'),
+        ('customer-2@example.com', '2024-10-03 01:00:00');
+        """,
+        """
         INSERT INTO fidesopstest.login VALUES
         (1, 1, '2021-01-01 01:00:00'),
         (2, 1, '2021-01-02 01:00:00'),
@@ -518,6 +1035,11 @@ def seed_bigquery_integration_db(bigquery_integration_engine) -> None:
         (2, 'admin-account@example.com', 'Monthly Report', 2021, 9, 100),
         (3, 'admin-account@example.com', 'Monthly Report', 2021, 10, 100),
         (4, 'admin-account@example.com', 'Monthly Report', 2021, 11, 100);
+        """,
+        """
+        INSERT INTO fidesopstest.customer_profile VALUES
+        (1, STRUCT('customer-1@example.com', '555-123-4567'), '123 Example Street, Exampletown, NY 12345'),
+        (2, STRUCT('customer-2@example.com', '555-987-6543'), '4 Example Lane, Exampletown, NY 12321');
         """,
     ]
     with bigquery_integration_engine.connect() as connection:

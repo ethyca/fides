@@ -4,13 +4,14 @@ import {
   ConsentOptionCreate,
   FidesCookie,
   FidesInitOptions,
+  NoticeValues,
   PrivacyExperience,
   PrivacyExperienceMinimal,
   PrivacyPreferencesRequest,
   SaveConsentPreference,
   UserConsentPreference,
 } from "./consent-types";
-import { debugLog } from "./consent-utils";
+import { applyOverridesToConsent } from "./consent-utils";
 import { removeCookiesFromBrowser, saveFidesCookie } from "./cookie";
 import { dispatchFidesEvent } from "./events";
 import { TcfSavePreferences } from "./tcf/types";
@@ -24,13 +25,15 @@ async function savePreferencesApi(
   experience: PrivacyExperience | PrivacyExperienceMinimal,
   consentMethod: ConsentMethod,
   privacyExperienceConfigHistoryId?: string,
-  consentPreferencesToSave?: Array<SaveConsentPreference>,
+  consentPreferencesToSave?: Array<
+    Pick<SaveConsentPreference, "noticeHistoryId" | "consentPreference">
+  >,
   tcf?: TcfSavePreferences,
   userLocationString?: string,
   servedNoticeHistoryId?: string,
   propertyId?: string,
 ) {
-  debugLog(options.debug, "Saving preferences to Fides API");
+  fidesDebugger("Saving preferences to Fides API");
   // Derive the Fides user preferences array from consent preferences
   const fidesUserPreferences: ConsentOptionCreate[] = (
     consentPreferencesToSave || []
@@ -68,6 +71,19 @@ async function savePreferencesApi(
  * 6. Remove any cookies from notices that were opted-out from the browser
  * 7. Dispatch a "FidesUpdated" event
  */
+export interface UpdateConsentPreferences {
+  consentPreferencesToSave?: Array<SaveConsentPreference>;
+  privacyExperienceConfigHistoryId?: string;
+  experience: PrivacyExperience | PrivacyExperienceMinimal;
+  consentMethod: ConsentMethod;
+  options: FidesInitOptions;
+  userLocationString?: string;
+  cookie: FidesCookie;
+  servedNoticeHistoryId?: string;
+  tcf?: TcfSavePreferences;
+  updateCookie: (oldCookie: FidesCookie) => Promise<FidesCookie>;
+  propertyId?: string;
+}
 export const updateConsentPreferences = async ({
   consentPreferencesToSave,
   privacyExperienceConfigHistoryId,
@@ -80,20 +96,7 @@ export const updateConsentPreferences = async ({
   tcf,
   updateCookie,
   propertyId,
-}: {
-  consentPreferencesToSave?: Array<SaveConsentPreference>;
-  privacyExperienceConfigHistoryId?: string;
-  experience: PrivacyExperience | PrivacyExperienceMinimal;
-  consentMethod: ConsentMethod;
-  options: FidesInitOptions;
-  userLocationString?: string;
-  cookie: FidesCookie;
-  debug?: boolean;
-  servedNoticeHistoryId?: string;
-  tcf?: TcfSavePreferences;
-  updateCookie: (oldCookie: FidesCookie) => Promise<FidesCookie>;
-  propertyId?: string;
-}) => {
+}: UpdateConsentPreferences) => {
   // 1. Update the cookie object based on new preferences & extra details
   const updatedCookie = await updateCookie(cookie);
   Object.assign(cookie, updatedCookie);
@@ -103,15 +106,23 @@ export const updateConsentPreferences = async ({
   dispatchFidesEvent("FidesUpdating", cookie, options.debug);
 
   // 3. Update the window.Fides object
-  debugLog(options.debug, "Updating window.Fides");
-  window.Fides.consent = cookie.consent;
+  fidesDebugger("Updating window.Fides");
+  const normalizedConsent = applyOverridesToConsent(
+    cookie.consent,
+    window.Fides?.experience?.non_applicable_privacy_notices,
+    window.Fides?.experience?.privacy_notices,
+  );
+  window.Fides.consent = normalizedConsent;
   window.Fides.fides_string = cookie.fides_string;
   window.Fides.tcf_consent = cookie.tcf_consent;
 
   // 4. Save preferences to the cookie in the browser
-  debugLog(options.debug, "Saving preferences to cookie");
-  saveFidesCookie(cookie, options.base64Cookie);
-  window.Fides.saved_consent = cookie.consent;
+  fidesDebugger("Saving preferences to cookie");
+  saveFidesCookie(
+    { ...cookie, consent: normalizedConsent },
+    options.base64Cookie,
+  );
+  window.Fides.saved_consent = cookie.consent as NoticeValues;
 
   // 5. Save preferences to API (if not disabled)
   if (!options.fidesDisableSaveApi) {
@@ -129,8 +140,7 @@ export const updateConsentPreferences = async ({
         propertyId,
       );
     } catch (e) {
-      debugLog(
-        options.debug,
+      fidesDebugger(
         "Error saving updated preferences to API, continuing. Error: ",
         e,
       );
@@ -145,7 +155,12 @@ export const updateConsentPreferences = async ({
           preference.consentPreference === UserConsentPreference.OPT_OUT,
       )
       .forEach((preference) => {
-        removeCookiesFromBrowser(preference.notice.cookies);
+        if (preference.notice?.cookies) {
+          removeCookiesFromBrowser(
+            preference.notice.cookies,
+            experience.experience_config?.auto_subdomain_cookie_deletion,
+          );
+        }
       });
   }
 

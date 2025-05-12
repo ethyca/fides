@@ -155,7 +155,7 @@ class TestSovrnSchema:
 class TestAttentiveSchema:
     def test_attentive_email_schema(self):
         schema = AttentiveSchema(recipient_email_address="attentive@example.com")
-        assert schema.third_party_vendor_name == "Attentive"
+        assert schema.third_party_vendor_name == "Attentive Email"
         assert schema.test_email_address is None
         assert schema.recipient_email_address == "attentive@example.com"
         assert schema.advanced_settings == AdvancedSettings(

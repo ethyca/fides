@@ -1,8 +1,7 @@
 import {
-  Badge,
+  AntButton as Button,
+  AntTag as Tag,
   Box,
-  Button,
-  ButtonGroup,
   Checkbox,
   Flex,
   ModalFooter,
@@ -55,14 +54,9 @@ export const HeaderCheckboxRow = ({
           {title}
         </Text>
       </Checkbox>
-      <Badge
-        colorScheme="purple"
-        variant="solid"
-        width="fit-content"
-        data-testid="num-selected-badge"
-      >
+      <Tag color="minos" className="w-fit" data-testid="num-selected-badge">
         {numSelected} selected
-      </Badge>
+      </Tag>
     </Box>
     {children}
   </Flex>
@@ -76,29 +70,13 @@ export const Footer = ({
   onClose: () => void;
 }) => (
   <ModalFooter justifyContent="center">
-    <ButtonGroup
-      size="sm"
-      display="flex"
-      justifyContent="space-between"
-      width="100%"
-    >
-      <Button
-        data-testid="cancel-btn"
-        flexGrow={1}
-        variant="outline"
-        mr={3}
-        onClick={onClose}
-      >
+    <div className="flex w-full justify-between">
+      <Button onClick={onClose} data-testid="cancel-btn">
         Cancel
       </Button>
-      <Button
-        flexGrow={1}
-        colorScheme="primary"
-        onClick={onApply}
-        data-testid="apply-btn"
-      >
+      <Button type="primary" onClick={onApply} data-testid="apply-btn">
         Apply
       </Button>
-    </ButtonGroup>
+    </div>
   </ModalFooter>
 );

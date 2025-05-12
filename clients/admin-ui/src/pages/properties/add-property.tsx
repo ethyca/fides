@@ -1,22 +1,15 @@
-import { Box, Heading, Text, useToast } from "fidesui";
+import { Box, useToast } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
-import { PROPERTIES_ROUTE } from "~/features/common/nav/v2/routes";
+import { PROPERTIES_ROUTE } from "~/features/common/nav/routes";
+import PageHeader from "~/features/common/PageHeader";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useCreatePropertyMutation } from "~/features/properties/property.slice";
 import PropertyForm, { FormValues } from "~/features/properties/PropertyForm";
 import { isErrorResult } from "~/types/errors";
-
-const Header = () => (
-  <Box display="flex" alignItems="center" data-testid="header">
-    <Heading fontSize="2xl" fontWeight="semibold">
-      Add property
-    </Heading>
-  </Box>
-);
 
 const AddPropertyPage: NextPage = () => {
   const toast = useToast();
@@ -38,9 +31,19 @@ const AddPropertyPage: NextPage = () => {
 
   return (
     <Layout title="Add property">
-      <Header />
-      <Box maxWidth="720px" pt={2}>
-        <Text fontSize="sm">Add new property to Fides here.</Text>
+      <PageHeader
+        heading="Properties"
+        breadcrumbItems={[
+          {
+            title: "All properties",
+            href: PROPERTIES_ROUTE,
+          },
+          {
+            title: "Add property",
+          },
+        ]}
+      />
+      <Box maxWidth="720px">
         <PropertyForm handleSubmit={handleSubmit} />
       </Box>
     </Layout>

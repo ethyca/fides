@@ -1,0 +1,20 @@
+.container {
+  border-radius: 6px;
+  display: flex;
+  flex-grow: 1;
+
+  transition: box-shadow 0.2s ease-in-out;
+
+  &:hover {
+    box-shadow:
+      0px 1px 2px 0px rgba(0, 0, 0, 0.06),
+      0px 1px 3px 0px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.card {
+  flex-grow: 1;
+  border-radius: 0px 6px 6px 0px;
+  border-left: none;
+  background-color: var(--fidesui-corinth);
+}

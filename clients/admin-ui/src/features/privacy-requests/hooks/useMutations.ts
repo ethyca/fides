@@ -1,6 +1,7 @@
 import {
   useApproveRequestMutation,
   useDenyRequestMutation,
+  useSoftDeleteRequestMutation,
 } from "~/features/privacy-requests/privacy-requests.slice";
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 
@@ -17,10 +18,15 @@ export const useMutations = ({
   const [denyRequest, denyRequestResult] = useDenyRequestMutation({
     fixedCacheKey: subjectRequest.id,
   });
+  const [softDeleteRequest, softDeleteRequestResult] =
+    useSoftDeleteRequestMutation({
+      fixedCacheKey: subjectRequest.id,
+    });
 
   const handleApproveRequest = () => approveRequest(subjectRequest);
   const handleDenyRequest = (reason: string) =>
     denyRequest({ id: subjectRequest.id, reason });
+  const handleDeleteRequest = () => softDeleteRequest(subjectRequest);
 
   const isLoading =
     denyRequestResult.isLoading || approveRequestResult.isLoading;
@@ -32,6 +38,8 @@ export const useMutations = ({
     denyRequestResult,
     handleApproveRequest,
     handleDenyRequest,
+    handleDeleteRequest,
+    softDeleteRequestResult,
     isLoading,
   };
 };

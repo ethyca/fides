@@ -1,6 +1,8 @@
+import pytest
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
-from fides.api.service.connectors.sql_connector import MySQLConnector
+from fides.api.service.connectors.mysql_connector import MySQLConnector
 
 
 def test_mysql_connector_build_uri(connection_config_mysql, db: Session):
@@ -54,3 +56,28 @@ def test_mysql_connector_build_uri(connection_config_mysql, db: Session):
         connector.build_uri()
         == "mysql+pymysql://host.docker.internal:3306/mysql_example"
     )
+
+
+def test_get_connect_args(connection_config_mysql):
+    connector = MySQLConnector(configuration=connection_config_mysql)
+
+    # Default ssl_mode
+    connection_config_mysql.secrets = {
+        "username": "mysql_user",
+        "password": "mysql_pw",
+        "host": "host.docker.internal",
+        "dbname": "mysql_example",
+    }
+    connect_args = connector.get_connect_args()
+    assert connect_args == {"ssl": {"mode": "preferred"}}
+
+    # Custom ssl_mode
+    connection_config_mysql.secrets = {
+        "username": "mysql_user",
+        "password": "mysql_pw",
+        "host": "host.docker.internal",
+        "dbname": "mysql_example",
+        "ssl_mode": "required",
+    }
+    connect_args = connector.get_connect_args()
+    assert connect_args == {"ssl": {"mode": "required"}}

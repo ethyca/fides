@@ -1,5 +1,6 @@
 /* eslint-disable spaced-comment */
 import {
+  ComponentType,
   ExperienceConfigTranslation,
   FidesEndpointPaths,
   FidesInitOptions,
@@ -607,19 +608,19 @@ describe("Consent i18n", () => {
           testModalNoticesLocalization(notices);
 
           // Check the GPC badge labels on the first notice
-          cy.get(
-            "#fides-modal .fides-modal-notices .fides-notice-toggle:first",
-          ).within(() => {
-            cy.get(".fides-notice-toggle-title").contains(notices[0].title);
-            cy.get(".fides-gpc-label").contains(modal.gpc_label);
-            cy.get(".fides-gpc-label .fides-gpc-badge").contains(
-              modal.gpc_applied_label,
-            );
-            cy.get(".fides-toggle-input").click();
-            cy.get(".fides-gpc-label .fides-gpc-badge").contains(
-              modal.gpc_overridden_label,
-            );
-          });
+          cy.get("#fides-modal .fides-modal-notices .fides-notice-toggle")
+            .eq(1)
+            .within(() => {
+              cy.get(".fides-notice-toggle-title").contains(notices[0].title);
+              cy.get(".fides-gpc-label").contains(modal.gpc_label);
+              cy.get(".fides-gpc-label .fides-gpc-badge").contains(
+                modal.gpc_applied_label,
+              );
+              cy.get(".fides-toggle-input").click();
+              cy.get(".fides-gpc-label .fides-gpc-badge").contains(
+                modal.gpc_overridden_label,
+              );
+            });
           cy.get(
             "#fides-modal .fides-modal-notices .fides-notice-toggle:last",
           ).within(() => {
@@ -789,9 +790,9 @@ describe("Consent i18n", () => {
            * 3) Spanish essential notice (correct Spanish translation)
            */
           const EXPECTED_NOTICE_HISTORY_IDS = [
+            "pri_notice-history-essential-es-000", // Spanish (es)
             "pri_notice-history-advertising-en-000", // English (en)
             "pri_notice-history-analytics-es-000", // Spanish (es)
-            "pri_notice-history-essential-es-000", // Spanish (es)
           ];
 
           // First, expect GPC to auto-apply and save preferences to the API
@@ -810,7 +811,14 @@ describe("Consent i18n", () => {
             const noticeHistoryIDs = preferences.map(
               (e: any) => e.privacy_notice_history_id,
             );
-            expect(noticeHistoryIDs).to.eql(EXPECTED_NOTICE_HISTORY_IDS);
+            cy.wrap(noticeHistoryIDs).should(
+              "deep.include.members",
+              EXPECTED_NOTICE_HISTORY_IDS,
+            );
+            cy.wrap(EXPECTED_NOTICE_HISTORY_IDS).should(
+              "deep.include.members",
+              noticeHistoryIDs,
+            );
           });
 
           // Open the modal and test the "notices served" API
@@ -823,8 +831,13 @@ describe("Consent i18n", () => {
             expect(privacy_experience_config_history_id).to.eq(
               "pri_exp-history-banner-modal-es-000",
             );
-            expect(privacy_notice_history_ids).to.eql(
+            cy.wrap(privacy_notice_history_ids).should(
+              "deep.include.members",
               EXPECTED_NOTICE_HISTORY_IDS,
+            );
+            cy.wrap(EXPECTED_NOTICE_HISTORY_IDS).should(
+              "deep.include.members",
+              privacy_notice_history_ids,
             );
           });
 
@@ -845,7 +858,14 @@ describe("Consent i18n", () => {
             const noticeHistoryIDs = preferences.map(
               (e: any) => e.privacy_notice_history_id,
             );
-            expect(noticeHistoryIDs).to.eql(EXPECTED_NOTICE_HISTORY_IDS);
+            cy.wrap(noticeHistoryIDs).should(
+              "deep.include.members",
+              EXPECTED_NOTICE_HISTORY_IDS,
+            );
+            cy.wrap(EXPECTED_NOTICE_HISTORY_IDS).should(
+              "deep.include.members",
+              noticeHistoryIDs,
+            );
           });
 
           // TODO (PROD-1598): test that correct history ID used after user changes language
@@ -1052,7 +1072,6 @@ describe("Consent i18n", () => {
             const experienceTranslationOverrides = {
               fides_title: "My override title",
               fides_description: "My override description",
-              fides_privacy_policy_url: "https://example.com/privacy",
               fides_override_language: "ja",
             };
             cy.fixture("consent/experience_banner_modal.json").then(
@@ -1082,11 +1101,6 @@ describe("Consent i18n", () => {
                   cy.get(
                     "div#fides-banner-description.fides-banner-description",
                   ).contains(translation.banner_description as string);
-                  cy.get("#fides-privacy-policy-link a").should(
-                    "have.attr",
-                    "href",
-                    translation.privacy_policy_url as string,
-                  );
                 });
                 // Open the modal
                 cy.contains("button", "Manage preferences").click();
@@ -1096,6 +1110,36 @@ describe("Consent i18n", () => {
                   );
                   cy.get(".fides-modal-description").contains(
                     translation.description as string,
+                  );
+                });
+              },
+            );
+          });
+          it("does apply fides_privacy_policy_url override", () => {
+            const experienceTranslationOverrides = {
+              fides_privacy_policy_url: "https://example.com/privacy",
+              fides_override_language: "ja",
+            };
+            cy.fixture("consent/experience_banner_modal.json").then(
+              (experience) => {
+                const experienceItem = experience.items[0];
+                stubConfig(
+                  {
+                    options: {
+                      customOptionsPath: TEST_OVERRIDE_WINDOW_PATH,
+                    },
+                    experience: experienceItem,
+                  },
+                  null,
+                  null,
+                  undefined,
+                  { ...experienceTranslationOverrides },
+                );
+                cy.get("div#fides-banner").within(() => {
+                  cy.get("#fides-privacy-policy-link a").should(
+                    "have.attr",
+                    "href",
+                    experienceTranslationOverrides.fides_privacy_policy_url as string,
                   );
                 });
               },
@@ -1115,7 +1159,6 @@ describe("Consent i18n", () => {
             const experienceTranslationOverrides = {
               fides_title: "My override title",
               fides_description: "My override description",
-              fides_privacy_policy_url: "https://example.com/privacy",
               // skips setting fides_override_language
             };
             cy.fixture("consent/experience_banner_modal.json").then(
@@ -1144,11 +1187,6 @@ describe("Consent i18n", () => {
                   cy.get(
                     "div#fides-banner-description.fides-banner-description",
                   ).contains(translation.banner_description as string);
-                  cy.get("#fides-privacy-policy-link a").should(
-                    "have.attr",
-                    "href",
-                    translation.privacy_policy_url as string,
-                  );
                 });
                 // Open the modal
                 cy.contains("button", "Manage preferences").click();
@@ -1158,6 +1196,35 @@ describe("Consent i18n", () => {
                   );
                   cy.get(".fides-modal-description").contains(
                     translation.description as string,
+                  );
+                });
+              },
+            );
+          });
+          it("does apply fides_privacy_policy_url override", () => {
+            const experienceTranslationOverrides = {
+              fides_privacy_policy_url: "https://example.com/privacy",
+            };
+            cy.fixture("consent/experience_banner_modal.json").then(
+              (experience) => {
+                const experienceItem = experience.items[0];
+                stubConfig(
+                  {
+                    options: {
+                      customOptionsPath: TEST_OVERRIDE_WINDOW_PATH,
+                    },
+                    experience: experienceItem,
+                  },
+                  null,
+                  null,
+                  undefined,
+                  { ...experienceTranslationOverrides },
+                );
+                cy.get("div#fides-banner").within(() => {
+                  cy.get("#fides-privacy-policy-link a").should(
+                    "have.attr",
+                    "href",
+                    experienceTranslationOverrides.fides_privacy_policy_url as string,
                   );
                 });
               },
@@ -1553,9 +1620,11 @@ describe("Consent i18n", () => {
     describe("displays localized texts", () => {
       beforeEach(() => {
         beforeAll();
-        cy.visitWithLanguage("/consent", SPANISH_LOCALE);
+        cy.visitConsent({
+          settingsOverride: SETTINGS,
+          language: SPANISH_LOCALE,
+        });
         cy.getByTestId("consent");
-        cy.overrideSettings(SETTINGS);
         cy.wait("@getExperience");
       });
 
@@ -1682,9 +1751,9 @@ describe("Consent i18n", () => {
         });
         cy.get("#fides-modal-link").click();
         cy.get("#fides-modal .fides-modal-notices").within(() => {
-          cy.get(".fides-toggle:first").contains("Off");
-          cy.get(".fides-toggle:first").click();
-          cy.get(".fides-toggle:first").contains("On");
+          cy.getByTestId("toggle-Advertising").contains("Off");
+          cy.getByTestId("toggle-Advertising").click();
+          cy.getByTestId("toggle-Advertising").contains("On");
         });
       });
 
@@ -1727,6 +1796,60 @@ describe("Consent i18n", () => {
           cy.get(".fides-toggle:first").click();
           cy.get(".fides-toggle:first").contains("On").should("not.exist");
         });
+      });
+    });
+  });
+
+  describe("when localizing the modal link", () => {
+    it("displays the modal link in the default locale when not provided", () => {
+      visitDemoWithI18n({
+        navigatorLanguage: ENGLISH_LOCALE,
+        fixture: "experience_banner_modal.json",
+        overrideExperience: (experience: any) => {
+          experience.experience_config!.translations[0].modal_link_label = "";
+          return experience;
+        },
+      });
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("#fides-modal-link").contains("Manage preferences");
+      });
+    });
+
+    it("displays the modal link in English", () => {
+      visitDemoWithI18n({
+        navigatorLanguage: ENGLISH_LOCALE,
+        fixture: "experience_banner_modal.json",
+      });
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("#fides-modal-link").contains("Manage my consent preferences");
+      });
+    });
+
+    it("displays the modal link in Spanish", () => {
+      visitDemoWithI18n({
+        navigatorLanguage: SPANISH_LOCALE,
+        fixture: "experience_banner_modal.json",
+      });
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("#fides-modal-link").contains(
+          "Administrar mis preferencias de consentimiento",
+        );
+      });
+    });
+
+    it("displays the modal link in the correct locale when experience is Headless", () => {
+      visitDemoWithI18n({
+        navigatorLanguage: SPANISH_LOCALE,
+        fixture: "experience_banner_modal.json",
+        overrideExperience: (experience: any) => {
+          experience.experience_config!.component = ComponentType.HEADLESS;
+          return experience;
+        },
+      });
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("#fides-modal-link").contains(
+          "Administrar mis preferencias de consentimiento",
+        );
       });
     });
   });

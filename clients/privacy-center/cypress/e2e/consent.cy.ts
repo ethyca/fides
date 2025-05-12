@@ -1,4 +1,6 @@
 import { CONSENT_COOKIE_NAME, FidesCookie, GpcStatus } from "fides-js";
+import { mockPrivacyNotice } from "support/mocks";
+import { stubConfig } from "support/stubs";
 
 import { ConsentPreferencesWithVerificationCode } from "../../types/api";
 import { API_URL } from "../support/constants";
@@ -8,6 +10,7 @@ describe("Consent modal deeplink", () => {
     cy.visit("/?showConsentModal=true");
     cy.loadConfigFixture("config/config_consent.json").as("config");
     cy.overrideSettings({ IS_OVERLAY_ENABLED: false });
+
     cy.intercept("POST", `${API_URL}/consent-request`, {
       body: {
         consent_request_id: "consent-request-id",
@@ -56,8 +59,17 @@ describe("Consent modal deeplink", () => {
 describe("Consent settings", () => {
   beforeEach(() => {
     cy.visit("/");
+    // This type of override is flaky. We should refactor it to intercept
+    // the Server component request instead.
+    // eslint-disable-next-line cypress/no-unnecessary-waiting
+    cy.wait(500);
     cy.loadConfigFixture("config/config_consent.json").as("config");
     cy.overrideSettings({ IS_OVERLAY_ENABLED: false });
+    cy.waitUntil(() =>
+      cy
+        .getByTestId("description")
+        .should("contain", "This Privacy Center is exclusively about consent"),
+    );
   });
 
   describe("when the user isn't verified", () => {
@@ -202,10 +214,7 @@ describe("Consent settings", () => {
         },
       ).as("patchConsentPreferences");
 
-      cy.visit("/consent");
-      cy.getByTestId("consent");
-      cy.loadConfigFixture("config/config_consent.json").as("config");
-      cy.overrideSettings({ IS_OVERLAY_ENABLED: false });
+      cy.visitConsent({ settingsOverride: { IS_OVERLAY_ENABLED: false } });
     });
 
     it("populates its header and description from config", () => {
@@ -299,55 +308,15 @@ describe("Consent settings", () => {
         ) as FidesCookie;
         expect(cookie.fides_meta.consentMethod).to.eql("save");
       });
-
-      cy.visit("/fides-js-demo.html");
-      cy.get("#consent-json");
-      cy.waitUntilFidesInitialized().then(() => {
-        cy.window({ timeout: 1000 }).should("have.property", "dataLayer");
-        cy.window().then((win) => {
-          // Now all of the cookie keys should be populated.
-          expect(win).to.have.nested.property("Fides.consent").that.eql({
-            data_sales: false,
-            tracking: false,
-            analytics: true,
-            gpc_test: true,
-          });
-
-          // GTM configuration
-          expect(win)
-            .to.have.nested.property("dataLayer[0]")
-            .that.eql({
-              event: "FidesInitialized",
-              Fides: {
-                consent: {
-                  data_sales: false,
-                  tracking: false,
-                  analytics: true,
-                  gpc_test: true,
-                },
-                extraDetails: {
-                  consentMethod: "save",
-                },
-                fides_string: undefined,
-              },
-            });
-          // Meta Pixel configuration
-          expect(win)
-            .to.have.nested.property("fbq.queue")
-            .that.eql([
-              ["consent", "revoke"],
-              ["dataProcessingOptions", ["LDU"], 1, 1000],
-            ]);
-        });
-      });
     });
 
     describe("when globalPrivacyControl is enabled", () => {
       beforeEach(() => {
-        cy.visit("/consent?globalPrivacyControl=true");
+        cy.visitConsent({
+          settingsOverride: { IS_OVERLAY_ENABLED: false },
+          urlParams: { globalPrivacyControl: "true" },
+        });
         cy.getByTestId("consent");
-        cy.loadConfigFixture("config/config_consent.json").as("config");
-        cy.overrideSettings({ IS_OVERLAY_ENABLED: false });
       });
 
       it("applies the GPC defaults", () => {
@@ -424,6 +393,7 @@ describe("Consent settings", () => {
           });
 
           // GTM configuration
+          const timestamp = win.dataLayer[0]?.Fides?.timestamp;
           expect(win)
             .to.have.nested.property("dataLayer[0]")
             .that.eql({
@@ -439,6 +409,7 @@ describe("Consent settings", () => {
                   shouldShowExperience: false,
                 },
                 fides_string: undefined,
+                timestamp,
               },
             });
 
@@ -455,10 +426,23 @@ describe("Consent settings", () => {
 
     describe("when globalPrivacyControl is enabled", () => {
       it("uses the globalPrivacyControl default", () => {
-        cy.visit("/fides-js-demo.html?globalPrivacyControl=true");
+        cy.on("window:before:load", (win) => {
+          // eslint-disable-next-line no-param-reassign
+          win.navigator.globalPrivacyControl = true;
+        });
+        cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+        stubConfig({
+          experience: {
+            privacy_notices: [
+              mockPrivacyNotice({
+                title: "Advertising with gpc enabled",
+                id: "pri_notice-advertising",
+                has_gpc_flag: true,
+              }),
+            ],
+          },
+        });
         cy.get("#consent-json");
-        // eslint-disable-next-line cypress/no-unnecessary-waiting
-        cy.wait(2000);
         cy.waitUntilFidesInitialized().then(() => {
           cy.window({ timeout: 500 }).should("have.property", "dataLayer");
           cy.window().then((win) => {

@@ -2,7 +2,6 @@ import { getErrorMessage } from "common/helpers";
 import {
   Box,
   ConfirmationModal,
-  Heading,
   Spinner,
   Text,
   useDisclosure,
@@ -12,8 +11,10 @@ import type { NextPage } from "next";
 import { useRouter } from "next/router";
 
 import Layout from "~/features/common/Layout";
-import { MESSAGING_ROUTE } from "~/features/common/nav/v2/routes";
+import { MESSAGING_ROUTE } from "~/features/common/nav/routes";
+import PageHeader from "~/features/common/PageHeader";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
+import CustomizableMessagingTemplatesLabelEnum from "~/features/messaging-templates/CustomizableMessagingTemplatesLabelEnum";
 import {
   MessagingTemplateCreateOrUpdate,
   useDeleteMessagingTemplateByIdMutation,
@@ -91,20 +92,25 @@ const EditPropertyPage: NextPage = () => {
 
   return (
     <Layout title="Configure Message">
-      <Box data-testid="add-messaging-template">
-        <Heading marginBottom={2} fontSize="2xl">
-          Configure message
-        </Heading>
-        <Box maxWidth="720px">
-          <Text fontSize="sm">Configure this message</Text>
-          <Box padding={2}>
-            <PropertySpecificMessagingTemplateForm
-              template={messagingTemplate}
-              handleSubmit={handleSubmit}
-              handleDelete={onDeleteOpen}
-            />
-          </Box>
-        </Box>
+      <PageHeader
+        heading="Messaging"
+        breadcrumbItems={[
+          { title: "Messaging", href: MESSAGING_ROUTE },
+          {
+            title: `${
+              CustomizableMessagingTemplatesLabelEnum[
+                messagingTemplate.type as keyof typeof CustomizableMessagingTemplatesLabelEnum
+              ]
+            }`,
+          },
+        ]}
+      />
+      <Box data-testid="add-messaging-template" maxWidth="720px">
+        <PropertySpecificMessagingTemplateForm
+          template={messagingTemplate}
+          handleSubmit={handleSubmit}
+          handleDelete={onDeleteOpen}
+        />
       </Box>
       <ConfirmationModal
         isOpen={deleteIsOpen}

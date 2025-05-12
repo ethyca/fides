@@ -8,8 +8,10 @@ on:
       - "*"
 
 env:
-  DOCKER_USER: ethycaci
+  # Docker auth with read-write (publish) permissions. Set as env in workflow root as auth is required in multiple jobs.
+  DOCKER_USER: ${{ secrets.DOCKER_USER }}
   DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
+  DEFAULT_PYTHON_VERSION: "3.10.16"
 
 jobs:
   ParseTags:
@@ -19,6 +21,7 @@ jobs:
       rc_tag: ${{ steps.check-rc-tag.outputs.match }}
       alpha_tag: ${{ steps.check-alpha-tag.outputs.match }}
       beta_tag: ${{ steps.check-beta-tag.outputs.match }}
+      version: ${{ github.ref_name }}
     steps:
       - name: Check Prod Tag
         id: check-prod-tag
@@ -57,21 +60,30 @@ jobs:
           fi
 
   Push:
-    runs-on: ubuntu-latest
     needs: ParseTags
     strategy:
-      # This matrix will effectively _try_ to run every permutation in parallel,
-      # skipping all of the tasks that don't match. This leaves a ton of "skipped" jobs
-      # but is the fastest way to get this working without overhauling the tag check logic.
       matrix:
         application: ["fides", "sample_app", "privacy_center"]
+        arch: ["amd64", "arm64"]
+        include:
+          - arch: "amd64"
+            runner: "ubuntu-latest"
+          - arch: "arm64"
+            runner: "ubuntu-24.04-arm"
+    runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # This is required to properly tag images
 
+      - name: Set Up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+          cache: "pip"
+
       - name: Login to DockerHub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: ${{ env.DOCKER_USER }}
           password: ${{ env.DOCKER_TOKEN }}
@@ -83,35 +95,116 @@ jobs:
       # these dev images do not need a versioned/git-tagged image
       - name: Push Fides Dev Tag
         if: needs.ParseTags.outputs.prod_tag == 'false' && needs.ParseTags.outputs.rc_tag == 'false' && needs.ParseTags.outputs.beta_tag == 'false' && needs.ParseTags.outputs.alpha_tag == 'false'
+        env:
+          DOCKER_PLATFORMS: linux/${{ matrix.arch }}
+          IMAGE_SUFFIX: -${{ matrix.arch }}
         run: nox -s "push(${{ matrix.application }},dev)"
 
       # if a prod git tag, then we run the prod job to publish images tagged with the version number and a constant ":latest" tag
       # prod pushes a versioned image, git-tagged images not needed
       - name: Push Fides Prod Tags
         if: needs.ParseTags.outputs.prod_tag == 'true'
+        env:
+          DOCKER_PLATFORMS: linux/${{ matrix.arch }}
+          IMAGE_SUFFIX: -${{ matrix.arch }}
         run: nox -s "push(${{ matrix.application }},prod)"
 
       # if an RC git tag, then we run the rc job to publish images with an ":rc" tag
       # git-tagged images are also pushed
       - name: Push Fides RC Tags
         if: needs.ParseTags.outputs.rc_tag == 'true'
+        env:
+          DOCKER_PLATFORMS: linux/${{ matrix.arch }}
+          IMAGE_SUFFIX: -${{ matrix.arch }}
         run: nox -s "push(${{ matrix.application }},rc)" -- git_tag
 
       # if an alpha or beta git tag, then we run the prerelease job to publish images with an ":prerelease" tag
       # git-tagged images are also pushed
       - name: Push Fides prerelease Tags
         if: needs.ParseTags.outputs.alpha_tag == 'true' || needs.ParseTags.outputs.beta_tag == 'true'
+        env:
+          DOCKER_PLATFORMS: linux/${{ matrix.arch }}
+          IMAGE_SUFFIX: -${{ matrix.arch }}
         run: nox -s "push(${{ matrix.application }},prerelease)" -- git_tag
 
+  CreateManifests:
+    needs: [Push, ParseTags]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        application: ["fides", "sample_app", "privacy_center"]
+        include:
+          - application: "fides"
+            image_name: "fides"
+          - application: "sample_app"
+            image_name: "fides-sample-app"
+          - application: "privacy_center"
+            image_name: "fides-privacy-center"
+    steps:
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_USER }}
+          password: ${{ env.DOCKER_TOKEN }}
+
+      - name: Create and Push Dev Manifest
+        if: needs.ParseTags.outputs.prod_tag == 'false' && needs.ParseTags.outputs.rc_tag == 'false' && needs.ParseTags.outputs.beta_tag == 'false' && needs.ParseTags.outputs.alpha_tag == 'false'
+        run: |
+          docker manifest create ethyca/${{ matrix.image_name }}:dev \
+            --amend ethyca/${{ matrix.image_name }}:dev-amd64 \
+            --amend ethyca/${{ matrix.image_name }}:dev-arm64
+          docker manifest push ethyca/${{ matrix.image_name }}:dev
+
+      - name: Create and Push Prod Manifest
+        if: needs.ParseTags.outputs.prod_tag == 'true'
+        run: |
+          # Create and push version manifest
+          docker manifest create ethyca/${{ matrix.image_name }}:${{ needs.ParseTags.outputs.version }} \
+            --amend ethyca/${{ matrix.image_name }}:${{ needs.ParseTags.outputs.version }}-amd64 \
+            --amend ethyca/${{ matrix.image_name }}:${{ needs.ParseTags.outputs.version }}-arm64
+          docker manifest push ethyca/${{ matrix.image_name }}:${{ needs.ParseTags.outputs.version }}
+          # Create and push latest manifest
+          docker manifest create ethyca/${{ matrix.image_name }}:latest \
+            --amend ethyca/${{ matrix.image_name }}:latest-amd64 \
+            --amend ethyca/${{ matrix.image_name }}:latest-arm64
+          docker manifest push ethyca/${{ matrix.image_name }}:latest
+
+      - name: Create and Push RC Manifest
+        if: needs.ParseTags.outputs.rc_tag == 'true'
+        run: |
+          # Create and push version manifest
+          docker manifest create ethyca/${{ matrix.image_name }}:${{ needs.ParseTags.outputs.version }} \
+            --amend ethyca/${{ matrix.image_name }}:${{ needs.ParseTags.outputs.version }}-amd64 \
+            --amend ethyca/${{ matrix.image_name }}:${{ needs.ParseTags.outputs.version }}-arm64
+          docker manifest push ethyca/${{ matrix.image_name }}:${{ needs.ParseTags.outputs.version }}
+          # Create and push rc manifest
+          docker manifest create ethyca/${{ matrix.image_name }}:rc \
+            --amend ethyca/${{ matrix.image_name }}:rc-amd64 \
+            --amend ethyca/${{ matrix.image_name }}:rc-arm64
+          docker manifest push ethyca/${{ matrix.image_name }}:rc
+
+      - name: Create and Push Prerelease Manifest
+        if: needs.ParseTags.outputs.alpha_tag == 'true' || needs.ParseTags.outputs.beta_tag == 'true'
+        run: |
+          # Create and push version manifest
+          docker manifest create ethyca/${{ matrix.image_name }}:${{ needs.ParseTags.outputs.version }} \
+            --amend ethyca/${{ matrix.image_name }}:${{ needs.ParseTags.outputs.version }}-amd64 \
+            --amend ethyca/${{ matrix.image_name }}:${{ needs.ParseTags.outputs.version }}-arm64
+          docker manifest push ethyca/${{ matrix.image_name }}:${{ needs.ParseTags.outputs.version }}
+          # Create and push prerelease manifest
+          docker manifest create ethyca/${{ matrix.image_name }}:prerelease \
+            --amend ethyca/${{ matrix.image_name }}:prerelease-amd64 \
+            --amend ethyca/${{ matrix.image_name }}:prerelease-arm64
+          docker manifest push ethyca/${{ matrix.image_name }}:prerelease
 
   NotifyRedeploy:
     runs-on: ubuntu-latest
-    needs: Push
+    needs: [CreateManifests]
     steps:
       # if an RC git tag, also notify Fidesinfra to trigger a redeploy of rc env, to pick up our newly published images
       - name: Send Repository Dispatch Event (RC redeploy)
         if: needs.ParseTags.outputs.rc_tag == 'true'
-        uses: peter-evans/repository-dispatch@v2
+        uses: peter-evans/repository-dispatch@v3
         with:
           event-type: trigger-fidesinfra-deploy-fides-rc
           repository: ethyca/fidesinfra

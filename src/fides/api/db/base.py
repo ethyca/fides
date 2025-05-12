@@ -3,15 +3,20 @@
 # imported by Alembic
 from fides.api.db.base_class import Base
 from fides.api.models.application_config import ApplicationConfig
+from fides.api.models.asset import Asset
+from fides.api.models.attachment import Attachment, AttachmentReference
 from fides.api.models.audit_log import AuditLog
 from fides.api.models.authentication_request import AuthenticationRequest
 from fides.api.models.client import ClientDetail
+from fides.api.models.comment import Comment, CommentReference
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.consent_automation import ConsentAutomation
 from fides.api.models.custom_asset import CustomAsset
 from fides.api.models.custom_connector_template import CustomConnectorTemplate
+from fides.api.models.custom_report import CustomReport
 from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.models.detection_discovery import StagedResource
+from fides.api.models.db_cache import DBCache
+from fides.api.models.detection_discovery import MonitorConfig, StagedResource
 from fides.api.models.experience_notices import ExperienceNotices
 from fides.api.models.fides_cloud import FidesCloud
 from fides.api.models.fides_user import FidesUser
@@ -54,4 +59,8 @@ from fides.api.models.storage import StorageConfig
 from fides.api.models.system_compass_sync import SystemCompassSync
 from fides.api.models.system_history import SystemHistory
 from fides.api.models.system_manager import SystemManager
+from fides.api.models.tcf_publisher_restrictions import (
+    TCFConfiguration,
+    TCFPublisherRestriction,
+)
 from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride

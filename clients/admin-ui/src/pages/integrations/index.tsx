@@ -1,7 +1,6 @@
 import {
+  AntButton as Button,
   Box,
-  Button,
-  Heading,
   LinkIcon,
   TabList,
   Tabs,
@@ -13,6 +12,7 @@ import React from "react";
 import { FidesTab } from "~/features/common/DataTabs";
 import FidesSpinner from "~/features/common/FidesSpinner";
 import Layout from "~/features/common/Layout";
+import PageHeader from "~/features/common/PageHeader";
 import { useGetAllDatastoreConnectionsQuery } from "~/features/datastore-connections/datastore-connection.slice";
 import AddIntegrationModal from "~/features/integrations/add-integration/AddIntegrationModal";
 import getIntegrationTypeInfo, {
@@ -48,9 +48,14 @@ const IntegrationListView: NextPage = () => {
 
   return (
     <Layout title="Integrations">
-      <Heading mb={2} fontSize="2xl" fontWeight="semibold">
-        Integrations
-      </Heading>
+      <PageHeader
+        heading="Integrations"
+        breadcrumbItems={[
+          {
+            title: "All integrations",
+          },
+        ]}
+      />
       <Box data-testid="integration-tabs" display="flex">
         <Tabs index={tabIndex} onChange={onChangeFilter} w="full">
           <TabList>
@@ -67,13 +72,12 @@ const IntegrationListView: NextPage = () => {
           pb="2"
         >
           <Button
-            size="sm"
-            variant="outline"
             onClick={onOpen}
             data-testid="add-integration-btn"
+            icon={<LinkIcon />}
+            iconPosition="end"
           >
             Add Integration
-            <LinkIcon marginLeft="8px" />
           </Button>
         </Box>
       </Box>

@@ -10,6 +10,9 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from fides.api.custom_types import PhoneNumber, SafeStr
 from fides.api.schemas import Msg
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
+from fides.api.schemas.connection_configuration.connection_secrets_base_aws import (
+    BaseAWSSchema,
+)
 from fides.api.schemas.privacy_preference import MinimalPrivacyPreferenceHistorySchema
 from fides.api.schemas.privacy_request import Consent
 from fides.api.schemas.property import MinimalProperty
@@ -23,12 +26,13 @@ class MessagingMethod(Enum):
 
 
 class MessagingServiceType(Enum):
-    """Enum for messaging service type. Upper-cased in the database"""
+    """Enum for messaging service type."""
 
     mailgun = "mailgun"
     twilio_text = "twilio_text"
     twilio_email = "twilio_email"
     mailchimp_transactional = "mailchimp_transactional"
+    aws_ses = "aws_ses"
 
     @classmethod
     def _missing_(
@@ -45,6 +49,7 @@ EMAIL_MESSAGING_SERVICES: Tuple[str, ...] = (
     MessagingServiceType.mailgun.value,
     MessagingServiceType.twilio_email.value,
     MessagingServiceType.mailchimp_transactional.value,
+    MessagingServiceType.aws_ses.value,
 )
 SMS_MESSAGING_SERVICES: Tuple[str, ...] = (MessagingServiceType.twilio_text.value,)
 
@@ -115,6 +120,8 @@ class RequestReviewDenyBodyParams(BaseModel):
     """Body params required for privacy request review deny template"""
 
     rejection_reason: Optional[SafeStr] = None
+
+    model_config = ConfigDict(extra="forbid")
 
 
 class ConsentPreferencesByUser(BaseModel):
@@ -196,6 +203,32 @@ class FidesopsMessage(
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
+    @model_validator(mode="after")
+    def validate_body_params_match_action_type(self) -> "FidesopsMessage":
+
+        valid_body_params_for_action_type = {
+            MessagingActionType.CONSENT_REQUEST: None,  # Don't validate this one
+            MessagingActionType.CONSENT_REQUEST_EMAIL_FULFILLMENT: ConsentEmailFulfillmentBodyParams,
+            MessagingActionType.SUBJECT_IDENTITY_VERIFICATION: SubjectIdentityVerificationBodyParams,
+            MessagingActionType.PRIVACY_REQUEST_RECEIPT: RequestReceiptBodyParams,
+            MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY: RequestReviewDenyBodyParams,
+            MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE: None,  # No body params for this action type
+            MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS: AccessRequestCompleteBodyParams,
+            MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT: ErasureRequestBodyParams,
+            MessagingActionType.PRIVACY_REQUEST_ERROR_NOTIFICATION: ErrorNotificationBodyParams,
+            MessagingActionType.USER_INVITE: UserInviteBodyParams,
+        }
+
+        valid_body_params = valid_body_params_for_action_type.get(
+            self.action_type, None
+        )
+        if valid_body_params and not isinstance(self.body_params, valid_body_params):
+            raise ValueError(
+                f"Invalid body params for action type {self.action_type}. Expected {valid_body_params.__name__}, got {type(self.body_params).__name__}"
+            )
+
+        return self
+
 
 class EmailForActionType(BaseModel):
     """
@@ -223,6 +256,9 @@ class MessagingServiceDetails(Enum):
     # Twilio Email
     TWILIO_EMAIL_FROM = "twilio_email_from"
 
+    # AWS SES
+    AWS_REGION = "aws_region"
+
 
 class MessagingServiceDetailsMailchimpTransactional(BaseModel):
     """The details required to represent a Mailchimp Transactional email configuration."""
@@ -247,6 +283,23 @@ class MessagingServiceDetailsTwilioEmail(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+class MessagingServiceDetailsAWS_SES(BaseModel):
+    """The details required to represent an AWS SES email configuration."""
+
+    email_from: Optional[str] = None
+    domain: Optional[str] = None
+    aws_region: str
+
+    model_config = ConfigDict(extra="forbid")
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        if not values.get("domain") and not values.get("email_from"):
+            raise ValueError("Either 'email_from' or 'domain' must be provided.")
+        return values
+
+
 class MessagingServiceSecrets(Enum):
     """Enum for message service secrets"""
 
@@ -264,6 +317,12 @@ class MessagingServiceSecrets(Enum):
 
     # Twilio Sendgrid/Email
     TWILIO_API_KEY = "twilio_api_key"
+
+    # AWS SES
+    AWS_AUTH_METHOD = "auth_method"
+    AWS_ACCESS_KEY_ID = "aws_access_key_id"
+    AWS_SECRET_ACCESS_KEY = "aws_secret_access_key"
+    AWS_ASSUME_ROLE_ARN = "aws_assume_role_arn"
 
 
 class MessagingServiceSecretsMailchimpTransactional(BaseModel):
@@ -307,6 +366,15 @@ class MessagingServiceSecretsTwilioEmail(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+class MessagingServiceSecretsAWS_SES(BaseAWSSchema):
+    """
+    The secrets required to connect to AWS SES.
+    Inherits basic AWS authentication schema.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+
 class MessagingConfigBase(BaseModel):
     """Base model shared by messaging config related models"""
 
@@ -316,6 +384,7 @@ class MessagingConfigBase(BaseModel):
             MessagingServiceDetailsMailgun,
             MessagingServiceDetailsTwilioEmail,
             MessagingServiceDetailsMailchimpTransactional,
+            MessagingServiceDetailsAWS_SES,
         ]
     ] = None
     model_config = ConfigDict(
@@ -347,14 +416,24 @@ class MessagingConfigRequestBase(MessagingConfigBase):
     ) -> None:
         if isinstance(service_type, MessagingServiceType):
             service_type = service_type.value
+
+        if (
+            service_type
+            in [
+                MessagingServiceType.mailgun.value,
+                MessagingServiceType.twilio_email.value,
+                MessagingServiceType.aws_ses.value,
+            ]
+            and not details
+        ):
+            raise ValueError("Messaging config must include details")
+
         if service_type == MessagingServiceType.mailgun.value:
-            if not details:
-                raise ValueError("Messaging config must include details")
-            MessagingServiceDetailsMailgun.validate(details)
+            MessagingServiceDetailsMailgun.model_validate(details)
         if service_type == MessagingServiceType.twilio_email.value:
-            if not details:
-                raise ValueError("Messaging config must include details")
-            MessagingServiceDetailsTwilioEmail.validate(details)
+            MessagingServiceDetailsTwilioEmail.model_validate(details)
+        if service_type == MessagingServiceType.aws_ses.value:
+            MessagingServiceDetailsAWS_SES.model_validate(details)
 
 
 class MessagingConfigRequest(MessagingConfigRequestBase):
@@ -377,6 +456,7 @@ SUPPORTED_MESSAGING_SERVICE_SECRETS = Union[
     MessagingServiceSecretsTwilioSMS,
     MessagingServiceSecretsTwilioEmail,
     MessagingServiceSecretsMailchimpTransactional,
+    MessagingServiceSecretsAWS_SES,
 ]
 
 

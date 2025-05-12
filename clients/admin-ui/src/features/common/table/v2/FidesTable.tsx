@@ -22,6 +22,7 @@ import {
   Portal,
   SmallCloseIcon,
   Table,
+  TableCellProps,
   TableContainer,
   Tbody,
   Td,
@@ -53,11 +54,13 @@ declare module "@tanstack/table-core" {
     width?: string;
     minWidth?: string;
     maxWidth?: string;
-    displayText?: string;
     showHeaderMenu?: boolean;
     showHeaderMenuWrapOption?: boolean;
     overflow?: "auto" | "visible" | "hidden";
     disableRowClick?: boolean;
+    cellProps?: TableCellProps;
+    headerProps?: TableCellProps;
+    noPadding?: boolean;
     onCellClick?: (row: TData) => void;
   }
 }
@@ -80,6 +83,7 @@ const tableHeaderButtonStyles = {
   "&:focus": {
     outline: "none",
   },
+  letterSpacing: "0.6px",
 };
 
 interface HeaderContentProps<T> {
@@ -103,6 +107,8 @@ const HeaderContent = <T,>({
   const { meta } = header.column.columnDef;
   if (!meta?.showHeaderMenu) {
     if (enableSorting && header.column.getCanSort()) {
+      // TODO PROD-2567 - leaving this as a Chakra button for now, but should
+      // be migrated to AntButton as part of table migration
       return (
         <Button
           data-testid={`${header.id}-header-sort`}
@@ -117,7 +123,7 @@ const HeaderContent = <T,>({
           variant="ghost"
           size="sm"
           sx={{
-            ...getTableTHandTDStyles(header.column.id),
+            ...getTableTHandTDStyles(header.column.id === "select"),
             ...tableHeaderButtonStyles,
           }}
         >
@@ -129,10 +135,11 @@ const HeaderContent = <T,>({
     return (
       <Box
         data-testid={`${header.id}-header`}
-        sx={{ ...getTableTHandTDStyles(header.column.id) }}
+        sx={{ ...getTableTHandTDStyles(header.column.id === "select") }}
         fontSize="xs"
         lineHeight={9} // same as table header height
         fontWeight="medium"
+        style={header.column.columnDef.meta?.headerProps as React.CSSProperties}
       >
         {flexRender(header.column.columnDef.header, header.getContext())}
       </Box>
@@ -153,7 +160,7 @@ const HeaderContent = <T,>({
         variant="ghost"
         size="sm"
         sx={{
-          ...getTableTHandTDStyles(header.column.id),
+          ...getTableTHandTDStyles(header.column.id === "select"),
           ...tableHeaderButtonStyles,
         }}
         data-testid={`${header.id}-header-menu`}
@@ -437,6 +444,7 @@ export const FidesTableV2 = <T,>({
                         opacity: 1,
                       },
                     }}
+                    {...header.column.columnDef.meta?.cellProps}
                   >
                     <HeaderContent
                       header={header}

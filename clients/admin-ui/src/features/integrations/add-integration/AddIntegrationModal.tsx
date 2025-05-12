@@ -2,7 +2,9 @@ import { UseDisclosureReturn } from "fidesui";
 import { useState } from "react";
 
 import FormModal from "~/features/common/modals/FormModal";
-import { IntegrationTypeInfo } from "~/features/integrations/add-integration/allIntegrationTypes";
+import getIntegrationTypeInfo, {
+  IntegrationTypeInfo,
+} from "~/features/integrations/add-integration/allIntegrationTypes";
 import ConfigureIntegrationForm from "~/features/integrations/add-integration/ConfigureIntegrationForm";
 import IntegrationTypeDetail from "~/features/integrations/add-integration/IntegrationTypeDetail";
 import SelectIntegrationType from "~/features/integrations/add-integration/SelectIntegrationType";
@@ -28,6 +30,10 @@ const AddIntegrationModal = ({
     integrationType?.placeholder.connection_type,
   );
 
+  const { description } = getIntegrationTypeInfo(
+    integrationType?.placeholder.connection_type,
+  );
+
   const handleCancel = () => {
     setStep(IntegrationModalStep.LIST_VIEW);
     setIntegrationType(undefined);
@@ -49,7 +55,12 @@ const AddIntegrationModal = ({
     : "Add integration";
 
   return (
-    <FormModal isOpen={isOpen} onClose={handleCancel} title={modalTitle}>
+    <FormModal
+      size="2xl"
+      isOpen={isOpen}
+      onClose={handleCancel}
+      title={modalTitle}
+    >
       {step === IntegrationModalStep.LIST_VIEW && (
         <SelectIntegrationType
           onCancel={handleCancel}
@@ -68,6 +79,7 @@ const AddIntegrationModal = ({
         <ConfigureIntegrationForm
           connectionOption={connectionOption!}
           onCancel={handleCancel}
+          description={description}
         />
       )}
     </FormModal>

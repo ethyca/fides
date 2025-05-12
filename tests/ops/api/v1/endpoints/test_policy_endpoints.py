@@ -141,7 +141,7 @@ class TestGetPolicyDetail:
         assert resp.status_code == 404
 
     def test_get_policy_returns_drp_action(
-        self, api_client: TestClient, generate_auth_header, policy_drp_action, url
+        self, api_client: TestClient, generate_auth_header, policy_drp_action
     ):
         auth_header = generate_auth_header(scopes=[scopes.POLICY_READ])
         resp = api_client.get(
@@ -233,7 +233,6 @@ class TestGetRules:
         )
         assert resp.status_code == 403
 
-    @pytest.mark.usefixtures("policy_drp_action")
     def test_get_rules(
         self,
         db,
@@ -242,12 +241,10 @@ class TestGetRules:
         policy: Policy,
         url,
     ):
-        # since we have more than one policy fixture, we expect to have
-        # more than one policy, and therefore more than one rule, in the db
         all_policies = Policy.query(db=db).all()
-        assert len(all_policies) > 1
+        assert len(all_policies) == 1
         all_rules = Rule.query(db=db).all()
-        assert len(all_rules) > 1
+        assert len(all_rules) == 1
 
         auth_header = generate_auth_header(scopes=[scopes.RULE_READ])
         resp = api_client.get(
@@ -1285,6 +1282,29 @@ class TestRuleTargets:
         assert resp.status_code == 200
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 2
+
+    def test_create_rule_targets_with_invalid_rule_key(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        policy,
+    ):
+        """
+        Test that creating rule targets with an invalid rule key returns a 404
+        """
+        data = []
+        auth_header = generate_auth_header(scopes=[scopes.RULE_CREATE_OR_UPDATE])
+        resp = api_client.patch(
+            self.get_rule_url(policy.key, "invalid_rule_key"),
+            json=data,
+            headers=auth_header,
+        )
+
+        assert resp.status_code == 404
+        assert (
+            resp.json()["detail"]
+            == "No Rule found for key invalid_rule_key on Policy example_access_request_policy."
+        )
 
     def test_create_rule_targets_as_root(
         self,

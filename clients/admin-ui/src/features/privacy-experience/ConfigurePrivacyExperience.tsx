@@ -1,4 +1,11 @@
-import { ButtonGroup, Flex, IconButton, Spacer, Text, useToast } from "fidesui";
+import {
+  AntFlex as Flex,
+  AntRadio as Radio,
+  Spacer,
+  Text,
+  theme,
+  useToast,
+} from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
@@ -8,21 +15,24 @@ import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage } from "~/features/common/helpers";
 import { DesktopIcon } from "~/features/common/Icon/DesktopIcon";
 import { MobileIcon } from "~/features/common/Icon/MobileIcon";
-import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
+import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
+import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import {
   defaultInitialValues,
   findLanguageDisplayName,
+  getTranslationFormFields,
   transformConfigResponseToCreate,
   TranslationWithLanguageName,
 } from "~/features/privacy-experience/form/helpers";
+import { FIELD_VALIDATION_DATA } from "~/features/privacy-experience/form/translations-form-validations";
 import {
   selectAllLanguages,
   selectPage as selectLanguagePage,
   selectPageSize as selectLanguagePageSize,
   useGetAllLanguagesQuery,
 } from "~/features/privacy-experience/language.slice";
-import Preview from "~/features/privacy-experience/Preview";
+import Preview from "~/features/privacy-experience/preview/Preview";
 import {
   usePatchExperienceConfigMutation,
   usePostExperienceConfigMutation,
@@ -30,46 +40,46 @@ import {
 import { PrivacyExperienceForm } from "~/features/privacy-experience/PrivacyExperienceForm";
 import PrivacyExperienceTranslationForm from "~/features/privacy-experience/PrivacyExperienceTranslationForm";
 import { selectAllPrivacyNotices } from "~/features/privacy-notices/privacy-notices.slice";
-import { useGetConfigurationSettingsQuery } from "~/features/privacy-requests";
 import {
   ComponentType,
   ExperienceConfigCreate,
   ExperienceConfigResponse,
   ExperienceTranslation,
+  ExperienceTranslationCreate,
   SupportedLanguage,
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
-const translationSchema = (requirePreferencesLink: boolean) =>
-  Yup.object().shape({
-    title: Yup.string().required().label("Title"),
-    description: Yup.string().required().label("Description"),
-    accept_button_label: Yup.string().required().label("Accept button label"),
-    reject_button_label: Yup.string().required().label("Reject button label"),
-    save_button_label: Yup.string().required().label("Save button label"),
-    acknowledge_button_label: Yup.string()
-      .required()
-      .label("Acknowledge button label"),
-    privacy_policy_url: Yup.string()
-      .url()
-      .nullable()
-      .label("Privacy policy URL"),
-    is_default: Yup.boolean(),
-    privacy_preferences_link_label: requirePreferencesLink
-      ? Yup.string().required().label("Privacy preferences link label")
-      : Yup.string().nullable().label("Privacy preferences link label"),
+const buildTranslationSchema = (componentType: ComponentType): Yup.Schema => {
+  const formFields = getTranslationFormFields(componentType);
+  const schema: Partial<Record<keyof ExperienceTranslationCreate, Yup.Schema>> =
+    {};
+
+  Object.entries(formFields).forEach(([field, config]) => {
+    const fieldKey = field as keyof ExperienceTranslationCreate;
+    if (config.included) {
+      const fieldData = FIELD_VALIDATION_DATA[fieldKey];
+      schema[fieldKey] = config.required
+        ? fieldData.validation.required().label(fieldData.label)
+        : fieldData.validation.nullable().label(fieldData.label);
+    }
   });
+
+  return Yup.object().shape(schema);
+};
+
+const translationSchema = ({
+  componentType,
+}: {
+  componentType: ComponentType;
+}) => buildTranslationSchema(componentType);
 
 const validationSchema = Yup.object().shape({
   name: Yup.string().required().label("Experience name"),
   component: Yup.string().required().label("Experience type"),
-  translations: Yup.array().when("component", {
-    is: (value: ComponentType) =>
-      value === ComponentType.BANNER_AND_MODAL ||
-      value === ComponentType.TCF_OVERLAY,
-    then: (schema) => schema.of(translationSchema(true)),
-    otherwise: (schema) => schema.of(translationSchema(false)),
-  }),
+  translations: Yup.array().when("component", ([component], schema) =>
+    schema.of(translationSchema({ componentType: component })),
+  ),
 });
 
 const ConfigurePrivacyExperience = ({
@@ -108,6 +118,16 @@ const ConfigurePrivacyExperience = ({
     : defaultInitialValues;
 
   const handleSubmit = async (values: ExperienceConfigCreate) => {
+    // Ignore placeholder TCF notice. It is used only as a UX cue that TCF purposes will always exist
+    // eslint-disable-next-line no-param-reassign
+    values.privacy_notice_ids = values.privacy_notice_ids?.filter(
+      (item) => item !== "tcf_purposes_placeholder",
+    );
+    if (initialValues.tcf_configuration_id && !values.tcf_configuration_id) {
+      // If the TCF configuration gets cleared, set the TCF configuration ID to null to remove it on the DB side
+      // eslint-disable-next-line no-param-reassign
+      values.tcf_configuration_id = null;
+    }
     const valuesToSubmit = {
       ...values,
       disabled: passedInExperience?.disabled ?? true,
@@ -182,9 +202,7 @@ const ConfigurePrivacyExperience = ({
     >
       <Form style={{ height: "100vh" }}>
         <Flex
-          w="full"
-          h="full"
-          direction="row"
+          className="size-full"
           data-testid="privacy-experience-detail-page"
         >
           {translationToEdit ? (
@@ -202,32 +220,33 @@ const ConfigurePrivacyExperience = ({
               onCreateTranslation={handleCreateNewTranslation}
             />
           )}
-          <Flex direction="column" w="75%" bgColor="gray.50" overflowY="hidden">
+          <Flex
+            vertical
+            className="w-full overflow-y-hidden"
+            style={{ backgroundColor: theme.colors.gray[50] }}
+          >
             <Flex
-              direction="row"
-              p={4}
-              align="center"
-              bgColor="white"
-              borderBottom="1px solid #DEE5EE"
+              className="flex-row items-center p-4"
+              style={{
+                backgroundColor: theme.colors.white,
+                borderBottom: `1px solid ${theme.colors.gray[100]}`,
+              }}
             >
               <Text fontSize="md" fontWeight="semibold">
                 PREVIEW
               </Text>
               <Spacer />
-              <ButtonGroup size="sm" variant="outline" isAttached>
-                <IconButton
-                  icon={<MobileIcon />}
-                  aria-label="View mobile preview"
-                  onClick={() => setIsMobilePreview(true)}
-                  bgColor={isMobilePreview ? "gray.200" : undefined}
-                />
-                <IconButton
-                  icon={<DesktopIcon />}
-                  aria-label="View desktop preview"
-                  onClick={() => setIsMobilePreview(false)}
-                  bgColor={!isMobilePreview ? "gray.200" : undefined}
-                />
-              </ButtonGroup>
+              <Radio.Group
+                onChange={(e) => setIsMobilePreview(e.target.value)}
+                defaultValue={false}
+              >
+                <Radio.Button value title="View mobile preview">
+                  <MobileIcon />
+                </Radio.Button>
+                <Radio.Button value={false} title="View desktop preview">
+                  <DesktopIcon />
+                </Radio.Button>
+              </Radio.Group>
             </Flex>
             <Preview
               allPrivacyNotices={allPrivacyNotices}

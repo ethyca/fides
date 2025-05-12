@@ -22,7 +22,7 @@ import _ from "lodash";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { EDIT_PROPERTY_ROUTE } from "~/features/common/nav/v2/routes";
+import { EDIT_PROPERTY_ROUTE } from "~/features/common/nav/routes";
 import Restrict, { useHasPermission } from "~/features/common/Restrict";
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
 import { useGetAllPropertiesQuery } from "~/features/properties/property.slice";
@@ -60,7 +60,10 @@ const EmptyTableNotice = () => (
         <Text fontSize="sm">
           Click “Add property” to add your first property to Fides.
         </Text>
-        <AddPropertyButton buttonLabel="Add property" buttonVariant="primary" />
+        <AddPropertyButton
+          buttonLabel="Add property"
+          buttonProps={{ type: "primary" }}
+        />
       </Restrict>
     </VStack>
   </VStack>
@@ -139,7 +142,6 @@ export const PropertiesTable = () => {
         ),
         header: (props) => <DefaultHeaderCell value="Experience" {...props} />,
         meta: {
-          displayText: "Experience",
           showHeaderMenu: true,
         },
       }),
@@ -162,6 +164,7 @@ export const PropertiesTable = () => {
     state: {
       expanded: true,
     },
+    columnResizeMode: "onChange",
   });
 
   const onRowClick = (property: Property) => {
@@ -187,10 +190,7 @@ export const PropertiesTable = () => {
           />
           <HStack alignItems="center" spacing={4}>
             <Restrict scopes={[ScopeRegistryEnum.PROPERTY_CREATE]}>
-              <AddPropertyButton
-                buttonLabel="Add property"
-                buttonVariant="outline"
-              />
+              <AddPropertyButton buttonLabel="Add property" />
             </Restrict>
           </HStack>
         </TableActionBar>

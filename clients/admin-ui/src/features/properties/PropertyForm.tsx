@@ -1,4 +1,4 @@
-import { Box, Button, Flex } from "fidesui";
+import { AntButton as Button, Box, Flex } from "fidesui";
 import { Form, Formik, useFormikContext } from "formik";
 import { useRouter } from "next/router";
 import { useMemo } from "react";
@@ -7,11 +7,10 @@ import { useAppSelector } from "~/app/hooks";
 import FormSection from "~/features/common/form/FormSection";
 import {
   CustomClipboardCopy,
-  CustomSelect,
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { enumToOptions } from "~/features/common/helpers";
-import { PROPERTIES_ROUTE } from "~/features/common/nav/v2/routes";
+import { PROPERTIES_ROUTE } from "~/features/common/nav/routes";
 import ScrollableList from "~/features/common/ScrollableList";
 import {
   selectAllExperienceConfigs,
@@ -26,6 +25,7 @@ import {
   PropertyType,
 } from "~/types/api";
 
+import { ControlledSelect } from "../common/form/ControlledSelect";
 import DeletePropertyModal from "./DeletePropertyModal";
 
 interface Props {
@@ -111,12 +111,12 @@ const PropertyForm = ({ property, handleSubmit }: Props) => {
                 tooltip="Unique name to identify this property"
                 variant="stacked"
               />
-              <CustomSelect
+              <ControlledSelect
                 isRequired
                 label="Type"
                 name="type"
                 options={enumToOptions(PropertyType)}
-                variant="stacked"
+                layout="stacked"
               />
             </FormSection>
           </Box>
@@ -143,10 +143,8 @@ const PropertyForm = ({ property, handleSubmit }: Props) => {
                 triggerComponent={
                   <Button
                     data-testid="delete-property-button"
-                    size="sm"
-                    variant="outline"
-                    isLoading={false}
-                    mr={3}
+                    loading={false}
+                    className="mr-3"
                   >
                     Delete
                   </Button>
@@ -154,21 +152,14 @@ const PropertyForm = ({ property, handleSubmit }: Props) => {
               />
             )}
             <Flex justifyContent="right" width="100%" paddingTop={2}>
-              <Button
-                size="sm"
-                variant="outline"
-                isLoading={false}
-                mr={3}
-                onClick={handleCancel}
-              >
+              <Button onClick={handleCancel} loading={false} className="mr-3">
                 Cancel
               </Button>
               <Button
-                size="sm"
-                type="submit"
-                colorScheme="primary"
-                isDisabled={isSubmitting || !dirty || !isValid}
-                isLoading={isSubmitting}
+                htmlType="submit"
+                type="primary"
+                disabled={isSubmitting || !dirty || !isValid}
+                loading={isSubmitting}
               >
                 Save
               </Button>

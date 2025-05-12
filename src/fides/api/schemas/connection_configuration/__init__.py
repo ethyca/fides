@@ -19,6 +19,12 @@ from fides.api.schemas.connection_configuration.connection_secrets_bigquery impo
 from fides.api.schemas.connection_configuration.connection_secrets_bigquery import (
     BigQuerySchema as BigQuerySchema,
 )
+from fides.api.schemas.connection_configuration.connection_secrets_datahub import (
+    DatahubDocsSchema as DatahubDocsSchema,
+)
+from fides.api.schemas.connection_configuration.connection_secrets_datahub import (
+    DatahubSchema as DatahubSchema,
+)
 from fides.api.schemas.connection_configuration.connection_secrets_dynamic_erasure_email import (
     DynamicErasureEmailDocsSchema as DynamicErasureEmailDocsSchema,
 )
@@ -86,6 +92,12 @@ from fides.api.schemas.connection_configuration.connection_secrets_mysql import 
 from fides.api.schemas.connection_configuration.connection_secrets_mysql import (
     MySQLSchema as MySQLSchema,
 )
+from fides.api.schemas.connection_configuration.connection_secrets_okta import (
+    OktaDocsSchema as OktaDocsSchema,
+)
+from fides.api.schemas.connection_configuration.connection_secrets_okta import (
+    OktaSchema as OktaSchema,
+)
 from fides.api.schemas.connection_configuration.connection_secrets_postgres import (
     PostgreSQLDocsSchema as PostgreSQLDocsSchema,
 )
@@ -97,6 +109,12 @@ from fides.api.schemas.connection_configuration.connection_secrets_rds_mysql imp
 )
 from fides.api.schemas.connection_configuration.connection_secrets_rds_mysql import (
     RDSMySQLSchema as RDSMySQLSchema,
+)
+from fides.api.schemas.connection_configuration.connection_secrets_rds_postgres import (
+    RDSPostgresDocsSchema as RDSPostgresDocsSchema,
+)
+from fides.api.schemas.connection_configuration.connection_secrets_rds_postgres import (
+    RDSPostgresSchema as RDSPostgresSchema,
 )
 from fides.api.schemas.connection_configuration.connection_secrets_redshift import (
     RedshiftDocsSchema as RedshiftDocsSchema,
@@ -136,14 +154,18 @@ from fides.api.schemas.connection_configuration.connection_secrets_timescale imp
 from fides.api.schemas.connection_configuration.connection_secrets_timescale import (
     TimescaleSchema as TimescaleSchema,
 )
+from fides.api.schemas.connection_configuration.connection_secrets_website import (
+    WebsiteSchema,
+)
 from fides.api.schemas.connection_configuration.connections_secrets_https import (
     HttpsSchema as HttpsSchema,
 )
 from fides.api.schemas.saas.saas_config import SaaSConfig as SaaSConfig
 
 secrets_schemas: Dict[str, Any] = {
-    ConnectionType.attentive.value: AttentiveSchema,
+    ConnectionType.attentive_email.value: AttentiveSchema,
     ConnectionType.bigquery.value: BigQuerySchema,
+    ConnectionType.datahub.value: DatahubSchema,
     ConnectionType.dynamic_erasure_email.value: DynamicErasureEmailSchema,
     ConnectionType.dynamodb.value: DynamoDBSchema,
     ConnectionType.fides.value: FidesConnectorSchema,
@@ -156,9 +178,11 @@ secrets_schemas: Dict[str, Any] = {
     ConnectionType.mariadb.value: MariaDBSchema,
     ConnectionType.mongodb.value: MongoDBSchema,
     ConnectionType.mssql.value: MicrosoftSQLServerSchema,
+    ConnectionType.okta.value: OktaSchema,
     ConnectionType.mysql.value: MySQLSchema,
     ConnectionType.postgres.value: PostgreSQLSchema,
     ConnectionType.rds_mysql.value: RDSMySQLSchema,
+    ConnectionType.rds_postgres.value: RDSPostgresSchema,
     ConnectionType.redshift.value: RedshiftSchema,
     ConnectionType.s3.value: S3Schema,
     ConnectionType.saas.value: SaaSSchema,
@@ -166,6 +190,7 @@ secrets_schemas: Dict[str, Any] = {
     ConnectionType.snowflake.value: SnowflakeSchema,
     ConnectionType.sovrn.value: SovrnSchema,
     ConnectionType.timescale.value: TimescaleSchema,
+    ConnectionType.website.value: WebsiteSchema,
 }
 
 
@@ -200,24 +225,29 @@ def get_connection_secrets_schema(
 # Creating the actual connection secrets schemas happens later once we know
 # what type of schema we should validate against.
 connection_secrets_schemas = Union[
-    MongoDBDocsSchema,
-    PostgreSQLDocsSchema,
-    MySQLDocsSchema,
+    BigQueryDocsSchema,
+    DatahubDocsSchema,
+    DynamicErasureEmailDocsSchema,
+    DynamoDBDocsSchema,
+    EmailDocsSchema,
+    FidesDocsSchema,
     GoogleCloudSQLMySQLDocsSchema,
     GoogleCloudSQLPostgresDocsSchema,
-    RedshiftDocsSchema,
-    SnowflakeDocsSchema,
-    MSSQLDocsSchema,
-    MariaDBDocsSchema,
-    BigQueryDocsSchema,
-    SaaSSchema,
-    EmailDocsSchema,
     ManualWebhookDocsSchema,
-    TimescaleDocsSchema,
-    FidesDocsSchema,
-    SovrnDocsSchema,
-    DynamoDBDocsSchema,
+    MariaDBDocsSchema,
+    MongoDBDocsSchema,
+    MSSQLDocsSchema,
+    MySQLDocsSchema,
+    OktaDocsSchema,
+    PostgreSQLDocsSchema,
+    RDSMySQLDocsSchema,
+    RDSPostgresDocsSchema,
+    RedshiftDocsSchema,
     S3DocsSchema,
+    SaaSSchema,
     ScyllaDocsSchema,
-    DynamicErasureEmailDocsSchema,
+    SnowflakeDocsSchema,
+    SovrnDocsSchema,
+    TimescaleDocsSchema,
+    WebsiteSchema,
 ]

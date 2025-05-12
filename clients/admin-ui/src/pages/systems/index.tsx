@@ -8,19 +8,17 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import {
+  AntButton as Button,
   Box,
-  Button,
   ConfirmationModal,
   EditIcon,
   HStack,
-  IconButton,
   Text,
   useDisclosure,
   useToast,
   VStack,
 } from "fidesui";
 import type { NextPage } from "next";
-import NextLink from "next/link";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -31,7 +29,7 @@ import Layout from "~/features/common/Layout";
 import {
   ADD_SYSTEMS_ROUTE,
   EDIT_SYSTEM_ROUTE,
-} from "~/features/common/nav/v2/routes";
+} from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import Restrict from "~/features/common/Restrict";
 import {
@@ -131,6 +129,7 @@ const Systems: NextPage = () => {
         query: {
           id: system.fides_key,
         },
+        hash: "#information",
       });
     },
     [dispatch, router],
@@ -158,9 +157,14 @@ const Systems: NextPage = () => {
       }),
       columnHelper.accessor((row) => row.description, {
         id: "description",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Description" {...props} />,
+        cell: (props) => (
+          <DefaultCell value={props.getValue()} cellProps={props} />
+        ),
         size: 300,
+        meta: {
+          showHeaderMenu: true,
+        },
       }),
       columnHelper.accessor((row) => row.administrating_department, {
         id: "department",
@@ -185,22 +189,20 @@ const Systems: NextPage = () => {
           const system = row.original;
           return (
             <HStack spacing={0} data-testid={`system-${system.fides_key}`}>
-              <IconButton
+              <Button
                 aria-label="Edit property"
                 data-testid="edit-btn"
-                variant="outline"
-                size="xs"
-                mr={2}
+                size="small"
+                className="mr-2"
                 icon={<EditIcon />}
                 onClick={() => handleEdit(system)}
               />
               <Restrict scopes={[ScopeRegistryEnum.SYSTEM_DELETE]}>
-                <IconButton
+                <Button
                   aria-label="Delete system"
                   data-testid="delete-btn"
-                  variant="outline"
-                  size="xs"
-                  mr={2}
+                  size="small"
+                  className="mr-2"
                   icon={<TrashCanOutlineIcon />}
                   onClick={() => {
                     setSelectedSystemForDelete(system);
@@ -223,18 +225,18 @@ const Systems: NextPage = () => {
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    columnResizeMode: "onChange",
     columns,
     data,
   });
 
   return (
-    <Layout title="System inventory" mainProps={{ paddingTop: 0 }}>
+    <Layout title="System inventory">
       <Box data-testid="system-management">
-        <PageHeader breadcrumbs={[{ title: "System inventory" }]}>
-          <Text fontSize="sm" mb={1}>
-            View and manage recently detected systems and vendors here.
-          </Text>
-        </PageHeader>
+        <PageHeader
+          heading="System inventory"
+          breadcrumbItems={[{ title: "All systems" }]}
+        />
         {isLoading ? (
           <TableSkeletonLoader rowHeight={36} numRows={15} />
         ) : (
@@ -318,10 +320,9 @@ const EmptyTableNotice = () => (
       </Text>
     </VStack>
     <Button
-      as={NextLink}
       href={ADD_SYSTEMS_ROUTE}
-      size="xs"
-      colorScheme="primary"
+      size="small"
+      type="primary"
       data-testid="add-privacy-notice-btn"
     >
       Add a system +

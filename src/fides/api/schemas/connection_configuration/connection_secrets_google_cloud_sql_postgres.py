@@ -8,6 +8,9 @@ from fides.api.schemas.base_class import NoValidationSchema
 from fides.api.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
 )
+from fides.api.schemas.connection_configuration.enums.google_cloud_sql_ip_type import (
+    GoogleCloudSQLIPType,
+)
 
 
 class KeyfileCreds(BaseModel):
@@ -43,7 +46,8 @@ class GoogleCloudSQLPostgresSchema(ConnectionConfigSecretsSchema):
         title="Instance connection name",
         description="example: friendly-tower-424214-n8:us-central1:test-ethyca",
     )
-    dbname: str = Field(
+    dbname: Optional[str] = Field(
+        default=None,
         title="Database name",
     )
     db_schema: Optional[str] = Field(
@@ -56,11 +60,15 @@ class GoogleCloudSQLPostgresSchema(ConnectionConfigSecretsSchema):
         json_schema_extra={"sensitive": True},
         description="The contents of the key file that contains authentication credentials for a service account in GCP.",
     )
+    ip_type: Optional[GoogleCloudSQLIPType] = Field(
+        default=None,
+        title="IP type",
+        description="Specify the IP Address type required for your database (defaults to public). See the Google Cloud documentation for more information about connection options: https://cloud.google.com/sql/docs/postgres/connect-overview",
+    )
 
     _required_components: ClassVar[List[str]] = [
         "db_iam_user",
         "instance_connection_name",
-        "dbname",
         "keyfile_creds",
     ]
 
@@ -70,6 +78,15 @@ class GoogleCloudSQLPostgresSchema(ConnectionConfigSecretsSchema):
         if isinstance(v, str):
             v = json.loads(v)
         return KeyfileCreds.model_validate(v)
+
+    @field_validator("ip_type", mode="before")
+    @classmethod
+    def empty_string_to_none(cls, v: Optional[str]) -> Optional[GoogleCloudSQLIPType]:
+        if v == "":
+            return None
+        if v is not None:
+            return GoogleCloudSQLIPType(v)
+        return v
 
 
 class GoogleCloudSQLPostgresDocsSchema(

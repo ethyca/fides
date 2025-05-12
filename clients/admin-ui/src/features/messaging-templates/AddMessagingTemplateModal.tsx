@@ -1,8 +1,7 @@
-import { Select, SingleValue } from "chakra-react-select";
 import {
+  AntButton as Button,
+  AntSelect as Select,
   Box,
-  Button,
-  ButtonGroup,
   Modal,
   ModalBody,
   ModalContent,
@@ -13,7 +12,6 @@ import {
 } from "fidesui";
 import { useState } from "react";
 
-import { SELECT_STYLES } from "~/features/common/form/inputs";
 import { CustomizableMessagingTemplatesEnum } from "~/features/messaging-templates/CustomizableMessagingTemplatesEnum";
 import CustomizableMessagingTemplatesLabelEnum from "~/features/messaging-templates/CustomizableMessagingTemplatesLabelEnum";
 
@@ -69,41 +67,30 @@ const AddMessagingTemplateModal = ({
           </Text>
 
           <Box data-testid="template-type-selector">
-            <Select
+            <Select<string>
               options={options}
-              size="sm"
-              chakraStyles={SELECT_STYLES}
-              onChange={(option: SingleValue<any>) => {
-                setSelectedTemplateType(option?.value);
+              onChange={(value) => {
+                setSelectedTemplateType(value);
               }}
-              classNamePrefix="custom-select"
+              className="w-full"
             />
           </Box>
         </ModalBody>
         <ModalFooter justifyContent="flex-start">
-          <ButtonGroup size="sm" display="flex" justifyItems="stretch" w="full">
-            <Button
-              variant="outline"
-              mr={2}
-              onClick={onClose}
-              data-testid="cancel-btn"
-              size="md"
-              flex={1}
-            >
+          <div className="flex w-full gap-4">
+            <Button onClick={onClose} data-testid="cancel-btn" className="grow">
               Cancel
             </Button>
             <Button
-              size="md"
-              colorScheme="primary"
-              bgColor="primary.800"
               onClick={() => onAccept(selectedTemplateId!)}
+              type="primary"
               data-testid="confirm-btn"
-              isDisabled={!selectedTemplateId}
-              flex={1}
+              disabled={!selectedTemplateId}
+              className="grow"
             >
               Next
             </Button>
-          </ButtonGroup>
+          </div>
         </ModalFooter>
       </ModalContent>
     </Modal>

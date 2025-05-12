@@ -10,9 +10,7 @@ const ActionButtons = () => {
 
   return (
     <Flex gap={4}>
-      {errorRequests?.length > 0 && (
-        <ReprocessButton buttonProps={{ size: "xs" }} />
-      )}
+      {errorRequests?.length > 0 && <ReprocessButton />}
       <ConfigureAlerts />
     </Flex>
   );

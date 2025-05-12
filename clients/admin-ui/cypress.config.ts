@@ -3,6 +3,7 @@ import { defineConfig } from "cypress";
 export default defineConfig({
   e2e: {
     baseUrl: "http://localhost:3000",
+    experimentalRunAllSpecs: true,
     setupNodeEvents(on) {
       on("before:browser:launch", (browser, launchOptions) => {
         if (browser.family === "chromium") {
@@ -27,4 +28,7 @@ export default defineConfig({
       bundler: "webpack",
     },
   },
+
+  // Will only run for cy:run, not cy:open
+  video: true,
 });

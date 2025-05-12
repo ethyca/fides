@@ -1,4 +1,4 @@
-import { CustomSelect, Option, SelectInput } from "common/form/inputs";
+import { Option } from "common/form/inputs";
 import {
   ConnectionTypeSecretSchemaProperty,
   ConnectionTypeSecretSchemaResponse,
@@ -6,10 +6,8 @@ import {
 import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
 import DSRCustomizationModal from "datastore-connections/system_portal_config/forms/DSRCustomizationForm/DSRCustomizationModal";
 import {
-  Box,
-  Button,
-  ButtonGroup,
-  CircleHelpIcon,
+  AntButton as Button,
+  AntSelect as Select,
   Flex,
   FormControl,
   FormErrorMessage,
@@ -21,7 +19,6 @@ import {
   NumberInputField,
   NumberInputStepper,
   Spacer,
-  Tooltip,
   VStack,
 } from "fidesui";
 import { Field, FieldInputProps, Form, Formik, FormikProps } from "formik";
@@ -30,7 +27,9 @@ import React from "react";
 import { DatastoreConnectionStatus } from "src/features/datastore-connections/types";
 
 import { useFeatures } from "~/features/common/features";
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 import DisableConnectionModal from "~/features/datastore-connections/DisableConnectionModal";
+import SelectDataset from "~/features/datastore-connections/system_portal_config/forms/SelectDataset";
 import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
@@ -63,6 +62,10 @@ type ConnectorParametersFormProps = {
    */
   onTestConnectionClick: (value: TestConnectionResponse) => void;
   /**
+   * Parent callback when Test Dataset is clicked
+   */
+  onTestDatasetsClick: () => void;
+  /**
    * Text for the test button. Defaults to "Test connection"
    */
   testButtonLabel?: string;
@@ -86,6 +89,7 @@ export const ConnectorParametersForm = ({
   isAuthorizing = false,
   onSaveClick,
   onTestConnectionClick,
+  onTestDatasetsClick,
   onAuthorizeConnectionClick,
   testButtonLabel = "Test integration",
   connectionOption,
@@ -161,15 +165,18 @@ export const ConnectorParametersForm = ({
         const error = form.errors.secrets && form.errors.secrets[key];
         const touch = form.touched.secrets ? form.touched.secrets[key] : false;
 
+        const isBoolean = item.type === "boolean";
+        const isInteger = item.type === "integer";
+
         return (
           <FormControl
             display="flex"
-            isRequired={isRequiredSecretValue(key)}
+            isRequired={isRequiredSecretValue(key) && !isBoolean}
             isInvalid={error && touch}
           >
             {getFormLabel(key, item.title)}
             <VStack align="flex-start" w="inherit">
-              {item.type !== "integer" && (
+              {!isInteger && !isBoolean && (
                 <Input
                   {...field}
                   type={item.sensitive ? "password" : "text"}
@@ -179,7 +186,17 @@ export const ConnectorParametersForm = ({
                   size="sm"
                 />
               )}
-              {item.type === "integer" && (
+              {isBoolean && (
+                <Select
+                  value={!!field.value}
+                  onChange={(value) => form.setFieldValue(field.name, value)}
+                  options={[
+                    { label: "False", value: false },
+                    { label: "True", value: true },
+                  ]}
+                />
+              )}
+              {isInteger && (
                 <NumberInput
                   allowMouseWheel
                   color="gray.700"
@@ -199,24 +216,9 @@ export const ConnectorParametersForm = ({
               )}
               <FormErrorMessage>{error}</FormErrorMessage>
             </VStack>
-            <Tooltip
-              aria-label={item.description}
-              hasArrow
-              label={item.description}
-              placement="right-start"
-              openDelay={500}
-            >
-              <Flex
-                alignItems="center"
-                h="32px"
-                visibility={item.description ? "visible" : "hidden"}
-              >
-                <CircleHelpIcon
-                  marginLeft="8px"
-                  _hover={{ cursor: "pointer" }}
-                />
-              </Flex>
-            </Tooltip>
+            <Flex alignItems="center" h={8} ml={2}>
+              <InfoTooltip label={item.description} />
+            </Flex>
           </FormControl>
         );
       }}
@@ -346,7 +348,7 @@ export const ConnectorParametersForm = ({
         return (
           <Form noValidate>
             <VStack align="stretch" gap="16px">
-              <ButtonGroup size="sm" spacing="8px" variant="outline">
+              <div className="flex flex-row">
                 {connectionConfig ? (
                   <DisableConnectionModal
                     connection_key={connectionConfig?.key}
@@ -363,7 +365,7 @@ export const ConnectorParametersForm = ({
                     deleteResult={deleteResult}
                   />
                 ) : null}
-              </ButtonGroup>
+              </div>
               {/* Connection Identifier */}
               {!!connectionConfig?.key && (
                 <Field id="instance_key" name="instance_key">
@@ -385,20 +387,9 @@ export const ConnectorParametersForm = ({
                           {props.errors.instance_key as string}
                         </FormErrorMessage>
                       </VStack>
-                      <Tooltip
-                        aria-label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this integration."
-                        hasArrow
-                        label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this integration."
-                        placement="right-start"
-                        openDelay={500}
-                      >
-                        <Flex alignItems="center" h="32px">
-                          <CircleHelpIcon
-                            marginLeft="8px"
-                            _hover={{ cursor: "pointer" }}
-                          />
-                        </Flex>
-                      </Tooltip>
+                      <Flex alignItems="center" h={8} ml={2}>
+                        <InfoTooltip label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this integration." />
+                      </Flex>
                     </FormControl>
                   )}
                 </Field>
@@ -446,85 +437,67 @@ export const ConnectorParametersForm = ({
                       {/* Known as enabled_actions throughout the front-end and back-end but it's displayed to the user as "Request types" */}
                       {getFormLabel("enabled_actions", "Request types")}
                       <VStack align="flex-start" w="inherit">
-                        <Box width="100%">
-                          <SelectInput
-                            options={connectionOption.supported_actions.map(
-                              (action) => ({
-                                label: _.upperFirst(action),
-                                value: action,
-                              }),
-                            )}
-                            fieldName={field.name}
-                            size="sm"
-                            isMulti
-                            isDisabled={
-                              connectionOption.supported_actions.length === 1
-                            }
-                          />
-                        </Box>
+                        <Select
+                          {...field}
+                          placeholder="Select..."
+                          mode="multiple"
+                          options={connectionOption.supported_actions.map(
+                            (action) => ({
+                              label: _.upperFirst(action),
+                              value: action,
+                            }),
+                          )}
+                          onChange={(value) => {
+                            form.setFieldValue(field.name, value);
+                          }}
+                          disabled={
+                            connectionOption.supported_actions.length === 1
+                          }
+                          className="w-full"
+                        />
                         <FormErrorMessage>
                           {props.errors.enabled_actions as string}
                         </FormErrorMessage>
                       </VStack>
-                      <Tooltip
-                        aria-label="The request types that are supported for this integration."
-                        hasArrow
-                        label="The request types that are supported for this integration."
-                        placement="right-start"
-                        openDelay={500}
-                      >
-                        <Flex alignItems="center" h="32px">
-                          <CircleHelpIcon
-                            marginLeft="8px"
-                            _hover={{ cursor: "pointer" }}
-                          />
-                        </Flex>
-                      </Tooltip>
+                      <Flex alignItems="center" h={8} ml={2}>
+                        <InfoTooltip label="The request types that are supported for this integration." />
+                      </Flex>
                     </FormControl>
                   )}
                 </Field>
               )}
               {SystemType.DATABASE === connectionOption.type &&
                 !isCreatingConnectionConfig && (
-                  <CustomSelect
-                    label="Datasets"
-                    labelProps={{
-                      fontWeight: "semibold",
-                      fontSize: "sm",
-                      minWidth: "150px",
-                    }}
-                    name="dataset"
-                    options={datasetDropdownOptions}
-                    isMulti
-                    size="sm"
-                  />
+                  <SelectDataset options={datasetDropdownOptions} />
                 )}
-              <ButtonGroup size="sm" spacing="8px" variant="outline">
+              <div className="flex gap-4">
                 {!connectionOption.authorization_required || authorized ? (
                   <Button
-                    colorScheme="gray.700"
-                    isDisabled={
+                    disabled={
                       !connectionConfig?.key ||
                       isSubmitting ||
                       deleteResult.isLoading
                     }
-                    isLoading={isLoading || isFetching}
-                    loadingText="Testing"
+                    loading={isLoading || isFetching}
                     onClick={() => handleTestConnectionClick(props)}
-                    variant="outline"
+                    data-testid="test-connection-button"
                   >
                     {testButtonLabel}
                   </Button>
                 ) : null}
+                {isPlusEnabled &&
+                  SystemType.DATABASE === connectionOption.type &&
+                  !_.isEmpty(initialDatasets) && (
+                    <Button onClick={() => onTestDatasetsClick()}>
+                      Test datasets
+                    </Button>
+                  )}
                 {connectionOption.authorization_required && !authorized ? (
                   <Button
-                    colorScheme="gray.700"
-                    isLoading={isAuthorizing}
-                    loadingText="Authorizing"
+                    loading={isAuthorizing}
                     onClick={() =>
                       handleAuthorizeConnectionClick(props.values, props)
                     }
-                    variant="outline"
                   >
                     Authorize integration
                   </Button>
@@ -534,20 +507,14 @@ export const ConnectorParametersForm = ({
                 ) : null}
                 <Spacer />
                 <Button
-                  bg="primary.800"
-                  color="white"
-                  isDisabled={deleteResult.isLoading || isSubmitting}
-                  isLoading={isSubmitting}
-                  loadingText="Submitting"
-                  size="sm"
-                  variant="solid"
-                  type="submit"
-                  _active={{ bg: "primary.500" }}
-                  _hover={{ bg: "primary.400" }}
+                  type="primary"
+                  disabled={deleteResult.isLoading || isSubmitting}
+                  loading={isSubmitting}
+                  htmlType="submit"
                 >
                   Save
                 </Button>
-              </ButtonGroup>
+              </div>
             </VStack>
           </Form>
         );

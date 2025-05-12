@@ -3,7 +3,6 @@ import { useEffect, useState } from "preact/hooks";
 
 import {
   ButtonType,
-  ConsentMechanism,
   ConsentMethod,
   FidesInitOptions,
   PrivacyExperience,
@@ -12,6 +11,7 @@ import {
 import { useMediaQuery } from "../lib/hooks/useMediaQuery";
 import { DEFAULT_LOCALE, Locale, messageExists } from "../lib/i18n";
 import { useI18n } from "../lib/i18n/i18n-context";
+import BrandLink from "./BrandLink";
 import Button from "./Button";
 import LanguageSelector from "./LanguageSelector";
 import PrivacyPolicyLink from "./PrivacyPolicyLink";
@@ -24,6 +24,7 @@ interface ConsentButtonProps {
   onRejectAll: () => void;
   options: FidesInitOptions;
   hideOptInOut?: boolean;
+  hideRejectAll?: boolean;
   isInModal?: boolean;
   isTCF?: boolean;
   isMinimalTCF?: boolean;
@@ -35,7 +36,8 @@ export const ConsentButtons = ({
   renderFirstButton,
   onAcceptAll,
   onRejectAll,
-  hideOptInOut = false,
+  hideOptInOut,
+  hideRejectAll,
   options,
   isInModal,
   isTCF,
@@ -56,6 +58,7 @@ export const ConsentButtons = ({
       onManagePreferencesClick();
     }
   };
+  const includeBrandLink = isInModal && options.showFidesBrandLink;
 
   useEffect(() => {
     if (isLoadingModal && !isMinimalTCF) {
@@ -85,13 +88,15 @@ export const ConsentButtons = ({
                 loading={isLoadingModal}
               />
             )}
-            <Button
-              buttonType={ButtonType.PRIMARY}
-              label={i18n.t("exp.reject_button_label")}
-              onClick={onRejectAll}
-              className="fides-reject-all-button"
-              loading={isGVLLoading}
-            />
+            {!hideRejectAll && (
+              <Button
+                buttonType={ButtonType.PRIMARY}
+                label={i18n.t("exp.reject_button_label")}
+                onClick={onRejectAll}
+                className="fides-reject-all-button"
+                loading={isGVLLoading}
+              />
+            )}
             <Button
               buttonType={ButtonType.PRIMARY}
               label={i18n.t("exp.accept_button_label")}
@@ -109,7 +114,7 @@ export const ConsentButtons = ({
             : "fides-banner-button-group fides-banner-secondary-actions"
         }${includeLanguageSelector ? " fides-button-group-i18n" : ""}${
           includePrivacyPolicyLink ? " fides-button-group-privacy-policy" : ""
-        }`}
+        }${includeBrandLink ? " fides-button-group-brand" : ""}`}
       >
         {includeLanguageSelector && (
           <LanguageSelector
@@ -127,6 +132,7 @@ export const ConsentButtons = ({
           />
         )}
         {includePrivacyPolicyLink && <PrivacyPolicyLink />}
+        {includeBrandLink && <BrandLink />}
       </div>
     </div>
   );
@@ -136,6 +142,8 @@ type NoticeKeys = Array<PrivacyNotice["notice_key"]>;
 
 interface NoticeConsentButtonProps {
   experience: PrivacyExperience;
+  onAcceptAll: () => void;
+  onRejectAll: () => void;
   onSave: (consentMethod: ConsentMethod, noticeKeys: NoticeKeys) => void;
   onManagePreferencesClick?: () => void;
   enabledKeys: NoticeKeys;
@@ -147,6 +155,8 @@ interface NoticeConsentButtonProps {
 
 export const NoticeConsentButtons = ({
   experience,
+  onAcceptAll,
+  onRejectAll,
   onSave,
   onManagePreferencesClick,
   enabledKeys,
@@ -161,26 +171,10 @@ export const NoticeConsentButtons = ({
   }
   const { privacy_notices: notices } = experience;
 
-  const handleAcceptAll = () => {
-    onSave(
-      ConsentMethod.ACCEPT,
-      notices.map((n) => n.notice_key),
-    );
-  };
-
   const handleAcknowledgeNotices = () => {
     onSave(
       ConsentMethod.ACKNOWLEDGE,
       notices.map((n) => n.notice_key),
-    );
-  };
-
-  const handleRejectAll = () => {
-    onSave(
-      ConsentMethod.REJECT,
-      notices
-        .filter((n) => n.consent_mechanism === ConsentMechanism.NOTICE_ONLY)
-        .map((n) => n.notice_key),
     );
   };
 
@@ -216,8 +210,8 @@ export const NoticeConsentButtons = ({
     <ConsentButtons
       availableLocales={experience.available_locales}
       onManagePreferencesClick={onManagePreferencesClick}
-      onAcceptAll={handleAcceptAll}
-      onRejectAll={handleRejectAll}
+      onAcceptAll={onAcceptAll}
+      onRejectAll={onRejectAll}
       isInModal={isInModal}
       renderFirstButton={renderFirstButton}
       hideOptInOut={hideOptInOut}

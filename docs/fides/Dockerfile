@@ -1,4 +1,4 @@
-FROM python:3.10.13-slim-bookworm as build
+FROM python:3.10.16-slim-bookworm AS build
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -14,7 +14,6 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     libssl-dev \
     libffi-dev \
-    libxslt-dev \
     libkrb5-dev \
     unixodbc \
     unixodbc-dev \
@@ -31,7 +30,7 @@ COPY . .
 RUN pip install -U pip && pip install . && pip install -r docs/fides/requirements.txt
 
 
-FROM python:3.10.13-slim-bookworm as docs
+FROM python:3.10.16-slim-bookworm AS docs
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     git \

@@ -1,0 +1,17 @@
+// option bolds the parent name and shows the description on hover
+.option {
+  strong {
+    font-weight: 400;
+  }
+  em {
+    visibility: hidden;
+  }
+  &:hover {
+    strong {
+      font-weight: 600;
+    }
+    em {
+      visibility: visible;
+    }
+  }
+}

@@ -1,17 +1,22 @@
-import { stubPlus, stubSystemCrud } from "cypress/support/stubs";
+import { stubLocations, stubPlus, stubSystemCrud } from "cypress/support/stubs";
 
-import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
+import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 
 describe("Integration management for data detection & discovery", () => {
   beforeEach(() => {
     cy.login();
+    cy.intercept("GET", "/api/v1/connection?connection_type*", {
+      fixture: "connectors/list.json",
+    }).as("getConnectors");
     cy.intercept("GET", "/api/v1/connection/*/test", {
       statusCode: 200,
       body: {
         test_status: "succeeded",
       },
     }).as("testConnection");
-
+    cy.intercept("GET", "/api/v1/connection_type", {
+      fixture: "connectors/connection_types.json",
+    }).as("getConnectionTypes");
     cy.intercept("GET", "/api/v1/connection_type/*/secret", {
       fixture: "connectors/bigquery_secret.json",
     }).as("getSecretsSchema");
@@ -72,6 +77,9 @@ describe("Integration management for data detection & discovery", () => {
       });
 
       it("should navigate to management page when 'manage' button is clicked", () => {
+        cy.intercept("GET", "/api/v1/connection/bq_integration", {
+          fixture: "connectors/bigquery_connection.json",
+        }).as("getConnection");
         cy.getByTestId("integration-info-bq_integration").within(() => {
           cy.getByTestId("configure-btn").click();
           cy.url().should("contain", "/bq_integration");
@@ -104,9 +112,9 @@ describe("Integration management for data detection & discovery", () => {
         cy.intercept("PATCH", "/api/v1/connection", { statusCode: 200 }).as(
           "patchConnection",
         );
-        cy.intercept("PATCH", "/api/v1/connection/*/secret*").as(
-          "patchConnectionSecrets",
-        );
+        cy.intercept("PATCH", "/api/v1/connection/*/secret*", {
+          response: 200,
+        }).as("patchConnectionSecrets");
         cy.getByTestId("add-integration-btn").click();
         cy.getByTestId("add-modal-content").within(() => {
           cy.getByTestId("integration-info-bq_placeholder").within(() => {
@@ -127,9 +135,12 @@ describe("Integration management for data detection & discovery", () => {
 
       it("should be able to add a new integration associated with a system", () => {
         stubSystemCrud();
-        cy.intercept("PATCH", "/api/v1/system/*/connection").as(
-          "patchSystemConnection",
-        );
+        cy.intercept("PATCH", "/api/v1/connection/*/secret*", {
+          response: 200,
+        }).as("patchConnectionSecrets");
+        cy.intercept("PATCH", "/api/v1/system/*/connection", {
+          response: 200,
+        }).as("patchSystemConnection");
         cy.intercept("GET", "/api/v1/system", {
           fixture: "systems/systems.json",
         }).as("getSystems");
@@ -146,7 +157,9 @@ describe("Integration management for data detection & discovery", () => {
             parseSpecialCharSequences: false,
           },
         );
-        cy.selectOption("input-system_fides_key", "Fidesctl System");
+        cy.getByTestId("controlled-select-system_fides_key").antSelect(
+          "Fidesctl System",
+        );
         cy.getByTestId("save-btn").click();
         cy.wait("@patchSystemConnection");
       });
@@ -176,7 +189,7 @@ describe("Integration management for data detection & discovery", () => {
 
     it("redirects to list view if the integration type is incorrect", () => {
       cy.intercept("GET", "/api/v1/connection/*", {
-        fixture: "connectors/postgres_connector.json",
+        fixture: "connectors/sovrn_connector.json",
       }).as("getConnection");
       cy.wait("@getConnection");
       cy.url().should("not.contain", "bq_integration");
@@ -202,9 +215,9 @@ describe("Integration management for data detection & discovery", () => {
     });
 
     it("can edit integration with the modal with new secrets", () => {
-      cy.intercept("PATCH", "/api/v1/connection/*/secret*").as(
-        "patchConnectionSecrets",
-      );
+      cy.intercept("PATCH", "/api/v1/connection/*/secret*", {
+        response: 200,
+      }).as("patchConnectionSecrets");
       cy.intercept("PATCH", "/api/v1/connection", {
         fixture: "connectors/patch_connection.json",
       }).as("patchConnection");
@@ -231,6 +244,9 @@ describe("Integration management for data detection & discovery", () => {
       cy.intercept("GET", "/api/v1/plus/discovery-monitor*", {
         fixture: "detection-discovery/monitors/empty_monitors.json",
       }).as("getEmptyMonitors");
+      cy.intercept("/api/v1/plus/discovery-monitor/databases", {
+        fixture: "empty-pagination.json",
+      }).as("getEmptyDatabases");
       cy.getByTestId("tab-Data discovery").click();
       cy.wait("@getEmptyMonitors");
       cy.getByTestId("no-results-notice").should("exist");
@@ -244,26 +260,46 @@ describe("Integration management for data detection & discovery", () => {
         cy.intercept("/api/v1/plus/discovery-monitor/databases", {
           fixture: "detection-discovery/monitors/database_list_page_1.json",
         }).as("getDatabasesPage1");
-        cy.intercept("POST", "/api/v1/plus/discovery-monitor/*/execute").as(
-          "executeMonitor",
-        );
-        cy.intercept("DELETE", "/api/v1/plus/discovery-monitor/*").as(
-          "deleteMonitor",
-        );
+        cy.intercept("POST", "/api/v1/plus/discovery-monitor/*/execute", {
+          response: 200,
+        }).as("executeMonitor");
+        cy.intercept("DELETE", "/api/v1/plus/discovery-monitor/*", {
+          response: 200,
+        }).as("deleteMonitor");
         cy.getByTestId("tab-Data discovery").click();
         cy.wait("@getMonitors");
       });
 
       it("shows a table of monitors", () => {
         cy.getByTestId("row-test monitor 1").should("exist");
+        // scan status column
+        cy.getByTestId("row-test monitor 1-col-monitor_status").should(
+          "contain",
+          "Scanning",
+        );
+        cy.getByTestId("row-test monitor 2-col-monitor_status").within(() => {
+          cy.getByTestId("tag-success").should("exist");
+        });
+        cy.getByTestId("row-test monitor 3-col-monitor_status").within(() => {
+          cy.getByTestId("tag-error").should("exist").click();
+        });
+        cy.getByTestId("error-log-drawer")
+          .should("be.visible")
+          .within(() => {
+            cy.getByTestId("error-log-message").should("have.length", 2);
+          });
       });
 
       it("can configure a new monitor", () => {
-        cy.intercept("PUT", "/api/v1/plus/discovery-monitor*").as("putMonitor");
+        cy.intercept("PUT", "/api/v1/plus/discovery-monitor*", {
+          response: 200,
+        }).as("putMonitor");
         cy.getByTestId("add-monitor-btn").click();
         cy.getByTestId("add-modal-content").should("be.visible");
         cy.getByTestId("input-name").type("A new monitor");
-        cy.selectOption("input-execution_frequency", "Daily");
+        cy.getByTestId("controlled-select-execution_frequency").antSelect(
+          "Daily",
+        );
         cy.getByTestId("input-execution_start_date").type("2034-06-03T10:00");
         cy.getByTestId("next-btn").click();
         cy.wait("@getDatabasesPage1");
@@ -276,11 +312,15 @@ describe("Integration management for data detection & discovery", () => {
       });
 
       it("can exclude databases", () => {
-        cy.intercept("PUT", "/api/v1/plus/discovery-monitor*").as("putMonitor");
+        cy.intercept("PUT", "/api/v1/plus/discovery-monitor*", {
+          response: 200,
+        }).as("putMonitor");
         cy.getByTestId("add-monitor-btn").click();
         cy.getByTestId("add-modal-content").should("be.visible");
         cy.getByTestId("input-name").type("A new monitor");
-        cy.selectOption("input-execution_frequency", "Daily");
+        cy.getByTestId("controlled-select-execution_frequency").antSelect(
+          "Daily",
+        );
         cy.getByTestId("input-execution_start_date").type("2034-06-03T10:00");
         cy.getByTestId("next-btn").click();
         cy.wait("@getDatabasesPage1");
@@ -303,7 +343,9 @@ describe("Integration management for data detection & discovery", () => {
         cy.getByTestId("add-monitor-btn").click();
         cy.getByTestId("add-modal-content").should("be.visible");
         cy.getByTestId("input-name").type("A new monitor");
-        cy.selectOption("input-execution_frequency", "Daily");
+        cy.getByTestId("controlled-select-execution_frequency").antSelect(
+          "Daily",
+        );
         cy.getByTestId("input-execution_start_date").type("2034-06-03T10:00");
         cy.getByTestId("next-btn").click();
         cy.wait("@getDatabasesPage1");
@@ -320,7 +362,9 @@ describe("Integration management for data detection & discovery", () => {
       });
 
       it("can edit an existing monitor by clicking the edit button", () => {
-        cy.intercept("PUT", "/api/v1/plus/discovery-monitor*").as("putMonitor");
+        cy.intercept("PUT", "/api/v1/plus/discovery-monitor*", {
+          response: 200,
+        }).as("putMonitor");
         cy.getByTestId("row-test monitor 1").within(() => {
           cy.getByTestId("edit-monitor-btn").click();
         });
@@ -347,7 +391,7 @@ describe("Integration management for data detection & discovery", () => {
       it("can edit an existing monitor by clicking the table row", () => {
         cy.getByTestId("row-test monitor 2").click();
         cy.getByTestId("input-name").should("have.value", "test monitor 2");
-        cy.getSelectValueContainer("input-execution_frequency").should(
+        cy.getByTestId("controlled-select-execution_frequency").should(
           "contain",
           "Weekly",
         );
@@ -371,7 +415,9 @@ describe("Integration management for data detection & discovery", () => {
       });
 
       it("can enable/disable a monitor", () => {
-        cy.intercept("PUT", "/api/v1/plus/discovery-monitor*").as("putMonitor");
+        cy.intercept("PUT", "/api/v1/plus/discovery-monitor*", {
+          response: 200,
+        }).as("putMonitor");
         cy.getByTestId("row-test monitor 1").within(() => {
           cy.getByTestId("toggle-switch").click();
         });
@@ -384,22 +430,90 @@ describe("Integration management for data detection & discovery", () => {
         cy.intercept("GET", "/api/v1/plus/discovery-monitor*", {
           fixture: "detection-discovery/monitors/monitor_list.json",
         }).as("getMonitors");
-        cy.intercept("/api/v1/plus/discovery-monitor/databases", {
-          body: { items: [], page: 1, size: 25, total: 0, pages: 0 },
+        cy.intercept("POST", "/api/v1/plus/discovery-monitor/databases", {
+          fixture: "empty-pagination.json",
         }).as("getEmptyDatabases");
         cy.getByTestId("tab-Data discovery").click();
         cy.wait("@getMonitors");
-        cy.clock(new Date(2034, 5, 3));
       });
 
       it("skips the project/database selection step", () => {
-        cy.intercept("PUT", "/api/v1/plus/discovery-monitor*").as("putMonitor");
+        cy.intercept("PUT", "/api/v1/plus/discovery-monitor*", {
+          response: 200,
+        }).as("putMonitor");
         cy.getByTestId("add-monitor-btn").click();
         cy.getByTestId("input-name").type("A new monitor");
-        cy.selectOption("input-execution_frequency", "Daily");
+        cy.getByTestId("controlled-select-execution_frequency").antSelect(
+          "Daily",
+        );
         cy.getByTestId("input-execution_start_date").type("2034-06-03T10:00");
         cy.getByTestId("next-btn").click();
         cy.wait("@putMonitor");
+      });
+    });
+
+    describe("data discovery tab for website integration", () => {
+      beforeEach(() => {
+        stubLocations();
+        cy.intercept("GET", "/api/v1/connection/*", {
+          fixture: "connectors/website_integration.json",
+        }).as("getWebsiteIntegration");
+        cy.intercept("GET", "/api/v1/plus/discovery-monitor*", {
+          fixture: "detection-discovery/monitors/website_monitor_list.json",
+        }).as("getMonitors");
+        cy.intercept("GET", "/api/v1/connection_type", {
+          fixture: "connectors/connection_types.json",
+        }).as("getConnectionTypes");
+        cy.getByTestId("tab-Data discovery").click();
+        cy.wait("@getMonitors");
+      });
+
+      it("should render the website monitor list", () => {
+        cy.getByTestId("monitor-description").contains(
+          "Configure your website monitor",
+        );
+        cy.getByTestId("row-test website monitor-col-name").should(
+          "contain",
+          "test website monitor",
+        );
+      });
+
+      it("should allow creating a website monitor", () => {
+        cy.intercept("PUT", "/api/v1/plus/discovery-monitor*", {
+          response: 200,
+        }).as("putMonitor");
+        cy.getByTestId("add-monitor-btn").click();
+        cy.getByTestId("input-name").type("A new website monitor");
+        cy.getByTestId("input-url")
+          .should("be.disabled")
+          .and("have.value", "http://example.com");
+        cy.getByTestId(
+          "controlled-select-datasource_params.locations",
+        ).antSelect("France");
+        cy.getByTestId("controlled-select-execution_frequency").click({
+          force: true,
+        });
+        cy.getByTestId("controlled-select-execution_frequency").antSelect(
+          "Quarterly",
+        );
+        cy.getByTestId("input-execution_start_date").type("2034-06-03T10:00");
+        cy.getByTestId("save-btn").click();
+        cy.wait("@putMonitor");
+      });
+
+      it("should allow editing a website monitor", () => {
+        cy.intercept("PUT", "/api/v1/plus/discovery-monitor*", {
+          response: 200,
+        }).as("putMonitor");
+        cy.getByTestId("row-test website monitor").click();
+        cy.getByTestId("input-name")
+          .should("have.value", "test website monitor")
+          .clear()
+          .type("A different name");
+        cy.getByTestId("save-btn").click();
+        cy.wait("@putMonitor").then((interception) => {
+          expect(interception.request.body.name).to.equal("A different name");
+        });
       });
     });
   });

@@ -4,6 +4,7 @@
 
 import type { Classification } from "./Classification";
 import type { DiffStatus } from "./DiffStatus";
+import type { StagedResourceTypeValue } from "./StagedResourceTypeValue";
 
 /**
  * The Field model is also used to represent "sub-fields" that are nested under a
@@ -17,19 +18,37 @@ import type { DiffStatus } from "./DiffStatus";
  */
 export type Field = {
   urn: string;
-  user_assigned_data_categories?: Array<string>;
+  user_assigned_data_categories?: Array<string> | null;
+  /**
+   * User assigned data uses overriding auto assigned data uses
+   */
+  user_assigned_data_uses?: Array<string> | null;
+  user_assigned_system_key?: string | null;
   name?: string | null;
+  system_key?: string | null;
   description?: string | null;
   monitor_config_id?: string | null;
   updated_at?: string | null;
-  source_modified?: string | null;
-  classifications?: Array<Classification>;
   /**
    * The diff status of the staged resource
    */
   diff_status?: DiffStatus | null;
+  resource_type?: StagedResourceTypeValue | null;
   /**
-   * Represents the presence of various diff statuses of the staged resource's children. This is computed 'on-demand', i.e. a specific instance method must be invoked to populate the field.
+   * The data uses associated with the staged resource
+   */
+  data_uses?: Array<string> | null;
+  source_modified?: string | null;
+  classifications?: Array<Classification>;
+  /**
+   *
+   * Represents the presence of various diff statuses of the staged resource's children. This is calculated:
+   * - during detection
+   * - upon queuing classification
+   * - after classification finishes
+   * - upon queuing promotion
+   * - after promotion finishes
+   *
    */
   child_diff_statuses?: Record<string, boolean>;
   database_name?: string | null;
@@ -40,5 +59,7 @@ export type Field = {
   sub_field_urns?: Array<string>;
   direct_child_urns?: Array<string>;
   top_level_field_name?: string | null;
+  top_level_field_urn?: string | null;
   source_data_type?: string | null;
+  sub_fields?: Array<Field> | null;
 };

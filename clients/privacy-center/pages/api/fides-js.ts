@@ -3,11 +3,12 @@ import {
   ComponentType,
   ConsentOption,
   constructFidesRegionString,
-  debugLog,
   DEFAULT_LOCALE,
   EmptyExperience,
+  experienceIsValid,
   fetchExperience,
   FidesConfig,
+  parseFidesDisabledNotices,
   PrivacyExperience,
   PrivacyExperienceMinimal,
   UserGeolocation,
@@ -15,15 +16,11 @@ import {
 import { promises as fsPromises } from "fs";
 import type { NextApiRequest, NextApiResponse } from "next";
 
-import {
-  loadPrivacyCenterEnvironment,
-  loadServerSettings,
-} from "~/app/server-environment";
+import { getFidesApiUrl, loadServerSettings } from "~/app/server-environment";
+import { getPrivacyCenterEnvironmentCached } from "~/app/server-utils";
 import { LOCATION_HEADERS, lookupGeolocation } from "~/common/geolocation";
 import { safeLookupPropertyId } from "~/common/property-id";
 
-// one hour, how long the client should cache fides.js for
-const FIDES_JS_MAX_AGE_SECONDS = 60 * 60;
 // one hour, how long until the custom-fides.css is refreshed
 const CUSTOM_FIDES_CSS_TTL_MS = 3600 * 1000;
 
@@ -110,8 +107,9 @@ export default async function handler(
   res: NextApiResponse,
 ) {
   // Load the configured consent options (data uses, defaults, etc.) from environment
-  const environment = await loadPrivacyCenterEnvironment();
-  const serverSettings = await loadServerSettings();
+  const environment = await getPrivacyCenterEnvironmentCached({
+    skipGeolocation: true,
+  });
 
   let options: ConsentOption[] = [];
   if (environment.config?.consent?.page.consentOptions) {
@@ -139,8 +137,7 @@ export default async function handler(
       fidesString,
     );
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error(error);
+    fidesError(error);
     res
       .status(400) // 400 Bad Request. Malformed request.
       .send(
@@ -181,8 +178,7 @@ export default async function handler(
       const userLanguageString =
         fidesLocale || req.headers["accept-language"] || DEFAULT_LOCALE;
 
-      debugLog(
-        environment.settings.DEBUG,
+      fidesDebugger(
         `Fetching relevant experiences from server-side (${userLanguageString})...`,
       );
 
@@ -194,21 +190,19 @@ export default async function handler(
       experience = await fetchExperience({
         userLocationString: fidesRegionString,
         userLanguageString,
-        fidesApiUrl:
-          serverSettings.SERVER_SIDE_FIDES_API_URL ||
-          environment.settings.FIDES_API_URL,
-        debug: environment.settings.DEBUG,
+        fidesApiUrl: getFidesApiUrl(),
         propertyId,
         requestMinimalTCF: true,
       });
+      fidesDebugger(
+        `Fetched relevant experiences from server-side (${userLanguageString}).`,
+      );
+      experienceIsValid(experience);
     }
   }
 
   if (!geolocation) {
-    debugLog(
-      environment.settings.DEBUG,
-      "No geolocation found, unable to prefetch experience.",
-    );
+    fidesDebugger("No geolocation found, unable to prefetch experience.");
   }
 
   // This query param is used for testing purposes only, and should not be used
@@ -232,8 +226,11 @@ export default async function handler(
   if (forcedGppQuery === "true" && experience === undefined) {
     experience = {};
   }
+
   const gppEnabled =
-    !!experience?.gpp_settings?.enabled || forcedGppQuery === "true";
+    (!!experience?.gpp_settings?.cmp_api_required ||
+      forcedGppQuery === "true") &&
+    forcedGppQuery !== "debug";
 
   // Create the FidesConfig JSON that will be used to initialize fides.js unless in E2E mode (see below)
   const fidesConfig: FidesConfig = {
@@ -258,6 +255,7 @@ export default async function handler(
         environment.settings.FIDES_DISABLE_NOTICES_SERVED_API,
       fidesDisableBanner: environment.settings.FIDES_DISABLE_BANNER,
       fidesTcfGdprApplies: environment.settings.FIDES_TCF_GDPR_APPLIES,
+      showFidesBrandLink: environment.settings.SHOW_BRAND_LINK,
       fidesString,
       // Custom API override functions must be passed into custom Fides extensions via Fides.init(...)
       apiOptions: null,
@@ -268,6 +266,13 @@ export default async function handler(
       base64Cookie: environment.settings.BASE_64_COOKIE,
       fidesPrimaryColor: environment.settings.FIDES_PRIMARY_COLOR,
       fidesClearCookie: environment.settings.FIDES_CLEAR_COOKIE,
+      fidesConsentOverride: environment.settings.FIDES_CONSENT_OVERRIDE,
+      fidesDisabledNotices: environment.settings.FIDES_DISABLED_NOTICES
+        ? parseFidesDisabledNotices(environment.settings.FIDES_DISABLED_NOTICES)
+        : null,
+      fidesConsentNonApplicableFlagMode:
+        environment.settings.FIDES_CONSENT_NON_APPLICABLE_FLAG_MODE,
+      fidesConsentFlagType: environment.settings.FIDES_CONSENT_FLAG_TYPE,
     },
     experience: experience || undefined,
     geolocation: geolocation || undefined,
@@ -275,13 +280,19 @@ export default async function handler(
   };
   const fidesConfigJSON = JSON.stringify(fidesConfig);
 
-  debugLog(
-    environment.settings.DEBUG,
-    "Bundling generic fides.js & Privacy Center configuration together...",
-  );
-  const fidesJsFile = tcfEnabled
-    ? "public/lib/fides-tcf.js"
-    : "public/lib/fides.js";
+  fidesDebugger("Bundling js & Privacy Center configuration together...");
+  const isHeadlessExperience =
+    experience?.experience_config?.component === ComponentType.HEADLESS;
+  let fidesJsFile = "public/lib/fides.js";
+  if (tcfEnabled) {
+    fidesDebugger("TCF extension enabled, bundling fides-tcf.js...");
+    fidesJsFile = "public/lib/fides-tcf.js";
+  } else if (isHeadlessExperience) {
+    fidesDebugger(
+      "Headless experience detected, bundling fides-headless.js...",
+    );
+    fidesJsFile = "public/lib/fides-headless.js";
+  }
   const fidesJSBuffer = await fsPromises.readFile(fidesJsFile);
   const fidesJS: string = fidesJSBuffer.toString();
   if (!fidesJS || fidesJS === "") {
@@ -289,8 +300,7 @@ export default async function handler(
   }
   let fidesGPP: string = "";
   if (gppEnabled) {
-    debugLog(
-      environment.settings.DEBUG,
+    fidesDebugger(
       `GPP extension ${
         forcedGppQuery === "true" ? "forced" : "enabled"
       }, bundling fides-ext-gpp.js...`,
@@ -333,8 +343,9 @@ export default async function handler(
   `;
 
   // Instruct any caches to store this response, since these bundles do not change often
+  const serverSettings = loadServerSettings();
   const cacheHeaders: CacheControl = {
-    "max-age": FIDES_JS_MAX_AGE_SECONDS,
+    "max-age": serverSettings.FIDES_JS_MAX_AGE_SECONDS,
     public: true,
   };
 
@@ -344,6 +355,7 @@ export default async function handler(
     .setHeader("Content-Type", "application/javascript")
     // Allow CORS since this is a static file we do not need to lock down
     .setHeader("Access-Control-Allow-Origin", "*")
+    .setHeader("Access-Control-Allow-Headers", "*")
     .setHeader("Cache-Control", stringify(cacheHeaders))
     // Ignore cache if user's geolocation or language changes
     .setHeader("Vary", [...LOCATION_HEADERS, "Accept-Language"])
@@ -365,20 +377,19 @@ async function fetchCustomFidesCss(
 
   if (shouldRefresh) {
     try {
-      const environment = await loadPrivacyCenterEnvironment();
-      const serverSettings = await loadServerSettings();
-
-      const fidesUrl =
-        serverSettings.SERVER_SIDE_FIDES_API_URL ||
-        environment.settings.FIDES_API_URL;
+      const fidesUrl = getFidesApiUrl();
       const response = await fetch(
         `${fidesUrl}/plus/custom-asset/custom-fides.css`,
       );
       const data = await response.text();
 
       if (!response.ok) {
-        // eslint-disable-next-line no-console
-        console.error(
+        if (response.status === 404) {
+          fidesDebugger("No custom-fides.css found, skipping...");
+          autoRefresh = false;
+          return null;
+        }
+        fidesError(
           "Error fetching custom-fides.css:",
           response.status,
           response.statusText,
@@ -391,19 +402,16 @@ async function fetchCustomFidesCss(
         throw new Error("No data returned by the server");
       }
 
-      // eslint-disable-next-line no-console
-      console.log("Successfully retrieved custom-fides.css");
+      fidesDebugger("Successfully retrieved custom-fides.css");
       autoRefresh = true;
       cachedCustomFidesCss = data;
       lastFetched = currentTime;
     } catch (error) {
       autoRefresh = false; // /custom-asset endpoint unreachable stop auto-refresh
       if (error instanceof Error) {
-        // eslint-disable-next-line no-console
-        console.error("Error during fetch operation:", error.message);
+        fidesError("Error during fetch operation:", error.message);
       } else {
-        // eslint-disable-next-line no-console
-        console.error("Unknown error occurred:", error);
+        fidesError("Unknown error occurred:", error);
       }
     }
   }

@@ -13,7 +13,7 @@ import {
 } from "fidesui";
 import { useFormik } from "formik";
 import { Headers } from "headers-polyfill";
-import { useRouter } from "next/router";
+import { useSearchParams } from "next/navigation";
 import React, { useEffect } from "react";
 import * as Yup from "yup";
 
@@ -65,7 +65,8 @@ const usePrivacyRequestForm = ({
   const customPrivacyRequestFields =
     action?.custom_privacy_request_fields ?? {};
   const toast = useToast();
-  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const property = useProperty();
 
   const formik = useFormik<FormValues>({
@@ -86,7 +87,8 @@ const usePrivacyRequestForm = ({
           .filter(([, field]) => !field.hidden)
           .map(([key, field]) => {
             const valueFromQueryParam =
-              field.query_param_key && router.query[field.query_param_key];
+              field.query_param_key &&
+              (searchParams?.get(field.query_param_key) as string);
 
             const value = valueFromQueryParam || field.default_value || "";
 
@@ -105,7 +107,7 @@ const usePrivacyRequestForm = ({
         Object.entries(action.identity_inputs ?? {})
           // we have to support name as an identity_input for legacy purposes
           // but we ignore it since it's not unique enough to be treated as an identity
-          .filter(([key]) => key !== "name")
+          .filter(([key, field]) => key !== "name" && !!field)
           .map(([key, field]) => {
             const value = fallbackNull(values[key]);
             if (typeof field === "string") {
@@ -134,7 +136,7 @@ const usePrivacyRequestForm = ({
             }
 
             const valueFromQueryParam =
-              field.query_param_key && router.query[field.query_param_key];
+              field.query_param_key && searchParams?.get(field.query_param_key);
 
             const value = valueFromQueryParam || field.default_value || null;
 
@@ -351,14 +353,14 @@ const PrivacyRequestForm = ({
       <ModalHeader pt={6} pb={0}>
         {action.title}
       </ModalHeader>
-      <Text fontSize="sm" color="gray.600" mb={4} ml={6}>
+      <Text fontSize="sm" color="gray.800" mb={4} ml={6}>
         {action.description}
       </Text>
       <chakra.form onSubmit={handleSubmit} data-testid="privacy-request-form">
         <ModalBody maxHeight={400} overflowY="auto">
           {action.description_subtext?.map((paragraph, index) => (
             // eslint-disable-next-line react/no-array-index-key
-            <Text fontSize="sm" color="gray.600" mb={4} key={index}>
+            <Text fontSize="sm" color="gray.800" mb={4} key={index}>
               {paragraph}
             </Text>
           ))}

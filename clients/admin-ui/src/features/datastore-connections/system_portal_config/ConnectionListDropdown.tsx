@@ -1,9 +1,9 @@
 import { debounce } from "common/utils";
 import {
+  AntButton as Button,
+  AntTooltip as Tooltip,
   ArrowDownLineIcon,
   Box,
-  Button,
-  ButtonProps,
   Flex,
   Input,
   InputGroup,
@@ -14,7 +14,6 @@ import {
   MenuList,
   SearchLineIcon,
   Text,
-  Tooltip,
 } from "fidesui";
 import { useCallback, useMemo, useRef, useState } from "react";
 
@@ -69,10 +68,6 @@ type SelectDropdownProps = {
    * Disable the control
    */
   disabled?: boolean;
-  /**
-   * Menu button props
-   */
-  menuButtonProps?: ButtonProps;
 };
 
 type UseConnectionListDropDown = {
@@ -139,7 +134,6 @@ const ConnectionListDropdown = ({
   hasClear = true,
   label,
   list,
-  menuButtonProps,
   onChange,
   selectedValue,
 }: SelectDropdownProps) => {
@@ -202,20 +196,11 @@ const ConnectionListDropdown = ({
         as={Button}
         color={selectedText ? "complimentary.500" : undefined}
         disabled={disabled}
-        fontWeight="normal"
-        rightIcon={<ArrowDownLineIcon />}
-        size="sm"
-        variant="outline"
-        _active={{
-          bg: "none",
-        }}
-        _hover={{
-          bg: "none",
-        }}
-        {...menuButtonProps}
+        icon={<ArrowDownLineIcon />}
+        iconPosition="end"
+        className="!bg-transparent text-left hover:bg-transparent active:bg-transparent"
         data-testid="select-dropdown-btn"
         width="272px"
-        textAlign="left"
       >
         <Text noOfLines={1} style={{ wordBreak: "break-all" }}>
           {selectedText ?? label}
@@ -257,7 +242,7 @@ const ConnectionListDropdown = ({
               cursor="auto"
               p="8px"
             >
-              <Button onClick={handleClear} size="xs" variant="outline">
+              <Button onClick={handleClear} size="small">
                 Clear
               </Button>
             </Flex>
@@ -266,13 +251,10 @@ const ConnectionListDropdown = ({
           <Box overflowY="auto" maxHeight="272px">
             {filteredListItems.map(([key, option]) => (
               <Tooltip
-                aria-label={option.toolTip}
-                hasArrow
-                label={option.toolTip}
+                title={option.toolTip}
                 key={key}
-                placement="auto-start"
-                openDelay={500}
-                shouldWrapChildren
+                placement="rightTop"
+                mouseEnterDelay={0.5}
               >
                 <MenuItem
                   color={

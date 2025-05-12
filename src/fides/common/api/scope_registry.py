@@ -46,6 +46,7 @@ PRIVACY_EXPERIENCE = "privacy-experience"
 PRIVACY_NOTICE = "privacy-notice"
 PRIVACY_PREFERENCE_HISTORY = "privacy-preference-history"
 PRIVACY_REQUEST = "privacy-request"
+PRIVACY_REQUEST_ACCESS_RESULTS = "privacy-request-access-results"
 PRIVACY_REQUEST_NOTIFICATIONS = "privacy-request-notifications"
 READ = "read"
 REGISTER = "register"
@@ -59,6 +60,7 @@ STORAGE = "storage"
 SYSTEM = "system"
 SYSTEM_MANAGER = "system_manager"
 TAXONOMY = "taxonomy"
+TEST = "test"
 TRANSFER = "transfer"
 UPDATE = "update"
 UPLOAD_DATA = "upload_data"
@@ -67,6 +69,7 @@ USER_PERMISSION = "user-permission"
 VALIDATE = "validate"
 VIEW_DATA = "view_data"
 WEBHOOK = "webhook"
+WORKER_STATS = "worker-stats"
 
 ASSIGN_OWNERS = "assign_owners"
 
@@ -128,6 +131,7 @@ DATA_USE_DELETE = f"{DATA_USE}:{DELETE}"
 DATASET_CREATE_OR_UPDATE = f"{DATASET}:{CREATE_OR_UPDATE}"
 DATASET_DELETE = f"{DATASET}:{DELETE}"
 DATASET_READ = f"{DATASET}:{READ}"
+DATASET_TEST = f"{DATASET}:{TEST}"
 
 ENCRYPTION_EXEC = f"{ENCRYPTION}:{EXEC}"
 
@@ -179,6 +183,7 @@ PRIVACY_REQUEST_REVIEW = f"{PRIVACY_REQUEST}:{REVIEW}"
 PRIVACY_REQUEST_TRANSFER = f"{PRIVACY_REQUEST}:{TRANSFER}"
 PRIVACY_REQUEST_UPLOAD_DATA = f"{PRIVACY_REQUEST}:{UPLOAD_DATA}"
 PRIVACY_REQUEST_VIEW_DATA = f"{PRIVACY_REQUEST}:{VIEW_DATA}"
+PRIVACY_REQUEST_READ_ACCESS_RESULTS = f"{PRIVACY_REQUEST_ACCESS_RESULTS}:{READ}"
 
 RULE_CREATE_OR_UPDATE = f"{RULE}:{CREATE_OR_UPDATE}"
 RULE_DELETE = f"{RULE}:{DELETE}"
@@ -228,6 +233,8 @@ WEBHOOK_CREATE_OR_UPDATE = f"{WEBHOOK}:{CREATE_OR_UPDATE}"
 WEBHOOK_DELETE = f"{WEBHOOK}:{DELETE}"
 WEBHOOK_READ = f"{WEBHOOK}:{READ}"
 
+WORKER_STATS_READ = f"{WORKER_STATS}:{READ}"
+
 SCOPE_DOCS = {
     CONFIG_READ: "View the configuration",
     CONFIG_UPDATE: "Update the configuration",
@@ -273,6 +280,7 @@ SCOPE_DOCS = {
     DATASET_CREATE_OR_UPDATE: "Create or modify datasets",
     DATASET_DELETE: "Delete datasets",
     DATASET_READ: "View datasets",
+    DATASET_TEST: "Run a standalone privacy request test for a dataset",
     ENCRYPTION_EXEC: "Encrypt data",
     MESSAGING_TEMPLATE_UPDATE: "Update messaging templates",
     EVALUATION_CREATE: "Create evaluation",
@@ -302,6 +310,7 @@ SCOPE_DOCS = {
     PRIVACY_PREFERENCE_HISTORY_READ: "Read the history of all saved privacy preferences",
     PRIVACY_REQUEST_CREATE: "",
     PRIVACY_REQUEST_CALLBACK_RESUME: "Restart paused privacy requests",
+    PRIVACY_REQUEST_READ_ACCESS_RESULTS: "Download access data for the privacy request",
     PRIVACY_REQUEST_DELETE: "Remove privacy requests",
     PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE: "",
     PRIVACY_REQUEST_NOTIFICATIONS_READ: "",
@@ -344,6 +353,7 @@ SCOPE_DOCS = {
     WEBHOOK_CREATE_OR_UPDATE: "Create or update web hooks",
     WEBHOOK_DELETE: "Remove web hooks",
     WEBHOOK_READ: "View web hooks",
+    WORKER_STATS_READ: "View worker statistics",
 }
 
 SCOPE_REGISTRY = list(SCOPE_DOCS.keys())

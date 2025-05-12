@@ -17,12 +17,7 @@ export const GOOGLE_CLOUD_SQL_MYSQL_PLACEHOLDER = {
   created_at: "",
 };
 
-export const GOOGLE_CLOUD_SQL_MYSQL_TAGS = [
-  "Database",
-  "Detection",
-  "Discovery",
-  "DSR automation",
-];
+export const GOOGLE_CLOUD_SQL_MYSQL_TAGS = ["Discovery", "Detection"];
 
 export const GoogleCloudSQLMySQLOverview = () => (
   <>
@@ -38,7 +33,7 @@ export const GoogleCloudSQLMySQLOverview = () => (
       <InfoHeading text="Categories" />
       <InfoUnorderedList>
         <ListItem>Database</ListItem>
-        <ListItem>NoSQL database</ListItem>
+        <ListItem>SQL database</ListItem>
         <ListItem>Storage system</ListItem>
         <ListItem>Data detection</ListItem>
         <ListItem>Data discovery</ListItem>

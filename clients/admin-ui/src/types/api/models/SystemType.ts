@@ -3,8 +3,10 @@
 /* eslint-disable */
 
 export enum SystemType {
-  SAAS = "saas",
+  DATA_CATALOG = "data_catalog",
   DATABASE = "database",
-  MANUAL = "manual",
   EMAIL = "email",
+  MANUAL = "manual",
+  SAAS = "saas",
+  WEBSITE = "website",
 }

@@ -28,6 +28,7 @@ const FormModal = ({
     isCentered
     scrollBehavior="inside"
     size="xl"
+    id="add-modal"
     {...props}
   >
     <ModalOverlay />

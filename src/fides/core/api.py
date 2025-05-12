@@ -4,7 +4,8 @@ from typing import Dict, List, Optional, Union
 
 import requests
 
-from fides.api.util.endpoint_utils import API_PREFIX
+# Not using the constant value from fides.api.util.endpoint_utils to reduce the startup time for the CLI
+API_PREFIX = "/api/v1"
 
 
 def generate_resource_url(
@@ -145,4 +146,9 @@ def db_action(
     """
     Tell the API to perform a database action.
     """
-    return requests.post(f"{server_url}{API_PREFIX}/admin/db/{action}", headers=headers)
+    return requests.post(
+        f"{server_url}{API_PREFIX}/admin/db/{action}",
+        headers=headers,
+        allow_redirects=False,
+        timeout=30,
+    )

@@ -1,9 +1,9 @@
-import SelectDropdown from "common/dropdown/SelectDropdown";
 import { ItemOption } from "common/dropdown/types";
 import { capitalize } from "common/utils";
-import { Box } from "fidesui";
 import React, { useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
+
+import { FilterSelect } from "~/features/common/dropdown/FilterSelect";
 
 import { DisabledStatus } from "../constants";
 import {
@@ -11,11 +11,7 @@ import {
   setDisabledStatus,
 } from "../datastore-connection.slice";
 
-export type DisabledStatusFilterProps = {
-  width?: string;
-};
-
-const DisabledStatusFilter = ({ width }: DisabledStatusFilterProps) => {
+const DisabledStatusFilter = () => {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const { disabled_status } = useSelector(selectDatastoreConnectionFilters);
 
@@ -29,6 +25,12 @@ const DisabledStatusFilter = ({ width }: DisabledStatusFilterProps) => {
   };
 
   const list = useMemo(() => loadList(), []);
+  const options = [...list].map(([key, value]) => {
+    return {
+      value: value.value,
+      label: key,
+    };
+  });
 
   // Hooks
   const dispatch = useDispatch();
@@ -39,15 +41,13 @@ const DisabledStatusFilter = ({ width }: DisabledStatusFilterProps) => {
   };
 
   return (
-    <Box>
-      <SelectDropdown
-        label="Status"
-        list={list}
-        menuButtonProps={{ width }}
-        onChange={handleChange}
-        selectedValue={disabled_status?.toString()}
-      />
-    </Box>
+    <FilterSelect
+      placeholder="Status"
+      options={options}
+      onChange={handleChange}
+      defaultValue={disabled_status?.toString() || undefined}
+      data-testid="disabled-status-filter"
+    />
   );
 };
 

@@ -1,4 +1,5 @@
 from typing import Any, Dict, List, Optional
+from urllib.parse import quote_plus
 
 from loguru import logger
 from pymongo import MongoClient
@@ -13,7 +14,10 @@ from fides.api.schemas.connection_configuration.connection_secrets_mongodb impor
     MongoDBSchema,
 )
 from fides.api.service.connectors.base_connector import BaseConnector
-from fides.api.service.connectors.query_config import MongoQueryConfig, QueryConfig
+from fides.api.service.connectors.query_configs.mongodb_query_config import (
+    MongoQueryConfig,
+)
+from fides.api.service.connectors.query_configs.query_config import QueryConfig
 from fides.api.util.collection_util import Row
 from fides.api.util.logger import Pii
 
@@ -31,8 +35,7 @@ class MongoDBConnector(BaseConnector[MongoClient]):
         user_pass: str = ""
         default_auth_db: str = ""
         if config.username and config.password:
-            user_pass = f"{config.username}:{config.password}@"
-
+            user_pass = f"{quote_plus(config.username)}:{quote_plus(config.password)}@"
             if config.defaultauthdb:
                 default_auth_db = f"/{config.defaultauthdb}"
 

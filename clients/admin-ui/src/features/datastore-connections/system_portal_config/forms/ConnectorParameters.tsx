@@ -12,6 +12,7 @@ import {
   DatastoreConnectionSecretsResponse,
 } from "datastore-connections/types";
 import { Box, Flex, Spacer, useToast, UseToastOptions } from "fidesui";
+import router from "next/router";
 import { useMemo, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
@@ -51,23 +52,7 @@ import {
   ConnectorParametersForm,
   TestConnectionResponse,
 } from "./ConnectorParametersForm";
-
-const generateIntegrationKey = (
-  systemFidesKey: string,
-  connectionOption: ConnectionSystemTypeMap,
-): string => {
-  let integrationKey = systemFidesKey;
-
-  if (!systemFidesKey.includes(connectionOption.identifier)) {
-    integrationKey += `_${connectionOption.identifier}`;
-  }
-
-  if (connectionOption.type === SystemType.SAAS) {
-    integrationKey += "_api";
-  }
-
-  return integrationKey;
-};
+import { generateIntegrationKey } from "./helpers";
 
 /**
  * Only handles creating saas connectors. The BE handler automatically
@@ -128,7 +113,6 @@ export const patchConnectionConfig = async (
         ? connectionOption.type
         : connectionOption.identifier) as ConnectionType,
       description: values.description,
-      disabled: false,
       key,
       ...(values.enabled_actions
         ? { enabled_actions: values.enabled_actions as ActionType[] }
@@ -311,7 +295,9 @@ export const useConnectorForm = ({
         values.dataset &&
         connectionOption.type === SystemType.DATABASE
       ) {
-        await patchConnectionDatasetConfig(values, connectionConfig.key);
+        await patchConnectionDatasetConfig(values, connectionConfig.key, {
+          showSuccessAlert: false,
+        });
       }
 
       successAlert(
@@ -395,7 +381,12 @@ export const ConnectorParameters = ({
     const toastParams = {
       ...DEFAULT_TOAST_PARAMS,
       status,
-      description: <TestConnectionMessage status={status} />,
+      description: (
+        <TestConnectionMessage
+          status={status}
+          failure_reason={value.data?.failure_reason}
+        />
+      ),
     };
     toast(toastParams);
   };
@@ -407,6 +398,10 @@ export const ConnectorParameters = ({
       skip,
     },
   );
+
+  const handleTestDatasetsClick = () => {
+    router.push(`/systems/configure/${systemFidesKey}/test-datasets`);
+  };
 
   const {
     isSubmitting,
@@ -467,6 +462,7 @@ export const ConnectorParameters = ({
         isAuthorizing={isAuthorizing}
         onSaveClick={handleSubmit}
         onTestConnectionClick={handleTestConnectionClick}
+        onTestDatasetsClick={handleTestDatasetsClick}
         onAuthorizeConnectionClick={handleAuthorization}
         connectionOption={connectionOption}
         connectionConfig={connectionConfig}

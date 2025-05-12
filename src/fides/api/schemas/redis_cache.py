@@ -1,8 +1,19 @@
 import uuid
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import ConfigDict, EmailStr, Field, StrictInt, StrictStr, field_validator
+from fideslang.validation import FidesKey
+from pydantic import (
+    ConfigDict,
+    EmailStr,
+    Field,
+    StrictInt,
+    StrictStr,
+    ValidationError,
+    field_validator,
+    model_validator,
+)
 
+from fides.api.common_exceptions import BadRequest
 from fides.api.custom_types import PhoneNumber
 from fides.api.schemas.base_class import FidesSchema
 
@@ -114,6 +125,57 @@ class Identity(IdentityBase):
             else:
                 d[field] = value
         return d
+
+
+class UnlabeledIdentities(FidesSchema):
+    """
+    A model for validating identity dictionaries where standard fields use Identity's validation
+    but custom fields just need to be valued.
+    """
+
+    data: Dict[str, Any]
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_identities(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        if not isinstance(values, dict):
+            raise BadRequest("Inputs must be JSON formatted")
+
+        if not values:
+            raise BadRequest("No inputs provided")
+
+        standard_fields = {}
+        custom_fields = {}
+
+        # Separate standard and custom fields
+        for field, value in values.items():
+            if field in Identity.model_fields:
+                if value is None:
+                    raise BadRequest(f'Input "{field}" cannot be empty')
+                standard_fields[field] = value
+            else:
+                if value is None:
+                    raise BadRequest(f'Input "{field}" cannot be empty')
+                custom_fields[field] = value
+
+        # Validate standard fields using Identity
+        try:
+            Identity(**standard_fields)
+        except ValidationError as e:
+            error_detail = e.errors()[0]
+            field = error_detail.get("loc")[0]  # type: ignore[assignment, index]
+            clean_message = error_detail.get("msg")
+            raise BadRequest(f'"{field}" {clean_message}')
+
+        # Return the combined validated data
+        return {"data": {**standard_fields, **custom_fields}}
+
+
+class DatasetTestRequest(FidesSchema):
+    """The policy key and inputs required to run a dataset test."""
+
+    policy_key: FidesKey
+    identities: UnlabeledIdentities
 
 
 class CustomPrivacyRequestField(FidesSchema):

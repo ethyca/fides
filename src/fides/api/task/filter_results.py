@@ -19,7 +19,7 @@ def filter_data_categories(
     """Filter access request results to only return fields associated with the target data categories
     and subcategories.
 
-    Regarding subcategories,if data category "user.contact" is specified on one of the rule
+    Regarding subcategories, if data category "user.contact" is specified on one of the rule
     targets, for example, all fields on subcategories also apply, so ["user.contact.address.city",
     "user.contact.address.street", ...], etc.
 

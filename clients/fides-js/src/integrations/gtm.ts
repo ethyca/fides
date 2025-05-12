@@ -1,35 +1,78 @@
-import { FidesEvent } from "../docs";
+import { FidesEvent, FidesEventType } from "../docs";
+import {
+  ConsentFlagType,
+  ConsentNonApplicableFlagMode,
+  FidesGlobal,
+  NoticeConsent,
+} from "../lib/consent-types";
+import { applyOverridesToConsent } from "../lib/consent-utils";
 import { FidesEventDetail } from "../lib/events";
 
 declare global {
   interface Window {
     dataLayer?: any[];
+    Fides: FidesGlobal;
   }
 }
 
 /**
  * Defines the structure of the Fides variable pushed to the GTM data layer
  */
-type FidesVariable = FidesEvent["detail"];
+type FidesVariable = Omit<FidesEvent["detail"], "consent"> & {
+  consent: NoticeConsent;
+};
+
+export interface GtmOptions {
+  non_applicable_flag_mode?: ConsentNonApplicableFlagMode;
+  flag_type?: ConsentFlagType;
+}
 
 // Helper function to push the Fides variable to the GTM data layer from a FidesEvent
-const pushFidesVariableToGTM = (fidesEvent: {
-  type: string;
-  detail: FidesEventDetail;
-}) => {
+const pushFidesVariableToGTM = (
+  fidesEvent: {
+    type: string;
+    detail: FidesEventDetail;
+  },
+  options?: GtmOptions,
+) => {
   // Initialize the dataLayer object, just in case we run before GTM is initialized
   const dataLayer = window.dataLayer ?? [];
   window.dataLayer = dataLayer;
+  const { detail, type } = fidesEvent;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  const { consent, extraDetails, fides_string, timestamp } = detail;
+  let consentValues: NoticeConsent = consent;
+  const flagType =
+    options?.flag_type ??
+    window.Fides?.options?.fidesConsentFlagType ??
+    ConsentFlagType.BOOLEAN;
+  const nonApplicableFlagMode =
+    options?.non_applicable_flag_mode ??
+    window.Fides?.options?.fidesConsentNonApplicableFlagMode ??
+    ConsentNonApplicableFlagMode.OMIT;
+
+  const privacyNotices = window.Fides?.experience?.privacy_notices ?? [];
+  const nonApplicablePrivacyNotices =
+    window.Fides?.experience?.non_applicable_privacy_notices;
+
+  consentValues = applyOverridesToConsent(
+    consent,
+    nonApplicablePrivacyNotices,
+    privacyNotices,
+    flagType,
+    nonApplicableFlagMode,
+  );
 
   // Construct the Fides variable that will be pushed to GTM
   const Fides: FidesVariable = {
-    consent: fidesEvent.detail.consent,
-    extraDetails: fidesEvent.detail.extraDetails,
-    fides_string: fidesEvent.detail.fides_string,
+    consent: consentValues,
+    extraDetails,
+    fides_string,
+    timestamp,
   };
 
   // Push to the GTM dataLayer
-  dataLayer.push({ event: fidesEvent.type, Fides });
+  dataLayer.push({ event: type, Fides });
 };
 
 /**
@@ -37,31 +80,52 @@ const pushFidesVariableToGTM = (fidesEvent: {
  * The user's consent choices will automatically be pushed into GTM's
  * `dataLayer` under `Fides.consent` variable.
  */
-export const gtm = () => {
+export const gtm = (options?: GtmOptions) => {
+  // List every FidesEventType as a record so that new additional events are
+  // considered by future developers as to whether they should be pushed to GTM.
+  const fidesEvents: Record<FidesEventType, boolean> = {
+    FidesInitializing: false,
+    FidesInitialized: true,
+    FidesUpdating: true,
+    FidesUpdated: true,
+    FidesUIChanged: true,
+    FidesUIShown: true,
+    FidesModalClosed: true,
+  };
+
+  const events = Object.entries(fidesEvents)
+    .filter(([, dispatchToGtm]) => dispatchToGtm)
+    .map(([key]) => key) as FidesEventType[];
+
   // Listen for Fides events and cross-publish them to GTM
-  window.addEventListener("FidesInitialized", (event) =>
-    pushFidesVariableToGTM(event),
-  );
-  window.addEventListener("FidesUpdating", (event) =>
-    pushFidesVariableToGTM(event),
-  );
-  window.addEventListener("FidesUpdated", (event) =>
-    pushFidesVariableToGTM(event),
-  );
+  events.forEach((eventName) => {
+    window.addEventListener(eventName, (event) =>
+      pushFidesVariableToGTM(event, options),
+    );
+  });
 
   // If Fides was already initialized, publish a synthetic event immediately
   if (window.Fides?.initialized) {
-    pushFidesVariableToGTM({
-      type: "FidesInitialized",
-      detail: {
-        consent: window.Fides.consent,
-        fides_meta: window.Fides.fides_meta,
-        identity: window.Fides.identity,
-        tcf_consent: window.Fides.tcf_consent,
-        extraDetails: {
-          consentMethod: window.Fides.fides_meta?.consentMethod,
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const { consent, fides_meta, identity, tcf_consent } = window.Fides;
+    // Lookup the timestamp of the original FidesInitialized performance mark
+    const timestamp =
+      performance?.getEntriesByName("FidesInitialized")[0]?.startTime;
+    pushFidesVariableToGTM(
+      {
+        type: "FidesInitialized",
+        detail: {
+          consent,
+          fides_meta,
+          identity,
+          tcf_consent,
+          timestamp,
+          extraDetails: {
+            consentMethod: fides_meta?.consentMethod,
+          },
         },
       },
-    });
+      options,
+    );
   }
 };

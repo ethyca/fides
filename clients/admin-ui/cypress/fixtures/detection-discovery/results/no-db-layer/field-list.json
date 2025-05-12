@@ -1,0 +1,25 @@
+{
+  "items": [
+    {
+      "urn": "dynamo_monitor.test_dataset_5.test_table_1.test_field_1",
+      "user_assigned_data_categories": [],
+      "name": "test_field_1",
+      "description": null,
+      "monitor_config_id": "dynamo_monitor",
+      "schema_name": "test_dataset_5",
+      "table_name": "test_table_1",
+      "updated_at": null,
+      "source_modified": "2024-03-27T21:45:55.755000+00:00",
+      "classifications": [],
+      "diff_status": "classification_addition",
+      "child_diff_statuses": {},
+      "parent_schema": "dynamo_monitor.test_dataset_5",
+      "database_name": null,
+      "data_type": null
+    }
+  ],
+  "total": 1,
+  "page": 1,
+  "size": 25,
+  "pages": 1
+}

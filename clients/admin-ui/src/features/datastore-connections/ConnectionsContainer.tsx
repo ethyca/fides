@@ -48,6 +48,12 @@ const ConnectionsContainer = () => {
   } = useGetAllDatastoreConnectionsQuery(cachedFilters);
 
   const hasData = datastoreConnectionsData!?.items?.length > 0;
+  const hasFilters =
+    !!filters.search ||
+    !!filters.connection_type ||
+    !!filters.system_type ||
+    !!filters.disabled_status ||
+    !!filters.test_status;
 
   useEffect(() => {
     dispatch(setOrphanedFromSystem(true));
@@ -81,7 +87,7 @@ const ConnectionsContainer = () => {
             total={datastoreConnectionsData!?.total}
           />
         ) : (
-          <ConnectionsEmptyState />
+          <ConnectionsEmptyState hasFilters={hasFilters} />
         ))}
     </>
   );

@@ -5,5 +5,6 @@
 export enum ProviderEnum {
   GOOGLE = "google",
   OKTA = "okta",
+  AZURE = "azure",
   CUSTOM = "custom",
 }

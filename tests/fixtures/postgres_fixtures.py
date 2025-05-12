@@ -2,6 +2,7 @@ from typing import Dict, Generator, List
 from uuid import uuid4
 
 import pytest
+from fideslang.models import Dataset as FideslangDataset
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 from sqlalchemy_utils.functions import drop_database
@@ -14,15 +15,13 @@ from fides.api.models.connectionconfig import (
 )
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import ActionType
-from fides.api.models.privacy_request import (
-    ExecutionLog,
-    ExecutionLogStatus,
-    PrivacyRequest,
-)
+from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.models.sql_models import System
+from fides.api.schemas.privacy_request import ExecutionLogStatus
 from fides.api.service.connectors import PostgreSQLConnector
 from fides.config import CONFIG
+from tests.ops.test_helpers.dataset_utils import remove_primary_keys
 from tests.ops.test_helpers.db_utils import seed_postgres_data
 
 from .application_fixtures import integration_secrets
@@ -97,6 +96,34 @@ def postgres_example_test_dataset_config_read_access(
     fides_key = postgres_dataset["fides_key"]
 
     ctl_dataset = CtlDataset.create_from_dataset_dict(db, postgres_dataset)
+
+    dataset = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": read_connection_config.id,
+            "fides_key": fides_key,
+            "ctl_dataset_id": ctl_dataset.id,
+        },
+    )
+    yield dataset
+    dataset.delete(db=db)
+    ctl_dataset.delete(db=db)
+
+
+@pytest.fixture
+def postgres_example_test_dataset_config_read_access_without_primary_keys(
+    read_connection_config: ConnectionConfig,
+    db: Session,
+    example_datasets: List[Dict],
+) -> Generator:
+    postgres_dataset = example_datasets[0]
+    fides_key = postgres_dataset["fides_key"]
+
+    dataset = FideslangDataset(**postgres_dataset)
+    updated_dataset = remove_primary_keys(dataset)
+    ctl_dataset = CtlDataset.create_from_dataset_dict(
+        db, updated_dataset.model_dump(mode="json")
+    )
 
     dataset = DatasetConfig.create(
         db=db,

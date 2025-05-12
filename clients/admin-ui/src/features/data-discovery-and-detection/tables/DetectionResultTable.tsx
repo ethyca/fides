@@ -24,13 +24,12 @@ import useDetectionResultColumns from "~/features/data-discovery-and-detection/h
 import useDetectionResultFilterTabs from "~/features/data-discovery-and-detection/hooks/useDetectionResultsFilterTabs";
 import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/useDiscoveryRoutes";
 import IconLegendTooltip from "~/features/data-discovery-and-detection/IndicatorLegend";
-import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
 import getResourceRowName from "~/features/data-discovery-and-detection/utils/getResourceRowName";
 import isNestedField from "~/features/data-discovery-and-detection/utils/isNestedField";
-import { StagedResource } from "~/types/api";
+import { StagedResource, StagedResourceTypeValue } from "~/types/api";
 
-import { SearchInput } from "../SearchInput";
+import { DebouncedSearchInput } from "../../common/DebouncedSearchInput";
 
 const EMPTY_RESPONSE = {
   items: [],
@@ -150,7 +149,7 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
     });
 
   const getRowIsClickable = (row: StagedResource) =>
-    resourceType !== StagedResourceType.FIELD || isNestedField(row);
+    resourceType !== StagedResourceTypeValue.FIELD || isNestedField(row);
 
   const tableInstance = useReactTable<StagedResource>({
     getCoreRowModel: getCoreRowModel(),
@@ -160,6 +159,7 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
     columns: resourceColumns,
     manualPagination: true,
     data,
+    columnResizeMode: "onChange",
   });
 
   if (isLoading) {
@@ -181,8 +181,11 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
           width="full"
         >
           <Flex gap={6} align="center">
-            <Box w={400} flexShrink={0}>
-              <SearchInput value={searchQuery} onChange={setSearchQuery} />
+            <Box flexShrink={0}>
+              <DebouncedSearchInput
+                value={searchQuery}
+                onChange={setSearchQuery}
+              />
             </Box>
             <IconLegendTooltip />
           </Flex>

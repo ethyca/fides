@@ -3,7 +3,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional
 
-from pydantic import EmailStr, field_validator
+from pydantic import ConfigDict, EmailStr, field_validator
 
 from fides.api.cryptography.cryptographic_util import decode_password
 from fides.api.schemas.base_class import FidesSchema
@@ -27,6 +27,8 @@ class UserCreate(FidesSchema):
     last_name: Optional[str] = None
     disabled: bool = False
 
+    model_config = ConfigDict(extra="ignore")
+
     @field_validator("username")
     @classmethod
     def validate_username(cls, username: str) -> str:
@@ -37,22 +39,32 @@ class UserCreate(FidesSchema):
 
     @field_validator("password")
     @classmethod
-    def validate_password(cls, password: str) -> str:
+    def validate_password_field(cls, password: str) -> str:
         """Add some password requirements"""
         decoded_password = decode_password(password)
+        return UserCreate.validate_password(decoded_password)
 
-        if len(decoded_password) < 8:
+    @staticmethod
+    def validate_password(password: str) -> str:
+        """
+        Validate password requirements.
+            Raises:
+                ValueError: If password does not meet requirements
+            Returns:
+                str: password
+        """
+        if len(password) < 8:
             raise ValueError("Password must have at least eight characters.")
-        if re.search("[0-9]", decoded_password) is None:
+        if re.search(r"[\d]", password) is None:
             raise ValueError("Password must have at least one number.")
-        if re.search("[A-Z]", decoded_password) is None:
+        if re.search("[A-Z]", password) is None:
             raise ValueError("Password must have at least one capital letter.")
-        if re.search("[a-z]", decoded_password) is None:
+        if re.search("[a-z]", password) is None:
             raise ValueError("Password must have at least one lowercase letter.")
-        if re.search(r"[\W_]", decoded_password) is None:
+        if re.search(r"[\W_]", password) is None:
             raise ValueError("Password must have at least one symbol.")
 
-        return decoded_password
+        return password
 
 
 class UserCreateResponse(FidesSchema):
@@ -102,11 +114,25 @@ class UserPasswordReset(FidesSchema):
     old_password: str
     new_password: str
 
+    @field_validator("new_password")
+    @classmethod
+    def validate_new_password(cls, password: str) -> str:
+        """Add some password requirements"""
+        decoded_password = decode_password(password)
+        return UserCreate.validate_password(decoded_password)
+
 
 class UserForcePasswordReset(FidesSchema):
     """Only a new password, for the case where the user does not remember their password"""
 
     new_password: str
+
+    @field_validator("new_password")
+    @classmethod
+    def validate_new_password(cls, password: str) -> str:
+        """Add some password requirements"""
+        decoded_password = decode_password(password)
+        return UserCreate.validate_password(decoded_password)
 
 
 class UserUpdate(FidesSchema):
@@ -115,6 +141,8 @@ class UserUpdate(FidesSchema):
     email_address: Optional[EmailStr] = None
     first_name: Optional[str] = None
     last_name: Optional[str] = None
+
+    model_config = ConfigDict(extra="ignore")
 
 
 class DisabledReason(Enum):

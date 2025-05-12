@@ -18,18 +18,19 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "common/table/v2";
-import { Button, Flex, HStack, Text, VStack } from "fidesui";
+import { AntButton as Button, Flex, HStack, Text, VStack } from "fidesui";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useMemo } from "react";
 
-import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/v2/routes";
+import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/routes";
+import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import { useHasPermission } from "~/features/common/Restrict";
+import { BadgeCellExpandable } from "~/features/common/table/v2/cells";
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
 import {
   EnablePrivacyNoticeCell,
   getNoticeChildren,
-  getRegions,
   MechanismCell,
   PrivacyNoticeStatusCell,
 } from "~/features/privacy-notices/cells";
@@ -37,6 +38,7 @@ import { FRAMEWORK_MAP } from "~/features/privacy-notices/constants";
 import { useGetAllPrivacyNoticesQuery } from "~/features/privacy-notices/privacy-notices.slice";
 import {
   LimitedPrivacyNoticeResponseSchema,
+  PrivacyNoticeRegion,
   ScopeRegistryEnum,
 } from "~/types/api";
 
@@ -48,37 +50,39 @@ const emptyNoticeResponse = {
   pages: 1,
 };
 
-const EmptyTableNotice = () => (
-  <VStack
-    mt={6}
-    p={10}
-    spacing={4}
-    borderRadius="base"
-    maxW="70%"
-    data-testid="no-results-notice"
-    alignSelf="center"
-    margin="auto"
-  >
-    <VStack>
-      <Text fontSize="md" fontWeight="600">
-        No privacy notices found.
-      </Text>
-      <Text fontSize="sm">
-        Click &quot;Add a privacy notice&quot; to add your first privacy notice
-        to Fides.
-      </Text>
-    </VStack>
-    <Button
-      as={NextLink}
-      href={`${PRIVACY_NOTICES_ROUTE}/new`}
-      size="xs"
-      colorScheme="primary"
-      data-testid="add-privacy-notice-btn"
+const EmptyTableNotice = () => {
+  return (
+    <VStack
+      mt={6}
+      p={10}
+      spacing={4}
+      borderRadius="base"
+      maxW="70%"
+      data-testid="no-results-notice"
+      alignSelf="center"
+      margin="auto"
     >
-      Add a privacy notice +
-    </Button>
-  </VStack>
-);
+      <VStack>
+        <Text fontSize="md" fontWeight="600">
+          No privacy notices found.
+        </Text>
+        <Text fontSize="sm">
+          Click &quot;Add a privacy notice&quot; to add your first privacy
+          notice to Fides.
+        </Text>
+      </VStack>
+      <Button
+        href={`${PRIVACY_NOTICES_ROUTE}/new`}
+        role="link"
+        size="small"
+        type="primary"
+        data-testid="add-privacy-notice-btn"
+      >
+        Add a privacy notice +
+      </Button>
+    </VStack>
+  );
+};
 const columnHelper = createColumnHelper<LimitedPrivacyNoticeResponseSchema>();
 
 export const PrivacyNoticesTable = () => {
@@ -141,20 +145,22 @@ export const PrivacyNoticesTable = () => {
         }),
         columnHelper.accessor((row) => row.configured_regions, {
           id: "regions",
-          cell: (props) =>
-            getRegions(props.getValue())?.length ? (
-              <GroupCountBadgeCell
-                suffix="Locations"
-                value={getRegions(props.getValue())}
-                {...props}
-              />
-            ) : (
-              <DefaultCell value="Unassigned" />
-            ),
+          cell: (props) => (
+            <BadgeCellExpandable
+              values={
+                props.getValue()?.map((location: PrivacyNoticeRegion) => ({
+                  label: PRIVACY_NOTICE_REGION_RECORD[location] ?? location,
+                  key: location,
+                })) ?? []
+              }
+              cellProps={props}
+            />
+          ),
           header: (props) => <DefaultHeaderCell value="Locations" {...props} />,
+          size: 250,
           meta: {
-            displayText: "Locations",
             showHeaderMenu: true,
+            disableRowClick: true,
           },
         }),
         columnHelper.accessor((row) => row.disabled, {
@@ -184,7 +190,6 @@ export const PrivacyNoticesTable = () => {
             ),
           header: (props) => <DefaultHeaderCell value="Children" {...props} />,
           meta: {
-            displayText: "Child notices",
             showHeaderMenu: true,
           },
         }),
@@ -209,6 +214,7 @@ export const PrivacyNoticesTable = () => {
     state: {
       expanded: true,
     },
+    columnResizeMode: "onChange",
   });
 
   const onRowClick = ({ id }: LimitedPrivacyNoticeResponseSchema) => {
@@ -226,15 +232,15 @@ export const PrivacyNoticesTable = () => {
         {userCanUpdate && (
           <TableActionBar>
             <HStack alignItems="center" spacing={4} marginLeft="auto">
-              <Button
-                as={NextLink}
+              <NextLink
                 href={`${PRIVACY_NOTICES_ROUTE}/new`}
-                size="xs"
-                colorScheme="primary"
-                data-testid="add-privacy-notice-btn"
+                passHref
+                legacyBehavior
               >
-                Add a privacy notice +
-              </Button>
+                <Button type="primary" data-testid="add-privacy-notice-btn">
+                  Add a privacy notice +
+                </Button>
+              </NextLink>
             </HStack>
           </TableActionBar>
         )}

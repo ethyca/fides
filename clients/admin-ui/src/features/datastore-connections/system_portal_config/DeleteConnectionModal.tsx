@@ -1,7 +1,6 @@
 import {
-  Button,
+  AntButton as Button,
   Flex,
-  IconButton,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -48,14 +47,12 @@ const DeleteConnectionModal = ({
         <Spacer />
         <Flex alignItems="center">
           <Text fontSize="sm">Delete integration</Text>
-          <IconButton
-            marginLeft="8px"
+          <Button
             aria-label="Delete integration"
-            variant="outline"
             icon={<TrashCanSolidIcon />}
-            isDisabled={deleteResult.isLoading}
+            disabled={deleteResult.isLoading}
             onClick={onOpen}
-            size="sm"
+            className="ml-2"
           />
         </Flex>
       </>
@@ -80,33 +77,14 @@ const DeleteConnectionModal = ({
           </ModalBody>
 
           <ModalFooter>
-            <Button
-              onClick={closeIfComplete}
-              marginRight="10px"
-              size="sm"
-              variant="solid"
-              bg="white"
-              width="50%"
-            >
+            <Button onClick={closeIfComplete} className="w-1/2">
               Cancel
             </Button>
             <Button
               onClick={handleDeleteConnection}
-              isLoading={deleteResult.isLoading}
-              mr={3}
-              size="sm"
-              variant="solid"
-              bg="primary.800"
-              color="white"
-              width="50%"
-              _loading={{
-                opacity: 1,
-                div: { opacity: 0.4 },
-              }}
-              _hover={{
-                bg: "gray.100",
-                color: "gray.600",
-              }}
+              loading={deleteResult.isLoading}
+              type="primary"
+              className="w-1/2"
             >
               Delete integration
             </Button>

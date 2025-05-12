@@ -1,4 +1,4 @@
-import { Box, Button, Divider, Heading, Stack } from "fidesui";
+import { AntButton as Button, Box, Divider, Heading, Stack } from "fidesui";
 import { Form, Formik } from "formik";
 import { useState } from "react";
 
@@ -92,19 +92,13 @@ const TwilioEmailConfiguration = () => {
                 />
               </Stack>
               <Box mt={10}>
-                <Button
-                  onClick={() => handleReset()}
-                  mr={2}
-                  size="sm"
-                  variant="outline"
-                >
+                <Button onClick={() => handleReset()} className="mr-2">
                   Cancel
                 </Button>
                 <Button
-                  isDisabled={isSubmitting}
-                  type="submit"
-                  colorScheme="primary"
-                  size="sm"
+                  disabled={isSubmitting}
+                  htmlType="submit"
+                  type="primary"
                   data-testid="save-btn"
                 >
                   Save
@@ -137,19 +131,13 @@ const TwilioEmailConfiguration = () => {
                     />
                   </Stack>
                   <Box mt={10}>
-                    <Button
-                      onClick={() => handleReset()}
-                      mr={2}
-                      size="sm"
-                      variant="outline"
-                    >
+                    <Button onClick={() => handleReset()} className="mr-2">
                       Cancel
                     </Button>
                     <Button
-                      isDisabled={isSubmitting}
-                      type="submit"
-                      colorScheme="primary"
-                      size="sm"
+                      disabled={isSubmitting}
+                      htmlType="submit"
+                      type="primary"
                       data-testid="save-btn"
                     >
                       Save

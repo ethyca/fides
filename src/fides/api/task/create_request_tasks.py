@@ -25,14 +25,15 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import (
     COMPLETED_EXECUTION_LOG_STATUSES,
-    ExecutionLogStatus,
     PrivacyRequest,
     RequestTask,
     TraversalDetails,
 )
 from fides.api.schemas.policy import ActionType
+from fides.api.schemas.privacy_request import ExecutionLogStatus
 from fides.api.task.deprecated_graph_task import format_data_use_map_for_caching
 from fides.api.task.execute_request_tasks import log_task_queued, queue_request_task
+from fides.api.util.logger_context_utils import log_context
 
 
 def _add_edge_if_no_nodes(
@@ -422,6 +423,7 @@ def collect_tasks_fn(
         data[tn.address] = tn
 
 
+@log_context
 def run_access_request(
     privacy_request: PrivacyRequest,
     policy: Policy,
@@ -449,8 +451,7 @@ def run_access_request(
         )
     else:
         try:
-            logger.info("Building access graph for {}", privacy_request.id)
-            traversal: Traversal = Traversal(graph, identity)
+            traversal: Traversal = Traversal(graph, identity, policy=policy)
 
             # Traversal.traverse populates traversal_nodes in place, adding parents and children to each traversal_node.
             traversal_nodes: Dict[CollectionAddress, TraversalNode] = {}
@@ -484,6 +485,32 @@ def run_access_request(
                     connection_configs,
                 )
             )
+
+            # Add execution logs for skipped nodes
+            if traversal.skipped_nodes:
+                logger.warning(
+                    "Some nodes were skipped, the identities provided were not sufficient to reach them"
+                )
+                for node_address, skip_message in traversal.skipped_nodes.items():
+                    logger.debug(skip_message)
+                    privacy_request.add_skipped_execution_log(
+                        session,
+                        connection_key=None,
+                        dataset_name="Dataset traversal",
+                        collection_name=node_address.replace(":", "."),
+                        message=skip_message,
+                        action_type=ActionType.access,
+                    )
+            # Or log success if all collections are reachable
+            else:
+                privacy_request.add_success_execution_log(
+                    session,
+                    connection_key=None,
+                    dataset_name="Dataset traversal",
+                    collection_name=None,
+                    message=f"Traversal successful for privacy request: {privacy_request.id}",
+                    action_type=ActionType.access,
+                )
         except TraversalError as err:
             log_traversal_error_and_update_privacy_request(
                 privacy_request, session, err
@@ -497,6 +524,7 @@ def run_access_request(
     return ready_tasks
 
 
+@log_context
 def run_erasure_request(  # pylint: disable = too-many-arguments
     privacy_request: PrivacyRequest,
     session: Session,
@@ -519,6 +547,7 @@ def run_erasure_request(  # pylint: disable = too-many-arguments
     return ready_tasks
 
 
+@log_context
 def run_consent_request(  # pylint: disable = too-many-arguments
     privacy_request: PrivacyRequest,
     graph: DatasetGraph,
@@ -543,7 +572,7 @@ def run_consent_request(  # pylint: disable = too-many-arguments
             session, privacy_request, ActionType.consent
         )
     else:
-        logger.info("Building consent graph for {}", privacy_request.id)
+        logger.info("Building consent graph")
         traversal_nodes: Dict[CollectionAddress, TraversalNode] = {}
         # Unlike erasure and access graphs, we don't call traversal.traverse, but build a simpler
         # graph that just has one node per dataset
@@ -586,10 +615,9 @@ def get_existing_ready_tasks(
 
         if ready:
             logger.info(
-                "Found existing {} task(s) ready to reprocess: {}. Privacy Request: {}",
+                "Found existing {} task(s) ready to reprocess: {}.",
                 action_type.value,
                 [t.collection_address for t in ready],
-                privacy_request.id,
             )
         return ready
     return ready

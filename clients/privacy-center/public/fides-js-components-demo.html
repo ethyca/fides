@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <title>fides-js script demo page</title>
+    <title>fides-js script components demo page</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <!--
@@ -26,9 +26,14 @@
       })();
       var deleteCookie = function () {
         document.cookie =
-          "fides_consent=;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+          "fides_consent=;Path=/;expires='Thu, 01 Jan 1970 00:00:01 GMT';";
         location.reload();
       };
+      if (params.get("disable_animations") === "true") {
+        document.write(
+          "<style>div#fides-banner-container:not(.fides-embedded) { transition: none !important; }</style>",
+        );
+      }
     </script>
     <script>
       // Our cypress test suite requires injecting consent options through an obj on window
@@ -70,6 +75,7 @@
             layer1_button_options: "opt_in_opt_out",
             allow_language_selection: true,
             auto_detect_language: true,
+            auto_subdomain_cookie_deletion: true,
             language: "en",
             accept_button_label: "Accept Test",
             acknowledge_button_label: "Acknowledge Test",
@@ -206,26 +212,38 @@
           privacyCenterUrl: "http://localhost:3001",
           fidesApiUrl: "http://localhost:8080/api/v1",
           fidesPrimaryColor: "#008000",
+          showFidesBrandLink: true,
+          otFidesMapping: null,
         },
       };
       if (init !== "false") {
         window.Fides.init(fidesConfig);
-        Fides.gtm();
+        Fides.gtm(
+          !!window.fides_overrides && window.fides_overrides.gtmOptions,
+        );
       }
     </script>
 
     <style>
       body {
-        margin: 16px;
+        margin: 16px 16px 64px 16px;
+        background-color: #fafafa;
+        font-family: "Inter", Arial, Helvetica, sans-serif;
         height: 100vh;
         overflow: scroll;
         overflow-x: hidden;
       }
+      h2 {
+        margin-bottom: 8px;
+      }
       pre {
-        background-color: #eee;
+        background-color: #e6e6e8;
         padding: 16px;
         white-space: pre-wrap;
         overflow-y: auto;
+        margin: 0px;
+        border-radius: 4px;
+        box-shadow: 0 2px 2px inset rgba(0, 0, 0, 0.05);
       }
       #fides-modal-link {
         border: none;
@@ -234,6 +252,14 @@
         cursor: pointer;
         text-decoration: underline;
       }
+      .delete-cookie {
+        background-color: #2b2e35;
+        color: #fafafa;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
     </style>
   </head>
 
@@ -241,10 +267,9 @@
     <main>
       <h1>fides.js demo page</h1>
       <p>
-        This page exists to demonstrate and debug the fides.js script. It is
-        used by the Privacy Center's test suite to ensure that users' consent
-        choices can be accessed by pages that live outside of the Privacy
-        Center.
+        This page exists to test and debug the fides.js script. It is used by
+        the Privacy Center's test suite to ensure that users' consent choices
+        can be accessed by pages that live outside of the Privacy Center.
       </p>
 
       <div>
@@ -350,6 +375,13 @@
       } else {
         window.addEventListener("FidesInitialized", onInitialized);
       }
+      window.addEventListener("FidesUpdated", () => {
+        document.getElementById("consent-json").textContent = JSON.stringify(
+          Fides.consent,
+          null,
+          2,
+        );
+      });
     })();
   </script>
 </html>

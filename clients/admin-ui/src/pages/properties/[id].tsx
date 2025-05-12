@@ -1,9 +1,11 @@
-import { Box, Heading, Text, useToast } from "fidesui";
+import { Box, useToast } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
+import { PROPERTIES_ROUTE } from "~/features/common/nav/routes";
+import PageHeader from "~/features/common/PageHeader";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   useGetPropertyByIdQuery,
@@ -41,13 +43,19 @@ const EditPropertyPage: NextPage = () => {
 
   return (
     <Layout title={data.name}>
-      <Box display="flex" alignItems="center" data-testid="header">
-        <Heading fontSize="2xl" fontWeight="semibold">
-          Edit {data.name}
-        </Heading>
-      </Box>
-      <Box maxWidth="720px" pt={2}>
-        <Text fontSize="sm">Edit your existing property here.</Text>
+      <PageHeader
+        heading="Properties"
+        breadcrumbItems={[
+          {
+            title: "All properties",
+            href: PROPERTIES_ROUTE,
+          },
+          {
+            title: data.name,
+          },
+        ]}
+      />
+      <Box maxWidth="720px">
         <PropertyForm property={data} handleSubmit={handleSubmit} />
       </Box>
     </Layout>

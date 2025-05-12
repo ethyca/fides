@@ -1,4 +1,4 @@
-import { Flex, FormControl, Tag, VStack } from "fidesui";
+import { AntTag as Tag, Flex, FormControl, VStack } from "fidesui";
 import { useField } from "formik";
 import _ from "lodash";
 import { useEffect, useState } from "react";
@@ -8,7 +8,7 @@ import {
   Label,
   StringField,
 } from "~/features/common/form/inputs";
-import QuestionTooltip from "~/features/common/QuestionTooltip";
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 
 import { useSelectedHistory } from "../SelectedHistoryContext";
 
@@ -65,10 +65,10 @@ const SystemDataSwitch = ({
           <Label htmlFor={props.id || props.name} fontSize="xs" my={0} mr={1}>
             {label}
           </Label>
-          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+          <InfoTooltip label={tooltip} />
         </Flex>
         {field.value !== undefined && (
-          <Tag colorScheme="gray" size="sm" m={1}>
+          <Tag color="marble" className="m-1">
             {field.value ? "YES" : "NO"}
           </Tag>
         )}

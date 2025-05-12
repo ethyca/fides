@@ -7,6 +7,7 @@ import type { ExperienceTranslationResponse } from "./ExperienceTranslationRespo
 import type { Layer1ButtonOption } from "./Layer1ButtonOption";
 import type { MinimalProperty } from "./MinimalProperty";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
+import type { RejectAllMechanism } from "./RejectAllMechanism";
 
 /**
  * Schema for embedding an Experience Config in a Privacy Experience response.
@@ -21,6 +22,7 @@ export type ExperienceConfigResponseNoNotices = {
   layer1_button_options?: Layer1ButtonOption | null;
   allow_language_selection?: boolean | null;
   auto_detect_language?: boolean | null;
+  auto_subdomain_cookie_deletion?: boolean | null;
   regions: Array<PrivacyNoticeRegion>;
   id: string;
   created_at: string;
@@ -28,4 +30,8 @@ export type ExperienceConfigResponseNoNotices = {
   component: ComponentType;
   translations?: Array<ExperienceTranslationResponse>;
   properties?: Array<MinimalProperty>;
+  /**
+   * Determines the behavior of the reject all button
+   */
+  reject_all_mechanism?: RejectAllMechanism | null;
 };

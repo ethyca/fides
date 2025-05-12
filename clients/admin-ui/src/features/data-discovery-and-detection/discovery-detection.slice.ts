@@ -6,7 +6,7 @@ import { baseApi } from "~/features/common/api.slice";
 import {
   DiffStatus,
   MonitorConfig,
-  Page_MonitorConfig_,
+  Page_MonitorStatusResponse_,
   Page_StagedResourceAPIResponse_,
   Page_str_,
 } from "~/types/api";
@@ -34,6 +34,7 @@ interface DatabaseByMonitorQueryParams {
   page: number;
   size: number;
   monitor_config_id: string;
+  show_hidden?: boolean;
 }
 
 interface DatabaseByConnectionQueryParams {
@@ -54,14 +55,15 @@ interface BulkResourceActionQueryParams {
 }
 
 interface ChangeResourceCategoryQueryParam {
-  staged_resource_urn: string;
-  user_assigned_data_categories: string[];
   monitor_config_id: string;
+  staged_resource_urn: string;
+  user_assigned_data_categories?: string[];
+  user_assigned_system_key?: string;
 }
 
 const discoveryDetectionApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    getMonitorsByIntegration: build.query<Page_MonitorConfig_, any>({
+    getMonitorsByIntegration: build.query<Page_MonitorStatusResponse_, any>({
       query: (params) => ({
         method: "GET",
         url: `/plus/discovery-monitor`,
@@ -89,7 +91,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         }),
       },
     ),
-    getDatabasesByConnection: build.query<
+    getAvailableDatabasesByConnection: build.query<
       Page_str_,
       DatabaseByConnectionQueryParams
     >({
@@ -131,22 +133,23 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
     }),
     confirmResource: build.mutation<
       any,
-      ResourceActionQueryParams & { monitor_config_id: string }
+      ResourceActionQueryParams & {
+        monitor_config_id: string;
+        unmute_children?: boolean;
+        start_classification?: boolean;
+        classify_monitored_resources?: boolean;
+      }
     >({
       query: (params) => ({
         method: "POST",
-        url: `/plus/discovery-monitor/${params.monitor_config_id}/${params.staged_resource_urn}/confirm`,
-        params: {},
-      }),
-      invalidatesTags: ["Discovery Monitor Results"],
-    }),
-    muteResource: build.mutation<any, ResourceActionQueryParams>({
-      query: ({ staged_resource_urn }) => ({
-        method: "POST",
-        url: `/plus/discovery-monitor/mute?${queryString.stringify(
-          { staged_resource_urns: [staged_resource_urn] },
+        url: `/plus/discovery-monitor/${params.monitor_config_id}/${params.staged_resource_urn}/confirm?${queryString.stringify(
+          {
+            unmute_children: params.unmute_children,
+            classify_monitored_resources: params.classify_monitored_resources,
+          },
           { arrayFormat: "none" },
         )}`,
+        params: {},
       }),
       invalidatesTags: ["Discovery Monitor Results"],
     }),
@@ -156,6 +159,16 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         method: "POST",
         url: `/plus/discovery-monitor/un-mute?${queryString.stringify(
           { staged_resource_urns: [params.staged_resource_urn] },
+          { arrayFormat: "none" },
+        )}`,
+      }),
+      invalidatesTags: ["Discovery Monitor Results"],
+    }),
+    muteResource: build.mutation<any, ResourceActionQueryParams>({
+      query: ({ staged_resource_urn }) => ({
+        method: "POST",
+        url: `/plus/discovery-monitor/mute?${queryString.stringify(
+          { staged_resource_urns: [staged_resource_urn] },
           { arrayFormat: "none" },
         )}`,
       }),
@@ -204,6 +217,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
           {
             urn: params.staged_resource_urn,
             user_assigned_data_categories: params.user_assigned_data_categories,
+            user_assigned_system_key: params.user_assigned_system_key,
           },
         ],
       }),
@@ -217,8 +231,8 @@ export const {
   useGetMonitorsByIntegrationQuery,
   usePutDiscoveryMonitorMutation,
   useGetDatabasesByMonitorQuery,
-  useGetDatabasesByConnectionQuery,
-  useLazyGetDatabasesByConnectionQuery,
+  useGetAvailableDatabasesByConnectionQuery,
+  useLazyGetAvailableDatabasesByConnectionQuery,
   useExecuteDiscoveryMonitorMutation,
   useDeleteDiscoveryMonitorMutation,
   useGetMonitorResultsQuery,

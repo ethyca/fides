@@ -2,7 +2,7 @@ from loguru import logger
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from fides.api.api.deps import get_db_contextmanager
+from fides.api.api.deps import get_autoclose_db_session
 from fides.api.db.base_class import FidesBase
 from fides.api.migrations.hash_migration_mixin import HashMigrationMixin
 from fides.api.migrations.hash_migration_tracker import HashMigrationTracker
@@ -47,7 +47,7 @@ def bcrypt_migration_task() -> None:
     Job to migrate all the tables using bcrypt hashes for general data (excludes tables with credentials).
     """
 
-    with get_db_contextmanager() as db:
+    with get_autoclose_db_session() as db:
         # Do a single pass to check if any of the models have already been migrated.
         # This will allow us to optimize searching for these models by not calling
         # the previously used bcrypt hash.
@@ -68,7 +68,7 @@ def is_migrated(db: Session, model: type[FidesBase]) -> bool:
     """
 
     query = text(
-        f"SELECT EXISTS (SELECT 1 FROM {model.__tablename__} WHERE is_hash_migrated = false)"
+        f"SELECT EXISTS (SELECT 1 FROM {model.__tablename__} WHERE is_hash_migrated IS FALSE)"
     )
     result = db.execute(query).scalar()
     return not result

@@ -7,20 +7,24 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Box, Button, EditIcon, HStack, Text, VStack } from "fidesui";
+import {
+  AntButton as Button,
+  Box,
+  EditIcon,
+  HStack,
+  Text,
+  VStack,
+} from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useCallback, useMemo, useState } from "react";
 
-import { DatabaseIcon } from "~/features/common/Icon/database/DatabaseIcon";
-import { DatasetIcon } from "~/features/common/Icon/database/DatasetIcon";
-import { TableIcon } from "~/features/common/Icon/database/TableIcon";
 import Layout from "~/features/common/Layout";
 import {
   DATASET_COLLECTION_SUBFIELD_DETAIL_ROUTE,
   DATASET_DETAIL_ROUTE,
   DATASET_ROUTE,
-} from "~/features/common/nav/v2/routes";
+} from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
   BadgeCell,
@@ -31,12 +35,12 @@ import {
   TableActionBar,
   TableSkeletonLoader,
 } from "~/features/common/table/v2";
-import TaxonomiesPicker from "~/features/common/TaxonomiesPicker";
+import TaxonomySelectCell from "~/features/common/table/v2/TaxonomySelectCell";
+import { DATA_BREADCRUMB_ICONS } from "~/features/data-discovery-and-detection/DiscoveryMonitorBreadcrumbs";
 import {
   useGetDatasetByKeyQuery,
   useUpdateDatasetMutation,
 } from "~/features/dataset";
-import DatasetBreadcrumbs from "~/features/dataset/DatasetBreadcrumbs";
 import EditFieldDrawer from "~/features/dataset/EditFieldDrawer";
 import { getUpdatedDatasetFromField } from "~/features/dataset/helpers";
 import { DatasetField } from "~/types/api";
@@ -47,8 +51,10 @@ const FieldsDetailPage: NextPage = () => {
   const router = useRouter();
   const [updateDataset] = useUpdateDatasetMutation();
 
-  const datasetId = router.query.datasetId as string;
-  const collectionName = router.query.collectionName as string;
+  const datasetId = decodeURIComponent(router.query.datasetId as string);
+  const collectionName = decodeURIComponent(
+    router.query.collectionName as string,
+  );
 
   const { isLoading, data: dataset } = useGetDatasetByKeyQuery(datasetId);
   const collections = useMemo(() => dataset?.collections || [], [dataset]);
@@ -119,9 +125,9 @@ const FieldsDetailPage: NextPage = () => {
       router.push({
         pathname: DATASET_COLLECTION_SUBFIELD_DETAIL_ROUTE,
         query: {
-          datasetId,
-          collectionName,
-          subfieldUrn: row.name,
+          datasetId: encodeURIComponent(datasetId),
+          collectionName: encodeURIComponent(collectionName),
+          subfieldNames: encodeURIComponent(row.name),
         },
       });
     },
@@ -158,30 +164,41 @@ const FieldsDetailPage: NextPage = () => {
       }),
       columnHelper.accessor((row) => row.description, {
         id: "description",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
+        cell: (props) => (
+          <DefaultCell value={props.getValue()} cellProps={props} />
+        ),
         header: (props) => <DefaultHeaderCell value="Description" {...props} />,
         size: 300,
+        meta: {
+          showHeaderMenu: true,
+        },
       }),
       columnHelper.accessor((row) => row.data_categories, {
         id: "data_categories",
         cell: (props) => {
           const field = props.row.original;
+          // TODO: HJ-20 remove this check when data categories can be added to subfields
+          const hasSubfields =
+            props.row.original.fields && props.row.original.fields?.length > 0;
           return (
-            <TaxonomiesPicker
-              selectedTaxonomies={props.getValue() || []}
-              onAddTaxonomy={(dataCategory) =>
-                handleAddDataCategory({ dataCategory, field })
-              }
-              onRemoveTaxonomy={(dataCategory) =>
-                handleRemoveDataCategory({ dataCategory, field })
-              }
-            />
+            !hasSubfields && (
+              <TaxonomySelectCell
+                selectedTaxonomies={props.getValue() || []}
+                onAddTaxonomy={(dataCategory) =>
+                  handleAddDataCategory({ dataCategory, field })
+                }
+                onRemoveTaxonomy={(dataCategory) =>
+                  handleRemoveDataCategory({ dataCategory, field })
+                }
+              />
+            )
           );
         },
         header: (props) => (
           <DefaultHeaderCell value="Data categories" {...props} />
         ),
         size: 300,
+        meta: { disableRowClick: true },
       }),
 
       columnHelper.display({
@@ -192,9 +209,8 @@ const FieldsDetailPage: NextPage = () => {
           return (
             <HStack spacing={0} data-testid={`field-${field.name}`}>
               <Button
-                variant="outline"
-                size="xs"
-                leftIcon={<EditIcon />}
+                size="small"
+                icon={<EditIcon />}
                 onClick={() => {
                   setSelectedFieldForEditing(field);
                   setIsEditingField(true);
@@ -229,6 +245,7 @@ const FieldsDetailPage: NextPage = () => {
     getSortedRowModel: getSortedRowModel(),
     columns,
     data: filteredFields,
+    columnResizeMode: "onChange",
   });
 
   const [isEditingField, setIsEditingField] = useState(false);
@@ -236,31 +253,30 @@ const FieldsDetailPage: NextPage = () => {
     DatasetField | undefined
   >();
 
+  const breadcrumbs = useMemo(() => {
+    return [
+      {
+        title: "All datasets",
+        href: DATASET_ROUTE,
+      },
+      {
+        title: datasetId,
+        href: {
+          pathname: DATASET_DETAIL_ROUTE,
+          query: { datasetId },
+        },
+        icon: DATA_BREADCRUMB_ICONS[1],
+      },
+      {
+        title: collectionName,
+        icon: DATA_BREADCRUMB_ICONS[2],
+      },
+    ];
+  }, [datasetId, collectionName]);
+
   return (
-    <Layout title={`Dataset - ${datasetId}`} mainProps={{ paddingTop: 0 }}>
-      <PageHeader breadcrumbs={[{ title: "Datasets" }]}>
-        <DatasetBreadcrumbs
-          breadcrumbs={[
-            {
-              title: "All datasets",
-              icon: <DatabaseIcon boxSize={4} />,
-              link: DATASET_ROUTE,
-            },
-            {
-              title: datasetId,
-              link: {
-                pathname: DATASET_DETAIL_ROUTE,
-                query: { datasetId },
-              },
-              icon: <DatasetIcon boxSize={5} />,
-            },
-            {
-              title: collectionName,
-              icon: <TableIcon boxSize={5} />,
-            },
-          ]}
-        />
-      </PageHeader>
+    <Layout title={`Dataset - ${datasetId}`}>
+      <PageHeader heading="Datasets" breadcrumbItems={breadcrumbs} />
 
       {isLoading ? (
         <TableSkeletonLoader rowHeight={36} numRows={15} />

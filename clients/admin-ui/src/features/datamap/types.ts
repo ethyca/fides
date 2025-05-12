@@ -1,3 +1,5 @@
+import { DATAMAP_GROUPING } from "~/types/api";
+
 export type Link = {
   source: string;
   target: string;
@@ -19,3 +21,16 @@ export type SystemNode = {
 export type SetSelectedSystemId = {
   setSelectedSystemId: (id: string) => void;
 };
+
+export type DatamapReportFilterSelections = {
+  dataUses: string[];
+  dataSubjects: string[];
+  dataCategories: string[];
+};
+
+export interface CustomReportTableState {
+  groupBy?: DATAMAP_GROUPING;
+  filters?: unknown;
+  columnOrder?: string[];
+  columnVisibility?: Record<string, boolean>;
+}

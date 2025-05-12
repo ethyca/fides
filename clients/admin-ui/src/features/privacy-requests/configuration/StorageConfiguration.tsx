@@ -1,19 +1,30 @@
-import { Box, Heading, Radio, RadioGroup, Stack, Text } from "fidesui";
+import {
+  AntFlex as Flex,
+  AntRadio as Radio,
+  Box,
+  Heading,
+  RadioChangeEvent,
+  Text,
+} from "fidesui";
 import { useEffect, useState } from "react";
 
 import { isErrorResult } from "~/features/common/helpers";
 import { useAlert, useAPIHelper } from "~/features/common/hooks";
 import Layout from "~/features/common/Layout";
-import BackButton from "~/features/common/nav/v2/BackButton";
-import { PRIVACY_REQUESTS_CONFIGURATION_ROUTE } from "~/features/common/nav/v2/routes";
+import {
+  PRIVACY_REQUESTS_CONFIGURATION_ROUTE,
+  PRIVACY_REQUESTS_ROUTE,
+} from "~/features/common/nav/routes";
+import PageHeader from "~/features/common/PageHeader";
+import { usePatchConfigurationSettingsMutation } from "~/features/config-settings/config-settings.slice";
 import { storageTypes } from "~/features/privacy-requests/constants";
 import {
   useCreateStorageMutation,
   useGetActiveStorageQuery,
   useGetStorageDetailsQuery,
-  usePatchConfigurationSettingsMutation,
 } from "~/features/privacy-requests/privacy-requests.slice";
 
+import GoogleCloudStorageConfiguration from "./GoogleCloudStorageConfiguration";
 import S3StorageConfiguration from "./S3StorageConfiguration";
 
 const StorageConfiguration = () => {
@@ -34,7 +45,8 @@ const StorageConfiguration = () => {
     }
   }, [activeStorage]);
 
-  const handleChange = async (value: string) => {
+  const handleChange = async (e: RadioChangeEvent) => {
+    const { value } = e.target;
     if (value === storageTypes.local) {
       const storageDetailsResult = await saveStorageType({
         type: value,
@@ -61,10 +73,27 @@ const StorageConfiguration = () => {
     }
   };
 
+  const storageComponents = {
+    s3: S3StorageConfiguration,
+    gcs: GoogleCloudStorageConfiguration,
+  };
+  const StorageConfigComponent =
+    storageComponents[storageValue as keyof typeof storageComponents];
+
   return (
     <Layout title="Configure Privacy Requests - Storage">
-      <BackButton backPath={PRIVACY_REQUESTS_CONFIGURATION_ROUTE} />
-      <Heading mb={5} fontSize="2xl" fontWeight="semibold">
+      <PageHeader
+        heading="Privacy Requests"
+        breadcrumbItems={[
+          { title: "All requests", href: PRIVACY_REQUESTS_ROUTE },
+          {
+            title: "Configure requests",
+            href: PRIVACY_REQUESTS_CONFIGURATION_ROUTE,
+          },
+          { title: "Storage" },
+        ]}
+      />
+      <Heading mb={5} fontSize="md" fontWeight="semibold">
         Configure storage
       </Heading>
 
@@ -81,36 +110,43 @@ const StorageConfiguration = () => {
           your results. Fides currently supports{" "}
           <Text as="span" color="complimentary.500">
             Local
+          </Text>
+          {", "}
+          <Text as="span" color="complimentary.500">
+            S3
           </Text>{" "}
           and{" "}
           <Text as="span" color="complimentary.500">
-            S3
+            GCS
           </Text>{" "}
           storage methods.
         </Box>
         <Heading fontSize="md" fontWeight="semibold" mt={10}>
           Choose storage type to configure
         </Heading>
-        <RadioGroup
-          isDisabled={isLoading}
+        <Radio.Group
+          disabled={isLoading}
           onChange={handleChange}
           value={storageValue}
           data-testid="privacy-requests-storage-selection"
-          colorScheme="secondary"
-          p={3}
+          className="p-3"
         >
-          <Stack direction="row">
-            <Radio key="local" value="local" data-testid="option-local" mr={5}>
+          <Flex>
+            <Radio key="local" value="local" data-testid="option-local">
               Local
             </Radio>
             <Radio key="s3" value="s3" data-testid="option-s3">
               S3
             </Radio>
-          </Stack>
-        </RadioGroup>
-        {storageValue === "s3" && storageDetails ? (
-          <S3StorageConfiguration storageDetails={storageDetails} />
-        ) : null}
+            <Radio key="gcs" value="gcs" data-testid="option-gcs">
+              GCS
+            </Radio>
+          </Flex>
+        </Radio.Group>
+
+        {StorageConfigComponent && storageDetails && (
+          <StorageConfigComponent storageDetails={storageDetails} />
+        )}
       </Box>
     </Layout>
   );

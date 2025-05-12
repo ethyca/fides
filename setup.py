@@ -54,7 +54,7 @@ extras["all"] = sum([value for value in extras.values()], [])
 ## Package Setup ##
 ###################
 setup(
-    name="ethyca-fides",
+    name="ethyca_fides",
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
     description="Open-source ecosystem for data privacy as code.",

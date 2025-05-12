@@ -48,6 +48,49 @@ dataset:
     - name: single_row
       data_categories:
       - system.operations
+  - name: attachment_reference
+    fields:
+    - name: attachment_id
+      data_categories:
+      - system.operations
+    - name: created_at
+      data_categories:
+      - system.operations
+    - name: id
+      data_categories:
+      - system.operations
+    - name: reference_id
+      data_categories:
+      - system.operations
+    - name: reference_type
+      data_categories:
+      - system.operations
+    - name: updated_at
+      data_categories:
+      - system.operations
+  - name: attachment
+    fields:
+    - name: attachment_type
+      data_categories:
+      - system.operations
+    - name: created_at
+      data_categories:
+      - system.operations
+    - name: file_name
+      data_categories:
+      - system.operations
+    - name: id
+      data_categories:
+      - system.operations
+    - name: storage_key
+      data_categories:
+      - system.operations
+    - name: updated_at
+      data_categories:
+      - system.operations
+    - name: user_id
+      data_categories:
+      - system.operations
   - name: auditlog
     fields:
     - name: created_at
@@ -100,6 +143,46 @@ dataset:
     - name: user_id
       data_categories:
       - user.unique_id
+  - name: comment
+    fields:
+    - name: comment_text
+      data_categories:
+      - system.operations
+    - name: comment_type
+      data_categories:
+      - system.operations
+    - name: created_at
+      data_categories:
+      - system.operations
+    - name: id
+      data_categories:
+      - system.operations
+    - name: updated_at
+      data_categories:
+      - system.operations
+    - name: user_id
+      data_categories:
+      - system.operations
+  - name: comment_reference
+    fields:
+    - name: comment_id
+      data_categories:
+      - system.operations
+    - name: created_at
+      data_categories:
+      - system.operations
+    - name: id
+      data_categories:
+      - system.operations
+    - name: reference_id
+      data_categories:
+      - system.operations
+    - name: reference_type
+      data_categories:
+      - system.operations
+    - name: updated_at
+      data_categories:
+      - system.operations
   - name: client
     fields:
     - name: created_at
@@ -476,6 +559,12 @@ dataset:
     - name: email_address
       data_categories:
       - user.contact.email
+    - name: password_login_enabled
+      data_categories:
+      - system.operations
+    - name: totp_secret
+      data_categories:
+      - system.operations
   - name: fidesuserpermissions
     fields:
     - name: created_at
@@ -716,6 +805,9 @@ dataset:
     - name: vendor_deleted_date
       data_categories:
       - system.operations
+    - name: hidden
+      data_categories:
+      - system.operations
   - name: messagingconfig
     description: 'Fides Generated Description for Table: messagingconfig'
     data_categories: []
@@ -776,6 +868,8 @@ dataset:
     - name: last_test_succeeded
       data_categories: [system.operations]
     - name: last_test_timestamp
+      data_categories: [system.operations]
+    - name: last_run_timestamp
       data_categories: [system.operations]
     - name: name
       data_categories: [system.operations]
@@ -908,6 +1002,27 @@ dataset:
     - name: privacy_request_id
       data_categories: [system.operations]
     - name: status
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+  - name: monitorexecution
+    data_categories: []
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: monitor_config_key
+      data_categories: [system.operations]
+    - name: status
+      data_categories: [system.operations]
+    - name: started
+      data_categories: [system.operations]
+    - name: completed
+      data_categories: [system.operations]
+    - name: classification_instances
+      data_categories: [system.operations]
+    - name: messages
+      data_categories: [system.operations]
+    - name: created_at
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
@@ -1064,6 +1179,8 @@ dataset:
       data_categories: [ system.operations ]
     - name: auto_detect_language
       data_categories: [ system.operations ]
+    - name: auto_subdomain_cookie_deletion
+      data_categories: [ system.operations ]
     - name: id
       data_categories: [system.operations]
     - name: name
@@ -1071,6 +1188,10 @@ dataset:
     - name: origin
       data_categories: [system.operations]
     - name: updated_at
+      data_categories: [system.operations]
+    - name: reject_all_mechanism
+      data_categories: [system.operations]
+    - name: tcf_configuration_id
       data_categories: [system.operations]
   - name: privacyexperienceconfighistory
     description: 'Historical table to store all versions of Experience Config History for record keeping'
@@ -1105,6 +1226,8 @@ dataset:
       data_categories: [ system.operations ]
     - name: auto_detect_language
       data_categories: [ system.operations ]
+    - name: auto_subdomain_cookie_deletion
+      data_categories: [ system.operations ]
     - name: id
       data_categories: [system.operations]
     - name: is_default
@@ -1134,6 +1257,10 @@ dataset:
     - name: updated_at
       data_categories: [system.operations]
     - name: version
+      data_categories: [system.operations]
+    - name: reject_all_mechanism
+      data_categories: [system.operations]
+    - name: tcf_configuration_id
       data_categories: [system.operations]
   - name: privacynoticetemplate
     data_categories: []
@@ -1305,6 +1432,10 @@ dataset:
     - name: source
       data_categories: [ system.operations ]
     - name: submitted_by
+      data_categories: [ system.operations ]
+    - name: deleted_at
+      data_categories: [ system.operations ]
+    - name: deleted_by
       data_categories: [ system.operations ]
   - name: privacyrequesterror
     data_categories: []
@@ -1997,6 +2128,8 @@ dataset:
       data_categories: [ system.operations ]
     - name: auto_detect_language
       data_categories: [ system.operations ]
+    - name: auto_subdomain_cookie_deletion
+      data_categories: [ system.operations ]
     - name: id
       data_categories: [system.operations]
     - name: name
@@ -2212,6 +2345,16 @@ dataset:
       data_categories: [system]
     - name: user_assigned_data_categories
       data_categories: [system]
+    - name: user_assigned_data_uses
+      data_categories: [system]
+    - name: user_assigned_system_id
+      data_categories: [system]
+    - name: data_uses
+      data_categories: [system]
+    - name: system_id
+      data_categories: [system]
+    - name: vendor_id
+      data_categories: [system]
   - name: fides_user_invite
     fields:
       - name: created_at
@@ -2306,6 +2449,100 @@ dataset:
       - name: salt
         data_categories: [system.operations]
       - name: single_row
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+  - name: plus_custom_report
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: type
+        data_categories: [system.operations]
+      - name: name
+        data_categories: [system.operations]
+      - name: config
+        data_categories: [system.operations]
+      - name: created_by
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+  - name: dbcache
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: namespace
+        data_categories: [system.operations]
+      - name: cache_key
+        data_categories: [system.operations]
+      - name: cache_value
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+  - name: asset
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: name
+        data_categories: [system.operations]
+      - name: asset_type
+        data_categories: [system.operations]
+      - name: domain
+        data_categories: [system.operations]
+      - name: parent
+        data_categories: [system.operations]
+      - name: parent_domain
+        data_categories: [system.operations]
+      - name: locations
+        data_categories: [system.operations]
+      - name: with_consent
+        data_categories: [system.operations]
+      - name: data_uses
+        data_categories: [system.operations]
+      - name: meta
+        data_categories: [system.operations]
+      - name: path
+        data_categories: [system.operations]
+      - name: base_url
+        data_categories: [system.operations]
+      - name: system_id
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+      - name: description
+        data_categories: [system.operations]
+      - name: page
+        data_categories: [system.operations]
+  - name: tcf_configuration
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: name
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+  - name: tcf_publisher_restriction
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: tcf_configuration_id
+        data_categories: [system.operations]
+      - name: purpose_id
+        data_categories: [system.operations]
+      - name: restriction_type
+        data_categories: [system.operations]
+      - name: vendor_restriction
+        data_categories: [system.operations]
+      - name: range_entries
+        data_categories: [system.operations]
+      - name: created_at
         data_categories: [system.operations]
       - name: updated_at
         data_categories: [system.operations]

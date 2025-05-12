@@ -1,6 +1,9 @@
 import {
+  stubDatasetCrud,
   stubPlus,
+  stubSystemAssets,
   stubSystemCrud,
+  stubSystemIntegrations,
   stubSystemVendors,
   stubTaxonomyEntities,
   stubVendorList,
@@ -12,8 +15,9 @@ import {
   ADD_SYSTEMS_ROUTE,
   DATAMAP_ROUTE,
   INDEX_ROUTE,
+  INTEGRATION_MANAGEMENT_ROUTE,
   SYSTEM_ROUTE,
-} from "~/features/common/nav/v2/routes";
+} from "~/features/common/nav/routes";
 import { RoleRegistryEnum } from "~/types/api";
 
 describe("System management with Plus features", () => {
@@ -28,49 +32,61 @@ describe("System management with Plus features", () => {
     cy.intercept({ method: "POST", url: "/api/v1/system*" }).as(
       "postDictSystem",
     );
+    stubDatasetCrud();
+    stubSystemIntegrations();
+    stubSystemVendors();
   });
 
   describe("permissions", () => {
-    it("can view a system page as a viewer", () => {
+    beforeEach(() => {
       cy.assumeRole(RoleRegistryEnum.VIEWER);
       cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system`);
+    });
+
+    it("can view a system page as a viewer", () => {
       cy.getByTestId("input-name").should("exist");
+    });
+
+    it("can access integration management page from system edit page", () => {
+      cy.getByTestId("integration-page-btn").click();
+      cy.url().should("contain", INTEGRATION_MANAGEMENT_ROUTE);
     });
   });
 
   describe("vendor list", () => {
     beforeEach(() => {
       stubVendorList();
+      stubSystemAssets();
       cy.visit(`${ADD_SYSTEMS_MANUAL_ROUTE}`);
       cy.wait(["@getDictionaryEntries", "@getSystems"]);
     });
 
     it("can display the vendor list dropdown", () => {
-      cy.getSelectValueContainer("input-name");
+      cy.getByTestId("vendor-name-select");
     });
 
     it("contains type ahead dictionary entries", () => {
-      cy.getSelectValueContainer("input-name").type("A");
-      cy.get("#react-select-select-name-option-0").contains("Aniview LTD");
-      cy.get("#react-select-select-name-option-1").contains(
-        "Anzu Virtual Reality LTD",
-      );
+      cy.getByTestId("vendor-name-select").find("input").type("A");
+      cy.get(".ant-select-item").eq(0).contains("Aniview LTD");
+      cy.get(".ant-select-item").eq(1).contains("Anzu Virtual Reality LTD");
     });
 
     it("can reset suggestions by clearing vendor input", () => {
-      cy.getSelectValueContainer("input-name").type("L{enter}");
+      cy.getByTestId("vendor-name-select").find("input").type("L");
+      cy.antSelectDropdownVisible();
+      cy.getByTestId("vendor-name-select").realPress("Enter");
       cy.getByTestId("input-legal_name").should("have.value", "LINE");
       cy.getByTestId("clear-btn").click();
       cy.getByTestId("input-legal_name").should("be.empty");
     });
 
     it("can't refresh suggestions immediately after populating", () => {
-      cy.getSelectValueContainer("input-name").type("A{enter}");
+      cy.getByTestId("vendor-name-select").find("input").type("A{enter}");
       cy.getByTestId("refresh-suggestions-btn").should("be.disabled");
     });
 
     it("can refresh suggestions when editing a saved system", () => {
-      cy.getSelectValueContainer("input-name").type("A{enter}");
+      cy.getByTestId("vendor-name-select").find("input").type("A{enter}");
       cy.fixture("systems/dictionary-system.json").then((dictSystem) => {
         cy.fixture("systems/system.json").then((origSystem) => {
           cy.intercept(
@@ -96,7 +112,7 @@ describe("System management with Plus features", () => {
     // the form to be mistakenly marked as dirty and the "unsaved changes"
     // modal to pop up incorrectly when switching tabs
     it("can switch between tabs after populating from dictionary", () => {
-      cy.getSelectValueContainer("input-name").type("Anzu{enter}");
+      cy.getByTestId("vendor-name-select").find("input").type("Anzu{enter}");
       // the form fetches the system again after saving, so update the intercept with dictionary values
       cy.fixture("systems/dictionary-system.json").then((dictSystem) => {
         cy.fixture("systems/system.json").then((origSystem) => {
@@ -118,19 +134,23 @@ describe("System management with Plus features", () => {
       cy.wait("@getDictSystem");
       cy.getByTestId("input-dpo").should("have.value", "DPO@anzu.io");
       cy.getByTestId("tab-Data uses").click();
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(500);
       cy.getByTestId("tab-Information").click();
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(500);
       cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("confirmation-modal").should("not.exist");
     });
 
     it("locks editing for a GVL vendor when TCF is enabled", () => {
-      cy.getSelectValueContainer("input-name").type("Aniview{enter}");
+      cy.getByTestId("vendor-name-select").find("input").type("Aniview{enter}");
       cy.getByTestId("locked-for-GVL-notice");
       cy.getByTestId("input-description").should("be.disabled");
     });
 
     it("does not allow changes to data uses when locked", () => {
-      cy.getSelectValueContainer("input-name").type("Aniview{enter}");
+      cy.getByTestId("vendor-name-select").find("input").type("Aniview{enter}");
       cy.getByTestId("save-btn").click();
       cy.wait(["@postSystem", "@getSystem", "@getSystems"]);
       cy.getByTestId("tab-Data uses").click();
@@ -140,23 +160,37 @@ describe("System management with Plus features", () => {
       cy.getByTestId("input-name").should("be.disabled");
     });
 
+    it("does not allow system assets to be edited when locked", () => {
+      cy.getByTestId("vendor-name-select").find("input").type("Aniview{enter}");
+      cy.getByTestId("save-btn").click();
+      cy.wait(["@postSystem", "@getSystem", "@getSystems"]);
+      cy.getByTestId("tab-Assets").click();
+      cy.getByTestId("col-select").should("not.exist");
+      cy.getByTestId("col-actions").should("not.exist");
+      cy.getByTestId("add-asset-btn").should("not.exist");
+      cy.getByTestId("row-0").within(() => {
+        cy.getByTestId("system-badge").should("not.have.attr", "onClick");
+        cy.getByTestId("taxonomy-add-btn").should("not.exist");
+      });
+    });
+
     it("does not lock editing for a non-GVL vendor", () => {
-      cy.getSelectValueContainer("input-name").type("L{enter}");
+      cy.getByTestId("vendor-name-select").find("input").type("L{enter}");
       cy.getByTestId("locked-for-GVL-notice").should("not.exist");
       cy.getByTestId("input-description").should("not.be.disabled");
     });
 
     it("locks editing fields and changing name for a GVL vendor when visiting 'edit system' page directly", () => {
-      cy.fixture("systems/systems.json").then((systems) => {
+      cy.fixture("systems/system.json").then((system) => {
         cy.intercept("GET", "/api/v1/system/*", {
           body: {
-            ...systems[0],
+            ...system,
             vendor_id: "gvl.733",
           },
-        }).as("getSystem");
+        }).as("getSystemGVL");
       });
       cy.visit("/systems/configure/fidesctl_system");
-      cy.wait("@getSystem");
+      cy.wait("@getSystemGVL");
       cy.getByTestId("locked-for-GVL-notice");
       cy.getByTestId("input-name").should("be.disabled");
       cy.getByTestId("input-description").should("be.disabled");
@@ -169,29 +203,31 @@ describe("System management with Plus features", () => {
             ...systems[0],
             vendor_id: "gacp.3073",
           },
-        }).as("getSystem");
+        }).as("getSystemNonGVL");
       });
       cy.visit("/systems/configure/fidesctl_system");
-      cy.wait("@getSystem");
+      cy.wait("@getSystemNonGVL");
       cy.getByTestId("locked-for-GVL-notice").should("not.exist");
       cy.getByTestId("input-name").should("not.be.disabled");
     });
 
     it("allows changes to data uses for non-GVL vendors", () => {
-      cy.getSelectValueContainer("input-name").type("L{enter}");
+      cy.getByTestId("vendor-name-select").find("input").type("L");
+      cy.antSelectDropdownVisible();
+      cy.getByTestId("vendor-name-select").realPress("Enter");
       cy.getByTestId("save-btn").click();
       cy.wait(["@postSystem", "@getSystem", "@getSystems"]);
       cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("add-btn");
       cy.getByTestId("delete-btn");
       cy.getByTestId("row-functional.service.improve").click();
-      cy.getByTestId("input-data_categories")
+      cy.getByTestId("controlled-select-data_categories")
         .find("input")
         .should("not.be.disabled");
     });
 
     it("don't allow editing declaration name after creation", () => {
-      cy.getSelectValueContainer("input-name").type("L{enter}");
+      cy.getByTestId("vendor-name-select").find("input").type("L{enter}");
       cy.getByTestId("save-btn").click();
       cy.wait(["@postSystem", "@getSystem", "@getSystems"]);
       cy.getByTestId("tab-Data uses").click();
@@ -200,12 +236,16 @@ describe("System management with Plus features", () => {
     });
 
     it("don't allow editing data uses after creation", () => {
-      cy.getSelectValueContainer("input-name").type("L{enter}");
+      cy.getByTestId("vendor-name-select").find("input").type("L");
+      cy.antSelectDropdownVisible();
+      cy.getByTestId("vendor-name-select").realPress("Enter");
       cy.getByTestId("save-btn").click();
       cy.wait(["@postSystem", "@getSystem", "@getSystems"]);
       cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("row-functional.service.improve").click();
-      cy.getByTestId("input-data_use").find("input").should("be.disabled");
+      cy.getByTestId("controlled-select-data_use")
+        .find("input")
+        .should("be.disabled");
     });
   });
 
@@ -251,7 +291,7 @@ describe("System management with Plus features", () => {
       // Should not be able to save while form is untouched
       cy.getByTestId("save-btn").should("be.disabled");
       const testId =
-        "input-customFieldValues.id-custom-field-definition-pokemon-party";
+        "controlled-select-customFieldValues.id-custom-field-definition-pokemon-party";
       cy.getByTestId(testId).contains("Charmander");
       cy.getByTestId(testId).contains("Eevee");
       cy.getByTestId(testId).contains("Snorlax");
@@ -352,18 +392,34 @@ describe("System management with Plus features", () => {
     it("select page checkbox only selects rows on the displayed page", () => {
       cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
       cy.wait("@getSystemVendors");
+      cy.wait("@getDict");
+      // unreliable test because when dictionary loads it overrides the rows selected
+      // adding a .wait to make it more reliable
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(500);
       cy.getByTestId("select-page-checkbox")
         .get("[type='checkbox']")
         .check({ force: true });
+      // allow UI to update the selected rows
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(500);
       cy.getByTestId("selected-row-count").contains("6 row(s) selected.");
     });
 
     it("select all button selects all rows across every page", () => {
       cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
       cy.wait("@getSystemVendors");
+      cy.wait("@getDict");
+      // unreliable test because when dictionary loads it overrides the rows selected
+      // adding a .wait to make it more reliable
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(500);
       cy.getByTestId("select-page-checkbox")
         .get("[type='checkbox']")
         .check({ force: true });
+      // allow UI to update the selected rows
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(500);
       cy.getByTestId("select-all-rows-btn").click();
       cy.getByTestId("selected-row-count").contains("8 row(s) selected.");
     });
@@ -447,6 +503,173 @@ describe("System management with Plus features", () => {
       cy.location().should((location) => {
         expect(location.pathname).to.eq(INDEX_ROUTE);
       });
+    });
+  });
+
+  describe("asset list", () => {
+    beforeEach(() => {
+      stubSystemAssets();
+      cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system`);
+      cy.wait("@getSystem");
+    });
+
+    it("shows an empty state", () => {
+      cy.intercept("GET", "/api/v1/plus/system-assets/*", {
+        fixture: "empty-pagination",
+      }).as("getEmptySystemAssets");
+      cy.getByTestId("tab-Assets").click({ force: true });
+      cy.wait("@getEmptySystemAssets");
+      cy.getByTestId("empty-state").should("exist");
+    });
+
+    it("lists assets in the system assets tab", () => {
+      cy.getByTestId("tab-Assets").click({ force: true });
+      cy.wait("@getSystemAssets");
+      cy.getByTestId("row-0-col-name").should("contain", "ar_debug");
+      cy.getByTestId("row-0-col-locations").should("contain", "United States");
+      cy.getByTestId("row-0-col-data_uses").should("contain", "Essential");
+    });
+
+    describe("asset operations", () => {
+      beforeEach(() => {
+        cy.getByTestId("tab-Assets").click({ force: true });
+        cy.wait("@getSystemAssets");
+      });
+
+      it("can add a new asset", () => {
+        cy.getByTestId("add-asset-btn").click();
+        cy.getByTestId("add-modal-content").should("exist");
+        cy.getByTestId("input-name").type("test_cookie");
+        cy.getByTestId("input-domain").type("example.com");
+        cy.getByTestId("controlled-select-asset_type").antSelect("Cookie");
+        cy.getByTestId("controlled-select-data_uses").antSelect("analytics");
+        cy.getByTestId("save-btn").click({ force: true });
+        cy.wait("@addSystemAsset");
+      });
+
+      it("can edit an existing asset", () => {
+        cy.getByTestId("row-0-col-actions").within(() => {
+          cy.getByTestId("edit-btn").click();
+        });
+        cy.getByTestId("add-modal-content").should("exist");
+
+        cy.getByTestId("input-name")
+          .should("have.value", "ar_debug")
+          .should("be.disabled");
+        cy.getByTestId("controlled-select-asset_type")
+          .should("contain", "Cookie")
+          .should("have.class", "ant-select-disabled");
+        cy.getByTestId("controlled-select-data_uses").should(
+          "contain",
+          "essential",
+        );
+        cy.getByTestId("controlled-select-data_uses").antSelect(0);
+        cy.getByTestId("input-domain")
+          .should("have.value", ".doubleclick.net")
+          .should("be.disabled");
+        cy.getByTestId("input-description")
+          .should("have.value", "This is a test description")
+          .clear({ force: true })
+          .type("Updating the description");
+
+        cy.getByTestId("save-btn").click();
+        cy.wait("@updateSystemAssets").then((interception) => {
+          expect(interception.request.body[0].data_uses).to.eql([
+            "essential",
+            "analytics",
+          ]);
+        });
+      });
+
+      it("can delete an asset", () => {
+        cy.getByTestId("row-0-col-actions").within(() => {
+          cy.getByTestId("remove-btn").click();
+        });
+
+        cy.getByTestId("confirmation-modal").should("exist");
+        cy.getByTestId("continue-btn").click({ force: true });
+        cy.wait("@deleteSystemAssets");
+      });
+
+      it("validates base URL for non-cookie assets", () => {
+        cy.getByTestId("add-asset-btn").click();
+        cy.getByTestId("add-modal-content").should("exist");
+
+        cy.getByTestId("input-name").type("test_tag");
+        cy.getByTestId("input-domain").type("example.com");
+        cy.getByTestId("controlled-select-asset_type").antSelect(
+          "Javascript tag",
+        );
+        cy.getByTestId("controlled-select-data_uses").antSelect("analytics");
+        cy.getByTestId("controlled-select-data_uses").within(() => {
+          // force select menu to close so it doesn't cover the input
+          cy.get("input").focus().blur();
+        });
+        // blur the input without entering anything to trigger the error
+        cy.getByTestId("input-base_url").clear().blur();
+        cy.getByTestId("save-btn").should("be.disabled");
+        cy.getByTestId("error-base_url").should(
+          "contain",
+          "Base URL is required",
+        );
+        cy.getByTestId("input-base_url").type("https://example.com/script.js");
+        cy.getByTestId("save-btn").click();
+        cy.wait("@addSystemAsset");
+      });
+
+      it("can bulk delete assets", () => {
+        cy.getByTestId("row-0-col-select").click();
+        cy.getByTestId("row-1-col-select").click();
+        cy.getByTestId("bulk-delete-btn").click();
+        cy.getByTestId("confirmation-modal").should("exist");
+        cy.getByTestId("continue-btn").click();
+        cy.wait("@deleteSystemAssets");
+      });
+    });
+  });
+
+  describe("tab navigation", () => {
+    it("updates URL hash when switching tabs", () => {
+      cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system#information`);
+      cy.location("hash").should("eq", "#information");
+
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(500);
+      cy.getByTestId("tab-Data uses").click();
+      cy.location("hash").should("eq", "#data-uses");
+
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(500);
+      cy.getByTestId("tab-Data flow").click();
+      cy.location("hash").should("eq", "#data-flow");
+
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(500);
+      cy.getByTestId("tab-Integrations").click();
+      cy.location("hash").should("eq", "#integrations");
+
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(500);
+      cy.getByTestId("tab-Assets").click({ force: true });
+      cy.location("hash").should("eq", "#assets");
+
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(500);
+      cy.getByTestId("tab-History").click({ force: true });
+      cy.location("hash").should("eq", "#history");
+    });
+
+    it("loads correct tab directly based on URL hash", () => {
+      // Visit page with specific hash
+      cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system#data-uses`);
+
+      // Verify correct tab is active
+      cy.getByTestId("tab-Data uses").should(
+        "have.attr",
+        "aria-selected",
+        "true",
+      );
+      cy.location("hash").should("eq", "#data-uses");
     });
   });
 });
