@@ -1,129 +1,148 @@
 dataset:
-  - fides_key: fides_cache
-    name: Fides Redis Cache
-    description: Fields stored in temporary storage to support Fides request execution
-    collections:
-      - name: hash_table
+- fides_key: fides_cache
+  name: Fides Redis Cache
+  description: Fields stored in temporary storage to support Fides request execution
+  collections:
+  - name: hash_table
+    fields:
+    - name: EN_ACCESS_GRAPH__<privacy_request_id>
+      description: This graph is summarized and sent to Fideslog to create high level
+        insight into how graphs change between retries to inform future features.
+      fidesops_meta:
+        data_type: object
+      fields:
+      - name: <dataset_name>:<collection_name>
+        fidesops_meta:
+          data_type: object
         fields:
-          - name: EN_ACCESS_GRAPH__<privacy_request_id>
-            description: This graph is summarized and sent to Fideslog to create high level insight into how graphs change between retries to inform future features.
-            fidesops_meta:
-              data_type: object # Stores an encrypted representation of the fidesops graph that executes the privacy requests.
-            fields:
-              - name: <dataset_name>:<collection_name>  # The current collection
-                fidesops_meta:
-                  data_type: object
-                fields:
-                  - name: <dataset_name>:<upstream_collection_name>  # An upstream collection
-                    data_categories: [system.operations]
-                    fidesops_meta:
-                      data_type: string[]  # List of edges between the upstream collection and the current collection
-          - name: EN_DATA_USE_MAP__<privacy_request_id>
-            description: This map of traversed `Collection`s to associated `DataUse`s is stored and retrieved to be included in access request output packages.
-            fidesops_meta:
-              data_type: object # Dict mapping `Collection` addresses -> set of associated `DataUse`s
-            fields:
-              - name: <dataset_name>:<collection_name>  # `Collection` address
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: string[] # set of `DataUse`s associated with this `Collection`
-          - name: EN_EMAIL_INFORMATION__<privacy_request_id>__<current_step>__<dataset_name>__<collection_name>  # Usage: For building emails associated with email-connector datasets at the end of the privacy request. This encrypted raw information is retrieved from each relevant email-based collection and used to build a single email per email connector, with instructions on how to mask data on the given dataset.
-            fidesops_meta:
-              data_type: object  # Stores how to locate and mask records for a given "email" collection.
-              fields:
-                - name: step  # Currently always "erasure".  The email connector only sends emails for erasure requests.
-                  data_categories: [system.operations]
-                  fidesops_meta:
-                    data_type: string
-                - name: collection # <dataset_name>:<collection_name>
-                  data_categories: [system.operations]
-                  fidesops_meta:
-                    data_type: string
-                - name: action_needed
-                  fidesops_meta:
-                    data_type: object[]
-                  fields:
-                    - name: locators
-                      data_categories: [user]
-                      fidesops_meta:
-                        data_type: object  # Field names mapped to values that should be used to locate the relevant records to mask
-                    - name: get  # Always None for this "action required" cache
-                    - name: update
-                      fidesops_meta:
-                        data_type: object  # Field names (nested fields are dot-separated) mapped to the masking value
-          - name: EN_FAILED_LOCATION__<privacy_request_id>  # Usage: Used to resume a privacy request from a particular checkpoint.
+        - name: <dataset_name>:<upstream_collection_name>
+          data_categories:
+          - system.operations
+          fidesops_meta:
+            data_type: string[]
+    - name: EN_DATA_USE_MAP__<privacy_request_id>
+      description: This map of traversed `Collection`s to associated `DataUse`s is
+        stored and retrieved to be included in access request output packages.
+      fidesops_meta:
+        data_type: object
+      fields:
+      - name: <dataset_name>:<collection_name>
+        data_categories:
+        - system.operations
+        fidesops_meta:
+          data_type: string[]
+    - name: EN_EMAIL_INFORMATION__<privacy_request_id>__<current_step>__<dataset_name>__<collection_name>
+      fidesops_meta:
+        data_type: object
+        fields:
+        - name: step
+          data_categories:
+          - system.operations
+          fidesops_meta:
+            data_type: string
+        - name: collection
+          data_categories:
+          - system.operations
+          fidesops_meta:
+            data_type: string
+        - name: action_needed
+          fidesops_meta:
+            data_type: object[]
+          fields:
+          - name: locators
+            data_categories:
+            - user
             fidesops_meta:
               data_type: object
-            fields:
-              - name: step  # The particular checkpoint where the privacy request failed.  Only one checkpoint can be cached at a time.
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: string
-              - name: collection # dataset_name:collection_name  # Optional. If the privacy request failed inside the graph, the particular dataset/collection where it failed.
-                data_categories: [system.operations]
-                fidesops_meta:
-                  data_type: string
-          - name: EN_MANUAL_INPUT__<privacy_request_id>__<dataset_name>:<collection_name>  # Usage: To store data uploaded by a human for a given manual collection which can be used to query downstream dependent results and later filtered and returned to the user. This is for the Manual Connector, which is integrated with the graph.
-            fidesops_meta:
-              data_type: object[]  # A list of rows manually uploaded for a given collection.  The fields will be entirely dependent on the collection in question.
-          - name: EN_MANUAL_MASK__<privacy_request_id>__<dataset_name>:<collection_name>  # Usage: To have an erasure for a Manual Connector (which is integrated with the graph) return the same information that an automated connector returns. This allows a user to confirm they've manually masked data on their end for a given collection.
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: integer  # A count of records manually erased for a given collection
-          - name: EN_PAUSED_LOCATION__<privacy_request_id>  # Usage: Caches the location where a privacy request is paused and awaiting input by a manual connector. Manual data should be uploaded corresponding to this cached location.  Manual connectors are integrated with the graph.
+          - name: get
+          - name: update
             fidesops_meta:
               data_type: object
-              fields:
-                - name: step  # Either access or erasure
-                  data_categories: [system.operations]
-                  fidesops_meta:
-                    data_type: string
-                - name: collection # dataset_name:collection_name.  The given collection where the manual connector is awaiting input.
-                  data_categories: [system.operations]
-                  fidesops_meta:
-                    data_type: string
-                - name: action_needed
-                  fidesops_meta:
-                    data_type: object[]
-                  fields:
-                    - name: locators
-                      data_type: object  # Field names mapped to values that should be used to manually locate the record(s) associated with a given subject
-                    - name: get  # Applicable if we're paused on the "access" step. A list of field names on the current collection that should be retrieved.
-                      data_categories: [user]
-                      data_type: string[]
-                    - name: update  # Applicable if we're paused on the "erasure" step
-                      data_type: object # Field names mapped to the values that should be used to mask
-          - name: EN_PLACEHOLDER_RESULTS__<privacy_request_id>__access_request__<dataset_name>:<collection_name>  # Usage: Saves the access data that we should use to perform the erasure request.  Access request data is a prerequisite to running an erasure.
-            fidesops_meta:
-              data_type: object[]  # A list of encrypted rows. This separate representation of access results is stored to indicate which array elements are not applicable to the given data subject.
-          - name: EN_<privacy_request_id>__access_request__<dataset_name>:<collection_name>  # Usage: These are the results of the access request for a given collection.  These rows are used to find data in dependent collections downstream and are later filtered by data category and returned to the user.
-            fidesops_meta:
-              data_type: object[]  # A list of encrypted rows retrieved from the given collection in an access request.
-          - name: EN_<privacy_request_id>__erasure_request__<dataset_name>:<collection_name> # Usage: For retrying a privacy request after pause or failure, lets us know that an erasure was already performed on this collection, so we don't attempt again.
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: integer  # An encrypted count of records masked on the given collection
-          - name: EN_WEBHOOK_MANUAL_INPUT__<privacy_request_id>__<access_manual_webhook_id>  # Usage: Stores fields manually uploaded for a *webhook* to be returned directly to the user at the end of the privacy request.  Manual webhooks run before the graph, as opposed to manual connectors which collect manual data as *part* of the graph.
-            fidesops_meta:
-              data_type: object  # A single record that was manually uploaded for the given manual webhook (all dynamic fields may be user-related)
-          - name: id-<privacy_request_id>-async-execution  # Usage: May not be using yet, but tying a privacy request to its celery task could give us more insight into its current status in the future.
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string  # Stores the privacy request's celery task id
-          - name: id-<privacy_request_id>-drp-<attribute>"  # Usage: For DRP troubleshooting. Individually caches portions of the drp request body. Can map to multiple scalar values.
-          - name: id-<privacy_request_id>-encryption-key  # Usage: Used to encrypt access request results before uploading to the user
-            fidesops_meta:
-              data_categories: [system.operations]
-              data_type: string  # Sets the fidesops encryption key.
-          - name: id-<privacy_request_id>-identity-<identity_attribute>  # Usage: For caching the users' identity to be used in privacy request execution.  For example, identity attribute might be "email" or "phone_number"
-            data_categories: [user]
-            fidesops_meta:
-              data_type: string
-          - name: id-<privacy_request_id>-masking-secret-<masking_strategy>-<secret_type>  # Usage: To carry out erasure requests using certain masking strategies that need secrets
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string  # An automatically generated secret that should be used in conjunction with the given masking strategy
-          - name: IDENTITY_VERIFICATION_CODE__<privacy_request_id>  # Usage: To verify the user's identity before executing a privacy request.
-            data_categories: [system.operations]
-            fidesops_meta:
-              data_type: string  # A stringified version of a six-digit identification number
+    - name: EN_FAILED_LOCATION__<privacy_request_id>
+      fidesops_meta:
+        data_type: object
+      fields:
+      - name: step
+        data_categories:
+        - system.operations
+        fidesops_meta:
+          data_type: string
+      - name: collection
+        data_categories:
+        - system.operations
+        fidesops_meta:
+          data_type: string
+    - name: EN_MANUAL_INPUT__<privacy_request_id>__<dataset_name>:<collection_name>
+      fidesops_meta:
+        data_type: object[]
+    - name: EN_MANUAL_MASK__<privacy_request_id>__<dataset_name>:<collection_name>
+      data_categories:
+      - system.operations
+      fidesops_meta:
+        data_type: integer
+    - name: EN_PAUSED_LOCATION__<privacy_request_id>
+      fidesops_meta:
+        data_type: object
+        fields:
+        - name: step
+          data_categories:
+          - system.operations
+          fidesops_meta:
+            data_type: string
+        - name: collection
+          data_categories:
+          - system.operations
+          fidesops_meta:
+            data_type: string
+        - name: action_needed
+          fidesops_meta:
+            data_type: object[]
+          fields:
+          - name: locators
+            data_type: object
+          - name: get
+            data_categories:
+            - user
+            data_type: string[]
+          - name: update
+            data_type: object
+    - name: EN_PLACEHOLDER_RESULTS__<privacy_request_id>__access_request__<dataset_name>:<collection_name>
+      fidesops_meta:
+        data_type: object[]
+    - name: EN_<privacy_request_id>__access_request__<dataset_name>:<collection_name>
+      fidesops_meta:
+        data_type: object[]
+    - name: EN_<privacy_request_id>__erasure_request__<dataset_name>:<collection_name>
+      data_categories:
+      - system.operations
+      fidesops_meta:
+        data_type: integer
+    - name: EN_WEBHOOK_MANUAL_INPUT__<privacy_request_id>__<access_manual_webhook_id>
+      fidesops_meta:
+        data_type: object
+    - name: id-<privacy_request_id>-async-execution
+      data_categories:
+      - system.operations
+      fidesops_meta:
+        data_type: string
+    - name: id-<privacy_request_id>-drp-<attribute>"
+    - name: id-<privacy_request_id>-encryption-key
+      fidesops_meta:
+        data_categories:
+        - system.operations
+        data_type: string
+    - name: id-<privacy_request_id>-identity-<identity_attribute>
+      data_categories:
+      - user
+      fidesops_meta:
+        data_type: string
+    - name: id-<privacy_request_id>-masking-secret-<masking_strategy>-<secret_type>
+      data_categories:
+      - system.operations
+      fidesops_meta:
+        data_type: string
+    - name: IDENTITY_VERIFICATION_CODE__<privacy_request_id>
+      data_categories:
+      - system.operations
+      fidesops_meta:
+        data_type: string
