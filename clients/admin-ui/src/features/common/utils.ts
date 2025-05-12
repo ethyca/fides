@@ -133,3 +133,7 @@ export const getDomain = (urlOrDomain: string): string => {
     return urlOrDomain.replace(/^(https?:\/\/)?(www\.)?/, "");
   }
 };
+
+export const stripHashFromUrl = (url: string) => {
+  return url.split("#")[0];
+};

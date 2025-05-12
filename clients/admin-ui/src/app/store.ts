@@ -17,6 +17,7 @@ import {
 } from "redux-persist";
 import createWebStorage from "redux-persist/lib/storage/createWebStorage";
 
+import { rtkQueryErrorLogger } from "~/app/middleware";
 import { STORAGE_ROOT_KEY } from "~/constants";
 import { authSlice } from "~/features/auth";
 import { baseApi } from "~/features/common/api.slice";
@@ -102,7 +103,6 @@ const reducer = {
 export type RootState = StateFromReducersMapObject<typeof reducer>;
 
 const allReducers = combineReducers(reducer);
-
 const rootReducer = (state: RootState | undefined, action: AnyAction) => {
   let newState = state;
   if (action.type === "auth/logout") {
@@ -129,7 +129,6 @@ const persistConfig = {
 };
 
 export const persistedReducer = persistReducer(persistConfig, rootReducer);
-
 export const makeStore = (
   preloadedState?: Parameters<typeof persistedReducer>[0],
 ) =>
@@ -140,7 +139,7 @@ export const makeStore = (
         serializableCheck: {
           ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
         },
-      }).concat(baseApi.middleware, healthApi.middleware),
+      }).concat(baseApi.middleware, healthApi.middleware, rtkQueryErrorLogger),
     devTools: true,
     preloadedState,
   });

@@ -267,9 +267,12 @@ export default async function handler(
       fidesPrimaryColor: environment.settings.FIDES_PRIMARY_COLOR,
       fidesClearCookie: environment.settings.FIDES_CLEAR_COOKIE,
       fidesConsentOverride: environment.settings.FIDES_CONSENT_OVERRIDE,
-      fidesDisabledNotices: parseFidesDisabledNotices(
-        environment.settings.FIDES_DISABLED_NOTICES || undefined,
-      ),
+      fidesDisabledNotices: environment.settings.FIDES_DISABLED_NOTICES
+        ? parseFidesDisabledNotices(environment.settings.FIDES_DISABLED_NOTICES)
+        : null,
+      fidesConsentNonApplicableFlagMode:
+        environment.settings.FIDES_CONSENT_NON_APPLICABLE_FLAG_MODE,
+      fidesConsentFlagType: environment.settings.FIDES_CONSENT_FLAG_TYPE,
     },
     experience: experience || undefined,
     geolocation: geolocation || undefined,

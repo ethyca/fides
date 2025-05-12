@@ -72,6 +72,16 @@ preferences in the FidesJS UI but has yet to *save* those changes (i.e.
 
 Event properties passed by FidesJS when dispatched. Depending on the event type, some properties may or may not be set, so most of these are marked as optional.
 
+#### Example
+
+```ts
+window.addEventListener("FidesUpdated", (evt) => {
+  if (evt.detail.extraDetails?.consentMethod === "accept") {
+    console.log("Current user clicked the 'Accept' button!");
+  }
+});
+```
+
 #### consent
 
 > **consent**: `Record`\<`string`, `boolean`\>
@@ -211,16 +221,6 @@ The vendor list ID if this is a vendor-related preference
 > `optional` **vendor\_name**: `string`
 
 The vendor name if this is a vendor-related preference
-
-#### Example
-
-```ts
-window.addEventListener("FidesUpdated", (evt) => {
-  if (evt.detail.extraDetails?.consentMethod === "accept") {
-    console.log("Current user clicked the 'Accept' button!");
-  }
-});
-```
 
 #### Overrides
 

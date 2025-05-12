@@ -67,6 +67,8 @@ export type PrivacyCenterClientSettings = Pick<
   | "FIDES_CLEAR_COOKIE"
   | "FIDES_CONSENT_OVERRIDE"
   | "FIDES_DISABLED_NOTICES"
+  | "FIDES_CONSENT_NON_APPLICABLE_FLAG_MODE"
+  | "FIDES_CONSENT_FLAG_TYPE"
 >;
 
 export type Styles = string;
@@ -326,6 +328,9 @@ export const getClientSettings = (): PrivacyCenterClientSettings => {
     FIDES_CLEAR_COOKIE: settings.FIDES_CLEAR_COOKIE,
     FIDES_CONSENT_OVERRIDE: settings.FIDES_CONSENT_OVERRIDE,
     FIDES_DISABLED_NOTICES: settings.FIDES_DISABLED_NOTICES,
+    FIDES_CONSENT_NON_APPLICABLE_FLAG_MODE:
+      settings.FIDES_CONSENT_NON_APPLICABLE_FLAG_MODE,
+    FIDES_CONSENT_FLAG_TYPE: settings.FIDES_CONSENT_FLAG_TYPE,
   };
 
   return clientSettings;

@@ -16,7 +16,7 @@ from fides.api.util.data_category import get_data_categories_from_db
 from tests.conftest import create_citext_extension
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session")
 def setup_db(api_client, config):
     """Apply migrations at beginning and end of testing session"""
     assert config.test_mode
@@ -24,7 +24,7 @@ def setup_db(api_client, config):
     yield api_client.post(url=f"{config.cli.server_url}/v1/admin/db/reset")
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture
 def clear_db_tables(db):
     """Clear data from tables between tests.
 
@@ -58,7 +58,7 @@ def clear_db_tables(db):
     delete_data(Base.metadata.sorted_tables)
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session")
 def fideslang_data_categories(db):
     """
     Creates a database record for each data category in the fideslang taxonomy.

@@ -13,7 +13,7 @@ from fides.api.models.location_regulation_selections import (
 )
 
 
-@pytest.fixture(scope="function", autouse=True)
+@pytest.fixture(scope="function")
 def reset_location_regulation_selections(db):
     LocationRegulationSelections.set_selected_locations(db, [])
     LocationRegulationSelections.set_selected_regulations(db, [])

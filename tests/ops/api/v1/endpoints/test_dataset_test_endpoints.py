@@ -114,7 +114,7 @@ class TestDatasetInputs:
 class TestDatasetReachability:
 
     @pytest.fixture(scope="function")
-    def default_access_policy(self, db) -> None:
+    def default_access_policy(self, db, default_data_categories) -> None:
         load_default_access_policy(db, get_client_id(db), get_user_data_categories())
 
     def test_dataset_reachability_not_authenticated(
@@ -229,7 +229,7 @@ class TestDatasetReachability:
 @pytest.mark.integration_postgres
 class TestDatasetTest:
     @pytest.fixture(scope="function")
-    def default_access_policy(self, db) -> None:
+    def default_access_policy(self, db, default_data_categories) -> None:
         load_default_access_policy(db, get_client_id(db), get_user_data_categories())
 
     def test_dataset_test_not_authenticated(
