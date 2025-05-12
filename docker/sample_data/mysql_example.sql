@@ -108,9 +108,9 @@ CREATE TABLE `Lead` (
 );
 
 CREATE TABLE reserved (
-                              id INT PRIMARY KEY,
-                              key CHARACTER VARYING(100),
-                              option CHARACTER VARYING(100),
-                              on TIMESTAMP,
-                              rename BOOLEAN
+                              `id` INT PRIMARY KEY,
+                              `key` CHARACTER VARYING(100),
+                              `option` CHARACTER VARYING(100),
+                              `on` TIMESTAMP,
+                              `rename` BOOLEAN
 );
