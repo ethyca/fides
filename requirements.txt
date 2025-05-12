@@ -260,11 +260,12 @@ googleapis-common-protos==1.70.0
     #   grpcio-status
 greenlet==3.2.2
     # via sqlalchemy
-grpcio==1.71.0
+grpcio==1.47.0
     # via
+    #   -r requirements.in
     #   google-api-core
     #   grpcio-status
-grpcio-status==1.48.2
+grpcio-status==1.47.0
     # via google-api-core
 h11==0.14.0
     # via
@@ -596,6 +597,7 @@ six==1.17.0
     #   avro-gen3
     #   ecdsa
     #   geomet
+    #   grpcio
     #   hvac
     #   mixpanel
     #   python-dateutil
