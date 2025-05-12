@@ -74,3 +74,4 @@ fideslang===3.1.0
 
 # protobuf<3.21
 grpcio==1.70.0
+protobuf==5.29.3
