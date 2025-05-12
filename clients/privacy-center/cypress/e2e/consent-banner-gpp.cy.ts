@@ -202,7 +202,7 @@ describe("Fides-js GPP extension", () => {
             // date-based and changes each day. The first 6 characters are the
             // "Created" date, the next 6 are the "Last Updated" date.
             expect(args[3][0].pingData.gppString).to.match(
-              /DBABMA~[a-zA-Z0-9_]{6}[a-zA-Z0-9_]{6}AGXABBENArEoABaAAEAAAAAAABEAAAAA/,
+              /DBABMA~[a-zA-Z0-9_]{6}[a-zA-Z0-9_]{6}AGXABBENArEoABaAAEAAAAAAABEAAiAA/,
             );
             // the `PurposeConsents` should match the gpp string
             expect(
