@@ -75,4 +75,3 @@ fideslang===3.1.0
 # Freezing to avoid breaking changes on fidesplus
 grpcio==1.70.0
 protobuf==5.29.3
-click==8.1.8

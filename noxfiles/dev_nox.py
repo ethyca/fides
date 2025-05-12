@@ -291,7 +291,7 @@ def delete_old_test_pypi_packages(session: Session, action: str) -> None:
         )
 
 
-@nox_session()
+@nox_session(python="3.9")
 def upgrade_packages(session: Session) -> None:
     session.install("pip-tools==7.4.1")
     session.run("rm", "-f", "requirements.txt", external=True)
