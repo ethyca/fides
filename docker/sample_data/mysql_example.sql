@@ -106,3 +106,11 @@ CREATE TABLE `Lead` (
                               email CHARACTER VARYING(100),
                               updated_at TIMESTAMP
 );
+
+CREATE TABLE reserved (
+                              id INT PRIMARY KEY,
+                              key CHARACTER VARYING(100),
+                              option CHARACTER VARYING(100),
+                              on TIMESTAMP,
+                              rename BOOLEAN
+);

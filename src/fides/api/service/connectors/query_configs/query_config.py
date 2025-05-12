@@ -425,7 +425,7 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
     @abstractmethod
     def get_formatted_query_string(
         self,
-        field_list: str,
+        field_list: List[str],
         clauses: List[str],
     ) -> str:
         """Returns a SQL query string."""
@@ -477,8 +477,7 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
                 clauses.append(self.format_clause_for_query(field_name, "IN", operand))
 
         if len(clauses) > 0:
-            formatted_fields = ", ".join(field_list)
-            query_str = self.get_formatted_query_string(formatted_fields, clauses)
+            query_str = self.get_formatted_query_string(field_list, clauses)
             return self.format_query_stmt(query_str, query_data)
 
         return None
@@ -616,8 +615,7 @@ class SQLQueryConfig(SQLLikeQueryConfig[Executable]):
                 query_data[field_name] = tuple(data)
 
         if len(clauses) > 0:
-            formatted_fields = ", ".join(field_list)
-            query_str = self.get_formatted_query_string(formatted_fields, clauses)
+            query_str = self.get_formatted_query_string(field_list, clauses)
             return text(query_str).params(query_data)
 
         return None
@@ -630,11 +628,12 @@ class SQLQueryConfig(SQLLikeQueryConfig[Executable]):
 
     def get_formatted_query_string(
         self,
-        field_list: str,
+        field_list: List[str],
         clauses: List[str],
     ) -> str:
         """Returns an SQL query string."""
-        return f"SELECT {field_list} FROM {self.node.collection.name} WHERE {' OR '.join(clauses)}"
+        formatted_field_list = ", ".join(field_list)
+        return f"SELECT {formatted_field_list} FROM {self.node.collection.name} WHERE {' OR '.join(clauses)}"
 
     def generate_query(
         self,
@@ -739,8 +738,7 @@ class QueryStringWithoutTuplesOverrideQueryConfig(SQLQueryConfig):
                 clauses.append(self.format_clause_for_query(field_name, "IN", operand))
 
         if len(clauses) > 0:
-            formatted_fields = ", ".join(field_list)
-            query_str = self.get_formatted_query_string(formatted_fields, clauses)
+            query_str = self.get_formatted_query_string(field_list, clauses)
             return text(query_str).params(query_data)
 
         return None

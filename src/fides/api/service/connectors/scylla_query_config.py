@@ -57,11 +57,12 @@ class ScyllaDBQueryConfig(SQLLikeQueryConfig[ScyllaDBStatement]):
 
     def get_formatted_query_string(
         self,
-        field_list: str,
+        field_list: List[str],
         clauses: List[str],
     ) -> str:
         """Returns an SQL query string."""
-        return f"SELECT {field_list} FROM {self.node.collection.name} WHERE {' OR '.join(clauses)} ALLOW FILTERING;"
+        formatted_field_list = ", ".join(field_list)
+        return f"SELECT {formatted_field_list} FROM {self.node.collection.name} WHERE {' OR '.join(clauses)} ALLOW FILTERING;"
 
     def generate_query(
         self,

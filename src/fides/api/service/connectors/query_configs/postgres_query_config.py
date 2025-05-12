@@ -10,9 +10,10 @@ class PostgresQueryConfig(SQLQueryConfig):
 
     def get_formatted_query_string(
         self,
-        field_list: str,
+        field_list: List[str],
         clauses: List[str],
     ) -> str:
         """Returns a query string with double quotation mark formatting for tables that have the same names as
         Postgres reserved words."""
-        return f'SELECT {field_list} FROM "{self.node.collection.name}" WHERE ({" OR ".join(clauses)})'
+        formatted_fields = ", ".join(field_list)
+        return f'SELECT {formatted_fields} FROM "{self.node.collection.name}" WHERE ({" OR ".join(clauses)})'

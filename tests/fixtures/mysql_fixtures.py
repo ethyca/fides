@@ -228,6 +228,11 @@ def mysql_integration_db(mysql_integration_session):
         INSERT INTO `Lead` VALUES
         ('test@example.com', '2021-01-05'); -- test case for table with reserved keyword
         """,
+        """
+        INSERT INTO reserved VALUES
+        (1, 'key-1', 'option-1', '2021-01-01', true), -- test case for columns with reserved keywords
+        (2, 'key-2', 'option-2', '2021-01-02', false);
+        """,
     ]
     [mysql_integration_session.execute(stmt) for stmt in statements]
     yield mysql_integration_session
