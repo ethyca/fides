@@ -477,7 +477,7 @@ describe("generateFidesString", () => {
     expect(decodedTCString.publisherCountryCode).toBe("US");
   });
 
-  it("saves special purpose vendor to legitimate interest appropriately", async () => {
+  it("saves special purpose vendor to Vendor Legitimate Interest ", async () => {
     // This test only check for opt out, but is applicable regardless of consent choice
     const experienceWithSpecialPurposeVendors = {
       ...experience,
@@ -505,6 +505,12 @@ describe("generateFidesString", () => {
           features: [],
           special_features: [],
           url: "https://test.com/privacy",
+        },
+        {
+          id: "gvl.740",
+          name: "Special Purpose and Legitimate Interest Vendor",
+          special_purposes: [1],
+          features: [],
         },
       ],
       gvl: {
@@ -570,7 +576,7 @@ describe("generateFidesString", () => {
         specialFeatures: [],
         specialPurposes: [], // Preferences are not saved here
         vendorsConsent: [], // User opted out of all vendors
-        vendorsLegint: [], // No explicit legitimate interest consent
+        vendorsLegint: ["gvl.740"],
       },
     });
 
@@ -583,6 +589,7 @@ describe("generateFidesString", () => {
 
     // Verify the special purpose only vendors are appropriately added to the legitimate interest section
     expect(decodedTCString.vendorConsents.size).toBe(0);
+    expect(decodedTCString.vendorLegitimateInterests.has(740)).toBe(true);
     expect(decodedTCString.vendorLegitimateInterests.has(777)).toBe(false);
     expect(decodedTCString.vendorLegitimateInterests.has(888)).toBe(true);
     expect(decodedTCString.vendorLegitimateInterests.has(999)).toBe(true);
