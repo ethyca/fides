@@ -4,6 +4,7 @@ import unittest.mock as mock
 from email.utils import formatdate
 from typing import Any, Dict, Generator
 
+import certifi
 import pytest
 from loguru import logger
 from requests import ConnectionError, Response, Session
@@ -189,6 +190,10 @@ class TestAuthenticatedClient:
         test_authenticated_client.uri = test_http_server
         test_authenticated_client.send(request_params)
 
+    def test_clients_append_certifi_path(
+        self, test_authenticated_client, test_http_server
+    ):
+        assert test_authenticated_client.session.verify == certifi.where()
 
 @pytest.mark.unit_saas
 class TestRetryAfterHeaderParsing:

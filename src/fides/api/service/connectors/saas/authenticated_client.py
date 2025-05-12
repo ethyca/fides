@@ -50,6 +50,7 @@ class AuthenticatedClient:
         rate_limit_config: Optional[RateLimitConfig] = None,
     ):
         self.session = Session()
+        self.session.verify = certifi.where()
         self.uri = uri
         self.configuration = configuration
         self.client_config = client_config
@@ -225,8 +226,7 @@ class AuthenticatedClient:
         if isinstance(prepared_request.body, str):
             prepared_request.body = prepared_request.body.encode("utf-8")
 
-        response = self.session.send(prepared_request, verify=certifi.where())
-
+        response = self.session.send(prepared_request)
         ignore_error = self._should_ignore_error(
             status_code=response.status_code, errors_to_ignore=ignore_errors
         )
