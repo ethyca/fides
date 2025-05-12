@@ -476,4 +476,69 @@ describe("generateFidesString", () => {
     const decodedTCString = TCString.decode(tcfString);
     expect(decodedTCString.publisherCountryCode).toBe("US");
   });
+
+  it("saves special purpose only vendor to legitimate interest regardless of consent choice", async () => {
+    // Add a vendor that only has special purposes
+    const experienceWithSpecialPurposeVendor = {
+      ...experience,
+      tcf_vendor_relationships: [
+        {
+          id: "gvl.999",
+          name: "Special Purpose Only Vendor",
+          purposes: [],
+          legitimate_interest_purposes: [],
+          special_purposes: [1, 2],
+          features: [],
+          special_features: [],
+          flexible_purposes: [],
+          url: "https://test.com/privacy",
+        },
+      ],
+      gvl: {
+        ...mockGvl,
+        vendors: {
+          ...mockGvl.vendors,
+          999: {
+            id: 999,
+            name: "Special Purpose Only Vendor",
+            purposes: [], // No regular purposes
+            legIntPurposes: [], // No legitimate interest purposes
+            flexiblePurposes: [],
+            specialPurposes: [1, 2], // Only special purposes
+            features: [],
+            specialFeatures: [],
+            policyUrl: "https://test.com/privacy",
+            usesCookies: true,
+            cookieMaxAgeSeconds: 86400,
+            cookieRefresh: false,
+            usesNonCookieAccess: false,
+          },
+        },
+      },
+    } as unknown as PrivacyExperience;
+
+    const fidesString = await generateFidesString({
+      experience: experienceWithSpecialPurposeVendor,
+      tcStringPreferences: {
+        customPurposesConsent: [],
+        features: [],
+        purposesConsent: [], // User opted out of all purposes
+        purposesLegint: [],
+        specialFeatures: [],
+        specialPurposes: [], // Preferences are not saved here
+        vendorsConsent: [], // User opted out of all vendors
+        vendorsLegint: [], // No explicit legitimate interest consent
+      },
+    });
+
+    expect(fidesString).not.toBeNull();
+    expect(fidesString).not.toBeUndefined();
+    expect(fidesString).not.toBe("");
+
+    const [tcfString] = fidesString.split(FIDES_SEPARATOR);
+    const decodedTCString = TCString.decode(tcfString);
+
+    // Verify the special purpose vendor is in legitimate interest section regardless of user choice
+    expect(decodedTCString.vendorLegitimateInterests.has(999)).toBe(true);
+  });
 });

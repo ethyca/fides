@@ -22,6 +22,7 @@ from tests.ctl.types import FixtureRequest
 
 
 @pytest.fixture(name="created_resources")
+@pytest.mark.usefixtures("monkeypatch_requests")
 def fixture_created_resources(
     test_config: FidesConfig, request: FixtureRequest
 ) -> Generator:
@@ -62,7 +63,8 @@ def fixture_created_resources(
     indirect=["created_resources"],
 )
 async def test_cascade_delete_taxonomy_children(
-    created_resources: List, async_session: AsyncSession
+    created_resources: List,
+    async_session: AsyncSession,
 ) -> None:
     """Deleting a parent taxonomy should delete all of its children too"""
     resource_type, keys = created_resources
@@ -378,14 +380,14 @@ async def test_get_custom_fields_filtered(
     )
 
 
-async def test_get_resource_with_custom_field(db, async_session_temp):
+async def test_get_resource_with_custom_field(db, async_session):
     system_data = {
         "name": "my system",
         "system_type": "test",
         "fides_key": str(uuid4()),
     }
 
-    system = await create_resource(sql_models.System, system_data, async_session_temp)
+    system = await create_resource(sql_models.System, system_data, async_session)
 
     custom_definition_data = {
         "name": "test1",
@@ -420,7 +422,7 @@ async def test_get_resource_with_custom_field(db, async_session_temp):
     )
 
     result = await get_resource_with_custom_fields(
-        sql_models.System, system.fides_key, async_session_temp
+        sql_models.System, system.fides_key, async_session
     )
 
     assert result["name"] == system.name
@@ -428,16 +430,16 @@ async def test_get_resource_with_custom_field(db, async_session_temp):
     assert result[custom_field_definition.name] == "Test value 1, Test value 2"
 
 
-async def test_get_resource_with_custom_field_no_custom_field(async_session_temp):
+async def test_get_resource_with_custom_field_no_custom_field(async_session):
     system_data = {
         "name": "my system",
         "system_type": "test",
         "fides_key": str(uuid4()),
     }
 
-    system = await create_resource(sql_models.System, system_data, async_session_temp)
+    system = await create_resource(sql_models.System, system_data, async_session)
     result = await get_resource_with_custom_fields(
-        sql_models.System, system.fides_key, async_session_temp
+        sql_models.System, system.fides_key, async_session
     )
 
     assert result["name"] == system.name

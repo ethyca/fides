@@ -8,13 +8,14 @@ import {
   FidesCookie,
   LegacyConsentConfig,
   NoticeConsent,
-  OtToFidesConsentMapping,
   PrivacyExperience,
   PrivacyNoticeWithPreference,
   SaveConsentPreference,
+  UserConsentPreference,
 } from "./consent-types";
 import { resolveLegacyConsentValue } from "./consent-value";
 import {
+  processExternalConsentValue,
   transformConsentToFidesUserPreference,
   transformUserPreferenceToBoolean,
 } from "./shared-consent-utils";
@@ -25,7 +26,6 @@ import type { TcfOtherConsent, TcfSavePreferences } from "./tcf/types";
  * Save the cookie under the name "fides_consent" for 365 days
  */
 export const CONSENT_COOKIE_NAME = "fides_consent";
-export const OT_CONSENT_COOKIE_NAME = "OptanonConsent";
 export const CONSENT_COOKIE_MAX_AGE_DAYS = 365;
 
 /**
@@ -52,7 +52,7 @@ export const consentCookieObjHasSomeConsentSet = (
     return false;
   }
   return Object.values(consent).some(
-    (val: boolean | undefined) => val !== undefined,
+    (val: boolean | UserConsentPreference | undefined) => val !== undefined,
   );
 };
 
@@ -98,64 +98,6 @@ export const makeFidesCookie = (consent?: NoticeConsent): FidesCookie => {
  */
 export const getCookieByName = (cookieName: string): string | undefined =>
   cookies.get(cookieName);
-
-/**
- * Retrieve and decode OneTrust consent cookie
- */
-export const getOTConsentCookie = (): string | undefined => {
-  const cookieString = getCookieByName(OT_CONSENT_COOKIE_NAME);
-  if (!cookieString) {
-    return undefined;
-  }
-  return cookieString;
-};
-
-/**
- * Translates OneTrust cookie consent to Fides consent format
- * @param {string} otCookieValue - Value of the OptanonConsent cookie
- * @param {Object} otToFidesMapping - Object mapping OT categories to arrays of Fides keys
- * @returns {NoticeConsent} - Fides consent object
- */
-export const otCookieToFidesConsent = (
-  otCookieValue: string,
-  otToFidesMapping: OtToFidesConsentMapping,
-): NoticeConsent => {
-  // Initialize an empty Fides consent object
-  const fidesConsent: NoticeConsent = {};
-
-  // Extract the groups parameter
-  const groupsMatch = otCookieValue.match(/groups=([^&]*)/);
-
-  if (!groupsMatch || !groupsMatch[1]) {
-    return fidesConsent; // Return empty object if groups not found
-  }
-
-  // Parse the groups string into an object
-  const groupsStr = groupsMatch[1];
-  const groupPairs = groupsStr.split(",");
-
-  // Process only the categories found in the cookie
-  groupPairs.forEach((pair) => {
-    const [category, consentValue] = pair.split(":");
-
-    // Skip if category is not in our mapping
-    if (!otToFidesMapping[category]) {
-      return;
-    }
-
-    // Add the corresponding Fides keys to the result with appropriate consent value
-    otToFidesMapping[category].forEach((fidesKey: string) => {
-      const isConsented = consentValue === "1";
-
-      // Set fides key based on current consent
-      if (fidesConsent[fidesKey] === undefined) {
-        fidesConsent[fidesKey] = isConsented;
-      }
-    });
-  });
-
-  return fidesConsent;
-};
 
 /**
  * Retrieve and decode fides consent cookie
@@ -204,6 +146,15 @@ export const getOrMakeFidesCookie = (
 
   // Check for an existing cookie for this device
   let parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
+
+  // If the cookie is saved using consent mechanism because of the fidesConsentFlagType override, we need to convert it to boolean for internal use
+  if (parsedCookie?.consent) {
+    const { consent } = parsedCookie;
+    Object.entries(consent).forEach(([key, value]) => {
+      consent[key] = processExternalConsentValue(value);
+    });
+  }
+
   if (!parsedCookie) {
     fidesDebugger(
       `No existing Fides consent cookie found, returning defaults.`,
@@ -444,7 +395,7 @@ export const updateCookieFromNoticePreferences = async (
  * default values). This is used during initialization to override saved cookie
  * values with newer values from the experience.
  */
-export const getConsentStateFromExperience = (
+const getConsentStateFromExperience = (
   experience: PrivacyExperience,
 ): NoticeConsent => {
   const consent: NoticeConsent = {};

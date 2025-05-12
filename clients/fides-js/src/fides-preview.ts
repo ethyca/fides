@@ -34,8 +34,6 @@ function cleanup(): void {
     // Remove the script from DOM to ensure complete cleanup
     currentScript.remove();
     currentScript = null;
-    // @ts-ignore - We know this is safe as we're cleaning up the global
-    window.Fides = null;
   }
   currentMode = null;
 }

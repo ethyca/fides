@@ -5,6 +5,27 @@ module.exports = {
     tsconfigRootDir: __dirname,
   },
   parser: "@typescript-eslint/parser",
+  overrides: [
+    {
+      // Prevent ~/ imports in .ts files
+      files: ["**/*.ts"],
+      excludedFiles: ["**/__tests__/**"],
+      rules: {
+        "no-restricted-imports": [
+          "error",
+          {
+            patterns: [
+              {
+                group: ["~/*"],
+                message:
+                  "The ~/ path alias should not be used in .ts files. Use relative paths instead.",
+              },
+            ],
+          },
+        ],
+      },
+    },
+  ],
   rules: {
     "import/no-cycle": "off",
     "import/extensions": "off",

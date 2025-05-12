@@ -11,8 +11,8 @@ class TestBaseEmailConnector:
         "fixtures,expected_value",
         [
             (
-                [],
-                MessagingServiceType.mailgun.value,  # mailgun is set to notification service type provider by autouse fixture
+                ["set_notification_service_type_to_mailgun"],
+                MessagingServiceType.mailgun.value,
             ),
             (
                 ["set_notification_service_type_to_twilio_email"],
@@ -52,4 +52,4 @@ class TestBaseEmailConnector:
         for fixture in fixtures:
             request.getfixturevalue(fixture)
 
-        assert expected_value == get_email_messaging_config_service_type(db)
+        assert get_email_messaging_config_service_type(db) == expected_value
