@@ -440,7 +440,7 @@ describe("Fides-js TCF", () => {
             assertTcOptIns({
               cookie: cookieKeyConsent,
               modelType: "vendorLegitimateInterests",
-              ids: [],
+              ids: [fidesVendorIdToId(VENDOR_1.id)],
             });
             expect(
               cookieKeyConsent.tcf_consent.system_consent_preferences,
@@ -666,7 +666,7 @@ describe("Fides-js TCF", () => {
               assertTcOptIns({
                 cookie: cookieKeyConsent,
                 modelType: "vendorLegitimateInterests",
-                ids: [],
+                ids: [fidesVendorIdToId(VENDOR_1.id)],
               });
               expect(
                 cookieKeyConsent.tcf_consent.system_consent_preferences,
@@ -1139,7 +1139,7 @@ describe("Fides-js TCF", () => {
               assertTcOptIns({
                 cookie: cookieKeyConsent,
                 modelType: "vendorLegitimateInterests",
-                ids: [],
+                ids: [fidesVendorIdToId(VENDOR_1.id)],
               });
               expect(
                 cookieKeyConsent.tcf_consent.system_consent_preferences,
@@ -1355,7 +1355,7 @@ describe("Fides-js TCF", () => {
                 assertTcOptIns({
                   cookie: cookieKeyConsent,
                   modelType: "vendorLegitimateInterests",
-                  ids: [],
+                  ids: [fidesVendorIdToId(VENDOR_1.id)],
                 });
                 expect(
                   cookieKeyConsent.tcf_consent.system_consent_preferences,
@@ -1539,7 +1539,7 @@ describe("Fides-js TCF", () => {
               assertTcOptIns({
                 cookie: cookieKeyConsent,
                 modelType: "vendorLegitimateInterests",
-                ids: [],
+                ids: [fidesVendorIdToId(VENDOR_1.id)],
               });
               expect(
                 cookieKeyConsent.tcf_consent
@@ -1577,7 +1577,7 @@ describe("Fides-js TCF", () => {
               assertTcOptIns({
                 cookie: cookieKeyConsent,
                 modelType: "vendorLegitimateInterests",
-                ids: [],
+                ids: [fidesVendorIdToId(VENDOR_1.id)],
               });
               expect(
                 cookieKeyConsent.tcf_consent
@@ -1744,7 +1744,7 @@ describe("Fides-js TCF", () => {
               assertTcOptIns({
                 cookie: cookieKeyConsent,
                 modelType: "vendorLegitimateInterests",
-                ids: [],
+                ids: [fidesVendorIdToId(VENDOR_1.id)],
               });
               expect(
                 cookieKeyConsent.tcf_consent
@@ -1873,7 +1873,7 @@ describe("Fides-js TCF", () => {
             assertTcOptIns({
               cookie: cookieKeyConsent,
               modelType: "vendorLegitimateInterests",
-              ids: [],
+              ids: [fidesVendorIdToId(VENDOR_1.id)],
             });
             expect(
               cookieKeyConsent.tcf_consent.system_consent_preferences,
@@ -2155,7 +2155,7 @@ describe("Fides-js TCF", () => {
           assertTcOptIns({
             cookie: cookieKeyConsent,
             modelType: "vendorLegitimateInterests",
-            ids: [],
+            ids: [fidesVendorIdToId(VENDOR_1.id)],
           });
           expect(
             cookieKeyConsent.tcf_consent
@@ -2241,7 +2241,6 @@ describe("Fides-js TCF", () => {
         cy.getByTestId("consent-modal").within(() => {
           cy.get("button").contains("Opt in to all").click();
         });
-        // On slow connections, we should explicitly wait for FidesUpdated
         cy.get("@FidesUpdated")
           .should("have.been.calledOnce")
           .its("lastCall.args.0.detail.extraDetails.consentMethod")
@@ -2273,7 +2272,10 @@ describe("Fides-js TCF", () => {
               1: false,
               [vendorIdOnly]: true,
             });
-            expect(tcData.vendor.legitimateInterests).to.eql({});
+            expect(tcData.vendor.legitimateInterests).to.eql({
+              1: false,
+              [vendorIdOnly]: true,
+            });
           });
       });
 
@@ -2340,7 +2342,10 @@ describe("Fides-js TCF", () => {
               1: false,
               [vendorIdOnly]: true,
             });
-            expect(tcData.vendor.legitimateInterests).to.eql({});
+            expect(tcData.vendor.legitimateInterests).to.eql({
+              1: false,
+              [vendorIdOnly]: true,
+            });
           });
       });
     });
