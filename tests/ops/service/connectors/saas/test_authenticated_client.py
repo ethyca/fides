@@ -195,6 +195,7 @@ class TestAuthenticatedClient:
     ):
         assert test_authenticated_client.session.verify == certifi.where()
 
+
 @pytest.mark.unit_saas
 class TestRetryAfterHeaderParsing:
     def test_retry_after_parses_seconds_response(self):
