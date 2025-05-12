@@ -167,16 +167,10 @@ export const generateFidesString = async ({
           (relationship) => {
             const { id } = decodeVendorId(relationship.id);
             const vendor = experience.gvl?.vendors[id];
-            // ensure specialPurposes includes purposes that are not forbidden
-            const nonForbiddenSpecialPurposes =
-              vendor?.specialPurposes?.filter(
-                (p) => !FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS.includes(p),
-              ) || [];
             if (
               vendor &&
-              (vendor.purposes.length === 0 || vendor.purposes.length > 0) &&
               vendor.legIntPurposes.length === 0 &&
-              nonForbiddenSpecialPurposes.length > 0
+              vendor.specialPurposes.length > 0
             ) {
               tcModel.vendorLegitimateInterests.set(+id);
             }
