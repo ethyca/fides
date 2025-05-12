@@ -34,17 +34,6 @@ def static_checks(session: nox.Session) -> None:
 
 
 @nox.session()
-def upgrade_packages(session: nox.Session) -> None:
-    session.install("pip-tools==7.4.1")
-    session.run("rm", "requirements.txt")
-    session.run("rm", "dev-requirements.txt")
-    session.run("rm", "optional-requirements.txt")
-    session.run("pip-compile", "requirements.in")
-    session.run("pip-compile", "dev-requirements.in")
-    session.run("pip-compile", "optional-requirements.in")
-
-
-@nox.session()
 @nox.parametrize(
     "mode",
     [
