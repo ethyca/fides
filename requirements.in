@@ -72,6 +72,7 @@ typing-extensions==4.12.2
 versioneer==0.19
 fideslang===3.1.0
 
-# protobuf<3.21
+# Freezing to avoid breaking changes on fidesplus
 grpcio==1.70.0
 protobuf==5.29.3
+click==8.1.8
