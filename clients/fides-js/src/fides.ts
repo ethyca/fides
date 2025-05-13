@@ -5,10 +5,6 @@
  *
  * See the overall package docs in ./docs/README.md for more!
  */
-import { blueconic } from "./integrations/blueconic";
-import { gtm } from "./integrations/gtm";
-import { meta } from "./integrations/meta";
-import { shopify } from "./integrations/shopify";
 import { raise } from "./lib/common-utils";
 import {
   readConsentFromAnyProvider,
@@ -28,21 +24,16 @@ import {
   OverrideType,
   PrivacyExperience,
 } from "./lib/consent-types";
-import {
-  decodeNoticeConsentString,
-  defaultShowModal,
-  encodeNoticeConsentString,
-  shouldResurfaceBanner,
-} from "./lib/consent-utils";
+import { shouldResurfaceBanner } from "./lib/consent-utils";
 import {
   consentCookieObjHasSomeConsentSet,
   getFidesConsentCookie,
   updateExperienceFromCookieConsentNotices,
 } from "./lib/cookie";
 import { initializeDebugger } from "./lib/debugger";
-import { dispatchFidesEvent, onFidesEvent } from "./lib/events";
+import { dispatchFidesEvent } from "./lib/events";
 import { DecodedFidesString, decodeFidesString } from "./lib/fides-string";
-import { DEFAULT_LOCALE, DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
+import { getCoreFides } from "./lib/init-utils";
 import {
   getInitialCookie,
   getInitialFides,
@@ -217,76 +208,26 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   });
 }
 
+const initialFides = getCoreFides({});
 // The global Fides object; this is bound to window.Fides if available
 // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
 const _Fides: FidesGlobal = {
-  consent: {},
-  experience: undefined,
-  geolocation: {},
-  locale: DEFAULT_LOCALE,
-  options: {
-    debug: true,
-    isOverlayEnabled: false,
-    isPrefetchEnabled: false,
-    isGeolocationEnabled: false,
-    geolocationApiUrl: "",
-    overlayParentId: null,
-    modalLinkId: null,
-    privacyCenterUrl: "",
-    fidesApiUrl: "",
-    tcfEnabled: false,
-    gppEnabled: false,
-    fidesEmbed: false,
-    fidesDisableSaveApi: false,
-    fidesDisableNoticesServedApi: false,
-    fidesDisableBanner: false,
-    fidesString: null,
-    apiOptions: null,
-    fidesTcfGdprApplies: false,
-    fidesJsBaseUrl: "",
-    customOptionsPath: null,
-    preventDismissal: false,
-    allowHTMLDescription: null,
-    base64Cookie: false,
-    fidesPrimaryColor: null,
-    fidesClearCookie: false,
-    showFidesBrandLink: true,
-    fidesConsentOverride: null,
-    otFidesMapping: null,
-    fidesDisabledNotices: null,
-    fidesConsentNonApplicableFlagMode: null,
-    fidesConsentFlagType: null,
-  },
-  fides_meta: {},
-  identity: {},
-  tcf_consent: {},
-  saved_consent: {},
-  blueconic,
-  gtm,
+  ...initialFides,
   init,
-  config: undefined,
   reinitialize() {
     if (!this.config || !this.initialized) {
       throw new Error("Fides must be initialized before reinitializing");
     }
     return this.init();
   },
-  initialized: false,
-  onFidesEvent,
   shouldShowExperience() {
     return shouldResurfaceBanner(
       this.experience,
       this.cookie,
-      this.saved_consent,
+      this.saved_consent ?? {},
       this.options,
     );
   },
-  meta,
-  shopify,
-  showModal: defaultShowModal,
-  getModalLinkLabel: () => DEFAULT_MODAL_LINK_LABEL,
-  encodeNoticeConsentString,
-  decodeNoticeConsentString,
 };
 
 updateWindowFides(_Fides);
