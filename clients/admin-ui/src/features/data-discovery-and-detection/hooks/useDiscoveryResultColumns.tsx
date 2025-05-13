@@ -220,9 +220,7 @@ const useDiscoveryResultColumns = ({
       columnHelper.accessor((row) => row.name, {
         id: "name",
         cell: (props) => <ResultStatusCell result={props.row.original} />,
-        header: (props) => (
-          <DefaultHeaderCell value="Endpoint name" {...props} />
-        ),
+        header: (props) => <DefaultHeaderCell value="Object" {...props} />,
         size: NAME_COLUMN_SIZE,
       }),
       columnHelper.accessor((row) => row.description, {

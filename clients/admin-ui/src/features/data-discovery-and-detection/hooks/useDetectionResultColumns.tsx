@@ -229,9 +229,7 @@ const useDetectionResultColumns = ({
             result={props.row.original}
           />
         ),
-        header: (props) => (
-          <DefaultHeaderCell value="Endpoint name" {...props} />
-        ),
+        header: (props) => <DefaultHeaderCell value="Object" {...props} />,
         size: NAME_COLUMN_SIZE,
       }),
       columnHelper.accessor((row) => row.description, {
