@@ -1538,7 +1538,9 @@ location_groups:
 - continent: Europe
   id: non_eea
   name: Non European Economic Area
-
+- continent: Global
+  id: global
+  name: Global
 
 
 
