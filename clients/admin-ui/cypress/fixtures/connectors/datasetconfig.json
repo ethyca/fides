@@ -1,1 +1,722 @@
-[]
+{
+  "items": [
+    {
+      "fides_key": "postgres_example_test_dataset",
+      "ctl_dataset": {
+        "fides_key": "postgres_example_test_dataset",
+        "organization_fides_key": "default_organization",
+        "tags": null,
+        "name": "Postgres Example Test Dataset",
+        "description": "Example of a Postgres dataset containing a variety of related tables like customers, products, addresses, etc.",
+        "meta": null,
+        "data_categories": null,
+        "fides_meta": null,
+        "collections": [
+          {
+            "name": "address",
+            "description": null,
+            "data_categories": null,
+            "fields": [
+              {
+                "name": "city",
+                "description": null,
+                "data_categories": ["user.contact.address.city"],
+                "fides_meta": null,
+                "fields": null
+              },
+              {
+                "name": "house",
+                "description": null,
+                "data_categories": ["user.contact.address.street"],
+                "fides_meta": null,
+                "fields": null
+              },
+              {
+                "name": "id",
+                "description": null,
+                "data_categories": ["system.operations"],
+                "fides_meta": {
+                  "references": null,
+                  "identity": null,
+                  "primary_key": true,
+                  "data_type": null,
+                  "length": null,
+                  "return_all_elements": null,
+                  "read_only": null
+                },
+                "fields": null
+              },
+              {
+                "name": "state",
+                "description": null,
+                "data_categories": ["user.contact.address.state"],
+                "fides_meta": null,
+                "fields": null
+              },
+              {
+                "name": "street",
+                "description": null,
+                "data_categories": ["user.contact.address.street"],
+                "fides_meta": null,
+                "fields": null
+              },
+              {
+                "name": "zip",
+                "description": null,
+                "data_categories": ["user.contact.address.postal_code"],
+                "fides_meta": null,
+                "fields": null
+              }
+            ],
+            "fides_meta": null
+          },
+          {
+            "name": "customer",
+            "description": null,
+            "data_categories": null,
+            "fields": [
+              {
+                "name": "address_id",
+                "description": null,
+                "data_categories": ["system.operations"],
+                "fides_meta": {
+                  "references": [
+                    {
+                      "dataset": "postgres_example_test_dataset",
+                      "field": "address.id",
+                      "direction": "to"
+                    }
+                  ],
+                  "identity": null,
+                  "primary_key": null,
+                  "data_type": null,
+                  "length": null,
+                  "return_all_elements": null,
+                  "read_only": null
+                },
+                "fields": null
+              },
+              {
+                "name": "created",
+                "description": null,
+                "data_categories": ["system.operations"],
+                "fides_meta": null,
+                "fields": null
+              },
+              {
+                "name": "email",
+                "description": null,
+                "data_categories": ["user.contact.email"],
+                "fides_meta": {
+                  "references": null,
+                  "identity": "email",
+                  "primary_key": null,
+                  "data_type": "string",
+                  "length": null,
+                  "return_all_elements": null,
+                  "read_only": null
+                },
+                "fields": null
+              },
+              {
+                "name": "id",
+                "description": null,
+                "data_categories": ["user.unique_id"],
+                "fides_meta": {
+                  "references": null,
+                  "identity": null,
+                  "primary_key": true,
+                  "data_type": null,
+                  "length": null,
+                  "return_all_elements": null,
+                  "read_only": null
+                },
+                "fields": null
+              },
+              {
+                "name": "name",
+                "description": null,
+                "data_categories": ["user.name"],
+                "fides_meta": {
+                  "references": null,
+                  "identity": null,
+                  "primary_key": null,
+                  "data_type": "string",
+                  "length": 40,
+                  "return_all_elements": null,
+                  "read_only": null
+                },
+                "fields": null
+              }
+            ],
+            "fides_meta": null
+          },
+          {
+            "name": "employee",
+            "description": null,
+            "data_categories": null,
+            "fields": [
+              {
+                "name": "address_id",
+                "description": null,
+                "data_categories": ["system.operations"],
+                "fides_meta": {
+                  "references": [
+                    {
+                      "dataset": "postgres_example_test_dataset",
+                      "field": "address.id",
+                      "direction": "to"
+                    }
+                  ],
+                  "identity": null,
+                  "primary_key": null,
+                  "data_type": null,
+                  "length": null,
+                  "return_all_elements": null,
+                  "read_only": null
+                },
+                "fields": null
+              },
+              {
+                "name": "email",
+                "description": null,
+                "data_categories": ["user.contact.email"],
+                "fides_meta": {
+                  "references": null,
+                  "identity": "email",
+                  "primary_key": null,
+                  "data_type": "string",
+                  "length": null,
+                  "return_all_elements": null,
+                  "read_only": null
+                },
+                "fields": null
+              },
+              {
+                "name": "id",
+                "description": null,
+                "data_categories": ["user.unique_id"],
+                "fides_meta": {
+                  "references": null,
+                  "identity": null,
+                  "primary_key": true,
+                  "data_type": null,
+                  "length": null,
+                  "return_all_elements": null,
+                  "read_only": null
+                },
+                "fields": null
+              },
+              {
+                "name": "name",
+                "description": null,
+                "data_categories": ["user.name"],
+                "fides_meta": {
+                  "references": null,
+                  "identity": null,
+                  "primary_key": null,
+                  "data_type": "string",
+                  "length": null,
+                  "return_all_elements": null,
+                  "read_only": null
+                },
+                "fields": null
+              }
+            ],
+            "fides_meta": null
+          },
+          {
+            "name": "login",
+            "description": null,
+            "data_categories": null,
+            "fields": [
+              {
+                "name": "customer_id",
+                "description": null,
+                "data_categories": ["user.unique_id"],
+                "fides_meta": {
+                  "references": [
+                    {
+                      "dataset": "postgres_example_test_dataset",
+                      "field": "customer.id",
+                      "direction": "from"
+                    }
+                  ],
+                  "identity": null,
+                  "primary_key": null,
+                  "data_type": null,
+                  "length": null,
+                  "return_all_elements": null,
+                  "read_only": null
+                },
+                "fields": null
+              },
+              {
+                "name": "id",
+                "description": null,
+                "data_categories": ["system.operations"],
+                "fides_meta": {
+                  "references": null,
+                  "identity": null,
+                  "primary_key": true,
+                  "data_type": null,
+                  "length": null,
+                  "return_all_elements": null,
+                  "read_only": null
+                },
+                "fields": null
+              },
+              {
+                "name": "time",
+                "description": null,
+                "data_categories": ["user.sensor"],
+                "fides_meta": null,
+                "fields": null
+              }
+            ],
+            "fides_meta": null
+          },
+          {
+            "name": "order_item",
+            "description": null,
+            "data_categories": null,
+            "fields": [
+              {
+                "name": "order_id",
+                "description": null,
+                "data_categories": ["system.operations"],
+                "fides_meta": {
+                  "references": [
+                    {
+                      "dataset": "postgres_example_test_dataset",
+                      "field": "orders.id",
+                      "direction": "from"
+                    }
+                  ],
+                  "identity": null,
+                  "primary_key": null,
+                  "data_type": null,
+                  "length": null,
+                  "return_all_elements": null,
+                  "read_only": null
+                },
+                "fields": null
+              },
+              {
+                "name": "product_id",
+                "description": null,
+                "data_categories": ["system.operations"],
+                "fides_meta": {
+                  "references": [
+                    {
+                      "dataset": "postgres_example_test_dataset",
+                      "field": "product.id",
+                      "direction": "to"
+                    }
+                  ],
+                  "identity": null,
+                  "primary_key": null,
+                  "data_type": null,
+                  "length": null,
+                  "return_all_elements": null,
+                  "read_only": null
+                },
+                "fields": null
+              },
+              {
+                "name": "quantity",
+                "description": null,
+                "data_categories": ["system.operations"],
+                "fides_meta": null,
+                "fields": null
+              }
+            ],
+            "fides_meta": null
+          },
+          {
+            "name": "orders",
+            "description": null,
+            "data_categories": null,
+            "fields": [
+              {
+                "name": "customer_id",
+                "description": null,
+                "data_categories": ["user.unique_id"],
+                "fides_meta": {
+                  "references": [
+                    {
+                      "dataset": "postgres_example_test_dataset",
+                      "field": "customer.id",
+                      "direction": "from"
+                    }
+                  ],
+                  "identity": null,
+                  "primary_key": null,
+                  "data_type": null,
+                  "length": null,
+                  "return_all_elements": null,
+                  "read_only": null
+                },
+                "fields": null
+              },
+              {
+                "name": "id",
+                "description": null,
+                "data_categories": ["system.operations"],
+                "fides_meta": {
+                  "references": null,
+                  "identity": null,
+                  "primary_key": true,
+                  "data_type": null,
+                  "length": null,
+                  "return_all_elements": null,
+                  "read_only": null
+                },
+                "fields": null
+              },
+              {
+                "name": "shipping_address_id",
+                "description": null,
+                "data_categories": ["system.operations"],
+                "fides_meta": {
+                  "references": [
+                    {
+                      "dataset": "postgres_example_test_dataset",
+                      "field": "address.id",
+                      "direction": "to"
+                    }
+                  ],
+                  "identity": null,
+                  "primary_key": null,
+                  "data_type": null,
+                  "length": null,
+                  "return_all_elements": null,
+                  "read_only": null
+                },
+                "fields": null
+              }
+            ],
+            "fides_meta": null
+          },
+          {
+            "name": "payment_card",
+            "description": null,
+            "data_categories": null,
+            "fields": [
+              {
+                "name": "billing_address_id",
+                "description": null,
+                "data_categories": ["system.operations"],
+                "fides_meta": {
+                  "references": [
+                    {
+                      "dataset": "postgres_example_test_dataset",
+                      "field": "address.id",
+                      "direction": "to"
+                    }
+                  ],
+                  "identity": null,
+                  "primary_key": null,
+                  "data_type": null,
+                  "length": null,
+                  "return_all_elements": null,
+                  "read_only": null
+                },
+                "fields": null
+              },
+              {
+                "name": "ccn",
+                "description": null,
+                "data_categories": ["user.financial.bank_account"],
+                "fides_meta": null,
+                "fields": null
+              },
+              {
+                "name": "code",
+                "description": null,
+                "data_categories": ["user.financial"],
+                "fides_meta": null,
+                "fields": null
+              },
+              {
+                "name": "customer_id",
+                "description": null,
+                "data_categories": ["user.unique_id"],
+                "fides_meta": {
+                  "references": [
+                    {
+                      "dataset": "postgres_example_test_dataset",
+                      "field": "customer.id",
+                      "direction": "from"
+                    }
+                  ],
+                  "identity": null,
+                  "primary_key": null,
+                  "data_type": null,
+                  "length": null,
+                  "return_all_elements": null,
+                  "read_only": null
+                },
+                "fields": null
+              },
+              {
+                "name": "id",
+                "description": null,
+                "data_categories": ["system.operations"],
+                "fides_meta": {
+                  "references": null,
+                  "identity": null,
+                  "primary_key": true,
+                  "data_type": null,
+                  "length": null,
+                  "return_all_elements": null,
+                  "read_only": null
+                },
+                "fields": null
+              },
+              {
+                "name": "name",
+                "description": null,
+                "data_categories": ["user.financial"],
+                "fides_meta": null,
+                "fields": null
+              },
+              {
+                "name": "preferred",
+                "description": null,
+                "data_categories": ["user"],
+                "fides_meta": null,
+                "fields": null
+              }
+            ],
+            "fides_meta": null
+          },
+          {
+            "name": "product",
+            "description": null,
+            "data_categories": null,
+            "fields": [
+              {
+                "name": "id",
+                "description": null,
+                "data_categories": ["system.operations"],
+                "fides_meta": {
+                  "references": null,
+                  "identity": null,
+                  "primary_key": true,
+                  "data_type": null,
+                  "length": null,
+                  "return_all_elements": null,
+                  "read_only": null
+                },
+                "fields": null
+              },
+              {
+                "name": "name",
+                "description": null,
+                "data_categories": ["system.operations"],
+                "fides_meta": null,
+                "fields": null
+              },
+              {
+                "name": "price",
+                "description": null,
+                "data_categories": ["system.operations"],
+                "fides_meta": null,
+                "fields": null
+              }
+            ],
+            "fides_meta": null
+          },
+          {
+            "name": "report",
+            "description": null,
+            "data_categories": null,
+            "fields": [
+              {
+                "name": "email",
+                "description": null,
+                "data_categories": ["user.contact.email"],
+                "fides_meta": {
+                  "references": null,
+                  "identity": "email",
+                  "primary_key": null,
+                  "data_type": "string",
+                  "length": null,
+                  "return_all_elements": null,
+                  "read_only": null
+                },
+                "fields": null
+              },
+              {
+                "name": "id",
+                "description": null,
+                "data_categories": ["system.operations"],
+                "fides_meta": {
+                  "references": null,
+                  "identity": null,
+                  "primary_key": true,
+                  "data_type": null,
+                  "length": null,
+                  "return_all_elements": null,
+                  "read_only": null
+                },
+                "fields": null
+              },
+              {
+                "name": "month",
+                "description": null,
+                "data_categories": ["system.operations"],
+                "fides_meta": null,
+                "fields": null
+              },
+              {
+                "name": "name",
+                "description": null,
+                "data_categories": ["system.operations"],
+                "fides_meta": null,
+                "fields": null
+              },
+              {
+                "name": "total_visits",
+                "description": null,
+                "data_categories": ["system.operations"],
+                "fides_meta": null,
+                "fields": null
+              },
+              {
+                "name": "year",
+                "description": null,
+                "data_categories": ["system.operations"],
+                "fides_meta": null,
+                "fields": null
+              }
+            ],
+            "fides_meta": null
+          },
+          {
+            "name": "service_request",
+            "description": null,
+            "data_categories": null,
+            "fields": [
+              {
+                "name": "alt_email",
+                "description": null,
+                "data_categories": ["user.contact.email"],
+                "fides_meta": {
+                  "references": null,
+                  "identity": "email",
+                  "primary_key": null,
+                  "data_type": "string",
+                  "length": null,
+                  "return_all_elements": null,
+                  "read_only": null
+                },
+                "fields": null
+              },
+              {
+                "name": "closed",
+                "description": null,
+                "data_categories": ["system.operations"],
+                "fides_meta": null,
+                "fields": null
+              },
+              {
+                "name": "email",
+                "description": null,
+                "data_categories": ["system.operations"],
+                "fides_meta": {
+                  "references": null,
+                  "identity": "email",
+                  "primary_key": null,
+                  "data_type": "string",
+                  "length": null,
+                  "return_all_elements": null,
+                  "read_only": null
+                },
+                "fields": null
+              },
+              {
+                "name": "employee_id",
+                "description": null,
+                "data_categories": ["user.unique_id"],
+                "fides_meta": {
+                  "references": [
+                    {
+                      "dataset": "postgres_example_test_dataset",
+                      "field": "employee.id",
+                      "direction": "from"
+                    }
+                  ],
+                  "identity": null,
+                  "primary_key": null,
+                  "data_type": null,
+                  "length": null,
+                  "return_all_elements": null,
+                  "read_only": null
+                },
+                "fields": null
+              },
+              {
+                "name": "id",
+                "description": null,
+                "data_categories": ["system.operations"],
+                "fides_meta": {
+                  "references": null,
+                  "identity": null,
+                  "primary_key": true,
+                  "data_type": null,
+                  "length": null,
+                  "return_all_elements": null,
+                  "read_only": null
+                },
+                "fields": null
+              },
+              {
+                "name": "opened",
+                "description": null,
+                "data_categories": ["system.operations"],
+                "fides_meta": null,
+                "fields": null
+              }
+            ],
+            "fides_meta": null
+          },
+          {
+            "name": "visit",
+            "description": null,
+            "data_categories": null,
+            "fields": [
+              {
+                "name": "email",
+                "description": null,
+                "data_categories": ["user.contact.email"],
+                "fides_meta": {
+                  "references": null,
+                  "identity": "email",
+                  "primary_key": null,
+                  "data_type": "string",
+                  "length": null,
+                  "return_all_elements": null,
+                  "read_only": null
+                },
+                "fields": null
+              },
+              {
+                "name": "last_visit",
+                "description": null,
+                "data_categories": ["system.operations"],
+                "fides_meta": null,
+                "fields": null
+              }
+            ],
+            "fides_meta": null
+          }
+        ]
+      }
+    }
+  ],
+  "total": 1,
+  "page": 1,
+  "size": 50
+}
