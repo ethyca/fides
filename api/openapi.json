@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.60.1"
+    "version": "2.61.0"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -2452,13 +2452,16 @@
                     "$ref": "#/components/schemas/MySQLDocsSchema"
                   },
                   {
+                    "$ref": "#/components/schemas/OktaDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/PostgreSQLDocsSchema"
+                  },
+                  {
                     "$ref": "#/components/schemas/RDSMySQLDocsSchema"
                   },
                   {
                     "$ref": "#/components/schemas/RDSPostgresDocsSchema"
-                  },
-                  {
-                    "$ref": "#/components/schemas/PostgreSQLDocsSchema"
                   },
                   {
                     "$ref": "#/components/schemas/RedshiftDocsSchema"
@@ -3863,13 +3866,16 @@
                     "$ref": "#/components/schemas/MySQLDocsSchema"
                   },
                   {
+                    "$ref": "#/components/schemas/OktaDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/PostgreSQLDocsSchema"
+                  },
+                  {
                     "$ref": "#/components/schemas/RDSMySQLDocsSchema"
                   },
                   {
                     "$ref": "#/components/schemas/RDSPostgresDocsSchema"
-                  },
-                  {
-                    "$ref": "#/components/schemas/PostgreSQLDocsSchema"
                   },
                   {
                     "$ref": "#/components/schemas/RedshiftDocsSchema"
@@ -4012,13 +4018,16 @@
                     "$ref": "#/components/schemas/MySQLDocsSchema"
                   },
                   {
+                    "$ref": "#/components/schemas/OktaDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/PostgreSQLDocsSchema"
+                  },
+                  {
                     "$ref": "#/components/schemas/RDSMySQLDocsSchema"
                   },
                   {
                     "$ref": "#/components/schemas/RDSPostgresDocsSchema"
-                  },
-                  {
-                    "$ref": "#/components/schemas/PostgreSQLDocsSchema"
                   },
                   {
                     "$ref": "#/components/schemas/RedshiftDocsSchema"
@@ -13926,6 +13935,17 @@
               }
             ],
             "title": "Url"
+          },
+          "error_notification_mode": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ErrorNotificationMode"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "console_only"
           }
         },
         "additionalProperties": false,
@@ -15406,6 +15426,7 @@
           "mongodb",
           "mssql",
           "mysql",
+          "okta",
           "postgres",
           "rds_mysql",
           "rds_postgres",
@@ -16000,13 +16021,16 @@
                 "$ref": "#/components/schemas/MySQLDocsSchema"
               },
               {
+                "$ref": "#/components/schemas/OktaDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/PostgreSQLDocsSchema"
+              },
+              {
                 "$ref": "#/components/schemas/RDSMySQLDocsSchema"
               },
               {
                 "$ref": "#/components/schemas/RDSPostgresDocsSchema"
-              },
-              {
-                "$ref": "#/components/schemas/PostgreSQLDocsSchema"
               },
               {
                 "$ref": "#/components/schemas/RedshiftDocsSchema"
@@ -18001,6 +18025,14 @@
         ],
         "title": "Endpoint",
         "description": "A collection of read/update/delete requests which corresponds to a FidesDataset collection (by name)"
+      },
+      "ErrorNotificationMode": {
+        "type": "string",
+        "enum": [
+          "console_only",
+          "toast"
+        ],
+        "title": "ErrorNotificationMode"
       },
       "Evaluation": {
         "properties": {
@@ -20128,7 +20160,7 @@
               }
             ],
             "title": "SSL Mode",
-            "description": "The SSL mode to use for the connection. Valid values are 'required', 'preferred', and 'disabled'."
+            "description": "The SSL mode to use for the connection. Accepted values are: 'required', 'preferred', 'disabled', or an empty value."
           }
         },
         "type": "object",
@@ -20144,7 +20176,8 @@
         "enum": [
           "preferred",
           "required",
-          "disabled"
+          "disabled",
+          ""
         ],
         "title": "MySQLSSLMode"
       },
@@ -20229,6 +20262,28 @@
         ],
         "title": "OktaConfig",
         "description": "The model for the connection config for Okta"
+      },
+      "OktaDocsSchema": {
+        "properties": {
+          "org_url": {
+            "type": "string",
+            "title": "Organization URL",
+            "description": "The URL of your Okta organization (e.g. https://your-org.okta.com)"
+          },
+          "api_token": {
+            "type": "string",
+            "title": "API Token",
+            "description": "The API token used to authenticate with Okta",
+            "sensitive": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "org_url",
+          "api_token"
+        ],
+        "title": "OktaDocsSchema",
+        "description": "Okta Secrets Schema for API Docs"
       },
       "Organization": {
         "properties": {
@@ -25071,13 +25126,16 @@
                 "$ref": "#/components/schemas/MySQLDocsSchema"
               },
               {
+                "$ref": "#/components/schemas/OktaDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/PostgreSQLDocsSchema"
+              },
+              {
                 "$ref": "#/components/schemas/RDSMySQLDocsSchema"
               },
               {
                 "$ref": "#/components/schemas/RDSPostgresDocsSchema"
-              },
-              {
-                "$ref": "#/components/schemas/PostgreSQLDocsSchema"
               },
               {
                 "$ref": "#/components/schemas/RedshiftDocsSchema"
@@ -26798,6 +26856,7 @@
           "email",
           "manual",
           "saas",
+          "system",
           "website"
         ],
         "title": "SystemType"
