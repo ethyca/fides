@@ -573,7 +573,7 @@ describe("Integration management for data detection & discovery", () => {
     describe("data discovery tab for API integration", () => {
       beforeEach(() => {
         cy.intercept("GET", "/api/v1/connection/*", {
-          fixture: "connectors/salesforce_connection_2.json",
+          fixture: "connectors/salesforce_connection.json",
         }).as("getSalesforceIntegration");
         cy.intercept("GET", "/api/v1/plus/discovery-monitor*", {
           fixture: "detection-discovery/monitors/salesforce_monitor_list.json",
@@ -585,7 +585,7 @@ describe("Integration management for data detection & discovery", () => {
           statusCode: 200,
           body: { items: [], total: 0, page: 1, size: 50, pages: 0 },
         }).as("getEmptyDatabases");
-        cy.visit("/integrations/salesforce_integration_2");
+        cy.visit("/integrations/salesforce_integration");
         cy.getByTestId("tab-Data discovery").click();
         cy.wait("@getSalesforceMonitors");
       });
