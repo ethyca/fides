@@ -2,6 +2,7 @@ import { ListItem } from "fidesui";
 
 import {
   InfoHeading,
+  InfoOrderedList,
   InfoText,
   InfoUnorderedList,
 } from "~/features/common/copy/components";
@@ -43,6 +44,31 @@ export const SalesforceOverview = () => (
       fulfillment.
     </InfoText>
     <ShowMoreContent>
+      <InfoHeading text="What this integration does" />
+      <InfoUnorderedList>
+        <ListItem>
+          Discover personal data in standard Salesforce objects
+        </ListItem>
+        <ListItem>
+          Detect sensitive information across your Salesforce instance
+        </ListItem>
+        <ListItem>
+          Automate data subject access requests including data retrieval,
+          updates, and deletions
+        </ListItem>
+        <ListItem>
+          Map Salesforce data to your organization&apos;s data map
+        </ListItem>
+        <ListItem>
+          Discover and map custom Salesforce objects (requires setting up a
+          monitor)
+        </ListItem>
+      </InfoUnorderedList>
+      <InfoText>
+        Once integrated, the system will automatically map sensitive personal
+        data for standard Salesforce objects. By setting up a monitor, you can
+        also detect and map custom objects in your Salesforce instance.
+      </InfoText>
       <InfoHeading text="Categories" />
       <InfoUnorderedList>
         <ListItem>CRM System</ListItem>
@@ -56,6 +82,37 @@ export const SalesforceOverview = () => (
         Salesforce instance. This ensures exclusive data control and enhances
         security by reducing unauthorized access risks.
       </InfoText>
+      <InfoHeading text="Setup Instructions" />
+      <InfoText>
+        Follow these steps to set up your Salesforce integration:
+      </InfoText>
+      <InfoOrderedList>
+        <ListItem>
+          Create a Connected App in Salesforce by following the Salesforce guide
+        </ListItem>
+        <ListItem>Configure Basic Connected App Settings</ListItem>
+        <ListItem>
+          Uncheck &quot;Require Proof Key for Code Exchange (PKCE) Extension for
+          Supported Authorization Flows&quot;
+        </ListItem>
+        <ListItem>
+          Enable OAuth Settings for API Integration with the required scopes
+        </ListItem>
+        <ListItem>
+          Enter your Fides Redirect URL (typically
+          https://fides-host.com/api/v1/oauth/callback)
+        </ListItem>
+      </InfoOrderedList>
+      <InfoHeading text="Required Information" />
+      <InfoUnorderedList>
+        <ListItem>Domain: Your Salesforce URL</ListItem>
+        <ListItem>Consumer Key: Your OAuth client ID</ListItem>
+        <ListItem>Consumer Secret: Your OAuth client secret</ListItem>
+        <ListItem>Redirect URL: The Fides URL for OAuth callback</ListItem>
+        <ListItem>
+          Token Refresh URL: The Salesforce URL for refresh tokens
+        </ListItem>
+      </InfoUnorderedList>
       <InfoHeading text="Required OAuth Scopes" />
       <InfoUnorderedList>
         <ListItem>Manage user data via APIs (api)</ListItem>
