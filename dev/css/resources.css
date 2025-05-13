@@ -1,0 +1,4 @@
+.required:before {
+  color: red;
+  content: '*\00a0 \00a0 \00a0 \00a0 \00a0 ';
+}
