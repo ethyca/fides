@@ -8,22 +8,6 @@ class MySQLQueryConfig(SQLQueryConfig):
     Generates SQL valid for MySQL
     """
 
-    def format_clause_for_query(
-        self, string_path: str, operator: str, operand: str
-    ) -> str:
-        """
-        Formats a clause for a MySQL query with backticks in case the string_path or operand is a
-        reserved word.
-        """
-        if operator == "IN":
-            return f"{string_path} IN ({operand})"
-        if string_path == operand:
-            string_path = f"`{string_path}`"
-            operand = f"`{operand}`"
-        else:
-            string_path = f"`{string_path}`"
-        return f"{string_path} {operator} :{operand}"
-
     def get_formatted_query_string(
         self,
         field_list: List[str],
