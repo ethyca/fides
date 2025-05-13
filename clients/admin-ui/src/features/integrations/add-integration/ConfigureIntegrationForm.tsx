@@ -108,6 +108,7 @@ const ConfigureIntegrationForm = ({
   const toast = useToast();
 
   const isEditing = !!connection;
+  const isSaas = connectionOption.type === SystemType.SAAS;
 
   // Exclude secrets fields that haven't changed
   // The api returns secrets masked as asterisks (*****)
@@ -122,7 +123,6 @@ const ConfigureIntegrationForm = ({
 
   const handleSubmit = async (values: FormValues) => {
     const newSecretsValues = excludeUnchangedSecrets(values.secrets!);
-    const isSaas = connectionOption.type === SystemType.SAAS;
 
     const connectionPayload = isEditing
       ? {
@@ -295,7 +295,7 @@ const ConfigureIntegrationForm = ({
                 variant="stacked"
               />
               {generateFields(secrets!)}
-              {!isEditing && (
+              {!isEditing && !isSaas && (
                 <ControlledSelect
                   id="system_fides_key"
                   name="system_fides_key"
