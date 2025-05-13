@@ -1,1 +1,4 @@
+# This file should be updated directly by developers.
+# Do not update pip-generated requirements.txt files instead.
+
 pymssql==2.2.8

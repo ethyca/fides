@@ -1,3 +1,6 @@
+# This file should be updated directly by developers.
+# Do not update pip-generated requirements.txt files instead.
+
 acryl-datahub==0.14.1
 alembic==1.8.1
 anyascii==0.3.2
