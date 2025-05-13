@@ -86,8 +86,9 @@ celery[pytest]==5.2.7
     #   -r requirements.in
     #   flower
     #   pytest-celery
-certifi==2025.4.26
+certifi==2024.8.30
     # via
+    #   -r requirements.in
     #   httpcore
     #   httpx
     #   requests
@@ -567,7 +568,7 @@ rich==14.0.0
     #   typer
 rich-click==1.6.1
     # via -r requirements.in
-rich-toolkit==0.14.5
+rich-toolkit==0.14.6
     # via fastapi-cli
 rpds-py==0.24.0
     # via
