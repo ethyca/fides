@@ -147,3 +147,17 @@ export CFLAGS="-I/opt/homebrew/opt/freetds/include"
 ```zsh
 pip install "ethyca-fides[all]"
 ```
+
+## Updating Python requirements
+We use `pip-tools` to handle our requirements, we have 3 main files where our requirements reside: `requirements.in`, `dev-requirements.in` and `optional-requirements.in`.
+As a prerequisite we need Python 3.9 installed and available, this is required so we freeze packages to 3.9, packages available on 3.9 are highly likely to be available on 3.10.
+
+### Just updating to the latest available versions
+1. Run `nox -s upgrade_packages`
+
+### When updating the requirements files
+When adding, updating or deleting a requirement from our requirements files you should run `nox -s upgrade_packages`
+
+1. Update the requirements file: `requirements.in` / `optional-requirements.in` / `dev-requirements.in`
+2. Run `nox -s upgrade_packages`
+3. This will update the generated `requirements.txt` / `optional-requirements.txt` / `dev-requirements.txt`

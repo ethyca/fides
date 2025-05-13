@@ -293,6 +293,11 @@ def delete_old_test_pypi_packages(session: Session, action: str) -> None:
 
 @nox_session(python="3.9")
 def upgrade_packages(session: Session) -> None:
+    """
+    Run pip-compile to update requirements files. Requires Python 3.9.
+    """
+    # Check if we're using Python 3.9
+    session.run("python", "-c", "import sys; assert sys.version_info.major == 3 and sys.version_info.minor == 9, 'Python 3.9 is required but got: ' + sys.version")
     session.install("pip-tools==7.4.1")
     session.run("rm", "-f", "requirements.txt", external=True)
     session.run("rm", "-f", "dev-requirements.txt", external=True)
