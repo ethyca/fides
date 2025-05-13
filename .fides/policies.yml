@@ -1,5 +1,4 @@
 policy:
-
 - fides_key: data_sharing_policy
   name: Data Sharing
   organization_fides_key: default_organization
