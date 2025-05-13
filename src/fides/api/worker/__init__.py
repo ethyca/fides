@@ -8,6 +8,7 @@ from loguru import logger
 from fides.api.db.base import Base  # type: ignore
 from fides.api.service.saas_request.override_implementations import *
 from fides.api.tasks import (
+    DATASTORE_MONITORS_QUEUE_NAME,
     DSR_QUEUE_NAME,
     MESSAGING_QUEUE_NAME,
     PRIVACY_PREFERENCES_QUEUE_NAME,
@@ -36,6 +37,7 @@ def start_worker(
         MESSAGING_QUEUE_NAME,
         PRIVACY_PREFERENCES_QUEUE_NAME,
         DSR_QUEUE_NAME,
+        DATASTORE_MONITORS_QUEUE_NAME,
     ]
 
     # Fall back to all queues if neither queues nor exclude_queues are provided.
