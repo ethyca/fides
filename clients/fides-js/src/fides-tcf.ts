@@ -12,13 +12,11 @@ import type { TCData } from "@iabtechlabtcf/cmpapi";
 import { TCString } from "@iabtechlabtcf/core";
 
 import { FidesCookie, shouldResurfaceBanner } from "./fides";
-import { raise } from "./lib/common-utils";
 import {
   FidesConfig,
   FidesExperienceTranslationOverrides,
   FidesGlobal,
   FidesInitOptionsOverrides,
-  FidesOptions,
   FidesOverrides,
   GetPreferencesFnResp,
   NoticeValues,
@@ -29,13 +27,12 @@ import { initializeDebugger } from "./lib/debugger";
 import { dispatchFidesEvent } from "./lib/events";
 import { DecodedFidesString, decodeFidesString } from "./lib/fides-string";
 import type { GppFunction } from "./lib/gpp/types";
-import { getCoreFides } from "./lib/init-utils";
+import { getCoreFides, raise, updateWindowFides } from "./lib/init-utils";
 import {
   getInitialCookie,
   getInitialFides,
   getOverridesByType,
   initialize,
-  UpdateExperienceFn,
 } from "./lib/initialize";
 import { initOverlay } from "./lib/initOverlay";
 import { initializeTcfCmpApi } from "./lib/tcf";
@@ -49,8 +46,6 @@ import { customGetConsentPreferences } from "./services/external/preferences";
 
 declare global {
   interface Window {
-    Fides: FidesGlobal;
-    fides_overrides: Partial<FidesOptions>;
     __tcfapiLocator?: Window;
     __tcfapi?: (
       command: string,
@@ -63,16 +58,14 @@ declare global {
   }
 }
 
-const updateWindowFides = (fidesGlobal: FidesGlobal) => {
-  if (typeof window !== "undefined") {
-    window.Fides = fidesGlobal;
-  }
-};
-
-const updateExperience: UpdateExperienceFn = ({
+export interface UpdateTCFExperienceProps {
+  cookie: FidesCookie;
+  experience: PrivacyExperience;
+}
+const updateTCFExperience = ({
   cookie,
   experience,
-}): Partial<PrivacyExperience> => {
+}: UpdateTCFExperienceProps): Partial<PrivacyExperience> => {
   // We need the cookie.fides_string to attach user preference to an experience.
   // If this does not exist, we should assume no user preference has been given and leave the experience as is.
   if (cookie.fides_string) {
@@ -202,7 +195,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     fides: this,
     initOverlay,
     renderOverlay,
-    updateExperience,
+    updateExperience: updateTCFExperience,
     overrides,
     propertyId: config.propertyId,
   });
@@ -224,7 +217,7 @@ const _Fides: FidesGlobal = {
   init,
   reinitialize() {
     if (!this.config || !this.initialized) {
-      throw new Error("Fides must be initialized before reinitializing");
+      raise("Fides must be initialized before reinitializing");
     }
     return this.init();
   },
@@ -249,5 +242,6 @@ export * from "./lib/consent-utils";
 export * from "./lib/consent-value";
 export * from "./lib/cookie";
 export * from "./lib/events";
+export * from "./lib/init-utils";
 export * from "./lib/initOverlay";
 export * from "./lib/shared-consent-utils";

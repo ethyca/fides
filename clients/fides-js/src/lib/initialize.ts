@@ -44,12 +44,8 @@ import {
   localizeModalLinkText,
   setupI18n,
 } from "./i18n";
+import { UpdateExperienceProps } from "./init-utils";
 import { searchForElement } from "./ui-utils";
-
-export type UpdateExperienceFn = (args: {
-  cookie: FidesCookie;
-  experience: PrivacyExperience;
-}) => Partial<PrivacyExperience>;
 
 const retrieveEffectiveRegionString = async (
   geolocation: UserGeolocation | undefined,
@@ -231,7 +227,9 @@ export const initialize = async ({
    * Once we for sure have a valid experience, this is another chance to update values
    * before the overlay renders.
    */
-  updateExperience: UpdateExperienceFn;
+  updateExperience: (
+    props: UpdateExperienceProps,
+  ) => Partial<PrivacyExperience>;
   overrides?: Partial<FidesOverrides>;
 } & FidesConfig): Promise<Partial<FidesGlobal>> => {
   let shouldContinueInitOverlay: boolean = true;

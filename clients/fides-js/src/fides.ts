@@ -5,7 +5,6 @@
  *
  * See the overall package docs in ./docs/README.md for more!
  */
-import { raise } from "./lib/common-utils";
 import {
   readConsentFromAnyProvider,
   registerDefaultProviders,
@@ -16,67 +15,35 @@ import {
   FidesExperienceTranslationOverrides,
   FidesGlobal,
   FidesInitOptionsOverrides,
-  FidesOptions,
   FidesOverrides,
   GetPreferencesFnResp,
   NoticeConsent,
   NoticeValues,
   OverrideType,
-  PrivacyExperience,
 } from "./lib/consent-types";
 import { shouldResurfaceBanner } from "./lib/consent-utils";
 import {
-  consentCookieObjHasSomeConsentSet,
   getFidesConsentCookie,
   updateExperienceFromCookieConsentNotices,
 } from "./lib/cookie";
 import { initializeDebugger } from "./lib/debugger";
 import { dispatchFidesEvent } from "./lib/events";
 import { DecodedFidesString, decodeFidesString } from "./lib/fides-string";
-import { getCoreFides } from "./lib/init-utils";
+import {
+  getCoreFides,
+  raise,
+  updateExperience,
+  updateWindowFides,
+} from "./lib/init-utils";
 import {
   getInitialCookie,
   getInitialFides,
   getOverridesByType,
   initialize,
-  UpdateExperienceFn,
 } from "./lib/initialize";
 import { initOverlay } from "./lib/initOverlay";
 import { renderOverlay } from "./lib/renderOverlay";
 import { customGetConsentPreferences } from "./services/external/preferences";
-
-declare global {
-  interface Window {
-    Fides: FidesGlobal;
-    fides_overrides: Partial<FidesOptions>;
-    fidesDebugger: (...args: unknown[]) => void;
-  }
-}
-
-const updateWindowFides = (fidesGlobal: FidesGlobal) => {
-  if (typeof window !== "undefined") {
-    window.Fides = fidesGlobal;
-  }
-};
-
-const updateExperience: UpdateExperienceFn = ({
-  cookie,
-  experience,
-}): Partial<PrivacyExperience> => {
-  let updatedExperience: PrivacyExperience = experience;
-  const preferencesExistOnCookie = consentCookieObjHasSomeConsentSet(
-    cookie.consent,
-  );
-  if (preferencesExistOnCookie) {
-    // If we have some preferences on the cookie, we update client-side experience with those preferences
-    // if the name matches. This is used for client-side UI.
-    updatedExperience = updateExperienceFromCookieConsentNotices({
-      experience,
-      cookie,
-    });
-  }
-  return updatedExperience;
-};
 
 /**
  * Initialize the global Fides object with the given configuration values
@@ -128,6 +95,8 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     experienceTranslationOverrides,
   };
 
+  /* THIRD PARTY CONSENT MIGRATION */
+
   // Register any configured consent migration providers
   registerDefaultProviders(optionsOverrides);
 
@@ -140,6 +109,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
       migratedConsent = consent;
     }
   }
+  /* END THIRD PARTY CONSENT MIGRATION */
 
   config = {
     ...config,
@@ -216,7 +186,7 @@ const _Fides: FidesGlobal = {
   init,
   reinitialize() {
     if (!this.config || !this.initialized) {
-      throw new Error("Fides must be initialized before reinitializing");
+      raise("Fides must be initialized before reinitializing");
     }
     return this.init();
   },
@@ -240,6 +210,7 @@ export * from "./lib/consent-value";
 export * from "./lib/cookie";
 export * from "./lib/events";
 export * from "./lib/i18n";
+export * from "./lib/init-utils";
 export * from "./lib/initOverlay";
 export * from "./lib/shared-consent-utils";
 export * from "./services/api";

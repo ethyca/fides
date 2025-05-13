@@ -2,14 +2,64 @@ import { blueconic } from "../integrations/blueconic";
 import { gtm } from "../integrations/gtm";
 import { meta } from "../integrations/meta";
 import { shopify } from "../integrations/shopify";
-import { FidesGlobal } from "./consent-types";
+import {
+  FidesCookie,
+  FidesGlobal,
+  FidesOptions,
+  PrivacyExperience,
+} from "./consent-types";
 import {
   decodeNoticeConsentString,
   defaultShowModal,
   encodeNoticeConsentString,
 } from "./consent-utils";
+import {
+  consentCookieObjHasSomeConsentSet,
+  updateExperienceFromCookieConsentNotices,
+} from "./cookie";
 import { onFidesEvent } from "./events";
 import { DEFAULT_LOCALE, DEFAULT_MODAL_LINK_LABEL } from "./i18n";
+
+declare global {
+  interface Window {
+    Fides: FidesGlobal;
+    fides_overrides: Partial<FidesOptions>;
+    fidesDebugger: (...args: unknown[]) => void;
+  }
+}
+
+export const raise = (message: string) => {
+  throw new Error(message);
+};
+
+export const updateWindowFides = (fidesGlobal: FidesGlobal) => {
+  if (typeof window !== "undefined") {
+    window.Fides = fidesGlobal;
+  }
+};
+
+export interface UpdateExperienceProps {
+  cookie: FidesCookie;
+  experience: PrivacyExperience;
+}
+export const updateExperience = ({
+  cookie,
+  experience,
+}: UpdateExperienceProps): Partial<PrivacyExperience> => {
+  let updatedExperience: PrivacyExperience = experience;
+  const preferencesExistOnCookie = consentCookieObjHasSomeConsentSet(
+    cookie.consent,
+  );
+  if (preferencesExistOnCookie) {
+    // If we have some preferences on the cookie, we update client-side experience with those preferences
+    // if the name matches. This is used for client-side UI.
+    updatedExperience = updateExperienceFromCookieConsentNotices({
+      experience,
+      cookie,
+    });
+  }
+  return updatedExperience;
+};
 
 export const getCoreFides = ({
   tcfEnabled = false,
