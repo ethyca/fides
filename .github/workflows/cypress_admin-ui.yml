@@ -15,6 +15,22 @@ env:
 
 jobs:
   Admin-UI-Cypress:
+    strategy:
+      matrix:
+        specs:
+          - "cypress/e2e/a**.*"
+          - "cypress/e2e/c**.*"
+          - "cypress/e2e/d**.*"
+          - "cypress/e2e/h**.*"
+          - "cypress/e2e/l**.*"
+          - "cypress/e2e/m**.*"
+          - "cypress/e2e/n**.*"
+          - "cypress/e2e/o**.*"
+          - "cypress/e2e/p**.*"
+          - "cypress/e2e/r**.*"
+          - "cypress/e2e/s**.*"
+          - "cypress/e2e/t**.*"
+          - "cypress/e2e/u**.*"
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -40,7 +56,7 @@ jobs:
         with:
           working-directory: clients/admin-ui
           install: false
-          start: npm run cy:start
+          start: npm run cy:run -- --spec ${{ matrix.specs }}
           wait-on: "http://localhost:3000"
           wait-on-timeout: 180
 
