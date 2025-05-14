@@ -17,7 +17,7 @@ jobs:
   prepare-matrix:
     runs-on: ubuntu-latest
     outputs:
-      specs: ${{ steps.set-matrix.outputs.specs }}
+      spec_groups: ${{ steps.set-matrix.outputs.spec_groups }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,15 +27,44 @@ jobs:
         shell: bash
         run: |
           cd clients/admin-ui/cypress/e2e
-          # Find all test files and create a matrix with individual files
-          echo "specs=$(find . -name "*.cy.ts" | sed 's|^\./||' | sort | python3 -c '
-          import sys, json
-          files = [line.strip() for line in sys.stdin]
-          # Format for GitHub Actions - each file becomes its own matrix entry
-          print(json.dumps(files))
+          # Group test files into balanced groups based on file size
+          echo "spec_groups=$(find . -name "*.cy.ts" | python3 -c '
+          import sys, os, json, math
+
+          # Number of groups to create (adjust based on your needs)
+          NUM_GROUPS = 4
+
+          # Get all test files with their sizes
+          files = []
+          for line in sys.stdin:
+              filepath = line.strip()
+              if os.path.exists(filepath):
+                  size = os.path.getsize(filepath)
+                  files.append((filepath.replace("./", ""), size))
+
+          # Sort files by size in descending order
+          files.sort(key=lambda x: x[1], reverse=True)
+
+          # Initialize groups
+          groups = [[] for _ in range(NUM_GROUPS)]
+          group_sizes = [0] * NUM_GROUPS
+
+          # Distribute files using greedy algorithm (largest file first)
+          for file, size in files:
+              # Find the group with the smallest total size
+              min_group_idx = group_sizes.index(min(group_sizes))
+              groups[min_group_idx].append(file)
+              group_sizes[min_group_idx] += size
+
+          # Format for GitHub Actions
+          print(json.dumps([",".join(group) for group in groups]))
           ')" >> $GITHUB_OUTPUT
 
-  build-admin-ui:
+  Admin-UI-Cypress:
+    needs: prepare-matrix
+    strategy:
+      matrix:
+        spec_group: ${{ fromJson(needs.prepare-matrix.outputs.spec_groups) }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -56,46 +85,6 @@ jobs:
         working-directory: clients/fides-js
         run: npm run build
 
-      - name: Build Admin UI
-        working-directory: clients/admin-ui
-        run: npm run build
-
-      - name: Cache build artifacts
-        uses: actions/cache@v3
-        with:
-          path: |
-            clients/admin-ui/dist
-            clients/fides-js/dist
-            clients/node_modules
-          key: ${{ runner.os }}-admin-ui-build-${{ github.sha }}
-
-  Admin-UI-Cypress:
-    needs: [prepare-matrix, build-admin-ui]
-    strategy:
-      matrix:
-        specs: ${{ fromJson(needs.prepare-matrix.outputs.specs) }}
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: clients
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Use Node.js 20.x
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20.x
-
-      - name: Restore cached build artifacts
-        uses: actions/cache@v3
-        with:
-          path: |
-            clients/admin-ui/dist
-            clients/fides-js/dist
-            clients/node_modules
-          key: ${{ runner.os }}-admin-ui-build-${{ github.sha }}
-
       - name: Cypress Admin UI E2E Tests
         uses: cypress-io/github-action@v6
         with:
@@ -104,7 +93,7 @@ jobs:
           start: npm run cy:start
           wait-on: "http://localhost:3000"
           wait-on-timeout: 180
-          spec: cypress/e2e/${{ matrix.specs }}
+          spec: cypress/e2e/{${{ matrix.spec_group }}}
 
       - uses: actions/upload-artifact@v4
         if: failure()
