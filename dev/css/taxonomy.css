@@ -1,0 +1,216 @@
+/* -- START: Taxonomy Visualization Explorer CSS -- */
+
+
+/* Typography */
+
+.vis {
+    font-family: "Source Sans Pro", sans-serif;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 1.5;
+    letter-spacing: 0.15px;
+    color: var(--md-typeset-color);
+    margin: 0 auto;
+    padding: 20px;
+    background-color: var(--md-vis-bg-color);
+    border-radius: 5px;
+}
+
+.vis h1 {
+    font-weight: 700;
+    font-size: 26px;
+    letter-spacing: -0.48px;
+    color: #111439;
+    margin: 0;
+}
+
+.vis .legend {
+    font-weight: 600;
+    font-size: 10px;
+    letter-spacing: -0.19px;
+    color: #0a2540;
+}
+
+.vis .card-title {
+    font-weight: 700;
+}
+
+.vis .card-subtitle {
+    font-weight: 600;
+}
+
+
+/* General */
+
+.vis-container {
+    max-width: 1400px;
+    text-align: center;
+}
+
+.vis-container>*+* {
+    margin-top: 1.5rem;
+}
+
+.chart-container>svg {
+    display: block;
+}
+
+@media screen and (min-width: 1200px) {
+    .controls-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+}
+
+.btn-group {
+    display: inline-flex;
+    vertical-align: middle;
+    margin: 0.25em;
+}
+
+.btn {
+    line-height: 1;
+    font-size: 14px;
+    background-color: #eef2f7;
+    border: none;
+    padding: 0.65em 0.75em;
+    margin: 0;
+}
+
+.btn--icon {
+    padding: 0;
+    width: 48px;
+    height: 2.3em;
+    display: inline-flexbox;
+    justify-content: center;
+    align-items: center;
+}
+
+.btn:first-child {
+    border-top-left-radius: 2px;
+    border-bottom-left-radius: 2px;
+}
+
+.btn:last-child {
+    border-top-right-radius: 2px;
+    border-bottom-right-radius: 2px;
+}
+
+.btn:hover {
+    background-color: #e9ebee;
+}
+
+.btn:active,
+.btn.is-selected {
+    background-color: #cbd7e7;
+}
+
+
+/* Legend */
+
+.vis-color-legend {
+    display: inline-flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.vis-color-legend .legend-item {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+}
+
+.vis-color-legend .legend-swatch {
+    width: 1em;
+    height: 1em;
+    margin-right: 0.5em;
+}
+
+
+/* Tooltip */
+
+.vis-tooltip {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: #ffffff;
+    padding: 1em;
+    border-radius: 4px;
+    box-shadow: 0 2px 24px 0 rgba(0, 0, 0, 0.2);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    color: rgb(79, 86, 107);
+}
+
+.vis-tooltip.is-visible {
+    opacity: 1;
+}
+
+.vis-tooltip .card {
+    max-width: 240px;
+}
+
+.vis-tooltip .card>*+* {
+    margin-top: 1em;
+}
+
+
+/* Sunburst */
+
+.vis .sunburst-svg .partition-path,
+.vis .sunburst-svg .label-text {
+    transition: fill 0.15s;
+}
+
+.vis .sunburst-svg .partition-path.is-highlighted {
+    fill: #57f2ea;
+}
+
+.vis .sunburst-svg .label-text.is-highlighted {
+    fill: currentColor;
+}
+
+
+/* Radial Tree */
+
+
+/* Tree */
+
+.vis .radial-tree-svg .link,
+.vis .radial-tree-svg .node,
+.vis .tree-svg .link,
+.vis .tree-svg .node {
+    transition: fill 0.15s;
+}
+
+.vis .radial-tree-svg .link,
+.vis .tree-svg .link {
+    stroke-width: 1.5px;
+}
+
+.vis .radial-tree-svg .link.is-highlighted,
+.vis .tree-svg .link.is-highlighted {
+    stroke: #57f2ea;
+    stroke-width: 2.5px;
+}
+
+.vis .radial-tree-svg .node.is-highlighted,
+.vis .tree-svg .node.is-highlighted {
+    fill: #57f2ea;
+}
+
+.vis .radial-tree-svg .label-text .label-text__bg,
+.vis .tree-svg .label-text .label-text__bg {
+    stroke: var(--md-default-bg-color);
+}
+
+.vis .radial-tree-svg .label-text.is-highlighted,
+.vis .tree-svg .label-text.is-highlighted {
+    font-weight: 700;
+}
+
+
+/* -- END: Taxonomy Visualization Explorer CSS -- */
