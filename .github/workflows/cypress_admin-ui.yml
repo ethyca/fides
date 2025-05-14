@@ -27,7 +27,7 @@ jobs:
         shell: bash
         run: |
           cd clients/admin-ui/cypress/e2e
-          echo "specs=$(find . -name "*.cy.ts" | sed 's|^\./||'" >> $GITHUB_OUTPUT
+          echo "specs=$(find . -name "*.cy.ts" | sed 's|^\./||')" >> $GITHUB_OUTPUT
 
   Admin-UI-Cypress:
     needs: prepare-matrix
