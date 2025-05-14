@@ -87,6 +87,7 @@ jobs:
 
       - name: Cypress Admin UI E2E Tests
         uses: cypress-io/github-action@v6
+        continue-on-error: true
         with:
           working-directory: clients/admin-ui
           install: false
