@@ -17,18 +17,19 @@ jobs:
   list-specs:
     runs-on: ubuntu-latest
     outputs:
-      specs: ${{ steps.list-specs.outputs.matrix }}
+      specs: ${{ steps.list-specs.outputs.specs }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - id: list-specs
-        run: echo "::set-output name=specs::$(ls clients/admin-ui/cypress/e2e/* | jq -R -s -c 'split("\n")[:-1]')"
+        run: |
+          find clients/admin-ui/cypress/e2e -name "*.cy.ts" | sed 's/^/          - "/' | sed 's/$/",/' | tee specs.txt
 
   Admin-UI-Cypress:
     needs: list-specs
     strategy:
       matrix:
-        specs: ${{ fromJson(needs.list-specs.outputs.matrix) }}
+        specs: ${{ needs.list-specs.outputs.specs }}
     runs-on: ubuntu-latest
     defaults:
       run:
