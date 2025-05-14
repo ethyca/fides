@@ -64,7 +64,7 @@ const ConfigureIntegrationForm = ({
     usePatchSystemConnectionConfigsMutation();
 
   const { data: secrets, isLoading: secretsSchemaIsLoading } =
-    useGetConnectionTypeSecretSchemaQuery(connectionOption.identifier);
+    useGetConnectionTypeSecretSchemaQuery(connectionOption?.identifier);
 
   const { data: allSystems } = useGetAllSystemsQuery();
 
@@ -292,7 +292,7 @@ const ConfigureIntegrationForm = ({
                   layout="stacked"
                 />
               )}
-              {connectionOption.identifier === ConnectionType.DATAHUB && (
+              {connectionOption?.identifier === ConnectionType.DATAHUB && (
                 <ControlledSelect
                   id="dataset"
                   name="dataset"
