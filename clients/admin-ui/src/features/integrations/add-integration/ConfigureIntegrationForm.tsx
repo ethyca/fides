@@ -11,6 +11,7 @@ import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-typ
 import type { ConnectionTypeSecretSchemaResponse } from "~/features/connection-type/types";
 import { useGetAllFilteredDatasetsQuery } from "~/features/dataset";
 import {
+  useCreateUnlinkedSassConnectionConfigMutation,
   usePatchDatastoreConnectionMutation,
   usePatchDatastoreConnectionSecretsMutation,
 } from "~/features/datastore-connections";
@@ -28,6 +29,7 @@ import {
   ConnectionType,
   DynamoDBDocsSchema,
   ScyllaDocsSchema,
+  SystemType,
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
@@ -63,6 +65,9 @@ const ConfigureIntegrationForm = ({
   const [patchSystemConnectionsTrigger, { isLoading: systemPatchIsLoading }] =
     usePatchSystemConnectionConfigsMutation();
 
+  const [createUnlinkedSassConnectionConfigTrigger] =
+    useCreateUnlinkedSassConnectionConfigMutation();
+
   const { data: secrets, isLoading: secretsSchemaIsLoading } =
     useGetConnectionTypeSecretSchemaQuery(connectionOption.identifier);
 
@@ -95,7 +100,7 @@ const ConfigureIntegrationForm = ({
     description: connection?.description ?? "",
     secrets: mapValues(
       secrets?.properties,
-      (s, key) => connection?.secrets?.[key] ?? "",
+      (s, key) => connection?.secrets?.[key] ?? s.default ?? "",
     ),
     dataset: initialDatasets,
   };
@@ -103,6 +108,7 @@ const ConfigureIntegrationForm = ({
   const toast = useToast();
 
   const isEditing = !!connection;
+  const isSaas = connectionOption.type === SystemType.SAAS;
 
   // Exclude secrets fields that haven't changed
   // The api returns secrets masked as asterisks (*****)
@@ -143,6 +149,13 @@ const ConfigureIntegrationForm = ({
       patchResult = await patchSystemConnectionsTrigger({
         systemFidesKey: values.system_fides_key,
         connectionConfigs: [connectionPayload],
+      });
+    } else if (isSaas && !isEditing) {
+      patchResult = await createUnlinkedSassConnectionConfigTrigger({
+        ...connectionPayload,
+        instance_key: formatKey(values.name),
+        saas_connector_type: connectionOption.identifier,
+        secrets: values.secrets || {},
       });
     } else {
       patchResult = await patchDatastoreConnectionsTrigger(connectionPayload);
@@ -282,7 +295,7 @@ const ConfigureIntegrationForm = ({
                 variant="stacked"
               />
               {generateFields(secrets!)}
-              {!isEditing && (
+              {!isEditing && !isSaas && (
                 <ControlledSelect
                   id="system_fides_key"
                   name="system_fides_key"

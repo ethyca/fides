@@ -438,3 +438,21 @@ saas_config:
                 "status": "closed",
                 "site_id": "<site_id>"
               }
+    - name: field_list_example
+      requests:
+        read:
+          method: GET
+          path: /v1/field_list_example
+          query_params:
+            - name: query
+              value: <field_list>
+          param_values:
+            - name: email
+              identity: email
+        update:
+          method: POST
+          path: /v1/field_list_example
+          body: |
+            {
+              "fields": "<field_list>"
+            }

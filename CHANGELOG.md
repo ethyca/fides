@@ -23,9 +23,11 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Added
 - Exposes configuration settings for the async db engine connection [#6128](https://github.com/ethyca/fides/pull/6128)
+- Added support for Salesforce custom object monitoring using Helios [#6096](https://github.com/ethyca/fides/pull/6096)
 
 ### Changed
 - Attachment uploads now check for file extension types, retrieving and attachment also returns the file size. [#6124](https://github.com/ethyca/fides/pull/6124)
+- Integrations detail page now includes a setup guide component. [#6096](https://github.com/ethyca/fides/pull/6096)
 
 ### Developer Experience
 - Refactored Fides initialization code to reduce duplication and improve maintainability. [#6143](https://github.com/ethyca/fides/pull/6143)

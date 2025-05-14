@@ -215,6 +215,63 @@ const useDiscoveryResultColumns = ({
     return { columns };
   }
 
+  if (resourceType === StagedResourceTypeValue.ENDPOINT) {
+    const columns = [
+      columnHelper.accessor((row) => row.name, {
+        id: "name",
+        cell: (props) => <ResultStatusCell result={props.row.original} />,
+        header: (props) => <DefaultHeaderCell value="Object" {...props} />,
+        size: NAME_COLUMN_SIZE,
+      }),
+      columnHelper.accessor((row) => row.description, {
+        id: "description",
+        cell: (props) => (
+          <DefaultCell value={props.getValue()} cellProps={props} />
+        ),
+        header: (props) => <DefaultHeaderCell value="Description" {...props} />,
+        meta: {
+          showHeaderMenu: true,
+        },
+      }),
+      columnHelper.display({
+        id: "status",
+        cell: (props) => <ResultStatusBadgeCell result={props.row.original} />,
+        header: (props) => <DefaultHeaderCell value="Status" {...props} />,
+      }),
+      columnHelper.display({
+        id: "type",
+        cell: () => <DefaultCell value="Endpoint" />,
+        header: "Type",
+      }),
+      columnHelper.display({
+        id: "classifications",
+        cell: ({ row }) => {
+          return <EditCategoryCell resource={row.original} />;
+        },
+        meta: { overflow: "visible", disableRowClick: true },
+        header: "Data category",
+        minSize: 280,
+      }),
+      columnHelper.accessor((row) => row.updated_at, {
+        id: "time",
+        cell: (props) => <RelativeTimestampCell time={props.getValue()} />,
+        header: (props) => <DefaultHeaderCell value="When" {...props} />,
+      }),
+      columnHelper.display({
+        id: "actions",
+        cell: (props) => (
+          <DiscoveryItemActionsCell resource={props.row.original} />
+        ),
+        header: "Actions",
+        size: ACTION_COLUMN_SIZE,
+        meta: {
+          disableRowClick: true,
+        },
+      }),
+    ];
+    return { columns };
+  }
+
   return { columns: defaultColumns };
 };
 
