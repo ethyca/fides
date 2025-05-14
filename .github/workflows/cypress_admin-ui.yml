@@ -27,54 +27,12 @@ jobs:
         shell: bash
         run: |
           cd clients/admin-ui/cypress/e2e
-          # Group files by first letter to create balanced test groups
-          # The grouping logic aims to distribute tests more evenly
-
-          # Generate groups based on file prefixes
+          # Find all test files and create a matrix with individual files
           echo "specs=$(find . -name "*.cy.ts" | sed 's|^\./||' | sort | python3 -c '
           import sys, json
           files = [line.strip() for line in sys.stdin]
-
-          # Create prefix groups
-          groups = {}
-          for file in files:
-              prefix = file[0].lower()
-              if prefix not in groups:
-                  groups[prefix] = []
-              groups[prefix].append(file)
-
-          # Combine small groups
-          result = []
-          current_group = []
-          current_size = 0
-
-          # Sort keys to ensure consistent output
-          sorted_keys = sorted(groups.keys())
-
-          for prefix in sorted_keys:
-              prefix_files = groups[prefix]
-              prefix_size = len(prefix_files)
-
-              # If prefix has many files, create its own group
-              if prefix_size >= 3:
-                  result.append(",".join(prefix_files))
-              # Add to current group
-              elif current_size + prefix_size <= 3:
-                  current_group.extend(prefix_files)
-                  current_size += prefix_size
-              # Current group is full, start a new one
-              else:
-                  if current_group:
-                      result.append(",".join(current_group))
-                  current_group = prefix_files.copy()
-                  current_size = prefix_size
-
-          # Add the last group if it has any files
-          if current_group:
-              result.append(",".join(current_group))
-
-          # Format for GitHub Actions
-          print(json.dumps(result))
+          # Format for GitHub Actions - each file becomes its own matrix entry
+          print(json.dumps(files))
           ')" >> $GITHUB_OUTPUT
 
   Admin-UI-Cypress:
