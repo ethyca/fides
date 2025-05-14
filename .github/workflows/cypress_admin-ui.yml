@@ -35,11 +35,7 @@ jobs:
           print(json.dumps(files))
           ')" >> $GITHUB_OUTPUT
 
-  Admin-UI-Cypress:
-    needs: prepare-matrix
-    strategy:
-      matrix:
-        specs: ${{ fromJson(needs.prepare-matrix.outputs.specs) }}
+  build-admin-ui:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -60,6 +56,46 @@ jobs:
         working-directory: clients/fides-js
         run: npm run build
 
+      - name: Build Admin UI
+        working-directory: clients/admin-ui
+        run: npm run build
+
+      - name: Cache build artifacts
+        uses: actions/cache@v3
+        with:
+          path: |
+            clients/admin-ui/dist
+            clients/fides-js/dist
+            clients/node_modules
+          key: ${{ runner.os }}-admin-ui-build-${{ github.sha }}
+
+  Admin-UI-Cypress:
+    needs: [prepare-matrix, build-admin-ui]
+    strategy:
+      matrix:
+        specs: ${{ fromJson(needs.prepare-matrix.outputs.specs) }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: clients
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: Restore cached build artifacts
+        uses: actions/cache@v3
+        with:
+          path: |
+            clients/admin-ui/dist
+            clients/fides-js/dist
+            clients/node_modules
+          key: ${{ runner.os }}-admin-ui-build-${{ github.sha }}
+
       - name: Cypress Admin UI E2E Tests
         uses: cypress-io/github-action@v6
         with:
@@ -68,7 +104,7 @@ jobs:
           start: npm run cy:start
           wait-on: "http://localhost:3000"
           wait-on-timeout: 180
-          spec: ${{ matrix.specs }}
+          spec: cypress/e2e/${{ matrix.specs }}
 
       - uses: actions/upload-artifact@v4
         if: failure()
