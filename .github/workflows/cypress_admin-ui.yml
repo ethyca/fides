@@ -17,13 +17,13 @@ jobs:
   list-specs:
     runs-on: ubuntu-latest
     outputs:
-      specs: ${{ steps.list-specs.outputs.specs }}
+      specs: ${{ steps.step2.outputs.specs }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - id: list-specs
+      - id: step2
         run: |
-          find clients/admin-ui/cypress/e2e -name "*.cy.ts" | sed 's/^/          - "/' | sed 's/$/",/' | tee specs.txt
+          echo "specs=$(ls clients/admin-ui/cypress/e2e)" >> "$GITHUB_OUTPUT"
 
   Admin-UI-Cypress:
     needs: list-specs
