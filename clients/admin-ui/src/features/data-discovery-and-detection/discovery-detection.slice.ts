@@ -119,6 +119,13 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Discovery Monitor Configs"],
     }),
+    getDiscoveryMonitor: build.query<MonitorConfig, MonitorActionQueryParams>({
+      query: ({ monitor_config_id }) => ({
+        method: "GET",
+        url: `/plus/discovery-monitor/${monitor_config_id}`,
+      }),
+      providesTags: ["Discovery Monitor Configs"],
+    }),
     getMonitorResults: build.query<
       Page_StagedResourceAPIResponse_,
       MonitorResultQueryParams
@@ -235,6 +242,7 @@ export const {
   useLazyGetAvailableDatabasesByConnectionQuery,
   useExecuteDiscoveryMonitorMutation,
   useDeleteDiscoveryMonitorMutation,
+  useGetDiscoveryMonitorQuery,
   useGetMonitorResultsQuery,
   usePromoteResourceMutation,
   usePromoteResourcesMutation,
