@@ -14,22 +14,26 @@ env:
   CI: true
 
 jobs:
-  list-specs:
+  prepare-matrix:
     runs-on: ubuntu-latest
     outputs:
-      specs: ${{ steps.step2.outputs.specs }}
+      specs: ${{ steps.set-matrix.outputs.specs }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - id: step2
+
+      - name: Set matrix
+        id: set-matrix
+        shell: bash
         run: |
-          echo "specs=$(ls clients/admin-ui/cypress/e2e)" >> "$GITHUB_OUTPUT"
+          cd clients/admin-ui/cypress/e2e
+          echo "specs=$(find . -name "*.cy.ts" | sed 's|^\./||'" >> $GITHUB_OUTPUT
 
   Admin-UI-Cypress:
-    needs: list-specs
+    needs: prepare-matrix
     strategy:
       matrix:
-        specs: ${{ needs.list-specs.outputs.specs }}
+        specs: ${{ fromJson(needs.prepare-matrix.outputs.specs) }}
     runs-on: ubuntu-latest
     defaults:
       run:
