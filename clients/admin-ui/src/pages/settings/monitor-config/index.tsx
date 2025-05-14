@@ -1,5 +1,5 @@
-import { AntButton } from "fidesui";
-import { useRouter } from "next/router";
+import { AntSpin } from "fidesui";
+import Link from "next/link";
 
 import Layout from "~/features/common/Layout";
 import {
@@ -7,9 +7,11 @@ import {
   MONITOR_CONFIG_ROUTE,
 } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
+import { useMockGetAllMonitorTemplatesQuery } from "~/features/monitors/useMockGetMonitorTemplatesQuery";
 
 const MonitorConfigTable = () => {
-  const router = useRouter();
+  const { data, isLoading } = useMockGetAllMonitorTemplatesQuery();
+
   return (
     <Layout title="Monitor configs">
       <PageHeader
@@ -20,15 +22,25 @@ const MonitorConfigTable = () => {
           },
         ]}
       />
-      <div>
-        Configuring monitor config...
-        <AntButton onClick={() => router.push(CREATE_MONITOR_CONFIG_ROUTE)}>
-          Add new
-        </AntButton>
-        <AntButton onClick={() => router.push(`${MONITOR_CONFIG_ROUTE}/1`)}>
-          Edit config 1
-        </AntButton>
-      </div>
+      {isLoading ? (
+        <AntSpin
+          size="large"
+          className="flex h-full items-center justify-center"
+        />
+      ) : (
+        <div>
+          <Link href={CREATE_MONITOR_CONFIG_ROUTE}>Add new</Link>
+          <ul>
+            {data.items?.map((config) => (
+              <li key={config.id}>
+                <Link href={`${MONITOR_CONFIG_ROUTE}/${config.id}`}>
+                  {config.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </Layout>
   );
 };

@@ -49,6 +49,7 @@ export {
   Row as AntRow,
   Skeleton as AntSkeleton,
   Space as AntSpace,
+  Spin as AntSpin,
   Switch as AntSwitch,
   Tabs as AntTabs,
   Tooltip as AntTooltip,
