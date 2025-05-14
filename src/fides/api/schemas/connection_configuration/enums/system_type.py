@@ -7,4 +7,5 @@ class SystemType(Enum):
     email = "email"
     manual = "manual"
     saas = "saas"
+    system = "system"
     website = "website"

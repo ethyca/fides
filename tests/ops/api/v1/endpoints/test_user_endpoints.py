@@ -1617,7 +1617,7 @@ class TestUpdateSystemsManagedByUser:
         assert viewer_user.systems == [system]
 
     @pytest.mark.usefixtures(
-        "load_default_data_uses"
+        "default_data_uses"
     )  # privacy declaration requires data uses to be present
     def test_update_system_manager_existing_system_not_in_request_which_removes_system(
         self, api_client: TestClient, generate_auth_header, url, system, viewer_user, db

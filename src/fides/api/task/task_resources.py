@@ -19,6 +19,7 @@ from fides.api.service.connectors import (
     MicrosoftSQLServerConnector,
     MongoDBConnector,
     MySQLConnector,
+    OktaConnector,
     PostgreSQLConnector,
     RedshiftConnector,
     SaaSConnector,
@@ -60,6 +61,8 @@ class Connections:
             return MongoDBConnector(connection_config)
         if connection_config.connection_type == ConnectionType.mysql:
             return MySQLConnector(connection_config)
+        if connection_config.connection_type == ConnectionType.okta:
+            return OktaConnector(connection_config)
         if connection_config.connection_type == ConnectionType.snowflake:
             return SnowflakeConnector(connection_config)
         if connection_config.connection_type == ConnectionType.redshift:

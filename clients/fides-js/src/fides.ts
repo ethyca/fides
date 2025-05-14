@@ -11,7 +11,10 @@ import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
 import { raise } from "./lib/common-utils";
 import {
-  ConsentMethod,
+  readConsentFromAnyProvider,
+  registerDefaultProviders,
+} from "./lib/consent-migration";
+import {
   FidesConfig,
   FidesCookie,
   FidesExperienceTranslationOverrides,
@@ -21,7 +24,7 @@ import {
   FidesOverrides,
   GetPreferencesFnResp,
   NoticeConsent,
-  OtToFidesConsentMapping,
+  NoticeValues,
   OverrideType,
   PrivacyExperience,
 } from "./lib/consent-types";
@@ -34,9 +37,6 @@ import {
 import {
   consentCookieObjHasSomeConsentSet,
   getFidesConsentCookie,
-  getOTConsentCookie,
-  otCookieToFidesConsent,
-  saveFidesCookie,
   updateExperienceFromCookieConsentNotices,
 } from "./lib/cookie";
 import { initializeDebugger } from "./lib/debugger";
@@ -85,45 +85,6 @@ const updateExperience: UpdateExperienceFn = ({
     });
   }
   return updatedExperience;
-};
-
-const readConsentFromOneTrust = (
-  config: FidesConfig,
-  optionsOverrides: Partial<FidesInitOptionsOverrides>,
-): NoticeConsent | undefined => {
-  const otConsentCookie =
-    !!optionsOverrides.otFidesMapping && getOTConsentCookie();
-  if (!optionsOverrides.otFidesMapping || !otConsentCookie) {
-    fidesDebugger(
-      "OT cookie or OT-Fides mapping does not exist, skipping mapping consent to Fides cookie...",
-      config.options,
-    );
-    return undefined;
-  }
-  try {
-    const decodedString = decodeURIComponent(optionsOverrides.otFidesMapping);
-    const strippedString = decodedString.replace(/^'|'$/g, "");
-    const otFidesMappingParsed: OtToFidesConsentMapping =
-      JSON.parse(strippedString);
-    const otToFidesConsent: NoticeConsent = otCookieToFidesConsent(
-      otConsentCookie,
-      otFidesMappingParsed,
-    );
-    if (otToFidesConsent) {
-      fidesDebugger(
-        `Fides consent built based on OT consent: ${JSON.stringify(otToFidesConsent)}`,
-        config.options,
-      );
-      return otToFidesConsent;
-    }
-    return undefined;
-  } catch (e) {
-    fidesDebugger(
-      `Failed to map OT consent to Fides consent due to: ${e}`,
-      config.options,
-    );
-  }
-  return undefined;
 };
 
 /**
@@ -176,35 +137,34 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     experienceTranslationOverrides,
   };
 
-  // Check for an existing cookie for this device
-  let consentFromOneTrust: NoticeConsent | undefined;
-  if (optionsOverrides.otFidesMapping && !getFidesConsentCookie()) {
-    consentFromOneTrust = readConsentFromOneTrust(config, optionsOverrides);
+  // Register any configured consent migration providers
+  registerDefaultProviders(optionsOverrides);
+
+  // Check for migrated consent from any registered providers
+  let migratedConsent: NoticeConsent | undefined;
+
+  if (!getFidesConsentCookie()) {
+    const { consent, method } = readConsentFromAnyProvider(optionsOverrides);
+    if (consent && method) {
+      migratedConsent = consent;
+    }
   }
+
   config = {
     ...config,
     options: { ...config.options, ...overrides.optionsOverrides },
   };
-  this.cookie = getInitialCookie(config);
+  this.cookie = getInitialCookie(config); // also adds legacy consent values to the cookie
   this.cookie.consent = {
     ...this.cookie.consent,
-    ...consentFromOneTrust,
+    ...migratedConsent,
   };
 
   // Keep a copy of saved consent from the cookie, since we update the "cookie"
   // value during initialization based on overrides, experience, etc.
   this.saved_consent = {
-    ...this.cookie.consent,
+    ...(this.cookie.consent as NoticeValues),
   };
-
-  if (consentFromOneTrust && !getFidesConsentCookie()) {
-    // If we have consent from OneTrust, we need to write the cookie to the browser
-    Object.assign(this.cookie.fides_meta, {
-      consentMethod: ConsentMethod.SCRIPT,
-    });
-    fidesDebugger("Saving OT preferences to Fides cookie");
-    saveFidesCookie(this.cookie, config.options.base64Cookie);
-  }
 
   // Update the fidesString if we have an override and the NC portion is valid
   const { fidesString } = config.options;
@@ -224,6 +184,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
       );
     }
   }
+
   const initialFides = getInitialFides({
     ...config,
     cookie: this.cookie,
@@ -249,6 +210,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   });
   Object.assign(this, updatedFides);
   updateWindowFides(this);
+
   // Dispatch the "FidesInitialized" event to update listeners with the initial state.
   dispatchFidesEvent("FidesInitialized", this.cookie, config.options.debug, {
     shouldShowExperience: this.shouldShowExperience(),
@@ -292,6 +254,8 @@ const _Fides: FidesGlobal = {
     fidesConsentOverride: null,
     otFidesMapping: null,
     fidesDisabledNotices: null,
+    fidesConsentNonApplicableFlagMode: null,
+    fidesConsentFlagType: null,
   },
   fides_meta: {},
   identity: {},

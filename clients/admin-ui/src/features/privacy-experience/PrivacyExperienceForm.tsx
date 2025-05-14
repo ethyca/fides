@@ -23,6 +23,7 @@ import {
   selectLocationsRegulations,
   useGetLocationsRegulationsQuery,
 } from "~/features/locations/locations.slice";
+import { selectHealth as selectPlusHealth } from "~/features/plus/plus.slice";
 import { getSelectedRegionIds } from "~/features/privacy-experience/form/helpers";
 import { selectAllLanguages } from "~/features/privacy-experience/language.slice";
 import {
@@ -48,18 +49,16 @@ import {
   SupportedLanguage,
 } from "~/types/api";
 
+import { useFeatures } from "../common/features";
 import { ControlledSelect } from "../common/form/ControlledSelect";
 import { useGetConfigurationSettingsQuery } from "../config-settings/config-settings.slice";
 import { TCFConfigSelect } from "./form/TCFConfigSelect";
 
-const componentTypeOptions: SelectProps["options"] = [
+// Base component type options without TCF overlay
+const baseComponentTypeOptions: SelectProps["options"] = [
   {
     label: "Banner and modal",
     value: ComponentType.BANNER_AND_MODAL,
-  },
-  {
-    label: "TCF overlay",
-    value: ComponentType.TCF_OVERLAY,
   },
   {
     label: "Modal",
@@ -74,6 +73,12 @@ const componentTypeOptions: SelectProps["options"] = [
     value: ComponentType.HEADLESS,
   },
 ];
+
+// The TCF overlay option to insert
+const tcfOverlayOption = {
+  label: "TCF overlay",
+  value: ComponentType.TCF_OVERLAY,
+};
 
 const tcfRejectAllMechanismOptions: SelectProps["options"] = [
   {
@@ -152,6 +157,9 @@ export const PrivacyExperienceForm = ({
   onCreateTranslation: (lang: SupportedLanguage) => ExperienceTranslation;
 }) => {
   const router = useRouter();
+  const isPublisherRestrictionsFlagEnabled =
+    useFeatures()?.flags?.publisherRestrictions;
+  const plusHealth = useAppSelector(selectPlusHealth);
 
   const {
     values,
@@ -310,7 +318,17 @@ export const PrivacyExperienceForm = ({
       <ControlledSelect
         name="component"
         id="component"
-        options={componentTypeOptions}
+        options={useMemo(() => {
+          if (plusHealth?.tcf?.enabled) {
+            // Insert TCF overlay as the second item
+            return [
+              baseComponentTypeOptions[0],
+              tcfOverlayOption,
+              ...baseComponentTypeOptions.slice(1),
+            ];
+          }
+          return baseComponentTypeOptions;
+        }, [plusHealth])}
         label="Experience type"
         layout="stacked"
         disabled={!!initialValues.component}
@@ -318,14 +336,18 @@ export const PrivacyExperienceForm = ({
         isRequired
       />
       <Collapse
-        in={values.component === ComponentType.TCF_OVERLAY}
+        in={
+          values.component === ComponentType.TCF_OVERLAY &&
+          isPublisherRestrictionsFlagEnabled
+        }
         animateOpacity
       >
-        {values.component === ComponentType.TCF_OVERLAY && (
-          <TCFConfigSelect
-            overridesEnabled={appConfig?.consent?.override_vendor_purposes}
-          />
-        )}
+        {values.component === ComponentType.TCF_OVERLAY &&
+          isPublisherRestrictionsFlagEnabled && (
+            <TCFConfigSelect
+              overridesEnabled={appConfig?.consent?.override_vendor_purposes}
+            />
+          )}
       </Collapse>
       <Collapse
         in={values.component === ComponentType.TCF_OVERLAY}
@@ -408,7 +430,7 @@ export const PrivacyExperienceForm = ({
             return undefined;
           }}
           getItemLabel={getPrivacyNoticeName}
-          draggable
+          draggable={false}
           baseTestId="privacy-notice"
         />
       ) : (
@@ -422,7 +444,7 @@ export const PrivacyExperienceForm = ({
             setFieldValue("privacy_notice_ids", newValues)
           }
           getItemLabel={getPrivacyNoticeName}
-          draggable
+          draggable={false}
           baseTestId="privacy-notice"
         />
       )}

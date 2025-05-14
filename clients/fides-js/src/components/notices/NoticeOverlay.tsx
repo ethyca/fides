@@ -34,6 +34,7 @@ import {
 } from "../../lib/i18n";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { updateConsentPreferences } from "../../lib/preferences";
+import { processExternalConsentValue } from "../../lib/shared-consent-utils";
 import ConsentBanner from "../ConsentBanner";
 import { NoticeConsentButtons } from "../ConsentButtons";
 import Overlay from "../Overlay";
@@ -55,7 +56,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const initialEnabledNoticeKeys = (consent?: NoticeConsent) => {
     if (experience.privacy_notices) {
-      // ensure we have most up-to-date cookie vals
+      // ensure we have most up-to-date cookie vals. If we don't have any consent, use the savedConsent which will be the default values that haven't been passed through the privacy_notices yet so it's perfect to use here.
       return experience.privacy_notices.map((notice) => {
         const val = resolveConsentValue(
           notice,
@@ -106,7 +107,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   const privacyNoticeItems: PrivacyNoticeItem[] = useMemo(
     () => {
       const privacyNotices = experience.privacy_notices ?? [];
-      return privacyNotices.map((notice) => {
+      const items = privacyNotices.map((notice) => {
         const disabled =
           notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY ||
           (options.fidesDisabledNotices?.includes(notice.notice_key) ??
@@ -115,6 +116,16 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         const bestTranslation = selectBestNoticeTranslation(i18n, notice);
         return { notice: { ...notice, disabled }, bestTranslation };
       });
+
+      const noticeOnly = items.filter(
+        (item) =>
+          item.notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY,
+      );
+      const others = items.filter(
+        (item) =>
+          item.notice.consent_mechanism !== ConsentMechanism.NOTICE_ONLY,
+      );
+      return [...noticeOnly, ...others];
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
@@ -131,7 +142,11 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
 
   window.addEventListener("FidesUpdating", (event) => {
     // If GPC is being applied after initialization, we need to update the initial overlay to reflect the new state. This is especially important for Firefox browsers (Gecko) because GPC gets applied rather late due to how it handles queuing the `setTimeout` on the last step of our `initialize` function.
-    setDraftEnabledNoticeKeys(initialEnabledNoticeKeys(event.detail.consent));
+    const { consent } = event.detail;
+    Object.entries(consent).forEach(([key, value]) => {
+      consent[key] = processExternalConsentValue(value);
+    });
+    setDraftEnabledNoticeKeys(initialEnabledNoticeKeys(consent));
   });
 
   const isAllNoticeOnly = privacyNoticeItems.every(

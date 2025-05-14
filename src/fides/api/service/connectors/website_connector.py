@@ -20,6 +20,9 @@ class WebsiteConnector(BaseConnector):
     NOTE: No DSR processing is supported for Website connectors.
     """
 
+    def dsr_supported(self) -> bool:
+        return False
+
     def create_client(self) -> Any:  # type: ignore
         """Returns a client for the website"""
 

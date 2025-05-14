@@ -30,6 +30,12 @@
     "test": true,
     "production": false
   },
+  "oktaMonitor": {
+    "description": "Monitor Okta for activity",
+    "development": true,
+    "test": true,
+    "production": false
+  },
   "ssoAuthentication": {
     "description": "SSO Authentication Providers (OpenID)",
     "development": true,
@@ -38,6 +44,12 @@
   },
   "downloadAccessRequestResults": {
     "description": "Download access data from completed requests",
+    "development": true,
+    "test": true,
+    "production": false
+  },
+  "publisherRestrictions": {
+    "description": "TCF publisher restrictions",
     "development": true,
     "test": true,
     "production": false

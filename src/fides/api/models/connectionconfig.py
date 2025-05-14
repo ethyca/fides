@@ -57,6 +57,7 @@ class ConnectionType(enum.Enum):
     mongodb = "mongodb"
     mssql = "mssql"
     mysql = "mysql"
+    okta = "okta"
     postgres = "postgres"
     rds_mysql = "rds_mysql"
     rds_postgres = "rds_postgres"
@@ -92,6 +93,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.mongodb.value: "MongoDB",
             ConnectionType.mssql.value: "Microsoft SQL Server",
             ConnectionType.mysql.value: "MySQL",
+            ConnectionType.okta.value: "Okta",
             ConnectionType.postgres.value: "PostgreSQL",
             ConnectionType.rds_mysql.value: "RDS MySQL",
             ConnectionType.rds_postgres.value: "RDS Postgres",
@@ -135,6 +137,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.mongodb.value: SystemType.database,
             ConnectionType.mssql.value: SystemType.database,
             ConnectionType.mysql.value: SystemType.database,
+            ConnectionType.okta.value: SystemType.system,
             ConnectionType.postgres.value: SystemType.database,
             ConnectionType.rds_mysql.value: SystemType.database,
             ConnectionType.rds_postgres.value: SystemType.database,

@@ -1,9 +1,7 @@
 import {
   AntButton as Button,
-  CheckIcon,
-  CloseIcon,
-  DeleteIcon,
   HStack,
+  Icons,
   Portal,
   StackProps,
   Text,
@@ -47,7 +45,7 @@ export const RequestTableActions = ({
       <Button
         title="Approve"
         aria-label="Approve"
-        icon={<CheckIcon w={2} h={2} />}
+        icon={<Icons.Checkmark />}
         onClick={approvalModal.onOpen}
         loading={isLoading}
         disabled={isLoading}
@@ -66,7 +64,7 @@ export const RequestTableActions = ({
       <Button
         title="Deny"
         aria-label="Deny"
-        icon={<CloseIcon w={2} h={2} />}
+        icon={<Icons.Close />}
         onClick={denyModal.onOpen}
         loading={isLoading}
         disabled={isLoading}
@@ -82,7 +80,7 @@ export const RequestTableActions = ({
         <Button
           title="Delete"
           aria-label="Delete"
-          icon={<DeleteIcon w={2} h={2} />}
+          icon={<Icons.TrashCan size={14} />}
           onClick={deleteModal.onOpen}
           loading={isLoading}
           disabled={isLoading}

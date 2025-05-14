@@ -37,7 +37,7 @@ class AccessManualWebhook(Base):
         "Attachment",
         secondary="attachment_reference",
         primaryjoin="and_(AccessManualWebhook.id == AttachmentReference.reference_id, "
-        "AttachmentReference.reference_type == 'manual_step')",
+        "AttachmentReference.reference_type == 'access_manual_webhook')",
         secondaryjoin="Attachment.id == AttachmentReference.attachment_id",
         order_by="Attachment.created_at",
         viewonly=True,
@@ -48,7 +48,7 @@ class AccessManualWebhook(Base):
         "Comment",
         secondary="comment_reference",
         primaryjoin="and_(AccessManualWebhook.id == CommentReference.reference_id, "
-        "CommentReference.reference_type == 'manual_step')",
+        "CommentReference.reference_type == 'access_manual_webhook')",
         secondaryjoin="Comment.id == CommentReference.comment_id",
         order_by="Comment.created_at",
         viewonly=True,

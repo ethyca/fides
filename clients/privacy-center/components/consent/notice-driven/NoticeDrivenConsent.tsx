@@ -448,13 +448,12 @@ export const resolveConsentValue = (
   );
   if (preferenceExistsInCookie) {
     return transformConsentToFidesUserPreference(
-      // @ts-ignore
-      cookie.consent[notice.notice_key],
+      cookie.consent[notice.notice_key] as boolean,
       notice.consent_mechanism,
-    );
+    ) as UserConsentPreference;
   }
 
-  return notice.default_preference!;
+  return notice.default_preference as UserConsentPreference;
 };
 
 export default NoticeDrivenConsent;

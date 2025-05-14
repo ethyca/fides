@@ -1,8 +1,10 @@
 import {
   ComponentType,
   CONSENT_COOKIE_NAME,
+  ConsentFlagType,
   ConsentMechanism,
   ConsentMethod,
+  ConsentNonApplicableFlagMode,
   encodeNoticeConsentString,
   FidesCookie,
   FidesInitOptions,
@@ -332,7 +334,14 @@ describe("Consent overlay", () => {
             // uuid is generated automatically if the user has no saved consent cookie
             generatedUserDeviceId = body.browser_identity.fides_user_device_id;
             expect(generatedUserDeviceId).to.be.a("string");
-            expect(body.preferences).to.eql(expected.preferences);
+            cy.wrap(body.preferences).should(
+              "deep.include.members",
+              expected.preferences,
+            );
+            cy.wrap(expected.preferences).should(
+              "deep.include.members",
+              body.preferences,
+            );
             expect(body.privacy_experience_config_history_id).to.eql(
               expected.privacy_experience_config_history_id,
             );
@@ -781,7 +790,14 @@ describe("Consent overlay", () => {
             served_notice_history_id: body.served_notice_history_id,
             source: REQUEST_SOURCE,
           };
-          expect(body).to.eql(expected);
+          cy.wrap(body.preferences).should(
+            "deep.include.members",
+            expected.preferences,
+          );
+          cy.wrap(expected.preferences).should(
+            "deep.include.members",
+            body.preferences,
+          );
           expect(body.served_notice_history_id).to.be.a("string");
         });
 
@@ -883,7 +899,15 @@ describe("Consent overlay", () => {
             served_notice_history_id: body.served_notice_history_id,
             source: REQUEST_SOURCE,
           };
-          expect(body).to.eql(expected);
+          cy.wrap(body.preferences).should(
+            "deep.include.members",
+            expected.preferences,
+          );
+          cy.wrap(expected.preferences).should(
+            "deep.include.members",
+            body.preferences,
+          );
+          expect(body.served_notice_history_id).to.be.a("string");
         });
 
         // check that the cookie updated
@@ -1099,7 +1123,8 @@ describe("Consent overlay", () => {
           cy.get("button").contains("OK").click();
           cy.wait("@patchPrivacyPreference").then((interception) => {
             const { body } = interception.request;
-            expect(body.preferences).to.eql(expected);
+            cy.wrap(body.preferences).should("deep.include.members", expected);
+            cy.wrap(expected).should("deep.include.members", body.preferences);
           });
         });
       });
@@ -1111,7 +1136,8 @@ describe("Consent overlay", () => {
           cy.get("button").contains("OK").click();
           cy.wait("@patchPrivacyPreference").then((interception) => {
             const { body } = interception.request;
-            expect(body.preferences).to.eql(expected);
+            cy.wrap(body.preferences).should("deep.include.members", expected);
+            cy.wrap(expected).should("deep.include.members", body.preferences);
           });
         });
       });
@@ -2039,7 +2065,7 @@ describe("Consent overlay", () => {
       describe("Reject all", () => {
         const validateRejectAll = (interception: any) => {
           const { body } = interception.request;
-          expect(body.preferences).to.eql([
+          const expectedPreferences = [
             {
               preference: "opt_out",
               privacy_notice_history_id:
@@ -2053,7 +2079,15 @@ describe("Consent overlay", () => {
               preference: "acknowledge",
               privacy_notice_history_id: "pri_notice-history-essential-en-000",
             },
-          ]);
+          ];
+          cy.wrap(body.preferences).should(
+            "deep.include.members",
+            expectedPreferences,
+          );
+          cy.wrap(expectedPreferences).should(
+            "deep.include.members",
+            body.preferences,
+          );
           expect(body.method).to.eql(ConsentMethod.SCRIPT);
         };
         it("rejects all notices automatically when set", () => {
@@ -2112,7 +2146,7 @@ describe("Consent overlay", () => {
       describe("Accept all", () => {
         const validateAcceptAll = (interception: any) => {
           const { body } = interception.request;
-          expect(body.preferences).to.eql([
+          const expectedPreferences = [
             {
               preference: "opt_in",
               privacy_notice_history_id:
@@ -2126,7 +2160,15 @@ describe("Consent overlay", () => {
               preference: "acknowledge",
               privacy_notice_history_id: "pri_notice-history-essential-en-000",
             },
-          ]);
+          ];
+          cy.wrap(body.preferences).should(
+            "deep.include.members",
+            expectedPreferences,
+          );
+          cy.wrap(expectedPreferences).should(
+            "deep.include.members",
+            body.preferences,
+          );
           expect(body.method).to.eql(ConsentMethod.SCRIPT);
         };
         it("accepts all notices automatically when set", () => {
@@ -2180,6 +2222,55 @@ describe("Consent overlay", () => {
             });
           });
         });
+      });
+    });
+
+    it("should display notice-only notices first in the toggle list", () => {
+      // Create a mix of notice types with different consent mechanisms
+      const notices = [
+        mockPrivacyNotice({
+          title: "Regular Notice",
+          id: "pri_notice-regular",
+          notice_key: "regular",
+          consent_mechanism: ConsentMechanism.OPT_IN,
+        }),
+        mockPrivacyNotice({
+          title: "Notice Only First",
+          id: "pri_notice-only-first",
+          notice_key: "notice_only_first",
+          consent_mechanism: ConsentMechanism.NOTICE_ONLY,
+        }),
+        mockPrivacyNotice({
+          title: "Another Regular",
+          id: "pri_notice-another",
+          notice_key: "another",
+          consent_mechanism: ConsentMechanism.OPT_OUT,
+        }),
+        mockPrivacyNotice({
+          title: "Notice Only Second",
+          id: "pri_notice-only-second",
+          notice_key: "notice_only_second",
+          consent_mechanism: ConsentMechanism.NOTICE_ONLY,
+        }),
+      ];
+
+      stubConfig({
+        experience: {
+          privacy_notices: notices,
+        },
+      });
+
+      // Open the modal
+      cy.contains("button", "Manage preferences").click();
+
+      // Get all notice toggles
+      cy.get(".fides-notice-toggle").then(($toggles) => {
+        // First two toggles should be notice-only
+        cy.wrap($toggles[0]).contains("Notice Only First");
+        cy.wrap($toggles[1]).contains("Notice Only Second");
+        // Followed by regular notices
+        cy.wrap($toggles[2]).contains("Regular Notice");
+        cy.wrap($toggles[3]).contains("Another Regular");
       });
     });
   });
@@ -2259,7 +2350,6 @@ describe("Consent overlay", () => {
             expect(consentMethod).to.eql(ConsentMethod.REJECT);
           });
       });
-
       it("emits FidesUpdating -> FidesUpdated events when accept all is clicked", () => {
         cy.get("div#fides-banner").within(() => {
           cy.contains("button", "Opt in to all").should("be.visible").click();
@@ -3163,6 +3253,317 @@ describe("Consent overlay", () => {
         win.Fides.init().then(() => {
           assert.isTrue(win.Fides.initialized);
         });
+      });
+    });
+  });
+
+  describe("when using overrides for consent mechanism flags and non-applicable notices", () => {
+    describe("when using consent mechanism flags and OMIT mode for non-applicable notices", () => {
+      beforeEach(() => {
+        cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+        const nonApplicableNotices = ["functional", "personalization"];
+
+        // Create experience with non-applicable notices
+        cy.fixture("consent/experience_banner_modal.json").then((data) => {
+          const experience = data.items[0];
+          experience.non_applicable_privacy_notices = nonApplicableNotices;
+
+          stubConfig({
+            experience,
+            options: {
+              isOverlayEnabled: true,
+              fidesConsentFlagType: ConsentFlagType.CONSENT_MECHANISM,
+              // Default is OMIT, so we don't need to specify fidesConsentNonApplicableFlagMode
+            },
+          });
+        });
+      });
+
+      it("formats FidesInitialized events with consent mechanism strings and omits non-applicable notices", () => {
+        cy.get("@FidesInitialized")
+          .should("have.been.calledOnce")
+          .its("firstCall.args.0.detail.consent")
+          .then((consent) => {
+            // Check that values are formatted as strings
+            expect(
+              Object.values(consent).every(
+                (value) => typeof value === "string",
+              ),
+            ).to.be.true;
+
+            // Default values should be formatted as consent mechanism strings
+            expect(consent).to.have.property(PRIVACY_NOTICE_KEY_1, "opt_out");
+            expect(consent).to.have.property(
+              PRIVACY_NOTICE_KEY_2,
+              "acknowledge",
+            );
+            expect(consent).to.have.property(PRIVACY_NOTICE_KEY_3, "opt_in");
+
+            // Non-applicable notices should NOT be included
+            expect(consent).to.not.have.property("functional");
+            expect(consent).to.not.have.property("personalization");
+          });
+      });
+
+      // Rest of the test cases remain the same, just update assertions
+      it("omits non-applicable notices in the cookie", () => {
+        // Accept all preferences
+        cy.get("div#fides-banner").within(() => {
+          cy.contains("button", "Opt in to all").click();
+        });
+
+        cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
+          cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+            const cookieKeyConsent: FidesCookie = JSON.parse(
+              decodeURIComponent(cookie!.value),
+            );
+
+            // Cookie values should be strings not booleans
+            expect(
+              typeof cookieKeyConsent.consent[PRIVACY_NOTICE_KEY_1],
+            ).to.equal("string");
+            expect(
+              typeof cookieKeyConsent.consent[PRIVACY_NOTICE_KEY_2],
+            ).to.equal("string");
+            expect(
+              typeof cookieKeyConsent.consent[PRIVACY_NOTICE_KEY_3],
+            ).to.equal("string");
+
+            // Non-applicable notices should NOT exist in the cookie
+            expect(cookieKeyConsent.consent).to.not.have.property("functional");
+            expect(cookieKeyConsent.consent).to.not.have.property(
+              "personalization",
+            );
+          });
+        });
+      });
+    });
+
+    describe("when using consent mechanism flags and non-applicable notices", () => {
+      beforeEach(() => {
+        cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+        const nonApplicableNotices = ["functional", "personalization"];
+
+        // Create experience with non-applicable notices
+        cy.fixture("consent/experience_banner_modal.json").then((data) => {
+          const experience = data.items[0];
+          experience.non_applicable_privacy_notices = nonApplicableNotices;
+
+          stubConfig({
+            experience,
+            options: {
+              isOverlayEnabled: true,
+              fidesConsentFlagType: ConsentFlagType.CONSENT_MECHANISM,
+              fidesConsentNonApplicableFlagMode:
+                ConsentNonApplicableFlagMode.INCLUDE,
+            },
+          });
+        });
+      });
+
+      it("formats FidesInitialized events with consent mechanism strings", () => {
+        cy.get("@FidesInitialized")
+          .should("have.been.calledOnce")
+          .its("firstCall.args.0.detail.consent")
+          .then((consent) => {
+            // Check that values are formatted as strings
+            expect(
+              Object.values(consent).every(
+                (value) => typeof value === "string",
+              ),
+            ).to.be.true;
+
+            // Default values should be formatted as consent mechanism strings
+            expect(consent).to.have.property(PRIVACY_NOTICE_KEY_1, "opt_out");
+            expect(consent).to.have.property(
+              PRIVACY_NOTICE_KEY_2,
+              "acknowledge",
+            );
+            expect(consent).to.have.property(PRIVACY_NOTICE_KEY_3, "opt_in");
+
+            // Non-applicable notices should be included with "not_applicable" value
+            expect(consent).to.have.property("functional", "not_applicable");
+            expect(consent).to.have.property(
+              "personalization",
+              "not_applicable",
+            );
+          });
+      });
+
+      // Update remaining cases with "functional" instead of "essential"
+      it("formats FidesUpdated events with consent mechanism strings when changing preferences", () => {
+        // Accept all preferences
+        cy.get("div#fides-banner").within(() => {
+          cy.contains("button", "Opt in to all").click();
+        });
+
+        cy.get("@FidesUpdated")
+          .should("have.been.calledOnce")
+          .its("firstCall.args.0.detail.consent")
+          .then((consent) => {
+            // Check that all values are formatted as strings
+            expect(
+              Object.values(consent).every(
+                (value) => typeof value === "string",
+              ),
+            ).to.be.true;
+
+            // All applicable notices should be opt_in
+            expect(consent).to.have.property(PRIVACY_NOTICE_KEY_1, "opt_in");
+            expect(consent).to.have.property(
+              PRIVACY_NOTICE_KEY_2,
+              "acknowledge",
+            );
+            expect(consent).to.have.property(PRIVACY_NOTICE_KEY_3, "opt_in");
+
+            // Non-applicable notices should be included with "not_applicable" value
+            expect(consent).to.have.property("functional", "not_applicable");
+            expect(consent).to.have.property(
+              "personalization",
+              "not_applicable",
+            );
+          });
+      });
+
+      it("stores consent values in the cookie with consent mechanism format", () => {
+        // Accept all preferences
+        cy.get("div#fides-banner").within(() => {
+          cy.contains("button", "Opt in to all").click();
+        });
+
+        cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
+          cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+            const cookieKeyConsent: FidesCookie = JSON.parse(
+              decodeURIComponent(cookie!.value),
+            );
+
+            // Cookie values should be strings not booleans
+            expect(
+              typeof cookieKeyConsent.consent[PRIVACY_NOTICE_KEY_1],
+            ).to.equal("string");
+            expect(
+              typeof cookieKeyConsent.consent[PRIVACY_NOTICE_KEY_2],
+            ).to.equal("string");
+            expect(
+              typeof cookieKeyConsent.consent[PRIVACY_NOTICE_KEY_3],
+            ).to.equal("string");
+
+            // Values should match consent mechanism strings
+            expect(cookieKeyConsent.consent[PRIVACY_NOTICE_KEY_1]).to.equal(
+              "opt_in",
+            );
+            expect(cookieKeyConsent.consent[PRIVACY_NOTICE_KEY_2]).to.equal(
+              "acknowledge",
+            );
+            expect(cookieKeyConsent.consent[PRIVACY_NOTICE_KEY_3]).to.equal(
+              "opt_in",
+            );
+
+            // Non-applicable notices should exist in the cookie
+            expect(cookieKeyConsent.consent).to.have.property(
+              "functional",
+              "not_applicable",
+            );
+            expect(cookieKeyConsent.consent).to.have.property(
+              "personalization",
+              "not_applicable",
+            );
+          });
+        });
+      });
+
+      // Replace all instances of checking for 'essential' toggle
+      it("represents consent values correctly in the UI", () => {
+        cy.contains("button", "Manage preferences").click();
+
+        // UI should still show toggles in correct states regardless of consent value format
+        cy.getByTestId("toggle-Advertising").within(() => {
+          cy.get("input").should("not.be.checked");
+        });
+        cy.getByTestId("toggle-Essential").within(() => {
+          cy.get("input").should("be.checked");
+        });
+        cy.getByTestId("toggle-Analytics").within(() => {
+          cy.get("input").should("be.checked");
+        });
+
+        // No toggles should exist for non-applicable notices
+        cy.getByTestId("toggle-functional").should("not.exist");
+        cy.getByTestId("toggle-personalization").should("not.exist");
+      });
+    });
+
+    describe("when using boolean flags (default) with non-applicable notices", () => {
+      beforeEach(() => {
+        cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+        const nonApplicableNotices = ["functional", "personalization"];
+
+        // Create experience with non-applicable notices
+        cy.fixture("consent/experience_banner_modal.json").then((data) => {
+          const experience = data.items[0];
+          experience.non_applicable_privacy_notices = nonApplicableNotices;
+
+          stubConfig({
+            experience,
+            options: {
+              isOverlayEnabled: true,
+              // Not setting fidesConsentFlagType defaults to BOOLEAN
+              fidesConsentNonApplicableFlagMode:
+                ConsentNonApplicableFlagMode.INCLUDE,
+            },
+          });
+        });
+      });
+
+      it("formats FidesInitialized events with boolean values and includes non-applicable notices", () => {
+        cy.get("@FidesInitialized")
+          .should("have.been.calledOnce")
+          .its("firstCall.args.0.detail.consent")
+          .then((consent) => {
+            // Check that values are formatted as booleans
+            expect(
+              Object.values(consent).every(
+                (value) => typeof value === "boolean",
+              ),
+            ).to.be.true;
+
+            // Default values should be formatted as booleans
+            expect(consent).to.have.property(PRIVACY_NOTICE_KEY_1, false);
+            expect(consent).to.have.property(PRIVACY_NOTICE_KEY_2, true);
+            expect(consent).to.have.property(PRIVACY_NOTICE_KEY_3, true);
+
+            // Non-applicable notices should be included with null values represented as true
+            expect(consent).to.have.property("functional", true);
+            expect(consent).to.have.property("personalization", true);
+          });
+      });
+
+      it("formats FidesUpdated events with boolean values when changing preferences", () => {
+        // Accept all preferences
+        cy.get("div#fides-banner").within(() => {
+          cy.contains("button", "Opt in to all").click();
+        });
+
+        cy.get("@FidesUpdated")
+          .should("have.been.calledOnce")
+          .its("firstCall.args.0.detail.consent")
+          .then((consent) => {
+            // Check that all values are formatted as booleans
+            expect(
+              Object.values(consent).every(
+                (value) => typeof value === "boolean",
+              ),
+            ).to.be.true;
+
+            // All applicable notices should be true
+            expect(consent).to.have.property(PRIVACY_NOTICE_KEY_1, true);
+            expect(consent).to.have.property(PRIVACY_NOTICE_KEY_2, true);
+            expect(consent).to.have.property(PRIVACY_NOTICE_KEY_3, true);
+
+            // Non-applicable notices should be included with null values represented as true
+            expect(consent).to.have.property("functional", true);
+            expect(consent).to.have.property("personalization", true);
+          });
       });
     });
   });

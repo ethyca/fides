@@ -186,15 +186,17 @@ const ConsentConfigPage: NextPage = () => {
 
   const hasLegacyLegalBasisOverrides = useMemo(() => {
     return (
-      isTcfOverrideEnabled &&
       tcfPurposeOverrides?.some(
         (po) =>
           !po.is_included ||
           po.required_legal_basis === TCFLegalBasisEnum.CONSENT ||
           po.required_legal_basis === TCFLegalBasisEnum.LEGITIMATE_INTERESTS,
-      )
+      ) || false
     );
-  }, [tcfPurposeOverrides, isTcfOverrideEnabled]);
+  }, [tcfPurposeOverrides]);
+
+  const isPublisherRestrictionsFlagEnabled =
+    useFeatures()?.flags?.publisherRestrictions;
 
   return (
     <Layout title="Consent Configuration">
@@ -213,11 +215,14 @@ const ConsentConfigPage: NextPage = () => {
             <SettingsBox title="Transparency & Consent Framework settings">
               <FrameworkStatus name="TCF" enabled={isTcfEnabled} />
             </SettingsBox>
-            {isTcfEnabled && !hasLegacyLegalBasisOverrides && (
-              <PublisherRestrictionsConfig
-                isTCFOverrideEnabled={isTcfOverrideEnabled}
-              />
-            )}
+            {/* New publisher restrictions configuration */}
+            {isTcfEnabled &&
+              !hasLegacyLegalBasisOverrides &&
+              isPublisherRestrictionsFlagEnabled && (
+                <PublisherRestrictionsConfig
+                  isTCFOverrideEnabled={isTcfOverrideEnabled}
+                />
+              )}
           </Stack>
           <Formik<FormValues>
             initialValues={initialValues}
@@ -227,27 +232,32 @@ const ConsentConfigPage: NextPage = () => {
             {({ dirty, isValid, isSubmitting }) => (
               <Form>
                 <Stack spacing={6}>
-                  {hasLegacyLegalBasisOverrides && (
-                    <SettingsBox title="Vendor overrides" fontSize="sm">
-                      <TCFOverrideToggle
-                        defaultChecked
-                        disabled={isPatchConfigSettingsLoading}
-                      />
-                      <Stack mt={2} spacing={2}>
-                        <Text>
-                          The table below allows you to adjust which TCF
-                          purposes you allow as part of your user facing notices
-                          and business activites.
-                        </Text>
-                        <Text>
-                          To configure this section, select the purposes you
-                          allow and where available, the appropriate legal bases
-                          (either Consent or Legitimate Interest).
-                        </Text>
-                        <DeprecatedPurposeOverrides />
-                      </Stack>
-                    </SettingsBox>
-                  )}
+                  {/* Legacy vendor overrides */}
+                  {isTcfEnabled &&
+                    (hasLegacyLegalBasisOverrides ||
+                      !isPublisherRestrictionsFlagEnabled) && (
+                      <SettingsBox title="Vendor overrides" fontSize="sm">
+                        <TCFOverrideToggle
+                          defaultChecked={isTcfOverrideEnabled}
+                          disabled={isPatchConfigSettingsLoading}
+                        />
+                        {isTcfOverrideEnabled && (
+                          <Stack mt={2} spacing={2}>
+                            <Text>
+                              The table below allows you to adjust which TCF
+                              purposes you allow as part of your user facing
+                              notices and business activites.
+                            </Text>
+                            <Text>
+                              To configure this section, select the purposes you
+                              allow and where available, the appropriate legal
+                              bases (either Consent or Legitimate Interest).
+                            </Text>
+                            <DeprecatedPurposeOverrides />
+                          </Stack>
+                        )}
+                      </SettingsBox>
+                    )}
                   <PublisherSettings />
                   <GppConfiguration />
                   <Button
