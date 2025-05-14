@@ -10,8 +10,6 @@ import {
 } from "fidesui";
 import { useCallback } from "react";
 
-import { useAppSelector } from "~/app/hooks";
-import { selectUser } from "~/features/auth";
 import FidesSpinner from "~/features/common/FidesSpinner";
 import { getErrorMessage } from "~/features/common/helpers";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
@@ -38,7 +36,6 @@ const RequestAttachments = ({ subjectRequest }: RequestAttachmentsProps) => {
     ScopeRegistryEnum.ATTACHMENT_CREATE,
   ]);
 
-  const currentUser = useAppSelector(selectUser);
   const [uploadAttachment] = useUploadAttachmentMutation();
   const {
     data: activeStorage,
@@ -49,12 +46,11 @@ const RequestAttachments = ({ subjectRequest }: RequestAttachmentsProps) => {
   const { data: attachments, isLoading: isLoadingAttachments } =
     useGetAttachmentsQuery({
       privacy_request_id: subjectRequest.id,
-      user_id: currentUser?.id || "",
     });
 
   const defaultFileList: UploadFile[] =
     attachments?.items.map((attachment) => {
-      const isExternalLink = attachment.download_url.startsWith("http");
+      const isExternalLink = attachment.download_url?.startsWith("http");
       return {
         uid: attachment.id,
         name: attachment.file_name,
@@ -121,9 +117,7 @@ const RequestAttachments = ({ subjectRequest }: RequestAttachmentsProps) => {
               try {
                 await uploadAttachment({
                   privacy_request_id: subjectRequest.id,
-                  user_id: currentUser?.id || "",
                   attachment_file: file as File,
-                  storage_key: activeStorage.key,
                   attachment_type: AttachmentType.INTERNAL_USE_ONLY,
                 }).unwrap();
 
