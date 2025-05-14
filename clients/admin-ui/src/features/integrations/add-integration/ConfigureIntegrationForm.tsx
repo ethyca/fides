@@ -129,7 +129,7 @@ const ConfigureIntegrationForm = ({
       : {
           name: values.name,
           key: formatKey(values.name),
-          connection_type: connectionOption.identifier as ConnectionType,
+          connection_type: connectionOption?.identifier as ConnectionType,
           access: AccessLevel.READ,
           disabled: false,
           description: values.description,
