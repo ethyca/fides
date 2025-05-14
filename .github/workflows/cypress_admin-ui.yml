@@ -32,7 +32,7 @@ jobs:
           import sys, os, json, math
 
           # Number of groups to create (adjust based on your needs)
-          NUM_GROUPS = 6
+          NUM_GROUPS = 3
 
           # Get all test files with their sizes
           files = []
@@ -63,6 +63,7 @@ jobs:
   Admin-UI-Cypress:
     needs: prepare-matrix
     strategy:
+      fail-fast: false
       matrix:
         spec_group: ${{ fromJson(needs.prepare-matrix.outputs.spec_groups) }}
     runs-on: ubuntu-latest
