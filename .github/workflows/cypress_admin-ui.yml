@@ -56,9 +56,10 @@ jobs:
         with:
           working-directory: clients/admin-ui
           install: false
-          start: npm run cy:run -- --spec ${{ matrix.specs }}
+          start: npm run cy:start
           wait-on: "http://localhost:3000"
           wait-on-timeout: 180
+          spec: ${{ matrix.specs }}
 
       - uses: actions/upload-artifact@v4
         if: failure()
