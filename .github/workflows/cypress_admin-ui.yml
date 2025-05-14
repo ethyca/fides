@@ -14,23 +14,21 @@ env:
   CI: true
 
 jobs:
+  list-specs:
+    runs-on: ubuntu-latest
+    outputs:
+      specs: ${{ steps.list-specs.outputs.matrix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - id: list-specs
+        run: echo "::set-output name=specs::$(ls clients/admin-ui/cypress/e2e/* | jq -R -s -c 'split("\n")[:-1]')"
+
   Admin-UI-Cypress:
+    needs: list-specs
     strategy:
       matrix:
-        specs:
-          - "cypress/e2e/a**.*"
-          - "cypress/e2e/c**.*"
-          - "cypress/e2e/datamap.*"
-          - "cypress/e2e/datasets.*"
-          - "cypress/e2e/h**.*,cypress/e2e/m**.*,cypress/e2e/n**.*,cypress/e2e/o**.*"
-          - "cypress/e2e/l**.*"
-          - "cypress/e2e/privacy-experiences.*"
-          - "cypress/e2e/privacy-notices.*"
-          - "cypress/e2e/privacy-requests.*"
-          - "cypress/e2e/properties.*,cypress/e2e/r.*"
-          - "cypress/e2e/s**.*"
-          - "cypress/e2e/t**.*"
-          - "cypress/e2e/u**.*"
+        specs: ${{ fromJson(needs.list-specs.outputs.matrix) }}
     runs-on: ubuntu-latest
     defaults:
       run:
