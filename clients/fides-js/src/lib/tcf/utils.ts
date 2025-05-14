@@ -1,6 +1,5 @@
 import { TCString } from "@iabtechlabtcf/core";
 
-import { extractIds } from "../common-utils";
 import {
   ConsentMechanism,
   FidesCookie,
@@ -179,6 +178,19 @@ export const updateExperienceFromCookieConsentTcf = ({
       return { ...notice, current_preference: preference };
     });
   return { ...experience, ...tcfEntities, privacy_notices: noticesWithConsent };
+};
+
+/**
+ * Extracts the id value of each object in the list and returns a list
+ * of IDs, either strings or numbers based on the IDs' type.
+ */
+const extractIds = <T extends { id: string | number }[]>(
+  modelList?: T,
+): any[] => {
+  if (!modelList) {
+    return [];
+  }
+  return modelList.map((model) => model.id);
 };
 
 /**
