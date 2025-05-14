@@ -35,39 +35,8 @@ jobs:
           print(json.dumps(files))
           ')" >> $GITHUB_OUTPUT
 
-  build-admin-ui:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Use Node.js 20.x
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20.x
-
-      - name: Install dependencies
-        working-directory: clients
-        run: npm install
-
-      - name: Build FidesJS
-        working-directory: clients/fides-js
-        run: npm run build
-
-      - name: Build Admin UI
-        working-directory: clients/admin-ui
-        run: npm run build
-
-      - name: Cache build output
-        uses: actions/cache@v3
-        with:
-          path: |
-            clients/admin-ui/.next
-            clients/fides-js/dist
-          key: ${{ runner.os }}-admin-ui-build-${{ github.sha }}
-
   Admin-UI-Cypress:
-    needs: [prepare-matrix, build-admin-ui]
+    needs: prepare-matrix
     strategy:
       matrix:
         specs: ${{ fromJson(needs.prepare-matrix.outputs.specs) }}
@@ -87,20 +56,16 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Restore build output
-        uses: actions/cache@v3
-        with:
-          path: |
-            clients/admin-ui/.next
-            clients/fides-js/dist
-          key: ${{ runner.os }}-admin-ui-build-${{ github.sha }}
+      - name: Build FidesJS
+        working-directory: clients/fides-js
+        run: npm run build
 
       - name: Cypress Admin UI E2E Tests
         uses: cypress-io/github-action@v6
         with:
           working-directory: clients/admin-ui
           install: false
-          start: npm run start
+          start: npm run cy:start
           wait-on: "http://localhost:3000"
           wait-on-timeout: 180
           spec: ${{ matrix.specs }}
