@@ -4,7 +4,7 @@ from collections import defaultdict
 from enum import Enum
 from functools import lru_cache
 from os.path import dirname, join
-from typing import Any, Dict, Iterable, List, Set, Union
+from typing import Any, Dict, Iterable, List, Optional, Set, Union
 
 import yaml
 from pydantic import BaseModel
