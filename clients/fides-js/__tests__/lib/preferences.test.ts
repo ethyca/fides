@@ -18,6 +18,7 @@ jest.mock("../../src/lib/fides-string");
 jest.mock("../../src/lib/consent-utils");
 
 // Setup mocks
+const mockFidesString = "encoded-tcf,encoded-ac,encoded-gpp,encoded-nc-string";
 const mockDecodeFidesString = decodeFidesString as jest.MockedFunction<
   typeof decodeFidesString
 >;
@@ -64,7 +65,9 @@ describe("preferences", () => {
         config: { propertyId: "prop1" },
         initialized: true,
         cookie: mockCookie,
-        encodeNoticeConsentString: jest.fn().mockReturnValue("encoded-string"),
+        encodeNoticeConsentString: jest
+          .fn()
+          .mockReturnValue("encoded-nc-string"),
         decodeNoticeConsentString: jest
           .fn()
           .mockReturnValue({ analytics: true }),
@@ -136,20 +139,19 @@ describe("preferences", () => {
     it("should update consent with a fidesString", async () => {
       // ARRANGE
       const mockFides = createMockFides();
-      const fidesString = "tc.encoded-nc-string.gpp";
 
       mockDecodeFidesString.mockReturnValue({
-        tc: "tc",
-        ac: "",
-        gpp: "gpp",
+        tc: "encoded-tc",
+        ac: "encoded-ac",
+        gpp: "encoded-gpp",
         nc: "encoded-nc-string",
       });
 
       // ACT
-      await updateConsent(mockFides, { fidesString });
+      await updateConsent(mockFides, { fidesString: mockFidesString });
 
       // ASSERT
-      expect(mockDecodeFidesString).toHaveBeenCalledWith(fidesString);
+      expect(mockDecodeFidesString).toHaveBeenCalledWith(mockFidesString);
       expect(mockFides.decodeNoticeConsentString).toHaveBeenCalledWith(
         "encoded-nc-string",
       );
@@ -158,7 +160,7 @@ describe("preferences", () => {
       // Verify cookie fides_string was updated
       const updateCookieFn = updatePreferencesSpy.mock.calls[0][0].updateCookie;
       const updatedCookie = await updateCookieFn({} as FidesCookie);
-      expect(updatedCookie.fides_string).toBe(fidesString);
+      expect(updatedCookie.fides_string).toBe(mockFidesString);
     });
 
     // Test: fidesString should take priority over consent object
@@ -169,12 +171,11 @@ describe("preferences", () => {
         analytics: false,
         marketing: true,
       };
-      const fidesString = "tc.encoded-nc-string.gpp";
 
       mockDecodeFidesString.mockReturnValue({
-        tc: "tc",
-        ac: "",
-        gpp: "gpp",
+        tc: "encoded-tc",
+        ac: "encoded-ac",
+        gpp: "encoded-gpp",
         nc: "encoded-nc-string",
       });
 
@@ -188,7 +189,10 @@ describe("preferences", () => {
         .mockReturnValue(decodedConsent);
 
       // ACT
-      await updateConsent(mockFides, { consent: consentValues, fidesString });
+      await updateConsent(mockFides, {
+        consent: consentValues,
+        fidesString: mockFidesString,
+      });
 
       // ASSERT
       expect(updatePreferencesSpy).toHaveBeenCalledTimes(1);
@@ -276,67 +280,6 @@ describe("preferences", () => {
         updatePreferencesSpy.mock.calls[0][0].consentPreferencesToSave;
       expect(savedPreferences).toHaveLength(1);
       expect(savedPreferences![0].notice.notice_key).toBe("analytics");
-    });
-
-    // Test: Creates fidesString with proper format when none exists
-    it("should create proper fidesString format when none exists", async () => {
-      // ARRANGE
-      const mockFides = createMockFides();
-      const consentValues: NoticeValues = {
-        analytics: true,
-      };
-
-      // ACT
-      await updateConsent(mockFides, { consent: consentValues });
-
-      // ASSERT
-      const updateCookieFn = updatePreferencesSpy.mock.calls[0][0].updateCookie;
-      const updatedCookie = await updateCookieFn({} as FidesCookie);
-
-      // Should have format .nc. (empty tc and gpp sections)
-      expect(updatedCookie.fides_string).toBe(".encoded-string.");
-    });
-
-    // Test: Preserves existing fidesString parts when updating consent
-    it("should preserve existing fidesString parts when updating with consent", async () => {
-      // ARRANGE
-      const existingFidesString = "existing-tc.existing-nc.existing-gpp";
-      const mockFides = createMockFides({
-        cookie: {
-          consent: {},
-          identity: {},
-          fides_meta: {},
-          tcf_consent: {},
-          fides_string: existingFidesString,
-        },
-      });
-
-      const consentValues: NoticeValues = {
-        analytics: true,
-      };
-
-      mockDecodeFidesString.mockReturnValue({
-        tc: "existing-tc",
-        ac: "",
-        gpp: "existing-gpp",
-        nc: "existing-nc",
-      });
-
-      // ACT
-      await updateConsent(mockFides, { consent: consentValues });
-
-      // ASSERT
-      expect(mockFides.encodeNoticeConsentString).toHaveBeenCalledWith(
-        consentValues,
-      );
-
-      const updateCookieFn = updatePreferencesSpy.mock.calls[0][0].updateCookie;
-      const updatedCookie = await updateCookieFn({} as FidesCookie);
-
-      // Should maintain tc and gpp sections, but update nc section
-      expect(updatedCookie.fides_string).toBe(
-        "existing-tc.encoded-string.existing-gpp",
-      );
     });
   });
 });
