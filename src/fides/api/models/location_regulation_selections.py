@@ -295,7 +295,6 @@ class Continent(Enum):
     africa = "Africa"
     oceania = "Oceania"
     europe = "Europe"
-    all = "All"
 
 
 class Selection(BaseModel):
@@ -309,7 +308,7 @@ class LocationRegulationBase(Selection):
     """Base Location Regulation Schema"""
 
     name: str
-    continent: Continent
+    continent: Optional[Continent] = None
     default_selected: bool = False
 
 

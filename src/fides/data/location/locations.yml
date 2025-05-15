@@ -1511,6 +1511,11 @@ locations:
   continent: North America
   regulation: [pipeda]
   default_selected: True
+- id: global
+  name: Global
+  belongs_to: []
+  regulation: []
+  default_selected: True
 
 
 
@@ -1538,8 +1543,12 @@ location_groups:
 - continent: Europe
   id: non_eea
   name: Non European Economic Area
-- continent: All
-  id: global
+
+
+##############
+### Global ###
+##############
+- id: global
   name: Global
 
 
