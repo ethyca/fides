@@ -451,6 +451,12 @@ describe("Privacy Requests", () => {
     });
 
     it("downloads attachment when button is clicked for external links", () => {
+      // Stub window.open before intercepting, based on
+      // https://glebbahmutov.com/cypress-examples/recipes/window-open.html
+      cy.window().then((win) => {
+        cy.stub(win, "open").as("windowOpen");
+      });
+
       cy.intercept("GET", "/api/v1/plus/privacy-request/*/attachment/*", {
         statusCode: 200,
         fixture: "privacy-requests/attachment-details-external.json",
@@ -458,6 +464,12 @@ describe("Privacy Requests", () => {
 
       cy.get(".ant-upload-list-item-container").first().find("button").click();
       cy.wait("@getAttachmentDetails");
+
+      // Confirm the window.open stub was called with expected URL
+      cy.get("@windowOpen").should(
+        "have.been.calledWith",
+        "https://example.com/download/test-document.pdf",
+      );
     });
 
     it("shows info message for local storage attachments", () => {
