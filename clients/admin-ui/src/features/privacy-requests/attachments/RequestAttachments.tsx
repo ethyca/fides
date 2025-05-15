@@ -8,7 +8,7 @@ import {
   Icons,
   UploadFile,
 } from "fidesui";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 
 import FidesSpinner from "~/features/common/FidesSpinner";
 import { getErrorMessage } from "~/features/common/helpers";
@@ -35,6 +35,7 @@ interface CustomAttachmentData {
 }
 
 const RequestAttachments = ({ subjectRequest }: RequestAttachmentsProps) => {
+  const [isUploadingFile, setIsUploadingFile] = useState(false);
   const canUserReadAttachments = useHasPermission([
     ScopeRegistryEnum.ATTACHMENT_READ,
   ]);
@@ -54,9 +55,11 @@ const RequestAttachments = ({ subjectRequest }: RequestAttachmentsProps) => {
       privacy_request_id: subjectRequest.id,
     });
 
-  const defaultFileList: Array<
-    UploadFile & { customData?: CustomAttachmentData }
-  > =
+  const { refetch: refetchAttachments } = useGetAttachmentsQuery({
+    privacy_request_id: subjectRequest.id,
+  });
+
+  const fileList: Array<UploadFile & { customData?: CustomAttachmentData }> =
     attachments?.items.map((attachment) => {
       return {
         uid: attachment.id,
@@ -101,7 +104,7 @@ const RequestAttachments = ({ subjectRequest }: RequestAttachmentsProps) => {
         ) : (
           <Upload
             name="attachment_file"
-            defaultFileList={defaultFileList}
+            fileList={fileList}
             iconRender={renderAttachmentIcon}
             showUploadList={{
               showRemoveIcon: false,
@@ -114,6 +117,7 @@ const RequestAttachments = ({ subjectRequest }: RequestAttachmentsProps) => {
               const fileName = (file as File).name;
 
               try {
+                setIsUploadingFile(true);
                 await uploadAttachment({
                   privacy_request_id: subjectRequest.id,
                   attachment_file: file as File,
@@ -121,10 +125,15 @@ const RequestAttachments = ({ subjectRequest }: RequestAttachmentsProps) => {
                 }).unwrap();
 
                 message.success(`${fileName} file uploaded successfully`);
+
+                refetchAttachments();
+
                 onSuccess?.(file);
               } catch (err) {
                 message.error(`${fileName} file upload failed.`);
                 onError?.(err as Error);
+              } finally {
+                setIsUploadingFile(false);
               }
             }}
             disabled={!isAddButtonEnabled}
@@ -143,9 +152,10 @@ const RequestAttachments = ({ subjectRequest }: RequestAttachmentsProps) => {
                   <Button
                     icon={<Icons.Add />}
                     iconPosition="end"
-                    disabled={!isAddButtonEnabled}
+                    disabled={!isAddButtonEnabled || isUploadingFile}
+                    loading={isUploadingFile}
                   >
-                    Add
+                    {isUploadingFile ? "Uploading" : "Add"}
                   </Button>
                   <InfoTooltip
                     label={`Uploaded attachments are for internal use and won't be send as part of the request package.

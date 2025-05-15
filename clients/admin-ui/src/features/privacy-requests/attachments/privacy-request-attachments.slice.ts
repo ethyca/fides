@@ -36,7 +36,10 @@ const privacyRequestAttachmentsApi = baseApi.injectEndpoints({
         providesTags: ["Privacy Request Attachments"],
       },
     ),
-    uploadAttachment: build.mutation<void, UploadAttachmentParams>({
+    uploadAttachment: build.mutation<
+      AttachmentResponse,
+      UploadAttachmentParams
+    >({
       query: ({ privacy_request_id, attachment_type, attachment_file }) => {
         const formData = new FormData();
         formData.append("attachment_type", attachment_type);
