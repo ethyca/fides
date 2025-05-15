@@ -39,9 +39,11 @@ jobs:
         run: npm ci
 
       - name: Generate docs
+        if: matrix.clients == 'fides-js'
         run: npm run docs:generate
 
       - name: Fail if docs are not up to date
+        if: matrix.clients == 'fides-js'
         run: |
           if [[ -n "$(git status --porcelain)" ]]; then
             echo "Docs are not up to date. Please run 'npm run docs:generate' and commit the changes.";
