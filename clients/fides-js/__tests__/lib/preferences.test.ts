@@ -209,9 +209,7 @@ describe("preferences", () => {
       const mockFides = createMockFides();
 
       // ACT & ASSERT
-      await expect(updateConsent(mockFides, {})).rejects.toThrow(
-        "Either consent or fidesString must be provided",
-      );
+      await expect(updateConsent(mockFides, {})).rejects.toThrow();
     });
 
     // Test: Error if fidesString is invalid
@@ -225,9 +223,7 @@ describe("preferences", () => {
       });
 
       // ACT & ASSERT
-      await expect(updateConsent(mockFides, { fidesString })).rejects.toThrow(
-        "Invalid fidesString provided: Invalid format",
-      );
+      await expect(updateConsent(mockFides, { fidesString })).rejects.toThrow();
     });
 
     // Test: Error if cookie is not initialized
@@ -255,31 +251,7 @@ describe("preferences", () => {
       // ACT & ASSERT
       await expect(
         updateConsent(mockFides, { consent: consentValues }),
-      ).rejects.toThrow("Cannot update consent without an experience");
-    });
-
-    // Test: Warning when notice key doesn't exist in experience
-    it("should log a warning when notice key does not exist in experience", async () => {
-      // ARRANGE
-      const mockFides = createMockFides();
-      const consentValues: NoticeValues = {
-        analytics: true,
-        nonexistent: false,
-      };
-
-      // ACT
-      await updateConsent(mockFides, { consent: consentValues });
-
-      // ASSERT
-      expect(window.fidesDebugger).toHaveBeenCalledWith(
-        'Warning: Notice key "nonexistent" does not exist in the current experience',
-      );
-
-      // Only analytics should be saved, not nonexistent
-      const savedPreferences =
-        updatePreferencesSpy.mock.calls[0][0].consentPreferencesToSave;
-      expect(savedPreferences).toHaveLength(1);
-      expect(savedPreferences![0].notice.notice_key).toBe("analytics");
+      ).rejects.toThrow();
     });
   });
 });

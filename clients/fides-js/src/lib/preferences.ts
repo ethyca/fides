@@ -243,7 +243,7 @@ export const updateConsent = async (
 
   if (!fides.experience) {
     return Promise.reject(
-      new Error("Cannot update consent without an experience"),
+      new Error("Experience must be initialized before updating consent"),
     );
   }
 
