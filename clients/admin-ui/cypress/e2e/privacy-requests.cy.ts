@@ -416,71 +416,88 @@ describe("Privacy Requests", () => {
    */
   describe("Request Attachments", () => {
     beforeEach(() => {
-      cy.get<PrivacyRequestEntity>("@privacyRequest").then((privacyRequest) => {
-        cy.visit(`/privacy-requests/${privacyRequest.id}`);
-      });
-      cy.wait("@getPrivacyRequest");
+      cy.assumeRole(RoleRegistryEnum.OWNER);
 
-      // Mock active storage configuration
       cy.intercept("GET", "/api/v1/storage/default/active", {
         key: "default_storage_config_local",
         type: "local",
       }).as("getActiveStorage");
 
-      // Mock attachments list
       cy.intercept("GET", "/api/v1/plus/privacy-request/*/attachment*", {
+        statusCode: 200,
         fixture: "privacy-requests/attachments.json",
       }).as("getAttachments");
+
+      cy.get<PrivacyRequestEntity>("@privacyRequest").then((privacyRequest) => {
+        cy.visit(`/privacy-requests/${privacyRequest.id}`);
+      });
+
+      cy.wait("@getPrivacyRequest");
+      cy.wait("@getAttachments");
     });
 
     it("displays existing attachments", () => {
-      cy.wait(["@getActiveStorage", "@getAttachments"]);
+      cy.get(".ant-upload-list-item-container").should("have.length", 2);
 
-      // Check that both attachments are displayed
-      cy.get(".ant-upload-list-item").should("have.length", 2);
-
-      // Check that external link is clickable
-      cy.get(".ant-upload-list-item")
+      cy.get(".ant-upload-list-item-container")
         .first()
-        .should("contain", "test-document.pdf")
-        .find("a")
-        .should("have.attr", "href", "https://example.com/test-document.pdf");
+        .find(".ant-typography")
+        .should("contain", "test-document.pdf");
 
-      // Check that local file is displayed but not linked
-      cy.get(".ant-upload-list-item")
+      cy.get(".ant-upload-list-item-container")
         .last()
-        .should("contain", "local-document.pdf")
-        .find("a")
-        .should("not.exist");
+        .find(".ant-typography")
+        .should("contain", "local-document.pdf");
+    });
+
+    it("downloads attachment when button is clicked for external links", () => {
+      cy.intercept("GET", "/api/v1/plus/privacy-request/*/attachment/*", {
+        statusCode: 200,
+        fixture: "privacy-requests/attachment-details-external.json",
+      }).as("getAttachmentDetails");
+
+      cy.get(".ant-upload-list-item-container").first().find("button").click();
+      cy.wait("@getAttachmentDetails");
+    });
+
+    it("shows info message for local storage attachments", () => {
+      cy.intercept("GET", "/api/v1/plus/privacy-request/*/attachment/*", {
+        statusCode: 200,
+        fixture: "privacy-requests/attachment-details-local.json",
+      }).as("getAttachmentDetails");
+
+      cy.get(".ant-upload-list-item-container").last().find("button").click();
+      cy.wait("@getAttachmentDetails");
+
+      cy.get(".ant-message-info").should("be.visible");
+      cy.get(".ant-message-info").should(
+        "contain",
+        "Download is not available when using local storage methods",
+      );
     });
 
     it("uploads new attachments", () => {
-      cy.wait(["@getActiveStorage", "@getAttachments"]);
-
-      // Mock successful upload
       cy.intercept("POST", "/api/v1/plus/privacy-request/*/attachment*", {
         statusCode: 200,
       }).as("uploadAttachment");
 
-      // Upload a file
       cy.get('input[type="file"]').selectFile(
         "cypress/fixtures/privacy-requests/test-upload.pdf",
         { force: true },
       );
 
-      // Verify upload request was made
       cy.wait("@uploadAttachment").then((interception) => {
-        // Verify it's a multipart form request
         expect(interception.request.headers["content-type"]).to.include(
           "multipart/form-data",
         );
-
-        // Verify the response was successful
         expect(interception.response.statusCode).to.equal(200);
       });
 
-      // Verify success message
-      cy.contains("test-upload.pdf file uploaded successfully");
+      cy.get(".ant-message-success").should("be.visible");
+      cy.get(".ant-message-success").should(
+        "contain",
+        "test-upload.pdf file uploaded successfully",
+      );
     });
   });
 });
