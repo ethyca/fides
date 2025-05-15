@@ -295,6 +295,7 @@ class Continent(Enum):
     africa = "Africa"
     oceania = "Oceania"
     europe = "Europe"
+    global = "Global"
 
 
 class Selection(BaseModel):
