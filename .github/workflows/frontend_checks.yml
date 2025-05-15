@@ -38,6 +38,18 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Generate docs
+        run: npm run docs:generate
+
+      - name: Fail if docs are not up to date
+        run: |
+          if [[ -n "$(git status --porcelain)" ]]; then
+            echo "Docs are not up to date. Please run 'npm run docs:generate' and commit the changes.";
+            git status
+            git diff
+            exit 1
+          fi
+
       - name: Lint
         run: npm run lint
 
