@@ -35,7 +35,6 @@ import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   useAddMonitorResultSystemsMutation,
   useGetDiscoveredAssetsQuery,
-  useGetDiscoveredSystemAggregateQuery,
   useIgnoreMonitorResultSystemsMutation,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import useActionCenterTabs, {
@@ -288,7 +287,7 @@ export const DiscoveredSystemsTable = ({
       </TableActionBar>
       <FidesTableV2
         tableInstance={tableInstance}
-        onRowClick={handleRowClick}
+        // onRowClick={handleRowClick}
         emptyTableNotice={
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}

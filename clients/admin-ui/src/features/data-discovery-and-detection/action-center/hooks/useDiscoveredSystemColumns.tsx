@@ -5,12 +5,10 @@ import {
   DefaultCell,
   IndeterminateCheckboxCell,
 } from "~/features/common/table/v2";
-import {
-  DefaultHeaderCell,
-} from "~/features/common/table/v2/cells";
 import DiscoveredSystemDataUseCell from "~/features/data-discovery-and-detection/action-center/tables/cells/DiscoveredSystemDataUseCell";
-import { DiscoveredSystemStatusCell } from "../tables/cells/DiscoveredSystemAggregateStatusCell";
+
 import { DiscoveredSystemActionsCell } from "../tables/cells/DiscoveredSystemAggregateActionsCell";
+import { DiscoveredSystemStatusCell } from "../tables/cells/DiscoveredSystemAggregateStatusCell";
 import { MonitorSystemAggregate } from "../types";
 
 interface UseDiscoveredSystemColumnsProps {
@@ -80,7 +78,7 @@ export const useDiscoveredSystemColumns = ({
 
   const description = columnHelper.display({
     id: "description",
-    cell: (props) => <DefaultCell value="No description available" />,
+    cell: (props) => <DefaultCell value={props.row.original.description || "No description available"} />,
     header: "Description",
     size: 250,
   });
@@ -103,7 +101,7 @@ export const useDiscoveredSystemColumns = ({
       <DiscoveredSystemActionsCell
         system={props.row.original}
         monitorId={monitorId || ""}
-        allowIgnore={true}
+        allowIgnore
         onTabChange={onTabChange || (() => {})}
       />
     ),
