@@ -21,7 +21,6 @@ import {
   NoticeValues,
   OverrideType,
 } from "./lib/consent-types";
-import { shouldResurfaceBanner } from "./lib/consent-utils";
 import {
   getFidesConsentCookie,
   updateExperienceFromCookieConsentNotices,
@@ -184,20 +183,6 @@ const initialFides = getCoreFides({});
 const _Fides: FidesGlobal = {
   ...initialFides,
   init,
-  reinitialize() {
-    if (!this.config || !this.initialized) {
-      raise("Fides must be initialized before reinitializing");
-    }
-    return this.init();
-  },
-  shouldShowExperience() {
-    return shouldResurfaceBanner(
-      this.experience,
-      this.cookie,
-      this.saved_consent ?? {},
-      this.options,
-    );
-  },
 };
 
 updateWindowFides(_Fides);

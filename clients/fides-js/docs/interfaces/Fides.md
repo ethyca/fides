@@ -522,3 +522,43 @@ The user's identity values, which only include a copy of the fides user device i
 ```
 
 This field is read-only.
+
+***
+
+### updateConsent()
+
+> **updateConsent**: (`options`) => `Promise`\<`void`\>
+
+Updates user consent preferences with either a consent object or fidesString.
+If both are provided, fidesString takes priority.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `options` | `object` | Options for updating consent |
+| `options.consent`? | `Record`\<`string`, `boolean`\> | Object mapping notice keys to consent values |
+| `options.fidesString`? | `string` | A Fides string containing encoded consent preferences |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+#### Examples
+
+Update consent using notice keys and boolean values:
+```ts
+Fides.updateConsent({
+  consent: {
+    data_sales_and_sharing: false,
+    analytics: true
+  }
+});
+```
+
+Update consent using a fidesString:
+```ts
+Fides.updateConsent({
+  fidesString: ",,,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9"
+});
+```

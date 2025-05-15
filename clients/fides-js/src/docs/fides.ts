@@ -408,6 +408,38 @@ export interface Fides {
   identity: Record<string, string>;
 
   /**
+   * Updates user consent preferences with either a consent object or fidesString.
+   * If both are provided, fidesString takes priority.
+   *
+   * @example
+   * Update consent using notice keys and boolean values:
+   * ```ts
+   * Fides.updateConsent({
+   *   consent: {
+   *     data_sales_and_sharing: false,
+   *     analytics: true
+   *   }
+   * });
+   * ```
+   *
+   * @example
+   * Update consent using a fidesString:
+   * ```ts
+   * Fides.updateConsent({
+   *   fidesString: ",,,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9"
+   * });
+   * ```
+   *
+   * @param options - Options for updating consent
+   * @param options.consent - Object mapping notice keys to consent values
+   * @param options.fidesString - A Fides string containing encoded consent preferences
+   */
+  updateConsent: (options: {
+    consent?: Record<string, boolean>;
+    fidesString?: string;
+  }) => Promise<void>;
+
+  /**
    * NOTE: The properties below are all marked @internal, despite being exported
    * on the global Fides object. This is because they are mostly implementation
    * details and internals that we probably *should* be hiding, to avoid
