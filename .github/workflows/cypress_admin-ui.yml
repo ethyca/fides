@@ -32,7 +32,7 @@ jobs:
           import sys, os, json, math, re
 
           # Number of groups to create (adjust based on your needs)
-          NUM_GROUPS = 4
+          NUM_GROUPS = 3
 
           # Get all test files with their test counts
           files = []
