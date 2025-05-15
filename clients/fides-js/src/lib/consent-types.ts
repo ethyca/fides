@@ -200,6 +200,10 @@ export interface FidesGlobal extends Omit<Fides, "gtm" | "consent"> {
   shopify: typeof shopify;
   shouldShowExperience: () => boolean;
   showModal: () => void;
+  updateConsent: (options: {
+    consent?: NoticeValues;
+    fidesString?: string;
+  }) => Promise<void>;
 }
 
 /**
@@ -218,6 +222,7 @@ export interface OtToFidesConsentMapping {
  * Store the user's consent preferences as well as implicit consent preferences if applicable
  * as notice_key -> boolean pairs or notice_key -> consent_mechanism pairs, depending on
  * the value of `Fides.options.fidesConsentFlagType` and `Fides.options.fidesConsentNonApplicableFlagMode`.
+ * NOTE: This should only be used for externally facing consent preferences, not for internal use (browser cookie, window events, Fides.consent, etc). Use NoticeValues to store and track consent internally.
  * eg.
  * {
  *   "data_sales": false,
