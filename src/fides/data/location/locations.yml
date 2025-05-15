@@ -1545,13 +1545,6 @@ location_groups:
   name: Non European Economic Area
 
 
-##############
-### Global ###
-##############
-- id: global
-  name: Global
-
-
 
 ###################
 ### Regulations ###
