@@ -73,7 +73,7 @@ jobs:
   Admin-UI-Cypress:
     needs: prepare-matrix
     strategy:
-      fail-fast: false
+      fail-fast: false # We want every single job to run completely, we don't want one failing job on the matrix to stop the rest of them.
       matrix:
         spec_group: ${{ fromJson(needs.prepare-matrix.outputs.spec_groups) }}
     runs-on: ubuntu-latest

@@ -90,7 +90,7 @@ describe("Integration management for data detection & discovery", () => {
     describe("adding an integration", () => {
       beforeEach(() => {
         cy.intercept("GET", "/api/v1/connection?*", {
-          // fixture: "connectors/bigquery_connection_list.json",
+          fixture: "connectors/bigquery_connection_list.json",
         }).as("getConnections");
         cy.intercept("GET", "/api/v1/connection_type?*", {
           fixture: "connectors/connection_types.json",
