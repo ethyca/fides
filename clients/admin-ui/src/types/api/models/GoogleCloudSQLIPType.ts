@@ -3,10 +3,10 @@
 /* eslint-disable */
 
 /**
- * IP type of a Google Cloud SQL instance.
+ * Enum for Google Cloud SQL IP types
  */
 export enum GoogleCloudSQLIPType {
   PUBLIC = "public",
   PRIVATE = "private",
-  PRIVATE_SERVICE_CONNECT = "psc",
+  PSC = "psc",
 }
