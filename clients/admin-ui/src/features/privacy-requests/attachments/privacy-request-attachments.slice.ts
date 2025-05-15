@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 import { baseApi } from "~/features/common/api.slice";
+import { AttachmentResponse } from "~/types/api/models/AttachmentResponse";
 import { AttachmentType } from "~/types/api/models/AttachmentType";
 import { Page_AttachmentResponse_ } from "~/types/api/models/Page_AttachmentResponse_";
 
@@ -50,11 +51,24 @@ const privacyRequestAttachmentsApi = baseApi.injectEndpoints({
       },
       invalidatesTags: ["Privacy Request Attachments"],
     }),
+    getAttachmentDetails: build.query<
+      AttachmentResponse,
+      { privacy_request_id: string; attachment_id: string }
+    >({
+      query: ({ privacy_request_id, attachment_id }) => ({
+        url: `plus/privacy-request/${privacy_request_id}/attachment/${attachment_id}`,
+        method: "GET",
+      }),
+    }),
   }),
 });
 
-export const { useGetAttachmentsQuery, useUploadAttachmentMutation } =
-  privacyRequestAttachmentsApi;
+export const {
+  useGetAttachmentsQuery,
+  useUploadAttachmentMutation,
+  useGetAttachmentDetailsQuery,
+  useLazyGetAttachmentDetailsQuery,
+} = privacyRequestAttachmentsApi;
 
 export const privacyRequestAttachmentsSlice = createSlice({
   name: "privacyRequestAttachments",

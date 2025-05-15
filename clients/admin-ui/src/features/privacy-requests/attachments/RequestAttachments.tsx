@@ -19,6 +19,7 @@ import { ScopeRegistryEnum } from "~/types/api";
 import { AttachmentType } from "~/types/api/models/AttachmentType";
 
 import { useGetActiveStorageQuery } from "../privacy-requests.slice";
+import { renderUploadItem } from "./CustomUploadItem";
 import {
   useGetAttachmentsQuery,
   useUploadAttachmentMutation,
@@ -26,6 +27,11 @@ import {
 
 interface RequestAttachmentsProps {
   subjectRequest: PrivacyRequestEntity;
+}
+
+interface CustomAttachmentData {
+  attachment_id: string;
+  privacy_request_id: string;
 }
 
 const RequestAttachments = ({ subjectRequest }: RequestAttachmentsProps) => {
@@ -48,29 +54,22 @@ const RequestAttachments = ({ subjectRequest }: RequestAttachmentsProps) => {
       privacy_request_id: subjectRequest.id,
     });
 
-  const defaultFileList: UploadFile[] =
+  const defaultFileList: Array<
+    UploadFile & { customData?: CustomAttachmentData }
+  > =
     attachments?.items.map((attachment) => {
-      const isExternalLink = attachment.download_url?.startsWith("http");
       return {
         uid: attachment.id,
         name: attachment.file_name,
         status: "done" as const,
-        url: isExternalLink ? attachment.download_url : undefined,
+        customData: {
+          attachment_id: attachment.id,
+          privacy_request_id: subjectRequest.id,
+        },
       };
     }) || [];
 
   const renderAttachmentIcon = useCallback(() => <Icons.Attachment />, []);
-
-  const downloadIcon = useCallback((file: UploadFile) => {
-    if (file.url) {
-      return <Icons.Download />;
-    }
-    return (
-      <Tooltip title="Download is not available when using local storage methods">
-        <Icons.Download />
-      </Tooltip>
-    );
-  }, []);
 
   if (!canUserReadAttachments) {
     return null;
@@ -106,9 +105,9 @@ const RequestAttachments = ({ subjectRequest }: RequestAttachmentsProps) => {
             iconRender={renderAttachmentIcon}
             showUploadList={{
               showRemoveIcon: false,
-              showDownloadIcon: true,
-              downloadIcon,
+              showDownloadIcon: false,
             }}
+            itemRender={renderUploadItem}
             accept={allowedFileExtensions.join(",")}
             customRequest={async (options) => {
               const { file, onSuccess, onError } = options;
