@@ -1,0 +1,31 @@
+{
+  "items": [
+    {
+      "id": "att_123",
+      "user_id": "usr_123",
+      "username": "test.user",
+      "user_first_name": "Test",
+      "user_last_name": "User",
+      "file_name": "test-document.pdf",
+      "attachment_type": "internal_use_only",
+      "retrieved_attachment_url": null,
+      "retrieved_attachment_size": null,
+      "created_at": "2024-03-20T10:00:00Z"
+    },
+    {
+      "id": "att_456",
+      "user_id": "usr_123",
+      "username": "test.user",
+      "user_first_name": "Test",
+      "user_last_name": "User",
+      "file_name": "local-document.pdf",
+      "attachment_type": "internal_use_only",
+      "retrieved_attachment_url": null,
+      "retrieved_attachment_size": null,
+      "created_at": "2024-03-20T11:00:00Z"
+    }
+  ],
+  "total": 2,
+  "page": 1,
+  "size": 10
+}

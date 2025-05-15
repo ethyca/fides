@@ -410,4 +410,106 @@ describe("Privacy Requests", () => {
       });
     });
   });
+
+  /**
+   * Tests for privacy request attachments functionality
+   */
+  describe("Request Attachments", () => {
+    beforeEach(() => {
+      cy.assumeRole(RoleRegistryEnum.OWNER);
+
+      cy.intercept("GET", "/api/v1/storage/default/active", {
+        key: "default_storage_config_local",
+        type: "local",
+      }).as("getActiveStorage");
+
+      cy.intercept("GET", "/api/v1/plus/privacy-request/*/attachment*", {
+        statusCode: 200,
+        fixture: "privacy-requests/attachments.json",
+      }).as("getAttachments");
+
+      cy.get<PrivacyRequestEntity>("@privacyRequest").then((privacyRequest) => {
+        cy.visit(`/privacy-requests/${privacyRequest.id}`);
+      });
+
+      cy.wait("@getPrivacyRequest");
+      cy.wait("@getAttachments");
+    });
+
+    it("displays existing attachments", () => {
+      cy.get(".ant-upload-list-item-container").should("have.length", 2);
+
+      cy.get(".ant-upload-list-item-container")
+        .first()
+        .find(".ant-typography")
+        .should("contain", "test-document.pdf");
+
+      cy.get(".ant-upload-list-item-container")
+        .last()
+        .find(".ant-typography")
+        .should("contain", "local-document.pdf");
+    });
+
+    it("downloads attachment when button is clicked for external links", () => {
+      // Stub window.open before intercepting, based on
+      // https://glebbahmutov.com/cypress-examples/recipes/window-open.html
+      cy.window().then((win) => {
+        cy.stub(win, "open").as("windowOpen");
+      });
+
+      cy.intercept("GET", "/api/v1/plus/privacy-request/*/attachment/*", {
+        statusCode: 200,
+        fixture: "privacy-requests/attachment-details-external.json",
+      }).as("getAttachmentDetails");
+
+      cy.get(".ant-upload-list-item-container").first().find("button").click();
+      cy.wait("@getAttachmentDetails");
+
+      // Confirm the window.open stub was called with expected URL
+      cy.get("@windowOpen").should(
+        "have.been.calledWith",
+        "https://example.com/download/test-document.pdf",
+      );
+    });
+
+    it("shows info message for local storage attachments", () => {
+      cy.intercept("GET", "/api/v1/plus/privacy-request/*/attachment/*", {
+        statusCode: 200,
+        fixture: "privacy-requests/attachment-details-local.json",
+      }).as("getAttachmentDetails");
+
+      cy.get(".ant-upload-list-item-container").last().find("button").click();
+      cy.wait("@getAttachmentDetails");
+
+      cy.get(".ant-message-info").should("be.visible");
+      cy.get(".ant-message-info").should(
+        "contain",
+        "Download is not available when using local storage methods",
+      );
+    });
+
+    it("uploads new attachments", () => {
+      cy.intercept("POST", "/api/v1/plus/privacy-request/*/attachment*", {
+        statusCode: 200,
+      }).as("uploadAttachment");
+
+      cy.get('input[type="file"]').selectFile(
+        "cypress/fixtures/privacy-requests/test-upload.pdf",
+        { force: true },
+      );
+
+      cy.wait("@uploadAttachment").then((interception) => {
+        expect(interception.request.headers["content-type"]).to.include(
+          "multipart/form-data",
+        );
+        expect(interception.response.statusCode).to.equal(200);
+      });
+
+      cy.get(".ant-message-success").should("be.visible");
+      cy.get(".ant-message-success").should(
+        "contain",
+        "test-upload.pdf file uploaded successfully",
+      );
+    });
+  });
 });
