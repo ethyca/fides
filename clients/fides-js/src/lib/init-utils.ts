@@ -6,6 +6,7 @@ import {
   FidesCookie,
   FidesGlobal,
   FidesOptions,
+  NoticeValues,
   PrivacyExperience,
 } from "./consent-types";
 import {
@@ -20,6 +21,7 @@ import {
 } from "./cookie";
 import { onFidesEvent } from "./events";
 import { DEFAULT_LOCALE, DEFAULT_MODAL_LINK_LABEL } from "./i18n";
+import { updateConsent } from "./preferences";
 
 declare global {
   interface Window {
@@ -121,18 +123,36 @@ export const getCoreFides = ({
     encodeNoticeConsentString,
     decodeNoticeConsentString,
     reinitialize(this: FidesGlobal): Promise<void> {
+      if (typeof this.init !== "function") {
+        return Promise.reject(new Error("Fides.init method is not available"));
+      }
       if (!this.config || !this.initialized) {
         raise("Fides must be initialized before reinitializing");
       }
       return this.init();
     },
     shouldShowExperience(this: FidesGlobal): boolean {
+      if (
+        !this?.experience ||
+        !this?.cookie ||
+        !this?.saved_consent ||
+        !this?.options
+      ) {
+        // Can't show experience if required data is missing
+        return false;
+      }
       return shouldResurfaceBanner(
         this.experience,
         this.cookie,
         this.saved_consent,
         this.options,
       );
+    },
+    updateConsent(
+      this: FidesGlobal,
+      options: { consent?: NoticeValues; fidesString?: string },
+    ): Promise<void> {
+      return updateConsent(this, options);
     },
   };
 };

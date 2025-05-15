@@ -3,6 +3,7 @@ import {
   ConsentMethod,
   ConsentOptionCreate,
   FidesCookie,
+  FidesGlobal,
   FidesInitOptions,
   NoticeValues,
   PrivacyExperience,
@@ -14,6 +15,7 @@ import {
 import { applyOverridesToConsent } from "./consent-utils";
 import { removeCookiesFromBrowser, saveFidesCookie } from "./cookie";
 import { dispatchFidesEvent } from "./events";
+import { decodeFidesString } from "./fides-string";
 import { TcfSavePreferences } from "./tcf/types";
 
 /**
@@ -166,4 +168,141 @@ export const updateConsentPreferences = async ({
 
   // 7. Dispatch a "FidesUpdated" event
   dispatchFidesEvent("FidesUpdated", cookie, options.debug);
+};
+
+/**
+ * Updates user consent preferences with either a consent object or fidesString.
+ * If both are provided, fidesString takes priority.
+ * Can be used as a convenience method to update consent preferences using the FidesGlobal object.
+ */
+export const updateConsent = async (
+  fides: FidesGlobal,
+  options: { consent?: NoticeValues; fidesString?: string },
+): Promise<void> => {
+  const { consent, fidesString } = options;
+
+  // If neither consent nor fidesString is provided, raise an error
+  if (!consent && !fidesString) {
+    return Promise.reject(
+      new Error("Either consent or fidesString must be provided"),
+    );
+  }
+
+  let finalConsent = consent || {};
+
+  // If fidesString is provided, it takes priority
+  if (fidesString) {
+    try {
+      const decodedString = decodeFidesString(fidesString);
+      if (decodedString.nc) {
+        finalConsent = fides.decodeNoticeConsentString(decodedString.nc);
+      }
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      return Promise.reject(
+        new Error(`Invalid fidesString provided: ${errorMessage}`),
+      );
+    }
+  }
+
+  // Clone current cookie for updating
+  if (!fides.cookie) {
+    return Promise.reject(new Error("Cookie is not initialized"));
+  }
+
+  const updatedCookie: FidesCookie = {
+    consent: { ...(fides.cookie.consent || {}) },
+    identity: { ...(fides.cookie.identity || {}) },
+    fides_meta: { ...(fides.cookie.fides_meta || {}) },
+    tcf_consent: { ...(fides.cookie.tcf_consent || {}) },
+    fides_string: fides.cookie.fides_string || "",
+    tcf_version_hash: fides.cookie.tcf_version_hash || "",
+  };
+
+  // Update cookie with new consent values
+  Object.entries(finalConsent).forEach(([key, value]) => {
+    updatedCookie.consent[key] = value;
+  });
+
+  // If fidesString is provided, update it on the cookie
+  if (fidesString) {
+    updatedCookie.fides_string = fidesString;
+  } else if (consent) {
+    // Generate new fidesString based on updated consent
+    const newNcString = fides.encodeNoticeConsentString(finalConsent);
+    // Preserve other parts of fidesString if they exist
+    if (fides.cookie.fides_string) {
+      const decoded = decodeFidesString(fides.cookie.fides_string);
+      decoded.nc = newNcString;
+      updatedCookie.fides_string = `${decoded.tc || ""}.${newNcString}.${decoded.gpp || ""}`;
+    } else {
+      updatedCookie.fides_string = `.${newNcString}.`;
+    }
+  }
+
+  if (!fides.experience) {
+    return Promise.reject(
+      new Error("Cannot update consent without an experience"),
+    );
+  }
+
+  // Prepare consentPreferencesToSave by mapping from finalConsent
+  const consentPreferencesToSave: SaveConsentPreference[] = [];
+
+  // Validate that all notice keys in finalConsent exist in the experience
+  const validNoticeKeys = new Set(
+    fides.experience.privacy_notices?.map((n) => n.notice_key) || [],
+  );
+
+  Object.entries(finalConsent).forEach(([key, value]) => {
+    if (!validNoticeKeys.has(key)) {
+      fidesDebugger(
+        `Warning: Notice key "${key}" does not exist in the current experience`,
+      );
+      // Continue processing other keys
+    }
+
+    const notice = fides.experience?.privacy_notices?.find(
+      (n) => n.notice_key === key,
+    );
+    if (notice) {
+      const historyId = notice.translations?.[0]?.privacy_notice_history_id;
+      if (historyId) {
+        consentPreferencesToSave.push(
+          new SaveConsentPreference(
+            notice,
+            value
+              ? UserConsentPreference.OPT_IN
+              : UserConsentPreference.OPT_OUT,
+            historyId,
+          ),
+        );
+      }
+    }
+  });
+
+  // Get privacy_experience_config_history_id from experience config translations
+  let configHistoryId: string | undefined;
+  if (fides.experience.experience_config?.translations?.length) {
+    configHistoryId =
+      fides.experience.experience_config.translations[0]
+        .privacy_experience_config_history_id;
+  }
+
+  // Call updateConsentPreferences with necessary parameters
+  return updateConsentPreferences({
+    consentPreferencesToSave,
+    privacyExperienceConfigHistoryId: configHistoryId,
+    experience: fides.experience as
+      | PrivacyExperience
+      | PrivacyExperienceMinimal,
+    consentMethod: ConsentMethod.SAVE,
+    options: fides.options,
+    userLocationString: fides.geolocation?.country, // Using country as the location string
+    cookie: fides.cookie,
+    servedNoticeHistoryId: undefined, // Not passing a served notice ID
+    updateCookie: async () => updatedCookie,
+    propertyId: fides.config?.propertyId,
+  });
 };
