@@ -26,6 +26,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added support for uploading files as internal attachments to privacy requests [#6069](https://github.com/ethyca/fides/pull/6069)
 - Implements Fallback Locations in CMP [#6158](https://github.com/ethyca/fides/pull/6158)
 - Added dedicated Celery queues for discovery monitor operations (detection, classification, and promotion) [#6144](https://github.com/ethyca/fides/pull/6144)
+- Added a new method to Fides object for updating user consent [#6151](https://github.com/ethyca/fides/pull/6151)
 
 ### Changed
 - Attachment uploads now check for file extension types, retrieving and attachment also returns the file size. [#6124](https://github.com/ethyca/fides/pull/6124)
