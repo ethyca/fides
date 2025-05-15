@@ -18,7 +18,7 @@ import {
 import palette from "fidesui/src/palette/palette.module.scss";
 import { Field, Form, Formik } from "formik";
 
-import { initialValues } from "../constants";
+import { initialValues } from "../../../features/poc/constants";
 
 const { Text, Title } = Typography;
 
@@ -191,3 +191,5 @@ export const FormikFieldPOC = () => (
     )}
   </Formik>
 );
+
+export default FormikFieldPOC;

@@ -18,7 +18,7 @@ import {
 import palette from "fidesui/src/palette/palette.module.scss";
 import { useState } from "react";
 
-import { initialValues } from "../constants";
+import { initialValues } from "../../../features/poc/constants";
 
 const { Title } = Typography;
 
@@ -122,3 +122,5 @@ export const AntFormPOC = () => {
     </Row>
   );
 };
+
+export default AntFormPOC;
