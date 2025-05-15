@@ -12,6 +12,7 @@ import {
   decodeNoticeConsentString,
   defaultShowModal,
   encodeNoticeConsentString,
+  shouldResurfaceBanner,
 } from "./consent-utils";
 import {
   consentCookieObjHasSomeConsentSet,
@@ -65,7 +66,7 @@ export const getCoreFides = ({
   tcfEnabled = false,
 }: {
   tcfEnabled?: boolean;
-}): Omit<FidesGlobal, "init" | "reinitialize" | "shouldShowExperience"> => {
+}): Omit<FidesGlobal, "init"> => {
   return {
     consent: {},
     experience: undefined,
@@ -119,5 +120,19 @@ export const getCoreFides = ({
     getModalLinkLabel: () => DEFAULT_MODAL_LINK_LABEL,
     encodeNoticeConsentString,
     decodeNoticeConsentString,
+    reinitialize(this: FidesGlobal): Promise<void> {
+      if (!this.config || !this.initialized) {
+        raise("Fides must be initialized before reinitializing");
+      }
+      return this.init();
+    },
+    shouldShowExperience(this: FidesGlobal): boolean {
+      return shouldResurfaceBanner(
+        this.experience,
+        this.cookie,
+        this.saved_consent,
+        this.options,
+      );
+    },
   };
 };
