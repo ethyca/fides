@@ -1,15 +1,23 @@
-import { AntButton, AntCol, AntForm, AntInput, AntRow, Icons } from "fidesui";
+import {
+  AntButton,
+  AntCol,
+  AntForm,
+  AntInput,
+  AntRow,
+  Icons,
+  useToast,
+} from "fidesui";
 
 import DataCategorySelect from "~/features/common/dropdown/DataCategorySelect";
+import { getErrorMessage } from "~/features/common/helpers";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
-  MonitorTemplateCreate,
-  MonitorTemplateFormValues,
-  MonitorTemplateResponse,
-} from "~/features/monitors/types";
-import {
-  useMockCreateMonitorTemplateQuery,
-  useMockUpdateMonitorTemplateQuery,
-} from "~/features/monitors/useMockGetMonitorTemplatesQuery";
+  useCreateSharedMonitorConfigMutation,
+  useUpdateSharedMonitorConfigMutation,
+} from "~/features/monitors/shared-monitor-config.slice";
+import { MonitorTemplateFormValues } from "~/features/monitors/types";
+import { SharedMonitorConfig } from "~/types/api/models/SharedMonitorConfig";
+import { isErrorResult, RTKResult } from "~/types/errors";
 
 const DEFAULT_INITIAL_VALUES: Partial<MonitorTemplateFormValues> = {
   rules: [],
@@ -18,46 +26,69 @@ const DEFAULT_INITIAL_VALUES: Partial<MonitorTemplateFormValues> = {
 const MonitorTemplateForm = ({
   monitor,
 }: {
-  monitor?: MonitorTemplateResponse;
+  monitor?: SharedMonitorConfig;
 }) => {
   const [form] = AntForm.useForm<MonitorTemplateFormValues>();
+  const toast = useToast();
 
-  const { trigger: createMonitorTemplate, isLoading: createIsLoading } =
-    useMockCreateMonitorTemplateQuery();
-  const { trigger: updateMonitorTemplate, isLoading: updateIsLoading } =
-    useMockUpdateMonitorTemplateQuery();
+  const [createMonitorTemplate, { isLoading: createIsLoading }] =
+    useCreateSharedMonitorConfigMutation();
+  const [updateMonitorTemplate, { isLoading: updateIsLoading }] =
+    useUpdateSharedMonitorConfigMutation();
 
   const transformMonitorResponseToFormValues = (
-    response: MonitorTemplateResponse,
+    response: SharedMonitorConfig,
   ): MonitorTemplateFormValues => {
     return {
       ...response,
-      rules: response.regexMap.map(([regex, dataCategory]) => ({
-        regex,
-        dataCategory,
-      })),
+      rules:
+        response?.classify_params?.context_regex_pattern_mapping?.map(
+          ([regex, dataCategory]) => ({
+            regex,
+            dataCategory,
+          }),
+        ) ?? [],
     };
   };
 
   const transformFormValuesToPayload = (
     values: MonitorTemplateFormValues,
-  ): MonitorTemplateCreate => {
+  ): SharedMonitorConfig => {
     return {
       name: values.name,
-      rules: values.rules.map(({ regex, dataCategory }) => [
-        regex,
-        dataCategory,
-      ]),
+      classify_params: {
+        context_regex_pattern_mapping: values.rules.map(
+          ({ regex, dataCategory }) => [regex, dataCategory],
+        ),
+      },
     };
   };
 
-  const onSubmit = (values: MonitorTemplateFormValues) => {
-    const payload = transformFormValuesToPayload(values);
-    if (monitor) {
-      updateMonitorTemplate({ ...payload, id: monitor.id });
+  const handleResult = (result: RTKResult, isCreate: boolean) => {
+    if (isErrorResult(result)) {
+      toast(
+        errorToastParams(getErrorMessage(result.error, "A problem occurred")),
+      );
     } else {
-      createMonitorTemplate(payload);
+      toast(
+        successToastParams(
+          isCreate
+            ? "Monitor config created successfully"
+            : "Monitor config updated successfully",
+        ),
+      );
     }
+  };
+
+  const onSubmit = async (values: MonitorTemplateFormValues) => {
+    const payload = transformFormValuesToPayload(values);
+    let result;
+    if (monitor) {
+      result = await updateMonitorTemplate({ ...payload, id: monitor.id });
+    } else {
+      result = await createMonitorTemplate(payload);
+    }
+    handleResult(result, !monitor);
   };
 
   return (

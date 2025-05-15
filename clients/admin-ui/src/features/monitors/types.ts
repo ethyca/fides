@@ -2,11 +2,6 @@ import { PaginatedResponse } from "~/types/common/PaginationQueryParams";
 
 // temporary artisanal types
 
-export interface MonitorTemplateCreate {
-  name: string;
-  rules: Array<string>[];
-}
-
 export interface MonitorTemplateUpdate {
   id: string;
   name: string;

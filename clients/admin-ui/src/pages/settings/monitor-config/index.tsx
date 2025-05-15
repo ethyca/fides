@@ -7,10 +7,13 @@ import {
   MONITOR_CONFIG_ROUTE,
 } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
-import { useMockGetAllMonitorTemplatesQuery } from "~/features/monitors/useMockGetMonitorTemplatesQuery";
+import { useGetSharedMonitorConfigsQuery } from "~/features/monitors/shared-monitor-config.slice";
 
 const MonitorConfigTable = () => {
-  const { data, isLoading } = useMockGetAllMonitorTemplatesQuery();
+  const { data, isLoading } = useGetSharedMonitorConfigsQuery({
+    page: 1,
+    size: 10,
+  });
 
   return (
     <Layout title="Monitor configs">
@@ -31,7 +34,7 @@ const MonitorConfigTable = () => {
         <div>
           <Link href={CREATE_MONITOR_CONFIG_ROUTE}>Add new</Link>
           <ul>
-            {data.items?.map((config) => (
+            {data?.items?.map((config) => (
               <li key={config.id}>
                 <Link href={`${MONITOR_CONFIG_ROUTE}/${config.id}`}>
                   {config.name}

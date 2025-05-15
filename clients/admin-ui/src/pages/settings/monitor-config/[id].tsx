@@ -6,13 +6,13 @@ import Layout from "~/features/common/Layout";
 import { MONITOR_CONFIG_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import MonitorTemplateForm from "~/features/monitors/MonitorTemplateForm";
-import { useMockGetMonitorTemplateByIdQuery } from "~/features/monitors/useMockGetMonitorTemplatesQuery";
+import { useGetSharedMonitorConfigByIdQuery } from "~/features/monitors/shared-monitor-config.slice";
 
 const EditMonitorTemplate = () => {
   const router = useRouter();
   const id = router.query.id as string;
 
-  const { data, isLoading } = useMockGetMonitorTemplateByIdQuery({ id });
+  const { data, isLoading } = useGetSharedMonitorConfigByIdQuery({ id });
 
   return (
     <Layout title="Edit monitor config">

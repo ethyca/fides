@@ -62,6 +62,7 @@ export const baseApi = createApi({
     "Property",
     "Property-Specific Messaging Templates",
     "Purpose",
+    "Shared Monitor Configs",
     "System",
     "System Assets",
     "System History",
