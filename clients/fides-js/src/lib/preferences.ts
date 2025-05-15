@@ -179,14 +179,14 @@ export const updateConsent = async (
   fides: FidesGlobal,
   options: { consent?: NoticeValues; fidesString?: string },
 ): Promise<void> => {
-  const { consent, fidesString } = options;
-
   // If neither consent nor fidesString is provided, raise an error
-  if (!consent && !fidesString) {
+  if (!options?.consent && !options?.fidesString) {
     return Promise.reject(
       new Error("Either consent or fidesString must be provided"),
     );
   }
+
+  const { consent, fidesString } = options;
 
   let finalConsent = consent || {};
 
