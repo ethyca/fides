@@ -15,19 +15,23 @@ import {
   useCreateSharedMonitorConfigMutation,
   useUpdateSharedMonitorConfigMutation,
 } from "~/features/monitors/shared-monitor-config.slice";
-import { MonitorTemplateFormValues } from "~/features/monitors/types";
 import { SharedMonitorConfig } from "~/types/api/models/SharedMonitorConfig";
 import { isErrorResult, RTKResult } from "~/types/errors";
+
+export interface MonitorTemplateFormValues {
+  name: string;
+  description?: string | null;
+  rules: {
+    regex: string;
+    dataCategory: string;
+  }[];
+}
 
 const DEFAULT_INITIAL_VALUES: Partial<MonitorTemplateFormValues> = {
   rules: [],
 };
 
-const MonitorTemplateForm = ({
-  monitor,
-}: {
-  monitor?: SharedMonitorConfig;
-}) => {
+const MonitorTemplateForm = ({ config }: { config?: SharedMonitorConfig }) => {
   const [form] = AntForm.useForm<MonitorTemplateFormValues>();
   const toast = useToast();
 
@@ -36,7 +40,7 @@ const MonitorTemplateForm = ({
   const [updateMonitorTemplate, { isLoading: updateIsLoading }] =
     useUpdateSharedMonitorConfigMutation();
 
-  const transformMonitorResponseToFormValues = (
+  const transformConfigResponseToFormValues = (
     response: SharedMonitorConfig,
   ): MonitorTemplateFormValues => {
     return {
@@ -83,12 +87,12 @@ const MonitorTemplateForm = ({
   const onSubmit = async (values: MonitorTemplateFormValues) => {
     const payload = transformFormValuesToPayload(values);
     let result;
-    if (monitor) {
-      result = await updateMonitorTemplate({ ...payload, id: monitor.id });
+    if (config) {
+      result = await updateMonitorTemplate({ ...payload, id: config.id });
     } else {
       result = await createMonitorTemplate(payload);
     }
-    handleResult(result, !monitor);
+    handleResult(result, !config);
   };
 
   return (
@@ -99,8 +103,8 @@ const MonitorTemplateForm = ({
       onFinish={onSubmit}
       className="mt-4"
       initialValues={
-        monitor
-          ? transformMonitorResponseToFormValues(monitor)
+        config
+          ? transformConfigResponseToFormValues(config)
           : DEFAULT_INITIAL_VALUES
       }
       validateTrigger={["onBlur", "onChange"]}
@@ -114,6 +118,9 @@ const MonitorTemplateForm = ({
             rules={[{ required: true, message: "Config name is required" }]}
           >
             <AntInput autoFocus />
+          </AntForm.Item>
+          <AntForm.Item label="Description" name="description">
+            <AntInput.TextArea />
           </AntForm.Item>
         </AntCol>
       </AntRow>

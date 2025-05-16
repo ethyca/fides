@@ -19,6 +19,7 @@ export type {
   RadioGroupProps as AntRadioGroupProps,
   SelectProps as AntSelectProps,
   SwitchProps as AntSwitchProps,
+  TableProps as AntTableProps,
   TabsProps as AntTabsProps,
   TagProps as AntTagProps,
   TooltipProps as AntTooltipProps,
@@ -51,6 +52,7 @@ export {
   Space as AntSpace,
   Spin as AntSpin,
   Switch as AntSwitch,
+  Table as AntTable,
   Tabs as AntTabs,
   Tooltip as AntTooltip,
 } from "antd/lib";

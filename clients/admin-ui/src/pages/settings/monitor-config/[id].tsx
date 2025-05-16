@@ -37,7 +37,7 @@ const EditMonitorTemplate = () => {
           className="flex h-full items-center justify-center"
         />
       ) : (
-        <MonitorTemplateForm monitor={data} />
+        <MonitorTemplateForm config={data} />
       )}
     </Layout>
   );
