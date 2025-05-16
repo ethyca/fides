@@ -145,7 +145,7 @@ describe("fidesStringToConsent", () => {
     const cmpApi = new CmpApi(1, 1);
     fidesStringToConsent({
       fidesString:
-        "CQNvpkAQNvpkAGXABBENBfFgALAAAENAAAAAFyQAQFyAXJABAXIAAAAA,1~,DBABMA~CQNvpkAQNvpkAGXABBENBfFgALAAAENAAAAAFyQAQFyAXJABAXIAAAAA",
+        "CQNvpkAQNvpkAGXABBENBfFgALAAAENAAAAAFyQAQFyAXJABAXIAAAAA,2~~dv.,DBABMA~CQNvpkAQNvpkAGXABBENBfFgALAAAENAAAAAFyQAQFyAXJABAXIAAAAA",
       cmpApi,
     });
     expect(updateConsentPreferences).toHaveBeenCalledWith(
@@ -183,7 +183,7 @@ describe("fidesStringToConsent", () => {
     const cmpApi = new CmpApi(1, 1);
     fidesStringToConsent({
       fidesString:
-        "CQNvpkAQNvpkAGXABBENBfFgAAAAAAAAAAAAAAAAAAAA,1~,DBABMA~CQNvpkAQNvpkAGXABBENBfFgAAAAAAAAAAAAAAAAAAAA",
+        "CQNvpkAQNvpkAGXABBENBfFgAAAAAAAAAAAAAAAAAAAA,2~~dv.,DBABMA~CQNvpkAQNvpkAGXABBENBfFgAAAAAAAAAAAAAAAAAAAA",
       cmpApi,
     });
     expect(updateConsentPreferences).toHaveBeenCalledWith(
@@ -208,7 +208,7 @@ describe("fidesStringToConsent", () => {
     const cmpApi = new CmpApi(1, 1);
     fidesStringToConsent({
       fidesString:
-        "CQNvpkAQNvpkAGXABBENBfFgAJAAAAIAAAAAAAAAAAAA,1~,DBABMA~CQNvpkAQNvpkAGXABBENBfFgAJAAAAIAAAAAAAAAAAAA",
+        "CQNvpkAQNvpkAGXABBENBfFgAJAAAAIAAAAAAAAAAAAA,2~~dv.,DBABMA~CQNvpkAQNvpkAGXABBENBfFgAJAAAAIAAAAAAAAAAAAA",
       cmpApi,
     });
     expect(updateConsentPreferences).toHaveBeenCalledWith(
