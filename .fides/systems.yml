@@ -1,46 +1,64 @@
 system:
-- fides_key: privacy_annotations
-  name: Fides Privacy Annotations
-  organization_fides_key: default_organization
-  description: Privacy annotations as code.
-  system_type: Service
-  administrating_department: Not defined
-  privacy_declarations:
-  - name: Store fidesctl annotation data.
-    data_categories:
-    - system.operations
-    - user.contact
-    data_use: functional.service.improve
-    data_subjects:
-    - anonymous_user
-    dataset_references:
-    - fides_db
-- fides_key: privacy_request_fulfillment
-  name: Fides Privacy Request Fulfillment
-  organization_fides_key: default_organization
-  description: Privacy request fufillment.
-  system_type: Application
-  administrating_department: Not defined
-  privacy_declarations:
-  - name: Manage privacy request Fufillment
-    data_categories: []
-    data_use: essential.service
-    data_subjects:
-    - customer
-    dataset_references:
-    - fides_db
-    - fides_cache
-- fides_key: admin_ui
-  name: Fides Administration UI
-  organization_fides_key: default_organization
-  description: Fides administration UI.
-  system_type: Application
-  administrating_department: Not defined
-  privacy_declarations:
-  - name: Manage privacy request Fufillment
-    data_categories: []
-    data_use: essential.service
-    data_subjects:
-    - employee
-    dataset_references:
-    - fides_db
+  # System Info
+  - fides_key: privacy_annotations
+    name: Fides Privacy Annotations
+    organization_fides_key: default_organization
+    description: Privacy annotations as code.
+    system_type: Service
+    # RoPA Info - these need to exist to pass an audit
+    administrating_department: Not defined
+    # Privacy Declarations 
+    privacy_declarations:
+      - name: Store fidesctl annotation data.
+        data_categories:
+          - system.operations
+          - user.contact
+        data_use: functional.service.improve
+        data_subjects:
+          - anonymous_user
+        dataset_references:
+          - fides_db
+
+  # System Info
+  - fides_key: privacy_request_fulfillment
+    name: Fides Privacy Request Fulfillment
+    organization_fides_key: default_organization
+    description: Privacy request fufillment.
+    system_type: Application
+    # RoPA Info - these need to exist to pass an audit
+    administrating_department: Not defined
+    # Privacy Declarations
+    privacy_declarations:
+      - name: Manage privacy request Fufillment
+        data_categories: [] # comprehensive list of data categories in `fides_db`
+        data_use: essential.service
+        data_subjects:
+          - customer
+        dataset_references:
+          - fides_db
+          - fides_cache
+
+  # System Info
+  - fides_key: admin_ui
+    name: Fides Administration UI
+    organization_fides_key: default_organization
+    description: Fides administration UI.
+    system_type: Application
+    # RoPA Info - these need to exist to pass an audit
+    administrating_department: Not defined
+    # Privacy Declarations
+    privacy_declarations:
+      - name: Manage privacy request Fufillment
+        data_categories: [] # comprehensive list of data categories in `fides_db`
+        data_use: essential.service
+        data_subjects:
+          - employee
+        dataset_references:
+          - fides_db
+          # Specific tables for reference
+          # - fides_db.client
+          # - fides_db.connectionconfig
+          # - fides_db.fidesuser
+          # - fides_db.fidesuserpermissions
+          # - fides_db.providedidentity
+          # - fides_db.privacyrequest

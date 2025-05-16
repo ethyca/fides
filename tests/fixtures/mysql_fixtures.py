@@ -145,7 +145,6 @@ def truncate_all_tables(mysql_integration_session):
         "service_request",
         "report",
         "`Lead`",
-        "reserved",
     ]
     [mysql_integration_session.execute(f"TRUNCATE TABLE {table};") for table in tables]
 
