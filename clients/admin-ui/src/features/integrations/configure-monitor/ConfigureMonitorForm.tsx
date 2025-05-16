@@ -1,5 +1,5 @@
 import { format, parseISO } from "date-fns";
-import { AntButton as Button, VStack } from "fidesui";
+import { AntButton as Button, AntFlex, Icons, VStack } from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import * as Yup from "yup";
@@ -10,9 +10,12 @@ import {
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { enumToOptions } from "~/features/common/helpers";
+import { MONITOR_CONFIG_ROUTE } from "~/features/common/nav/routes";
+import { useGetSharedMonitorConfigsQuery } from "~/features/monitors/shared-monitor-config.slice";
 import {
   ConnectionSystemTypeMap,
   ConnectionType,
+  EditableMonitorConfig,
   MonitorConfig,
   MonitorFrequency,
 } from "~/types/api";
@@ -21,6 +24,7 @@ interface MonitorConfigFormValues {
   name: string;
   execution_frequency?: MonitorFrequency;
   execution_start_date: string;
+  shared_config_id?: string;
 }
 
 const ConfigureMonitorForm = ({
@@ -42,14 +46,28 @@ const ConfigureMonitorForm = ({
 }) => {
   const isEditing = !!monitor;
 
-  const { query } = useRouter();
-  const integrationId = Array.isArray(query.id) ? query.id[0] : query.id;
+  const router = useRouter();
+  const integrationId = Array.isArray(router.query.id)
+    ? router.query.id[0]
+    : router.query.id;
 
   const validationSchema = Yup.object().shape({
     name: Yup.string().required().label("Name"),
     execution_frequency: Yup.string().nullable().label("Execution frequency"),
     execution_start_date: Yup.date().nullable().label("Execution start date"),
   });
+
+  const { data: sharedMonitorConfigs } = useGetSharedMonitorConfigsQuery({
+    page: 1,
+    size: 100,
+  });
+
+  const sharedMonitorConfigOptions = sharedMonitorConfigs?.items.map(
+    (config) => ({
+      label: config.name,
+      value: config.id,
+    }),
+  );
 
   const handleNextClicked = (values: MonitorConfigFormValues) => {
     const executionInfo =
@@ -65,15 +83,17 @@ const ConfigureMonitorForm = ({
             execution_start_date: undefined,
           };
 
-    const payload: MonitorConfig = isEditing
+    const payload: EditableMonitorConfig = isEditing
       ? {
           ...monitor,
           ...executionInfo,
           name: values.name,
+          shared_config_id: values.shared_config_id,
         }
       : {
           ...executionInfo,
           name: values.name,
+          shared_config_id: values.shared_config_id,
           connection_config_key: integrationId!,
           classify_params: {
             num_samples: 25,
@@ -131,6 +151,21 @@ const ConfigureMonitorForm = ({
               label="Automatic execution frequency"
               layout="stacked"
             />
+            <AntFlex className="w-full items-end gap-2">
+              <ControlledSelect
+                name="shared_config_id"
+                id="shared_config_id"
+                options={sharedMonitorConfigOptions}
+                label="Shared monitor config"
+                tooltip="If a shared monitor config is selected, the monitor will use the shared config to classify resources"
+                layout="stacked"
+              />
+              <Button
+                onClick={() => router.push(MONITOR_CONFIG_ROUTE)}
+                icon={<Icons.Settings />}
+                aria-label="View shared monitor configs"
+              />
+            </AntFlex>
             <CustomDateTimeInput
               name="execution_start_date"
               label="Automatic execution start time"

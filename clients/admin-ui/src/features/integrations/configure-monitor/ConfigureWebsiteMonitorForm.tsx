@@ -1,5 +1,5 @@
 import { format, parseISO } from "date-fns";
-import { AntButton as Button, AntFlex as Flex, Text } from "fidesui";
+import { AntButton as Button, AntFlex as Flex, Icons, Text } from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import * as Yup from "yup";
@@ -11,8 +11,10 @@ import {
 } from "~/features/common/form/inputs";
 import { enumToOptions } from "~/features/common/helpers";
 import FormInfoBox from "~/features/common/modals/FormInfoBox";
+import { MONITOR_CONFIG_ROUTE } from "~/features/common/nav/routes";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import { useGetOnlyCountryLocationsQuery } from "~/features/locations/locations.slice";
+import { useGetSharedMonitorConfigsQuery } from "~/features/monitors/shared-monitor-config.slice";
 import { getSelectedRegionIds } from "~/features/privacy-experience/form/helpers";
 import {
   MonitorConfig,
@@ -54,10 +56,10 @@ const ConfigureWebsiteMonitorForm = ({
   onClose: () => void;
   onSubmit: (values: MonitorConfig) => Promise<void>;
 }) => {
-  const { query } = useRouter();
-  const integrationId = Array.isArray(query.id)
-    ? query.id[0]
-    : (query.id as string);
+  const router = useRouter();
+  const integrationId = Array.isArray(router.query.id)
+    ? router.query.id[0]
+    : (router.query.id as string);
   const initialDate = monitor?.execution_start_date
     ? parseISO(monitor.execution_start_date)
     : Date.now();
@@ -69,6 +71,18 @@ const ConfigureWebsiteMonitorForm = ({
     ...getSelectedRegionIds(locationRegulationResponse?.locations ?? []),
     ...getSelectedRegionIds(locationRegulationResponse?.location_groups ?? []),
   ];
+
+  const { data: sharedMonitorConfigs } = useGetSharedMonitorConfigsQuery({
+    page: 1,
+    size: 100,
+  });
+
+  const sharedMonitorConfigOptions = sharedMonitorConfigs?.items.map(
+    (config) => ({
+      label: config.name,
+      value: config.id,
+    }),
+  );
 
   const regionOptions = allSelectedRegions.map((region) => ({
     value: region,
@@ -123,6 +137,15 @@ const ConfigureWebsiteMonitorForm = ({
       MonitorFrequency.NOT_SCHEDULED,
     ].includes(option.value as MonitorFrequency),
   );
+
+  const handleViewSharedMonitorConfigs = () => {
+    const a = document.createElement("a");
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    a.href = `${MONITOR_CONFIG_ROUTE}`;
+    a.click();
+    a.remove();
+  };
 
   return (
     <Flex vertical className="pt-4">
@@ -181,6 +204,21 @@ const ConfigureWebsiteMonitorForm = ({
                 tooltip={REGIONS_TOOLTIP_COPY}
                 layout="stacked"
               />
+              <Flex className="w-full items-end gap-2">
+                <ControlledSelect
+                  name="shared_config_id"
+                  id="shared_config_id"
+                  options={sharedMonitorConfigOptions}
+                  label="Shared monitor config"
+                  tooltip="If a shared monitor config is selected, the monitor will use the shared config to classify resources"
+                  layout="stacked"
+                />
+                <Button
+                  onClick={handleViewSharedMonitorConfigs}
+                  icon={<Icons.Settings />}
+                  aria-label="View shared monitor configs"
+                />
+              </Flex>
               <ControlledSelect
                 name="execution_frequency"
                 id="execution_frequency"
