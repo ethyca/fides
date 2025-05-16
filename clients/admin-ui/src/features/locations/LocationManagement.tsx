@@ -16,7 +16,7 @@ import { getErrorMessage } from "~/features/common/helpers";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import SearchInput from "~/features/common/SearchInput";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
-import { LocationRegulationResponse, Selection } from "~/types/api";
+import { LocationRegulationResponse, PrivacyNoticeRegion, Selection } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 import { REGULATIONS_ROUTE } from "../common/nav/routes";
@@ -29,7 +29,7 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
   const toast = useToast();
   const confirmationDisclosure = useDisclosure();
   const [draftSelections, setDraftSelections] = useState<Array<Selection>>(
-    data.locations ?? [],
+    data.locations?.filter(l => l.id !== PrivacyNoticeRegion.GLOBAL) ?? [],
   );
   const [search, setSearch] = useState("");
   const [patchLocationsRegulationsMutationTrigger, { isLoading: isSaving }] =
@@ -38,7 +38,7 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
   const locationGroupsByContinent = useMemo(
     () =>
       groupLocationsByContinent(
-        data.locations || [],
+        (data.locations || []).filter(l => l.id !== PrivacyNoticeRegion.GLOBAL),
         data.location_groups || [],
       ),
     [data],
