@@ -30,6 +30,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Developer Experience
 - Refactored Fides initialization code to reduce duplication and improve maintainability. [#6143](https://github.com/ethyca/fides/pull/6143)
+- Improved endpoint profiler to output all frames. [#6153](https://github.com/ethyca/fides/pull/6153)
 
 ## [2.61.1](https://github.com/ethyca/fides/compare/2.61.0...2.61.1)
 
