@@ -19,14 +19,23 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.61.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.61.1...main)
 
 ### Added
 - Exposes configuration settings for the async db engine connection [#6128](https://github.com/ethyca/fides/pull/6128)
+- Added support for uploading files as internal attachments to privacy requests [#6069](https://github.com/ethyca/fides/pull/6069)
 
 ### Changed
 - Attachment uploads now check for file extension types, retrieving and attachment also returns the file size. [#6124](https://github.com/ethyca/fides/pull/6124)
 
+### Developer Experience
+- Refactored Fides initialization code to reduce duplication and improve maintainability. [#6143](https://github.com/ethyca/fides/pull/6143)
+- Improved endpoint profiler to output all frames. [#6153](https://github.com/ethyca/fides/pull/6153)
+
+## [2.61.1](https://github.com/ethyca/fides/compare/2.61.0...2.61.1)
+
+### Fixed
+- Added certifi to fix SSL CA Error [#6139](https://github.com/ethyca/fides/pull/6139)
 
 ## [2.61.0](https://github.com/ethyca/fides/compare/2.60.1...2.61.0)
 
