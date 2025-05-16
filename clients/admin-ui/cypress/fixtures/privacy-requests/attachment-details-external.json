@@ -1,0 +1,12 @@
+{
+  "id": "att_123",
+  "user_id": "usr_123",
+  "username": "test.user",
+  "user_first_name": "Test",
+  "user_last_name": "User",
+  "file_name": "test-document.pdf",
+  "attachment_type": "internal_use_only",
+  "retrieved_attachment_url": "https://example.com/download/test-document.pdf",
+  "retrieved_attachment_size": 123456,
+  "created_at": "2024-03-20T10:00:00Z"
+}
