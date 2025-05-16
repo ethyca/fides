@@ -407,7 +407,7 @@ pg8000==1.31.2
     # via -r requirements.in
 platformdirs==4.3.8
     # via snowflake-connector-python
-pluggy==1.5.0
+pluggy==1.6.0
     # via pytest
 progressbar2==4.5.0
     # via acryl-datahub
@@ -570,7 +570,7 @@ rich-click==1.6.1
     # via -r requirements.in
 rich-toolkit==0.14.6
     # via fastapi-cli
-rpds-py==0.24.0
+rpds-py==0.25.0
     # via
     #   jsonschema
     #   referencing
@@ -674,7 +674,7 @@ tornado==6.4.2
     # via flower
 twilio==7.15.0
     # via -r requirements.in
-typer==0.15.3
+typer==0.15.4
     # via fastapi-cli
 types-defusedxml==0.7.0.20240218
     # via -r requirements.in
