@@ -22,7 +22,7 @@ export const useLinkSystemStep = ({
     : SYSTEM_ROUTE;
 
   return {
-    title: "Link System",
+    title: "Link system",
     description: isComplete ? (
       <>
         <Link href={linkUrl} passHref>

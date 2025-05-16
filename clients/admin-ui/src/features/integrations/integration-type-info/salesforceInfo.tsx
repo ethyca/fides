@@ -82,7 +82,7 @@ export const SalesforceOverview = () => (
         Salesforce instance. This ensures exclusive data control and enhances
         security by reducing unauthorized access risks.
       </InfoText>
-      <InfoHeading text="Setup Instructions" />
+      <InfoHeading text="Setup instructions" />
       <InfoText>
         Follow these steps to set up your Salesforce integration:
       </InfoText>
@@ -103,7 +103,7 @@ export const SalesforceOverview = () => (
           https://fides-host.com/api/v1/oauth/callback)
         </ListItem>
       </InfoOrderedList>
-      <InfoHeading text="Required Information" />
+      <InfoHeading text="Required information" />
       <InfoUnorderedList>
         <ListItem>Domain: Your Salesforce URL</ListItem>
         <ListItem>Consumer Key: Your OAuth client ID</ListItem>
@@ -113,14 +113,14 @@ export const SalesforceOverview = () => (
           Token Refresh URL: The Salesforce URL for refresh tokens
         </ListItem>
       </InfoUnorderedList>
-      <InfoHeading text="Required OAuth Scopes" />
+      <InfoHeading text="Required OAuth scopes" />
       <InfoUnorderedList>
         <ListItem>Manage user data via APIs (api)</ListItem>
         <ListItem>
           Perform requests at any time (refresh_token, offline_access)
         </ListItem>
       </InfoUnorderedList>
-      <InfoHeading text="Supported Objects" />
+      <InfoHeading text="Supported objects" />
       <InfoText>
         Fides supports both standard and custom Salesforce objects. The
         integration includes built-in support for common objects such as:

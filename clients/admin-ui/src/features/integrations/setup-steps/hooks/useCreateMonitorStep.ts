@@ -18,7 +18,7 @@ export const useCreateMonitorStep = (params: BaseStepHookParams): Step => {
   const hasMonitors = !!monitorsData?.items?.length;
 
   return {
-    title: "Create Monitor",
+    title: "Create monitor",
     description: hasMonitors
       ? "Data monitor created successfully"
       : "Use the Data discovery tab in this page to add a new monitor",
