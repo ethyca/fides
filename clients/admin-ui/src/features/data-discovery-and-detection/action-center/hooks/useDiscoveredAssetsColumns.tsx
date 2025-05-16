@@ -6,6 +6,7 @@ import {
   IndeterminateCheckboxCell,
 } from "~/features/common/table/v2";
 import {
+  BadgeCellExpandable,
   DefaultHeaderCell,
   ListCellExpandable,
 } from "~/features/common/table/v2/cells";
@@ -15,34 +16,33 @@ import { PrivacyNoticeRegion, StagedResourceAPIResponse } from "~/types/api";
 
 import { SystemCell } from "../tables/cells/SystemCell";
 
-export const useDiscoveredAssetsColumns = () => {
+export const useDiscoveredAssetsColumns = ({
+  readonly,
+  onTabChange,
+}: {
+  readonly: boolean;
+  onTabChange: (index: number) => void;
+}) => {
   const columnHelper = createColumnHelper<StagedResourceAPIResponse>();
 
-  const columns: ColumnDef<StagedResourceAPIResponse, any>[] = [
-    columnHelper.display({
-      id: "select",
-      cell: ({ row }) => (
-        <IndeterminateCheckboxCell
-          isChecked={row.getIsSelected()}
-          onChange={row.getToggleSelectedHandler()}
-          dataTestId={`select-${row.original.name || row.id}`}
-        />
-      ),
-      header: ({ table }) => (
-        <IndeterminateCheckboxCell
-          isChecked={table.getIsAllPageRowsSelected()}
-          isIndeterminate={table.getIsSomeRowsSelected()}
-          onChange={table.getToggleAllRowsSelectedHandler()}
-          dataTestId="select-all-rows"
-        />
-      ),
-      maxSize: 40,
-    }),
+  const readonlyColumns: ColumnDef<StagedResourceAPIResponse, any>[] = [
     columnHelper.accessor((row) => row.name, {
       id: "name",
       cell: (props) => <DefaultCell value={props.getValue()} />,
       header: "Asset",
       size: 300,
+      meta: {
+        headerProps: readonly
+          ? undefined
+          : {
+              paddingLeft: "0px",
+            },
+        cellProps: readonly
+          ? undefined
+          : {
+              padding: "0 !important",
+            },
+      },
     }),
     columnHelper.accessor((row) => row.resource_type, {
       id: "resource_type",
@@ -56,6 +56,7 @@ export const useDiscoveredAssetsColumns = () => {
           <SystemCell
             aggregateSystem={props.row.original}
             monitorConfigId={props.row.original.monitor_config_id}
+            readonly={readonly}
           />
         ),
       header: "System",
@@ -67,7 +68,10 @@ export const useDiscoveredAssetsColumns = () => {
     columnHelper.display({
       id: "data_use",
       cell: (props) => (
-        <DiscoveredAssetDataUseCell asset={props.row.original} />
+        <DiscoveredAssetDataUseCell
+          asset={props.row.original}
+          readonly={readonly}
+        />
       ),
       header: "Categories of consent",
       size: 400,
@@ -78,22 +82,25 @@ export const useDiscoveredAssetsColumns = () => {
     columnHelper.accessor((row) => row.locations, {
       id: "locations",
       cell: (props) => (
-        <DefaultCell
-          value={
-            props.getValue().length > 1
-              ? `${props.getValue().length} locations`
-              : PRIVACY_NOTICE_REGION_RECORD[
-                  props.getValue()[0] as PrivacyNoticeRegion
-                ]
-          }
+        <BadgeCellExpandable
+          values={props.getValue().map((location: PrivacyNoticeRegion) => ({
+            label: PRIVACY_NOTICE_REGION_RECORD[location] ?? location,
+            key: location,
+          }))}
+          cellProps={props}
         />
       ),
-      header: "Locations",
+      header: (props) => <DefaultHeaderCell value="Locations" {...props} />,
+      size: 300,
+      meta: {
+        showHeaderMenu: true,
+        disableRowClick: true,
+      },
     }),
     columnHelper.accessor((row) => row.domain, {
       id: "domain",
       cell: (props) => <DefaultCell value={props.getValue()} />,
-      header: "Domain",
+      header: (props) => <DefaultHeaderCell value="Domain" {...props} />,
     }),
     /*
     // TODO: [HJ-344] uncomment when monitor supports discovery status
@@ -122,10 +129,45 @@ export const useDiscoveredAssetsColumns = () => {
         disableRowClick: true,
       },
     }),
+  ];
+
+  if (readonly) {
+    return { columns: readonlyColumns };
+  }
+
+  const editableColumns = [
+    columnHelper.display({
+      id: "select",
+      cell: ({ row }) => (
+        <IndeterminateCheckboxCell
+          isChecked={row.getIsSelected()}
+          onChange={row.getToggleSelectedHandler()}
+          dataTestId={`select-${row.original.name || row.id}`}
+        />
+      ),
+      header: ({ table }) => (
+        <IndeterminateCheckboxCell
+          isChecked={table.getIsAllPageRowsSelected()}
+          isIndeterminate={table.getIsSomeRowsSelected()}
+          onChange={table.getToggleAllRowsSelectedHandler()}
+          dataTestId="select-all-rows"
+        />
+      ),
+      maxSize: 40,
+      meta: {
+        cellProps: {
+          borderRight: "none",
+        },
+      },
+    }),
+    ...readonlyColumns,
     columnHelper.display({
       id: "actions",
       cell: (props) => (
-        <DiscoveredAssetActionsCell asset={props.row.original} />
+        <DiscoveredAssetActionsCell
+          asset={props.row.original}
+          onTabChange={onTabChange}
+        />
       ),
       header: "Actions",
       meta: {
@@ -133,5 +175,6 @@ export const useDiscoveredAssetsColumns = () => {
       },
     }),
   ];
-  return { columns };
+
+  return { columns: editableColumns };
 };

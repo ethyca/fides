@@ -17,12 +17,17 @@ export const MYSQL_PLACEHOLDER = {
   created_at: "",
 };
 
-export const MYSQL_TAGS = ["Database", "Detection", "Discovery", "MySQL"];
+export const MYSQL_TAGS = ["DSR Automation", "Discovery", "Detection"];
 
 export const MySQLOverview = () => (
   <>
     <InfoHeading text="Overview" />
-    <InfoText>Add infotext</InfoText>
+    <InfoText>
+      Continuously monitor MySQL databases to detect and track schema-level
+      changes, automatically discover and label data categories as well as
+      automatically process DSR (privacy requests) and consent enforcement to
+      proactively manage data governance risks.
+    </InfoText>
     <ShowMoreContent>
       <InfoHeading text="Categories" />
       <InfoUnorderedList>

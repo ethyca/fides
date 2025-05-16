@@ -1,7 +1,5 @@
 import { TCString } from "@iabtechlabtcf/core";
 
-import { extractIds } from "../common-utils";
-import { getConsentContext } from "../consent-context";
 import {
   ConsentMechanism,
   FidesCookie,
@@ -183,6 +181,19 @@ export const updateExperienceFromCookieConsentTcf = ({
 };
 
 /**
+ * Extracts the id value of each object in the list and returns a list
+ * of IDs, either strings or numbers based on the IDs' type.
+ */
+const extractIds = <T extends { id: string | number }[]>(
+  modelList?: T,
+): any[] => {
+  if (!modelList) {
+    return [];
+  }
+  return modelList.map((model) => model.id);
+};
+
+/**
  * Constructs the TCF notices served props based on the privacy experience.
  * If the experience is minimal, it will use the minimal TCF fields directly
  * which are already in the correct format.
@@ -274,11 +285,10 @@ export const getEnabledIdsNotice = (
     return [];
   }
   const parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
-  const context = getConsentContext();
 
   return noticeList
     .map((notice) => {
-      const value = resolveConsentValue(notice, context, parsedCookie?.consent);
+      const value = resolveConsentValue(notice, parsedCookie?.consent);
       return { ...notice, consentValue: value };
     })
     .filter((notice) => notice.consentValue)

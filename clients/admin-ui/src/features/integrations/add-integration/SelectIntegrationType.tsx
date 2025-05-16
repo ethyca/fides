@@ -25,7 +25,7 @@ const SelectIntegrationType = ({
     useIntegrationFilterTabs(INTEGRATION_TYPE_LIST);
 
   const {
-    flags: { datahub },
+    flags: { oktaMonitor },
   } = useFlags();
 
   return (
@@ -42,7 +42,7 @@ const SelectIntegrationType = ({
       ) : (
         <Flex direction="column">
           {filteredTypes.map((i) => {
-            if (!datahub && i.placeholder.connection_type === "datahub") {
+            if (!oktaMonitor && i.placeholder.connection_type === "okta") {
               return null;
             }
             return (

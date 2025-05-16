@@ -9,6 +9,8 @@ import postcss from "rollup-plugin-postcss";
 import commonjs from "@rollup/plugin-commonjs";
 import { visualizer } from "rollup-plugin-visualizer";
 import strip from "@rollup/plugin-strip";
+import replace from "@rollup/plugin-replace";
+import fs from "fs";
 
 const NAME = "fides";
 const IS_DEV = process.env.NODE_ENV === "development";
@@ -186,8 +188,56 @@ SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
     ],
   };
 
-  rollupOptions.push(...[js, mjs, declaration]);
+  if (IS_DEV) {
+    rollupOptions.push(...[js, declaration]);
+  } else {
+    rollupOptions.push(...[js, mjs, declaration]);
+  }
 });
+
+// Add preview script build configuration
+const previewScript = {
+  input: "src/fides-preview.ts",
+  plugins: [
+    esbuild({
+      minify: true,
+    }),
+    replace({
+      // Inject the actual script contents during build
+      // These will be properly escaped as strings
+      FIDES_STANDARD_SCRIPT: () => {
+        const standardPath = "dist/fides.js";
+        return JSON.stringify(fs.readFileSync(standardPath, "utf-8"));
+      },
+      FIDES_TCF_SCRIPT: () => {
+        const tcfPath = "dist/fides-tcf.js";
+        return JSON.stringify(fs.readFileSync(tcfPath, "utf-8"));
+      },
+      preventAssignment: true,
+    }),
+    copy({
+      targets: [
+        {
+          src: "dist/fides-preview.js",
+          dest: "../admin-ui/public/lib/",
+        },
+      ],
+      verbose: true,
+      hook: "writeBundle",
+    }),
+  ],
+  output: [
+    {
+      file: "dist/fides-preview.js",
+      format: "umd",
+      name: "FidesPreview",
+      sourcemap: false,
+    },
+  ],
+};
+
+// Add preview script to build after the main scripts
+rollupOptions.push(previewScript);
 
 /**
  * In addition to our regular built outputs (like fides.js!) also generate a

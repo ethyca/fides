@@ -1,27 +1,29 @@
 import os
 from enum import Enum as EnumType
-from typing import Any, Optional
+from typing import IO, TYPE_CHECKING, Any, Tuple
 
+from fideslang.validation import AnyHttpUrlString
 from loguru import logger as log
 from sqlalchemy import Column
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import ForeignKey, String, UniqueConstraint
+from sqlalchemy import ForeignKey, String, UniqueConstraint, orm
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
 
 from fides.api.db.base_class import Base
-from fides.api.models.fides_user import FidesUser  # pylint: disable=unused-import
-from fides.api.models.storage import StorageConfig  # pylint: disable=unused-import
 from fides.api.schemas.storage.storage import StorageDetails, StorageType
 from fides.api.service.storage.s3 import (
     generic_delete_from_s3,
     generic_retrieve_from_s3,
     generic_upload_to_s3,
 )
-from fides.api.service.storage.util import (
-    LOCAL_FIDES_UPLOAD_DIRECTORY,
-    get_local_filename,
-)
+from fides.api.service.storage.util import get_local_filename
+
+if TYPE_CHECKING:
+    from fides.api.models.comment import Comment
+    from fides.api.models.fides_user import FidesUser
+    from fides.api.models.privacy_request import PrivacyRequest
+    from fides.api.models.storage import StorageConfig
 
 
 class AttachmentType(str, EnumType):
@@ -38,7 +40,8 @@ class AttachmentReferenceType(str, EnumType):
     Enum for attachment reference types. Indicates where attachment is referenced.
     """
 
-    manual_step = "manual_step"
+    access_manual_webhook = "access_manual_webhook"
+    erasure_manual_webhook = "erasure_manual_webhook"
     privacy_request = "privacy_request"
     comment = "comment"
 
@@ -53,7 +56,9 @@ class AttachmentReference(Base):
         """Overriding base class method to set the table name."""
         return "attachment_reference"
 
-    attachment_id = Column(String, ForeignKey("attachment.id"), nullable=False)
+    attachment_id = Column(
+        String, ForeignKey("attachment.id", ondelete="CASCADE"), nullable=False
+    )
     reference_id = Column(String, nullable=False)
     reference_type = Column(EnumColumn(AttachmentReferenceType), nullable=False)
 
@@ -63,11 +68,8 @@ class AttachmentReference(Base):
         ),
     )
 
-    attachment = relationship(
-        "Attachment",
-        back_populates="references",
-        uselist=False,
-    )
+    # Relationships
+    attachment = relationship("Attachment", back_populates="references")
 
     @classmethod
     def create(
@@ -100,8 +102,11 @@ class Attachment(Base):
     references = relationship(
         "AttachmentReference",
         back_populates="attachment",
-        cascade="all, delete",
+        cascade="all, delete-orphan",
         uselist=True,
+        foreign_keys=[AttachmentReference.attachment_id],
+        primaryjoin=lambda: Attachment.id
+        == orm.foreign(AttachmentReference.attachment_id),
     )
 
     config = relationship(
@@ -110,7 +115,7 @@ class Attachment(Base):
         uselist=False,
     )
 
-    def upload(self, attachment: bytes) -> None:
+    def upload(self, attachment: IO[bytes]) -> None:
         """Uploads an attachment to S3 or local storage."""
         if self.config.type == StorageType.s3:
             bucket_name = f"{self.config.details[StorageDetails.BUCKET.value]}"
@@ -118,7 +123,7 @@ class Attachment(Base):
             generic_upload_to_s3(
                 storage_secrets=self.config.secrets,
                 bucket_name=bucket_name,
-                file_key=self.id,
+                file_key=f"{self.id}/{self.file_name}",
                 document=attachment,
                 auth_method=auth_method,
             )
@@ -126,29 +131,63 @@ class Attachment(Base):
             return
 
         if self.config.type == StorageType.local:
-            filename = get_local_filename(self.id)
+            filename = get_local_filename(f"{self.id}/{self.file_name}")
+
+            # Validate that attachment is a file-like object
+            if not hasattr(attachment, "read"):
+                raise TypeError(f"Expected a file-like object, got {type(attachment)}")
+
+            # Reset the file pointer to the beginning
+            try:
+                attachment.seek(0)
+            except Exception as e:
+                raise ValueError(f"Failed to reset file pointer for attachment: {e}")
+
+            # Create directory if it doesn't exist
+            os.makedirs(os.path.dirname(filename), exist_ok=True)
+
+            # Write the file in chunks to avoid loading the entire content into memory
             with open(filename, "wb") as file:
-                file.write(attachment)
+                for chunk in iter(
+                    lambda: attachment.read(1024 * 1024), b""
+                ):  # 1 MB chunks
+                    if not isinstance(chunk, bytes):
+                        raise TypeError(f"Expected bytes, got {type(chunk)}")
+                    file.write(chunk)
+
+            log.info(f"Uploaded {self.file_name} to local storage at {filename}")
             return
 
         raise ValueError(f"Unsupported storage type: {self.config.type}")
 
-    def retrieve_attachment(self) -> Optional[bytes]:
-        """Returns the attachment from S3 in bytes form."""
+    def retrieve_attachment(
+        self,
+    ) -> Tuple[int, AnyHttpUrlString]:
+        """
+        Retrieves a the size of the attachment and the presigned URL to retrieve it.
+        - For s3:
+          - the size is retrieved from the s3 object metadata
+          - the presigned URL is retrieved from the s3 client
+        - For local:
+          - the size is retrieved from the file size
+          - the URL is the local file path
+        """
         if self.config.type == StorageType.s3:
             bucket_name = f"{self.config.details[StorageDetails.BUCKET.value]}"
             auth_method = self.config.details[StorageDetails.AUTH_METHOD.value]
-            return generic_retrieve_from_s3(
+            size, url = generic_retrieve_from_s3(
                 storage_secrets=self.config.secrets,
                 bucket_name=bucket_name,
-                file_key=self.id,
+                file_key=f"{self.id}/{self.file_name}",
                 auth_method=auth_method,
             )
+            return size, url
 
         if self.config.type == StorageType.local:
-            filename = f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{self.id}"
+            filename = get_local_filename(f"{self.id}/{self.file_name}")
             with open(filename, "rb") as file:
-                return file.read()
+                size = len(file.read())
+                return size, filename
 
         raise ValueError(f"Unsupported storage type: {self.config.type}")
 
@@ -160,13 +199,13 @@ class Attachment(Base):
             generic_delete_from_s3(
                 storage_secrets=self.config.secrets,
                 bucket_name=bucket_name,
-                file_key=self.id,
+                file_key=f"{self.id}/{self.file_name}",
                 auth_method=auth_method,
             )
             return
 
         if self.config.type == StorageType.local:
-            filename = f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{self.id}"
+            filename = get_local_filename(f"{self.id}/{self.file_name}")
             os.remove(filename)
             return
 
@@ -178,12 +217,10 @@ class Attachment(Base):
         db: Session,
         *,
         data: dict[str, Any],
-        attachment_file: bytes,
+        attachment_file: IO[bytes],
         check_name: bool = False,
     ) -> "Attachment":
-        """Creates a new attachment record in the database and uploads the attachment to S3."""
-        if attachment_file is None:
-            raise ValueError("Attachment is required")
+        """Creates a new attachment record in the database and uploads the attachment via the upload method."""
         attachment_model = super().create(db=db, data=data, check_name=check_name)
 
         try:
@@ -208,4 +245,46 @@ class Attachment(Base):
     def delete(self, db: Session) -> None:
         """Deletes an attachment record from the database and deletes the attachment from S3."""
         self.delete_attachment_from_storage()
+
+        # Delete all references to the attachment
+        for reference in self.references:
+            reference.delete(db)
         super().delete(db=db)
+
+    @staticmethod
+    def delete_attachments_for_reference_and_type(
+        db: Session, reference_id: str, reference_type: AttachmentReferenceType
+    ) -> None:
+        """
+        Deletes attachments associated with a given reference_id and reference_type.
+        Deletes all references to the attachments.
+
+        Args:
+            db: Database session
+            reference_id: ID of the reference
+            reference_type: Type of the reference
+
+        Examples:
+
+        - Delete all attachments associated with a comment.
+           ``Attachment.delete_attachments_for_reference_and_type(
+               db, comment.id, AttachmentReferenceType.comment
+           )``
+        - Delete all attachments associated with a privacy request.
+           ``Attachment.delete_attachments_for_reference_and_type(
+               db, privacy_request.id, AttachmentReferenceType.privacy_request
+            )``
+        """
+        # Query attachments explicitly to avoid lazy loading
+        attachments = (
+            db.query(Attachment)
+            .join(AttachmentReference)
+            .filter(
+                AttachmentReference.reference_id == reference_id,
+                AttachmentReference.reference_type == reference_type,
+            )
+            .all()
+        )
+
+        for attachment in attachments:
+            attachment.delete(db)

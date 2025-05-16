@@ -19,10 +19,12 @@ import getIntegrationTypeInfo, {
   SUPPORTED_INTEGRATIONS,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
 import MonitorConfigTab from "~/features/integrations/configure-monitor/MonitorConfigTab";
+import DatahubDataSyncTab from "~/features/integrations/configure-scan/DatahubDataSyncTab";
 import ConfigureIntegrationModal from "~/features/integrations/ConfigureIntegrationModal";
 import ConnectionStatusNotice from "~/features/integrations/ConnectionStatusNotice";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
+import { ConnectionType } from "~/types/api";
 
 const IntegrationDetailView: NextPage = () => {
   const { query } = useRouter();
@@ -40,7 +42,7 @@ const IntegrationDetailView: NextPage = () => {
 
   const { onOpen, isOpen, onClose } = useDisclosure();
 
-  const { overview, instructions } = getIntegrationTypeInfo(
+  const { overview, instructions, description } = getIntegrationTypeInfo(
     connection?.connection_type,
   );
 
@@ -85,13 +87,22 @@ const IntegrationDetailView: NextPage = () => {
             isOpen={isOpen}
             onClose={onClose}
             connection={connection!}
+            description={description}
           />
           {overview}
           {instructions}
         </Box>
       ),
     },
-    {
+  ];
+
+  if (connection?.connection_type === ConnectionType.DATAHUB) {
+    tabs.push({
+      label: "Data sync",
+      content: <DatahubDataSyncTab integration={connection!} />,
+    });
+  } else {
+    tabs.push({
       label: "Data discovery",
       content: (
         <MonitorConfigTab
@@ -99,8 +110,8 @@ const IntegrationDetailView: NextPage = () => {
           integrationOption={integrationOption}
         />
       ),
-    },
-  ];
+    });
+  }
 
   return (
     <Layout title="Integrations">

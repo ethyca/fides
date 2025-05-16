@@ -12,10 +12,12 @@ import {
   ViewOffIcon,
 } from "fidesui";
 
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
+import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
 import getResourceName from "~/features/data-discovery-and-detection/utils/getResourceName";
-import { DiffStatus } from "~/types/api";
+import { DiffStatus, StagedResourceTypeValue } from "~/types/api";
 
 import ActionButton from "../../ActionButton";
 import {
@@ -46,7 +48,7 @@ const DiscoveryItemActionsCell = ({ resource }: DiscoveryItemActionsProps) => {
     top_level_field_name,
   } = resource;
 
-  const { successAlert } = useAlert();
+  const { successAlert, errorAlert } = useAlert();
 
   const isSubField = !!top_level_field_name;
 
@@ -66,41 +68,60 @@ const DiscoveryItemActionsCell = ({ resource }: DiscoveryItemActionsProps) => {
   const showMuteAction =
     itemHasClassificationChanges || childItemsHaveClassificationChanges;
 
+  const showReclassifyAction =
+    findResourceType(resource) !== StagedResourceTypeValue.FIELD;
+
   // if promote and mute are both shown, show "Reclassify" in an overflow menu
   // to avoid having too many buttons in the cell
-  const showReclassifyInOverflow = showPromoteAction && showMuteAction;
+  const showReclassifyInOverflow =
+    showPromoteAction && showMuteAction && showReclassifyAction;
 
   const handlePromote = async () => {
-    await promoteResourceMutation({
+    const result = await promoteResourceMutation({
       staged_resource_urn: resource.urn,
     });
-    successAlert(
-      `These changes have been added to a Fides dataset. To view, navigate to "Manage datasets".`,
-      `Table changes confirmed`,
-    );
+    if (isErrorResult(result)) {
+      errorAlert(getErrorMessage(result.error), "Failed to promote resource");
+    } else {
+      successAlert(
+        `These changes have been added to a Fides dataset. To view, navigate to "Manage datasets".`,
+        `Table changes confirmed`,
+      );
+    }
   };
 
   const handleMute = async () => {
-    await muteResourceMutation({
+    const result = await muteResourceMutation({
       staged_resource_urn: resource.urn,
     });
-    successAlert(
-      `Ignored changes will not be added to a Fides dataset.`,
-      `${resource.name || "Changes"} ignored`,
-    );
+    if (isErrorResult(result)) {
+      errorAlert(getErrorMessage(result.error), "Failed to mute resource");
+    } else {
+      successAlert(
+        `Ignored changes will not be added to a Fides dataset.`,
+        `${resource.name || "Changes"} ignored`,
+      );
+    }
   };
 
   const handleReclassify = async () => {
-    await confirmResourceMutation({
+    const result = await confirmResourceMutation({
       staged_resource_urn: resource.urn,
       monitor_config_id: resource.monitor_config_id!,
       start_classification: true,
       classify_monitored_resources: true,
     });
-    successAlert(
-      `Reclassification of ${getResourceName(resource) || "the resource"} has begun.  The results may take some time to appear in the “Data discovery“ tab.`,
-      `Reclassification started`,
-    );
+    if (isErrorResult(result)) {
+      errorAlert(
+        getErrorMessage(result.error),
+        "Failed to reclassify resource",
+      );
+    } else {
+      successAlert(
+        `Reclassification of ${getResourceName(resource) || "the resource"} has begun.  The results may take some time to appear in the “Data discovery“ tab.`,
+        `Reclassification started`,
+      );
+    }
   };
 
   return (
@@ -123,7 +144,7 @@ const DiscoveryItemActionsCell = ({ resource }: DiscoveryItemActionsProps) => {
           loading={muteIsLoading}
         />
       )}
-      {!showReclassifyInOverflow && (
+      {showReclassifyAction && !showReclassifyInOverflow && (
         <ActionButton
           title="Reclassify"
           icon={<RepeatIcon />}
@@ -132,29 +153,31 @@ const DiscoveryItemActionsCell = ({ resource }: DiscoveryItemActionsProps) => {
           loading={confirmIsLoading}
         />
       )}
-      <Spacer />
       {showReclassifyInOverflow && (
-        <Menu>
-          <MenuButton
-            as={Button}
-            size="small"
-            // TS expects Chakra's type prop (HTML type) but we want to assign the Ant type
-            // @ts-ignore
-            type="text"
-            icon={<MoreIcon transform="rotate(90deg)" />}
-            className="w-6 gap-0"
-            data-testid="actions-overflow-btn"
-          />
-          <MenuList>
-            <MenuItem
-              onClick={handleReclassify}
-              icon={<RepeatIcon />}
-              data-testid="action-reclassify"
-            >
-              Reclassify
-            </MenuItem>
-          </MenuList>
-        </Menu>
+        <>
+          <Spacer />
+          <Menu>
+            <MenuButton
+              as={Button}
+              size="small"
+              // TS expects Chakra's type prop (HTML type) but we want to assign the Ant type
+              // @ts-ignore
+              type="text"
+              icon={<MoreIcon transform="rotate(90deg)" />}
+              className="w-6 gap-0"
+              data-testid="actions-overflow-btn"
+            />
+            <MenuList>
+              <MenuItem
+                onClick={handleReclassify}
+                icon={<RepeatIcon />}
+                data-testid="action-reclassify"
+              >
+                Reclassify
+              </MenuItem>
+            </MenuList>
+          </Menu>
+        </>
       )}
     </HStack>
   );

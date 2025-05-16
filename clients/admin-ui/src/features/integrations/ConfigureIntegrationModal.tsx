@@ -9,14 +9,16 @@ const ConfigureIntegrationModal = ({
   isOpen,
   onClose,
   connection,
+  description,
 }: Pick<UseDisclosureReturn, "isOpen" | "onClose"> & {
   connection: ConnectionConfigurationResponse;
+  description: React.ReactNode;
 }) => {
   const connectionOption = useIntegrationOption(connection.connection_type);
 
   return (
     <FormModal
-      title="Manage integration secret"
+      title={`Manage ${connection?.name} integration`}
       isOpen={isOpen}
       onClose={onClose}
     >
@@ -24,6 +26,7 @@ const ConfigureIntegrationModal = ({
         connection={connection}
         connectionOption={connectionOption!}
         onCancel={onClose}
+        description={description}
       />
     </FormModal>
   );

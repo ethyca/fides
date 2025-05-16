@@ -11,7 +11,6 @@ export type Asset = {
   name: string;
   asset_type: string;
   domain: string;
-  page?: Array<string>;
   base_url?: string | null;
   locations?: Array<string>;
   id: string;
@@ -19,4 +18,5 @@ export type Asset = {
   parent?: Array<string>;
   parent_domain?: string | null;
   with_consent?: boolean;
+  page?: Array<string>;
 };

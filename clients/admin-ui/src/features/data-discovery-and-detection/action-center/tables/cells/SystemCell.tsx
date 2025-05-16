@@ -12,11 +12,13 @@ import { StagedResourceAPIResponse } from "~/types/api";
 interface SystemCellProps {
   aggregateSystem: StagedResourceAPIResponse;
   monitorConfigId: string;
+  readonly?: boolean;
 }
 
 export const SystemCell = ({
   aggregateSystem,
   monitorConfigId,
+  readonly,
 }: SystemCellProps) => {
   const {
     resource_type: assetType,
@@ -65,6 +67,16 @@ export const SystemCell = ({
   };
 
   const currentSystemKey = userAssignedSystemKey || systemKey;
+
+  if (readonly) {
+    return (
+      <div style={getTableTHandTDStyles()}>
+        <Tag data-testid="system-badge" color="white">
+          {systemName}
+        </Tag>
+      </div>
+    );
+  }
 
   return (
     <>

@@ -18,7 +18,7 @@ import {
 import { PrivacyExperience, PrivacyExperienceMinimal } from "./consent-types";
 import { ETHYCA_CMP_ID, FIDES_SEPARATOR } from "./tcf/constants";
 import { extractTCStringForCmpApi } from "./tcf/events";
-import { EnabledIds } from "./tcf/types";
+import { EnabledIds, TcfPublisherRestriction } from "./tcf/types";
 import {
   decodeVendorId,
   uniqueGvlVendorIds,
@@ -107,22 +107,25 @@ export const generateFidesString = async ({
           const { id } = decodeVendorId(vendorId);
           tcModel.vendorConsents.set(+id);
 
-          // look up each vendor in the GVL vendors list to see if they have a purpose list.
-          // If they do not it means they have been set in Admin UI as Vendor Overrides to
-          // require consent. In that case we need to set a publisher restriction for the
-          // vendor's flexible purposes.
-          const vendor = experience.gvl?.vendors[id];
-          if (vendor && !vendor?.purposes?.length) {
-            vendor.flexiblePurposes.forEach((purpose) => {
-              const purposeRestriction = new PurposeRestriction();
-              purposeRestriction.purposeId = purpose;
-              purposeRestriction.restrictionType =
-                RestrictionType.REQUIRE_CONSENT;
-              tcModel.publisherRestrictions.add(+id, purposeRestriction);
-            });
+          if (!experience.tcf_publisher_restrictions?.length) {
+            // Legacy: look up each vendor in the GVL vendors list to see if they have a purpose list.
+            // If they do not it means they have been set in Admin UI as Vendor Overrides to
+            // require consent. In that case we need to set a publisher restriction for the
+            // vendor's flexible purposes.
+            const vendor = experience.gvl?.vendors[id];
+            if (vendor && !vendor?.purposes?.length) {
+              vendor.flexiblePurposes.forEach((purpose) => {
+                const purposeRestriction = new PurposeRestriction();
+                purposeRestriction.purposeId = purpose;
+                purposeRestriction.restrictionType =
+                  RestrictionType.REQUIRE_CONSENT;
+                tcModel.publisherRestrictions.add(+id, purposeRestriction);
+              });
+            }
           }
         }
       });
+
       tcStringPreferences.vendorsLegint.forEach((vendorId) => {
         if (experience.minimal_tcf) {
           (
@@ -158,6 +161,32 @@ export const generateFidesString = async ({
         }
       });
 
+      // Set legitimate interest for special-purpose only vendors
+      if (experience.gvl?.vendors) {
+        (experience as PrivacyExperience).tcf_vendor_relationships?.forEach(
+          (relationship) => {
+            const { id } = decodeVendorId(relationship.id);
+            const vendor = experience.gvl?.vendors[id];
+            const isInVendorConsents = (
+              experience as PrivacyExperience
+            ).tcf_vendor_consents?.some(
+              (consent) => consent.id === relationship.id,
+            );
+            if (
+              vendor &&
+              vendor.specialPurposes?.length &&
+              (!vendor.purposes || vendor.purposes.length === 0) &&
+              (!vendor.flexiblePurposes ||
+                vendor.flexiblePurposes.length === 0) &&
+              (!vendor.legIntPurposes || vendor.legIntPurposes.length === 0) &&
+              !isInVendorConsents
+            ) {
+              tcModel.vendorLegitimateInterests.set(+id);
+            }
+          },
+        );
+      }
+
       // Set purposes on tcModel
       tcStringPreferences.purposesConsent.forEach((purposeId) => {
         tcModel.purposeConsents.set(+purposeId);
@@ -174,10 +203,31 @@ export const generateFidesString = async ({
         tcModel.specialFeatureOptins.set(+id);
       });
 
-      // note that we cannot set consent for special purposes nor features because the IAB policy states
-      // the user is not given choice by a CMP.
-      // See https://iabeurope.eu/iab-europe-transparency-consent-framework-policies/
-      // and https://github.com/InteractiveAdvertisingBureau/iabtcf-es/issues/63#issuecomment-581798996
+      // Process publisher restrictions if available
+      if (
+        experience.tcf_publisher_restrictions &&
+        experience.tcf_publisher_restrictions.length > 0
+      ) {
+        experience.tcf_publisher_restrictions.forEach(
+          (restriction: TcfPublisherRestriction) => {
+            // NOTE: While this documentation https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/TCFv2/TCF-Implementation-Guidelines.md#pubrestrenc
+            // mentions "it might be more efficient to encode a small number of range restriction
+            // segments using a specific encoding scheme," this is referring to the CMP's interface (Admin UI)
+            // providing a mechanism for handling ranges, but the TCModel.publisherRestrictions object does
+            // not support ranges. We must add each vendor id as a separate publisher restriction because
+            // that's what the TCModel we're using for our encoding supports.
+            // See https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/core#setting-publisher-restrictions
+            // for more information about the loop below.
+            restriction.vendors.forEach((vendorId: number) => {
+              const purposeRestriction = new PurposeRestriction();
+              purposeRestriction.purposeId = restriction.purpose_id;
+              purposeRestriction.restrictionType = restriction.restriction_type;
+              tcModel.publisherRestrictions.add(vendorId, purposeRestriction);
+            });
+          },
+        );
+      }
+
       encodedString = TCString.encode(tcModel, {
         // We do not want to include vendors disclosed or publisher tc at the moment
         segments: [Segment.CORE],

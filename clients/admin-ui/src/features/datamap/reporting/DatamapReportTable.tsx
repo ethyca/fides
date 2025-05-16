@@ -69,6 +69,7 @@ import {
   getDatamapReportColumns,
   getDefaultColumn,
 } from "./DatamapReportTableColumns";
+import { RenameColumnsButtons } from "./RenameColumnsButtons";
 import { getColumnOrder, getGrouping, getPrefixColumns } from "./utils";
 
 const emptyMinimalDatamapReportResponse: Page_DatamapReport_ = {
@@ -496,152 +497,121 @@ export const DatamapReportTable = () => {
         initialValues={columnNameMapOverrides}
         onSubmit={handleColumnRenaming}
       >
-        {({ submitForm, resetForm }) => (
-          <>
-            <TableActionBar>
-              <GlobalFilterV2
-                globalFilter={globalFilter}
-                setGlobalFilter={updateGlobalFilter}
-                placeholder="System name, Fides key, or ID"
-              />
-              <Flex alignItems="center" gap={2}>
-                {userCanSeeReports && (
-                  <CustomReportTemplates
-                    reportType={ReportType.DATAMAP}
-                    savedReportId={savedCustomReportId}
-                    tableStateToSave={{
-                      groupBy,
-                      filters: selectedFilters,
-                      columnOrder,
-                      columnVisibility,
-                    }}
-                    currentColumnMap={columnNameMapOverrides}
-                    onCustomReportSaved={(customReport) =>
-                      handleSavedReport(customReport, resetForm)
-                    }
-                    onSavedReportDeleted={() => {
-                      setSavedCustomReportId("");
-                    }}
-                  />
-                )}
-                <Menu>
-                  <MenuButton
-                    as={Button}
-                    icon={<ChevronDownIcon />}
-                    iconPosition="end"
-                    loading={groupChangeStarted}
-                    data-testid="group-by-menu"
-                  >
-                    Group by {getMenuDisplayValue()}
-                  </MenuButton>
-                  <MenuList zIndex={11} data-testid="group-by-menu-list">
-                    <MenuItemOption
-                      onClick={() => {
-                        onGroupChange(DATAMAP_GROUPING.SYSTEM_DATA_USE);
-                      }}
-                      isChecked={DATAMAP_GROUPING.SYSTEM_DATA_USE === groupBy}
-                      value={DATAMAP_GROUPING.SYSTEM_DATA_USE}
-                      data-testid="group-by-system-data-use"
-                    >
-                      System
-                    </MenuItemOption>
-                    <MenuItemOption
-                      onClick={() => {
-                        onGroupChange(DATAMAP_GROUPING.DATA_USE_SYSTEM);
-                      }}
-                      isChecked={DATAMAP_GROUPING.DATA_USE_SYSTEM === groupBy}
-                      value={DATAMAP_GROUPING.DATA_USE_SYSTEM}
-                      data-testid="group-by-data-use-system"
-                    >
-                      Data use
-                    </MenuItemOption>
-                  </MenuList>
-                </Menu>
-                <Button
-                  data-testid="filter-multiple-systems-btn"
-                  onClick={onFilterModalOpen}
-                >
-                  Filter
-                </Button>
-                <Button
-                  aria-label="Export report"
-                  data-testid="export-btn"
-                  onClick={onExportReportOpen}
-                  icon={<DownloadLightIcon ml="1.5px" />}
+        <>
+          <TableActionBar>
+            <GlobalFilterV2
+              globalFilter={globalFilter}
+              setGlobalFilter={updateGlobalFilter}
+              placeholder="System name, Fides key, or ID"
+            />
+            <Flex alignItems="center" gap={2}>
+              {userCanSeeReports && (
+                <CustomReportTemplates
+                  reportType={ReportType.DATAMAP}
+                  savedReportId={savedCustomReportId}
+                  tableStateToSave={{
+                    groupBy,
+                    filters: selectedFilters,
+                    columnOrder,
+                    columnVisibility,
+                  }}
+                  currentColumnMap={columnNameMapOverrides}
+                  onCustomReportSaved={(customReport, resetForm) =>
+                    handleSavedReport(customReport, resetForm)
+                  }
+                  onSavedReportDeleted={() => {
+                    setSavedCustomReportId("");
+                  }}
                 />
-                <Menu placement="bottom-end">
-                  <MenuButton
-                    as={Button}
-                    icon={<MoreIcon className="rotate-90" />}
-                    data-testid="more-menu"
-                    aria-label="More options"
-                    className="w-6 gap-0"
-                  />
-                  <MenuList data-testid="more-menu-list">
-                    <MenuItem
-                      onClick={onColumnSettingsOpen}
-                      data-testid="edit-columns-btn"
-                    >
-                      Edit columns
-                    </MenuItem>
-                    <MenuItem
-                      onClick={() => setIsRenamingColumns(true)}
-                      data-testid="rename-columns-btn"
-                    >
-                      Rename columns
-                    </MenuItem>
-                  </MenuList>
-                </Menu>
-                {isRenamingColumns && (
-                  <div className="flex gap-2">
-                    <Button
-                      size="small"
-                      data-testid="rename-columns-reset-btn"
-                      onClick={() => {
-                        setColumnNameMapOverrides({});
-                        setSavedCustomReportId("");
-                        resetForm({ values: {} });
-                        setIsRenamingColumns(false);
-                      }}
-                    >
-                      Reset all
-                    </Button>
-                    <Button
-                      size="small"
-                      data-testid="rename-columns-cancel-btn"
-                      onClick={() => {
-                        resetForm({ values: columnNameMapOverrides });
-                        setIsRenamingColumns(false);
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      size="small"
-                      type="primary"
-                      htmlType="submit"
-                      data-testid="rename-columns-apply-btn"
-                      onClick={submitForm}
-                    >
-                      Apply
-                    </Button>
-                  </div>
-                )}
-              </Flex>
-            </TableActionBar>
-            <Form>
-              <FidesTableV2<DatamapReport>
-                tableInstance={tableInstance}
-                columnExpandStorageKey={
-                  DATAMAP_LOCAL_STORAGE_KEYS.COLUMN_EXPANSION_STATE
-                }
-                columnWrapStorageKey={
-                  DATAMAP_LOCAL_STORAGE_KEYS.WRAPPING_COLUMNS
-                }
+              )}
+              <Menu>
+                <MenuButton
+                  as={Button}
+                  icon={<ChevronDownIcon />}
+                  iconPosition="end"
+                  loading={groupChangeStarted}
+                  data-testid="group-by-menu"
+                >
+                  Group by {getMenuDisplayValue()}
+                </MenuButton>
+                <MenuList zIndex={11} data-testid="group-by-menu-list">
+                  <MenuItemOption
+                    onClick={() => {
+                      onGroupChange(DATAMAP_GROUPING.SYSTEM_DATA_USE);
+                    }}
+                    isChecked={DATAMAP_GROUPING.SYSTEM_DATA_USE === groupBy}
+                    value={DATAMAP_GROUPING.SYSTEM_DATA_USE}
+                    data-testid="group-by-system-data-use"
+                  >
+                    System
+                  </MenuItemOption>
+                  <MenuItemOption
+                    onClick={() => {
+                      onGroupChange(DATAMAP_GROUPING.DATA_USE_SYSTEM);
+                    }}
+                    isChecked={DATAMAP_GROUPING.DATA_USE_SYSTEM === groupBy}
+                    value={DATAMAP_GROUPING.DATA_USE_SYSTEM}
+                    data-testid="group-by-data-use-system"
+                  >
+                    Data use
+                  </MenuItemOption>
+                </MenuList>
+              </Menu>
+              <Button
+                data-testid="filter-multiple-systems-btn"
+                onClick={onFilterModalOpen}
+              >
+                Filter
+              </Button>
+              <Button
+                aria-label="Export report"
+                data-testid="export-btn"
+                onClick={onExportReportOpen}
+                icon={<DownloadLightIcon ml="1.5px" />}
               />
-            </Form>
-          </>
-        )}
+              <Menu placement="bottom-end">
+                <MenuButton
+                  as={Button}
+                  icon={<MoreIcon className="rotate-90" />}
+                  data-testid="more-menu"
+                  aria-label="More options"
+                  className="w-6 gap-0"
+                />
+                <MenuList data-testid="more-menu-list">
+                  <MenuItem
+                    onClick={onColumnSettingsOpen}
+                    data-testid="edit-columns-btn"
+                  >
+                    Edit columns
+                  </MenuItem>
+                  <MenuItem
+                    onClick={() => setIsRenamingColumns(true)}
+                    data-testid="rename-columns-btn"
+                  >
+                    Rename columns
+                  </MenuItem>
+                </MenuList>
+              </Menu>
+              {isRenamingColumns && (
+                <RenameColumnsButtons
+                  columnNameMapOverrides={columnNameMapOverrides}
+                  setColumnNameMapOverrides={setColumnNameMapOverrides}
+                  setSavedCustomReportId={setSavedCustomReportId}
+                  setIsRenamingColumns={setIsRenamingColumns}
+                />
+              )}
+            </Flex>
+          </TableActionBar>
+          <Form>
+            <FidesTableV2<DatamapReport>
+              tableInstance={tableInstance}
+              columnExpandStorageKey={
+                DATAMAP_LOCAL_STORAGE_KEYS.COLUMN_EXPANSION_STATE
+              }
+              columnWrapStorageKey={DATAMAP_LOCAL_STORAGE_KEYS.WRAPPING_COLUMNS}
+            />
+          </Form>
+        </>
       </Formik>
 
       <PaginationBar

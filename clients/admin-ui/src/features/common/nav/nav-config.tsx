@@ -54,21 +54,18 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "Activity",
         path: routes.DETECTION_DISCOVERY_ACTIVITY_ROUTE,
         scopes: [],
-        requiresFlag: "dataDiscoveryAndDetection",
         requiresPlus: true,
       },
       {
         title: "Data detection",
         path: routes.DATA_DETECTION_ROUTE,
         scopes: [],
-        requiresFlag: "dataDiscoveryAndDetection",
         requiresPlus: true,
       },
       {
         title: "Data discovery",
         path: routes.DATA_DISCOVERY_ROUTE,
         scopes: [],
-        requiresFlag: "dataDiscoveryAndDetection",
         requiresPlus: true,
       },
       {
@@ -166,7 +163,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "Consent reporting",
         path: routes.CONSENT_REPORTING_ROUTE,
-        requiresFlag: "consentReporting",
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
       },
@@ -201,7 +197,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "Integrations",
         path: routes.INTEGRATION_MANAGEMENT_ROUTE,
-        requiresFlag: "dataDiscoveryAndDetection",
         requiresPlus: true,
         scopes: [
           ScopeRegistryEnum.CONNECTION_AUTHORIZE,
@@ -309,6 +304,11 @@ if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
       {
         title: "Fides JS Docs",
         path: routes.FIDES_JS_DOCS,
+        scopes: [],
+      },
+      {
+        title: "Forms POC",
+        path: routes.FORMS_POC_ROUTE,
         scopes: [],
       },
     ],

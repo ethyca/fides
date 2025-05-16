@@ -95,3 +95,13 @@ export type PrivacyRequestOption = {
   identity_inputs?: IdentityInputs;
   custom_privacy_request_fields?: CustomPrivacyRequestFields;
 };
+
+export enum ConsentNonApplicableFlagMode {
+  OMIT = "omit",
+  INCLUDE = "include",
+}
+
+export enum ConsentFlagType {
+  BOOLEAN = "boolean",
+  CONSENT_MECHANISM = "consent_mechanism",
+}

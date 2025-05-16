@@ -5,6 +5,7 @@ anyio==3.7.1
 APScheduler==3.9.1.post1
 asyncpg==0.27.0
 boto3==1.26.1
+certifi==2024.8.30
 celery[pytest]==5.2.7
 click_default_group==1.2.2
 cloud-sql-python-connector==1.9.2
@@ -70,4 +71,4 @@ toml==0.10.2
 twilio==7.15.0
 typing-extensions==4.12.2
 versioneer==0.19
-fideslang==3.0.9
+fideslang===3.1.0

@@ -19,6 +19,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import FidesSpinner from "~/features/common/FidesSpinner";
 import { MonitorIcon } from "~/features/common/Icon/MonitorIcon";
+import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import {
   DefaultCell,
   DefaultHeaderCell,
@@ -28,16 +29,18 @@ import {
   TableActionBar,
   useServerSidePagination,
 } from "~/features/common/table/v2";
-import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
 import { useGetMonitorsByIntegrationQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import ConfigureMonitorModal from "~/features/integrations/configure-monitor/ConfigureMonitorModal";
 import MonitorConfigActionsCell from "~/features/integrations/configure-monitor/MonitorConfigActionsCell";
 import { MonitorConfigEnableCell } from "~/features/integrations/configure-monitor/MonitorConfigEnableCell";
+import MonitorStatusCell from "~/features/integrations/configure-monitor/MonitorStatusCell";
 import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
   ConnectionType,
   MonitorConfig,
+  WebsiteMonitorParams,
+  WebsiteSchema,
 } from "~/types/api";
 
 const EMPTY_RESPONSE = {
@@ -51,6 +54,13 @@ const EMPTY_RESPONSE = {
 const DATA_DISCOVERY_MONITOR_COPY = `A data discovery monitor observes configured systems for data model changes to proactively discover and classify data risks. Monitors can observe part or all of a project, dataset, table, or API for changes and each can be assigned to a different data steward.`;
 
 const WEBSITE_MONITOR_COPY = `Configure your website monitor to identify active ad tech vendors and tracking technologies across your site. This monitor will analyze selected pages for vendor activity, compliance with privacy requirements, and data collection practices. Set your preferences below to customize the monitor frequency and scan locations.`;
+
+const OKTA_MONITOR_COPY = `Configure your SSO provider monitor to detect and map systems within your infrastructure. This monitor will analyze connected systems to identify their activity and ensure accurate representation in your data map. Set your preferences below to customize the monitor&apos;s scan frequency and scope. To learn more about monitors, view our docs here.`;
+
+const MONITOR_COPIES: Partial<Record<ConnectionType, string>> = {
+  [ConnectionType.WEBSITE]: WEBSITE_MONITOR_COPY,
+  [ConnectionType.OKTA]: OKTA_MONITOR_COPY,
+} as const;
 
 const columnHelper = createColumnHelper<MonitorConfig>();
 
@@ -87,6 +97,9 @@ const MonitorConfigTab = ({
   integration: ConnectionConfigurationResponse;
   integrationOption?: ConnectionSystemTypeMap;
 }) => {
+  const isWebsiteMonitor =
+    integrationOption?.identifier === ConnectionType.WEBSITE;
+
   const {
     PAGE_SIZES,
     pageSize,
@@ -149,16 +162,17 @@ const MonitorConfigTab = ({
   }, [totalPages, setTotalPages]);
 
   const columns: ColumnDef<MonitorConfig, any>[] = useMemo(
-    () => [
-      columnHelper.accessor((row) => row.name, {
+    () => {
+      const nameColumn = columnHelper.accessor((row) => row.name, {
         id: "name",
         cell: (props) => <DefaultCell value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Name" {...props} />,
-      }),
-      columnHelper.accessor((row) => row.databases, {
+      });
+
+      const scopeColumn = columnHelper.accessor((row) => row.databases, {
         id: "projects",
         cell: (props) =>
-          props.getValue().length === 0 ? (
+          props.getValue()?.length === 0 ? (
             <DefaultCell value="All projects" />
           ) : (
             <GroupCountBadgeCell
@@ -169,40 +183,107 @@ const MonitorConfigTab = ({
             />
           ),
         header: (props) => <DefaultHeaderCell value="Scope" {...props} />,
-      }),
-      columnHelper.accessor((row) => row.execution_frequency, {
-        id: "frequency",
-        cell: (props) => (
-          <DefaultCell value={props.getValue() ?? "Not scheduled"} />
-        ),
-        header: (props) => (
-          <DefaultHeaderCell value="Scan frequency" {...props} />
-        ),
-      }),
-      columnHelper.accessor((row) => row.last_monitored, {
-        id: "last_monitored",
-        cell: (props) => <RelativeTimestampCell time={props.getValue()} />,
-        header: (props) => <DefaultHeaderCell value="Last scan" {...props} />,
-      }),
-      columnHelper.accessor((row) => row.enabled, {
+      });
+
+      const sourceUrlColumn = columnHelper.accessor(
+        () => {
+          const secrets = integration.secrets as WebsiteSchema | null;
+          return secrets?.url;
+        },
+        {
+          id: "source_url",
+          cell: (props) => (
+            <DefaultCell value={props.getValue() ?? "Not scheduled"} />
+          ),
+          header: (props) => (
+            <DefaultHeaderCell value="Source URL" {...props} />
+          ),
+        },
+      );
+
+      const scanFrequencyColumn = columnHelper.accessor(
+        (row) => row.execution_frequency,
+        {
+          id: "frequency",
+          cell: (props) => (
+            <DefaultCell value={props.getValue() ?? "Not scheduled"} />
+          ),
+          header: (props) => (
+            <DefaultHeaderCell value="Scan frequency" {...props} />
+          ),
+        },
+      );
+
+      const lastScanColumn = columnHelper.display({
+        id: "monitor_status",
+        cell: (props) => <MonitorStatusCell monitor={props.row.original} />,
+        header: (props) => <DefaultHeaderCell value="Scan status" {...props} />,
+        meta: { disableRowClick: true },
+      });
+
+      const regionsColumn = columnHelper.accessor(
+        (row) => {
+          const params = row.datasource_params as WebsiteMonitorParams | null;
+          return (
+            params?.locations
+              ?.map(
+                (location) =>
+                  PRIVACY_NOTICE_REGION_RECORD[
+                    location as keyof typeof PRIVACY_NOTICE_REGION_RECORD
+                  ],
+              )
+              .join(", ") || "No regions selected"
+          );
+        },
+        {
+          id: "regions",
+          cell: (props) => <DefaultCell value={props.getValue()} />,
+          header: (props) => <DefaultHeaderCell value="Regions" {...props} />,
+        },
+      );
+
+      const statusColumn = columnHelper.accessor((row) => row.enabled, {
         id: "status",
         cell: MonitorConfigEnableCell,
         header: (props) => <DefaultHeaderCell value="Status" {...props} />,
         size: 0,
         meta: { disableRowClick: true },
-      }),
-      columnHelper.display({
+      });
+
+      const actionsColumn = columnHelper.display({
         id: "action",
         cell: (props) => (
           <MonitorConfigActionsCell
             onEditClick={() => handleEditMonitor(props.row.original)}
+            isWebsiteMonitor={isWebsiteMonitor}
             monitorId={props.row.original.key!}
           />
         ),
         header: "Actions",
         meta: { disableRowClick: true },
-      }),
-    ],
+      });
+
+      if (isWebsiteMonitor) {
+        return [
+          nameColumn,
+          sourceUrlColumn,
+          scanFrequencyColumn,
+          regionsColumn,
+          lastScanColumn,
+          statusColumn,
+          actionsColumn,
+        ];
+      }
+
+      return [
+        nameColumn,
+        scopeColumn,
+        scanFrequencyColumn,
+        lastScanColumn,
+        statusColumn,
+        actionsColumn,
+      ];
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
@@ -222,12 +303,14 @@ const MonitorConfigTab = ({
     return <FidesSpinner />;
   }
 
+  const monitorCopy =
+    MONITOR_COPIES[integrationOption?.identifier as ConnectionType] ??
+    DATA_DISCOVERY_MONITOR_COPY;
+
   return (
     <>
       <Text maxW="720px" mb={6} fontSize="sm" data-testid="monitor-description">
-        {integrationOption?.identifier === ConnectionType.WEBSITE
-          ? WEBSITE_MONITOR_COPY
-          : DATA_DISCOVERY_MONITOR_COPY}
+        {monitorCopy}
       </Text>
       <TableActionBar>
         <Spacer />
@@ -248,6 +331,7 @@ const MonitorConfigTab = ({
           isEditing={isEditing}
           integration={integration}
           integrationOption={integrationOption!}
+          isWebsiteMonitor={isWebsiteMonitor}
         />
       </TableActionBar>
       <FidesTableV2

@@ -82,8 +82,8 @@ const EmptyTableExperience = () => {
 const columnHelper = createColumnHelper<ExperienceConfigListViewResponse>();
 
 export const PrivacyExperiencesTable = () => {
-  const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
   const router = useRouter();
+  const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
 
   // Permissions
   const userCanUpdate = useHasPermission([

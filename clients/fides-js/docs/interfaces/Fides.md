@@ -36,7 +36,7 @@ existence of Fides *or* subscribe to the global `FidesInitialized` event (see
 
 ### consent
 
-> **consent**: `Record`\<`string`, `boolean`\>
+> **consent**: `Record`\<`string`, `string` \| `boolean`\>
 
 User's current consent preferences, formatted as a key/value object with:
 - key: the applicable Fides `notice_key` (e.g. `data_sales_and_sharing`, `analytics`)
@@ -69,40 +69,38 @@ A `Fides.consent` value showing the user has opted-in to analytics, but not mark
 }
 ```
 
+A `Fides.consent` value showing the user has opted-in to analytics, but not marketing using a consent mechanism string:
+```ts
+{
+  "analytics": "opt_in",
+  "marketing": "opt_out"
+}
+
 ***
 
 ### fides\_string?
 
 > `optional` **fides\_string**: `string`
 
-User's current consent string(s) combined into a single value. The string
-consists of three parts separated by commas in the format:
-`TC_STRING,AC_STRING,GPP_STRING` where:
+User's current consent string(s) combined into a single value. This is used by
+FidesJS to store IAB consent strings from various frameworks such as TCF, GPP,
+and Google's "Additional Consent" string. Additionally, we support passing a
+Notice Consent string, which is a base64 encoded string of the user's Notice
+Consent preferences. See [FidesOptions.fides_string](FidesOptions.md#fides_string) for more details.
+
+The string consists of four parts separated by commas in the format:
+`TC_STRING,AC_STRING,GPP_STRING,NC_STRING` where:
 
 - TC_STRING: IAB TCF (Transparency & Consent Framework) string
-- AC_STRING: Google's Additional Consent string, derived from TC_STRING
+- AC_STRING: Google's Additional Consent string
 - GPP_STRING: IAB GPP (Global Privacy Platform) string
-
-Note: The AC_STRING can only exist if TC_STRING exists, as it's derived from it.
-When GPP is enabled, the GPP_STRING portion is automatically initialized during
-FidesJS initialization, either preserving any existing GPP string or using a
-default value. The GPP_STRING is independent and can exist with or without the
-other strings.
+- NC_STRING: Base64 encoded string of the user's Notice Consent preferences.
 
 #### Example
 
 ```ts
-// Complete string with all parts:
 console.log(Fides.fides_string);
-// "CPzHq4APzHq4AAMABBENAUEAALAAAEOAAAAAAEAEACACAAAA,1~61.70,DBABLA~BVAUAAAAAWA.QA"
-
-// TC and AC strings only (no GPP):
-console.log(Fides.fides_string);
-// "CPzHq4APzHq4AAMABBENAUEAALAAAEOAAAAAAEAEACACAAAA,1~61.70"
-
-// GPP string only:
-console.log(Fides.fides_string);
-// ",,DBABLA~BVAUAAAAAWA.QA"
+// "CPzHq4APzHq4AAMABBENAUEAALAAAEOAAAAAAEAEACACAAAA,1~61.70,DBABLA~BVAUAAAAAWA.QA,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9"
 ```
 
 ***
@@ -141,21 +139,25 @@ To always return in the default language only, pass the `disableLocalization` op
 
 #### Examples
 
-Getting the link text in the user's current locale (eg. Spanish):
+Get the link text in the user's current locale (eg. Spanish):
 ```ts
 console.log(Fides.getModalLinkLabel()); // "Tus preferencias de privacidad"
 ```
 
-Getting the link text in the default locale to match other links on the page:
+Get the link text in the default locale to match other links on the page:
 ```ts
 console.log(Fides.getModalLinkLabel({ disableLocalization: true })); // "Your Privacy Choices"
 ```
 
-Applying the link text to a custom modal link element:
+Apply the link text to a custom modal link element on Fides initialization:
 ```html
 <button class="my-custom-show-modal" id="fides-modal-link-label" onclick="Fides.showModal()"><button>
-<script>
- document.getElementById('fides-modal-link-label').innerText = Fides.getModalLinkLabel();
+<script id="fides-js">
+  function() {
+    addEventListener("FidesInitialized", ( function() {
+      document.getElementById('fides-modal-link-label').innerText = Fides.getModalLinkLabel();
+    }));
+  }
 </script>
 ```
 
@@ -235,7 +237,7 @@ function myCustomShowModalFunction() {
 
 ### gtm()
 
-> **gtm**: () => `void`
+> **gtm**: (`options`?) => `void`
 
 Enable the Google Tag Manager (GTM) integration. This should be called
 immediately after FidesJS is included, and once enabled, FidesJS will
@@ -243,19 +245,40 @@ automatically push all [FidesEvent](FidesEvent.md) events to the GTM data layer 
 they occur, which can then be used to trigger/block tags in GTM based on
 `Fides.consent` preferences or other business logic.
 
-See the Google Tag Manager tutorial for more: [https://fid.es/configuring-gtm-consent](https://fid.es/configuring-gtm-consent)
+See the [Google Tag Manager tutorial](/tutorials/consent-management/consent-management-configuration/google-tag-manager-consent-mode) for more.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `options`? | `object` | Optional configuration for the GTM integration |
+| `options.non_applicable_flag_mode`? | `"omit"` \| `"include"` | Controls how non-applicable privacy notices are handled in the data layer. Can be "omit" (default) to exclude non-applicable notices, or "include" to include them with a default value. |
+| `options.flag_type`? | `"boolean"` \| `"consent_mechanism"` | Controls how consent values are represented in the data layer. Can be "boolean" (default) for true/false values, or "consent_mechanism" for string values like "opt_in", "opt_out", "acknowledge", "not_applicable". |
 
 #### Returns
 
 `void`
 
-#### Example
+#### Examples
 
-Enabling the GTM integration in your site's `<head>`:
+Basic usage in your site's `<head>`:
 ```html
 <head>
   <script src="path/to/fides.js"></script>
   <script>Fides.gtm()</script>
+</head>
+```
+
+With options to include non-applicable notices and use consent mechanism strings:
+```html
+<head>
+  <script src="path/to/fides.js"></script>
+  <script>
+    Fides.gtm({
+      non_applicable_flag_mode: "include",
+      flag_type: "consent_mechanism"
+    });
+  </script>
 </head>
 ```
 
@@ -276,7 +299,7 @@ However, initialization can be called manually if needed - for example to delay
 initialization until after your own custom JavaScript has run to set up some
 config options. In this case, you can disable the automatic initialization
 by including the query param `initialize=false` in the Fides script URL
-(see (Privacy Center FidesJS Hosting)[/docs/dev-docs/js/privacy-center-fidesjs-hosting] for details).
+(see [Privacy Center FidesJS Hosting](/dev-docs/js/privacy-center-fidesjs-hosting) for details).
 You will then need to call `Fides.init()` manually at the appropriate time.
 
 This function can also be used to reinitialize FidesJS. This is useful when
@@ -296,6 +319,40 @@ such as the `fides_overrides` global or the query params.
 #### Returns
 
 `Promise`\<`void`\>
+
+#### Example
+
+Disable FidesJS initialization and trigger manually instead:
+```html
+<head>
+  <script src="https://privacy.example.com/fides.js?initialize=false"></script>
+</head>
+<body>
+  <!--- Later, in your own application code... -->
+  <script>Fides.init()</script>
+</body>
+```
+Configure overrides after loading Fides.js tag.
+```html
+<head>
+  <script src="path/to/fides.js">
+    // Loading Fides.js before setting window.fides_overrides requires re-initialization
+  </script>
+
+  <script>
+    function onChange(newData) {
+      // Update Fides options
+      window.fides_overrides = window.fides_overrides || {};
+      window.fides_overrides = {
+        fides_locale: newData,
+      };
+
+      // Reinitialize FidesJS
+      window.Fides.init();
+    };
+  </script>
+</head>
+```
 
 ***
 
@@ -362,3 +419,106 @@ preferences) or in the case when the previous consent is no longer valid.
 #### Returns
 
 `boolean`
+
+***
+
+### encodeNoticeConsentString()
+
+> **encodeNoticeConsentString**: (`consent`) => `string`
+
+Encode the user's consent preferences into a Notice Consent string. See [FidesOptions.fides_string](FidesOptions.md#fides_string) for more details.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `consent` | `Record`\<`string`, `boolean` \| `0` \| `1`\> | The user's consent preferences to encode. (Numeric values are supported for smaller string results and will be decoded to boolean values) |
+
+#### Returns
+
+`string`
+
+#### Example
+
+```ts
+const encoded = Fides.encodeNoticeConsentString({data_sales_and_sharing:0,analytics:1});
+console.log(encoded); // "eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9"
+```
+
+***
+
+### decodeNoticeConsentString()
+
+> **decodeNoticeConsentString**: (`base64String`) => `object`
+
+Decode a Notice Consent string into a user's consent preferences. See [FidesOptions.fides_string](FidesOptions.md#fides_string) for more details.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `base64String` | `string` | The Notice Consent string to decode. |
+
+#### Returns
+
+`object`
+
+#### Example
+
+```ts
+const decoded = Fides.decodeNoticeConsentString("eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9");
+console.log(decoded); // {data_sales_and_sharing: false, analytics: true}
+```
+
+***
+
+### geolocation?
+
+> `optional` **geolocation**: `any`
+
+The detected geolocation that Fides uses to determine the user's experience.
+This field is read-only.
+
+#### Example
+
+```ts
+{
+  "country": "ca",
+  "location": "ca-on",
+  "region": "on"
+}
+```
+
+***
+
+### locale
+
+> **locale**: `string`
+
+The detected i18n locale that Fides uses to determine the language shown to the user.
+
+#### Example
+
+```ts
+"en"
+```
+
+This field is read-only.
+
+***
+
+### identity
+
+> **identity**: `Record`\<`string`, `string`\>
+
+The user's identity values, which only include a copy of the fides user device id that we store in the fides_consent cookie e.g.
+
+#### Example
+
+```ts
+{
+  "fides_user_device_id": "1234-"
+}
+```
+
+This field is read-only.

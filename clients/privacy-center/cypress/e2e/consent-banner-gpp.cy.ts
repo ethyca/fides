@@ -175,7 +175,9 @@ describe("Fides-js GPP extension", () => {
             expect(gppString).to.eql("DBAA"); // empty string, header only
           });
 
-        cy.get("button").contains("Opt in to all").click();
+        cy.get("div#fides-banner").within(() => {
+          cy.get("button").contains("Opt in to all").click();
+        });
         cy.get("@FidesUpdated").should("have.been.calledOnce");
 
         const expected = [
@@ -200,7 +202,7 @@ describe("Fides-js GPP extension", () => {
             // date-based and changes each day. The first 6 characters are the
             // "Created" date, the next 6 are the "Last Updated" date.
             expect(args[3][0].pingData.gppString).to.match(
-              /DBABMA~[a-zA-Z0-9]{6}[a-zA-Z0-9]{6}AGXABBENArEoABaAAEAAAAAAABEAAAAA/,
+              /DBABMA~[a-zA-Z0-9_]{6}[a-zA-Z0-9_]{6}AGXABBENArEoABaAAEAAAAAAABEAAAAA/,
             );
             // the `PurposeConsents` should match the gpp string
             expect(
@@ -518,7 +520,9 @@ describe("Fides-js GPP extension", () => {
       });
 
       it("can go through the flow of user opting in to data sales and sharing", () => {
-        cy.get("button").contains("Opt in to all").click();
+        cy.get("div#fides-banner").within(() => {
+          cy.get("button").contains("Opt in to all").click();
+        });
         cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
           cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
             const fidesCookie: FidesCookie = JSON.parse(
@@ -597,7 +601,9 @@ describe("Fides-js GPP extension", () => {
       });
 
       it("can go through the flow of user opting out of data sales and sharing", () => {
-        cy.get("button").contains("Opt out of all").click();
+        cy.get("div#fides-banner").within(() => {
+          cy.get("button").contains("Opt out of all").click();
+        });
         cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
           cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
             const fidesCookie: FidesCookie = JSON.parse(
@@ -737,7 +743,9 @@ describe("Fides-js GPP extension", () => {
       });
 
       it("can go through the flow of user opting in to data sales and sharing", () => {
-        cy.get("button").contains("Opt in to all").click();
+        cy.get("div#fides-banner").within(() => {
+          cy.get("button").contains("Opt in to all").click();
+        });
 
         // Check the GPP events
         cy.get("@gppListener")
@@ -752,7 +760,9 @@ describe("Fides-js GPP extension", () => {
       });
 
       it("can go through the flow of user opting out of data sales and sharing", () => {
-        cy.get("button").contains("Opt out of all").click();
+        cy.get("div#fides-banner").within(() => {
+          cy.get("button").contains("Opt out of all").click();
+        });
 
         // Check the GPP events
         cy.get("@gppListener")

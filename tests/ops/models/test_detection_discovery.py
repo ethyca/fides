@@ -154,16 +154,14 @@ class TestStagedResourceModel:
         assert from_db_single.urn == urn_list[0]
 
     async def test_get_urn_async(
-        self, async_session_temp: AsyncSession, create_staged_resource
+        self, async_session: AsyncSession, create_staged_resource
     ) -> None:
         urn_list: List[str] = [str(create_staged_resource.urn)]
 
-        from_db_single = await StagedResource.get_urn_async(
-            async_session_temp, urn_list[0]
-        )
+        from_db_single = await StagedResource.get_urn_async(async_session, urn_list[0])
         assert from_db_single.urn == urn_list[0]
 
-        from_db = await StagedResource.get_urn_list_async(async_session_temp, urn_list)
+        from_db = await StagedResource.get_urn_list_async(async_session, urn_list)
         assert len(from_db) == len(urn_list)
         assert from_db[0].urn == urn_list[0]
 
@@ -297,14 +295,14 @@ class TestStagedResourceModel:
         resources = db.execute(query).all()
         assert len(resources) == 1
 
-    def test_fetch_staged_resources_by_type_query(
+    def test_fetch_staged_resources_by_type_query_with_monitor_config_ids(
         self,
         db: Session,
         create_staged_resource,
         create_staged_schema,
     ):
         """
-        Tests that the fetch_staged_resources_by_type_query works as expected
+        Tests that the fetch_staged_resources_by_type_query works as expected with monitor config IDs
         """
         query = fetch_staged_resources_by_type_query("Table")
         resources = db.execute(query).all()
@@ -515,6 +513,30 @@ class TestMonitorConfigModel:
                     "second": 5,
                 },
             ),
+            (
+                MonitorFrequency.QUARTERLY,
+                {
+                    "start_date": SAMPLE_START_DATE,
+                    "timezone": str(timezone.utc),
+                    "day": 20,
+                    "hour": 0,
+                    "minute": 42,
+                    "second": 5,
+                    "month": "2,5,8,11",  # May is month 5, so it will run in May, Aug, Nov, Feb
+                },
+            ),
+            (
+                MonitorFrequency.YEARLY,
+                {
+                    "start_date": SAMPLE_START_DATE,
+                    "timezone": str(timezone.utc),
+                    "day": 20,
+                    "month": 5,  # May
+                    "hour": 0,
+                    "minute": 42,
+                    "second": 5,
+                },
+            ),
         ],
     )
     def test_create_monitor_config_execution_trigger_logic(
@@ -586,6 +608,30 @@ class TestMonitorConfigModel:
                     "start_date": SAMPLE_START_DATE,
                     "timezone": str(timezone.utc),
                     "day": 20,
+                    "hour": 0,
+                    "minute": 42,
+                    "second": 5,
+                },
+            ),
+            (
+                MonitorFrequency.QUARTERLY,
+                {
+                    "start_date": SAMPLE_START_DATE,
+                    "timezone": str(timezone.utc),
+                    "day": 20,
+                    "hour": 0,
+                    "minute": 42,
+                    "second": 5,
+                    "month": "2,5,8,11",  # May is month 5, so it will run in May, Aug, Nov, Feb
+                },
+            ),
+            (
+                MonitorFrequency.YEARLY,
+                {
+                    "start_date": SAMPLE_START_DATE,
+                    "timezone": str(timezone.utc),
+                    "day": 20,
+                    "month": 5,  # May
                     "hour": 0,
                     "minute": 42,
                     "second": 5,

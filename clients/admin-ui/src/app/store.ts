@@ -17,6 +17,7 @@ import {
 } from "redux-persist";
 import createWebStorage from "redux-persist/lib/storage/createWebStorage";
 
+import { rtkQueryErrorLogger } from "~/app/middleware";
 import { STORAGE_ROOT_KEY } from "~/constants";
 import { authSlice } from "~/features/auth";
 import { baseApi } from "~/features/common/api.slice";
@@ -25,6 +26,7 @@ import { healthApi } from "~/features/common/health.slice";
 import { dirtyFormsSlice } from "~/features/common/hooks/dirty-forms.slice";
 import { configWizardSlice } from "~/features/config-wizard/config-wizard.slice";
 import { connectionTypeSlice } from "~/features/connection-type";
+import { tcfConfigSlice } from "~/features/consent-settings/tcf/tcf-config.slice";
 import { discoveryDetectionSlice } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import { dataSubjectsSlice } from "~/features/data-subjects/data-subject.slice";
 import { dataUseSlice } from "~/features/data-use/data-use.slice";
@@ -77,6 +79,7 @@ const reducer = {
   [authSlice.name]: authSlice.reducer,
   [configWizardSlice.name]: configWizardSlice.reducer,
   [connectionTypeSlice.name]: connectionTypeSlice.reducer,
+  [tcfConfigSlice.name]: tcfConfigSlice.reducer,
   [dataSubjectsSlice.name]: dataSubjectsSlice.reducer,
   [dataUseSlice.name]: dataUseSlice.reducer,
   [datasetSlice.name]: datasetSlice.reducer,
@@ -100,7 +103,6 @@ const reducer = {
 export type RootState = StateFromReducersMapObject<typeof reducer>;
 
 const allReducers = combineReducers(reducer);
-
 const rootReducer = (state: RootState | undefined, action: AnyAction) => {
   let newState = state;
   if (action.type === "auth/logout") {
@@ -127,7 +129,6 @@ const persistConfig = {
 };
 
 export const persistedReducer = persistReducer(persistConfig, rootReducer);
-
 export const makeStore = (
   preloadedState?: Parameters<typeof persistedReducer>[0],
 ) =>
@@ -138,7 +139,7 @@ export const makeStore = (
         serializableCheck: {
           ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
         },
-      }).concat(baseApi.middleware, healthApi.middleware),
+      }).concat(baseApi.middleware, healthApi.middleware, rtkQueryErrorLogger),
     devTools: true,
     preloadedState,
   });

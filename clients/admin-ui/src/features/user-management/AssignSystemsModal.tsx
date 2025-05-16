@@ -18,7 +18,7 @@ import {
 } from "fidesui";
 import { useMemo, useState } from "react";
 
-import SearchBar from "~/features/common/SearchBar";
+import SearchInput from "~/features/common/SearchInput";
 import { useGetAllSystemsQuery } from "~/features/system";
 import { System } from "~/types/api";
 
@@ -116,8 +116,8 @@ const AssignSystemsModal = ({
                   </FormControl>
                 </Box>
               </Flex>
-              <SearchBar
-                search={searchFilter}
+              <SearchInput
+                value={searchFilter}
                 onChange={setSearchFilter}
                 placeholder="Search for systems"
                 data-testid="system-search"

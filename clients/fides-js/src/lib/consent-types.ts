@@ -15,6 +15,7 @@ import type {
   TCFFeatureRecord,
   TCFFeatureSave,
   TcfOtherConsent,
+  TcfPublisherRestriction,
   TCFPurposeConsentRecord,
   TCFPurposeLegitimateInterestsRecord,
   TCFPurposeSave,
@@ -148,6 +149,12 @@ export interface FidesInitOptions {
 
   // List of notice_keys to disable their respective Toggle elements in the CMP Overlay
   fidesDisabledNotices: string[] | null;
+
+  // Determines how non-applicable privacy notices are handled (omit or include)
+  fidesConsentNonApplicableFlagMode: ConsentNonApplicableFlagMode | null;
+
+  // The type of value to use for consent (boolean or consent_mechanism)
+  fidesConsentFlagType: ConsentFlagType | null;
 }
 
 /**
@@ -157,10 +164,16 @@ export interface FidesInitOptions {
  * ensure that the documented interface isn't overly specific in areas we may
  * need to change.
  */
-export interface FidesGlobal extends Fides {
+export interface FidesGlobal extends Omit<Fides, "gtm" | "consent"> {
   cookie?: FidesCookie;
   config?: FidesConfig;
   consent: NoticeConsent;
+  encodeNoticeConsentString: (
+    noticeConsent: Record<string, boolean | 0 | 1>,
+  ) => string;
+  decodeNoticeConsentString: (base64String: string) => {
+    [noticeKey: string]: boolean;
+  };
   experience:
     | PrivacyExperience
     | PrivacyExperienceMinimal
@@ -173,7 +186,7 @@ export interface FidesGlobal extends Fides {
   identity: FidesJSIdentity;
   initialized: boolean;
   options: FidesInitOptions;
-  saved_consent: NoticeConsent;
+  saved_consent: NoticeValues;
   tcf_consent: TcfOtherConsent;
   blueconic: typeof blueconic;
   gtm: typeof gtm;
@@ -202,14 +215,35 @@ export interface OtToFidesConsentMapping {
 }
 
 /**
- * Store the user's consent preferences as notice_key -> boolean pairs, e.g.
+ * Store the user's consent preferences as well as implicit consent preferences if applicable
+ * as notice_key -> boolean pairs or notice_key -> consent_mechanism pairs, depending on
+ * the value of `Fides.options.fidesConsentFlagType` and `Fides.options.fidesConsentNonApplicableFlagMode`.
+ * eg.
+ * {
+ *   "data_sales": false,
+ *   "analytics": true,
+ *   ...
+ * }
+ * or
+ * {
+ *   "data_sales": "opt_out",
+ *   "analytics": "not_applicable",
+ *   ...
+ * }
+ */
+export type NoticeConsent = Record<string, boolean | UserConsentPreference>;
+
+/**
+ * Store the user's explicit consent preferences as notice_key -> boolean pairs,
+ * regardless of the value of `Fides.options.fidesConsentFlagType` and
+ * `Fides.options.fidesConsentNonApplicableFlagMode`.
  * {
  *   "data_sales": false,
  *   "analytics": true,
  *   ...
  * }
  */
-export type NoticeConsent = Record<string, boolean>;
+export type NoticeValues = Record<string, boolean>;
 
 /**
  * Store the user's identity values, e.g.
@@ -242,9 +276,7 @@ export interface FidesCookie {
 }
 
 export type GetPreferencesFnResp = {
-  // Overrides the value for Fides.consent for the user's notice-based preferences (e.g. { data_sales: false })
-  consent?: NoticeConsent;
-  // Overrides the value for Fides.fides_string for the user's TCF+AC preferences (e.g. 1a2a3a.AAABA,1~123.121)
+  // Overrides the value for Fides.fides_string for the user's consent preferences
   fides_string?: string;
   // An explicit version hash for provided fides_string when calculating whether consent should be re-triggered
   version_hash?: string;
@@ -445,6 +477,7 @@ export type PrivacyExperience = {
   tcf_system_legitimate_interests?: Array<TCFVendorLegitimateInterestsRecord>;
   tcf_system_relationships?: Array<TCFVendorRelationships>;
   tcf_publisher_country_code?: string;
+  tcf_publisher_restrictions?: Array<TcfPublisherRestriction>;
 
   /**
    * @deprecated For backwards compatibility purposes, whether the Experience should show a banner.
@@ -463,6 +496,7 @@ export type PrivacyExperience = {
   available_locales?: string[];
   vendor_count?: number;
   minimal_tcf?: boolean;
+  non_applicable_privacy_notices?: Array<PrivacyNotice["notice_key"]>;
 };
 
 interface ExperienceConfigTranslationMinimal
@@ -478,6 +512,8 @@ export interface ExperienceConfigMinimal
     | "auto_detect_language"
     | "dismissable"
     | "auto_subdomain_cookie_deletion"
+    | "layer1_button_options"
+    | "reject_all_mechanism"
   > {
   translations: ExperienceConfigTranslationMinimal[];
 }
@@ -493,6 +529,8 @@ export interface PrivacyExperienceMinimal
     | "minimal_tcf"
     | "gvl"
     | "tcf_publisher_country_code"
+    | "non_applicable_privacy_notices"
+    | "tcf_publisher_restrictions"
   > {
   experience_config: ExperienceConfigMinimal;
   vendor_count?: number;
@@ -664,7 +702,18 @@ export enum UserConsentPreference {
   OPT_IN = "opt_in",
   OPT_OUT = "opt_out",
   ACKNOWLEDGE = "acknowledge",
+  NOT_APPLICABLE = "not_applicable",
   TCF = "tcf",
+}
+
+export enum ConsentNonApplicableFlagMode {
+  OMIT = "omit",
+  INCLUDE = "include",
+}
+
+export enum ConsentFlagType {
+  BOOLEAN = "boolean",
+  CONSENT_MECHANISM = "consent_mechanism",
 }
 
 // NOTE: This (and most enums!) could reasonably be replaced by string union
@@ -725,6 +774,8 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesConsentOverride"
   | "otFidesMapping"
   | "fidesDisabledNotices"
+  | "fidesConsentNonApplicableFlagMode"
+  | "fidesConsentFlagType"
 >;
 
 export type FidesExperienceTranslationOverrides = {
@@ -755,6 +806,13 @@ export enum Layer1ButtonOption {
   // defines the buttons to show in the layer 1 banner
   ACKNOWLEDGE = "acknowledge", // show acknowledge button
   OPT_IN_OPT_OUT = "opt_in_opt_out", // show opt in and opt out buttons
+  OPT_IN_ONLY = "opt_in_only", // TCF only, hide opt out button
+}
+
+export enum RejectAllMechanism {
+  // Applies to TCF only
+  REJECT_ALL = "reject_all", // reject all purposes and legitimate interests
+  REJECT_CONSENT_ONLY = "reject_consent_only", // do not reject legitimate interests
 }
 
 export enum ConsentMethod {
@@ -767,6 +825,7 @@ export enum ConsentMethod {
   GPC = "gpc",
   INDIVIDUAL_NOTICE = "individual_notice",
   ACKNOWLEDGE = "acknowledge",
+  OT_MIGRATION = "ot_migration",
 }
 
 export type PrivacyPreferencesRequest = {

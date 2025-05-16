@@ -5,8 +5,10 @@ import {
   ConsentMethod,
   FidesCookie,
   FidesEndpointPaths,
+  Layer1ButtonOption,
   PrivacyExperience,
   PrivacyExperienceMinimal,
+  RejectAllMechanism,
 } from "fides-js";
 import { NoticeConsent } from "fides-js/src/lib/consent-types";
 import { FIDES_SEPARATOR } from "fides-js/src/lib/tcf/constants";
@@ -220,11 +222,6 @@ describe("Fides-js TCF", () => {
         });
       });
       cy.waitUntilFidesInitialized().then(() => {
-        // The banner has a delay, so in order to assert its non-existence, we have
-        // to give it a chance to come up first. Otherwise, the following gets will
-        // pass regardless.
-        // eslint-disable-next-line cypress/no-unnecessary-waiting
-        cy.wait(500);
         cy.get("@FidesUIShown").should("not.have.been.called");
         cy.get("div#fides-banner").should("not.exist");
       });
@@ -234,11 +231,6 @@ describe("Fides-js TCF", () => {
 
       stubTCFExperience({ stubOptions: { fidesDisableBanner: true } });
       cy.waitUntilFidesInitialized().then(() => {
-        // The banner has a delay, so in order to assert its non-existence, we have
-        // to give it a chance to come up first. Otherwise, the following gets will
-        // pass regardless.
-        // eslint-disable-next-line cypress/no-unnecessary-waiting
-        cy.wait(500);
         cy.get("@FidesUIShown").should("not.have.been.called");
         cy.get("div#fides-banner").should("not.exist");
       });
@@ -336,6 +328,26 @@ describe("Fides-js TCF", () => {
           });
         });
         cy.get("#fides-tab-purposes");
+      });
+
+      it("hides reject button based on configuration", () => {
+        cy.get("div#fides-banner").within(() => {
+          cy.get("#fides-button-group").within(() => {
+            cy.get("button").contains("Opt out of all").should("be.visible");
+          });
+        });
+        cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+        stubTCFExperience({
+          includeCustomPurposes,
+          experienceConfig: {
+            layer1_button_options: Layer1ButtonOption.OPT_IN_ONLY,
+          },
+        });
+        cy.get("div#fides-banner").within(() => {
+          cy.get("#fides-button-group").within(() => {
+            cy.get("button").contains("Opt out of all").should("not.exist");
+          });
+        });
       });
 
       describe("saving preferences", () => {
@@ -683,6 +695,48 @@ describe("Fides-js TCF", () => {
               expect(cookieKeyConsent.fides_string).to.not.contain(
                 vendorsDisclosed,
               );
+            });
+          });
+        });
+
+        it("can opt out of all with reject mechanism set to consent only", () => {
+          cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+          stubTCFExperience({
+            includeCustomPurposes,
+            experienceConfig: {
+              reject_all_mechanism: RejectAllMechanism.REJECT_CONSENT_ONLY,
+            },
+          });
+          cy.get("div#fides-banner").within(() => {
+            cy.get("button").contains("Opt out of all").click();
+            cy.wait("@patchPrivacyPreference").then((interception) => {
+              cy.get("@FidesUIChanged").should("not.have.been.called");
+              const { body } = interception.request;
+              expect(interception.request.body.method).to.eql(
+                ConsentMethod.REJECT,
+              );
+              expect(body.purpose_legitimate_interests_preferences).to.eql([
+                {
+                  id: PURPOSE_2.id,
+                  preference: "opt_in",
+                },
+              ]);
+            });
+          });
+          // Verify the cookie on save
+          cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
+            cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+              const cookieKeyConsent: FidesCookie = JSON.parse(
+                decodeURIComponent(cookie!.value),
+              );
+              expect(cookieKeyConsent.fides_meta.consentMethod).to.eql(
+                ConsentMethod.REJECT,
+              );
+              assertTcOptIns({
+                cookie: cookieKeyConsent,
+                modelType: "purposeLegitimateInterests",
+                ids: [2],
+              });
             });
           });
         });
@@ -2306,7 +2360,9 @@ describe("Fides-js TCF", () => {
       });
       cy.waitUntilFidesInitialized().then(() => {
         cy.get("div#fides-banner").should("be.visible");
-        cy.get("button").contains("Opt in to all").click();
+        cy.get("div#fides-banner").within(() => {
+          cy.get("button").contains("Opt in to all").click();
+        });
         cy.get("@TCFEvent")
           .its("lastCall.args")
           .then(([tcData, success]) => {
@@ -2330,7 +2386,9 @@ describe("Fides-js TCF", () => {
       });
       cy.waitUntilFidesInitialized().then(() => {
         cy.get("div#fides-banner").should("be.visible");
-        cy.get("button").contains("Opt in to all").click();
+        cy.get("div#fides-banner").within(() => {
+          cy.get("button").contains("Opt in to all").click();
+        });
         cy.get("@TCFEvent")
           .its("lastCall.args")
           .then(([tcData, success]) => {

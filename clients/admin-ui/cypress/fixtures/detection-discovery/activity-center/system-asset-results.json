@@ -44,7 +44,7 @@
       "description": null,
       "monitor_config_id": "my_web_monitor_1",
       "updated_at": "2025-01-16T17:27:31.499796Z",
-      "diff_status": "addition",
+      "diff_status": "muted",
       "domain": "td.doubleclick.net",
       "parent": "https://www.googletagmanager.com/gtag/js?id=AW-697301175&l=dataLayer&cx=c&gtm=45je51d0v9134906606za200",
       "parent_domain": "www.googletagmanager.com",

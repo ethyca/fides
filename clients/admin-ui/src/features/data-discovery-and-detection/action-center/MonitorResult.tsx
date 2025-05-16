@@ -1,9 +1,10 @@
 import { formatDistance } from "date-fns";
 import {
   AntAvatar as Avatar,
-  AntFlex as Flex,
+  AntCol as Col,
   AntList as List,
   AntListItemProps as ListItemProps,
+  AntRow as Row,
   AntSkeleton as Skeleton,
   AntTooltip as Tooltip,
   AntTypography as Typography,
@@ -13,7 +14,11 @@ import NextLink from "next/link";
 import { useEffect, useState } from "react";
 
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
-import { formatDate, getWebsiteIconUrl } from "~/features/common/utils";
+import {
+  formatDate,
+  getDomain,
+  getWebsiteIconUrl,
+} from "~/features/common/utils";
 
 import { MonitorAggregatedResults } from "./types";
 
@@ -38,6 +43,7 @@ export const MonitorResult = ({
     updates,
     last_monitored: lastMonitored,
     warning,
+    secrets,
     key,
   } = monitorSummary;
 
@@ -47,6 +53,10 @@ export const MonitorResult = ({
     })
     .join(", ");
 
+  const formattedLastMonitored = lastMonitored
+    ? formatDate(new Date(lastMonitored))
+    : undefined;
+
   const lastMonitoredDistance = lastMonitored
     ? formatDistance(new Date(lastMonitored), new Date(), {
         addSuffix: true,
@@ -55,55 +65,67 @@ export const MonitorResult = ({
 
   useEffect(() => {
     if (property) {
-      setIconUrl(getWebsiteIconUrl(property));
+      setIconUrl(getWebsiteIconUrl(property, 60));
     }
-  }, [property]);
+    if (secrets?.url) {
+      setIconUrl(getWebsiteIconUrl(getDomain(secrets.url), 60));
+    }
+  }, [property, secrets?.url]);
 
   return (
     <List.Item data-testid={`monitor-result-${key}`} {...props}>
       <Skeleton avatar title={false} loading={showSkeleton} active>
-        <List.Item.Meta
-          avatar={
-            <Avatar
-              src={iconUrl}
-              size="small"
-              icon={<Icons.Wikis />}
-              style={{
-                backgroundColor: "transparent",
-                color: "var(--ant-color-text)",
-              }}
-            />
-          }
-          title={
-            <NextLink
-              href={`${ACTION_CENTER_ROUTE}/${key}`}
-              className="whitespace-nowrap"
-            >
-              {`${totalUpdates} assets detected${property ? ` on ${property}` : ""}`}
-              {!!warning && (
-                <Tooltip
-                  title={typeof warning === "string" ? warning : undefined}
+        <Row gutter={12} className="w-full">
+          <Col span={18} className="align-middle">
+            <List.Item.Meta
+              avatar={
+                <Avatar
+                  src={iconUrl}
+                  size={30}
+                  icon={<Icons.Wikis />}
+                  style={{
+                    backgroundColor: "transparent",
+                    color: "var(--ant-color-text)",
+                  }}
+                />
+              }
+              title={
+                <NextLink
+                  href={`${ACTION_CENTER_ROUTE}/${key}`}
+                  className="whitespace-nowrap"
                 >
-                  <Icons.WarningAltFilled
-                    className="ml-1 inline-block align-middle"
-                    style={{ color: "var(--fidesui-error)" }}
-                  />
-                </Tooltip>
-              )}
-            </NextLink>
-          }
-          description={`${assetCountString} detected.`}
-        />
-        <Flex className="gap-12">
-          <Text style={{ maxWidth: 300 }} ellipsis={{ tooltip: name }}>
-            {name}
-          </Text>
-          {!!lastMonitoredDistance && (
-            <Tooltip title={formatDate(lastMonitored)}>
-              <Text data-testid="monitor-date">{lastMonitoredDistance}</Text>
-            </Tooltip>
-          )}
-        </Flex>
+                  {`${totalUpdates} assets detected${property ? ` on ${property}` : ""}`}
+                  {!!warning && (
+                    <Tooltip
+                      title={typeof warning === "string" ? warning : undefined}
+                    >
+                      <Icons.WarningAltFilled
+                        className="ml-1 inline-block align-middle"
+                        style={{ color: "var(--fidesui-error)" }}
+                      />
+                    </Tooltip>
+                  )}
+                </NextLink>
+              }
+              description={`${assetCountString} detected.`}
+            />
+          </Col>
+          <Col span={4} className="flex items-center justify-end">
+            <Text ellipsis={{ tooltip: name }}>{name}</Text>
+          </Col>
+          <Col span={2} className="flex items-center justify-end">
+            {!!lastMonitoredDistance && (
+              <Tooltip title={formattedLastMonitored}>
+                <Text
+                  data-testid="monitor-date"
+                  ellipsis={{ tooltip: formattedLastMonitored }}
+                >
+                  {lastMonitoredDistance}
+                </Text>
+              </Tooltip>
+            )}
+          </Col>
+        </Row>
       </Skeleton>
     </List.Item>
   );

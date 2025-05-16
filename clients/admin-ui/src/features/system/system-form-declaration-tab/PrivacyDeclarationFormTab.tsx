@@ -18,14 +18,12 @@ interface Props {
   system: SystemResponse;
   addButtonProps?: ButtonProps;
   includeCustomFields?: boolean;
-  includeCookies?: boolean;
 }
 
 const PrivacyDeclarationFormTab = ({
   system,
   addButtonProps,
   includeCustomFields,
-  includeCookies,
   ...dataProps
 }: Props & DataProps) => {
   const { isOpen, onClose, onOpen } = useDisclosure();

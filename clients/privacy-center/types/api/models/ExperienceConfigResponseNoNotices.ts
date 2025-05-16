@@ -2,6 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import { RejectAllMechanism } from "./RejectAllMechanism";
 import type { ComponentType } from "./ComponentType";
 import type { ExperienceTranslationResponse } from "./ExperienceTranslationResponse";
 import type { Layer1ButtonOption } from "./Layer1ButtonOption";
@@ -29,4 +30,5 @@ export type ExperienceConfigResponseNoNotices = {
   component: ComponentType;
   translations?: Array<ExperienceTranslationResponse>;
   properties?: Array<MinimalProperty>;
+  reject_all_mechanism?: RejectAllMechanism | null;
 };
