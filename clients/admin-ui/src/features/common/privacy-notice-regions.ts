@@ -320,6 +320,7 @@ export const PRIVACY_NOTICE_REGION_RECORD: Record<PrivacyNoticeRegion, string> =
     [PrivacyNoticeRegion.CARIBBEAN]: "Caribbean",
     [PrivacyNoticeRegion.EEA]: "European Economic Area (EEA)",
     [PrivacyNoticeRegion.NON_EEA]: "Non European Economic Area",
+    [PrivacyNoticeRegion.GLOBAL]: "Global",
   };
 
 export const PRIVACY_NOTICE_REGION_MAP = new Map(
