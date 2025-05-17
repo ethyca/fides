@@ -14,10 +14,9 @@ secrets = get_secrets("{{ connector_id }}")
 @pytest.fixture(scope="session")
 def {{ connector_id }}_secrets(saas_config) -> Dict[str, Any]:
     return {
-        {%+ for connector in connector_params -%}
-        "{{connector}}": pydash.get(saas_config, "{{ connector_id }}.{{connector}}")
-        or secrets["{{connector}}"],
-        {%+ endfor -%}
+        "domain": pydash.get(saas_config, "{{ connector_id }}.domain")
+        or secrets["domain"],
+        # add the rest of your secrets here
     }
 
 
@@ -27,59 +26,45 @@ def {{ connector_id }}_identity_email(saas_config) -> str:
         pydash.get(saas_config, "{{ connector_id }}.identity_email") or secrets["identity_email"]
     )
 
-{%- if delete -%}
+
 @pytest.fixture
 def {{ connector_id }}_erasure_identity_email() -> str:
     return generate_random_email()
-{%- endif -%}
 
-{%- if external -%}
+
 @pytest.fixture
 def {{ connector_id }}_external_references() -> Dict[str, Any]:
-    return {
-        {%+ for reference in external_references -%}
-        "{{reference}}": "AddYourExternalReferenceHere",
-        {%+ endfor -%}
-    }
-{%- endif -%}
+    return {}
 
-{%- if external and delete -%}
+
 @pytest.fixture
 def {{ connector_id }}_erasure_external_references() -> Dict[str, Any]:
     return {}
-{%- endif -%}
 
 
-{%- if delete -%}
+
+
 @pytest.fixture
 def {{ connector_id }}_erasure_data(
     {{ connector_id }}_erasure_identity_email: str,
 ) -> Generator:
     # create the data needed for erasure tests here
     yield {}
-{%- endif -%}
+
 
 @pytest.fixture
 def {{ connector_id }}_runner(
     db,
     cache,
     {{ connector_id }}_secrets,
-    {%- if external -%}
     {{ connector_id }}_external_references,
-    {%- endif -%}
-    {%- if external and delete -%}
     {{ connector_id }}_erasure_external_references,
-    {%- endif -%}
 ) -> ConnectorRunner:
     return ConnectorRunner(
         db,
         cache,
         "{{ connector_id }}",
         {{ connector_id }}_secrets,
-        {%- if external -%}
         external_references={{ connector_id }}_external_references,
-        {%- endif -%}
-        {%- if external and delete -%}
         erasure_external_references={{ connector_id }}_erasure_external_references,
-        {%- endif -%}
     )
