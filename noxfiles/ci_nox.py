@@ -213,7 +213,7 @@ def check_container_startup(session: nox.Session) -> None:
 def minimal_config_startup(session: nox.Session) -> None:
     """
     Check that the server can start successfully with a minimal
-    configuration set through environment vairables.
+    configuration set through environment variables.
     """
     session.notify("teardown")
     compose_file = "docker/docker-compose.minimal-config.yml"
