@@ -32,8 +32,8 @@
   },
   "dependencies": {
     "@iabgpp/cmpapi": "file:./src/lib/gpp/modules/cmpapi",
-    "@iabtechlabtcf/cmpapi": "^1.5.8",
-    "@iabtechlabtcf/core": "^1.5.7",
+    "@iabtechlabtcf/cmpapi": "1.5.15",
+    "@iabtechlabtcf/core": "1.5.15",
     "@rollup/plugin-replace": "^6.0.2",
     "a11y-dialog": "^7.5.2",
     "base-64": "^1.0.0",
