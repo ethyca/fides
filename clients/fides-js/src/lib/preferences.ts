@@ -12,7 +12,10 @@ import {
   SaveConsentPreference,
   UserConsentPreference,
 } from "./consent-types";
-import { applyOverridesToConsent } from "./consent-utils";
+import {
+  applyOverridesToConsent,
+  constructFidesRegionString,
+} from "./consent-utils";
 import { removeCookiesFromBrowser, saveFidesCookie } from "./cookie";
 import { dispatchFidesEvent } from "./events";
 import { decodeFidesString } from "./fides-string";
@@ -290,6 +293,9 @@ export const updateConsent = async (
         .privacy_experience_config_history_id;
   }
 
+  const fidesRegionString =
+    constructFidesRegionString(fides.geolocation) || undefined;
+
   // Call updateConsentPreferences with necessary parameters
   return updateConsentPreferences({
     consentPreferencesToSave,
@@ -299,7 +305,7 @@ export const updateConsent = async (
       | PrivacyExperienceMinimal,
     consentMethod: ConsentMethod.SAVE,
     options: fides.options,
-    userLocationString: fides.geolocation?.country, // Using country as the location string
+    userLocationString: fidesRegionString,
     cookie: fides.cookie,
     servedNoticeHistoryId: undefined, // Not passing a served notice ID
     updateCookie: async () => updatedCookie,
