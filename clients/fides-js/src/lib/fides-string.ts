@@ -1,5 +1,6 @@
 import { CmpApi } from "@iabgpp/cmpapi";
 
+import { isValidAcString } from "./consent-utils";
 import { FIDES_SEPARATOR } from "./tcf/constants";
 import { VendorSources } from "./tcf/vendors";
 
@@ -75,13 +76,8 @@ export const decodeFidesString = (fidesString: string): DecodedFidesString => {
  * // returns [gacp.1, gacp.2, gacp.3]
  */
 export const consentIdsFromAcString = (acString: string) => {
-  const acVersion = acString.split("~")[0];
-  const isValidAcString =
-    !acVersion ||
-    (acVersion === "1" && !acString?.match(/\d~[0-9.]+$/)) ||
-    (acVersion === "2" && !acString?.match(/\d~[0-9.]+~dv.[0-9.]+$/)) ||
-    (acVersion !== "1" && acVersion !== "2");
-  if (!isValidAcString) {
+  const isValid = isValidAcString(acString);
+  if (!isValid) {
     fidesDebugger(
       acString && `Received invalid AC string "${acString}", returning no ids`,
     );

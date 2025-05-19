@@ -16,6 +16,7 @@ import {
   encodeNoticeConsentString,
   getWindowObjFromPath,
   isPrivacyExperience,
+  isValidAcString,
   shouldResurfaceBanner,
 } from "~/lib/consent-utils";
 import { parseFidesDisabledNotices } from "~/lib/shared-consent-utils";
@@ -624,5 +625,23 @@ describe("applyOverridesToConsent", () => {
       essential: true,
       tracking: false,
     });
+  });
+});
+
+describe("isValidAcString", () => {
+  it("should return true for valid AC strings", () => {
+    expect(isValidAcString("1~1.2.3")).toBe(true);
+    expect(isValidAcString("2~1.2.3~dv.4.5")).toBe(true);
+    expect(isValidAcString("1~")).toBe(true);
+    expect(isValidAcString("2~")).toBe(false);
+    expect(isValidAcString("2~~dv.")).toBe(true);
+  });
+
+  it("should return false for invalid AC strings", () => {
+    expect(isValidAcString("1~1.2.3~dv.4.5")).toBe(false);
+    expect(isValidAcString("3~1.2.3")).toBe(false);
+    expect(isValidAcString("2~1.2.3~dv.4.5~dv.6.7")).toBe(false);
+    expect(isValidAcString("")).toBe(false);
+    expect(isValidAcString("1.2.3")).toBe(false);
   });
 });
