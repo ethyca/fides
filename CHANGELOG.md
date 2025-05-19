@@ -27,6 +27,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Changed
 - Attachment uploads now check for file extension types, retrieving and attachment also returns the file size. [#6124](https://github.com/ethyca/fides/pull/6124)
+- Updated the AC string version from v1 to v2 format, which now includes a disclosed vendors section [#6155](https://github.com/ethyca/fides/pull/6155)
 
 ### Developer Experience
 - Refactored Fides initialization code to reduce duplication and improve maintainability. [#6143](https://github.com/ethyca/fides/pull/6143)
