@@ -62,7 +62,9 @@ export const decodeFidesString = (fidesString: string): DecodedFidesString => {
 };
 
 /**
- * Given an AC string, return a list of its ids, encoded
+ * Given an AC string, return a list of its ids, encoded.
+ * V2 AC strings include a list of disclosed vendors which we can ignore for the return value but
+ * we do use to validate the AC string format. The consent id list is formatted the same as V1.
  *
  * @example // V1 AC string
  * consentIdsFromAcString("1~1.2.3")
@@ -74,12 +76,12 @@ export const decodeFidesString = (fidesString: string): DecodedFidesString => {
  */
 export const consentIdsFromAcString = (acString: string) => {
   const acVersion = acString.split("~")[0];
-  if (
+  const isValidAcString =
     !acVersion ||
     (acVersion === "1" && !acString?.match(/\d~[0-9.]+$/)) ||
     (acVersion === "2" && !acString?.match(/\d~[0-9.]+~dv.[0-9.]+$/)) ||
-    (acVersion !== "1" && acVersion !== "2")
-  ) {
+    (acVersion !== "1" && acVersion !== "2");
+  if (!isValidAcString) {
     fidesDebugger(
       acString && `Received invalid AC string "${acString}", returning no ids`,
     );
