@@ -1,5 +1,6 @@
 import { CmpApi } from "@iabgpp/cmpapi";
 
+import { isValidAcString } from "./consent-utils";
 import { FIDES_SEPARATOR } from "./tcf/constants";
 import { VendorSources } from "./tcf/vendors";
 
@@ -19,21 +20,21 @@ export interface DecodedFidesString {
  *
  * The Fides string format is: `TC_STRING,AC_STRING,GPP_STRING,NC_STRING` where:
  * - TC_STRING: The TCF (Transparency & Consent Framework) string
- * - AC_STRING: The Additional Consent string, which is derived from TC_STRING
+ * - AC_STRING: The Additional Consent string
  * - GPP_STRING: The Global Privacy Platform string
  * - NC_STRING: A Base64 encoded stringified JSON object containing Notice Consent preferences
  *
  * Rules:
  * 1. If the string is empty or undefined, all parts are empty strings
  * 2. If only one part exists, it's treated as the TC string
- * 3. AC string can only exist if TC string exists (as it's derived from TC)
- * 4. GPP string is independent and can exist with or without TC/AC strings
- * 5. Notice Consent String is an optional part that can be used to pass notice consent preferences programatically
+ * 3. AC string can only exist if TC string exists. An AC string will not be processed if the TC string is not present.
+ * 4. GPP string is independent and can exist with or without other string parts
+ * 5. Notice Consent String is an optional part that can be used to pass notice consent preferences programatically. This can also exist independently.
  *
  * @example
  * // Complete string with all parts
- * decodeFidesString("CPzvOIA.IAAA,1~2.3.4,DBABLA~BVAUAAAAAWA.QA,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjoxLCJhbmFseXRpY3MiOjB9")
- * // Returns { tc: "CPzvOIA.IAAA", ac: "1~2.3.4", gpp: "DBABLA~BVAUAAAAAWA.QA", nc: "eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjoxLCJhbmFseXRpY3MiOjB9" }
+ * decodeFidesString("CPzvOIA.IAAA,2~2.3.4~dv.1.5,DBABLA~BVAUAAAAAWA.QA,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjoxLCJhbmFseXRpY3MiOjB9")
+ * // Returns { tc: "CPzvOIA.IAAA", ac: "2~2.3.4~dv.1.5", gpp: "DBABLA~BVAUAAAAAWA.QA", nc: "eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjoxLCJhbmFseXRpY3MiOjB9" }
  *
  * // TC string only
  * decodeFidesString("CPzvOIA.IAAA")
@@ -42,6 +43,10 @@ export interface DecodedFidesString {
  * // GPP string only (with empty TC and AC)
  * decodeFidesString(",,DBABLA~BVAUAAAAAWA.QA")
  * // Returns { tc: "", ac: "", gpp: "DBABLA~BVAUAAAAAWA.QA", nc: "" }
+ *
+ * // Notice Consent String only
+ * decodeFidesString(",,,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjoxLCJhbmFseXRpY3MiOjB9")
+ * // Returns { tc: "", ac: "", gpp: "", nc: "eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjoxLCJhbmFseXRpY3MiOjB9" }
  *
  * @param fidesString - The combined Fides string to decode
  * @returns An object containing the decoded TC, AC, GPP, and Notice Consent strings
@@ -58,14 +63,21 @@ export const decodeFidesString = (fidesString: string): DecodedFidesString => {
 };
 
 /**
- * Given an AC string, return a list of its ids, encoded
+ * Given an AC string, return a list of its ids, encoded.
+ * V2 AC strings include a list of disclosed vendors which we can ignore for the return value but
+ * we do use to validate the AC string format. The consent id list is formatted the same as V1.
  *
- * @example
+ * @example // V1 AC string
+ * consentIdsFromAcString("1~1.2.3")
  * // returns [gacp.1, gacp.2, gacp.3]
- * idsFromAcString("1~1.2.3")
+ *
+ * @example // V2 AC string
+ * consentIdsFromAcString("2~1.2.3~dv.4.5")
+ * // returns [gacp.1, gacp.2, gacp.3]
  */
-export const idsFromAcString = (acString: string) => {
-  if (!acString?.match(/\d~[0-9.]+$/)) {
+export const consentIdsFromAcString = (acString: string) => {
+  const isValid = isValidAcString(acString);
+  if (!isValid) {
     fidesDebugger(
       acString && `Received invalid AC string "${acString}", returning no ids`,
     );

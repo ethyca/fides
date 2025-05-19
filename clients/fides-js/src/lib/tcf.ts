@@ -32,39 +32,48 @@ const CMP_VERSION = 1;
 const FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS = [1, 3, 4, 5, 6];
 
 // AC
-const AC_SPECIFICATION_VERSION = 1;
+const AC_SPECIFICATION_VERSION = 2;
 
 /**
- * Generates an Additional Consent (AC) string in the format `version~id1.id2.id3` where:
- * - version: The AC specification version (currently 1)
- * - id1.id2.id3: A sorted, dot-separated list of vendor IDs that have consent
+ * Generates an Additional Consent (AC) string in the format `version~id1.id2.id3~id4.id5.id6` where:
+ * - version: The AC specification version
+ * - id1.id2.id3: A sorted, dot-separated list of user-consented vendor IDs.
+ * - id4.id5.id6: "dv." followed by a sorted, dot-separated list of non-user-consented disclosed
+ *  vendor IDs.
  *
- * The function combines vendors from both consent and legitimate interest lists,
- * filters for AC vendors only (those with 'gacp' prefix), extracts their numeric IDs,
+ * Vendors included in the user-consented list should not be included in the disclosed vendor list
+ * to reduce the string size.
+ *
+ * The function filters for AC vendors only (those with 'gacp' prefix), extracts their numeric IDs,
  * and joins them in ascending order.
  *
  * @example
- * // Given vendors ["gacp.42", "gacp.33", "gvl.12", "gacp.49"]
- * generateAcString({tcStringPreferences: {
- *   vendorsConsent: ["gacp.42"],
- *   vendorsLegint: ["gacp.33", "gvl.12", "gacp.49"]
- * }})
- * // Returns "1~33.42.49"
+ * generateAcString({
+ *   userConsentedVendorIds: ["gacp.42"],
+ *   disclosedVendorIds: ["gacp.49", "gacp.33", "gvl.12", "gacp.42", "gvl.123"]
+ * })
+ * // Returns "2~42~dv.33.49"
  */
 const generateAcString = ({
-  tcStringPreferences,
+  userConsentedVendorIds,
+  disclosedVendorIds,
 }: {
-  tcStringPreferences: Pick<EnabledIds, "vendorsConsent" | "vendorsLegint">;
+  userConsentedVendorIds: string[];
+  disclosedVendorIds: string[];
 }) => {
-  const vendorIds = [
-    ...tcStringPreferences.vendorsConsent,
-    ...tcStringPreferences.vendorsLegint,
-  ]
-    .filter(vendorIsAc)
-    .map((id) => decodeVendorId(id).id)
-    .sort((a, b) => Number(a) - Number(b))
-    .join(".");
-  return `${AC_SPECIFICATION_VERSION}~${vendorIds}`;
+  const processIds = (ids: string[]) =>
+    ids
+      .filter(vendorIsAc)
+      .map((id) => decodeVendorId(id).id)
+      .sort((a, b) => Number(a) - Number(b))
+      .join(".");
+
+  const consentedIds = processIds(userConsentedVendorIds);
+  const disclosedIds = processIds(
+    disclosedVendorIds.filter((id) => !userConsentedVendorIds.includes(id)),
+  );
+
+  return `${AC_SPECIFICATION_VERSION}~${consentedIds}~dv.${disclosedIds}`;
 };
 
 /**
@@ -233,8 +242,16 @@ export const generateFidesString = async ({
         segments: [Segment.CORE],
       });
 
-      // Attach the AC string
-      const acString = generateAcString({ tcStringPreferences });
+      // Attach the AC string, which only applies to tcf_vendor_consents (no LI exists in AC)
+      const disclosedVendorIds = experience.minimal_tcf
+        ? (experience as PrivacyExperienceMinimal).tcf_vendor_consent_ids
+        : (experience as PrivacyExperience).tcf_vendor_consents?.map(
+            (vendor) => vendor.id,
+          );
+      const acString = generateAcString({
+        userConsentedVendorIds: tcStringPreferences?.vendorsConsent ?? [],
+        disclosedVendorIds: disclosedVendorIds ?? [],
+      });
       encodedString = `${encodedString}${FIDES_SEPARATOR}${acString}`;
 
       // GPP string portion is handled by the GPP extension

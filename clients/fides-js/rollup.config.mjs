@@ -53,7 +53,7 @@ const fidesScriptPlugins = ({ name, gzipWarnSizeKb, gzipErrorSizeKb }) => [
     IS_DEV
       ? {}
       : {
-          include: ["**/*.ts"],
+          include: ["**/*.ts", "**/*.tsx"],
           functions: ["fidesDebugger"],
         },
   ),

@@ -344,7 +344,7 @@ describe("Fides-js GPP extension", () => {
     it("can handle a fides string being passed in", () => {
       cy.setCookie(
         "fides_string",
-        "CQNvpkAQNvpkAGXABBENBfFgALAAAENAAAAAFyQAQFyAXJABAXIAAAAA,1~,DBABMA~CQNvpkAQNvpkAGXABBENBfFgALAAAENAAAAAFyQAQFyAXJABAXIAAAAA",
+        "CQNvpkAQNvpkAGXABBENBfFgALAAAENAAAAAFyQAQFyAXJABAXIAAAAA,2~~dv.,DBABMA~CQNvpkAQNvpkAGXABBENBfFgALAAAENAAAAAFyQAQFyAXJABAXIAAAAA",
       );
       const cookie = mockCookie({
         tcf_version_hash: TCF_VERSION_HASH,
