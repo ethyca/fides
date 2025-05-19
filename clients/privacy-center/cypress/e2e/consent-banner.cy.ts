@@ -3279,6 +3279,27 @@ describe("Consent overlay", () => {
         });
       });
 
+      it("initializes with the correct consent values", () => {
+        cy.window().then((win) => {
+          win.Fides.init().then(() => {
+            expect(win.Fides.consent).to.have.property(
+              PRIVACY_NOTICE_KEY_1,
+              "opt_out",
+            );
+            expect(win.Fides.consent).to.have.property(
+              PRIVACY_NOTICE_KEY_2,
+              "acknowledge",
+            );
+            expect(win.Fides.consent).to.have.property(
+              PRIVACY_NOTICE_KEY_3,
+              "opt_in",
+            );
+            expect(win.Fides.consent).to.not.have.property("functional");
+            expect(win.Fides.consent).to.not.have.property("personalization");
+          });
+        });
+      });
+
       it("formats FidesInitialized events with consent mechanism strings and omits non-applicable notices", () => {
         cy.get("@FidesInitialized")
           .should("have.been.calledOnce")
@@ -3357,6 +3378,33 @@ describe("Consent overlay", () => {
               fidesConsentNonApplicableFlagMode:
                 ConsentNonApplicableFlagMode.INCLUDE,
             },
+          });
+        });
+      });
+
+      it("initializes with the correct consent values", () => {
+        cy.window().then((win) => {
+          win.Fides.init().then(() => {
+            expect(win.Fides.consent).to.have.property(
+              PRIVACY_NOTICE_KEY_1,
+              "opt_out",
+            );
+            expect(win.Fides.consent).to.have.property(
+              PRIVACY_NOTICE_KEY_2,
+              "acknowledge",
+            );
+            expect(win.Fides.consent).to.have.property(
+              PRIVACY_NOTICE_KEY_3,
+              "opt_in",
+            );
+            expect(win.Fides.consent).to.have.property(
+              "functional",
+              "not_applicable",
+            );
+            expect(win.Fides.consent).to.have.property(
+              "personalization",
+              "not_applicable",
+            );
           });
         });
       });
