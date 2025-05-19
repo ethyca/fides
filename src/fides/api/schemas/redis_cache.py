@@ -79,7 +79,7 @@ class Identity(IdentityBase):
         """
         Returns a dictionary with LabeledIdentity values returned as simple values.
         """
-        d = super().dict(*args, **kwargs)
+        d = super().model_dump(*args, **kwargs)
         for key, value in d.items():
             if key in self.model_fields:
                 d[key] = value
