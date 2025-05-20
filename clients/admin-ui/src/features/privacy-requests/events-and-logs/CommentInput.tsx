@@ -2,10 +2,15 @@ import {
   AntButton as Button,
   AntFlex as Flex,
   AntInput as Input,
+  AntMessage as message,
   AntTabs as Tabs,
   AntTabsProps as TabsProps,
 } from "fidesui";
 import { useEffect, useRef, useState } from "react";
+
+import { CommentType } from "~/types/api/models/CommentType";
+
+import { useCreateCommentMutation } from "../comments/privacy-request-comments.slice";
 
 export interface CommentInputProps {
   privacyRequestId: string;
@@ -18,6 +23,7 @@ export const CommentInput = ({
 }: CommentInputProps) => {
   const [commentText, setCommentText] = useState("");
   const textAreaRef = useRef<any>(null);
+  const [createComment, { isLoading }] = useCreateCommentMutation();
 
   // Focus the textarea when the component mounts
   useEffect(() => {
@@ -26,17 +32,26 @@ export const CommentInput = ({
     }
   }, []);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (commentText.trim()) {
-      // Just log the comment for now
-      console.log("Comment submitted:", {
-        privacyRequestId,
-        commentText,
-      });
+      try {
+        await createComment({
+          privacy_request_id: privacyRequestId,
+          comment_text: commentText,
+          comment_type: CommentType.NOTE,
+        }).unwrap();
 
-      // Reset and close
-      setCommentText("");
-      onCancel();
+        // Reset and close
+        setCommentText("");
+        onCancel();
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error("Failed to add comment:", error);
+        message.error({
+          content: "Failed to add comment",
+          duration: 5,
+        });
+      }
     }
   };
 
@@ -69,6 +84,7 @@ export const CommentInput = ({
         </Button>
         <Button
           onClick={handleSubmit}
+          loading={isLoading}
           disabled={!commentText.trim()}
           type="primary"
           htmlType="button"
