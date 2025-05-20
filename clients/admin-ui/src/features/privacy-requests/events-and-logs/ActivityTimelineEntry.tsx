@@ -28,7 +28,6 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
         <span
           className={classNames(styles.title, {
             [styles["title--error"]]: isError,
-            [styles["title--skipped"]]: isSkipped,
           })}
           data-testid="activity-timeline-title"
         >
