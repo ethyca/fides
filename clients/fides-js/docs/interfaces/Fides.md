@@ -100,7 +100,7 @@ The string consists of four parts separated by commas in the format:
 
 ```ts
 console.log(Fides.fides_string);
-// "CPzHq4APzHq4AAMABBENAUEAALAAAEOAAAAAAEAEACACAAAA,1~61.70,DBABLA~BVAUAAAAAWA.QA,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9"
+// "CPzHq4APzHq4AAMABBENAUEAALAAAEOAAAAAAEAEACACAAAA,2~61.70~dv.33,DBABLA~BVAUAAAAAWA.QA,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9"
 ```
 
 ***
@@ -126,6 +126,17 @@ The modal's "Trigger link label" text can be customized, per regulation, for eac
 Use this function to get the label in the appropriate language for the user's current locale.
 To always return in the default language only, pass the `disableLocalization` option as `true`.
 
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `options`? | `object` |
+| `options.disableLocalization`? | `boolean` |
+
+#### Returns
+
+`string`
+
 #### Examples
 
 Get the link text in the user's current locale (eg. Spanish):
@@ -149,17 +160,6 @@ Apply the link text to a custom modal link element on Fides initialization:
   }
 </script>
 ```
-
-#### Parameters
-
-| Parameter | Type |
-| ------ | ------ |
-| `options`? | `object` |
-| `options.disableLocalization`? | `boolean` |
-
-#### Returns
-
-`string`
 
 ***
 
@@ -190,6 +190,10 @@ automated searching for, and binding the click event to, the modal link. If usin
 Fides Cloud, contact Ethyca Support for details on adjusting global settings.
 
 This function is not available for Headless experiences.
+
+#### Returns
+
+`void`
 
 #### Examples
 
@@ -229,10 +233,6 @@ function myCustomShowModalFunction() {
 }
 ```
 
-#### Returns
-
-`void`
-
 ***
 
 ### gtm()
@@ -246,6 +246,18 @@ they occur, which can then be used to trigger/block tags in GTM based on
 `Fides.consent` preferences or other business logic.
 
 See the [Google Tag Manager tutorial](/tutorials/consent-management/consent-management-configuration/google-tag-manager-consent-mode) for more.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `options`? | `object` | Optional configuration for the GTM integration |
+| `options.non_applicable_flag_mode`? | `"omit"` \| `"include"` | Controls how non-applicable privacy notices are handled in the data layer. Can be "omit" (default) to exclude non-applicable notices, or "include" to include them with a default value. |
+| `options.flag_type`? | `"boolean"` \| `"consent_mechanism"` | Controls how consent values are represented in the data layer. Can be "boolean" (default) for true/false values, or "consent_mechanism" for string values like "opt_in", "opt_out", "acknowledge", "not_applicable". |
+
+#### Returns
+
+`void`
 
 #### Examples
 
@@ -269,18 +281,6 @@ With options to include non-applicable notices and use consent mechanism strings
   </script>
 </head>
 ```
-
-#### Parameters
-
-| Parameter | Type | Description |
-| ------ | ------ | ------ |
-| `options`? | `object` | Optional configuration for the GTM integration |
-| `options.non_applicable_flag_mode`? | `"omit"` \| `"include"` | Controls how non-applicable privacy notices are handled in the data layer. Can be "omit" (default) to exclude non-applicable notices, or "include" to include them with a default value. |
-| `options.flag_type`? | `"boolean"` \| `"consent_mechanism"` | Controls how consent values are represented in the data layer. Can be "boolean" (default) for true/false values, or "consent_mechanism" for string values like "opt_in", "opt_out", "acknowledge", "not_applicable". |
-
-#### Returns
-
-`void`
 
 ***
 
@@ -309,6 +309,16 @@ regular/embedded mode with `fides_embed`, overriding the user's language with
 `fides_locale`, etc. Doing so without passing a config will reinitialize
 FidesJS with the initial configuration, but taking into account any new overrides
 such as the `fides_overrides` global or the query params.
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `config`? | `any` |
+
+#### Returns
+
+`Promise`\<`void`\>
 
 #### Example
 
@@ -344,16 +354,6 @@ Configure overrides after loading Fides.js tag.
 </head>
 ```
 
-#### Parameters
-
-| Parameter | Type |
-| ------ | ------ |
-| `config`? | `any` |
-
-#### Returns
-
-`Promise`\<`void`\>
-
 ***
 
 ### onFidesEvent()
@@ -365,15 +365,6 @@ receives the event details directly. This is useful in restricted environments w
 directly access `window.addEventListener`.
 
 Returns an unsubscribe function that can be called to remove the event listener.
-
-#### Example
-
-```ts
-const unsubscribe = Fides.onFidesEvent("FidesUpdated", (detail) => {
-  console.log(detail.consent);
-  unsubscribe();
-});
-```
 
 #### Parameters
 
@@ -390,19 +381,28 @@ const unsubscribe = Fides.onFidesEvent("FidesUpdated", (detail) => {
 
 `void`
 
+#### Example
+
+```ts
+const unsubscribe = Fides.onFidesEvent("FidesUpdated", (detail) => {
+  console.log(detail.consent);
+  unsubscribe();
+});
+```
+
 ***
 
 ### ~~reinitialize()~~
 
 > **reinitialize**: () => `Promise`\<`void`\>
 
-#### Deprecated
-
-`Fides.init()` can now be used directly instead of `Fides.reinitialize()`.
-
 #### Returns
 
 `Promise`\<`void`\>
+
+#### Deprecated
+
+`Fides.init()` can now be used directly instead of `Fides.reinitialize()`.
 
 ***
 
@@ -428,13 +428,6 @@ preferences) or in the case when the previous consent is no longer valid.
 
 Encode the user's consent preferences into a Notice Consent string. See [FidesOptions.fides_string](FidesOptions.md#fides_string) for more details.
 
-#### Example
-
-```ts
-const encoded = Fides.encodeNoticeConsentString({data_sales_and_sharing:0,analytics:1});
-console.log(encoded); // "eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9"
-```
-
 #### Parameters
 
 | Parameter | Type | Description |
@@ -445,6 +438,13 @@ console.log(encoded); // "eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOj
 
 `string`
 
+#### Example
+
+```ts
+const encoded = Fides.encodeNoticeConsentString({data_sales_and_sharing:0,analytics:1});
+console.log(encoded); // "eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9"
+```
+
 ***
 
 ### decodeNoticeConsentString()
@@ -452,13 +452,6 @@ console.log(encoded); // "eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOj
 > **decodeNoticeConsentString**: (`base64String`) => `object`
 
 Decode a Notice Consent string into a user's consent preferences. See [FidesOptions.fides_string](FidesOptions.md#fides_string) for more details.
-
-#### Example
-
-```ts
-const decoded = Fides.decodeNoticeConsentString("eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9");
-console.log(decoded); // {data_sales_and_sharing: false, analytics: true}
-```
 
 #### Parameters
 
@@ -469,6 +462,13 @@ console.log(decoded); // {data_sales_and_sharing: false, analytics: true}
 #### Returns
 
 `object`
+
+#### Example
+
+```ts
+const decoded = Fides.decodeNoticeConsentString("eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9");
+console.log(decoded); // {data_sales_and_sharing: false, analytics: true}
+```
 
 ***
 

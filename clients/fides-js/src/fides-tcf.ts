@@ -11,24 +11,12 @@
 import type { TCData } from "@iabtechlabtcf/cmpapi";
 import { TCString } from "@iabtechlabtcf/core";
 
-import {
-  decodeNoticeConsentString,
-  defaultShowModal,
-  encodeNoticeConsentString,
-  FidesCookie,
-  shouldResurfaceBanner,
-} from "./fides";
-import { blueconic } from "./integrations/blueconic";
-import { gtm } from "./integrations/gtm";
-import { meta } from "./integrations/meta";
-import { shopify } from "./integrations/shopify";
-import { raise } from "./lib/common-utils";
+import { FidesCookie, shouldResurfaceBanner } from "./fides";
 import {
   FidesConfig,
   FidesExperienceTranslationOverrides,
   FidesGlobal,
   FidesInitOptionsOverrides,
-  FidesOptions,
   FidesOverrides,
   GetPreferencesFnResp,
   NoticeValues,
@@ -36,16 +24,15 @@ import {
   PrivacyExperience,
 } from "./lib/consent-types";
 import { initializeDebugger } from "./lib/debugger";
-import { dispatchFidesEvent, onFidesEvent } from "./lib/events";
+import { dispatchFidesEvent } from "./lib/events";
 import { DecodedFidesString, decodeFidesString } from "./lib/fides-string";
 import type { GppFunction } from "./lib/gpp/types";
-import { DEFAULT_LOCALE, DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
+import { getCoreFides, raise, updateWindowFides } from "./lib/init-utils";
 import {
   getInitialCookie,
   getInitialFides,
   getOverridesByType,
   initialize,
-  UpdateExperienceFn,
 } from "./lib/initialize";
 import { initOverlay } from "./lib/initOverlay";
 import { initializeTcfCmpApi } from "./lib/tcf";
@@ -59,8 +46,6 @@ import { customGetConsentPreferences } from "./services/external/preferences";
 
 declare global {
   interface Window {
-    Fides: FidesGlobal;
-    fides_overrides: Partial<FidesOptions>;
     __tcfapiLocator?: Window;
     __tcfapi?: (
       command: string,
@@ -73,16 +58,14 @@ declare global {
   }
 }
 
-const updateWindowFides = (fidesGlobal: FidesGlobal) => {
-  if (typeof window !== "undefined") {
-    window.Fides = fidesGlobal;
-  }
-};
-
-const updateExperience: UpdateExperienceFn = ({
+export interface UpdateTCFExperienceProps {
+  cookie: FidesCookie;
+  experience: PrivacyExperience;
+}
+const updateTCFExperience = ({
   cookie,
   experience,
-}): Partial<PrivacyExperience> => {
+}: UpdateTCFExperienceProps): Partial<PrivacyExperience> => {
   // We need the cookie.fides_string to attach user preference to an experience.
   // If this does not exist, we should assume no user preference has been given and leave the experience as is.
   if (cookie.fides_string) {
@@ -212,7 +195,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     fides: this,
     initOverlay,
     renderOverlay,
-    updateExperience,
+    updateExperience: updateTCFExperience,
     overrides,
     propertyId: config.propertyId,
   });
@@ -226,75 +209,26 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   });
 }
 
+const initialFides = getCoreFides({ tcfEnabled: true });
 // The global Fides object; this is bound to window.Fides if available
 // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
 const _Fides: FidesGlobal = {
-  consent: {},
-  experience: undefined,
-  geolocation: {},
-  locale: DEFAULT_LOCALE,
-  options: {
-    debug: true,
-    isOverlayEnabled: false,
-    isPrefetchEnabled: false,
-    isGeolocationEnabled: false,
-    geolocationApiUrl: "",
-    overlayParentId: null,
-    modalLinkId: null,
-    privacyCenterUrl: "",
-    fidesApiUrl: "",
-    tcfEnabled: true,
-    gppEnabled: false,
-    fidesEmbed: false,
-    fidesDisableSaveApi: false,
-    fidesDisableNoticesServedApi: false,
-    fidesDisableBanner: false,
-    fidesString: null,
-    apiOptions: null,
-    fidesTcfGdprApplies: true,
-    fidesJsBaseUrl: "",
-    customOptionsPath: null,
-    preventDismissal: false,
-    allowHTMLDescription: null,
-    base64Cookie: false,
-    fidesPrimaryColor: null,
-    fidesClearCookie: false,
-    showFidesBrandLink: false,
-    fidesConsentOverride: null,
-    fidesDisabledNotices: null,
-    fidesConsentNonApplicableFlagMode: null,
-    fidesConsentFlagType: null,
-  },
-  fides_meta: {},
-  identity: {},
-  tcf_consent: {},
-  saved_consent: {},
-  blueconic,
-  gtm,
+  ...initialFides,
   init,
-  config: undefined,
   reinitialize() {
     if (!this.config || !this.initialized) {
-      throw new Error("Fides must be initialized before reinitializing");
+      raise("Fides must be initialized before reinitializing");
     }
     return this.init();
   },
-  initialized: false,
-  onFidesEvent,
   shouldShowExperience() {
     return shouldResurfaceBanner(
       this.experience,
       this.cookie,
-      this.saved_consent,
+      this.saved_consent ?? {},
       this.options,
     );
   },
-  meta,
-  shopify,
-  showModal: defaultShowModal,
-  getModalLinkLabel: () => DEFAULT_MODAL_LINK_LABEL,
-  encodeNoticeConsentString,
-  decodeNoticeConsentString,
 };
 
 if (typeof window !== "undefined") {
@@ -308,5 +242,6 @@ export * from "./lib/consent-utils";
 export * from "./lib/consent-value";
 export * from "./lib/cookie";
 export * from "./lib/events";
+export * from "./lib/init-utils";
 export * from "./lib/initOverlay";
 export * from "./lib/shared-consent-utils";

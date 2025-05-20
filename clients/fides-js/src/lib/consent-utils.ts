@@ -1,4 +1,3 @@
-import { isConsentOverride } from "./common-utils";
 import {
   FIDES_OVERRIDE_EXPERIENCE_LANGUAGE_VALIDATOR_MAP,
   FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP,
@@ -208,6 +207,13 @@ export const experienceIsValid = (
   }
 
   return true;
+};
+
+export const isConsentOverride = (options: FidesInitOptions) => {
+  return (
+    options.fidesConsentOverride === ConsentMethod.ACCEPT ||
+    options.fidesConsentOverride === ConsentMethod.REJECT
+  );
 };
 
 /**
@@ -613,4 +619,15 @@ export const applyOverridesToConsent = (
   );
 
   return consentValues;
+};
+
+export const isValidAcString = (acString: string) => {
+  const acVersion = acString.split("~")[0];
+  return Boolean(
+    acVersion &&
+      ["1", "2"].includes(acVersion) &&
+      acString?.match(
+        acVersion === "1" ? /\d~[0-9.]*$/ : /\d~[0-9.]*~dv.[0-9.]*$/,
+      ),
+  );
 };

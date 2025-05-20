@@ -14,7 +14,7 @@ describe("Integration management for data detection & discovery", () => {
         test_status: "succeeded",
       },
     }).as("testConnection");
-    cy.intercept("GET", "/api/v1/connection_type", {
+    cy.intercept("GET", "/api/v1/connection_type?*", {
       fixture: "connectors/connection_types.json",
     }).as("getConnectionTypes");
     cy.intercept("GET", "/api/v1/connection_type/*/secret", {
@@ -92,7 +92,7 @@ describe("Integration management for data detection & discovery", () => {
         cy.intercept("GET", "/api/v1/connection?*", {
           fixture: "connectors/bigquery_connection_list.json",
         }).as("getConnections");
-        cy.intercept("GET", "/api/v1/connection_type", {
+        cy.intercept("GET", "/api/v1/connection_type?*", {
           fixture: "connectors/connection_types.json",
         }).as("getConnectionTypes");
         cy.visit(INTEGRATION_MANAGEMENT_ROUTE);
@@ -178,7 +178,7 @@ describe("Integration management for data detection & discovery", () => {
       cy.intercept("GET", "/api/v1/connection?*", {
         fixture: "connectors/bigquery_connection_list.json",
       }).as("getConnections");
-      cy.intercept("GET", "/api/v1/connection_type", {
+      cy.intercept("GET", "/api/v1/connection_type?*", {
         fixture: "connectors/connection_types.json",
       }).as("getConnectionTypes");
       cy.intercept("GET", "/api/v1/system", {
@@ -461,7 +461,7 @@ describe("Integration management for data detection & discovery", () => {
         cy.intercept("GET", "/api/v1/plus/discovery-monitor*", {
           fixture: "detection-discovery/monitors/website_monitor_list.json",
         }).as("getMonitors");
-        cy.intercept("GET", "/api/v1/connection_type", {
+        cy.intercept("GET", "/api/v1/connection_type?*", {
           fixture: "connectors/connection_types.json",
         }).as("getConnectionTypes");
         cy.getByTestId("tab-Data discovery").click();

@@ -25,6 +25,8 @@ export type {
   GetProps,
   InputRef,
   RadioChangeEvent,
+  UploadFile,
+  UploadProps,
 } from "antd/lib";
 export {
   Alert as AntAlert,
@@ -35,12 +37,14 @@ export {
   Checkbox as AntCheckbox,
   Col as AntCol,
   Collapse as AntCollapse,
+  DatePicker as AntDatePicker,
   Divider as AntDivider,
   Dropdown as AntDropdown,
   Empty as AntEmpty,
   Flex as AntFlex,
   Form as AntForm,
   Input as AntInput,
+  InputNumber as AntInputNumber,
   Layout as AntLayout,
   List as AntList,
   Menu as AntMenu,
@@ -52,6 +56,7 @@ export {
   Switch as AntSwitch,
   Tabs as AntTabs,
   Tooltip as AntTooltip,
+  Upload as AntUpload,
 } from "antd/lib";
 export type {
   BreadcrumbItemType as AntBreadcrumbItemType,

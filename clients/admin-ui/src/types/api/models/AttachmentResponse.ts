@@ -13,7 +13,7 @@ export type AttachmentResponse = {
   /**
    * The user ID
    */
-  user_id: string;
+  user_id: string | null;
   /**
    * The user name
    */
@@ -35,13 +35,13 @@ export type AttachmentResponse = {
    */
   attachment_type: string;
   /**
-   * For files <= 5mb, contains the body of the file. And the URL to retrieve the attachmentFor larger files containes the URL to retrieve the attachment
+   * The size of the attachment
    */
-  retrieved_attachment: Blob | string;
+  retrieved_attachment_size: number | null;
   /**
-   * The URL to download the attachment
+   * The URL to retrieve the attachment
    */
-  download_url: string;
+  retrieved_attachment_url: string | null;
   /**
    * The creation date
    */
