@@ -6,7 +6,7 @@ import {
   FidesCookie,
   FidesGlobal,
   FidesOptions,
-  NoticeValues,
+  NoticeConsent,
   PrivacyExperience,
 } from "./consent-types";
 import {
@@ -150,7 +150,11 @@ export const getCoreFides = ({
     },
     updateConsent(
       this: FidesGlobal,
-      options: { consent?: NoticeValues; fidesString?: string },
+      options: {
+        consent?: NoticeConsent;
+        fidesString?: string;
+        validation?: "throw" | "warn" | "ignore";
+      },
     ): Promise<void> {
       return updateConsent(this, options);
     },

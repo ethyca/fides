@@ -164,7 +164,8 @@ export interface FidesInitOptions {
  * ensure that the documented interface isn't overly specific in areas we may
  * need to change.
  */
-export interface FidesGlobal extends Omit<Fides, "gtm" | "consent"> {
+export interface FidesGlobal
+  extends Omit<Fides, "gtm" | "consent" | "updateConsent"> {
   cookie?: FidesCookie;
   config?: FidesConfig;
   consent: NoticeConsent;
@@ -201,8 +202,9 @@ export interface FidesGlobal extends Omit<Fides, "gtm" | "consent"> {
   shouldShowExperience: () => boolean;
   showModal: () => void;
   updateConsent: (options: {
-    consent?: NoticeValues;
+    consent?: NoticeConsent;
     fidesString?: string;
+    validation?: "throw" | "warn" | "ignore";
   }) => Promise<void>;
 }
 

@@ -1,10 +1,12 @@
 import { patchUserPreference } from "../services/api";
 import {
+  ConsentMechanism,
   ConsentMethod,
   ConsentOptionCreate,
   FidesCookie,
   FidesGlobal,
   FidesInitOptions,
+  NoticeConsent,
   NoticeValues,
   PrivacyExperience,
   PrivacyExperienceMinimal,
@@ -16,7 +18,11 @@ import {
   applyOverridesToConsent,
   constructFidesRegionString,
 } from "./consent-utils";
-import { removeCookiesFromBrowser, saveFidesCookie } from "./cookie";
+import {
+  removeCookiesFromBrowser,
+  saveFidesCookie,
+  updateCookieFromNoticePreferences,
+} from "./cookie";
 import { dispatchFidesEvent } from "./events";
 import { decodeFidesString } from "./fides-string";
 import { TcfSavePreferences } from "./tcf/types";
@@ -86,7 +92,7 @@ export interface UpdateConsentPreferences {
   cookie: FidesCookie;
   servedNoticeHistoryId?: string;
   tcf?: TcfSavePreferences;
-  updateCookie: (oldCookie: FidesCookie) => Promise<FidesCookie>;
+  updateCookie?: (oldCookie: FidesCookie) => Promise<FidesCookie>;
   propertyId?: string;
 }
 export const updateConsentPreferences = async ({
@@ -102,8 +108,16 @@ export const updateConsentPreferences = async ({
   updateCookie,
   propertyId,
 }: UpdateConsentPreferences) => {
+  if (!updateCookie && consentPreferencesToSave) {
+    // eslint-disable-next-line no-param-reassign
+    updateCookie = (oldCookie) =>
+      updateCookieFromNoticePreferences(oldCookie, consentPreferencesToSave);
+  }
+  if (!updateCookie && !consentPreferencesToSave) {
+    throw new Error("updateCookie is required");
+  }
   // 1. Update the cookie object based on new preferences & extra details
-  const updatedCookie = await updateCookie(cookie);
+  const updatedCookie = await updateCookie!(cookie);
   Object.assign(cookie, updatedCookie);
   Object.assign(cookie.fides_meta, { consentMethod }); // save extra details to meta (i.e. consentMethod)
 
@@ -180,105 +194,138 @@ export const updateConsentPreferences = async ({
  */
 export const updateConsent = async (
   fides: FidesGlobal,
-  options: { consent?: NoticeValues; fidesString?: string },
+  options: {
+    consent?: NoticeConsent;
+    fidesString?: string;
+    validation?: "throw" | "warn" | "ignore";
+  },
   consentMethod: ConsentMethod = ConsentMethod.SCRIPT,
 ): Promise<void> => {
   // If neither consent nor fidesString is provided, raise an error
   if (!options?.consent && !options?.fidesString) {
-    return Promise.reject(
-      new Error("Either consent or fidesString must be provided"),
-    );
+    throw new Error("Either consent or fidesString must be provided");
   }
   if (!fides.experience) {
-    return Promise.reject(
-      new Error("Experience must be initialized before updating consent"),
-    );
+    throw new Error("Experience must be initialized before updating consent");
   }
   if (!fides.cookie) {
-    return Promise.reject(new Error("Cookie is not initialized"));
+    throw new Error("Cookie is not initialized");
   }
 
-  const { consent, fidesString } = options;
+  const { consent, fidesString, validation = "throw" } = options;
 
-  let finalConsent = consent || {};
+  if (!["throw", "warn", "ignore"].includes(validation)) {
+    throw new Error(
+      "Validation must be 'throw', 'warn', or 'ignore' (default is 'throw')",
+    );
+  }
+
+  let finalConsent = fides.consent || {};
+
+  // validate consent object
+  if (consent) {
+    // Validate consent values and collect any validation errors
+    const validationError = Object.entries(consent).reduce<Error | null>(
+      (error, [key, value]) => {
+        // If we already found an error, don't continue validating
+        if (error) {
+          return error;
+        }
+
+        const notice = fides.experience!.privacy_notices?.find(
+          (n) => n.notice_key === key,
+        );
+        const consentMechanism = notice?.consent_mechanism;
+
+        if (
+          consentMechanism === ConsentMechanism.NOTICE_ONLY &&
+          (typeof value === "boolean" ||
+            value !== UserConsentPreference.ACKNOWLEDGE)
+        ) {
+          if (validation === "throw") {
+            return new Error(
+              `Invalid consent value for notice key: ${key}. Must be "acknowledge"`,
+            );
+          }
+          if (validation === "warn") {
+            // eslint-disable-next-line no-console
+            console.warn(
+              `Invalid consent value for notice key: ${key}. Must be "acknowledge"`,
+            );
+          }
+        } else if (
+          consentMechanism !== ConsentMechanism.NOTICE_ONLY &&
+          typeof value !== "boolean" &&
+          value !== UserConsentPreference.OPT_IN &&
+          value !== UserConsentPreference.OPT_OUT
+        ) {
+          if (validation === "throw") {
+            return new Error(
+              `Invalid consent value for notice key: ${key}. Must be a boolean or "opt_in" or "opt_out"`,
+            );
+          }
+          if (validation === "warn") {
+            // eslint-disable-next-line no-console
+            console.warn(
+              `Invalid consent value for notice key: ${key}. Must be "opt_in" or "opt_out"`,
+            );
+          }
+        }
+
+        return null;
+      },
+      null,
+    );
+
+    // If there was a validation error in "throw" mode, throw the error
+    if (validationError) {
+      throw validationError;
+    }
+  }
 
   // If fidesString is provided, it takes priority
   if (fidesString) {
     try {
       const decodedString = decodeFidesString(fidesString);
       if (decodedString.nc) {
-        finalConsent = fides.decodeNoticeConsentString(decodedString.nc);
+        finalConsent = {
+          ...fides.consent,
+          ...fides.decodeNoticeConsentString(decodedString.nc),
+        };
       }
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
-      return Promise.reject(
-        new Error(`Invalid fidesString provided: ${errorMessage}`),
-      );
+      throw new Error(`Invalid fidesString provided: ${errorMessage}`);
     }
-  }
-
-  // Clone current cookie for updating
-  const updatedCookie: FidesCookie = {
-    consent: { ...(fides.cookie.consent || {}) },
-    identity: { ...(fides.cookie.identity || {}) },
-    fides_meta: { ...(fides.cookie.fides_meta || {}) },
-    tcf_consent: { ...(fides.cookie.tcf_consent || {}) },
-    fides_string: fides.cookie.fides_string || "",
-    tcf_version_hash: fides.cookie.tcf_version_hash || "",
-  };
-
-  // Update cookie with new consent values
-  Object.entries(finalConsent).forEach(([key, value]) => {
-    updatedCookie.consent[key] = value;
-  });
-
-  // If fidesString is provided, update it on the cookie
-  if (fidesString) {
-    updatedCookie.fides_string = fidesString;
-  } else if (consent) {
-    // Generate new fidesString based on updated consent
-    const newNcString = fides.encodeNoticeConsentString(finalConsent);
-    // Preserve other parts of fidesString if they exist
-    if (fides.cookie.fides_string) {
-      const decoded = decodeFidesString(fides.cookie.fides_string);
-      decoded.nc = newNcString;
-      updatedCookie.fides_string = `${decoded.tc || ""}.${newNcString}.${decoded.gpp || ""}`;
-    } else {
-      updatedCookie.fides_string = `.${newNcString}.`;
-    }
+  } else {
+    finalConsent = consent!;
   }
 
   // Prepare consentPreferencesToSave by mapping from finalConsent
   const consentPreferencesToSave: SaveConsentPreference[] = [];
 
-  // Validate that all notice keys in finalConsent exist in the experience
-  const validNoticeKeys = new Set(
-    fides.experience.privacy_notices?.map((n) => n.notice_key) || [],
-  );
-
   Object.entries(finalConsent).forEach(([key, value]) => {
-    if (!validNoticeKeys.has(key)) {
-      fidesDebugger(
-        `Warning: Notice key "${key}" does not exist in the current experience`,
-      );
-      // Continue processing other keys
-    }
-
     const notice = fides.experience?.privacy_notices?.find(
       (n) => n.notice_key === key,
     );
+    // non-applicable privacy notices are ignored
     if (notice) {
       const historyId = notice.translations?.[0]?.privacy_notice_history_id;
+      let consentPreference: UserConsentPreference;
+      if (notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY) {
+        consentPreference = UserConsentPreference.ACKNOWLEDGE;
+      } else if (typeof value === "boolean") {
+        consentPreference = value
+          ? UserConsentPreference.OPT_IN
+          : UserConsentPreference.OPT_OUT;
+      } else {
+        consentPreference = value;
+      }
+
       if (historyId) {
         consentPreferencesToSave.push(
-          new SaveConsentPreference(
-            notice,
-            value
-              ? UserConsentPreference.OPT_IN
-              : UserConsentPreference.OPT_OUT,
-            historyId,
-          ),
+          new SaveConsentPreference(notice, consentPreference, historyId),
         );
       }
     }
@@ -306,8 +353,6 @@ export const updateConsent = async (
     options: fides.options,
     userLocationString: fidesRegionString,
     cookie: fides.cookie,
-    servedNoticeHistoryId: undefined, // Not passing a served notice ID
-    updateCookie: async () => updatedCookie,
     propertyId: fides.config?.propertyId,
   });
 };

@@ -1,8 +1,9 @@
 /* eslint-disable global-require */
 import {
+  ConsentMechanism,
+  ConsentMethod,
   FidesCookie,
   FidesGlobal,
-  NoticeValues,
   PrivacyExperience,
   UserConsentPreference,
 } from "../../src/lib/consent-types";
@@ -17,12 +18,6 @@ import mockExperienceJSON from "../__fixtures__/mock_experience.json";
 jest.mock("../../src/lib/fides-string");
 jest.mock("../../src/lib/consent-utils");
 
-// Setup mocks
-const mockFidesString = "encoded-tcf,encoded-ac,encoded-gpp,encoded-nc-string";
-const mockDecodeFidesString = decodeFidesString as jest.MockedFunction<
-  typeof decodeFidesString
->;
-
 describe("preferences", () => {
   const mockExperience: Partial<PrivacyExperience> = mockExperienceJSON as any;
   const updatePreferencesSpy = jest
@@ -36,6 +31,9 @@ describe("preferences", () => {
 
   beforeEach(() => {
     jest.resetAllMocks();
+    // Reset the mock implementations
+    updatePreferencesSpy.mockClear();
+    updatePreferencesSpy.mockResolvedValue(undefined);
   });
 
   describe("updateConsent", () => {
@@ -75,183 +73,452 @@ describe("preferences", () => {
       } as unknown as FidesGlobal;
     };
 
-    // Test: Successfully updating consent with a consent object
-    it("should update consent with a consent object", async () => {
-      // ARRANGE
+    beforeEach(() => {
+      jest.clearAllMocks();
+
+      // Mock decodeFidesString to return a valid value
+      (decodeFidesString as jest.Mock).mockReturnValue({
+        nc: "encoded-consent",
+      });
+
+      // We need to explicitly mock updateConsentPreferences so it doesn't actually run
+      // which would cause our validation tests to fail when they should pass
+      updatePreferencesSpy.mockResolvedValue(undefined);
+    });
+
+    it("should reject when neither consent nor fidesString is provided", async () => {
       const mockFides = createMockFides();
-      mockFides.experience!.privacy_notices = [
+      await expect(
+        updateConsent(mockFides, {}, ConsentMethod.SCRIPT),
+      ).rejects.toThrow("Either consent or fidesString must be provided");
+    });
+
+    it("should reject when experience is not initialized", async () => {
+      const mockFides = createMockFides({ experience: undefined });
+      await expect(
+        updateConsent(
+          mockFides,
+          { consent: { analytics: true } },
+          ConsentMethod.SCRIPT,
+        ),
+      ).rejects.toThrow(
+        "Experience must be initialized before updating consent",
+      );
+    });
+
+    it("should reject when cookie is not initialized", async () => {
+      const mockFides = createMockFides({ cookie: undefined });
+      await expect(
+        updateConsent(
+          mockFides,
+          { consent: { analytics: true } },
+          ConsentMethod.SCRIPT,
+        ),
+      ).rejects.toThrow("Cookie is not initialized");
+    });
+
+    it("should update consent from a provided consent object", async () => {
+      const mockConsent = { analytics: true, marketing: false };
+      const mockFides = createMockFides();
+
+      // Setup privacy notices in the experience to match the consent keys
+      (mockFides.experience as any).privacy_notices = [
         {
-          id: "notice1",
           notice_key: "analytics",
-          translations: [
-            {
-              language: "en",
-              privacy_notice_history_id: "history-analytics",
-            },
-          ],
+          id: "analytics-id",
+          consent_mechanism: ConsentMechanism.OPT_IN,
           cookies: [],
-          created_at: "",
-          updated_at: "",
+          translations: [
+            { language: "en", privacy_notice_history_id: "history-analytics" },
+          ],
         },
         {
-          id: "notice2",
           notice_key: "marketing",
-          translations: [
-            {
-              language: "en",
-              privacy_notice_history_id: "history-marketing",
-            },
-          ],
+          id: "marketing-id",
+          consent_mechanism: ConsentMechanism.OPT_OUT,
           cookies: [],
-          created_at: "",
-          updated_at: "",
+          translations: [
+            { language: "en", privacy_notice_history_id: "history-marketing" },
+          ],
         },
-      ];
-      const consentValues: NoticeValues = {
-        analytics: true,
-        marketing: false,
-      };
+      ] as any[];
 
-      // ACT
-      await updateConsent(mockFides, { consent: consentValues });
+      await updateConsent(
+        mockFides,
+        { consent: mockConsent },
+        ConsentMethod.SCRIPT,
+      );
 
-      // ASSERT
+      // Verify updateConsentPreferences was called with the right args
       expect(updatePreferencesSpy).toHaveBeenCalledTimes(1);
+      const callArgs = updatePreferencesSpy.mock.calls[0][0];
 
-      // Verify cookie consent was updated
-      const updateCookieFn = updatePreferencesSpy.mock.calls[0][0].updateCookie;
-      const updatedCookie = await updateCookieFn({} as FidesCookie);
-      expect(updatedCookie.consent).toEqual(consentValues);
+      // Check that consentPreferencesToSave contains the right preferences
+      expect(callArgs.consentPreferencesToSave).toHaveLength(2);
 
-      // Verify consentPreferencesToSave contains correct preferences
-      const savedPreferences =
-        updatePreferencesSpy.mock.calls[0][0].consentPreferencesToSave;
-      expect(savedPreferences).toHaveLength(2);
-      expect(savedPreferences![0].consentPreference).toBe(
+      // Check the conversion from boolean to preference type (using find for more robust testing)
+      const analyticsPref = callArgs.consentPreferencesToSave!.find(
+        (pref) => pref.notice.notice_key === "analytics",
+      );
+      expect(analyticsPref).toBeDefined();
+      expect(analyticsPref!.consentPreference).toBe(
         UserConsentPreference.OPT_IN,
       );
-      expect(savedPreferences![1].consentPreference).toBe(
+
+      const marketingPref = callArgs.consentPreferencesToSave!.find(
+        (pref) => pref.notice.notice_key === "marketing",
+      );
+      expect(marketingPref).toBeDefined();
+      expect(marketingPref!.consentPreference).toBe(
+        UserConsentPreference.OPT_OUT,
+      );
+
+      // Check other important parameters
+      expect(callArgs.consentMethod).toBe(ConsentMethod.SCRIPT);
+      expect(callArgs.cookie).toBe(mockFides.cookie);
+      expect(callArgs.experience).toBe(mockFides.experience);
+    });
+
+    it("should update consent from a provided fidesString", async () => {
+      const mockFides = createMockFides();
+
+      // Set up the decoded fidesString result through the mock
+      const decodedConsent = { analytics: true };
+      const mockDecodeFidesString = jest
+        .fn()
+        .mockReturnValue({ nc: "encoded-consent" });
+      (decodeFidesString as jest.Mock).mockImplementation(
+        mockDecodeFidesString,
+      );
+
+      (mockFides.decodeNoticeConsentString as jest.Mock).mockReturnValue(
+        decodedConsent,
+      );
+
+      // Setup privacy notices in the experience to match the consent keys
+      (mockFides.experience as any).privacy_notices = [
+        {
+          notice_key: "analytics",
+          id: "analytics-id",
+          consent_mechanism: ConsentMechanism.OPT_IN,
+          cookies: [],
+          translations: [
+            { language: "en", privacy_notice_history_id: "history-analytics" },
+          ],
+        },
+      ] as any[];
+
+      await updateConsent(
+        mockFides,
+        { fidesString: "some-encoded-string" },
+        ConsentMethod.SCRIPT,
+      );
+
+      // Verify decodeFidesString was called
+      expect(mockDecodeFidesString).toHaveBeenCalledWith("some-encoded-string");
+
+      // Verify decodeNoticeConsentString was called
+      expect(mockFides.decodeNoticeConsentString).toHaveBeenCalledWith(
+        "encoded-consent",
+      );
+
+      // Verify updateConsentPreferences was called with the right args
+      expect(updatePreferencesSpy).toHaveBeenCalledTimes(1);
+      const callArgs = updatePreferencesSpy.mock.calls[0][0];
+
+      // Check that consentPreferencesToSave contains the right preferences
+      expect(callArgs.consentPreferencesToSave).toHaveLength(1);
+
+      const [analyticsPref] = callArgs.consentPreferencesToSave!;
+      expect(analyticsPref.notice.notice_key).toBe("analytics");
+      expect(analyticsPref.consentPreference).toBe(
+        UserConsentPreference.OPT_IN,
+      );
+    });
+
+    it("should handle string consent values (opt_in/opt_out)", async () => {
+      const mockFides = createMockFides();
+
+      // Setup privacy notices for different consent mechanisms
+      (mockFides.experience as any).privacy_notices = [
+        {
+          notice_key: "analytics",
+          id: "analytics-id",
+          consent_mechanism: ConsentMechanism.OPT_IN,
+          cookies: [],
+          translations: [
+            { language: "en", privacy_notice_history_id: "history-analytics" },
+          ],
+        },
+        {
+          notice_key: "marketing",
+          id: "marketing-id",
+          consent_mechanism: ConsentMechanism.OPT_OUT,
+          cookies: [],
+          translations: [
+            { language: "en", privacy_notice_history_id: "history-marketing" },
+          ],
+        },
+      ];
+
+      // Use string values for consent
+      await updateConsent(
+        mockFides,
+        {
+          consent: {
+            analytics: UserConsentPreference.OPT_IN,
+            marketing: UserConsentPreference.OPT_OUT,
+          },
+        },
+        ConsentMethod.SCRIPT,
+      );
+
+      // Verify updateConsentPreferences was called with the right args
+      expect(updatePreferencesSpy).toHaveBeenCalledTimes(1);
+      const callArgs = updatePreferencesSpy.mock.calls[0][0];
+
+      // Check that consentPreferencesToSave contains the right preferences
+      expect(callArgs.consentPreferencesToSave).toHaveLength(2);
+
+      // String values should be passed through directly
+      const analyticsPref = callArgs.consentPreferencesToSave!.find(
+        (pref) => pref.notice.notice_key === "analytics",
+      );
+      expect(analyticsPref).toBeDefined();
+      expect(analyticsPref!.consentPreference).toBe(
+        UserConsentPreference.OPT_IN,
+      );
+
+      const marketingPref = callArgs.consentPreferencesToSave!.find(
+        (pref) => pref.notice.notice_key === "marketing",
+      );
+      expect(marketingPref).toBeDefined();
+      expect(marketingPref!.consentPreference).toBe(
         UserConsentPreference.OPT_OUT,
       );
     });
 
-    // Test: Successfully updating consent with a fidesString
-    it("should update consent with a fidesString", async () => {
-      // ARRANGE
+    it("should handle mixed consent value types (boolean and string)", async () => {
       const mockFides = createMockFides();
 
-      mockDecodeFidesString.mockReturnValue({
-        tc: "encoded-tc",
-        ac: "encoded-ac",
-        gpp: "encoded-gpp",
-        nc: "encoded-nc-string",
-      });
+      // Setup privacy notices for different consent mechanisms
+      (mockFides.experience as any).privacy_notices = [
+        {
+          notice_key: "analytics",
+          id: "analytics-id",
+          consent_mechanism: ConsentMechanism.OPT_IN,
+          cookies: [],
+          translations: [
+            { language: "en", privacy_notice_history_id: "history-analytics" },
+          ],
+        },
+        {
+          notice_key: "marketing",
+          id: "marketing-id",
+          consent_mechanism: ConsentMechanism.OPT_OUT,
+          cookies: [],
+          translations: [
+            { language: "en", privacy_notice_history_id: "history-marketing" },
+          ],
+        },
+      ];
 
-      // ACT
-      await updateConsent(mockFides, { fidesString: mockFidesString });
-
-      // ASSERT
-      expect(mockDecodeFidesString).toHaveBeenCalledWith(mockFidesString);
-      expect(mockFides.decodeNoticeConsentString).toHaveBeenCalledWith(
-        "encoded-nc-string",
+      // Use mixed boolean and string values for consent
+      await updateConsent(
+        mockFides,
+        {
+          consent: {
+            analytics: true, // boolean
+            marketing: UserConsentPreference.OPT_OUT, // string
+          },
+        },
+        ConsentMethod.SCRIPT,
       );
+
+      // Verify updateConsentPreferences was called with the right args
       expect(updatePreferencesSpy).toHaveBeenCalledTimes(1);
+      const callArgs = updatePreferencesSpy.mock.calls[0][0];
 
-      // Verify cookie fides_string was updated
-      const updateCookieFn = updatePreferencesSpy.mock.calls[0][0].updateCookie;
-      const updatedCookie = await updateCookieFn({} as FidesCookie);
-      expect(updatedCookie.fides_string).toBe(mockFidesString);
+      // Check that consentPreferencesToSave contains the right preferences
+      expect(callArgs.consentPreferencesToSave).toHaveLength(2);
+
+      // Boolean values should be converted, string values should be passed through
+      const analyticsPref = callArgs.consentPreferencesToSave!.find(
+        (pref) => pref.notice.notice_key === "analytics",
+      );
+      expect(analyticsPref).toBeDefined();
+      expect(analyticsPref!.consentPreference).toBe(
+        UserConsentPreference.OPT_IN,
+      );
+
+      const marketingPref = callArgs.consentPreferencesToSave!.find(
+        (pref) => pref.notice.notice_key === "marketing",
+      );
+      expect(marketingPref).toBeDefined();
+      expect(marketingPref!.consentPreference).toBe(
+        UserConsentPreference.OPT_OUT,
+      );
     });
 
-    // Test: fidesString should take priority over consent object
-    it("should prioritize fidesString over consent object", async () => {
-      // ARRANGE
+    it("should validate consent values based on consent_mechanism", async () => {
       const mockFides = createMockFides();
-      const consentValues: NoticeValues = {
-        analytics: false,
-        marketing: true,
-      };
 
-      mockDecodeFidesString.mockReturnValue({
-        tc: "encoded-tc",
-        ac: "encoded-ac",
-        gpp: "encoded-gpp",
-        nc: "encoded-nc-string",
-      });
+      // Set up a NOTICE_ONLY mechanism
+      (mockFides.experience as any).privacy_notices = [
+        {
+          notice_key: "terms",
+          id: "terms-id",
+          consent_mechanism: ConsentMechanism.NOTICE_ONLY,
+          cookies: [],
+          translations: [
+            { language: "en", privacy_notice_history_id: "history-terms" },
+          ],
+        },
+      ];
 
-      const decodedConsent = {
-        analytics: true,
-        marketing: false,
-      };
+      // Try to use opt_in for a NOTICE_ONLY type with validation='throw'
+      await expect(
+        updateConsent(
+          mockFides,
+          {
+            consent: { terms: UserConsentPreference.OPT_IN },
+            validation: "throw",
+          },
+          ConsentMethod.SCRIPT,
+        ),
+      ).rejects.toThrow(
+        'Invalid consent value for notice key: terms. Must be "acknowledge"',
+      );
+    });
 
-      mockFides.decodeNoticeConsentString = jest
-        .fn()
-        .mockReturnValue(decodedConsent);
+    it("should handle different validation modes", async () => {
+      const mockFides = createMockFides();
 
-      // ACT
-      await updateConsent(mockFides, {
-        consent: consentValues,
-        fidesString: mockFidesString,
-      });
+      // Set up a NOTICE_ONLY mechanism
+      (mockFides.experience as any).privacy_notices = [
+        {
+          notice_key: "terms",
+          id: "terms-id",
+          consent_mechanism: ConsentMechanism.NOTICE_ONLY,
+          cookies: [],
+          translations: [
+            { language: "en", privacy_notice_history_id: "history-terms" },
+          ],
+        },
+      ];
 
-      // ASSERT
+      // Test warn mode
+      const consoleSpy = jest
+        .spyOn(console, "warn")
+        .mockImplementation(() => {});
+
+      await updateConsent(
+        mockFides,
+        {
+          consent: { terms: UserConsentPreference.OPT_IN },
+          validation: "warn",
+        },
+        ConsentMethod.SCRIPT,
+      );
+
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'Invalid consent value for notice key: terms. Must be "acknowledge"',
+        ),
+      );
+
+      // Test ignore mode
+      consoleSpy.mockClear();
+
+      await updateConsent(
+        mockFides,
+        {
+          consent: { terms: UserConsentPreference.OPT_IN },
+          validation: "ignore",
+        },
+        ConsentMethod.SCRIPT,
+      );
+
+      expect(consoleSpy).not.toHaveBeenCalled();
+      consoleSpy.mockRestore();
+
+      // Test invalid validation option
+      await expect(
+        updateConsent(
+          mockFides,
+          {
+            consent: { analytics: true },
+            validation: "invalid" as any,
+          },
+          ConsentMethod.SCRIPT,
+        ),
+      ).rejects.toThrow("Validation must be 'throw', 'warn', or 'ignore'");
+    });
+
+    it("should handle NOTICE_ONLY consent mechanisms", async () => {
+      const mockFides = createMockFides();
+
+      // Setup privacy notice with NOTICE_ONLY mechanism
+      (mockFides.experience as any).privacy_notices = [
+        {
+          notice_key: "terms",
+          id: "terms-id",
+          consent_mechanism: ConsentMechanism.NOTICE_ONLY,
+          cookies: [],
+          translations: [
+            { language: "en", privacy_notice_history_id: "history-terms" },
+          ],
+        },
+      ];
+
+      // Test with explicit ACKNOWLEDGE value
+      await updateConsent(
+        mockFides,
+        {
+          consent: {
+            terms: UserConsentPreference.ACKNOWLEDGE,
+          },
+        },
+        ConsentMethod.SCRIPT,
+      );
+
+      // Verify updateConsentPreferences was called with the right args
       expect(updatePreferencesSpy).toHaveBeenCalledTimes(1);
+      let callArgs = updatePreferencesSpy.mock.calls[0][0];
+      let [termsPref] = callArgs.consentPreferencesToSave!;
 
-      // Verify the decoded string values are used, not the consent object
-      const updateCookieFn = updatePreferencesSpy.mock.calls[0][0].updateCookie;
-      const updatedCookie = await updateCookieFn({} as FidesCookie);
-      expect(updatedCookie.consent).toEqual(decodedConsent);
-    });
+      expect(termsPref.notice.notice_key).toBe("terms");
+      expect(termsPref.consentPreference).toBe(
+        UserConsentPreference.ACKNOWLEDGE,
+      );
 
-    // Test: Error if neither consent nor fidesString are provided
-    it("should reject if neither consent nor fidesString are provided", async () => {
-      // ARRANGE
-      const mockFides = createMockFides();
+      // Reset mock for next test
+      updatePreferencesSpy.mockClear();
 
-      // ACT & ASSERT
-      await expect(updateConsent(mockFides, {})).rejects.toThrow();
-    });
+      // Test that NOTICE_ONLY forces ACKNOWLEDGE when using validation="ignore"
+      await updateConsent(
+        mockFides,
+        {
+          consent: {
+            // This would be invalid with validation="throw", but we're using "ignore"
+            terms: true,
+          },
+          validation: "ignore",
+        },
+        ConsentMethod.SCRIPT,
+      );
 
-    // Test: Error if fidesString is invalid
-    it("should reject if fidesString is invalid", async () => {
-      // ARRANGE
-      const mockFides = createMockFides();
-      const fidesString = "invalid-string";
+      // Verify updateConsentPreferences was called with the right args
+      expect(updatePreferencesSpy).toHaveBeenCalledTimes(1);
+      // eslint-disable-next-line prefer-destructuring
+      callArgs = updatePreferencesSpy.mock.calls[0][0];
+      [termsPref] = callArgs.consentPreferencesToSave!;
 
-      mockDecodeFidesString.mockImplementation(() => {
-        throw new Error("Invalid format");
-      });
-
-      // ACT & ASSERT
-      await expect(updateConsent(mockFides, { fidesString })).rejects.toThrow();
-    });
-
-    // Test: Error if cookie is not initialized
-    it("should reject if cookie is not initialized", async () => {
-      // ARRANGE
-      const mockFides = createMockFides({ cookie: undefined });
-      const consentValues: NoticeValues = {
-        analytics: true,
-      };
-
-      // ACT & ASSERT
-      await expect(
-        updateConsent(mockFides, { consent: consentValues }),
-      ).rejects.toThrow("Cookie is not initialized");
-    });
-
-    // Test: Error if experience is not available
-    it("should reject if experience is not available", async () => {
-      // ARRANGE
-      const mockFides = createMockFides({ experience: undefined });
-      const consentValues: NoticeValues = {
-        analytics: true,
-      };
-
-      // ACT & ASSERT
-      await expect(
-        updateConsent(mockFides, { consent: consentValues }),
-      ).rejects.toThrow();
+      expect(termsPref.notice.notice_key).toBe("terms");
+      // Even though we passed 'true', it should be converted to ACKNOWLEDGE
+      expect(termsPref.consentPreference).toBe(
+        UserConsentPreference.ACKNOWLEDGE,
+      );
     });
   });
 });
