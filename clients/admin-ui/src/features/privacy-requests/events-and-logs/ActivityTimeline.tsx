@@ -1,16 +1,25 @@
-import { AntList as List, Box, useDisclosure } from "fidesui";
+import {
+  AntList as List,
+  AntSkeleton as Skeleton,
+  Box,
+  useDisclosure,
+} from "fidesui";
 import {
   ActivityTimelineItem,
+  ActivityTimelineItemTypeEnum,
   ExecutionLog,
   ExecutionLogStatus,
   PrivacyRequestEntity,
   PrivacyRequestResults,
 } from "privacy-requests/types";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 import { formatDate } from "~/features/common/utils";
+import { useGetCommentsQuery } from "~/features/privacy-requests/comments/privacy-request-comments.slice";
+import { CommentResponse } from "~/types/api/models/CommentResponse";
 
 import ActivityTimelineEntry from "./ActivityTimelineEntry";
+import styles from "./ActivityTimelineEntry.module.scss";
 import LogDrawer from "./LogDrawer";
 
 type ActivityTimelineProps = {
@@ -27,7 +36,20 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
     ExecutionLogStatus.ERROR,
   );
 
-  const { results } = subjectRequest;
+  const { results, id: privacyRequestId } = subjectRequest;
+
+  // Fetch comments data for this privacy request
+  const { data: commentsData, isLoading: isCommentsLoading } =
+    useGetCommentsQuery({
+      privacy_request_id: privacyRequestId,
+      size: 100, // Use a reasonable limit
+    });
+
+  // Determine if results are loading
+  const isResultsLoading = !results;
+
+  // Combined loading state
+  const isLoading = isCommentsLoading || isResultsLoading;
 
   // Update currentLogs when results change and we have a selected key
   useEffect(() => {
@@ -82,16 +104,73 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
         author: "Fides",
         title: key,
         date: formatDate(logs[0].updated_at),
-        tag: "Request update",
+        tag: ActivityTimelineItemTypeEnum.REQUEST_UPDATE,
         showViewLog: hasUnresolvedError || hasSkippedEntry,
         onClick: () => showLogs(key, logs),
         isError: hasUnresolvedError,
         isSkipped: hasSkippedEntry,
+        id: `request-${key}`,
       };
     });
   };
 
-  const timelineItems = mapResultsToTimelineItems(results);
+  // Map comments to ActivityTimelineItem
+  const mapCommentsToTimelineItems = (
+    comments?: CommentResponse[],
+  ): ActivityTimelineItem[] => {
+    if (!comments || comments.length === 0) {
+      return [];
+    }
+
+    return comments.map((comment) => {
+      const author =
+        comment.user_first_name && comment.user_last_name
+          ? `${comment.user_first_name} ${comment.user_last_name}`
+          : comment.username || "Unknown";
+
+      return {
+        author,
+        title: comment.comment_text,
+        date: formatDate(comment.created_at),
+        tag: ActivityTimelineItemTypeEnum.COMMENT,
+        showViewLog: false,
+        description: comment.comment_text,
+        isError: false,
+        isSkipped: false,
+        id: `comment-${comment.id}`,
+      };
+    });
+  };
+
+  // Combine and sort all timeline items
+  const timelineItems = useMemo(() => {
+    const requestItems = mapResultsToTimelineItems(results);
+    const commentItems = mapCommentsToTimelineItems(commentsData?.items);
+
+    // Combine both arrays
+    const allItems = [...requestItems, ...commentItems];
+
+    // Sort by date (newest first)
+    return allItems.sort((a, b) => {
+      return new Date(b.date).getTime() - new Date(a.date).getTime();
+    });
+  }, [results, commentsData]);
+
+  // Render skeleton items when loading
+  const renderSkeletonItems = () => {
+    // Use fixed IDs instead of array indices
+    const skeletonIds = [
+      "timeline-skeleton-1",
+      "timeline-skeleton-2",
+      "timeline-skeleton-3",
+    ];
+
+    return skeletonIds.map((id) => (
+      <div key={id} className={styles.itemButton} style={{ padding: "16px" }}>
+        <Skeleton paragraph={{ rows: 2 }} active />
+      </div>
+    ));
+  };
 
   return (
     <Box width="100%">
@@ -101,12 +180,11 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
         split={false}
         data-testid="activity-timeline-list"
       >
-        {timelineItems.map((item) => (
-          <ActivityTimelineEntry
-            key={`timeline-entry-${item.title}`}
-            item={item}
-          />
-        ))}
+        {isLoading
+          ? renderSkeletonItems()
+          : timelineItems.map((item) => (
+              <ActivityTimelineEntry key={item.id} item={item} />
+            ))}
       </List>
       <LogDrawer
         isOpen={isOpen}

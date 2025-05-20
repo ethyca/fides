@@ -22,11 +22,14 @@ $horizontal-padding: 20px;
   padding: 12px $horizontal-padding;
   text-align: left;
   background: transparent;
-  cursor: pointer;
+  cursor: default;
 
-  &:hover,
-  &--error {
+  &:hover {
     border-color: var(--fidesui-neutral-100);
+  }
+
+  &--clickable {
+    cursor: pointer;
   }
 
   &:focus-visible {
@@ -41,7 +44,6 @@ $horizontal-padding: 20px;
 }
 
 .header {
-  cursor: pointer;
   width: 100%;
   display: flex;
   flex-wrap: wrap;

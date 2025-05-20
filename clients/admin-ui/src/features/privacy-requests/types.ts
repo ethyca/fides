@@ -208,14 +208,20 @@ export interface ConfigMessagingSecretsRequest {
   };
 }
 
+export enum ActivityTimelineItemTypeEnum {
+  REQUEST_UPDATE = "Request update",
+  COMMENT = "Comment",
+}
+
 export interface ActivityTimelineItem {
   author: string;
   title: string;
   date: string;
-  tag: string;
+  tag: ActivityTimelineItemTypeEnum;
   showViewLog: boolean;
-  onClick: () => void;
+  onClick?: () => void;
   description?: string;
   isError: boolean;
   isSkipped: boolean;
+  id: string;
 }

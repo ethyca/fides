@@ -12,12 +12,16 @@ interface ActivityTimelineEntryProps {
 const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
   const { author, title, date, tag, onClick, isError, isSkipped } = item;
 
+  const isClickable = !!onClick;
+  const handleClick = onClick || (() => {});
+
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={handleClick}
       className={classNames(styles.itemButton, {
         [styles["itemButton--error"]]: isError,
+        [styles["itemButton--clickable"]]: isClickable,
       })}
       data-testid="activity-timeline-item"
     >
