@@ -189,6 +189,14 @@ export const updateConsent = async (
       new Error("Either consent or fidesString must be provided"),
     );
   }
+  if (!fides.experience) {
+    return Promise.reject(
+      new Error("Experience must be initialized before updating consent"),
+    );
+  }
+  if (!fides.cookie) {
+    return Promise.reject(new Error("Cookie is not initialized"));
+  }
 
   const { consent, fidesString } = options;
 
@@ -211,10 +219,6 @@ export const updateConsent = async (
   }
 
   // Clone current cookie for updating
-  if (!fides.cookie) {
-    return Promise.reject(new Error("Cookie is not initialized"));
-  }
-
   const updatedCookie: FidesCookie = {
     consent: { ...(fides.cookie.consent || {}) },
     identity: { ...(fides.cookie.identity || {}) },
@@ -243,12 +247,6 @@ export const updateConsent = async (
     } else {
       updatedCookie.fides_string = `.${newNcString}.`;
     }
-  }
-
-  if (!fides.experience) {
-    return Promise.reject(
-      new Error("Experience must be initialized before updating consent"),
-    );
   }
 
   // Prepare consentPreferencesToSave by mapping from finalConsent

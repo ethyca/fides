@@ -408,8 +408,8 @@ export interface Fides {
   identity: Record<string, string>;
 
   /**
-   * Updates user consent preferences with either a consent object or fidesString.
-   * If both are provided, fidesString takes priority.
+   * Updates user consent preferences with either a `consent` object or `fidesString`.
+   * If both are provided, `fidesString` takes priority.
    *
    * @example
    * Update consent using notice keys and boolean values:

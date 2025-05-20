@@ -529,8 +529,8 @@ This field is read-only.
 
 > **updateConsent**: (`options`) => `Promise`\<`void`\>
 
-Updates user consent preferences with either a consent object or fidesString.
-If both are provided, fidesString takes priority.
+Updates user consent preferences with either a `consent` object or `fidesString`.
+If both are provided, `fidesString` takes priority.
 
 #### Parameters
 
