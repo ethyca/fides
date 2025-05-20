@@ -130,7 +130,6 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
 
       return {
         author,
-        title: comment.comment_text,
         date: formatDate(comment.created_at),
         tag: ActivityTimelineItemTypeEnum.INTERNAL_COMMENT,
         showViewLog: false,

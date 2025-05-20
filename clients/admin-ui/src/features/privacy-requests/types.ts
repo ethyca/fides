@@ -223,7 +223,7 @@ export const TimelineItemColorMap: Record<
 
 export interface ActivityTimelineItem {
   author: string;
-  title: string;
+  title?: string;
   date: string;
   tag: ActivityTimelineItemTypeEnum;
   showViewLog: boolean;

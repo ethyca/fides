@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import { AntTag as Tag } from "fidesui";
+import { AntTag as Tag, AntTypography as Typography } from "fidesui";
 import React from "react";
 
 import { ActivityTimelineItem, TimelineItemColorMap } from "../types";
@@ -10,7 +10,8 @@ interface ActivityTimelineEntryProps {
 }
 
 const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
-  const { author, title, date, tag, onClick, isError, isSkipped } = item;
+  const { author, title, date, tag, onClick, isError, isSkipped, description } =
+    item;
 
   const isClickable = !!onClick;
   const handleClick = onClick || (() => {});
@@ -29,15 +30,17 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
         <span className={styles.author} data-testid="activity-timeline-author">
           {author}:
         </span>
-        <span
-          className={classNames(styles.title, {
-            [styles["title--error"]]: isError,
-          })}
-          data-testid="activity-timeline-title"
-        >
-          {title}
-          {isError && " failed"}
-        </span>
+        {title && (
+          <span
+            className={classNames(styles.title, {
+              [styles["title--error"]]: isError,
+            })}
+            data-testid="activity-timeline-title"
+          >
+            {title}
+            {isError && " failed"}
+          </span>
+        )}
         <span
           className={styles.timestamp}
           data-testid="activity-timeline-timestamp"
@@ -60,6 +63,11 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
           </span>
         )}
       </div>
+      {description && (
+        <div className="mt-2 pl-2.5">
+          <Typography.Paragraph>{description}</Typography.Paragraph>
+        </div>
+      )}
     </button>
   );
 };
