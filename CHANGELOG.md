@@ -28,10 +28,14 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Changed
 - Attachment uploads now check for file extension types, retrieving and attachment also returns the file size. [#6124](https://github.com/ethyca/fides/pull/6124)
 - Updated the AC string version from v1 to v2 format, which now includes a disclosed vendors section [#6155](https://github.com/ethyca/fides/pull/6155)
+- Locked down the version for @iabtechlabtcf packages for better control [#6145](https://github.com/ethyca/fides/pull/6145)
 
 ### Developer Experience
 - Refactored Fides initialization code to reduce duplication and improve maintainability. [#6143](https://github.com/ethyca/fides/pull/6143)
 - Improved endpoint profiler to output all frames. [#6153](https://github.com/ethyca/fides/pull/6153)
+
+### Fixed
+- Fix Special-purpose vendors with restricted purposes not correctly encoded in TC string [#6145](https://github.com/ethyca/fides/pull/6145) https://github.com/ethyca/fides/labels/high-risk
 
 ## [2.61.1](https://github.com/ethyca/fides/compare/2.61.0...2.61.1)
 

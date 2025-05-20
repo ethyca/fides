@@ -170,25 +170,17 @@ export const generateFidesString = async ({
         }
       });
 
-      // Set legitimate interest for special-purpose only vendors
+      // Set legitimate interest for special-purpose only vendors and vendors that
+      // have declared only purposes based on consent (no LI) + at least one SP
       if (experience.gvl?.vendors) {
         (experience as PrivacyExperience).tcf_vendor_relationships?.forEach(
           (relationship) => {
             const { id } = decodeVendorId(relationship.id);
             const vendor = experience.gvl?.vendors[id];
-            const isInVendorConsents = (
-              experience as PrivacyExperience
-            ).tcf_vendor_consents?.some(
-              (consent) => consent.id === relationship.id,
-            );
             if (
               vendor &&
               vendor.specialPurposes?.length &&
-              (!vendor.purposes || vendor.purposes.length === 0) &&
-              (!vendor.flexiblePurposes ||
-                vendor.flexiblePurposes.length === 0) &&
-              (!vendor.legIntPurposes || vendor.legIntPurposes.length === 0) &&
-              !isInVendorConsents
+              (!vendor.legIntPurposes || vendor.legIntPurposes.length === 0)
             ) {
               tcModel.vendorLegitimateInterests.set(+id);
             }
@@ -241,6 +233,11 @@ export const generateFidesString = async ({
         // We do not want to include vendors disclosed or publisher tc at the moment
         segments: [Segment.CORE],
       });
+
+      fidesDebugger(
+        "TC String encoded",
+        `https://iabgpp.com/#${encodedString}`,
+      );
 
       // Attach the AC string, which only applies to tcf_vendor_consents (no LI exists in AC)
       const disclosedVendorIds = experience.minimal_tcf
