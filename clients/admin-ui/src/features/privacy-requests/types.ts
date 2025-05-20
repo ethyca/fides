@@ -210,8 +210,16 @@ export interface ConfigMessagingSecretsRequest {
 
 export enum ActivityTimelineItemTypeEnum {
   REQUEST_UPDATE = "Request update",
-  COMMENT = "Comment",
+  INTERNAL_COMMENT = "Internal comment",
 }
+
+export const TimelineItemColorMap: Record<
+  ActivityTimelineItemTypeEnum,
+  string
+> = {
+  [ActivityTimelineItemTypeEnum.REQUEST_UPDATE]: "sandstone",
+  [ActivityTimelineItemTypeEnum.INTERNAL_COMMENT]: "marble",
+};
 
 export interface ActivityTimelineItem {
   author: string;

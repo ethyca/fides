@@ -2,7 +2,7 @@ import classNames from "classnames";
 import { AntTag as Tag } from "fidesui";
 import React from "react";
 
-import { ActivityTimelineItem } from "../types";
+import { ActivityTimelineItem, TimelineItemColorMap } from "../types";
 import styles from "./ActivityTimelineEntry.module.scss";
 
 interface ActivityTimelineEntryProps {
@@ -46,7 +46,7 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
         </span>
         <Tag
           className={styles.type}
-          color="sandstone"
+          color={TimelineItemColorMap[tag]}
           data-testid="activity-timeline-type"
         >
           {tag}
