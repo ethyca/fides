@@ -44,6 +44,7 @@ from fides.api.schemas.messaging.messaging import (
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity
+from fides.api.schemas.storage.storage import StorageType, StorageDetails
 from fides.api.service.connectors import FidesConnector, get_connector
 from fides.api.service.connectors.consent_email_connector import (
     CONSENT_EMAIL_CONNECTOR_TYPES,
@@ -83,21 +84,28 @@ class ManualWebhookResults(FidesSchema):
     proceed: bool
 
 
-def get_attachments(request_attachments: List[Attachment]) -> List[Dict[str, Any]]:
+def get_attachments(
+    db: Session, privacy_request: PrivacyRequest
+) -> List[Dict[str, Any]]:
+    """
+    Retrieves all attachments associated with a privacy request that are marked to be included with the access package.
+    Returns a list of dictionaries containing attachment metadata and content.
+    """
     attachments = []
-    for attachment in request_attachments:
-        logger.info(f"Attachment ID: {attachment.id}")
-        logger.info(f"Attachment config: {attachment.config}")
-        logger.info(f"Attachment type: {attachment.attachment_type}")
+    for attachment in privacy_request.attachments:
         if attachment.attachment_type == AttachmentType.include_with_access_package:
-            retrieved_attachment_size, retrieved_attachment_url = attachment.retrieve_attachment()
+            # Get size and content using the new method
+            size, content = attachment.retrieve_attachment_content()
+
+            # Derive content type from file name
+            content_type = attachment.file_name.split(".")[-1] if "." in attachment.file_name else "application/octet-stream"
+
             attachments.append(
                 {
-                    "id": attachment.id,
                     "file_name": attachment.file_name,
-                    "created_at": attachment.created_at.isoformat(),
-                    "file_size": retrieved_attachment_size,
-                    "download_url": retrieved_attachment_url,
+                    "file_size": size,
+                    "content": content,
+                    "content_type": content_type,
                 }
             )
     return attachments
@@ -134,7 +142,7 @@ def get_manual_webhook_access_inputs(
                         loaded_attachments.append(loaded_attachment)
                     else:
                         logger.error(f"Could not load attachment {webhook_attachment.id} or config is None")
-                webhook_data["attachments"] = get_attachments(loaded_attachments)
+                webhook_data["attachments"] = get_attachments(db, privacy_request)
             manual_inputs[manual_webhook.connection_config.key] = [webhook_data]
 
     except (
@@ -248,7 +256,7 @@ def upload_access_results(  # pylint: disable=R0912
     """Process the data uploads after the access portion of the privacy request has completed"""
     download_urls: List[str] = []
     logger.info(privacy_request.attachments)
-    attachments = get_attachments(privacy_request.attachments)
+    attachments = get_attachments(session, privacy_request)
     logger.info(f"{len(attachments)} attachments found for privacy request {privacy_request.id}")
     if not access_result:
         logger.info("No results returned for access request")

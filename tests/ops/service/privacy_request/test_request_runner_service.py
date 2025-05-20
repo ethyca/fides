@@ -1600,12 +1600,10 @@ class TestIncludeAttachments:
         assert "attachments" in filtered_results["access_request_rule"]
         results_attachments = filtered_results["access_request_rule"]["attachments"]
         assert len(results_attachments) == 1
-        assert results_attachments[0]["id"] == attachment_include_in_download.id
         assert results_attachments[0]["file_name"] == attachment_include_in_download.file_name
         assert results_attachments[0]["file_size"] == len(b"file content")
-        assert "download_url" in results_attachments[0]
-        assert "created_at" in results_attachments[0]
-
+        assert results_attachments[0]["content_type"] == "txt"
+        assert results_attachments[0]["content"] is not None
 
     @pytest.mark.usefixtures("s3_client")
     def test_attachments_included_in_manual_webhook_results(
@@ -1674,10 +1672,9 @@ class TestIncludeAttachments:
         # Verify the webhook data structure
         assert "attachments" in webhook_data
         assert len(webhook_data["attachments"]) == 1
-        assert webhook_data["attachments"][0]["id"] == attachment_include_in_download.id
         assert webhook_data["attachments"][0]["file_name"] == attachment_include_in_download.file_name
         assert webhook_data["attachments"][0]["file_size"] == len(b"file content")
-        assert "download_url" in webhook_data["attachments"][0]
-        assert "created_at" in webhook_data["attachments"][0]
+        assert webhook_data["attachments"][0]["content_type"] == "txt"
+        assert webhook_data["attachments"][0]["content"] is not None
         assert webhook_data["email"] == "test@example.com"
         assert webhook_data["last_name"] == "Test"
