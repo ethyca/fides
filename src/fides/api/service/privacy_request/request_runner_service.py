@@ -44,7 +44,6 @@ from fides.api.schemas.messaging.messaging import (
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity
-from fides.api.schemas.storage.storage import StorageType, StorageDetails
 from fides.api.service.connectors import FidesConnector, get_connector
 from fides.api.service.connectors.consent_email_connector import (
     CONSENT_EMAIL_CONNECTOR_TYPES,
@@ -98,7 +97,11 @@ def get_attachments(
             size, content = attachment.retrieve_attachment_content()
 
             # Derive content type from file name
-            content_type = attachment.file_name.split(".")[-1] if "." in attachment.file_name else "application/octet-stream"
+            content_type = (
+                attachment.file_name.split(".")[-1]
+                if "." in attachment.file_name
+                else "application/octet-stream"
+            )
 
             attachments.append(
                 {
@@ -128,9 +131,13 @@ def get_manual_webhook_access_inputs(
     try:
         for manual_webhook in AccessManualWebhook.get_enabled(db, ActionType.access):
             # Get the manual webhook input data
-            webhook_data = privacy_request.get_manual_webhook_access_input_strict(manual_webhook)
+            webhook_data = privacy_request.get_manual_webhook_access_input_strict(
+                manual_webhook
+            )
             # Get any attachments for this webhook
-            webhook_attachments = privacy_request.get_access_manual_webhook_attachments(db, manual_webhook.id)
+            webhook_attachments = privacy_request.get_access_manual_webhook_attachments(
+                db, manual_webhook.id
+            )
             logger.info(webhook_attachments)
             if webhook_attachments:
                 logger.info("GETTING ATTACHMENTS")
@@ -141,7 +148,9 @@ def get_manual_webhook_access_inputs(
                     if loaded_attachment and loaded_attachment.config is not None:
                         loaded_attachments.append(loaded_attachment)
                     else:
-                        logger.error(f"Could not load attachment {webhook_attachment.id} or config is None")
+                        logger.error(
+                            f"Could not load attachment {webhook_attachment.id} or config is None"
+                        )
                 webhook_data["attachments"] = get_attachments(db, privacy_request)
             manual_inputs[manual_webhook.connection_config.key] = [webhook_data]
 
@@ -257,7 +266,9 @@ def upload_access_results(  # pylint: disable=R0912
     download_urls: List[str] = []
     logger.info(privacy_request.attachments)
     attachments = get_attachments(session, privacy_request)
-    logger.info(f"{len(attachments)} attachments found for privacy request {privacy_request.id}")
+    logger.info(
+        f"{len(attachments)} attachments found for privacy request {privacy_request.id}"
+    )
     if not access_result:
         logger.info("No results returned for access request")
 
@@ -278,9 +289,7 @@ def upload_access_results(  # pylint: disable=R0912
             )
         )
 
-        filtered_results.update(
-            manual_data
-        )
+        filtered_results.update(manual_data)
         if attachments:
             filtered_results["attachments"] = attachments
         rule_filtered_results[rule.key] = filtered_results

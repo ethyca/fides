@@ -1089,7 +1089,9 @@ class PrivacyRequest(
         if attachment:
             attachment.delete(db)
 
-    def _get_manual_webhook_attachments(self, db: Session, manual_webhook_id: str, reference_type: str) -> List[Attachment]:
+    def _get_manual_webhook_attachments(
+        self, db: Session, manual_webhook_id: str, reference_type: str
+    ) -> List[Attachment]:
         """Helper method to get attachments that have references to both this privacy request and the specified manual webhook"""
         query = """
             SELECT DISTINCT a.*
@@ -1106,18 +1108,26 @@ class PrivacyRequest(
             {
                 "privacy_request_id": self.id,
                 "manual_webhook_id": manual_webhook_id,
-                "reference_type": reference_type
-            }
+                "reference_type": reference_type,
+            },
         )
         return [Attachment(**row) for row in result]
 
-    def get_access_manual_webhook_attachments(self, db: Session, manual_webhook_id: str) -> List[Attachment]:
+    def get_access_manual_webhook_attachments(
+        self, db: Session, manual_webhook_id: str
+    ) -> List[Attachment]:
         """Get all attachments that have references to both this privacy request and the specified access manual webhook"""
-        return self._get_manual_webhook_attachments(db, manual_webhook_id, "access_manual_webhook")
+        return self._get_manual_webhook_attachments(
+            db, manual_webhook_id, "access_manual_webhook"
+        )
 
-    def get_erasure_manual_webhook_attachments(self, db: Session, manual_webhook_id: str) -> List[Attachment]:
+    def get_erasure_manual_webhook_attachments(
+        self, db: Session, manual_webhook_id: str
+    ) -> List[Attachment]:
         """Get all attachments that have references to both this privacy request and the specified erasure manual webhook"""
-        return self._get_manual_webhook_attachments(db, manual_webhook_id, "erasure_manual_webhook")
+        return self._get_manual_webhook_attachments(
+            db, manual_webhook_id, "erasure_manual_webhook"
+        )
 
     def get_existing_request_task(
         self,

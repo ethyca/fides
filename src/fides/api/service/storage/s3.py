@@ -125,7 +125,7 @@ def generic_upload_to_s3(  # pylint: disable=R0913
 
 
 def generic_retrieve_from_s3(
-    storage_secrets: Dict[str, Any],
+    storage_secrets: Dict[StorageSecrets, Any],
     bucket_name: str,
     file_key: str,
     auth_method: str,
@@ -152,12 +152,12 @@ def generic_retrieve_from_s3(
             response = s3_client.get_object(Bucket=bucket_name, Key=file_key)
             content = response["Body"].read()
             return response["ContentLength"], content
-        else:
-            # Get presigned URL
-            presigned_url = create_presigned_url_for_s3(s3_client, bucket_name, file_key)
-            # Get file size
-            response = s3_client.head_object(Bucket=bucket_name, Key=file_key)
-            return response["ContentLength"], presigned_url
+
+        # Get presigned URL
+        presigned_url = create_presigned_url_for_s3(s3_client, bucket_name, file_key)
+        # Get file size
+        response = s3_client.head_object(Bucket=bucket_name, Key=file_key)
+        return int(response["ContentLength"]), str(presigned_url)
     except ClientError as e:
         logger.error(f"Error retrieving file from S3: {e}")
         raise e

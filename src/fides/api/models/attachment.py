@@ -1,6 +1,6 @@
 import os
 from enum import Enum as EnumType
-from typing import IO, TYPE_CHECKING, Any, Tuple, Union
+from typing import IO, TYPE_CHECKING, Any, Tuple
 
 from fideslang.validation import AnyHttpUrlString
 from loguru import logger as log

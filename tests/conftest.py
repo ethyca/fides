@@ -6,9 +6,11 @@ import time
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, Dict, Generator, List
+from unittest.mock import create_autospec
 from uuid import uuid4
 
 import boto3
+import google.auth.credentials
 import pytest
 import requests
 import yaml
@@ -16,6 +18,8 @@ from fastapi import Query
 from fastapi.testclient import TestClient
 from fideslang import DEFAULT_TAXONOMY, models
 from fideslang.models import System as SystemSchema
+from google.api_core.exceptions import NotFound
+from google.cloud import storage
 from httpx import AsyncClient
 from loguru import logger
 from moto import mock_aws
@@ -24,7 +28,6 @@ from sqlalchemy.engine.base import Engine
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
-from unittest.mock import create_autospec
 
 from fides.api.common_exceptions import PrivacyRequestExit
 from fides.api.cryptography.schemas.jwt import (
@@ -88,9 +91,6 @@ from tests.fixtures.saas_example_fixtures import *
 from tests.fixtures.scylladb_fixtures import *
 from tests.fixtures.snowflake_fixtures import *
 from tests.fixtures.timescale_fixtures import *
-from google.cloud import storage
-import google.auth.credentials
-from google.api_core.exceptions import NotFound
 
 ROOT_PATH = Path().absolute()
 CONFIG = get_config()
@@ -2019,8 +2019,7 @@ def base_gcs_client_mock(monkeypatch):
         return mock_client
 
     monkeypatch.setattr(
-        "fides.api.service.storage.gcs.get_gcs_client",
-        mock_get_gcs_client
+        "fides.api.service.storage.gcs.get_gcs_client", mock_get_gcs_client
     )
 
     # Mock response class
@@ -2033,20 +2032,22 @@ def base_gcs_client_mock(monkeypatch):
 
     # Mock transport request
     def mock_transport_request(*args, **kwargs):
-        method = kwargs.get('method', 'GET')
-        url = kwargs.get('url', '')
+        method = kwargs.get("method", "GET")
+        url = kwargs.get("url", "")
 
-        if method == 'POST' and 'uploadType=resumable' in str(url):
-            return MockResponse(200, headers={"location": "https://upload.example.com/upload"})
-        elif method == 'PUT' and 'upload.example.com' in str(url):
+        if method == "POST" and "uploadType=resumable" in str(url):
+            return MockResponse(
+                200, headers={"location": "https://upload.example.com/upload"}
+            )
+        elif method == "PUT" and "upload.example.com" in str(url):
             return MockResponse(200)
-        elif method == 'DELETE':
+        elif method == "DELETE":
             return MockResponse(204)
         return MockResponse(200)
 
     monkeypatch.setattr(
         "google.auth.transport.requests.AuthorizedSession.request",
-        mock_transport_request
+        mock_transport_request,
     )
 
     return mock_client
@@ -2076,10 +2077,18 @@ def gcs_client(storage_config_default_gcs):
             # Mock generate_signed_url with proper parameters
             def mock_generate_signed_url(version, expiration, method):
                 return f"https://{storage_config_default_gcs.details[StorageDetails.BUCKET.value]}.storage.googleapis.com/{blob_name}"
+
             mock_blob.generate_signed_url = mock_generate_signed_url
 
             # Mock the upload process
-            def mock_upload_from_file(file_obj, content_type=None, num_retries=None, client=None, size=None, **kwargs):
+            def mock_upload_from_file(
+                file_obj,
+                content_type=None,
+                num_retries=None,
+                client=None,
+                size=None,
+                **kwargs,
+            ):
                 try:
                     file_obj.seek(0)
                     content = file_obj.read()
@@ -2091,14 +2100,32 @@ def gcs_client(storage_config_default_gcs):
                 except Exception as e:
                     raise ValueError(f"Failed to upload file: {e}")
 
-            def mock_upload_from_filename(filename, content_type=None, num_retries=None, client=None, size=None, **kwargs):
-                with open(filename, 'rb') as file_obj:
-                    return mock_upload_from_file(file_obj, content_type, num_retries, client, size, **kwargs)
+            def mock_upload_from_filename(
+                filename,
+                content_type=None,
+                num_retries=None,
+                client=None,
+                size=None,
+                **kwargs,
+            ):
+                with open(filename, "rb") as file_obj:
+                    return mock_upload_from_file(
+                        file_obj, content_type, num_retries, client, size, **kwargs
+                    )
 
-            def mock_upload_from_string(data, content_type=None, num_retries=None, client=None, size=None, **kwargs):
+            def mock_upload_from_string(
+                data,
+                content_type=None,
+                num_retries=None,
+                client=None,
+                size=None,
+                **kwargs,
+            ):
                 mock_blob.exists.return_value = True
                 mock_blob.size = len(data)
-                mock_blob.download_as_bytes.return_value = data.encode() if isinstance(data, str) else data
+                mock_blob.download_as_bytes.return_value = (
+                    data.encode() if isinstance(data, str) else data
+                )
                 return None
 
             # Mock delete operation

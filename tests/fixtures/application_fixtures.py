@@ -4005,6 +4005,7 @@ def attachment(s3_client, db, attachment_data, monkeypatch):
 @pytest.fixture
 def attachment_include_in_download(s3_client, db, attachment_data, monkeypatch):
     """Creates an attachment that is included in the download."""
+
     def mock_get_s3_client(auth_method, storage_secrets):
         return s3_client
 

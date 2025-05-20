@@ -102,7 +102,7 @@ def write_to_in_memory_buffer(
                             # Write the actual file content to the zip
                             f.writestr(
                                 f"attachments/{attachment['file_name']}",
-                                attachment["content"]
+                                attachment["content"],
                             )
                             # Remove the binary content from the metadata
                             attachment.pop("content")

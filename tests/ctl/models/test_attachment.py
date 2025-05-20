@@ -1,20 +1,21 @@
 import warnings
 from io import BytesIO
 from tempfile import SpooledTemporaryFile
+from unittest.mock import create_autospec
 
+import boto3
+import google.auth.credentials
+import google.oauth2.service_account
 import pytest
+import requests
 from botocore.exceptions import ClientError
+from google.cloud import storage
 from google.cloud.exceptions import NotFound
 from moto import mock_aws
 from sqlalchemy import exc as sa_exc
 from sqlalchemy.exc import IntegrityError
-import boto3
-from unittest.mock import create_autospec
-from google.cloud import storage
-import google.auth.credentials
-import google.oauth2.service_account
-import requests
 
+from fides.api.common_exceptions import StorageUploadError
 from fides.api.models.attachment import (
     Attachment,
     AttachmentReference,
@@ -24,9 +25,8 @@ from fides.api.models.attachment import (
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.storage import StorageConfig
 from fides.api.schemas.storage.storage import StorageDetails
-from fides.api.service.storage.util import get_local_filename
 from fides.api.service.storage.gcs import GCSAuthMethod
-from fides.api.common_exceptions import StorageUploadError
+from fides.api.service.storage.util import get_local_filename
 
 
 @pytest.fixture(
@@ -74,7 +74,9 @@ def verify_attachment_created_uploaded_gcs(attachment, attachment_file_copy):
 
 
 @pytest.fixture
-def mock_gcs_client(base_gcs_client_mock, monkeypatch, storage_config_default_gcs, attachment_file):
+def mock_gcs_client(
+    base_gcs_client_mock, monkeypatch, storage_config_default_gcs, attachment_file
+):
     """Fixture to provide mocked GCS client for attachment tests."""
     # Get the file content for size calculation
     file_content = attachment_file[1].read()
@@ -100,10 +102,18 @@ def mock_gcs_client(base_gcs_client_mock, monkeypatch, storage_config_default_gc
     def mock_size(self):
         return len(file_content)
 
-    monkeypatch.setattr("google.cloud.storage.Blob.upload_from_file", mock_upload_from_file)
-    monkeypatch.setattr("google.cloud.storage.Blob.upload_from_filename", mock_upload_from_filename)
-    monkeypatch.setattr("google.cloud.storage.Blob.upload_from_string", mock_upload_from_string)
-    monkeypatch.setattr("google.cloud.storage.Blob.generate_signed_url", mock_generate_signed_url)
+    monkeypatch.setattr(
+        "google.cloud.storage.Blob.upload_from_file", mock_upload_from_file
+    )
+    monkeypatch.setattr(
+        "google.cloud.storage.Blob.upload_from_filename", mock_upload_from_filename
+    )
+    monkeypatch.setattr(
+        "google.cloud.storage.Blob.upload_from_string", mock_upload_from_string
+    )
+    monkeypatch.setattr(
+        "google.cloud.storage.Blob.generate_signed_url", mock_generate_signed_url
+    )
     monkeypatch.setattr("google.cloud.storage.Blob.size", property(mock_size))
 
     return base_gcs_client_mock
@@ -180,7 +190,12 @@ def test_create_attachment_with_local_storage(
 
 
 def test_create_attachment_with_GCS_storage(
-    mock_gcs_client, db, user, attachment_data, attachment_file, storage_config_default_gcs
+    mock_gcs_client,
+    db,
+    user,
+    attachment_data,
+    attachment_file,
+    storage_config_default_gcs,
 ):
     """Test creating an attachment with GCS storage."""
     # Create a copy of the file content for verification
@@ -191,9 +206,7 @@ def test_create_attachment_with_GCS_storage(
     attachment_data["storage_key"] = storage_config_default_gcs.key
 
     attachment = Attachment.create_and_upload(
-        db=db,
-        data=attachment_data,
-        attachment_file=attachment_file[1]
+        db=db, data=attachment_data, attachment_file=attachment_file[1]
     )
     verify_attachment_created_uploaded_gcs(attachment, attachment_file_copy)
     attachment.delete(db)
@@ -261,9 +274,7 @@ def test_retrieve_attachment_from_gcs(
     attachment_data["storage_key"] = storage_config_default_gcs.key
 
     attachment = Attachment.create_and_upload(
-        db=db,
-        data=attachment_data,
-        attachment_file=attachment_file[1]
+        db=db, data=attachment_data, attachment_file=attachment_file[1]
     )
     verify_attachment_created_uploaded_gcs(attachment, attachment_file_copy)
     attachment.delete(db)
@@ -331,9 +342,7 @@ def test_delete_attachment_from_gcs(
     attachment_data["storage_key"] = storage_config_default_gcs.key
 
     attachment = Attachment.create_and_upload(
-        db=db,
-        data=attachment_data,
-        attachment_file=attachment_file[1]
+        db=db, data=attachment_data, attachment_file=attachment_file[1]
     )
     verify_attachment_created_uploaded_gcs(attachment, attachment_file_copy)
     attachment.delete(db)

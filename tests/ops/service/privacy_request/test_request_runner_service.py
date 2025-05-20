@@ -1,9 +1,9 @@
 # pylint: disable=missing-docstring, redefined-outer-name
 import time
+from io import BytesIO
 from typing import Any, Dict, List, Set
 from unittest import mock
 from unittest.mock import ANY, Mock, call
-from io import BytesIO
 
 import pydash
 import pytest
@@ -45,10 +45,10 @@ from fides.api.schemas.redis_cache import Identity
 from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.service.privacy_request.request_runner_service import (
     build_consent_dataset_graph,
+    get_manual_webhook_access_inputs,
     needs_batch_email_send,
     run_webhooks_and_report_status,
     upload_access_results,
-    get_manual_webhook_access_inputs,
 )
 from fides.common.api.v1.urn_registry import REQUEST_TASK_CALLBACK, V1_URL_PREFIX
 from fides.config import CONFIG
@@ -1524,6 +1524,7 @@ class TestIncludeAttachments:
     @pytest.fixture
     def create_attachment_references(self, db):
         """Fixture to create an attachment reference"""
+
         def _create_reference(references: List[Dict[str, Any]]):
             for reference in references:
                 AttachmentReference.create(
@@ -1533,7 +1534,8 @@ class TestIncludeAttachments:
                         "attachment_id": reference["attachment_id"],
                         "reference_type": reference["reference_type"],
                     },
-            )
+                )
+
         return _create_reference
 
     @pytest.mark.usefixtures("s3_client")
@@ -1567,7 +1569,7 @@ class TestIncludeAttachments:
                     "reference_id": privacy_request.id,
                     "attachment_id": attachment_include_in_download.id,
                     "reference_type": AttachmentReferenceType.privacy_request,
-                }
+                },
             ]
         )
         db.refresh(privacy_request)
@@ -1575,7 +1577,9 @@ class TestIncludeAttachments:
         # Ensure attachments are loaded with their configs
         for attachment in privacy_request.attachments:
             db.refresh(attachment)
-            assert attachment.config is not None, f"Config is None for attachment {attachment.id}"
+            assert (
+                attachment.config is not None
+            ), f"Config is None for attachment {attachment.id}"
 
         # Upload access results
         results = upload_access_results(
@@ -1600,7 +1604,10 @@ class TestIncludeAttachments:
         assert "attachments" in filtered_results["access_request_rule"]
         results_attachments = filtered_results["access_request_rule"]["attachments"]
         assert len(results_attachments) == 1
-        assert results_attachments[0]["file_name"] == attachment_include_in_download.file_name
+        assert (
+            results_attachments[0]["file_name"]
+            == attachment_include_in_download.file_name
+        )
         assert results_attachments[0]["file_size"] == len(b"file content")
         assert results_attachments[0]["content_type"] == "txt"
         assert results_attachments[0]["content"] is not None
@@ -1646,8 +1653,12 @@ class TestIncludeAttachments:
         # Ensure attachments are loaded with their configs
         db.refresh(attachment)
         db.refresh(attachment_include_in_download)
-        assert attachment.config is not None, f"Config is None for attachment {attachment.id}"
-        assert attachment_include_in_download.config is not None, f"Config is None for attachment {attachment_include_in_download.id}"
+        assert (
+            attachment.config is not None
+        ), f"Config is None for attachment {attachment.id}"
+        assert (
+            attachment_include_in_download.config is not None
+        ), f"Config is None for attachment {attachment_include_in_download.id}"
 
         # Cache manual webhook input
         privacy_request.cache_manual_webhook_access_input(
@@ -1667,12 +1678,17 @@ class TestIncludeAttachments:
         assert webhook_inputs.proceed
         assert webhook_inputs.manual_data is not None
         assert access_manual_webhook.connection_config.key in webhook_inputs.manual_data
-        webhook_data = webhook_inputs.manual_data[access_manual_webhook.connection_config.key][0]
+        webhook_data = webhook_inputs.manual_data[
+            access_manual_webhook.connection_config.key
+        ][0]
 
         # Verify the webhook data structure
         assert "attachments" in webhook_data
         assert len(webhook_data["attachments"]) == 1
-        assert webhook_data["attachments"][0]["file_name"] == attachment_include_in_download.file_name
+        assert (
+            webhook_data["attachments"][0]["file_name"]
+            == attachment_include_in_download.file_name
+        )
         assert webhook_data["attachments"][0]["file_size"] == len(b"file content")
         assert webhook_data["attachments"][0]["content_type"] == "txt"
         assert webhook_data["attachments"][0]["content"] is not None

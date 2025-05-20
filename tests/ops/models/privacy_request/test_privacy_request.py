@@ -1148,11 +1148,13 @@ class TestPrivacyRequestCustomIdentities:
             account_id=LabeledIdentity(label="Account ID", value="456"),
         )
 
+
 class TestPrivacyRequestAttachments:
 
     @pytest.fixture
     def mock_s3_client(self, s3_client, monkeypatch):
         """Fixture to mock the S3 client for attachment tests"""
+
         def mock_get_s3_client(auth_method, storage_secrets):
             return s3_client
 
@@ -1162,20 +1164,25 @@ class TestPrivacyRequestAttachments:
         return s3_client
 
     @pytest.fixture
-    def create_attachment(self,db, attachment_data, mock_s3_client):
+    def create_attachment(self, db, attachment_data, mock_s3_client):
         """Fixture to create a single attachment"""
+
         def _create_attachment(contents: bytes = b"test contents"):
             return Attachment.create_and_upload(
                 db=db,
                 data=attachment_data,
                 attachment_file=BytesIO(contents),
             )
+
         return _create_attachment
 
     @pytest.fixture
-    def create_attachment_reference(self,db):
+    def create_attachment_reference(self, db):
         """Fixture to create an attachment reference"""
-        def _create_reference(reference_id: str, attachment_id: str, reference_type: str):
+
+        def _create_reference(
+            reference_id: str, attachment_id: str, reference_type: str
+        ):
             return AttachmentReference.create(
                 db,
                 data={
@@ -1184,19 +1191,27 @@ class TestPrivacyRequestAttachments:
                     "reference_type": reference_type,
                 },
             )
+
         return _create_reference
 
     @pytest.fixture
     def cleanup_attachments(self, db):
         """Fixture to clean up attachments after tests"""
+
         def _cleanup(attachments):
             for attachment in attachments:
                 attachment.delete(db)
             db.commit()
+
         return _cleanup
 
     def test_retrieve_attachments_from_privacy_request(
-        self, db,create_attachment, create_attachment_reference, cleanup_attachments, privacy_request
+        self,
+        db,
+        create_attachment,
+        create_attachment_reference,
+        cleanup_attachments,
+        privacy_request,
     ):
         # Create Attachments
         attachment1 = create_attachment(b"contents of test file 1")
@@ -1312,7 +1327,9 @@ class TestPrivacyRequestAttachments:
         erasure_attachments = privacy_request.get_erasure_manual_webhook_attachments(
             db, access_manual_webhook.id
         )
-        assert len(erasure_attachments) == 0  # No attachments associated with erasure webhook
+        assert (
+            len(erasure_attachments) == 0
+        )  # No attachments associated with erasure webhook
 
         # Clean up
         cleanup_attachments([attachment1, attachment2, attachment3])
@@ -1332,7 +1349,13 @@ class TestPrivacyRequestAttachments:
         assert len(erasure_attachments) == 0
 
     def test_privacy_request_attachment_relationship_warnings(
-        self, s3_client, db, privacy_request, create_attachment, create_attachment_reference, mock_s3_client
+        self,
+        s3_client,
+        db,
+        privacy_request,
+        create_attachment,
+        create_attachment_reference,
+        mock_s3_client,
     ):
         """Test that no SQLAlchemy relationship warnings occur when creating and accessing PrivacyRequest attachment relationships."""
         with warnings.catch_warnings(record=True) as warning_list:
@@ -1384,14 +1407,17 @@ class TestPrivacyRequestComments:
     @pytest.fixture
     def create_comment(self, db, comment_data):
         """Fixture to create a single comment"""
+
         def _create_comment(contents: str = "test comment"):
             comment_data["comment_text"] = contents
             return Comment.create(db=db, data=comment_data)
+
         return _create_comment
 
     @pytest.fixture
     def create_comment_reference(self, db):
         """Fixture to create a comment reference"""
+
         def _create_reference(reference_id: str, comment_id: str, reference_type: str):
             return CommentReference.create(
                 db,
@@ -1401,18 +1427,28 @@ class TestPrivacyRequestComments:
                     "reference_type": reference_type,
                 },
             )
+
         return _create_reference
 
     @pytest.fixture
     def cleanup_comments(self, db):
         """Fixture to clean up comments after tests"""
+
         def _cleanup(comments):
             for comment in comments:
                 comment.delete(db)
             db.commit()
+
         return _cleanup
 
-    def test_retrieve_comments_from_privacy_request(self, db, create_comment, create_comment_reference, cleanup_comments, privacy_request):
+    def test_retrieve_comments_from_privacy_request(
+        self,
+        db,
+        create_comment,
+        create_comment_reference,
+        cleanup_comments,
+        privacy_request,
+    ):
         # Create Comments
         comment1 = create_comment("test comment 1")
         comment2 = create_comment("test comment 2")
@@ -1445,7 +1481,9 @@ class TestPrivacyRequestComments:
         assert Comment.get(db, object_id=comment2.id) is None
         assert Comment.get(db, object_id=comment3.id) is None
 
-    def test_privacy_request_get_comment_by_id(self, db, create_comment, create_comment_reference, privacy_request):
+    def test_privacy_request_get_comment_by_id(
+        self, db, create_comment, create_comment_reference, privacy_request
+    ):
         # Create and associate comment with the PrivacyRequest
         comment = create_comment("test comment")
         create_comment_reference(
@@ -1483,7 +1521,8 @@ class TestPrivacyRequestComments:
                 db.query(CommentReference)
                 .filter(
                     CommentReference.reference_id == privacy_request.id,
-                    CommentReference.reference_type == CommentReferenceType.privacy_request,
+                    CommentReference.reference_type
+                    == CommentReferenceType.privacy_request,
                 )
                 .all()
             )
