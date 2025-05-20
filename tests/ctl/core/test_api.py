@@ -3402,9 +3402,9 @@ class TestHealthchecks:
                 "fides.dsr": 0,
                 "fidesops.messaging": 0,
                 "fides.privacy_preferences": 0,
-                "fidesplus.datastore_monitors_classification": 0,
-                "fidesplus.datastore_monitors_detection": 0,
-                "fidesplus.datastore_monitors_promotion": 0,
+                "fidesplus.discovery_monitors_classification": 0,
+                "fidesplus.discovery_monitors_detection": 0,
+                "fidesplus.discovery_monitors_promotion": 0,
                 "fides": 0,
             },
         }

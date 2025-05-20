@@ -11,9 +11,9 @@ from redis.exceptions import DataError
 from fides.api import common_exceptions
 from fides.api.schemas.masking.masking_secrets import SecretType
 from fides.api.tasks import (
-    DATASTORE_MONITORS_CLASSIFICATION_QUEUE_NAME,
-    DATASTORE_MONITORS_DETECTION_QUEUE_NAME,
-    DATASTORE_MONITORS_PROMOTION_QUEUE_NAME,
+    DISCOVERY_MONITORS_CLASSIFICATION_QUEUE_NAME,
+    DISCOVERY_MONITORS_DETECTION_QUEUE_NAME,
+    DISCOVERY_MONITORS_PROMOTION_QUEUE_NAME,
     DSR_QUEUE_NAME,
     MESSAGING_QUEUE_NAME,
     PRIVACY_PREFERENCES_QUEUE_NAME,
@@ -316,9 +316,9 @@ def get_queue_counts() -> Dict[str, int]:
             MESSAGING_QUEUE_NAME,
             PRIVACY_PREFERENCES_QUEUE_NAME,
             DSR_QUEUE_NAME,
-            DATASTORE_MONITORS_DETECTION_QUEUE_NAME,
-            DATASTORE_MONITORS_CLASSIFICATION_QUEUE_NAME,
-            DATASTORE_MONITORS_PROMOTION_QUEUE_NAME,
+            DISCOVERY_MONITORS_DETECTION_QUEUE_NAME,
+            DISCOVERY_MONITORS_CLASSIFICATION_QUEUE_NAME,
+            DISCOVERY_MONITORS_PROMOTION_QUEUE_NAME,
             default_queue_name,
         ]:
             queue_counts[queue] = redis_conn.llen(queue)
