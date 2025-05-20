@@ -1,53 +1,64 @@
+import classNames from "classnames";
 import { AntTag as Tag } from "fidesui";
-import { useState } from "react";
+import React from "react";
 
-import { formatDate } from "~/features/common/utils";
-
+import { ActivityTimelineItem } from "../types";
 import styles from "./ActivityTimelineEntry.module.scss";
 
 interface ActivityTimelineEntryProps {
-  author: string;
-  title: string;
-  timestamp: string;
-  type: string;
-  content?: React.ReactNode;
-  logs?: React.ReactNode;
-  className?: string;
+  item: ActivityTimelineItem;
 }
 
-const ActivityTimelineEntry = ({
-  author,
-  timestamp,
-  title,
-  type,
-  content,
-  logs,
-  className = "",
-}: ActivityTimelineEntryProps) => {
-  const [isOpen, setIsOpen] = useState(false);
+const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
+  const { author, title, date, tag, onClick, isError, isSkipped } = item;
 
   return (
-    <div
-      className={`${styles.container} ${isOpen ? styles["container--open"] : undefined} ${className}`}
+    <button
+      type="button"
+      onClick={onClick}
+      className={classNames(styles.itemButton, {
+        [styles["itemButton--error"]]: isError,
+      })}
+      data-testid="activity-timeline-item"
     >
-      <button
-        type="button"
-        className={styles.header}
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        <span className={styles.author}>{author}:</span>
-        <span className={styles.title}>{title}</span>
-        <span className={styles.timestamp}>{formatDate(timestamp)}</span>
-        <Tag>{type}</Tag>
-        <span className={styles.viewLogs}>{isOpen ? "Hide" : "View"} logs</span>
-      </button>
-      {content && <span className={styles.content}>{content}</span>}
-      <div
-        className={`${styles.logs} ${isOpen ? styles["logs--open"] : undefined}`}
-      >
-        {logs}
+      <div className={styles.header}>
+        <span className={styles.author} data-testid="activity-timeline-author">
+          {author}:
+        </span>
+        <span
+          className={classNames(styles.title, {
+            [styles["title--error"]]: isError,
+            [styles["title--skipped"]]: isSkipped,
+          })}
+          data-testid="activity-timeline-title"
+        >
+          {title}
+          {isError && " failed"}
+        </span>
+        <span
+          className={styles.timestamp}
+          data-testid="activity-timeline-timestamp"
+        >
+          {date}
+        </span>
+        <Tag
+          className={styles.type}
+          color="sandstone"
+          data-testid="activity-timeline-type"
+        >
+          {tag}
+        </Tag>
+        {(isError || isSkipped) && (
+          <span
+            className={styles.viewLogs}
+            data-testid="activity-timeline-view-logs"
+          >
+            View Log
+          </span>
+        )}
       </div>
-    </div>
+    </button>
   );
 };
+
 export default ActivityTimelineEntry;

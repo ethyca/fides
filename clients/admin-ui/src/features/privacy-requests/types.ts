@@ -207,3 +207,15 @@ export interface ConfigMessagingSecretsRequest {
     twilio_sender_phone_number?: string;
   };
 }
+
+export interface ActivityTimelineItem {
+  author: string;
+  title: string;
+  date: string;
+  tag: string;
+  showViewLog: boolean;
+  onClick: () => void;
+  description?: string;
+  isError: boolean;
+  isSkipped: boolean;
+}

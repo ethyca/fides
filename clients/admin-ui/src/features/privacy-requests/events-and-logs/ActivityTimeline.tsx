@@ -1,12 +1,16 @@
-import { Box, useDisclosure } from "fidesui";
+import { AntList as List, Box, useDisclosure } from "fidesui";
 import {
+  ActivityTimelineItem,
   ExecutionLog,
   ExecutionLogStatus,
   PrivacyRequestEntity,
+  PrivacyRequestResults,
 } from "privacy-requests/types";
 import React, { useEffect, useState } from "react";
 
-import ActivityTimelineList from "./ActivityTimelineList";
+import { formatDate } from "~/features/common/utils";
+
+import ActivityTimelineEntry from "./ActivityTimelineEntry";
 import LogDrawer from "./LogDrawer";
 
 type ActivityTimelineProps = {
@@ -58,12 +62,52 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
     onOpen();
   };
 
+  // Map from source events to ActivityTimelineItems
+  const mapResultsToTimelineItems = (
+    resultsData?: PrivacyRequestResults,
+  ): ActivityTimelineItem[] => {
+    if (!resultsData) {
+      return [];
+    }
+
+    return Object.entries(resultsData).map(([key, logs]) => {
+      const hasUnresolvedError = logs.some(
+        (log) => log.status === ExecutionLogStatus.ERROR,
+      );
+      const hasSkippedEntry = logs.some(
+        (log) => log.status === ExecutionLogStatus.SKIPPED,
+      );
+
+      return {
+        author: "Fides",
+        title: key,
+        date: formatDate(logs[0].updated_at),
+        tag: "Request update",
+        showViewLog: hasUnresolvedError || hasSkippedEntry,
+        onClick: () => showLogs(key, logs),
+        isError: hasUnresolvedError,
+        isSkipped: hasSkippedEntry,
+      };
+    });
+  };
+
+  const timelineItems = mapResultsToTimelineItems(results);
+
   return (
     <Box width="100%">
-      <ActivityTimelineList
-        results={results}
-        onItemClicked={({ key, logs }) => showLogs(key, logs)}
-      />
+      <List
+        className="!border-none"
+        bordered={false}
+        split={false}
+        data-testid="activity-timeline-list"
+      >
+        {timelineItems.map((item) => (
+          <ActivityTimelineEntry
+            key={`timeline-entry-${item.title}`}
+            item={item}
+          />
+        ))}
+      </List>
       <LogDrawer
         isOpen={isOpen}
         onClose={closeDrawer}
