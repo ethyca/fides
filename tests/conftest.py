@@ -14,6 +14,7 @@ import google.auth.credentials
 import pytest
 import requests
 import yaml
+from urllib.parse import urlparse
 from fastapi import Query
 from fastapi.testclient import TestClient
 from fideslang import DEFAULT_TAXONOMY, models
@@ -2039,7 +2040,7 @@ def base_gcs_client_mock(monkeypatch):
             return MockResponse(
                 200, headers={"location": "https://upload.example.com/upload"}
             )
-        elif method == "PUT" and "upload.example.com" in str(url):
+        elif method == "PUT" and urlparse(str(url)).hostname == "upload.example.com":
             return MockResponse(200)
         elif method == "DELETE":
             return MockResponse(204)
