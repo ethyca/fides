@@ -50,7 +50,6 @@ export const CommentInput = ({
             ref={textAreaRef}
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
-            placeholder="Add a note about this privacy request..."
             rows={3}
             className="mb-4 w-full"
             data-testid="comment-input"
