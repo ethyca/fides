@@ -1089,6 +1089,36 @@ class PrivacyRequest(
         if attachment:
             attachment.delete(db)
 
+    def _get_manual_webhook_attachments(self, db: Session, manual_webhook_id: str, reference_type: str) -> List[Attachment]:
+        """Helper method to get attachments that have references to both this privacy request and the specified manual webhook"""
+        query = """
+            SELECT DISTINCT a.*
+            FROM attachment a
+            INNER JOIN attachment_reference ar1 ON a.id = ar1.attachment_id
+            INNER JOIN attachment_reference ar2 ON a.id = ar2.attachment_id
+            WHERE ar1.reference_id = :privacy_request_id
+            AND ar1.reference_type = 'privacy_request'
+            AND ar2.reference_id = :manual_webhook_id
+            AND ar2.reference_type = :reference_type
+        """
+        result = db.execute(
+            query,
+            {
+                "privacy_request_id": self.id,
+                "manual_webhook_id": manual_webhook_id,
+                "reference_type": reference_type
+            }
+        )
+        return [Attachment(**row) for row in result]
+
+    def get_access_manual_webhook_attachments(self, db: Session, manual_webhook_id: str) -> List[Attachment]:
+        """Get all attachments that have references to both this privacy request and the specified access manual webhook"""
+        return self._get_manual_webhook_attachments(db, manual_webhook_id, "access_manual_webhook")
+
+    def get_erasure_manual_webhook_attachments(self, db: Session, manual_webhook_id: str) -> List[Attachment]:
+        """Get all attachments that have references to both this privacy request and the specified erasure manual webhook"""
+        return self._get_manual_webhook_attachments(db, manual_webhook_id, "erasure_manual_webhook")
+
     def get_existing_request_task(
         self,
         db: Session,
@@ -1228,7 +1258,8 @@ class PrivacyRequest(
         """
         if not self.policy.get_rules_for_action(action_type=ActionType.access):
             return None
-
+        logger.info(f"Saving filtered access results for privacy request {self.id}")
+        logger.info(f"Results: {results}")
         self.filtered_final_upload = results
         self.save(db)
 

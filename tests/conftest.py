@@ -97,6 +97,7 @@ TEST_DEPRECATED_CONFIG_PATH = "tests/ctl/test_deprecated_config.toml"
 
 @pytest.fixture
 def s3_client(storage_config):
+    """Creates a mock S3 client for testing."""
     with mock_aws():
         session = boto3.Session(
             aws_access_key_id="fake_access_key",

@@ -20,6 +20,7 @@ from fides.api.common_exceptions import (
 from fides.api.db.session import get_db_session
 from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph import DatasetGraph
+from fides.api.models.attachment import Attachment, AttachmentType
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.connectionconfig import AccessLevel, ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
@@ -82,6 +83,26 @@ class ManualWebhookResults(FidesSchema):
     proceed: bool
 
 
+def get_attachments(request_attachments: List[Attachment]) -> List[Dict[str, Any]]:
+    attachments = []
+    for attachment in request_attachments:
+        logger.info(f"Attachment ID: {attachment.id}")
+        logger.info(f"Attachment config: {attachment.config}")
+        logger.info(f"Attachment type: {attachment.attachment_type}")
+        if attachment.attachment_type == AttachmentType.include_with_access_package:
+            retrieved_attachment_size, retrieved_attachment_url = attachment.retrieve_attachment()
+            attachments.append(
+                {
+                    "id": attachment.id,
+                    "file_name": attachment.file_name,
+                    "created_at": attachment.created_at.isoformat(),
+                    "file_size": retrieved_attachment_size,
+                    "download_url": retrieved_attachment_url,
+                }
+            )
+    return attachments
+
+
 def get_manual_webhook_access_inputs(
     db: Session, privacy_request: PrivacyRequest, policy: Policy
 ) -> ManualWebhookResults:
@@ -98,9 +119,24 @@ def get_manual_webhook_access_inputs(
 
     try:
         for manual_webhook in AccessManualWebhook.get_enabled(db, ActionType.access):
-            manual_inputs[manual_webhook.connection_config.key] = [
-                privacy_request.get_manual_webhook_access_input_strict(manual_webhook)
-            ]
+            # Get the manual webhook input data
+            webhook_data = privacy_request.get_manual_webhook_access_input_strict(manual_webhook)
+            # Get any attachments for this webhook
+            webhook_attachments = privacy_request.get_access_manual_webhook_attachments(db, manual_webhook.id)
+            logger.info(webhook_attachments)
+            if webhook_attachments:
+                logger.info("GETTING ATTACHMENTS")
+                # Load attachments from database to ensure they have their configs
+                loaded_attachments = []
+                for webhook_attachment in webhook_attachments:
+                    loaded_attachment = db.query(Attachment).get(webhook_attachment.id)
+                    if loaded_attachment and loaded_attachment.config is not None:
+                        loaded_attachments.append(loaded_attachment)
+                    else:
+                        logger.error(f"Could not load attachment {webhook_attachment.id} or config is None")
+                webhook_data["attachments"] = get_attachments(loaded_attachments)
+            manual_inputs[manual_webhook.connection_config.key] = [webhook_data]
+
     except (
         NoCachedManualWebhookEntry,
         ValidationError,
@@ -211,6 +247,9 @@ def upload_access_results(  # pylint: disable=R0912
 ) -> List[str]:
     """Process the data uploads after the access portion of the privacy request has completed"""
     download_urls: List[str] = []
+    logger.info(privacy_request.attachments)
+    attachments = get_attachments(privacy_request.attachments)
+    logger.info(f"{len(attachments)} attachments found for privacy request {privacy_request.id}")
     if not access_result:
         logger.info("No results returned for access request")
 
@@ -233,7 +272,9 @@ def upload_access_results(  # pylint: disable=R0912
 
         filtered_results.update(
             manual_data
-        )  # Add manual data directly to each upload packet
+        )
+        if attachments:
+            filtered_results["attachments"] = attachments
         rule_filtered_results[rule.key] = filtered_results
 
         logger.info(

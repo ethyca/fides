@@ -3985,7 +3985,7 @@ def attachment_data(user, storage_config):
     }
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def attachment(s3_client, db, attachment_data, monkeypatch):
     """Creates an attachment."""
 
@@ -3995,6 +3995,23 @@ def attachment(s3_client, db, attachment_data, monkeypatch):
     monkeypatch.setattr(
         "fides.api.service.storage.s3.get_s3_client", mock_get_s3_client
     )
+    attachment = Attachment.create_and_upload(
+        db, data=attachment_data, attachment_file=BytesIO(b"file content")
+    )
+    yield attachment
+    attachment.delete(db)
+
+
+@pytest.fixture
+def attachment_include_in_download(s3_client, db, attachment_data, monkeypatch):
+    """Creates an attachment that is included in the download."""
+    def mock_get_s3_client(auth_method, storage_secrets):
+        return s3_client
+
+    monkeypatch.setattr(
+        "fides.api.service.storage.s3.get_s3_client", mock_get_s3_client
+    )
+    attachment_data["attachment_type"] = AttachmentType.include_with_access_package
     attachment = Attachment.create_and_upload(
         db, data=attachment_data, attachment_file=BytesIO(b"file content")
     )

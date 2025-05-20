@@ -3,9 +3,11 @@ import time
 from typing import Any, Dict, List, Set
 from unittest import mock
 from unittest.mock import ANY, Mock, call
+from io import BytesIO
 
 import pydash
 import pytest
+from moto import mock_aws
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import flag_modified
@@ -16,6 +18,12 @@ from fides.api.common_exceptions import (
 )
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.application_config import ApplicationConfig
+from fides.api.models.attachment import (
+    Attachment,
+    AttachmentReference,
+    AttachmentReferenceType,
+    AttachmentType,
+)
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import PolicyPostWebhook, PolicyPreWebhook
 from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest
@@ -39,6 +47,8 @@ from fides.api.service.privacy_request.request_runner_service import (
     build_consent_dataset_graph,
     needs_batch_email_send,
     run_webhooks_and_report_status,
+    upload_access_results,
+    get_manual_webhook_access_inputs,
 )
 from fides.common.api.v1.urn_registry import REQUEST_TASK_CALLBACK, V1_URL_PREFIX
 from fides.config import CONFIG
@@ -1508,3 +1518,166 @@ class TestSkipCollectionsWithOptionalIdentities:
         assert skipped_log.message == (
             'Skipping the "optional_identities:customer" collection, it is reachable by the "user_id" identity but only the "email" identity was provided'
         )
+
+
+class TestIncludeAttachments:
+    @pytest.fixture
+    def create_attachment_references(self, db):
+        """Fixture to create an attachment reference"""
+        def _create_reference(references: List[Dict[str, Any]]):
+            for reference in references:
+                AttachmentReference.create(
+                    db,
+                    data={
+                        "reference_id": reference["reference_id"],
+                        "attachment_id": reference["attachment_id"],
+                        "reference_type": reference["reference_type"],
+                    },
+            )
+        return _create_reference
+
+    @pytest.mark.usefixtures("s3_client")
+    def test_attachments_included_in_upload_access_results(
+        self,
+        db,
+        privacy_request,
+        storage_config,
+        attachment,
+        attachment_include_in_download,
+        create_attachment_references,
+        policy,
+        postgres_dataset_graph,
+    ):
+        """Test that attachments are included in the upload access results.
+
+        This test creates two attachments, one that is included in the download
+        and one that is not.  It then creates a privacy request and uploads the
+        access results.  It then verifies that only the attachment intended to be
+        included in the download is included in the upload access results.
+        """
+        # Create attachment references for each attachment
+        create_attachment_references(
+            [
+                {
+                    "reference_id": privacy_request.id,
+                    "attachment_id": attachment.id,
+                    "reference_type": AttachmentReferenceType.privacy_request,
+                },
+                {
+                    "reference_id": privacy_request.id,
+                    "attachment_id": attachment_include_in_download.id,
+                    "reference_type": AttachmentReferenceType.privacy_request,
+                }
+            ]
+        )
+        db.refresh(privacy_request)
+
+        # Ensure attachments are loaded with their configs
+        for attachment in privacy_request.attachments:
+            db.refresh(attachment)
+            assert attachment.config is not None, f"Config is None for attachment {attachment.id}"
+
+        # Upload access results
+        results = upload_access_results(
+            session=db,
+            policy=policy,
+            access_result={},
+            dataset_graph=postgres_dataset_graph,
+            privacy_request=privacy_request,
+            manual_data={},
+            fides_connector_datasets=set(),
+        )
+
+        # Verify that the download URLs are returned
+        assert results is not None
+        assert len(results) > 0
+        assert "http://www.data-download-url" in results
+
+        # Verify that the attachment was included in the filtered results
+        filtered_results = privacy_request.get_filtered_final_upload()
+        assert filtered_results is not None
+        assert "access_request_rule" in filtered_results
+        assert "attachments" in filtered_results["access_request_rule"]
+        results_attachments = filtered_results["access_request_rule"]["attachments"]
+        assert len(results_attachments) == 1
+        assert results_attachments[0]["id"] == attachment_include_in_download.id
+        assert results_attachments[0]["file_name"] == attachment_include_in_download.file_name
+        assert results_attachments[0]["file_size"] == len(b"file content")
+        assert "download_url" in results_attachments[0]
+        assert "created_at" in results_attachments[0]
+
+
+    @pytest.mark.usefixtures("s3_client")
+    def test_attachments_included_in_manual_webhook_results(
+        self,
+        db,
+        privacy_request,
+        storage_config,
+        attachment,
+        attachment_include_in_download,
+        create_attachment_references,
+        access_manual_webhook,
+        policy,
+    ):
+        # Create an attachment
+        create_attachment_references(
+            [
+                {
+                    "reference_id": privacy_request.id,
+                    "attachment_id": attachment.id,
+                    "reference_type": AttachmentReferenceType.privacy_request,
+                },
+                {
+                    "reference_id": access_manual_webhook.id,
+                    "attachment_id": attachment.id,
+                    "reference_type": AttachmentReferenceType.access_manual_webhook,
+                },
+                {
+                    "reference_id": access_manual_webhook.id,
+                    "attachment_id": attachment_include_in_download.id,
+                    "reference_type": AttachmentReferenceType.access_manual_webhook,
+                },
+                {
+                    "reference_id": privacy_request.id,
+                    "attachment_id": attachment_include_in_download.id,
+                    "reference_type": AttachmentReferenceType.privacy_request,
+                },
+            ]
+        )
+
+        # Ensure attachments are loaded with their configs
+        db.refresh(attachment)
+        db.refresh(attachment_include_in_download)
+        assert attachment.config is not None, f"Config is None for attachment {attachment.id}"
+        assert attachment_include_in_download.config is not None, f"Config is None for attachment {attachment_include_in_download.id}"
+
+        # Cache manual webhook input
+        privacy_request.cache_manual_webhook_access_input(
+            access_manual_webhook,
+            {"email": "test@example.com", "last_name": "Test"},
+        )
+
+        # Get manual webhook access inputs
+        webhook_inputs = get_manual_webhook_access_inputs(
+            db=db,
+            privacy_request=privacy_request,
+            policy=policy,
+        )
+
+        # Verify that the attachment was included in the webhook inputs
+        assert webhook_inputs is not None
+        assert webhook_inputs.proceed
+        assert webhook_inputs.manual_data is not None
+        assert access_manual_webhook.connection_config.key in webhook_inputs.manual_data
+        webhook_data = webhook_inputs.manual_data[access_manual_webhook.connection_config.key][0]
+
+        # Verify the webhook data structure
+        assert "attachments" in webhook_data
+        assert len(webhook_data["attachments"]) == 1
+        assert webhook_data["attachments"][0]["id"] == attachment_include_in_download.id
+        assert webhook_data["attachments"][0]["file_name"] == attachment_include_in_download.file_name
+        assert webhook_data["attachments"][0]["file_size"] == len(b"file content")
+        assert "download_url" in webhook_data["attachments"][0]
+        assert "created_at" in webhook_data["attachments"][0]
+        assert webhook_data["email"] == "test@example.com"
+        assert webhook_data["last_name"] == "Test"
