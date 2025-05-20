@@ -15,13 +15,11 @@ import {
 } from "fides-js";
 import { promises as fsPromises } from "fs";
 import type { NextApiRequest, NextApiResponse } from "next";
+import pRetry from "p-retry";
 
 import { getFidesApiUrl, loadServerSettings } from "~/app/server-environment";
 import { getPrivacyCenterEnvironmentCached } from "~/app/server-utils";
-import {
-  createLoggingContext,
-  LoggerContext,
-} from "~/app/server-utils/loggerContext";
+import { createLoggingContext } from "~/app/server-utils/loggerContext";
 import { MissingExperienceBehavior } from "~/app/server-utils/PrivacyCenterSettings";
 import { LOCATION_HEADERS, lookupGeolocation } from "~/common/geolocation";
 import { safeLookupPropertyId } from "~/common/property-id";
@@ -49,41 +47,8 @@ const missingExperienceBehaviors: Record<
   },
 };
 
-const PREFETCH_RETRY_DELAY = 100;
+const PREFETCH_RETRY_MIN_TIMEOUT_MS = 100;
 const PREFETCH_MAX_RETRIES = 10;
-async function retry<T>(
-  func: () => Promise<T> | T,
-  {
-    delay,
-    retries,
-    timeout = setTimeout,
-  }: { delay: number; retries: number; timeout?: typeof setTimeout },
-  loggingContext: LoggerContext,
-): Promise<T> {
-  try {
-    return await func();
-  } catch (error) {
-    let message;
-    if (error instanceof Error) {
-      message = error.message;
-    }
-    loggingContext.warn(
-      `Attempt to get privacy experience failed, ${retries} remain. Error message was: `,
-      message,
-    );
-    if (retries > 1) {
-      await new Promise((resolve) => {
-        timeout(resolve, delay);
-      });
-      return retry(
-        func,
-        { delay, retries: retries - 1, timeout },
-        loggingContext,
-      );
-    }
-    throw error;
-  }
-}
 
 /**
  * @swagger
@@ -161,7 +126,7 @@ export default async function handler(
 ) {
   const loggingContext = createLoggingContext(req);
   const serverSettings = loadServerSettings();
-  console.log({ serverSettings });
+
   // eslint-disable-next-line no-console, @typescript-eslint/no-explicit-any
   // Load the configured consent options (data uses, defaults, etc.) from environment
   const environment = await getPrivacyCenterEnvironmentCached({
@@ -246,12 +211,13 @@ export default async function handler(
       const missingExperienceHandler =
         missingExperienceBehaviors[serverSettings.MISSING_EXPERIENCE_BEHAVIOR];
 
+      const PREFETCH_BACKOFF_FACTOR = 1.125;
       /*
        * Since we don't know what the experience will be when the initial call is made,
        * we supply the minimal request to the api endpoint with the understanding that if
        * TCF is being returned, we want the minimal version. It will be ignored otherwise.
        */
-      experience = await retry(
+      experience = await pRetry(
         () =>
           fetchExperience({
             userLocationString: fidesRegionString,
@@ -262,10 +228,20 @@ export default async function handler(
             missingExperienceHandler,
           }),
         {
-          delay: PREFETCH_RETRY_DELAY,
           retries: PREFETCH_MAX_RETRIES,
+          factor: PREFETCH_BACKOFF_FACTOR,
+          minTimeout: PREFETCH_RETRY_MIN_TIMEOUT_MS,
+          onFailedAttempt: (error) => {
+            let message;
+            if (error instanceof Error) {
+              message = error.message;
+            }
+            loggingContext.warn(
+              `Attempt to get privacy experience failed, ${error.retriesLeft} remain. Error message was: `,
+              message,
+            );
+          },
         },
-        loggingContext,
       );
       loggingContext.debug(
         `Fetched relevant experiences from server-side (${userLanguageString}).`,
