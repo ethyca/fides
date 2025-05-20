@@ -181,6 +181,7 @@ export const updateConsentPreferences = async ({
 export const updateConsent = async (
   fides: FidesGlobal,
   options: { consent?: NoticeValues; fidesString?: string },
+  consentMethod: ConsentMethod = ConsentMethod.SCRIPT,
 ): Promise<void> => {
   // If neither consent nor fidesString is provided, raise an error
   if (!options?.consent && !options?.fidesString) {
@@ -303,7 +304,7 @@ export const updateConsent = async (
     experience: fides.experience as
       | PrivacyExperience
       | PrivacyExperienceMinimal,
-    consentMethod: ConsentMethod.SAVE,
+    consentMethod,
     options: fides.options,
     userLocationString: fidesRegionString,
     cookie: fides.cookie,
