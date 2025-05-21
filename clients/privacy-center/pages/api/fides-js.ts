@@ -212,37 +212,42 @@ export default async function handler(
       const missingExperienceHandler =
         missingExperienceBehaviors[serverSettings.MISSING_EXPERIENCE_BEHAVIOR];
 
-      /*
-       * Since we don't know what the experience will be when the initial call is made,
-       * we supply the minimal request to the api endpoint with the understanding that if
-       * TCF is being returned, we want the minimal version. It will be ignored otherwise.
-       */
-      experience = await pRetry(
-        () =>
-          fetchExperience({
-            userLocationString: fidesRegionString,
-            userLanguageString,
-            fidesApiUrl: getFidesApiUrl(),
-            propertyId,
-            requestMinimalTCF: true,
-            missingExperienceHandler,
-          }),
-        {
-          retries: PREFETCH_MAX_RETRIES,
-          factor: PREFETCH_BACKOFF_FACTOR,
-          minTimeout: PREFETCH_RETRY_MIN_TIMEOUT_MS,
-          onFailedAttempt: (error) => {
-            loggingContext.debug(
-              `Attempt to get privacy experience failed, ${error.retriesLeft} remain. Error message was: `,
-              error.message,
-            );
+      try {
+        /*
+         * Since we don't know what the experience will be when the initial call is made,
+         * we supply the minimal request to the api endpoint with the understanding that if
+         * TCF is being returned, we want the minimal version. It will be ignored otherwise.
+         */
+        experience = await pRetry(
+          () =>
+            fetchExperience({
+              userLocationString: fidesRegionString,
+              userLanguageString,
+              fidesApiUrl: getFidesApiUrl(),
+              propertyId,
+              requestMinimalTCF: true,
+              missingExperienceHandler,
+            }),
+          {
+            retries: PREFETCH_MAX_RETRIES,
+            factor: PREFETCH_BACKOFF_FACTOR,
+            minTimeout: PREFETCH_RETRY_MIN_TIMEOUT_MS,
+            onFailedAttempt: (error) => {
+              loggingContext.debug(
+                `Attempt to get privacy experience failed, ${error.retriesLeft} remain. Error message was: `,
+                error.message,
+              );
+            },
           },
-        },
-      );
-      loggingContext.debug(
-        `Fetched relevant experiences from server-side (${userLanguageString}).`,
-      );
-      experienceIsValid(experience);
+        );
+        loggingContext.debug(
+          `Fetched relevant experiences from server-side (${userLanguageString}).`,
+        );
+        experienceIsValid(experience);
+      } catch (error) {
+        loggingContext.error(error);
+        throw error;
+      }
     }
   }
 
