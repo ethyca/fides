@@ -98,9 +98,6 @@ jest.mock(
 );
 
 describe("loadPrivacyCenterEnvironment", () => {
-  beforeAll(() => {
-    (globalThis as any).fidesDebugger = () => {};
-  });
   beforeEach(() => {
     mockAsServerSide();
     loadEnvironmentVariablesMock.mockReturnValue({

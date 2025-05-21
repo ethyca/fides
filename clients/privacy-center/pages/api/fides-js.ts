@@ -160,7 +160,7 @@ export default async function handler(
       fidesString,
     );
   } catch (error) {
-    fidesError(error);
+    loggingContext.error(error);
     res
       .status(400) // 400 Bad Request. Malformed request.
       .send(
@@ -441,7 +441,7 @@ async function fetchCustomFidesCss(
           autoRefresh = false;
           return null;
         }
-        fidesError(
+        loggingContext.error(
           "Error fetching custom-fides.css:",
           response.status,
           response.statusText,
@@ -461,9 +461,9 @@ async function fetchCustomFidesCss(
     } catch (error) {
       autoRefresh = false; // /custom-asset endpoint unreachable stop auto-refresh
       if (error instanceof Error) {
-        fidesError("Error during fetch operation:", error.message);
+        loggingContext.error("Error during fetch operation:", error.message);
       } else {
-        fidesError("Unknown error occurred:", error);
+        loggingContext.error("Unknown error occurred:", error);
       }
     }
   }
