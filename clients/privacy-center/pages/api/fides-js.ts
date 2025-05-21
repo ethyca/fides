@@ -20,7 +20,7 @@ import pRetry from "p-retry";
 import { getFidesApiUrl, loadServerSettings } from "~/app/server-environment";
 import { getPrivacyCenterEnvironmentCached } from "~/app/server-utils";
 import { createLoggingContext } from "~/app/server-utils/loggerContext";
-import { MissingExperienceBehavior } from "~/app/server-utils/PrivacyCenterSettings";
+import { MissingExperienceBehaviors } from "~/app/server-utils/PrivacyCenterSettings";
 import { LOCATION_HEADERS, lookupGeolocation } from "~/common/geolocation";
 import { safeLookupPropertyId } from "~/common/property-id";
 
@@ -36,7 +36,7 @@ let lastFetched: number = 0;
 let autoRefresh: boolean = true;
 
 const missingExperienceBehaviors: Record<
-  MissingExperienceBehavior,
+  MissingExperienceBehaviors,
   (error: unknown) => Record<string, never>
 > = {
   throw: (error) => {

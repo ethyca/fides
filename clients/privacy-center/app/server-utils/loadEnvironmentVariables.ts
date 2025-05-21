@@ -1,4 +1,7 @@
-import { PrivacyCenterSettings } from "~/app/server-utils/PrivacyCenterSettings";
+import {
+  LOG_LEVEL_LABELS,
+  PrivacyCenterSettings,
+} from "~/app/server-utils/PrivacyCenterSettings";
 import type { ConsentMethod } from "~/types/api";
 import type {
   ConsentFlagType,
@@ -20,6 +23,14 @@ const defaultMissingExperienceBehavior = (
   }
 
   return "empty_experience";
+};
+
+const defaultLogLevel = (setting: any): PrivacyCenterSettings["LOG_LEVEL"] => {
+  if (LOG_LEVEL_LABELS.includes(setting)) {
+    return setting;
+  }
+
+  return "info";
 };
 
 const loadEnvironmentVariables = () => {
@@ -47,6 +58,7 @@ const loadEnvironmentVariables = () => {
     MISSING_EXPERIENCE_BEHAVIOR: defaultMissingExperienceBehavior(
       process.env.FIDES_PRIVACY_CENTER__MISSING_EXPERIENCE_BEHAVIOR,
     ),
+    LOG_LEVEL: defaultLogLevel(process.env.FIDES_PRIVACY_CENTER__LOG_LEVEL),
 
     // Overlay options
     DEBUG: process.env.FIDES_PRIVACY_CENTER__DEBUG
