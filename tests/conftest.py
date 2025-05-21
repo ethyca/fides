@@ -6,9 +6,12 @@ import time
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, Dict, Generator, List
+from unittest.mock import create_autospec
+from urllib.parse import urlparse
 from uuid import uuid4
 
 import boto3
+import google.auth.credentials
 import pytest
 import requests
 import yaml
@@ -16,6 +19,8 @@ from fastapi import Query
 from fastapi.testclient import TestClient
 from fideslang import DEFAULT_TAXONOMY, models
 from fideslang.models import System as SystemSchema
+from google.api_core.exceptions import NotFound
+from google.cloud import storage
 from httpx import AsyncClient
 from loguru import logger
 from moto import mock_aws
@@ -97,6 +102,7 @@ TEST_DEPRECATED_CONFIG_PATH = "tests/ctl/test_deprecated_config.toml"
 
 @pytest.fixture
 def s3_client(storage_config):
+    """Creates a mock S3 client for testing."""
     with mock_aws():
         session = boto3.Session(
             aws_access_key_id="fake_access_key",
@@ -1982,3 +1988,174 @@ def pytest_configure_node(node):
         print(
             "[Configure Node] Skipping DB setup/config update on single node or non-xdist run."
         )
+
+
+@pytest.fixture
+def base_gcs_client_mock(monkeypatch):
+    """Base fixture for mocking GCS client and related functionality.
+    This fixture provides the core mocking functionality that can be extended
+    for specific test cases.
+    """
+    # Create mock credentials
+    mock_credentials = create_autospec(google.auth.credentials.Credentials)
+    mock_credentials.universe_domain = "googleapis.com"
+
+    # Create mock client
+    mock_client = create_autospec(storage.Client)
+
+    # Mock auth.default
+    def mock_auth_default(*args, **kwargs):
+        return (mock_credentials, "test-project")
+
+    monkeypatch.setattr("google.auth.default", mock_auth_default)
+
+    # Mock Client class
+    def mock_client_init(*args, **kwargs):
+        return mock_client
+
+    monkeypatch.setattr("google.cloud.storage.Client", mock_client_init)
+
+    # Mock get_gcs_client
+    def mock_get_gcs_client(auth_method, storage_secrets):
+        return mock_client
+
+    monkeypatch.setattr(
+        "fides.api.service.storage.gcs.get_gcs_client", mock_get_gcs_client
+    )
+
+    # Mock response class
+    class MockResponse:
+        def __init__(self, status_code=200, content=None, headers=None):
+            self.status_code = status_code
+            self.content = content or b""
+            self.headers = headers or {}
+            self.text = self.content.decode() if self.content else ""
+
+    # Mock transport request
+    def mock_transport_request(*args, **kwargs):
+        method = kwargs.get("method", "GET")
+        url = kwargs.get("url", "")
+
+        if method == "POST" and "uploadType=resumable" in str(url):
+            return MockResponse(
+                200, headers={"location": "https://upload.example.com/upload"}
+            )
+        elif method == "PUT" and urlparse(str(url)).hostname == "upload.example.com":
+            return MockResponse(200)
+        elif method == "DELETE":
+            return MockResponse(204)
+        return MockResponse(200)
+
+    monkeypatch.setattr(
+        "google.auth.transport.requests.AuthorizedSession.request",
+        mock_transport_request,
+    )
+
+    return mock_client
+
+
+@pytest.fixture
+def gcs_client(storage_config_default_gcs):
+    """Creates a mock GCS client for testing."""
+    # Create mock credentials
+    mock_credentials = create_autospec(google.auth.credentials.Credentials)
+    mock_credentials.universe_domain = "googleapis.com"
+
+    # Create and configure the main client mock
+    mock_client = create_autospec(storage.Client)
+
+    # Create a dictionary to store blob states
+    blob_states = {}
+
+    def get_mock_blob(blob_name):
+        if blob_name not in blob_states:
+            mock_blob = create_autospec(storage.Blob)
+            mock_blob.name = blob_name
+            mock_blob.exists.return_value = False
+            mock_blob.size = 0
+            mock_blob.download_as_bytes.return_value = b""
+
+            # Mock generate_signed_url with proper parameters
+            def mock_generate_signed_url(version, expiration, method):
+                return f"https://{storage_config_default_gcs.details[StorageDetails.BUCKET.value]}.storage.googleapis.com/{blob_name}"
+
+            mock_blob.generate_signed_url = mock_generate_signed_url
+
+            # Mock the upload process
+            def mock_upload_from_file(
+                file_obj,
+                content_type=None,
+                num_retries=None,
+                client=None,
+                size=None,
+                **kwargs,
+            ):
+                try:
+                    file_obj.seek(0)
+                    content = file_obj.read()
+                    mock_blob.exists.return_value = True
+                    mock_blob.size = len(content)
+                    mock_blob.download_as_bytes.return_value = content
+                    file_obj.seek(0)
+                    return None
+                except Exception as e:
+                    raise ValueError(f"Failed to upload file: {e}")
+
+            def mock_upload_from_filename(
+                filename,
+                content_type=None,
+                num_retries=None,
+                client=None,
+                size=None,
+                **kwargs,
+            ):
+                with open(filename, "rb") as file_obj:
+                    return mock_upload_from_file(
+                        file_obj, content_type, num_retries, client, size, **kwargs
+                    )
+
+            def mock_upload_from_string(
+                data,
+                content_type=None,
+                num_retries=None,
+                client=None,
+                size=None,
+                **kwargs,
+            ):
+                mock_blob.exists.return_value = True
+                mock_blob.size = len(data)
+                mock_blob.download_as_bytes.return_value = (
+                    data.encode() if isinstance(data, str) else data
+                )
+                return None
+
+            # Mock delete operation
+            def mock_delete():
+                if not mock_blob.exists.return_value:
+                    raise NotFound("No such object")
+                mock_blob.exists.return_value = False
+                mock_blob.size = 0
+                mock_blob.download_as_bytes.return_value = b""
+                return None
+
+            mock_blob.upload_from_file = mock_upload_from_file
+            mock_blob.upload_from_filename = mock_upload_from_filename
+            mock_blob.upload_from_string = mock_upload_from_string
+            mock_blob.delete = mock_delete
+            blob_states[blob_name] = mock_blob
+        return blob_states[blob_name]
+
+    # Set up bucket operations
+    def mock_bucket_operations(bucket_name):
+        mock_bucket = create_autospec(storage.Bucket)
+        mock_bucket.name = bucket_name
+
+        def get_blob(blob_name):
+            return get_mock_blob(f"{bucket_name}/{blob_name}")
+
+        mock_bucket.blob = get_blob
+        return mock_bucket
+
+    mock_client.bucket.side_effect = mock_bucket_operations
+
+    yield mock_client
