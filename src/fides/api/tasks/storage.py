@@ -75,7 +75,21 @@ def write_to_in_memory_buffer(
     logger.debug("Writing data to in-memory buffer")
 
     if resp_format == ResponseFormat.json.value:
-        json_str = json.dumps(data, indent=2, default=StorageJSONEncoder)
+        # Create a copy of the data to modify
+        json_data = data.copy()
+
+        # Handle attachments by including their metadata and URLs
+        if "attachments" in json_data and isinstance(json_data["attachments"], list):
+            for attachment in json_data["attachments"]:
+                if isinstance(attachment, dict):
+                    # The attachment data already contains download_url from get_attachments_content
+                    # Just ensure we have all the metadata we need
+                    attachment["content_type"] = attachment.get(
+                        "content_type", "application/octet-stream"
+                    )
+                    attachment["file_size"] = attachment.get("file_size", 0)
+
+        json_str = json.dumps(json_data, indent=2, default=StorageJSONEncoder().default)
         return BytesIO(
             encrypt_access_request_results(json_str, privacy_request.id).encode(
                 CONFIG.security.encoding
@@ -85,7 +99,12 @@ def write_to_in_memory_buffer(
     if resp_format == ResponseFormat.csv.value:
         zipped_csvs = BytesIO()
         with zipfile.ZipFile(zipped_csvs, "w") as f:
+            # Handle regular data fields and manual webhook data (which includes its own attachments)
             for key in data:
+                if key == "attachments":
+                    # Skip privacy request attachments here as they'll be handled separately
+                    continue
+
                 df = pd.json_normalize(data[key])
                 buffer = BytesIO()
                 df.to_csv(buffer, index=False, encoding=CONFIG.security.encoding)
@@ -96,6 +115,21 @@ def write_to_in_memory_buffer(
                         buffer.getvalue(), privacy_request.id
                     ),
                 )
+
+            # Handle privacy request attachments separately
+            if "attachments" in data and isinstance(data["attachments"], list):
+                for attachment in data["attachments"]:
+                    if (
+                        isinstance(attachment, dict)
+                        and "content" in attachment
+                        and "file_name" in attachment
+                    ):
+                        f.writestr(
+                            f"attachments/{attachment['file_name']}",
+                            encrypt_access_request_results(
+                                attachment["content"], privacy_request.id
+                            ),
+                        )
 
         zipped_csvs.seek(0)
         return zipped_csvs

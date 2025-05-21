@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Dict, Union
+from typing import Any, Union
 
 from bson import ObjectId
 from pydantic import ValidationError
@@ -54,6 +54,7 @@ class StorageJSONEncoder(CustomJSONEncoder):
     A JSON encoder specifically for storage operations that maintains the original
     format for datetime and ObjectId while inheriting other functionality from CustomJSONEncoder.
     """
+
     def default(self, o: Any) -> Any:
         if isinstance(o, datetime):
             return o.strftime("%Y-%m-%dT%H:%M:%S")

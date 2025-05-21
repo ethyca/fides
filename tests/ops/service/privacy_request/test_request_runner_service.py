@@ -1611,6 +1611,8 @@ class TestIncludeAttachments:
         assert results_attachments[0]["file_size"] == len(b"file content")
         assert results_attachments[0]["content_type"] == "txt"
         assert results_attachments[0]["content"] is not None
+        assert results_attachments[0]["download_url"] is not None
+        assert "http://www.data-download-url" in results_attachments[0]["download_url"]
 
     @pytest.mark.usefixtures("s3_client")
     def test_attachments_included_in_manual_webhook_results(
@@ -1692,5 +1694,10 @@ class TestIncludeAttachments:
         assert webhook_data["attachments"][0]["file_size"] == len(b"file content")
         assert webhook_data["attachments"][0]["content_type"] == "txt"
         assert webhook_data["attachments"][0]["content"] is not None
+        assert webhook_data["attachments"][0]["download_url"] is not None
+        assert (
+            "http://www.data-download-url"
+            in webhook_data["attachments"][0]["download_url"]
+        )
         assert webhook_data["email"] == "test@example.com"
         assert webhook_data["last_name"] == "Test"

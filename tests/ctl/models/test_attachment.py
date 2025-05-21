@@ -1,7 +1,8 @@
+import types
 import warnings
 from io import BytesIO
 from tempfile import SpooledTemporaryFile
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 from botocore.exceptions import ClientError
@@ -9,8 +10,6 @@ from google.cloud.exceptions import NotFound
 from moto import mock_aws
 from sqlalchemy import exc as sa_exc
 from sqlalchemy.exc import IntegrityError
-from unittest.mock import MagicMock
-import types
 
 from fides.api.models.attachment import (
     Attachment,

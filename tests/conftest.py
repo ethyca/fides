@@ -2196,13 +2196,17 @@ def mock_gcs_client(
         mock_blob.size = len(file_content)
 
         # Configure download_as_bytes with proper method binding
-        def mock_download_as_bytes(self, client=None, start=None, end=None, raw_download=False, **kwargs):
+        def mock_download_as_bytes(
+            self, client=None, start=None, end=None, raw_download=False, **kwargs
+        ):
             """Mock implementation of download_as_bytes method.
             Cannot use autospec because it is bound to the mock_blob instance.
             """
             return file_content
 
-        mock_blob.download_as_bytes = types.MethodType(mock_download_as_bytes, mock_blob)
+        mock_blob.download_as_bytes = types.MethodType(
+            mock_download_as_bytes, mock_blob
+        )
 
         def mock_upload_from_file(
             self,
