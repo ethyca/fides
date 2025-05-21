@@ -160,7 +160,7 @@ export default async function handler(
       fidesString,
     );
   } catch (error) {
-    log.error(error);
+    log.warn(error, "Error looking up geolocation or property ID.");
     res
       .status(400) // 400 Bad Request. Malformed request.
       .send(
@@ -183,16 +183,17 @@ export default async function handler(
 
   // If a geolocation can be determined, "prefetch" the experience from the Fides API immediately.
   // This allows the bundle to be fully configured server-side, so that the Fides.js bundle can initialize instantly!
-
+  let fidesRegionString: string | null = null;
   if (
     geolocation &&
     environment.settings.IS_OVERLAY_ENABLED &&
     environment.settings.IS_PREFETCH_ENABLED &&
     !fidesString
   ) {
-    const fidesRegionString = constructFidesRegionString(geolocation);
+    fidesRegionString = constructFidesRegionString(geolocation);
 
     if (fidesRegionString) {
+      const region = fidesRegionString;
       // Check for a provided "fides_locale" query param or cookie. If present, use it as
       // the user's preferred language, otherwise use the "accept-language" header
       // provided by the browser. If all else fails, use the default ("en").
@@ -201,8 +202,13 @@ export default async function handler(
       const userLanguageString =
         fidesLocale || req.headers["accept-language"] || DEFAULT_LOCALE;
 
-      log.debug(
-        `Fetching relevant experiences from server-side (${userLanguageString})...`,
+      log.info(
+        {
+          region,
+          "accept-language": userLanguageString,
+          propertyId,
+        },
+        `Fetching relevant experiences from server-side FIDES API...`,
       );
 
       // Define how we want to handle the scenario when the API fails to gives us an experience.
@@ -221,7 +227,7 @@ export default async function handler(
         experience = await pRetry(
           () =>
             fetchExperience({
-              userLocationString: fidesRegionString,
+              userLocationString: region,
               userLanguageString,
               fidesApiUrl: getFidesApiUrl(),
               propertyId,
@@ -234,18 +240,27 @@ export default async function handler(
             minTimeout: PREFETCH_RETRY_MIN_TIMEOUT_MS,
             onFailedAttempt: (error) => {
               log.debug(
-                `Attempt to get privacy experience failed, ${error.retriesLeft} remain. Error message was: `,
                 error.message,
+                `Attempt to get privacy experience failed, ${error.retriesLeft} remain. Error message was: `,
               );
             },
           },
         );
         log.debug(
-          `Fetched relevant experiences from server-side (${userLanguageString}).`,
+          {
+            experienceFound: Boolean(experience),
+            region: fidesRegionString,
+            "accept-langauage": userLanguageString,
+            propertyId,
+          },
+          `Fetched relevant experiences from server-side.`,
         );
         experienceIsValid(experience);
       } catch (error) {
-        log.error(error);
+        log.error(
+          error,
+          "Error fetching experience from server-side Fides API.",
+        );
         throw error;
       }
     }
@@ -254,7 +269,7 @@ export default async function handler(
   if (!geolocation) {
     log.debug("No geolocation found, unable to prefetch experience.");
   } else {
-    log.debug("Using geolocation", geolocation);
+    log.debug({ geolocation }, "Using geolocation");
   }
 
   // This query param is used for testing purposes only, and should not be used
@@ -391,6 +406,18 @@ export default async function handler(
   }
   })();
   `;
+
+  log.info(
+    {
+      propertyId,
+      experienceFound: Boolean(experience),
+      tcfEnabled,
+      gppEnabled,
+      customCssEnabled: Boolean(customFidesCss),
+      region: fidesRegionString,
+    },
+    "/fides.js response complete!",
+  );
 
   // Instruct any caches to store this response, since these bundles do not change often
   const cacheHeaders: CacheControl = {

@@ -40,7 +40,7 @@ const fetchPropertyFromApi = async ({
     log.debug(`Request to fetch property failed`, e);
   }
 
-  log.debug(`Fetched property id: `, result?.id);
+  log.debug(`Fetched property id: ${result?.id}`);
   return result;
 };
 export default fetchPropertyFromApi;
