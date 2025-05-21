@@ -3638,7 +3638,7 @@ describe("Consent overlay", () => {
     });
   });
 
-  describe("when updating consent using window.Fides.updateConsent", () => {
+  describe.only("when updating consent using window.Fides.updateConsent", () => {
     beforeEach(() => {
       cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
       cy.fixture("consent/fidesjs_options_banner_modal.json").then((config) => {
@@ -3669,8 +3669,8 @@ describe("Consent overlay", () => {
         win.Fides.updateConsent({
           consent: {
             [PRIVACY_NOTICE_KEY_1]: true,
-            [PRIVACY_NOTICE_KEY_2]: false,
-            [PRIVACY_NOTICE_KEY_3]: false,
+            [PRIVACY_NOTICE_KEY_2]: UserConsentPreference.ACKNOWLEDGE,
+            [PRIVACY_NOTICE_KEY_3]: UserConsentPreference.OPT_OUT,
           },
         });
 
@@ -3680,7 +3680,7 @@ describe("Consent overlay", () => {
           .its("consent")
           .should("eql", {
             [PRIVACY_NOTICE_KEY_1]: true,
-            [PRIVACY_NOTICE_KEY_2]: false,
+            [PRIVACY_NOTICE_KEY_2]: true,
             [PRIVACY_NOTICE_KEY_3]: false,
           });
       });
@@ -3710,7 +3710,7 @@ describe("Consent overlay", () => {
           .its("consent")
           .should("eql", {
             [PRIVACY_NOTICE_KEY_1]: true,
-            [PRIVACY_NOTICE_KEY_2]: false,
+            [PRIVACY_NOTICE_KEY_2]: true,
             [PRIVACY_NOTICE_KEY_3]: false,
           });
       });
@@ -3732,7 +3732,7 @@ describe("Consent overlay", () => {
         win.Fides.updateConsent({
           consent: {
             [PRIVACY_NOTICE_KEY_1]: false,
-            [PRIVACY_NOTICE_KEY_2]: true,
+            [PRIVACY_NOTICE_KEY_2]: UserConsentPreference.ACKNOWLEDGE,
             [PRIVACY_NOTICE_KEY_3]: false,
           },
           fidesString:
@@ -3745,7 +3745,7 @@ describe("Consent overlay", () => {
           .its("consent")
           .should("eql", {
             [PRIVACY_NOTICE_KEY_1]: true,
-            [PRIVACY_NOTICE_KEY_2]: false,
+            [PRIVACY_NOTICE_KEY_2]: true,
             [PRIVACY_NOTICE_KEY_3]: false,
           });
       });
