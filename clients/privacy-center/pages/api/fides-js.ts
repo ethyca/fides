@@ -210,7 +210,7 @@ export default async function handler(
       log.info(
         {
           region,
-          "accept-language": userLanguageString,
+          acceptLanguage: userLanguageString,
           propertyId,
         },
         `Fetching relevant experiences from server-side Fides API...`,
@@ -245,8 +245,8 @@ export default async function handler(
             minTimeout: PREFETCH_RETRY_MIN_TIMEOUT_MS,
             onFailedAttempt: (error) => {
               log.debug(
-                error.message,
-                `Attempt to get privacy experience failed, ${error.retriesLeft} remain. Error message was: `,
+                error,
+                `Attempt to get privacy experience failed, ${error.retriesLeft} remain.`,
               );
             },
           },
@@ -256,7 +256,7 @@ export default async function handler(
             experienceFound: Boolean(experience?.experience_config?.id),
             experienceConfigId: experience?.experience_config?.id,
             region: fidesRegionString,
-            "accept-language": userLanguageString,
+            acceptLanguage: userLanguageString,
             propertyId,
           },
           `Fetched relevant experiences from server-side Fides API.`,
@@ -415,6 +415,7 @@ export default async function handler(
       experienceConfigId: experience?.experience_config?.id,
       tcfEnabled,
       gppEnabled,
+      isHeadlessExperience,
       customCssEnabled: Boolean(customFidesCss),
     },
     "/fides.js response complete!",

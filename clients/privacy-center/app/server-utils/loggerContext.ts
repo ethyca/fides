@@ -14,7 +14,7 @@ export const createLogger = () => {
 
 export const createRequestLogger = (request: NextApiRequest) => {
   const id = request.headers["x-request-id"] ?? "null";
-  const child = createLogger().child({ "Request-Id": id });
+  const child = createLogger().child({ requestId: id });
   return child;
 };
 
