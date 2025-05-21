@@ -8,7 +8,6 @@ import {
   getClientSettings,
   getFidesApiUrl,
   loadConfigFromFile,
-  loadServerSettings,
   loadStylesFromFile,
   PrivacyCenterEnvironment,
 } from "../server-environment";
