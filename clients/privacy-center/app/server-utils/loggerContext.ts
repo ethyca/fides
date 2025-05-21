@@ -7,7 +7,6 @@ export const createLogger = () => {
   const settings = loadServerSettings();
   const logger = pino({
     level: settings.LOG_LEVEL,
-    transport: { target: "pino-pretty" },
   });
 
   return logger;
