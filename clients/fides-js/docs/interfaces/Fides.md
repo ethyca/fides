@@ -40,8 +40,13 @@ existence of Fides *or* subscribe to the global `FidesInitialized` event (see
 
 User's current consent preferences, formatted as a key/value object with:
 - key: the applicable Fides `notice_key` (e.g. `data_sales_and_sharing`, `analytics`)
-- value: `true` or `false`, depending on whether or not the current user
-has consented to the notice
+- value:
+  - `true` or `false` boolean values (where true means opt-in/consent granted, false means opt-out/consent declined)
+  - or one of these string values:
+    - `"opt_in"` - user has explicitly opted in to this notice
+    - `"opt_out"` - user has explicitly opted out of this notice
+    - `"acknowledge"` - user has acknowledged this notice (for notice-only consent mechanisms)
+    - `"not_applicable"` - notice is not applicable to the user's region/context
 
 Note that FidesJS will automatically set default consent preferences based
 on the type of notice - so, for example a typical "opt-in" analytics notice
@@ -69,12 +74,20 @@ A `Fides.consent` value showing the user has opted-in to analytics, but not mark
 }
 ```
 
-A `Fides.consent` value showing the user has opted-in to analytics, but not marketing using a consent mechanism string:
+A `Fides.consent` value showing the user has opted-in to analytics, but not marketing using consent mechanism strings:
 ```ts
 {
   "analytics": "opt_in",
   "marketing": "opt_out"
 }
+```
+
+A `Fides.consent` value showing a notice-only consent mechanism with acknowledgment:
+```ts
+{
+  "terms_of_service": "acknowledge"
+}
+```
 
 ***
 
@@ -537,8 +550,9 @@ If both are provided, `fidesString` takes priority.
 | Parameter | Type | Description |
 | ------ | ------ | ------ |
 | `options` | `object` | Options for updating consent |
-| `options.consent`? | `Record`\<`string`, `boolean`\> | Object mapping notice keys to consent values |
+| `options.consent`? | `Record`\<`string`, `string` \| `boolean`\> | Object mapping notice keys to consent values: - Boolean values: `true` (opt-in/consent granted) or `false` (opt-out/consent declined) - String values: - `"opt_in"` - user has explicitly opted in to this notice - `"opt_out"` - user has explicitly opted out of this notice - `"acknowledge"` - ONLY valid for notices with "notice_only" consent mechanism |
 | `options.fidesString`? | `string` | A Fides string containing encoded consent preferences |
+| `options.validation`? | `"throw"` \| `"warn"` \| `"ignore"` | Controls validation behavior: "throw" (default), "warn", or "ignore" - "throw": Throws an error if any consent value is invalid (default) - "warn": Logs a warning if any consent value is invalid, but continues processing - "ignore": Silently accepts invalid values without validation |
 
 #### Returns
 
@@ -556,9 +570,35 @@ Fides.updateConsent({
 });
 ```
 
+Update consent using string values instead of booleans:
+```ts
+Fides.updateConsent({
+  consent: {
+    data_sales_and_sharing: "opt_out",
+    analytics: "opt_in",
+    terms_of_service: "acknowledge"
+  }
+});
+```
+
 Update consent using a fidesString:
 ```ts
 Fides.updateConsent({
   fidesString: ",,,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9"
+});
+```
+
+Control validation behavior:
+```ts
+// With validation="warn" - logs warnings but doesn't throw errors
+Fides.updateConsent({
+  consent: { notice_key: invalidValue },
+  validation: "warn"
+});
+
+// With validation="ignore" - silently accepts invalid values
+Fides.updateConsent({
+  consent: { notice_key: invalidValue },
+  validation: "ignore"
 });
 ```
