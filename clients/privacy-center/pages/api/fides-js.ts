@@ -19,7 +19,7 @@ import pRetry from "p-retry";
 
 import { getFidesApiUrl, loadServerSettings } from "~/app/server-environment";
 import { getPrivacyCenterEnvironmentCached } from "~/app/server-utils";
-import { createLoggingContext } from "~/app/server-utils/loggerContext";
+import { createRequestLogger } from "~/app/server-utils/loggerContext";
 import { MissingExperienceBehaviors } from "~/app/server-utils/PrivacyCenterSettings";
 import { LOCATION_HEADERS, lookupGeolocation } from "~/common/geolocation";
 import { safeLookupPropertyId } from "~/common/property-id";
@@ -125,7 +125,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  const loggingContext = createLoggingContext(req);
+  const loggingContext = createRequestLogger(req);
   const serverSettings = loadServerSettings();
 
   // eslint-disable-next-line no-console, @typescript-eslint/no-explicit-any
@@ -415,7 +415,7 @@ export default async function handler(
 async function fetchCustomFidesCss(
   req: NextApiRequest,
 ): Promise<string | null> {
-  const loggingContext = createLoggingContext(req);
+  const loggingContext = createRequestLogger(req);
 
   const currentTime = Date.now();
   const forceRefresh = "refresh" in req.query;

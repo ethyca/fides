@@ -11,10 +11,10 @@ import {
   loadStylesFromFile,
   PrivacyCenterEnvironment,
 } from "../server-environment";
-import debugLogServer from "./debugLogServer";
 import fetchPropertyFromApi from "./fetchPropertyFromApi";
 import loadEnvironmentVariables from "./loadEnvironmentVariables";
 import lookupGeolocationServerSide from "./lookupGeolocationServerSide";
+import { createLogger } from "./loggerContext";
 
 /**
  *
@@ -31,8 +31,9 @@ const getPrivacyCenterEnvironment = async ({
   searchParams?: NextSearchParams;
   skipGeolocation?: boolean;
 } = {}): Promise<PrivacyCenterEnvironment> => {
+  const log = createLogger();
   // DEFER: Log a version number here (see https://github.com/ethyca/fides/issues/3171)
-  debugLogServer("Load Privacy Center environment for session...");
+  log.debug("Load Privacy Center environment for session...");
 
   const userLocation = skipGeolocation
     ? null
