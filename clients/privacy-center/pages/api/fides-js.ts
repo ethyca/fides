@@ -249,7 +249,7 @@ export default async function handler(
           {
             experienceFound: Boolean(experience),
             region: fidesRegionString,
-            "accept-langauage": userLanguageString,
+            "accept-language": userLanguageString,
             propertyId,
           },
           `Fetched relevant experiences from server-side.`,
