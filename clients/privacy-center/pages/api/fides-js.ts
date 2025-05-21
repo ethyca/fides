@@ -128,7 +128,6 @@ export default async function handler(
   const log = createRequestLogger(req);
   const serverSettings = loadServerSettings();
 
-  // eslint-disable-next-line no-console, @typescript-eslint/no-explicit-any
   // Load the configured consent options (data uses, defaults, etc.) from environment
   const environment = await getPrivacyCenterEnvironmentCached({
     skipGeolocation: true,
