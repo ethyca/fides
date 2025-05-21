@@ -49,6 +49,7 @@ const missingExperienceBehaviors: Record<
 
 const PREFETCH_RETRY_MIN_TIMEOUT_MS = 100;
 const PREFETCH_MAX_RETRIES = 10;
+const PREFETCH_BACKOFF_FACTOR = 1.125;
 
 /**
  * @swagger
@@ -211,7 +212,6 @@ export default async function handler(
       const missingExperienceHandler =
         missingExperienceBehaviors[serverSettings.MISSING_EXPERIENCE_BEHAVIOR];
 
-      const PREFETCH_BACKOFF_FACTOR = 1.125;
       /*
        * Since we don't know what the experience will be when the initial call is made,
        * we supply the minimal request to the api endpoint with the understanding that if
@@ -232,13 +232,9 @@ export default async function handler(
           factor: PREFETCH_BACKOFF_FACTOR,
           minTimeout: PREFETCH_RETRY_MIN_TIMEOUT_MS,
           onFailedAttempt: (error) => {
-            let message;
-            if (error instanceof Error) {
-              message = error.message;
-            }
-            loggingContext.warn(
+            loggingContext.debug(
               `Attempt to get privacy experience failed, ${error.retriesLeft} remain. Error message was: `,
-              message,
+              error.message,
             );
           },
         },
