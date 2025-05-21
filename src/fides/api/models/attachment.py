@@ -212,6 +212,9 @@ class Attachment(Base):
             bucket = storage_client.bucket(bucket_name)
             blob = bucket.blob(f"{self.id}/{self.file_name}")
 
+            # Ensure we have the blob metadata
+            blob.reload()
+
             url = blob.generate_signed_url(
                 version="v4",
                 expiration=CONFIG.security.subject_request_download_link_ttl_seconds,
@@ -246,13 +249,22 @@ class Attachment(Base):
             auth_method = self.config.details[StorageDetails.AUTH_METHOD.value]
             storage_client = get_gcs_client(auth_method, self.config.secrets)
             bucket = storage_client.bucket(bucket_name)
-            blob = bucket.blob(f"{self.id}/{self.file_name}")
-            blob.delete()
+
+            # List and delete all blobs in the folder
+            prefix = f"{self.id}/"
+            blobs = bucket.list_blobs(prefix=prefix)
+            for blob in blobs:
+                blob.delete()
             return
 
         if self.config.type == StorageType.local:
-            filename = get_local_filename(f"{self.id}/{self.file_name}")
-            os.remove(filename)
+            folder_path = os.path.dirname(
+                get_local_filename(f"{self.id}/{self.file_name}")
+            )
+            if os.path.exists(folder_path):
+                import shutil
+
+                shutil.rmtree(folder_path)
             return
 
         raise ValueError(f"Unsupported storage type: {self.config.type}")

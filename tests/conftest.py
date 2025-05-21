@@ -3,11 +3,11 @@ import copy
 import json
 import os
 import time
+import types
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, Dict, Generator, List
 from unittest.mock import create_autospec
-from urllib.parse import urlparse
 from uuid import uuid4
 
 import boto3
@@ -1991,171 +1991,272 @@ def pytest_configure_node(node):
 
 
 @pytest.fixture
-def base_gcs_client_mock(monkeypatch):
-    """Base fixture for mocking GCS client and related functionality.
-    This fixture provides the core mocking functionality that can be extended
-    for specific test cases.
+def base_gcs_client_mock():
+    """Fixture to provide a base mock for Google Cloud Storage (GCS) client.
+
+    This fixture creates a base mock of the GCS client with proper method signatures
+    and basic functionality. It uses `create_autospec` to ensure that the mock
+    maintains the same interface as the real GCS client, which helps catch interface
+    changes and ensures type safety.
+
+    The fixture sets up:
+    - Mock credentials with proper autospec
+    - Mock client with required attributes
+    - Mock batch stack for handling batch operations
+    - Mock HTTP transport for handling requests
+    - Basic bucket method implementation
+
+    Usage:
+        ```python
+        def test_something(base_gcs_client_mock):
+            # The mock client will have the same interface as the real GCS client
+            bucket = base_gcs_client_mock.bucket("my-bucket")
+            # Any method calls will be properly type-checked
+        ```
+
+    Why autospec is used:
+    - Ensures the mock has the same interface as the real GCS client
+    - Catches interface changes that would break the real code
+    - Provides better error messages when methods are called incorrectly
+    - Maintains type safety throughout the test
     """
-    # Create mock credentials
+    # Create mock credentials with proper autospec
     mock_credentials = create_autospec(google.auth.credentials.Credentials)
-    mock_credentials.universe_domain = "googleapis.com"
-
-    # Create mock client
-    mock_client = create_autospec(storage.Client)
-
-    # Mock auth.default
-    def mock_auth_default(*args, **kwargs):
-        return (mock_credentials, "test-project")
-
-    monkeypatch.setattr("google.auth.default", mock_auth_default)
-
-    # Mock Client class
-    def mock_client_init(*args, **kwargs):
-        return mock_client
-
-    monkeypatch.setattr("google.cloud.storage.Client", mock_client_init)
-
-    # Mock get_gcs_client
-    def mock_get_gcs_client(auth_method, storage_secrets):
-        return mock_client
-
-    monkeypatch.setattr(
-        "fides.api.service.storage.gcs.get_gcs_client", mock_get_gcs_client
+    mock_credentials.valid = True
+    mock_credentials.expired = False
+    mock_credentials.refresh = create_autospec(
+        google.auth.credentials.Credentials.refresh, side_effect=lambda: None
     )
 
-    # Mock response class
-    class MockResponse:
-        def __init__(self, status_code=200, content=None, headers=None):
-            self.status_code = status_code
-            self.content = content or b""
-            self.headers = headers or {}
-            self.text = self.content.decode() if self.content else ""
+    # Create mock client with proper autospec
+    mock_client = create_autospec(storage.Client)
+    mock_client._credentials = mock_credentials
+    mock_client.project = "test-project"
 
-    # Mock transport request
-    def mock_transport_request(*args, **kwargs):
-        method = kwargs.get("method", "GET")
-        url = kwargs.get("url", "")
+    # Set up batch stack
+    class MockBatchStack:
+        """Mock implementation of GCS batch operation stack."""
 
-        if method == "POST" and "uploadType=resumable" in str(url):
-            return MockResponse(
-                200, headers={"location": "https://upload.example.com/upload"}
-            )
-        elif method == "PUT" and urlparse(str(url)).hostname == "upload.example.com":
-            return MockResponse(200)
-        elif method == "DELETE":
-            return MockResponse(204)
-        return MockResponse(200)
+        def __init__(self):
+            self._stack = []
 
-    monkeypatch.setattr(
-        "google.auth.transport.requests.AuthorizedSession.request",
-        mock_transport_request,
+        @property
+        def top(self):
+            """Returns the top batch in the stack or None if empty."""
+            return self._stack[-1] if self._stack else None
+
+        def push(self, batch):
+            """Adds a new batch to the top of the stack."""
+            self._stack.append(batch)
+
+        def pop(self):
+            """Removes and returns the top batch from the stack."""
+            return self._stack.pop() if self._stack else None
+
+    # Set up HTTP transport with proper autospec
+    mock_http = create_autospec(requests.Session)
+    mock_response = create_autospec(requests.Response)
+    mock_response.status_code = 200
+    mock_http.request = create_autospec(
+        requests.Session.request, return_value=mock_response
+    )
+
+    # Add required attributes to mock client
+    mock_client._batch_stack = MockBatchStack()
+    mock_client._http_internal = mock_http
+    mock_client._http = mock_http
+
+    # Set up bucket method with proper autospec
+    def mock_get_bucket(self, bucket_name, user_project=None, generation=None):
+        """Creates and returns a mock bucket with the given name."""
+        mock_bucket = create_autospec(storage.Bucket)
+        mock_bucket.name = bucket_name
+        return mock_bucket
+
+    mock_client.bucket = types.MethodType(
+        create_autospec(storage.Client.bucket, side_effect=mock_get_bucket), mock_client
     )
 
     return mock_client
 
 
 @pytest.fixture
-def gcs_client(storage_config_default_gcs):
-    """Creates a mock GCS client for testing."""
-    # Create mock credentials
-    mock_credentials = create_autospec(google.auth.credentials.Credentials)
-    mock_credentials.universe_domain = "googleapis.com"
+def mock_gcs_client(
+    base_gcs_client_mock, monkeypatch, storage_config_default_gcs, attachment_file
+):
+    """Fixture to provide a fully configured mock GCS client for attachment testing.
 
-    # Create and configure the main client mock
-    mock_client = create_autospec(storage.Client)
+    This fixture extends the base_gcs_client_mock with attachment-specific behavior,
+    implementing a mock of the GCS client's functionality needed for testing
+    upload and deletion of files. It uses `create_autospec` to ensure type safety and proper
+    method signatures throughout the mock hierarchy.
 
-    # Create a dictionary to store blob states
-    blob_states = {}
+    Key features:
+    - Tracks all blobs in a bucket using a dictionary
+    - Simulates blob creation, deletion, and access
+    - Implements proper error handling (e.g., NotFound exceptions)
+    - Supports blob listing with prefix filtering
+    - Maintains proper method signatures through autospec
 
-    def get_mock_blob(blob_name):
-        if blob_name not in blob_states:
-            mock_blob = create_autospec(storage.Blob)
-            mock_blob.name = blob_name
-            mock_blob.exists.return_value = False
-            mock_blob.size = 0
-            mock_blob.download_as_bytes.return_value = b""
+    The mock implements the following GCS operations:
+    - Blob creation and upload
+    - Blob deletion
+    - Blob retrieval
+    - Signed URL generation
+    - Blob listing with prefix support
 
-            # Mock generate_signed_url with proper parameters
-            def mock_generate_signed_url(version, expiration, method):
-                return f"https://{storage_config_default_gcs.details[StorageDetails.BUCKET.value]}.storage.googleapis.com/{blob_name}"
+    Usage:
+        ```python
+        def test_attachment_operations(mock_gcs_client):
+            # Create and upload an attachment
+            bucket = mock_gcs_client.bucket("test-bucket")
+            blob = bucket.blob("test-file.txt")
+            blob.upload_from_file(file_obj)
 
-            mock_blob.generate_signed_url = mock_generate_signed_url
+            # Delete the attachment
+            blob.delete()
 
-            # Mock the upload process
-            def mock_upload_from_file(
-                file_obj,
-                content_type=None,
-                num_retries=None,
-                client=None,
-                size=None,
-                **kwargs,
-            ):
-                try:
-                    file_obj.seek(0)
-                    content = file_obj.read()
-                    mock_blob.exists.return_value = True
-                    mock_blob.size = len(content)
-                    mock_blob.download_as_bytes.return_value = content
-                    file_obj.seek(0)
-                    return None
-                except Exception as e:
-                    raise ValueError(f"Failed to upload file: {e}")
+            # Attempting to access deleted blob raises NotFound
+            with pytest.raises(NotFound):
+                blob.reload()
+        ```
 
-            def mock_upload_from_filename(
-                filename,
-                content_type=None,
-                num_retries=None,
-                client=None,
-                size=None,
-                **kwargs,
-            ):
-                with open(filename, "rb") as file_obj:
-                    return mock_upload_from_file(
-                        file_obj, content_type, num_retries, client, size, **kwargs
-                    )
+    Why autospec is used:
+    - Ensures all mock methods have the same signature as real GCS methods
+    - Catches interface changes that would break the real code
+    - Provides better error messages for incorrect method calls
+    - Maintains type safety throughout the test
+    - Helps catch bugs related to method signature changes
 
-            def mock_upload_from_string(
-                data,
-                content_type=None,
-                num_retries=None,
-                client=None,
-                size=None,
-                **kwargs,
-            ):
-                mock_blob.exists.return_value = True
-                mock_blob.size = len(data)
-                mock_blob.download_as_bytes.return_value = (
-                    data.encode() if isinstance(data, str) else data
-                )
-                return None
+    Dependencies:
+        - base_gcs_client_mock: Provides the base GCS client mock
+        - storage_config_default_gcs: Provides GCS storage configuration
+        - attachment_file: Provides test file content for size calculations
+    """
+    # Get the file content for size calculation
+    file_content = attachment_file[1].read()
+    attachment_file[1].seek(0)  # Reset file pointer
 
-            # Mock delete operation
-            def mock_delete():
-                if not mock_blob.exists.return_value:
-                    raise NotFound("No such object")
-                mock_blob.exists.return_value = False
-                mock_blob.size = 0
-                mock_blob.download_as_bytes.return_value = b""
-                return None
+    # Create a mock bucket with proper autospec
+    mock_bucket = create_autospec(storage.Bucket)
+    mock_bucket.name = storage_config_default_gcs.details[StorageDetails.BUCKET.value]
 
-            mock_blob.upload_from_file = mock_upload_from_file
-            mock_blob.upload_from_filename = mock_upload_from_filename
-            mock_blob.upload_from_string = mock_upload_from_string
-            mock_blob.delete = mock_delete
-            blob_states[blob_name] = mock_blob
-        return blob_states[blob_name]
+    # Track all blobs
+    blobs = {}
 
-    # Set up bucket operations
-    def mock_bucket_operations(bucket_name):
-        mock_bucket = create_autospec(storage.Bucket)
-        mock_bucket.name = bucket_name
+    # Set up the mock bucket's blob method with proper autospec
+    def mock_get_blob(self, blob_name, *args, **kwargs):
+        """Retrieves a blob by name, raising NotFound if it doesn't exist."""
+        # Check if blob exists
+        if blob_name not in blobs:
+            raise NotFound(f"Blob {blob_name} not found")
 
-        def get_blob(blob_name):
-            return get_mock_blob(f"{bucket_name}/{blob_name}")
+        mock_blob = blobs[blob_name]
+        return mock_blob
 
-        mock_bucket.blob = get_blob
+    # Set up bucket methods with proper autospec
+    mock_bucket.blob = types.MethodType(
+        create_autospec(storage.Bucket.blob, side_effect=mock_get_blob), mock_bucket
+    )
+
+    def mock_list_blobs(
+        self, prefix=None, delimiter=None, max_results=None, page_token=None, **kwargs
+    ):
+        """Lists all blobs in the bucket, optionally filtered by prefix."""
+        if prefix:
+            return [blob for name, blob in blobs.items() if name.startswith(prefix)]
+        return list(blobs.values())
+
+    mock_bucket.list_blobs = types.MethodType(
+        create_autospec(storage.Bucket.list_blobs, side_effect=mock_list_blobs),
+        mock_bucket,
+    )
+
+    # Set up the mock client's bucket method with proper autospec
+    def mock_get_bucket(self, bucket_name, user_project=None, generation=None):
+        """Returns the mock bucket if the name matches, otherwise raises ValueError."""
+        if bucket_name != mock_bucket.name:
+            raise ValueError(
+                f"Expected bucket name {mock_bucket.name}, got {bucket_name}"
+            )
         return mock_bucket
 
-    mock_client.bucket.side_effect = mock_bucket_operations
+    # Update the base mock's bucket method with proper autospec
+    base_gcs_client_mock.bucket = types.MethodType(
+        create_autospec(storage.Client.bucket, side_effect=mock_get_bucket),
+        base_gcs_client_mock,
+    )
 
-    yield mock_client
+    # Helper function to create a new blob
+    def create_mock_blob(blob_name):
+        """Creates a new mock blob with all required methods and attributes."""
+        mock_blob = create_autospec(storage.Blob)
+        mock_blob.name = blob_name
+        mock_blob.exists.return_value = True
+        mock_blob.size = len(file_content)
+        mock_blob.download_as_bytes = create_autospec(
+            storage.Blob.download_as_bytes, return_value=file_content
+        )
+
+        def mock_upload_from_file(
+            self,
+            file_obj,
+            content_type=None,
+            num_retries=None,
+            client=None,
+            size=None,
+            **kwargs,
+        ):
+            """Simulates uploading a file to the blob, storing it in the blobs dictionary."""
+            blobs[blob_name] = self
+            return None
+
+        def mock_generate_signed_url(self, version, expiration, method, **kwargs):
+            """Generates a signed URL for the blob, raising NotFound if the blob doesn't exist."""
+            if blob_name not in blobs:
+                raise NotFound(f"Blob {blob_name} not found")
+            return f"https://storage.googleapis.com/{mock_bucket.name}/{blob_name}"
+
+        def mock_delete(self):
+            """Deletes the blob from the blobs dictionary."""
+            if blob_name in blobs:
+                del blobs[blob_name]
+            return None
+
+        def mock_reload(self):
+            """Simulates reloading the blob's metadata, raising NotFound if the blob doesn't exist."""
+            if blob_name not in blobs:
+                raise NotFound(f"Blob {blob_name} not found")
+            return None
+
+        # Create properly autospecced methods with side effects
+        mock_blob.upload_from_file = types.MethodType(
+            create_autospec(
+                storage.Blob.upload_from_file, side_effect=mock_upload_from_file
+            ),
+            mock_blob,
+        )
+        mock_blob.generate_signed_url = types.MethodType(
+            create_autospec(
+                storage.Blob.generate_signed_url, side_effect=mock_generate_signed_url
+            ),
+            mock_blob,
+        )
+        mock_blob.delete = types.MethodType(
+            create_autospec(storage.Blob.delete, side_effect=mock_delete), mock_blob
+        )
+        mock_blob.reload = types.MethodType(
+            create_autospec(storage.Blob.reload, side_effect=mock_reload), mock_blob
+        )
+        return mock_blob
+
+    # Override the bucket's blob method to use our blob creation
+    def mock_create_blob(self, blob_name, *args, **kwargs):
+        """Creates a new blob in the bucket using the create_mock_blob helper."""
+        return create_mock_blob(blob_name)
+
+    mock_bucket.blob = types.MethodType(
+        create_autospec(storage.Bucket.blob, side_effect=mock_create_blob), mock_bucket
+    )
+
+    return base_gcs_client_mock
