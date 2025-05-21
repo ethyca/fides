@@ -3279,6 +3279,15 @@ describe("Consent overlay", () => {
         });
       });
 
+      it("initializes the options correctly", () => {
+        cy.window().then((win) => {
+          expect(win.Fides.options).to.have.property(
+            "fidesConsentFlagType",
+            ConsentFlagType.CONSENT_MECHANISM,
+          );
+        });
+      });
+
       it("initializes with the correct consent values", () => {
         cy.window().then((win) => {
           win.Fides.init().then(() => {
@@ -3379,6 +3388,19 @@ describe("Consent overlay", () => {
                 ConsentNonApplicableFlagMode.INCLUDE,
             },
           });
+        });
+      });
+
+      it("initializes the options correctly", () => {
+        cy.window().then((win) => {
+          expect(win.Fides.options).to.have.property(
+            "fidesConsentFlagType",
+            ConsentFlagType.CONSENT_MECHANISM,
+          );
+          expect(win.Fides.options).to.have.property(
+            "fidesConsentNonApplicableFlagMode",
+            ConsentNonApplicableFlagMode.INCLUDE,
+          );
         });
       });
 
