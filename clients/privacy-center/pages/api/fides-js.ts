@@ -168,6 +168,12 @@ export default async function handler(
     return;
   }
 
+  if (!geolocation) {
+    log.debug("No geolocation found, unable to prefetch experience.");
+  } else {
+    log.debug({ geolocation }, "Using geolocation");
+  }
+
   /**
    * NOTE: initializing `experience` as an empty object `{}` causes problems, specifically
    * for clients not using prefetch and CDNs as Fides.js interprets that as a valid, albeit
@@ -207,7 +213,7 @@ export default async function handler(
           "accept-language": userLanguageString,
           propertyId,
         },
-        `Fetching relevant experiences from server-side FIDES API...`,
+        `Fetching relevant experiences from server-side Fides API...`,
       );
 
       // Define how we want to handle the scenario when the API fails to gives us an experience.
@@ -247,12 +253,13 @@ export default async function handler(
         );
         log.debug(
           {
-            experienceFound: Boolean(experience),
+            experienceFound: Boolean(experience?.experience_config?.id),
+            experienceConfigId: experience?.experience_config?.id,
             region: fidesRegionString,
             "accept-language": userLanguageString,
             propertyId,
           },
-          `Fetched relevant experiences from server-side.`,
+          `Fetched relevant experiences from server-side Fides API.`,
         );
         experienceIsValid(experience);
       } catch (error) {
@@ -263,12 +270,6 @@ export default async function handler(
         throw error;
       }
     }
-  }
-
-  if (!geolocation) {
-    log.debug("No geolocation found, unable to prefetch experience.");
-  } else {
-    log.debug({ geolocation }, "Using geolocation");
   }
 
   // This query param is used for testing purposes only, and should not be used
@@ -408,12 +409,13 @@ export default async function handler(
 
   log.info(
     {
+      region: fidesRegionString,
       propertyId,
-      experienceFound: Boolean(experience),
+      experienceFound: Boolean(experience?.experience_config?.id),
+      experienceConfigId: experience?.experience_config?.id,
       tcfEnabled,
       gppEnabled,
       customCssEnabled: Boolean(customFidesCss),
-      region: fidesRegionString,
     },
     "/fides.js response complete!",
   );

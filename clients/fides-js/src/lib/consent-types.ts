@@ -517,6 +517,7 @@ interface ExperienceConfigTranslationMinimal
 export interface ExperienceConfigMinimal
   extends Pick<
     ExperienceConfig,
+    | "id"
     | "component"
     | "auto_detect_language"
     | "dismissable"
