@@ -19,16 +19,43 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.61.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.62.0...main)
 
 ### Added
-- Exposes configuration settings for the async db engine connection [#6128](https://github.com/ethyca/fides/pull/6128)
 - Added support for Salesforce custom object monitoring using Helios [#6096](https://github.com/ethyca/fides/pull/6096)
 
 ### Changed
-- Attachment uploads now check for file extension types, retrieving and attachment also returns the file size. [#6124](https://github.com/ethyca/fides/pull/6124)
 - Integrations detail page now includes a setup guide component. [#6096](https://github.com/ethyca/fides/pull/6096)
 
+## [2.62.0](https://github.com/ethyca/fides/compare/2.61.1...2.62.0)
+
+### Added
+- Exposes configuration settings for the async db engine connection [#6128](https://github.com/ethyca/fides/pull/6128)
+- Added support for uploading files as internal attachments to privacy requests [#6069](https://github.com/ethyca/fides/pull/6069)
+- Implements Fallback Locations in CMP [#6158](https://github.com/ethyca/fides/pull/6158)
+- Added dedicated Celery queues for discovery monitor operations (detection, classification, and promotion) [#6144](https://github.com/ethyca/fides/pull/6144)
+- Added a new method to Fides object for updating user consent [#6151](https://github.com/ethyca/fides/pull/6151)
+- Privacy Center log level support and additional logging [#6133](https://github.com/ethyca/fides/pull/6133)
+- Privacy Center support for throwing an error when an experience could not be prefetched [#6133](https://github.com/ethyca/fides/pull/6133)
+- Privacy Center support for retrying the experience prefetch when an error is encountered calling the API [#6133](https://github.com/ethyca/fides/pull/6133)
+
+### Changed
+- Attachment uploads now check for file extension types, retrieving and attachment also returns the file size. [#6124](https://github.com/ethyca/fides/pull/6124)
+- Updated the AC string version from v1 to v2 format, which now includes a disclosed vendors section [#6155](https://github.com/ethyca/fides/pull/6155)
+- Locked down the version for @iabtechlabtcf packages for better control [#6145](https://github.com/ethyca/fides/pull/6145)
+
+### Developer Experience
+- Refactored Fides initialization code to reduce duplication and improve maintainability. [#6143](https://github.com/ethyca/fides/pull/6143)
+- Improved endpoint profiler to output all frames. [#6153](https://github.com/ethyca/fides/pull/6153)
+
+### Fixed
+- Fix Special-purpose vendors with restricted purposes not correctly encoded in TC string [#6145](https://github.com/ethyca/fides/pull/6145) https://github.com/ethyca/fides/labels/high-risk
+- Fixed an issue where consent mechanism string values and/or non-applicable notices not applied to Fides.consent during initialization [#6157](https://github.com/ethyca/fides/pull/6157)
+
+## [2.61.1](https://github.com/ethyca/fides/compare/2.61.0...2.61.1)
+
+### Fixed
+- Added certifi to fix SSL CA Error [#6139](https://github.com/ethyca/fides/pull/6139)
 
 ## [2.61.0](https://github.com/ethyca/fides/compare/2.60.1...2.61.0)
 

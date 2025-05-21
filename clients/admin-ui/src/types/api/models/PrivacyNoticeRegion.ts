@@ -316,4 +316,5 @@ export enum PrivacyNoticeRegion {
   CARIBBEAN = "caribbean",
   EEA = "eea",
   NON_EEA = "non_eea",
+  GLOBAL = "global",
 }
