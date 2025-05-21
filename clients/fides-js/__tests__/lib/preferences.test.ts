@@ -117,6 +117,59 @@ describe("preferences", () => {
       ).rejects.toThrow("Cookie is not initialized");
     });
 
+    it("should reject when consent key is in non_applicable_privacy_notices", async () => {
+      const mockFides = createMockFides();
+
+      // Setup a notice in non_applicable_privacy_notices
+      (mockFides.experience as any).non_applicable_privacy_notices = [
+        "marketing",
+      ];
+
+      // Try to use a non-applicable notice key
+      await expect(
+        updateConsent(
+          mockFides,
+          {
+            consent: { marketing: true },
+            validation: "throw",
+          },
+          ConsentMethod.SCRIPT,
+        ),
+      ).rejects.toThrow(/is not applicable/);
+    });
+
+    it("should reject when consent key is not a valid notice key", async () => {
+      const mockFides = createMockFides();
+
+      // Setup privacy notices but not including the one we'll try to use
+      (mockFides.experience as any).privacy_notices = [
+        {
+          notice_key: "analytics",
+          id: "analytics-id",
+          consent_mechanism: ConsentMechanism.OPT_IN,
+          cookies: [],
+          translations: [
+            { language: "en", privacy_notice_history_id: "history-analytics" },
+          ],
+        },
+      ];
+
+      // Empty the non_applicable_privacy_notices to ensure our test key isn't there
+      (mockFides.experience as any).non_applicable_privacy_notices = [];
+
+      // Try to use a key that doesn't exist in either privacy_notices or non_applicable_privacy_notices
+      await expect(
+        updateConsent(
+          mockFides,
+          {
+            consent: { nonexistent: true },
+            validation: "throw",
+          },
+          ConsentMethod.SCRIPT,
+        ),
+      ).rejects.toThrow(/not a valid notice key/);
+    });
+
     it("should update consent from a provided consent object", async () => {
       const mockConsent = { analytics: true, marketing: false };
       const mockFides = createMockFides();
@@ -366,12 +419,12 @@ describe("preferences", () => {
       // Set up a NOTICE_ONLY mechanism
       (mockFides.experience as any).privacy_notices = [
         {
-          notice_key: "terms",
-          id: "terms-id",
+          notice_key: "essential",
+          id: "essential-id",
           consent_mechanism: ConsentMechanism.NOTICE_ONLY,
           cookies: [],
           translations: [
-            { language: "en", privacy_notice_history_id: "history-terms" },
+            { language: "en", privacy_notice_history_id: "history-essential" },
           ],
         },
       ];
@@ -381,13 +434,27 @@ describe("preferences", () => {
         updateConsent(
           mockFides,
           {
-            consent: { terms: UserConsentPreference.OPT_IN },
+            consent: { essential: UserConsentPreference.OPT_IN },
             validation: "throw",
           },
           ConsentMethod.SCRIPT,
         ),
-      ).rejects.toThrow(
-        'Invalid consent value for notice key: terms. Must be "acknowledge"',
+      ).rejects.toThrow(/Invalid consent value/);
+
+      // Expect notice-only true to be converted to ACKNOWLEDGE
+      await updateConsent(
+        mockFides,
+        {
+          consent: { essential: true },
+          validation: "throw",
+        },
+        ConsentMethod.SCRIPT,
+      );
+      expect(updatePreferencesSpy).toHaveBeenCalledTimes(1);
+      const callArgs = updatePreferencesSpy.mock.calls[0][0];
+      expect(callArgs.consentPreferencesToSave).toHaveLength(1);
+      expect(callArgs.consentPreferencesToSave![0].consentPreference).toBe(
+        UserConsentPreference.ACKNOWLEDGE,
       );
     });
 
@@ -397,12 +464,12 @@ describe("preferences", () => {
       // Set up a NOTICE_ONLY mechanism
       (mockFides.experience as any).privacy_notices = [
         {
-          notice_key: "terms",
-          id: "terms-id",
+          notice_key: "essential",
+          id: "essential-id",
           consent_mechanism: ConsentMechanism.NOTICE_ONLY,
           cookies: [],
           translations: [
-            { language: "en", privacy_notice_history_id: "history-terms" },
+            { language: "en", privacy_notice_history_id: "history-essential" },
           ],
         },
       ];
@@ -415,16 +482,14 @@ describe("preferences", () => {
       await updateConsent(
         mockFides,
         {
-          consent: { terms: UserConsentPreference.OPT_IN },
+          consent: { essential: UserConsentPreference.OPT_IN },
           validation: "warn",
         },
         ConsentMethod.SCRIPT,
       );
 
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining(
-          'Invalid consent value for notice key: terms. Must be "acknowledge"',
-        ),
+        expect.stringContaining("Invalid consent value"),
       );
 
       // Test ignore mode
@@ -433,7 +498,7 @@ describe("preferences", () => {
       await updateConsent(
         mockFides,
         {
-          consent: { terms: UserConsentPreference.OPT_IN },
+          consent: { essential: UserConsentPreference.OPT_IN },
           validation: "ignore",
         },
         ConsentMethod.SCRIPT,
@@ -461,12 +526,12 @@ describe("preferences", () => {
       // Setup privacy notice with NOTICE_ONLY mechanism
       (mockFides.experience as any).privacy_notices = [
         {
-          notice_key: "terms",
-          id: "terms-id",
+          notice_key: "essential",
+          id: "essential-id",
           consent_mechanism: ConsentMechanism.NOTICE_ONLY,
           cookies: [],
           translations: [
-            { language: "en", privacy_notice_history_id: "history-terms" },
+            { language: "en", privacy_notice_history_id: "history-essential" },
           ],
         },
       ];
@@ -476,7 +541,7 @@ describe("preferences", () => {
         mockFides,
         {
           consent: {
-            terms: UserConsentPreference.ACKNOWLEDGE,
+            essential: UserConsentPreference.ACKNOWLEDGE,
           },
         },
         ConsentMethod.SCRIPT,
@@ -485,10 +550,10 @@ describe("preferences", () => {
       // Verify updateConsentPreferences was called with the right args
       expect(updatePreferencesSpy).toHaveBeenCalledTimes(1);
       let callArgs = updatePreferencesSpy.mock.calls[0][0];
-      let [termsPref] = callArgs.consentPreferencesToSave!;
+      let [essentialPref] = callArgs.consentPreferencesToSave!;
 
-      expect(termsPref.notice.notice_key).toBe("terms");
-      expect(termsPref.consentPreference).toBe(
+      expect(essentialPref.notice.notice_key).toBe("essential");
+      expect(essentialPref.consentPreference).toBe(
         UserConsentPreference.ACKNOWLEDGE,
       );
 
@@ -501,7 +566,7 @@ describe("preferences", () => {
         {
           consent: {
             // This would be invalid with validation="throw", but we're using "ignore"
-            terms: true,
+            essential: true,
           },
           validation: "ignore",
         },
@@ -512,11 +577,11 @@ describe("preferences", () => {
       expect(updatePreferencesSpy).toHaveBeenCalledTimes(1);
       // eslint-disable-next-line prefer-destructuring
       callArgs = updatePreferencesSpy.mock.calls[0][0];
-      [termsPref] = callArgs.consentPreferencesToSave!;
+      [essentialPref] = callArgs.consentPreferencesToSave!;
 
-      expect(termsPref.notice.notice_key).toBe("terms");
+      expect(essentialPref.notice.notice_key).toBe("essential");
       // Even though we passed 'true', it should be converted to ACKNOWLEDGE
-      expect(termsPref.consentPreference).toBe(
+      expect(essentialPref.consentPreference).toBe(
         UserConsentPreference.ACKNOWLEDGE,
       );
     });

@@ -25,6 +25,7 @@ import {
 } from "./cookie";
 import { dispatchFidesEvent } from "./events";
 import { decodeFidesString } from "./fides-string";
+import { transformConsentToFidesUserPreference } from "./shared-consent-utils";
 import { TcfSavePreferences } from "./tcf/types";
 
 /**
@@ -211,7 +212,6 @@ export const updateConsent = async (
   if (!fides.cookie) {
     throw new Error("Cookie is not initialized");
   }
-
   const { consent, fidesString, validation = "throw" } = options;
 
   if (!["throw", "warn", "ignore"].includes(validation)) {
@@ -219,6 +219,16 @@ export const updateConsent = async (
       "Validation must be 'throw', 'warn', or 'ignore' (default is 'throw')",
     );
   }
+
+  const handleValidationError = (errorMessage: string) => {
+    if (validation === "throw") {
+      throw new Error(errorMessage);
+    }
+    if (validation === "warn") {
+      // eslint-disable-next-line no-console
+      console.warn(errorMessage);
+    }
+  };
 
   let finalConsent = fides.consent || {};
 
@@ -232,44 +242,47 @@ export const updateConsent = async (
           return error;
         }
 
+        const nonApplicableNotice =
+          fides.experience!.non_applicable_privacy_notices?.find(
+            (n) => n === key,
+          );
+
+        if (nonApplicableNotice) {
+          return new Error(
+            `Provided notice key '${key}' is not applicable to the current experience.`,
+          );
+        }
+
         const notice = fides.experience!.privacy_notices?.find(
           (n) => n.notice_key === key,
         );
+
+        if (!nonApplicableNotice && !notice) {
+          return new Error(`'${key}' is not a valid notice key`);
+        }
+
         const consentMechanism = notice?.consent_mechanism;
+        const isNoticeOnly = consentMechanism === ConsentMechanism.NOTICE_ONLY;
 
         if (
-          consentMechanism === ConsentMechanism.NOTICE_ONLY &&
-          (typeof value === "boolean" ||
-            value !== UserConsentPreference.ACKNOWLEDGE)
+          isNoticeOnly &&
+          value !== true &&
+          value !== UserConsentPreference.ACKNOWLEDGE
         ) {
-          if (validation === "throw") {
-            return new Error(
-              `Invalid consent value for notice key: ${key}. Must be "acknowledge"`,
-            );
-          }
-          if (validation === "warn") {
-            // eslint-disable-next-line no-console
-            console.warn(
-              `Invalid consent value for notice key: ${key}. Must be "acknowledge"`,
-            );
-          }
-        } else if (
-          consentMechanism !== ConsentMechanism.NOTICE_ONLY &&
+          return new Error(
+            `Invalid consent value for notice-only notice key: '${key}'. Must be \`true\` or "acknowledge"`,
+          );
+        }
+
+        if (
+          !isNoticeOnly &&
           typeof value !== "boolean" &&
           value !== UserConsentPreference.OPT_IN &&
           value !== UserConsentPreference.OPT_OUT
         ) {
-          if (validation === "throw") {
-            return new Error(
-              `Invalid consent value for notice key: ${key}. Must be a boolean or "opt_in" or "opt_out"`,
-            );
-          }
-          if (validation === "warn") {
-            // eslint-disable-next-line no-console
-            console.warn(
-              `Invalid consent value for notice key: ${key}. Must be "opt_in" or "opt_out"`,
-            );
-          }
+          return new Error(
+            `Invalid consent value for notice key: '${key}'. Must be a boolean or "opt_in" or "opt_out"`,
+          );
         }
 
         return null;
@@ -277,9 +290,8 @@ export const updateConsent = async (
       null,
     );
 
-    // If there was a validation error in "throw" mode, throw the error
     if (validationError) {
-      throw validationError;
+      handleValidationError(validationError.message);
     }
   }
 
@@ -296,10 +308,10 @@ export const updateConsent = async (
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
-      throw new Error(`Invalid fidesString provided: ${errorMessage}`);
+      handleValidationError(`Invalid fidesString provided: ${errorMessage}`);
     }
   } else {
-    finalConsent = consent!;
+    finalConsent = { ...fides.consent, ...consent };
   }
 
   // Prepare consentPreferencesToSave by mapping from finalConsent
@@ -313,12 +325,11 @@ export const updateConsent = async (
     if (notice) {
       const historyId = notice.translations?.[0]?.privacy_notice_history_id;
       let consentPreference: UserConsentPreference;
-      if (notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY) {
-        consentPreference = UserConsentPreference.ACKNOWLEDGE;
-      } else if (typeof value === "boolean") {
-        consentPreference = value
-          ? UserConsentPreference.OPT_IN
-          : UserConsentPreference.OPT_OUT;
+      if (typeof value === "boolean") {
+        consentPreference = transformConsentToFidesUserPreference(
+          value,
+          notice.consent_mechanism,
+        );
       } else {
         consentPreference = value;
       }
