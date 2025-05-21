@@ -30,12 +30,20 @@ class TestStartWorker:
             (
                 None,
                 None,
-                "fides,fidesops.messaging,fides.privacy_preferences,fides.dsr",
+                "fides,fidesops.messaging,fides.privacy_preferences,fides.dsr,fidesplus.discovery_monitors_detection,fidesplus.discovery_monitors_classification,fidesplus.discovery_monitors_promotion",
             ),
             ("fides.dsr", None, "fides.dsr"),
-            (None, "fides.dsr,fides.privacy_preferences", "fides,fidesops.messaging"),
+            (
+                None,
+                "fides.dsr,fides.privacy_preferences,fidesplus.discovery_monitors_detection",
+                "fides,fidesops.messaging,fidesplus.discovery_monitors_classification,fidesplus.discovery_monitors_promotion",
+            ),
             ("fides,fides.dsr", None, "fides,fides.dsr"),
-            (None, "fides,fides.dsr", "fidesops.messaging,fides.privacy_preferences"),
+            (
+                None,
+                "fides,fides.dsr",
+                "fidesops.messaging,fides.privacy_preferences,fidesplus.discovery_monitors_detection,fidesplus.discovery_monitors_classification,fidesplus.discovery_monitors_promotion",
+            ),
         ],
     )
     def test_start_worker_with_arguments(
