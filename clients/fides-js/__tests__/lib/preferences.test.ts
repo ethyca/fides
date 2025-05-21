@@ -5,6 +5,7 @@ import {
   FidesCookie,
   FidesGlobal,
   PrivacyExperience,
+  UpdateConsentValidation,
   UserConsentPreference,
 } from "../../src/lib/consent-types";
 import { decodeFidesString } from "../../src/lib/fides-string";
@@ -131,7 +132,7 @@ describe("preferences", () => {
           mockFides,
           {
             consent: { marketing: true },
-            validation: "throw",
+            validation: UpdateConsentValidation.THROW,
           },
           ConsentMethod.SCRIPT,
         ),
@@ -163,7 +164,7 @@ describe("preferences", () => {
           mockFides,
           {
             consent: { nonexistent: true },
-            validation: "throw",
+            validation: UpdateConsentValidation.THROW,
           },
           ConsentMethod.SCRIPT,
         ),
@@ -435,7 +436,7 @@ describe("preferences", () => {
           mockFides,
           {
             consent: { essential: UserConsentPreference.OPT_IN },
-            validation: "throw",
+            validation: UpdateConsentValidation.THROW,
           },
           ConsentMethod.SCRIPT,
         ),
@@ -446,7 +447,7 @@ describe("preferences", () => {
         mockFides,
         {
           consent: { essential: true },
-          validation: "throw",
+          validation: UpdateConsentValidation.THROW,
         },
         ConsentMethod.SCRIPT,
       );
@@ -483,7 +484,7 @@ describe("preferences", () => {
         mockFides,
         {
           consent: { essential: UserConsentPreference.OPT_IN },
-          validation: "warn",
+          validation: UpdateConsentValidation.WARN,
         },
         ConsentMethod.SCRIPT,
       );
@@ -499,7 +500,7 @@ describe("preferences", () => {
         mockFides,
         {
           consent: { essential: UserConsentPreference.OPT_IN },
-          validation: "ignore",
+          validation: UpdateConsentValidation.IGNORE,
         },
         ConsentMethod.SCRIPT,
       );
@@ -517,7 +518,7 @@ describe("preferences", () => {
           },
           ConsentMethod.SCRIPT,
         ),
-      ).rejects.toThrow("Validation must be 'throw', 'warn', or 'ignore'");
+      ).rejects.toThrow(/Validation must be one of/);
     });
 
     it("should handle NOTICE_ONLY consent mechanisms", async () => {
@@ -568,7 +569,7 @@ describe("preferences", () => {
             // This would be invalid with validation="throw", but we're using "ignore"
             essential: true,
           },
-          validation: "ignore",
+          validation: UpdateConsentValidation.IGNORE,
         },
         ConsentMethod.SCRIPT,
       );
