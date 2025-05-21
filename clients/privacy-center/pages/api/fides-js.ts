@@ -125,7 +125,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  const loggingContext = createRequestLogger(req);
+  const log = createRequestLogger(req);
   const serverSettings = loadServerSettings();
 
   // eslint-disable-next-line no-console, @typescript-eslint/no-explicit-any
@@ -160,7 +160,7 @@ export default async function handler(
       fidesString,
     );
   } catch (error) {
-    loggingContext.error(error);
+    log.error(error);
     res
       .status(400) // 400 Bad Request. Malformed request.
       .send(
@@ -201,7 +201,7 @@ export default async function handler(
       const userLanguageString =
         fidesLocale || req.headers["accept-language"] || DEFAULT_LOCALE;
 
-      loggingContext.debug(
+      log.debug(
         `Fetching relevant experiences from server-side (${userLanguageString})...`,
       );
 
@@ -233,30 +233,28 @@ export default async function handler(
             factor: PREFETCH_BACKOFF_FACTOR,
             minTimeout: PREFETCH_RETRY_MIN_TIMEOUT_MS,
             onFailedAttempt: (error) => {
-              loggingContext.debug(
+              log.debug(
                 `Attempt to get privacy experience failed, ${error.retriesLeft} remain. Error message was: `,
                 error.message,
               );
             },
           },
         );
-        loggingContext.debug(
+        log.debug(
           `Fetched relevant experiences from server-side (${userLanguageString}).`,
         );
         experienceIsValid(experience);
       } catch (error) {
-        loggingContext.error(error);
+        log.error(error);
         throw error;
       }
     }
   }
 
   if (!geolocation) {
-    loggingContext.debug(
-      "No geolocation found, unable to prefetch experience.",
-    );
+    log.debug("No geolocation found, unable to prefetch experience.");
   } else {
-    loggingContext.debug("Using geolocation", geolocation);
+    log.debug("Using geolocation", geolocation);
   }
 
   // This query param is used for testing purposes only, and should not be used
@@ -334,19 +332,15 @@ export default async function handler(
   };
   const fidesConfigJSON = JSON.stringify(fidesConfig);
 
-  loggingContext.debug(
-    "Bundling js & Privacy Center configuration together...",
-  );
+  log.debug("Bundling js & Privacy Center configuration together...");
   const isHeadlessExperience =
     experience?.experience_config?.component === ComponentType.HEADLESS;
   let fidesJsFile = "public/lib/fides.js";
   if (tcfEnabled) {
-    loggingContext.debug("TCF extension enabled, bundling fides-tcf.js...");
+    log.debug("TCF extension enabled, bundling fides-tcf.js...");
     fidesJsFile = "public/lib/fides-tcf.js";
   } else if (isHeadlessExperience) {
-    loggingContext.debug(
-      "Headless experience detected, bundling fides-headless.js...",
-    );
+    log.debug("Headless experience detected, bundling fides-headless.js...");
     fidesJsFile = "public/lib/fides-headless.js";
   }
   const fidesJSBuffer = await fsPromises.readFile(fidesJsFile);
@@ -356,7 +350,7 @@ export default async function handler(
   }
   let fidesGPP: string = "";
   if (gppEnabled) {
-    loggingContext.debug(
+    log.debug(
       `GPP extension ${
         forcedGppQuery === "true" ? "forced" : "enabled"
       }, bundling fides-ext-gpp.js...`,

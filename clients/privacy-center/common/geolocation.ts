@@ -40,11 +40,11 @@ export const LOCATION_HEADERS = [
 export const lookupGeolocation = async (
   req: NextApiRequest,
 ): Promise<UserGeolocation | null> => {
-  const loggingContext = createRequestLogger(req);
+  const log = createRequestLogger(req);
   // Check for a provided "geolocation" query param
   const { geolocation: geolocationQuery } = req.query;
   if (typeof geolocationQuery === "string") {
-    loggingContext.debug(`Geolocation found in query: ${geolocationQuery}`);
+    log.debug(`Geolocation found in query: ${geolocationQuery}`);
     if (!VALID_ISO_3166_LOCATION_REGEX.test(geolocationQuery)) {
       throw new Error(
         `Provided location (${geolocationQuery}) query parameter is not in ISO 3166 format.`,
@@ -62,14 +62,14 @@ export const lookupGeolocation = async (
   // Check for CloudFront viewer location headers
   const countryHeader = req.headers[CLOUDFRONT_HEADER_COUNTRY];
   if (typeof countryHeader === "string") {
-    loggingContext.debug(`Country found in header: ${countryHeader}`);
+    log.debug(`Country found in header: ${countryHeader}`);
     let geolocation;
     let region;
     const country = countryHeader.split(",")[0];
     geolocation = country;
     const regionHeader = req.headers[CLOUDFRONT_HEADER_REGION];
     if (typeof regionHeader === "string") {
-      loggingContext.debug(`Region found in header: ${countryHeader}`);
+      log.debug(`Region found in header: ${countryHeader}`);
       [region] = regionHeader.split(",");
       // Check if the region header is valid; otherwise discard (it's optional!)
       if (VALID_ISO_3166_2_REGION_REGEX.test(region)) {
@@ -86,14 +86,10 @@ export const lookupGeolocation = async (
       };
     }
 
-    loggingContext.debug(
-      "Geolocation found in header was not a valid ISO 3166 location",
-    );
+    log.debug("Geolocation found in header was not a valid ISO 3166 location");
     return null;
   }
 
-  loggingContext.debug(
-    "Geolocation was not found in headers or the query parameters",
-  );
+  log.debug("Geolocation was not found in headers or the query parameters");
   return null;
 };
