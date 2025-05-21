@@ -3638,7 +3638,7 @@ describe("Consent overlay", () => {
     });
   });
 
-  describe.only("when updating consent using window.Fides.updateConsent", () => {
+  describe("when updating consent using window.Fides.updateConsent", () => {
     beforeEach(() => {
       cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
       cy.fixture("consent/fidesjs_options_banner_modal.json").then((config) => {
