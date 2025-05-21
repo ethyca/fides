@@ -11,7 +11,7 @@ from jinja2 import Environment, FileSystemLoader
 
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.policy import ActionType
-from fides.api.util.storage_util import storage_json_encoder
+from fides.api.util.storage_util import StorageJSONEncoder
 
 DSR_DIRECTORY = Path(__file__).parent.resolve()
 
@@ -41,7 +41,7 @@ class DsrReportBuilder:
 
         # Jinja template environment initialization
         def pretty_print(value: str, indent: int = 4) -> str:
-            return json.dumps(value, indent=indent, default=storage_json_encoder)
+            return json.dumps(value, indent=indent, cls=StorageJSONEncoder)
 
         jinja2.filters.FILTERS["pretty_print"] = pretty_print
         self.template_loader = Environment(
@@ -136,6 +136,59 @@ class DsrReportBuilder:
             ),
         )
 
+    def _add_attachments(self, attachments: List[Dict[str, Any]]) -> None:
+        """
+        Adds attachments to the DSR report.
+        Each attachment is added to the zip file and a page is generated to display attachment metadata.
+        """
+        if not attachments:
+            return
+
+        # Create attachments directory
+        attachments_dir = "data/attachments"
+
+        # Track links to attachment pages
+        attachment_links = {}
+
+        for index, attachment in enumerate(attachments, 1):
+            # Add the attachment file to the zip
+            if attachment.get("content"):
+                self.out.writestr(
+                    f"{attachments_dir}/files/{attachment['file_name']}",
+                    attachment["content"]
+                )
+
+            # Generate attachment metadata page
+            detail_url = f"{index}.html"
+            self._add_file(
+                f"{attachments_dir}/{index}.html",
+                self._populate_template(
+                    "templates/item.html",
+                    f"Attachment #{index}",
+                    None,
+                    {
+                        "file_name": attachment["file_name"],
+                        "file_size": attachment.get("file_size"),
+                        "content_type": attachment.get("content_type"),
+                    },
+                ),
+            )
+            attachment_links[f"attachment #{index}"] = detail_url
+
+        # Generate attachments index page
+        self._add_file(
+            f"{attachments_dir}/index.html",
+            self._populate_template(
+                "templates/collection_index.html",
+                "Attachments",
+                None,
+                attachment_links,
+            ),
+        )
+
+        # Add attachments to main links
+        self.main_links["Attachments"] = f"{attachments_dir}/index.html"
+
     def generate(self) -> BytesIO:
         """
         Processes the request and DSR data to build zip file containing the DSR report.
@@ -156,16 +209,44 @@ class DsrReportBuilder:
 
             # pre-process data to split the dataset:collection keys
             datasets: Dict[str, Any] = defaultdict(lambda: defaultdict(list))
+            attachments = []
+
             for key, rows in self.dsr_data.items():
+                if key == "attachments":
+                    attachments = rows
+                    continue
+
                 parts = key.split(":", 1)
                 dataset_name, collection_name = (
                     parts if len(parts) > 1 else ("manual", parts[0])
                 )
+
+                # Check if this is manual data that might contain attachments
+                if dataset_name == "manual":
+                    for row in rows:
+                        if isinstance(row, dict):
+                            # Handle attachments in manual webhook data
+                            if "attachments" in row:
+                                attachments.extend(row["attachments"])
+                                # Remove attachments from the row to avoid duplication
+                                row.pop("attachments")
+
+                            # Handle nested attachments in manual webhook data
+                            for field_value in row.values():
+                                if isinstance(field_value, dict) and "attachments" in field_value:
+                                    attachments.extend(field_value["attachments"])
+                                    # Remove attachments from the nested field to avoid duplication
+                                    field_value.pop("attachments")
+
                 datasets[dataset_name][collection_name].extend(rows)
 
             for dataset_name, collections in datasets.items():
                 self._add_dataset(dataset_name, collections)
                 self.main_links[dataset_name] = f"data/{dataset_name}/index.html"
+
+            # Add attachments if present
+            if attachments:
+                self._add_attachments(attachments)
 
             # create the main index once all the datasets have been added
             self._add_file(

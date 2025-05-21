@@ -20,7 +20,7 @@ from fides.api.common_exceptions import (
 from fides.api.db.session import get_db_session
 from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph import DatasetGraph
-from fides.api.models.attachment import Attachment, AttachmentType
+from fides.api.models.attachment import Attachment, AttachmentReferenceType, AttachmentType
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.connectionconfig import AccessLevel, ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
@@ -83,15 +83,16 @@ class ManualWebhookResults(FidesSchema):
     proceed: bool
 
 
-def get_attachments(
-    db: Session, privacy_request: PrivacyRequest
+def get_attachments_content(
+    db: Session,
+    loaded_attachments: List[Attachment],
 ) -> List[Dict[str, Any]]:
     """
     Retrieves all attachments associated with a privacy request that are marked to be included with the access package.
     Returns a list of dictionaries containing attachment metadata and content.
     """
     attachments = []
-    for attachment in privacy_request.attachments:
+    for attachment in loaded_attachments:
         if attachment.attachment_type == AttachmentType.include_with_access_package:
             # Get size and content using the new method
             size, content = attachment.retrieve_attachment_content()
@@ -151,7 +152,7 @@ def get_manual_webhook_access_inputs(
                         logger.error(
                             f"Could not load attachment {webhook_attachment.id} or config is None"
                         )
-                webhook_data["attachments"] = get_attachments(db, privacy_request)
+                webhook_data["attachments"] = get_attachments_content(db, loaded_attachments)
             manual_inputs[manual_webhook.connection_config.key] = [webhook_data]
 
     except (
@@ -265,7 +266,15 @@ def upload_access_results(  # pylint: disable=R0912
     """Process the data uploads after the access portion of the privacy request has completed"""
     download_urls: List[str] = []
     logger.info(privacy_request.attachments)
-    attachments = get_attachments(session, privacy_request)
+    all_attachments = privacy_request.attachments
+    removed_manual_webhook_attachments = [
+        attachment
+        for attachment in all_attachments
+        if AttachmentReferenceType.access_manual_webhook not in [
+            ref.reference_type for ref in attachment.references
+        ]
+    ]
+    attachments = get_attachments_content(session, removed_manual_webhook_attachments)
     logger.info(
         f"{len(attachments)} attachments found for privacy request {privacy_request.id}"
     )

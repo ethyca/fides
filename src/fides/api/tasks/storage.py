@@ -30,7 +30,7 @@ from fides.api.util.cache import get_cache, get_encryption_cache_key
 from fides.api.util.encryption.aes_gcm_encryption_scheme import (
     encrypt_to_bytes_verify_secrets_length,
 )
-from fides.api.util.storage_util import storage_json_encoder
+from fides.api.util.storage_util import StorageJSONEncoder
 from fides.config import CONFIG
 
 if TYPE_CHECKING:
@@ -75,16 +75,7 @@ def write_to_in_memory_buffer(
     logger.debug("Writing data to in-memory buffer")
 
     if resp_format == ResponseFormat.json.value:
-        # Handle attachments by converting binary content to base64
-        if "attachments" in data:
-            for attachment in data["attachments"]:
-                if "content" in attachment:
-                    # Convert binary content to base64 string
-                    attachment["content"] = bytes_to_b64_str(attachment["content"])
-                    # Remove the original binary content to avoid JSON serialization issues
-                    attachment["content_b64"] = attachment.pop("content")
-
-        json_str = json.dumps(data, indent=2, default=storage_json_encoder)
+        json_str = json.dumps(data, indent=2, default=StorageJSONEncoder)
         return BytesIO(
             encrypt_access_request_results(json_str, privacy_request.id).encode(
                 CONFIG.security.encoding
@@ -95,40 +86,16 @@ def write_to_in_memory_buffer(
         zipped_csvs = BytesIO()
         with zipfile.ZipFile(zipped_csvs, "w") as f:
             for key in data:
-                if key == "attachments":
-                    # Handle attachments separately in the zip file
-                    for attachment in data[key]:
-                        if "content" in attachment:
-                            # Write the actual file content to the zip
-                            f.writestr(
-                                f"attachments/{attachment['file_name']}",
-                                attachment["content"],
-                            )
-                            # Remove the binary content from the metadata
-                            attachment.pop("content")
-
-                    # Write the attachment metadata as a separate CSV
-                    df = pd.json_normalize(data[key])
-                    buffer = BytesIO()
-                    df.to_csv(buffer, index=False, encoding=CONFIG.security.encoding)
-                    buffer.seek(0)
-                    f.writestr(
-                        "attachments_metadata.csv",
-                        encrypt_access_request_results(
-                            buffer.getvalue(), privacy_request.id
-                        ),
-                    )
-                else:
-                    df = pd.json_normalize(data[key])
-                    buffer = BytesIO()
-                    df.to_csv(buffer, index=False, encoding=CONFIG.security.encoding)
-                    buffer.seek(0)
-                    f.writestr(
-                        f"{key}.csv",
-                        encrypt_access_request_results(
-                            buffer.getvalue(), privacy_request.id
-                        ),
-                    )
+                df = pd.json_normalize(data[key])
+                buffer = BytesIO()
+                df.to_csv(buffer, index=False, encoding=CONFIG.security.encoding)
+                buffer.seek(0)
+                f.writestr(
+                    f"{key}.csv",
+                    encrypt_access_request_results(
+                        buffer.getvalue(), privacy_request.id
+                    ),
+                )
 
         zipped_csvs.seek(0)
         return zipped_csvs
