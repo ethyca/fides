@@ -440,7 +440,7 @@ export default async function handler(
 async function fetchCustomFidesCss(
   req: NextApiRequest,
 ): Promise<string | null> {
-  const loggingContext = createRequestLogger(req);
+  const log = createRequestLogger(req);
 
   const currentTime = Date.now();
   const forceRefresh = "refresh" in req.query;
@@ -462,11 +462,11 @@ async function fetchCustomFidesCss(
 
       if (!response.ok) {
         if (response.status === 404) {
-          loggingContext.debug("No custom-fides.css found, skipping...");
+          log.debug("No custom-fides.css found, skipping...");
           autoRefresh = false;
           return null;
         }
-        loggingContext.error(
+        log.error(
           "Error fetching custom-fides.css:",
           response.status,
           response.statusText,
@@ -479,17 +479,13 @@ async function fetchCustomFidesCss(
         throw new Error("No data returned by the server");
       }
 
-      loggingContext.debug("Successfully retrieved custom-fides.css");
+      log.debug("Successfully retrieved custom-fides.css");
       autoRefresh = true;
       cachedCustomFidesCss = data;
       lastFetched = currentTime;
     } catch (error) {
       autoRefresh = false; // /custom-asset endpoint unreachable stop auto-refresh
-      if (error instanceof Error) {
-        loggingContext.error("Error during fetch operation:", error.message);
-      } else {
-        loggingContext.error("Unknown error occurred:", error);
-      }
+      log.error(error, `Error during fetch operation`);
     }
   }
   return cachedCustomFidesCss;
