@@ -10,7 +10,8 @@ import {
   VALID_ISO_3166_2_REGION_REGEX,
   VALID_ISO_3166_LOCATION_REGEX,
 } from "../../common/geolocation";
-import { createLogger } from "./loggerContext";
+import loadEnvironmentVariables from "./loadEnvironmentVariables";
+import { createLogger } from "./logger";
 
 /**
  * Lookup the "geolocation" (ie country and region) for the given request by looking for either:
@@ -25,7 +26,8 @@ const lookupGeolocationServerSide = async ({
 }: {
   searchParams?: NextSearchParams;
 } = {}) => {
-  const log = createLogger();
+  const settings = loadEnvironmentVariables();
+  const log = createLogger({ logLevel: settings.LOG_LEVEL });
   // 1. Check for a provided "geolocation" query param
   if (searchParams) {
     const { geolocation: geolocationQuery } = await searchParams;

@@ -1,7 +1,7 @@
 import { addCommonHeaders } from "~/common/CommonHeaders";
 import { Property } from "~/types/api";
 
-import { createLogger } from "./loggerContext";
+import { createLogger } from "./logger";
 
 const fetchPropertyFromApi = async ({
   fidesApiUrl,

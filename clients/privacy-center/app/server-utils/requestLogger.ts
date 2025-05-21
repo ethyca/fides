@@ -1,20 +1,14 @@
 import { NextApiRequest } from "next";
-import pino from "pino";
 
 import { loadServerSettings } from "../server-environment";
-
-export const createLogger = () => {
-  const settings = loadServerSettings();
-  const logger = pino({
-    level: settings.LOG_LEVEL,
-  });
-
-  return logger;
-};
+import { createLogger } from "./logger";
 
 export const createRequestLogger = (request: NextApiRequest) => {
+  const serverSettings = loadServerSettings();
   const id = request.headers["x-request-id"] ?? "null";
-  const child = createLogger().child({ requestId: id });
+  const child = createLogger({ logLevel: serverSettings.LOG_LEVEL }).child({
+    requestId: id,
+  });
   return child;
 };
 

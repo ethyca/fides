@@ -1,7 +1,7 @@
 import { UserGeolocation } from "fides-js";
 import type { NextApiRequest } from "next";
 
-import { createRequestLogger } from "~/app/server-utils/loggerContext";
+import { createRequestLogger } from "~/app/server-utils/requestLogger";
 
 /**
  * Regex to validate a [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) code:

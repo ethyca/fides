@@ -19,8 +19,8 @@ import pRetry from "p-retry";
 
 import { getFidesApiUrl, loadServerSettings } from "~/app/server-environment";
 import { getPrivacyCenterEnvironmentCached } from "~/app/server-utils";
-import { createRequestLogger } from "~/app/server-utils/loggerContext";
 import { MissingExperienceBehaviors } from "~/app/server-utils/PrivacyCenterSettings";
+import { createRequestLogger } from "~/app/server-utils/requestLogger";
 import { LOCATION_HEADERS, lookupGeolocation } from "~/common/geolocation";
 import { safeLookupPropertyId } from "~/common/property-id";
 
