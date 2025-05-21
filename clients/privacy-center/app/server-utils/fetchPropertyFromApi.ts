@@ -1,5 +1,6 @@
 import { addCommonHeaders } from "~/common/CommonHeaders";
 import { Property } from "~/types/api";
+
 import { createLogger } from "./loggerContext";
 
 const fetchPropertyFromApi = async ({

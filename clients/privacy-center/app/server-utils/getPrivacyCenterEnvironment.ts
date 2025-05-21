@@ -13,8 +13,8 @@ import {
 } from "../server-environment";
 import fetchPropertyFromApi from "./fetchPropertyFromApi";
 import loadEnvironmentVariables from "./loadEnvironmentVariables";
-import lookupGeolocationServerSide from "./lookupGeolocationServerSide";
 import { createLogger } from "./loggerContext";
+import lookupGeolocationServerSide from "./lookupGeolocationServerSide";
 
 /**
  *
