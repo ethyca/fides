@@ -16,24 +16,22 @@ const ActivityTab = ({ subjectRequest }: ActivityTabProps) => {
     <div className="w-full">
       <ActivityTimeline subjectRequest={subjectRequest} />
 
-      <div className="mt-4">
-        {showCommentInput ? (
-          <CommentInput
-            privacyRequestId={subjectRequest.id}
-            onCancel={() => setShowCommentInput(false)}
-          />
-        ) : (
-          <Flex justify="flex-start" className="mt-2">
-            <Button
-              type="default"
-              onClick={() => setShowCommentInput(true)}
-              className="flex items-center"
-            >
-              Add comment <span className="ml-1">+</span>
-            </Button>
-          </Flex>
-        )}
-      </div>
+      {showCommentInput ? (
+        <CommentInput
+          privacyRequestId={subjectRequest.id}
+          onCancel={() => setShowCommentInput(false)}
+        />
+      ) : (
+        <Flex justify="flex-start" className="mt-2">
+          <Button
+            type="default"
+            onClick={() => setShowCommentInput(true)}
+            className="flex items-center"
+          >
+            Add comment <span className="ml-1">+</span>
+          </Button>
+        </Flex>
+      )}
     </div>
   );
 };

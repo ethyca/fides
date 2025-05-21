@@ -60,16 +60,14 @@ export const CommentInput = ({
       key: "internal",
       label: "Internal comment",
       children: (
-        <div className="py-2">
-          <Input.TextArea
-            ref={textAreaRef}
-            value={commentText}
-            onChange={(e) => setCommentText(e.target.value)}
-            rows={3}
-            className="mb-4 w-full"
-            data-testid="comment-input"
-          />
-        </div>
+        <Input.TextArea
+          ref={textAreaRef}
+          value={commentText}
+          onChange={(e) => setCommentText(e.target.value)}
+          rows={3}
+          className="mb-3 h-[150px] w-full !resize-none"
+          data-testid="comment-input"
+        />
       ),
     },
   ];
@@ -78,7 +76,7 @@ export const CommentInput = ({
     <div>
       <Tabs items={items} />
 
-      <Flex justify="flex-end" className="mt-4 gap-2">
+      <Flex justify="flex-end" className="gap-2">
         <Button onClick={onCancel} data-testid="cancel-comment-button">
           Cancel
         </Button>

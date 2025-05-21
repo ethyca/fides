@@ -104,7 +104,7 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
         author: "Fides",
         title: key,
         date: formatDate(logs[0].updated_at),
-        tag: ActivityTimelineItemTypeEnum.REQUEST_UPDATE,
+        type: ActivityTimelineItemTypeEnum.REQUEST_UPDATE,
         showViewLog: hasUnresolvedError || hasSkippedEntry,
         onClick: () => showLogs(key, logs),
         isError: hasUnresolvedError,
@@ -131,7 +131,7 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
       return {
         author,
         date: formatDate(comment.created_at),
-        tag: ActivityTimelineItemTypeEnum.INTERNAL_COMMENT,
+        type: ActivityTimelineItemTypeEnum.INTERNAL_COMMENT,
         showViewLog: false,
         description: comment.comment_text,
         isError: false,

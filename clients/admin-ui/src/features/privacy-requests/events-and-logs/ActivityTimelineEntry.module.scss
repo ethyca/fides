@@ -24,6 +24,7 @@ $horizontal-padding: 20px;
   background: transparent;
   cursor: default;
 
+  &--comment,
   &:hover {
     border-color: var(--fidesui-neutral-100);
   }

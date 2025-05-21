@@ -2,7 +2,11 @@ import classNames from "classnames";
 import { AntTag as Tag, AntTypography as Typography } from "fidesui";
 import React from "react";
 
-import { ActivityTimelineItem, TimelineItemColorMap } from "../types";
+import {
+  ActivityTimelineItem,
+  ActivityTimelineItemTypeEnum,
+  TimelineItemColorMap,
+} from "../types";
 import styles from "./ActivityTimelineEntry.module.scss";
 
 interface ActivityTimelineEntryProps {
@@ -10,8 +14,16 @@ interface ActivityTimelineEntryProps {
 }
 
 const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
-  const { author, title, date, tag, onClick, isError, isSkipped, description } =
-    item;
+  const {
+    author,
+    title,
+    date,
+    type,
+    onClick,
+    isError,
+    isSkipped,
+    description,
+  } = item;
 
   const isClickable = !!onClick;
   const handleClick = onClick || (() => {});
@@ -23,6 +35,8 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
       className={classNames(styles.itemButton, {
         [styles["itemButton--error"]]: isError,
         [styles["itemButton--clickable"]]: isClickable,
+        [styles["itemButton--comment"]]:
+          type === ActivityTimelineItemTypeEnum.INTERNAL_COMMENT,
       })}
       data-testid="activity-timeline-item"
     >
@@ -49,10 +63,10 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
         </span>
         <Tag
           className={styles.type}
-          color={TimelineItemColorMap[tag]}
+          color={TimelineItemColorMap[type]}
           data-testid="activity-timeline-type"
         >
-          {tag}
+          {type}
         </Tag>
         {(isError || isSkipped) && (
           <span
@@ -65,7 +79,9 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
       </div>
       {description && (
         <div className="mt-2 pl-2.5">
-          <Typography.Paragraph>{description}</Typography.Paragraph>
+          <Typography.Paragraph className="!mb-0 whitespace-pre-wrap">
+            {description}
+          </Typography.Paragraph>
         </div>
       )}
     </button>

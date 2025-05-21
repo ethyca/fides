@@ -225,7 +225,7 @@ export interface ActivityTimelineItem {
   author: string;
   title?: string;
   date: string;
-  tag: ActivityTimelineItemTypeEnum;
+  type: ActivityTimelineItemTypeEnum;
   showViewLog: boolean;
   onClick?: () => void;
   description?: string;
