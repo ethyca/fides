@@ -54,6 +54,7 @@ export {
   Skeleton as AntSkeleton,
   Space as AntSpace,
   Switch as AntSwitch,
+  Table as AntTable,
   Tabs as AntTabs,
   Tooltip as AntTooltip,
   Upload as AntUpload,
