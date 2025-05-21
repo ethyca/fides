@@ -10,7 +10,7 @@ export const MISSING_EXPERIENCE_BEHAVIORS = [
 ] as const;
 export type MissingExperienceBehaviors =
   (typeof MISSING_EXPERIENCE_BEHAVIORS)[number];
-// Designed to be forwards-compatible with Pino: https://github.com/pinojs/pino/blob/main/docs/api.md#loggerlevels-object
+
 export const LOG_LEVEL_LABELS = [
   "fatal",
   "error",
