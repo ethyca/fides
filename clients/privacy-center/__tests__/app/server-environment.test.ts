@@ -1,6 +1,6 @@
 import { produce } from "immer";
 
-import { validateConfig } from "~/app/server-environment";
+import { loadServerSettings, validateConfig } from "~/app/server-environment";
 import { getPrivacyCenterEnvironmentCached } from "~/app/server-utils";
 import customFields from "~/config/examples/customFields.json";
 import fullJson from "~/config/examples/full.json";
@@ -102,6 +102,7 @@ describe("loadPrivacyCenterEnvironment", () => {
     mockAsServerSide();
     loadEnvironmentVariablesMock.mockReturnValue({
       USE_API_CONFIG: false,
+      LOG_LEVEL: "fatal",
     });
     lookupGeolocationServerSideMock.mockResolvedValue({
       location: "us-ca",
@@ -117,6 +118,7 @@ describe("loadPrivacyCenterEnvironment", () => {
   it("doesn't call API when env variable USE_API_CONFIG is false and visits root privacy center ", async () => {
     loadEnvironmentVariablesMock.mockReturnValue({
       USE_API_CONFIG: false,
+      LOG_LEVEL: "fatal",
     });
 
     await getPrivacyCenterEnvironmentCached({});
@@ -126,6 +128,7 @@ describe("loadPrivacyCenterEnvironment", () => {
   it("does call API when env variable USE_API_CONFIG is false but visits another privacy center path ", async () => {
     loadEnvironmentVariablesMock.mockReturnValue({
       USE_API_CONFIG: true,
+      LOG_LEVEL: "fatal",
     });
 
     await getPrivacyCenterEnvironmentCached({ propertyPath: "/myproperty" });
@@ -135,6 +138,7 @@ describe("loadPrivacyCenterEnvironment", () => {
   it("does call API when env variable USE_API_CONFIG is true and visits root privacy center ", async () => {
     loadEnvironmentVariablesMock.mockReturnValue({
       USE_API_CONFIG: true,
+      LOG_LEVEL: "fatal",
     });
 
     await getPrivacyCenterEnvironmentCached({});
