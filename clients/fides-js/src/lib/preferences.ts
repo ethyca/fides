@@ -188,6 +188,58 @@ export const updateConsentPreferences = async ({
   dispatchFidesEvent("FidesUpdated", cookie, options.debug);
 };
 
+const validateConsent = (fides: FidesGlobal, consent: NoticeConsent) => {
+  return Object.entries(consent).reduce<Error | null>((error, [key, value]) => {
+    // If we already found an error, don't continue validating
+    if (error) {
+      return error;
+    }
+
+    const nonApplicableNotice =
+      fides.experience!.non_applicable_privacy_notices?.find((n) => n === key);
+
+    if (nonApplicableNotice) {
+      return new Error(
+        `Provided notice key '${key}' is not applicable to the current experience.`,
+      );
+    }
+
+    const notice = fides.experience!.privacy_notices?.find(
+      (n) => n.notice_key === key,
+    );
+
+    if (!nonApplicableNotice && !notice) {
+      return new Error(`'${key}' is not a valid notice key`);
+    }
+
+    const consentMechanism = notice?.consent_mechanism;
+    const isNoticeOnly = consentMechanism === ConsentMechanism.NOTICE_ONLY;
+
+    if (
+      isNoticeOnly &&
+      value !== true &&
+      value !== UserConsentPreference.ACKNOWLEDGE
+    ) {
+      return new Error(
+        `Invalid consent value for notice-only notice key: '${key}'. Must be \`true\` or "acknowledge"`,
+      );
+    }
+
+    if (
+      !isNoticeOnly &&
+      typeof value !== "boolean" &&
+      value !== UserConsentPreference.OPT_IN &&
+      value !== UserConsentPreference.OPT_OUT
+    ) {
+      return new Error(
+        `Invalid consent value for notice key: '${key}'. Must be a boolean or "opt_in" or "opt_out"`,
+      );
+    }
+
+    return null;
+  }, null);
+};
+
 /**
  * Updates user consent preferences with either a consent object or fidesString.
  * If both are provided, fidesString takes priority.
@@ -235,60 +287,7 @@ export const updateConsent = async (
   // validate consent object
   if (consent) {
     // Validate consent values and collect any validation errors
-    const validationError = Object.entries(consent).reduce<Error | null>(
-      (error, [key, value]) => {
-        // If we already found an error, don't continue validating
-        if (error) {
-          return error;
-        }
-
-        const nonApplicableNotice =
-          fides.experience!.non_applicable_privacy_notices?.find(
-            (n) => n === key,
-          );
-
-        if (nonApplicableNotice) {
-          return new Error(
-            `Provided notice key '${key}' is not applicable to the current experience.`,
-          );
-        }
-
-        const notice = fides.experience!.privacy_notices?.find(
-          (n) => n.notice_key === key,
-        );
-
-        if (!nonApplicableNotice && !notice) {
-          return new Error(`'${key}' is not a valid notice key`);
-        }
-
-        const consentMechanism = notice?.consent_mechanism;
-        const isNoticeOnly = consentMechanism === ConsentMechanism.NOTICE_ONLY;
-
-        if (
-          isNoticeOnly &&
-          value !== true &&
-          value !== UserConsentPreference.ACKNOWLEDGE
-        ) {
-          return new Error(
-            `Invalid consent value for notice-only notice key: '${key}'. Must be \`true\` or "acknowledge"`,
-          );
-        }
-
-        if (
-          !isNoticeOnly &&
-          typeof value !== "boolean" &&
-          value !== UserConsentPreference.OPT_IN &&
-          value !== UserConsentPreference.OPT_OUT
-        ) {
-          return new Error(
-            `Invalid consent value for notice key: '${key}'. Must be a boolean or "opt_in" or "opt_out"`,
-          );
-        }
-
-        return null;
-      },
-      null,
-    );
+    const validationError = validateConsent(fides, consent);
 
     if (validationError) {
       handleValidationError(validationError.message);
@@ -304,6 +303,11 @@ export const updateConsent = async (
           ...fides.consent,
           ...fides.decodeNoticeConsentString(decodedString.nc),
         };
+        const validationError = validateConsent(fides, finalConsent);
+
+        if (validationError) {
+          handleValidationError(validationError.message);
+        }
       }
     } catch (error) {
       const errorMessage =

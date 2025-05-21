@@ -3701,7 +3701,7 @@ describe("Consent overlay", () => {
         // Update consent
         win.Fides.updateConsent({
           fidesString:
-            ",,,eyJhZHZlcnRpc2luZyI6dHJ1ZSwiZXNzZW50aWFsIjpmYWxzZSwiYW5hbHl0aWNzX29wdF9vdXQiOmZhbHNlfQ==",
+            ",,,eyJhZHZlcnRpc2luZyI6dHJ1ZSwiZXNzZW50aWFsIjp0cnVlLCJhbmFseXRpY3Nfb3B0X291dCI6ZmFsc2V9",
         });
 
         // Verify consent was updated
@@ -3736,7 +3736,7 @@ describe("Consent overlay", () => {
             [PRIVACY_NOTICE_KEY_3]: false,
           },
           fidesString:
-            ",,,eyJhZHZlcnRpc2luZyI6dHJ1ZSwiZXNzZW50aWFsIjpmYWxzZSwiYW5hbHl0aWNzX29wdF9vdXQiOmZhbHNlfQ==",
+            ",,,eyJhZHZlcnRpc2luZyI6dHJ1ZSwiZXNzZW50aWFsIjp0cnVlLCJhbmFseXRpY3Nfb3B0X291dCI6ZmFsc2V9",
         });
 
         // Verify consent was updated from the fidesString and not the consent object
