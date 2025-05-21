@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { v4 } from "uuid";
 
+import { createLogger } from "./app/server-utils/loggerContext";
+
 export default function middleware(request: NextRequest) {
+  const log = createLogger();
   const requestId = v4();
 
   const logDict = {
@@ -10,11 +13,7 @@ export default function middleware(request: NextRequest) {
     requestId,
   };
 
-  const debug = process.env.FIDES_PRIVACY_CENTER__DEBUG === "true";
-  if (debug) {
-    /* eslint-disable no-console */
-    console.info(JSON.stringify(logDict));
-  }
+  log.debug(logDict);
 
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-request-id", requestId);
