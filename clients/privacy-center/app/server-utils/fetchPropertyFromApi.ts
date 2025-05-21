@@ -1,7 +1,6 @@
 import { addCommonHeaders } from "~/common/CommonHeaders";
 import { Property } from "~/types/api";
 
-import loadEnvironmentVariables from "./loadEnvironmentVariables";
 import { createLogger } from "./logger";
 
 const fetchPropertyFromApi = async ({
@@ -13,8 +12,7 @@ const fetchPropertyFromApi = async ({
   path: string;
   location?: string | null;
 }) => {
-  const settings = loadEnvironmentVariables();
-  const log = createLogger({ logLevel: settings.LOG_LEVEL });
+  const log = createLogger();
   const headers = new Headers();
   addCommonHeaders(headers);
 

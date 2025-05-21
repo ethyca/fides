@@ -10,7 +10,6 @@ import {
   VALID_ISO_3166_2_REGION_REGEX,
   VALID_ISO_3166_LOCATION_REGEX,
 } from "../../common/geolocation";
-import loadEnvironmentVariables from "./loadEnvironmentVariables";
 import { createLogger } from "./logger";
 
 /**
@@ -26,8 +25,7 @@ const lookupGeolocationServerSide = async ({
 }: {
   searchParams?: NextSearchParams;
 } = {}) => {
-  const settings = loadEnvironmentVariables();
-  const log = createLogger({ logLevel: settings.LOG_LEVEL });
+  const log = createLogger();
   // 1. Check for a provided "geolocation" query param
   if (searchParams) {
     const { geolocation: geolocationQuery } = await searchParams;

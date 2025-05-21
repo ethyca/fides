@@ -1,10 +1,11 @@
 import pino from "pino";
 
-import { LogLevels } from "./PrivacyCenterSettings";
+import loadEnvironmentVariables from "./loadEnvironmentVariables";
 
-export const createLogger = ({ logLevel }: { logLevel: LogLevels }) => {
+export const createLogger = () => {
+  const settings = loadEnvironmentVariables();
   const logger = pino({
-    level: logLevel,
+    level: settings.LOG_LEVEL,
   });
 
   return logger;
