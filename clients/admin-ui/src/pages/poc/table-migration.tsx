@@ -1,4 +1,4 @@
-import type { ColumnsType } from "antd/es/table";
+import type { ColumnsType, FilterValue } from "antd/es/table/interface";
 import { useFeatures } from "common/features";
 import {
   AntButton as Button,
@@ -12,19 +12,42 @@ import {
   AntTypography as Typography,
 } from "fidesui";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
+import { useAppSelector } from "~/app/hooks";
 import { ADD_MULTIPLE_VENDORS_ROUTE } from "~/features/common/nav/routes";
+import {
+  selectPurposes,
+  useGetPurposesQuery,
+} from "~/features/common/purpose.slice";
 import AddVendor from "~/features/configure-consent/AddVendor";
 import {
   ConsentManagementModal,
   useConsentManagementModal,
 } from "~/features/configure-consent/ConsentManagementModal";
+import {
+  selectDataUses,
+  useGetAllDataUsesQuery,
+} from "~/features/data-use/data-use.slice";
 import { useGetVendorReportQuery } from "~/features/plus/plus.slice";
 import { SystemSummary } from "~/types/api";
 
 const { Content } = Layout;
 const { Title, Paragraph } = Typography;
+
+// Consent categories for filtering
+const CONSENT_CATEGORIES = [
+  { text: "Advertising", value: "advertising" },
+  { text: "Analytics", value: "analytics" },
+  { text: "Functional", value: "functional" },
+  { text: "Essential", value: "essential" },
+];
+
+// Legal basis options for filtering
+const LEGAL_BASIS_OPTIONS = [
+  { text: "Consent", value: "Consent" },
+  { text: "Legitimate Interest", value: "Legitimate interests" },
+];
 
 export const TableMigrationPOC = () => {
   const { tcf: isTcfEnabled, dictionaryService } = useFeatures();
@@ -33,6 +56,46 @@ export const TableMigrationPOC = () => {
   const [pageSize, setPageSize] = useState<number>(25);
   const [pageIndex, setPageIndex] = useState<number>(1);
   const [systemFidesKey, setSystemFidesKey] = useState<string>();
+  const [filteredInfo, setFilteredInfo] = useState<
+    Record<string, FilterValue | null>
+  >({});
+
+  // Load data use options for filtering
+  useGetAllDataUsesQuery();
+  const dataUses = useAppSelector(selectDataUses);
+
+  // Load purpose options for filtering
+  useGetPurposesQuery();
+  const purposeResponse = useAppSelector(selectPurposes);
+
+  // Transform purposes for filtering
+  const purposeOptions = useMemo(() => {
+    const normalPurposes = Object.entries(purposeResponse.purposes).map(
+      ([key, purpose]) => ({
+        text: purpose.name,
+        value: key,
+      }),
+    );
+
+    const specialPurposes = Object.entries(
+      purposeResponse.special_purposes,
+    ).map(([key, purpose]) => ({
+      text: purpose.name,
+      value: key,
+    }));
+
+    return [...normalPurposes, ...specialPurposes];
+  }, [purposeResponse]);
+
+  // Transform data uses for filtering
+  const dataUseOptions = useMemo(
+    () =>
+      dataUses.map((dataUse) => ({
+        text: dataUse.name || dataUse.fides_key,
+        value: dataUse.fides_key,
+      })),
+    [dataUses],
+  );
 
   const {
     isOpen: isRowModalOpen,
@@ -40,15 +103,46 @@ export const TableMigrationPOC = () => {
     onClose: onRowModalClose,
   } = useConsentManagementModal();
 
+  // Format filter parameters for the API
+  const formatFilterParams = () => {
+    // Format data uses filters as "data_uses=value1&data_uses=value2"
+    const dataUsesFilters = ((filteredInfo.data_uses as string[]) || [])
+      .map((value) => `data_uses=${encodeURIComponent(value)}`)
+      .join("&");
+
+    // Format legal basis filters as "legal_bases=value1&legal_bases=value2"
+    const legalBasisFilters = ((filteredInfo.legal_bases as string[]) || [])
+      .map((value) => `legal_bases=${encodeURIComponent(value)}`)
+      .join("&");
+
+    // Format purpose filters as "purposes=value1&purposes=value2"
+    const purposeFilters = ((filteredInfo.tcf_purpose as string[]) || [])
+      .map((value) => `purposes=${encodeURIComponent(value)}`)
+      .join("&");
+
+    // Format consent category filters as "consent_category=value1&consent_category=value2"
+    const consentCategoryFilters = (
+      (filteredInfo.consent_categories as string[]) || []
+    )
+      .map((value) => `consent_category=${encodeURIComponent(value)}`)
+      .join("&");
+
+    return {
+      dataUses: dataUsesFilters,
+      legalBasis: legalBasisFilters,
+      purposes: purposeFilters,
+      specialPurposes: "",
+      consentCategories: consentCategoryFilters,
+    };
+  };
+
+  const filterParams = formatFilterParams();
+
   const { data: vendorReport, isLoading } = useGetVendorReportQuery({
     pageIndex,
     pageSize,
     search: searchText,
-    dataUses: "",
-    legalBasis: "",
-    purposes: "",
-    specialPurposes: "",
-    consentCategories: "",
+    ...filterParams,
   });
 
   const totalRows = vendorReport?.total || 0;
@@ -59,9 +153,13 @@ export const TableMigrationPOC = () => {
     setPageIndex(1);
   };
 
-  const onTableChange = (pagination: any) => {
+  const handleTableChange = (
+    pagination: any,
+    filters: Record<string, FilterValue | null>,
+  ) => {
     setPageIndex(pagination.current);
     setPageSize(pagination.pageSize);
+    setFilteredInfo(filters);
   };
 
   const onRowClick = (record: SystemSummary) => {
@@ -73,12 +171,18 @@ export const TableMigrationPOC = () => {
     router.push(ADD_MULTIPLE_VENDORS_ROUTE);
   };
 
+  // Clear all filters
+  const clearAllFilters = () => {
+    setFilteredInfo({});
+  };
+
   // Table columns configuration
   const columns: ColumnsType<SystemSummary> = [
     {
       title: "Vendor",
       dataIndex: "name",
       key: "name",
+      filteredValue: filteredInfo.name || null,
     },
     ...(isTcfEnabled
       ? [
@@ -91,6 +195,8 @@ export const TableMigrationPOC = () => {
                 {count} {count === 1 ? "purpose" : "purposes"}
               </Tag>
             ),
+            filters: purposeOptions,
+            filteredValue: filteredInfo.tcf_purpose || null,
           },
           {
             title: "Data use",
@@ -101,6 +207,8 @@ export const TableMigrationPOC = () => {
                 {count} {count === 1 ? "data use" : "data uses"}
               </Tag>
             ),
+            filters: dataUseOptions,
+            filteredValue: filteredInfo.data_uses || null,
           },
           {
             title: "Legal basis",
@@ -111,6 +219,8 @@ export const TableMigrationPOC = () => {
                 {count} {count === 1 ? "basis" : "bases"}
               </Tag>
             ),
+            filters: LEGAL_BASIS_OPTIONS,
+            filteredValue: filteredInfo.legal_bases || null,
           },
         ]
       : [
@@ -123,6 +233,8 @@ export const TableMigrationPOC = () => {
                 {count} {count === 1 ? "category" : "categories"}
               </Tag>
             ),
+            filters: CONSENT_CATEGORIES,
+            filteredValue: filteredInfo.consent_categories || null,
           },
           {
             title: "Cookies",
@@ -144,7 +256,7 @@ export const TableMigrationPOC = () => {
       </Row>
       <Paragraph className="mb-6">
         This is a demonstration of migrating the ConsentManagementTable from
-        TanStack Table to Ant Design Table.
+        TanStack Table to Ant Design Table with built-in filtering.
       </Paragraph>
 
       {isRowModalOpen && systemFidesKey ? (
@@ -168,7 +280,7 @@ export const TableMigrationPOC = () => {
             buttonLabel="Add vendors"
             onButtonClick={dictionaryService ? goToAddMultiple : undefined}
           />
-          <Button>Filter</Button>
+          <Button onClick={clearAllFilters}>Clear filters</Button>
         </Space>
       </Flex>
 
@@ -184,7 +296,7 @@ export const TableMigrationPOC = () => {
           showSizeChanger: true,
           pageSizeOptions: [25, 50, 100],
         }}
-        onChange={onTableChange}
+        onChange={handleTableChange}
         onRow={(record) => ({
           onClick: () => onRowClick(record),
           style: { cursor: "pointer" },
