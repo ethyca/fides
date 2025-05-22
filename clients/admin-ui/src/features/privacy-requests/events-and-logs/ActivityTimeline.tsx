@@ -156,20 +156,11 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
   }, [results, commentsData]);
 
   // Render skeleton items when loading
-  const renderSkeletonItems = () => {
-    // Use fixed IDs instead of array indices
-    const skeletonIds = [
-      "timeline-skeleton-1",
-      "timeline-skeleton-2",
-      "timeline-skeleton-3",
-    ];
-
-    return skeletonIds.map((id) => (
-      <div key={id} className={styles.itemButton} style={{ padding: "16px" }}>
-        <Skeleton paragraph={{ rows: 2 }} active />
-      </div>
-    ));
-  };
+  const renderSkeletonItems = () => (
+    <div className={styles.itemButton} data-testid="timeline-skeleton">
+      <Skeleton paragraph={{ rows: 2 }} active />
+    </div>
+  );
 
   return (
     <Box width="100%">

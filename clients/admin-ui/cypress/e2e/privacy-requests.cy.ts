@@ -573,7 +573,7 @@ describe("Privacy Requests", () => {
       cy.getByTestId("comment-input").should("not.exist");
     });
 
-    it("shows loading state while fetching comments", () => {
+    it.only("shows loading state while fetching comments", () => {
       cy.intercept("GET", "/api/v1/plus/privacy-request/*/comment*", {
         statusCode: 200,
         fixture: "privacy-requests/comments/empty-comments.json",
@@ -583,12 +583,12 @@ describe("Privacy Requests", () => {
       cy.visit("/privacy-requests/pri_96bb91d3-cdb9-46c3-9546-0c276eb05a5c");
 
       // Check for skeleton loading state before comments load
-      cy.get(".ant-skeleton").should("exist");
+      cy.getByTestId("timeline-skeleton").should("exist");
 
       cy.wait("@getCommentsDelayed");
 
       // Verify skeletons are gone after loading
-      cy.get(".ant-skeleton").should("not.exist");
+      cy.getByTestId("timeline-skeleton").should("not.exist");
     });
 
     it("restricts comment functionality based on user permissions", () => {
