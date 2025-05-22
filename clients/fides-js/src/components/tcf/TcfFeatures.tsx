@@ -54,7 +54,7 @@ const TcfFeatures = ({
           // The hideToggles prop ensures the UI doesn't show toggle controls,
           // and this no-op handler ensures no events are fired even if somehow triggered.
         }}
-        renderToggleChild={(f) => (
+        renderDropdownChild={(f) => (
           <FeatureChildren type="features" feature={f} />
         )}
         hideToggles
@@ -73,7 +73,7 @@ const TcfFeatures = ({
             },
           )
         }
-        renderToggleChild={(f) => (
+        renderDropdownChild={(f) => (
           <FeatureChildren type="specialFeatures" feature={f} />
         )}
       />
