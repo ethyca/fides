@@ -104,22 +104,18 @@ def get_attachments_content(
             # Get download URL using retrieve_attachment
             _, url = attachment.retrieve_attachment()
 
-            # Derive content type from file name
-            content_type = (
-                attachment.file_name.split(".")[-1]
-                if "." in attachment.file_name
-                else "application/octet-stream"
-            )
-
             attachments.append(
                 {
                     "file_name": attachment.file_name,
                     "file_size": size,
                     "content": content,
                     "download_url": url,
-                    "content_type": content_type,
+                    "content_type": attachment.content_type,
                 }
             )
+    logger.info(
+        f"Attachments: {[(a.file_name, a.content_type) for a in loaded_attachments]}"
+    )
     return attachments
 
 

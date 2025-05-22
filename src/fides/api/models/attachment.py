@@ -18,7 +18,7 @@ from fides.api.service.storage.s3 import (
     generic_retrieve_from_s3,
     generic_upload_to_s3,
 )
-from fides.api.service.storage.util import get_local_filename
+from fides.api.service.storage.util import AllowedFileType, get_local_filename
 from fides.config import CONFIG
 
 if TYPE_CHECKING:
@@ -116,6 +116,11 @@ class Attachment(Base):
         lazy="selectin",
         uselist=False,
     )
+
+    @property
+    def content_type(self) -> str:
+        """Returns the content type of the attachment."""
+        return AllowedFileType[self.file_name.split(".")[-1]].value
 
     def upload(self, attachment: IO[bytes]) -> None:
         """Uploads an attachment to S3, GCS, or local storage."""

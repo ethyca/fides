@@ -73,6 +73,8 @@ def write_to_in_memory_buffer(
     :param request_id: str, The privacy request id
     """
     logger.debug("Writing data to in-memory buffer")
+    logger.debug(f"Response format: {resp_format}")
+    logger.debug(f"Data keys: {list(data.keys())}")
 
     if resp_format == ResponseFormat.json.value:
         # Create a copy of the data to modify
@@ -80,21 +82,41 @@ def write_to_in_memory_buffer(
 
         # Handle attachments by including their metadata and URLs
         if "attachments" in json_data and isinstance(json_data["attachments"], list):
-            for attachment in json_data["attachments"]:
+            logger.debug(f"Processing {len(json_data['attachments'])} attachments")
+            for idx, attachment in enumerate(json_data["attachments"]):
+                logger.debug(
+                    f"Processing attachment {idx}: {list(attachment.keys()) if isinstance(attachment, dict) else type(attachment)}"
+                )
                 if isinstance(attachment, dict):
-                    # The attachment data already contains download_url from get_attachments_content
-                    # Just ensure we have all the metadata we need
+                    # Safely remove content if it exists
+                    if "content" in attachment:
+                        logger.debug(f"Removing content from attachment {idx}")
+                        attachment.pop("content")
+                    # Ensure content_type and file_size are set
                     attachment["content_type"] = attachment.get(
                         "content_type", "application/octet-stream"
                     )
                     attachment["file_size"] = attachment.get("file_size", 0)
+                    logger.debug(
+                        f"Attachment {idx} final keys: {list(attachment.keys())}"
+                    )
 
-        json_str = json.dumps(json_data, indent=2, default=StorageJSONEncoder().default)
-        return BytesIO(
-            encrypt_access_request_results(json_str, privacy_request.id).encode(
-                CONFIG.security.encoding
+        try:
+            logger.debug("Attempting to convert data to JSON")
+            logger.debug(f"Data structure: {json_data}")
+            json_str = json.dumps(
+                json_data, indent=2, default=StorageJSONEncoder().default
             )
-        )
+            logger.debug("Successfully converted data to JSON string")
+            return BytesIO(
+                encrypt_access_request_results(json_str, privacy_request.id).encode(
+                    CONFIG.security.encoding
+                )
+            )
+        except Exception as e:
+            logger.error(f"Error converting data to JSON: {str(e)}")
+            logger.error(f"Data that failed to convert: {json_data}")
+            raise
 
     if resp_format == ResponseFormat.csv.value:
         zipped_csvs = BytesIO()
@@ -118,18 +140,32 @@ def write_to_in_memory_buffer(
 
             # Handle privacy request attachments separately
             if "attachments" in data and isinstance(data["attachments"], list):
+                # Create a CSV with attachment metadata and URLs
+                attachment_rows = []
                 for attachment in data["attachments"]:
-                    if (
-                        isinstance(attachment, dict)
-                        and "content" in attachment
-                        and "file_name" in attachment
-                    ):
-                        f.writestr(
-                            f"attachments/{attachment['file_name']}",
-                            encrypt_access_request_results(
-                                attachment["content"], privacy_request.id
-                            ),
+                    if isinstance(attachment, dict):
+                        attachment_rows.append(
+                            {
+                                "file_name": attachment.get("file_name", ""),
+                                "file_size": attachment.get("file_size", 0),
+                                "content_type": attachment.get(
+                                    "content_type", "application/octet-stream"
+                                ),
+                                "download_url": attachment.get("download_url", ""),
+                            }
                         )
+
+                if attachment_rows:
+                    df = pd.DataFrame(attachment_rows)
+                    buffer = BytesIO()
+                    df.to_csv(buffer, index=False, encoding=CONFIG.security.encoding)
+                    buffer.seek(0)
+                    f.writestr(
+                        "attachments/attachments.csv",
+                        encrypt_access_request_results(
+                            buffer.getvalue(), privacy_request.id
+                        ),
+                    )
 
         zipped_csvs.seek(0)
         return zipped_csvs
@@ -210,30 +246,56 @@ def upload_to_gcs(
 ) -> str:
     """Uploads access request data to a Google Cloud Storage bucket"""
     logger.info("Starting Google Cloud Storage upload of {}", file_key)
+    logger.debug(f"Response format: {resp_format}")
+    logger.debug(f"Data keys: {list(data.keys())}")
 
     try:
         storage_client = get_gcs_client(auth_method, storage_secrets)
         bucket = storage_client.bucket(bucket_name)
+        logger.debug("Successfully created GCS client and bucket")
 
         blob = bucket.blob(file_key)
-        in_memory_file = write_to_in_memory_buffer(resp_format, data, privacy_request)
+        logger.debug("Created blob object")
+
+        try:
+            in_memory_file = write_to_in_memory_buffer(
+                resp_format, data, privacy_request
+            )
+            logger.debug("Successfully created in-memory file")
+        except Exception as e:
+            logger.error(f"Error in write_to_in_memory_buffer: {str(e)}")
+            raise
+
         content_type = {
             ResponseFormat.json.value: "application/json",
             ResponseFormat.csv.value: "application/zip",
             ResponseFormat.html.value: "application/zip",
         }
-        blob.upload_from_string(
-            in_memory_file.getvalue(), content_type=content_type[resp_format]
-        )
+        logger.debug(f"Using content type: {content_type[resp_format]}")
+
+        try:
+            blob.upload_from_string(
+                in_memory_file.getvalue(), content_type=content_type[resp_format]
+            )
+            logger.debug("Successfully uploaded file to GCS")
+        except Exception as e:
+            logger.error(f"Error uploading to GCS: {str(e)}")
+            raise
 
         logger.info("File {} uploaded to {}", file_key, blob.public_url)
 
-        presigned_url = blob.generate_signed_url(
-            version="v4",
-            expiration=CONFIG.security.subject_request_download_link_ttl_seconds,
-            method="GET",
-        )
-        return presigned_url
+        try:
+            presigned_url = blob.generate_signed_url(
+                version="v4",
+                expiration=CONFIG.security.subject_request_download_link_ttl_seconds,
+                method="GET",
+            )
+            logger.debug("Successfully generated presigned URL")
+            return presigned_url
+        except Exception as e:
+            logger.error(f"Error generating presigned URL: {str(e)}")
+            raise
+
     except Exception as e:
         logger.error(
             "Encountered error while uploading and generating link for Google Cloud Storage object: {}",
