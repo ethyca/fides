@@ -4,7 +4,7 @@ import {
   Box,
   useDisclosure,
 } from "fidesui";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
   ExecutionLog,
@@ -66,11 +66,14 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
     onClose();
   };
 
-  const showLogs = (key: string, logs: ExecutionLog[]) => {
-    setCurrentKey(key);
-    setCurrentLogs(logs);
-    onOpen();
-  };
+  const showLogs = useCallback(
+    (key: string, logs: ExecutionLog[]) => {
+      setCurrentKey(key);
+      setCurrentLogs(logs);
+      onOpen();
+    },
+    [onOpen],
+  );
 
   const timelineItems = useMemo(() => {
     const eventItemsWithClickHandler = eventItems.map((item) => {
@@ -90,9 +93,9 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
 
     // Sort by date (oldest first)
     return allItems.sort((a, b) => {
-      return a.date.getTime() - b.date.getTime();
+      return new Date(a.date).getTime() - new Date(b.date).getTime();
     });
-  }, [eventItems, commentItems, results]);
+  }, [eventItems, commentItems, results, showLogs]);
 
   const renderSkeletonItems = () => (
     <div className={styles.itemButton} data-testid="timeline-skeleton">
