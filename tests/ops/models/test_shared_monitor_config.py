@@ -214,7 +214,10 @@ class TestSharedMonitorConfigModel:
                     "context_regex_pattern_mapping": [
                         [".*([e|E]mail|[e|E]mail_address).*", "user.contact.email"],
                         [".*[P|p]hone_number.*", "user.contact.phone_number"],
-                        [".*[S|s]sn.*", "user.gov_id.ssn"],
+                        [
+                            ".*[S|s]sn.*",
+                            "user.government_id.national_identification_number",
+                        ],
                     ]
                 },
             },
@@ -234,12 +237,12 @@ class TestSharedMonitorConfigModel:
         ] == [
             [".*([e|E]mail|[e|E]mail_address).*", "user.contact.email"],
             [".*[P|p]hone_number.*", "user.contact.phone_number"],
-            [".*[S|s]sn.*", "user.gov_id.ssn"],
+            [".*[S|s]sn.*", "user.government_id.national_identification_number"],
         ]
         assert updated_monitor_config_2.classify_params[
             "context_regex_pattern_mapping"
         ] == [
             [".*([e|E]mail|[e|E]mail_address).*", "user.contact.email"],
             [".*[P|p]hone_number.*", "user.contact.phone_number"],
-            [".*[S|s]sn.*", "user.gov_id.ssn"],
+            [".*[S|s]sn.*", "user.government_id.national_identification_number"],
         ]
