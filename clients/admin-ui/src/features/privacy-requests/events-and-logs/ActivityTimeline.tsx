@@ -7,6 +7,7 @@ import {
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
+  ActivityTimelineItemTypeEnum,
   ExecutionLog,
   ExecutionLogStatus,
   PrivacyRequestEntity,
@@ -89,13 +90,29 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
       return item;
     });
 
-    const allItems = [...eventItemsWithClickHandler, ...commentItems];
+    // Create initial access request item
+    const initialRequestItem = {
+      author: "Fides",
+      title: "Access request received",
+      date: new Date(subjectRequest.created_at),
+      type: ActivityTimelineItemTypeEnum.REQUEST_UPDATE,
+      showViewLog: false,
+      isError: false,
+      isSkipped: false,
+      id: "initial-request",
+    };
+
+    const allItems = [
+      initialRequestItem,
+      ...eventItemsWithClickHandler,
+      ...commentItems,
+    ];
 
     // Sort by date (oldest first)
     return allItems.sort((a, b) => {
       return new Date(a.date).getTime() - new Date(b.date).getTime();
     });
-  }, [eventItems, commentItems, results, showLogs]);
+  }, [eventItems, commentItems, results, showLogs, subjectRequest.created_at]);
 
   const renderSkeletonItems = () => (
     <div className={styles.itemButton} data-testid="timeline-skeleton">
