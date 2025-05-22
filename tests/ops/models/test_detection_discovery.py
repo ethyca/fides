@@ -773,9 +773,6 @@ class TestMonitorConfigModel:
         assert merged_params["custom_param"] == "local value"
         assert merged_params["num_samples"] == 25
 
-        # Clean up
-        db.delete(mc)
-
     def test_shared_config_override_priority(
         self,
         db: Session,
@@ -825,9 +822,6 @@ class TestMonitorConfigModel:
 
         # Local value should not be overridden
         assert merged_params["num_samples"] == 25  # Local value
-
-        # Clean up
-        db.delete(mc)
 
     def test_update_monitor_config_with_shared_config(
         self,
@@ -881,9 +875,6 @@ class TestMonitorConfigModel:
             [".*([e|E]mail|[e|E]mail_address).*", "user.contact.email"],
             [".*[P|p]hone_number.*", "user.contact.phone_number"],
         ]
-
-        # Clean up
-        db.delete(mc)
 
 
 class TestMonitorExecutionModel:
