@@ -311,6 +311,11 @@ if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
         path: routes.FORMS_POC_ROUTE,
         scopes: [],
       },
+      {
+        title: "Table Migration POC",
+        path: routes.TABLE_MIGRATION_POC_ROUTE,
+        scopes: [],
+      },
     ],
   });
 }
