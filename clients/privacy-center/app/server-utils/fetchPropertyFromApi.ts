@@ -1,7 +1,7 @@
 import { addCommonHeaders } from "~/common/CommonHeaders";
 import { Property } from "~/types/api";
 
-import debugLogServer from "./debugLogServer";
+import { createLogger } from "./logger";
 
 const fetchPropertyFromApi = async ({
   fidesApiUrl,
@@ -12,6 +12,7 @@ const fetchPropertyFromApi = async ({
   path: string;
   location?: string | null;
 }) => {
+  const log = createLogger();
   const headers = new Headers();
   addCommonHeaders(headers);
 
@@ -26,7 +27,7 @@ const fetchPropertyFromApi = async ({
     }
 
     const url = `${fidesApiUrl}/plus/property?${searchParams}`;
-    debugLogServer(`Fetching property from API: ${url}`);
+    log.debug(`Fetching property from API: ${url}`);
 
     const response = await fetch(url, {
       method: "GET",
@@ -36,10 +37,10 @@ const fetchPropertyFromApi = async ({
       result = await response.json();
     }
   } catch (e) {
-    debugLogServer(`Request to fetch property failed`, e);
+    log.debug(`Request to fetch property failed`, e);
   }
 
-  debugLogServer(`Fetched property id: `, result?.id);
+  log.debug(`Fetched property id: ${result?.id}`);
   return result;
 };
 export default fetchPropertyFromApi;

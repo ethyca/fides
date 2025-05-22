@@ -3637,4 +3637,118 @@ describe("Consent overlay", () => {
       });
     });
   });
+
+  describe("when updating consent using window.Fides.updateConsent", () => {
+    beforeEach(() => {
+      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+      cy.fixture("consent/fidesjs_options_banner_modal.json").then((config) => {
+        stubConfig({
+          experience: {
+            experience_config: {
+              ...config.experience.experience_config,
+              ...{ component: ComponentType.HEADLESS },
+            },
+          },
+        });
+      });
+    });
+
+    it("should update the consent cookie using consent object", () => {
+      cy.window().then((win) => {
+        // Initial consent
+        cy.window()
+          .its("Fides")
+          .its("consent")
+          .should("eql", {
+            [PRIVACY_NOTICE_KEY_1]: false,
+            [PRIVACY_NOTICE_KEY_2]: true,
+            [PRIVACY_NOTICE_KEY_3]: true,
+          });
+
+        // Update consent
+        win.Fides.updateConsent({
+          consent: {
+            [PRIVACY_NOTICE_KEY_1]: true,
+            [PRIVACY_NOTICE_KEY_2]: UserConsentPreference.ACKNOWLEDGE,
+            [PRIVACY_NOTICE_KEY_3]: UserConsentPreference.OPT_OUT,
+          },
+        });
+
+        // Verify consent was updated
+        cy.window()
+          .its("Fides")
+          .its("consent")
+          .should("eql", {
+            [PRIVACY_NOTICE_KEY_1]: true,
+            [PRIVACY_NOTICE_KEY_2]: true,
+            [PRIVACY_NOTICE_KEY_3]: false,
+          });
+      });
+    });
+
+    it("should update the consent cookie using fidesString", () => {
+      cy.window().then((win) => {
+        // Initial consent
+        cy.window()
+          .its("Fides")
+          .its("consent")
+          .should("eql", {
+            [PRIVACY_NOTICE_KEY_1]: false,
+            [PRIVACY_NOTICE_KEY_2]: true,
+            [PRIVACY_NOTICE_KEY_3]: true,
+          });
+
+        // Update consent
+        win.Fides.updateConsent({
+          fidesString:
+            ",,,eyJhZHZlcnRpc2luZyI6dHJ1ZSwiZXNzZW50aWFsIjp0cnVlLCJhbmFseXRpY3Nfb3B0X291dCI6ZmFsc2V9",
+        });
+
+        // Verify consent was updated
+        cy.window()
+          .its("Fides")
+          .its("consent")
+          .should("eql", {
+            [PRIVACY_NOTICE_KEY_1]: true,
+            [PRIVACY_NOTICE_KEY_2]: true,
+            [PRIVACY_NOTICE_KEY_3]: false,
+          });
+      });
+    });
+
+    it("should update the consent cookie using fidesString when both are provided", () => {
+      cy.window().then((win) => {
+        // Initial consent
+        cy.window()
+          .its("Fides")
+          .its("consent")
+          .should("eql", {
+            [PRIVACY_NOTICE_KEY_1]: false,
+            [PRIVACY_NOTICE_KEY_2]: true,
+            [PRIVACY_NOTICE_KEY_3]: true,
+          });
+
+        // Update consent
+        win.Fides.updateConsent({
+          consent: {
+            [PRIVACY_NOTICE_KEY_1]: false,
+            [PRIVACY_NOTICE_KEY_2]: UserConsentPreference.ACKNOWLEDGE,
+            [PRIVACY_NOTICE_KEY_3]: false,
+          },
+          fidesString:
+            ",,,eyJhZHZlcnRpc2luZyI6dHJ1ZSwiZXNzZW50aWFsIjp0cnVlLCJhbmFseXRpY3Nfb3B0X291dCI6ZmFsc2V9",
+        });
+
+        // Verify consent was updated from the fidesString and not the consent object
+        cy.window()
+          .its("Fides")
+          .its("consent")
+          .should("eql", {
+            [PRIVACY_NOTICE_KEY_1]: true,
+            [PRIVACY_NOTICE_KEY_2]: true,
+            [PRIVACY_NOTICE_KEY_3]: false,
+          });
+      });
+    });
+  });
 });

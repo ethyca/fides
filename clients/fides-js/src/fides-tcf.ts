@@ -11,7 +11,7 @@
 import type { TCData } from "@iabtechlabtcf/cmpapi";
 import { TCString } from "@iabtechlabtcf/core";
 
-import { FidesCookie, shouldResurfaceBanner } from "./fides";
+import { FidesCookie } from "./fides";
 import {
   FidesConfig,
   FidesExperienceTranslationOverrides,
@@ -215,20 +215,6 @@ const initialFides = getCoreFides({ tcfEnabled: true });
 const _Fides: FidesGlobal = {
   ...initialFides,
   init,
-  reinitialize() {
-    if (!this.config || !this.initialized) {
-      raise("Fides must be initialized before reinitializing");
-    }
-    return this.init();
-  },
-  shouldShowExperience() {
-    return shouldResurfaceBanner(
-      this.experience,
-      this.cookie,
-      this.saved_consent ?? {},
-      this.options,
-    );
-  },
 };
 
 if (typeof window !== "undefined") {

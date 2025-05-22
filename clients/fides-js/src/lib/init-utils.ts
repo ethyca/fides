@@ -6,12 +6,15 @@ import {
   FidesCookie,
   FidesGlobal,
   FidesOptions,
+  NoticeConsent,
   PrivacyExperience,
+  UpdateConsentValidation,
 } from "./consent-types";
 import {
   decodeNoticeConsentString,
   defaultShowModal,
   encodeNoticeConsentString,
+  shouldResurfaceBanner,
 } from "./consent-utils";
 import {
   consentCookieObjHasSomeConsentSet,
@@ -19,6 +22,7 @@ import {
 } from "./cookie";
 import { onFidesEvent } from "./events";
 import { DEFAULT_LOCALE, DEFAULT_MODAL_LINK_LABEL } from "./i18n";
+import { updateConsent } from "./preferences";
 
 declare global {
   interface Window {
@@ -65,7 +69,7 @@ export const getCoreFides = ({
   tcfEnabled = false,
 }: {
   tcfEnabled?: boolean;
-}): Omit<FidesGlobal, "init" | "reinitialize" | "shouldShowExperience"> => {
+}): Omit<FidesGlobal, "init"> => {
   return {
     consent: {},
     experience: undefined,
@@ -119,5 +123,41 @@ export const getCoreFides = ({
     getModalLinkLabel: () => DEFAULT_MODAL_LINK_LABEL,
     encodeNoticeConsentString,
     decodeNoticeConsentString,
+    reinitialize(this: FidesGlobal): Promise<void> {
+      if (typeof this.init !== "function") {
+        return Promise.reject(new Error("Fides.init method is not available"));
+      }
+      if (!this.config || !this.initialized) {
+        raise("Fides must be initialized before reinitializing");
+      }
+      return this.init();
+    },
+    shouldShowExperience(this: FidesGlobal): boolean {
+      if (
+        !this?.experience ||
+        !this?.cookie ||
+        !this?.saved_consent ||
+        !this?.options
+      ) {
+        // Can't show experience if required data is missing
+        return false;
+      }
+      return shouldResurfaceBanner(
+        this.experience,
+        this.cookie,
+        this.saved_consent,
+        this.options,
+      );
+    },
+    updateConsent(
+      this: FidesGlobal,
+      options: {
+        consent?: NoticeConsent;
+        fidesString?: string;
+        validation?: UpdateConsentValidation;
+      },
+    ): Promise<void> {
+      return updateConsent(this, options);
+    },
   };
 };
