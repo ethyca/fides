@@ -8,6 +8,7 @@ import {
   FidesOptions,
   NoticeConsent,
   PrivacyExperience,
+  UpdateConsentValidation,
 } from "./consent-types";
 import {
   decodeNoticeConsentString,
@@ -153,7 +154,7 @@ export const getCoreFides = ({
       options: {
         consent?: NoticeConsent;
         fidesString?: string;
-        validation?: "throw" | "warn" | "ignore";
+        validation?: UpdateConsentValidation;
       },
     ): Promise<void> {
       return updateConsent(this, options);
