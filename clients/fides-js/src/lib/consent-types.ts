@@ -204,7 +204,7 @@ export interface FidesGlobal
   updateConsent: (options: {
     consent?: NoticeConsent;
     fidesString?: string;
-    validation?: "throw" | "warn" | "ignore";
+    validation?: UpdateConsentValidation;
   }) => Promise<void>;
 }
 
@@ -724,6 +724,12 @@ export enum ConsentNonApplicableFlagMode {
 export enum ConsentFlagType {
   BOOLEAN = "boolean",
   CONSENT_MECHANISM = "consent_mechanism",
+}
+
+export enum UpdateConsentValidation {
+  THROW = "throw",
+  WARN = "warn",
+  IGNORE = "ignore",
 }
 
 // NOTE: This (and most enums!) could reasonably be replaced by string union

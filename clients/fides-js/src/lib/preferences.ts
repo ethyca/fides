@@ -12,6 +12,7 @@ import {
   PrivacyExperienceMinimal,
   PrivacyPreferencesRequest,
   SaveConsentPreference,
+  UpdateConsentValidation,
   UserConsentPreference,
 } from "./consent-types";
 import {
@@ -27,7 +28,6 @@ import { dispatchFidesEvent } from "./events";
 import { decodeFidesString } from "./fides-string";
 import { transformConsentToFidesUserPreference } from "./shared-consent-utils";
 import { TcfSavePreferences } from "./tcf/types";
-
 /**
  * Helper function to transform save prefs and call API
  */
@@ -250,7 +250,7 @@ export const updateConsent = async (
   options: {
     consent?: NoticeConsent;
     fidesString?: string;
-    validation?: "throw" | "warn" | "ignore";
+    validation?: UpdateConsentValidation;
   },
   consentMethod: ConsentMethod = ConsentMethod.SCRIPT,
 ): Promise<void> => {
@@ -264,19 +264,25 @@ export const updateConsent = async (
   if (!fides.cookie) {
     throw new Error("Cookie is not initialized");
   }
-  const { consent, fidesString, validation = "throw" } = options;
+  const {
+    consent,
+    fidesString,
+    validation = UpdateConsentValidation.THROW,
+  } = options;
 
-  if (!["throw", "warn", "ignore"].includes(validation)) {
+  if (!Object.values(UpdateConsentValidation).includes(validation)) {
     throw new Error(
-      "Validation must be 'throw', 'warn', or 'ignore' (default is 'throw')",
+      `Validation must be one of: ${Object.values(UpdateConsentValidation).join(
+        ", ",
+      )} (default is ${UpdateConsentValidation.THROW})`,
     );
   }
 
   const handleValidationError = (errorMessage: string) => {
-    if (validation === "throw") {
+    if (validation === UpdateConsentValidation.THROW) {
       throw new Error(errorMessage);
     }
-    if (validation === "warn") {
+    if (validation === UpdateConsentValidation.WARN) {
       // eslint-disable-next-line no-console
       console.warn(errorMessage);
     }
