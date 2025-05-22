@@ -12,7 +12,7 @@ import {
   AntTypography as Typography,
 } from "fidesui";
 import { useRouter } from "next/router";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { ADD_MULTIPLE_VENDORS_ROUTE } from "~/features/common/nav/routes";
@@ -52,6 +52,7 @@ const LEGAL_BASIS_OPTIONS = [
 export const TableMigrationPOC = () => {
   const { tcf: isTcfEnabled, dictionaryService } = useFeatures();
   const router = useRouter();
+  const [searchInput, setSearchInput] = useState<string>("");
   const [searchText, setSearchText] = useState<string>("");
   const [pageSize, setPageSize] = useState<number>(25);
   const [pageIndex, setPageIndex] = useState<number>(1);
@@ -148,9 +149,27 @@ export const TableMigrationPOC = () => {
   const totalRows = vendorReport?.total || 0;
   const items = vendorReport?.items || [];
 
+  // Debounced search handler
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchText(searchInput);
+      if (pageIndex !== 1) {
+        setPageIndex(1);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchInput, pageIndex]);
+
+  const onSearchInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchInput(e.target.value);
+    },
+    [],
+  );
+
   const onSearch = (value: string) => {
-    setSearchText(value);
-    setPageIndex(1);
+    setSearchInput(value);
   };
 
   const handleTableChange = (
@@ -272,8 +291,8 @@ export const TableMigrationPOC = () => {
           placeholder="Search"
           onSearch={onSearch}
           style={{ width: 300 }}
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
+          value={searchInput}
+          onChange={onSearchInputChange}
         />
         <Space size={8}>
           <AddVendor
