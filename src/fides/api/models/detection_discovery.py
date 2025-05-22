@@ -9,6 +9,7 @@ from loguru import logger
 from sqlalchemy import ARRAY, Boolean, Column, DateTime, ForeignKey, String, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.future import select
 from sqlalchemy.orm import Session, relationship
@@ -45,10 +46,14 @@ class MonitorFrequency(Enum):
 # used to represent the months of the year that the monitor will run
 # on quarterly basis, in cron format
 QUARTERLY_MONTH_PATTERN = r"^\d+,\d+,\d+,\d+$"
+
+
 class SharedMonitorConfig(Base, FidesBase):
     """SQL model for shareable monitor configurations"""
 
-    __tablename__ = "shared_monitor_config"
+    @declared_attr
+    def __tablename__(self) -> str:
+        return "shared_monitor_config"
 
     # Basic info
     name = Column(String, nullable=False)
@@ -180,7 +185,7 @@ class MonitorConfig(Base):
         return merged_params
 
     @classify_params.setter
-    def classify_params(self, value):
+    def classify_params(self, value: Dict[str, Any]) -> None:
         """Setter for the classify_params to maintain compatibility with existing code"""
         self._classify_params = value
 
