@@ -550,7 +550,7 @@ describe("Privacy Requests", () => {
     });
 
     it("allows creating a new comment", () => {
-      cy.contains("Add comment").click();
+      cy.getByTestId("add-comment-button").click();
       cy.getByTestId("comment-input").should("exist");
       cy.getByTestId("comment-input").type("New comment from test");
       cy.getByTestId("submit-comment-button").click();
@@ -566,7 +566,7 @@ describe("Privacy Requests", () => {
     });
 
     it("allows canceling comment creation", () => {
-      cy.contains("Add comment").click();
+      cy.getByTestId("add-comment-button").click();
       cy.getByTestId("comment-input").should("exist");
       cy.getByTestId("comment-input").type("Comment that will be canceled");
       cy.getByTestId("cancel-comment-button").click();
@@ -591,15 +591,24 @@ describe("Privacy Requests", () => {
       cy.get(".ant-skeleton").should("not.exist");
     });
 
-    it.only("restricts comment functionality based on user role", () => {
-      cy.contains("Add comment").should("exist");
-
+    it("restricts comment functionality based on user permissions", () => {
+      // First check with a viewer role (has comment:read but not comment:create)
       cy.assumeRole(RoleRegistryEnum.VIEWER);
       cy.reload();
       cy.wait("@getPrivacyRequestWithLogs");
       cy.wait("@getComments");
 
-      cy.contains("Add comment").should("not.exist");
+      // Button should be hidden for users without COMMENT_CREATE scope
+      cy.getByTestId("add-comment-button").should("not.exist");
+
+      // Then check with an owner role (has comment:create scope)
+      cy.assumeRole(RoleRegistryEnum.OWNER);
+      cy.reload();
+      cy.wait("@getPrivacyRequestWithLogs");
+      cy.wait("@getComments");
+
+      // Button should be visible for users with COMMENT_CREATE scope
+      cy.getByTestId("add-comment-button").should("exist");
     });
   });
 });
