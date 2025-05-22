@@ -610,5 +610,27 @@ describe("Privacy Requests", () => {
       // Button should be visible for users with COMMENT_CREATE scope
       cy.getByTestId("add-comment-button").should("exist");
     });
+
+    it("handles 404 errors from comments API gracefully", () => {
+      // Intercept comments API and return a 404 error
+      cy.intercept("GET", "/api/v1/plus/privacy-request/*/comment*", {
+        statusCode: 404,
+        body: {
+          detail: "Not found",
+        },
+      }).as("commentsNotFound");
+
+      // Load the page
+      cy.visit("/privacy-requests/pri_96bb91d3-cdb9-46c3-9546-0c276eb05a5c");
+      cy.wait("@getPrivacyRequestWithLogs");
+      cy.wait("@commentsNotFound");
+
+      // Verify the timeline still shows request updates even if comments failed to load
+      cy.getByTestId("activity-timeline-list").should("exist");
+      cy.getByTestId("activity-timeline-item").should("exist");
+
+      // The Add comment button should still be available
+      cy.getByTestId("add-comment-button").should("exist");
+    });
   });
 });
