@@ -274,9 +274,15 @@ def oauth_callback(code: str, state: str, db: Session = Depends(get_db)) -> Resp
 
             parsed_url = urlparse(authentication_request.referer)
             base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
-            system_key = connection_config.system.fides_key
+
+            if connection_config.system is not None:
+                system_key = connection_config.system.fides_key
+                redirect_path = f"/systems/configure/{system_key}"
+            else:
+                redirect_path = f"/integrations/{connection_config.key}"
+
             return RedirectResponse(
-                url=f"{base_url}/systems/configure/{system_key}?status={test_status_value}"
+                url=f"{base_url}{redirect_path}?status={test_status_value}"
             )
         return PlainTextResponse(
             content=f"Connection test status: {test_status_value}. No referer URL available. Please navigate back to the Fides Admin UI.",

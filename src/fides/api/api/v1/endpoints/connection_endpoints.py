@@ -22,6 +22,7 @@ from fides.api.schemas.connection_configuration import connection_secrets_schema
 from fides.api.schemas.connection_configuration.connection_config import (
     BulkPutConnectionConfiguration,
     ConnectionConfigurationResponse,
+    ConnectionConfigurationResponseWithSystemKey,
     CreateConnectionConfigurationWithSecrets,
 )
 from fides.api.schemas.connection_configuration.connection_secrets import (
@@ -154,13 +155,25 @@ def get_connections(
 @router.get(
     CONNECTION_BY_KEY,
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_READ])],
-    response_model=ConnectionConfigurationResponse,
+    response_model=ConnectionConfigurationResponseWithSystemKey,
 )
 def get_connection_detail(
     connection_key: FidesKey, db: Session = Depends(deps.get_db)
-) -> ConnectionConfig:
+) -> ConnectionConfigurationResponseWithSystemKey:
     """Returns connection configuration with matching key."""
-    return get_connection_config_or_error(db, connection_key)
+    connection_config = get_connection_config_or_error(db, connection_key)
+
+    # Convert to Pydantic model with all fields
+    response = ConnectionConfigurationResponseWithSystemKey.model_validate(
+        connection_config
+    )
+
+    # Override just the system_key field to use only the system's fides_key without fallback
+    response.system_key = (
+        connection_config.system.fides_key if connection_config.system else None
+    )
+
+    return response
 
 
 @router.patch(
