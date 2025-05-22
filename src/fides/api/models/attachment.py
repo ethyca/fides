@@ -225,8 +225,7 @@ class Attachment(Base):
         if self.config.type == StorageType.local:
             filename = get_local_filename(f"{self.id}/{self.file_name}")
             with open(filename, "rb") as file:
-                content = file.read()
-                size = len(content)
+                size = os.path.getsize(filename)
                 return size, filename
 
         raise ValueError(f"Unsupported storage type: {self.config.type}")
