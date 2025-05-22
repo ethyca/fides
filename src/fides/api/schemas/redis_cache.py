@@ -1,5 +1,5 @@
 import uuid
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, ClassVar, Dict, List, Optional, Union
 
 from fideslang.validation import FidesKey
 from pydantic import (
@@ -125,6 +125,19 @@ class Identity(IdentityBase):
             else:
                 d[field] = value
         return d
+
+
+class UnverifiedIdentity(Identity):
+    """Exclude email and phone number from the identity"""
+
+    email: ClassVar[Optional[EmailStr]] = Field(exclude=True)  # type: ignore[misc]
+    phone_number: ClassVar[Optional[PhoneNumber]] = Field(exclude=True)  # type: ignore[misc]
+
+    def __init__(self, **data: Any):
+        for field, _ in data.items():
+            if field in self.__class_vars__:
+                raise ValueError(f'Identity "{field}" not allowed')
+        super().__init__(**data)
 
 
 class UnlabeledIdentities(FidesSchema):
