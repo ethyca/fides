@@ -79,7 +79,7 @@ const mockFidesCookie = (override?: Partial<FidesCookie>) => {
   const cookie: FidesCookie = {
     identity: { fides_user_device_id: uuid },
     fides_meta: {
-      version: "0.9.0",
+      version: "unknown",
       createdAt: CREATED_DATE,
       updatedAt: UPDATED_DATE,
     },

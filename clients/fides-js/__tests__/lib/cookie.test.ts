@@ -73,14 +73,14 @@ describe("cookies", () => {
     window.fidesDebugger = () => {};
   });
   describe("makeFidesCookie", () => {
-    it("generates a v0.9.0 cookie with uuid", () => {
+    it("generates a cookie with uuid", () => {
       const cookie: FidesCookie = makeFidesCookie();
       expect(cookie).toEqual({
         consent: {},
         fides_meta: {
           createdAt: MOCK_DATE,
           updatedAt: "",
-          version: "0.9.0",
+          version: "unknown",
         },
         identity: {
           fides_user_device_id: MOCK_UUID,

@@ -76,6 +76,10 @@ USER fidesuser
 COPY --chown=fidesuser:fidesgroup . /fides
 WORKDIR /fides
 
+# Get the git tag and set it as an ENV variable
+RUN git fetch --tags
+ENV GIT_VERSION="test"
+
 # Immediately flush to stdout, globally
 ENV PYTHONUNBUFFERED=TRUE
 
