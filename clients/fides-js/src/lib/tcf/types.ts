@@ -246,12 +246,14 @@ export type VendorRecord = TCFVendorConsentRecord &
     isFidesSystem: boolean;
     isConsent: boolean;
     isLegint: boolean;
+    isSpecial: boolean;
     isGvl: boolean;
   };
 
 export interface PurposeRecord extends TCFPurposeConsentRecord {
   isConsent: boolean;
   isLegint: boolean;
+  isSpecial: boolean;
 }
 
 export type GVLJson = Pick<

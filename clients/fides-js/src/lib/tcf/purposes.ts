@@ -9,29 +9,35 @@ import {
 export const getUniquePurposeRecords = ({
   consentPurposes = [],
   legintPurposes = [],
+  specialPurposes = [],
 }: {
   consentPurposes: TCFPurposeConsentRecord[] | undefined;
   legintPurposes: TCFPurposeLegitimateInterestsRecord[] | undefined;
+  specialPurposes: TCFSpecialPurposeRecord[] | undefined;
 }) => {
   const uniqueIds = Array.from(
     new Set([
       ...consentPurposes.map((p) => p.id),
       ...legintPurposes.map((p) => p.id),
+      ...specialPurposes.map((p) => p.id),
     ]),
   ).sort((a, b) => a - b);
   const purposes: PurposeRecord[] = [];
   uniqueIds.forEach((id) => {
     const consent = consentPurposes.find((p) => p.id === id);
     const legint = legintPurposes.find((p) => p.id === id);
-    if (consent || legint) {
+    const special = specialPurposes.find((p) => p.id === id);
+    if (consent || legint || special) {
       const record = { ...consent, ...legint } as
         | TCFPurposeConsentRecord
-        | TCFPurposeLegitimateInterestsRecord;
+        | TCFPurposeLegitimateInterestsRecord
+        | TCFSpecialPurposeRecord;
       purposes.push({
         ...record,
         id,
         isConsent: !!consent,
         isLegint: !!legint,
+        isSpecial: !!special,
       });
     }
   });

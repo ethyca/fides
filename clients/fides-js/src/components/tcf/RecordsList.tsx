@@ -26,8 +26,8 @@ interface Props<T extends RecordListItem> {
   type: RecordListType;
   title: string;
   enabledIds: string[];
-  renderToggleChild?: (item: T, isCustomPurpose?: boolean) => VNode;
-  onToggle: (
+  renderDropdownChild?: (item: T, isCustomPurpose?: boolean) => VNode;
+  onToggle?: (
     payload: string[],
     item: T,
     triggerDetails: FidesEventDetailsTrigger,
@@ -41,7 +41,7 @@ const RecordsList = <T extends RecordListItem>({
   type,
   title,
   enabledIds,
-  renderToggleChild,
+  renderDropdownChild,
   renderBadgeLabel,
   onToggle,
   hideToggles,
@@ -51,15 +51,19 @@ const RecordsList = <T extends RecordListItem>({
     return null;
   }
 
+  if (!hideToggles && !onToggle) {
+    fidesDebugger("ERROR: onToggle is required when hideToggles is not true");
+  }
+
   const handleToggle = (item: T, triggerDetails: FidesEventDetailsTrigger) => {
     const purposeId = `${item.id}`;
-    if (enabledIds.indexOf(purposeId) !== -1) {
+    if (enabledIds.indexOf(purposeId) !== -1 && onToggle) {
       onToggle(
         enabledIds.filter((e) => e !== purposeId),
         item,
         triggerDetails,
       );
-    } else {
+    } else if (onToggle) {
       onToggle([...enabledIds, purposeId], item, triggerDetails);
     }
   };
@@ -99,9 +103,8 @@ const RecordsList = <T extends RecordListItem>({
           offLabel={toggleOffLabel}
           disabled={item.disabled}
         >
-          {renderToggleChild
-            ? renderToggleChild(item, Boolean(item.bestTranslation))
-            : ""}
+          {!!renderDropdownChild &&
+            renderDropdownChild(item, Boolean(item.bestTranslation))}
         </DataUseToggle>
       ))}
     </div>
