@@ -172,22 +172,16 @@ def generic_delete_from_s3(
     try:
         # If the file_key ends with a '/', it's a folder prefix
         if file_key.endswith("/"):
-            # List all objects with the prefix
-            objects_to_delete = s3_client.list_objects_v2(
-                Bucket=bucket_name, Prefix=file_key
-            )
+            # List all objects with the prefix, handling pagination
+            paginator = s3_client.get_paginator("list_objects_v2")
+            for page in paginator.paginate(Bucket=bucket_name, Prefix=file_key):
+                if "Contents" in page:
+                    for obj in page["Contents"]:
+                        s3_client.delete_object(Bucket=bucket_name, Key=obj["Key"])
+            return
 
-            # Delete all objects with the prefix
-            if "Contents" in objects_to_delete:
-                delete_keys = {
-                    "Objects": [
-                        {"Key": obj["Key"]} for obj in objects_to_delete["Contents"]
-                    ]
-                }
-                s3_client.delete_objects(Bucket=bucket_name, Delete=delete_keys)
-        else:
-            # Delete single object
-            s3_client.delete_object(Bucket=bucket_name, Key=file_key)
+        # Delete single object
+        s3_client.delete_object(Bucket=bucket_name, Key=file_key)
     except Exception as e:
         logger.error("Encountered error while deleting s3 object: {}", e)
         raise e
