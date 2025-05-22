@@ -320,6 +320,7 @@ export const TableMigrationPOC = () => {
           onClick: () => onRowClick(record),
           style: { cursor: "pointer" },
         })}
+        size="small"
       />
     </Content>
   );
