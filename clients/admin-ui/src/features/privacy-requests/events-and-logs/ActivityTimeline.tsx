@@ -33,16 +33,13 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
 
   const { results, id: privacyRequestId } = subjectRequest;
 
-  // Use our custom hooks
   const { commentItems, isLoading: isCommentsLoading } =
     usePrivacyRequestComments(privacyRequestId);
   const { eventItems, isLoading: isResultsLoading } =
     usePrivacyRequestEventLogs(results);
 
-  // Combined loading state
   const isLoading = isCommentsLoading || isResultsLoading;
 
-  // Update currentLogs when results change and we have a selected key
   useEffect(() => {
     if (currentKey && results && results[currentKey]) {
       setCurrentLogs(results[currentKey]);
@@ -75,9 +72,7 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
     onOpen();
   };
 
-  // Combine and sort all timeline items
   const timelineItems = useMemo(() => {
-    // Override the onClick handler for event items
     const eventItemsWithClickHandler = eventItems.map((item) => {
       if (item.type === "Request update" && item.title && results) {
         const key = item.title;
@@ -91,7 +86,6 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
       return item;
     });
 
-    // Combine both arrays
     const allItems = [...eventItemsWithClickHandler, ...commentItems];
 
     // Sort by date (oldest first)
@@ -100,7 +94,6 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
     });
   }, [eventItems, commentItems, results]);
 
-  // Render skeleton items when loading
   const renderSkeletonItems = () => (
     <div className={styles.itemButton} data-testid="timeline-skeleton">
       <Skeleton paragraph={{ rows: 2 }} active />
