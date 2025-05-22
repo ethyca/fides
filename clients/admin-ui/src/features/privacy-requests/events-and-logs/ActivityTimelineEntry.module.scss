@@ -22,16 +22,11 @@ $horizontal-padding: 20px;
   padding: 12px $horizontal-padding;
   text-align: left;
   background: transparent;
-  cursor: default;
 
   &--error,
   &--comment,
   &:hover {
     border-color: var(--fidesui-neutral-100);
-  }
-
-  &--clickable {
-    cursor: pointer;
   }
 
   &:focus-visible {

@@ -26,20 +26,9 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
   } = item;
 
   const isClickable = !!onClick;
-  const handleClick = onClick || (() => {});
 
-  return (
-    <button
-      type="button"
-      onClick={handleClick}
-      className={classNames(styles.itemButton, {
-        [styles["itemButton--error"]]: isError,
-        [styles["itemButton--clickable"]]: isClickable,
-        [styles["itemButton--comment"]]:
-          type === ActivityTimelineItemTypeEnum.INTERNAL_COMMENT,
-      })}
-      data-testid="activity-timeline-item"
-    >
+  const content = (
+    <>
       <div className={styles.header}>
         <span className={styles.author} data-testid="activity-timeline-author">
           {author}:
@@ -84,7 +73,27 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
           </Typography.Paragraph>
         </div>
       )}
+    </>
+  );
+
+  const commonProps = {
+    className: classNames(styles.itemButton, {
+      [styles["itemButton--error"]]: isError,
+      [styles["itemButton--clickable"]]: isClickable,
+      [styles["itemButton--comment"]]:
+        type === ActivityTimelineItemTypeEnum.INTERNAL_COMMENT,
+    }),
+    "data-testid": "activity-timeline-item",
+  };
+
+  // Render a button for clickable items, or a div for non-clickable items
+  // This maintains the same styling and data-testid attributes while changing the HTML element
+  return isClickable ? (
+    <button type="button" onClick={onClick} {...commonProps}>
+      {content}
     </button>
+  ) : (
+    <div {...commonProps}>{content}</div>
   );
 };
 

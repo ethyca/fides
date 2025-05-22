@@ -179,11 +179,15 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
         split={false}
         data-testid="activity-timeline-list"
       >
-        {isLoading
-          ? renderSkeletonItems()
-          : timelineItems.map((item) => (
-              <ActivityTimelineEntry key={item.id} item={item} />
-            ))}
+        <ul className="!list-none">
+          {isLoading
+            ? renderSkeletonItems()
+            : timelineItems.map((item) => (
+                <li key={item.id}>
+                  <ActivityTimelineEntry item={item} />
+                </li>
+              ))}
+        </ul>
       </List>
       <LogDrawer
         isOpen={isOpen}
