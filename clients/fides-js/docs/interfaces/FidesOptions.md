@@ -175,17 +175,25 @@ The string consists of four parts separated by commas in the format:
 
 #### Example
 
-// Complete string with all parts:
-// "CPzHq4APzHq4AAMABBENAUEAALAAAEOAAAAAAEAEACACAAAA,1~61.70,DBABLA~BVAUAAAAAWA.QA,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9"
+Complete string with all parts:
+```
+"CPzHq4APzHq4AAMABBENAUEAALAAAEOAAAAAAEAEACACAAAA,2~61.70~dv.33,DBABLA~BVAUAAAAAWA.QA,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9"
+```
 
-// TC and AC strings only:
-// "CPzHq4APzHq4AAMABBENAUEAALAAAEOAAAAAAEAEACACAAAA,1~61.70"
+TC and AC strings only:
+```
+"CPzHq4APzHq4AAMABBENAUEAALAAAEOAAAAAAEAEACACAAAA,2~61.70~dv.33"
+```
 
-// GPP string only:
-// ",,DBABLA~BVAUAAAAAWA.QA"
+GPP string only:
+```
+",,DBABLA~BVAUAAAAAWA.QA"
+```
 
-// Notice Consent string only:
-// ",,,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9"
+Notice Consent string only:
+```
+",,,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9"
+```
 
 To properly encode the Notice Consent string, use the
 `window.Fides.encodeNoticeConsentString` function (see [Fides.encodeNoticeConsentString](Fides.md#encodenoticeconsentstring)) or write your own function that

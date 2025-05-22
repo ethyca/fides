@@ -4,7 +4,6 @@ import { FunctionComponent, h } from "preact";
 import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 
 import { FidesEvent } from "../../docs/fides-event";
-import { isConsentOverride } from "../../lib/common-utils";
 import { getConsentContext } from "../../lib/consent-context";
 import {
   ConsentMechanism,
@@ -19,6 +18,7 @@ import {
 import {
   createConsentPreferencesToSave,
   getGpcStatusFromNotice,
+  isConsentOverride,
 } from "../../lib/consent-utils";
 import { resolveConsentValue } from "../../lib/consent-value";
 import {

@@ -41,6 +41,7 @@ const ActivityTimelineList = ({
 
       return (
         <button
+          key={key}
           type="button"
           onClick={() => onItemClicked({ key, logs })}
           className={classNames(styles.itemButton, {
