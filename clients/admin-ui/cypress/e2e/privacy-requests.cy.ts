@@ -573,7 +573,7 @@ describe("Privacy Requests", () => {
       cy.getByTestId("comment-input").should("not.exist");
     });
 
-    it.only("shows loading state while fetching comments", () => {
+    it("shows loading state while fetching comments", () => {
       cy.intercept("GET", "/api/v1/plus/privacy-request/*/comment*", {
         statusCode: 200,
         fixture: "privacy-requests/comments/empty-comments.json",
