@@ -96,7 +96,7 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
 
     // Sort by date (oldest first)
     return allItems.sort((a, b) => {
-      return new Date(a.date).getTime() - new Date(b.date).getTime();
+      return a.date.getTime() - b.date.getTime();
     });
   }, [eventItems, commentItems, results]);
 

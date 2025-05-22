@@ -224,7 +224,7 @@ export const TimelineItemColorMap: Record<
 export interface ActivityTimelineItem {
   author: string;
   title?: string;
-  date: string;
+  date: Date;
   type: ActivityTimelineItemTypeEnum;
   showViewLog: boolean;
   onClick?: () => void;

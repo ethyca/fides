@@ -1,4 +1,3 @@
-import { formatDate } from "~/features/common/utils";
 import {
   ActivityTimelineItem,
   ActivityTimelineItemTypeEnum,
@@ -27,7 +26,7 @@ export const usePrivacyRequestEventLogs = (results?: PrivacyRequestResults) => {
         return {
           author: "Fides",
           title: key,
-          date: formatDate(logs[0].updated_at),
+          date: new Date(logs[0].updated_at),
           type: ActivityTimelineItemTypeEnum.REQUEST_UPDATE,
           showViewLog: hasUnresolvedError || hasSkippedEntry,
           onClick: () => {}, // This will be overridden in the component

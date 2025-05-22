@@ -2,6 +2,8 @@ import classNames from "classnames";
 import { AntTag as Tag, AntTypography as Typography } from "fidesui";
 import React from "react";
 
+import { formatDate } from "~/features/common/utils";
+
 import {
   ActivityTimelineItem,
   ActivityTimelineItemTypeEnum,
@@ -24,6 +26,9 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
     isSkipped,
     description,
   } = item;
+
+  // Format the date for display
+  const formattedDate = formatDate(date);
 
   const isClickable = !!onClick;
 
@@ -48,7 +53,7 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
           className={styles.timestamp}
           data-testid="activity-timeline-timestamp"
         >
-          {date}
+          {formattedDate}
         </span>
         <Tag
           className={styles.type}

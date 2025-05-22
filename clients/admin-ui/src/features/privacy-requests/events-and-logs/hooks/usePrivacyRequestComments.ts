@@ -1,4 +1,3 @@
-import { formatDate } from "~/features/common/utils";
 import { useGetCommentsQuery } from "~/features/privacy-requests/comments/privacy-request-comments.slice";
 import {
   ActivityTimelineItem,
@@ -27,7 +26,7 @@ export const usePrivacyRequestComments = (privacyRequestId: string) => {
 
         return {
           author,
-          date: formatDate(comment.created_at),
+          date: new Date(comment.created_at),
           type: ActivityTimelineItemTypeEnum.INTERNAL_COMMENT,
           showViewLog: false,
           description: comment.comment_text,
