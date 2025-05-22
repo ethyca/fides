@@ -171,12 +171,15 @@ class DsrReportBuilder:
         """
         Generates an attachments directory with an index page and adds the attachments to the zip file.
         """
-        if not attachments:
+        if not attachments or not isinstance(attachments, list):
             return
 
         # Create attachment links for the index page
         attachment_links = {}
         for attachment in attachments:
+            if not isinstance(attachment, dict):
+                continue
+
             file_name = attachment.get("file_name", "unknown")
             content_type = attachment.get("content_type", "")
             attachment_links[file_name] = f"{file_name}"

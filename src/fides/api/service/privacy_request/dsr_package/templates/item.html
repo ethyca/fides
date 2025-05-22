@@ -25,7 +25,7 @@
             <div class="table-row">
                <div class="table-cell">{{ field }}</div>
                <div class="table-cell">
-                  {% if field == "attachments" and value is sequence %}
+                  {% if field == "attachments" and value is sequence and value is not string %}
                      {% for attachment in value %}
                         <a href="{{ attachment.file_name }}" target="_blank" class="attachment-link">
                            {{ attachment.file_name }}

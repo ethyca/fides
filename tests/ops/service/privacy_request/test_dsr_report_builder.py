@@ -23,36 +23,30 @@ class TestDsrReportBuilderAttachments:
             "manual:test_webhook": [
                 {
                     "email": "test@example.com",
-                    "attachments": [
-                        {
-                            "file_name": "test1.pdf",
-                            "file_size": 1024,
-                            "content_type": "application/pdf",
-                            "content": b"test content 1",
-                            "download_url": "http://example.com/test1.pdf",
-                        }
-                    ],
-                    "nested_data": {
-                        "attachments": [
-                            {
-                                "file_name": "test2.pdf",
-                                "file_size": 2048,
-                                "content_type": "application/pdf",
-                                "content": b"test content 2",
-                                "download_url": "http://example.com/test2.pdf",
-                            }
-                        ]
-                    },
                 }
             ],
             "attachments": [
                 {
-                    "file_name": "test3.pdf",
-                    "file_size": 3072,
+                    "file_name": "test1.txt",
+                    "file_size": 1024,
+                    "content_type": "text/plain",
+                    "content": "test content 1",
+                    "download_url": "http://example.com/test1.txt",
+                },
+                {
+                    "file_name": "test2.pdf",
+                    "file_size": 2048,
                     "content_type": "application/pdf",
-                    "content": b"test content 3",
-                    "download_url": "http://example.com/test3.pdf",
-                }
+                    "content": b"test content 2",
+                    "download_url": "http://example.com/test2.pdf",
+                },
+                {
+                    "file_name": "test3.txt",
+                    "file_size": 3072,
+                    "content_type": "text/plain",
+                    "content": "test content 3",
+                    "download_url": "http://example.com/test3.txt",
+                },
             ],
         }
 
@@ -62,39 +56,48 @@ class TestDsrReportBuilderAttachments:
 
         # Verify the report structure
         with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
-            # Check that all attachment files are present
-            assert "data/attachments/files/test1.pdf" in zip_file.namelist()
-            assert "data/attachments/files/test2.pdf" in zip_file.namelist()
-            assert "data/attachments/files/test3.pdf" in zip_file.namelist()
-
-            # Check that attachment metadata pages are present
-            assert "data/attachments/1.html" in zip_file.namelist()
-            assert "data/attachments/2.html" in zip_file.namelist()
-            assert "data/attachments/3.html" in zip_file.namelist()
-            assert "data/attachments/index.html" in zip_file.namelist()
+            # Check that all attachment files are present in the attachments directory
+            # Note: Attachments are only stored in the top-level attachments directory
+            # when they come from the top-level "attachments" key
+            assert "attachments/test1.txt" in zip_file.namelist()
+            assert "attachments/test2.pdf" in zip_file.namelist()
+            assert "attachments/test3.txt" in zip_file.namelist()
 
             # Verify attachment content
             assert (
-                zip_file.read("data/attachments/files/test1.pdf") == b"test content 1"
+                zip_file.read("attachments/test1.txt").decode("utf-8")
+                == "test content 1"
             )
+            assert zip_file.read("attachments/test2.pdf") == b"test content 2"
             assert (
-                zip_file.read("data/attachments/files/test2.pdf") == b"test content 2"
-            )
-            assert (
-                zip_file.read("data/attachments/files/test3.pdf") == b"test content 3"
+                zip_file.read("attachments/test3.txt").decode("utf-8")
+                == "test content 3"
             )
 
-            # Verify that attachments were removed from manual data
+            # Verify that the manual webhook page exists but has no attachment links
             manual_data = zip_file.read("data/manual/test_webhook/1.html").decode(
                 "utf-8"
             )
-            assert "attachments" not in manual_data
             assert "test@example.com" in manual_data
+            assert 'class="attachment-link"' not in manual_data
+
+            # Verify that the attachments index page exists and contains links
+            attachments_index = zip_file.read("attachments/index.html").decode("utf-8")
+            assert "test1.txt" in attachments_index
+            assert "test2.pdf" in attachments_index
+            assert "test3.txt" in attachments_index
 
     def test_without_attachments(self, privacy_request: PrivacyRequest):
         """Test DSR report builder with no attachments"""
         dsr_data = {
-            "manual:test_webhook": [{"email": "test@example.com", "name": "Test User"}]
+            "manual:test_webhook": [
+                {
+                    "email": "test@example.com",
+                    "name": "Test User",
+                    "attachments": [],  # Empty attachments list
+                }
+            ],
+            "attachments": [],  # Empty top-level attachments
         }
 
         # Create the DSR report
@@ -103,18 +106,23 @@ class TestDsrReportBuilderAttachments:
 
         # Verify the report structure
         with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
-            # Check that no attachment files or pages are present
+            # Check that no attachment files are present
             assert not any(
-                name.startswith("data/attachments/") for name in zip_file.namelist()
+                name.startswith("attachments/") for name in zip_file.namelist()
+            )
+            assert not any(
+                name.endswith(".txt") or name.endswith(".pdf")
+                for name in zip_file.namelist()
             )
 
-            # Verify manual data is present
+            # Verify manual data is present and contains no attachment links
             assert "data/manual/test_webhook/1.html" in zip_file.namelist()
             manual_data = zip_file.read("data/manual/test_webhook/1.html").decode(
                 "utf-8"
             )
             assert "test@example.com" in manual_data
             assert "Test User" in manual_data
+            assert 'class="attachment-link"' not in manual_data
 
     def test_with_empty_attachments(self, privacy_request: PrivacyRequest):
         """Test DSR report builder with empty attachment lists"""
@@ -175,8 +183,104 @@ class TestDsrReportBuilderAttachments:
 
             # Verify that no attachment files were created
             assert not any(
-                name.startswith("data/attachments/") for name in zip_file.namelist()
+                name.startswith("attachments/") for name in zip_file.namelist()
             )
+            assert not any(
+                name.endswith(".txt") or name.endswith(".pdf")
+                for name in zip_file.namelist()
+            )
+            assert 'class="attachment-link"' not in manual_data
+
+    def test_with_manual_webhook_attachments(self, privacy_request: PrivacyRequest):
+        """Test DSR report builder with attachments in manual webhook data"""
+        dsr_data = {
+            "manual:test_webhook": [
+                {
+                    "email": "test@example.com",
+                    "attachments": [
+                        {
+                            "file_name": "webhook1.txt",
+                            "file_size": 1024,
+                            "content_type": "text/plain",
+                            "content": "webhook content 1",
+                            "download_url": "http://example.com/webhook1.txt",
+                        },
+                        {
+                            "file_name": "webhook2.pdf",
+                            "file_size": 2048,
+                            "content_type": "application/pdf",
+                            "content": b"webhook content 2",
+                            "download_url": "http://example.com/webhook2.pdf",
+                        },
+                    ],
+                }
+            ],
+            "attachments": [
+                {
+                    "file_name": "top_level.txt",
+                    "file_size": 3072,
+                    "content_type": "text/plain",
+                    "content": "top level content",
+                    "download_url": "http://example.com/top_level.txt",
+                }
+            ],
+        }
+
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
+        report = builder.generate()
+
+        with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
+            # Verify that webhook attachments are present in both locations
+            assert "attachments/webhook1.txt" in zip_file.namelist()
+            assert "attachments/webhook2.pdf" in zip_file.namelist()
+            assert "data/manual/test_webhook/webhook1.txt" in zip_file.namelist()
+            assert "data/manual/test_webhook/webhook2.pdf" in zip_file.namelist()
+
+            # Verify that top-level attachment is only in attachments directory
+            assert "attachments/top_level.txt" in zip_file.namelist()
+            assert "data/manual/test_webhook/top_level.txt" not in zip_file.namelist()
+
+            # Verify attachment content in both locations
+            assert (
+                zip_file.read("attachments/webhook1.txt").decode("utf-8")
+                == "webhook content 1"
+            )
+            assert zip_file.read("attachments/webhook2.pdf") == b"webhook content 2"
+            assert (
+                zip_file.read("data/manual/test_webhook/webhook1.txt").decode("utf-8")
+                == "webhook content 1"
+            )
+            assert (
+                zip_file.read("data/manual/test_webhook/webhook2.pdf")
+                == b"webhook content 2"
+            )
+            assert (
+                zip_file.read("attachments/top_level.txt").decode("utf-8")
+                == "top level content"
+            )
+
+            # Verify that the manual webhook page contains clickable links to its attachments
+            manual_data = zip_file.read("data/manual/test_webhook/1.html").decode(
+                "utf-8"
+            )
+            assert 'href="webhook1.txt"' in manual_data
+            assert 'href="webhook2.pdf"' in manual_data
+            assert 'class="attachment-link"' in manual_data
+            assert (
+                'href="top_level.txt"' not in manual_data
+            )  # Top-level attachment shouldn't be linked
+
+            # Verify that the attachments index page only contains top-level attachments
+            attachments_index = zip_file.read("attachments/index.html").decode("utf-8")
+            assert (
+                "webhook1.txt" not in attachments_index
+            )  # Webhook attachments shouldn't be in index
+            assert (
+                "webhook2.pdf" not in attachments_index
+            )  # Webhook attachments shouldn't be in index
+            assert (
+                "top_level.txt" in attachments_index
+            )  # Only top-level attachment should be in index
 
 
 class TestDsrReportBuilderDataStructure:
