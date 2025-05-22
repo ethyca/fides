@@ -512,4 +512,94 @@ describe("Privacy Requests", () => {
       );
     });
   });
+
+  /**
+   * Tests for privacy request comments functionality
+   */
+  describe("Request Comments", () => {
+    beforeEach(() => {
+      cy.assumeRole(RoleRegistryEnum.OWNER);
+
+      cy.intercept("GET", "/api/v1/plus/privacy-request/*/comment*", {
+        statusCode: 200,
+        fixture: "privacy-requests/comments/comments-list.json",
+      }).as("getComments");
+
+      cy.intercept("POST", "/api/v1/plus/privacy-request/*/comment", {
+        statusCode: 200,
+        fixture: "privacy-requests/comments/comment-created.json",
+      }).as("createComment");
+
+      cy.intercept("GET", "/api/v1/privacy-request*", {
+        fixture: "privacy-requests/with-logs.json",
+      }).as("getPrivacyRequestWithLogs");
+
+      cy.visit("/privacy-requests/pri_96bb91d3-cdb9-46c3-9546-0c276eb05a5c");
+      cy.wait("@getPrivacyRequestWithLogs");
+      cy.wait("@getComments");
+    });
+
+    it("displays existing comments in the activity timeline", () => {
+      cy.getByTestId("activity-timeline-item")
+        .contains("This is a test comment")
+        .should("exist");
+      cy.contains("Test User:").should("exist");
+      cy.getByTestId("activity-timeline-type")
+        .contains("Internal comment")
+        .should("exist");
+    });
+
+    it("allows creating a new comment", () => {
+      cy.contains("Add comment").click();
+      cy.getByTestId("comment-input").should("exist");
+      cy.getByTestId("comment-input").type("New comment from test");
+      cy.getByTestId("submit-comment-button").click();
+
+      // Check that the request was made with the correct form data
+      cy.wait("@createComment").then((interception) => {
+        const requestBody = interception.request.body;
+        expect(requestBody).to.include('name="comment_text"');
+        expect(requestBody).to.include("New comment from test");
+        expect(requestBody).to.include('name="comment_type"');
+        expect(requestBody).to.include("note");
+      });
+    });
+
+    it("allows canceling comment creation", () => {
+      cy.contains("Add comment").click();
+      cy.getByTestId("comment-input").should("exist");
+      cy.getByTestId("comment-input").type("Comment that will be canceled");
+      cy.getByTestId("cancel-comment-button").click();
+      cy.getByTestId("comment-input").should("not.exist");
+    });
+
+    it("shows loading state while fetching comments", () => {
+      cy.intercept("GET", "/api/v1/plus/privacy-request/*/comment*", {
+        statusCode: 200,
+        fixture: "privacy-requests/comments/empty-comments.json",
+        delay: 1000,
+      }).as("getCommentsDelayed");
+
+      cy.visit("/privacy-requests/pri_96bb91d3-cdb9-46c3-9546-0c276eb05a5c");
+
+      // Check for skeleton loading state before comments load
+      cy.get(".ant-skeleton").should("exist");
+
+      cy.wait("@getCommentsDelayed");
+
+      // Verify skeletons are gone after loading
+      cy.get(".ant-skeleton").should("not.exist");
+    });
+
+    it.only("restricts comment functionality based on user role", () => {
+      cy.contains("Add comment").should("exist");
+
+      cy.assumeRole(RoleRegistryEnum.VIEWER);
+      cy.reload();
+      cy.wait("@getPrivacyRequestWithLogs");
+      cy.wait("@getComments");
+
+      cy.contains("Add comment").should("not.exist");
+    });
+  });
 });
