@@ -23,7 +23,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Added
 - Attachments can now be stored with GCS [#6161](https://github.com/ethyca/fides/pull/6161)
-- Attachments can now retrieve their content as well as their download urls [# ]
+- Attachments can now retrieve their content as well as their download urls [#6169 ](https://github.com/ethyca/fides/pull/6169)
 
 
 
