@@ -15,7 +15,13 @@ import {
 } from "@xyflow/react";
 import { Box } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
-import React, { useCallback, useContext, useEffect, useMemo } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+} from "react";
 
 import { DatamapGraphContext } from "~/features/datamap/datamap-graph/DatamapGraphContext";
 import DatamapSystemNode from "~/features/datamap/DatamapSystemNode";
@@ -91,6 +97,11 @@ const DatamapGraph = ({
   const { nodes: baseNodes, edges } = useDatamapGraph({ data });
   const reactFlowInstance = useReactFlow();
   const datamapGraphRef = useContext(DatamapGraphContext);
+  const originalViewportRef = useRef<{
+    x: number;
+    y: number;
+    zoom: number;
+  } | null>(null);
 
   // Merge selection state with base nodes based on selectedSystemId from parent
   const nodes = useMemo(
@@ -128,6 +139,106 @@ const DatamapGraph = ({
       }, 150);
     }
   }, [nodes, reactFlowInstance]);
+
+  // Pan view to keep selected node visible when drawer opens/closes
+  useEffect(() => {
+    if (selectedSystemId && nodes.length > 0) {
+      // Wait for the drawer animation to complete (drawer has 500ms animation)
+      setTimeout(() => {
+        const selectedNode = nodes.find((node) => node.id === selectedSystemId);
+        if (!selectedNode) {
+          return;
+        }
+
+        const viewport = reactFlowInstance.getViewport();
+        const reactFlowBounds = document
+          .querySelector('[data-testid="reactflow-graph"]')
+          ?.getBoundingClientRect();
+        const drawerElement = document.querySelector(
+          '[data-testid="datamap-drawer"]',
+        );
+
+        if (!reactFlowBounds) {
+          return;
+        }
+
+        if (!drawerElement) {
+          return;
+        }
+
+        // Store original viewport if not already stored
+        if (!originalViewportRef.current) {
+          originalViewportRef.current = { ...viewport };
+        }
+
+        // Get actual drawer width from the DOM
+        const drawerBounds = drawerElement.getBoundingClientRect();
+        const drawerWidth = drawerBounds.width;
+        const nodeScreenX =
+          selectedNode.position.x * viewport.zoom + viewport.x;
+        const availableWidth = reactFlowBounds.width - drawerWidth;
+
+        // Check if the selected node is covered by the drawer
+        if (nodeScreenX > availableWidth - 100) {
+          // 100px buffer
+          // Calculate how much to pan left to center the node in the available space
+          const targetX = availableWidth / 2;
+          const deltaX = targetX - nodeScreenX;
+
+          // Pan the view with smooth animation
+          reactFlowInstance.setViewport(
+            {
+              x: viewport.x + deltaX,
+              y: viewport.y,
+              zoom: viewport.zoom,
+            },
+            { duration: 300 },
+          ); // 300ms smooth animation
+        }
+      }, 600); // Wait for drawer animation to complete (500ms) plus small buffer
+    } else if (!selectedSystemId && originalViewportRef.current) {
+      // Drawer is closed, restore original viewport with custom smooth animation
+      setTimeout(() => {
+        if (originalViewportRef.current) {
+          const startViewport = reactFlowInstance.getViewport();
+          const targetViewport = originalViewportRef.current;
+          const duration = 800; // 800ms for smooth restoration
+          const startTime = performance.now();
+
+          // Ease-out-cubic function for smooth deceleration
+          const easeOutCubic = (t: number): number => 1 - (1 - t) ** 3;
+
+          const animate = (currentTime: number) => {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const easedProgress = easeOutCubic(progress);
+
+            // Interpolate between start and target viewport
+            const currentViewport = {
+              x:
+                startViewport.x +
+                (targetViewport.x - startViewport.x) * easedProgress,
+              y:
+                startViewport.y +
+                (targetViewport.y - startViewport.y) * easedProgress,
+              zoom:
+                startViewport.zoom +
+                (targetViewport.zoom - startViewport.zoom) * easedProgress,
+            };
+
+            reactFlowInstance.setViewport(currentViewport);
+
+            if (progress < 1) {
+              requestAnimationFrame(animate);
+            }
+          };
+
+          requestAnimationFrame(animate);
+          originalViewportRef.current = null;
+        }
+      }, 100);
+    }
+  }, [selectedSystemId, nodes, reactFlowInstance]);
 
   // Handle node selection
   const onNodeClick = useCallback(
