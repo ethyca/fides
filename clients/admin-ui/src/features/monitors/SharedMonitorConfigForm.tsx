@@ -133,7 +133,7 @@ const SharedMonitorConfigForm = ({
 
         // Update form with new rules
         form.setFieldValue("rules", rules);
-        toast(successToastParams("CSV rules imported successfully"));
+        toast(successToastParams("CSV patterns imported successfully"));
       } catch (error) {
         toast(errorToastParams("Failed to parse CSV file"));
       }
@@ -212,7 +212,7 @@ const SharedMonitorConfigForm = ({
                 )}
               </AntFlex>
               {fields.map(({ key, name, ...field }, idx) => (
-                <AntRow key={key} gutter={8} align="middle">
+                <AntRow key={key} align="middle">
                   <AntCol span={11}>
                     <AntForm.Item
                       label="On match"
@@ -226,7 +226,7 @@ const SharedMonitorConfigForm = ({
                   <AntCol span={1} className="flex justify-center pt-[5px]">
                     -&gt;
                   </AntCol>
-                  <AntCol span={11}>
+                  <AntCol span={11} className="pr-2">
                     <AntForm.Item
                       label="Assign"
                       {...field}
@@ -265,15 +265,17 @@ const SharedMonitorConfigForm = ({
                 </AntRow>
               ))}
               <AntForm.ErrorList errors={errors} />
-              {/* TODO: make this work with the modal's built-in submit button */}
-              <AntForm.Item label={null}>
-                <AntButton
-                  type="primary"
-                  htmlType="submit"
-                  loading={createIsLoading || updateIsLoading}
-                >
-                  Submit
-                </AntButton>
+              <AntForm.Item label={null} className="mb-0">
+                <AntFlex justify="end" gap={8}>
+                  <AntButton onClick={onBackClick}>Cancel</AntButton>
+                  <AntButton
+                    type="primary"
+                    htmlType="submit"
+                    loading={createIsLoading || updateIsLoading}
+                  >
+                    Save
+                  </AntButton>
+                </AntFlex>
               </AntForm.Item>
             </>
           )}

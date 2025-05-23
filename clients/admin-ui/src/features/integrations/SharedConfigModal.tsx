@@ -54,6 +54,7 @@ const SharedConfigModal = () => {
         destroyOnClose
         centered
         width={768}
+        footer={null}
       >
         {modalState === SharedConfigModalState.FORM_VIEW && (
           <SharedMonitorConfigForm
