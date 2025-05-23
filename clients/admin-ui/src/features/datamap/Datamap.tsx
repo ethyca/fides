@@ -17,6 +17,7 @@ import SettingsBar from "~/features/datamap/SettingsBar";
 import { selectIsGettingStarted } from "./datamap.slice";
 import GetStarted from "./GetStarted";
 
+// Use dynamic import with SSR disabled for ReactFlow
 const SpatialDatamap = dynamic(
   () => import("~/features/datamap/SpatialDatamap"),
   { ssr: false },
@@ -45,8 +46,16 @@ const useHome = () => {
   const resetSelectedSystemId = useCallback(() => {
     attemptAction().then((modalConfirmed: boolean) => {
       if (modalConfirmed && selectedSystemId) {
+        // Updated to use ReactFlow instance methods
         if (datamapGraphRef.current) {
-          datamapGraphRef.current?.$id(selectedSystemId).unselect();
+          // Get all nodes from ReactFlow and set the selected state to false
+          const nodes = datamapGraphRef.current.getNodes();
+          datamapGraphRef.current.setNodes(
+            nodes.map((node) => ({
+              ...node,
+              selected: false,
+            })),
+          );
         }
         setSelectedSystemIdInner(undefined);
       }

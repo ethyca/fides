@@ -1,4 +1,4 @@
-import cytoscape from "cytoscape";
+import { ReactFlowInstance } from "@xyflow/react";
 import React, {
   createContext,
   createRef,
@@ -7,7 +7,7 @@ import React, {
 } from "react";
 
 const datamapGraphRef = createRef() as MutableRefObject<
-  cytoscape.Core | undefined
+  ReactFlowInstance | undefined
 >;
 export const DatamapGraphContext = createContext(datamapGraphRef);
 
