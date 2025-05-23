@@ -24,18 +24,16 @@ import EmbeddedVendorList from "./EmbeddedVendorList";
 import RadioGroup from "./RadioGroup";
 import RecordsList, { RecordListItem, RecordListType } from "./RecordsList";
 
-type TCFPurposeRecord =
-  | TCFPurposeConsentRecord
-  | TCFPurposeLegitimateInterestsRecord
-  | PrivacyNoticeWithBestTranslation;
-
 const PurposeDetails = ({
   type,
   purpose,
   isCustomPurpose = false,
 }: {
   type: RecordListType;
-  purpose: TCFPurposeRecord;
+  purpose:
+    | PurposeRecord
+    | TCFSpecialPurposeRecord
+    | PrivacyNoticeWithBestTranslation;
   isCustomPurpose?: boolean;
 }) => {
   const { i18n } = useI18n();
@@ -52,9 +50,7 @@ const PurposeDetails = ({
     );
   }
   // eslint-disable-next-line no-param-reassign
-  purpose = purpose as
-    | TCFPurposeConsentRecord
-    | TCFPurposeLegitimateInterestsRecord;
+  purpose = purpose as PurposeRecord | TCFSpecialPurposeRecord;
   const vendors = [...(purpose.vendors || []), ...(purpose.systems || [])];
   return (
     <div>
@@ -124,9 +120,21 @@ const TcfPurposes = ({
     enabledSpecialPurposeIds: string[];
   } = useMemo(() => {
     const specialPurposes = allSpecialPurposes ?? [];
+    const consentPurposes: PurposeRecord[] = uniquePurposes
+      .filter((p) => p.isConsent)
+      .map((p) => ({
+        ...p,
+        vendors: allPurposesConsent.find((q) => q.id === p.id)?.vendors,
+      }));
+    const legintPurposes: PurposeRecord[] = uniquePurposes
+      .filter((p) => p.isLegint)
+      .map((p) => ({
+        ...p,
+        vendors: allPurposesLegint.find((q) => q.id === p.id)?.vendors,
+      }));
     if (activeLegalBasisOption.value === LegalBasisEnum.CONSENT.toString()) {
       return {
-        purposes: uniquePurposes.filter((p) => p.isConsent),
+        purposes: consentPurposes,
         customPurposes: allCustomPurposesConsent.map((purpose) => ({
           ...purpose,
           disabled: purpose.disabled,
@@ -141,7 +149,7 @@ const TcfPurposes = ({
       };
     }
     return {
-      purposes: uniquePurposes.filter((p) => p.isLegint),
+      purposes: legintPurposes,
       purposeModelType: "purposesLegint",
       enabledPurposeIds: enabledPurposeLegintIds,
       specialPurposes: specialPurposes.filter((sp) =>
@@ -151,10 +159,12 @@ const TcfPurposes = ({
     };
   }, [
     allSpecialPurposes,
-    activeLegalBasisOption,
     uniquePurposes,
+    activeLegalBasisOption.value,
     enabledPurposeLegintIds,
     enabledSpecialPurposeIds,
+    allPurposesConsent,
+    allPurposesLegint,
     allCustomPurposesConsent,
     enabledPurposeConsentIds,
     enabledCustomPurposeConsentIds,
