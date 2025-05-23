@@ -61,8 +61,9 @@ from fides.api.schemas.privacy_request import (
 from fides.api.schemas.redis_cache import Identity, LabeledIdentity
 from fides.api.task.graph_runners import access_runner
 from fides.api.tasks import DSR_QUEUE_NAME, MESSAGING_QUEUE_NAME
-from fides.api.util.cache import get_encryption_cache_key, get_masking_secret_cache_key
+from fides.api.util.cache import get_encryption_cache_key
 from fides.api.util.data_category import get_user_data_categories
+from fides.api.util.encryption.secrets_util import SecretsUtil
 from fides.api.util.fuzzy_search_utils import (
     get_should_refresh_automaton,
     manually_reset_automaton,
@@ -620,7 +621,6 @@ class TestCreatePrivacyRequest:
         db,
         api_client: TestClient,
         erasure_policy_aes,
-        cache,
     ):
         identity = {"email": "test@example.com"}
         data = [
@@ -635,12 +635,17 @@ class TestCreatePrivacyRequest:
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
         pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
-        secret_key = get_masking_secret_cache_key(
-            privacy_request_id=pr.id,
-            masking_strategy="aes_encrypt",
-            secret_type=SecretType.key,
+
+        assert len(pr.masking_secrets) == 3
+        assert (
+            SecretsUtil.get_masking_secret(
+                privacy_request_id=pr.id,
+                masking_strategy="aes_encrypt",
+                secret_type=SecretType.key,
+            )
+            is not None
         )
-        assert cache.get_encoded_by_key(secret_key) is not None
+
         pr.delete(db=db)
         assert run_erasure_request_mock.called
 
@@ -7080,7 +7085,6 @@ class TestCreatePrivacyRequestAuthenticated:
         generate_auth_header,
         api_client: TestClient,
         erasure_policy_aes,
-        cache,
     ):
         identity = {"email": "test@example.com"}
         data = [
@@ -7096,12 +7100,17 @@ class TestCreatePrivacyRequestAuthenticated:
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
         pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
-        secret_key = get_masking_secret_cache_key(
-            privacy_request_id=pr.id,
-            masking_strategy="aes_encrypt",
-            secret_type=SecretType.key,
+
+        assert len(pr.masking_secrets) == 3
+        assert (
+            SecretsUtil.get_masking_secret(
+                privacy_request_id=pr.id,
+                masking_strategy="aes_encrypt",
+                secret_type=SecretType.key,
+            )
+            is not None
         )
-        assert cache.get_encoded_by_key(secret_key) is not None
+
         assert run_erasure_request_mock.called
 
     def test_create_privacy_request_invalid_encryption_values(
