@@ -92,6 +92,12 @@ from fides.api.schemas.connection_configuration.connection_secrets_mysql import 
 from fides.api.schemas.connection_configuration.connection_secrets_mysql import (
     MySQLSchema as MySQLSchema,
 )
+from fides.api.schemas.connection_configuration.connection_secrets_okta import (
+    OktaDocsSchema as OktaDocsSchema,
+)
+from fides.api.schemas.connection_configuration.connection_secrets_okta import (
+    OktaSchema as OktaSchema,
+)
 from fides.api.schemas.connection_configuration.connection_secrets_postgres import (
     PostgreSQLDocsSchema as PostgreSQLDocsSchema,
 )
@@ -172,6 +178,7 @@ secrets_schemas: Dict[str, Any] = {
     ConnectionType.mariadb.value: MariaDBSchema,
     ConnectionType.mongodb.value: MongoDBSchema,
     ConnectionType.mssql.value: MicrosoftSQLServerSchema,
+    ConnectionType.okta.value: OktaSchema,
     ConnectionType.mysql.value: MySQLSchema,
     ConnectionType.postgres.value: PostgreSQLSchema,
     ConnectionType.rds_mysql.value: RDSMySQLSchema,
@@ -231,9 +238,10 @@ connection_secrets_schemas = Union[
     MongoDBDocsSchema,
     MSSQLDocsSchema,
     MySQLDocsSchema,
+    OktaDocsSchema,
+    PostgreSQLDocsSchema,
     RDSMySQLDocsSchema,
     RDSPostgresDocsSchema,
-    PostgreSQLDocsSchema,
     RedshiftDocsSchema,
     S3DocsSchema,
     SaaSSchema,

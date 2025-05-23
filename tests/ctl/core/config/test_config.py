@@ -198,6 +198,8 @@ def test_database_url_test_mode_disabled() -> None:
 
 @pytest.mark.unit
 def test_password_escaped_by_database_settings_validation() -> None:
+    current_test_db = os.environ.get("FIDES__DATABASE__TEST_DB")
+    os.environ["FIDES__DATABASE__TEST_DB"] = "test_database"
     database_settings = DatabaseSettings(
         user="postgres",
         password="fidesp@ssword",
@@ -225,6 +227,9 @@ def test_password_escaped_by_database_settings_validation() -> None:
         database_settings.sqlalchemy_test_database_uri
         == "postgresql://postgres:fidesp%40ssword@fides-db:5432/test_database"
     )
+
+    if current_test_db:
+        os.environ["FIDES__DATABASE__TEST_DB"] = current_test_db
 
 
 def test_get_alembic_config_with_special_char_in_database_url():

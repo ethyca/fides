@@ -19,6 +19,7 @@ from toml import load as load_toml
 from fides.api.common_exceptions import SystemManagerException
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.application_config import ApplicationConfig
+from fides.api.models.asset import Asset
 from fides.api.models.attachment import Attachment, AttachmentType
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.client import ClientDetail
@@ -89,6 +90,7 @@ from fides.api.schemas.redis_cache import (
 from fides.api.schemas.storage.storage import (
     AWSAuthMethod,
     FileNaming,
+    GCSAuthMethod,
     StorageDetails,
     StorageSecrets,
     StorageType,
@@ -375,6 +377,71 @@ def storage_config_default_s3_secret_keys(db: Session) -> Generator:
 
 
 @pytest.fixture(scope="function")
+def storage_config_default_gcs(db: Session) -> Generator:
+    """
+    Create and yield a default storage config, as defined by its
+    `is_default` flag being set to `True`. This is a Google Cloud Storage config.
+    """
+    sc = StorageConfig.create(
+        db=db,
+        data={
+            "name": default_storage_config_name(StorageType.gcs.value),
+            "type": StorageType.gcs,
+            "is_default": True,
+            "details": {
+                StorageDetails.NAMING.value: FileNaming.request_id.value,
+                StorageDetails.AUTH_METHOD.value: GCSAuthMethod.ADC.value,
+                StorageDetails.BUCKET.value: "test_bucket",
+            },
+            "format": ResponseFormat.json,
+        },
+    )
+    yield sc
+
+
+@pytest.fixture(scope="function")
+def storage_config_default_gcs_service_account_keys(db: Session) -> Generator:
+    """
+    Create and yield a default storage config, as defined by its
+    `is_default` flag being set to `True`. This is a Google Cloud Storage config.
+    """
+    sc = StorageConfig.create(
+        db=db,
+        data={
+            "name": default_storage_config_name(StorageType.gcs.value),
+            "type": StorageType.gcs,
+            "is_default": True,
+            "details": {
+                StorageDetails.NAMING.value: FileNaming.request_id.value,
+                StorageDetails.AUTH_METHOD.value: GCSAuthMethod.SERVICE_ACCOUNT_KEYS.value,
+                StorageDetails.BUCKET.value: "test_bucket",
+            },
+            "secrets": {
+                "type": "service_account",
+                "project_id": "test-project-123",
+                "private_key_id": "test-key-id-456",
+                "private_key": (
+                    "-----BEGIN PRIVATE KEY-----\n"
+                    "MIItest\n"
+                    "-----END PRIVATE KEY-----\n"
+                ),
+                "client_email": "test-service@test-project-123.iam.gserviceaccount.com",
+                "client_id": "123456789",
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+                "auth_provider_x509_cert_url": (
+                    "https://www.googleapis.com/oauth2/v1/certs"
+                ),
+                "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/test-service%40test-project-123.iam.gserviceaccount.com",
+                "universe_domain": "googleapis.com",
+            },
+            "format": ResponseFormat.json,
+        },
+    )
+    yield sc
+
+
+@pytest.fixture(scope="function")
 def storage_config_default_local(db: Session) -> Generator:
     """
     Create and yield the default local storage config.
@@ -631,6 +698,7 @@ def access_and_erasure_policy(
 def erasure_policy(
     db: Session,
     oauth_client: ClientDetail,
+    default_data_categories,  # This needs to be explicitly passed in to ensure data categories are available
 ) -> Generator:
     erasure_policy = Policy.create(
         db=db,
@@ -1076,6 +1144,7 @@ def policy(
     db: Session,
     oauth_client: ClientDetail,
     storage_config: StorageConfig,
+    default_data_categories,  # This needs to be explicitly passed in to ensure data categories are available
 ) -> Generator:
     access_request_policy = Policy.create(
         db=db,
@@ -1125,7 +1194,6 @@ def policy(
 def consent_policy(
     db: Session,
     oauth_client: ClientDetail,
-    storage_config: StorageConfig,
 ) -> Generator:
     """Consent policies only need a ConsentRule attached - no RuleTargets necessary"""
     consent_request_policy = Policy.create(
@@ -1163,6 +1231,7 @@ def policy_local_storage(
     db: Session,
     oauth_client: ClientDetail,
     storage_config_local: StorageConfig,
+    default_data_categories,  # This needs to be explicitly passed in to ensure data categories are available
 ) -> Generator:
     """
     A basic example policy fixture that uses a local storage config
@@ -1217,7 +1286,9 @@ def policy_drp_action(
     db: Session,
     oauth_client: ClientDetail,
     storage_config: StorageConfig,
+    default_data_categories,  # This needs to be explicitly passed in to ensure data categories are available
 ) -> Generator:
+
     access_request_policy = Policy.create(
         db=db,
         data={
@@ -1263,7 +1334,11 @@ def policy_drp_action(
 
 
 @pytest.fixture(scope="function")
-def policy_drp_action_erasure(db: Session, oauth_client: ClientDetail) -> Generator:
+def policy_drp_action_erasure(
+    db: Session,
+    oauth_client: ClientDetail,
+    default_data_categories,  # This needs to be explicitly passed in to ensure data categories are available
+) -> Generator:
     erasure_request_policy = Policy.create(
         db=db,
         data={
@@ -1315,7 +1390,7 @@ def policy_drp_action_erasure(db: Session, oauth_client: ClientDetail) -> Genera
 def erasure_policy_string_rewrite(
     db: Session,
     oauth_client: ClientDetail,
-    storage_config: StorageConfig,
+    default_data_categories,  # This needs to be explicitly passed in to ensure data categories are available
 ) -> Generator:
     erasure_policy = Policy.create(
         db=db,
@@ -1893,7 +1968,9 @@ def privacy_request_with_consent_policy(
 
 
 @pytest.fixture(scope="function")
-def privacy_request_with_custom_fields(db: Session, policy: Policy) -> PrivacyRequest:
+def privacy_request_with_custom_fields(
+    db: Session, policy: Policy, allow_custom_privacy_request_field_collection_enabled
+) -> PrivacyRequest:
     privacy_request = PrivacyRequest.create(
         db=db,
         data={
@@ -1921,7 +1998,7 @@ def privacy_request_with_custom_fields(db: Session, policy: Policy) -> PrivacyRe
 
 @pytest.fixture(scope="function")
 def privacy_request_with_custom_array_fields(
-    db: Session, policy: Policy
+    db: Session, policy: Policy, allow_custom_privacy_request_field_collection_enabled
 ) -> PrivacyRequest:
     privacy_request = PrivacyRequest.create(
         db=db,
@@ -2231,7 +2308,38 @@ def privacy_notice(db: Session) -> Generator:
         },
     )
 
+    # Create cookie assets
+    cookie_assets = [
+        Asset(
+            name="test_cookie",
+            asset_type="Cookie",
+            data_uses=["marketing.advertising"],
+        ),
+        Asset(
+            name="test_cookie_2",
+            asset_type="Cookie",
+            data_uses=["third_party_sharing.disclosure"],  # a not matching data use
+        ),
+        Asset(
+            name="test_cookie_3",
+            asset_type="Cookie",
+            data_uses=["test.third_party_sharing.cookie"],  # should not match either
+        ),
+    ]
+    for cookie_asset in cookie_assets:
+        cookie_asset.save(db)
+
     yield privacy_notice
+
+    # Clean up cookie assets first
+    for cookie in cookie_assets:
+        try:
+            cookie.delete(db)
+        except ObjectDeletedError:
+            # Skip if already deleted
+            pass
+
+    # Then clean up translations and histories
     for translation in privacy_notice.translations:
         for history in translation.histories:
             history.delete(db)
@@ -3312,7 +3420,7 @@ def allow_custom_privacy_request_field_collection_enabled():
     original_value = CONFIG.execution.allow_custom_privacy_request_field_collection
     CONFIG.execution.allow_custom_privacy_request_field_collection = True
     yield
-    CONFIG.notifications.send_request_review_notification = original_value
+    CONFIG.execution.allow_custom_privacy_request_field_collection = original_value
 
 
 @pytest.fixture(scope="function")
@@ -3320,7 +3428,7 @@ def allow_custom_privacy_request_field_collection_disabled():
     original_value = CONFIG.execution.allow_custom_privacy_request_field_collection
     CONFIG.execution.allow_custom_privacy_request_field_collection = False
     yield
-    CONFIG.notifications.send_request_review_notification = original_value
+    CONFIG.execution.allow_custom_privacy_request_field_collection = original_value
 
 
 @pytest.fixture(scope="function")
@@ -3330,7 +3438,7 @@ def allow_custom_privacy_request_fields_in_request_execution_enabled():
     )
     CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution = True
     yield
-    CONFIG.notifications.allow_custom_privacy_request_fields_in_request_execution = (
+    CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution = (
         original_value
     )
 
@@ -3342,7 +3450,7 @@ def allow_custom_privacy_request_fields_in_request_execution_disabled():
     )
     CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution = False
     yield
-    CONFIG.notifications.allow_custom_privacy_request_fields_in_request_execution = (
+    CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution = (
         original_value
     )
 

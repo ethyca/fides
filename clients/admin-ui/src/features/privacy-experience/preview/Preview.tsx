@@ -1,13 +1,16 @@
 import { FidesGlobal } from "fides-js/src/lib/consent-types";
 import { AntFlex as Flex, Text } from "fidesui";
 import { useFormikContext } from "formik";
+import { useRouter } from "next/router";
 import Script from "next/script";
 import React, { useEffect, useMemo, useState } from "react";
 
 import { PREVIEW_CONTAINER_ID } from "~/constants";
+import { useGetVendorReportQuery } from "~/features/plus/plus.slice";
 import { TranslationWithLanguageName } from "~/features/privacy-experience/form/helpers";
 import {
   buildBaseConfig,
+  generateMockNotices,
   translationOrDefault,
 } from "~/features/privacy-experience/preview/helpers";
 import theme from "~/theme";
@@ -19,7 +22,6 @@ import {
   PrivacyNoticeResponse,
 } from "~/types/api";
 
-import { useFeatures } from "../../common/features";
 import { COMPONENT_MAP } from "../constants";
 
 declare global {
@@ -67,63 +69,110 @@ const Preview = ({
   translation?: TranslationWithLanguageName;
   isMobilePreview: boolean;
 }) => {
+  const router = useRouter();
+  const isNewExperience = router.pathname.includes("/new");
   const { values } = useFormikContext<ExperienceConfigCreate>();
   const [noticesOnConfig, setNoticesOnConfig] = useState<
     PrivacyNoticeResponse[]
   >([]);
+  const [fidesScriptLoaded, setFidesScriptLoaded] = useState(false);
+  const [previewMode, setPreviewMode] = useState<"standard" | "tcf">();
   const isPreviewAvailable = [
     ComponentType.BANNER_AND_MODAL,
     ComponentType.MODAL,
     ComponentType.TCF_OVERLAY,
   ].includes(values.component);
 
-  const { systemsCount } = useFeatures();
-
-  useEffect(() => {
-    if (values.privacy_notice_ids) {
-      const notices = values.privacy_notice_ids
-        .map((id) => allPrivacyNotices.find((notice) => notice?.id === id))
-        .map((notice) => {
-          if (
-            values.component === ComponentType.TCF_OVERLAY &&
-            notice !== undefined
-          ) {
-            return {
-              ...notice,
-              translations: [
-                {
-                  language: "en",
-                  text: notice?.name,
-                },
-              ],
-            };
-          }
-          return notice;
-        })
-        .filter(
-          (notice): notice is PrivacyNoticeResponse => notice !== undefined,
-        );
-      setNoticesOnConfig(notices);
-    } else {
-      setNoticesOnConfig([]);
-    }
-  }, [values.privacy_notice_ids, allPrivacyNotices, values.component]);
-
-  // Create the base FidesConfig JSON that will be used to initialize fides.js
-  const baseConfig = useMemo(
-    () => buildBaseConfig(initialValues, noticesOnConfig),
-    [initialValues, noticesOnConfig],
+  /**
+   * Selects the number of vendors
+   * By using the paginated getVendorReport endpoint, we can get the total number of vendors
+   */
+  const { data: vendorReport } = useGetVendorReportQuery({
+    pageIndex: 1,
+    pageSize: 1,
+  });
+  const vendorCount = useMemo(
+    () => vendorReport?.total || 0,
+    [vendorReport?.total],
   );
 
-  const fidesJsScript =
-    values.component === ComponentType.TCF_OVERLAY
-      ? "/lib/fides-tcf.js"
-      : "/lib/fides.js";
+  useEffect(() => {
+    if (
+      isPreviewAvailable &&
+      fidesScriptLoaded &&
+      window.FidesPreview &&
+      values.component &&
+      (values.privacy_notice_ids?.length ||
+        values.component === ComponentType.TCF_OVERLAY)
+    ) {
+      if (values.component === ComponentType.TCF_OVERLAY) {
+        window.FidesPreview("tcf");
+        setPreviewMode("tcf");
+      } else {
+        window.FidesPreview("standard");
+        setPreviewMode("standard");
+      }
+    } else if (window.FidesPreview) {
+      window.FidesPreview?.cleanup();
+    }
+
+    return () => {
+      // cleanup fides.js preview when the component unmounts so it doesn't continue to run on other pages
+      window.FidesPreview?.cleanup();
+    };
+  }, [
+    values.component,
+    fidesScriptLoaded,
+    isPreviewAvailable,
+    values.privacy_notice_ids?.length,
+    isNewExperience,
+  ]);
 
   useEffect(() => {
+    if (initialValues && values.component && allPrivacyNotices) {
+      if (values.privacy_notice_ids) {
+        const notices = generateMockNotices(
+          values.privacy_notice_ids,
+          values.component,
+          allPrivacyNotices,
+        );
+        setNoticesOnConfig(notices);
+      } else {
+        setNoticesOnConfig([]);
+      }
+    }
+  }, [
+    values.privacy_notice_ids,
+    allPrivacyNotices,
+    values.component,
+    initialValues,
+  ]);
+
+  const baseConfig = useMemo(() => {
+    return values.component
+      ? buildBaseConfig(
+          { ...initialValues, component: values.component },
+          noticesOnConfig,
+        )
+      : null;
+  }, [initialValues, noticesOnConfig, values.component]);
+
+  useEffect(() => {
+    if (
+      !isPreviewAvailable ||
+      !fidesScriptLoaded ||
+      !window.FidesPreview ||
+      !window.Fides ||
+      (!values.privacy_notice_ids?.length &&
+        values.component !== ComponentType.TCF_OVERLAY)
+    ) {
+      return;
+    }
+    const updatedConfig = baseConfig;
     // if current component is a modal, we want to force fides.js to show a modal, not a banner component
     if (values.component === ComponentType.MODAL) {
-      baseConfig.experience.experience_config.component = ComponentType.MODAL;
+      updatedConfig.experience.experience_config.component =
+        ComponentType.MODAL;
     }
     // if we're editing a translation, we want to preview the banner/modal with that language,
     // otherwise we show first translation if exists, else keep default
@@ -132,47 +181,54 @@ const Preview = ({
     );
     if (values.translations?.length) {
       if (currentTranslation) {
-        baseConfig.experience.available_locales = [
-          ...(baseConfig.experience.available_locales || []),
+        updatedConfig.experience.available_locales = [
+          ...(updatedConfig.experience.available_locales || []),
           currentTranslation.language,
         ];
-        baseConfig.experience.experience_config.translations[0] =
+        updatedConfig.experience.experience_config.translations[0] =
           translationOrDefault(currentTranslation);
-        baseConfig.options.fidesLocale = currentTranslation.language;
+        updatedConfig.options.fidesLocale = currentTranslation.language;
       } else if (values.translations) {
-        baseConfig.experience.experience_config.translations[0] =
+        updatedConfig.experience.experience_config.translations[0] =
           translationOrDefault(values.translations[0]);
-        baseConfig.options.fidesLocale = values.translations[0].language;
+        updatedConfig.options.fidesLocale = values.translations[0].language;
       }
     }
-    baseConfig.experience.experience_config.show_layer1_notices =
-      !!noticesOnConfig?.length && !!values.show_layer1_notices;
-    baseConfig.experience.experience_config.layer1_button_options =
+    updatedConfig.experience.experience_config.show_layer1_notices =
+      !!values.privacy_notice_ids?.length && !!values.show_layer1_notices;
+    updatedConfig.experience.experience_config.layer1_button_options =
       (values.component === ComponentType.BANNER_AND_MODAL ||
         values.component === ComponentType.TCF_OVERLAY) &&
       values.layer1_button_options
         ? values.layer1_button_options
         : Layer1ButtonOption.OPT_IN_OPT_OUT;
-    baseConfig.options.preventDismissal = !values.dismissable;
-    baseConfig.experience.vendor_count = systemsCount;
-    baseConfig.experience.experience_config.component = values.component;
-    if (
-      window.Fides &&
-      (noticesOnConfig?.length ||
-        values.component === ComponentType.TCF_OVERLAY) &&
-      isPreviewAvailable
-    ) {
-      // reinitialize fides.js each time the form changes
-      window.Fides.init(baseConfig as any);
-    }
+    updatedConfig.options.preventDismissal = !values.dismissable;
+    updatedConfig.experience.vendor_count = vendorCount;
+    updatedConfig.experience.experience_config.component = values.component;
+    // reinitialize fides.js each time the form changes
+    window.Fides.init(updatedConfig);
+
+    /**
+     * NOTE: as tempting as it may be to just include the full values object in the dependency array,
+     * it's not a good idea because it will cause the preview to re-render constantly as the form is updated.
+     * Not all form fields require a preview re-render, the fields chosen here are very intentional.
+     */
   }, [
-    values,
-    noticesOnConfig,
     translation,
     baseConfig,
     allPrivacyNotices,
     isPreviewAvailable,
-    systemsCount,
+    vendorCount,
+    fidesScriptLoaded,
+    previewMode,
+    values.privacy_notice_ids,
+    values.component,
+    values.translations,
+    values.show_layer1_notices,
+    values.layer1_button_options,
+    values.dismissable,
+    initialValues,
+    noticesOnConfig,
   ]);
 
   const modal = document.getElementById("fides-modal");
@@ -200,7 +256,7 @@ const Preview = ({
   }
 
   if (
-    !noticesOnConfig?.length &&
+    !values.privacy_notice_ids?.length &&
     values.component !== ComponentType.TCF_OVERLAY
   ) {
     return (
@@ -350,14 +406,12 @@ const Preview = ({
       )}
       <Script
         id="fides-js-script"
-        src={fidesJsScript}
+        src="/lib/fides-preview.js"
         onReady={() => {
-          if (!window.Fides.experience) {
-            window.Fides?.init(baseConfig as any);
-          }
+          setFidesScriptLoaded(true);
         }}
       />
-      <div id={PREVIEW_CONTAINER_ID} />
+      <div id={PREVIEW_CONTAINER_ID} key={values.component} />
     </Flex>
   );
 };

@@ -29,11 +29,11 @@ import {
   TableActionBar,
   useServerSidePagination,
 } from "~/features/common/table/v2";
-import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
 import { useGetMonitorsByIntegrationQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import ConfigureMonitorModal from "~/features/integrations/configure-monitor/ConfigureMonitorModal";
 import MonitorConfigActionsCell from "~/features/integrations/configure-monitor/MonitorConfigActionsCell";
 import { MonitorConfigEnableCell } from "~/features/integrations/configure-monitor/MonitorConfigEnableCell";
+import MonitorStatusCell from "~/features/integrations/configure-monitor/MonitorStatusCell";
 import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
@@ -54,6 +54,13 @@ const EMPTY_RESPONSE = {
 const DATA_DISCOVERY_MONITOR_COPY = `A data discovery monitor observes configured systems for data model changes to proactively discover and classify data risks. Monitors can observe part or all of a project, dataset, table, or API for changes and each can be assigned to a different data steward.`;
 
 const WEBSITE_MONITOR_COPY = `Configure your website monitor to identify active ad tech vendors and tracking technologies across your site. This monitor will analyze selected pages for vendor activity, compliance with privacy requirements, and data collection practices. Set your preferences below to customize the monitor frequency and scan locations.`;
+
+const OKTA_MONITOR_COPY = `Configure your SSO provider monitor to detect and map systems within your infrastructure. This monitor will analyze connected systems to identify their activity and ensure accurate representation in your data map. Set your preferences below to customize the monitor&apos;s scan frequency and scope. To learn more about monitors, view our docs here.`;
+
+const MONITOR_COPIES: Partial<Record<ConnectionType, string>> = {
+  [ConnectionType.WEBSITE]: WEBSITE_MONITOR_COPY,
+  [ConnectionType.OKTA]: OKTA_MONITOR_COPY,
+} as const;
 
 const columnHelper = createColumnHelper<MonitorConfig>();
 
@@ -90,6 +97,9 @@ const MonitorConfigTab = ({
   integration: ConnectionConfigurationResponse;
   integrationOption?: ConnectionSystemTypeMap;
 }) => {
+  const isWebsiteMonitor =
+    integrationOption?.identifier === ConnectionType.WEBSITE;
+
   const {
     PAGE_SIZES,
     pageSize,
@@ -204,14 +214,12 @@ const MonitorConfigTab = ({
         },
       );
 
-      const lastScanColumn = columnHelper.accessor(
-        (row) => row.last_monitored,
-        {
-          id: "last_monitored",
-          cell: (props) => <RelativeTimestampCell time={props.getValue()} />,
-          header: (props) => <DefaultHeaderCell value="Last scan" {...props} />,
-        },
-      );
+      const lastScanColumn = columnHelper.display({
+        id: "monitor_status",
+        cell: (props) => <MonitorStatusCell monitor={props.row.original} />,
+        header: (props) => <DefaultHeaderCell value="Scan status" {...props} />,
+        meta: { disableRowClick: true },
+      });
 
       const regionsColumn = columnHelper.accessor(
         (row) => {
@@ -247,6 +255,7 @@ const MonitorConfigTab = ({
         cell: (props) => (
           <MonitorConfigActionsCell
             onEditClick={() => handleEditMonitor(props.row.original)}
+            isWebsiteMonitor={isWebsiteMonitor}
             monitorId={props.row.original.key!}
           />
         ),
@@ -254,7 +263,7 @@ const MonitorConfigTab = ({
         meta: { disableRowClick: true },
       });
 
-      if (integrationOption?.identifier === ConnectionType.WEBSITE) {
+      if (isWebsiteMonitor) {
         return [
           nameColumn,
           sourceUrlColumn,
@@ -294,12 +303,14 @@ const MonitorConfigTab = ({
     return <FidesSpinner />;
   }
 
+  const monitorCopy =
+    MONITOR_COPIES[integrationOption?.identifier as ConnectionType] ??
+    DATA_DISCOVERY_MONITOR_COPY;
+
   return (
     <>
       <Text maxW="720px" mb={6} fontSize="sm" data-testid="monitor-description">
-        {integrationOption?.identifier === ConnectionType.WEBSITE
-          ? WEBSITE_MONITOR_COPY
-          : DATA_DISCOVERY_MONITOR_COPY}
+        {monitorCopy}
       </Text>
       <TableActionBar>
         <Spacer />
@@ -320,6 +331,7 @@ const MonitorConfigTab = ({
           isEditing={isEditing}
           integration={integration}
           integrationOption={integrationOption!}
+          isWebsiteMonitor={isWebsiteMonitor}
         />
       </TableActionBar>
       <FidesTableV2

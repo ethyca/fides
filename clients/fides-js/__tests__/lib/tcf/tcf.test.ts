@@ -12,6 +12,9 @@ import {
 } from "~/lib/tcf/types";
 
 describe("generateFidesString", () => {
+  beforeAll(() => {
+    window.fidesDebugger = () => {};
+  });
   // Test TCF data:
   const mockGvl: GVLJson = {
     vendors: {
@@ -475,5 +478,133 @@ describe("generateFidesString", () => {
 
     const decodedTCString = TCString.decode(tcfString);
     expect(decodedTCString.publisherCountryCode).toBe("US");
+  });
+
+  it("saves special purpose only vendor to legitimate interest regardless of consent choice", async () => {
+    // Add a vendor that only has special purposes
+    const experienceWithSpecialPurposeVendor = {
+      ...experience,
+      tcf_vendor_relationships: [
+        {
+          id: "gvl.111",
+        },
+        {
+          id: "gvl.222",
+        },
+        {
+          id: "gvl.333",
+        },
+        {
+          id: "gvl.444",
+        },
+        {
+          id: "gvl.888",
+        },
+        {
+          id: "gvl.999",
+        },
+      ],
+      gvl: {
+        ...mockGvl,
+        vendors: {
+          111: {
+            id: 111,
+            name: "Vendor with only purposes",
+            purposes: [1, 2, 3],
+            legIntPurposes: [],
+            flexiblePurposes: [],
+            specialPurposes: [],
+            features: [],
+            specialFeatures: [],
+          },
+          222: {
+            id: 222,
+            name: "Vendor with only legitimate interests",
+            purposes: [],
+            legIntPurposes: [7, 8],
+            flexiblePurposes: [],
+            specialPurposes: [],
+            features: [],
+            specialFeatures: [],
+          },
+          333: {
+            id: 333,
+            name: "Vendor with purposes and legitimate interests",
+            purposes: [1, 2, 3],
+            legIntPurposes: [7, 8],
+            flexiblePurposes: [],
+            specialPurposes: [],
+            features: [],
+            specialFeatures: [],
+          },
+          444: {
+            id: 444,
+            name: "Vendor with purposes, legitimate interests and special purposes",
+            purposes: [1, 2],
+            legIntPurposes: [7, 8],
+            flexiblePurposes: [],
+            specialPurposes: [1, 2],
+            features: [],
+            specialFeatures: [],
+          },
+          888: {
+            id: 888,
+            name: "Vendor with purposes, no legitimate interest, special purpose",
+            purposes: [1, 2, 3],
+            legIntPurposes: [],
+            flexiblePurposes: [],
+            specialPurposes: [1],
+            features: [],
+            specialFeatures: [],
+          },
+          999: {
+            id: 999,
+            name: "Special Purpose Only Vendor",
+            purposes: [], // No regular purposes
+            legIntPurposes: [], // No legitimate interest purposes
+            flexiblePurposes: [],
+            specialPurposes: [1, 2], // Only special purposes
+            features: [],
+            specialFeatures: [],
+          },
+        },
+      },
+    } as unknown as PrivacyExperience;
+
+    const fidesString = await generateFidesString({
+      experience: experienceWithSpecialPurposeVendor,
+      tcStringPreferences: {
+        customPurposesConsent: [],
+        features: [],
+        purposesConsent: [], // User opted out of all purposes
+        purposesLegint: [],
+        specialFeatures: [],
+        specialPurposes: [], // Preferences are not saved here
+        vendorsConsent: [], // User opted out of all vendors
+        vendorsLegint: [], // No explicit legitimate interest consent
+      },
+    });
+
+    expect(fidesString).not.toBeNull();
+    expect(fidesString).not.toBeUndefined();
+    expect(fidesString).not.toBe("");
+
+    const [tcfString] = fidesString.split(FIDES_SEPARATOR);
+    const decodedTCString = TCString.decode(tcfString);
+
+    // Verify the special purpose vendor is in legitimate interest section regardless of user choice
+    expect(decodedTCString.vendorLegitimateInterests.has(888)).toBe(true);
+    expect(decodedTCString.vendorLegitimateInterests.has(999)).toBe(true);
+
+    // Verify the rest of the vendors are not in either section because the user opted out and
+    // they have no special purposes
+    expect(decodedTCString.vendorConsents.has(111)).toBe(false);
+    expect(decodedTCString.vendorConsents.has(222)).toBe(false);
+    expect(decodedTCString.vendorConsents.has(333)).toBe(false);
+    expect(decodedTCString.vendorConsents.has(444)).toBe(false);
+    expect(decodedTCString.vendorLegitimateInterests.has(111)).toBe(false);
+    expect(decodedTCString.vendorLegitimateInterests.has(222)).toBe(false);
+    expect(decodedTCString.vendorLegitimateInterests.has(333)).toBe(false);
+    expect(decodedTCString.vendorLegitimateInterests.has(444)).toBe(false);
   });
 });

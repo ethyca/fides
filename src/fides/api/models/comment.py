@@ -33,7 +33,8 @@ class CommentReferenceType(str, EnumType):
     Enum for comment reference types. Indicates where the comment is referenced.
     """
 
-    manual_step = "manual_step"
+    access_manual_webhook = "access_manual_webhook"
+    erasure_manual_webhook = "erasure_manual_webhook"
     privacy_request = "privacy_request"
 
 
@@ -93,6 +94,17 @@ class Comment(Base):
         uselist=True,
         foreign_keys=[CommentReference.comment_id],
         primaryjoin=lambda: Comment.id == orm.foreign(CommentReference.comment_id),
+    )
+
+    attachments = relationship(
+        "Attachment",
+        secondary="attachment_reference",
+        primaryjoin="and_(Comment.id == AttachmentReference.reference_id, "
+        "AttachmentReference.reference_type == 'comment')",
+        secondaryjoin="Attachment.id == AttachmentReference.attachment_id",
+        order_by="Attachment.created_at",
+        viewonly=True,
+        uselist=True,
     )
 
     def delete(self, db: Session) -> None:

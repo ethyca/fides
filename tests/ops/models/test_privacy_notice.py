@@ -1,11 +1,11 @@
 from typing import Generator
 
 import pytest
-from fideslang.models import Cookies as CookieSchema
 from fideslang.validation import FidesValidationError
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from fides.api.models.asset import Asset
 from fides.api.models.experience_notices import ExperienceNotices
 from fides.api.models.location_regulation_selections import DeprecatedNoticeRegion
 from fides.api.models.privacy_notice import (
@@ -17,7 +17,7 @@ from fides.api.models.privacy_notice import (
     PrivacyNoticeHistory,
     UserConsentPreference,
 )
-from fides.api.models.sql_models import Cookies, PrivacyDeclaration
+from fides.api.models.sql_models import PrivacyDeclaration
 from fides.api.schemas.language import SupportedLanguage
 
 
@@ -587,26 +587,52 @@ class TestPrivacyNoticeModel:
         [
             (
                 ["marketing.advertising", "third_party_sharing"],
-                [{"name": "test_cookie"}],
-                [CookieSchema(name="test_cookie")],
+                [{"name": "test_cookie", "domain": "example.com"}],
+                [
+                    {
+                        "name": "test_cookie",
+                        "domain": "example.com",
+                        "asset_type": "Cookie",
+                    }
+                ],
                 "Data uses overlap exactly",
             ),
             (
                 ["marketing.advertising.first_party", "third_party_sharing"],
-                [{"name": "test_cookie"}],
+                [{"name": "test_cookie", "domain": "example.com"}],
                 [],
                 "Privacy notice use more specific than system's.  Too big a leap to assume system should be adjusted here.",
             ),
             (
                 ["marketing", "third_party_sharing"],
-                [{"name": "test_cookie"}],
-                [CookieSchema(name="test_cookie")],
+                [{"name": "test_cookie", "domain": "example.com"}],
+                [
+                    {
+                        "name": "test_cookie",
+                        "domain": "example.com",
+                        "asset_type": "Cookie",
+                    }
+                ],
                 "Privacy notice use more general than system's, so system's data use is under the scope of the notice",
             ),
             (
                 ["marketing.advertising", "third_party_sharing"],
-                [{"name": "test_cookie"}, {"name": "another_cookie"}],
-                [CookieSchema(name="test_cookie"), CookieSchema(name="another_cookie")],
+                [
+                    {"name": "test_cookie", "domain": "example.com"},
+                    {"name": "another_cookie", "domain": "example.com"},
+                ],
+                [
+                    {
+                        "name": "test_cookie",
+                        "domain": "example.com",
+                        "asset_type": "Cookie",
+                    },
+                    {
+                        "name": "another_cookie",
+                        "domain": "example.com",
+                        "asset_type": "Cookie",
+                    },
+                ],
                 "Test multiple cookies",
             ),
             (["marketing.advertising"], [], [], "No cookies returns an empty set"),
@@ -623,27 +649,46 @@ class TestPrivacyNoticeModel:
         system,
     ):
         """Test different combinations of data uses and cookies between the Privacy Notice and the Privacy Declaration"""
-        db.query(Cookies).delete()
+        # Clean up any existing cookie assets first
+        db.query(Asset).filter(Asset.asset_type == "Cookie").delete()
+        db.commit()
+
         privacy_notice.data_uses = privacy_notice_data_use
         privacy_notice.save(db)
 
         privacy_declaration = system.privacy_declarations[0]
         assert privacy_declaration.data_use == "marketing.advertising"
 
+        # Create test assets
+        created_assets = []
         for cookie in declaration_cookies:
-            Cookies.create(
+            asset = Asset.create(
                 db,
                 data={
                     "name": cookie["name"],
-                    "privacy_declaration_id": privacy_declaration.id,
+                    "asset_type": "Cookie",
+                    "domain": cookie["domain"],
                     "system_id": system.id,
+                    "data_uses": [privacy_declaration.data_use],
                 },
                 check_name=False,
             )
+            created_assets.append(asset)
 
-        assert [
-            CookieSchema.model_validate(cookie) for cookie in privacy_notice.cookies
-        ] == expected_cookies, description
+        try:
+            assert [
+                {
+                    "name": cookie.name,
+                    "domain": cookie.domain,
+                    "asset_type": cookie.asset_type,
+                }
+                for cookie in privacy_notice.cookies
+            ] == expected_cookies, description
+        finally:
+            # Clean up created assets
+            for asset in created_assets:
+                db.delete(asset)
+            db.commit()
 
     def test_generate_privacy_notice_key(self, privacy_notice):
         assert (
@@ -774,6 +819,9 @@ class TestPrivacyNoticeModel:
             )
 
         nt.delete(db)
+
+    def test_cookies_property(self, privacy_notice):
+        assert len(privacy_notice.cookies) == 2
 
 
 class TestHierarchicalNotices:

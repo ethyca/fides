@@ -1,6 +1,6 @@
 import { Box, BoxProps, Heading, Stack, Text } from "fidesui";
 
-import QuestionTooltip from "~/features/common/QuestionTooltip";
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 
 const FormSection = ({
   title,
@@ -26,7 +26,7 @@ const FormSection = ({
       {title}
       {tooltip ? (
         <Text as="span" mx={1}>
-          <QuestionTooltip label={tooltip} />
+          <InfoTooltip label={tooltip} />
         </Text>
       ) : undefined}
     </Heading>

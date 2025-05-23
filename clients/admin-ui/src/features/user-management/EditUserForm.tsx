@@ -23,6 +23,7 @@ const useUserForm = (profile: User) => {
     last_name: profile.last_name ?? "",
     password: "",
     id: profile.id,
+    password_login_enabled: Boolean(profile.password_login_enabled),
   };
 
   const handleSubmit = async (values: FormValues) => {

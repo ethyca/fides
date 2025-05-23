@@ -129,6 +129,16 @@ def stringify_date(log_date: datetime) -> str:
 
 class TestCreatePrivacyRequest:
     @pytest.fixture(scope="function")
+    def privacy_request_receipt_notification_enabled(self, db):
+        """Enable request receipt notification"""
+        original_value = CONFIG.notifications.send_request_receipt_notification
+        CONFIG.notifications.send_request_receipt_notification = True
+        ApplicationConfig.update_config_set(db, CONFIG)
+        yield
+        CONFIG.notifications.send_request_receipt_notification = original_value
+        ApplicationConfig.update_config_set(db, CONFIG)
+
+    @pytest.fixture(scope="function")
     def url(self) -> str:
         return V1_URL_PREFIX + PRIVACY_REQUESTS
 
@@ -769,7 +779,9 @@ class TestCreatePrivacyRequest:
         pr = PrivacyRequest.get(db=db, object_id=response_data["id"])
         pr.delete(db=db)
 
-    @pytest.mark.usefixtures("messaging_config")
+    @pytest.mark.usefixtures(
+        "messaging_config", "privacy_request_receipt_notification_enabled"
+    )
     @mock.patch(
         "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
     )
@@ -2465,6 +2477,7 @@ class TestPrivacyRequestSearch:
         generate_auth_header,
         privacy_request_with_custom_fields,
         privacy_request_with_custom_array_fields,
+        allow_custom_privacy_request_field_collection_enabled,
     ):
         privacy_request = privacy_request_with_custom_fields
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
@@ -8422,7 +8435,7 @@ class TestGetAccessResults:
 @pytest.mark.integration
 class TestPrivacyRequestFilteredResults:
     @pytest.fixture(scope="function")
-    def default_access_policy(self, db) -> None:
+    def default_access_policy(self, db, default_data_categories) -> None:
         load_default_access_policy(db, get_client_id(db), get_user_data_categories())
 
     def test_filtered_results_not_authenticated(

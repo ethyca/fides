@@ -154,8 +154,11 @@ jobs:
           username: ${{ env.DOCKER_USER }}
           password: ${{ env.DOCKER_RO_TOKEN }}
 
-      - name: Run test suite
+      - name: Run Fides webserver startup check
         run: nox -s check_container_startup
+
+      - name: Run Celery worker startup check
+        run: nox -s check_worker_startup
 
   Misc-Tests:
     needs: Check-Container-Startup
@@ -388,6 +391,8 @@ jobs:
           GOOGLE_CLOUD_SQL_POSTGRES_DB_IAM_USER: op://github-actions/gcp-postgres/GOOGLE_CLOUD_SQL_POSTGRES_DB_IAM_USER
           GOOGLE_CLOUD_SQL_POSTGRES_INSTANCE_CONNECTION_NAME: op://github-actions/gcp-postgres/GOOGLE_CLOUD_SQL_POSTGRES_INSTANCE_CONNECTION_NAME
           GOOGLE_CLOUD_SQL_POSTGRES_KEYFILE_CREDS: op://github-actions/gcp-postgres/GOOGLE_CLOUD_SQL_POSTGRES_KEYFILE_CREDS
+          OKTA_API_TOKEN: op://github-actions/okta/OKTA_API_TOKEN
+          OKTA_ORG_URL: op://github-actions/okta/OKTA_ORG_URL
           RDS_MYSQL_AWS_ACCESS_KEY_ID: op://github-actions/rds-mysql/RDS_MYSQL_AWS_ACCESS_KEY_ID
           RDS_MYSQL_AWS_SECRET_ACCESS_KEY: op://github-actions/rds-mysql/RDS_MYSQL_AWS_SECRET_ACCESS_KEY
           RDS_MYSQL_DB_INSTANCE: op://github-actions/rds-mysql/RDS_MYSQL_DB_INSTANCE

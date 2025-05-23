@@ -1,10 +1,12 @@
-from contextlib import contextmanager
-from typing import Generator
+from contextlib import asynccontextmanager, contextmanager
+from typing import AsyncGenerator, Generator
 
 from fastapi import Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import RedisNotConfigured
+from fides.api.db.ctl_session import async_session
 from fides.api.db.session import get_db_engine, get_db_session
 from fides.api.util.cache import get_cache as get_redis_connection
 from fides.config import CONFIG, FidesConfig
@@ -12,6 +14,7 @@ from fides.config import get_config as get_app_config
 from fides.config.config_proxy import ConfigProxy
 
 _engine = None
+_readonly_engine = None
 
 
 def get_config() -> FidesConfig:
@@ -23,6 +26,15 @@ def get_db() -> Generator:
     """Return our database session"""
     try:
         db = get_api_session()
+        yield db
+    finally:
+        db.close()
+
+
+def get_readonly_db() -> Generator:
+    """Return our readonly database session"""
+    try:
+        db = get_readonly_api_session()
         yield db
     finally:
         db.close()
@@ -61,6 +73,26 @@ def get_api_session() -> Session:
     return db
 
 
+def get_readonly_api_session() -> Session:
+    """Gets the shared read-only database session to use for API functionality"""
+    if not CONFIG.database.sqlalchemy_readonly_database_uri:
+        return get_api_session()
+
+    global _readonly_engine  # pylint: disable=W0603
+    if not _readonly_engine:
+        _readonly_engine = get_db_engine(
+            database_uri=CONFIG.database.sqlalchemy_readonly_database_uri,
+            pool_size=CONFIG.database.api_engine_pool_size,
+            max_overflow=CONFIG.database.api_engine_max_overflow,
+            keepalives_idle=CONFIG.database.api_engine_keepalives_idle,
+            keepalives_interval=CONFIG.database.api_engine_keepalives_interval,
+            keepalives_count=CONFIG.database.api_engine_keepalives_count,
+        )
+    SessionLocal = get_db_session(CONFIG, engine=_readonly_engine)
+    db = SessionLocal()
+    return db
+
+
 def get_config_proxy(db: Session = Depends(get_db)) -> ConfigProxy:
     return ConfigProxy(db)
 
@@ -72,3 +104,17 @@ def get_cache() -> Generator:
             "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a Redis cache."
         )
     yield get_redis_connection()
+
+
+@asynccontextmanager
+async def get_async_autoclose_db_session() -> AsyncGenerator[AsyncSession, None]:
+    """
+    Return an async database session as an async context manager that automatically closes when the context exits.
+
+    Use this when you need manual control over the async session lifecycle outside of API endpoints.
+    """
+    session = async_session()
+    try:
+        yield session
+    finally:
+        await session.close()

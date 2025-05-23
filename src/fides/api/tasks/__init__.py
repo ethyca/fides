@@ -19,6 +19,10 @@ from fides.config import CONFIG, FidesConfig
 MESSAGING_QUEUE_NAME = "fidesops.messaging"
 PRIVACY_PREFERENCES_QUEUE_NAME = "fides.privacy_preferences"  # This queue is used in Fidesplus for saving privacy preferences and notices served
 DSR_QUEUE_NAME = "fides.dsr"  # This queue is used for running data subject requests
+DISCOVERY_MONITORS_DETECTION_QUEUE_NAME = "fidesplus.discovery_monitors_detection"  # This queue is used for running discovery monitors detection tasks
+DISCOVERY_MONITORS_CLASSIFICATION_QUEUE_NAME = "fidesplus.discovery_monitors_classification"  # This queue is used for running discovery monitors classification tasks
+DISCOVERY_MONITORS_PROMOTION_QUEUE_NAME = "fidesplus.discovery_monitors_promotion"  # This queue is used for running discovery monitors promotion tasks
+
 
 NEW_SESSION_RETRIES = 5
 

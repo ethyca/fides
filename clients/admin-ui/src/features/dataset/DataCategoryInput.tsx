@@ -8,7 +8,7 @@ import {
 
 import { DataCategory } from "~/types/api";
 
-import QuestionTooltip from "../common/QuestionTooltip";
+import { InfoTooltip } from "../common/InfoTooltip";
 import DataCategoryDropdown from "./DataCategoryDropdown";
 
 export interface Props {
@@ -44,7 +44,7 @@ const DataCategoryInput = ({
               onChecked={onChecked}
             />
           </Box>
-          <QuestionTooltip label={tooltip} />
+          <InfoTooltip label={tooltip} />
         </Box>
         <Space direction="vertical" size={2} data-testid="selected-categories">
           {sortedCheckedDataCategories.map((dc) => (

@@ -8,12 +8,14 @@ from pydantic import ConfigDict, Field, SerializeAsAny, field_validator, model_v
 from fides.api.custom_types import AnyHttpUrlStringRemovesSlash, URLOriginString
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.messaging.messaging import MessagingServiceType
+from fides.config.admin_ui_settings import ErrorNotificationMode
 
 
 class StorageTypeApiAccepted(Enum):
     """Enum for storage destination types accepted in API updates"""
 
     s3 = "s3"
+    gcs = "gcs"
     local = "local"  # local should be used for testing only, not for processing real-world privacy requests
 
 
@@ -66,6 +68,9 @@ class ExecutionApplicationConfig(FidesSchema):
 class AdminUIConfig(FidesSchema):
     enabled: Optional[bool] = None
     url: SerializeAsAny[Optional[AnyHttpUrlStringRemovesSlash]] = None
+    error_notification_mode: Optional[ErrorNotificationMode] = (
+        ErrorNotificationMode.CONSOLE_ONLY
+    )
 
     model_config = ConfigDict(extra="forbid")
 

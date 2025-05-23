@@ -31,7 +31,10 @@ import {
 
 export type PrivacyCenterServerSettings = Pick<
   PrivacyCenterSettings,
-  "SERVER_SIDE_FIDES_API_URL" | "FIDES_JS_MAX_AGE_SECONDS"
+  | "SERVER_SIDE_FIDES_API_URL"
+  | "FIDES_JS_MAX_AGE_SECONDS"
+  | "MISSING_EXPERIENCE_BEHAVIOR"
+  | "LOG_LEVEL"
 >;
 
 /**
@@ -67,6 +70,8 @@ export type PrivacyCenterClientSettings = Pick<
   | "FIDES_CLEAR_COOKIE"
   | "FIDES_CONSENT_OVERRIDE"
   | "FIDES_DISABLED_NOTICES"
+  | "FIDES_CONSENT_NON_APPLICABLE_FLAG_MODE"
+  | "FIDES_CONSENT_FLAG_TYPE"
 >;
 
 export type Styles = string;
@@ -281,6 +286,8 @@ export const loadServerSettings = (): PrivacyCenterServerSettings => {
     SERVER_SIDE_FIDES_API_URL:
       settings.SERVER_SIDE_FIDES_API_URL || settings.FIDES_API_URL,
     FIDES_JS_MAX_AGE_SECONDS: settings.FIDES_JS_MAX_AGE_SECONDS,
+    MISSING_EXPERIENCE_BEHAVIOR: settings.MISSING_EXPERIENCE_BEHAVIOR,
+    LOG_LEVEL: settings.LOG_LEVEL,
   };
 
   return serverSideSettings;
@@ -326,6 +333,9 @@ export const getClientSettings = (): PrivacyCenterClientSettings => {
     FIDES_CLEAR_COOKIE: settings.FIDES_CLEAR_COOKIE,
     FIDES_CONSENT_OVERRIDE: settings.FIDES_CONSENT_OVERRIDE,
     FIDES_DISABLED_NOTICES: settings.FIDES_DISABLED_NOTICES,
+    FIDES_CONSENT_NON_APPLICABLE_FLAG_MODE:
+      settings.FIDES_CONSENT_NON_APPLICABLE_FLAG_MODE,
+    FIDES_CONSENT_FLAG_TYPE: settings.FIDES_CONSENT_FLAG_TYPE,
   };
 
   return clientSettings;

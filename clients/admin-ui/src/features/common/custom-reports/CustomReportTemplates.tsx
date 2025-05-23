@@ -5,7 +5,6 @@ import {
   ChevronDownIcon,
   ConfirmationModal,
   HStack,
-  IconButton,
   Input,
   InputGroup,
   Popover,
@@ -24,7 +23,7 @@ import {
   useToast,
   VStack,
 } from "fidesui";
-import { Form, Formik } from "formik";
+import { Form, Formik, FormikState, useFormikContext } from "formik";
 import { useEffect, useMemo, useState } from "react";
 
 import { AddIcon } from "~/features/common/custom-fields/icons/AddIcon";
@@ -55,7 +54,12 @@ interface CustomReportTemplatesProps {
   savedReportId: string; // from local storage
   tableStateToSave: CustomReportTableState | undefined;
   currentColumnMap?: Record<string, string>;
-  onCustomReportSaved: (customReport: CustomReportResponse | null) => void;
+  onCustomReportSaved: (
+    customReport: CustomReportResponse | null,
+    resetForm: (
+      nextState?: Partial<FormikState<Record<string, string>>> | undefined,
+    ) => void,
+  ) => void;
   onSavedReportDeleted: () => void;
 }
 
@@ -104,6 +108,7 @@ export const CustomReportTemplates = ({
   const [reportToDelete, setReportToDelete] =
     useState<CustomReportResponseMinimal>();
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
+  const { resetForm } = useFormikContext();
 
   const buttonLabel = useMemo(() => {
     const reportName = customReportsList?.items.find(
@@ -157,7 +162,7 @@ export const CustomReportTemplates = ({
     if (fetchedReport) {
       setShowSpinner(false);
       if (fetchedReport.id !== savedReportId) {
-        onCustomReportSaved(fetchedReport);
+        onCustomReportSaved(fetchedReport, resetForm);
       }
       popoverOnClose();
     } else if (selectedReportId) {
@@ -165,7 +170,7 @@ export const CustomReportTemplates = ({
       setShowSpinner(true);
     } else {
       // form was reset, apply the reset
-      onCustomReportSaved(null);
+      onCustomReportSaved(null, resetForm);
       popoverOnClose();
     }
   };
@@ -283,14 +288,13 @@ export const CustomReportTemplates = ({
                       pb={3}
                       data-testid="custom-reports-empty-state"
                     >
-                      <IconButton
-                        variant="primary"
-                        backgroundColor="gray.500"
-                        isRound
-                        size="xs"
+                      <Button
+                        type="primary"
+                        size="small"
                         aria-label={`add ${CUSTOM_REPORT_TITLE}`}
                         icon={<AddIcon />}
                         onClick={modalOnOpen}
+                        className="rounded-full"
                         data-testid="add-report-button"
                       />
                       <Text fontSize="sm" textAlign="center" color="gray.500">
@@ -384,7 +388,9 @@ export const CustomReportTemplates = ({
         unavailableNames={customReportsList?.items.map((customReport) => {
           return customReport.name;
         })}
-        onCreateCustomReport={onCustomReportSaved}
+        onCreateCustomReport={(customReport) =>
+          onCustomReportSaved(customReport, resetForm)
+        }
       />
       <ConfirmationModal
         isOpen={deleteIsOpen}

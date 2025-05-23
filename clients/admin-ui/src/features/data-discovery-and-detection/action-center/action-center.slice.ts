@@ -43,16 +43,17 @@ const actionCenterApi = baseApi.injectEndpoints({
       {
         key: string;
         search?: string;
+        diff_status?: DiffStatus[];
       } & PaginationQueryParams
     >({
-      query: ({ key, page = 1, size = 20, search }) => ({
+      query: ({ key, page = 1, size = 20, search, diff_status }) => ({
         url: `/plus/discovery-monitor/system-aggregate-results`,
         params: {
           monitor_config_id: key,
           page,
           size,
           search,
-          diff_status: "addition",
+          diff_status,
         },
       }),
       providesTags: ["Discovery Monitor Results"],
@@ -132,6 +133,21 @@ const actionCenterApi = baseApi.injectEndpoints({
       },
       invalidatesTags: ["Discovery Monitor Results"],
     }),
+    restoreMonitorResultAssets: build.mutation<any, { urnList?: string[] }>({
+      query: (params) => {
+        const queryParams = new URLSearchParams({
+          status_to_set: DiffStatus.ADDITION,
+        });
+        params.urnList?.forEach((urn) =>
+          queryParams.append("staged_resource_urns", urn),
+        );
+        return {
+          method: "POST",
+          url: `/plus/discovery-monitor/un-mute?${queryParams}`,
+        };
+      },
+      invalidatesTags: ["Discovery Monitor Results"],
+    }),
     updateAssetsSystem: build.mutation<
       any,
       {
@@ -190,6 +206,7 @@ export const {
   useIgnoreMonitorResultSystemsMutation,
   useAddMonitorResultAssetsMutation,
   useIgnoreMonitorResultAssetsMutation,
+  useRestoreMonitorResultAssetsMutation,
   useUpdateAssetsSystemMutation,
   useUpdateAssetsDataUseMutation,
   useUpdateAssetsMutation,
