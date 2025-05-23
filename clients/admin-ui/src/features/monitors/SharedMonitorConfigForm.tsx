@@ -6,10 +6,13 @@ import {
   AntInput,
   AntRow,
   AntUpload,
+  AntUploadChangeParam,
+  AntUploadFile,
   Icons,
   useToast,
 } from "fidesui";
 import { CustomTypography } from "fidesui/src/hoc";
+import { parse } from "papaparse";
 
 import DataCategorySelect from "~/features/common/dropdown/DataCategorySelect";
 import { getErrorMessage } from "~/features/common/helpers";
@@ -107,6 +110,37 @@ const SharedMonitorConfigForm = ({
     handleResult(result, !config);
   };
 
+  const handleFileUpload = (info: AntUploadChangeParam<AntUploadFile>) => {
+    const { file } = info;
+    if (!file) {
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const csvText = e.target?.result as string;
+        const { data } = parse<string[]>(csvText, {
+          skipEmptyLines: true,
+          header: false,
+        });
+
+        // Transform CSV data into rules format
+        const rules = data.map(([regex, dataCategory]) => ({
+          regex,
+          dataCategory,
+        }));
+
+        // Update form with new rules
+        form.setFieldValue("rules", rules);
+        toast(successToastParams("CSV rules imported successfully"));
+      } catch (error) {
+        toast(errorToastParams("Failed to parse CSV file"));
+      }
+    };
+    reader.readAsText(file as any);
+  };
+
   return (
     <>
       <BackButtonNonLink onClick={onBackClick} className="pt-3" />
@@ -165,7 +199,12 @@ const SharedMonitorConfigForm = ({
                   Regex patterns
                 </CustomTypography.Title>
                 {!config && (
-                  <AntUpload onChange={(e) => console.log("change", e)}>
+                  <AntUpload
+                    accept=".csv"
+                    showUploadList={false}
+                    beforeUpload={() => false}
+                    onChange={handleFileUpload}
+                  >
                     <AntButton icon={<Icons.Upload />} iconPosition="end">
                       Upload CSV
                     </AntButton>

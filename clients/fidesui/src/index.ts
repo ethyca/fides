@@ -23,6 +23,7 @@ export type {
   TabsProps as AntTabsProps,
   TagProps as AntTagProps,
   TooltipProps as AntTooltipProps,
+  UploadFile as AntUploadFile,
   GetProps,
   InputRef,
   RadioChangeEvent,
@@ -46,6 +47,7 @@ export {
   List as AntList,
   Menu as AntMenu,
   message as AntMessage,
+  Modal as AntModal,
   Radio as AntRadio,
   Row as AntRow,
   Skeleton as AntSkeleton,
@@ -55,6 +57,7 @@ export {
   Table as AntTable,
   Tabs as AntTabs,
   Tooltip as AntTooltip,
+  Upload as AntUpload,
 } from "antd/lib";
 export type {
   BreadcrumbItemType as AntBreadcrumbItemType,
@@ -65,6 +68,7 @@ export type {
   BaseOptionType as AntBaseOptionType,
   DefaultOptionType as AntDefaultOptionType,
 } from "antd/lib/select";
+export type { UploadChangeParam as AntUploadChangeParam } from "antd/lib/upload";
 
 // Higher-order components
 export {
