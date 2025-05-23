@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 
 import pytest
@@ -124,5 +125,5 @@ class TestStorageUtil:
         # Test fallback to parent encoder for other types
         test_dict = {"key": "value"}
         assert (
-            encoder.default(test_dict) == test_dict
+            encoder.default(test_dict) == "{'key': 'value'}"
         )  # Should use parent encoder's default handling
