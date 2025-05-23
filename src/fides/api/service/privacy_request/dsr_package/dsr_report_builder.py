@@ -41,9 +41,7 @@ class DsrReportBuilder:
 
         # Jinja template environment initialization
         def pretty_print(value: str, indent: int = 4) -> str:
-            return json.dumps(
-                value, indent=indent, default=StorageJSONEncoder().default
-            )
+            return json.dumps(value, indent=indent, cls=StorageJSONEncoder)
 
         jinja2.filters.FILTERS["pretty_print"] = pretty_print
         self.template_loader = Environment(
@@ -116,6 +114,37 @@ class DsrReportBuilder:
         detail_links = {}
         for index, item in enumerate(rows, 1):
             detail_url = f"{index}.html"
+
+            # Handle attachments in the item if they exist
+            if "attachments" in item and isinstance(item["attachments"], list):
+                for attachment in item["attachments"]:
+                    file_name = attachment.get("file_name", "unknown")
+                    content = attachment.get("content")
+                    content_type = attachment.get("content_type", "")
+
+                    if content:
+                        # Save to top-level attachments directory
+                        if content_type.startswith("text/"):
+                            if isinstance(content, bytes):
+                                content = content.decode("utf-8")
+                            self._add_file(f"attachments/{file_name}", content)
+                        else:
+                            if not isinstance(content, bytes):
+                                content = content.encode("utf-8")
+                            self.out.writestr(f"attachments/{file_name}", content)
+
+                        # Also save to the manual webhook directory
+                        if content_type.startswith("text/"):
+                            self._add_file(
+                                f"data/{dataset_name}/{collection_name}/{file_name}",
+                                content,
+                            )
+                        else:
+                            self.out.writestr(
+                                f"data/{dataset_name}/{collection_name}/{file_name}",
+                                content,
+                            )
+
             self._add_file(
                 f"data/{dataset_name}/{collection_name}/{index}.html",
                 self._populate_template(
@@ -135,6 +164,48 @@ class DsrReportBuilder:
                 collection_name,
                 None,
                 detail_links,
+            ),
+        )
+
+    def _add_attachments(self, attachments: List[Dict[str, Any]]) -> None:
+        """
+        Generates an attachments directory with an index page and adds the attachments to the zip file.
+        """
+        if not attachments or not isinstance(attachments, list):
+            return
+
+        # Create attachment links for the index page
+        attachment_links = {}
+        for attachment in attachments:
+            if not isinstance(attachment, dict):
+                continue
+
+            file_name = attachment.get("file_name", "unknown")
+            content_type = attachment.get("content_type", "")
+            attachment_links[file_name] = f"{file_name}"
+
+            # Add the attachment content to the zip file
+            content = attachment.get("content")
+            if content:
+                # For text-based files, we need to encode them
+                if content_type.startswith("text/"):
+                    if isinstance(content, bytes):
+                        content = content.decode("utf-8")
+                    self._add_file(f"attachments/{file_name}", content)
+                # For binary files, write them directly
+                else:
+                    if not isinstance(content, bytes):
+                        content = content.encode("utf-8")
+                    self.out.writestr(f"attachments/{file_name}", content)
+
+        # Generate attachments index page using the attachments index template
+        self._add_file(
+            "attachments/index.html",
+            self._populate_template(
+                "templates/attachments_index.html",
+                "Attachments",
+                "Files attached to this privacy request",
+                attachment_links,
             ),
         )
 
@@ -159,6 +230,12 @@ class DsrReportBuilder:
             # pre-process data to split the dataset:collection keys
             datasets: Dict[str, Any] = defaultdict(lambda: defaultdict(list))
             for key, rows in self.dsr_data.items():
+                if key == "attachments":
+                    # Handle attachments separately
+                    self._add_attachments(rows)
+                    self.main_links["Attachments"] = "attachments/index.html"
+                    continue
+
                 parts = key.split(":", 1)
                 dataset_name, collection_name = (
                     parts if len(parts) > 1 else ("manual", parts[0])

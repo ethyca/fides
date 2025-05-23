@@ -20,6 +20,11 @@ from fides.api.common_exceptions import (
 from fides.api.db.session import get_db_session
 from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph import DatasetGraph
+from fides.api.models.attachment import (
+    Attachment,
+    AttachmentReferenceType,
+    AttachmentType,
+)
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.connectionconfig import AccessLevel, ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
@@ -82,6 +87,38 @@ class ManualWebhookResults(FidesSchema):
     proceed: bool
 
 
+def get_attachments_content(
+    db: Session,
+    loaded_attachments: List[Attachment],
+) -> List[Dict[str, Any]]:
+    """
+    Retrieves all attachments associated with a privacy request that are marked to be included with the access package.
+    Returns a list of dictionaries containing attachment metadata, content, and download URL.
+    """
+    attachments = []
+    for attachment in loaded_attachments:
+        if attachment.attachment_type == AttachmentType.include_with_access_package:
+            # Get size and content using retrieve_attachment_content
+            size, content = attachment.retrieve_attachment_content()
+
+            # Get download URL using retrieve_attachment
+            _, url = attachment.retrieve_attachment()
+
+            attachments.append(
+                {
+                    "file_name": attachment.file_name,
+                    "file_size": size,
+                    "content": content,
+                    "download_url": url,
+                    "content_type": attachment.content_type,
+                }
+            )
+    logger.info(
+        f"Attachments: {[(a.file_name, a.content_type) for a in loaded_attachments]}"
+    )
+    return attachments
+
+
 def get_manual_webhook_access_inputs(
     db: Session, privacy_request: PrivacyRequest, policy: Policy
 ) -> ManualWebhookResults:
@@ -98,9 +135,32 @@ def get_manual_webhook_access_inputs(
 
     try:
         for manual_webhook in AccessManualWebhook.get_enabled(db, ActionType.access):
-            manual_inputs[manual_webhook.connection_config.key] = [
-                privacy_request.get_manual_webhook_access_input_strict(manual_webhook)
-            ]
+            # Get the manual webhook input data
+            webhook_data = privacy_request.get_manual_webhook_access_input_strict(
+                manual_webhook
+            )
+            # Get any attachments for this webhook
+            webhook_attachments = privacy_request.get_access_manual_webhook_attachments(
+                db, manual_webhook.id
+            )
+            logger.info(webhook_attachments)
+            if webhook_attachments:
+                logger.info("GETTING ATTACHMENTS")
+                # Load attachments from database to ensure they have their configs
+                loaded_attachments = []
+                for webhook_attachment in webhook_attachments:
+                    loaded_attachment = db.query(Attachment).get(webhook_attachment.id)
+                    if loaded_attachment and loaded_attachment.config is not None:
+                        loaded_attachments.append(loaded_attachment)
+                    else:
+                        logger.error(
+                            f"Could not load attachment {webhook_attachment.id} or config is None"
+                        )
+                webhook_data["attachments"] = get_attachments_content(
+                    db, loaded_attachments
+                )
+            manual_inputs[manual_webhook.connection_config.key] = [webhook_data]
+
     except (
         NoCachedManualWebhookEntry,
         ValidationError,
@@ -211,6 +271,20 @@ def upload_access_results(  # pylint: disable=R0912
 ) -> List[str]:
     """Process the data uploads after the access portion of the privacy request has completed"""
     download_urls: List[str] = []
+    logger.info(privacy_request.attachments)
+    all_attachments = privacy_request.attachments
+    # Remove manual webhook attachments from the list of attachments
+    # This is done because the manual webhook attachments are already included in the manual_data
+    removed_manual_webhook_attachments = [
+        attachment
+        for attachment in all_attachments
+        if AttachmentReferenceType.access_manual_webhook
+        not in [ref.reference_type for ref in attachment.references]
+    ]
+    attachments = get_attachments_content(session, removed_manual_webhook_attachments)
+    logger.info(
+        f"{len(attachments)} attachments found for privacy request {privacy_request.id}"
+    )
     if not access_result:
         logger.info("No results returned for access request")
 
@@ -231,9 +305,9 @@ def upload_access_results(  # pylint: disable=R0912
             )
         )
 
-        filtered_results.update(
-            manual_data
-        )  # Add manual data directly to each upload packet
+        filtered_results.update(manual_data)
+        if attachments:
+            filtered_results["attachments"] = attachments
         rule_filtered_results[rule.key] = filtered_results
 
         logger.info(

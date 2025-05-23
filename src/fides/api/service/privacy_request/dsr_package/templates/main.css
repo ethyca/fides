@@ -35,7 +35,7 @@ h1 {
     margin-bottom: 24px;
     width: 100%;
     display: flex;
-    justify-content: center; 
+    justify-content: center;
 }
 
 .header div {
@@ -176,4 +176,14 @@ h1 {
 
 a {
     text-decoration: none;
+}
+
+.attachment-link {
+    color: var(--text-color);
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.attachment-link:hover {
+    opacity: 0.8;
 }
