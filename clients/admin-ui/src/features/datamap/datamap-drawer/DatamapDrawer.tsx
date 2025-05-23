@@ -1,4 +1,3 @@
-import { DataFlowAccordion } from "common/system-data-flow/DataFlowAccordion";
 import {
   AntButton as Button,
   Box,
@@ -10,6 +9,7 @@ import {
 } from "fidesui";
 import React, { useMemo } from "react";
 
+import { DataFlowAccordion } from "~/features/common/system-data-flow/DataFlowAccordion";
 import { usePrivacyDeclarationData } from "~/features/system/privacy-declarations/hooks";
 import PrivacyDeclarationManager from "~/features/system/privacy-declarations/PrivacyDeclarationManager";
 import { useGetSystemByFidesKeyQuery } from "~/features/system/system.slice";

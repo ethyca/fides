@@ -6,7 +6,7 @@ import DatamapGraph from "~/features/datamap/DatamapGraph";
 
 import { DatamapRow } from "./datamap.slice";
 import DatamapTableContext from "./datamap-table/DatamapTableContext";
-import { Link, SetSelectedSystemId, SystemNode } from "./types";
+import { Link, SystemNode } from "./types";
 
 const useSpatialDatamap = (rows: Row<DatamapRow>[]) => {
   const systemKeysFromFilteredRows = useMemo(
@@ -73,8 +73,15 @@ const useSpatialDatamap = (rows: Row<DatamapRow>[]) => {
   };
 };
 
-type SpatialDatamapProps = object & SetSelectedSystemId;
-const SpatialDatamap = ({ setSelectedSystemId }: SpatialDatamapProps) => {
+type SpatialDatamapProps = {
+  setSelectedSystemId: (id: string) => void;
+  selectedSystemId?: string;
+};
+
+const SpatialDatamap = ({
+  setSelectedSystemId,
+  selectedSystemId,
+}: SpatialDatamapProps) => {
   const { tableInstance } = useContext(DatamapTableContext);
 
   if (!tableInstance) {
@@ -89,7 +96,11 @@ const SpatialDatamap = ({ setSelectedSystemId }: SpatialDatamapProps) => {
 
   return (
     <Box boxSize="100%" minHeight="600px" position="relative">
-      <DatamapGraph data={data} setSelectedSystemId={setSelectedSystemId} />
+      <DatamapGraph
+        data={data}
+        setSelectedSystemId={setSelectedSystemId}
+        selectedSystemId={selectedSystemId}
+      />
     </Box>
   );
 };

@@ -1,6 +1,3 @@
-import { FieldTypes } from "common/custom-fields";
-import { getErrorMessage, isErrorResult } from "common/helpers";
-import { useAlert } from "common/hooks";
 import {
   Modal,
   ModalBody,
@@ -12,6 +9,9 @@ import { Formik } from "formik";
 import { useState } from "react";
 import * as Yup from "yup";
 
+import { FieldTypes } from "~/features/common/custom-fields";
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { useAlert } from "~/features/common/hooks";
 import { CustomFieldForm } from "~/features/custom-fields/CustomFieldForm";
 import {
   useAddCustomFieldDefinitionMutation,
