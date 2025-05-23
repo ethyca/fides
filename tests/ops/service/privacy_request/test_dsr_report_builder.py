@@ -61,7 +61,7 @@ class TestDsrReportBuilder:
         with zipfile.ZipFile(report) as zip_file:
             # Check welcome page content
             welcome_content = zip_file.read("welcome.html").decode("utf-8")
-            assert "DSR Report" in welcome_content
+            assert "Your requested data" in welcome_content
             assert "dataset1" in welcome_content
 
             # Check dataset index content
