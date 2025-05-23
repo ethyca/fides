@@ -1,12 +1,13 @@
 import {
+  AntButton as Button,
   AntFlex as Flex,
   AntForm as Form,
   AntInput as Input,
+  AntSpace as Space,
   AntTooltip as Tooltip,
   AntTypography as Typography,
 } from "fidesui";
 
-import ClipboardButton from "~/features/common/ClipboardButton";
 import DaysLeftTag from "~/features/common/DaysLeftTag";
 import { useFeatures } from "~/features/common/features";
 import RequestStatusBadge from "~/features/common/RequestStatusBadge";
@@ -14,6 +15,7 @@ import RequestType from "~/features/common/RequestType";
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 import { PrivacyRequestStatus as ApiPrivacyRequestStatus } from "~/types/api/models/PrivacyRequestStatus";
 
+import ClipboardButton from "../common/ClipboardButton";
 import RequestAttachments from "./attachments/RequestAttachments";
 import RequestCustomFields from "./RequestCustomFields";
 import RequestDetailsRow from "./RequestDetailsRow";
@@ -79,8 +81,14 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
       <Form layout="vertical">
         <Form.Item label="Request ID:" className="mb-4">
           <Flex gap={1}>
-            <Input readOnly value={id} data-testid="request-detail-value-id" />
-            <ClipboardButton copyText={id} size="small" />
+            <Space.Compact style={{ width: "100%" }}>
+              <Input
+                readOnly
+                value={id}
+                data-testid="request-detail-value-id"
+              />
+              <Button icon={<ClipboardButton copyText={id} />} />
+            </Space.Compact>
           </Flex>
         </Form.Item>
         <Form.Item label="Policy key:" className="mb-4">

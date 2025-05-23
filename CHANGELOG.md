@@ -21,7 +21,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.62.0...main)
 
-
+### Added
+- Added ability to add internal comments to privacy requests [#6165](https://github.com/ethyca/fides/pull/6165)
 
 
 ## [2.62.0](https://github.com/ethyca/fides/compare/2.61.1...2.62.0)
