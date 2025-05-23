@@ -32,7 +32,7 @@ export const debounce = (fn: (props?: any) => void, ms = 0) => {
 };
 
 export const formatDate = (value: string | number | Date): string =>
-  format(new Date(value), "MMMM d, y, kk:mm:ss z");
+  format(new Date(value), "MMMM d, y, KK:mm:ss aaa z");
 
 export const utf8ToB64 = (str: string): string =>
   window.btoa(unescape(encodeURIComponent(str)));
