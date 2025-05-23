@@ -1268,8 +1268,6 @@ class PrivacyRequest(
         """
         if not self.policy.get_rules_for_action(action_type=ActionType.access):
             return None
-        logger.info(f"Saving filtered access results for privacy request {self.id}")
-        logger.info(f"Results: {results}")
         self.filtered_final_upload = results
         self.save(db)
 
