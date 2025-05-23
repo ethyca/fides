@@ -144,6 +144,7 @@ def generic_retrieve_from_s3(
     Returns:
         Tuple containing (file_size, presigned_url_or_content)
     """
+    logger.info("Retrieving S3 object: {}", file_key)
     s3_client = get_s3_client(auth_method, storage_secrets)
 
     try:
