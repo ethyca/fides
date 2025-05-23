@@ -5,23 +5,30 @@ import SharedMonitorConfigForm from "~/features/monitors/SharedMonitorConfigForm
 import SharedMonitorConfigTable from "~/features/monitors/SharedMonitorConfigTable";
 import { SharedMonitorConfig } from "~/types/api";
 
+enum SharedConfigModalState {
+  MAIN_VIEW = "main",
+  FORM_VIEW = "form",
+}
+
 const SharedConfigModal = () => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
-
-  const [formIsOpen, setFormIsOpen] = useState(false);
 
   const [configToEdit, setConfigToEdit] = useState<
     SharedMonitorConfig | undefined
   >(undefined);
 
+  const [modalState, setModalState] = useState<SharedConfigModalState>(
+    SharedConfigModalState.MAIN_VIEW,
+  );
+
   const handleRowClick = (row: SharedMonitorConfig) => {
     setConfigToEdit(row);
-    setFormIsOpen(true);
+    setModalState(SharedConfigModalState.FORM_VIEW);
     setModalIsOpen(true);
   };
 
   const resetForm = () => {
-    setFormIsOpen(false);
+    setModalState(SharedConfigModalState.MAIN_VIEW);
     setConfigToEdit(undefined);
   };
 
@@ -48,14 +55,15 @@ const SharedConfigModal = () => {
         centered
         width={768}
       >
-        {formIsOpen ? (
+        {modalState === SharedConfigModalState.FORM_VIEW && (
           <SharedMonitorConfigForm
             config={configToEdit}
             onBackClick={resetForm}
           />
-        ) : (
+        )}
+        {modalState === SharedConfigModalState.MAIN_VIEW && (
           <SharedMonitorConfigTable
-            onNewClick={() => setFormIsOpen(true)}
+            onNewClick={() => setModalState(SharedConfigModalState.FORM_VIEW)}
             onRowClick={handleRowClick}
           />
         )}

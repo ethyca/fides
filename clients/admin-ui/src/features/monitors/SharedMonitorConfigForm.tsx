@@ -1,9 +1,11 @@
 import {
   AntButton,
   AntCol,
+  AntFlex,
   AntForm,
   AntInput,
   AntRow,
+  AntUpload,
   Icons,
   useToast,
 } from "fidesui";
@@ -158,9 +160,18 @@ const SharedMonitorConfigForm = ({
         >
           {(fields, { add, remove }, { errors }) => (
             <>
-              <CustomTypography.Title level={3} className="pb-4">
-                Regex patterns
-              </CustomTypography.Title>
+              <AntFlex justify="space-between">
+                <CustomTypography.Title level={3} className="pb-4">
+                  Regex patterns
+                </CustomTypography.Title>
+                {!config && (
+                  <AntUpload onChange={(e) => console.log("change", e)}>
+                    <AntButton icon={<Icons.Upload />} iconPosition="end">
+                      Upload CSV
+                    </AntButton>
+                  </AntUpload>
+                )}
+              </AntFlex>
               {fields.map(({ key, name, ...field }, idx) => (
                 <AntRow key={key} gutter={8} align="middle">
                   <AntCol span={11}>
