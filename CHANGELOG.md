@@ -21,7 +21,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.62.0...main)
 
-
+### Fixed
+- Fixed missing "am/pm" in the formatted dates [#6145](https://github.com/ethyca/fides/pull/6145)
 
 
 ## [2.62.0](https://github.com/ethyca/fides/compare/2.61.1...2.62.0)
