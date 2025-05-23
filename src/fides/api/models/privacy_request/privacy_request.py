@@ -1268,6 +1268,7 @@ class PrivacyRequest(
         """
         if not self.policy.get_rules_for_action(action_type=ActionType.access):
             return None
+
         self.filtered_final_upload = results
         self.save(db)
 
