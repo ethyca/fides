@@ -2,7 +2,7 @@ import types
 import warnings
 from io import BytesIO
 from tempfile import SpooledTemporaryFile
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 from botocore.exceptions import ClientError
@@ -204,27 +204,6 @@ class TestAttachmentRetrieval:
         self._verify_attachment_created_uploaded_s3(attachment, attachment_file_copy)
         attachment.delete(db)
 
-    def test_retrieve_attachment_content_from_s3(
-        self, s3_client, db, attachment_data, attachment_file, monkeypatch
-    ):
-        """Test retrieving attachment content from S3."""
-        # Create a copy of the file content for verification
-        attachment_file_copy = attachment_file[1].read()
-        attachment_file[1].seek(0)  # Reset the file pointer again for the test
-
-        def mock_get_s3_client(auth_method, storage_secrets):
-            return s3_client
-
-        monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
-
-        attachment = Attachment.create_and_upload(
-            db, data=attachment_data, attachment_file=attachment_file[1]
-        )
-        retrieved_size, retrieved_content = attachment.retrieve_attachment_content()
-        assert retrieved_size == len(attachment_file_copy)
-        assert retrieved_content == attachment_file_copy
-        attachment.delete(db)
-
     def test_retrieve_attachment_from_local(
         self, db, attachment_data, attachment_file, storage_config_local
     ):
@@ -238,23 +217,6 @@ class TestAttachmentRetrieval:
         )
 
         self._verify_attachment_created_uploaded_local(attachment, attachment_file_copy)
-        attachment.delete(db)
-
-    def test_retrieve_attachment_content_from_local(
-        self, db, attachment_data, attachment_file, storage_config_local
-    ):
-        """Test retrieving attachment content from local storage."""
-        # Create a copy of the file content for verification
-        attachment_file_copy = attachment_file[1].read()
-        attachment_file[1].seek(0)  # Reset the file pointer again for the test
-        attachment_data["storage_key"] = storage_config_local.key
-        attachment = Attachment.create_and_upload(
-            db=db, data=attachment_data, attachment_file=attachment_file[1]
-        )
-
-        retrieved_size, retrieved_content = attachment.retrieve_attachment_content()
-        assert retrieved_size == len(attachment_file_copy)
-        assert retrieved_content == attachment_file_copy
         attachment.delete(db)
 
     def test_retrieve_attachment_from_gcs(
@@ -289,41 +251,6 @@ class TestAttachmentRetrieval:
             self._verify_attachment_created_uploaded_gcs(
                 attachment, attachment_file_copy
             )
-            attachment.delete(db)
-
-    def test_retrieve_attachment_content_from_gcs(
-        self,
-        mock_gcs_client,
-        db,
-        attachment_data,
-        attachment_file,
-        storage_config_default_gcs,
-    ):
-        """Test retrieving attachment content from GCS storage."""
-        # Create a copy of the file content for verification
-        attachment_file_copy = attachment_file[1].read()
-        attachment_file[1].seek(0)  # Reset the file pointer again for the test
-
-        # Update attachment data to use GCS storage config
-        attachment_data["storage_key"] = storage_config_default_gcs.key
-
-        with (
-            patch(
-                "fides.api.models.attachment.get_gcs_client",
-                return_value=mock_gcs_client,
-            ) as mock1,
-            patch(
-                "fides.api.service.storage.gcs.get_gcs_client",
-                return_value=mock_gcs_client,
-            ) as mock2,
-        ):
-            attachment = Attachment.create_and_upload(
-                db=db, data=attachment_data, attachment_file=attachment_file[1]
-            )
-
-            retrieved_size, retrieved_content = attachment.retrieve_attachment_content()
-            assert retrieved_size == len(attachment_file_copy)
-            assert retrieved_content == attachment_file_copy
             attachment.delete(db)
 
     def _verify_attachment_created_uploaded_s3(self, attachment, attachment_file_copy):

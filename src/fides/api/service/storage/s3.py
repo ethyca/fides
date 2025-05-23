@@ -170,7 +170,8 @@ def generic_delete_from_s3(
     auth_method: str,
 ) -> None:
     """
-    Deletes arbitrary data from s3
+    Deletes arbitrary data from s3. If file_key ends with a filename, deletes just that file.
+    If file_key ends with a '/', deletes all objects with that prefix.
 
     :param storage_secrets: S3 storage secrets
     :param bucket_name: Name of the S3 bucket
@@ -181,6 +182,17 @@ def generic_delete_from_s3(
 
     s3_client = maybe_get_s3_client(auth_method, storage_secrets)
     try:
+        # If the file_key ends with a '/', it's a folder prefix
+        if file_key.endswith("/"):
+            # List all objects with the prefix, handling pagination
+            paginator = s3_client.get_paginator("list_objects_v2")
+            for page in paginator.paginate(Bucket=bucket_name, Prefix=file_key):
+                if "Contents" in page:
+                    for obj in page["Contents"]:
+                        s3_client.delete_object(Bucket=bucket_name, Key=obj["Key"])
+            return
+
+        # Delete single object
         s3_client.delete_object(Bucket=bucket_name, Key=file_key)
     except Exception as e:
         logger.error("Encountered error while deleting s3 object: {}", e)
