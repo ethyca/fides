@@ -23,15 +23,16 @@ export type PostgreSQLDocsSchema = {
    */
   password?: string | null;
   /**
+   * Indicates whether an SSH tunnel is required for the connection. Enable this option if your PostgreSQL server is behind a firewall and requires SSH tunneling for remote connections.
+   */
+  ssh_required?: boolean;
+  /**
    * The name of the specific database within the database server that you want to connect to.
    */
-  dbname: string;
+  dbname?: string | null;
   /**
    * The default schema to be used for the database connection (defaults to public).
    */
   db_schema?: string | null;
-  /**
-   * Indicates whether an SSH tunnel is required for the connection. Enable this option if your PostgreSQL server is behind a firewall and requires SSH tunneling for remote connections.
-   */
-  ssh_required?: boolean;
+  ssl_mode?: string | null;
 };

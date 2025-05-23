@@ -3,6 +3,7 @@
 /* eslint-disable */
 
 import type { Classification } from "./Classification";
+import type { Constraint } from "./Constraint";
 import type { DiffStatus } from "./DiffStatus";
 import type { StagedResourceTypeValue } from "./StagedResourceTypeValue";
 
@@ -92,6 +93,7 @@ export type StagedResourceAPIResponse = {
   data_type?: string | null;
   fields?: Array<string>;
   num_rows?: number | null;
+  constraints?: Array<Constraint>;
   tables?: Array<string>;
   schemas?: Array<string>;
   system?: string | null;

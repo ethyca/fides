@@ -1,29 +1,31 @@
 import {
   Page_UserResponse_,
   ScopeRegistryEnum,
-  UserCreate,
+  UserCreateExtended,
   UserCreateResponse,
   UserPasswordReset,
   UserPermissionsCreate,
   UserPermissionsEdit,
   UserPermissionsPlusResponse,
   UserResponse,
+  UserResponseExtended,
   UserUpdate,
 } from "~/types/api";
 
 // Now that we have generated API types, this file can mostly re-export those interfaces.
 export type {
-  UserCreate,
+  UserCreateExtended,
   UserCreateResponse,
   UserPermissionsCreate,
   UserPermissionsPlusResponse,
   UserResponse,
+  UserResponseExtended,
   UserUpdate,
 };
 
 export interface UsersResponse extends Page_UserResponse_ {}
 
-export interface User extends UserResponse {}
+export interface User extends UserResponseExtended {}
 
 export interface UserPermissions extends UserPermissionsPlusResponse {}
 

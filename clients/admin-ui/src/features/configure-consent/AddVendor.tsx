@@ -121,15 +121,8 @@ const AddVendor = ({
     const transformedDeclarations = values.privacy_declarations
       .filter((dec) => dec.consent_use !== EMPTY_DECLARATION.consent_use)
       .flatMap((dec) => {
-        // if a cookie from the form already exists on the declaration with full
-        // information from the dictionary, use that; otherwise, make the cookie
-        // name from the form into a new cookie
-        const transformedCookies = dec.cookieNames.map((name) => {
-          const existingCookie = dec.cookies.find((c) => c.name === name);
-          return existingCookie ?? { name, path: "/" };
-        });
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        const { cookieNames, consent_use, ...rest } = dec;
+        const { consent_use, ...rest } = dec;
 
         // for "marketing", we create two data uses on the backend
         if (dec.consent_use === "marketing" && !dec.data_use) {
@@ -139,13 +132,11 @@ const AddVendor = ({
           ].map((dataUse) => ({
             ...rest,
             data_use: dataUse,
-            cookies: transformedCookies,
           }));
         }
         return {
           ...rest,
           data_use: dec.data_use ? dec.data_use : dec.consent_use!,
-          cookies: transformedCookies,
         };
       });
 

@@ -304,16 +304,7 @@ describe("System management page", () => {
       cy.wait("@getFidesctlSystem");
       cy.getByTestId("input-name").type("edit");
       cy.getByTestId("save-btn").click();
-      cy.wait("@putSystem").then((interception) => {
-        const { body } = interception.request;
-        expect(body.cookies).to.eql([
-          {
-            name: "test_cookie",
-            path: "/",
-            domain: "https://www.example.com",
-          },
-        ]);
-      });
+      cy.wait("@putSystem");
     });
 
     it.skip("Can go through the edit flow", () => {

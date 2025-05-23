@@ -13,7 +13,7 @@ import {
 
 import {
   User,
-  UserCreate,
+  UserCreateExtended,
   UserCreateResponse,
   UserPasswordResetParams,
   UserPermissions,
@@ -102,7 +102,7 @@ const userApi = baseApi.injectEndpoints({
       query: (id) => ({ url: `user/${id}/permission` }),
       providesTags: ["User"],
     }),
-    createUser: build.mutation<UserCreateResponse, UserCreate>({
+    createUser: build.mutation<UserCreateResponse, UserCreateExtended>({
       query: (user) => ({
         url: "user",
         method: "POST",

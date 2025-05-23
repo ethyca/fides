@@ -1,11 +1,10 @@
 import { AntTooltip as Tooltip, Flex, Text } from "fidesui";
 
 import { STATUS_INDICATOR_MAP } from "~/features/data-discovery-and-detection/statusIndicators";
-
-import { MonitorSystemAggregate } from "../../types";
+import { SystemStagedResourcesAggregateRecord } from "~/types/api";
 
 interface DiscoveredSystemStatusCellProps {
-  system: MonitorSystemAggregate;
+  system: SystemStagedResourcesAggregateRecord;
 }
 
 export const DiscoveredSystemStatusCell = ({

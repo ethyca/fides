@@ -30,20 +30,16 @@ import {
 } from "~/features/config-settings/config-settings.slice";
 import { useGetEmailInviteStatusQuery } from "~/features/messaging/messaging.slice";
 import { useGetAllOpenIDProvidersQuery } from "~/features/openid-authentication/openprovider.slice";
+import { UserCreateExtended } from "~/types/api";
 
 import PasswordManagement from "./PasswordManagement";
-import { User, UserCreate, UserCreateResponse } from "./types";
+import { User, UserCreateResponse } from "./types";
 import {
   shouldShowPasswordField,
   shouldShowPasswordLoginToggle,
   shouldShowPasswordManagement,
 } from "./user-form-helpers";
 import { selectActiveUser, setActiveUserId } from "./user-management.slice";
-
-// Extended type for the form with password_login_enabled
-interface UserCreateExtended extends UserCreate {
-  password_login_enabled?: boolean | null;
-}
 
 const defaultInitialValues: UserCreateExtended = {
   username: "",

@@ -8,5 +8,6 @@ export enum SystemType {
   EMAIL = "email",
   MANUAL = "manual",
   SAAS = "saas",
+  SYSTEM = "system",
   WEBSITE = "website",
 }

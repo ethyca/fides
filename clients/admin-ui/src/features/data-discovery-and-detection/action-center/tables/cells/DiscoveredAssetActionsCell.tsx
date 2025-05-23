@@ -55,14 +55,16 @@ export const DiscoveredAssetActionsCell = ({
   } = asset;
 
   const handleAdd = async () => {
-    const systemToLink = userAssignedSystemKey || systemKey;
-    const href = `${SYSTEM_ROUTE}/configure/${systemToLink}#assets`;
     const result = await addMonitorResultAssetsMutation({
       urnList: [urn],
     });
     if (isErrorResult(result)) {
       toast(errorToastParams(getErrorMessage(result.error)));
     } else {
+      const promotedSystemKey = result.data?.[0]?.promoted_system_key;
+      const systemToLink =
+        promotedSystemKey || userAssignedSystemKey || systemKey;
+      const href = `${SYSTEM_ROUTE}/configure/${systemToLink}#assets`;
       toast(
         successToastParams(
           successToastContent(

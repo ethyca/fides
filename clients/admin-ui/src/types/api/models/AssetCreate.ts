@@ -10,7 +10,7 @@ export type AssetCreate = {
   description?: string | null;
   name: string;
   asset_type: string;
-  domain: string;
+  domain?: string | null;
   base_url?: string | null;
   locations?: Array<string>;
 };

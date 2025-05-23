@@ -7,6 +7,7 @@
  */
 export type ManualWebhookField = {
   pii_field: string;
+  types?: Array<"string" | "file">;
   dsr_package_label?: string | null;
   data_categories?: Array<string> | null;
 };
