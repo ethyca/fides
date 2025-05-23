@@ -2,7 +2,7 @@ import { Row } from "@tanstack/react-table";
 import { Box } from "fidesui";
 import React, { useContext, useMemo } from "react";
 
-import CytoscapeGraph from "~/features/datamap/CytoscapeGraph";
+import DatamapGraph from "~/features/datamap/DatamapGraph";
 
 import { DatamapRow } from "./datamap.slice";
 import DatamapTableContext from "./datamap-table/DatamapTableContext";
@@ -89,7 +89,7 @@ const SpatialDatamap = ({ setSelectedSystemId }: SpatialDatamapProps) => {
 
   return (
     <Box boxSize="100%" minHeight="600px" position="relative">
-      <CytoscapeGraph data={data} setSelectedSystemId={setSelectedSystemId} />
+      <DatamapGraph data={data} setSelectedSystemId={setSelectedSystemId} />
     </Box>
   );
 };
