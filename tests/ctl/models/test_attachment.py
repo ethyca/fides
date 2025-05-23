@@ -1,4 +1,3 @@
-import types
 import warnings
 from io import BytesIO
 from tempfile import SpooledTemporaryFile
