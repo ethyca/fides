@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from fides.api.schemas.redis_cache import Identity
+from fides.api.schemas.redis_cache import Identity, UnverifiedIdentity
 
 
 class TestIdentitySchema:
@@ -258,3 +258,26 @@ class TestIdentitySchema:
     ):
         identity = Identity(**identity_data)
         assert identity.labeled_dict(include_default_labels=True) == expected_dict
+
+
+class TestUnverifiedIdentitySchema:
+    def test_error_email_identity(self):
+        with pytest.raises(ValueError) as exc:
+            UnverifiedIdentity(email="user@example.com")
+        assert 'Identity "email" not allowed' in str(exc.value)
+
+    def test_error_phone_number_identity(self):
+        with pytest.raises(ValueError) as exc:
+            UnverifiedIdentity(phone_number="+15558675309")
+        assert 'Identity "phone_number" not allowed' in str(exc.value)
+
+    def test_valid_custom_identity(self):
+        UnverifiedIdentity(customer_id={"label": "Customer ID", "value": "123"})
+
+    def test_invalid_custom_identity(self):
+        with pytest.raises(ValueError) as exc:
+            UnverifiedIdentity(customer_id="123")
+        assert (
+            str(exc.value)
+            == 'Custom identity "customer_id" must be an instance of LabeledIdentity (e.g. {"label": "Field label", "value": "123"})'
+        )

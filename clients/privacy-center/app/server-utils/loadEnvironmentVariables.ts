@@ -1,4 +1,7 @@
-import { PrivacyCenterSettings } from "~/app/server-utils/PrivacyCenterSettings";
+import {
+  LOG_LEVEL_LABELS,
+  PrivacyCenterSettings,
+} from "~/app/server-utils/PrivacyCenterSettings";
 import type { ConsentMethod } from "~/types/api";
 import type {
   ConsentFlagType,
@@ -11,6 +14,24 @@ import type {
  * environment variable.
  */
 export const DEFAULT_FIDES_JS_MAX_AGE_SECONDS = 60 * 60;
+
+const defaultMissingExperienceBehavior = (
+  setting: string | undefined,
+): PrivacyCenterSettings["MISSING_EXPERIENCE_BEHAVIOR"] => {
+  if (setting === "throw") {
+    return "throw";
+  }
+
+  return "empty_experience";
+};
+
+const defaultLogLevel = (setting: any): PrivacyCenterSettings["LOG_LEVEL"] => {
+  if (LOG_LEVEL_LABELS.includes(setting)) {
+    return setting;
+  }
+
+  return "info";
+};
 
 const loadEnvironmentVariables = () => {
   // Load environment variables
@@ -34,6 +55,10 @@ const loadEnvironmentVariables = () => {
     FIDES_JS_MAX_AGE_SECONDS:
       Number(process.env.FIDES_PRIVACY_CENTER__FIDES_JS_MAX_AGE_SECONDS) ||
       DEFAULT_FIDES_JS_MAX_AGE_SECONDS,
+    MISSING_EXPERIENCE_BEHAVIOR: defaultMissingExperienceBehavior(
+      process.env.FIDES_PRIVACY_CENTER__MISSING_EXPERIENCE_BEHAVIOR,
+    ),
+    LOG_LEVEL: defaultLogLevel(process.env.FIDES_PRIVACY_CENTER__LOG_LEVEL),
 
     // Overlay options
     DEBUG: process.env.FIDES_PRIVACY_CENTER__DEBUG

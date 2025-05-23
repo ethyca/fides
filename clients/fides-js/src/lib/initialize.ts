@@ -23,6 +23,7 @@ import {
   UserGeolocation,
 } from "./consent-types";
 import {
+  applyOverridesToConsent,
   constructFidesRegionString,
   experienceIsValid,
   getOverrideValidatorMapByType,
@@ -425,8 +426,14 @@ export const initialize = async ({
   }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  const { consent, fides_meta, identity, fides_string, tcf_consent } =
-    fides.cookie;
+  const { fides_meta, identity, fides_string, tcf_consent } = fides.cookie;
+  const consent = applyOverridesToConsent(
+    fides.cookie.consent,
+    fides.experience?.non_applicable_privacy_notices,
+    fides.experience?.privacy_notices,
+    options.fidesConsentFlagType ?? undefined,
+    options.fidesConsentNonApplicableFlagMode ?? undefined,
+  );
 
   // return an object with the updated Fides values
   return {
