@@ -14,11 +14,11 @@ export const getLayoutedElements = (
   // Clear the layout
   dagreGraph.setGraph({
     rankdir: direction,
-    ranksep: 100, // Increase vertical spacing between nodes
-    nodesep: 80, // Increase horizontal spacing between nodes
-    edgesep: 80, // Edge separation
-    marginx: 40, // Margin on x axis
-    marginy: 40, // Margin on y axis
+    ranksep: 10, // Increase vertical spacing between nodes
+    nodesep: 10, // Increase horizontal spacing between nodes
+    edgesep: 10, // Edge separation
+    marginx: 10, // Margin on x axis
+    marginy: 10, // Margin on y axis
   });
 
   // Set node width and height for layout calculation

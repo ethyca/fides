@@ -160,6 +160,7 @@ const datamapApi = baseApi.injectEndpoints({
         method: "GET",
         params: {
           include_deprecated_columns: true,
+          include_gvl_systems: true,
         },
       }),
       providesTags: ["Datamap"],
