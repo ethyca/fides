@@ -1,9 +1,3 @@
-import { isErrorResult } from "common/helpers";
-import { FormGuard } from "common/hooks/useIsAnyFormDirty";
-import { GearLightIcon } from "common/Icon";
-import { DataFlowSystemsDeleteTable } from "common/system-data-flow/DataFlowSystemsDeleteTable";
-import DataFlowSystemsModal from "common/system-data-flow/DataFlowSystemsModal";
-import { errorToastParams, successToastParams } from "common/toast";
 import {
   AccordionButton,
   AccordionIcon,
@@ -21,6 +15,12 @@ import {
 import { Form, Formik, FormikHelpers } from "formik";
 import React, { useEffect, useMemo, useState } from "react";
 
+import { isErrorResult } from "~/features/common/helpers";
+import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
+import { GearLightIcon } from "~/features/common/Icon";
+import { DataFlowSystemsDeleteTable } from "~/features/common/system-data-flow/DataFlowSystemsDeleteTable";
+import DataFlowSystemsModal from "~/features/common/system-data-flow/DataFlowSystemsModal";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   useGetAllSystemsQuery,
   useUpdateSystemMutation,
