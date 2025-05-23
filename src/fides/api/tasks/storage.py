@@ -30,7 +30,7 @@ from fides.api.util.cache import get_cache, get_encryption_cache_key
 from fides.api.util.encryption.aes_gcm_encryption_scheme import (
     encrypt_to_bytes_verify_secrets_length,
 )
-from fides.api.util.storage_util import storage_json_encoder
+from fides.api.util.storage_util import StorageJSONEncoder
 from fides.config import CONFIG
 
 if TYPE_CHECKING:
@@ -75,7 +75,7 @@ def write_to_in_memory_buffer(
     logger.debug("Writing data to in-memory buffer")
 
     if resp_format == ResponseFormat.json.value:
-        json_str = json.dumps(data, indent=2, default=storage_json_encoder)
+        json_str = json.dumps(data, indent=2, default=StorageJSONEncoder().default)
         return BytesIO(
             encrypt_access_request_results(json_str, privacy_request.id).encode(
                 CONFIG.security.encoding

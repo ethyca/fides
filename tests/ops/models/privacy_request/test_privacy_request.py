@@ -1,3 +1,4 @@
+import warnings
 from datetime import datetime, timedelta, timezone
 from io import BytesIO
 from time import sleep
@@ -7,6 +8,7 @@ from uuid import uuid4
 import pytest
 import requests_mock
 from pydantic import ValidationError
+from sqlalchemy import exc as sa_exc
 from sqlalchemy.orm import Session, joinedload
 
 from fides.api.common_exceptions import (
@@ -1147,230 +1149,397 @@ class TestPrivacyRequestCustomIdentities:
         )
 
 
-def test_retrieve_attachments_from_privacy_request(
-    s3_client, db, attachment_data, privacy_request, monkeypatch
-):
-    # Create Attachments
+class TestPrivacyRequestAttachments:
 
-    def mock_get_s3_client(auth_method, storage_secrets):
+    @pytest.fixture
+    def mock_s3_client(self, s3_client, monkeypatch):
+        """Fixture to mock the S3 client for attachment tests"""
+
+        def mock_get_s3_client(auth_method, storage_secrets):
+            return s3_client
+
+        monkeypatch.setattr(
+            "fides.api.service.storage.s3.get_s3_client", mock_get_s3_client
+        )
         return s3_client
 
-    monkeypatch.setattr(
-        "fides.api.service.storage.s3.get_s3_client", mock_get_s3_client
-    )
+    @pytest.fixture
+    def create_attachment(self, db, attachment_data, mock_s3_client):
+        """Fixture to create a single attachment"""
 
-    attachment1 = Attachment.create_and_upload(
-        db=db,
-        data=attachment_data,
-        attachment_file=BytesIO(b"contents of test file 1"),
-    )
-    attachment2 = Attachment.create_and_upload(
-        db=db,
-        data=attachment_data,
-        attachment_file=BytesIO(b"contents of test file 2"),
-    )
-    attachment3 = Attachment.create_and_upload(
-        db=db,
-        data=attachment_data,
-        attachment_file=BytesIO(b"contents of test file 3"),
-    )
-
-    # Associate Attachments with the PrivacyRequest
-    for attachment in [attachment1, attachment2, attachment3]:
-        AttachmentReference.create(
-            db,
-            data={
-                "reference_id": privacy_request.id,
-                "attachment_id": attachment.id,
-                "reference_type": AttachmentReferenceType.privacy_request,
-            },
-        )
-    # Verify that attachments can be retrieved
-    retrieved_request = (
-        db.query(PrivacyRequest).filter_by(id=privacy_request.id).first()
-    )
-    attachments = retrieved_request.attachments
-
-    assert len(attachments) == 3
-    # Verify that the attachments are in the correct order
-    assert attachments[0].id == attachment1.id
-    assert attachments[1].id == attachment2.id
-    assert attachments[2].id == attachment3.id
-
-    # Verify deleting the privacy request deletes the attachments.
-    privacy_request.delete(db)
-    db.commit()
-    assert Attachment.get(db, object_id=attachment1.id) is None
-    assert Attachment.get(db, object_id=attachment2.id) is None
-    assert Attachment.get(db, object_id=attachment3.id) is None
-
-
-def test_privacy_request_get_attachment_by_id(db, attachment, privacy_request):
-    # Associate Attachment with the PrivacyRequest
-    AttachmentReference.create(
-        db,
-        data={
-            "reference_id": privacy_request.id,
-            "attachment_id": attachment.id,
-            "reference_type": AttachmentReferenceType.privacy_request,
-        },
-    )
-
-    retrieved_attachment = privacy_request.get_attachment_by_id(db, attachment.id)
-    assert retrieved_attachment.id == attachment.id
-
-
-def test_privacy_request_delete_attachment_by_id(db, attachment, privacy_request):
-    # Associate Attachment with the PrivacyRequest
-    AttachmentReference.create(
-        db,
-        data={
-            "reference_id": privacy_request.id,
-            "attachment_id": attachment.id,
-            "reference_type": AttachmentReferenceType.privacy_request,
-        },
-    )
-
-    privacy_request.delete_attachment_by_id(db, attachment.id)
-    assert privacy_request.get_attachment_by_id(db, attachment.id) is None
-
-
-def test_retrieve_comments_from_privacy_request(db, comment_data, privacy_request):
-    # Create Comments
-    comment1 = Comment.create(db=db, data=comment_data)
-    comment2 = Comment.create(db=db, data=comment_data)
-    comment3 = Comment.create(db=db, data=comment_data)
-
-    # Associate Comments with the PrivacyRequest
-    for comment in [comment1, comment2, comment3]:
-        CommentReference.create(
-            db,
-            data={
-                "reference_id": privacy_request.id,
-                "comment_id": comment.id,
-                "reference_type": CommentReferenceType.privacy_request,
-            },
-        )
-
-    # Verify that comments can be retrieved
-    retrieved_request = (
-        db.query(PrivacyRequest).filter_by(id=privacy_request.id).first()
-    )
-    comments = retrieved_request.comments
-
-    assert len(comments) == 3
-    # Verify that the comments are in the correct order
-    assert comments[0].id == comment1.id
-    assert comments[1].id == comment2.id
-    assert comments[2].id == comment3.id
-
-    # Verify deleting the privacy request deletes the comments.
-    privacy_request.delete(db)
-    db.commit()
-    assert Comment.get(db, object_id=comment1.id) is None
-    assert Comment.get(db, object_id=comment2.id) is None
-    assert Comment.get(db, object_id=comment3.id) is None
-
-
-def test_privacy_request_get_comment_by_id(db, comment, privacy_request):
-    # Associate Comments with the PrivacyRequest
-    CommentReference.create(
-        db,
-        data={
-            "reference_id": privacy_request.id,
-            "comment_id": comment.id,
-            "reference_type": CommentReferenceType.privacy_request,
-        },
-    )
-
-    # Verify that comments can be retrieved
-    retrieved_comment = privacy_request.get_comment_by_id(db, comment.id)
-
-    assert retrieved_comment.id == comment.id
-
-
-def test_privacy_request_relationship_warnings(
-    s3_client, db, privacy_request, comment, attachment, monkeypatch
-):
-    """Test that no SQLAlchemy relationship warnings occur when creating and accessing PrivacyRequest relationships."""
-    import warnings
-
-    from sqlalchemy import exc as sa_exc
-
-    def mock_get_s3_client(auth_method, storage_secrets):
-        return s3_client
-
-    monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
-
-    with warnings.catch_warnings(record=True) as warning_list:
-        warnings.simplefilter("always")
-
-        # Create attachment reference for privacy request
-        attachment_ref = AttachmentReference.create(
-            db,
-            data={
-                "attachment_id": attachment.id,
-                "reference_id": privacy_request.id,
-                "reference_type": AttachmentReferenceType.privacy_request,
-            },
-        )
-        db.refresh(privacy_request)
-        db.refresh(attachment)
-
-        # Create comment reference for privacy request
-        comment_ref = CommentReference.create(
-            db,
-            data={
-                "comment_id": comment.id,
-                "reference_id": privacy_request.id,
-                "reference_type": CommentReferenceType.privacy_request,
-            },
-        )
-        db.refresh(privacy_request)
-        db.refresh(comment)
-
-        # Test accessing relationships in various ways
-        assert len(privacy_request.attachments) == 1
-        assert len(privacy_request.comments) == 1
-
-        # Query references directly
-        attachment_refs = (
-            db.query(AttachmentReference)
-            .filter(
-                AttachmentReference.reference_id == privacy_request.id,
-                AttachmentReference.reference_type
-                == AttachmentReferenceType.privacy_request,
+        def _create_attachment(contents: bytes = b"test contents"):
+            return Attachment.create_and_upload(
+                db=db,
+                data=attachment_data,
+                attachment_file=BytesIO(contents),
             )
-            .all()
-        )
-        assert len(attachment_refs) == 1
 
-        comment_refs = (
-            db.query(CommentReference)
-            .filter(
-                CommentReference.reference_id == privacy_request.id,
-                CommentReference.reference_type == CommentReferenceType.privacy_request,
+        return _create_attachment
+
+    @pytest.fixture
+    def create_attachment_reference(self, db):
+        """Fixture to create an attachment reference"""
+
+        def _create_reference(
+            reference_id: str, attachment_id: str, reference_type: str
+        ):
+            return AttachmentReference.create(
+                db,
+                data={
+                    "reference_id": reference_id,
+                    "attachment_id": attachment_id,
+                    "reference_type": reference_type,
+                },
             )
-            .all()
-        )
-        assert len(comment_refs) == 1
 
-        # Verify no SQLAlchemy relationship warnings were emitted
-        sqlalchemy_warnings = [
-            w for w in warning_list if issubclass(w.category, sa_exc.SAWarning)
-        ]
+        return _create_reference
+
+    @pytest.fixture
+    def cleanup_attachments(self, db):
+        """Fixture to clean up attachments after tests"""
+
+        def _cleanup(attachments):
+            for attachment in attachments:
+                attachment.delete(db)
+            db.commit()
+
+        return _cleanup
+
+    def test_retrieve_attachments_from_privacy_request(
+        self,
+        db,
+        create_attachment,
+        create_attachment_reference,
+        cleanup_attachments,
+        privacy_request,
+    ):
+        # Create Attachments
+        attachment1 = create_attachment(b"contents of test file 1")
+        attachment2 = create_attachment(b"contents of test file 2")
+        attachment3 = create_attachment(b"contents of test file 3")
+
+        # Associate Attachments with the PrivacyRequest
+        for attachment in [attachment1, attachment2, attachment3]:
+            create_attachment_reference(
+                privacy_request.id,
+                attachment.id,
+                AttachmentReferenceType.privacy_request,
+            )
+
+        # Verify that attachments can be retrieved
+        retrieved_request = (
+            db.query(PrivacyRequest).filter_by(id=privacy_request.id).first()
+        )
+        attachments = retrieved_request.attachments
+
+        assert len(attachments) == 3
+        # Verify that the attachments are in the correct order
+        assert attachments[0].id == attachment1.id
+        assert attachments[1].id == attachment2.id
+        assert attachments[2].id == attachment3.id
+
+        # Verify deleting the privacy request deletes the attachments.
+        privacy_request.delete(db)
+        db.commit()
+        assert Attachment.get(db, object_id=attachment1.id) is None
+        assert Attachment.get(db, object_id=attachment2.id) is None
+        assert Attachment.get(db, object_id=attachment3.id) is None
+
+    def test_privacy_request_get_attachment_by_id(
+        self, db, create_attachment_reference, attachment, privacy_request
+    ):
+        # Associate Attachment with the PrivacyRequest
+        create_attachment_reference(
+            privacy_request.id,
+            attachment.id,
+            AttachmentReferenceType.privacy_request,
+        )
+
+        retrieved_attachment = privacy_request.get_attachment_by_id(db, attachment.id)
+        assert retrieved_attachment.id == attachment.id
+
+    def test_privacy_request_delete_attachment_by_id(
+        self, db, create_attachment_reference, attachment, privacy_request
+    ):
+        # Associate Attachment with the PrivacyRequest
+        create_attachment_reference(
+            privacy_request.id,
+            attachment.id,
+            AttachmentReferenceType.privacy_request,
+        )
+
+        privacy_request.delete_attachment_by_id(db, attachment.id)
+        assert privacy_request.get_attachment_by_id(db, attachment.id) is None
+
+    def test_privacy_request_get_manual_webhook_attachments(
+        self,
+        db,
+        create_attachment,
+        create_attachment_reference,
+        cleanup_attachments,
+        privacy_request,
+        access_manual_webhook,
+    ):
+        # Create Attachments
+        attachment1 = create_attachment(b"contents of test file 1")
+        attachment2 = create_attachment(b"contents of test file 2")
+
+        # Associate Attachments with both the PrivacyRequest and the Access Manual Webhook
+        for attachment in [attachment1, attachment2]:
+            # Create reference to privacy request
+            create_attachment_reference(
+                privacy_request.id,
+                attachment.id,
+                AttachmentReferenceType.privacy_request,
+            )
+            # Create reference to access manual webhook
+            create_attachment_reference(
+                access_manual_webhook.id,
+                attachment.id,
+                AttachmentReferenceType.access_manual_webhook,
+            )
+
+        # Verify that attachments can be retrieved for access manual webhook
+        access_attachments = privacy_request.get_access_manual_webhook_attachments(
+            db, access_manual_webhook.id
+        )
+        assert len(access_attachments) == 2
+        attachment_ids = sorted([a.id for a in access_attachments])
+        access_attachment_ids = sorted([attachment1.id, attachment2.id])
+        assert attachment_ids == access_attachment_ids
+
+        # Create an attachment that's only associated with the privacy request
+        attachment3 = create_attachment(b"contents of test file 3")
+        create_attachment_reference(
+            privacy_request.id,
+            attachment3.id,
+            AttachmentReferenceType.privacy_request,
+        )
+
+        # Verify that attachment3 is not included in the manual webhook attachments
+        access_attachments = privacy_request.get_access_manual_webhook_attachments(
+            db, access_manual_webhook.id
+        )
+        assert len(access_attachments) == 2
+        assert attachment3.id not in [a.id for a in access_attachments]
+
+        # Test erasure manual webhook attachments
+        erasure_attachments = privacy_request.get_erasure_manual_webhook_attachments(
+            db, access_manual_webhook.id
+        )
         assert (
-            len(sqlalchemy_warnings) == 0
-        ), f"SQLAlchemy warnings found: {[str(w.message) for w in sqlalchemy_warnings]}"
+            len(erasure_attachments) == 0
+        )  # No attachments associated with erasure webhook
 
-        # Cleanup
-        if db.query(CommentReference).filter_by(id=comment_ref.id).first():
-            comment_ref.delete(db)
+        # Clean up
+        cleanup_attachments([attachment1, attachment2, attachment3])
+
+    def test_privacy_request_get_manual_webhook_attachments_no_attachments(
+        self, db, privacy_request, access_manual_webhook
+    ):
+        """Test getting manual webhook attachments when none exist"""
+        access_attachments = privacy_request.get_access_manual_webhook_attachments(
+            db, access_manual_webhook.id
+        )
+        assert len(access_attachments) == 0
+
+        erasure_attachments = privacy_request.get_erasure_manual_webhook_attachments(
+            db, access_manual_webhook.id
+        )
+        assert len(erasure_attachments) == 0
+
+    def test_privacy_request_attachment_relationship_warnings(
+        self,
+        s3_client,
+        db,
+        privacy_request,
+        create_attachment,
+        create_attachment_reference,
+        mock_s3_client,
+    ):
+        """Test that no SQLAlchemy relationship warnings occur when creating and accessing PrivacyRequest attachment relationships."""
+        with warnings.catch_warnings(record=True) as warning_list:
+            warnings.simplefilter("always")
+
+            # Create attachment and reference using fixtures
+            attachment = create_attachment(b"test contents")
+            attachment_ref = create_attachment_reference(
+                privacy_request.id,
+                attachment.id,
+                AttachmentReferenceType.privacy_request,
+            )
+            db.refresh(privacy_request)
+            db.refresh(attachment)
+
+            # Test accessing relationships in various ways
+            assert len(privacy_request.attachments) == 1
+
+            # Query references directly
+            attachment_refs = (
+                db.query(AttachmentReference)
+                .filter(
+                    AttachmentReference.reference_id == privacy_request.id,
+                    AttachmentReference.reference_type
+                    == AttachmentReferenceType.privacy_request,
+                )
+                .all()
+            )
+            assert len(attachment_refs) == 1
+
+            # Verify no SQLAlchemy relationship warnings were emitted
+            sqlalchemy_warnings = [
+                w for w in warning_list if issubclass(w.category, sa_exc.SAWarning)
+            ]
+            assert (
+                len(sqlalchemy_warnings) == 0
+            ), f"SQLAlchemy warnings found: {[str(w.message) for w in sqlalchemy_warnings]}"
+
+            # Cleanup
+            if db.query(AttachmentReference).filter_by(id=attachment_ref.id).first():
+                attachment_ref.delete(db)
+                db.commit()
+
+            # Refresh the session to ensure clean state
+            db.expire_all()
+
+
+class TestPrivacyRequestComments:
+    @pytest.fixture
+    def create_comment(self, db, comment_data):
+        """Fixture to create a single comment"""
+
+        def _create_comment(contents: str = "test comment"):
+            comment_data["comment_text"] = contents
+            return Comment.create(db=db, data=comment_data)
+
+        return _create_comment
+
+    @pytest.fixture
+    def create_comment_reference(self, db):
+        """Fixture to create a comment reference"""
+
+        def _create_reference(reference_id: str, comment_id: str, reference_type: str):
+            return CommentReference.create(
+                db,
+                data={
+                    "reference_id": reference_id,
+                    "comment_id": comment_id,
+                    "reference_type": reference_type,
+                },
+            )
+
+        return _create_reference
+
+    @pytest.fixture
+    def cleanup_comments(self, db):
+        """Fixture to clean up comments after tests"""
+
+        def _cleanup(comments):
+            for comment in comments:
+                comment.delete(db)
             db.commit()
 
-        if db.query(AttachmentReference).filter_by(id=attachment_ref.id).first():
-            attachment_ref.delete(db)
-            db.commit()
+        return _cleanup
 
-        # Refresh the session to ensure clean state
-        db.expire_all()
+    def test_retrieve_comments_from_privacy_request(
+        self,
+        db,
+        create_comment,
+        create_comment_reference,
+        cleanup_comments,
+        privacy_request,
+    ):
+        # Create Comments
+        comment1 = create_comment("test comment 1")
+        comment2 = create_comment("test comment 2")
+        comment3 = create_comment("test comment 3")
+
+        # Associate Comments with the PrivacyRequest
+        for comment in [comment1, comment2, comment3]:
+            create_comment_reference(
+                privacy_request.id,
+                comment.id,
+                CommentReferenceType.privacy_request,
+            )
+
+        # Verify that comments can be retrieved
+        retrieved_request = (
+            db.query(PrivacyRequest).filter_by(id=privacy_request.id).first()
+        )
+        comments = retrieved_request.comments
+
+        assert len(comments) == 3
+        # Verify that the comments are in the correct order
+        assert comments[0].id == comment1.id
+        assert comments[1].id == comment2.id
+        assert comments[2].id == comment3.id
+
+        # Verify deleting the privacy request deletes the comments.
+        privacy_request.delete(db)
+        db.commit()
+        assert Comment.get(db, object_id=comment1.id) is None
+        assert Comment.get(db, object_id=comment2.id) is None
+        assert Comment.get(db, object_id=comment3.id) is None
+
+    def test_privacy_request_get_comment_by_id(
+        self, db, create_comment, create_comment_reference, privacy_request
+    ):
+        # Create and associate comment with the PrivacyRequest
+        comment = create_comment("test comment")
+        create_comment_reference(
+            privacy_request.id,
+            comment.id,
+            CommentReferenceType.privacy_request,
+        )
+
+        # Verify that comment can be retrieved
+        retrieved_comment = privacy_request.get_comment_by_id(db, comment.id)
+        assert retrieved_comment.id == comment.id
+
+    def test_privacy_request_comment_relationship_warnings(
+        self, db, privacy_request, create_comment, create_comment_reference
+    ):
+        """Test that no SQLAlchemy relationship warnings occur when creating and accessing PrivacyRequest comment relationships."""
+        with warnings.catch_warnings(record=True) as warning_list:
+            warnings.simplefilter("always")
+
+            # Create comment and reference using fixtures
+            comment = create_comment("test comment")
+            comment_ref = create_comment_reference(
+                privacy_request.id,
+                comment.id,
+                CommentReferenceType.privacy_request,
+            )
+            db.refresh(privacy_request)
+            db.refresh(comment)
+
+            # Test accessing relationships in various ways
+            assert len(privacy_request.comments) == 1
+
+            # Query references directly
+            comment_refs = (
+                db.query(CommentReference)
+                .filter(
+                    CommentReference.reference_id == privacy_request.id,
+                    CommentReference.reference_type
+                    == CommentReferenceType.privacy_request,
+                )
+                .all()
+            )
+            assert len(comment_refs) == 1
+
+            # Verify no SQLAlchemy relationship warnings were emitted
+            sqlalchemy_warnings = [
+                w for w in warning_list if issubclass(w.category, sa_exc.SAWarning)
+            ]
+            assert (
+                len(sqlalchemy_warnings) == 0
+            ), f"SQLAlchemy warnings found: {[str(w.message) for w in sqlalchemy_warnings]}"
+
+            # Cleanup
+            if db.query(CommentReference).filter_by(id=comment_ref.id).first():
+                comment_ref.delete(db)
+                db.commit()
+
+            # Refresh the session to ensure clean state
+            db.expire_all()

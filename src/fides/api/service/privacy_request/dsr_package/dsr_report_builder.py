@@ -11,7 +11,7 @@ from jinja2 import Environment, FileSystemLoader
 
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.policy import ActionType
-from fides.api.util.storage_util import storage_json_encoder
+from fides.api.util.storage_util import StorageJSONEncoder
 
 DSR_DIRECTORY = Path(__file__).parent.resolve()
 
@@ -41,7 +41,9 @@ class DsrReportBuilder:
 
         # Jinja template environment initialization
         def pretty_print(value: str, indent: int = 4) -> str:
-            return json.dumps(value, indent=indent, default=storage_json_encoder)
+            return json.dumps(
+                value, indent=indent, default=StorageJSONEncoder().default
+            )
 
         jinja2.filters.FILTERS["pretty_print"] = pretty_print
         self.template_loader = Environment(

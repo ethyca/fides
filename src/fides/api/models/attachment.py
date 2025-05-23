@@ -18,7 +18,7 @@ from fides.api.service.storage.s3 import (
     generic_retrieve_from_s3,
     generic_upload_to_s3,
 )
-from fides.api.service.storage.util import get_local_filename
+from fides.api.service.storage.util import AllowedFileType, get_local_filename
 from fides.config import CONFIG
 
 if TYPE_CHECKING:
@@ -117,6 +117,11 @@ class Attachment(Base):
         uselist=False,
     )
 
+    @property
+    def content_type(self) -> str:
+        """Returns the content type of the attachment."""
+        return AllowedFileType[self.file_name.split(".")[-1]].value
+
     def upload(self, attachment: IO[bytes]) -> None:
         """Uploads an attachment to S3, GCS, or local storage."""
         if self.config.type == StorageType.s3:
@@ -202,6 +207,7 @@ class Attachment(Base):
                 bucket_name=bucket_name,
                 file_key=f"{self.id}/{self.file_name}",
                 auth_method=auth_method,
+                get_content=False,
             )
             return size, url
 
@@ -214,7 +220,6 @@ class Attachment(Base):
 
             # Ensure we have the blob metadata
             blob.reload()
-
             url = blob.generate_signed_url(
                 version="v4",
                 expiration=CONFIG.security.subject_request_download_link_ttl_seconds,
@@ -226,6 +231,52 @@ class Attachment(Base):
             filename = get_local_filename(f"{self.id}/{self.file_name}")
             size = os.path.getsize(filename)
             return size, filename
+
+        raise ValueError(f"Unsupported storage type: {self.config.type}")
+
+    def retrieve_attachment_content(
+        self,
+    ) -> Tuple[int, bytes]:
+        """
+        Retrieves the size of the attachment and its actual content.
+        - For s3:
+          - the size is retrieved from the s3 object metadata
+          - returns the actual content
+        - For gcs:
+          - the size is retrieved from the blob metadata
+          - returns the actual content
+        - For local:
+          - the size is retrieved from the file size
+          - returns the actual content
+        """
+        if self.config.type == StorageType.s3:
+            bucket_name = f"{self.config.details[StorageDetails.BUCKET.value]}"
+            auth_method = self.config.details[StorageDetails.AUTH_METHOD.value]
+            size, content = generic_retrieve_from_s3(
+                storage_secrets=self.config.secrets,
+                bucket_name=bucket_name,
+                file_key=f"{self.id}/{self.file_name}",
+                auth_method=auth_method,
+                get_content=True,
+            )
+            return size, content
+
+        if self.config.type == StorageType.gcs:
+            bucket_name = f"{self.config.details[StorageDetails.BUCKET.value]}"
+            auth_method = self.config.details[StorageDetails.AUTH_METHOD.value]
+            storage_client = get_gcs_client(auth_method, self.config.secrets)
+            bucket = storage_client.bucket(bucket_name)
+            blob = bucket.blob(f"{self.id}/{self.file_name}")
+
+            content = blob.download_as_bytes()
+            return len(content), content
+
+        if self.config.type == StorageType.local:
+            filename = get_local_filename(f"{self.id}/{self.file_name}")
+            with open(filename, "rb") as file:
+                content = file.read()
+                size = len(content)
+                return size, content
 
         raise ValueError(f"Unsupported storage type: {self.config.type}")
 

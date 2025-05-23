@@ -120,7 +120,7 @@ from fides.api.util.collection_util import Row
 from fides.api.util.endpoint_utils import validate_start_and_end_filters
 from fides.api.util.enums import ColumnSort
 from fides.api.util.fuzzy_search_utils import get_decrypted_identities_automaton
-from fides.api.util.storage_util import storage_json_encoder
+from fides.api.util.storage_util import StorageJSONEncoder
 from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_CALLBACK_RESUME,
     PRIVACY_REQUEST_CREATE,
@@ -2129,7 +2129,7 @@ def get_test_privacy_request_results(
 
     # Escape datetime and ObjectId values
     raw_data = privacy_request.get_raw_access_results()
-    escaped_json = json.dumps(raw_data, indent=2, default=storage_json_encoder)
+    escaped_json = json.dumps(raw_data, indent=2, cls=StorageJSONEncoder)
     results = json.loads(escaped_json)
 
     filtered_results: Dict[str, Any] = filter_access_results(
