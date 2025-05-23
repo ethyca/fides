@@ -1,6 +1,6 @@
 # pylint: disable=E1101
 from enum import Enum as EnumType
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Set, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Tuple, Union
 
 from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from fideslang.models import DataCategory as FideslangDataCategory

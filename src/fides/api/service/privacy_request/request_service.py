@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from asyncio import sleep
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, Optional, Set
 
 from httpx import AsyncClient
 from loguru import logger
@@ -17,6 +17,7 @@ from fides.api.models.privacy_request import (
     RequestTask,
 )
 from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import (
     ExecutionLogStatus,
     PrivacyRequestResponse,

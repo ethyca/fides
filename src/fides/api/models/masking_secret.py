@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Union
+from typing import TYPE_CHECKING, Any, Union
 from urllib.parse import unquote_to_bytes
 
 from sqlalchemy import Column, ForeignKey, String
@@ -13,6 +13,9 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 
 from fides.api.db.base_class import Base, JSONTypeOverride
 from fides.config import CONFIG
+
+if TYPE_CHECKING:
+    from fides.api.models.privacy_request import PrivacyRequest
 
 
 class MaskingSecret(Base):

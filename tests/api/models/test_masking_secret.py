@@ -1,8 +1,8 @@
 """Tests for the MaskingSecret model and related functionality."""
 
-import pytest
 from unittest.mock import Mock, patch
 
+import pytest
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import MaskingSecretsExpired
@@ -10,8 +10,8 @@ from fides.api.models.masking_secret import MaskingSecret
 from fides.api.models.policy import Policy
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
 from fides.api.service.privacy_request.request_runner_service import (
-    _verify_masking_secrets,
     CurrentStep,
+    _verify_masking_secrets,
 )
 
 
