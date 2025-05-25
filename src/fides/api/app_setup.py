@@ -16,7 +16,11 @@ from slowapi.extension import _rate_limit_exceeded_handler  # type: ignore
 from slowapi.middleware import SlowAPIMiddleware  # type: ignore
 
 import fides
-from fides.api.api.deps import get_api_session
+from fides.api.api.deps import (
+    get_api_session,
+    get_async_autoclose_db_session,
+    get_autoclose_db_session,
+)
 from fides.api.api.v1 import CTL_ROUTER
 from fides.api.api.v1.api import api_router
 from fides.api.api.v1.endpoints.admin import ADMIN_ROUTER
@@ -24,7 +28,8 @@ from fides.api.api.v1.endpoints.generic_overrides import GENERIC_OVERRIDES_ROUTE
 from fides.api.api.v1.endpoints.health import HEALTH_ROUTER
 from fides.api.api.v1.exception_handlers import ExceptionHandlers
 from fides.api.common_exceptions import RedisConnectionError, RedisNotConfigured
-from fides.api.db.database import configure_db
+from fides.api.db import seed
+from fides.api.db.database import configure_db, seed_db
 from fides.api.db.seed import create_or_update_parent_user
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.oauth.system_manager_oauth_util import (
@@ -165,9 +170,12 @@ async def run_database_startup(app: FastAPI) -> None:
 
     if CONFIG.database.automigrate:
         try:
-            await configure_db(
-                CONFIG.database.sync_database_uri, samples=CONFIG.database.load_samples
-            )
+            configure_db(CONFIG.database.sync_database_uri)
+            with get_autoclose_db_session() as session:
+                seed_db(session)
+            if CONFIG.database.load_samples:
+                async with get_async_autoclose_db_session() as async_session:
+                    await seed.load_samples(async_session)
         except Exception as e:
             logger.error("Error occurred during database configuration: {}", str(e))
     else:

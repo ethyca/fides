@@ -9,6 +9,8 @@ import {
 export type ConnectionTypeParams = {
   search: string;
   system_type?: SystemType;
+  page?: number;
+  size?: number;
 };
 
 export type ConnectionTypeSecretSchemaProperty = {

@@ -5,126 +5,44 @@
  *
  * See the overall package docs in ./docs/README.md for more!
  */
-import { blueconic } from "./integrations/blueconic";
-import { gtm } from "./integrations/gtm";
-import { meta } from "./integrations/meta";
-import { shopify } from "./integrations/shopify";
-import { raise } from "./lib/common-utils";
 import {
-  ConsentMethod,
+  readConsentFromAnyProvider,
+  registerDefaultProviders,
+} from "./lib/consent-migration";
+import {
   FidesConfig,
   FidesCookie,
   FidesExperienceTranslationOverrides,
   FidesGlobal,
   FidesInitOptionsOverrides,
-  FidesOptions,
   FidesOverrides,
   GetPreferencesFnResp,
   NoticeConsent,
-  OtToFidesConsentMapping,
+  NoticeValues,
   OverrideType,
-  PrivacyExperience,
 } from "./lib/consent-types";
 import {
-  decodeNoticeConsentString,
-  defaultShowModal,
-  encodeNoticeConsentString,
-  shouldResurfaceBanner,
-} from "./lib/consent-utils";
-import {
-  consentCookieObjHasSomeConsentSet,
   getFidesConsentCookie,
-  getOTConsentCookie,
-  otCookieToFidesConsent,
-  saveFidesCookie,
   updateExperienceFromCookieConsentNotices,
 } from "./lib/cookie";
 import { initializeDebugger } from "./lib/debugger";
-import { dispatchFidesEvent, onFidesEvent } from "./lib/events";
+import { dispatchFidesEvent } from "./lib/events";
 import { DecodedFidesString, decodeFidesString } from "./lib/fides-string";
-import { DEFAULT_LOCALE, DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
+import {
+  getCoreFides,
+  raise,
+  updateExperience,
+  updateWindowFides,
+} from "./lib/init-utils";
 import {
   getInitialCookie,
   getInitialFides,
   getOverridesByType,
   initialize,
-  UpdateExperienceFn,
 } from "./lib/initialize";
 import { initOverlay } from "./lib/initOverlay";
 import { renderOverlay } from "./lib/renderOverlay";
 import { customGetConsentPreferences } from "./services/external/preferences";
-
-declare global {
-  interface Window {
-    Fides: FidesGlobal;
-    fides_overrides: Partial<FidesOptions>;
-    fidesDebugger: (...args: unknown[]) => void;
-  }
-}
-
-const updateWindowFides = (fidesGlobal: FidesGlobal) => {
-  if (typeof window !== "undefined") {
-    window.Fides = fidesGlobal;
-  }
-};
-
-const updateExperience: UpdateExperienceFn = ({
-  cookie,
-  experience,
-}): Partial<PrivacyExperience> => {
-  let updatedExperience: PrivacyExperience = experience;
-  const preferencesExistOnCookie = consentCookieObjHasSomeConsentSet(
-    cookie.consent,
-  );
-  if (preferencesExistOnCookie) {
-    // If we have some preferences on the cookie, we update client-side experience with those preferences
-    // if the name matches. This is used for client-side UI.
-    updatedExperience = updateExperienceFromCookieConsentNotices({
-      experience,
-      cookie,
-    });
-  }
-  return updatedExperience;
-};
-
-const readConsentFromOneTrust = (
-  config: FidesConfig,
-  optionsOverrides: Partial<FidesInitOptionsOverrides>,
-): NoticeConsent | undefined => {
-  const otConsentCookie =
-    !!optionsOverrides.otFidesMapping && getOTConsentCookie();
-  if (!optionsOverrides.otFidesMapping || !otConsentCookie) {
-    fidesDebugger(
-      "OT cookie or OT-Fides mapping does not exist, skipping mapping consent to Fides cookie...",
-      config.options,
-    );
-    return undefined;
-  }
-  try {
-    const decodedString = decodeURIComponent(optionsOverrides.otFidesMapping);
-    const strippedString = decodedString.replace(/^'|'$/g, "");
-    const otFidesMappingParsed: OtToFidesConsentMapping =
-      JSON.parse(strippedString);
-    const otToFidesConsent: NoticeConsent = otCookieToFidesConsent(
-      otConsentCookie,
-      otFidesMappingParsed,
-    );
-    if (otToFidesConsent) {
-      fidesDebugger(
-        `Fides consent built based on OT consent: ${JSON.stringify(otToFidesConsent)}`,
-        config.options,
-      );
-      return otToFidesConsent;
-    }
-    return undefined;
-  } catch (e) {
-    fidesDebugger(
-      `Failed to map OT consent to Fides consent due to: ${e}`,
-      config.options,
-    );
-  }
-  return undefined;
-};
 
 /**
  * Initialize the global Fides object with the given configuration values
@@ -176,35 +94,37 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     experienceTranslationOverrides,
   };
 
-  // Check for an existing cookie for this device
-  let consentFromOneTrust: NoticeConsent | undefined;
-  if (optionsOverrides.otFidesMapping && !getFidesConsentCookie()) {
-    consentFromOneTrust = readConsentFromOneTrust(config, optionsOverrides);
+  /* THIRD PARTY CONSENT MIGRATION */
+
+  // Register any configured consent migration providers
+  registerDefaultProviders(optionsOverrides);
+
+  // Check for migrated consent from any registered providers
+  let migratedConsent: NoticeConsent | undefined;
+
+  if (!getFidesConsentCookie()) {
+    const { consent, method } = readConsentFromAnyProvider(optionsOverrides);
+    if (consent && method) {
+      migratedConsent = consent;
+    }
   }
+  /* END THIRD PARTY CONSENT MIGRATION */
+
   config = {
     ...config,
     options: { ...config.options, ...overrides.optionsOverrides },
   };
-  this.cookie = getInitialCookie(config);
+  this.cookie = getInitialCookie(config); // also adds legacy consent values to the cookie
   this.cookie.consent = {
     ...this.cookie.consent,
-    ...consentFromOneTrust,
+    ...migratedConsent,
   };
 
   // Keep a copy of saved consent from the cookie, since we update the "cookie"
   // value during initialization based on overrides, experience, etc.
   this.saved_consent = {
-    ...this.cookie.consent,
+    ...(this.cookie.consent as NoticeValues),
   };
-
-  if (consentFromOneTrust && !getFidesConsentCookie()) {
-    // If we have consent from OneTrust, we need to write the cookie to the browser
-    Object.assign(this.cookie.fides_meta, {
-      consentMethod: ConsentMethod.SCRIPT,
-    });
-    fidesDebugger("Saving OT preferences to Fides cookie");
-    saveFidesCookie(this.cookie, config.options.base64Cookie);
-  }
 
   // Update the fidesString if we have an override and the NC portion is valid
   const { fidesString } = config.options;
@@ -224,6 +144,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
       );
     }
   }
+
   const initialFides = getInitialFides({
     ...config,
     cookie: this.cookie,
@@ -249,80 +170,19 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   });
   Object.assign(this, updatedFides);
   updateWindowFides(this);
+
   // Dispatch the "FidesInitialized" event to update listeners with the initial state.
   dispatchFidesEvent("FidesInitialized", this.cookie, config.options.debug, {
     shouldShowExperience: this.shouldShowExperience(),
   });
 }
 
+const initialFides = getCoreFides({});
 // The global Fides object; this is bound to window.Fides if available
 // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
 const _Fides: FidesGlobal = {
-  consent: {},
-  experience: undefined,
-  geolocation: {},
-  locale: DEFAULT_LOCALE,
-  options: {
-    debug: true,
-    isOverlayEnabled: false,
-    isPrefetchEnabled: false,
-    isGeolocationEnabled: false,
-    geolocationApiUrl: "",
-    overlayParentId: null,
-    modalLinkId: null,
-    privacyCenterUrl: "",
-    fidesApiUrl: "",
-    tcfEnabled: false,
-    gppEnabled: false,
-    fidesEmbed: false,
-    fidesDisableSaveApi: false,
-    fidesDisableNoticesServedApi: false,
-    fidesDisableBanner: false,
-    fidesString: null,
-    apiOptions: null,
-    fidesTcfGdprApplies: false,
-    fidesJsBaseUrl: "",
-    customOptionsPath: null,
-    preventDismissal: false,
-    allowHTMLDescription: null,
-    base64Cookie: false,
-    fidesPrimaryColor: null,
-    fidesClearCookie: false,
-    showFidesBrandLink: true,
-    fidesConsentOverride: null,
-    otFidesMapping: null,
-    fidesDisabledNotices: null,
-  },
-  fides_meta: {},
-  identity: {},
-  tcf_consent: {},
-  saved_consent: {},
-  blueconic,
-  gtm,
+  ...initialFides,
   init,
-  config: undefined,
-  reinitialize() {
-    if (!this.config || !this.initialized) {
-      throw new Error("Fides must be initialized before reinitializing");
-    }
-    return this.init();
-  },
-  initialized: false,
-  onFidesEvent,
-  shouldShowExperience() {
-    return shouldResurfaceBanner(
-      this.experience,
-      this.cookie,
-      this.saved_consent,
-      this.options,
-    );
-  },
-  meta,
-  shopify,
-  showModal: defaultShowModal,
-  getModalLinkLabel: () => DEFAULT_MODAL_LINK_LABEL,
-  encodeNoticeConsentString,
-  decodeNoticeConsentString,
 };
 
 updateWindowFides(_Fides);
@@ -335,6 +195,7 @@ export * from "./lib/consent-value";
 export * from "./lib/cookie";
 export * from "./lib/events";
 export * from "./lib/i18n";
+export * from "./lib/init-utils";
 export * from "./lib/initOverlay";
 export * from "./lib/shared-consent-utils";
 export * from "./services/api";

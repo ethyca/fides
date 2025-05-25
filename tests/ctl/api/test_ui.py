@@ -55,6 +55,8 @@ def test_generate_route_file_map(route_file_map: Dict[re.Pattern, Path]) -> None
         ("dataset/", "dataset.html"),
         ("dataset/new", "dataset/new.html"),
         ("dataset/1234", "dataset/[id].html"),
+        ("dataset/id.with.dots", "dataset/[id].html"),
+        ("dataset/[id_with_brackets]", "dataset/[id].html"),
         ("dataset/G00d-Times_R011/", "dataset/[id].html"),
         ("nested/you/me/and", "nested/[...slug].html"),
         ("nested/the_devil/makes/3/", "nested/[...slug].html"),

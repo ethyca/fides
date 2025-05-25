@@ -16,7 +16,68 @@ env:
   CI: true
 
 jobs:
+  prepare-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      spec_groups: ${{ steps.set-matrix.outputs.spec_groups }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set matrix
+        id: set-matrix
+        shell: bash
+        run: |
+          cd clients/admin-ui/cypress/e2e
+          # Group test files into balanced groups based on number of tests in each file
+          echo "spec_groups=$(find . -name "*.cy.ts" | python3 -c '
+          import sys, os, json, math, re
+
+          # Number of groups to create (adjust based on your needs)
+          NUM_GROUPS = 3
+
+          # Get all test files with their test counts
+          files = []
+          for line in sys.stdin:
+              filepath = line.strip()
+              if os.path.exists(filepath):
+                  # Count the number of test occurrences (it, describe, context)
+                  test_count = 0
+                  with open(filepath, "r") as f:
+                      content = f.read()
+                      # Count occurrences of test definitions like "it(", "test(", "specify("
+                      test_count += len(re.findall(r"\bit\s*\(", content))
+                      test_count += len(re.findall(r"\btest\s*\(", content))
+                      test_count += len(re.findall(r"\bspecify\s*\(", content))
+                      # If no tests found, set minimum of 1 to ensure file is included
+                      if test_count == 0:
+                          test_count = 1
+                  files.append((filepath.replace("./", ""), test_count))
+
+          # Sort files by test count in descending order
+          files.sort(key=lambda x: x[1], reverse=True)
+
+          # Initialize groups
+          groups = [[] for _ in range(NUM_GROUPS)]
+          group_counts = [0] * NUM_GROUPS
+
+          # Distribute files using greedy algorithm (most tests first)
+          for file, count in files:
+              # Find the group with the smallest total test count
+              min_group_idx = group_counts.index(min(group_counts))
+              groups[min_group_idx].append(file)
+              group_counts[min_group_idx] += count
+
+          # Format for GitHub Actions
+          print(json.dumps([",".join(group) for group in groups]))
+          ')" >> $GITHUB_OUTPUT
+
   Admin-UI-Cypress:
+    needs: prepare-matrix
+    strategy:
+      fail-fast: false # We want every single job to run completely, we don't want one failing job on the matrix to stop the rest of them.
+      matrix:
+        spec_group: ${{ fromJson(needs.prepare-matrix.outputs.spec_groups) }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -62,6 +123,7 @@ jobs:
           start: npm run cy:start
           wait-on: "http://localhost:3000"
           wait-on-timeout: 180
+          spec: cypress/e2e/{${{ matrix.spec_group }}}
 
       - uses: actions/upload-artifact@v4
         if: failure()

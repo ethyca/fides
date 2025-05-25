@@ -148,6 +148,10 @@ export const stubDatasetCrud = () => {
     "getDataset",
   );
 
+  cy.intercept("GET", "/api/v1/dataset?only_unlinked_datasets=false", []).as(
+    "getUnlinkedDatasets",
+  );
+
   // Update
   cy.intercept("PUT", "/api/v1/dataset*", { fixture: "dataset.json" }).as(
     "putDataset",
@@ -566,6 +570,9 @@ export const stubWebsiteMonitor = () => {
   cy.intercept("PATCH", "/api/v1/plus/discovery-monitor/*/results", {
     response: 200,
   }).as("patchAssets");
+  cy.intercept("POST", "/api/v1/plus/discovery-monitor/un-mute*", {
+    response: 200,
+  }).as("restoreAssets");
 };
 
 export const stubSystemAssets = () => {

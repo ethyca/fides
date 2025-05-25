@@ -1,7 +1,6 @@
 import {
   AntButton as Button,
   AntSelectProps as SelectProps,
-  AntTooltip as Tooltip,
   ArrowForwardIcon,
   Box,
   Collapse,
@@ -21,13 +20,10 @@ import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/routes";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import ScrollableList from "~/features/common/ScrollableList";
 import {
-  selectTCFConfigFilters,
-  useGetTCFConfigurationsQuery,
-} from "~/features/consent-settings/tcf/tcf-config.slice";
-import {
   selectLocationsRegulations,
   useGetLocationsRegulationsQuery,
 } from "~/features/locations/locations.slice";
+import { selectHealth as selectPlusHealth } from "~/features/plus/plus.slice";
 import { getSelectedRegionIds } from "~/features/privacy-experience/form/helpers";
 import { selectAllLanguages } from "~/features/privacy-experience/language.slice";
 import {
@@ -53,10 +49,13 @@ import {
   SupportedLanguage,
 } from "~/types/api";
 
+import { useFeatures } from "../common/features";
 import { ControlledSelect } from "../common/form/ControlledSelect";
 import { useGetConfigurationSettingsQuery } from "../config-settings/config-settings.slice";
+import { TCFConfigSelect } from "./form/TCFConfigSelect";
 
-const componentTypeOptions: SelectProps["options"] = [
+// Base component type options without TCF overlay
+const baseComponentTypeOptions: SelectProps["options"] = [
   {
     label: "Banner and modal",
     value: ComponentType.BANNER_AND_MODAL,
@@ -74,6 +73,12 @@ const componentTypeOptions: SelectProps["options"] = [
     value: ComponentType.HEADLESS,
   },
 ];
+
+// The TCF overlay option to insert
+const tcfOverlayOption = {
+  label: "TCF overlay",
+  value: ComponentType.TCF_OVERLAY,
+};
 
 const tcfRejectAllMechanismOptions: SelectProps["options"] = [
   {
@@ -127,7 +132,9 @@ export const PrivacyExperienceConfigColumnLayout = ({
   </Flex>
 );
 
-function privacyNoticeIdsWithTcfId(values: ExperienceConfigCreate): string[] {
+const privacyNoticeIdsWithTcfId = (
+  values: ExperienceConfigCreate,
+): string[] => {
   if (!values.privacy_notice_ids) {
     return [TCF_PLACEHOLDER_ID];
   }
@@ -136,7 +143,7 @@ function privacyNoticeIdsWithTcfId(values: ExperienceConfigCreate): string[] {
     noticeIdsWithTcfId.push(TCF_PLACEHOLDER_ID);
   }
   return noticeIdsWithTcfId;
-}
+};
 
 export const PrivacyExperienceForm = ({
   allPrivacyNotices,
@@ -150,9 +157,19 @@ export const PrivacyExperienceForm = ({
   onCreateTranslation: (lang: SupportedLanguage) => ExperienceTranslation;
 }) => {
   const router = useRouter();
+  const isPublisherRestrictionsFlagEnabled =
+    useFeatures()?.flags?.publisherRestrictions;
+  const plusHealth = useAppSelector(selectPlusHealth);
 
-  const { values, setFieldValue, dirty, isValid, isSubmitting, initialValues } =
-    useFormikContext<ExperienceConfigCreate>();
+  const {
+    values,
+    setFieldValue,
+    dirty,
+    isValid,
+    isSubmitting,
+    initialValues,
+    setValues,
+  } = useFormikContext<ExperienceConfigCreate>();
   const noticePage = useAppSelector(selectNoticePage);
   const noticePageSize = useAppSelector(selectNoticePageSize);
   useGetAllPrivacyNoticesQuery({ page: noticePage, size: noticePageSize });
@@ -213,18 +230,6 @@ export const PrivacyExperienceForm = ({
   useGetAllPropertiesQuery({ page: propertyPage, size: propertyPageSize });
   const allProperties = useAppSelector(selectAllProperties);
 
-  const tcfConfigFilters = useAppSelector(selectTCFConfigFilters);
-  const { data: tcfConfigs } = useGetTCFConfigurationsQuery(tcfConfigFilters);
-
-  const tcfConfigOptions = useMemo(
-    () =>
-      tcfConfigs?.items.map((config) => ({
-        label: config.name,
-        value: config.id,
-      })) ?? [],
-    [tcfConfigs],
-  );
-
   const buttonPanel = (
     <div className="flex justify-between border-t border-[#DEE5EE] p-4">
       <Button onClick={() => router.push(PRIVACY_EXPERIENCE_ROUTE)}>
@@ -242,6 +247,61 @@ export const PrivacyExperienceForm = ({
     </div>
   );
 
+  const handleComponentChange = (value: ComponentType) => {
+    if (!values.component) {
+      return;
+    }
+    const newComponent = value as ComponentType;
+
+    // Reset common fields that might need to be unset
+    const updates: Partial<ExperienceConfigCreate> = {
+      tcf_configuration_id: undefined,
+      layer1_button_options: undefined,
+      show_layer1_notices: false,
+    };
+
+    // Handle TCF specific fields
+    if (newComponent !== ComponentType.TCF_OVERLAY) {
+      updates.reject_all_mechanism = undefined;
+      // Remove TCF placeholder from privacy notices if present
+      if (values.privacy_notice_ids?.includes(TCF_PLACEHOLDER_ID)) {
+        updates.privacy_notice_ids = values.privacy_notice_ids.filter(
+          (id) => id !== TCF_PLACEHOLDER_ID,
+        );
+      }
+    } else {
+      updates.privacy_notice_ids = [TCF_PLACEHOLDER_ID];
+    }
+
+    // Set component specific defaults
+    switch (newComponent) {
+      case ComponentType.PRIVACY_CENTER:
+      case ComponentType.HEADLESS:
+        updates.dismissable = undefined;
+        updates.layer1_button_options = undefined;
+        updates.show_layer1_notices = undefined;
+        break;
+      case ComponentType.BANNER_AND_MODAL:
+        updates.layer1_button_options = Layer1ButtonOption.OPT_IN_OPT_OUT;
+        break;
+      case ComponentType.TCF_OVERLAY:
+        updates.layer1_button_options = Layer1ButtonOption.OPT_IN_OPT_OUT;
+        updates.reject_all_mechanism = RejectAllMechanism.REJECT_ALL;
+        break;
+      case ComponentType.MODAL:
+        updates.layer1_button_options = undefined;
+        updates.show_layer1_notices = undefined;
+        break;
+      default:
+        break;
+    }
+
+    setValues({
+      ...values,
+      ...updates,
+    });
+    setFieldValue("component", value);
+  };
   return (
     <PrivacyExperienceConfigColumnLayout buttonPanel={buttonPanel}>
       <BackButton backPath={PRIVACY_EXPERIENCE_ROUTE} mt={4} />
@@ -255,49 +315,39 @@ export const PrivacyExperienceForm = ({
         isRequired
         variant="stacked"
       />
-      {values.component !== ComponentType.TCF_OVERLAY && (
-        <ControlledSelect
-          name="component"
-          id="component"
-          options={componentTypeOptions}
-          label="Experience type"
-          layout="stacked"
-          disabled={!!initialValues.component}
-          isRequired
-        />
-      )}
+      <ControlledSelect
+        name="component"
+        id="component"
+        options={useMemo(() => {
+          if (plusHealth?.tcf?.enabled) {
+            // Insert TCF overlay as the second item
+            return [
+              baseComponentTypeOptions[0],
+              tcfOverlayOption,
+              ...baseComponentTypeOptions.slice(1),
+            ];
+          }
+          return baseComponentTypeOptions;
+        }, [plusHealth])}
+        label="Experience type"
+        layout="stacked"
+        disabled={!!initialValues.component}
+        onChange={handleComponentChange}
+        isRequired
+      />
       <Collapse
-        in={values.component === ComponentType.TCF_OVERLAY}
+        in={
+          values.component === ComponentType.TCF_OVERLAY &&
+          isPublisherRestrictionsFlagEnabled
+        }
         animateOpacity
       >
-        {values.component === ComponentType.TCF_OVERLAY && (
-          <Tooltip
-            title={
-              // eslint-disable-next-line no-nested-ternary
-              !appConfig?.consent?.override_vendor_purposes
-                ? "You must enable the Override vendor purposes setting in consent settings to select a TCF configuration."
-                : !tcfConfigOptions?.length
-                  ? "No TCF configurations found. Please create a TCF configuration in 'Consent settings' to select one."
-                  : undefined
-            }
-          >
-            <div>
-              <ControlledSelect
-                name="tcf_configuration_id"
-                id="tcf_configuration_id"
-                label="TCF Configuration"
-                options={tcfConfigOptions}
-                layout="stacked"
-                disabled={
-                  !tcfConfigOptions?.length ||
-                  !appConfig?.consent?.override_vendor_purposes
-                }
-                tooltip='Select a TCF configuration. Configurations are defined in "Consent settings" and apply to TCF privacy experiences.'
-                allowClear
-              />
-            </div>
-          </Tooltip>
-        )}
+        {values.component === ComponentType.TCF_OVERLAY &&
+          isPublisherRestrictionsFlagEnabled && (
+            <TCFConfigSelect
+              overridesEnabled={appConfig?.consent?.override_vendor_purposes}
+            />
+          )}
       </Collapse>
       <Collapse
         in={values.component === ComponentType.TCF_OVERLAY}
@@ -380,7 +430,7 @@ export const PrivacyExperienceForm = ({
             return undefined;
           }}
           getItemLabel={getPrivacyNoticeName}
-          draggable
+          draggable={false}
           baseTestId="privacy-notice"
         />
       ) : (
@@ -394,7 +444,7 @@ export const PrivacyExperienceForm = ({
             setFieldValue("privacy_notice_ids", newValues)
           }
           getItemLabel={getPrivacyNoticeName}
-          draggable
+          draggable={false}
           baseTestId="privacy-notice"
         />
       )}
@@ -450,7 +500,7 @@ export const PrivacyExperienceForm = ({
             createNewValue={(opt) =>
               onCreateTranslation(opt.value as SupportedLanguage)
             }
-            onRowClick={onSelectTranslation}
+            onEditItem={onSelectTranslation}
             selectOnAdd
             draggable
             baseTestId="language"

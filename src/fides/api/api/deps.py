@@ -1,10 +1,12 @@
-from contextlib import contextmanager
-from typing import Generator
+from contextlib import asynccontextmanager, contextmanager
+from typing import AsyncGenerator, Generator
 
 from fastapi import Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import RedisNotConfigured
+from fides.api.db.ctl_session import async_session
 from fides.api.db.session import get_db_engine, get_db_session
 from fides.api.util.cache import get_cache as get_redis_connection
 from fides.config import CONFIG, FidesConfig
@@ -102,3 +104,17 @@ def get_cache() -> Generator:
             "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a Redis cache."
         )
     yield get_redis_connection()
+
+
+@asynccontextmanager
+async def get_async_autoclose_db_session() -> AsyncGenerator[AsyncSession, None]:
+    """
+    Return an async database session as an async context manager that automatically closes when the context exits.
+
+    Use this when you need manual control over the async session lifecycle outside of API endpoints.
+    """
+    session = async_session()
+    try:
+        yield session
+    finally:
+        await session.close()

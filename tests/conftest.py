@@ -1,13 +1,17 @@
 import asyncio
+import copy
 import json
 import os
 import time
+import types
 from datetime import datetime
 from pathlib import Path
-from typing import Callable
+from typing import Any, Callable, Dict, Generator, List
+from unittest.mock import create_autospec
 from uuid import uuid4
 
 import boto3
+import google.auth.credentials
 import pytest
 import requests
 import yaml
@@ -15,9 +19,12 @@ from fastapi import Query
 from fastapi.testclient import TestClient
 from fideslang import DEFAULT_TAXONOMY, models
 from fideslang.models import System as SystemSchema
+from google.api_core.exceptions import NotFound
+from google.cloud import storage
 from httpx import AsyncClient
 from loguru import logger
 from moto import mock_aws
+from pytest import MonkeyPatch
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
@@ -31,7 +38,11 @@ from fides.api.cryptography.schemas.jwt import (
     JWE_PAYLOAD_SCOPES,
     JWE_PAYLOAD_SYSTEMS,
 )
+from fides.api.db.base_class import Base
+from fides.api.db.crud import create_resource
 from fides.api.db.ctl_session import sync_engine
+from fides.api.db.database import seed_db
+from fides.api.db.seed import load_default_organization, load_default_taxonomy
 from fides.api.db.system import create_system
 from fides.api.main import app
 from fides.api.models.privacy_request import (
@@ -40,7 +51,8 @@ from fides.api.models.privacy_request import (
     generate_request_callback_pre_approval_jwe,
     generate_request_callback_resume_jwe,
 )
-from fides.api.models.sql_models import DataUse, PrivacyDeclaration
+from fides.api.models.sql_models import DataCategory as DataCategoryDbModel
+from fides.api.models.sql_models import DataUse, PrivacyDeclaration, sql_model_map
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.roles import APPROVER, CONTRIBUTOR, OWNER, VIEWER_AND_APPROVER
 from fides.api.schemas.messaging.messaging import MessagingServiceType
@@ -69,6 +81,7 @@ from tests.fixtures.messaging_fixtures import *
 from tests.fixtures.mongodb_fixtures import *
 from tests.fixtures.mssql_fixtures import *
 from tests.fixtures.mysql_fixtures import *
+from tests.fixtures.okta_fixtures import *
 from tests.fixtures.postgres_fixtures import *
 from tests.fixtures.rds_mysql_fixtures import *
 from tests.fixtures.rds_postgres_fixtures import *
@@ -89,6 +102,7 @@ TEST_DEPRECATED_CONFIG_PATH = "tests/ctl/test_deprecated_config.toml"
 
 @pytest.fixture
 def s3_client(storage_config):
+    """Creates a mock S3 client for testing."""
     with mock_aws():
         session = boto3.Session(
             aws_access_key_id="fake_access_key",
@@ -134,16 +148,15 @@ def test_client():
         yield test_client
 
 
-@pytest.fixture(scope="session")
 @pytest.mark.asyncio
-async def async_session(test_client):
+@pytest.fixture(scope="session")
+async def async_session():
     assert CONFIG.test_mode
-    assert requests.post == test_client.post
 
     create_citext_extension(sync_engine)
 
     async_engine = create_async_engine(
-        CONFIG.database.async_database_uri,
+        f"{CONFIG.database.async_database_uri}?prepared_statement_cache_size=0",
         echo=False,
     )
 
@@ -208,7 +221,7 @@ async def async_api_client():
         yield client
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session")
 def event_loop():
     try:
         loop = asyncio.get_running_loop()
@@ -388,7 +401,7 @@ def auth_header(request, oauth_client, config):
     return {"Authorization": "Bearer " + jwe}
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture(scope="function", autouse=True)
 def clear_get_config_cache() -> None:
     get_config.cache_clear()
 
@@ -547,6 +560,36 @@ def resources_dict():
     yield resources_dict
 
 
+@pytest.fixture(scope="function")
+@pytest.mark.asyncio
+async def fideslang_resources(
+    async_session,
+    resources_dict,
+    default_organization,
+    default_taxonomy,
+    config,
+):
+    """
+    Loads all resources from resources_dict into the database.
+    This fixture runs automatically before each test function.
+    """
+
+    # Load each resource into the database
+    resources = copy.deepcopy(resources_dict)
+    for resource_type, resource in resources.items():
+        if resource_type in sql_model_map:
+            if resource_type == "system":
+                await create_system(
+                    resource, async_session, config.security.oauth_root_client_id
+                )
+            else:
+                await create_resource(
+                    sql_model_map[resource_type],
+                    resource.model_dump(mode="json"),
+                    async_session,
+                )
+
+
 @pytest.fixture
 def test_manifests():
     test_manifests = {
@@ -700,7 +743,7 @@ def celery_config():
     return {"task_always_eager": False}
 
 
-@pytest.fixture(autouse=True, scope="session")
+@pytest.fixture(scope="session")
 def celery_enable_logging():
     """Turns on celery output logs."""
     return True
@@ -842,7 +885,7 @@ def consent_runner_tester(
         return privacy_request.get_consent_results()
 
 
-@pytest.fixture(autouse=True, scope="session")
+@pytest.fixture(scope="session")
 def analytics_opt_out():
     """Disable sending analytics when running tests."""
     original_value = CONFIG.user.analytics_opt_out
@@ -884,7 +927,7 @@ def subject_identity_verification_required(db):
     ApplicationConfig.update_config_set(db, CONFIG)
 
 
-@pytest.fixture(autouse=True, scope="function")
+@pytest.fixture(scope="function")
 def subject_identity_verification_not_required(db):
     """Disable identity verification for most tests unless overridden"""
     original_value = CONFIG.execution.subject_identity_verification_required
@@ -908,7 +951,7 @@ def disable_consent_identity_verification(db):
     ApplicationConfig.update_config_set(db, CONFIG)
 
 
-@pytest.fixture(autouse=True, scope="function")
+@pytest.fixture(scope="function")
 def privacy_request_complete_email_notification_disabled(db):
     """Disable request completion email for most tests unless overridden"""
     original_value = CONFIG.notifications.send_request_completion_notification
@@ -921,7 +964,7 @@ def privacy_request_complete_email_notification_disabled(db):
     db.commit()
 
 
-@pytest.fixture(autouse=True, scope="function")
+@pytest.fixture(scope="function")
 def privacy_request_receipt_notification_disabled(db):
     """Disable request receipt notification for most tests unless overridden"""
     original_value = CONFIG.notifications.send_request_receipt_notification
@@ -934,7 +977,7 @@ def privacy_request_receipt_notification_disabled(db):
     db.commit()
 
 
-@pytest.fixture(autouse=True, scope="function")
+@pytest.fixture(scope="function")
 def privacy_request_review_notification_disabled(db):
     """Disable request review notification for most tests unless overridden"""
     original_value = CONFIG.notifications.send_request_review_notification
@@ -947,8 +990,8 @@ def privacy_request_review_notification_disabled(db):
     db.commit()
 
 
-@pytest.fixture(scope="function", autouse=True)
-def set_notification_service_type_mailgun(db):
+@pytest.fixture(scope="function")
+def set_notification_service_type_to_mailgun(db):
     """Set default notification service type"""
     original_value = CONFIG.notifications.notification_service_type
     CONFIG.notifications.notification_service_type = MessagingServiceType.mailgun.value
@@ -1008,7 +1051,7 @@ def set_property_specific_messaging_enabled(db):
     ApplicationConfig.update_config_set(db, CONFIG)
 
 
-@pytest.fixture(autouse=True, scope="function")
+@pytest.fixture(scope="function")
 def set_property_specific_messaging_disabled(db):
     """Disable property specific messaging for all tests unless overridden"""
     original_value = CONFIG.notifications.enable_property_specific_messaging
@@ -1799,15 +1842,6 @@ def connection_client(db, connection_config):
     client.delete(db)
 
 
-@pytest.fixture(scope="function", autouse=True)
-def load_default_data_uses(db):
-    for data_use in DEFAULT_TAXONOMY.data_use:
-        # weirdly, only in some test scenarios, we already have the default taxonomy
-        # loaded, in which case the create will throw an error. so we first check existence.
-        if DataUse.get_by(db, field="name", value=data_use.name) is None:
-            DataUse.create(db=db, data=data_use.model_dump(mode="json"))
-
-
 @pytest.fixture
 def owner_auth_header(owner_user):
     return generate_role_header_for_user(owner_user, owner_user.client.roles)
@@ -1835,3 +1869,394 @@ def viewer_and_approver_auth_header(viewer_and_approver_user):
     return generate_role_header_for_user(
         viewer_and_approver_user, viewer_and_approver_user.client.roles
     )
+
+
+@pytest.mark.asyncio
+@pytest.fixture(scope="function")
+def seed_data(session):
+    """
+    Fixture to load default resources into the database before a test.
+    """
+    seed_db(session)
+
+
+@pytest.fixture(scope="function")
+def default_data_categories(db: Session):
+    for data_category in DEFAULT_TAXONOMY.data_category:
+        if (
+            DataCategoryDbModel.get_by(db, field="name", value=data_category.name)
+            is None
+        ):
+            DataCategoryDbModel.create(
+                db=db, data=data_category.model_dump(mode="json")
+            )
+
+
+@pytest.fixture(scope="function")
+def default_data_uses(db: Session):
+    for data_use in DEFAULT_TAXONOMY.data_use:
+        if DataUse.get_by(db, field="name", value=data_use.name) is None:
+            DataUse.create(db=db, data=data_use.model_dump(mode="json"))
+
+
+@pytest.fixture(scope="function")
+def default_organization(db: Session):
+    load_default_organization(db)
+
+
+@pytest.fixture(scope="function")
+def default_taxonomy(db: Session):
+    load_default_taxonomy(db)
+
+
+@pytest.fixture(scope="function", autouse=True)
+async def clear_db_tables(db, async_session):
+    """Clear data from tables between tests.
+
+    If relationships are not set to cascade on delete they will fail with an
+    IntegrityError if there are relationships present. This function stores tables
+    that fail with this error then recursively deletes until no more IntegrityErrors
+    are present.
+    """
+    yield
+
+    def delete_data(tables):
+        redo = []
+        for table in tables:
+            try:
+                db.execute(table.delete())
+            except IntegrityError:
+                redo.append(table)
+            finally:
+                db.commit()
+
+        if redo:
+            delete_data(redo)
+
+    # make sure all transactions are closed before starting deletes
+    db.commit()
+    await async_session.commit()
+
+    delete_data(Base.metadata.sorted_tables)
+
+
+@pytest.fixture(autouse=True, scope="session")
+def monkeysession():
+    """
+    Monkeypatch at the session level instead of the function level.
+    Automatically undoes the monkeypatching when the session finishes.
+    """
+    mpatch = MonkeyPatch()
+    yield mpatch
+    mpatch.undo()
+
+
+@pytest.fixture(scope="session")
+def monkeypatch_requests(test_client, monkeysession) -> None:
+    """
+    Some places within the application, for example `fides.core.api`, use the `requests`
+    library to interact with the webserver. This fixture patches those `requests` calls
+    so that all of those tests instead interact with the test instance.
+    """
+    monkeysession.setattr(requests, "get", test_client.get)
+    monkeysession.setattr(requests, "post", test_client.post)
+    monkeysession.setattr(requests, "put", test_client.put)
+    monkeysession.setattr(requests, "patch", test_client.patch)
+    monkeysession.setattr(requests, "delete", test_client.delete)
+
+
+def pytest_configure_node(node):
+    """Pytest hook automatically called for each xdist worker node configuration."""
+    if hasattr(node, "workerinput") and node.workerinput:
+        worker_id = node.workerinput["workerid"]
+        print(
+            f"[Configure Node] Configuring database and config for worker {worker_id}..."
+        )
+
+        os.environ["FIDES__DATABASE__TEST_DB"] = f"fides_test_{worker_id}"
+
+        get_config.cache_clear()
+        fides_config = get_config()
+        sync_db_uri = fides_config.database.sqlalchemy_test_database_uri
+        async_db_uri = fides_config.database.async_database_uri
+
+        # Log connection strings
+        print(
+            f"[Configure Node] Sync DB URI: {sync_db_uri} Async DB URI: {async_db_uri}"
+        )
+    else:
+        print(
+            "[Configure Node] Skipping DB setup/config update on single node or non-xdist run."
+        )
+
+
+@pytest.fixture
+def base_gcs_client_mock():
+    """Fixture to provide a base mock for Google Cloud Storage (GCS) client.
+
+    This fixture creates a base mock of the GCS client with proper method signatures
+    and basic functionality. It uses `create_autospec` to ensure that the mock
+    maintains the same interface as the real GCS client, which helps catch interface
+    changes and ensures type safety.
+
+    The fixture sets up:
+    - Mock credentials with proper autospec
+    - Mock client with required attributes
+    - Mock batch stack for handling batch operations
+    - Mock HTTP transport for handling requests
+    - Basic bucket method implementation
+
+    Usage:
+        ```python
+        def test_something(base_gcs_client_mock):
+            # The mock client will have the same interface as the real GCS client
+            bucket = base_gcs_client_mock.bucket("my-bucket")
+            # Any method calls will be properly type-checked
+        ```
+
+    Why autospec is used:
+    - Ensures the mock has the same interface as the real GCS client
+    - Catches interface changes that would break the real code
+    - Provides better error messages when methods are called incorrectly
+    - Maintains type safety throughout the test
+    """
+    # Create mock credentials with proper autospec
+    mock_credentials = create_autospec(google.auth.credentials.Credentials)
+    mock_credentials.valid = True
+    mock_credentials.expired = False
+    mock_credentials.refresh = create_autospec(
+        google.auth.credentials.Credentials.refresh, side_effect=lambda: None
+    )
+
+    # Create mock client with proper autospec
+    mock_client = create_autospec(storage.Client)
+    mock_client._credentials = mock_credentials
+    mock_client.project = "test-project"
+
+    # Set up batch stack
+    class MockBatchStack:
+        """Mock implementation of GCS batch operation stack."""
+
+        def __init__(self):
+            self._stack = []
+
+        @property
+        def top(self):
+            """Returns the top batch in the stack or None if empty."""
+            return self._stack[-1] if self._stack else None
+
+        def push(self, batch):
+            """Adds a new batch to the top of the stack."""
+            self._stack.append(batch)
+
+        def pop(self):
+            """Removes and returns the top batch from the stack."""
+            return self._stack.pop() if self._stack else None
+
+    # Set up HTTP transport with proper autospec
+    mock_http = create_autospec(requests.Session)
+    mock_response = create_autospec(requests.Response)
+    mock_response.status_code = 200
+    mock_http.request = create_autospec(
+        requests.Session.request, return_value=mock_response
+    )
+
+    # Add required attributes to mock client
+    mock_client._batch_stack = MockBatchStack()
+    mock_client._http_internal = mock_http
+    mock_client._http = mock_http
+
+    # Set up bucket method with proper autospec
+    def mock_get_bucket(self, bucket_name, user_project=None, generation=None):
+        """Creates and returns a mock bucket with the given name."""
+        mock_bucket = create_autospec(storage.Bucket)
+        mock_bucket.name = bucket_name
+        return mock_bucket
+
+    mock_client.bucket = types.MethodType(
+        create_autospec(storage.Client.bucket, side_effect=mock_get_bucket), mock_client
+    )
+
+    return mock_client
+
+
+@pytest.fixture
+def mock_gcs_client(
+    base_gcs_client_mock, monkeypatch, storage_config_default_gcs, attachment_file
+):
+    """Fixture to provide a fully configured mock GCS client for attachment testing.
+
+    This fixture extends the base_gcs_client_mock with attachment-specific behavior,
+    implementing a mock of the GCS client's functionality needed for testing
+    upload and deletion of files. It uses `create_autospec` to ensure type safety and proper
+    method signatures throughout the mock hierarchy.
+
+    Key features:
+    - Tracks all blobs in a bucket using a dictionary
+    - Simulates blob creation, deletion, and access
+    - Implements proper error handling (e.g., NotFound exceptions)
+    - Supports blob listing with prefix filtering
+    - Maintains proper method signatures through autospec
+
+    The mock implements the following GCS operations:
+    - Blob creation and upload
+    - Blob deletion
+    - Blob retrieval
+    - Signed URL generation
+    - Blob listing with prefix support
+
+    Usage:
+        ```python
+        def test_attachment_operations(mock_gcs_client):
+            # Create and upload an attachment
+            bucket = mock_gcs_client.bucket("test-bucket")
+            blob = bucket.blob("test-file.txt")
+            blob.upload_from_file(file_obj)
+
+            # Delete the attachment
+            blob.delete()
+
+            # Attempting to access deleted blob raises NotFound
+            with pytest.raises(NotFound):
+                blob.reload()
+        ```
+
+    Why autospec is used:
+    - Ensures all mock methods have the same signature as real GCS methods
+    - Catches interface changes that would break the real code
+    - Provides better error messages for incorrect method calls
+    - Maintains type safety throughout the test
+    - Helps catch bugs related to method signature changes
+
+    Dependencies:
+        - base_gcs_client_mock: Provides the base GCS client mock
+        - storage_config_default_gcs: Provides GCS storage configuration
+        - attachment_file: Provides test file content for size calculations
+    """
+    # Get the file content for size calculation
+    file_content = attachment_file[1].read()
+    attachment_file[1].seek(0)  # Reset file pointer
+
+    # Create a mock bucket with proper autospec
+    mock_bucket = create_autospec(storage.Bucket)
+    mock_bucket.name = storage_config_default_gcs.details[StorageDetails.BUCKET.value]
+
+    # Track all blobs
+    blobs = {}
+
+    # Set up the mock bucket's blob method with proper autospec
+    def mock_get_blob(self, blob_name, *args, **kwargs):
+        """Retrieves a blob by name, raising NotFound if it doesn't exist."""
+        # Check if blob exists
+        if blob_name not in blobs:
+            raise NotFound(f"Blob {blob_name} not found")
+
+        mock_blob = blobs[blob_name]
+        return mock_blob
+
+    # Set up bucket methods with proper autospec
+    mock_bucket.blob = types.MethodType(
+        create_autospec(storage.Bucket.blob, side_effect=mock_get_blob), mock_bucket
+    )
+
+    def mock_list_blobs(
+        self, prefix=None, delimiter=None, max_results=None, page_token=None, **kwargs
+    ):
+        """Lists all blobs in the bucket, optionally filtered by prefix."""
+        if prefix:
+            return [blob for name, blob in blobs.items() if name.startswith(prefix)]
+        return list(blobs.values())
+
+    mock_bucket.list_blobs = types.MethodType(
+        create_autospec(storage.Bucket.list_blobs, side_effect=mock_list_blobs),
+        mock_bucket,
+    )
+
+    # Set up the mock client's bucket method with proper autospec
+    def mock_get_bucket(self, bucket_name, user_project=None, generation=None):
+        """Returns the mock bucket if the name matches, otherwise raises ValueError."""
+        if bucket_name != mock_bucket.name:
+            raise ValueError(
+                f"Expected bucket name {mock_bucket.name}, got {bucket_name}"
+            )
+        return mock_bucket
+
+    # Update the base mock's bucket method with proper autospec
+    base_gcs_client_mock.bucket = types.MethodType(
+        create_autospec(storage.Client.bucket, side_effect=mock_get_bucket),
+        base_gcs_client_mock,
+    )
+
+    # Helper function to create a new blob
+    def create_mock_blob(blob_name):
+        """Creates a new mock blob with all required methods and attributes."""
+        mock_blob = create_autospec(storage.Blob)
+        mock_blob.name = blob_name
+        mock_blob.exists.return_value = True
+        mock_blob.size = len(file_content)
+        mock_blob.download_as_bytes = create_autospec(
+            storage.Blob.download_as_bytes, return_value=file_content
+        )
+
+        def mock_upload_from_file(
+            self,
+            file_obj,
+            content_type=None,
+            num_retries=None,
+            client=None,
+            size=None,
+            **kwargs,
+        ):
+            """Simulates uploading a file to the blob, storing it in the blobs dictionary."""
+            blobs[blob_name] = self
+            return None
+
+        def mock_generate_signed_url(self, version, expiration, method, **kwargs):
+            """Generates a signed URL for the blob, raising NotFound if the blob doesn't exist."""
+            if blob_name not in blobs:
+                raise NotFound(f"Blob {blob_name} not found")
+            return f"https://storage.googleapis.com/{mock_bucket.name}/{blob_name}"
+
+        def mock_delete(self):
+            """Deletes the blob from the blobs dictionary."""
+            if blob_name in blobs:
+                del blobs[blob_name]
+            return None
+
+        def mock_reload(self):
+            """Simulates reloading the blob's metadata, raising NotFound if the blob doesn't exist."""
+            if blob_name not in blobs:
+                raise NotFound(f"Blob {blob_name} not found")
+            return None
+
+        # Create properly autospecced methods with side effects
+        mock_blob.upload_from_file = types.MethodType(
+            create_autospec(
+                storage.Blob.upload_from_file, side_effect=mock_upload_from_file
+            ),
+            mock_blob,
+        )
+        mock_blob.generate_signed_url = types.MethodType(
+            create_autospec(
+                storage.Blob.generate_signed_url, side_effect=mock_generate_signed_url
+            ),
+            mock_blob,
+        )
+        mock_blob.delete = types.MethodType(
+            create_autospec(storage.Blob.delete, side_effect=mock_delete), mock_blob
+        )
+        mock_blob.reload = types.MethodType(
+            create_autospec(storage.Blob.reload, side_effect=mock_reload), mock_blob
+        )
+        return mock_blob
+
+    # Override the bucket's blob method to use our blob creation
+    def mock_create_blob(self, blob_name, *args, **kwargs):
+        """Creates a new blob in the bucket using the create_mock_blob helper."""
+        return create_mock_blob(blob_name)
+
+    mock_bucket.blob = types.MethodType(
+        create_autospec(storage.Bucket.blob, side_effect=mock_create_blob), mock_bucket
+    )
+
+    return base_gcs_client_mock

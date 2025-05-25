@@ -154,16 +154,14 @@ class TestStagedResourceModel:
         assert from_db_single.urn == urn_list[0]
 
     async def test_get_urn_async(
-        self, async_session_temp: AsyncSession, create_staged_resource
+        self, async_session: AsyncSession, create_staged_resource
     ) -> None:
         urn_list: List[str] = [str(create_staged_resource.urn)]
 
-        from_db_single = await StagedResource.get_urn_async(
-            async_session_temp, urn_list[0]
-        )
+        from_db_single = await StagedResource.get_urn_async(async_session, urn_list[0])
         assert from_db_single.urn == urn_list[0]
 
-        from_db = await StagedResource.get_urn_list_async(async_session_temp, urn_list)
+        from_db = await StagedResource.get_urn_list_async(async_session, urn_list)
         assert len(from_db) == len(urn_list)
         assert from_db[0].urn == urn_list[0]
 

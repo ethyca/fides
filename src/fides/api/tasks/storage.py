@@ -123,9 +123,10 @@ def upload_to_s3(  # pylint: disable=R0913
     logger.info("Starting S3 Upload of {}", file_key)
 
     if privacy_request is None and document is not None:
-        return generic_upload_to_s3(
+        _, response = generic_upload_to_s3(
             storage_secrets, bucket_name, file_key, auth_method, document
         )
+        return response
 
     if privacy_request is None:
         raise ValueError("Privacy request must be provided")
@@ -134,7 +135,9 @@ def upload_to_s3(  # pylint: disable=R0913
         s3_client = get_s3_client(
             auth_method,
             storage_secrets,
-            assume_role_arn=CONFIG.credentials["storage"].get("aws_s3_assume_role_arn"),
+            assume_role_arn=CONFIG.credentials.get(  # pylint: disable=no-member
+                "storage", {}
+            ).get("aws_s3_assume_role_arn"),
         )
 
         # handles file chunking

@@ -13,6 +13,7 @@ from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import ConnectionTestStatus
 from fides.api.service.connectors import (
     MongoDBConnector,
+    OktaConnector,
     PostgreSQLConnector,
     RDSMySQLConnector,
     RDSPostgresConnector,
@@ -73,6 +74,7 @@ class TestPostgresConnectionPutSecretsAPI:
             "password": None,
             "db_schema": None,
             "ssh_required": False,
+            "ssl_mode": None,
         }
         assert connection_config.last_test_timestamp is not None
         assert connection_config.last_test_succeeded is False
@@ -118,6 +120,7 @@ class TestPostgresConnectionPutSecretsAPI:
             "password": "postgres",
             "db_schema": None,
             "ssh_required": False,
+            "ssl_mode": None,
         }
         assert connection_config.last_test_timestamp is not None
         assert connection_config.last_test_succeeded is True
@@ -1501,5 +1504,36 @@ class TestRDSPostgresConnector:
         rds_postgres_connection_config.secrets["aws_secret_access_key"] = "bad_key"
         rds_postgres_connection_config.save(db)
         connector = get_connector(rds_postgres_connection_config)
+        with pytest.raises(ConnectionException):
+            connector.test_connection()
+
+
+@pytest.mark.integration_external
+@pytest.mark.integration_okta
+class TestOktaConnector:
+    def test_connector(
+        self,
+        okta_connection_config,
+    ) -> None:
+        connector = get_connector(okta_connection_config)
+        assert connector.__class__ == OktaConnector
+        assert connector.client()
+
+    def test_test_connection(
+        self,
+        db: Session,
+        okta_connection_config,
+    ) -> None:
+        connector = get_connector(okta_connection_config)
+        assert connector.test_connection() == ConnectionTestStatus.succeeded
+
+    def test_test_wrong_connection(
+        self,
+        db: Session,
+        okta_connection_config,
+    ) -> None:
+        okta_connection_config.secrets["api_token"] = "bad_key"
+        okta_connection_config.save(db)
+        connector = get_connector(okta_connection_config)
         with pytest.raises(ConnectionException):
             connector.test_connection()

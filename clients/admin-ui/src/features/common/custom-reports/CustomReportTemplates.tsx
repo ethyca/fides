@@ -5,7 +5,6 @@ import {
   ChevronDownIcon,
   ConfirmationModal,
   HStack,
-  IconButton,
   Input,
   InputGroup,
   Popover,
@@ -289,14 +288,13 @@ export const CustomReportTemplates = ({
                       pb={3}
                       data-testid="custom-reports-empty-state"
                     >
-                      <IconButton
-                        variant="primary"
-                        backgroundColor="gray.500"
-                        isRound
-                        size="xs"
+                      <Button
+                        type="primary"
+                        size="small"
                         aria-label={`add ${CUSTOM_REPORT_TITLE}`}
                         icon={<AddIcon />}
                         onClick={modalOnOpen}
+                        className="rounded-full"
                         data-testid="add-report-button"
                       />
                       <Text fontSize="sm" textAlign="center" color="gray.500">

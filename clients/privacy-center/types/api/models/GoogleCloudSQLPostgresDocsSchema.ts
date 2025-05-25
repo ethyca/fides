@@ -3,6 +3,7 @@
 /* eslint-disable */
 
 import type { fides__api__schemas__connection_configuration__connection_secrets_google_cloud_sql_postgres__KeyfileCreds } from "./fides__api__schemas__connection_configuration__connection_secrets_google_cloud_sql_postgres__KeyfileCreds";
+import type { GoogleCloudSQLIPType } from "./GoogleCloudSQLIPType";
 
 /**
  * Google Cloud SQL Postgres Secrets Schema for API Docs
@@ -25,4 +26,8 @@ export type GoogleCloudSQLPostgresDocsSchema = {
    * The contents of the key file that contains authentication credentials for a service account in GCP.
    */
   keyfile_creds: fides__api__schemas__connection_configuration__connection_secrets_google_cloud_sql_postgres__KeyfileCreds;
+  /**
+   * Specify the IP Address type required for the database (defaults to public).
+   */
+  ip_type?: GoogleCloudSQLIPType | null;
 };

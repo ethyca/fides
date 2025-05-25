@@ -1,5 +1,12 @@
-import { PrivacyCenterSettings } from "~/app/server-utils/PrivacyCenterSettings";
-import { ConsentMethod } from "~/types/api";
+import {
+  LOG_LEVEL_LABELS,
+  PrivacyCenterSettings,
+} from "~/app/server-utils/PrivacyCenterSettings";
+import type { ConsentMethod } from "~/types/api";
+import type {
+  ConsentFlagType,
+  ConsentNonApplicableFlagMode,
+} from "~/types/config";
 
 /**
  * Default value for how long to cache the /fides.js bundle for, in seconds.
@@ -7,6 +14,24 @@ import { ConsentMethod } from "~/types/api";
  * environment variable.
  */
 export const DEFAULT_FIDES_JS_MAX_AGE_SECONDS = 60 * 60;
+
+const defaultMissingExperienceBehavior = (
+  setting: string | undefined,
+): PrivacyCenterSettings["MISSING_EXPERIENCE_BEHAVIOR"] => {
+  if (setting === "throw") {
+    return "throw";
+  }
+
+  return "empty_experience";
+};
+
+const defaultLogLevel = (setting: any): PrivacyCenterSettings["LOG_LEVEL"] => {
+  if (LOG_LEVEL_LABELS.includes(setting)) {
+    return setting;
+  }
+
+  return "info";
+};
 
 const loadEnvironmentVariables = () => {
   // Load environment variables
@@ -30,6 +55,10 @@ const loadEnvironmentVariables = () => {
     FIDES_JS_MAX_AGE_SECONDS:
       Number(process.env.FIDES_PRIVACY_CENTER__FIDES_JS_MAX_AGE_SECONDS) ||
       DEFAULT_FIDES_JS_MAX_AGE_SECONDS,
+    MISSING_EXPERIENCE_BEHAVIOR: defaultMissingExperienceBehavior(
+      process.env.FIDES_PRIVACY_CENTER__MISSING_EXPERIENCE_BEHAVIOR,
+    ),
+    LOG_LEVEL: defaultLogLevel(process.env.FIDES_PRIVACY_CENTER__LOG_LEVEL),
 
     // Overlay options
     DEBUG: process.env.FIDES_PRIVACY_CENTER__DEBUG
@@ -102,6 +131,14 @@ const loadEnvironmentVariables = () => {
         | ConsentMethod.REJECT) || null,
     FIDES_DISABLED_NOTICES:
       process.env.FIDES_PRIVACY_CENTER__FIDES_DISABLED_NOTICES || null,
+    FIDES_CONSENT_NON_APPLICABLE_FLAG_MODE:
+      (process.env
+        .FIDES_PRIVACY_CENTER__FIDES_CONSENT_NON_APPLICABLE_FLAG_MODE as ConsentNonApplicableFlagMode) ||
+      null,
+    FIDES_CONSENT_FLAG_TYPE:
+      (process.env
+        .FIDES_PRIVACY_CENTER__FIDES_CONSENT_FLAG_TYPE as ConsentFlagType) ||
+      null,
   };
   return settings;
 };

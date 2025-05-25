@@ -381,7 +381,12 @@ export const ConnectorParameters = ({
     const toastParams = {
       ...DEFAULT_TOAST_PARAMS,
       status,
-      description: <TestConnectionMessage status={status} />,
+      description: (
+        <TestConnectionMessage
+          status={status}
+          failure_reason={value.data?.failure_reason}
+        />
+      ),
     };
     toast(toastParams);
   };
