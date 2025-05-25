@@ -171,8 +171,9 @@ async def run_database_startup(app: FastAPI) -> None:
     if CONFIG.database.automigrate:
         try:
             configure_db(CONFIG.database.sync_database_uri)
-            with get_autoclose_db_session() as session:
-                seed_db(session)
+            if not CONFIG.test_mode:
+                with get_autoclose_db_session() as session:
+                    seed_db(session)
             if CONFIG.database.load_samples:
                 async with get_async_autoclose_db_session() as async_session:
                     await seed.load_samples(async_session)

@@ -115,7 +115,7 @@ def get_db_health(
 
 
 def seed_db(session: Session) -> None:
-    """Load default resources into the database, and optionally load samples."""
+    """Load default resources into the database"""
     load_default_resources(session)
 
 

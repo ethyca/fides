@@ -33,7 +33,7 @@ from tests.conftest import wait_for_tasks_to_complete
 @pytest.mark.integration_postgres
 class TestPrivacyRequestService:
     """
-    Since these tests actually run the privacy request using the posgres database, we need to
+    Since these tests actually run the privacy request using the Postgres database, we need to
     mark them all as integration tests.
     """
 
@@ -325,6 +325,7 @@ class TestPrivacyRequestService:
         "postgres_integration_db",
         "require_manual_request_approval",
         "postgres_example_test_dataset_config",
+        "allow_custom_privacy_request_field_collection_enabled",
     )
     def test_resubmit_automatically_approves_request_if_no_webhooks(
         self,
@@ -425,3 +426,22 @@ class TestPrivacyRequestService:
             ExecutionLog.status == ExecutionLogStatus.error
         )
         assert error_logs.count() == 0
+
+    def test_create_privacy_request_with_masking_secrets(
+        self,
+        privacy_request_service: PrivacyRequestService,
+        erasure_policy_aes: Policy,
+    ):
+        """
+        Test that a privacy request with a policy that needs masking secrets
+        persists the masking secrets to the database.
+        """
+        privacy_request = privacy_request_service.create_privacy_request(
+            PrivacyRequestCreate(
+                identity=Identity(email="user@example.com"),
+                policy_key=erasure_policy_aes.key,
+            ),
+            authenticated=True,
+        )
+        assert privacy_request.masking_secrets is not None
+        assert len(privacy_request.masking_secrets) > 0
