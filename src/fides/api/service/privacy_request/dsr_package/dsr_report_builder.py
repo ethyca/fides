@@ -4,16 +4,15 @@ import zipfile
 from collections import defaultdict
 from io import BytesIO
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Optional
 
 import jinja2
 from jinja2 import Environment, FileSystemLoader
+from loguru import logger
 
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.policy import ActionType
 from fides.api.util.storage_util import StorageJSONEncoder
-from loguru import logger
-
 
 DSR_DIRECTORY = Path(__file__).parent.resolve()
 
@@ -40,10 +39,11 @@ class DsrReportBuilder:
         privacy_request: the privacy request object
         dsr_data: the DSR data
     """
+
     def __init__(
         self,
         privacy_request: PrivacyRequest,
-        dsr_data: Dict[str, Any],
+        dsr_data: dict[str, Any],
     ):
         """
         Initializes the DSR report builder.
@@ -61,12 +61,12 @@ class DsrReportBuilder:
         self.template_loader = Environment(
             loader=FileSystemLoader(DSR_DIRECTORY), autoescape=True
         )
-        self.template_data: Dict[str, Any] = {
+        self.template_data: dict[str, Any] = {
             "text_color": TEXT_COLOR,
             "header_color": HEADER_COLOR,
             "border_color": BORDER_COLOR,
         }
-        self.main_links: Dict[str, Any] = {}  # used to track the generated pages
+        self.main_links: dict[str, Any] = {}  # used to track the generated pages
         self.request_data = _map_privacy_request(privacy_request)
         self.dsr_data = dsr_data
 
@@ -75,7 +75,7 @@ class DsrReportBuilder:
         template_path: str,
         heading: Optional[str] = None,
         description: Optional[str] = None,
-        data: Optional[Dict[str, Any]] = None,
+        data: Optional[dict[str, Any]] = None,
     ) -> str:
         """
         Populates the template with the given data.
@@ -111,7 +111,7 @@ class DsrReportBuilder:
         if filename and contents:
             self.out.writestr(f"{filename}", contents.encode("utf-8"))
 
-    def _add_dataset(self, dataset_name: str, collections: Dict[str, Any]) -> None:
+    def _add_dataset(self, dataset_name: str, collections: dict[str, Any]) -> None:
         """
         Adds a dataset to the zip file.
 
@@ -177,7 +177,7 @@ class DsrReportBuilder:
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             "application/vnd.ms-excel",
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            "application/zip"
+            "application/zip",
         ]:
             if not isinstance(content, bytes):
                 content = content.encode("utf-8")
@@ -190,7 +190,7 @@ class DsrReportBuilder:
         self.out.writestr(f"{directory}/{file_name}", content)
 
     def _add_collection(
-        self, rows: List[Dict[str, Any]], dataset_name: str, collection_name: str
+        self, rows: list[dict[str, Any]], dataset_name: str, collection_name: str
     ) -> None:
         """
         Adds a collection to the zip file.
@@ -204,7 +204,9 @@ class DsrReportBuilder:
 
         for index, collection_item in enumerate(rows, 1):
             # Process any attachments in the item
-            if "attachments" in collection_item and isinstance(collection_item["attachments"], list):
+            if "attachments" in collection_item and isinstance(
+                collection_item["attachments"], list
+            ):
                 for attachment in collection_item["attachments"]:
                     file_name = attachment.get("file_name", "unknown")
                     content = attachment.get("content")
@@ -213,15 +215,17 @@ class DsrReportBuilder:
                         file_name,
                         content,
                         content_type,
-                        f"data/{dataset_name}/{collection_name}"
+                        f"data/{dataset_name}/{collection_name}",
                     )
 
             # Add item content to the list
-            items_content.append({
-                "index": index,
-                "heading": f"{collection_name} (item #{index})",
-                "data": collection_item
-            })
+            items_content.append(
+                {
+                    "index": index,
+                    "heading": f"{collection_name} (item #{index})",
+                    "data": collection_item,
+                }
+            )
 
         # Generate the collection index page
         self._add_file(
@@ -234,7 +238,7 @@ class DsrReportBuilder:
             ),
         )
 
-    def _add_attachments(self, attachments: List[Dict[str, Any]]) -> None:
+    def _add_attachments(self, attachments: list[dict[str, Any]]) -> None:
         """
         Adds top-level attachments to the zip file.
 
@@ -256,7 +260,9 @@ class DsrReportBuilder:
             attachment_links[file_name] = f"{file_name}"
 
             # Write the attachment to the top-level attachments directory
-            self._write_attachment_content(file_name, content, content_type, "attachments")
+            self._write_attachment_content(
+                file_name, content, content_type, "attachments"
+            )
 
         # Generate attachments index page using the attachments index template
         self._add_file(
@@ -269,13 +275,15 @@ class DsrReportBuilder:
             ),
         )
 
-    def _get_datasets_from_dsr_data(self) -> Dict[str, Any]:
+    def _get_datasets_from_dsr_data(self) -> dict[str, Any]:
         """
         Returns the datasets from the DSR data.
         """
         # pre-process data to split the dataset:collection keys
-        datasets: Dict[str, Any] = defaultdict(lambda: defaultdict(list))
+        datasets: dict[str, Any] = defaultdict(lambda: defaultdict(list))
         for key, rows in self.dsr_data.items():
+
+            # we handle attachments separately
             if key == "attachments":
                 continue
 
@@ -318,7 +326,9 @@ class DsrReportBuilder:
             datasets = self._get_datasets_from_dsr_data()
 
             # Sort datasets alphabetically, excluding special cases
-            regular_datasets = [name for name in sorted(datasets.keys()) if name != "dataset"] # pylint: disable=invalid-name
+            regular_datasets = [
+                name for name in sorted(datasets.keys()) if name != "dataset"
+            ]  # pylint: disable=invalid-name
 
             # Add regular datasets in alphabetical order
             for dataset_name in regular_datasets:
@@ -353,9 +363,9 @@ class DsrReportBuilder:
         return self.baos
 
 
-def _map_privacy_request(privacy_request: PrivacyRequest) -> Dict[str, Any]:
+def _map_privacy_request(privacy_request: PrivacyRequest) -> dict[str, Any]:
     """Creates a map with a subset of values from the privacy request"""
-    request_data: Dict[str, Any] = {}
+    request_data: dict[str, Any] = {}
     request_data["id"] = privacy_request.id
 
     action_type: Optional[ActionType] = privacy_request.policy.get_action_type()

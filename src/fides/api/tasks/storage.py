@@ -26,10 +26,6 @@ from fides.api.tasks.attachment_utils import remove_attachment_content
 from fides.api.tasks.csv_utils import write_csv_to_zip
 from fides.api.tasks.encryption_utils import encrypt_access_request_results
 from fides.api.util.aws_util import get_s3_client
-from fides.api.util.cache import get_cache, get_encryption_cache_key
-from fides.api.util.encryption.aes_gcm_encryption_scheme import (
-    encrypt_to_bytes_verify_secrets_length,
-)
 from fides.api.util.storage_util import StorageJSONEncoder
 from fides.config import CONFIG
 
