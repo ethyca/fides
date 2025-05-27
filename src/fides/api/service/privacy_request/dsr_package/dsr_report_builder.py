@@ -14,6 +14,7 @@ from fides.api.schemas.policy import ActionType
 from fides.api.util.storage_util import StorageJSONEncoder
 from loguru import logger
 
+
 DSR_DIRECTORY = Path(__file__).parent.resolve()
 
 TEXT_COLOR = "#4A5568"
