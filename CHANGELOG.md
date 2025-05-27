@@ -48,6 +48,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Fixed
 - Fix Special-purpose vendors with restricted purposes not correctly encoded in TC string [#6145](https://github.com/ethyca/fides/pull/6145) https://github.com/ethyca/fides/labels/high-risk
 - Fixed an issue where consent mechanism string values and/or non-applicable notices not applied to Fides.consent during initialization [#6157](https://github.com/ethyca/fides/pull/6157)
+- Fixed vendor display when switching between consent and legitimate interest purposes in TCF UI [#6171](https://github.com/ethyca/fides/pull/6171)
 
 ## [2.61.1](https://github.com/ethyca/fides/compare/2.61.0...2.61.1)
 
