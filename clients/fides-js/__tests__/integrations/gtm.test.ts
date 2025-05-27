@@ -7,7 +7,9 @@ import {
 
 const fidesEvents: Record<FidesEventType, boolean> = {
   FidesInitializing: false,
-  FidesInitialized: true,
+  FidesInitialized: true, // deprecated
+  FidesConsentLoaded: false,
+  FidesReady: false,
   FidesUpdating: true,
   FidesUpdated: true,
   FidesUIChanged: true,

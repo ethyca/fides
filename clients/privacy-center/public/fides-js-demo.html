@@ -26,9 +26,6 @@
         document.write(
           "<script>Fides.gtm(!!window.fides_overrides && window.fides_overrides.gtmOptions);<\/script>",
         );
-        window.addEventListener("FidesInitialized", (a) =>
-          console.log("FidesInitialized", a),
-        );
       })();
       var deleteCookie = function () {
         document.cookie =
@@ -218,7 +215,7 @@
       if (Fides.initialized) {
         onInitialized();
       } else {
-        window.addEventListener("FidesInitialized", onInitialized);
+        window.addEventListener("FidesReady", onInitialized);
       }
       window.addEventListener("FidesUpdated", () => {
         console.log("Fides has been updated");

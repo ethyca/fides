@@ -191,6 +191,12 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     Object.assign(this, initialFides);
     updateWindowFides(this);
     this.experience = initialFides.experience; // pre-fetched experience, if available, with consent applied
+
+    // Vendors (GTM, etc.) can use this event to know when the consent is loaded.
+    dispatchFidesEvent("FidesConsentLoaded", this.cookie, {
+      shouldShowExperience: this.shouldShowExperience(),
+    });
+    /** @deprecated - FidesInitialized is used for backwards compatibility only */
     dispatchFidesEvent("FidesInitialized", this.cookie, {
       shouldShowExperience: this.shouldShowExperience(),
       firstInit: true,
@@ -209,7 +215,11 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   Object.assign(this, updatedFides);
   updateWindowFides(this);
 
-  // Dispatch the "FidesInitialized" event to update listeners with the initial state.
+  // The window.Fides object and the Overlay are now fully initialized and ready to be used.
+  dispatchFidesEvent("FidesReady", this.cookie, {
+    shouldShowExperience: this.shouldShowExperience(),
+  });
+  /** @deprecated - FidesInitialized is used for backwards compatibility only */
   dispatchFidesEvent("FidesInitialized", this.cookie, {
     shouldShowExperience: this.shouldShowExperience(),
     firstInit: false,

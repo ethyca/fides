@@ -85,7 +85,9 @@ export const gtm = (options?: GtmOptions) => {
   // considered by future developers as to whether they should be pushed to GTM.
   const fidesEvents: Record<FidesEventType, boolean> = {
     FidesInitializing: false,
-    FidesInitialized: true,
+    FidesInitialized: true, // deprecated
+    FidesConsentLoaded: false,
+    FidesReady: false,
     FidesUpdating: true,
     FidesUpdated: true,
     FidesUIChanged: true,
