@@ -26,6 +26,9 @@
         document.write(
           "<script>Fides.gtm(!!window.fides_overrides && window.fides_overrides.gtmOptions);<\/script>",
         );
+        window.addEventListener("FidesInitialized", (a) =>
+          console.log("FidesInitialized", a),
+        );
       })();
       var deleteCookie = function () {
         document.cookie =

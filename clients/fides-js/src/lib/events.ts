@@ -74,7 +74,6 @@ export type { FidesEventType };
 export const dispatchFidesEvent = (
   type: FidesEventType,
   fidesCookie: FidesCookie | undefined,
-  debug: boolean,
   extraDetails?: FidesEventExtraDetails,
 ) => {
   const cookie = fidesCookie ? { ...fidesCookie } : undefined;
@@ -98,7 +97,7 @@ export const dispatchFidesEvent = (
     const event = new CustomEvent(type, {
       detail: {
         ...normalizedCookie,
-        debug,
+        debug: !!window.Fides?.options?.debug,
         extraDetails: constructedExtraDetails,
         timestamp,
       },

@@ -100,17 +100,12 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   this.config = config; // no matter how the config is set, we want to store it on the global object
   updateWindowFides(this);
 
-  dispatchFidesEvent(
-    "FidesInitializing",
-    undefined,
-    this.config.options.debug,
-    {
-      gppEnabled:
-        this.config.options.gppEnabled ||
-        this.config.experience?.gpp_settings?.enabled,
-      tcfEnabled: this.config.options.tcfEnabled,
-    },
-  );
+  dispatchFidesEvent("FidesInitializing", undefined, {
+    gppEnabled:
+      this.config.options.gppEnabled ||
+      this.config.experience?.gpp_settings?.enabled,
+    tcfEnabled: this.config.options.tcfEnabled,
+  });
 
   const optionsOverrides: Partial<FidesInitOptionsOverrides> =
     getOverridesByType<Partial<FidesInitOptionsOverrides>>(
@@ -196,7 +191,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     Object.assign(this, initialFides);
     updateWindowFides(this);
     this.experience = initialFides.experience; // pre-fetched experience, if available, with consent applied
-    dispatchFidesEvent("FidesInitialized", this.cookie, config.options.debug, {
+    dispatchFidesEvent("FidesInitialized", this.cookie, {
       shouldShowExperience: this.shouldShowExperience(),
       firstInit: true,
     });
@@ -215,7 +210,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   updateWindowFides(this);
 
   // Dispatch the "FidesInitialized" event to update listeners with the initial state.
-  dispatchFidesEvent("FidesInitialized", this.cookie, config.options.debug, {
+  dispatchFidesEvent("FidesInitialized", this.cookie, {
     shouldShowExperience: this.shouldShowExperience(),
     firstInit: false,
   });
