@@ -31,6 +31,11 @@ class TestProperty:
         return {"id": experience_config.id, "name": experience_config.name}
 
     def test_create_property(self, db, minimal_experience, privacy_center_config):
+        # Clean any properties that might have been created from
+        # the database migration on server startup.
+        db.query(Property).delete()
+        db.commit()
+
         prop = Property.create(
             db=db,
             data=PropertySchema(
