@@ -4,7 +4,7 @@ import zipfile
 from collections import defaultdict
 from io import BytesIO
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import jinja2
 from jinja2 import Environment, FileSystemLoader
@@ -209,6 +209,21 @@ class DsrReportBuilder:
             ),
         )
 
+    def _get_dataset_and_collections(
+        self, key: str, rows: List[Dict[str, Any]]
+    ) -> Tuple[str, List[Dict[str, Any]]]:
+        """
+        Returns the dataset name for the given key and rows.
+        """
+        print(key)
+        print(rows)
+        parts = key.split(":", 1)
+        if len(parts) > 1:
+            return parts
+        if "system_name" in rows[0]:
+            return (rows[0]["system_name"], parts[0])
+        return ("manual", parts[0])
+
     def generate(self) -> BytesIO:
         """
         Processes the request and DSR data to build zip file containing the DSR report.
@@ -233,13 +248,22 @@ class DsrReportBuilder:
                 if key == "attachments":
                     # Handle attachments separately
                     self._add_attachments(rows)
-                    self.main_links["Attachments"] = "attachments/index.html"
+                    self.main_links["Additional Attachments"] = "attachments/index.html"
                     continue
 
                 parts = key.split(":", 1)
-                dataset_name, collection_name = (
-                    parts if len(parts) > 1 else ("manual", parts[0])
-                )
+                if len(parts) > 1:
+                    dataset_name, collection_name = parts
+                else:
+                    for row in rows:
+                        if "system_name" in row:
+                            dataset_name = row["system_name"]
+                            collection_name = parts[0]
+                            break
+                    else:
+                        dataset_name = "manual"
+                        collection_name = parts[0]
+
                 datasets[dataset_name][collection_name].extend(rows)
 
             for dataset_name, collections in datasets.items():

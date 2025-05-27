@@ -139,13 +139,13 @@ def get_manual_webhook_access_inputs(
             webhook_data = privacy_request.get_manual_webhook_access_input_strict(
                 manual_webhook
             )
+            webhook_data["system_name"] = manual_webhook.connection_config.system.name
             # Get any attachments for this webhook
             webhook_attachments = privacy_request.get_access_manual_webhook_attachments(
                 db, manual_webhook.id
             )
             logger.info(webhook_attachments)
             if webhook_attachments:
-                logger.info("GETTING ATTACHMENTS")
                 # Load attachments from database to ensure they have their configs
                 loaded_attachments = []
                 for webhook_attachment in webhook_attachments:

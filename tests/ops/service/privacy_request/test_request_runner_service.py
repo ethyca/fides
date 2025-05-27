@@ -25,6 +25,7 @@ from fides.api.models.attachment import (
     AttachmentType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.policy import PolicyPostWebhook, PolicyPreWebhook
 from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest
 from fides.api.schemas.masking.masking_configuration import MaskingConfiguration
@@ -769,6 +770,9 @@ class TestPrivacyRequestsEmailNotifications:
 
 
 class TestPrivacyRequestsManualWebhooks:
+    EMAIL = "customer-1@example.com"
+    LAST_NAME = "McCustomer"
+
     @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
     @pytest.mark.parametrize(
         "dsr_version",
@@ -787,11 +791,10 @@ class TestPrivacyRequestsManualWebhooks:
     ):
         request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-        customer_email = "customer-1@example.com"
         data = {
             "requested_at": "2021-08-30T16:09:37.359Z",
             "policy_key": policy.key,
-            "identity": {"email": customer_email},
+            "identity": {"email": self.EMAIL},
         }
 
         pr = get_privacy_request_results(
@@ -826,12 +829,10 @@ class TestPrivacyRequestsManualWebhooks:
     ):
         """Manual inputs are not tied to policies, but should still hold up a request even for erasure requests."""
         request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-        customer_email = "customer-1@example.com"
         data = {
             "requested_at": "2021-08-30T16:09:37.359Z",
             "policy_key": erasure_policy.key,
-            "identity": {"email": customer_email},
+            "identity": {"email": self.EMAIL},
         }
 
         pr = get_privacy_request_results(
@@ -874,7 +875,11 @@ class TestPrivacyRequestsManualWebhooks:
         assert mock_upload.called
         assert mock_upload.call_args.kwargs["data"] == {
             "manual_webhook_example": [
-                {"email": "customer-1@example.com", "last_name": "McCustomer"}
+                {
+                    "system_name": integration_manual_webhook_config.system.name,
+                    "email": self.EMAIL,
+                    "last_name": self.LAST_NAME,
+                }
             ]
         }
 
@@ -900,7 +905,7 @@ class TestPrivacyRequestsManualWebhooks:
 
         privacy_request_requires_input.cache_manual_webhook_access_input(
             access_manual_webhook,
-            {"email": "customer-1@example.com"},
+            {"email": self.EMAIL},
         )
 
         run_privacy_request_task.delay(privacy_request_requires_input.id).get(
@@ -912,7 +917,11 @@ class TestPrivacyRequestsManualWebhooks:
         assert mock_upload.called
         assert mock_upload.call_args.kwargs["data"] == {
             "manual_webhook_example": [
-                {"email": "customer-1@example.com", "last_name": None}
+                {
+                    "email": self.EMAIL,
+                    "last_name": None,
+                    "system_name": integration_manual_webhook_config.system.name,
+                }
             ]
         }
 
@@ -949,8 +958,93 @@ class TestPrivacyRequestsManualWebhooks:
         assert privacy_request_requires_input.status == PrivacyRequestStatus.complete
         assert mock_upload.called
         assert mock_upload.call_args.kwargs["data"] == {
-            "manual_webhook_example": [{"email": None, "last_name": None}]
+            "manual_webhook_example": [
+                {
+                    "email": None,
+                    "last_name": None,
+                    "system_name": integration_manual_webhook_config.system.name,
+                }
+            ]
         }
+
+    @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
+    )
+    def test_multiple_manual_webhooks(
+        self,
+        mock_upload,
+        integration_manual_webhook_config,
+        integration_manual_webhook_config_with_system2,
+        access_manual_webhook,
+        policy,
+        run_privacy_request_task,
+        privacy_request_requires_input: PrivacyRequest,
+        db,
+        dsr_version,
+        request,
+    ):
+        """Test that multiple manual webhooks are processed correctly"""
+        mock_upload.return_value = "http://www.data-download-url"
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+        # Create a second manual webhook
+        second_webhook = AccessManualWebhook.create(
+            db=db,
+            data={
+                "connection_config_id": integration_manual_webhook_config_with_system2.id,
+                "fields": [
+                    {
+                        "pii_field": "phone",
+                        "dsr_package_label": "phone",
+                        "data_categories": ["user.contact.phone"],
+                        "types": ["string"],
+                    }
+                ],
+            },
+        )
+
+        # Cache input for both webhooks
+        privacy_request_requires_input.cache_manual_webhook_access_input(
+            access_manual_webhook,
+            {"email": self.EMAIL, "last_name": self.LAST_NAME},
+        )
+        privacy_request_requires_input.cache_manual_webhook_access_input(
+            second_webhook,
+            {"phone": "+1234567890"},
+        )
+
+        run_privacy_request_task.delay(privacy_request_requires_input.id).get(
+            timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+        )
+
+        db.refresh(privacy_request_requires_input)
+        assert privacy_request_requires_input.status == PrivacyRequestStatus.complete
+        assert mock_upload.called
+
+        # Verify both webhooks' data was included in the upload
+        uploaded_data = mock_upload.call_args.kwargs["data"]
+        assert "manual_webhook_example" in uploaded_data
+        webhook_data = uploaded_data["manual_webhook_example"][0]
+
+        # Verify first webhook's data
+        assert webhook_data["email"] == self.EMAIL
+        assert webhook_data["last_name"] == self.LAST_NAME
+        assert (
+            webhook_data["system_name"] == integration_manual_webhook_config.system.name
+        )
+
+        # Verify second webhook's data
+        webhook_data2 = uploaded_data["manual_webhook_example2"][0]
+        assert webhook_data2["phone"] == "+1234567890"
+        assert (
+            webhook_data2["system_name"]
+            == integration_manual_webhook_config_with_system2.system.name
+        )
+
+        # Clean up
+        second_webhook.delete(db)
 
 
 def test_build_consent_dataset_graph(
@@ -1609,10 +1703,13 @@ class TestIncludeAttachments:
             == attachment_include_in_download.file_name
         )
         assert results_attachments[0]["file_size"] == len(b"file content")
-        assert results_attachments[0]["content_type"] == "txt"
+        assert results_attachments[0]["content_type"] == "text/plain"
         assert results_attachments[0]["content"] is not None
         assert results_attachments[0]["download_url"] is not None
-        assert "http://www.data-download-url" in results_attachments[0]["download_url"]
+        assert (
+            "https://s3.amazonaws.com/test_bucket/"
+            in results_attachments[0]["download_url"]
+        )
 
     @pytest.mark.usefixtures("s3_client")
     def test_attachments_included_in_manual_webhook_results(
@@ -1679,6 +1776,7 @@ class TestIncludeAttachments:
         assert webhook_inputs is not None
         assert webhook_inputs.proceed
         assert webhook_inputs.manual_data is not None
+
         assert access_manual_webhook.connection_config.key in webhook_inputs.manual_data
         webhook_data = webhook_inputs.manual_data[
             access_manual_webhook.connection_config.key
@@ -1686,17 +1784,22 @@ class TestIncludeAttachments:
 
         # Verify the webhook data structure
         assert "attachments" in webhook_data
+        assert "system_name" in webhook_data
+        assert (
+            webhook_data["system_name"]
+            == access_manual_webhook.connection_config.system.name
+        )
         assert len(webhook_data["attachments"]) == 1
         assert (
             webhook_data["attachments"][0]["file_name"]
             == attachment_include_in_download.file_name
         )
         assert webhook_data["attachments"][0]["file_size"] == len(b"file content")
-        assert webhook_data["attachments"][0]["content_type"] == "txt"
+        assert webhook_data["attachments"][0]["content_type"] == "text/plain"
         assert webhook_data["attachments"][0]["content"] is not None
         assert webhook_data["attachments"][0]["download_url"] is not None
         assert (
-            "http://www.data-download-url"
+            "https://s3.amazonaws.com/test_bucket/"
             in webhook_data["attachments"][0]["download_url"]
         )
         assert webhook_data["email"] == "test@example.com"

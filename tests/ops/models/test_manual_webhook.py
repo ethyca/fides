@@ -157,6 +157,12 @@ class TestManualWebhook:
             access_manual_webhook.attachments, key=lambda x: x.created_at
         )
 
+        assert access_manual_webhook.system is not None
+        assert (
+            access_manual_webhook.system.name
+            == access_manual_webhook.connection_config.system.name
+        )
+
     def test_manual_webhook_with_multiple_types(
         self, integration_manual_webhook_config, db
     ):

@@ -1,8 +1,6 @@
 import io
-import json
 import zipfile
-from datetime import datetime, timezone
-from unittest.mock import MagicMock
+from datetime import datetime
 
 import pytest
 from sqlalchemy.orm import Session
@@ -14,6 +12,7 @@ from fides.api.service.privacy_request.dsr_package.dsr_report_builder import (
     DsrReportBuilder,
 )
 
+
 class TestDsrReportBuilderAttachments:
     """Tests for DSR report builder's attachment handling"""
 
@@ -21,9 +20,10 @@ class TestDsrReportBuilderAttachments:
         """Test DSR report builder with attachments in manual webhook data"""
         # Create test data with attachments in different locations
         dsr_data = {
-            "manual:test_webhook": [
+            "test_webhook": [
                 {
                     "email": "test@example.com",
+                    "system_name": "test_system",
                 }
             ],
             "attachments": [
@@ -96,6 +96,7 @@ class TestDsrReportBuilderAttachments:
                     "email": "test@example.com",
                     "name": "Test User",
                     "attachments": [],  # Empty attachments list
+                    "system_name": "test_system",
                 }
             ],
             "attachments": [],  # Empty top-level attachments
@@ -133,6 +134,7 @@ class TestDsrReportBuilderAttachments:
                     "email": "test@example.com",
                     "attachments": [],
                     "nested_data": {"attachments": []},
+                    "system_name": "test_system",
                 }
             ],
             "attachments": [],
@@ -166,6 +168,7 @@ class TestDsrReportBuilderAttachments:
                     "nested_data": {
                         "attachments": None  # Malformed nested attachment data
                     },
+                    "system_name": "test_system",
                 }
             ],
             "attachments": "not a list",  # Malformed top-level attachment data
@@ -214,6 +217,7 @@ class TestDsrReportBuilderAttachments:
                             "download_url": "http://example.com/webhook2.pdf",
                         },
                     ],
+                    "system_name": "test_system",
                 }
             ],
             "attachments": [
@@ -282,6 +286,105 @@ class TestDsrReportBuilderAttachments:
             assert (
                 "top_level.txt" in attachments_index
             )  # Only top-level attachment should be in index
+
+    def test_with_multiple_manual_webhooks(self, privacy_request: PrivacyRequest):
+        """Test DSR report builder with multiple manual webhooks and their attachments"""
+        dsr_data = {
+            "test_webhook": [
+                {
+                    "email": "test@example.com",
+                    "last_name": "Test User",
+                    "attachments": [
+                        {
+                            "file_name": "webhook1.txt",
+                            "file_size": 1024,
+                            "content_type": "text/plain",
+                            "content": "webhook content 1",
+                            "download_url": "http://example.com/webhook1.txt",
+                        }
+                    ],
+                    "system_name": "test_system",
+                }
+            ],
+            "test_webhook2": [
+                {
+                    "phone": "+1234567890",
+                    "attachments": [
+                        {
+                            "file_name": "webhook2.pdf",
+                            "file_size": 2048,
+                            "content_type": "application/pdf",
+                            "content": b"webhook content 2",
+                            "download_url": "http://example.com/webhook2.pdf",
+                        }
+                    ],
+                    "system_name": "test_system2",
+                }
+            ],
+            "attachments": [
+                {
+                    "file_name": "top_level.txt",
+                    "file_size": 3072,
+                    "content_type": "text/plain",
+                    "content": "top level content",
+                    "download_url": "http://example.com/top_level.txt",
+                }
+            ],
+        }
+
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
+        report = builder.generate()
+
+        with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
+            # Verify that webhook attachments are present in both locations
+            assert "attachments/webhook1.txt" in zip_file.namelist()
+            assert "attachments/webhook2.pdf" in zip_file.namelist()
+            assert "data/test_system/test_webhook/webhook1.txt" in zip_file.namelist()
+            assert "data/test_system2/test_webhook2/webhook2.pdf" in zip_file.namelist()
+
+            # Verify that top-level attachment is only in attachments directory
+            assert "attachments/top_level.txt" in zip_file.namelist()
+            assert "data/test_system/test_webhook/top_level.txt" not in zip_file.namelist()
+            assert "data/test_system2/test_webhook2/top_level.txt" not in zip_file.namelist()
+
+            # Verify attachment content in both locations
+            assert (
+                zip_file.read("attachments/webhook1.txt").decode("utf-8")
+                == "webhook content 1"
+            )
+            assert zip_file.read("attachments/webhook2.pdf") == b"webhook content 2"
+            assert (
+                zip_file.read("data/test_system/test_webhook/webhook1.txt").decode("utf-8")
+                == "webhook content 1"
+            )
+            assert (
+                zip_file.read("data/test_system2/test_webhook2/webhook2.pdf")
+                == b"webhook content 2"
+            )
+            assert (
+                zip_file.read("attachments/top_level.txt").decode("utf-8")
+                == "top level content"
+            )
+
+            # Verify that the manual webhook pages contain clickable links to their attachments
+            webhook1_data = zip_file.read("data/test_system/test_webhook/1.html").decode("utf-8")
+            assert 'href="webhook1.txt"' in webhook1_data
+            assert 'class="attachment-link"' in webhook1_data
+            assert "test@example.com" in webhook1_data
+            assert "Test User" in webhook1_data
+            assert "test_system" in webhook1_data
+
+            webhook2_data = zip_file.read("data/test_system2/test_webhook2/1.html").decode("utf-8")
+            assert 'href="webhook2.pdf"' in webhook2_data
+            assert 'class="attachment-link"' in webhook2_data
+            assert "+1234567890" in webhook2_data
+            assert "test_system2" in webhook2_data
+
+            # Verify that the attachments index page only contains top-level attachment
+            attachments_index = zip_file.read("attachments/index.html").decode("utf-8")
+            assert "webhook1.txt" not in attachments_index  # Webhook attachments shouldn't be in index
+            assert "webhook2.pdf" not in attachments_index  # Webhook attachments shouldn't be in index
+            assert "top_level.txt" in attachments_index  # Only top-level attachment should be in index
 
 
 class TestDsrReportBuilderDataStructure:
@@ -403,6 +506,7 @@ class TestDsrReportBuilderDataTypes:
                         "key": "value",
                         "nested_list": [{"a": 1}, {"b": 2}],
                     },
+                    "system_name": "test_system",
                 }
             ]
         }
@@ -452,6 +556,7 @@ class TestDsrReportBuilderDataTypes:
                     "unicode_chars": "你好世界",
                     "emoji": "👋🌍",
                     "html_chars": "<script>alert('test')</script>",
+                    "system_name": "test_system",
                 }
             ]
         }
@@ -514,6 +619,7 @@ class TestDsrReportBuilderDataTypes:
             assert "&lt;" in html_chars  # <
             assert "&gt;" in html_chars  # >
             assert "&#39;" in html_chars  # '
+
 
 @pytest.fixture
 def dsr_data() -> dict:
