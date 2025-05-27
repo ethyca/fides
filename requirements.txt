@@ -7,6 +7,7 @@ asyncpg==0.27.0
 boto3==1.26.1
 certifi==2024.8.30
 celery[pytest]==5.2.7
+click==8.1.8
 click_default_group==1.2.2
 cloud-sql-python-connector==1.9.2
 colorama>=0.4.3
