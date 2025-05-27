@@ -57,6 +57,10 @@ const VENDOR_1 = {
   id: "gvl.2",
   name: "Captify",
 };
+const VENDOR_2 = {
+  id: "gvl.3",
+  name: "Fides System",
+};
 const STACK_1 = {
   id: 7,
   name: "Selection of personalised advertising, advertising measurement, and audience research",
@@ -986,6 +990,15 @@ describe("Fides-js TCF", () => {
             cy.get("span")
               .contains(legintSpecialPurposeName)
               .should("not.exist");
+            cy.get("span").contains(PURPOSE_4.name).click();
+            // scroll to the vendor list
+            cy.get(".fides-tcf-purpose-vendor-list").first().scrollIntoView();
+            cy.get(".fides-tcf-purpose-vendor-list")
+              .contains(VENDOR_1.name)
+              .should("be.visible");
+            cy.get(".fides-tcf-purpose-vendor-list")
+              .contains(VENDOR_2.name)
+              .should("not.be.visible");
             cy.getByTestId(`toggle-${PURPOSE_2.name}`).should("not.exist");
 
             // Now check legint page
@@ -996,6 +1009,14 @@ describe("Fides-js TCF", () => {
             cy.getByTestId(`toggle-${PURPOSE_2.name}`);
             cy.get("span").contains(legintSpecialPurposeName);
             cy.get("span").contains(SPECIAL_PURPOSE_1.name).should("not.exist");
+            cy.get("span").contains(PURPOSE_2.name).click();
+            cy.get(".fides-tcf-purpose-vendor-list").first().scrollIntoView();
+            cy.get(".fides-tcf-purpose-vendor-list")
+              .contains(VENDOR_1.name)
+              .should("not.be.visible");
+            cy.get(".fides-tcf-purpose-vendor-list")
+              .contains(VENDOR_2.name)
+              .should("be.visible");
           });
         });
       });
@@ -1977,8 +1998,7 @@ describe("Fides-js TCF", () => {
               default_preference: "opt_out",
               purpose_consents: [
                 {
-                  id: 2,
-                  name: "Use limited data to select advertising",
+                  ...PURPOSE_2,
                   retention_period: "45",
                 },
               ],
@@ -3536,12 +3556,7 @@ describe("Fides-js TCF", () => {
           name: "Test",
           description: "A longer description",
           default_preference: "opt_out",
-          purpose_consents: [
-            {
-              id: 4,
-              name: "Use profiles to select personalised advertising",
-            },
-          ],
+          purpose_consents: [PURPOSE_4],
         };
         AC_IDS.forEach((id, idx) => {
           const vendor = { ...baseVendor, id: `gacp.${id}`, name: `AC ${id}` };
