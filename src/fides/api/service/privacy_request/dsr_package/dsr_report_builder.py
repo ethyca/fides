@@ -12,6 +12,7 @@ from jinja2 import Environment, FileSystemLoader
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.policy import ActionType
 from fides.api.util.storage_util import StorageJSONEncoder
+from loguru import logger
 
 DSR_DIRECTORY = Path(__file__).parent.resolve()
 
@@ -22,41 +23,49 @@ BORDER_COLOR = "#E2E8F0"
 
 # pylint: disable=too-many-instance-attributes
 class DsrReportBuilder:
+    """
+    Manages populating HTML templates from the given data and adding the generated
+    pages to a zip file in a way that the pages can be navigated between.
+
+    The zip file is structured as follows:
+    - welcome.html: the main index page
+    - data/dataset_name/index.html: the index page for the dataset
+    - data/dataset_name/collection_name/index.html: the index page for the collection
+    - data/dataset_name/collection_name/item_index.html: the detail page for the item
+    - attachments/index.html: the index page for the attachments
+    - attachments/attachment_name: the attachment file
+
+    Args:
+        privacy_request: the privacy request object
+        dsr_data: the DSR data
+    """
     def __init__(
         self,
         privacy_request: PrivacyRequest,
         dsr_data: Dict[str, Any],
     ):
         """
-        Manages populating HTML templates from the given data and adding the generated
-        pages to a zip file in a way that the pages can be navigated between.
+        Initializes the DSR report builder.
         """
+        # Define pretty_print function for Jinja templates
+        jinja2.filters.FILTERS["pretty_print"] = lambda value, indent=4: json.dumps(
+            value, indent=indent, cls=StorageJSONEncoder
+        )
 
-        # zip file variables
+        # Initialize instance variables
         self.baos = BytesIO()
-
         # we close this in the finally block of generate()
         # pylint: disable=consider-using-with
         self.out = zipfile.ZipFile(self.baos, "w")
-
-        # Jinja template environment initialization
-        def pretty_print(value: str, indent: int = 4) -> str:
-            return json.dumps(value, indent=indent, cls=StorageJSONEncoder)
-
-        jinja2.filters.FILTERS["pretty_print"] = pretty_print
         self.template_loader = Environment(
             loader=FileSystemLoader(DSR_DIRECTORY), autoescape=True
         )
-
-        # to pass in custom colors in the future
         self.template_data: Dict[str, Any] = {
             "text_color": TEXT_COLOR,
             "header_color": HEADER_COLOR,
             "border_color": BORDER_COLOR,
         }
         self.main_links: Dict[str, Any] = {}  # used to track the generated pages
-
-        # report data to populate the templates
         self.request_data = _map_privacy_request(privacy_request)
         self.dsr_data = dsr_data
 
@@ -67,7 +76,18 @@ class DsrReportBuilder:
         description: Optional[str] = None,
         data: Optional[Dict[str, Any]] = None,
     ) -> str:
-        """Generates a file from the template and data"""
+        """
+        Populates the template with the given data.
+
+        Args:
+            template_path: the path to the template to populate
+            heading: the heading to display on the template
+            description: the description to display on the template
+            data: the data to populate the template with
+
+        Returns:
+            The rendered template as a string.
+        """
         report_data = {
             "heading": heading,
             "description": description,
@@ -80,14 +100,23 @@ class DsrReportBuilder:
         return rendered_template
 
     def _add_file(self, filename: str, contents: str) -> None:
-        """Helper to add a file to the zip archive"""
+        """
+        Adds a file to the zip file.
+
+        Args:
+            filename: the name of the file to add
+            contents: the contents of the file to add
+        """
         if filename and contents:
             self.out.writestr(f"{filename}", contents.encode("utf-8"))
 
     def _add_dataset(self, dataset_name: str, collections: Dict[str, Any]) -> None:
         """
-        Generates a page for each collection in the dataset and an index page for the dataset.
-        Tracks the generated links to build a root level index after each collection has been processed.
+        Adds a dataset to the zip file.
+
+        Args:
+            dataset_name: the name of the dataset to add
+            collections: the collections to add to the dataset
         """
         # track links to collection indexes
         collection_links = {}
@@ -107,69 +136,109 @@ class DsrReportBuilder:
             ),
         )
 
+    def _write_attachment_content(
+        self,
+        file_name: str,
+        content: Any,
+        content_type: str,
+        directory: str,
+    ) -> None:
+        """
+        Writes attachment content to the specified directory, handling different content types appropriately.
+
+        Args:
+            file_name: The name of the file to write
+            content: The content to write
+            content_type: The content type of the file
+            directory: The directory to write to (without trailing slash)
+        """
+        if not content:
+            return
+
+        # Handle text-based content types
+        if content_type.startswith("text/"):
+            if isinstance(content, bytes):
+                content = content.decode("utf-8")
+            self._add_file(f"{directory}/{file_name}", content)
+            return
+
+        # Handle image content types
+        if content_type.startswith("image/"):
+            if not isinstance(content, bytes):
+                content = content.encode("utf-8")
+            self.out.writestr(f"{directory}/{file_name}", content)
+            return
+
+        # Handle document content types
+        if content_type in [
+            "application/pdf",
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "application/vnd.ms-excel",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "application/zip"
+        ]:
+            if not isinstance(content, bytes):
+                content = content.encode("utf-8")
+            self.out.writestr(f"{directory}/{file_name}", content)
+            return
+
+        # For any other content type, treat as binary
+        if not isinstance(content, bytes):
+            content = content.encode("utf-8")
+        self.out.writestr(f"{directory}/{file_name}", content)
+
     def _add_collection(
         self, rows: List[Dict[str, Any]], dataset_name: str, collection_name: str
     ) -> None:
-        # track links to detail pages
-        detail_links = {}
-        for index, item in enumerate(rows, 1):
-            detail_url = f"{index}.html"
+        """
+        Adds a collection to the zip file.
 
-            # Handle attachments in the item if they exist
-            if "attachments" in item and isinstance(item["attachments"], list):
-                for attachment in item["attachments"]:
+        Args:
+            rows: the rows to add to the collection
+            dataset_name: the name of the dataset to add the collection to
+            collection_name: the name of the collection to add
+        """
+        items_content = []
+
+        for index, collection_item in enumerate(rows, 1):
+            # Process any attachments in the item
+            if "attachments" in collection_item and isinstance(collection_item["attachments"], list):
+                for attachment in collection_item["attachments"]:
                     file_name = attachment.get("file_name", "unknown")
                     content = attachment.get("content")
                     content_type = attachment.get("content_type", "")
+                    self._write_attachment_content(
+                        file_name,
+                        content,
+                        content_type,
+                        f"data/{dataset_name}/{collection_name}"
+                    )
 
-                    if content:
-                        # Save to top-level attachments directory
-                        if content_type.startswith("text/"):
-                            if isinstance(content, bytes):
-                                content = content.decode("utf-8")
-                            self._add_file(f"attachments/{file_name}", content)
-                        else:
-                            if not isinstance(content, bytes):
-                                content = content.encode("utf-8")
-                            self.out.writestr(f"attachments/{file_name}", content)
+            # Add item content to the list
+            items_content.append({
+                "index": index,
+                "heading": f"{collection_name} (item #{index})",
+                "data": collection_item
+            })
 
-                        # Also save to the manual webhook directory
-                        if content_type.startswith("text/"):
-                            self._add_file(
-                                f"data/{dataset_name}/{collection_name}/{file_name}",
-                                content,
-                            )
-                        else:
-                            self.out.writestr(
-                                f"data/{dataset_name}/{collection_name}/{file_name}",
-                                content,
-                            )
-
-            self._add_file(
-                f"data/{dataset_name}/{collection_name}/{index}.html",
-                self._populate_template(
-                    "templates/item.html",
-                    f"{collection_name} (item #{index})",
-                    None,
-                    item,
-                ),
-            )
-            detail_links[f"item #{index}"] = detail_url
-
-        # generate detail index page
+        # Generate the collection index page
         self._add_file(
             f"data/{dataset_name}/{collection_name}/index.html",
             self._populate_template(
                 "templates/collection_index.html",
                 collection_name,
                 None,
-                detail_links,
+                {"collection_items": items_content},
             ),
         )
 
     def _add_attachments(self, attachments: List[Dict[str, Any]]) -> None:
         """
-        Generates an attachments directory with an index page and adds the attachments to the zip file.
+        Adds top-level attachments to the zip file.
+
+        Args:
+            attachments: the attachments to add
         """
         if not attachments or not isinstance(attachments, list):
             return
@@ -181,22 +250,12 @@ class DsrReportBuilder:
                 continue
 
             file_name = attachment.get("file_name", "unknown")
+            content = attachment.get("content")
             content_type = attachment.get("content_type", "")
             attachment_links[file_name] = f"{file_name}"
 
-            # Add the attachment content to the zip file
-            content = attachment.get("content")
-            if content:
-                # For text-based files, we need to encode them
-                if content_type.startswith("text/"):
-                    if isinstance(content, bytes):
-                        content = content.decode("utf-8")
-                    self._add_file(f"attachments/{file_name}", content)
-                # For binary files, write them directly
-                else:
-                    if not isinstance(content, bytes):
-                        content = content.encode("utf-8")
-                    self.out.writestr(f"attachments/{file_name}", content)
+            # Write the attachment to the top-level attachments directory
+            self._write_attachment_content(file_name, content, content_type, "attachments")
 
         # Generate attachments index page using the attachments index template
         self._add_file(
@@ -209,20 +268,32 @@ class DsrReportBuilder:
             ),
         )
 
-    def _get_dataset_and_collections(
-        self, key: str, rows: List[Dict[str, Any]]
-    ) -> Tuple[str, List[Dict[str, Any]]]:
+    def _get_datasets_from_dsr_data(self) -> Dict[str, Any]:
         """
-        Returns the dataset name for the given key and rows.
+        Returns the datasets from the DSR data.
         """
-        print(key)
-        print(rows)
-        parts = key.split(":", 1)
-        if len(parts) > 1:
-            return parts
-        if "system_name" in rows[0]:
-            return (rows[0]["system_name"], parts[0])
-        return ("manual", parts[0])
+        # pre-process data to split the dataset:collection keys
+        datasets: Dict[str, Any] = defaultdict(lambda: defaultdict(list))
+        for key, rows in self.dsr_data.items():
+            if key == "attachments":
+                continue
+
+            parts = key.split(":", 1)
+            if len(parts) > 1:
+                dataset_name, collection_name = parts
+            else:
+                for row in rows:
+                    if "system_name" in row:
+                        dataset_name = row["system_name"]
+                        collection_name = parts[0]
+                        break
+                else:
+                    dataset_name = "manual"
+                    collection_name = parts[0]
+
+            datasets[dataset_name][collection_name].extend(rows)
+
+        return datasets
 
     def generate(self) -> BytesIO:
         """
@@ -243,33 +314,27 @@ class DsrReportBuilder:
             )
 
             # pre-process data to split the dataset:collection keys
-            datasets: Dict[str, Any] = defaultdict(lambda: defaultdict(list))
-            for key, rows in self.dsr_data.items():
-                if key == "attachments":
-                    # Handle attachments separately
-                    self._add_attachments(rows)
-                    self.main_links["Additional Attachments"] = "attachments/index.html"
-                    continue
+            datasets = self._get_datasets_from_dsr_data()
 
-                parts = key.split(":", 1)
-                if len(parts) > 1:
-                    dataset_name, collection_name = parts
-                else:
-                    for row in rows:
-                        if "system_name" in row:
-                            dataset_name = row["system_name"]
-                            collection_name = parts[0]
-                            break
-                    else:
-                        dataset_name = "manual"
-                        collection_name = parts[0]
+            # Sort datasets alphabetically, excluding special cases
+            regular_datasets = [name for name in sorted(datasets.keys()) if name != "dataset"] # pylint: disable=invalid-name
 
-                datasets[dataset_name][collection_name].extend(rows)
-
-            for dataset_name, collections in datasets.items():
-                self._add_dataset(dataset_name, collections)
+            # Add regular datasets in alphabetical order
+            for dataset_name in regular_datasets:
+                self._add_dataset(dataset_name, datasets[dataset_name])
                 self.main_links[dataset_name] = f"data/{dataset_name}/index.html"
 
+            # Add Additional Data if it exists
+            if "dataset" in datasets:
+                self._add_dataset("dataset", datasets["dataset"])
+                self.main_links["Additional Data"] = "data/dataset/index.html"
+
+            # Add Additional Attachments last if it exists
+            if "attachments" in self.dsr_data:
+                self._add_attachments(self.dsr_data["attachments"])
+                self.main_links["Additional Attachments"] = "attachments/index.html"
+
+            logger.info(f"Main links for welcome page: {self.main_links}")
             # create the main index once all the datasets have been added
             self._add_file(
                 "welcome.html",
@@ -283,6 +348,7 @@ class DsrReportBuilder:
 
         # reset the file pointer so the file can be fully read by the caller
         self.baos.seek(0)
+        logger.info("DSR report generation complete.")
         return self.baos
 
 

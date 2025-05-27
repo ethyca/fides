@@ -14,16 +14,34 @@
                </a>
             </div>
             <h1>{{ heading }}</h1>
-            <div class="table table-hover">
-               <div class="table-row">
-                  <div class="table-cell">Items</div>
+            {% for item in data.collection_items %}
+            <div class="item-section">
+               <h2>{{ item.heading }}</h2>
+               <div class="table">
+                  <div class="table-row">
+                     <div class="table-cell">Field</div>
+                     <div class="table-cell">Value</div>
+                  </div>
+                  {% for field, value in item.data.items() %}
+                  <div class="table-row">
+                     <div class="table-cell">{{ field }}</div>
+                     <div class="table-cell">
+                        {% if field == "attachments" and value is sequence and value is not string %}
+                           {% for attachment in value %}
+                              <a href="{{ attachment.file_name }}" target="_blank" class="attachment-link">
+                                 {{ attachment.file_name }}
+                              </a>
+                              {% if not loop.last %}<br>{% endif %}
+                           {% endfor %}
+                        {% else %}
+                           <pre>{{ value | pretty_print }}</pre>
+                        {% endif %}
+                     </div>
+                  </div>
+                  {% endfor %}
                </div>
-               {% for name, link in data.items() %}
-               <a href="{{ link }}" class="table-row">
-                  <div class="table-cell">{{ name }}</div>
-               </a>
-               {% endfor %}
             </div>
+            {% endfor %}
          </div>
       </div>
    </body>

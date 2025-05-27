@@ -414,11 +414,16 @@ class TestDsrReportBuilderDataStructure:
             assert "data/dataset1/collection2/index.html" in zip_file.namelist()
             assert "data/dataset2/collection1/index.html" in zip_file.namelist()
 
-            # Verify item pages
-            assert "data/dataset1/collection1/1.html" in zip_file.namelist()
-            assert "data/dataset1/collection1/2.html" in zip_file.namelist()
-            assert "data/dataset1/collection2/1.html" in zip_file.namelist()
-            assert "data/dataset2/collection1/1.html" in zip_file.namelist()
+            # Verify items are in collection index pages
+            collection1_content = zip_file.read("data/dataset1/collection1/index.html").decode("utf-8")
+            assert "Item 1" in collection1_content
+            assert "Item 2" in collection1_content
+
+            collection2_content = zip_file.read("data/dataset1/collection2/index.html").decode("utf-8")
+            assert "Item 3" in collection2_content
+
+            collection3_content = zip_file.read("data/dataset2/collection1/index.html").decode("utf-8")
+            assert "Item 4" in collection3_content
 
     def test_with_large_data(self, privacy_request: PrivacyRequest):
         """Test DSR report builder with large data sets"""
@@ -434,13 +439,16 @@ class TestDsrReportBuilderDataStructure:
         report = builder.generate()
 
         with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
-            # Verify all items were included
+            # Verify collection index page exists
+            assert "data/dataset1/collection1/index.html" in zip_file.namelist()
+
+            # Verify all items are in the collection index page
+            collection_content = zip_file.read("data/dataset1/collection1/index.html").decode("utf-8")
             for i in range(100):
-                assert f"data/dataset1/collection1/{i+1}.html" in zip_file.namelist()
+                assert f"Item {i}" in collection_content
 
             # Verify index pages
             assert "data/dataset1/index.html" in zip_file.namelist()
-            assert "data/dataset1/collection1/index.html" in zip_file.namelist()
 
 
 class TestDsrReportBuilderDataTypes:
@@ -658,8 +666,6 @@ class TestDsrReportBuilder:
 
             # Check collection structure
             assert "data/dataset1/collection1/index.html" in zip_file.namelist()
-            assert "data/dataset1/collection1/1.html" in zip_file.namelist()
-            assert "data/dataset1/collection1/2.html" in zip_file.namelist()
 
     def test_report_content(self, privacy_request, dsr_data: dict):
         """Test that the report content is correctly formatted"""
@@ -684,14 +690,8 @@ class TestDsrReportBuilder:
             assert "collection1" in collection1_content
             assert "item #1" in collection1_content
             assert "item #2" in collection1_content
-
-            # Check individual item content
-            item1_content = zip_file.read("data/dataset1/collection1/1.html").decode(
-                "utf-8"
-            )
-            assert "collection1 (item #1)" in item1_content
-            assert "item1@example.com" in item1_content
-            assert "Item 1" in item1_content
+            assert "item1@example.com" in collection1_content
+            assert "Item 1" in collection1_content
 
     def test_empty_dsr_data(self, privacy_request):
         """Test report generation with empty DSR data"""
@@ -723,3 +723,511 @@ class TestDsrReportBuilder:
                 privacy_request.requested_at.strftime("%m/%d/%Y %H:%M %Z")
                 in welcome_content
             )
+
+    def test_dataset_ordering(self, privacy_request):
+        """Test that regular datasets are alphabetical with Additional Data and Additional Attachments last"""
+        dsr_data = {
+            "zebra:collection1": [{"id": 1}],
+            "attachments": [{"file_name": "test.txt", "content": "test"}],
+            "alpha:collection1": [{"id": 2}],
+            "beta:collection1": [{"id": 3}],
+            "dataset:collection1": [{"id": 4}],  # This should be renamed to "Additional Data"
+            "charlie:collection1": [{"id": 5}],
+        }
+
+        builder = DsrReportBuilder(privacy_request, dsr_data)
+        report = builder.generate()
+
+        with zipfile.ZipFile(report) as zip_file:
+            welcome_content = zip_file.read("welcome.html").decode("utf-8")
+
+            # Find the order of links in the welcome page
+            link_order = []
+            for line in welcome_content.split("\n"):
+                if 'href="data/' in line or 'href="attachments/' in line:
+                    if 'data/alpha/' in line:
+                        link_order.append("alpha")
+                    elif 'data/beta/' in line:
+                        link_order.append("beta")
+                    elif 'data/charlie/' in line:
+                        link_order.append("charlie")
+                    elif 'data/zebra/' in line:
+                        link_order.append("zebra")
+                    elif 'data/dataset/' in line:
+                        link_order.append("Additional Data")
+                    elif 'attachments/index.html' in line:
+                        link_order.append("Additional Attachments")
+
+            # Verify the order: regular datasets alphabetically, then Additional Data, then Additional Attachments
+            assert link_order == [
+                "alpha",
+                "beta",
+                "charlie",
+                "zebra",
+                "Additional Data",
+                "Additional Attachments"
+            ]
+
+            # Verify the dataset directory structure
+            assert "data/dataset/index.html" in zip_file.namelist()  # Original directory name
+            assert "data/dataset/collection1/index.html" in zip_file.namelist()
+
+            # Verify the welcome page shows "Additional Data" instead of "dataset"
+            assert "Additional Data" in welcome_content
+            assert "dataset" not in welcome_content  # Should not appear as a link text
+
+
+class TestDsrReportBuilderAttachmentHandling:
+    """Tests for DSR report builder's attachment handling functions"""
+
+    def test_handle_attachment_text(self, privacy_request: PrivacyRequest):
+        """Test handling a text attachment"""
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+        attachment = {
+            "file_name": "test.txt",
+            "content": "test content",
+            "content_type": "text/plain"
+        }
+
+        builder._handle_attachment(attachment, "dataset1", "collection1")
+
+        with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
+            # Check only collection directory location
+            assert "data/dataset1/collection1/test.txt" in zip_file.namelist()
+            assert "attachments/test.txt" not in zip_file.namelist()
+
+            # Verify content
+            content = zip_file.read("data/dataset1/collection1/test.txt").decode("utf-8")
+            assert content == "test content"
+
+    def test_handle_attachment_binary(self, privacy_request: PrivacyRequest):
+        """Test handling a binary attachment"""
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+        attachment = {
+            "file_name": "test.pdf",
+            "content": b"test content",
+            "content_type": "application/pdf"
+        }
+
+        builder._handle_attachment(attachment, "dataset1", "collection1")
+
+        with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
+            # Check only collection directory location
+            assert "data/dataset1/collection1/test.pdf" in zip_file.namelist()
+            assert "attachments/test.pdf" not in zip_file.namelist()
+
+            # Verify content
+            content = zip_file.read("data/dataset1/collection1/test.pdf")
+            assert content == b"test content"
+
+    def test_handle_attachment_no_content(self, privacy_request: PrivacyRequest):
+        """Test handling an attachment with no content"""
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+        attachment = {
+            "file_name": "test.txt",
+            "content": None,
+            "content_type": "text/plain"
+        }
+
+        builder._handle_attachment(attachment, "dataset1", "collection1")
+
+        with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
+            assert "data/dataset1/collection1/test.txt" not in zip_file.namelist()
+
+    def test_add_attachments_top_level(self, privacy_request: PrivacyRequest):
+        """Test adding top-level attachments"""
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+        attachments = [
+            {
+                "file_name": "test1.txt",
+                "content": "content1",
+                "content_type": "text/plain"
+            },
+            {
+                "file_name": "test2.pdf",
+                "content": b"content2",
+                "content_type": "application/pdf"
+            }
+        ]
+
+        builder._add_attachments(attachments)
+
+        with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
+            # Check attachments directory
+            assert "attachments/test1.txt" in zip_file.namelist()
+            assert "attachments/test2.pdf" in zip_file.namelist()
+            assert "attachments/index.html" in zip_file.namelist()
+
+            # Verify content
+            assert zip_file.read("attachments/test1.txt").decode("utf-8") == "content1"
+            assert zip_file.read("attachments/test2.pdf") == b"content2"
+
+            # Verify index page
+            index_content = zip_file.read("attachments/index.html").decode("utf-8")
+            assert "test1.txt" in index_content
+            assert "test2.pdf" in index_content
+
+    def test_add_attachments_empty(self, privacy_request: PrivacyRequest):
+        """Test adding empty attachments list"""
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+        builder._add_attachments([])
+
+        with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
+            assert not any(name.startswith("attachments/") for name in zip_file.namelist())
+
+    def test_add_attachments_invalid(self, privacy_request: PrivacyRequest):
+        """Test adding invalid attachments"""
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+        attachments = [
+            None,
+            "not a dict",
+            {"file_name": "test.txt"},  # Missing content
+            {"content": "test"},  # Missing file_name
+        ]
+
+        builder._add_attachments(attachments)
+
+        with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
+            assert not any(name.startswith("attachments/") for name in zip_file.namelist())
+
+
+class TestDsrReportBuilderItemProcessing:
+    """Tests for DSR report builder's item processing functions"""
+
+    def test_process_item_attachments(self, privacy_request: PrivacyRequest):
+        """Test processing attachments in an item"""
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+        item = {
+            "id": 1,
+            "attachments": [
+                {
+                    "file_name": "test1.txt",
+                    "content": "content1",
+                    "content_type": "text/plain"
+                },
+                {
+                    "file_name": "test2.pdf",
+                    "content": b"content2",
+                    "content_type": "application/pdf"
+                }
+            ]
+        }
+
+        builder._process_item_attachments(item, "dataset1", "collection1")
+
+        with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
+            assert "attachments/test1.txt" in zip_file.namelist()
+            assert "attachments/test2.pdf" in zip_file.namelist()
+            assert "data/dataset1/collection1/test1.txt" in zip_file.namelist()
+            assert "data/dataset1/collection1/test2.pdf" in zip_file.namelist()
+
+    def test_process_item_no_attachments(self, privacy_request: PrivacyRequest):
+        """Test processing an item with no attachments"""
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+        item = {"id": 1}
+
+        builder._process_item_attachments(item, "dataset1", "collection1")
+
+        with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
+            assert not any(name.startswith("attachments/") for name in zip_file.namelist())
+            assert not any(name.startswith("data/dataset1/collection1/") for name in zip_file.namelist())
+
+    def test_prepare_item_content(self, privacy_request: PrivacyRequest):
+        """Test preparing item content"""
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+        item = {"id": 1, "name": "Test Item"}
+
+        content = builder._prepare_item_content(item, 1, "collection1")
+
+        assert content["index"] == 1
+        assert content["heading"] == "collection1 (item #1)"
+        assert content["data"] == item
+
+    def test_generate_collection_index(self, privacy_request: PrivacyRequest):
+        """Test generating collection index page"""
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+        items_content = [
+            {
+                "index": 1,
+                "heading": "collection1 (item #1)",
+                "data": {"id": 1, "name": "Item 1"}
+            },
+            {
+                "index": 2,
+                "heading": "collection1 (item #2)",
+                "data": {"id": 2, "name": "Item 2"}
+            }
+        ]
+
+        builder._generate_collection_index("dataset1", "collection1", items_content)
+
+        with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
+            assert "data/dataset1/collection1/index.html" in zip_file.namelist()
+            content = zip_file.read("data/dataset1/collection1/index.html").decode("utf-8")
+            assert "collection1" in content
+            assert "Item 1" in content
+            assert "Item 2" in content
+
+
+class TestDsrReportBuilderTemplateHandling:
+    """Tests for DSR report builder's template handling functions"""
+
+    def test_populate_template(self, privacy_request: PrivacyRequest):
+        """Test populating a template with data"""
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+        data = {"test_key": "test_value"}
+
+        result = builder._populate_template(
+            "templates/collection_index.html",
+            "Test Heading",
+            "Test Description",
+            data
+        )
+
+        assert "Test Heading" in result
+        assert "Test Description" in result
+        assert "test_key" in result
+        assert "test_value" in result
+
+    def test_populate_template_no_data(self, privacy_request: PrivacyRequest):
+        """Test populating a template with no data"""
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+
+        result = builder._populate_template(
+            "templates/collection_index.html",
+            "Test Heading"
+        )
+
+        assert "Test Heading" in result
+        assert "data" not in result
+
+    def test_add_file(self, privacy_request: PrivacyRequest):
+        """Test adding a file to the zip"""
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+        content = "test content"
+
+        builder._add_file("test.txt", content)
+
+        with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
+            assert "test.txt" in zip_file.namelist()
+            assert zip_file.read("test.txt").decode("utf-8") == content
+
+    def test_add_file_empty_content(self, privacy_request: PrivacyRequest):
+        """Test adding a file with empty content"""
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+
+        builder._add_file("test.txt", "")
+
+        with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
+            assert "test.txt" not in zip_file.namelist()
+
+
+class TestDsrReportBuilderDatasetHandling:
+    """Tests for DSR report builder's dataset handling functions"""
+
+    def test_add_dataset(self, privacy_request: PrivacyRequest):
+        """Test adding a dataset with collections"""
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+        collections = {
+            "collection1": [{"id": 1}, {"id": 2}],
+            "collection2": [{"id": 3}]
+        }
+
+        builder._add_dataset("dataset1", collections)
+
+        with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
+            assert "data/dataset1/index.html" in zip_file.namelist()
+            assert "data/dataset1/collection1/index.html" in zip_file.namelist()
+            assert "data/dataset1/collection2/index.html" in zip_file.namelist()
+
+            # Verify dataset index content
+            content = zip_file.read("data/dataset1/index.html").decode("utf-8")
+            assert "dataset1" in content
+            assert "collection1" in content
+            assert "collection2" in content
+
+    def test_add_dataset_empty_collections(self, privacy_request: PrivacyRequest):
+        """Test adding a dataset with no collections"""
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+
+        builder._add_dataset("dataset1", {})
+
+        with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
+            assert "data/dataset1/index.html" in zip_file.namelist()
+            content = zip_file.read("data/dataset1/index.html").decode("utf-8")
+            assert "dataset1" in content
+            assert "collection" not in content
+
+
+class TestDsrReportBuilderAttachmentContentWriting:
+    """Tests for DSR report builder's attachment content writing functionality"""
+
+    def test_write_text_attachment_content(self, privacy_request: PrivacyRequest):
+        """Test writing text-based attachment content"""
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+
+        # Test text/plain
+        builder._write_attachment_content(
+            "test.txt",
+            "test content",
+            "text/plain",
+            "attachments"
+        )
+
+        # Test text/csv
+        builder._write_attachment_content(
+            "test.csv",
+            "header1,header2\nvalue1,value2",
+            "text/csv",
+            "attachments"
+        )
+
+        with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
+            assert "attachments/test.txt" in zip_file.namelist()
+            assert "attachments/test.csv" in zip_file.namelist()
+            assert zip_file.read("attachments/test.txt").decode("utf-8") == "test content"
+            assert zip_file.read("attachments/test.csv").decode("utf-8") == "header1,header2\nvalue1,value2"
+
+    def test_write_image_attachment_content(self, privacy_request: PrivacyRequest):
+        """Test writing image attachment content"""
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+
+        # Test image/jpeg
+        jpeg_content = b"fake jpeg content"
+        builder._write_attachment_content(
+            "test.jpg",
+            jpeg_content,
+            "image/jpeg",
+            "attachments"
+        )
+
+        # Test image/png
+        png_content = b"fake png content"
+        builder._write_attachment_content(
+            "test.png",
+            png_content,
+            "image/png",
+            "attachments"
+        )
+
+        with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
+            assert "attachments/test.jpg" in zip_file.namelist()
+            assert "attachments/test.png" in zip_file.namelist()
+            assert zip_file.read("attachments/test.jpg") == jpeg_content
+            assert zip_file.read("attachments/test.png") == png_content
+
+    def test_write_document_attachment_content(self, privacy_request: PrivacyRequest):
+        """Test writing document attachment content"""
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+
+        # Test PDF
+        pdf_content = b"fake pdf content"
+        builder._write_attachment_content(
+            "test.pdf",
+            pdf_content,
+            "application/pdf",
+            "attachments"
+        )
+
+        # Test Word document
+        doc_content = b"fake word content"
+        builder._write_attachment_content(
+            "test.docx",
+            doc_content,
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "attachments"
+        )
+
+        # Test Excel document
+        xlsx_content = b"fake excel content"
+        builder._write_attachment_content(
+            "test.xlsx",
+            xlsx_content,
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "attachments"
+        )
+
+        # Test ZIP file
+        zip_content = b"fake zip content"
+        builder._write_attachment_content(
+            "test.zip",
+            zip_content,
+            "application/zip",
+            "attachments"
+        )
+
+        with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
+            assert "attachments/test.pdf" in zip_file.namelist()
+            assert "attachments/test.docx" in zip_file.namelist()
+            assert "attachments/test.xlsx" in zip_file.namelist()
+            assert "attachments/test.zip" in zip_file.namelist()
+            assert zip_file.read("attachments/test.pdf") == pdf_content
+            assert zip_file.read("attachments/test.docx") == doc_content
+            assert zip_file.read("attachments/test.xlsx") == xlsx_content
+            assert zip_file.read("attachments/test.zip") == zip_content
+
+    def test_write_attachment_content_no_content(self, privacy_request: PrivacyRequest):
+        """Test writing attachment content with no content"""
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+
+        builder._write_attachment_content(
+            "test.txt",
+            None,
+            "text/plain",
+            "attachments"
+        )
+
+        with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
+            assert "attachments/test.txt" not in zip_file.namelist()
+
+    def test_write_attachment_content_different_directories(self, privacy_request: PrivacyRequest):
+        """Test writing attachment content to different directories"""
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+
+        # Write to attachments directory
+        builder._write_attachment_content(
+            "test.txt",
+            "test content",
+            "text/plain",
+            "attachments"
+        )
+
+        # Write to collection directory
+        builder._write_attachment_content(
+            "test.txt",
+            "test content",
+            "text/plain",
+            "data/dataset1/collection1"
+        )
+
+        with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
+            assert "attachments/test.txt" in zip_file.namelist()
+            assert "data/dataset1/collection1/test.txt" in zip_file.namelist()
+            assert zip_file.read("attachments/test.txt").decode("utf-8") == "test content"
+            assert zip_file.read("data/dataset1/collection1/test.txt").decode("utf-8") == "test content"
+
+    def test_write_attachment_content_type_conversion(self, privacy_request: PrivacyRequest):
+        """Test writing attachment content with type conversion"""
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+
+        # Test string to bytes conversion for binary content
+        builder._write_attachment_content(
+            "test.pdf",
+            "fake pdf content",
+            "application/pdf",
+            "attachments"
+        )
+
+        # Test bytes to string conversion for text content
+        builder._write_attachment_content(
+            "test.txt",
+            b"fake text content",
+            "text/plain",
+            "attachments"
+        )
+
+        with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
+            assert "attachments/test.pdf" in zip_file.namelist()
+            assert "attachments/test.txt" in zip_file.namelist()
+            assert zip_file.read("attachments/test.pdf") == b"fake pdf content"
+            assert zip_file.read("attachments/test.txt").decode("utf-8") == "fake text content"
