@@ -1,5 +1,5 @@
 import secrets
-from typing import Union
+from typing import Optional, Union
 
 from fides.api.cryptography.cryptographic_util import bytes_to_b64_str
 from fides.api.util.cache import get_cache, get_encryption_cache_key
@@ -27,7 +27,7 @@ def encrypt_access_request_results(data: Union[str, bytes], request_id: str) -> 
     if isinstance(data, bytes):
         data = data.decode(CONFIG.security.encoding)
 
-    encryption_key: str | None = cache.get(encryption_cache_key)
+    encryption_key: Optional[str] = cache.get(encryption_cache_key)
     if not encryption_key:
         return data
 

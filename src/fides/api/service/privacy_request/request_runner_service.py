@@ -89,7 +89,6 @@ class ManualWebhookResults(FidesSchema):
 
 
 def get_attachments_content(
-    db: Session,
     loaded_attachments: List[Attachment],
 ) -> List[Dict[str, Any]]:
     """
@@ -113,9 +112,6 @@ def get_attachments_content(
                 attachment_data["content"] = content
 
             attachments.append(attachment_data)
-    logger.info(
-        f"Attachments: {[(a.file_name, a.content_type) for a in loaded_attachments]}"
-    )
     return attachments
 
 
@@ -155,7 +151,7 @@ def get_manual_webhook_access_inputs(
                     is not None
                 ]
                 webhook_data["attachments"] = get_attachments_content(
-                    db, loaded_attachments
+                    loaded_attachments
                 )
             manual_inputs[manual_webhook.connection_config.key] = [webhook_data]
 
@@ -277,7 +273,7 @@ def upload_access_results(  # pylint: disable=R0912
         if AttachmentReferenceType.access_manual_webhook
         not in [ref.reference_type for ref in attachment.references]
     ]
-    attachments = get_attachments_content(session, loaded_attachments)
+    attachments = get_attachments_content(loaded_attachments)
     logger.info(
         f"{len(attachments)} attachments found for privacy request {privacy_request.id}"
     )

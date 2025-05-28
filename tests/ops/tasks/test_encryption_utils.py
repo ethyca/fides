@@ -3,7 +3,6 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from fides.api.tasks.encryption_utils import encrypt_access_request_results
-from fides.config import CONFIG
 
 
 @pytest.fixture

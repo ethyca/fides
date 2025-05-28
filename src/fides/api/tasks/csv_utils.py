@@ -152,33 +152,32 @@ def write_csv_to_zip(
         privacy_request_id: The ID of the privacy request for encryption
     """
     for key, value in data.items():
-        if isinstance(value, list):
-            # For lists of dictionaries with the same structure, write as a single CSV
-            if all(isinstance(item, dict) for item in value) and all(
-                item.keys() == value[0].keys() for item in value
-            ):
-                # Create a DataFrame from the list of dictionaries
-                df = pd.DataFrame(value)
-                buffer = BytesIO()
-                df.to_csv(buffer, index=False, encoding=CONFIG.security.encoding)
-                buffer.seek(0)
-                zip_file.writestr(
-                    f"{key}.csv",
-                    encrypt_access_request_results(
-                        buffer.getvalue(), privacy_request_id
-                    ),
-                )
-            else:
-                # Handle lists with different structures or non-dict items
-                for idx, item in enumerate(value):
-                    if isinstance(item, dict):
-                        # Extract attachments if they exist
-                        attachments = item.pop("attachments", [])
-                        if attachments:
-                            _write_attachment_csv(
-                                zip_file, key, idx, attachments, privacy_request_id
-                            )
-                        _write_item_csv(zip_file, key, idx, item, privacy_request_id)
-        else:
+        if not isinstance(value, list):
             # Handle simple key-value pairs
             _write_simple_csv(zip_file, key, value, privacy_request_id)
+            continue
+
+        # For lists of dictionaries with the same structure, write as a single CSV
+        if all(isinstance(item, dict) for item in value) and all(
+            item.keys() == value[0].keys() for item in value
+        ):
+            # Create a DataFrame from the list of dictionaries
+            df = pd.DataFrame(value)
+            buffer = BytesIO()
+            df.to_csv(buffer, index=False, encoding=CONFIG.security.encoding)
+            buffer.seek(0)
+            zip_file.writestr(
+                f"{key}.csv",
+                encrypt_access_request_results(buffer.getvalue(), privacy_request_id),
+            )
+            continue
+        # Handle lists with different structures or non-dict items
+        for idx, item in enumerate(value):
+            if isinstance(item, dict):
+                # Extract attachments if they exist
+                attachments = item.pop("attachments", [])
+                if attachments:
+                    _write_attachment_csv(
+                        zip_file, key, idx, attachments, privacy_request_id
+                    )
+                _write_item_csv(zip_file, key, idx, item, privacy_request_id)

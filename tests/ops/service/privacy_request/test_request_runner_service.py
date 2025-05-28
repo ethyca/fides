@@ -1644,7 +1644,7 @@ class TestIncludeAttachments:
         attachments = [attachment, attachment_include_in_download]
 
         # Call the function
-        results = get_attachments_content(db, attachments)
+        results = get_attachments_content(attachments)
 
         # Verify results
         assert (
@@ -1667,15 +1667,15 @@ class TestIncludeAttachments:
     ):
         """Test edge cases for get_attachments_content."""
         # Test empty list
-        results = get_attachments_content(db, [])
+        results = get_attachments_content([])
         assert len(results) == 0
 
         # Test list with no include_with_access_package attachments
-        results = get_attachments_content(db, [attachment])
+        results = get_attachments_content([attachment])
         assert len(results) == 0
 
         # Test list with only include_with_access_package attachments
-        results = get_attachments_content(db, [attachment_include_in_download])
+        results = get_attachments_content([attachment_include_in_download])
         assert len(results) == 1
         assert results[0]["file_name"] == attachment_include_in_download.file_name
 
