@@ -146,15 +146,12 @@ def get_manual_webhook_access_inputs(
             )
             if webhook_attachments:
                 # Load attachments from database to ensure they have their configs
-                loaded_attachments = []
-                for webhook_attachment in webhook_attachments:
-                    loaded_attachment = db.query(Attachment).get(webhook_attachment.id)
-                    if loaded_attachment:
-                        loaded_attachments.append(loaded_attachment)
-                    else:
-                        logger.error(
-                            f"Could not load attachment {webhook_attachment.id}"
-                        )
+                # lazy loading may cause issues
+                loaded_attachments: list[Attachment] = [
+                    attachment
+                    for webhook_attachment in webhook_attachments
+                    if (attachment := db.query(Attachment).get(webhook_attachment.id)) is not None
+                ]
                 webhook_data["attachments"] = get_attachments_content(
                     db, loaded_attachments
                 )

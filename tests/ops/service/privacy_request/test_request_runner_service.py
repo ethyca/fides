@@ -46,6 +46,7 @@ from fides.api.schemas.redis_cache import Identity
 from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.service.privacy_request.request_runner_service import (
     build_consent_dataset_graph,
+    get_attachments_content,
     get_manual_webhook_access_inputs,
     needs_batch_email_send,
     run_webhooks_and_report_status,
@@ -1631,6 +1632,61 @@ class TestIncludeAttachments:
                 )
 
         return _create_reference
+
+    def test_get_attachments_content(
+        self,
+        db,
+        attachment,
+        attachment_include_in_download,
+    ):
+        """Test that get_attachments_content correctly filters and formats attachments."""
+        from fides.api.service.privacy_request.request_runner_service import (
+            get_attachments_content,
+        )
+
+        # Create a list of attachments with different types
+        attachments = [attachment, attachment_include_in_download]
+
+        # Call the function
+        results = get_attachments_content(db, attachments)
+
+        # Verify results
+        assert (
+            len(results) == 1
+        )  # Only attachment_include_in_download should be included
+        result = results[0]
+
+        # Verify the included attachment's data
+        assert result["file_name"] == attachment_include_in_download.file_name
+        assert result["file_size"] == len(b"file content")
+        assert result["content"] is not None
+        assert result["download_url"] is not None
+        assert "https://s3.amazonaws.com/test_bucket/" in result["download_url"]
+        assert result["content_type"] == "text/plain"
+
+    def test_get_attachments_content_edge_cases(
+        self,
+        db,
+        attachment,
+        attachment_include_in_download,
+    ):
+        """Test edge cases for get_attachments_content."""
+        from fides.api.service.privacy_request.request_runner_service import (
+            get_attachments_content,
+        )
+
+        # Test empty list
+        results = get_attachments_content(db, [])
+        assert len(results) == 0
+
+        # Test list with no include_with_access_package attachments
+        results = get_attachments_content(db, [attachment])
+        assert len(results) == 0
+
+        # Test list with only include_with_access_package attachments
+        results = get_attachments_content(db, [attachment_include_in_download])
+        assert len(results) == 1
+        assert results[0]["file_name"] == attachment_include_in_download.file_name
 
     @pytest.mark.usefixtures("s3_client")
     def test_attachments_included_in_upload_access_results(
