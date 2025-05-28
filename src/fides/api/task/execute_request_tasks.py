@@ -22,8 +22,9 @@ from fides.api.common_exceptions import (
 from fides.api.graph.config import TERMINATOR_ADDRESS, CollectionAddress
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest, RequestTask
+from fides.api.models.worker_tasks import TaskExecutionLogStatus
 from fides.api.schemas.policy import ActionType, CurrentStep
-from fides.api.schemas.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.graph_task import (
     GraphTask,
     mark_current_and_downstream_nodes_as_failed,
@@ -87,7 +88,7 @@ def run_prerequisite_task_checks(
     upstream_results: Query = request_task.upstream_tasks_objects(session)
 
     # Only bother running this if the current task body needs to run
-    if request_task.status == ExecutionLogStatus.pending:
+    if request_task.status == TaskExecutionLogStatus.pending:
         # Only running the upstream check instead of RequestTask.can_queue_request_task since
         # the node is already queued.
         if not request_task.upstream_tasks_complete(session, should_log=False):
@@ -123,7 +124,7 @@ def create_graph_task(
                 "collection_name": request_task.collection_name,
                 "fields_affected": [],
                 "action_type": request_task.action_type,
-                "status": ExecutionLogStatus.error,
+                "status": TaskExecutionLogStatus.error,
                 "privacy_request_id": request_task.privacy_request_id,
                 "message": str(exc),
             },
@@ -151,7 +152,7 @@ def can_run_task_body(
     if request_task.is_root_task:
         # Shouldn't be possible but adding as a catch-all
         return False
-    if request_task.status != ExecutionLogStatus.pending:
+    if request_task.status != TaskExecutionLogStatus.pending:
         logger_method(request_task)(
             "Skipping {} task {} with status {}.",
             request_task.action_type,
@@ -224,7 +225,7 @@ def queue_downstream_tasks(
 
     if (
         request_task.request_task_address == TERMINATOR_ADDRESS
-        and request_task.status != ExecutionLogStatus.complete
+        and request_task.status != TaskExecutionLogStatus.complete
     ):
         # Only queue privacy request from the next step if we haven't reached the terminator before.
         # Multiple pathways could mark the same node as complete, so we may have already reached the
@@ -241,7 +242,7 @@ def queue_downstream_tasks(
                 privacy_request_id=privacy_request.id,
                 from_step=next_step.value,
             )
-        request_task.update_status(session, ExecutionLogStatus.complete)
+        request_task.update_status(session, TaskExecutionLogStatus.complete)
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
@@ -430,7 +431,7 @@ def logger_method(request_task: RequestTask) -> Callable:
     """Log selected no-op items with debug method and others with info method"""
     return (
         logger.debug
-        if request_task.status == ExecutionLogStatus.complete
+        if request_task.status == TaskExecutionLogStatus.complete
         else logger.info
     )
 

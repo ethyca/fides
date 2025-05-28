@@ -73,13 +73,13 @@ from fides.api.models.privacy_request.webhook import (
     generate_request_callback_pre_approval_jwe,
     generate_request_callback_resume_jwe,
 )
+from fides.api.models.worker_tasks import TaskExecutionLogStatus
 from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fides.api.schemas.external_https import SecondPartyResponseFormat
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import (
     CheckpointActionRequired,
-    ExecutionLogStatus,
     ManualAction,
     PrivacyRequestSource,
     PrivacyRequestStatus,
@@ -1306,7 +1306,7 @@ class PrivacyRequest(
                 "connection_key": connection_key,
                 "dataset_name": dataset_name,
                 "collection_name": collection_name,
-                "status": ExecutionLogStatus.complete,
+                "status": TaskExecutionLogStatus.complete,
                 "message": message,
                 "action_type": action_type,
             },
@@ -1328,7 +1328,7 @@ class PrivacyRequest(
                 "connection_key": connection_key,
                 "dataset_name": dataset_name,
                 "collection_name": collection_name,
-                "status": ExecutionLogStatus.skipped,
+                "status": TaskExecutionLogStatus.skipped,
                 "message": message,
                 "action_type": action_type,
             },
@@ -1350,7 +1350,7 @@ class PrivacyRequest(
                 "connection_key": connection_key,
                 "dataset_name": dataset_name,
                 "collection_name": collection_name,
-                "status": ExecutionLogStatus.error,
+                "status": TaskExecutionLogStatus.error,
                 "message": message,
                 "action_type": action_type,
             },

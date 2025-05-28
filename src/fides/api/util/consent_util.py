@@ -18,7 +18,7 @@ from fides.api.models.privacy_request import (
 )
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
-from fides.api.schemas.privacy_request import ExecutionLogStatus
+from fides.api.models.worker_tasks import TaskExecutionLogStatus
 from fides.api.schemas.redis_cache import Identity
 
 
@@ -179,11 +179,11 @@ def cache_initial_status_and_identities_for_consent_reporting(
         if pref in relevant_preferences:
             pref.update_secondary_user_ids(db, relevant_user_identities)
             pref.cache_system_status(
-                db, connection_config.system_key, ExecutionLogStatus.pending
+                db, connection_config.system_key, TaskExecutionLogStatus.pending
             )
         else:
             pref.cache_system_status(
-                db, connection_config.system_key, ExecutionLogStatus.skipped
+                db, connection_config.system_key, TaskExecutionLogStatus.skipped
             )
 
 
@@ -201,12 +201,12 @@ def add_complete_system_status_for_consent_reporting(
         if (
             pref.affected_system_status
             and pref.affected_system_status.get(connection_config.system_key)
-            == ExecutionLogStatus.pending.value
+            == TaskExecutionLogStatus.pending.value
         ):
             pref.cache_system_status(
                 db,
                 connection_config.system_key,
-                ExecutionLogStatus.complete,
+                TaskExecutionLogStatus.complete,
             )
 
 
@@ -239,12 +239,12 @@ def add_errored_system_status_for_consent_reporting_on_preferences(
         if (
             preference.affected_system_status
             and preference.affected_system_status.get(connection_config.system_key)
-            == ExecutionLogStatus.pending.value
+            == TaskExecutionLogStatus.pending.value
         ):
             preference.cache_system_status(
                 db,
                 connection_config.system_key,  # type: ignore[arg-type]
-                ExecutionLogStatus.error,
+                TaskExecutionLogStatus.error,
             )
 
 

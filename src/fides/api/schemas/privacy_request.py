@@ -8,6 +8,7 @@ from pydantic import ConfigDict, Field, field_serializer, field_validator
 from fides.api.custom_types import SafeStr
 from fides.api.graph.config import CollectionAddress
 from fides.api.models.audit_log import AuditLogAction
+from fides.api.models.worker_tasks import TaskExecutionLogStatus
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.policy import ActionType, CurrentStep
@@ -141,26 +142,14 @@ class FieldsAffectedResponse(FidesSchema):
     model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
 
-class ExecutionLogStatus(EnumType):
-    """Enum for execution log statuses, reflecting where they are in their workflow"""
-
-    in_processing = "in_processing"
-    pending = "pending"
-    complete = "complete"
-    error = "error"
-    awaiting_processing = "paused"  # "paused" in the database to avoid a migration, but use "awaiting_processing" in the app
-    retrying = "retrying"
-    skipped = "skipped"
-
-
 class ExecutionLogStatusSerializeOverride(FidesSchema):
     """Override to serialize "paused" Execution Logs as awaiting_processing instead"""
 
-    status: ExecutionLogStatus
+    status: TaskExecutionLogStatus
     model_config = ConfigDict(from_attributes=True, use_enum_values=False)
 
     @field_serializer("status")
-    def serialize_status(self, status: ExecutionLogStatus) -> str:
+    def serialize_status(self, status: TaskExecutionLogStatus) -> str:
         """For statuses, we want to use the name instead of the value
         This is for backwards compatibility where we are repurposing the "paused" status
         to read "awaiting processing"
@@ -206,14 +195,14 @@ class ExecutionAndAuditLogResponse(FidesSchema):
     fields_affected: Optional[List[FieldsAffectedResponse]] = None
     message: Optional[str] = None
     action_type: Optional[ActionType] = None
-    status: Optional[Union[ExecutionLogStatus, AuditLogAction, str]] = None
+    status: Optional[Union[TaskExecutionLogStatus, AuditLogAction, str]] = None
     updated_at: Optional[datetime] = None
     user_id: Optional[str] = None
     model_config = ConfigDict(populate_by_name=True)
 
     @field_serializer("status")
     def serialize_status(
-        self, status: Optional[Union[ExecutionLogStatus, AuditLogAction, str]]
+        self, status: Optional[Union[TaskExecutionLogStatus, AuditLogAction, str]]
     ) -> Optional[str]:
         """For statuses, we want to use the name instead of the value
         This is for backwards compatibility where we are repurposing the "paused" status
@@ -222,7 +211,7 @@ class ExecutionAndAuditLogResponse(FidesSchema):
         Generally, status will be a string here because we had to convert both ExecutionLogStatuses
         and AuditLogAction statuses to strings so we could union both resources into the same query
         """
-        if isinstance(status, (AuditLogAction, ExecutionLogStatus)):
+        if isinstance(status, (AuditLogAction, TaskExecutionLogStatus)):
             return status.name if status else None
 
         return "awaiting_processing" if status == "paused" else status

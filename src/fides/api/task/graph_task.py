@@ -39,8 +39,8 @@ from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import Policy, Rule
 from fides.api.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest, RequestTask
+from fides.api.models.worker_tasks import TaskExecutionLogStatus
 from fides.api.schemas.policy import ActionType, CurrentStep
-from fides.api.schemas.privacy_request import ExecutionLogStatus
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.task.consolidate_query_matches import consolidate_query_matches
 from fides.api.task.filter_element_match import filter_element_match
@@ -185,18 +185,18 @@ def mark_current_and_downstream_nodes_as_failed(
 
     logger.info(f"Marking task {privacy_request_task.id} and descendants as errored")
 
-    privacy_request_task.status = ExecutionLogStatus.error
+    privacy_request_task.status = TaskExecutionLogStatus.error
     db.add(privacy_request_task)
 
     for descendant_addr in privacy_request_task.all_descendant_tasks or []:
         descendant: Optional[RequestTask] = (
             privacy_request_task.get_tasks_with_same_action_type(db, descendant_addr)
-            .filter(RequestTask.status == ExecutionLogStatus.pending)
+            .filter(RequestTask.status == TaskExecutionLogStatus.pending)
             .first()
         )
         if not descendant:
             continue
-        descendant.status = ExecutionLogStatus.error
+        descendant.status = TaskExecutionLogStatus.error
         db.add(descendant)
 
     db.commit()
@@ -353,7 +353,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         msg: str,
         fields_affected: Any,
         action_type: ActionType,
-        status: ExecutionLogStatus,
+        status: TaskExecutionLogStatus,
     ) -> None:
         """Update status activities - create an execution log (which stores historical logs)
         and update the Request Task's current status.
@@ -388,14 +388,14 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         logger.info("Starting node {}", self.key)
 
         self.update_status(
-            "starting", [], action_type, ExecutionLogStatus.in_processing
+            "starting", [], action_type, TaskExecutionLogStatus.in_processing
         )
 
     def log_retry(self, action_type: ActionType) -> None:
         """Task retry activities"""
         logger.info("Retrying node {}", self.key)
 
-        self.update_status("retrying", [], action_type, ExecutionLogStatus.retrying)
+        self.update_status("retrying", [], action_type, TaskExecutionLogStatus.retrying)
 
     def log_awaiting_processing(
         self, action_type: ActionType, ex: Optional[BaseException]
@@ -404,7 +404,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         logger.info("Pausing node {}", self.key)
 
         self.update_status(
-            str(ex), [], action_type, ExecutionLogStatus.awaiting_processing
+            str(ex), [], action_type, TaskExecutionLogStatus.awaiting_processing
         )
 
     def log_skipped(self, action_type: ActionType, ex: str) -> None:
@@ -412,7 +412,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         logger.info("Skipping node {}", self.key)
         if action_type == ActionType.consent and self.request_task.id:
             self.request_task.consent_sent = False
-        self.update_status(str(ex), [], action_type, ExecutionLogStatus.skipped)
+        self.update_status(str(ex), [], action_type, TaskExecutionLogStatus.skipped)
 
     def log_end(
         self,
@@ -428,7 +428,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 self.key,
                 Pii(ex),
             )
-            self.update_status(str(ex), [], action_type, ExecutionLogStatus.error)
+            self.update_status(str(ex), [], action_type, TaskExecutionLogStatus.error)
             # For DSR 3.0, Hooking into the GraphTask.log_end method to also mark the current
             # Request Task and every Request Task that can be reached from the current
             # task as errored.
@@ -444,7 +444,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                     self.execution_node, self.resources.policy, action_type
                 ),
                 action_type,
-                ExecutionLogStatus.complete,
+                TaskExecutionLogStatus.complete,
             )
 
     def post_process_input_data(
@@ -659,7 +659,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 "No values were erased since no primary key was defined in any of the fields for this collection",
                 None,
                 ActionType.erasure,
-                ExecutionLogStatus.complete,
+                TaskExecutionLogStatus.complete,
             )
             return 0
 
@@ -678,7 +678,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 f"given write access",
                 None,
                 ActionType.erasure,
-                ExecutionLogStatus.error,
+                TaskExecutionLogStatus.error,
             )
             return 0
 
@@ -718,7 +718,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 f"given write access",
                 None,
                 ActionType.consent,
-                ExecutionLogStatus.error,
+                TaskExecutionLogStatus.error,
             )
             return False
 
@@ -753,7 +753,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 pref.cache_system_status(
                     db,
                     self.connector.configuration.system_key,  # type: ignore[arg-type]
-                    ExecutionLogStatus.skipped,
+                    TaskExecutionLogStatus.skipped,
                 )
 
     def add_error_status_for_consent_reporting(self) -> None:

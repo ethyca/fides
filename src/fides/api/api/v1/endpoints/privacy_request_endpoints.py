@@ -75,6 +75,7 @@ from fides.api.models.privacy_request import (
     ProvidedIdentity,
     RequestTask,
 )
+from fides.api.models.worker_tasks import TaskExecutionLogStatus
 from fides.api.oauth.utils import (
     verify_callback_oauth_policy_pre_webhook,
     verify_callback_oauth_pre_approval_webhook,
@@ -91,7 +92,6 @@ from fides.api.schemas.privacy_request import (
     CheckpointActionRequired,
     DenyPrivacyRequests,
     ExecutionLogDetailResponse,
-    ExecutionLogStatus,
     FilteredPrivacyRequestResults,
     LogEntry,
     ManualWebhookData,
@@ -1942,7 +1942,7 @@ def request_task_async_callback(
             status_code=HTTP_400_BAD_REQUEST,
             detail=f"Callback failed. Cannot queue {request_task.action_type} task '{request_task.id}' with privacy request status '{privacy_request.status.value}'",
         )
-    if request_task.status != ExecutionLogStatus.awaiting_processing:
+    if request_task.status != TaskExecutionLogStatus.awaiting_processing:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
             detail=f"Callback failed. Cannot queue {request_task.action_type} task '{request_task.id}' with request task status '{request_task.status.value}'",
@@ -1965,7 +1965,7 @@ def request_task_async_callback(
         # For erasure requests, rows masked can be supplied here.
         request_task.rows_masked = data.rows_masked
 
-    request_task.update_status(db, ExecutionLogStatus.pending)
+    request_task.update_status(db, TaskExecutionLogStatus.pending)
     request_task.save(db)
 
     log_task_queued(request_task, "callback")
@@ -2121,7 +2121,7 @@ def get_test_privacy_request_results(
 
     # Update request status if all tasks are done
     if all_completed:
-        has_errors = ExecutionLogStatus.error in statuses
+        has_errors = TaskExecutionLogStatus.error in statuses
         privacy_request.status = (
             PrivacyRequestStatus.error if has_errors else PrivacyRequestStatus.complete
         )
@@ -2182,7 +2182,7 @@ def resubmit_privacy_request(
     return privacy_request
 
 
-def get_task_info(tasks: List[RequestTask]) -> Tuple[str, List[ExecutionLogStatus]]:
+def get_task_info(tasks: List[RequestTask]) -> Tuple[str, List[TaskExecutionLogStatus]]:
     """Returns first dataset and list of statuses from tasks"""
     statuses = []
     dataset_key = None
