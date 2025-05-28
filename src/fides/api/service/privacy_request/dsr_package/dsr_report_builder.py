@@ -118,7 +118,8 @@ class DsrReportBuilder:
 
     def _add_dataset(self, dataset_name: str, collections: dict[str, Any]) -> None:
         """
-        Adds a dataset to the zip file.
+        Generates a page for each collection in the dataset and an index page for the dataset.
+        Tracks the generated links to build a root level index after each collection has been processed.
 
         Args:
             dataset_name: the name of the dataset to add
