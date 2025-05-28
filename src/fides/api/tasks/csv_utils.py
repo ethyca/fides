@@ -169,7 +169,7 @@ def write_csv_to_zip(
                 encrypt_access_request_results(buffer.getvalue(), privacy_request_id),
             )
             continue
-        elif isinstance(value, list):
+        if isinstance(value, list):
             # Handle lists with different structures or non-dict items
             for idx, item in enumerate(value):
                 if isinstance(item, dict):
@@ -180,5 +180,5 @@ def write_csv_to_zip(
                             zip_file, key, idx, attachments, privacy_request_id
                         )
                     _write_item_csv(zip_file, key, idx, item, privacy_request_id)
-        else:
-            _write_simple_csv(zip_file, key, value, privacy_request_id)
+            continue
+        _write_simple_csv(zip_file, key, value, privacy_request_id)
