@@ -87,14 +87,15 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
 
     def get_formatted_query_string(
         self,
-        field_list: str,
+        field_list: List[str],
         clauses: List[str],
     ) -> str:
         """
         Returns a query string with backtick formatting for tables that have the same names as
         BigQuery reserved words.
         """
-        return f'SELECT {field_list} FROM `{self._generate_table_name()}` WHERE ({" OR ".join(clauses)})'
+        formatted_field_list = ", ".join(field_list)
+        return f'SELECT {formatted_field_list} FROM `{self._generate_table_name()}` WHERE ({" OR ".join(clauses)})'
 
     def generate_masking_stmt(
         self,
@@ -311,8 +312,7 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
                 clauses.append(self.format_clause_for_query(field_name, "IN", operand))
 
         if len(clauses) > 0:
-            formatted_fields = ", ".join(field_list)
-            query_str = self.get_formatted_query_string(formatted_fields, clauses)
+            query_str = self.get_formatted_query_string(field_list, clauses)
             return text(query_str).params(query_data)
 
         return None
