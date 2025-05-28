@@ -269,16 +269,15 @@ def upload_access_results(  # pylint: disable=R0912
 ) -> List[str]:
     """Process the data uploads after the access portion of the privacy request has completed"""
     download_urls: List[str] = []
-    all_attachments = privacy_request.attachments
     # Remove manual webhook attachments from the list of attachments
     # This is done because the manual webhook attachments are already included in the manual_data
-    removed_manual_webhook_attachments = [
+    loaded_attachments = [
         attachment
-        for attachment in all_attachments
+        for attachment in privacy_request.attachments
         if AttachmentReferenceType.access_manual_webhook
         not in [ref.reference_type for ref in attachment.references]
     ]
-    attachments = get_attachments_content(session, removed_manual_webhook_attachments)
+    attachments = get_attachments_content(session, loaded_attachments)
     logger.info(
         f"{len(attachments)} attachments found for privacy request {privacy_request.id}"
     )
