@@ -2,7 +2,7 @@ from unittest import mock
 
 import pytest
 
-from fides.api.schemas.privacy_request import ExecutionLogStatus
+from fides.api.models.worker_task import TaskExecutionLogStatus
 from tests.ops.service.privacy_request.test_request_runner_service import (
     get_privacy_request_results,
 )
@@ -125,11 +125,11 @@ def test_create_and_process_access_request_scylladb_no_keyspace(
 
     # Root task should be completed
     assert pr.access_tasks.first().collection_name == "__ROOT__"
-    assert pr.access_tasks.first().status == ExecutionLogStatus.complete
+    assert pr.access_tasks.first().status == TaskExecutionLogStatus.complete
 
     # All other tasks should be error
     for access_task in pr.access_tasks.offset(1):
-        assert access_task.status == ExecutionLogStatus.error
+        assert access_task.status == TaskExecutionLogStatus.error
 
     results = pr.get_raw_access_results()
     assert results == {}

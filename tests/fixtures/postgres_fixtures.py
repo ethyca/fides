@@ -18,7 +18,7 @@ from fides.api.models.policy import ActionType
 from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.models.sql_models import System
-from fides.api.schemas.privacy_request import ExecutionLogStatus
+from fides.api.models.worker_task import TaskExecutionLogStatus
 from fides.api.service.connectors import PostgreSQLConnector
 from fides.config import CONFIG
 from tests.ops.test_helpers.dataset_utils import remove_primary_keys
@@ -216,7 +216,7 @@ def postgres_execution_log(
                 }
             ],
             "action_type": ActionType.access,
-            "status": ExecutionLogStatus.pending,
+            "status": TaskExecutionLogStatus.pending,
             "privacy_request_id": privacy_request.id,
         },
     )
@@ -246,7 +246,7 @@ def second_postgres_execution_log(
                 },
             ],
             "action_type": ActionType.access,
-            "status": ExecutionLogStatus.error,
+            "status": TaskExecutionLogStatus.error,
             "privacy_request_id": privacy_request.id,
             "message": "Database timed out.",
         },
@@ -275,7 +275,7 @@ def async_execution_log(db: Session, privacy_request: PrivacyRequest) -> Executi
                 },
             ],
             "action_type": ActionType.access,
-            "status": ExecutionLogStatus.awaiting_processing,
+            "status": TaskExecutionLogStatus.awaiting_processing,
             "privacy_request_id": privacy_request.id,
         },
     )

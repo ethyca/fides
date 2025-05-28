@@ -11,7 +11,7 @@ from fides.api.graph.config import (
 )
 from fides.api.models.privacy_request import RequestTask
 from fides.api.schemas.policy import ActionType
-from fides.api.schemas.privacy_request import ExecutionLogStatus
+from fides.api.schemas.privacy_request import TaskExecutionLogStatus
 from fides.api.service.external_data_storage import ExternalDataStorageError
 from fides.api.service.storage.util import get_local_filename
 from fides.api.util.cache import FidesopsRedis, cache_task_tracking_key, get_cache
@@ -150,7 +150,7 @@ class TestRequestTask:
         root_task = request_task.get_tasks_with_same_action_type(
             db, ROOT_COLLECTION_ADDRESS.value
         ).first()
-        assert root_task.status == ExecutionLogStatus.complete
+        assert root_task.status == TaskExecutionLogStatus.complete
         assert root_task.is_root_task
         assert root_task.upstream_tasks_complete(db)
 
@@ -160,21 +160,21 @@ class TestRequestTask:
         ).first()
         assert terminator_task.is_terminator_task
         assert terminator_task.upstream_tasks == [request_task.collection_address]
-        assert request_task.status == ExecutionLogStatus.pending
+        assert request_task.status == TaskExecutionLogStatus.pending
         assert not terminator_task.upstream_tasks_complete(db)
         assert not terminator_task.can_queue_request_task(db)
 
         # Set the request task to be skipped
-        request_task.update_status(db, ExecutionLogStatus.skipped)
+        request_task.update_status(db, TaskExecutionLogStatus.skipped)
         # Skipped is considered to be a completed state
         assert terminator_task.upstream_tasks_complete(db)
         assert terminator_task.can_queue_request_task(db)
 
     def test_update_status(self, db, request_task):
-        assert request_task.status == ExecutionLogStatus.pending
-        request_task.update_status(db, ExecutionLogStatus.complete)
+        assert request_task.status == TaskExecutionLogStatus.pending
+        request_task.update_status(db, TaskExecutionLogStatus.complete)
 
-        assert request_task.status == ExecutionLogStatus.complete
+        assert request_task.status == TaskExecutionLogStatus.complete
 
     def test_save_filtered_access_results(self, db, privacy_request):
         assert privacy_request.get_filtered_final_upload() == {}
@@ -218,7 +218,7 @@ class TestGetRawAccessResults:
         assert request_task.get_access_data() == []
 
         request_task.access_data = [{"name": "Jane", "street": "102 Test Town"}]
-        request_task.update_status(db, ExecutionLogStatus.complete)
+        request_task.update_status(db, TaskExecutionLogStatus.complete)
         assert request_task.get_access_data() == [
             {"name": "Jane", "street": "102 Test Town"}
         ]
@@ -258,7 +258,7 @@ class TestGetRawMaskingCounts:
     ):
         """DSR 3.0 stores results on RequestTask.rows_masked"""
         erasure_request_task.rows_masked = 2
-        erasure_request_task.update_status(db, ExecutionLogStatus.complete)
+        erasure_request_task.update_status(db, TaskExecutionLogStatus.complete)
         assert privacy_request.get_raw_masking_counts() == {
             "test_dataset:test_collection": 2
         }
@@ -304,7 +304,7 @@ class TestGetConsentResults:
     ):
         """DSR 3.0 stores results on RequestTask.rows_masked"""
         consent_request_task.consent_sent = True
-        consent_request_task.update_status(db, ExecutionLogStatus.complete)
+        consent_request_task.update_status(db, TaskExecutionLogStatus.complete)
         assert privacy_request.get_consent_results() == {
             "test_dataset:test_collection": True
         }
@@ -675,7 +675,7 @@ class TestRequestTaskDataBehaviorDocumentation:
             dataset_name="test",
             collection_name="fresh",
             action_type=ActionType.access,
-            status=ExecutionLogStatus.pending,
+            status=TaskExecutionLogStatus.pending,
         )
         fresh_task.save(db)
         assert fresh_task.access_data is None  # Never touched

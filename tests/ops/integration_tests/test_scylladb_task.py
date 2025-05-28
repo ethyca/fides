@@ -2,7 +2,7 @@ import pytest
 from sqlalchemy.orm import Session
 
 from fides.api.models.privacy_request import PrivacyRequest
-from fides.api.schemas.privacy_request import ExecutionLogStatus
+from fides.api.models.worker_task import TaskExecutionLogStatus
 from fides.api.service.connectors.scylla_connector import ScyllaConnectorMissingKeyspace
 from fides.api.task.graph_task import get_cached_data_for_erasures
 
@@ -78,12 +78,13 @@ class TestScyllaDSRs:
         # Root task should be completed
         assert privacy_request.access_tasks.first().collection_name == "__ROOT__"
         assert (
-            privacy_request.access_tasks.first().status == ExecutionLogStatus.complete
+            privacy_request.access_tasks.first().status
+            == TaskExecutionLogStatus.complete
         )
 
         # All other tasks should be error
         for access_task in privacy_request.access_tasks.offset(1):
-            assert access_task.status == ExecutionLogStatus.error
+            assert access_task.status == TaskExecutionLogStatus.error
 
     @pytest.mark.parametrize(
         "dsr_version",
