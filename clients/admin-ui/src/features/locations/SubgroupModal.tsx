@@ -75,7 +75,7 @@ const SubgroupModal = ({
     onClose();
   };
 
-  const continentName = locations[0].continent;
+  const continentName = locations[0]?.continent || "Other";
   const subgroups = Object.keys(locationsByGroup);
   // If there are only "Others" do not render the group view
   const isGroupedView = !(subgroups.length === 1 && subgroups[0] === "Other");

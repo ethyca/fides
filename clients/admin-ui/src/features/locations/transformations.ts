@@ -18,7 +18,8 @@ export const groupLocationsByContinent = (
   > = {};
   const allContinents = new Set(locations.map((l) => l.continent).sort());
   allContinents.forEach((continent) => {
-    byContinent[continent] = {
+    const continentName = continent || "Other";
+    byContinent[continentName] = {
       locationGroups: locationGroups
         .filter((l) => l.continent === continent)
         .sort((a, b) => a.name.localeCompare(b.name)),

@@ -33,7 +33,7 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
   const toast = useToast();
   const confirmationDisclosure = useDisclosure();
   const [draftSelections, setDraftSelections] = useState<Array<Selection>>(
-    data.locations?.filter((l) => l.id !== PrivacyNoticeRegion.GLOBAL) ?? [],
+      data.locations ?? [],
   );
   const [search, setSearch] = useState("");
   const [patchLocationsRegulationsMutationTrigger, { isLoading: isSaving }] =
@@ -42,9 +42,7 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
   const locationGroupsByContinent = useMemo(
     () =>
       groupLocationsByContinent(
-        (data.locations || []).filter(
-          (l) => l.id !== PrivacyNoticeRegion.GLOBAL,
-        ),
+        data.locations || [],
         data.location_groups || [],
       ),
     [data],
