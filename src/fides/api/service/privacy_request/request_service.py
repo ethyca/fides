@@ -17,7 +17,7 @@ from fides.api.models.privacy_request import (
     PrivacyRequest,
     RequestTask,
 )
-from fides.api.models.worker_tasks import TaskExecutionLogStatus
+from fides.api.models.worker_task import TaskExecutionLogStatus
 from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
 from fides.api.schemas.policy import ActionType
