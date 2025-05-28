@@ -666,3 +666,134 @@ class TestAttachmentWarnings:
 
             # Refresh the session to ensure clean state
             db.expire_all()
+
+
+class TestAttachmentContentRetrieval:
+    """Tests for attachment content retrieval functionality."""
+
+    def test_retrieve_attachment_content_from_s3(
+        self, s3_client, db, attachment_data, attachment_file, monkeypatch
+    ):
+        """Test retrieving attachment content from S3."""
+        # Create a copy of the file content for verification
+        attachment_file_copy = attachment_file[1].read()
+        attachment_file[1].seek(0)  # Reset the file pointer again for the test
+
+        def mock_get_s3_client(auth_method, storage_secrets):
+            return s3_client
+
+        monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
+
+        attachment = Attachment.create_and_upload(
+            db, data=attachment_data, attachment_file=attachment_file[1]
+        )
+        size, content = attachment.retrieve_attachment_content()
+        assert size == len(attachment_file_copy)
+        assert content == attachment_file_copy
+        attachment.delete(db)
+
+    def test_retrieve_attachment_content_from_local(
+        self, db, attachment_data, attachment_file, storage_config_local
+    ):
+        """Test retrieving attachment content from local storage."""
+        # Create a copy of the file content for verification
+        attachment_file_copy = attachment_file[1].read()
+        attachment_file[1].seek(0)  # Reset the file pointer again for the test
+        attachment_data["storage_key"] = storage_config_local.key
+        attachment = Attachment.create_and_upload(
+            db=db, data=attachment_data, attachment_file=attachment_file[1]
+        )
+        size, content = attachment.retrieve_attachment_content()
+        assert size == len(attachment_file_copy)
+        assert content == attachment_file_copy
+        attachment.delete(db)
+
+    def test_retrieve_attachment_content_from_gcs(
+        self,
+        mock_gcs_client,
+        db,
+        attachment_data,
+        attachment_file,
+        storage_config_default_gcs,
+    ):
+        """Test retrieving attachment content from GCS storage."""
+        # Create a copy of the file content for verification
+        attachment_file_copy = attachment_file[1].read()
+        attachment_file[1].seek(0)  # Reset the file pointer again for the test
+
+        # Update attachment data to use GCS storage config
+        attachment_data["storage_key"] = storage_config_default_gcs.key
+
+        with (
+            patch(
+                "fides.api.models.attachment.get_gcs_client",
+                return_value=mock_gcs_client,
+            ) as mock1,
+            patch(
+                "fides.api.service.storage.gcs.get_gcs_client",
+                return_value=mock_gcs_client,
+            ) as mock2,
+        ):
+            attachment = Attachment.create_and_upload(
+                db=db, data=attachment_data, attachment_file=attachment_file[1]
+            )
+            size, content = attachment.retrieve_attachment_content()
+            assert size == len(attachment_file_copy)
+            assert content == attachment_file_copy
+            attachment.delete(db)
+
+    def test_retrieve_attachment_content_not_found(
+        self, s3_client, db, attachment_data, monkeypatch
+    ):
+        """Test retrieving attachment content when file is not found."""
+
+        def mock_get_s3_client(auth_method, storage_secrets):
+            return s3_client
+
+        monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
+
+        attachment = Attachment.create_and_upload(
+            db, data=attachment_data, attachment_file=BytesIO(b"test content")
+        )
+        attachment.delete_attachment_from_storage()
+
+        with pytest.raises(ClientError):
+            attachment.retrieve_attachment_content()
+
+    def test_content_type_property(self, s3_client, db, attachment_data, monkeypatch):
+        """Test the content_type property for different file types."""
+
+        def mock_get_s3_client(auth_method, storage_secrets):
+            return s3_client
+
+        monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
+
+        test_cases = [
+            ("test.pdf", "application/pdf"),
+            ("test.txt", "text/plain"),
+            ("test.jpeg", "image/jpeg"),
+            ("test.jpg", "image/jpeg"),
+            ("test.png", "image/png"),
+        ]
+
+        for filename, expected_content_type in test_cases:
+            attachment_data["file_name"] = filename
+            attachment = Attachment.create_and_upload(
+                db, data=attachment_data, attachment_file=BytesIO(b"test content")
+            )
+            assert attachment.content_type == expected_content_type
+            attachment.delete(db)
+
+    def test_invalid_file_type(self, s3_client, db, attachment_data, monkeypatch):
+        """Test creating an attachment with an invalid file type."""
+
+        def mock_get_s3_client(auth_method, storage_secrets):
+            return s3_client
+
+        monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
+
+        attachment_data["file_name"] = "test.invalid"
+        with pytest.raises(ValueError, match="Invalid or unallowed file extension"):
+            Attachment.create_and_upload(
+                db, data=attachment_data, attachment_file=BytesIO(b"test content")
+            )
