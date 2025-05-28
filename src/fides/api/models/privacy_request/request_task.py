@@ -241,7 +241,7 @@ class RequestTask(WorkerTask, Base):
         if not tasks_complete and should_log:
             logger.debug(
                 "Upstream tasks incomplete for {} task {}.",
-                self.action_type.value,
+                self.action_type,
                 self.collection_address,
             )
 
@@ -272,7 +272,7 @@ class RequestTask(WorkerTask, Base):
             logger.debug(
                 "Celery Task ID {} found for {} task {}.",
                 celery_task_id,
-                self.action_type.value,
+                self.action_type,
                 self.collection_address,
             )
 
@@ -282,7 +282,7 @@ class RequestTask(WorkerTask, Base):
             logger.debug(
                 "Celery Task {} already processing for {} task {}.",
                 celery_task_id,
-                self.action_type.value,
+                self.action_type,
                 self.collection_address,
             )
 

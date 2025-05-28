@@ -145,7 +145,7 @@ def can_run_task_body(
     if request_task.is_terminator_task:
         logger.info(
             "Terminator {} task reached.",
-            request_task.action_type.value,
+            request_task.action_type,
         )
         return False
     if request_task.is_root_task:
@@ -154,7 +154,7 @@ def can_run_task_body(
     if request_task.status != ExecutionLogStatus.pending:
         logger_method(request_task)(
             "Skipping {} task {} with status {}.",
-            request_task.action_type.value,
+            request_task.action_type,
             request_task.collection_address,
             request_task.status.value,
         )
@@ -449,7 +449,7 @@ def log_task_complete(request_task: RequestTask) -> None:
     """Convenience method for logging task completion"""
     logger.info(
         "{} task {} is {}.",
-        request_task.action_type.value.capitalize(),
+        request_task.action_type.capitalize(),
         request_task.collection_address,
         request_task.status.value,
     )
@@ -478,9 +478,9 @@ def _order_tasks_by_input_key(
 
 
 mapping = {
-    ActionType.access: run_access_node,
-    ActionType.erasure: run_erasure_node,
-    ActionType.consent: run_consent_node,
+    ActionType.access.value: run_access_node,
+    ActionType.erasure.value: run_erasure_node,
+    ActionType.consent.value: run_consent_node,
 }
 
 
@@ -504,7 +504,7 @@ def log_task_queued(request_task: RequestTask, location: str) -> None:
     """Helper for logging that tasks are queued"""
     logger_method(request_task)(
         "Queuing {} task {} from {}.",
-        request_task.action_type.value,
+        request_task.action_type,
         request_task.collection_address,
         location,
     )
