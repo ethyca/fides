@@ -91,8 +91,8 @@ class TestWriteCSVToZip:
 
         zip_buffer.seek(0)
         with zipfile.ZipFile(zip_buffer, "r") as zip_file:
-            assert "users/1/attachments.csv" in zip_file.namelist()
             assert "users/1/data.csv" in zip_file.namelist()
+            assert "users/1/attachments.csv" in zip_file.namelist()
 
 
 class TestWriteAttachmentCSV:
