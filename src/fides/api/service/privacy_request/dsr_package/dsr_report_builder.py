@@ -55,6 +55,7 @@ class DsrReportBuilder:
 
         # Initialize instance zip file variables
         self.baos = BytesIO()
+
         # we close this in the finally block of generate()
         # pylint: disable=consider-using-with
         self.out = zipfile.ZipFile(self.baos, "w")
