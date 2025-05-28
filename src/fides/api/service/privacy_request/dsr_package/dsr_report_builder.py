@@ -329,7 +329,7 @@ class DsrReportBuilder:
             )
 
             # pre-process data to split the dataset:collection keys
-            datasets = self._get_datasets_from_dsr_data()
+            datasets: dict[str, Any] = self._get_datasets_from_dsr_data()
 
             # Sort datasets alphabetically, excluding special cases
             regular_datasets = [
