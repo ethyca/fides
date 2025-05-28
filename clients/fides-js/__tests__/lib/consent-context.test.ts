@@ -83,6 +83,16 @@ describe("getConsentContext", () => {
 
     it("allows GPC when TCF is enabled (for custom notices)", () => {
       (window as any).Fides.options.tcfEnabled = true;
+      // Add mock custom privacy notices to enable GPC in TCF
+      (window as any).Fides.experience = {
+        privacy_notices: [
+          {
+            id: "custom-notice-1",
+            notice_key: "custom_analytics",
+            has_gpc_flag: true,
+          },
+        ],
+      };
       Object.defineProperty(window.navigator, "globalPrivacyControl", {
         value: true,
         writable: true,
@@ -95,6 +105,16 @@ describe("getConsentContext", () => {
 
     it("allows GPC query parameter when TCF is enabled", () => {
       (window as any).Fides.options.tcfEnabled = true;
+      // Add mock custom privacy notices to enable GPC in TCF
+      (window as any).Fides.experience = {
+        privacy_notices: [
+          {
+            id: "custom-notice-1",
+            notice_key: "custom_analytics",
+            has_gpc_flag: true,
+          },
+        ],
+      };
       Object.defineProperty(window, "location", {
         value: {
           href: "https://example.com?globalPrivacyControl=true",
