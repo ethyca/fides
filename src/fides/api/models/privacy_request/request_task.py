@@ -26,6 +26,7 @@ from fides.api.models.privacy_request.execution_log import (
 )
 from fides.api.models.worker_task import TaskExecutionLogStatus, WorkerTask
 from fides.api.schemas.base_class import FidesSchema
+from fides.api.schemas.policy import ActionType
 from fides.api.util.cache import (
     FidesopsRedis,
     celery_tasks_in_flight,
@@ -170,6 +171,10 @@ class RequestTask(WorkerTask, Base):
     def is_terminator_task(self) -> bool:
         """Convenience helper for asserting whether the task is a terminator task"""
         return self.request_task_address == TERMINATOR_ADDRESS
+
+    @classmethod
+    def allowed_action_types(cls) -> List[str]:
+        return [e.value for e in ActionType]
 
     def get_cached_task_id(self) -> Optional[str]:
         """Gets the cached celery task ID for this request task."""

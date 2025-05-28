@@ -1,4 +1,5 @@
 import enum
+from typing import Any, List
 
 from sqlalchemy import Column, DateTime, String
 from sqlalchemy.sql import text
@@ -38,6 +39,21 @@ class WorkerTask:
         index=True,
         nullable=False,
     )
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        action_type = kwargs.get("action_type")
+        if action_type is not None:
+            self.validate_action_type(action_type)
+        super().__init__(*args, **kwargs)
+
+    @classmethod
+    def validate_action_type(cls, action_type: str) -> None:
+        if action_type not in cls.allowed_action_types():
+            raise ValueError(f"Invalid action_type '{action_type}' for {cls.__name__}")
+
+    @classmethod
+    def allowed_action_types(cls) -> List[str]:
+        raise NotImplementedError("Subclasses must implement allowed_action_types")
 
 
 class TaskExecutionLog:
