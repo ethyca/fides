@@ -351,7 +351,6 @@ class DsrReportBuilder:
                 self._add_attachments(self.dsr_data["attachments"])
                 self.main_links["Additional Attachments"] = "attachments/index.html"
 
-            logger.info(f"Main links for welcome page: {self.main_links}")
             # create the main index once all the datasets have been added
             self._add_file(
                 "welcome.html",
