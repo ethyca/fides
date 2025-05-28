@@ -70,6 +70,8 @@ class DsrReportBuilder:
             "border_color": BORDER_COLOR,
         }
         self.main_links: dict[str, Any] = {}  # used to track the generated pages
+
+        # report data to populate the templates
         self.request_data = _map_privacy_request(privacy_request)
         self.dsr_data = dsr_data
 
