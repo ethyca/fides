@@ -91,8 +91,13 @@ class TestWriteCSVToZip:
 
         zip_buffer.seek(0)
         with zipfile.ZipFile(zip_buffer, "r") as zip_file:
-            assert "users/1/data.csv" in zip_file.namelist()
+            assert "users.csv" in zip_file.namelist()
             assert "users/1/attachments.csv" in zip_file.namelist()
+
+            # Verify the content of users.csv
+            content = zip_file.read("users.csv").decode()
+            assert "name,age" in content
+            assert "John,30" in content
 
 
 class TestWriteAttachmentCSV:
@@ -120,27 +125,27 @@ class TestWriteAttachmentCSV:
 
 class TestWriteItemCSV:
     def test_write_item_csv(self):
-        item = {"name": "John", "age": 30}
+        items = [{"name": "John", "age": 30}]
 
         zip_buffer = BytesIO()
         with zipfile.ZipFile(zip_buffer, "w") as zip_file:
-            _write_item_csv(zip_file, "test", 0, item, "test-request-id")
+            _write_item_csv(zip_file, "test", items, "test-request-id")
 
         zip_buffer.seek(0)
         with zipfile.ZipFile(zip_buffer, "r") as zip_file:
-            assert "test/1/data.csv" in zip_file.namelist()
-            content = zip_file.read("test/1/data.csv").decode()
+            assert "test.csv" in zip_file.namelist()
+            content = zip_file.read("test.csv").decode()
             assert "name,age" in content
             assert "John,30" in content
 
     def test_write_item_csv_empty(self):
         zip_buffer = BytesIO()
         with zipfile.ZipFile(zip_buffer, "w") as zip_file:
-            _write_item_csv(zip_file, "test", 0, {}, "test-request-id")
+            _write_item_csv(zip_file, "test", [], "test-request-id")
 
         zip_buffer.seek(0)
         with zipfile.ZipFile(zip_buffer, "r") as zip_file:
-            assert "test/1/data.csv" not in zip_file.namelist()
+            assert "test.csv" not in zip_file.namelist()
 
 
 class TestWriteSimpleCSV:

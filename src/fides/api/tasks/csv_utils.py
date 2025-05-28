@@ -97,8 +97,7 @@ def _write_attachment_csv(
 def _write_item_csv(
     zip_file: zipfile.ZipFile,
     key: str,
-    idx: int,
-    item: dict[str, Any],
+    items: list[dict[str, Any]],
     privacy_request_id: str,
 ) -> None:
     """Write item data to a CSV file in the zip archive.
@@ -106,15 +105,14 @@ def _write_item_csv(
     Args:
         zip_file: The zip file to write to
         key: The key for the data
-        idx: The index of the item in the list
-        item: The item data to write
+        items: List of items to write
         privacy_request_id: The ID of the privacy request for encryption
     """
-    if item:
-        df = pd.json_normalize(item)
+    if items:
+        df = pd.DataFrame(items)
         buffer = create_csv_from_dataframe(df)
         zip_file.writestr(
-            f"{key}/{idx + 1}/data.csv",
+            f"{key}.csv",
             encrypt_access_request_results(buffer.getvalue(), privacy_request_id),
         )
 
@@ -152,33 +150,21 @@ def write_csv_to_zip(
         privacy_request_id: The ID of the privacy request for encryption
     """
     for key, value in data.items():
-        # For lists of dictionaries with the same structure, write as a single CSV
         if (
-            isinstance(value, dict)
+            isinstance(value, list)
+            and value
             and all(isinstance(item, dict) for item in value)
-            and all(item.keys() == value[0].keys() for item in value)
         ):
-            # Handle lists of dictionaries with the same structure
-            # Create a DataFrame from the list of dictionaries
-            df = pd.DataFrame(value)
-            buffer = BytesIO()
-            df.to_csv(buffer, index=False, encoding=CONFIG.security.encoding)
-            buffer.seek(0)
-            zip_file.writestr(
-                f"{key}.csv",
-                encrypt_access_request_results(buffer.getvalue(), privacy_request_id),
-            )
-            continue
-        if isinstance(value, list):
-            # Handle lists with different structures or non-dict items
-            for idx, item in enumerate(value):
-                if isinstance(item, dict):
-                    # Extract attachments if they exist
-                    attachments = item.pop("attachments", [])
-                    if attachments:
-                        _write_attachment_csv(
-                            zip_file, key, idx, attachments, privacy_request_id
-                        )
-                    _write_item_csv(zip_file, key, idx, item, privacy_request_id)
-            continue
-        _write_simple_csv(zip_file, key, value, privacy_request_id)
+            # Handle lists of dictionaries
+            items: list[dict[str, Any]] = []
+            for item in value:
+                # Extract attachments if they exist
+                attachments = item.pop("attachments", [])
+                if attachments:
+                    _write_attachment_csv(
+                        zip_file, key, len(items), attachments, privacy_request_id
+                    )
+                items.append(item)
+            _write_item_csv(zip_file, key, items, privacy_request_id)
+        else:
+            _write_simple_csv(zip_file, key, value, privacy_request_id)

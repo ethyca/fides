@@ -244,23 +244,21 @@ class TestWriteToInMemoryBuffer:
 
         assert isinstance(result, BytesIO)
         with zipfile.ZipFile(result) as zip_file:
-            # Check for individual attachment CSV files
-            assert "attachments/1/data.csv" in zip_file.namelist()
-            assert "attachments/2/data.csv" in zip_file.namelist()
+            # Check for attachment CSV file
+            assert "attachments.csv" in zip_file.namelist()
             assert "metadata.csv" in zip_file.namelist()
 
             # Verify attachment data is properly written
-            attachment1_data = pd.read_csv(zip_file.open("attachments/1/data.csv"))
-            assert "file_name" in attachment1_data.columns
-            assert "file_size" in attachment1_data.columns
-            assert "content_type" in attachment1_data.columns
-            assert "content" not in attachment1_data.columns
+            attachment_data = pd.read_csv(zip_file.open("attachments.csv"))
+            assert "file_name" in attachment_data.columns
+            assert "file_size" in attachment_data.columns
+            assert "content_type" in attachment_data.columns
+            assert "content" not in attachment_data.columns
 
-            assert attachment1_data.iloc[0]["file_name"] == "doc1.pdf"
-            assert attachment1_data.iloc[0]["file_size"] == 1024
-            attachment2_data = pd.read_csv(zip_file.open("attachments/2/data.csv"))
-            assert attachment2_data.iloc[0]["file_name"] == "doc2.pdf"
-            assert attachment2_data.iloc[0]["file_size"] == 2048
+            assert attachment_data.iloc[0]["file_name"] == "doc1.pdf"
+            assert attachment_data.iloc[0]["file_size"] == 1024
+            assert attachment_data.iloc[1]["file_name"] == "doc2.pdf"
+            assert attachment_data.iloc[1]["file_size"] == 2048
 
     def test_write_to_in_memory_buffer_manual_webhook_attachments_json(self):
         """Test handling of attachments in manual webhook data (JSON format)."""
