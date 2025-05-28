@@ -159,7 +159,8 @@ export const TableMigrationPOC = () => {
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [searchInput, pageIndex]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchInput]);
 
   const onSearchInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
