@@ -23,9 +23,10 @@ from fides.api.models.consent_automation import ConsentAutomation
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
+from fides.api.models.worker_task import TaskExecutionLogStatus
 from fides.api.oauth.utils import extract_payload
 from fides.api.schemas.consentable_item import ConsentableItem
-from fides.api.schemas.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity
 from fides.api.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
 from fides.api.schemas.saas.shared_schemas import ConsentPropagationStatus, HTTPMethod
@@ -1086,7 +1087,7 @@ class TestAsyncConnectors:
         request_task = privacy_request.access_tasks.filter(
             RequestTask.collection_name == "user"
         ).first()
-        request_task.status = ExecutionLogStatus.awaiting_processing
+        request_task.status = TaskExecutionLogStatus.awaiting_processing
         request_task.callback_succeeded = True
         execution_node = ExecutionNode(request_task)
 
@@ -1177,7 +1178,7 @@ class TestAsyncConnectors:
         request_task = privacy_request.erasure_tasks.filter(
             RequestTask.collection_name == "user"
         ).first()
-        request_task.status = ExecutionLogStatus.awaiting_processing
+        request_task.status = TaskExecutionLogStatus.awaiting_processing
         request_task.callback_succeeded = True
         request_task.save(db)
         execution_node = ExecutionNode(request_task)

@@ -8,8 +8,8 @@ from fides.api.models.privacy_request.execution_log import (
     ExecutionLog,
     can_run_checkpoint,
 )
+from fides.api.models.worker_task import TaskExecutionLogStatus
 from fides.api.schemas.policy import ActionType, CurrentStep
-from fides.api.schemas.privacy_request import ExecutionLogStatus
 
 
 @pytest.fixture
@@ -63,7 +63,7 @@ def test_create_execution_log(db, execution_log_data):
     )
     assert retrieved_execution_log is not None
     assert retrieved_execution_log.action_type == ActionType.access
-    assert retrieved_execution_log.status == ExecutionLogStatus.complete
+    assert retrieved_execution_log.status == TaskExecutionLogStatus.complete
     assert retrieved_execution_log.connection_key == "some_key"
     assert retrieved_execution_log.dataset_name == "some_name"
     assert retrieved_execution_log.collection_name == "some_collection"

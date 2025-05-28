@@ -5,8 +5,9 @@ from unittest import mock
 import pytest
 
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
+from fides.api.models.worker_task import TaskExecutionLogStatus
 from fides.api.schemas.policy import ActionType
-from fides.api.schemas.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.service.privacy_request.request_service import (
     REQUEUE_INTERRUPTED_TASKS_LOCK,
     requeue_interrupted_tasks,
@@ -48,7 +49,7 @@ def in_progress_request_task(db, in_progress_privacy_request):
         db,
         data={
             "action_type": ActionType.access,
-            "status": ExecutionLogStatus.in_processing,
+            "status": TaskExecutionLogStatus.in_processing,
             "privacy_request_id": in_progress_privacy_request.id,
             "collection_address": "test_dataset:customer",
             "dataset_name": "test_dataset",
