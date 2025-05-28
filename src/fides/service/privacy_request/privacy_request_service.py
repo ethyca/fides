@@ -20,7 +20,7 @@ from fides.api.models.privacy_request import (
     RequestTask,
 )
 from fides.api.models.property import Property
-from fides.api.models.worker_tasks import TaskExecutionLogStatus
+from fides.api.models.worker_task import TaskExecutionLogStatus
 from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.messaging.messaging import MessagingActionType
 from fides.api.schemas.policy import ActionType, CurrentStep

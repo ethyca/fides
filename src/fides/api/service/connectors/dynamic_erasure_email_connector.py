@@ -17,7 +17,7 @@ from fides.api.models.privacy_request import (
     RequestTask,
     TraversalDetails,
 )
-from fides.api.models.worker_tasks import TaskExecutionLogStatus
+from fides.api.models.worker_task import TaskExecutionLogStatus
 from fides.api.schemas.connection_configuration.connection_secrets_dynamic_erasure_email import (
     DynamicErasureEmailSchema,
 )

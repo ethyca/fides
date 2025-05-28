@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.policy import Rule
 from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest
-from fides.api.models.worker_tasks import TaskExecutionLogStatus
+from fides.api.models.worker_task import TaskExecutionLogStatus
 from fides.api.schemas.connection_configuration.connection_secrets_email import (
     AdvancedSettings,
     BaseEmailSchema,
