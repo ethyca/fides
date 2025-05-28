@@ -53,7 +53,7 @@ class DsrReportBuilder:
             value, indent=indent, cls=StorageJSONEncoder
         )
 
-        # Initialize instance variables
+        # Initialize instance zip file variables
         self.baos = BytesIO()
         # we close this in the finally block of generate()
         # pylint: disable=consider-using-with
