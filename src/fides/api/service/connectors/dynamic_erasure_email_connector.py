@@ -17,11 +17,12 @@ from fides.api.models.privacy_request import (
     RequestTask,
     TraversalDetails,
 )
+from fides.api.models.worker_tasks import TaskExecutionLogStatus
 from fides.api.schemas.connection_configuration.connection_secrets_dynamic_erasure_email import (
     DynamicErasureEmailSchema,
 )
 from fides.api.schemas.policy import ActionType
-from fides.api.schemas.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.base_erasure_email_connector import (
     BaseErasureEmailConnector,
@@ -177,7 +178,7 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
                         "collection_name": self.configuration.name_or_key,
                         "privacy_request_id": privacy_request.id,
                         "action_type": ActionType.erasure,
-                        "status": ExecutionLogStatus.complete,
+                        "status": TaskExecutionLogStatus.complete,
                         "message": f"Erasure email instructions dispatched for '{self.configuration.name_or_key}'",
                     },
                 )
@@ -497,7 +498,7 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
                 "collection_name": self.configuration.name_or_key,
                 "privacy_request_id": privacy_request.id,
                 "action_type": ActionType.erasure,
-                "status": ExecutionLogStatus.error,
+                "status": TaskExecutionLogStatus.error,
                 "message": failure_reason
                 or "An error occurred when trying to send the erasure email",
             },
