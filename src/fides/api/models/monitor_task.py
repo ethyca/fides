@@ -1,4 +1,5 @@
 import enum
+from typing import List
 
 from sqlalchemy import Column, Enum, ForeignKey, String
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
@@ -32,6 +33,10 @@ class MonitorTask(WorkerTask, Base):
     )
     staged_resource_urn = Column(String, nullable=False)
     child_resource_urns = Column(ARRAY(String), nullable=True)
+
+    @classmethod
+    def allowed_action_types(cls) -> List[str]:
+        return [e.value for e in MonitorTaskType]
 
 
 class TaskRunType(enum.Enum):
