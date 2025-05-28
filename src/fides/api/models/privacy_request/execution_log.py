@@ -10,7 +10,7 @@ from sqlalchemy.ext.mutable import MutableList
 
 from fides.api.db.base_class import Base  # type: ignore[attr-defined]
 from fides.api.db.util import EnumColumn
-from fides.api.models.worker_tasks import TaskExecutionLog, TaskExecutionLogStatus
+from fides.api.models.worker_task import TaskExecutionLog, TaskExecutionLogStatus
 from fides.api.schemas.policy import ActionType, CurrentStep
 
 # Locations from which privacy request execution can be resumed, in order.

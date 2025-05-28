@@ -5,7 +5,7 @@ from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 
 from fides.api.db.base_class import Base
 from fides.api.models.detection_discovery import MonitorConfig
-from fides.api.models.worker_tasks import TaskExecutionLog, WorkerTask
+from fides.api.models.worker_task import TaskExecutionLog, WorkerTask
 
 
 class MonitorTaskType(enum.Enum):

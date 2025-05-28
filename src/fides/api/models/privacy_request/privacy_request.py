@@ -73,7 +73,7 @@ from fides.api.models.privacy_request.webhook import (
     generate_request_callback_pre_approval_jwe,
     generate_request_callback_resume_jwe,
 )
-from fides.api.models.worker_tasks import TaskExecutionLogStatus
+from fides.api.models.worker_task import TaskExecutionLogStatus
 from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fides.api.schemas.external_https import SecondPartyResponseFormat
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache

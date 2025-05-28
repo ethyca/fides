@@ -75,7 +75,7 @@ from fides.api.models.privacy_request import (
     ProvidedIdentity,
     RequestTask,
 )
-from fides.api.models.worker_tasks import TaskExecutionLogStatus
+from fides.api.models.worker_task import TaskExecutionLogStatus
 from fides.api.oauth.utils import (
     verify_callback_oauth_policy_pre_webhook,
     verify_callback_oauth_pre_approval_webhook,

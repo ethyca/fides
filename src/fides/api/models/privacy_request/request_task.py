@@ -24,7 +24,7 @@ from fides.api.models.field_types import EncryptedLargeDataDescriptor
 from fides.api.models.privacy_request.execution_log import (
     COMPLETED_EXECUTION_LOG_STATUSES,
 )
-from fides.api.models.worker_tasks import TaskExecutionLogStatus, WorkerTask
+from fides.api.models.worker_task import TaskExecutionLogStatus, WorkerTask
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.util.cache import (
     FidesopsRedis,

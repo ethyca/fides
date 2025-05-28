@@ -22,7 +22,7 @@ from fides.api.models.privacy_notice import (
     UserConsentPreference,
 )
 from fides.api.models.privacy_request import PrivacyRequest, ProvidedIdentity
-from fides.api.models.worker_tasks import TaskExecutionLogStatus
+from fides.api.models.worker_task import TaskExecutionLogStatus
 from fides.api.schemas.language import SupportedLanguage
 from fides.api.schemas.redis_cache import MultiValue
 from fides.config import CONFIG
