@@ -107,7 +107,7 @@ def get_attachments_content(
                 "content_type": attachment.content_type,
             }
             # If config response format is html, we need to get the content
-            if attachment.config.format.value == ResponseFormat.html.value:
+            if attachment.config.format.value == ResponseFormat.html.value:  # type: ignore[attr-defined]
                 _, content = attachment.retrieve_attachment_content()
                 attachment_data["content"] = content
 
