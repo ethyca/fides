@@ -62,6 +62,7 @@ class DsrReportBuilder:
         self.template_loader = Environment(
             loader=FileSystemLoader(DSR_DIRECTORY), autoescape=True
         )
+
         self.template_data: dict[str, Any] = {
             "text_color": TEXT_COLOR,
             "header_color": HEADER_COLOR,
