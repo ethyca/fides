@@ -148,12 +148,7 @@ def get_manual_webhook_access_inputs(
                 # Load attachments from database to ensure they have their configs
                 loaded_attachments = []
                 for webhook_attachment in webhook_attachments:
-                    loaded_attachment = db.query(Attachment).get(webhook_attachment.id)
-                    if loaded_attachment and loaded_attachment.config is not None:
-                        loaded_attachments.append(loaded_attachment)
-                    else:
-                        logger.error(
-                            f"Could not load attachment {webhook_attachment.id} or config is None"
+                    loaded_attachments.append(db.query(Attachment).get(webhook_attachment.id))
                         )
                 webhook_data["attachments"] = get_attachments_content(
                     db, loaded_attachments
