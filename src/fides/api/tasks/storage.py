@@ -22,7 +22,6 @@ from fides.api.service.storage.util import (
     LOCAL_FIDES_UPLOAD_DIRECTORY,
     get_local_filename,
 )
-from fides.api.tasks.attachment_utils import remove_attachment_content
 from fides.api.tasks.csv_utils import write_csv_to_zip
 from fides.api.tasks.encryption_utils import encrypt_access_request_results
 from fides.api.util.aws_util import get_s3_client
@@ -52,9 +51,6 @@ def write_to_in_memory_buffer(
 
     # Create a copy of the data to modify
     json_data = data.copy()
-
-    # Remove content from all attachments
-    remove_attachment_content(json_data)
 
     if resp_format == ResponseFormat.json.value:
         return convert_to_encrypted_json(json_data, privacy_request.id)
@@ -168,16 +164,12 @@ def upload_to_gcs(
     try:
         storage_client = get_gcs_client(auth_method, storage_secrets)
         bucket = storage_client.bucket(bucket_name)
-        logger.debug("Successfully created GCS client and bucket")
-
         blob = bucket.blob(file_key)
-        logger.debug("Created blob object")
 
         try:
             in_memory_file = write_to_in_memory_buffer(
                 resp_format, data, privacy_request
             )
-            logger.debug("Successfully created in-memory file")
         except Exception as e:
             logger.error(f"Error in write_to_in_memory_buffer: {str(e)}")
             raise
@@ -193,7 +185,6 @@ def upload_to_gcs(
             blob.upload_from_string(
                 in_memory_file.getvalue(), content_type=content_type[resp_format]
             )
-            logger.debug("Successfully uploaded file to GCS")
         except Exception as e:
             logger.error(f"Error uploading to GCS: {str(e)}")
             raise

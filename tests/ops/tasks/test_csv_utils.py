@@ -1,10 +1,7 @@
-import io
 import zipfile
 from io import BytesIO
-from typing import Any, Dict
 
 import pandas as pd
-import pytest
 
 from fides.api.tasks.csv_utils import (
     _write_attachment_csv,
@@ -12,143 +9,8 @@ from fides.api.tasks.csv_utils import (
     _write_simple_csv,
     create_attachment_csv,
     create_csv_from_dataframe,
-    create_data_csv,
     write_csv_to_zip,
 )
-from fides.config import CONFIG
-
-
-@pytest.fixture
-def sample_dataframe() -> pd.DataFrame:
-    """Create a sample DataFrame for testing."""
-    return pd.DataFrame(
-        {
-            "name": ["John", "Jane"],
-            "age": [30, 25],
-            "email": ["john@example.com", "jane@example.com"],
-        }
-    )
-
-
-@pytest.fixture
-def sample_data() -> Dict[str, Any]:
-    """Create sample data for testing."""
-    return {"user": {"name": "John Doe", "email": "john@example.com", "age": 30}}
-
-
-@pytest.fixture
-def sample_attachments() -> list:
-    """Create sample attachments for testing."""
-    return [
-        {
-            "file_name": "test1.pdf",
-            "file_size": 1024,
-            "content_type": "application/pdf",
-            "download_url": "https://example.com/test1.pdf",
-        },
-        {
-            "file_name": "test2.jpg",
-            "file_size": 2048,
-            "content_type": "image/jpeg",
-            "download_url": "https://example.com/test2.jpg",
-        },
-    ]
-
-
-def test_create_csv_from_dataframe(sample_dataframe):
-    """Test creating a CSV from a DataFrame."""
-    buffer = create_csv_from_dataframe(sample_dataframe)
-    assert isinstance(buffer, io.BytesIO)
-
-    # Read the CSV content
-    content = buffer.getvalue().decode(CONFIG.security.encoding)
-    assert "name,age,email" in content
-    assert "John,30,john@example.com" in content
-    assert "Jane,25,jane@example.com" in content
-
-
-def test_create_data_csv(sample_data):
-    """Test creating a CSV from data dictionary."""
-    buffer = create_data_csv(sample_data)
-    assert isinstance(buffer, io.BytesIO)
-
-    # Read the CSV content
-    content = buffer.getvalue().decode(CONFIG.security.encoding)
-    assert "user.name,user.email,user.age" in content
-    assert "John Doe,john@example.com,30" in content
-
-
-def test_create_attachment_csv(sample_attachments):
-    """Test creating a CSV from attachment data."""
-    buffer = create_attachment_csv(sample_attachments)
-    assert isinstance(buffer, io.BytesIO)
-
-    # Read the CSV content
-    content = buffer.getvalue().decode(CONFIG.security.encoding)
-    assert "file_name,file_size,content_type,download_url" in content
-    assert "test1.pdf,1024,application/pdf,https://example.com/test1.pdf" in content
-    assert "test2.jpg,2048,image/jpeg,https://example.com/test2.jpg" in content
-
-
-def test_create_attachment_csv_empty_list():
-    """Test creating a CSV from an empty attachment list."""
-    buffer = create_attachment_csv([])
-    assert buffer is None
-
-
-def test_write_csv_to_zip(sample_data):
-    """Test writing data to a zip file in CSV format."""
-    privacy_request_id = "test_request_123"
-
-    # Create a BytesIO object to store the zip file
-    zip_buffer = io.BytesIO()
-    with zipfile.ZipFile(zip_buffer, "w") as zip_file:
-        write_csv_to_zip(zip_file, sample_data, privacy_request_id)
-
-    # Verify the zip file contains the expected files
-    zip_buffer.seek(0)
-    with zipfile.ZipFile(zip_buffer, "r") as zip_file:
-        file_list = zip_file.namelist()
-        assert "user.csv" in file_list
-
-        # Read and verify the content of the CSV file
-        csv_content = zip_file.read("user.csv")
-        content = csv_content.decode(CONFIG.security.encoding)
-        assert "user.name,user.email,user.age" in content
-        assert "John Doe,john@example.com,30" in content
-
-
-def test_write_csv_to_zip_with_list_data():
-    """Test writing list data to a zip file in CSV format."""
-    privacy_request_id = "test_request_123"
-    list_data = {
-        "users": [
-            {
-                "name": "John",
-                "email": "john@example.com",
-                "attachments": [
-                    {
-                        "file_name": "doc1.pdf",
-                        "file_size": 1024,
-                        "content_type": "application/pdf",
-                        "download_url": "https://example.com/doc1.pdf",
-                    }
-                ],
-            }
-        ]
-    }
-
-    # Create a BytesIO object to store the zip file
-    zip_buffer = io.BytesIO()
-    with zipfile.ZipFile(zip_buffer, "w") as zip_file:
-        write_csv_to_zip(zip_file, list_data, privacy_request_id)
-
-    # Verify the zip file contains the expected files
-    zip_buffer.seek(0)
-    with zipfile.ZipFile(zip_buffer, "r") as zip_file:
-        file_list = zip_file.namelist()
-        assert "users/1/data.csv" in file_list
-        assert "users/1/attachments.csv" in file_list
 
 
 class TestCreateCSVFromDataFrame:
@@ -162,22 +24,6 @@ class TestCreateCSVFromDataFrame:
         assert "name,age" in content
         assert "John,30" in content
         assert "Jane,25" in content
-
-
-class TestCreateDataCSV:
-    def test_create_data_csv(self):
-        data = {
-            "name": "John",
-            "age": 30,
-            "address": {"city": "New York", "zip": "10001"},
-        }
-
-        result = create_data_csv(data)
-
-        assert isinstance(result, BytesIO)
-        content = result.getvalue().decode()
-        assert "name,age,address.city,address.zip" in content
-        assert "John,30,New York,10001" in content
 
 
 class TestCreateAttachmentCSV:

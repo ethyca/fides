@@ -23,20 +23,6 @@ def create_csv_from_dataframe(df: pd.DataFrame) -> BytesIO:
     return buffer
 
 
-def create_data_csv(data: dict[str, Any]) -> BytesIO:
-    """Create a CSV file from data.
-
-    Args:
-        data: Dictionary containing the data to convert
-        privacy_request_id: The ID of the privacy request for encryption
-
-    Returns:
-        BytesIO: A file-like object containing the CSV data
-    """
-    df = pd.json_normalize(data)
-    return create_csv_from_dataframe(df)
-
-
 def create_attachment_csv(attachments: list[dict[str, Any]]) -> Optional[BytesIO]:
     """Create a CSV file containing attachment metadata.
 
@@ -125,7 +111,8 @@ def _write_item_csv(
         privacy_request_id: The ID of the privacy request for encryption
     """
     if item:
-        buffer = create_data_csv(item)
+        df = pd.json_normalize(item)
+        buffer = create_csv_from_dataframe(df)
         zip_file.writestr(
             f"{key}/{idx + 1}/data.csv",
             encrypt_access_request_results(buffer.getvalue(), privacy_request_id),
@@ -146,7 +133,8 @@ def _write_simple_csv(
         value: The value to write
         privacy_request_id: The ID of the privacy request for encryption
     """
-    buffer = create_data_csv({key: value})
+    df = pd.json_normalize({key: value})
+    buffer = create_csv_from_dataframe(df)
     zip_file.writestr(
         f"{key}.csv",
         encrypt_access_request_results(buffer.getvalue(), privacy_request_id),

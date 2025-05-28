@@ -48,6 +48,7 @@ from fides.api.schemas.messaging.messaging import (
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity
+from fides.api.schemas.storage.storage import ResponseFormat
 from fides.api.service.connectors import FidesConnector, get_connector
 from fides.api.service.connectors.consent_email_connector import (
     CONSENT_EMAIL_CONNECTOR_TYPES,
@@ -98,21 +99,20 @@ def get_attachments_content(
     attachments = []
     for attachment in loaded_attachments:
         if attachment.attachment_type == AttachmentType.include_with_access_package:
-            # Get size and content using retrieve_attachment_content
-            size, content = attachment.retrieve_attachment_content()
+            # Get size and download URL using retrieve_attachment
+            size, url = attachment.retrieve_attachment()
+            attachment_data = {
+                "file_name": attachment.file_name,
+                "file_size": size,
+                "download_url": url,
+                "content_type": attachment.content_type,
+            }
+            # If config response format is html, we need to get the content
+            if attachment.config.format == ResponseFormat.html.value:
+                _, content = attachment.retrieve_attachment_content()
+                attachment_data["content"] = content
 
-            # Get download URL using retrieve_attachment
-            _, url = attachment.retrieve_attachment()
-
-            attachments.append(
-                {
-                    "file_name": attachment.file_name,
-                    "file_size": size,
-                    "content": content,
-                    "download_url": url,
-                    "content_type": attachment.content_type,
-                }
-            )
+            attachments.append(attachment_data)
     logger.info(
         f"Attachments: {[(a.file_name, a.content_type) for a in loaded_attachments]}"
     )
@@ -139,6 +139,7 @@ def get_manual_webhook_access_inputs(
             webhook_data = privacy_request.get_manual_webhook_access_input_strict(
                 manual_webhook
             )
+            # Add the system name to the webhook data for display purposes
             webhook_data["system_name"] = manual_webhook.connection_config.system.name
             # Get any attachments for this webhook
             webhook_attachments = privacy_request.get_access_manual_webhook_attachments(
@@ -150,7 +151,8 @@ def get_manual_webhook_access_inputs(
                 loaded_attachments: list[Attachment] = [
                     attachment
                     for webhook_attachment in webhook_attachments
-                    if (attachment := db.query(Attachment).get(webhook_attachment.id)) is not None
+                    if (attachment := db.query(Attachment).get(webhook_attachment.id))
+                    is not None
                 ]
                 webhook_data["attachments"] = get_attachments_content(
                     db, loaded_attachments
@@ -267,7 +269,6 @@ def upload_access_results(  # pylint: disable=R0912
 ) -> List[str]:
     """Process the data uploads after the access portion of the privacy request has completed"""
     download_urls: List[str] = []
-    logger.info(privacy_request.attachments)
     all_attachments = privacy_request.attachments
     # Remove manual webhook attachments from the list of attachments
     # This is done because the manual webhook attachments are already included in the manual_data
@@ -301,7 +302,9 @@ def upload_access_results(  # pylint: disable=R0912
             )
         )
 
-        filtered_results.update(manual_data)
+        filtered_results.update(
+            manual_data
+        )  # Add manual data directly to each upload packet
         if attachments:
             filtered_results["attachments"] = attachments
         rule_filtered_results[rule.key] = filtered_results

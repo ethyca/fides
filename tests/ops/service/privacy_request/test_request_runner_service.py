@@ -1640,10 +1640,6 @@ class TestIncludeAttachments:
         attachment_include_in_download,
     ):
         """Test that get_attachments_content correctly filters and formats attachments."""
-        from fides.api.service.privacy_request.request_runner_service import (
-            get_attachments_content,
-        )
-
         # Create a list of attachments with different types
         attachments = [attachment, attachment_include_in_download]
 
@@ -1659,7 +1655,6 @@ class TestIncludeAttachments:
         # Verify the included attachment's data
         assert result["file_name"] == attachment_include_in_download.file_name
         assert result["file_size"] == len(b"file content")
-        assert result["content"] is not None
         assert result["download_url"] is not None
         assert "https://s3.amazonaws.com/test_bucket/" in result["download_url"]
         assert result["content_type"] == "text/plain"
@@ -1671,10 +1666,6 @@ class TestIncludeAttachments:
         attachment_include_in_download,
     ):
         """Test edge cases for get_attachments_content."""
-        from fides.api.service.privacy_request.request_runner_service import (
-            get_attachments_content,
-        )
-
         # Test empty list
         results = get_attachments_content(db, [])
         assert len(results) == 0
@@ -1760,7 +1751,6 @@ class TestIncludeAttachments:
         )
         assert results_attachments[0]["file_size"] == len(b"file content")
         assert results_attachments[0]["content_type"] == "text/plain"
-        assert results_attachments[0]["content"] is not None
         assert results_attachments[0]["download_url"] is not None
         assert (
             "https://s3.amazonaws.com/test_bucket/"
@@ -1852,7 +1842,6 @@ class TestIncludeAttachments:
         )
         assert webhook_data["attachments"][0]["file_size"] == len(b"file content")
         assert webhook_data["attachments"][0]["content_type"] == "text/plain"
-        assert webhook_data["attachments"][0]["content"] is not None
         assert webhook_data["attachments"][0]["download_url"] is not None
         assert (
             "https://s3.amazonaws.com/test_bucket/"
