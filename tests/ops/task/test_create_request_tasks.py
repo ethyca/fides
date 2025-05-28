@@ -11,8 +11,9 @@ from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal, TraversalNode
 from fides.api.models.datasetconfig import convert_dataset_to_graph
 from fides.api.models.privacy_request import ExecutionLog, RequestTask
+from fides.api.models.worker_task import TaskExecutionLogStatus
 from fides.api.schemas.policy import ActionType
-from fides.api.schemas.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.create_request_tasks import (
     collect_tasks_fn,
     get_existing_ready_tasks,
@@ -187,7 +188,7 @@ class TestPersistAccessRequestTasks:
         assert root_task.dataset_name == "__ROOT__"
         assert root_task.collection_name == "__ROOT__"
         # We just create the root task in the completed state automatically
-        assert root_task.status == ExecutionLogStatus.complete
+        assert root_task.status == TaskExecutionLogStatus.complete
         assert root_task.upstream_tasks == []
         # These are the downstream data dependencies
         assert root_task.downstream_tasks == [
@@ -220,7 +221,7 @@ class TestPersistAccessRequestTasks:
         assert terminator_task.action_type == ActionType.access
         assert terminator_task.collection_name == "__TERMINATE__"
         assert terminator_task.dataset_name == "__TERMINATE__"
-        assert terminator_task.status == ExecutionLogStatus.pending
+        assert terminator_task.status == TaskExecutionLogStatus.pending
         assert terminator_task.upstream_tasks == [
             "postgres_example_test_dataset:address",
             "postgres_example_test_dataset:login",
@@ -247,7 +248,7 @@ class TestPersistAccessRequestTasks:
         assert payment_card_task.action_type == ActionType.access
         assert payment_card_task.collection_name == "payment_card"
         assert payment_card_task.dataset_name == "postgres_example_test_dataset"
-        assert payment_card_task.status == ExecutionLogStatus.pending
+        assert payment_card_task.status == TaskExecutionLogStatus.pending
         assert payment_card_task.upstream_tasks == [
             "postgres_example_test_dataset:customer"
         ]
@@ -472,7 +473,7 @@ class TestPersistAccessRequestTasks:
         ready_task = ready[0]
         assert ready_task == request_task
         assert not ready_task.is_root_task
-        assert ready_task.status == ExecutionLogStatus.pending
+        assert ready_task.status == TaskExecutionLogStatus.pending
 
         assert run_access_node_mock.called
         run_access_node_mock.assert_called_with(request_task, False)
@@ -509,7 +510,7 @@ class TestPersistAccessRequestTasks:
 
         # We expect two error logs, one per unreachable collection
         error_logs = privacy_request.execution_logs.filter(
-            ExecutionLog.status == ExecutionLogStatus.error
+            ExecutionLog.status == TaskExecutionLogStatus.error
         )
         assert error_logs.count() == 2
         error_logs = sorted(
@@ -572,7 +573,7 @@ class TestPersistErasureRequestTasks:
         assert root_task.collection_address == "__ROOT__:__ROOT__"
         assert root_task.dataset_name == "__ROOT__"
         assert root_task.collection_name == "__ROOT__"
-        assert root_task.status == ExecutionLogStatus.complete
+        assert root_task.status == TaskExecutionLogStatus.complete
         assert root_task.upstream_tasks == []
         # Every node other than the terminate node is downstream of the root node
         assert root_task.downstream_tasks == [
@@ -610,7 +611,7 @@ class TestPersistErasureRequestTasks:
         assert terminator_task.action_type == ActionType.erasure
         assert terminator_task.collection_name == "__TERMINATE__"
         assert terminator_task.dataset_name == "__TERMINATE__"
-        assert terminator_task.status == ExecutionLogStatus.pending
+        assert terminator_task.status == TaskExecutionLogStatus.pending
         # Every node but the root node has the terminator task downstream of it
         assert terminator_task.upstream_tasks == root_task.downstream_tasks
         assert terminator_task.downstream_tasks == []
@@ -631,7 +632,7 @@ class TestPersistErasureRequestTasks:
         assert payment_card_task.action_type == ActionType.erasure
         assert payment_card_task.collection_name == "payment_card"
         assert payment_card_task.dataset_name == "postgres_example_test_dataset"
-        assert payment_card_task.status == ExecutionLogStatus.pending
+        assert payment_card_task.status == TaskExecutionLogStatus.pending
         assert payment_card_task.upstream_tasks == ["__ROOT__:__ROOT__"]
         assert payment_card_task.downstream_tasks == [
             "__TERMINATE__:__TERMINATE__",
@@ -723,7 +724,7 @@ class TestPersistErasureRequestTasks:
                 "preferred": True,
             }
         ]
-        assert payment_card_task.status == ExecutionLogStatus.pending
+        assert payment_card_task.status == TaskExecutionLogStatus.pending
 
         address_task = privacy_request.erasure_tasks.filter(
             RequestTask.collection_address == "postgres_example_test_dataset:address"
@@ -1114,7 +1115,7 @@ class TestPersistErasureRequestTasks:
         assert not ready_task.is_root_task
         assert ready_task == erasure_request_task
 
-        assert ready_task.status == ExecutionLogStatus.pending
+        assert ready_task.status == TaskExecutionLogStatus.pending
         assert ready_task.action_type == ActionType.erasure
 
         assert update_erasure_tasks_with_access_data_mock.called
@@ -1155,7 +1156,7 @@ class TestPersistConsentRequestTasks:
             "__TERMINATE__:__TERMINATE__",
             "saas_connector_example:saas_connector_example",
         ]
-        assert root_task.status == ExecutionLogStatus.complete
+        assert root_task.status == TaskExecutionLogStatus.complete
         assert root_task.access_data == [{"ga_client_id": "test_id"}]
         assert root_task.get_access_data() == [{"ga_client_id": "test_id"}]
         terminator_task = privacy_request.get_terminate_task_by_action(
@@ -1169,7 +1170,7 @@ class TestPersistConsentRequestTasks:
         ]
         assert terminator_task.downstream_tasks == []
         assert terminator_task.all_descendant_tasks == []
-        assert terminator_task.status == ExecutionLogStatus.pending
+        assert terminator_task.status == TaskExecutionLogStatus.pending
 
         ga_task = privacy_request.consent_tasks.filter(
             RequestTask.collection_address
@@ -1183,7 +1184,7 @@ class TestPersistConsentRequestTasks:
         assert ga_task.upstream_tasks == ["__ROOT__:__ROOT__"]
         assert ga_task.downstream_tasks == ["__TERMINATE__:__TERMINATE__"]
         assert ga_task.all_descendant_tasks == ["__TERMINATE__:__TERMINATE__"]
-        assert ga_task.status == ExecutionLogStatus.pending
+        assert ga_task.status == TaskExecutionLogStatus.pending
 
         # The collection is a fake one for Consent, since requests happen at the dataset level
         assert ga_task.collection == {
@@ -1247,7 +1248,7 @@ class TestPersistConsentRequestTasks:
         assert ready_task == consent_request_task
         assert not ready_task.is_root_task
         assert ready_task.action_type == ActionType.consent
-        assert ready_task.status == ExecutionLogStatus.pending
+        assert ready_task.status == TaskExecutionLogStatus.pending
 
         assert run_consent_node_mock.called
         run_consent_node_mock.assert_called_with(consent_request_task, False)
@@ -1353,7 +1354,7 @@ class TestGetExistingReadyTasks:
         db.refresh(rt)
         # The current "errored" task is marked as pending, even if its upstream
         # tasks aren't ready
-        assert rt.status == ExecutionLogStatus.pending
+        assert rt.status == TaskExecutionLogStatus.pending
         upstream.delete(db)
         rt.delete(db)
 
@@ -1436,7 +1437,9 @@ class TestRunAccessRequestWithRequestTasks:
             "mongo_test:employee",
             "__TERMINATE__:__TERMINATE__",
         }
-        assert all(t.status == ExecutionLogStatus.complete for t in all_access_tasks)
+        assert all(
+            t.status == TaskExecutionLogStatus.complete for t in all_access_tasks
+        )
         db.refresh(privacy_request)
         assert privacy_request.status == PrivacyRequestStatus.complete
 
@@ -1568,7 +1571,7 @@ class TestRunAccessRequestWithRequestTasks:
         assert privacy_request.erasure_tasks.count() == 0
 
         assert all(
-            t.status == ExecutionLogStatus.complete
+            t.status == TaskExecutionLogStatus.complete
             for t in privacy_request.access_tasks
         )
         db.refresh(privacy_request)
@@ -1744,7 +1747,7 @@ class TestRunErasureRequestWithRequestTasks:
         )
 
         assert all(
-            t.status == ExecutionLogStatus.complete
+            t.status == TaskExecutionLogStatus.complete
             for t in privacy_request_with_erasure_policy.erasure_tasks
         )
 

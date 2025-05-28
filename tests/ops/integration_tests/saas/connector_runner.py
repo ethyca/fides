@@ -28,8 +28,9 @@ from fides.api.models.privacy_request import (
     RequestTask,
 )
 from fides.api.models.sql_models import Dataset as CtlDataset
+from fides.api.models.worker_task import TaskExecutionLogStatus
 from fides.api.schemas.policy import ActionType
-from fides.api.schemas.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity
 from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.api.service.connectors import get_connector
@@ -595,7 +596,7 @@ def mock_external_results_3_0(
     external_request_task.access_data = [external_references]
     external_request_task.data_for_erasures = [external_references]
     external_request_task.save(session)
-    external_request_task.update_status(session, ExecutionLogStatus.complete)
+    external_request_task.update_status(session, TaskExecutionLogStatus.complete)
     erasure_end_nodes: List[CollectionAddress] = list(dataset_graph.nodes.keys())
     # Further, erasure tasks are typically built when access tasks are created so the graphs match
     if is_erasure:

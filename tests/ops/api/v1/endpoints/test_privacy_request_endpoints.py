@@ -41,6 +41,7 @@ from fides.api.models.privacy_request import (
     PrivacyRequestNotifications,
     generate_request_task_callback_jwe,
 )
+from fides.api.models.worker_task import TaskExecutionLogStatus
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.roles import APPROVER, VIEWER
 from fides.api.schemas.dataset import DryRunDatasetResponse
@@ -53,11 +54,7 @@ from fides.api.schemas.messaging.messaging import (
     SubjectIdentityVerificationBodyParams,
 )
 from fides.api.schemas.policy import ActionType, CurrentStep, PolicyResponse
-from fides.api.schemas.privacy_request import (
-    ExecutionLogStatus,
-    PrivacyRequestSource,
-    PrivacyRequestStatus,
-)
+from fides.api.schemas.privacy_request import PrivacyRequestSource, PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity, LabeledIdentity
 from fides.api.task.graph_runners import access_runner
 from fides.api.tasks import DSR_QUEUE_NAME, MESSAGING_QUEUE_NAME
@@ -1898,7 +1895,7 @@ class TestGetPrivacyRequests:
                     "collection_name": f"test_collection_{i}",
                     "fields_affected": [],
                     "action_type": ActionType.access,
-                    "status": ExecutionLogStatus.pending,
+                    "status": TaskExecutionLogStatus.pending,
                     "privacy_request_id": privacy_request.id,
                 },
             )
@@ -3069,7 +3066,7 @@ class TestPrivacyRequestSearch:
                     "collection_name": f"test_collection_{i}",
                     "fields_affected": [],
                     "action_type": ActionType.access,
-                    "status": ExecutionLogStatus.pending,
+                    "status": TaskExecutionLogStatus.pending,
                     "privacy_request_id": privacy_request.id,
                 },
             )
@@ -7533,7 +7530,7 @@ class TestPrivacyRequestTasksList:
     def test_get_async_tasks(
         self, db, api_client: TestClient, generate_auth_header, url, request_task
     ):
-        request_task.status = ExecutionLogStatus.awaiting_processing
+        request_task.status = TaskExecutionLogStatus.awaiting_processing
         request_task.save(db)
 
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
@@ -7694,7 +7691,7 @@ class TestRequeuePrivacyRequest:
         terminate_access_task = privacy_request.get_terminate_task_by_action(
             ActionType.access
         )
-        terminate_access_task.status = ExecutionLogStatus.complete
+        terminate_access_task.status = TaskExecutionLogStatus.complete
         terminate_access_task.save(db)
 
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
@@ -7893,7 +7890,7 @@ class TestRequestTaskAsyncCallback:
         """Hitting this endpoint with an empty json result will still resume privacy request processing.
         Hitting this endpoint is assumed to mean the async action was completed"""
         assert privacy_request.status == PrivacyRequestStatus.in_processing
-        request_task.status = ExecutionLogStatus.awaiting_processing
+        request_task.status = TaskExecutionLogStatus.awaiting_processing
         request_task.save(db)
 
         auth_header = {
@@ -7919,7 +7916,7 @@ class TestRequestTaskAsyncCallback:
         self, _, db, api_client: TestClient, url, request_task, privacy_request
     ):
         assert privacy_request.status == PrivacyRequestStatus.in_processing
-        request_task.status = ExecutionLogStatus.awaiting_processing
+        request_task.status = TaskExecutionLogStatus.awaiting_processing
         request_task.save(db)
 
         auth_header = {
@@ -7945,7 +7942,7 @@ class TestRequestTaskAsyncCallback:
         self, db, api_client: TestClient, url, request_task, privacy_request
     ):
         assert privacy_request.status == PrivacyRequestStatus.in_processing
-        request_task.status = ExecutionLogStatus.awaiting_processing
+        request_task.status = TaskExecutionLogStatus.awaiting_processing
         request_task.save(db)
 
         auth_header = {
@@ -7973,7 +7970,7 @@ class TestRequestTaskAsyncCallback:
         privacy_request,
     ):
         assert privacy_request.status == PrivacyRequestStatus.in_processing
-        erasure_request_task.status = ExecutionLogStatus.awaiting_processing
+        erasure_request_task.status = TaskExecutionLogStatus.awaiting_processing
         erasure_request_task.save(db)
 
         auth_header = {
