@@ -144,7 +144,6 @@ def get_manual_webhook_access_inputs(
             webhook_attachments = privacy_request.get_access_manual_webhook_attachments(
                 db, manual_webhook.id
             )
-            logger.info(webhook_attachments)
             if webhook_attachments:
                 # Load attachments from database to ensure they have their configs
                 loaded_attachments = []
