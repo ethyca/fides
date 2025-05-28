@@ -1940,16 +1940,16 @@ def request_task_async_callback(
     ]:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Callback failed. Cannot queue {request_task.action_type.value} task '{request_task.id}' with privacy request status '{privacy_request.status.value}'",
+            detail=f"Callback failed. Cannot queue {request_task.action_type} task '{request_task.id}' with privacy request status '{privacy_request.status.value}'",
         )
     if request_task.status != ExecutionLogStatus.awaiting_processing:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Callback failed. Cannot queue {request_task.action_type.value} task '{request_task.id}' with request task status '{request_task.status.value}'",
+            detail=f"Callback failed. Cannot queue {request_task.action_type} task '{request_task.id}' with request task status '{request_task.status.value}'",
         )
     logger.info(
         "Callback received for {} task {} {}",
-        request_task.action_type.value,
+        request_task.action_type,
         request_task.collection_address,
         request_task.id,
     )
