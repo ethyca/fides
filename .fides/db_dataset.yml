@@ -2313,8 +2313,6 @@ dataset:
       data_categories: [system]
   - name: stagedresource
     fields:
-    - name: child_diff_statuses
-      data_categories: [system]
     - name: children
       data_categories: [system]
     - name: classifications
