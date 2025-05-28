@@ -13,7 +13,7 @@ from fides.api.schemas.storage.storage import ResponseFormat, StorageSecrets
 from fides.api.service.privacy_request.dsr_package.dsr_report_builder import (
     DsrReportBuilder,
 )
-from fides.api.service.storage.gcs import get_gcs_client
+from fides.api.service.storage.gcs import get_gcs_blob
 from fides.api.service.storage.s3 import (
     create_presigned_url_for_s3,
     generic_upload_to_s3,
@@ -43,29 +43,33 @@ def write_to_in_memory_buffer(
     :param request_id: str, The privacy request id
     """
 
-    if resp_format == ResponseFormat.html.value:
-        return DsrReportBuilder(
-            privacy_request=privacy_request,
-            dsr_data=data,
-        ).generate()
+    logger.debug("Writing data to in-memory buffer")
+    try:
+        if resp_format == ResponseFormat.html.value:
+            return DsrReportBuilder(
+                privacy_request=privacy_request,
+                dsr_data=data,
+            ).generate()
 
-    # Create a copy of the data to modify
-    json_data = data.copy()
+        if resp_format == ResponseFormat.json.value:
+            return convert_dict_to_encrypted_json(data, privacy_request.id)
 
-    if resp_format == ResponseFormat.json.value:
-        return convert_to_encrypted_json(json_data, privacy_request.id)
-
-    if resp_format == ResponseFormat.csv.value:
-        zipped_csvs = BytesIO()
-        with zipfile.ZipFile(zipped_csvs, "w") as f:
-            write_csv_to_zip(f, json_data, privacy_request.id)
-        zipped_csvs.seek(0)
-        return zipped_csvs
+        if resp_format == ResponseFormat.csv.value:
+            zipped_csvs = BytesIO()
+            with zipfile.ZipFile(zipped_csvs, "w") as f:
+                write_csv_to_zip(f, data, privacy_request.id)
+            zipped_csvs.seek(0)
+            return zipped_csvs
+    except Exception as e:
+        logger.error(f"Error writing data to in-memory buffer: {str(e)}")
+        raise e
 
     raise NotImplementedError(f"No handling for response format {resp_format}.")
 
 
-def convert_to_encrypted_json(data: dict[str, Any], privacy_request_id: str) -> BytesIO:
+def convert_dict_to_encrypted_json(
+    data: dict[str, Any], privacy_request_id: str
+) -> BytesIO:
     """Convert data to JSON and encrypt it.
 
     Args:
@@ -121,30 +125,30 @@ def upload_to_s3(  # pylint: disable=R0913
                 "storage", {}
             ).get("aws_s3_assume_role_arn"),
         )
+    except (ClientError, ParamValidationError) as e:
+        logger.error(f"Error getting s3 client: {str(e)}")
+        raise e
 
-        # handles file chunking
-        try:
-            s3_client.upload_fileobj(
-                Fileobj=write_to_in_memory_buffer(resp_format, data, privacy_request),
-                Bucket=bucket_name,
-                Key=file_key,
-            )
-        except Exception as e:
-            logger.error("Encountered error while uploading s3 object: {}", e)
-            raise e
+    # handles file chunking
+    try:
+        s3_client.upload_fileobj(
+            Fileobj=write_to_in_memory_buffer(resp_format, data, privacy_request),
+            Bucket=bucket_name,
+            Key=file_key,
+        )
+    except ClientError as e:
+        logger.error("Encountered error while uploading s3 object: {}", e)
+        raise e
 
+    try:
         presigned_url: AnyHttpUrlString = create_presigned_url_for_s3(
             s3_client, bucket_name, file_key
         )
 
         return presigned_url
     except ClientError as e:
-        logger.error(
-            "Encountered error while uploading and generating link for s3 object: {}", e
-        )
+        logger.error("Encountered error while generating link for s3 object: {}", e)
         raise e
-    except ParamValidationError as e:
-        raise ValueError(f"The parameters you provided are incorrect: {e}")
 
 
 def upload_to_gcs(
@@ -158,57 +162,39 @@ def upload_to_gcs(
 ) -> str:
     """Uploads access request data to a Google Cloud Storage bucket"""
     logger.info("Starting Google Cloud Storage upload of {}", file_key)
-    logger.debug(f"Response format: {resp_format}")
-    logger.debug(f"Data keys: {list(data.keys())}")
+    content_type = {
+        ResponseFormat.json.value: "application/json",
+        ResponseFormat.csv.value: "application/zip",
+        ResponseFormat.html.value: "application/zip",
+    }
+
+    blob = get_gcs_blob(auth_method, storage_secrets, bucket_name, file_key)
+    in_memory_file = write_to_in_memory_buffer(resp_format, data, privacy_request)
 
     try:
-        storage_client = get_gcs_client(auth_method, storage_secrets)
-        bucket = storage_client.bucket(bucket_name)
-        blob = bucket.blob(file_key)
-
-        try:
-            in_memory_file = write_to_in_memory_buffer(
-                resp_format, data, privacy_request
-            )
-        except Exception as e:
-            logger.error(f"Error in write_to_in_memory_buffer: {str(e)}")
-            raise
-
-        content_type = {
-            ResponseFormat.json.value: "application/json",
-            ResponseFormat.csv.value: "application/zip",
-            ResponseFormat.html.value: "application/zip",
-        }
-        logger.debug(f"Using content type: {content_type[resp_format]}")
-
-        try:
-            blob.upload_from_string(
-                in_memory_file.getvalue(), content_type=content_type[resp_format]
-            )
-        except Exception as e:
-            logger.error(f"Error uploading to GCS: {str(e)}")
-            raise
-
-        logger.info("File {} uploaded to {}", file_key, blob.public_url)
-
-        try:
-            presigned_url = blob.generate_signed_url(
-                version="v4",
-                expiration=CONFIG.security.subject_request_download_link_ttl_seconds,
-                method="GET",
-            )
-            logger.debug("Successfully generated presigned URL")
-            return presigned_url
-        except Exception as e:
-            logger.error(f"Error generating presigned URL: {str(e)}")
-            raise
-
+        blob.upload_from_string(
+            in_memory_file.getvalue(), content_type=content_type[resp_format]
+        )
     except Exception as e:
+        logger.error("Error uploading to GCS: {}", str(e))
         logger.error(
             "Encountered error while uploading and generating link for Google Cloud Storage object: {}",
             e,
         )
-        raise e
+        raise
+
+    logger.info("File {} uploaded to {}", file_key, blob.public_url)
+
+    try:
+        presigned_url = blob.generate_signed_url(
+            version="v4",
+            expiration=CONFIG.security.subject_request_download_link_ttl_seconds,
+            method="GET",
+        )
+        return presigned_url
+    except Exception as e:
+        logger.error("Error generating presigned URL: {}", str(e))
+        raise
 
 
 def upload_to_local(

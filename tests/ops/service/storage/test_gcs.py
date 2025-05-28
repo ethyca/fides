@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock, create_autospec, patch
 
 import pytest
+from google.cloud import storage
 from google.oauth2.service_account import Credentials
 
 from fides.api.common_exceptions import StorageUploadError
@@ -76,3 +77,48 @@ class TestGetGCSClient:
             get_gcs_client(invalid_auth, None)
         expected_msg = "Google Cloud Storage auth method not supported: invalid_auth"
         assert expected_msg in str(exc_info.value)
+
+
+class TestGetGCSBlob:
+    def test_get_gcs_blob_success(self, base_gcs_client_mock):
+        """Test successfully getting a GCS blob."""
+        # Create a properly specced mock bucket and blob
+        mock_bucket = create_autospec(storage.Bucket)
+        mock_blob = create_autospec(storage.Blob)
+        mock_bucket.blob.return_value = mock_blob
+
+        # Configure the base_gcs_client_mock to return our mock bucket
+        base_gcs_client_mock.bucket = MagicMock(return_value=mock_bucket)
+
+        with patch(
+            "fides.api.service.storage.gcs.get_gcs_client",
+            return_value=base_gcs_client_mock,
+        ):
+            from fides.api.service.storage.gcs import get_gcs_blob
+
+            result = get_gcs_blob(
+                GCSAuthMethod.ADC.value, None, "test-bucket", "test-file.txt"
+            )
+
+            # Verify the result is a Blob instance
+            assert isinstance(result, storage.Blob)
+            # Verify the correct methods were called
+            base_gcs_client_mock.bucket.assert_called_once_with("test-bucket")
+            mock_bucket.blob.assert_called_once_with("test-file.txt")
+
+    def test_get_gcs_blob_error(self, base_gcs_client_mock):
+        """Test error handling when getting a GCS blob."""
+        # Configure the mock to raise an exception
+        base_gcs_client_mock.bucket = MagicMock(side_effect=Exception("Test error"))
+
+        with patch(
+            "fides.api.service.storage.gcs.get_gcs_client",
+            return_value=base_gcs_client_mock,
+        ):
+            from fides.api.service.storage.gcs import get_gcs_blob
+
+            with pytest.raises(Exception) as exc_info:
+                get_gcs_blob(
+                    GCSAuthMethod.ADC.value, None, "test-bucket", "test-file.txt"
+                )
+            assert "Test error" in str(exc_info.value)
