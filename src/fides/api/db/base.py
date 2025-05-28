@@ -32,6 +32,7 @@ from fides.api.models.manual_tasks.manual_task_log import ManualTaskLog
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.messaging import MessagingConfig
 from fides.api.models.messaging_template import MessagingTemplate
+from fides.api.models.monitor_task import MonitorTask, MonitorTaskExecutionLog
 from fides.api.models.openid_provider import OpenIDProvider
 from fides.api.models.policy import Policy, Rule, RuleTarget
 from fides.api.models.privacy_center_config import PrivacyCenterConfig

@@ -15,7 +15,6 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 )
 
 from fides.api.db.base_class import Base, JSONTypeOverride  # type: ignore[attr-defined]
-from fides.api.db.util import EnumColumn
 from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
@@ -25,9 +24,8 @@ from fides.api.models.field_types import EncryptedLargeDataDescriptor
 from fides.api.models.privacy_request.execution_log import (
     COMPLETED_EXECUTION_LOG_STATUSES,
 )
+from fides.api.models.worker_tasks import TaskExecutionLogStatus, WorkerTask
 from fides.api.schemas.base_class import FidesSchema
-from fides.api.schemas.policy import ActionType
-from fides.api.schemas.privacy_request import ExecutionLogStatus
 from fides.api.util.cache import (
     FidesopsRedis,
     celery_tasks_in_flight,
@@ -68,7 +66,7 @@ class TraversalDetails(FidesSchema):
         )
 
 
-class RequestTask(Base):
+class RequestTask(WorkerTask, Base):
     """
     An individual Task for a Privacy Request.
 
@@ -91,21 +89,6 @@ class RequestTask(Base):
     )  # Of the format dataset_name:collection_name for convenience
     dataset_name = Column(String, nullable=False, index=True)
     collection_name = Column(String, nullable=False, index=True)
-    action_type = Column(EnumColumn(ActionType), nullable=False, index=True)
-
-    # Note that RequestTasks share statuses with ExecutionLogs.  When a RequestTask changes state, an ExecutionLog
-    # is also created with that state.  These are tied tightly together in GraphTask.
-    status = Column(
-        EnumColumn(
-            ExecutionLogStatus,
-            native_enum=False,
-            values_callable=lambda x: [
-                i.value for i in x
-            ],  # Using ExecutionLogStatus values in database, even though app is using the names.
-        ),  # character varying in database
-        index=True,
-        nullable=False,
-    )
 
     upstream_tasks = Column(
         MutableList.as_mutable(JSONB)
@@ -213,7 +196,7 @@ class RequestTask(Base):
         self.cleanup_external_storage()
         super().delete(db)
 
-    def update_status(self, db: Session, status: ExecutionLogStatus) -> None:
+    def update_status(self, db: Session, status: TaskExecutionLogStatus) -> None:
         """Helper method to update a task's status"""
         self.status = status
         self.save(db)
@@ -234,7 +217,7 @@ class RequestTask(Base):
             RequestTask.privacy_request_id == self.privacy_request_id,
             RequestTask.action_type == self.action_type,
             RequestTask.collection_address.in_(self.downstream_tasks or []),
-            RequestTask.status == ExecutionLogStatus.pending,
+            RequestTask.status == TaskExecutionLogStatus.pending,
         )
 
     def can_queue_request_task(self, db: Session, should_log: bool = False) -> bool:
