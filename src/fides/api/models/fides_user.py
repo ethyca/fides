@@ -23,12 +23,17 @@ from fides.api.db.base_class import Base
 from fides.api.models.audit_log import AuditLog
 
 # Intentionally importing SystemManager here to build the FidesUser.systems relationship
-from fides.api.models.system_manager import SystemManager  # type: ignore[unused-import]
+# from fides.api.models.system_manager import SystemManager  # type: ignore[unused-import]
 from fides.api.schemas.user import DisabledReason
 from fides.config import CONFIG
 
 if TYPE_CHECKING:
+    from fides.api.models.fides_user_permissions import FidesUserPermissions
+    from fides.api.models.fides_user_respondent_email_verification import (
+        FidesUserRespondentEmailVerification,
+    )
     from fides.api.models.sql_models import System  # type: ignore[attr-defined]
+    from fides.api.models.system_manager import SystemManager
 
 
 class FidesUser(Base):
@@ -71,6 +76,18 @@ class FidesUser(Base):
     )
 
     systems = relationship("System", secondary="systemmanager", back_populates="data_stewards")  # type: ignore
+    permissions = relationship(
+        "FidesUserPermissions",
+        back_populates="user",
+        cascade="all,delete",
+        uselist=False,
+    )
+    email_verifications = relationship(
+        "FidesUserRespondentEmailVerification",
+        backref="user",
+        cascade="all,delete",
+        lazy="dynamic",
+    )
 
     @property
     def system_ids(self) -> List[str]:
@@ -92,12 +109,25 @@ class FidesUser(Base):
     ) -> FidesUser:
         """Create a FidesUser by hashing the password with a generated salt
         and storing the hashed password and the salt"""
+        hashed_password = None
+        salt = None
 
-        if password := data.get("password"):
-            hashed_password, salt = FidesUser.hash_password(password)
+        # For external respondents, ensure email is provided and password is not
+        is_external_respondent = (
+            data.get("roles", []) and "external_respondent" in data["roles"]
+        )
+        if is_external_respondent:
+            if not data.get("email_address"):
+                raise ValueError("Email address is required for external respondents")
+            if data.get("password"):
+                raise ValueError(
+                    "Password login is not allowed for external respondents"
+                )
+            data["password_login_enabled"] = False
+
         else:
-            hashed_password = None
-            salt = None
+            if password := data.get("password"):
+                hashed_password, salt = FidesUser.hash_password(password)
 
         user = super().create(
             db,
@@ -134,6 +164,8 @@ class FidesUser(Base):
 
         No validations are performed on the old/existing password within this function.
         """
+        if self.permissions.is_respondent():
+            raise ValueError("Password changes are not allowed for respondents")
 
         hashed_password, salt = FidesUser.hash_password(new_password)
         self.hashed_password = hashed_password  # type: ignore
@@ -156,6 +188,9 @@ class FidesUser(Base):
             raise SystemManagerException(
                 f"User '{self.username}' is already a system manager of '{system.name}'."
             )
+
+        if self.permissions.is_respondent():
+            raise SystemManagerException("Respondents cannot be system managers.")
 
         self.systems.append(system)
         self.save(db=db)
