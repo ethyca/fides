@@ -7,6 +7,7 @@ from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_respondent_email_verification import (
     FidesUserRespondentEmailVerification,
 )
+from fides.api.models.sql_models import System
 
 USER_NAME = "user_1"
 PASSWORD = "test_password"

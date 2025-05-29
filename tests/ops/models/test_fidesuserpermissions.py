@@ -1,6 +1,7 @@
+from typing import Generator
+
 import pytest
 from sqlalchemy.orm import Session
-from typing import Generator
 
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
@@ -12,9 +13,9 @@ from fides.api.oauth.roles import (
     VIEWER,
 )
 
-
 USER_NAME = "user_1"
 PASSWORD = "test_password"
+
 
 @pytest.fixture
 def user(db: Session) -> Generator[FidesUser, None, None]:
@@ -24,6 +25,7 @@ def user(db: Session) -> Generator[FidesUser, None, None]:
     )
     yield user
     user.delete(db)
+
 
 class TestFidesUserPermissions:
     def test_create_user_permissions(self, db: Session, user: FidesUser) -> None:
@@ -74,7 +76,9 @@ class TestFidesUserPermissions:
             (VIEWER, False),
         ],
     )
-    def test_is_respondent(self, db: Session, user: FidesUser, role: str, expected: bool) -> None:
+    def test_is_respondent(
+        self, db: Session, user: FidesUser, role: str, expected: bool
+    ) -> None:
         permissions: FidesUserPermissions = FidesUserPermissions.create(
             db=db,
             data={"user_id": user.id, "roles": [role]},
@@ -100,7 +104,14 @@ class TestFidesUserPermissions:
             ),
         ],
     )
-    def test_update_roles(self, db: Session, user: FidesUser, initial_roles: list[str], new_roles: list[str], expected_error: str) -> None:
+    def test_update_roles(
+        self,
+        db: Session,
+        user: FidesUser,
+        initial_roles: list[str],
+        new_roles: list[str],
+        expected_error: str,
+    ) -> None:
         permissions: FidesUserPermissions = FidesUserPermissions.create(
             db=db,
             data={"user_id": user.id, "roles": initial_roles},

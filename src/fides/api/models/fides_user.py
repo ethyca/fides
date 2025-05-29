@@ -84,9 +84,10 @@ class FidesUser(Base):
     )
     email_verifications = relationship(
         "FidesUserRespondentEmailVerification",
-        backref="user",
+        back_populates="user",
         cascade="all,delete",
         lazy="dynamic",
+        foreign_keys="[FidesUserRespondentEmailVerification.user_id]",
     )
 
     @property
