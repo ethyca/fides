@@ -33,7 +33,7 @@ export type { BasicSystemResponse } from "./models/BasicSystemResponse";
 export type { BigQueryConfig } from "./models/BigQueryConfig";
 export type { BigQueryDocsSchema } from "./models/BigQueryDocsSchema";
 export type { Body_acquire_access_token_api_v1_oauth_token_post } from "./models/Body_acquire_access_token_api_v1_oauth_token_post";
-export type { Body_create_privacy_request_attachment_api_v1_plus_privacy_request__privacy_request_id__attachment_post } from "./models/Body_create_privacy_request_attachment_api_v1_plus_privacy_request__privacy_request_id__attachment_post";
+export type { Body_create_comment_api_v1_plus_privacy_request__privacy_request_id__comment_post } from "./models/Body_create_comment_api_v1_plus_privacy_request__privacy_request_id__comment_post";
 export type { Body_export_minimal_datamap_with_format_api_v1_plus_datamap_minimal__export_format__post } from "./models/Body_export_minimal_datamap_with_format_api_v1_plus_datamap_minimal__export_format__post";
 export type { Body_upload_data_api_v1_storage__request_id__post } from "./models/Body_upload_data_api_v1_storage__request_id__post";
 export type { BulkCustomFieldRequest } from "./models/BulkCustomFieldRequest";

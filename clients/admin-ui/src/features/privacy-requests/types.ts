@@ -207,3 +207,29 @@ export interface ConfigMessagingSecretsRequest {
     twilio_sender_phone_number?: string;
   };
 }
+
+export enum ActivityTimelineItemTypeEnum {
+  REQUEST_UPDATE = "Request update",
+  INTERNAL_COMMENT = "Internal comment",
+}
+
+export const TimelineItemColorMap: Record<
+  ActivityTimelineItemTypeEnum,
+  string
+> = {
+  [ActivityTimelineItemTypeEnum.REQUEST_UPDATE]: "sandstone",
+  [ActivityTimelineItemTypeEnum.INTERNAL_COMMENT]: "marble",
+};
+
+export interface ActivityTimelineItem {
+  author: string;
+  title?: string;
+  date: Date;
+  type: ActivityTimelineItemTypeEnum;
+  showViewLog: boolean;
+  onClick?: () => void;
+  description?: string;
+  isError: boolean;
+  isSkipped: boolean;
+  id: string;
+}
