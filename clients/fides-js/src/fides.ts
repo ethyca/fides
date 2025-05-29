@@ -23,6 +23,7 @@ import {
 } from "./lib/consent-types";
 import {
   getFidesConsentCookie,
+  isNewFidesCookie,
   updateExperienceFromCookieConsentNotices,
 } from "./lib/cookie";
 import { initializeDebugger } from "./lib/debugger";
@@ -36,7 +37,7 @@ import {
 } from "./lib/init-utils";
 import {
   getInitialCookie,
-  getInitialFides,
+  getInitialFidesFromConsentCookie,
   getOverridesByType,
   initialize,
 } from "./lib/initialize";
@@ -126,7 +127,8 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     ...(this.cookie.consent as NoticeValues),
   };
 
-  // Update the fidesString if we have an override and the NC portion is valid
+  // Update the fidesString if we have an override and the NC portion is valid. Unlike TCF, we don't actually use the fidesString for anything until after the experience is initialized. It is processed as automated consent.
+  // Defer [ENG-649]: we should process the fidesString as automated consent, similar to TCF, for faster initialization to benefit vendors.
   const { fidesString } = config.options;
   if (fidesString) {
     try {
@@ -137,6 +139,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
       const updatedCookie: Partial<FidesCookie> = {
         fides_string: fidesString,
       };
+      // this could be a new cookie or an update to an existing cookie
       this.cookie = { ...this.cookie, ...updatedCookie };
     } catch (error) {
       fidesDebugger(
@@ -145,20 +148,30 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     }
   }
 
-  const initialFides = getInitialFides({
-    ...config,
-    cookie: this.cookie,
-    savedConsent: this.saved_consent,
-    updateExperienceFromCookieConsent: updateExperienceFromCookieConsentNotices,
-  });
-  if (initialFides) {
+  this.experience = config.experience; // pre-fetched experience if available
+  const hasExistingCookie = !isNewFidesCookie(this.cookie);
+  const hasMigratableConsent = !!migratedConsent;
+  if (hasExistingCookie || hasMigratableConsent) {
+    /*
+     * We have enough information to initialize the Fides object before we have a valid experience.
+     * In this case, the experience is less important because the user has already consented to something.
+     * The earlier we can communicate consent to the vendor, the better.
+     */
+    const initialFides = getInitialFidesFromConsentCookie({
+      ...config,
+      cookie: this.cookie,
+      savedConsent: this.saved_consent,
+      updateExperienceFromCookieConsent:
+        updateExperienceFromCookieConsentNotices,
+    });
     Object.assign(this, initialFides);
     updateWindowFides(this);
+    this.experience = initialFides.experience; // pre-fetched experience, if available, with consent applied
     dispatchFidesEvent("FidesInitialized", this.cookie, config.options.debug, {
       shouldShowExperience: this.shouldShowExperience(),
     });
   }
-  this.experience = initialFides?.experience ?? config.experience;
+
   const updatedFides = await initialize({
     ...config,
     fides: this,
