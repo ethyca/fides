@@ -678,7 +678,7 @@ describe("Integration management for data detection & discovery", () => {
         cy.wait("@getConnectionTypes");
 
         checkStepStatus(
-          "Create Integration",
+          "Create integration",
           true,
           "Integration created successfully",
         );
@@ -690,7 +690,7 @@ describe("Integration management for data detection & discovery", () => {
         cy.wait("@getConnectionTypes");
 
         cy.getByTestId("integration-setup-card").within(() => {
-          cy.contains("Authorize Integration").should("not.exist");
+          cy.contains("Authorize integration").should("not.exist");
         });
       });
 
@@ -700,7 +700,7 @@ describe("Integration management for data detection & discovery", () => {
         cy.wait("@getConnectionTypes");
         cy.wait("@getEmptyMonitors");
 
-        checkStepStatus("Create Monitor", false);
+        checkStepStatus("Create monitor", false);
         cy.getByTestId("integration-setup-card").within(() => {
           cy.contains(
             "Use the Data discovery tab in this page to add a new monitor",
@@ -726,7 +726,7 @@ describe("Integration management for data detection & discovery", () => {
         );
 
         checkStepStatus(
-          "Create Monitor",
+          "Create monitor",
           true,
           "Data monitor created successfully",
         );
@@ -737,7 +737,7 @@ describe("Integration management for data detection & discovery", () => {
         cy.wait("@getConnection");
         cy.wait("@getConnectionTypes");
 
-        checkStepStatus("Link System", false);
+        checkStepStatus("Link system", false);
         cy.getByTestId("integration-setup-card").within(() => {
           cy.contains("Link this integration to").should("exist");
         });
@@ -767,7 +767,7 @@ describe("Integration management for data detection & discovery", () => {
             timeout: 10000,
           });
 
-        checkStepStatus("Link System", true, "System linked");
+        checkStepStatus("Link system", true, "System linked");
       });
 
       it("shows unchecked authorize step for unauthorized Salesforce integration", () => {
@@ -786,12 +786,12 @@ describe("Integration management for data detection & discovery", () => {
         // Wait for the authorization text to appear to ensure component has loaded
         cy.getByTestId("integration-setup-card")
           .should("exist")
-          .should("contain.text", "Authorize Integration", { timeout: 10000 })
+          .should("contain.text", "Authorize integration", { timeout: 10000 })
           .should("contain.text", "Authorize access to your integration", {
             timeout: 10000,
           });
 
-        checkStepStatus("Authorize Integration", false);
+        checkStepStatus("Authorize integration", false);
         cy.getByTestId("integration-setup-card").within(() => {
           cy.contains("Authorize access to your integration").should("exist");
         });
@@ -820,13 +820,13 @@ describe("Integration management for data detection & discovery", () => {
 
         cy.getByTestId("integration-setup-card")
           .should("exist")
-          .should("contain.text", "Authorize Integration", { timeout: 10000 })
+          .should("contain.text", "Authorize integration", { timeout: 10000 })
           .should("contain.text", "Data monitor created successfully", {
             timeout: 10000,
           });
 
         checkStepStatus(
-          "Authorize Integration",
+          "Authorize integration",
           true,
           "Integration authorized successfully",
         );
