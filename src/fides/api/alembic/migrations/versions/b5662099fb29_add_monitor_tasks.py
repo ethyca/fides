@@ -34,30 +34,15 @@ def upgrade():
             nullable=True,
         ),
         sa.Column("action_type", sa.String(), nullable=False),
-        sa.Column(
-            "status",
-            sa.Enum(
-                "in_processing",
-                "pending",
-                "complete",
-                "error",
-                "paused",
-                "retrying",
-                "skipped",
-                name="executionlogstatus",
-                native_enum=False,
-                create_type=False,
-            ),
-            nullable=False,
-        ),
+        sa.Column("status", sa.String(), nullable=False),
         sa.Column("celery_id", sa.String(), nullable=False),
         sa.Column(
             "task_arguments", postgresql.JSONB(astext_type=sa.Text()), nullable=True
         ),
         sa.Column("message", sa.String(), nullable=True),
         sa.Column("monitor_config_id", sa.String(), nullable=False),
-        sa.Column("staged_resource_urn", sa.String(), nullable=False),
-        sa.Column("child_resource_urns", postgresql.ARRAY(sa.String()), nullable=True),
+        sa.Column("staged_resource_urn", sa.String(), nullable=True),
+        sa.Column("child_resource_urns", sa.ARRAY(sa.String()), nullable=True),
         sa.ForeignKeyConstraint(
             ["monitor_config_id"],
             ["monitorconfig.id"],
@@ -75,22 +60,7 @@ def upgrade():
     op.create_table(
         "monitortaskexecutionlog",
         sa.Column("id", sa.String(length=255), nullable=False),
-        sa.Column(
-            "status",
-            sa.Enum(
-                "in_processing",
-                "pending",
-                "complete",
-                "error",
-                "paused",
-                "retrying",
-                "skipped",
-                name="executionlogstatus",
-                native_enum=False,
-                create_type=False,
-            ),
-            nullable=False,
-        ),
+        sa.Column("status", sa.String(), nullable=False),
         sa.Column("message", sa.String(), nullable=True),
         sa.Column(
             "created_at",

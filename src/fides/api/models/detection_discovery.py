@@ -6,18 +6,9 @@ from re import match
 from typing import Any, Dict, Iterable, List, Optional, Set, Type
 
 from loguru import logger
-from sqlalchemy import (
-    ARRAY,
-    Boolean,
-    Column,
-    DateTime,
-    ForeignKey,
-    Index,
-    String,
-    UniqueConstraint,
-    func,
-    text,
-)
+from sqlalchemy import ARRAY, Boolean, Column, DateTime
+from sqlalchemy import Enum as SQLAlchemyEnum
+from sqlalchemy import ForeignKey, Index, String, UniqueConstraint, func, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.declarative import declared_attr
@@ -29,6 +20,7 @@ from sqlalchemy.orm.query import Query
 from fides.api.db.base_class import Base, FidesBase
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
+from fides.api.models.worker_task import TaskExecutionLog, WorkerTask
 
 
 class DiffStatus(Enum):
@@ -649,3 +641,56 @@ def fetch_staged_resources_by_type_query(
         )
 
     return query
+
+
+class MonitorTaskType(Enum):
+    """
+    Types of tasks that can be executed by a worker.
+    """
+
+    DETECTION = "detection"
+    CLASSIFICATION = "classification"
+    PROMOTION = "promotion"
+
+
+class MonitorTask(WorkerTask, Base):
+    """
+    A monitor task executed by a worker.
+    """
+
+    celery_id = Column(String, unique=True, nullable=False)
+    task_arguments = Column(JSONB, nullable=True)  # To be able to rerun the task
+    # Contains info, warning, or error messages
+    message = Column(String)
+    monitor_config_id = Column(
+        String, ForeignKey(MonitorConfig.id_field_path), nullable=False
+    )
+    staged_resource_urn = Column(String, nullable=True)
+    child_resource_urns = Column(ARRAY(String), nullable=True)
+
+    @classmethod
+    def allowed_action_types(cls) -> List[str]:
+        return [e.value for e in MonitorTaskType]
+
+
+class TaskRunType(Enum):
+    """
+    Type of task run.
+    """
+
+    MANUAL = "manual"
+    SYSTEM = "system"
+
+
+class MonitorTaskExecutionLog(TaskExecutionLog, Base):
+    """
+    Stores the individual execution logs associated with a MonitorTask.
+    """
+
+    celery_id = Column(String, unique=True, nullable=False)
+    monitor_task_id = Column(
+        String, ForeignKey(MonitorTask.id_field_path), index=True, nullable=False
+    )
+    run_type = Column(
+        SQLAlchemyEnum(TaskRunType), nullable=False, default=TaskRunType.SYSTEM
+    )
