@@ -26,6 +26,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added ManualTask and ManualTaskReference models, foundational for for ManualDSRs [#6205](https://github.com/ethyca/fides/pull/6205) https://github.com/ethyca/fides/labels/db-migration
 - Added settings for read-only Redis instance [#6217](https://github.com/ethyca/fides/pull/6217)
 - Added support for large (>1GB) database columns by writing the contents to external storage [#6199](https://github.com/ethyca/fides/pull/6199)
+- Added `MonitorTask` and `MonitorTaskExecutionLog` models and db tables [#6178](https://github.com/ethyca/fides/pull/6178)
 
 ### Changed
 - TCF Banners will no longer resurface on reload after dismissal [#6200](https://github.com/ethyca/fides/pull/6200)
