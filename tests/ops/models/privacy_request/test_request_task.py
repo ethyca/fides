@@ -2,7 +2,7 @@ import pytest
 from sqlalchemy.orm import Query
 
 from fides.api.models.privacy_request.request_task import RequestTask, TraversalDetails
-from fides.api.models.worker_task import TaskExecutionLogStatus
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.privacy_request import ActionType
 from fides.api.util.cache import cache_task_tracking_key
 
@@ -93,7 +93,7 @@ def test_create_request_task(db, privacy_request, request_task_data):
     retrieved_task = db.query(RequestTask).filter_by(id=request_task.id).first()
     assert retrieved_task is not None
     assert retrieved_task.privacy_request_id == privacy_request.id
-    assert retrieved_task.status == TaskExecutionLogStatus.pending
+    assert retrieved_task.status == ExecutionLogStatus.pending
     assert retrieved_task.traversal_details is None
     assert retrieved_task.action_type == ActionType.access
     assert retrieved_task.collection_address == "test_dataset:test_collection"
@@ -105,11 +105,11 @@ def test_create_request_task(db, privacy_request, request_task_data):
 
 
 def test_request_task_update_status(db, request_task):
-    assert request_task.status == TaskExecutionLogStatus.pending
+    assert request_task.status == ExecutionLogStatus.pending
     # Update the status of the RequestTask
-    request_task.update_status(db, TaskExecutionLogStatus.complete)
+    request_task.update_status(db, ExecutionLogStatus.complete)
 
-    assert request_task.status == TaskExecutionLogStatus.complete
+    assert request_task.status == ExecutionLogStatus.complete
 
 
 def test_request_task_get_tasks_with_same_action_type(
@@ -144,7 +144,7 @@ def test_request_task_get_pending_downstream_tasks(db, request_task):
     # Query the RequestTask
     pending_downstream_tasks = request_task.get_pending_downstream_tasks(db).all()
     assert len(pending_downstream_tasks) == 1
-    assert pending_downstream_tasks[0].status == TaskExecutionLogStatus.pending
+    assert pending_downstream_tasks[0].status == ExecutionLogStatus.pending
     assert pending_downstream_tasks[0].id != request_task.id
 
 
@@ -152,7 +152,7 @@ def test_request_task_upstream_tasks_complete(db, request_task):
     assert request_task.upstream_tasks_complete(db) is True
 
     upstream_tasks = request_task.upstream_tasks_objects(db).all()
-    upstream_tasks[0].update_status(db, TaskExecutionLogStatus.pending)
+    upstream_tasks[0].update_status(db, ExecutionLogStatus.pending)
 
     assert request_task.upstream_tasks_complete(db) is False
 

@@ -13,7 +13,7 @@ from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import ActionType
 from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest
 from fides.api.models.sql_models import Dataset as CtlDataset
-from fides.api.models.worker_task import TaskExecutionLogStatus
+from fides.api.models.worker_task import ExecutionLogStatus
 
 from .application_fixtures import integration_secrets
 
@@ -84,7 +84,7 @@ def mongo_execution_log(
                 }
             ],
             "action_type": ActionType.access,
-            "status": TaskExecutionLogStatus.in_processing,
+            "status": ExecutionLogStatus.in_processing,
             "privacy_request_id": privacy_request.id,
         },
     )

@@ -29,7 +29,7 @@ from fides.api.models.privacy_request import (
     RequestTask,
     TraversalDetails,
 )
-from fides.api.models.worker_task import TaskExecutionLogStatus
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.task.deprecated_graph_task import format_data_use_map_for_caching
 from fides.api.task.execute_request_tasks import log_task_queued, queue_request_task
@@ -230,9 +230,9 @@ def base_task_data(
         "dataset_name": node.dataset,
         "collection_name": node.collection,
         "status": (
-            TaskExecutionLogStatus.complete
+            ExecutionLogStatus.complete
             if node == ROOT_COLLECTION_ADDRESS
-            else TaskExecutionLogStatus.pending
+            else ExecutionLogStatus.pending
         ),
         "collection": collection_representation,
         "traversal_details": traversal_details,
@@ -607,11 +607,11 @@ def get_existing_ready_tasks(
         for task in incomplete_tasks:
             # Checks if both upstream tasks are complete and the task is not currently in-flight (if using workers)
             if task.can_queue_request_task(session, should_log=True):
-                task.update_status(session, TaskExecutionLogStatus.pending)
+                task.update_status(session, ExecutionLogStatus.pending)
                 ready.append(task)
-            elif task.status == TaskExecutionLogStatus.error:
+            elif task.status == ExecutionLogStatus.error:
                 # Important to reset errored status to pending so it can be rerun
-                task.update_status(session, TaskExecutionLogStatus.pending)
+                task.update_status(session, ExecutionLogStatus.pending)
 
         if ready:
             logger.info(

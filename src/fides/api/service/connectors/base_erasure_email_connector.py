@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.policy import Rule
 from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest
-from fides.api.models.worker_task import TaskExecutionLogStatus
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.connection_configuration.connection_secrets_email import (
     AdvancedSettings,
     BaseEmailSchema,
@@ -76,7 +76,7 @@ class BaseErasureEmailConnector(BaseEmailConnector):
                 "collection_name": self.configuration.name_or_key,
                 "privacy_request_id": privacy_request.id,
                 "action_type": ActionType.erasure,
-                "status": TaskExecutionLogStatus.skipped,
+                "status": ExecutionLogStatus.skipped,
                 "message": f"Erasure email skipped for '{self.configuration.name_or_key}'",
             },
         )

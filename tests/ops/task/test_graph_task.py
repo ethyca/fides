@@ -27,7 +27,7 @@ from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import Policy, Rule, RuleTarget
 from fides.api.models.privacy_request import ExecutionLog
 from fides.api.models.sql_models import Dataset as CtlDataset
-from fides.api.models.worker_task import TaskExecutionLogStatus
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.task.deprecated_graph_task import (
     _evaluate_erasure_dependencies,
@@ -991,7 +991,7 @@ class TestGraphTaskAffectedConsentSystems:
             )
             .order_by(ExecutionLog.created_at.desc())
         )
-        assert logs.first().status == TaskExecutionLogStatus.skipped
+        assert logs.first().status == ExecutionLogStatus.skipped
 
     @mock.patch("fides.api.task.graph_task.mark_current_and_downstream_nodes_as_failed")
     @mock.patch(
@@ -1050,7 +1050,7 @@ class TestGraphTaskAffectedConsentSystems:
             )
             .order_by(ExecutionLog.created_at.desc())
         )
-        assert logs.first().status == TaskExecutionLogStatus.error
+        assert logs.first().status == ExecutionLogStatus.error
         assert mark_current_and_downstream_nodes_as_failed_mock.called
 
 
@@ -1162,7 +1162,7 @@ class TestGraphTaskLogging:
         tn = TraversalNode(generate_node("a", "b", "c"))
         rq = tn.to_mock_request_task()
         rq.action_type = ActionType.access
-        rq.status = TaskExecutionLogStatus.pending
+        rq.status = ExecutionLogStatus.pending
         rq.id = str(uuid.uuid4())
         db.add(rq)
         db.commit()
@@ -1173,7 +1173,7 @@ class TestGraphTaskLogging:
     def test_log_start(self, graph_task, db, privacy_request):
         graph_task.log_start(action_type=ActionType.access)
 
-        assert graph_task.request_task.status == TaskExecutionLogStatus.in_processing
+        assert graph_task.request_task.status == ExecutionLogStatus.in_processing
 
         execution_log = (
             db.query(ExecutionLog)
@@ -1185,12 +1185,12 @@ class TestGraphTaskLogging:
             )
             .first()
         )
-        assert execution_log.status == TaskExecutionLogStatus.in_processing
+        assert execution_log.status == ExecutionLogStatus.in_processing
 
     def test_log_retry(self, graph_task, db, privacy_request):
         graph_task.log_retry(action_type=ActionType.access)
 
-        assert graph_task.request_task.status == TaskExecutionLogStatus.retrying
+        assert graph_task.request_task.status == ExecutionLogStatus.retrying
 
         execution_log = (
             db.query(ExecutionLog)
@@ -1202,12 +1202,12 @@ class TestGraphTaskLogging:
             )
             .first()
         )
-        assert execution_log.status == TaskExecutionLogStatus.retrying
+        assert execution_log.status == ExecutionLogStatus.retrying
 
     def test_log_skipped(self, graph_task, db, privacy_request):
         graph_task.log_skipped(action_type=ActionType.access, ex="Skipping node")
 
-        assert graph_task.request_task.status == TaskExecutionLogStatus.skipped
+        assert graph_task.request_task.status == ExecutionLogStatus.skipped
         assert graph_task.request_task.consent_sent is None, "Not applicable for access"
 
         execution_log = (
@@ -1220,7 +1220,7 @@ class TestGraphTaskLogging:
             )
             .first()
         )
-        assert execution_log.status == TaskExecutionLogStatus.skipped
+        assert execution_log.status == ExecutionLogStatus.skipped
 
         graph_task.log_skipped(action_type=ActionType.consent, ex="Skipping node")
         assert graph_task.request_task.consent_sent is False
@@ -1235,7 +1235,7 @@ class TestGraphTaskLogging:
     ):
         graph_task.log_end(action_type=ActionType.access, ex=Exception("Key Error"))
 
-        assert graph_task.request_task.status == TaskExecutionLogStatus.error
+        assert graph_task.request_task.status == ExecutionLogStatus.error
 
         assert mark_current_and_downstream_nodes_as_failed_mock.called
         execution_log = (
@@ -1249,7 +1249,7 @@ class TestGraphTaskLogging:
             .first()
         )
 
-        assert execution_log.status == TaskExecutionLogStatus.error
+        assert execution_log.status == ExecutionLogStatus.error
 
     @mock.patch("fides.api.task.graph_task.mark_current_and_downstream_nodes_as_failed")
     def test_log_end_complete(
@@ -1261,7 +1261,7 @@ class TestGraphTaskLogging:
     ):
         graph_task.log_end(action_type=ActionType.access)
 
-        assert graph_task.request_task.status == TaskExecutionLogStatus.complete
+        assert graph_task.request_task.status == ExecutionLogStatus.complete
 
         assert not mark_current_and_downstream_nodes_as_failed_mock.called
         execution_log = (
@@ -1275,4 +1275,4 @@ class TestGraphTaskLogging:
             .first()
         )
 
-        assert execution_log.status == TaskExecutionLogStatus.complete
+        assert execution_log.status == ExecutionLogStatus.complete

@@ -22,7 +22,7 @@ from fides.api.models.privacy_notice import (
     UserConsentPreference,
 )
 from fides.api.models.privacy_request import PrivacyRequest, ProvidedIdentity
-from fides.api.models.worker_task import TaskExecutionLogStatus
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.language import SupportedLanguage
 from fides.api.schemas.redis_cache import MultiValue
 from fides.config import CONFIG
@@ -506,7 +506,7 @@ class PrivacyPreferenceHistory(ConsentReportingMixinV2, Base):
     privacy_request = relationship(PrivacyRequest, backref="privacy_preferences")
 
     def cache_system_status(
-        self, db: Session, system: str, status: TaskExecutionLogStatus
+        self, db: Session, system: str, status: ExecutionLogStatus
     ) -> None:
         """Update the cached affected system status for consent reporting
 
@@ -517,7 +517,7 @@ class PrivacyPreferenceHistory(ConsentReportingMixinV2, Base):
             self.affected_system_status = {}
         self.affected_system_status[system] = (
             status.name
-        )  # To avoid using "TaskExecutionLogStatus.paused" in the logs
+        )  # To avoid using "ExecutionLogStatus.paused" in the logs
         self.save(db)
 
     def update_secondary_user_ids(

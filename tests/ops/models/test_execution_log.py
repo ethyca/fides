@@ -4,7 +4,7 @@ import pytest
 from sqlalchemy.orm import Session
 
 from fides.api.models.privacy_request import ExecutionLog
-from fides.api.models.worker_task import TaskExecutionLogStatus
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 
 
@@ -24,7 +24,7 @@ def test_execution_log_timestamps(db: Session):
             "collection_name": "test_collection_1",
             "fields_affected": [],
             "action_type": ActionType.access,
-            "status": TaskExecutionLogStatus.in_processing,
+            "status": ExecutionLogStatus.in_processing,
             "privacy_request_id": "123",
         },
     )
@@ -39,7 +39,7 @@ def test_execution_log_timestamps(db: Session):
             "collection_name": "test_collection_2",
             "fields_affected": [],
             "action_type": ActionType.access,
-            "status": TaskExecutionLogStatus.complete,
+            "status": ExecutionLogStatus.complete,
             "privacy_request_id": "123",
         },
     )
