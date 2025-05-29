@@ -29,6 +29,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Developer Experience
 - Refactored FidesJS init logic for better clarity and TCF separation [#6173](https://github.com/ethyca/fides/pull/6173)
 
+### Fixed
+- Fixed Monitor button not appearing for tables with both classified fields and new discoveries in Data detection view [#6179](https://github.com/ethyca/fides/pull/6179)
+
 ## [2.62.0](https://github.com/ethyca/fides/compare/2.61.1...2.62.0)
 
 ### Added
