@@ -6,7 +6,6 @@ from loguru import logger
 from pydantic import Field, field_validator
 from sqlalchemy import and_, column, func, text
 from sqlalchemy.sql import ColumnElement
-from sqlalchemy.sql.expression import BinaryExpression
 from sqlalchemy_bigquery import BigQueryDialect
 
 from fides.api.schemas.base_class import FidesSchema
@@ -50,53 +49,27 @@ class TimeBasedPartitioning(FidesSchema):
 
     def _parse_interval(self) -> timedelta:
         """Parse interval string into timedelta."""
-        match = re.match(r"^(\d+)\s+(day|days|week|weeks)$", self.interval)
-        if not match:
-            raise ValueError(f"Invalid interval: {self.interval}")
+        parts = str(self.interval).split()
+        value = int(parts[0])
+        unit = parts[1]
 
-        value = int(match.group(1))
-        unit = match.group(2)
-
-        # Convert to timedelta
         if unit in ["week", "weeks"]:
             return timedelta(weeks=value)
         return timedelta(days=value)
 
     def create_interval_text(self, time_delta: timedelta) -> str:
-        """
-        Create INTERVAL text expression from timedelta using widely-supported SQL notation.
+        """Create INTERVAL text expression from timedelta."""
+        total_days = int(time_delta.total_seconds() / 86400)
 
-        Uses standard SQL INTERVAL syntax (INTERVAL n DAY/WEEK) which is supported by most
-        major databases including PostgreSQL, MySQL, BigQuery, Oracle, and others that follow
-        SQL-92 standards.
-
-        The method automatically optimizes intervals:
-        - Multiples of 7 days are converted to weeks (e.g., INTERVAL 2 WEEK vs INTERVAL 14 DAY)
-        - This provides cleaner, more readable SQL output
-
-        Args:
-            time_delta: Python timedelta object to convert to SQL INTERVAL syntax
-
-        Returns:
-            String in format "INTERVAL n WEEK" or "INTERVAL n DAY"
-
-        Note:
-            Subclasses can override this method to provide database-specific interval syntax
-            if needed (e.g., SQL Server uses DATEADD instead of INTERVAL notation).
-        """
-        total_days = int(time_delta.total_seconds() / 86400)  # 86400 seconds in a day
-
-        # Check if it's a clean week interval
+        # Use weeks if it's a clean multiple of 7 days
         if total_days % 7 == 0 and total_days >= 7:
-            weeks = total_days // 7
-            return f"INTERVAL {weeks} WEEK"
+            return f"INTERVAL {total_days // 7} WEEK"
         return f"INTERVAL {total_days} DAY"
 
     def _parse_time_expression(self, expr: str) -> ColumnElement:
-        """Convert time expression to SQLAlchemy expression using INTERVAL syntax."""
+        """Convert time expression to SQLAlchemy expression."""
         expr = expr.strip().upper()
 
-        # Handle NOW()
         if expr == "NOW()":
             return func.current_timestamp()
 
@@ -105,26 +78,26 @@ class TimeBasedPartitioning(FidesSchema):
             r"^NOW\(\)\s*([+-])\s*(\d+)\s+(DAY|DAYS|WEEK|WEEKS)$", expr
         )
         if now_match:
-            operator = now_match.group(1)
-            value = int(now_match.group(2))
-            unit = now_match.group(3).upper()
+            operator, value, unit = now_match.groups()
 
-            # Create timedelta and convert to clean INTERVAL text
-            if unit in ["WEEK", "WEEKS"]:
-                time_delta = timedelta(weeks=value)
-            else:
-                time_delta = timedelta(days=value)
+            # Create timedelta
+            time_delta = (
+                timedelta(weeks=int(value))
+                if unit in ["WEEK", "WEEKS"]
+                else timedelta(days=int(value))
+            )
 
             interval_text = self.create_interval_text(time_delta)
             base_expr = func.current_timestamp()
 
-            if operator == "-":
-                return base_expr - text(interval_text)
-            return base_expr + text(interval_text)
+            return (
+                base_expr - text(interval_text)
+                if operator == "-"
+                else base_expr + text(interval_text)
+            )
 
-        # Handle date literals - use func.DATE() for proper date arithmetic
+        # Handle date literals
         if re.match(r"^\d{4}-\d{2}-\d{2}", expr):
-            # Clean date string and create DATE() function call
             date_str = expr.split()[0]  # Remove time part if present
             return func.DATE(date_str)
 
@@ -132,27 +105,25 @@ class TimeBasedPartitioning(FidesSchema):
 
     def _calculate_total_duration(self) -> timedelta:
         """Calculate total duration between start and end as timedelta."""
+        # Handle NOW() - X to NOW() pattern
         start_match = re.match(
             r"^NOW\(\)\s*-\s*(\d+)\s+(DAY|DAYS|WEEK|WEEKS)$", self.start
         )
-        end_is_now = str(self.end).upper() == "NOW()"
-
-        # Handle NOW() - X to NOW() pattern
-        if start_match and end_is_now:
-            value = int(start_match.group(1))
-            unit = start_match.group(2).upper()
-
-            if unit in ["WEEK", "WEEKS"]:
-                return timedelta(weeks=value)
-            return timedelta(days=value)
+        if start_match and str(self.end).upper() == "NOW()":
+            value, unit = start_match.groups()
+            return (
+                timedelta(weeks=int(value))
+                if unit.upper() in ["WEEK", "WEEKS"]
+                else timedelta(days=int(value))
+            )
 
         # Handle date literal ranges
-        start_date_match = re.match(r"^(\d{4}-\d{2}-\d{2})", self.start)
-        end_date_match = re.match(r"^(\d{4}-\d{2}-\d{2})", self.end)
+        start_match = re.match(r"^(\d{4}-\d{2}-\d{2})", self.start)
+        end_match = re.match(r"^(\d{4}-\d{2}-\d{2})", self.end)
 
-        if start_date_match and end_date_match:
-            start_date = datetime.strptime(start_date_match.group(1), "%Y-%m-%d")
-            end_date = datetime.strptime(end_date_match.group(1), "%Y-%m-%d")
+        if start_match and end_match:
+            start_date = datetime.strptime(start_match.group(1), "%Y-%m-%d")
+            end_date = datetime.strptime(end_match.group(1), "%Y-%m-%d")
 
             if end_date <= start_date:
                 raise ValueError(
@@ -166,10 +137,13 @@ class TimeBasedPartitioning(FidesSchema):
         )
 
     def _generate_intervals(
-        self, field_column, interval_time_delta: timedelta, total_duration: timedelta
-    ) -> List[BinaryExpression]:
+        self,
+        field_column: ColumnElement,
+        interval_time_delta: timedelta,
+        total_duration: timedelta,
+    ) -> List[ColumnElement]:
         """Generate interval conditions using clean INTERVAL text expressions."""
-        conditions = []
+        conditions: List[ColumnElement] = []
 
         # Check if we're working with NOW() expressions
         is_now_based = (
@@ -177,104 +151,88 @@ class TimeBasedPartitioning(FidesSchema):
         )
 
         if is_now_based:
-            # Handle NOW() - X to NOW() pattern
+            # Handle NOW() - X to NOW() pattern (work backwards from furthest to most recent)
             current_offset = total_duration
+            end_expr = self._parse_time_expression(self.end)
 
-            # Generate intervals from furthest back to most recent
             while current_offset.total_seconds() > 0:
                 start_offset = current_offset
                 end_offset = current_offset - interval_time_delta
                 if end_offset.total_seconds() < 0:
                     end_offset = timedelta(0)
 
-                # Use clean INTERVAL text expressions
-                if start_offset.total_seconds() == 0:
-                    start_expr = func.current_timestamp()
-                else:
-                    start_interval_text = self.create_interval_text(start_offset)
-                    start_expr = func.current_timestamp() - text(start_interval_text)
+                # Calculate interval start
+                interval_start = (
+                    func.current_timestamp()
+                    if start_offset.total_seconds() == 0
+                    else func.current_timestamp()
+                    - text(self.create_interval_text(start_offset))
+                )
 
-                if end_offset.total_seconds() == 0:
-                    # Last interval: use the actual end expression
-                    end_expr = self._parse_time_expression(self.end)
-                else:
-                    end_interval_text = self.create_interval_text(end_offset)
-                    end_expr = func.current_timestamp() - text(end_interval_text)
+                # Calculate interval end
+                interval_end = (
+                    end_expr
+                    if end_offset.total_seconds() == 0
+                    else func.current_timestamp()
+                    - text(self.create_interval_text(end_offset))
+                )
 
-                condition = and_(field_column > start_expr, field_column <= end_expr)
-                conditions.append(condition)
-
+                conditions.append(
+                    and_(field_column > interval_start, field_column <= interval_end)
+                )
                 current_offset = end_offset
         else:
-            # Handle date literal ranges using INTERVAL arithmetic with func.DATE()
+            # Handle date literal ranges (work forwards from start to end)
             start_expr = self._parse_time_expression(self.start)
+            end_expr = self._parse_time_expression(self.end)
             current_offset = timedelta(0)
 
-            # Generate intervals from start to end
             while current_offset < total_duration:
-                if current_offset.total_seconds() == 0:
-                    # Use the parsed start expression directly (already wrapped in func.DATE())
-                    interval_start = start_expr
-                else:
-                    # Use INTERVAL text for the offset with proper date arithmetic
-                    offset_interval_text = self.create_interval_text(current_offset)
-                    interval_start = start_expr + text(offset_interval_text)
-
-                next_offset = current_offset + interval_time_delta
-                if next_offset >= total_duration:
-                    # Last interval: use actual end (already wrapped in func.DATE())
-                    interval_end = self._parse_time_expression(self.end)
-                else:
-                    # Use INTERVAL text for the next boundary with proper date arithmetic
-                    next_interval_text = self.create_interval_text(next_offset)
-                    interval_end = start_expr + text(next_interval_text)
-
-                condition = and_(
-                    field_column > interval_start, field_column <= interval_end
+                # Calculate interval start
+                interval_start = (
+                    start_expr
+                    if current_offset.total_seconds() == 0
+                    else start_expr + text(self.create_interval_text(current_offset))
                 )
-                conditions.append(condition)
 
+                # Calculate interval end
+                next_offset = current_offset + interval_time_delta
+                interval_end = (
+                    end_expr
+                    if next_offset >= total_duration
+                    else start_expr + text(self.create_interval_text(next_offset))
+                )
+
+                conditions.append(
+                    and_(field_column > interval_start, field_column <= interval_end)
+                )
                 current_offset = next_offset
 
         return conditions
 
-    def generate_expressions(self) -> List[BinaryExpression]:
-        """
-        Generate SQLAlchemy WHERE conditions for time-based partitioning.
-
-        Returns:
-            List of SQLAlchemy BinaryExpression conditions for each interval
-        """
-        field_column = column(self.field)
+    def generate_expressions(self) -> List[ColumnElement]:
+        """Generate SQLAlchemy WHERE conditions for time-based partitioning."""
+        field_column: ColumnElement = column(self.field)
         interval_time_delta = self._parse_interval()
         total_duration = self._calculate_total_duration()
 
-        # Generate intervals
         return self._generate_intervals(
             field_column, interval_time_delta, total_duration
         )
 
     def generate_where_clauses(self) -> List[str]:
-        """
-        Generate SQLAlchemy WHERE conditions for time-based partitioning.
-        """
+        """Generate SQLAlchemy WHERE conditions for time-based partitioning."""
         raise NotImplementedError("generate_where_clauses not implemented")
 
 
 class BigQueryTimeBasedPartitioning(TimeBasedPartitioning):
-    """
-    Generates BigQuery-specific WHERE clauses for time-based partitioning.
-    """
+    """Generates BigQuery-specific WHERE clauses for time-based partitioning."""
 
     def generate_where_clauses(self) -> List[str]:
-        """
-        Generate BigQuery-specific WHERE clauses.
-        """
-
-        bigquery_dialect = BigQueryDialect()
+        """Generate BigQuery-specific WHERE clauses."""
         conditions = self.generate_expressions()
+        bigquery_dialect = BigQueryDialect()
 
-        # Convert SQLAlchemy conditions to string format
         partition_clauses = []
         for condition in conditions:
             try:
