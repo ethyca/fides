@@ -24,7 +24,7 @@ from fides.api.graph.config import (
 from fides.api.models.privacy_request.execution_log import (
     COMPLETED_EXECUTION_LOG_STATUSES,
 )
-from fides.api.models.worker_task import TaskExecutionLogStatus, WorkerTask
+from fides.api.models.worker_task import ExecutionLogStatus, WorkerTask
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.policy import ActionType
 from fides.api.util.cache import (
@@ -179,7 +179,7 @@ class RequestTask(WorkerTask, Base):
         """Helper to retrieve erasure data needed to build masking requests or default to empty list"""
         return self.data_for_erasures or []
 
-    def update_status(self, db: Session, status: TaskExecutionLogStatus) -> None:
+    def update_status(self, db: Session, status: ExecutionLogStatus) -> None:
         """Helper method to update a task's status"""
         self.status = status
         self.save(db)
@@ -200,7 +200,7 @@ class RequestTask(WorkerTask, Base):
             RequestTask.privacy_request_id == self.privacy_request_id,
             RequestTask.action_type == self.action_type,
             RequestTask.collection_address.in_(self.downstream_tasks or []),
-            RequestTask.status == TaskExecutionLogStatus.pending,
+            RequestTask.status == ExecutionLogStatus.pending,
         )
 
     def can_queue_request_task(self, db: Session, should_log: bool = False) -> bool:

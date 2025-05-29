@@ -2,7 +2,7 @@ import pytest
 from sqlalchemy.orm import Session
 
 from fides.api.models.monitor_task import MonitorTask, MonitorTaskType
-from fides.api.models.worker_task import TaskExecutionLogStatus
+from fides.api.models.worker_task import ExecutionLogStatus
 
 
 class TestMonitorTask:
@@ -13,7 +13,7 @@ class TestMonitorTask:
             data={
                 "celery_id": "test-celery-id",
                 "action_type": MonitorTaskType.DETECTION.value,
-                "status": TaskExecutionLogStatus.pending.value,
+                "status": ExecutionLogStatus.pending.value,
                 "message": "Test message",
                 "monitor_config_id": monitor_config.id,
                 "staged_resource_urn": "test-urn",
@@ -24,7 +24,7 @@ class TestMonitorTask:
 
         assert task.celery_id == "test-celery-id"
         assert task.action_type == MonitorTaskType.DETECTION.value
-        assert task.status.value == TaskExecutionLogStatus.pending.value
+        assert task.status.value == ExecutionLogStatus.pending.value
         assert task.message == "Test message"
         assert task.monitor_config_id == monitor_config.id
         assert task.staged_resource_urn == "test-urn"
@@ -44,7 +44,7 @@ class TestMonitorTask:
             data={
                 "celery_id": "test-celery-id",
                 "action_type": MonitorTaskType.CLASSIFICATION.value,
-                "status": TaskExecutionLogStatus.in_processing.value,
+                "status": ExecutionLogStatus.in_processing.value,
                 "monitor_config_id": monitor_config.id,
                 "staged_resource_urn": "test-urn",
             },
@@ -53,7 +53,7 @@ class TestMonitorTask:
         # Required fields should be set
         assert task.celery_id == "test-celery-id"
         assert task.action_type == MonitorTaskType.CLASSIFICATION.value
-        assert task.status.value == TaskExecutionLogStatus.in_processing.value
+        assert task.status.value == ExecutionLogStatus.in_processing.value
         assert task.monitor_config_id == monitor_config.id
         assert task.staged_resource_urn == "test-urn"
 
@@ -84,7 +84,7 @@ class TestMonitorTask:
                 data={
                     "celery_id": "test-celery-id",
                     "action_type": "invalid_type",
-                    "status": TaskExecutionLogStatus.pending.value,
+                    "status": ExecutionLogStatus.pending.value,
                     "monitor_config_id": monitor_config.id,
                     "staged_resource_urn": "test-urn",
                 },

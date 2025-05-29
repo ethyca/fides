@@ -16,7 +16,7 @@ from fides.api.models.privacy_notice import (
 )
 from fides.api.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest
-from fides.api.models.worker_task import TaskExecutionLogStatus
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.connection_configuration.connection_secrets_email import (
     AdvancedSettingsWithExtendedIdentityTypes,
     ExtendedEmailSchema,
@@ -184,13 +184,13 @@ class GenericConsentEmailConnector(BaseEmailConnector):
                 "collection_name": self.configuration.name_or_key,
                 "privacy_request_id": privacy_request.id,
                 "action_type": ActionType.consent,
-                "status": TaskExecutionLogStatus.skipped,
+                "status": ExecutionLogStatus.skipped,
                 "message": f"Consent email skipped for '{self.configuration.name_or_key}'",
             },
         )
         for pref in privacy_request.privacy_preferences:  # type: ignore[attr-defined]
             pref.cache_system_status(
-                db, self.configuration.system_key, TaskExecutionLogStatus.skipped
+                db, self.configuration.system_key, ExecutionLogStatus.skipped
             )
 
     def add_errored_log(self, db: Session, privacy_request: PrivacyRequest) -> None:
@@ -204,7 +204,7 @@ class GenericConsentEmailConnector(BaseEmailConnector):
                 "collection_name": self.configuration.name_or_key,
                 "privacy_request_id": privacy_request.id,
                 "action_type": ActionType.consent,
-                "status": TaskExecutionLogStatus.error,
+                "status": ExecutionLogStatus.error,
                 "message": f"Consent email send error for '{self.configuration.name_or_key}'",
             },
         )
@@ -309,7 +309,7 @@ class GenericConsentEmailConnector(BaseEmailConnector):
                         "privacy_request_id": privacy_request.id,
                         "collection_name": self.configuration.name_or_key,
                         "action_type": ActionType.consent,
-                        "status": TaskExecutionLogStatus.complete,
+                        "status": ExecutionLogStatus.complete,
                         "message": f"Consent email instructions dispatched for '{self.configuration.name_or_key}'",
                     },
                 )

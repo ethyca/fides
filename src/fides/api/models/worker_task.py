@@ -7,7 +7,7 @@ from sqlalchemy.sql import text
 from fides.api.db.util import EnumColumn
 
 
-class TaskExecutionLogStatus(enum.Enum):
+class ExecutionLogStatus(enum.Enum):
     """Enum for task execution log statuses, reflecting where they are in their workflow"""
 
     in_processing = "in_processing"
@@ -30,11 +30,11 @@ class WorkerTask:
     # is also created with that state.  These are tied tightly together in GraphTask.
     status = Column(
         EnumColumn(
-            TaskExecutionLogStatus,
+            ExecutionLogStatus,
             native_enum=False,
             values_callable=lambda x: [
                 i.value for i in x
-            ],  # Using TaskExecutionLogStatus values in database, even though app is using the names.
+            ],  # Using ExecutionLogStatus values in database, even though app is using the names.
         ),  # character varying in database
         index=True,
         nullable=False,
@@ -63,11 +63,11 @@ class TaskExecutionLog:
 
     status = Column(
         EnumColumn(
-            TaskExecutionLogStatus,
+            ExecutionLogStatus,
             native_enum=False,
             values_callable=lambda x: [
                 i.value for i in x
-            ],  # Using TaskExecutionLogStatus values in database, even though app is using the names.
+            ],  # Using ExecutionLogStatus values in database, even though app is using the names.
         ),  # character varying in database
         index=True,
         nullable=False,

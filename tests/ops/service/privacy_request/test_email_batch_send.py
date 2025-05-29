@@ -13,8 +13,8 @@ from fides.api.schemas.privacy_notice import PrivacyNoticeHistorySchema
 from fides.api.schemas.privacy_preference import MinimalPrivacyPreferenceHistorySchema
 from fides.api.schemas.privacy_request import (
     Consent,
+    ExecutionLogStatus,
     PrivacyRequestStatus,
-    TaskExecutionLogStatus,
 )
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.privacy_request.email_batch_service import (
@@ -202,7 +202,7 @@ class TestConsentEmailBatchSend:
                     ExecutionLog.privacy_request_id
                     == privacy_request_awaiting_consent_email_send.id
                 )
-                & (ExecutionLog.status == TaskExecutionLogStatus.complete)
+                & (ExecutionLog.status == ExecutionLogStatus.complete)
             ),
         ).first()
         assert not email_execution_log
@@ -257,7 +257,7 @@ class TestConsentEmailBatchSend:
             ),
         )
         assert execution_logs.count() == 1
-        assert execution_logs[0].status == TaskExecutionLogStatus.error
+        assert execution_logs[0].status == ExecutionLogStatus.error
 
         db.refresh(privacy_preference_history)
         # Sovrn error status and identities added to affected systems and secondary user ids because this preference is relevant
@@ -333,7 +333,7 @@ class TestConsentEmailBatchSend:
                     ExecutionLog.privacy_request_id
                     == privacy_request_awaiting_consent_email_send.id
                 )
-                & (ExecutionLog.status == TaskExecutionLogStatus.complete)
+                & (ExecutionLog.status == ExecutionLogStatus.complete)
             ),
         ).first()
         assert (
@@ -348,7 +348,7 @@ class TestConsentEmailBatchSend:
                     ExecutionLog.privacy_request_id
                     == second_privacy_request_awaiting_consent_email_send.id
                 )
-                & (ExecutionLog.status == TaskExecutionLogStatus.complete)
+                & (ExecutionLog.status == ExecutionLogStatus.complete)
             ),
         ).first()
         assert logs_for_privacy_request_without_identity is None
@@ -405,7 +405,7 @@ class TestConsentEmailBatchSend:
                     ExecutionLog.privacy_request_id
                     == privacy_request_awaiting_consent_email_send.id
                 )
-                & (ExecutionLog.status == TaskExecutionLogStatus.complete)
+                & (ExecutionLog.status == ExecutionLogStatus.complete)
             ),
         ).first()
         assert (
@@ -420,7 +420,7 @@ class TestConsentEmailBatchSend:
                     ExecutionLog.privacy_request_id
                     == second_privacy_request_awaiting_consent_email_send.id
                 )
-                & (ExecutionLog.status == TaskExecutionLogStatus.complete)
+                & (ExecutionLog.status == ExecutionLogStatus.complete)
             ),
         ).first()
         assert logs_for_privacy_request_without_identity is None
@@ -466,7 +466,7 @@ class TestConsentEmailBatchSend:
             ),
         )
         assert email_execution_logs.count() == 1
-        assert email_execution_logs[0].status == TaskExecutionLogStatus.skipped
+        assert email_execution_logs[0].status == ExecutionLogStatus.skipped
 
         db.refresh(privacy_preference_history_us_ca_provide)
         # Entire privacy request is skipped, so "skipped" system logs are added in a different location then if
@@ -564,7 +564,7 @@ class TestConsentEmailBatchSend:
                     ExecutionLog.privacy_request_id
                     == privacy_request_awaiting_consent_email_send.id
                 )
-                & (ExecutionLog.status == TaskExecutionLogStatus.complete)
+                & (ExecutionLog.status == ExecutionLogStatus.complete)
             ),
         ).first()
         assert (
@@ -584,7 +584,7 @@ class TestConsentEmailBatchSend:
         assert logs_for_privacy_request_without_identity.count() == 1
         assert (
             logs_for_privacy_request_without_identity[0].status
-            == TaskExecutionLogStatus.skipped
+            == ExecutionLogStatus.skipped
         )
 
         # Sovrn complete status and identities added to affected systems and secondary user ids because this preference is relevant
@@ -693,7 +693,7 @@ class TestConsentEmailBatchSend:
                     ExecutionLog.privacy_request_id
                     == privacy_request_awaiting_consent_email_send.id
                 )
-                & (ExecutionLog.status == TaskExecutionLogStatus.complete)
+                & (ExecutionLog.status == ExecutionLogStatus.complete)
             ),
         ).first()
         assert (
@@ -713,7 +713,7 @@ class TestConsentEmailBatchSend:
         assert logs_for_privacy_request_without_identity.count() == 1
         assert (
             logs_for_privacy_request_without_identity[0].status
-            == TaskExecutionLogStatus.skipped
+            == ExecutionLogStatus.skipped
         )
 
         # Sovrn complete status and identities added to affected systems and secondary user ids because this preference is relevant
@@ -780,7 +780,7 @@ class TestConsentEmailBatchSend:
                     ExecutionLog.privacy_request_id
                     == privacy_request_awaiting_consent_email_send.id
                 )
-                & (ExecutionLog.status == TaskExecutionLogStatus.complete)
+                & (ExecutionLog.status == ExecutionLogStatus.complete)
             ),
         ).first()
         assert (
@@ -795,7 +795,7 @@ class TestConsentEmailBatchSend:
                     ExecutionLog.privacy_request_id
                     == second_privacy_request_awaiting_consent_email_send.id
                 )
-                & (ExecutionLog.status == TaskExecutionLogStatus.complete)
+                & (ExecutionLog.status == ExecutionLogStatus.complete)
             ),
         ).first()
         assert (
@@ -854,7 +854,7 @@ class TestConsentEmailBatchSend:
                     ExecutionLog.privacy_request_id
                     == privacy_request_awaiting_consent_email_send.id
                 )
-                & (ExecutionLog.status == TaskExecutionLogStatus.complete)
+                & (ExecutionLog.status == ExecutionLogStatus.complete)
             ),
         ).first()
         assert (
@@ -869,7 +869,7 @@ class TestConsentEmailBatchSend:
                     ExecutionLog.privacy_request_id
                     == second_privacy_request_awaiting_consent_email_send.id
                 )
-                & (ExecutionLog.status == TaskExecutionLogStatus.complete)
+                & (ExecutionLog.status == ExecutionLogStatus.complete)
             ),
         ).first()
         assert (
@@ -963,7 +963,7 @@ class TestErasureEmailBatchSend:
                     ExecutionLog.privacy_request_id
                     == privacy_request_awaiting_erasure_email_send.id
                 )
-                & (ExecutionLog.status == TaskExecutionLogStatus.complete)
+                & (ExecutionLog.status == ExecutionLogStatus.complete)
             ),
         ).first()
         assert not email_execution_log
@@ -1019,7 +1019,7 @@ class TestErasureEmailBatchSend:
                     ExecutionLog.privacy_request_id
                     == privacy_request_awaiting_erasure_email_send.id
                 )
-                & (ExecutionLog.status == TaskExecutionLogStatus.complete)
+                & (ExecutionLog.status == ExecutionLogStatus.complete)
             ),
         ).first()
         assert (
@@ -1052,7 +1052,7 @@ class TestErasureEmailBatchSend:
         assert logs_for_privacy_request_without_identity.count() == 1
         assert (
             logs_for_privacy_request_without_identity[0].status
-            == TaskExecutionLogStatus.skipped
+            == ExecutionLogStatus.skipped
         )
         assert (
             logs_for_privacy_request_without_identity[0].action_type
@@ -1110,7 +1110,7 @@ class TestErasureEmailBatchSend:
                     ExecutionLog.privacy_request_id
                     == privacy_request_awaiting_erasure_email_send.id
                 )
-                & (ExecutionLog.status == TaskExecutionLogStatus.complete)
+                & (ExecutionLog.status == ExecutionLogStatus.complete)
             ),
         ).first()
         assert (
@@ -1143,7 +1143,7 @@ class TestErasureEmailBatchSend:
         assert logs_for_privacy_request_without_identity.count() == 1
         assert (
             logs_for_privacy_request_without_identity[0].status
-            == TaskExecutionLogStatus.skipped
+            == ExecutionLogStatus.skipped
         )
         assert (
             logs_for_privacy_request_without_identity[0].action_type
@@ -1186,7 +1186,7 @@ class TestErasureEmailBatchSend:
                     ExecutionLog.privacy_request_id
                     == privacy_request_awaiting_erasure_email_send.id
                 )
-                & (ExecutionLog.status == TaskExecutionLogStatus.complete)
+                & (ExecutionLog.status == ExecutionLogStatus.complete)
             ),
         ).first()
         assert (
@@ -1201,7 +1201,7 @@ class TestErasureEmailBatchSend:
                     ExecutionLog.privacy_request_id
                     == second_privacy_request_awaiting_erasure_email_send.id
                 )
-                & (ExecutionLog.status == TaskExecutionLogStatus.complete)
+                & (ExecutionLog.status == ExecutionLogStatus.complete)
             ),
         ).first()
         assert (
