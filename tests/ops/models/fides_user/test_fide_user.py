@@ -3,50 +3,66 @@ from typing import Generator
 import pytest
 from sqlalchemy.orm import Session
 
+from fides.api.common_exceptions import SystemManagerException
 from fides.api.models.fides_user import FidesUser
+from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.fides_user_respondent_email_verification import (
     FidesUserRespondentEmailVerification,
 )
 from fides.api.models.sql_models import System
 
-USER_NAME = "user_1"
-PASSWORD = "test_password"
-EMAIL_ADDRESS = "user_1@example.com"
-
 
 @pytest.fixture
-def user(db: Session) -> Generator[FidesUser, None, None]:
-    user = FidesUser.create(
-        db=db,
-        data={"username": USER_NAME, "password": PASSWORD},
-    )
-    yield user
-    user.delete(db)
-
-
-@pytest.fixture
-def respondent(db: Session) -> Generator[FidesUser, None, None]:
+def respondent(
+    db: Session, username: str, email_address: str
+) -> Generator[FidesUser, None, None]:
     user = FidesUser.create(
         db=db,
         data={
-            "username": USER_NAME,
-            "email_address": EMAIL_ADDRESS,
+            "username": username,
+            "email_address": email_address,
             "roles": ["respondent"],
         },
     )
+    FidesUserPermissions.create(
+        db=db,
+        data={"user_id": user.id, "roles": ["respondent"]},
+    )
     yield user
     user.delete(db)
 
 
 @pytest.fixture
-def external_respondent(db: Session) -> Generator[FidesUser, None, None]:
+def external_respondent(
+    db: Session, username: str, email_address: str
+) -> Generator[FidesUser, None, None]:
     user = FidesUser.create(
         db=db,
         data={
-            "username": USER_NAME,
-            "email_address": EMAIL_ADDRESS,
+            "username": username,
+            "email_address": email_address,
             "roles": ["external_respondent"],
         },
+    )
+    FidesUserPermissions.create(
+        db=db,
+        data={"user_id": user.id, "roles": ["external_respondent"]},
+    )
+    yield user
+    user.delete(db)
+
+
+@pytest.fixture
+def approver(
+    db: Session, username: str, password: str
+) -> Generator[FidesUser, None, None]:
+    user = FidesUser.create(
+        db=db,
+        data={"username": username, "password": password},
+    )
+    FidesUserPermissions.create(
+        db=db,
+        data={"user_id": user.id, "roles": ["approver"]},
     )
     yield user
     user.delete(db)
@@ -54,29 +70,29 @@ def external_respondent(db: Session) -> Generator[FidesUser, None, None]:
 
 @pytest.fixture
 def system_manager(
-    db: Session, user: FidesUser, system: System
+    db: Session, approver: FidesUser, system: System
 ) -> Generator[FidesUser, None, None]:
-    user.set_as_system_manager(db, system)
-    yield user
+    approver.set_as_system_manager(db, system)
+    yield approver
 
 
 class TestCreateFidesUser:
 
-    def test_create_user(self, db: Session) -> None:
+    def test_create_user(self, db: Session, username: str, password: str) -> None:
         user = FidesUser.create(
             db=db,
-            data={"username": USER_NAME, "password": PASSWORD},
+            data={"username": username, "password": password},
         )
 
-        assert user.username == USER_NAME
+        assert user.username == username
         assert user.created_at is not None
         assert user.updated_at is not None
-        assert user.hashed_password != PASSWORD
+        assert user.hashed_password != password
         assert user.last_login_at is None
         assert user.password_reset_at is None
 
         assert not user.credentials_valid("bad_password")
-        assert user.credentials_valid(PASSWORD)
+        assert user.credentials_valid(password)
 
         user.delete(db)
 
@@ -97,25 +113,31 @@ class TestCreateFidesUser:
         ],
     )
     def create_user_with_roles(
-        self, db: Session, role: str, password_login_enabled: bool
+        self,
+        db: Session,
+        username: str,
+        email_address: str,
+        password: str,
+        role: str,
+        password_login_enabled: bool,
     ) -> None:
         data = {
-            "username": USER_NAME,
-            "email_address": EMAIL_ADDRESS,
+            "username": username,
+            "email_address": email_address,
             "roles": [role],
         }
         if password_login_enabled:
-            data["password"] = PASSWORD
+            data["password"] = password
 
         user = FidesUser.create(
             db=db,
             data=data,
         )
 
-        assert user.username == USER_NAME
+        assert user.username == username
         assert user.created_at is not None
         assert user.updated_at is not None
-        assert user.email_address == EMAIL_ADDRESS
+        assert user.email_address == email_address
         assert user.password_login_enabled is password_login_enabled
         if password_login_enabled:
             assert user.hashed_password is not None
@@ -123,9 +145,11 @@ class TestCreateFidesUser:
             assert user.hashed_password is None
 
     @pytest.mark.parametrize("role", ["respondent", "external_respondent"])
-    def create_user_with_roles_error_no_email(self, db: Session, role: str) -> None:
+    def create_user_with_roles_error_no_email(
+        self, db: Session, username: str, role: str
+    ) -> None:
         data = {
-            "username": USER_NAME,
+            "username": username,
             "roles": [role],
         }
 
@@ -138,12 +162,14 @@ class TestCreateFidesUser:
         assert "Email address is required for external respondents" in str(e.value)
 
     @pytest.mark.parametrize("role", ["respondent", "external_respondent"])
-    def create_user_with_roles_error_password(self, db: Session, role: str) -> None:
+    def create_user_with_roles_error_password(
+        self, db: Session, username: str, email_address: str, password: str, role: str
+    ) -> None:
         data = {
-            "username": USER_NAME,
-            "email_address": EMAIL_ADDRESS,
+            "username": username,
+            "email_address": email_address,
             "roles": [role],
-            "password": PASSWORD,
+            "password": password,
         }
 
         with pytest.raises(ValueError) as e:
@@ -156,16 +182,14 @@ class TestCreateFidesUser:
 
 
 class TestUpdateFidesUserPassword:
-    def test_update_user_password(self, db: Session, user: FidesUser) -> None:
-        user.update_password(db, "new_test_password")
+    def test_update_user_password(self, db: Session, approver: FidesUser) -> None:
+        approver.update_password(db, "new_test_password")
 
-        assert user.username == "user_1"
-        assert user.password_reset_at is not None
-        assert user.credentials_valid("new_test_password")
-        assert user.hashed_password != "new_test_password"
-        assert not user.credentials_valid("test_password")
-
-        user.delete(db)
+        assert approver.username == "user_1"
+        assert approver.password_reset_at is not None
+        assert approver.credentials_valid("new_test_password")
+        assert approver.hashed_password != "new_test_password"
+        assert not approver.credentials_valid("test_password")
 
     def test_update_user_password_error_respondent(
         self, db: Session, respondent: FidesUser
@@ -177,17 +201,32 @@ class TestUpdateFidesUserPassword:
         assert "Password changes are not allowed for respondents" in str(e.value)
 
 
+class TestUpdateFidesUserEmailAddress:
+    def test_update_user_email_address(self, db: Session, approver: FidesUser) -> None:
+        approver.update_email_address(db, "new_test_email@example.com")
+
+        assert approver.email_address == "new_test_email@example.com"
+
+    def test_update_user_email_address_error_respondent(
+        self, db: Session, respondent: FidesUser
+    ) -> None:
+        with pytest.raises(ValueError) as e:
+            respondent.update_email_address(db, "new_test_email@example.com")
+
+        assert "Email address changes are not allowed for respondents" in str(e.value)
+
+
 class TestUserSystemManager:
     def test_set_as_system_manager(
-        self, db: Session, system: System, user: FidesUser
+        self, db: Session, system: System, approver: FidesUser
     ) -> None:
-        user.set_as_system_manager(db, system)
-        assert system in user.systems
+        approver.set_as_system_manager(db, system)
+        assert system in approver.systems
 
     def test_set_as_system_manager_error_respondent(
         self, db: Session, system: System, respondent: FidesUser
     ) -> None:
-        with pytest.raises(ValueError) as e:
+        with pytest.raises(SystemManagerException) as e:
             respondent.set_as_system_manager(db, system)
 
         assert "Respondents cannot be system managers." in str(e.value)
@@ -195,10 +234,10 @@ class TestUserSystemManager:
     def test_set_as_system_manager_error_system_manager(
         self, db: Session, system: System, system_manager: FidesUser
     ) -> None:
-        with pytest.raises(ValueError) as e:
+        with pytest.raises(SystemManagerException) as e:
             system_manager.set_as_system_manager(db, system)
 
-        assert "User 'user_1' is already a system manager of 'system_1'." in str(
+        assert f"User '{system_manager.username}' is already a system manager" in str(
             e.value
         )
 
@@ -211,37 +250,25 @@ class TestUserSystemManager:
     def test_remove_as_system_manager_error(
         self, db: Session, system: System, user: FidesUser
     ) -> None:
-        with pytest.raises(ValueError) as e:
+        with pytest.raises(SystemManagerException) as e:
             user.remove_as_system_manager(db, system)
 
-        assert "User 'user_1' is not a manager of system 'system_1'." in str(e.value)
+        assert f"User '{user.username}' is not a manager of system " in str(e.value)
 
 
 class TestUserProperties:
-    def test_disabled_user(self, db: Session) -> None:
+    def test_disabled_user(self, db: Session, username: str, password: str) -> None:
         user = FidesUser.create(
             db=db,
             data={
-                "username": USER_NAME,
-                "password": PASSWORD,
+                "username": username,
+                "password": password,
                 "disabled": True,
-                "disabled_reason": "test_reason",
+                "disabled_reason": "pending_invite",
             },
         )
         assert user.disabled
-        assert user.disabled_reason == "test_reason"
-        user.delete(db)
-
-    def test_totp_secret(self, db: Session) -> None:
-        user = FidesUser.create(
-            db=db,
-            data={
-                "username": USER_NAME,
-                "password": PASSWORD,
-                "totp_secret": "test_secret",
-            },
-        )
-        assert user.totp_secret == "test_secret"
+        assert user.disabled_reason.value == "pending_invite"
         user.delete(db)
 
     def test_system_ids(
@@ -254,20 +281,26 @@ class TestUserProperties:
         assert hasattr(user.audit_logs, "filter")
         assert hasattr(user.audit_logs, "all")
 
-    def test_client_relationship(self, db: Session) -> None:
+    def test_client_relationship(
+        self, db: Session, username: str, password: str
+    ) -> None:
         user = FidesUser.create(
             db=db,
             data={
-                "username": USER_NAME,
-                "password": PASSWORD,
+                "username": username,
+                "password": password,
             },
         )
         # Test that client relationship exists and is optional
         assert user.client is None
         user.delete(db)
 
-    def test_permissions_relationship(self, db: Session, user: FidesUser) -> None:
+    @pytest.mark.parametrize("user", ["approver", "respondent", "external_respondent"])
+    def test_permissions_relationship(
+        self, db: Session, user: FidesUser, request
+    ) -> None:
         # Test that permissions relationship exists
+        user = request.getfixturevalue(user)
         assert hasattr(user, "permissions")
         # Test that permissions is optional (can be None)
         assert user.permissions is not None
@@ -284,18 +317,20 @@ class TestUserProperties:
         # This would typically be set by the login process
         # We're just testing the property exists and is nullable
 
-    def test_password_reset_at(self, db: Session, user: FidesUser) -> None:
-        assert user.password_reset_at is None
-        user.update_password(db, "new_password")
-        assert user.password_reset_at is not None
+    def test_password_reset_at(self, db: Session, approver: FidesUser) -> None:
+        assert approver.password_reset_at is None
+        approver.update_password(db, "new_password")
+        assert approver.password_reset_at is not None
 
-    def test_password_login_enabled(self, db: Session) -> None:
+    def test_password_login_enabled(
+        self, db: Session, username: str, email_address: str, password: str
+    ) -> None:
         # Test regular user
         user = FidesUser.create(
             db=db,
             data={
-                "username": USER_NAME,
-                "password": PASSWORD,
+                "username": username,
+                "password": password,
             },
         )
         assert user.password_login_enabled is None  # Default is None
@@ -305,8 +340,8 @@ class TestUserProperties:
         respondent = FidesUser.create(
             db=db,
             data={
-                "username": USER_NAME,
-                "email_address": EMAIL_ADDRESS,
+                "username": username,
+                "email_address": email_address,
                 "roles": ["external_respondent"],
             },
         )

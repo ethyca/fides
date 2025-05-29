@@ -13,19 +13,6 @@ from fides.api.oauth.roles import (
     VIEWER,
 )
 
-USER_NAME = "user_1"
-PASSWORD = "test_password"
-
-
-@pytest.fixture
-def user(db: Session) -> Generator[FidesUser, None, None]:
-    user = FidesUser.create(
-        db=db,
-        data={"username": USER_NAME, "password": PASSWORD},
-    )
-    yield user
-    user.delete(db)
-
 
 class TestFidesUserPermissions:
     def test_create_user_permissions(self, db: Session, user: FidesUser) -> None:

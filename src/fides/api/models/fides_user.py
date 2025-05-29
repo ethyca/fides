@@ -174,6 +174,14 @@ class FidesUser(Base):
         self.password_reset_at = datetime.utcnow()  # type: ignore
         self.save(db)
 
+    def update_email_address(self, db: Session, new_email_address: str) -> None:
+        """Updates the user's email address to the specified value."""
+        if self.permissions.is_respondent():
+            raise ValueError("Email address changes are not allowed for respondents")
+
+        self.email_address = new_email_address  # type: ignore
+        self.save(db)
+
     def set_as_system_manager(self, db: Session, system: System) -> None:
         """Add a user as one of the system managers for the given system
         If applicable, also update the systems on the user's client

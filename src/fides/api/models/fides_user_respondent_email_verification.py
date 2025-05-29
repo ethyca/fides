@@ -14,7 +14,9 @@ from fides.api.db.base_class import Base
 if TYPE_CHECKING:
     from fides.api.models.fides_user import FidesUser
 
-ACCESS_LINK_TTL_DAYS = 7  # Access links stay active for 7 days
+# Access links stay active for 45 days - the same as the DSR expiration. A new link is generated for each email.
+# The emails are created for new DSRs which are assigned to the respondent.
+ACCESS_LINK_TTL_DAYS = 45
 VERIFICATION_CODE_TTL_HOURS = 1  # Verification codes expire after 1 hour
 
 
@@ -24,6 +26,13 @@ class FidesUserRespondentEmailVerification(Base):
     This handles two types of verification:
     1. Access links - long-lived (7 days) for initial access
     2. Verification codes - short-lived (1 hour) for actual verification
+
+    When an email is sent to an external respondent, a new verification is created with a new access token is created.
+    When a respondent clicks the link in the email, the access token is verified and a verification code is generated.
+    The verification code is sent to the respondent's email address and the respondent is prompted to enter the code.
+    If the code is correct and has not expired, the respondent is considered verified.
+    If the code is incorrect, the number of attempts is incremented and the verification is saved.
+    If the user attemptes to use a link with an expired access token the user is not verified.
     """
 
     @declared_attr
@@ -31,7 +40,7 @@ class FidesUserRespondentEmailVerification(Base):
         return "fides_user_respondent_email_verification"
 
     username = Column(  # type: ignore
-        String,
+        CIText,
         ForeignKey("fidesuser.username", ondelete="CASCADE"),
         nullable=True,
         index=False,
@@ -75,7 +84,6 @@ class FidesUserRespondentEmailVerification(Base):
         verification = super().create(
             db,
             data={
-                "id": generate_secure_random_string(16),  # Generate a unique ID
                 "username": data["username"],
                 "user_id": data["user_id"],
                 "access_token": access_token,
@@ -111,8 +119,9 @@ class FidesUserRespondentEmailVerification(Base):
 
     def generate_verification_code(self, db: Session) -> str:
         """Generate a new verification code when access link is used."""
-        # Generate a 6-digit numeric code
-        code = generate_secure_random_string(6)
+        # Generate a 16 character string
+        # This is a hex string, so it will double the input parameter length
+        code = generate_secure_random_string(8)
         self.verification_code = code
         self.verification_code_expires_at = datetime.now(timezone.utc) + timedelta(
             hours=VERIFICATION_CODE_TTL_HOURS
@@ -130,14 +139,3 @@ class FidesUserRespondentEmailVerification(Base):
         self.save(db)
 
         return self.verification_code == code
-
-    def generate_new_access_token(self, db: Session) -> str:
-        """Generate a new access token and reset attempts."""
-        token = generate_secure_random_string(32)
-        self.access_token = token
-        self.access_token_expires_at = datetime.now(timezone.utc) + timedelta(
-            days=ACCESS_LINK_TTL_DAYS
-        )
-        self.attempts = 0
-        self.save(db)
-        return token

@@ -41,6 +41,6 @@ class FidesUserPermissions(Base):
         self.roles = new_roles
         self.save(db)
 
-    def update(self, db: Session, data: dict) -> "FidesUserPermissions":
+    def update(self, db: Session, *, data: dict) -> "FidesUserPermissions":
         """Update the user permissions with the provided data."""
-        return cast(FidesUserPermissions, super().update(db, data))
+        return cast(FidesUserPermissions, super().update(db, data=data))

@@ -11,32 +11,20 @@ from fides.api.models.fides_user_respondent_email_verification import (
     FidesUserRespondentEmailVerification,
 )
 
-USER_NAME = "test_user"
-EMAIL_ADDRESS = "test@example.com"
-
-
-@pytest.fixture
-def external_respondent(db: Session) -> Generator[FidesUser, None, None]:
-    user = FidesUser.create(
-        db=db,
-        data={
-            "username": USER_NAME,
-            "email_address": EMAIL_ADDRESS,
-            "roles": ["external_respondent"],
-        },
-    )
-    yield user
-    user.delete(db)
-
 
 class TestFidesUserRespondentEmailVerification:
+
     def test_create(self, db: Session, external_respondent: FidesUser) -> None:
         verification = FidesUserRespondentEmailVerification.create(
             db=db,
-            data={"username": USER_NAME},
+            data={
+                "username": external_respondent.username,
+                "user_id": external_respondent.id,
+            },
         )
 
-        assert verification.username == USER_NAME
+        assert verification.username == external_respondent.username
+        assert verification.user_id == external_respondent.id
         assert verification.access_token is not None
         assert verification.access_token_expires_at is not None
         assert verification.verification_code is None
@@ -55,6 +43,47 @@ class TestFidesUserRespondentEmailVerification:
             < 1
         )
 
+    def test_multiple_active_verifications(
+        self, db: Session, external_respondent: FidesUser
+    ) -> None:
+        """Test that a user can have multiple active verifications."""
+        # Create first verification
+        verification1 = FidesUserRespondentEmailVerification.create(
+            db=db,
+            data={
+                "username": external_respondent.username,
+                "user_id": external_respondent.id,
+            },
+        )
+
+        # Create second verification
+        verification2 = FidesUserRespondentEmailVerification.create(
+            db=db,
+            data={
+                "username": external_respondent.username,
+                "user_id": external_respondent.id,
+            },
+        )
+
+        # Verify both verifications exist and are active
+        assert verification1.id != verification2.id
+        assert verification1.access_token != verification2.access_token
+        assert not verification1.is_access_token_expired()
+        assert not verification2.is_access_token_expired()
+
+        # Generate verification codes for both
+        code1 = verification1.generate_verification_code(db)
+        code2 = verification2.generate_verification_code(db)
+
+        # Verify both codes are valid
+        assert verification1.verify_code(code1, db)
+        assert verification2.verify_code(code2, db)
+
+        # Verify the relationship works
+        assert len(external_respondent.email_verifications.all()) == 2
+        assert verification1 in external_respondent.email_verifications
+        assert verification2 in external_respondent.email_verifications
+
     def test_create_bad_payload(self, db: Session) -> None:
         with pytest.raises(KeyError):
             FidesUserRespondentEmailVerification.create(
@@ -67,7 +96,10 @@ class TestFidesUserRespondentEmailVerification:
     ) -> None:
         verification = FidesUserRespondentEmailVerification.create(
             db=db,
-            data={"username": USER_NAME},
+            data={
+                "username": external_respondent.username,
+                "user_id": external_respondent.id,
+            },
         )
 
         assert not verification.is_access_token_expired()
@@ -83,7 +115,10 @@ class TestFidesUserRespondentEmailVerification:
     ) -> None:
         verification = FidesUserRespondentEmailVerification.create(
             db=db,
-            data={"username": USER_NAME},
+            data={
+                "username": external_respondent.username,
+                "user_id": external_respondent.id,
+            },
         )
 
         # Should be expired when no code exists
@@ -104,7 +139,10 @@ class TestFidesUserRespondentEmailVerification:
     ) -> None:
         verification = FidesUserRespondentEmailVerification.create(
             db=db,
-            data={"username": USER_NAME},
+            data={
+                "username": external_respondent.username,
+                "user_id": external_respondent.id,
+            },
         )
 
         assert verification.verify_access_token(verification.access_token)
@@ -121,12 +159,15 @@ class TestFidesUserRespondentEmailVerification:
     ) -> None:
         verification = FidesUserRespondentEmailVerification.create(
             db=db,
-            data={"username": USER_NAME},
+            data={
+                "username": external_respondent.username,
+                "user_id": external_respondent.id,
+            },
         )
 
         code = verification.generate_verification_code(db)
-        assert len(code) == 6
-        assert code.isdigit()
+        assert len(code) == 16
+        assert code.isalnum()
         assert verification.verification_code == code
         assert verification.attempts == 0
 
@@ -146,7 +187,10 @@ class TestFidesUserRespondentEmailVerification:
     def test_verify_code(self, db: Session, external_respondent: FidesUser) -> None:
         verification = FidesUserRespondentEmailVerification.create(
             db=db,
-            data={"username": USER_NAME},
+            data={
+                "username": external_respondent.username,
+                "user_id": external_respondent.id,
+            },
         )
 
         code = verification.generate_verification_code(db)
@@ -162,32 +206,3 @@ class TestFidesUserRespondentEmailVerification:
             timezone.utc
         ) - timedelta(hours=1)
         assert not verification.verify_code(code, db)
-
-    def test_generate_new_access_token(
-        self, db: Session, external_respondent: FidesUser
-    ) -> None:
-        verification = FidesUserRespondentEmailVerification.create(
-            db=db,
-            data={"username": USER_NAME},
-        )
-
-        original_token = verification.access_token
-        original_expiry = verification.access_token_expires_at
-        verification.attempts = 5
-
-        new_token = verification.generate_new_access_token(db)
-        assert new_token != original_token
-        assert verification.access_token == new_token
-        assert verification.access_token_expires_at > original_expiry
-        assert verification.attempts == 0
-
-        # Verify expiration is set correctly
-        expected_expiry = datetime.now(timezone.utc) + timedelta(
-            days=ACCESS_LINK_TTL_DAYS
-        )
-        assert (
-            abs(
-                (verification.access_token_expires_at - expected_expiry).total_seconds()
-            )
-            < 1
-        )

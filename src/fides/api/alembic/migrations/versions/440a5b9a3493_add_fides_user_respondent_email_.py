@@ -8,6 +8,7 @@ Create Date: 2025-05-29 15:41:59.521940
 
 import sqlalchemy as sa
 from alembic import op
+from citext import CIText
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
@@ -21,7 +22,7 @@ def upgrade():
     op.create_table(
         "fides_user_respondent_email_verification",
         sa.Column("id", sa.String(), nullable=False),
-        sa.Column("username", sa.String(), nullable=False),
+        sa.Column("username", CIText(), nullable=False),
         sa.Column("user_id", sa.String(), nullable=False),
         sa.Column("access_token", sa.String(), nullable=False),
         sa.Column(
