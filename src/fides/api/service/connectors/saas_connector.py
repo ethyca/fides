@@ -530,11 +530,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         session = Session.object_session(privacy_request)
         masking_request = query_config.get_masking_request(session)
-        if not masking_request:
-            raise Exception(
-                f"Either no masking request configured or no valid masking request for {node.address.collection}. "
-                f"Check that MASKING_STRICT env var is appropriately set"
-            )
 
         self.set_saas_request_state(masking_request)
 
