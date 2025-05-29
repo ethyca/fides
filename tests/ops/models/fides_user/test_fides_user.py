@@ -13,62 +13,6 @@ from fides.api.models.sql_models import System
 
 
 @pytest.fixture
-def respondent(
-    db: Session, username: str, email_address: str
-) -> Generator[FidesUser, None, None]:
-    user = FidesUser.create(
-        db=db,
-        data={
-            "username": username,
-            "email_address": email_address,
-            "roles": ["respondent"],
-        },
-    )
-    FidesUserPermissions.create(
-        db=db,
-        data={"user_id": user.id, "roles": ["respondent"]},
-    )
-    yield user
-    user.delete(db)
-
-
-@pytest.fixture
-def external_respondent(
-    db: Session, username: str, email_address: str
-) -> Generator[FidesUser, None, None]:
-    user = FidesUser.create(
-        db=db,
-        data={
-            "username": username,
-            "email_address": email_address,
-            "roles": ["external_respondent"],
-        },
-    )
-    FidesUserPermissions.create(
-        db=db,
-        data={"user_id": user.id, "roles": ["external_respondent"]},
-    )
-    yield user
-    user.delete(db)
-
-
-@pytest.fixture
-def approver(
-    db: Session, username: str, password: str
-) -> Generator[FidesUser, None, None]:
-    user = FidesUser.create(
-        db=db,
-        data={"username": username, "password": password},
-    )
-    FidesUserPermissions.create(
-        db=db,
-        data={"user_id": user.id, "roles": ["approver"]},
-    )
-    yield user
-    user.delete(db)
-
-
-@pytest.fixture
 def system_manager(
     db: Session, approver: FidesUser, system: System
 ) -> Generator[FidesUser, None, None]:

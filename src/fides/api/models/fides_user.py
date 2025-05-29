@@ -76,18 +76,19 @@ class FidesUser(Base):
     )
 
     systems = relationship("System", secondary="systemmanager", back_populates="data_stewards")  # type: ignore
-    permissions = relationship(
-        "FidesUserPermissions",
-        back_populates="user",
-        cascade="all,delete",
-        uselist=False,
-    )
+    # permissions relationship is defined via backref in FidesUserPermissions
     email_verifications = relationship(
         "FidesUserRespondentEmailVerification",
         back_populates="user",
         cascade="all,delete",
         lazy="dynamic",
         foreign_keys="[FidesUserRespondentEmailVerification.user_id]",
+    )
+    permissions = relationship(
+        "FidesUserPermissions",
+        back_populates="user",
+        cascade="all,delete",
+        uselist=False,
     )
 
     @property
@@ -165,8 +166,9 @@ class FidesUser(Base):
 
         No validations are performed on the old/existing password within this function.
         """
-        if self.permissions.is_respondent():
-            raise ValueError("Password changes are not allowed for respondents")
+        if self.permissions is not None:
+            if self.permissions.is_respondent():
+                raise ValueError("Password changes are not allowed for respondents")
 
         hashed_password, salt = FidesUser.hash_password(new_password)
         self.hashed_password = hashed_password  # type: ignore
@@ -176,8 +178,11 @@ class FidesUser(Base):
 
     def update_email_address(self, db: Session, new_email_address: str) -> None:
         """Updates the user's email address to the specified value."""
-        if self.permissions.is_respondent():
-            raise ValueError("Email address changes are not allowed for respondents")
+        if self.permissions is not None:
+            if self.permissions.is_respondent():
+                raise ValueError(
+                    "Email address changes are not allowed for respondents"
+                )
 
         self.email_address = new_email_address  # type: ignore
         self.save(db)
@@ -198,8 +203,9 @@ class FidesUser(Base):
                 f"User '{self.username}' is already a system manager of '{system.name}'."
             )
 
-        if self.permissions.is_respondent():
-            raise SystemManagerException("Respondents cannot be system managers.")
+        if self.permissions is not None:
+            if self.permissions.is_respondent():
+                raise SystemManagerException("Respondents cannot be system managers.")
 
         self.systems.append(system)
         self.save(db=db)

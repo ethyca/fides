@@ -33,6 +33,8 @@ def user(db: Session, username: str, password: str) -> Generator[FidesUser, None
         data={"username": username, "password": password},
     )
     yield user
+    if user.permissions:
+        user.permissions.delete(db)
     user.delete(db)
 
 
@@ -51,6 +53,8 @@ def respondent(db: Session) -> Generator[FidesUser, None, None]:
         data={"user_id": user.id, "roles": ["respondent"]},
     )
     yield user
+    if user.permissions:
+        user.permissions.delete(db)
     user.delete(db)
 
 
@@ -69,6 +73,8 @@ def external_respondent(db: Session) -> Generator[FidesUser, None, None]:
         data={"user_id": user.id, "roles": ["external_respondent"]},
     )
     yield user
+    if user.permissions:
+        user.permissions.delete(db)
     user.delete(db)
 
 
@@ -83,4 +89,6 @@ def approver(db: Session) -> Generator[FidesUser, None, None]:
         data={"user_id": user.id, "roles": ["approver"]},
     )
     yield user
+    if user.permissions:
+        user.permissions.delete(db)
     user.delete(db)

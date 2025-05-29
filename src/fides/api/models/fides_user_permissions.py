@@ -17,7 +17,7 @@ class FidesUserPermissions(Base):
 
     user_id = Column(String, ForeignKey(FidesUser.id), nullable=False, unique=True)
     roles = Column(ARRAY(String), nullable=False, server_default="{}", default=dict)
-    user = relationship(FidesUser, back_populates="permissions")
+    user = relationship(FidesUser, back_populates="permissions", uselist=False)
 
     @property
     def total_scopes(self) -> List[str]:
