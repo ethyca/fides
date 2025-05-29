@@ -6,6 +6,7 @@ import DATAHUB_TYPE_INFO from "~/features/integrations/integration-type-info/dat
 import DYNAMO_TYPE_INFO from "~/features/integrations/integration-type-info/dynamoInfo";
 import GOOGLE_CLOUD_SQL_MYSQL_TYPE_INFO from "~/features/integrations/integration-type-info/googleCloudSQLMySQLInfo";
 import GOOGLE_CLOUD_SQL_POSTGRES_TYPE_INFO from "~/features/integrations/integration-type-info/googleCloudSQLPostgresInfo";
+import MANUAL_TYPE_INFO from "~/features/integrations/integration-type-info/manualInfo";
 import MICROSOFT_SQL_SERVER_TYPE_INFO from "~/features/integrations/integration-type-info/microsoftSQLServerInfo";
 import MYSQL_TYPE_INFO from "~/features/integrations/integration-type-info/mySQLInfo";
 import OKTA_TYPE_INFO from "~/features/integrations/integration-type-info/oktaInfo";
@@ -48,6 +49,7 @@ const INTEGRATION_TYPE_MAP: { [K in ConnectionType]?: IntegrationTypeInfo } = {
   [ConnectionType.MYSQL]: MYSQL_TYPE_INFO,
   [ConnectionType.WEBSITE]: WEBSITE_INTEGRATION_TYPE_INFO,
   [ConnectionType.POSTGRES]: POSTGRES_TYPE_INFO,
+  [ConnectionType.MANUAL_WEBHOOK]: MANUAL_TYPE_INFO,
 };
 
 export const INTEGRATION_TYPE_LIST: IntegrationTypeInfo[] =
