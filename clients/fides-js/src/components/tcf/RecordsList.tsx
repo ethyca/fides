@@ -33,6 +33,7 @@ interface Props<T extends RecordListItem> {
     triggerDetails: FidesEventDetailsTrigger,
   ) => void;
   renderBadgeLabel?: (item: T) => string | undefined;
+  renderGpcBadge?: (item: T) => VNode | undefined;
   hideToggles?: boolean;
 }
 
@@ -43,6 +44,7 @@ const RecordsList = <T extends RecordListItem>({
   enabledIds,
   renderToggleChild,
   renderBadgeLabel,
+  renderGpcBadge,
   onToggle,
   hideToggles,
 }: Props<T>) => {
@@ -94,6 +96,7 @@ const RecordsList = <T extends RecordListItem>({
           }}
           checked={enabledIds.indexOf(`${item.id}`) !== -1}
           badge={renderBadgeLabel ? renderBadgeLabel(item) : undefined}
+          gpcBadge={renderGpcBadge ? renderGpcBadge(item) : undefined}
           includeToggle={!hideToggles}
           onLabel={toggleOnLabel}
           offLabel={toggleOffLabel}
