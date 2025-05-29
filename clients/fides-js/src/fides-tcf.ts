@@ -11,7 +11,7 @@
 import type { TCData } from "@iabtechlabtcf/cmpapi";
 import { TCString } from "@iabtechlabtcf/core";
 
-import { FidesCookie } from "./fides";
+import { FidesCookie, isNewFidesCookie } from "./fides";
 import {
   FidesConfig,
   FidesExperienceTranslationOverrides,
@@ -30,7 +30,7 @@ import type { GppFunction } from "./lib/gpp/types";
 import { getCoreFides, raise, updateWindowFides } from "./lib/init-utils";
 import {
   getInitialCookie,
-  getInitialFides,
+  getInitialFidesFromConsentCookie,
   getOverridesByType,
   initialize,
 } from "./lib/initialize";
@@ -154,18 +154,20 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
 
   // Update the fidesString if we have an override and the TC portion is valid
   const { fidesString } = config.options;
+  let hasValidTCString = false;
   if (fidesString) {
     try {
       // Make sure TC string is valid before we assign it
       const { tc: tcString }: DecodedFidesString =
         decodeFidesString(fidesString);
-      TCString.decode(tcString);
+      hasValidTCString = !!TCString.decode(tcString);
       const updatedCookie: Partial<FidesCookie> = {
         fides_string: fidesString,
         tcf_version_hash:
           overrides.consentPrefsOverrides?.version_hash ??
           this.cookie.tcf_version_hash,
       };
+      // this could be a new cookie or an update to an existing cookie
       this.cookie = { ...this.cookie, ...updatedCookie };
     } catch (error) {
       fidesDebugger(
@@ -173,23 +175,33 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
       );
     }
   }
-  const initialFides = getInitialFides({
-    ...config,
-    cookie: this.cookie,
-    savedConsent: this.saved_consent,
-    updateExperienceFromCookieConsent: updateExperienceFromCookieConsentTcf,
-  });
-  // Initialize the CMP API early so that listeners are established
+
+  this.experience = config.experience; // pre-fetched experience if available
+  const hasExistingCookie = !isNewFidesCookie(this.cookie);
+  // Initialize the TCF CMP API early so that listeners are established
   initializeTcfCmpApi();
-  if (initialFides) {
+  if (hasExistingCookie || hasValidTCString) {
+    /*
+     * We have enough information to initialize the Fides object before we have a valid experience.
+     * In this case, the experience is less important because the user has already consented to something.
+     * The earlier we can communicate consent to the vendor, the better.
+     */
+    // TCF String gets applied to the cookie consent object in updateExperienceFromCookieConsentTcf
+    const initialFides = getInitialFidesFromConsentCookie({
+      ...config,
+      cookie: this.cookie,
+      savedConsent: this.saved_consent,
+      updateExperienceFromCookieConsent: updateExperienceFromCookieConsentTcf,
+    });
     Object.assign(this, initialFides);
     updateWindowFides(this);
+    this.experience = initialFides.experience; // pre-fetched experience, if available, with consent applied
     dispatchFidesEvent("FidesInitialized", this.cookie, config.options.debug, {
       shouldShowExperience: this.shouldShowExperience(),
       firstInit: true,
     });
   }
-  this.experience = initialFides?.experience ?? config.experience;
+
   const updatedFides = await initialize({
     ...config,
     fides: this,
