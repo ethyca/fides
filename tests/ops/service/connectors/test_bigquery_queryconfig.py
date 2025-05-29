@@ -663,3 +663,315 @@ class TestBigQueryQueryConfig:
             "UPDATE `silken-precinct-284918.fidesopstest.customer` SET `id`=%(id:INT64)s, `name`=%(name:STRING)s, `tags`=%(tags:ARRAY<STRING>)s WHERE `silken-precinct-284918.fidesopstest.customer`.`email` = %(email_1:STRING)s"
         }
         assert stmts == expected_stmts
+
+
+@pytest.mark.integration_external
+@pytest.mark.integration_bigquery
+class TestBigQueryQueryConfigPartitioning:
+    """
+    Test partition generation functionality for BigQuery query configurations.
+    """
+
+    @pytest.fixture(scope="function")
+    def bigquery_client(self, bigquery_connection_config):
+        connector = BigQueryConnector(bigquery_connection_config)
+        return connector.client()
+
+    @pytest.fixture(scope="function")
+    def dataset_graph(self, example_datasets, bigquery_connection_config):
+        dataset = Dataset(**example_datasets[7])
+        graph = convert_dataset_to_graph(dataset, bigquery_connection_config.key)
+        return DatasetGraph(*[graph])
+
+    @pytest.fixture(scope="function")
+    def partitioned_customer_node(self, dataset_graph):
+        """Create a customer node with time-based partitioning configuration"""
+        identity = {"email": "customer-1@example.com"}
+        bigquery_traversal = Traversal(dataset_graph, identity)
+        node = bigquery_traversal.traversal_node_dict[
+            CollectionAddress("bigquery_example_test_dataset", "customer")
+        ].to_mock_execution_node()
+
+        # Add partitioning configuration
+        node.collection.partitioning = {
+            "field": "created",
+            "start": "NOW() - 1000 DAYS",
+            "end": "NOW()",
+            "interval": "500 DAYS",
+        }
+        return node
+
+    @pytest.fixture(scope="function")
+    def where_clause_partitioned_node(self, dataset_graph):
+        """Create a node with where_clauses partitioning configuration"""
+        identity = {"email": "customer-1@example.com"}
+        bigquery_traversal = Traversal(dataset_graph, identity)
+        node = bigquery_traversal.traversal_node_dict[
+            CollectionAddress("bigquery_example_test_dataset", "customer")
+        ].to_mock_execution_node()
+
+        # Add where_clauses partitioning configuration
+        node.collection.partitioning = {
+            "where_clauses": [
+                "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 30 DAY)",
+                "`created` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 15 DAY) AND `created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 30 DAY)",
+            ]
+        }
+        return node
+
+    @pytest.fixture(scope="function")
+    def non_partitioned_node(self, dataset_graph):
+        """Create a node without partitioning configuration"""
+        identity = {"email": "customer-1@example.com"}
+        bigquery_traversal = Traversal(dataset_graph, identity)
+        return bigquery_traversal.traversal_node_dict[
+            CollectionAddress("bigquery_example_test_dataset", "customer")
+        ].to_mock_execution_node()
+
+    def test_get_partition_clauses_time_based_partitioning(
+        self, partitioned_customer_node
+    ):
+        """Test get_partition_clauses with time-based partitioning configuration"""
+        query_config = BigQueryQueryConfig(partitioned_customer_node)
+        partition_clauses = query_config.get_partition_clauses()
+        assert partition_clauses == [
+            "`created` > CURRENT_TIMESTAMP - INTERVAL 1000 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 500 DAY",
+            "`created` > CURRENT_TIMESTAMP - INTERVAL 500 DAY AND `created` <= CURRENT_TIMESTAMP",
+        ]
+
+    def test_get_partition_clauses_where_clauses_partitioning(
+        self, where_clause_partitioned_node
+    ):
+        """Test get_partition_clauses with where_clauses partitioning configuration"""
+        query_config = BigQueryQueryConfig(where_clause_partitioned_node)
+        partition_clauses = query_config.get_partition_clauses()
+
+        # Should return the exact where_clauses provided
+        expected_clauses = [
+            "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 30 DAY)",
+            "`created` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 15 DAY) AND `created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 30 DAY)",
+        ]
+        assert partition_clauses == expected_clauses
+
+    def test_get_partition_clauses_no_partitioning(self, non_partitioned_node):
+        """Test get_partition_clauses with no partitioning configuration"""
+        query_config = BigQueryQueryConfig(non_partitioned_node)
+        partition_clauses = query_config.get_partition_clauses()
+
+        # Should return empty list
+        assert partition_clauses == []
+
+    def test_get_partition_clauses_invalid_partitioning_spec(
+        self, non_partitioned_node
+    ):
+        """Test get_partition_clauses with invalid partitioning specification"""
+        # Set invalid partitioning spec (missing required fields)
+        non_partitioned_node.collection.partitioning = {
+            "field": "created",
+            "start": "NOW() - 1000 DAYS",
+            # Missing 'end' and 'interval'
+        }
+
+        query_config = BigQueryQueryConfig(non_partitioned_node)
+
+        # Should raise ValueError for invalid specification
+        with pytest.raises(ValueError):
+            query_config.get_partition_clauses()
+
+    def test_get_partition_clauses_single_partition(self, dataset_graph):
+        """Test get_partition_clauses when interval equals total duration (single partition)"""
+        identity = {"email": "customer-1@example.com"}
+        bigquery_traversal = Traversal(dataset_graph, identity)
+        node = bigquery_traversal.traversal_node_dict[
+            CollectionAddress("bigquery_example_test_dataset", "customer")
+        ].to_mock_execution_node()
+
+        # Set partitioning where interval equals total duration
+        node.collection.partitioning = {
+            "field": "created",
+            "start": "NOW() - 7 DAYS",
+            "end": "NOW()",
+            "interval": "7 DAYS",
+        }
+
+        query_config = BigQueryQueryConfig(node)
+        partition_clauses = query_config.get_partition_clauses()
+
+        assert partition_clauses == [
+            "`created` > CURRENT_TIMESTAMP - INTERVAL 1 WEEK AND `created` <= CURRENT_TIMESTAMP",
+        ]
+
+    def test_get_partition_clauses_many_partitions(self, dataset_graph):
+        """Test get_partition_clauses with many small partitions"""
+        identity = {"email": "customer-1@example.com"}
+        bigquery_traversal = Traversal(dataset_graph, identity)
+        node = bigquery_traversal.traversal_node_dict[
+            CollectionAddress("bigquery_example_test_dataset", "customer")
+        ].to_mock_execution_node()
+
+        # Set partitioning with small intervals
+        node.collection.partitioning = {
+            "field": "created",
+            "start": "NOW() - 30 DAYS",
+            "end": "NOW()",
+            "interval": "5 DAYS",
+        }
+
+        query_config = BigQueryQueryConfig(node)
+        partition_clauses = query_config.get_partition_clauses()
+
+        assert partition_clauses == [
+            "`created` > CURRENT_TIMESTAMP - INTERVAL 30 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 25 DAY",
+            "`created` > CURRENT_TIMESTAMP - INTERVAL 25 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 20 DAY",
+            "`created` > CURRENT_TIMESTAMP - INTERVAL 20 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 15 DAY",
+            "`created` > CURRENT_TIMESTAMP - INTERVAL 15 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 10 DAY",
+            "`created` > CURRENT_TIMESTAMP - INTERVAL 10 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 5 DAY",
+            "`created` > CURRENT_TIMESTAMP - INTERVAL 5 DAY AND `created` <= CURRENT_TIMESTAMP",
+        ]
+
+    def test_get_partition_clauses_week_intervals(self, dataset_graph):
+        """Test get_partition_clauses with week intervals"""
+        identity = {"email": "customer-1@example.com"}
+        bigquery_traversal = Traversal(dataset_graph, identity)
+        node = bigquery_traversal.traversal_node_dict[
+            CollectionAddress("bigquery_example_test_dataset", "customer")
+        ].to_mock_execution_node()
+
+        # Set partitioning with week intervals
+        node.collection.partitioning = {
+            "field": "last_visit",
+            "start": "NOW() - 4 WEEKS",
+            "end": "NOW()",
+            "interval": "1 WEEK",
+        }
+
+        query_config = BigQueryQueryConfig(node)
+        partition_clauses = query_config.get_partition_clauses()
+
+        assert partition_clauses == [
+            "`last_visit` > CURRENT_TIMESTAMP - INTERVAL 4 WEEK AND `last_visit` <= CURRENT_TIMESTAMP - INTERVAL 3 WEEK",
+            "`last_visit` > CURRENT_TIMESTAMP - INTERVAL 3 WEEK AND `last_visit` <= CURRENT_TIMESTAMP - INTERVAL 2 WEEK",
+            "`last_visit` > CURRENT_TIMESTAMP - INTERVAL 2 WEEK AND `last_visit` <= CURRENT_TIMESTAMP - INTERVAL 1 WEEK",
+            "`last_visit` > CURRENT_TIMESTAMP - INTERVAL 1 WEEK AND `last_visit` <= CURRENT_TIMESTAMP",
+        ]
+
+    def test_get_partition_clauses_with_namespace_meta(self, partitioned_customer_node):
+        """Test get_partition_clauses works correctly with namespace meta"""
+        namespace_meta = BigQueryNamespaceMeta(
+            project_id="cool_project", dataset_id="first_dataset"
+        )
+        query_config = BigQueryQueryConfig(partitioned_customer_node, namespace_meta)
+        partition_clauses = query_config.get_partition_clauses()
+
+        assert partition_clauses == [
+            "`created` > CURRENT_TIMESTAMP - INTERVAL 1000 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 500 DAY",
+            "`created` > CURRENT_TIMESTAMP - INTERVAL 500 DAY AND `created` <= CURRENT_TIMESTAMP",
+        ]
+
+    def test_generate_update_with_partitions(
+        self,
+        db,
+        partitioned_customer_node,
+        erasure_policy,
+        privacy_request,
+        bigquery_client,
+    ):
+        """Test that update statements are correctly generated for partitioned tables"""
+        erasure_policy.rules[0].targets[0].data_category = "user"
+        erasure_policy.rules[0].targets[0].save(db)
+
+        row = {
+            "email": "customer-1@example.com",
+            "id": "123",
+            "name": "John Doe",
+        }
+
+        query_config = BigQueryQueryConfig(partitioned_customer_node)
+        update_stmts = query_config.generate_update(
+            row, erasure_policy, privacy_request, bigquery_client
+        )
+
+        stmts = set(str(stmt) for stmt in update_stmts)
+        expected_stmts = {
+            "UPDATE `customer` SET `id`=%(id:INT64)s, `name`=%(name:STRING)s WHERE `customer`.`email` = %(email_1:STRING)s AND `created` > CURRENT_TIMESTAMP - INTERVAL 1000 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 500 DAY",
+            "UPDATE `customer` SET `id`=%(id:INT64)s, `name`=%(name:STRING)s WHERE `customer`.`email` = %(email_1:STRING)s AND `created` > CURRENT_TIMESTAMP - INTERVAL 500 DAY AND `created` <= CURRENT_TIMESTAMP",
+        }
+        assert stmts == expected_stmts
+
+    def test_generate_delete_with_partitions(
+        self,
+        db,
+        dataset_graph,
+        erasure_policy,
+        privacy_request,
+        bigquery_client,
+    ):
+        """Test that delete statements are correctly generated for partitioned tables"""
+        # Create a partitioned employee node (employee has DELETE masking override)
+        identity = {"email": "employee-1@example.com"}
+        bigquery_traversal = Traversal(dataset_graph, identity)
+        employee_node = bigquery_traversal.traversal_node_dict[
+            CollectionAddress("bigquery_example_test_dataset", "employee")
+        ].to_mock_execution_node()
+
+        # Add partitioning configuration
+        employee_node.collection.partitioning = {
+            "field": "created",
+            "start": "NOW() - 1000 DAYS",
+            "end": "NOW()",
+            "interval": "500 DAYS",
+        }
+
+        erasure_policy.rules[0].targets[0].data_category = "user"
+        erasure_policy.rules[0].targets[0].save(db)
+
+        row = {
+            "email": "employee-1@example.com",
+            "id": "123",
+            "name": "Jane Doe",
+            "address_id": "456",
+        }
+
+        query_config = BigQueryQueryConfig(employee_node)
+        delete_stmts = query_config.generate_delete(row, bigquery_client)
+
+        stmts = set(str(stmt) for stmt in delete_stmts)
+        expected_stmts = {
+            "DELETE FROM `employee` WHERE `employee`.`address_id` = %(address_id_1:STRING)s AND `employee`.`email` = %(email_1:STRING)s AND `created` > CURRENT_TIMESTAMP - INTERVAL 1000 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 500 DAY",
+            "DELETE FROM `employee` WHERE `employee`.`address_id` = %(address_id_1:STRING)s AND `employee`.`email` = %(email_1:STRING)s AND `created` > CURRENT_TIMESTAMP - INTERVAL 500 DAY AND `created` <= CURRENT_TIMESTAMP",
+        }
+        assert stmts == expected_stmts
+
+    def test_generate_update_with_namespace_and_partitions(
+        self,
+        db,
+        partitioned_customer_node,
+        erasure_policy,
+        privacy_request,
+        bigquery_client,
+    ):
+        """Test that update statements correctly combine namespace and partition information"""
+        namespace_meta = BigQueryNamespaceMeta(
+            project_id="silken-precinct-284918", dataset_id="fidesopstest"
+        )
+
+        erasure_policy.rules[0].targets[0].data_category = "user"
+        erasure_policy.rules[0].targets[0].save(db)
+
+        row = {
+            "email": "customer-1@example.com",
+            "id": "123",
+            "name": "John Doe",
+        }
+
+        query_config = BigQueryQueryConfig(partitioned_customer_node, namespace_meta)
+        update_stmts = query_config.generate_update(
+            row, erasure_policy, privacy_request, bigquery_client
+        )
+
+        stmts = set(str(stmt) for stmt in update_stmts)
+        expected_stmts = {
+            "UPDATE `silken-precinct-284918.fidesopstest.customer` SET `id`=%(id:INT64)s, `name`=%(name:STRING)s WHERE `silken-precinct-284918.fidesopstest.customer`.`email` = %(email_1:STRING)s AND `created` > CURRENT_TIMESTAMP - INTERVAL 1000 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 500 DAY",
+            "UPDATE `silken-precinct-284918.fidesopstest.customer` SET `id`=%(id:INT64)s, `name`=%(name:STRING)s WHERE `silken-precinct-284918.fidesopstest.customer`.`email` = %(email_1:STRING)s AND `created` > CURRENT_TIMESTAMP - INTERVAL 500 DAY AND `created` <= CURRENT_TIMESTAMP",
+        }
+        assert stmts == expected_stmts

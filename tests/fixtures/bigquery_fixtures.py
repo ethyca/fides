@@ -6,6 +6,7 @@ from typing import Dict, Generator, List
 from uuid import uuid4
 
 import pytest
+from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.models.connectionconfig import (
@@ -236,10 +237,10 @@ def bigquery_enterprise_test_dataset_config_with_partitioning_meta(
     )
     stackoverflow_posts_partitioned_collection["fides_meta"] = {
         "partitioning": {
-            "where_clauses": [
-                "`creation_date` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `creation_date` <= CURRENT_TIMESTAMP()",
-                "`creation_date` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2000 DAY) AND `creation_date` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)",
-            ]
+            "field": "creation_date",
+            "start": "NOW() - 2000 DAYS",
+            "end": "NOW()",
+            "interval": "1000 DAYS",
         }
     }
     bigquery_enterprise_dataset["collections"].append(
@@ -320,10 +321,10 @@ def bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta(
     bigquery_dataset["collections"].remove(customer_collection)
     customer_collection["fides_meta"] = {
         "partitioning": {
-            "where_clauses": [
-                "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `created` <= CURRENT_TIMESTAMP()",
-                "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2000 DAY) AND `created` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)",
-            ]
+            "field": "created",
+            "start": "NOW() - 1000 DAYS",
+            "end": "NOW()",
+            "interval": "500 DAYS",
         }
     }
     bigquery_dataset["collections"].append(customer_collection)
@@ -474,8 +475,8 @@ def bigquery_resources_with_namespace_meta(
         connection.execute(stmt)
 
         stmt = f"""
-            insert into fidesopstest.customer (id, email, name, address_id, custom_id, extra_address_data, tags, purchase_history)
-            values ({customer_id}, '{customer_email}', '{customer_name}', {address_id}, 'custom_{customer_id}', STRUCT('{city}' as city, '111' as house, {customer_id} as id, '{state}' as state, 'Test Street' as street, {address_id} as address_id), ['VIP', 'Rewards', 'Premium'], [STRUCT('ITEM-1' as item_id, 29.99 as price, '2023-01-15' as purchase_date, ['electronics', 'gadgets'] as item_tags), STRUCT('ITEM-2' as item_id, 49.99 as price, '2023-02-20' as purchase_date, ['clothing', 'accessories'] as item_tags)]);
+            insert into fidesopstest.customer (id, email, name, address_id, custom_id, extra_address_data, tags, purchase_history, created)
+            values ({customer_id}, '{customer_email}', '{customer_name}', {address_id}, 'custom_{customer_id}', STRUCT('{city}' as city, '111' as house, {customer_id} as id, '{state}' as state, 'Test Street' as street, {address_id} as address_id), ['VIP', 'Rewards', 'Premium'], [STRUCT('ITEM-1' as item_id, 29.99 as price, '2023-01-15' as purchase_date, ['electronics', 'gadgets'] as item_tags), STRUCT('ITEM-2' as item_id, 49.99 as price, '2023-02-20' as purchase_date, ['clothing', 'accessories'] as item_tags)], CURRENT_TIMESTAMP);
         """
 
         connection.execute(stmt)
@@ -749,29 +750,25 @@ def bigquery_test_engine(bigquery_keyfile_creds) -> Generator:
 
 
 def seed_bigquery_enterprise_integration_db(
-    bigquery_enterprise_test_dataset_config,
+    bigquery_connection_config,
 ) -> None:
     """
     Currently unused.
     This helper function has already been run once, and data has been populated in the test BigQuery enterprise dataset.
     We may need this later in case tables are accidentally removed.
     """
-    bigquery_connection_config = (
-        bigquery_enterprise_test_dataset_config.connection_config
-    )
     connector = BigQueryConnector(bigquery_connection_config)
     bigquery_client = connector.client()
     with bigquery_client.connect() as connection:
 
-        stmt = f"CREATE TABLE enterprise_dsr_testing.stackoverflow_posts_partitioned partition by date(creation_date) as select * from enterprise_dsr_testing.stackoverflow_posts;"
+        stmt = "CREATE TABLE enterprise_dsr_testing.stackoverflow_posts_partitioned partition by date(creation_date) as select * from enterprise_dsr_testing.stackoverflow_posts;"
         connection.execute(stmt)
 
-        stmt = f"ALTER TABLE enterprise_dsr_testing.users ADD COLUMN IF NOT EXISTS account_internal ARRAY<STRUCT<account_type STRING, score FLOAT64, expiry_date STRING, tags ARRAY<STRING>>;"
+        stmt = "ALTER TABLE enterprise_dsr_testing.users ADD COLUMN IF NOT EXISTS account_internal ARRAY<STRUCT<account_type STRING, score FLOAT64, expiry_date STRING, tags ARRAY<STRING>>;"
         connection.execute(stmt)
 
-    print(
-        f"Created table enterprise_dsr_testing.stackoverflow_posts_partitioned, "
-        f"partitioned on column creation_date."
+    logger.info(
+        "Created table enterprise_dsr_testing.stackoverflow_posts_partitioned, partitioned on column creation_date."
     )
 
 
@@ -781,6 +778,7 @@ def seed_bigquery_integration_db(bigquery_integration_engine) -> None:
     This helper function has already been run once, and data has been populated in the test BigQuery dataset.
     We may need this later for integration erasure tests, or in case tables are accidentally removed.
     """
+    logger.info("Refreshing BigQuery integration test data")
     statements = [
         """
         DROP TABLE IF EXISTS fidesopstest.report;
@@ -968,12 +966,12 @@ def seed_bigquery_integration_db(bigquery_integration_engine) -> None:
         """,
         """
         INSERT INTO fidesopstest.customer VALUES
-        (1, 'customer-1@example.com', 'John Customer', '2020-04-01 11:47:42', 1, 'custom_id_1', STRUCT('Exampletown' as city, '123' as house, 1 as id, 'NY' as state, 'Example Street' as street, 1 as address_id),
+        (1, 'customer-1@example.com', 'John Customer', TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 30 DAY), 1, 'custom_id_1', STRUCT('Exampletown' as city, '123' as house, 1 as id, 'NY' as state, 'Example Street' as street, 1 as address_id),
          ['VIP', 'Rewards', 'Premium'],
          [STRUCT('ITEM-1' as item_id, 29.99 as price, '2023-01-15' as purchase_date, ['electronics', 'gadgets'] as item_tags),
           STRUCT('ITEM-2' as item_id, 49.99 as price, '2023-02-20' as purchase_date, ['clothing', 'accessories'] as item_tags)]
         ),
-        (2, 'customer-2@example.com', 'Jill Customer', '2020-04-01 11:47:42', 2, 'custom_id_2', STRUCT('Exampletown' as city, '4' as house, 2 as id, 'NY' as state, 'Example Lane' as street, 2 as address_id),
+        (2, 'customer-2@example.com', 'Jill Customer', TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 60 DAY), 2, 'custom_id_2', STRUCT('Exampletown' as city, '4' as house, 2 as id, 'NY' as state, 'Example Lane' as street, 2 as address_id),
          ['Standard', 'New'],
          [STRUCT('ITEM-3' as item_id, 19.99 as price, '2023-03-10' as purchase_date, ['books', 'education'] as item_tags)]
         );
