@@ -10,7 +10,7 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.privacy_request import ExecutionLog
-from fides.api.models.worker_task import TaskExecutionLogStatus
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.connection_configuration import EmailSchema
 from fides.api.schemas.policy import ActionType
 from fides.api.service.connectors.base_erasure_email_connector import (
@@ -123,7 +123,7 @@ class GenericErasureEmailConnector(BaseErasureEmailConnector):
                         "collection_name": self.configuration.name_or_key,
                         "privacy_request_id": privacy_request.id,
                         "action_type": ActionType.erasure,
-                        "status": TaskExecutionLogStatus.complete,
+                        "status": ExecutionLogStatus.complete,
                         "message": f"Erasure email instructions dispatched for '{self.configuration.name_or_key}'",
                     },
                 )

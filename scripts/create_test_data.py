@@ -20,7 +20,7 @@ from fides.api.models.fides_user import FidesUser
 from fides.api.models.policy import Policy, Rule, RuleTarget
 from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest
 from fides.api.models.storage import StorageConfig
-from fides.api.models.worker_task import TaskExecutionLogStatus
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity
@@ -223,13 +223,13 @@ def create_test_data(db: orm.Session) -> FidesUser:
                 ActionType.erasure.value,
             ]:
                 for exl_status in [
-                    TaskExecutionLogStatus.in_processing,
-                    TaskExecutionLogStatus.pending,
-                    TaskExecutionLogStatus.complete,
-                    TaskExecutionLogStatus.error,
-                    TaskExecutionLogStatus.awaiting_processing,
-                    TaskExecutionLogStatus.retrying,
-                    TaskExecutionLogStatus.skipped,
+                    ExecutionLogStatus.in_processing,
+                    ExecutionLogStatus.pending,
+                    ExecutionLogStatus.complete,
+                    ExecutionLogStatus.error,
+                    ExecutionLogStatus.awaiting_processing,
+                    ExecutionLogStatus.retrying,
+                    ExecutionLogStatus.skipped,
                 ]:
                     ExecutionLog.create(
                         db=db,

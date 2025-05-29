@@ -20,7 +20,7 @@ from fides.api.models.privacy_request import (
     RequestTask,
 )
 from fides.api.models.property import Property
-from fides.api.models.worker_task import TaskExecutionLogStatus
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.messaging.messaging import MessagingActionType
 from fides.api.schemas.policy import ActionType, CurrentStep
@@ -651,7 +651,7 @@ def _requeue_privacy_request(
             )
             resume_step = (
                 CurrentStep.erasure
-                if terminator_access_task.status == TaskExecutionLogStatus.complete
+                if terminator_access_task.status == ExecutionLogStatus.complete
                 else CurrentStep.access
             )
         elif privacy_request.access_tasks.count():

@@ -17,7 +17,7 @@ from fides.api.models.privacy_request import (
     PrivacyRequest,
     RequestTask,
 )
-from fides.api.models.worker_task import TaskExecutionLogStatus
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
 from fides.api.schemas.policy import ActionType
@@ -236,7 +236,7 @@ def poll_for_exited_privacy_request_tasks(self: DatabaseTask) -> Set[str]:
             all_exited = all(
                 status in EXITED_EXECUTION_LOG_STATUSES for status in statuses
             )
-            if all_exited and TaskExecutionLogStatus.error in statuses:
+            if all_exited and ExecutionLogStatus.error in statuses:
                 logger.info(
                     f"Marking {task_type.value} step of {privacy_request.id} as error"
                 )
@@ -497,8 +497,8 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                         .filter(
                             RequestTask.status.in_(
                                 [
-                                    TaskExecutionLogStatus.in_processing,
-                                    TaskExecutionLogStatus.pending,
+                                    ExecutionLogStatus.in_processing,
+                                    ExecutionLogStatus.pending,
                                 ]
                             )
                         )

@@ -3,7 +3,7 @@ import pytest
 from fides.api.common_exceptions import TraversalError
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.privacy_request import ExecutionLog
-from fides.api.models.worker_task import TaskExecutionLogStatus
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.deprecated_graph_task import run_access_request_deprecated
 
@@ -35,7 +35,7 @@ class TestDeprecatedGraphTasks:
 
         # We expect two error logs, one per unreachable collection
         error_logs = privacy_request.execution_logs.filter(
-            ExecutionLog.status == TaskExecutionLogStatus.error
+            ExecutionLog.status == ExecutionLogStatus.error
         )
         assert error_logs.count() == 2
         error_logs = sorted(

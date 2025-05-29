@@ -8,7 +8,7 @@ from pydantic import ConfigDict, Field, field_serializer, field_validator
 from fides.api.custom_types import SafeStr
 from fides.api.graph.config import CollectionAddress
 from fides.api.models.audit_log import AuditLogAction
-from fides.api.models.worker_task import TaskExecutionLogStatus
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.policy import ActionType, CurrentStep
@@ -145,11 +145,11 @@ class FieldsAffectedResponse(FidesSchema):
 class ExecutionLogStatusSerializeOverride(FidesSchema):
     """Override to serialize "paused" Execution Logs as awaiting_processing instead"""
 
-    status: TaskExecutionLogStatus
+    status: ExecutionLogStatus
     model_config = ConfigDict(from_attributes=True, use_enum_values=False)
 
     @field_serializer("status")
-    def serialize_status(self, status: TaskExecutionLogStatus) -> str:
+    def serialize_status(self, status: ExecutionLogStatus) -> str:
         """For statuses, we want to use the name instead of the value
         This is for backwards compatibility where we are repurposing the "paused" status
         to read "awaiting processing"
@@ -195,14 +195,14 @@ class ExecutionAndAuditLogResponse(FidesSchema):
     fields_affected: Optional[List[FieldsAffectedResponse]] = None
     message: Optional[str] = None
     action_type: Optional[ActionType] = None
-    status: Optional[Union[TaskExecutionLogStatus, AuditLogAction, str]] = None
+    status: Optional[Union[ExecutionLogStatus, AuditLogAction, str]] = None
     updated_at: Optional[datetime] = None
     user_id: Optional[str] = None
     model_config = ConfigDict(populate_by_name=True)
 
     @field_serializer("status")
     def serialize_status(
-        self, status: Optional[Union[TaskExecutionLogStatus, AuditLogAction, str]]
+        self, status: Optional[Union[ExecutionLogStatus, AuditLogAction, str]]
     ) -> Optional[str]:
         """For statuses, we want to use the name instead of the value
         This is for backwards compatibility where we are repurposing the "paused" status
@@ -211,7 +211,7 @@ class ExecutionAndAuditLogResponse(FidesSchema):
         Generally, status will be a string here because we had to convert both ExecutionLogStatuses
         and AuditLogAction statuses to strings so we could union both resources into the same query
         """
-        if isinstance(status, (AuditLogAction, TaskExecutionLogStatus)):
+        if isinstance(status, (AuditLogAction, ExecutionLogStatus)):
             return status.name if status else None
 
         return "awaiting_processing" if status == "paused" else status

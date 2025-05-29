@@ -14,7 +14,7 @@ from fides.api.models.policy import Policy
 from fides.api.models.pre_approval_webhook import PreApprovalWebhook
 from fides.api.models.privacy_request import ExecutionLog
 from fides.api.models.property import Property
-from fides.api.models.worker_task import TaskExecutionLogStatus
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.oauth.roles import APPROVER
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import (
@@ -135,7 +135,7 @@ class TestPrivacyRequestService:
         privacy_request_id = privacy_request.id
 
         error_logs = privacy_request.execution_logs.filter(
-            ExecutionLog.status == TaskExecutionLogStatus.error
+            ExecutionLog.status == ExecutionLogStatus.error
         )
         assert error_logs.count() > 0
 
@@ -173,7 +173,7 @@ class TestPrivacyRequestService:
         # verify that the error logs from the original attempt
         # were deleted as part of the re-submission
         error_logs = privacy_request.execution_logs.filter(
-            ExecutionLog.status == TaskExecutionLogStatus.error
+            ExecutionLog.status == ExecutionLogStatus.error
         )
         assert error_logs.count() == 0
 
@@ -293,7 +293,7 @@ class TestPrivacyRequestService:
         db.refresh(privacy_request)
 
         error_logs = privacy_request.execution_logs.filter(
-            ExecutionLog.status == TaskExecutionLogStatus.error
+            ExecutionLog.status == ExecutionLogStatus.error
         )
         assert error_logs.count() > 0
 
@@ -314,7 +314,7 @@ class TestPrivacyRequestService:
         # verify that the error logs from the original attempt
         # were deleted as part of the re-submission
         error_logs = privacy_request.execution_logs.filter(
-            ExecutionLog.status == TaskExecutionLogStatus.error
+            ExecutionLog.status == ExecutionLogStatus.error
         )
         assert error_logs.count() == 0
 
@@ -386,7 +386,7 @@ class TestPrivacyRequestService:
         db.refresh(privacy_request)
 
         error_logs = privacy_request.execution_logs.filter(
-            ExecutionLog.status == TaskExecutionLogStatus.error
+            ExecutionLog.status == ExecutionLogStatus.error
         )
         assert error_logs.count() > 0
 
@@ -422,6 +422,6 @@ class TestPrivacyRequestService:
         # verify that the error logs from the original attempt
         # were deleted as part of the re-submission
         error_logs = privacy_request.execution_logs.filter(
-            ExecutionLog.status == TaskExecutionLogStatus.error
+            ExecutionLog.status == ExecutionLogStatus.error
         )
         assert error_logs.count() == 0

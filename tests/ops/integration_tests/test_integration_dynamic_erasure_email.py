@@ -6,7 +6,7 @@ import pytest as pytest
 from fides.api.email_templates import get_email_template
 from fides.api.models.connectionconfig import AccessLevel
 from fides.api.models.privacy_request import ExecutionLog
-from fides.api.models.worker_task import TaskExecutionLogStatus
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.messaging.messaging import (
     EmailForActionType,
     MessagingActionType,
@@ -572,7 +572,7 @@ async def test_erasure_email_invalid_dataset(
 
     # and that an error ExecutionLog was created
     error_log = pr.execution_logs.filter(
-        ExecutionLog.status == TaskExecutionLogStatus.error
+        ExecutionLog.status == ExecutionLogStatus.error
     )
     assert error_log.count() == 1
     assert (
@@ -670,7 +670,7 @@ async def test_erasure_email_invalid_field(
 
     # and that an error ExecutionLog was created
     error_log = pr.execution_logs.filter(
-        ExecutionLog.status == TaskExecutionLogStatus.error
+        ExecutionLog.status == ExecutionLogStatus.error
     )
     assert error_log.count() == 1
     assert (
@@ -768,7 +768,7 @@ async def test_erasure_email_mismatched_datasets(
 
     # and that an error ExecutionLog was created
     error_log = pr.execution_logs.filter(
-        ExecutionLog.status == TaskExecutionLogStatus.error
+        ExecutionLog.status == ExecutionLogStatus.error
     )
     assert error_log.count() == 1
     assert (
@@ -866,7 +866,7 @@ async def test_erasure_email_mismatched_collections(
 
     # and that an error ExecutionLog was created
     error_log = pr.execution_logs.filter(
-        ExecutionLog.status == TaskExecutionLogStatus.error
+        ExecutionLog.status == ExecutionLogStatus.error
     )
     assert error_log.count() == 1
     assert (
@@ -949,7 +949,7 @@ async def test_erasure_email_no_email_address(
 
     # and that an error ExecutionLog was created
     error_log = pr.execution_logs.filter(
-        ExecutionLog.status == TaskExecutionLogStatus.error
+        ExecutionLog.status == ExecutionLogStatus.error
     )
     assert error_log.count() == 1
     assert (
@@ -1032,7 +1032,7 @@ async def test_erasure_email_multiple_email_addresses(
 
     # and that an error ExecutionLog was created
     error_log = pr.execution_logs.filter(
-        ExecutionLog.status == TaskExecutionLogStatus.error
+        ExecutionLog.status == ExecutionLogStatus.error
     )
     assert error_log.count() == 1
     assert (

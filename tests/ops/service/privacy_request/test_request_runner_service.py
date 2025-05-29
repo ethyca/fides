@@ -27,7 +27,7 @@ from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.policy import PolicyPostWebhook, PolicyPreWebhook
 from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest
-from fides.api.models.worker_task import TaskExecutionLogStatus
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.masking.masking_configuration import MaskingConfiguration
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
 from fides.api.schemas.messaging.messaging import (
@@ -1530,7 +1530,7 @@ class TestConsentEmailStep:
         assert execution_logs.count() == 1
 
         assert [log.status for log in execution_logs] == [
-            TaskExecutionLogStatus.skipped,
+            ExecutionLogStatus.skipped,
         ]
 
     @pytest.mark.usefixtures("sovrn_email_connection_config")
@@ -1803,15 +1803,15 @@ class TestAsyncCallbacks:
             assert pr.status == PrivacyRequestStatus.in_processing
 
             request_tasks = pr.access_tasks
-            assert request_tasks[0].status == TaskExecutionLogStatus.complete
+            assert request_tasks[0].status == ExecutionLogStatus.complete
 
             # SaaS Request was marked as needing async results, so the Request
             # Task was put in a paused state
-            assert request_tasks[1].status == TaskExecutionLogStatus.awaiting_processing
+            assert request_tasks[1].status == ExecutionLogStatus.awaiting_processing
             assert request_tasks[1].collection_address == "saas_async_config:user"
 
             # Terminator task is downstream so it is still in a pending state
-            assert request_tasks[2].status == TaskExecutionLogStatus.pending
+            assert request_tasks[2].status == ExecutionLogStatus.pending
 
             jwe_token = mock_send.call_args[0][0].headers["reply-to-token"]
             auth_header = {"Authorization": "Bearer " + jwe_token}
@@ -1870,9 +1870,7 @@ class TestAsyncCallbacks:
 
         if dsr_version == "use_dsr_3_0":
             # Access async task fired first
-            assert (
-                pr.access_tasks[1].status == TaskExecutionLogStatus.awaiting_processing
-            )
+            assert pr.access_tasks[1].status == ExecutionLogStatus.awaiting_processing
             jwe_token = mock_send.call_args[0][0].headers["reply-to-token"]
             auth_header = {"Authorization": "Bearer " + jwe_token}
             # Post to callback URL to supply access results async
@@ -1885,9 +1883,7 @@ class TestAsyncCallbacks:
             assert response.status_code == 200
 
             # Erasure task is also expected async results and is now paused
-            assert (
-                pr.erasure_tasks[1].status == TaskExecutionLogStatus.awaiting_processing
-            )
+            assert pr.erasure_tasks[1].status == ExecutionLogStatus.awaiting_processing
             jwe_token = mock_send.call_args[0][0].headers["reply-to-token"]
             auth_header = {"Authorization": "Bearer " + jwe_token}
             # Post to callback URL to supply erasure results async
@@ -1903,7 +1899,7 @@ class TestAsyncCallbacks:
             assert pr.status == PrivacyRequestStatus.complete
 
             assert pr.erasure_tasks[1].rows_masked == 2
-            assert pr.erasure_tasks[1].status == TaskExecutionLogStatus.complete
+            assert pr.erasure_tasks[1].status == ExecutionLogStatus.complete
 
         else:
             # Async Erasure Requests not supported for DSR 2.0 - the given
@@ -2034,14 +2030,14 @@ class TestSkipCollectionsWithOptionalIdentities:
         run_privacy_request_task.delay(privacy_request.id).get(timeout=300)
 
         skipped_logs = privacy_request.execution_logs.filter_by(
-            status=TaskExecutionLogStatus.skipped
+            status=ExecutionLogStatus.skipped
         ).all()
         assert len(skipped_logs) == 1, "No skipped execution logs were created"
 
         # Verify the skipped log for dataset traversal
         skipped_log = skipped_logs[0]
         assert skipped_log.privacy_request_id == privacy_request.id
-        assert skipped_log.status == TaskExecutionLogStatus.skipped
+        assert skipped_log.status == ExecutionLogStatus.skipped
         assert skipped_log.dataset_name == "Dataset traversal"
         assert skipped_log.collection_name == "optional_identities.customer"
         assert skipped_log.message == (

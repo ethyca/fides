@@ -7,7 +7,7 @@ from httpx import HTTPStatusError
 from fides.api.cryptography.cryptographic_util import str_to_b64_str
 from fides.api.db.seed import create_or_update_parent_user
 from fides.api.models.privacy_request import PrivacyRequest
-from fides.api.models.worker_task import TaskExecutionLogStatus
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.service.privacy_request.request_service import (
@@ -140,12 +140,12 @@ class TestPollForExitedPrivacyRequests:
     ):
         # Put all tasks in an exited state - completed, errored, or skipped
         root_task = privacy_request.get_root_task_by_action(ActionType.access)
-        assert root_task.status == TaskExecutionLogStatus.complete
-        request_task.update_status(db, TaskExecutionLogStatus.skipped)
+        assert root_task.status == ExecutionLogStatus.complete
+        request_task.update_status(db, ExecutionLogStatus.skipped)
         terminator_task = privacy_request.get_terminate_task_by_action(
             ActionType.access
         )
-        terminator_task.update_status(db, TaskExecutionLogStatus.error)
+        terminator_task.update_status(db, ExecutionLogStatus.error)
 
         errored_prs = poll_for_exited_privacy_request_tasks.delay().get()
         assert errored_prs == {privacy_request.id}
@@ -168,12 +168,12 @@ class TestPollForExitedPrivacyRequests:
 
         # Put all tasks in an exited state - completed, errored, or skipped
         root_task = privacy_request.get_root_task_by_action(ActionType.access)
-        assert root_task.status == TaskExecutionLogStatus.complete
-        request_task.update_status(db, TaskExecutionLogStatus.error)
+        assert root_task.status == ExecutionLogStatus.complete
+        request_task.update_status(db, ExecutionLogStatus.error)
         terminator_task = privacy_request.get_terminate_task_by_action(
             ActionType.access
         )
-        terminator_task.update_status(db, TaskExecutionLogStatus.error)
+        terminator_task.update_status(db, ExecutionLogStatus.error)
 
         errored_prs = poll_for_exited_privacy_request_tasks.delay().get()
         assert errored_prs == {privacy_request.id}
@@ -187,12 +187,12 @@ class TestPollForExitedPrivacyRequests:
         # Put all tasks in an exited state - but none are errored.
         # This task does not flip the status of the overall privacy request in that case
         root_task = privacy_request.get_root_task_by_action(ActionType.access)
-        assert root_task.status == TaskExecutionLogStatus.complete
-        request_task.update_status(db, TaskExecutionLogStatus.skipped)
+        assert root_task.status == ExecutionLogStatus.complete
+        request_task.update_status(db, ExecutionLogStatus.skipped)
         terminator_task = privacy_request.get_terminate_task_by_action(
             ActionType.access
         )
-        terminator_task.update_status(db, TaskExecutionLogStatus.complete)
+        terminator_task.update_status(db, ExecutionLogStatus.complete)
 
         errored_prs = poll_for_exited_privacy_request_tasks.delay().get()
         assert errored_prs == set()
@@ -209,16 +209,16 @@ class TestPollForExitedPrivacyRequests:
         """
         # Erasure tasks still pending - these were created at the same time as the
         # access tasks but can't run until the access section is finished
-        assert erasure_request_task.status == TaskExecutionLogStatus.pending
+        assert erasure_request_task.status == ExecutionLogStatus.pending
 
         # Access tasks have errored
         root_task = privacy_request.get_root_task_by_action(ActionType.access)
-        assert root_task.status == TaskExecutionLogStatus.complete
-        request_task.update_status(db, TaskExecutionLogStatus.error)
+        assert root_task.status == ExecutionLogStatus.complete
+        request_task.update_status(db, ExecutionLogStatus.error)
         terminator_task = privacy_request.get_terminate_task_by_action(
             ActionType.access
         )
-        terminator_task.update_status(db, TaskExecutionLogStatus.error)
+        terminator_task.update_status(db, ExecutionLogStatus.error)
 
         errored_prs = poll_for_exited_privacy_request_tasks.delay().get()
         assert errored_prs == {privacy_request.id}
@@ -234,9 +234,9 @@ class TestPollForExitedPrivacyRequests:
         have completed, but erasure tasks have an error, the entire privacy request will be marked as error
         """
         for rq in privacy_request.request_tasks:
-            rq.update_status(db, TaskExecutionLogStatus.complete)
+            rq.update_status(db, ExecutionLogStatus.complete)
 
-        erasure_request_task.update_status(db, TaskExecutionLogStatus.error)
+        erasure_request_task.update_status(db, ExecutionLogStatus.error)
 
         errored_prs = poll_for_exited_privacy_request_tasks.delay().get()
         assert errored_prs == {privacy_request.id}

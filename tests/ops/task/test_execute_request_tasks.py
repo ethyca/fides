@@ -21,7 +21,7 @@ from fides.api.graph.graph import DatasetGraph, Edge
 from fides.api.graph.traversal import Traversal
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.privacy_request import RequestTask
-from fides.api.models.worker_task import TaskExecutionLogStatus
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.service.connectors import PostgreSQLConnector
@@ -114,7 +114,7 @@ class TestRunPrerequisiteTaskChecks:
         terminator_task = privacy_request.access_tasks.filter(
             RequestTask.collection_address == TERMINATOR_ADDRESS.value
         ).first()
-        request_task.update_status(db, TaskExecutionLogStatus.skipped)
+        request_task.update_status(db, ExecutionLogStatus.skipped)
 
         pr, rt, ur = run_prerequisite_task_checks(
             db, privacy_request.id, terminator_task.id
@@ -172,13 +172,13 @@ class TestCreateGraphTask:
         downstream_task = privacy_request.access_tasks.filter(
             RequestTask.collection_address == request_task.downstream_tasks[0]
         ).first()
-        assert downstream_task.status == TaskExecutionLogStatus.error
+        assert downstream_task.status == ExecutionLogStatus.error
 
         execution_log = privacy_request.execution_logs.first()
         assert execution_log.dataset_name == "postgres_example_test_dataset"
         assert execution_log.collection_name == "address"
         assert execution_log.action_type == ActionType.access
-        assert execution_log.status == TaskExecutionLogStatus.error
+        assert execution_log.status == ExecutionLogStatus.error
 
 
 class TestExecutionNode:
@@ -434,26 +434,26 @@ class TestExecutionNode:
 
 class TestCanRunTaskBody:
     def test_task_is_pending(self, request_task):
-        assert request_task.status == TaskExecutionLogStatus.pending
+        assert request_task.status == ExecutionLogStatus.pending
         assert can_run_task_body(request_task)
 
     def test_task_is_skipped(self, db, request_task):
-        request_task.update_status(db, TaskExecutionLogStatus.skipped)
+        request_task.update_status(db, ExecutionLogStatus.skipped)
         assert not can_run_task_body(request_task)
 
     def test_task_is_error(self, db, request_task):
-        request_task.update_status(db, TaskExecutionLogStatus.error)
+        request_task.update_status(db, ExecutionLogStatus.error)
         # Error states need to be set to pending when reprocessing
         assert not can_run_task_body(request_task)
 
     def test_task_is_complete(self, db, request_task):
-        request_task.update_status(db, TaskExecutionLogStatus.complete)
+        request_task.update_status(db, ExecutionLogStatus.complete)
         assert not can_run_task_body(request_task)
 
     @pytest.mark.usefixtures("request_task")
     def test_task_is_root(self, privacy_request):
         root_task = privacy_request.get_root_task_by_action(ActionType.access)
-        assert root_task.status == TaskExecutionLogStatus.complete
+        assert root_task.status == ExecutionLogStatus.complete
         assert not can_run_task_body(root_task)
 
     @pytest.mark.usefixtures("request_task")
@@ -461,7 +461,7 @@ class TestCanRunTaskBody:
         terminator_task = privacy_request.get_terminate_task_by_action(
             ActionType.access
         )
-        assert terminator_task.status == TaskExecutionLogStatus.pending
+        assert terminator_task.status == ExecutionLogStatus.pending
         assert not can_run_task_body(terminator_task)
 
 
@@ -473,8 +473,8 @@ class TestMarkCurrentAndDownstreamNodesAsFailed:
         terminator_task = privacy_request.get_terminate_task_by_action(
             ActionType.access
         )
-        assert request_task.status == TaskExecutionLogStatus.pending
-        assert terminator_task.status == TaskExecutionLogStatus.pending
+        assert request_task.status == ExecutionLogStatus.pending
+        assert terminator_task.status == ExecutionLogStatus.pending
 
         mark_current_and_downstream_nodes_as_failed(request_task, db)
 
@@ -484,12 +484,12 @@ class TestMarkCurrentAndDownstreamNodesAsFailed:
         db.refresh(erasure_request_task)
 
         # Upstream task unaffected
-        assert root_task.status == TaskExecutionLogStatus.complete
+        assert root_task.status == ExecutionLogStatus.complete
         # Both current task and terminator task marked as error
-        assert request_task.status == TaskExecutionLogStatus.error
-        assert terminator_task.status == TaskExecutionLogStatus.error
+        assert request_task.status == ExecutionLogStatus.error
+        assert terminator_task.status == ExecutionLogStatus.error
         # Task of a different action type unaffected
-        assert erasure_request_task.status == TaskExecutionLogStatus.pending
+        assert erasure_request_task.status == ExecutionLogStatus.pending
 
 
 class TestGetDSRVersion:
