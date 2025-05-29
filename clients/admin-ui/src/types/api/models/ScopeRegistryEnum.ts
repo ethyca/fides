@@ -21,6 +21,8 @@ export enum ScopeRegistryEnum {
   CLIENT_DELETE = "client:delete",
   CLIENT_READ = "client:read",
   CLIENT_UPDATE = "client:update",
+  COMMENT_CREATE = "comment:create",
+  COMMENT_READ = "comment:read",
   CONFIG_READ = "config:read",
   CONFIG_UPDATE = "config:update",
   CONNECTION_AUTHORIZE = "connection:authorize",

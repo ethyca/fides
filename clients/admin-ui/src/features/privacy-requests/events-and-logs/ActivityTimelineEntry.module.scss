@@ -12,12 +12,40 @@ $horizontal-padding: 20px;
   }
 }
 
-.header {
-  display: flex;
-  gap: 8px;
-  cursor: pointer;
+.itemButton {
+  display: block;
   width: 100%;
-  padding: calc(12px - $border-width) $horizontal-padding;
+  border: $border-width solid transparent;
+  border-radius: 6px;
+  transition: border-color 0.2s ease-in-out;
+  margin-bottom: 20px;
+  padding: 12px $horizontal-padding;
+  text-align: left;
+  background: transparent;
+
+  &--error,
+  &--comment,
+  &:hover {
+    border-color: var(--fidesui-neutral-100);
+  }
+
+  &:focus-visible {
+    border-color: var(--fidesui-neutral-700);
+  }
+
+  &--error,
+  &--error:hover,
+  &--error:focus {
+    border-left: 8px solid var(--fidesui-error);
+  }
+}
+
+.header {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
 }
 
 .author {
@@ -25,6 +53,10 @@ $horizontal-padding: 20px;
 
 .title {
   font-weight: 600;
+
+  &--error {
+    color: var(--fidesui-error);
+  }
 }
 
 .timestamp {

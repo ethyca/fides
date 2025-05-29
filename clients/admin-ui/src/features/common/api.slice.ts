@@ -60,6 +60,7 @@ export const baseApi = createApi({
     "Privacy Notices",
     "Privacy Notice Translations",
     "Privacy Request Attachments",
+    "Privacy Request Comments",
     "Property",
     "Property-Specific Messaging Templates",
     "Purpose",
