@@ -23,14 +23,17 @@ const ManualOverview = () => (
   </>
 );
 
-const MANUAL_TAGS = ["DSR", "Manual Tasks"];
+const MANUAL_TAGS = ["DSR", "Manual tasks"];
 
 const MANUAL_TYPE_INFO = {
   placeholder: MANUAL_PLACEHOLDER,
   category: ConnectionCategory.OTHER,
   tags: MANUAL_TAGS,
   overview: <ManualOverview />,
-  enabledFeatures: [IntegrationFeatureEnum.TASKS],
+  enabledFeatures: [
+    IntegrationFeatureEnum.TASKS,
+    IntegrationFeatureEnum.WITHOUT_CONNECTION,
+  ],
 };
 
 export default MANUAL_TYPE_INFO;
