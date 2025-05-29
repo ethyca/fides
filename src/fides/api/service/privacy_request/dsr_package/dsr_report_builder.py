@@ -145,6 +145,28 @@ class DsrReportBuilder:
             ),
         )
 
+    def _get_unique_filename(self, directory: str, filename: str) -> str:
+        """
+        Generates a unique filename by appending a counter if the file already exists.
+
+        Args:
+            directory: The directory path
+            filename: The original filename
+
+        Returns:
+            A unique filename that won't conflict with existing files
+        """
+        base_name, extension = os.path.splitext(filename)
+        counter = 1
+        unique_filename = filename
+
+        # Check if file exists in zip
+        while f"{directory}/{unique_filename}" in self.out.namelist():
+            unique_filename = f"{base_name}_{counter}{extension}"
+            counter += 1
+
+        return unique_filename
+
     def _write_attachment_content(
         self,
         file_name: str,
@@ -165,11 +187,18 @@ class DsrReportBuilder:
         if not content:
             return
 
+        # Get a unique filename to prevent duplicates
+        unique_filename = self._get_unique_filename(directory, file_name)
+        if unique_filename != file_name:
+            logger.debug(
+                "Renamed duplicate file from {} to {}", file_name, unique_filename
+            )
+
         # Handle text-based content types
         if content_type in [AllowedFileType.txt.value, AllowedFileType.csv.value]:
             if isinstance(content, bytes):
                 content = content.decode("utf-8")
-            self._add_file(f"{directory}/{file_name}", content)
+            self._add_file(f"{directory}/{unique_filename}", content)
             return
 
         # Handle binary content types
@@ -182,10 +211,10 @@ class DsrReportBuilder:
             with BytesIO(content) as content_stream:
                 while chunk := content_stream.read(chunk_size):
                     self.out.writestr(
-                        f"{directory}/{file_name}", chunk, zipfile.ZIP_DEFLATED
+                        f"{directory}/{unique_filename}", chunk, zipfile.ZIP_DEFLATED
                     )
         else:
-            self.out.writestr(f"{directory}/{file_name}", content)
+            self.out.writestr(f"{directory}/{unique_filename}", content)
 
     def _process_attachments_in_chunks(
         self, attachments: list[dict[str, Any]], chunk_size: int = 10
@@ -297,13 +326,16 @@ class DsrReportBuilder:
                 file_name = attachment["file_name"]
                 content = attachment["content"]
                 content_type = attachment["content_type"]
+
+                # Get unique filename for the attachment
+                unique_filename = self._get_unique_filename("attachments", file_name)
                 attachment_links[file_name] = (
-                    file_name  # Use actual file name as both key and value
+                    unique_filename  # Use unique filename for the link
                 )
 
                 # Write the attachment to the top-level attachments directory
                 self._write_attachment_content(
-                    file_name, content, content_type, "attachments"
+                    unique_filename, content, content_type, "attachments"
                 )
 
         # Generate attachments index page using the attachments index template

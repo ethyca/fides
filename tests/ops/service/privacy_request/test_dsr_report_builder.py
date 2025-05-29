@@ -997,6 +997,186 @@ class TestDsrReportBuilderAttachmentHandling:
         with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
             assert "test.txt" not in zip_file.namelist()
 
+    def test_handle_duplicate_filenames(self, privacy_request: PrivacyRequest):
+        """Test handling of duplicate filenames in the same directory"""
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+
+        # Create multiple files with the same name
+        attachments = [
+            {
+                "file_name": "test.txt",
+                "content": "content1",
+                "content_type": "text/plain",
+            },
+            {
+                "file_name": "test.txt",
+                "content": "content2",
+                "content_type": "text/plain",
+            },
+            {
+                "file_name": "test.txt",
+                "content": "content3",
+                "content_type": "text/plain",
+            },
+        ]
+
+        # Add all attachments to the same directory
+        for attachment in attachments:
+            builder._write_attachment_content(
+                attachment["file_name"],
+                attachment["content"],
+                attachment["content_type"],
+                "attachments",
+            )
+        builder.out.close()
+
+        with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
+            # Verify all files exist with unique names
+            assert "attachments/test.txt" in zip_file.namelist()
+            assert "attachments/test_1.txt" in zip_file.namelist()
+            assert "attachments/test_2.txt" in zip_file.namelist()
+
+            # Verify content is preserved
+            assert zip_file.read("attachments/test.txt").decode("utf-8") == "content1"
+            assert zip_file.read("attachments/test_1.txt").decode("utf-8") == "content2"
+            assert zip_file.read("attachments/test_2.txt").decode("utf-8") == "content3"
+
+    def test_handle_duplicate_filenames_different_directories(
+        self, privacy_request: PrivacyRequest
+    ):
+        """Test handling of duplicate filenames in different directories"""
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+
+        # Create files with the same name in different directories
+        attachments = [
+            {
+                "file_name": "test.txt",
+                "content": "content1",
+                "content_type": "text/plain",
+            },
+            {
+                "file_name": "test.txt",
+                "content": "content2",
+                "content_type": "text/plain",
+            },
+        ]
+
+        # Add attachments to different directories
+        builder._write_attachment_content(
+            attachments[0]["file_name"],
+            attachments[0]["content"],
+            attachments[0]["content_type"],
+            "attachments",
+        )
+        builder._write_attachment_content(
+            attachments[1]["file_name"],
+            attachments[1]["content"],
+            attachments[1]["content_type"],
+            "data/dataset1/collection1",
+        )
+        builder.out.close()
+
+        with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
+            # Verify files exist in their respective directories
+            assert "attachments/test.txt" in zip_file.namelist()
+            assert "data/dataset1/collection1/test.txt" in zip_file.namelist()
+
+            # Verify content is preserved
+            assert zip_file.read("attachments/test.txt").decode("utf-8") == "content1"
+            assert (
+                zip_file.read("data/dataset1/collection1/test.txt").decode("utf-8")
+                == "content2"
+            )
+
+    def test_handle_duplicate_filenames_with_extensions(
+        self, privacy_request: PrivacyRequest
+    ):
+        """Test handling of duplicate filenames with different extensions"""
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+
+        # Create files with the same base name but different extensions
+        attachments = [
+            {
+                "file_name": "test.txt",
+                "content": "text content",
+                "content_type": "text/plain",
+            },
+            {
+                "file_name": "test.pdf",
+                "content": b"pdf content",
+                "content_type": "application/pdf",
+            },
+            {
+                "file_name": "test.txt",
+                "content": "another text content",
+                "content_type": "text/plain",
+            },
+        ]
+
+        # Add all attachments to the same directory
+        for attachment in attachments:
+            builder._write_attachment_content(
+                attachment["file_name"],
+                attachment["content"],
+                attachment["content_type"],
+                "attachments",
+            )
+        builder.out.close()
+
+        with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
+            # Verify all files exist with correct names
+            assert "attachments/test.txt" in zip_file.namelist()
+            assert "attachments/test.pdf" in zip_file.namelist()
+            assert "attachments/test_1.txt" in zip_file.namelist()
+
+            # Verify content is preserved
+            assert (
+                zip_file.read("attachments/test.txt").decode("utf-8") == "text content"
+            )
+            assert zip_file.read("attachments/test.pdf") == b"pdf content"
+            assert (
+                zip_file.read("attachments/test_1.txt").decode("utf-8")
+                == "another text content"
+            )
+
+    def test_handle_duplicate_filenames_in_attachments_index(
+        self, privacy_request: PrivacyRequest
+    ):
+        """Test handling of duplicate filenames in the attachments index page"""
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+
+        # Create multiple files with the same name
+        attachments = [
+            {
+                "file_name": "test.txt",
+                "content": "content1",
+                "content_type": "text/plain",
+            },
+            {
+                "file_name": "test.txt",
+                "content": "content2",
+                "content_type": "text/plain",
+            },
+        ]
+
+        # Add attachments using _add_attachments to test index page generation
+        builder._add_attachments(attachments)
+        builder.out.close()
+
+        with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
+            # Verify files exist with unique names
+            assert "attachments/test.txt" in zip_file.namelist()
+            assert "attachments/test_1.txt" in zip_file.namelist()
+
+            # Verify index page contains correct links
+            index_content = zip_file.read("attachments/index.html").decode("utf-8")
+            assert 'href="test.txt"' in index_content
+            assert 'href="test_1.txt"' in index_content
+
+            # Verify content is preserved
+            assert zip_file.read("attachments/test.txt").decode("utf-8") == "content1"
+            assert zip_file.read("attachments/test_1.txt").decode("utf-8") == "content2"
+
 
 class TestDsrReportBuilderDatasetHandling:
     """Tests for DSR report builder's dataset handling functions"""
