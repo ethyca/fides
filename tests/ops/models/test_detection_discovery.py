@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from typing import List
 
 import pytest
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import flag_modified
@@ -13,10 +14,12 @@ from fides.api.models.detection_discovery import (
     MonitorExecution,
     MonitorFrequency,
     MonitorTask,
+    MonitorTaskExecutionLog,
     MonitorTaskType,
     SharedMonitorConfig,
     StagedResource,
     StagedResourceAncestor,
+    TaskRunType,
     fetch_staged_resources_by_type_query,
 )
 from fides.api.models.worker_task import ExecutionLogStatus
@@ -1282,3 +1285,148 @@ class TestMonitorTask:
                 },
             )
         assert "Invalid action_type 'invalid_type'" in str(exc.value)
+
+
+class TestMonitorTaskExecutionLog:
+    """Tests for the MonitorTaskExecutionLog model"""
+
+    def test_create_monitor_task_execution_log(
+        self, db: Session, monitor_config
+    ) -> None:
+        """Test creating a monitor task execution log with valid data."""
+        # First create a monitor task that we can reference
+        task = MonitorTask.create(
+            db=db,
+            data={
+                "celery_id": "test-celery-id",
+                "action_type": MonitorTaskType.DETECTION.value,
+                "status": ExecutionLogStatus.pending.value,
+                "monitor_config_id": monitor_config.id,
+            },
+        )
+
+        # Create the execution log
+        execution_log = MonitorTaskExecutionLog.create(
+            db=db,
+            data={
+                "celery_id": "test-celery-id-2",
+                "monitor_task_id": task.id,
+                "status": ExecutionLogStatus.pending.value,
+                "message": "Test execution message",
+                "run_type": TaskRunType.MANUAL,
+            },
+        )
+
+        assert execution_log.celery_id == "test-celery-id-2"
+        assert execution_log.monitor_task_id == task.id
+        assert execution_log.status.value == ExecutionLogStatus.pending.value
+        assert execution_log.message == "Test execution message"
+        assert execution_log.run_type == TaskRunType.MANUAL
+        assert execution_log.created_at is not None
+        assert execution_log.updated_at is not None
+
+        # Clean up
+        db.delete(execution_log)
+        db.commit()
+        db.delete(task)
+        db.commit()
+
+    def test_create_monitor_task_execution_log_defaults(
+        self, db: Session, monitor_config
+    ) -> None:
+        """Test creating a monitor task execution log with minimal required fields and verify default values."""
+        # First create a monitor task that we can reference
+        task = MonitorTask.create(
+            db=db,
+            data={
+                "celery_id": "test-celery-id",
+                "action_type": MonitorTaskType.DETECTION.value,
+                "status": ExecutionLogStatus.pending.value,
+                "monitor_config_id": monitor_config.id,
+            },
+        )
+
+        # Create the execution log with minimal fields
+        execution_log = MonitorTaskExecutionLog.create(
+            db=db,
+            data={
+                "celery_id": "test-celery-id-2",
+                "monitor_task_id": task.id,
+                "status": ExecutionLogStatus.pending.value,
+            },
+        )
+
+        # Required fields should be set
+        assert execution_log.celery_id == "test-celery-id-2"
+        assert execution_log.monitor_task_id == task.id
+        assert execution_log.status.value == ExecutionLogStatus.pending.value
+
+        # Optional fields should have default values
+        assert execution_log.message is None
+        assert execution_log.run_type == TaskRunType.SYSTEM  # Default value from model
+        assert execution_log.created_at is not None
+        assert execution_log.updated_at is not None
+
+        # Clean up
+        db.delete(execution_log)
+        db.commit()
+        db.delete(task)
+        db.commit()
+
+    def test_invalid_monitor_task_id(self, db: Session) -> None:
+        """Test that creating an execution log with an invalid monitor_task_id raises an error."""
+        with pytest.raises(IntegrityError) as exc:
+            MonitorTaskExecutionLog.create(
+                db=db,
+                data={
+                    "celery_id": "test-celery-id",
+                    "monitor_task_id": "non-existent-id",
+                    "status": ExecutionLogStatus.pending.value,
+                },
+            )
+
+        assert (
+            'Key (monitor_task_id)=(non-existent-id) is not present in table "monitortask"'
+            in str(exc)
+        )
+
+    def test_duplicate_celery_id(self, db: Session, monitor_config) -> None:
+        """Test that creating execution logs with duplicate celery_ids raises an error."""
+        # First create a monitor task that we can reference
+        task = MonitorTask.create(
+            db=db,
+            data={
+                "celery_id": "test-celery-id",
+                "action_type": MonitorTaskType.DETECTION.value,
+                "status": ExecutionLogStatus.pending.value,
+                "monitor_config_id": monitor_config.id,
+            },
+        )
+
+        # Create first execution log
+        first_log = MonitorTaskExecutionLog.create(
+            db=db,
+            data={
+                "celery_id": "duplicate-celery-id",
+                "monitor_task_id": task.id,
+                "status": ExecutionLogStatus.pending.value,
+            },
+        )
+
+        # Attempt to create second execution log with same celery_id
+        with pytest.raises(IntegrityError) as exc:
+            MonitorTaskExecutionLog.create(
+                db=db,
+                data={
+                    "celery_id": "duplicate-celery-id",
+                    "monitor_task_id": task.id,
+                    "status": ExecutionLogStatus.pending.value,
+                },
+            )
+        assert "duplicate key value violates unique constraint" in str(exc)
+
+        # Clean up
+        db.delete(first_log)
+        db.commit()
+        db.delete(task)
+        db.commit()
