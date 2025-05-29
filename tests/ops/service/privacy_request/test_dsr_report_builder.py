@@ -724,6 +724,50 @@ class TestDsrReportBuilder(TestDsrReportBuilderBase):
                 privacy_request.requested_at.strftime("%m/%d/%Y %H:%M %Z"),
             )
 
+    def test_attachment_links_in_index(self, privacy_request: PrivacyRequest):
+        """Test that attachment links in the index page correctly match the files"""
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+
+        # Create multiple files with the same name
+        attachments = [
+            {
+                "file_name": "test.txt",
+                "content": "content1",
+                "content_type": "text/plain",
+            },
+            {
+                "file_name": "test.txt",
+                "content": "content2",
+                "content_type": "text/plain",
+            },
+            {
+                "file_name": "test.txt",
+                "content": "content3",
+                "content_type": "text/plain",
+            },
+        ]
+
+        # Add attachments using _add_attachments
+        builder._add_attachments(attachments)
+        builder.out.close()
+
+        with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
+            # Verify files exist with unique names
+            assert "attachments/test.txt" in zip_file.namelist()
+            assert "attachments/test_1.txt" in zip_file.namelist()
+            assert "attachments/test_2.txt" in zip_file.namelist()
+
+            # Verify index page contains correct links
+            index_content = zip_file.read("attachments/index.html").decode("utf-8")
+            assert 'href="test.txt"' in index_content
+            assert 'href="test_1.txt"' in index_content
+            assert 'href="test_2.txt"' in index_content
+
+            # Verify content is preserved
+            assert zip_file.read("attachments/test.txt").decode("utf-8") == "content1"
+            assert zip_file.read("attachments/test_1.txt").decode("utf-8") == "content2"
+            assert zip_file.read("attachments/test_2.txt").decode("utf-8") == "content3"
+
 
 class TestDsrReportBuilderAttachmentHandling:
     """Tests for DSR report builder's attachment handling functions"""

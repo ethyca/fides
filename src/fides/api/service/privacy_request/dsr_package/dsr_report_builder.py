@@ -329,9 +329,21 @@ class DsrReportBuilder:
 
                 # Get unique filename for the attachment
                 unique_filename = self._get_unique_filename("attachments", file_name)
-                attachment_links[file_name] = (
-                    unique_filename  # Use unique filename for the link
-                )
+
+                # Store both original filename and unique filename
+                if file_name not in attachment_links:
+                    attachment_links[file_name] = unique_filename
+                else:
+                    # If we already have this filename, append a counter
+                    base_name, extension = os.path.splitext(file_name)
+                    counter = 1
+                    while (
+                        f"{base_name}_{counter}{extension}" in attachment_links.values()
+                    ):
+                        counter += 1
+                    attachment_links[f"{base_name}_{counter}{extension}"] = (
+                        unique_filename
+                    )
 
                 # Write the attachment to the top-level attachments directory
                 self._write_attachment_content(
