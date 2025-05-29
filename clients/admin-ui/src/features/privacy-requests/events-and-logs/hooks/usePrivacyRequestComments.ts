@@ -1,3 +1,6 @@
+import { AntMessage as message } from "fidesui";
+import { useEffect } from "react";
+
 import { useGetCommentsQuery } from "~/features/privacy-requests/comments/privacy-request-comments.slice";
 import {
   ActivityTimelineItem,
@@ -10,10 +13,21 @@ import { CommentResponse } from "~/types/api/models/CommentResponse";
  */
 export const usePrivacyRequestComments = (privacyRequestId: string) => {
   // Fetch comments data for this privacy request
-  const { data: commentsData, isLoading } = useGetCommentsQuery({
+  const {
+    data: commentsData,
+    isLoading,
+    error,
+  } = useGetCommentsQuery({
     privacy_request_id: privacyRequestId,
     size: 100, // Use a reasonable limit
   });
+
+  // Handle error state
+  useEffect(() => {
+    if (error) {
+      message.error("Failed to fetch the request comments");
+    }
+  }, [error]);
 
   // Map comments to ActivityTimelineItem
   const commentItems: ActivityTimelineItem[] = !commentsData?.items
