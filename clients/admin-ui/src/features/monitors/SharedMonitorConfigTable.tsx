@@ -66,6 +66,7 @@ const SharedMonitorConfigTable = ({
             onRowClick(row);
           },
           className: "cursor-pointer",
+          "data-testid": `config-${row.id}`,
         })}
       />
       <AntFlex justify="space-between">
@@ -80,7 +81,12 @@ const SharedMonitorConfigTable = ({
           startRange={startRange}
           endRange={endRange}
         />
-        <AntButton type="primary" onClick={onNewClick} className="mt-2">
+        <AntButton
+          type="primary"
+          onClick={onNewClick}
+          className="mt-2"
+          data-testid="create-new-btn"
+        >
           Create new
         </AntButton>
       </AntFlex>

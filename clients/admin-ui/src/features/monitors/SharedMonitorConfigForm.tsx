@@ -16,6 +16,7 @@ import { parse } from "papaparse";
 
 import DataCategorySelect from "~/features/common/dropdown/DataCategorySelect";
 import { getErrorMessage } from "~/features/common/helpers";
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { BackButtonNonLink } from "~/features/common/nav/BackButton";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
@@ -39,6 +40,8 @@ const DEFAULT_INITIAL_VALUES: Partial<SharedMonitorConfigFormValues> = {
 };
 
 const FORM_COPY = `Match regular expressions to data categories to customize classification. Use the "shared monitor configuration" field when editing monitors to apply this configuration.`;
+
+const TOOLTIP_COPY = `Upload a CSV to map regex patterns to data categories. Format: regex,data_category`;
 
 const SharedMonitorConfigForm = ({
   config,
@@ -75,6 +78,7 @@ const SharedMonitorConfigForm = ({
   ): SharedMonitorConfig => {
     return {
       name: values.name,
+      description: values.description,
       classify_params: {
         context_regex_pattern_mapping: values.rules.map(
           ({ regex, dataCategory }) => [regex, dataCategory],
@@ -125,7 +129,7 @@ const SharedMonitorConfigForm = ({
           header: false,
         });
 
-        // Transform CSV data into rules format
+        // Transform CSV data
         const rules = data.map(([regex, dataCategory]) => ({
           regex,
           dataCategory,
@@ -169,11 +173,16 @@ const SharedMonitorConfigForm = ({
               label="Configuration name"
               name="name"
               rules={[{ required: true, message: "Config name is required" }]}
+              data-testid="form-item-name"
             >
-              <AntInput autoFocus />
+              <AntInput autoFocus data-testid="input-name" />
             </AntForm.Item>
-            <AntForm.Item label="Description" name="description">
-              <AntInput.TextArea />
+            <AntForm.Item
+              label="Description"
+              name="description"
+              data-testid="form-item-description"
+            >
+              <AntInput.TextArea data-testid="input-description" />
             </AntForm.Item>
           </AntCol>
         </AntRow>
@@ -184,7 +193,7 @@ const SharedMonitorConfigForm = ({
               validator(_, value) {
                 if (value.length === 0) {
                   return Promise.reject(
-                    new Error("Please input at least one rule"),
+                    new Error("Please input at least one pattern"),
                   );
                 }
                 return Promise.resolve();
@@ -199,16 +208,19 @@ const SharedMonitorConfigForm = ({
                   Regex patterns
                 </CustomTypography.Title>
                 {!config && (
-                  <AntUpload
-                    accept=".csv"
-                    showUploadList={false}
-                    beforeUpload={() => false}
-                    onChange={handleFileUpload}
-                  >
-                    <AntButton icon={<Icons.Upload />} iconPosition="end">
-                      Upload CSV
-                    </AntButton>
-                  </AntUpload>
+                  <AntFlex gap={8} align="center">
+                    <InfoTooltip label={TOOLTIP_COPY} placement="left" />
+                    <AntUpload
+                      accept=".csv"
+                      showUploadList={false}
+                      beforeUpload={() => false}
+                      onChange={handleFileUpload}
+                    >
+                      <AntButton icon={<Icons.Upload />} iconPosition="end">
+                        Upload CSV
+                      </AntButton>
+                    </AntUpload>
+                  </AntFlex>
                 )}
               </AntFlex>
               {fields.map(({ key, name, ...field }, idx) => (
@@ -219,8 +231,12 @@ const SharedMonitorConfigForm = ({
                       {...field}
                       name={[name, "regex"]}
                       rules={[{ required: true, message: "Regex is required" }]}
+                      data-testid={`form-item-rules.${name}.regex`}
                     >
-                      <AntInput placeholder="Enter a regular expression" />
+                      <AntInput
+                        placeholder="Enter a regular expression"
+                        data-testid={`input-rules.${name}.regex`}
+                      />
                     </AntForm.Item>
                   </AntCol>
                   <AntCol span={1} className="flex justify-center pt-[5px]">
@@ -237,6 +253,7 @@ const SharedMonitorConfigForm = ({
                           message: "Data category is required",
                         },
                       ]}
+                      data-testid={`form-item-rules.${name}.dataCategory`}
                     >
                       <DataCategorySelect
                         selectedTaxonomies={[]}
@@ -244,6 +261,7 @@ const SharedMonitorConfigForm = ({
                         placeholder="Select a data category"
                         autoFocus={false}
                         allowClear
+                        data-testid={`input-rules.${name}.dataCategory`}
                       />
                     </AntForm.Item>
                   </AntCol>
@@ -253,12 +271,14 @@ const SharedMonitorConfigForm = ({
                         onClick={() => add()}
                         icon={<Icons.Add />}
                         aria-label="Add new rule"
+                        data-testid="add-rule-btn"
                       />
                     ) : (
                       <AntButton
                         onClick={() => remove(name)}
                         icon={<Icons.TrashCan />}
                         aria-label="Remove rule"
+                        data-testid={`remove-rule-${name}`}
                       />
                     )}
                   </AntCol>
@@ -272,6 +292,7 @@ const SharedMonitorConfigForm = ({
                     type="primary"
                     htmlType="submit"
                     loading={createIsLoading || updateIsLoading}
+                    data-testid="save-btn"
                   >
                     Save
                   </AntButton>
