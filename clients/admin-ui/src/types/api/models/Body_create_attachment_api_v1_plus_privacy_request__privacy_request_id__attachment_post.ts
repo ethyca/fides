@@ -4,7 +4,7 @@
 
 import type { AttachmentType } from "./AttachmentType";
 
-export type Body_create_privacy_request_attachment_api_v1_plus_privacy_request__privacy_request_id__attachment_post =
+export type Body_create_attachment_api_v1_plus_privacy_request__privacy_request_id__attachment_post =
   {
     attachment_type: AttachmentType;
     attachment_file: Blob;
