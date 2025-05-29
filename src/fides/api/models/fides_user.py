@@ -114,22 +114,8 @@ class FidesUser(Base):
         hashed_password = None
         salt = None
 
-        # For external respondents, ensure email is provided and password is not
-        is_external_respondent = (
-            data.get("roles", []) and "external_respondent" in data["roles"]
-        )
-        if is_external_respondent:
-            if not data.get("email_address"):
-                raise ValueError("Email address is required for external respondents")
-            if data.get("password"):
-                raise ValueError(
-                    "Password login is not allowed for external respondents"
-                )
-            data["password_login_enabled"] = False
-
-        else:
-            if password := data.get("password"):
-                hashed_password, salt = FidesUser.hash_password(password)
+        if password := data.get("password"):
+            hashed_password, salt = FidesUser.hash_password(password)
 
         user = super().create(
             db,
@@ -148,6 +134,18 @@ class FidesUser(Base):
         )
 
         return user  # type: ignore
+
+    @classmethod
+    def create_respondent(cls, db: Session, data: dict[str, Any]) -> FidesUser:
+        """Create a respondent user. This user will not be able to login with a password and
+        requires an email address to be provided.
+        """
+        if not data.get("email_address"):
+            raise ValueError("Email address is required for external respondents")
+        if data.get("password"):
+            raise ValueError("Password login is not allowed for external respondents")
+        data["password_login_enabled"] = False
+        return cls.create(db, data)
 
     def credentials_valid(self, password: str, encoding: str = "UTF-8") -> bool:
         """Verifies that the provided password is correct."""

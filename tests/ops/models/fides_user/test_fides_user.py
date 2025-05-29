@@ -47,81 +47,36 @@ class TestCreateFidesUser:
                 data={},
             )
 
-    @pytest.mark.parametrize(
-        "role, password_login_enabled",
-        [
-            ("approver", True),
-            ("viewer", True),
-            ("respondent", False),
-            ("external_respondent", False),
-        ],
-    )
-    def create_user_with_roles(
-        self,
-        db: Session,
-        username: str,
-        email_address: str,
-        password: str,
-        role: str,
-        password_login_enabled: bool,
+    def test_create_respondent(
+        self, db: Session, username: str, email_address: str
     ) -> None:
-        data = {
-            "username": username,
-            "email_address": email_address,
-            "roles": [role],
-        }
-        if password_login_enabled:
-            data["password"] = password
-
-        user = FidesUser.create(
+        respondent = FidesUser.create_respondent(
             db=db,
-            data=data,
+            data={"username": username, "email_address": email_address},
         )
+        assert respondent.username == username
+        assert respondent.email_address == email_address
 
-        assert user.username == username
-        assert user.created_at is not None
-        assert user.updated_at is not None
-        assert user.email_address == email_address
-        assert user.password_login_enabled is password_login_enabled
-        if password_login_enabled:
-            assert user.hashed_password is not None
-        else:
-            assert user.hashed_password is None
-
-    @pytest.mark.parametrize("role", ["respondent", "external_respondent"])
-    def create_user_with_roles_error_no_email(
-        self, db: Session, username: str, role: str
-    ) -> None:
-        data = {
-            "username": username,
-            "roles": [role],
-        }
-
+    def test_create_respondent_error_no_email(self, db: Session, username: str) -> None:
         with pytest.raises(ValueError) as e:
-            FidesUser.create(
+            FidesUser.create_respondent(
                 db=db,
-                data=data,
+                data={"username": username},
             )
-
         assert "Email address is required for external respondents" in str(e.value)
 
-    @pytest.mark.parametrize("role", ["respondent", "external_respondent"])
-    def create_user_with_roles_error_password(
-        self, db: Session, username: str, email_address: str, password: str, role: str
+    def test_create_respondent_error_password(
+        self, db: Session, username: str, email_address: str, password: str
     ) -> None:
-        data = {
-            "username": username,
-            "email_address": email_address,
-            "roles": [role],
-            "password": password,
-        }
-
         with pytest.raises(ValueError) as e:
-            FidesUser.create(
+            FidesUser.create_respondent(
                 db=db,
-                data=data,
+                data={
+                    "username": username,
+                    "email_address": email_address,
+                    "password": password,
+                },
             )
-
         assert "Password login is not allowed for external respondents" in str(e.value)
 
 
@@ -281,7 +236,7 @@ class TestUserProperties:
         user.delete(db)
 
         # Test external respondent
-        respondent = FidesUser.create(
+        respondent = FidesUser.create_respondent(
             db=db,
             data={
                 "username": username,
