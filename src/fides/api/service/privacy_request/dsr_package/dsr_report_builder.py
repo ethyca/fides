@@ -364,7 +364,7 @@ class DsrReportBuilder:
 
         # reset the file pointer so the file can be fully read by the caller
         self.baos.seek(0)
-        logger.info("DSR report generation complete.")
+        logger.bind(time_to_generate=time, dsr_package_size=size).info("DSR report generation complete.")
         return self.baos
 
 
