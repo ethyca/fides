@@ -30,7 +30,7 @@ import type { GppFunction } from "./lib/gpp/types";
 import { getCoreFides, raise, updateWindowFides } from "./lib/init-utils";
 import {
   getInitialCookie,
-  getInitialFidesFromConsent,
+  getInitialFidesFromConsentCookie,
   getOverridesByType,
   initialize,
 } from "./lib/initialize";
@@ -187,7 +187,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
      * The earlier we can communicate consent to the vendor, the better.
      */
     // TCF String gets applied to the cookie consent object in updateExperienceFromCookieConsentTcf
-    const initialFides = getInitialFidesFromConsent({
+    const initialFides = getInitialFidesFromConsentCookie({
       ...config,
       cookie: this.cookie,
       savedConsent: this.saved_consent,

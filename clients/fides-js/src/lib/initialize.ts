@@ -139,7 +139,7 @@ export const getInitialCookie = ({ consent, options }: FidesConfig) => {
 /**
  * If saved preferences are detected, immediately initialize from local cache
  */
-export const getInitialFidesFromConsent = ({
+export const getInitialFidesFromConsentCookie = ({
   cookie,
   savedConsent,
   experience,

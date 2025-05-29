@@ -37,7 +37,7 @@ import {
 } from "./lib/init-utils";
 import {
   getInitialCookie,
-  getInitialFidesFromConsent,
+  getInitialFidesFromConsentCookie,
   getOverridesByType,
   initialize,
 } from "./lib/initialize";
@@ -157,7 +157,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
      * In this case, the experience is less important because the user has already consented to something.
      * The earlier we can communicate consent to the vendor, the better.
      */
-    const initialFides = getInitialFidesFromConsent({
+    const initialFides = getInitialFidesFromConsentCookie({
       ...config,
       cookie: this.cookie,
       savedConsent: this.saved_consent,
