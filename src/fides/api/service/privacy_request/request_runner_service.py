@@ -1,5 +1,6 @@
+import time as time_module
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, Iterator, List, Optional, Set, Tuple
 
 import requests
 from loguru import logger
@@ -90,29 +91,72 @@ class ManualWebhookResults(FidesSchema):
 
 def get_attachments_content(
     loaded_attachments: List[Attachment],
-) -> List[Dict[str, Any]]:
+) -> Iterator[Dict[str, Any]]:
     """
     Retrieves all attachments associated with a privacy request that are marked to be included with the access package.
-    Returns a list of dictionaries containing attachment metadata, content, and download URL.
+    Yields dictionaries containing attachment metadata, content, and download URL.
+    Uses generators to minimize memory usage.
+
+    Args:
+        loaded_attachments: List of Attachment objects to process
+
+    Yields:
+        Dictionary containing attachment metadata and content
     """
-    attachments = []
+    start_time = time_module.time()
+    processed_count = 0
+    skipped_count = 0
+    error_count = 0
+    total_size = 0
+
     for attachment in loaded_attachments:
-        if attachment.attachment_type == AttachmentType.include_with_access_package:
+        if attachment.attachment_type != AttachmentType.include_with_access_package:
+            skipped_count += 1
+            continue
+
+        try:
             # Get size and download URL using retrieve_attachment
             size, url = attachment.retrieve_attachment()
+            total_size += size if size else 0
             attachment_data = {
                 "file_name": attachment.file_name,
                 "file_size": size,
                 "download_url": url,
                 "content_type": attachment.content_type,
             }
+
             # If config response format is html, we need to get the content
             if attachment.config.format.value == ResponseFormat.html.value:  # type: ignore[attr-defined]
                 _, content = attachment.retrieve_attachment_content()
-                attachment_data["content"] = content
+                if content:
+                    attachment_data["content"] = content
+                else:
+                    logger.warning(
+                        "No content retrieved for attachment {}", attachment.file_name
+                    )
+                    skipped_count += 1
+                    continue
 
-            attachments.append(attachment_data)
-    return attachments
+            processed_count += 1
+            yield attachment_data
+
+        except Exception as e:
+            error_count += 1
+            logger.error(
+                "Error processing attachment {}: {}", attachment.file_name, str(e)
+            )
+            continue
+
+    # Log final metrics
+    time_taken = time_module.time() - start_time
+    logger.bind(
+        time_to_process=time_taken,
+        total_attachments=len(loaded_attachments),
+        processed_attachments=processed_count,
+        skipped_attachments=skipped_count,
+        error_attachments=error_count,
+        total_size_bytes=total_size,
+    ).info("Attachment processing complete")
 
 
 def get_manual_webhook_access_inputs(
@@ -150,8 +194,8 @@ def get_manual_webhook_access_inputs(
                     if (attachment := db.query(Attachment).get(webhook_attachment.id))
                     is not None
                 ]
-                webhook_data["attachments"] = get_attachments_content(
-                    loaded_attachments
+                webhook_data["attachments"] = list(
+                    get_attachments_content(loaded_attachments)
                 )
             manual_inputs[manual_webhook.connection_config.key] = [webhook_data]
 
@@ -273,7 +317,7 @@ def upload_access_results(  # pylint: disable=R0912
         if AttachmentReferenceType.access_manual_webhook
         not in [ref.reference_type for ref in attachment.references]
     ]
-    attachments = get_attachments_content(loaded_attachments)
+    attachments = list(get_attachments_content(loaded_attachments))
     logger.info(
         f"{len(attachments)} attachments found for privacy request {privacy_request.id}"
     )

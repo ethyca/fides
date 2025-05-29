@@ -1,10 +1,11 @@
 import json
 import os
+import time as time_module
 import zipfile
 from collections import defaultdict
 from io import BytesIO
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Iterator, Optional
 
 import jinja2
 from jinja2 import Environment, FileSystemLoader
@@ -12,6 +13,7 @@ from loguru import logger
 
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.policy import ActionType
+from fides.api.service.storage.util import AllowedFileType
 from fides.api.util.storage_util import StorageJSONEncoder
 
 DSR_DIRECTORY = Path(__file__).parent.resolve()
@@ -152,6 +154,7 @@ class DsrReportBuilder:
     ) -> None:
         """
         Writes attachment content to the specified directory, handling different content types appropriately.
+        Uses streaming for large files to minimize memory usage.
 
         Args:
             file_name: The name of the file to write
@@ -163,37 +166,66 @@ class DsrReportBuilder:
             return
 
         # Handle text-based content types
-        if content_type.startswith("text/"):
+        if content_type in [AllowedFileType.txt.value, AllowedFileType.csv.value]:
             if isinstance(content, bytes):
                 content = content.decode("utf-8")
             self._add_file(f"{directory}/{file_name}", content)
             return
 
-        # Handle image content types
-        if content_type.startswith("image/"):
-            if not isinstance(content, bytes):
-                content = content.encode("utf-8")
-            self.out.writestr(f"{directory}/{file_name}", content)
-            return
-
-        # Handle document content types
-        if content_type in [
-            "application/pdf",
-            "application/msword",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            "application/vnd.ms-excel",
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            "application/zip",
-        ]:
-            if not isinstance(content, bytes):
-                content = content.encode("utf-8")
-            self.out.writestr(f"{directory}/{file_name}", content)
-            return
-
-        # For any other content type, treat as binary
+        # Handle binary content types
         if not isinstance(content, bytes):
             content = content.encode("utf-8")
-        self.out.writestr(f"{directory}/{file_name}", content)
+
+        # For large files, write in chunks to minimize memory usage
+        chunk_size = 1024 * 1024  # 1MB chunks
+        if len(content) > chunk_size:
+            with BytesIO(content) as content_stream:
+                while chunk := content_stream.read(chunk_size):
+                    self.out.writestr(
+                        f"{directory}/{file_name}", chunk, zipfile.ZIP_DEFLATED
+                    )
+        else:
+            self.out.writestr(f"{directory}/{file_name}", content)
+
+    def _process_attachments_in_chunks(
+        self, attachments: list[dict[str, Any]], chunk_size: int = 10
+    ) -> Iterator[list[dict[str, Any]]]:
+        """
+        Process attachments in smaller chunks to reduce memory usage.
+
+        Args:
+            attachments: List of attachments to process
+            chunk_size: Number of attachments to process at once
+
+        Yields:
+            Chunks of processed attachments
+        """
+        for i in range(0, len(attachments), chunk_size):
+            chunk = attachments[i : i + chunk_size]
+            processed_chunk = []
+            for attachment in chunk:
+                if not isinstance(attachment, dict):
+                    continue
+
+                file_name = attachment.get("file_name")
+                if not file_name:  # Skip if no file name
+                    logger.warning("Skipping attachment with no file name")
+                    continue
+
+                content = attachment.get("content")
+                content_type = attachment.get("content_type", "")
+
+                if content:
+                    processed_chunk.append(
+                        {
+                            "file_name": file_name,
+                            "content": content,
+                            "content_type": content_type,
+                        }
+                    )
+                else:
+                    logger.warning("Skipping attachment with no content")
+            yield processed_chunk
 
     def _add_collection(
         self, rows: list[dict[str, Any]], dataset_name: str, collection_name: str
@@ -213,16 +245,17 @@ class DsrReportBuilder:
             if "attachments" in collection_item and isinstance(
                 collection_item["attachments"], list
             ):
-                for attachment in collection_item["attachments"]:
-                    file_name = attachment.get("file_name", "unknown")
-                    content = attachment.get("content")
-                    content_type = attachment.get("content_type", "")
-                    self._write_attachment_content(
-                        file_name,
-                        content,
-                        content_type,
-                        f"data/{dataset_name}/{collection_name}",
-                    )
+                # Process attachments in chunks to minimize memory usage
+                for chunk in self._process_attachments_in_chunks(
+                    collection_item["attachments"]
+                ):
+                    for attachment in chunk:
+                        self._write_attachment_content(
+                            attachment["file_name"],
+                            attachment["content"],
+                            attachment["content_type"],
+                            f"data/{dataset_name}/{collection_name}",
+                        )
 
             # Add item content to the list
             items_content.append(
@@ -247,6 +280,7 @@ class DsrReportBuilder:
     def _add_attachments(self, attachments: list[dict[str, Any]]) -> None:
         """
         Adds top-level attachments to the zip file.
+        Processes attachments in chunks to minimize memory usage.
 
         Args:
             attachments: the attachments to add
@@ -256,19 +290,21 @@ class DsrReportBuilder:
 
         # Create attachment links for the index page
         attachment_links = {}
-        for attachment in attachments:
-            if not isinstance(attachment, dict):
-                continue
 
-            file_name = attachment.get("file_name", "unknown")
-            content = attachment.get("content")
-            content_type = attachment.get("content_type", "")
-            attachment_links[file_name] = f"{file_name}"
+        # Process attachments in chunks
+        for chunk in self._process_attachments_in_chunks(attachments):
+            for attachment in chunk:
+                file_name = attachment["file_name"]
+                content = attachment["content"]
+                content_type = attachment["content_type"]
+                attachment_links[file_name] = (
+                    file_name  # Use actual file name as both key and value
+                )
 
-            # Write the attachment to the top-level attachments directory
-            self._write_attachment_content(
-                file_name, content, content_type, "attachments"
-            )
+                # Write the attachment to the top-level attachments directory
+                self._write_attachment_content(
+                    file_name, content, content_type, "attachments"
+                )
 
         # Generate attachments index page using the attachments index template
         self._add_file(
@@ -310,11 +346,28 @@ class DsrReportBuilder:
 
         return datasets
 
+    def _format_size(self, size_bytes: float) -> str:
+        """
+        Format size in bytes to human readable format.
+
+        Args:
+            size_bytes: Size in bytes
+
+        Returns:
+            Formatted string with appropriate unit (B, KB, MB, GB)
+        """
+        for unit in ["B", "KB", "MB", "GB"]:
+            if size_bytes < 1024.0:
+                return f"{size_bytes:.1f} {unit}"
+            size_bytes /= 1024.0
+        return f"{size_bytes:.1f} TB"
+
     def generate(self) -> BytesIO:
         """
         Processes the request and DSR data to build zip file containing the DSR report.
         Returns the zip file as an in-memory byte array.
         """
+        start_time = time_module.time()
         try:
             # all the css for the pages is in main.css
             self._add_file(
@@ -364,7 +417,14 @@ class DsrReportBuilder:
 
         # reset the file pointer so the file can be fully read by the caller
         self.baos.seek(0)
-        logger.bind(time_to_generate=time, dsr_package_size=size).info("DSR report generation complete.")
+
+        # Calculate time taken and file size
+        time_taken = time_module.time() - start_time
+        file_size = self._format_size(float(len(self.baos.getvalue())))
+
+        logger.bind(time_to_generate=time_taken, dsr_package_size=file_size).info(
+            "DSR report generation complete."
+        )
         return self.baos
 
 

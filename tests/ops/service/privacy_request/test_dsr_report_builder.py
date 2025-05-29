@@ -861,13 +861,13 @@ class TestDsrReportBuilderAttachmentHandling:
         builder.out.close()
 
         with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
-            # Verify only the 'unknown' file is created (for attachment with missing file_name)
+            # Verify no attachments are created
             attachment_files = [
                 name
                 for name in zip_file.namelist()
                 if name.startswith("attachments/") and name != "attachments/index.html"
             ]
-            assert attachment_files == ["attachments/unknown"]
+            assert attachment_files == []
 
             # Verify the index page exists and has the correct structure
             assert "attachments/index.html" in zip_file.namelist()
@@ -876,13 +876,10 @@ class TestDsrReportBuilderAttachmentHandling:
             assert "Back to main page" in content
             assert "File Name" in content
 
-            # Verify that invalid attachments are listed in the index
-            assert 'href="test.txt"' in content  # Listed in index
-            assert 'href="unknown"' in content  # Listed in index
-            assert "test.txt" not in zip_file.namelist()  # But file doesn't exist
-            # Verify the 'unknown' file exists and has the correct content
-            assert "attachments/unknown" in zip_file.namelist()
-            assert zip_file.read("attachments/unknown").decode("utf-8") == "test"
+            # Verify that invalid attachments are not listed in the index
+            assert 'href="test.txt"' not in content  # Not listed in index
+            assert 'href="unknown"' not in content  # Not listed in index
+            assert "test.txt" not in zip_file.namelist()  # File doesn't exist
 
     def test_process_item_attachments(self, privacy_request: PrivacyRequest):
         """Test processing attachments in an item"""
