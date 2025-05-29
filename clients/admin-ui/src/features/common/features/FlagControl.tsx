@@ -23,6 +23,13 @@ export const FlagControl = ({
     value: boolean;
   }) => void;
 }) => {
+  // Do not render if the flag should be hidden in the current environment
+  if (
+    FLAG_CONFIG[flag].hideFrom?.includes(process.env.NEXT_PUBLIC_APP_ENV as any)
+  ) {
+    return null;
+  }
+
   if (typeof value !== "boolean") {
     // Only supporting modifying boolean flags for now.
     return (

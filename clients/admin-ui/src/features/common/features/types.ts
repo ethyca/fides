@@ -17,6 +17,10 @@ export type FlagEnvs<Value> = {
    * If true, this flag will not show up in the UI as a toggle
    */
   userCannotModify?: boolean;
+  /**
+   * Array of environments where this flag should be hidden from the UI
+   */
+  hideFrom?: Env[];
 };
 
 /**

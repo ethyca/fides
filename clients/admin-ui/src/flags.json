@@ -53,5 +53,12 @@
     "development": true,
     "test": true,
     "production": false
+  },
+  "devOnlyFlag": {
+    "description": "This feature is only available for devs, while we work on it",
+    "development": true,
+    "test": true,
+    "production": false,
+    "hideFrom": ["production"]
   }
 }
