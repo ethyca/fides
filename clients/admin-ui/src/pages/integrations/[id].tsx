@@ -23,8 +23,8 @@ import DatahubDataSyncTab from "~/features/integrations/configure-scan/DatahubDa
 import ConfigureIntegrationModal from "~/features/integrations/ConfigureIntegrationModal";
 import ConnectionStatusNotice from "~/features/integrations/ConnectionStatusNotice";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
+import { IntegrationFeatureEnum } from "~/features/integrations/IntegrationFeatureEnum";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
-import { ConnectionType } from "~/types/api";
 
 const IntegrationDetailView: NextPage = () => {
   const { query } = useRouter();
@@ -42,9 +42,8 @@ const IntegrationDetailView: NextPage = () => {
 
   const { onOpen, isOpen, onClose } = useDisclosure();
 
-  const { overview, instructions, description } = getIntegrationTypeInfo(
-    connection?.connection_type,
-  );
+  const { overview, instructions, description, enabledFeatures } =
+    getIntegrationTypeInfo(connection?.connection_type);
 
   const router = useRouter();
   if (
@@ -96,12 +95,15 @@ const IntegrationDetailView: NextPage = () => {
     },
   ];
 
-  if (connection?.connection_type === ConnectionType.DATAHUB) {
+  // Add conditional tabs based on enabled features
+  if (enabledFeatures?.includes(IntegrationFeatureEnum.DATA_SYNC)) {
     tabs.push({
       label: "Data sync",
       content: <DatahubDataSyncTab integration={connection!} />,
     });
-  } else {
+  }
+
+  if (enabledFeatures?.includes(IntegrationFeatureEnum.DATA_DISCOVERY)) {
     tabs.push({
       label: "Data discovery",
       content: (

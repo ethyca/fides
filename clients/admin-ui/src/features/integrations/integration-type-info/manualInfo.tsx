@@ -1,5 +1,6 @@
 import { InfoHeading, InfoText } from "~/features/common/copy/components";
 import { ConnectionCategory } from "~/features/integrations/ConnectionCategory";
+import { IntegrationFeatureEnum } from "~/features/integrations/IntegrationFeatureEnum";
 import { AccessLevel, ConnectionType } from "~/types/api";
 
 export const MANUAL_PLACEHOLDER = {
@@ -29,6 +30,7 @@ const MANUAL_TYPE_INFO = {
   category: ConnectionCategory.OTHER,
   tags: MANUAL_TAGS,
   overview: <ManualOverview />,
+  enabledFeatures: [IntegrationFeatureEnum.TASKS],
 };
 
 export default MANUAL_TYPE_INFO;

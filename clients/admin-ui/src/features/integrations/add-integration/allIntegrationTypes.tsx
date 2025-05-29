@@ -17,6 +17,7 @@ import S3_TYPE_INFO from "~/features/integrations/integration-type-info/s3Info";
 import SCYLLA_TYPE_INFO from "~/features/integrations/integration-type-info/scyllaInfo";
 import SNOWFLAKE_TYPE_INFO from "~/features/integrations/integration-type-info/snowflakeInfo";
 import WEBSITE_INTEGRATION_TYPE_INFO from "~/features/integrations/integration-type-info/websiteInfo";
+import { IntegrationFeatureEnum } from "~/features/integrations/IntegrationFeatureEnum";
 import {
   AccessLevel,
   ConnectionConfigurationResponse,
@@ -30,6 +31,7 @@ export type IntegrationTypeInfo = {
   description?: ReactNode;
   instructions?: ReactNode;
   tags: string[];
+  enabledFeatures: IntegrationFeatureEnum[];
 };
 
 const INTEGRATION_TYPE_MAP: { [K in ConnectionType]?: IntegrationTypeInfo } = {
@@ -67,6 +69,7 @@ const EMPTY_TYPE = {
   },
   category: ConnectionCategory.DATA_WAREHOUSE,
   tags: [],
+  enabledFeatures: [] as IntegrationFeatureEnum[],
 };
 
 const getIntegrationTypeInfo = (
