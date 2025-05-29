@@ -3,8 +3,7 @@
 /* eslint-disable */
 
 export enum MySQLSSLMode {
-  PREFERRED = 'preferred',
-  REQUIRED = 'required',
-  DISABLED = 'disabled',
-  = '',
+  PREFERRED = "preferred",
+  REQUIRED = "required",
+  DISABLED = "disabled",
 }
