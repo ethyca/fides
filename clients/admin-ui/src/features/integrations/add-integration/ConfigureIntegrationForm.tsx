@@ -209,9 +209,41 @@ const ConfigureIntegrationForm = ({
     return <FidesSpinner />;
   }
 
+  // TODO: handle multiselect property
+
   const generateFields = (secretsSchema: ConnectionTypeSecretSchemaResponse) =>
     Object.entries(secretsSchema.properties).map(([fieldKey, fieldInfo]) => {
       const fieldName = `secrets.${fieldKey}`;
+
+      // Check if this field has an enum definition
+      const enumDefinition = fieldInfo.allOf?.[0]?.$ref
+        ? secretsSchema.definitions[
+            fieldInfo.allOf[0].$ref.replace("#/definitions/", "")
+          ]
+        : undefined;
+
+      if (enumDefinition?.enum) {
+        // Create select input for enum fields
+        const options = enumDefinition.enum.map((value) => ({
+          label: value,
+          value,
+        }));
+
+        return (
+          <ControlledSelect
+            name={fieldName}
+            key={fieldName}
+            id={fieldName}
+            options={options}
+            label={fieldInfo.title}
+            isRequired={secretsSchema.required.includes(fieldKey)}
+            tooltip={fieldInfo.description}
+            layout="stacked"
+          />
+        );
+      }
+
+      // Default to text input for non-enum fields
       return (
         <CustomTextInput
           name={fieldName}

@@ -33,6 +33,11 @@ export type ConnectionTypeSecretSchemaResponse = {
   title: string;
   type: string;
   definitions: {
+    [key: string]: {
+      enum?: string[];
+      title: string;
+      type: string;
+    };
     ExtendedIdentityTypes: ConnectionTypeSecretSchemaResponse;
     AdvancedSettingsWithExtendedIdentityTypes: ConnectionTypeSecretSchemaResponse;
   };
