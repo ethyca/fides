@@ -34,8 +34,22 @@ def upgrade():
             nullable=True,
         ),
         sa.Column("action_type", sa.String(), nullable=False),
-        sa.Column("status", sa.String(), nullable=False),
-        sa.Column("celery_id", sa.String(), nullable=False),
+        sa.Column(
+            "status",
+            sa.Enum(
+                "in_processing",
+                "pending",
+                "complete",
+                "error",
+                "paused",
+                "retrying",
+                "skipped",
+                name="executionlogstatus",
+                native_enum=False,
+            ),
+            nullable=False,
+        ),
+        sa.Column("celery_id", sa.String(length=255), nullable=False),
         sa.Column(
             "task_arguments", postgresql.JSONB(astext_type=sa.Text()), nullable=True
         ),
@@ -60,7 +74,21 @@ def upgrade():
     op.create_table(
         "monitortaskexecutionlog",
         sa.Column("id", sa.String(length=255), nullable=False),
-        sa.Column("status", sa.String(), nullable=False),
+        sa.Column(
+            "status",
+            sa.Enum(
+                "in_processing",
+                "pending",
+                "complete",
+                "error",
+                "paused",
+                "retrying",
+                "skipped",
+                name="executionlogstatus",
+                native_enum=False,
+            ),
+            nullable=False,
+        ),
         sa.Column("message", sa.String(), nullable=True),
         sa.Column(
             "created_at",
@@ -74,7 +102,7 @@ def upgrade():
             server_default=sa.text("clock_timestamp()"),
             nullable=True,
         ),
-        sa.Column("celery_id", sa.String(), nullable=False),
+        sa.Column("celery_id", sa.String(length=255), nullable=False),
         sa.Column("monitor_task_id", sa.String(), nullable=False),
         sa.Column(
             "run_type", sa.Enum("MANUAL", "SYSTEM", name="taskruntype"), nullable=False
