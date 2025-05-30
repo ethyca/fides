@@ -884,18 +884,17 @@ class TestMonitorTaskExecutionLog:
         execution_log = MonitorTaskExecutionLog.create(
             db=db,
             data={
-                "celery_id": "test-celery-id-2",
                 "monitor_task_id": task.id,
                 "status": ExecutionLogStatus.pending.value,
             },
         )
 
         # Required fields should be set
-        assert execution_log.celery_id == "test-celery-id-2"
         assert execution_log.monitor_task_id == task.id
         assert execution_log.status.value == ExecutionLogStatus.pending.value
 
         # Optional fields should have default values
+        assert execution_log.celery_id is not None
         assert execution_log.message is None
         assert execution_log.run_type == TaskRunType.SYSTEM  # Default value from model
         assert execution_log.created_at is not None
@@ -913,7 +912,7 @@ class TestMonitorTaskExecutionLog:
             MonitorTaskExecutionLog.create(
                 db=db,
                 data={
-                    "celery_id": "test-celery-id",
+                    "celery_id": "61fc9e1d-977d-4e69-a33b-a4edbab375c1",
                     "monitor_task_id": "non-existent-id",
                     "status": ExecutionLogStatus.pending.value,
                 },
@@ -930,7 +929,7 @@ class TestMonitorTaskExecutionLog:
         task = MonitorTask.create(
             db=db,
             data={
-                "celery_id": "test-celery-id",
+                "celery_id": "61fc9e1d-977d-4e69-a33b-a4edbab375c1",
                 "action_type": MonitorTaskType.DETECTION.value,
                 "status": ExecutionLogStatus.pending.value,
                 "monitor_config_id": monitor_config.id,
@@ -941,7 +940,7 @@ class TestMonitorTaskExecutionLog:
         first_log = MonitorTaskExecutionLog.create(
             db=db,
             data={
-                "celery_id": "duplicate-celery-id",
+                "celery_id": "ca97b95d-4eb0-4d95-9970-05664e9a5bd8",
                 "monitor_task_id": task.id,
                 "status": ExecutionLogStatus.pending.value,
             },
@@ -952,7 +951,7 @@ class TestMonitorTaskExecutionLog:
             MonitorTaskExecutionLog.create(
                 db=db,
                 data={
-                    "celery_id": "duplicate-celery-id",
+                    "celery_id": "ca97b95d-4eb0-4d95-9970-05664e9a5bd8",
                     "monitor_task_id": task.id,
                     "status": ExecutionLogStatus.pending.value,
                 },
