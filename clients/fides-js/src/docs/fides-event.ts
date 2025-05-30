@@ -60,7 +60,7 @@ export type FidesEventType =
  * defaults - have been set on the `Fides` global object.
  * This event will always be dispatched, even if no previous consent was found.
  *
- * - ~~`FidesInitialized`~~: _deprecated_ - We strogly encourage using `FidesConsentLoaded`
+ * - ~~`FidesInitialized`~~: _deprecated_ - We strongly encourage using `FidesConsentLoaded`
  * and/or `FidesReady` instead. This event is dispatched at the same time as
  * `FidesConsentLoaded` and `FidesReady` and has the potential to be dispatched
  * multiple times which can be confusing, hence the deprecation.
