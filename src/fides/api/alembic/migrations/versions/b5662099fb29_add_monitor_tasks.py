@@ -112,7 +112,6 @@ def upgrade():
             ["monitortask.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("celery_id"),
     )
     op.create_index(
         op.f("ix_monitortaskexecutionlog_id"),
