@@ -12,6 +12,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 )
 
 from fides.api.db.base_class import Base, JSONTypeOverride
+from fides.api.util.custom_json_encoder import ENCODED_BYTES_PREFIX
 from fides.config import CONFIG
 
 if TYPE_CHECKING:
@@ -53,8 +54,8 @@ class MaskingSecret(Base):
     def get_secret(self) -> Union[str, bytes]:
         """Retrieve the secret in its original type"""
         secret = self.secret
-        if isinstance(secret, str) and secret.startswith("quote_encoded_"):
-            return unquote_to_bytes(secret)[14:]
+        if isinstance(secret, str) and secret.startswith(ENCODED_BYTES_PREFIX):
+            return unquote_to_bytes(secret)[len(ENCODED_BYTES_PREFIX) :]
         return secret
 
     @classmethod

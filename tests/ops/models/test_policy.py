@@ -1,4 +1,4 @@
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 from sqlalchemy.orm import Session
@@ -18,7 +18,9 @@ from fides.api.models.policy import (
     _is_ancestor_of_contained_categories,
 )
 from fides.api.models.storage import StorageConfig
+from fides.api.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
 from fides.api.service.masking.strategy.masking_strategy_hash import HashMaskingStrategy
+from fides.api.service.masking.strategy.masking_strategy_hmac import HmacMaskingStrategy
 from fides.api.service.masking.strategy.masking_strategy_nullify import (
     NullMaskingStrategy,
 )
@@ -407,7 +409,147 @@ def test_rule_get_storage_destination_not_found(
     rule.storage_destination = None
 
     with pytest.raises(StorageConfigNotFoundException):
-        rule_storage_config = rule.get_storage_destination(db)
+        rule.get_storage_destination(db)
+
+
+def test_policy_generate_masking_secrets_accumulates_from_multiple_strategies(
+    db: Session, oauth_client: ClientDetail
+):
+    """
+    Test that generate_masking_secrets correctly accumulates secrets when a policy
+    has multiple erasure rules, each using a different masking strategy that requires secrets.
+    """
+    policy = Policy.create(
+        db=db,
+        data={
+            "name": "Test Policy For Multiple Secrets",
+            "key": "test_policy_for_multiple_secrets_key",
+            "client_id": oauth_client.id,
+        },
+    )
+
+    # Rule 1: Uses HashMaskingStrategy (generates 1 secret: salt)
+    Rule.create(
+        db=db,
+        data={
+            "policy_id": policy.id,
+            "action_type": ActionType.erasure,
+            "name": "Rule with Hash Strategy",
+            "key": "rule_hash_strategy_for_accumulation",
+            "masking_strategy": {
+                "strategy": HashMaskingStrategy.name,
+                "configuration": {},  # Default algorithm: SHA-256
+            },
+            "client_id": oauth_client.id,
+        },
+    )
+
+    # Rule 2: Uses HmacMaskingStrategy (generates 2 secrets: key, salt)
+    Rule.create(
+        db=db,
+        data={
+            "policy_id": policy.id,
+            "action_type": ActionType.erasure,
+            "name": "Rule with HMAC Strategy",
+            "key": "rule_hmac_strategy_for_accumulation",
+            "masking_strategy": {
+                "strategy": HmacMaskingStrategy.name,
+                "configuration": {},  # Default algorithm: SHA-256
+            },
+            "client_id": oauth_client.id,
+        },
+    )
+
+    db.refresh(policy)  # Refresh to load the policy.rules relationship
+
+    generated_secrets = policy.generate_masking_secrets()
+
+    assert generated_secrets is not None
+    # Expected: 1 secret from HashMaskingStrategy + 2 secrets from HmacMaskingStrategy
+    assert len(generated_secrets) == 3
+
+    hash_secrets = [
+        secret
+        for secret in generated_secrets
+        if secret.masking_strategy == HashMaskingStrategy.name
+    ]
+    hmac_secrets = [
+        secret
+        for secret in generated_secrets
+        if secret.masking_strategy == HmacMaskingStrategy.name
+    ]
+
+    assert len(hash_secrets) == 1
+    assert hash_secrets[0].secret_type == SecretType.salt
+
+    assert len(hmac_secrets) == 2
+    hmac_secret_types = {secret.secret_type for secret in hmac_secrets}
+    assert {SecretType.key, SecretType.salt} == hmac_secret_types
+
+
+def test_policy_generate_masking_secrets_calls_strategy_once_for_duplicates(
+    db: Session, oauth_client: ClientDetail
+):
+    """
+    Tests that generate_masking_secrets processes a given masking strategy
+    only once even if that strategy (by name) is used in multiple rules.
+    """
+    policy = Policy.create(
+        db=db,
+        data={
+            "name": "Test Policy Unique Strategy Call",
+            "key": "test_policy_unique_strategy_call_key",
+            "client_id": oauth_client.id,
+        },
+    )
+
+    # Both rules use HashMaskingStrategy.
+    # The de-duplication is by strategy_name, so even if configurations were different,
+    # secret generation for HashMaskingStrategy would only occur once.
+    hash_strategy_config = {
+        "strategy": HashMaskingStrategy.name,
+        "configuration": {"algorithm": "SHA-256"},
+    }
+
+    Rule.create(
+        db=db,
+        data={
+            "policy_id": policy.id,
+            "action_type": ActionType.erasure,
+            "name": "Rule 1 Same Hash Strategy",
+            "key": "rule_1_same_hash_strategy_unique_test",
+            "masking_strategy": hash_strategy_config,
+            "client_id": oauth_client.id,
+        },
+    )
+
+    Rule.create(
+        db=db,
+        data={
+            "policy_id": policy.id,
+            "action_type": ActionType.erasure,
+            "name": "Rule 2 Same Hash Strategy",
+            "key": "rule_2_same_hash_strategy_unique_test",
+            "masking_strategy": hash_strategy_config,  # Using the same strategy name and config
+            "client_id": oauth_client.id,
+        },
+    )
+
+    db.refresh(policy)
+
+    generated_secrets = policy.generate_masking_secrets()
+
+    # HashMaskingStrategy.generate_secrets_for_cache() returns a list with 1 MaskingSecretCache (for the salt).
+    # If de-duplication by strategy_name works, we expect only 1 salt for HashMaskingStrategy.
+    # If de-duplication FAILED, generate_secrets_for_cache would be called for each rule,
+    # and we'd get 2 salts if using HashMaskingStrategy in both.
+    assert generated_secrets is not None
+    assert len(generated_secrets) == 1
+
+    # Verify it's the correct secret from HashMaskingStrategy
+    assert generated_secrets[0].masking_strategy == HashMaskingStrategy.name
+    assert generated_secrets[0].secret_type == SecretType.salt
+    assert isinstance(generated_secrets[0].secret, str)
 
 
 # using mocks to avoid a more complicated setup of Policy and TraversalNode fixtures

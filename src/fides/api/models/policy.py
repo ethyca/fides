@@ -160,7 +160,7 @@ class Policy(Base):
                 strategy_name, configuration
             )
             if masking_strategy.secrets_required():
-                masking_secrets = masking_strategy.generate_secrets_for_cache()
+                masking_secrets.extend(masking_strategy.generate_secrets_for_cache())
         return masking_secrets
 
     def applies_to(self, node: "TraversalNode") -> bool:

@@ -76,6 +76,7 @@ class SecretsUtil:
         """
         Attempts to retrieve masking secret from cache first, then falls back to DB.
         """
+        # TODO: get rid of the cache check after a few releases
         # Try cache first
         cache = get_cache()
         cache_key = get_masking_secret_cache_key(
