@@ -39,6 +39,7 @@ interface Task {
   name: string;
   description: string;
   types: string;
+  assignedTo: string;
   originalField: any; // Store the original field data for editing
 }
 
@@ -71,6 +72,9 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
               )
               .join(", ")
           : "N/A",
+        assignedTo: field.assignedTo
+          ? field.assignedTo.join(", ")
+          : "Unassigned",
         originalField: field, // Store original field for editing
       }));
       setTasks(transformedTasks);
@@ -116,6 +120,9 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
     <DefaultCell value={props.getValue()} />
   );
   const renderTypes = (props: any) => <DefaultCell value={props.getValue()} />;
+  const renderAssignedTo = (props: any) => (
+    <DefaultCell value={props.getValue()} />
+  );
 
   const renderActions = (props: any) => {
     const task = props.row.original;
@@ -143,7 +150,10 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
     <DefaultHeaderCell value="Description" {...props} />
   );
   const renderTypesHeader = (props: any) => (
-    <DefaultHeaderCell value="Types" {...props} />
+    <DefaultHeaderCell value="Type" {...props} />
+  );
+  const renderAssignedToHeader = (props: any) => (
+    <DefaultHeaderCell value="Assigned To" {...props} />
   );
   const renderActionsHeader = (props: any) => (
     <DefaultHeaderCell value="Actions" {...props} />
@@ -165,6 +175,11 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
         id: "types",
         cell: renderTypes,
         header: renderTypesHeader,
+      }),
+      columnHelper.accessor((row) => row.assignedTo, {
+        id: "assignedTo",
+        cell: renderAssignedTo,
+        header: renderAssignedToHeader,
       }),
       columnHelper.display({
         id: "actions",

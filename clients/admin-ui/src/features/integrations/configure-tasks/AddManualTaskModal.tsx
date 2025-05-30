@@ -65,6 +65,7 @@ const AddManualTaskModal = ({
         types: values.types || [],
         dsr_package_label: values.description,
         data_categories: values.data_categories || [],
+        assignedTo: values.assignedTo || [],
       };
 
       if (hasExistingFields) {
