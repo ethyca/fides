@@ -120,10 +120,15 @@ const DetectionItemActionsCell = ({
   // Field levels can mute/un-mute
   const isSchemaType = resourceType === StagedResourceTypeValue.SCHEMA;
   const isFieldType = resourceType === StagedResourceTypeValue.FIELD;
+  const hasClassificationChanges =
+    childDiffStatus &&
+    (childDiffStatus[DiffStatus.CLASSIFICATION_ADDITION] ||
+      childDiffStatus[DiffStatus.CLASSIFICATION_UPDATE]);
 
   const showStartMonitoringAction =
     (isSchemaType && diffStatus === undefined) ||
-    (!isFieldType && diffStatus === DiffStatus.ADDITION);
+    (!isFieldType && diffStatus === DiffStatus.ADDITION) ||
+    hasClassificationChanges;
   const showMuteAction = diffStatus !== DiffStatus.MUTED;
   const showStartMonitoringActionOnMutedParent =
     diffStatus === DiffStatus.MUTED && !isFieldType;
@@ -136,7 +141,8 @@ const DetectionItemActionsCell = ({
   const showConfirmAction =
     diffStatus === DiffStatus.MONITORED &&
     !ignoreChildActions &&
-    childDiffHasChanges;
+    childDiffHasChanges &&
+    !hasClassificationChanges;
 
   return (
     <HStack>
