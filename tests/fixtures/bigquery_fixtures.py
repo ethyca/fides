@@ -322,9 +322,9 @@ def bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta(
     customer_collection["fides_meta"] = {
         "partitioning": {
             "field": "created",
-            "start": "NOW() - 1000 DAYS",
+            "start": "NOW() - 2000 DAYS",
             "end": "NOW()",
-            "interval": "500 DAYS",
+            "interval": "1000 DAYS",
         }
     }
     bigquery_dataset["collections"].append(customer_collection)
