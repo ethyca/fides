@@ -658,7 +658,9 @@ class MonitorTask(WorkerTask, Base):
     A monitor task executed by a worker.
     """
 
-    celery_id = Column(String, unique=True, nullable=False)
+    celery_id = Column(
+        String(255), unique=True, nullable=False, default=FidesBase.generate_uuid
+    )
     task_arguments = Column(JSONB, nullable=True)  # To be able to rerun the task
     # Contains info, warning, or error messages
     message = Column(String)
@@ -687,7 +689,9 @@ class MonitorTaskExecutionLog(TaskExecutionLog, Base):
     Stores the individual execution logs associated with a MonitorTask.
     """
 
-    celery_id = Column(String, unique=True, nullable=False)
+    celery_id = Column(
+        String(255), unique=True, nullable=False, default=FidesBase.generate_uuid
+    )
     monitor_task_id = Column(
         String, ForeignKey(MonitorTask.id_field_path), index=True, nullable=False
     )
