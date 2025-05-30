@@ -531,6 +531,14 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         session = Session.object_session(privacy_request)
         masking_request = query_config.get_masking_request(session)
 
+        if not masking_request:
+            logger.info(
+                "No masking request found for the '{}' collection in {}",
+                self.current_collection_name,
+                self.saas_config.fides_key,  # type: ignore
+            )
+            return 0
+
         self.set_saas_request_state(masking_request)
 
         # hook for user-provided request override functions

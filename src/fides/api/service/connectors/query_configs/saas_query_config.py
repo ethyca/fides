@@ -52,7 +52,6 @@ from fides.api.util.saas_util import (
     get_identities,
 )
 from fides.common.api.v1.urn_registry import REQUEST_TASK_CALLBACK, V1_URL_PREFIX
-from fides.config.config_proxy import ConfigProxy
 
 T = TypeVar("T")
 
