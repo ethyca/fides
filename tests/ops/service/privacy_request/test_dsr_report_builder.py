@@ -1221,6 +1221,73 @@ class TestDsrReportBuilderAttachmentHandling:
             assert zip_file.read("attachments/test.txt").decode("utf-8") == "content1"
             assert zip_file.read("attachments/test_1.txt").decode("utf-8") == "content2"
 
+    def test_handle_duplicate_filenames_in_nested_attachments(
+        self, privacy_request: PrivacyRequest
+    ):
+        """Test handling of duplicate filenames in nested attachments"""
+        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+
+        # Create multiple items with attachments having the same filename
+        items = [
+            {
+                "id": 1,
+                "attachments": [
+                    {
+                        "file_name": "test.txt",
+                        "content": "content1",
+                        "content_type": "text/plain",
+                    },
+                    {
+                        "file_name": "test.txt",
+                        "content": "content2",
+                        "content_type": "text/plain",
+                    },
+                ],
+            },
+            {
+                "id": 2,
+                "attachments": [
+                    {
+                        "file_name": "test.txt",
+                        "content": "content3",
+                        "content_type": "text/plain",
+                    },
+                ],
+            },
+        ]
+
+        # Add collection with items containing attachments
+        builder._add_collection(items, "dataset1", "collection1")
+        builder.out.close()
+
+        with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
+            # Verify files exist with unique names
+            assert "data/dataset1/collection1/test.txt" in zip_file.namelist()
+            assert "data/dataset1/collection1/test_1.txt" in zip_file.namelist()
+            assert "data/dataset1/collection1/test_2.txt" in zip_file.namelist()
+
+            # Verify content is preserved
+            assert zip_file.read("data/dataset1/collection1/test.txt").decode("utf-8") == "content1"
+            assert zip_file.read("data/dataset1/collection1/test_1.txt").decode("utf-8") == "content2"
+            assert zip_file.read("data/dataset1/collection1/test_2.txt").decode("utf-8") == "content3"
+
+            # Verify index page contains correct links
+            index_content = zip_file.read("data/dataset1/collection1/index.html").decode("utf-8")
+            assert 'href="test.txt"' in index_content
+            assert 'href="test_1.txt"' in index_content
+            assert 'href="test_2.txt"' in index_content
+
+            # Verify each item's attachments are correctly linked
+            assert 'item #1' in index_content
+            assert 'item #2' in index_content
+            # Verify first item's attachments
+            item1_section = index_content[index_content.find('item #1'):index_content.find('item #2')]
+            assert 'href="test.txt"' in item1_section
+            assert 'href="test_1.txt"' in item1_section
+            # Verify second item's attachments
+            item2_section = index_content[index_content.find('item #2'):]
+            assert 'href="test_2.txt"' in item2_section
+
 
 class TestDsrReportBuilderDatasetHandling:
     """Tests for DSR report builder's dataset handling functions"""

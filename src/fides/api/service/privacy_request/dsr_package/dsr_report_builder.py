@@ -270,6 +270,8 @@ class DsrReportBuilder:
         items_content = []
 
         for index, collection_item in enumerate(rows, 1):
+            item_attachment_links = {}  # Track unique filenames for this specific item
+
             # Process any attachments in the item
             if "attachments" in collection_item and isinstance(
                 collection_item["attachments"], list
@@ -279,11 +281,14 @@ class DsrReportBuilder:
                     collection_item["attachments"]
                 ):
                     for attachment in chunk:
+                        directory = f"data/{dataset_name}/{collection_name}"
+                        unique_filename = self._get_unique_filename(directory, attachment["file_name"])
+                        item_attachment_links[unique_filename] = unique_filename
                         self._write_attachment_content(
-                            attachment["file_name"],
+                            unique_filename,
                             attachment["content"],
                             attachment["content_type"],
-                            f"data/{dataset_name}/{collection_name}",
+                            directory,
                         )
 
             # Add item content to the list
@@ -292,6 +297,7 @@ class DsrReportBuilder:
                     "index": index,
                     "heading": f"{collection_name} (item #{index})",
                     "data": collection_item,
+                    "attachments": item_attachment_links,  # Use item-specific attachment links
                 }
             )
 
@@ -330,20 +336,8 @@ class DsrReportBuilder:
                 # Get unique filename for the attachment
                 unique_filename = self._get_unique_filename("attachments", file_name)
 
-                # Store both original filename and unique filename
-                if file_name not in attachment_links:
-                    attachment_links[file_name] = unique_filename
-                else:
-                    # If we already have this filename, append a counter
-                    base_name, extension = os.path.splitext(file_name)
-                    counter = 1
-                    while (
-                        f"{base_name}_{counter}{extension}" in attachment_links.values()
-                    ):
-                        counter += 1
-                    attachment_links[f"{base_name}_{counter}{extension}"] = (
-                        unique_filename
-                    )
+                # Store the unique filename in the links dictionary
+                attachment_links[unique_filename] = unique_filename
 
                 # Write the attachment to the top-level attachments directory
                 self._write_attachment_content(

@@ -27,9 +27,9 @@
                      <div class="table-cell">{{ field }}</div>
                      <div class="table-cell">
                         {% if field == "attachments" and value is sequence and value is not string %}
-                           {% for attachment in value %}
-                              <a href="{{ attachment.file_name }}" target="_blank" class="attachment-link">
-                                 {{ attachment.file_name }}
+                           {% for attachment_name, attachment_url in item.attachments.items() %}
+                              <a href="{{ attachment_url }}" target="_blank" class="attachment-link">
+                                 {{ attachment_name }}
                               </a>
                               {% if not loop.last %}<br>{% endif %}
                            {% endfor %}
