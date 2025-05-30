@@ -26,6 +26,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Attachments can now be stored with GCS [#6161](https://github.com/ethyca/fides/pull/6161)
 - Attachments can now retrieve their content as well as their download urls [#6169 ](https://github.com/ethyca/fides/pull/6169)
 
+### Changed
+- Deprecated `FidesInitialized` event and added `FidesConsentLoaded` and `FidesReady` events for more granular initialization state handling [#6181](https://github.com/ethyca/fides/pull/6181)
+
 ### Developer Experience
 - Refactored FidesJS init logic for better clarity and TCF separation [#6173](https://github.com/ethyca/fides/pull/6173)
 

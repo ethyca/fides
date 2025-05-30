@@ -85,6 +85,7 @@ describe("Consent FidesEvents", () => {
       // Initialize and show banner on page load
       expectedEvents.push(
         { type: "FidesInitializing", detail: {} },
+        { type: "FidesReady", detail: {} },
         { type: "FidesInitialized", detail: {} },
         {
           type: "FidesUIShown",
@@ -305,6 +306,7 @@ describe("Consent FidesEvents", () => {
       // Initialize and show TCF banner on page load
       expectedEvents.push(
         { type: "FidesInitializing", detail: {} },
+        { type: "FidesReady", detail: {} },
         { type: "FidesInitialized", detail: {} },
         {
           type: "FidesUIShown",
@@ -658,6 +660,7 @@ describe("Consent FidesEvents", () => {
     it("should use notice_key in FidesUIChanged events for custom purposes", () => {
       const expectedEvents: FidesEventExpectation[] = [
         { type: "FidesInitializing", detail: {} },
+        { type: "FidesReady", detail: {} },
         { type: "FidesInitialized", detail: {} },
         {
           type: "FidesUIShown",
@@ -729,6 +732,7 @@ describe("Consent FidesEvents", () => {
       // Initialize and show banner
       expectedEvents.push(
         { type: "FidesInitializing", detail: {} },
+        { type: "FidesReady", detail: {} },
         { type: "FidesInitialized", detail: {} },
         {
           type: "FidesUIShown",
