@@ -1267,25 +1267,38 @@ class TestDsrReportBuilderAttachmentHandling:
             assert "data/dataset1/collection1/test_2.txt" in zip_file.namelist()
 
             # Verify content is preserved
-            assert zip_file.read("data/dataset1/collection1/test.txt").decode("utf-8") == "content1"
-            assert zip_file.read("data/dataset1/collection1/test_1.txt").decode("utf-8") == "content2"
-            assert zip_file.read("data/dataset1/collection1/test_2.txt").decode("utf-8") == "content3"
+            assert (
+                zip_file.read("data/dataset1/collection1/test.txt").decode("utf-8")
+                == "content1"
+            )
+            assert (
+                zip_file.read("data/dataset1/collection1/test_1.txt").decode("utf-8")
+                == "content2"
+            )
+            assert (
+                zip_file.read("data/dataset1/collection1/test_2.txt").decode("utf-8")
+                == "content3"
+            )
 
             # Verify index page contains correct links
-            index_content = zip_file.read("data/dataset1/collection1/index.html").decode("utf-8")
+            index_content = zip_file.read(
+                "data/dataset1/collection1/index.html"
+            ).decode("utf-8")
             assert 'href="test.txt"' in index_content
             assert 'href="test_1.txt"' in index_content
             assert 'href="test_2.txt"' in index_content
 
             # Verify each item's attachments are correctly linked
-            assert 'item #1' in index_content
-            assert 'item #2' in index_content
+            assert "item #1" in index_content
+            assert "item #2" in index_content
             # Verify first item's attachments
-            item1_section = index_content[index_content.find('item #1'):index_content.find('item #2')]
+            item1_section = index_content[
+                index_content.find("item #1") : index_content.find("item #2")
+            ]
             assert 'href="test.txt"' in item1_section
             assert 'href="test_1.txt"' in item1_section
             # Verify second item's attachments
-            item2_section = index_content[index_content.find('item #2'):]
+            item2_section = index_content[index_content.find("item #2") :]
             assert 'href="test_2.txt"' in item2_section
 
 

@@ -282,7 +282,9 @@ class DsrReportBuilder:
                 ):
                     for attachment in chunk:
                         directory = f"data/{dataset_name}/{collection_name}"
-                        unique_filename = self._get_unique_filename(directory, attachment["file_name"])
+                        unique_filename = self._get_unique_filename(
+                            directory, attachment["file_name"]
+                        )
                         item_attachment_links[unique_filename] = unique_filename
                         self._write_attachment_content(
                             unique_filename,
