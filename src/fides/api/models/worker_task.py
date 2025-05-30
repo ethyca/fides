@@ -31,7 +31,7 @@ class WorkerTask:
     status = Column(
         EnumColumn(
             ExecutionLogStatus,
-            native_enum=False,
+            native_enum=True,
             values_callable=lambda x: [
                 i.value for i in x
             ],  # Using ExecutionLogStatus values in database, even though app is using the names.
