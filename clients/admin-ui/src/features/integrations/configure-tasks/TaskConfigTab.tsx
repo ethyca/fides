@@ -188,7 +188,7 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
   });
 
   return (
-    <Box maxW="720px">
+    <Box maxW="760px">
       <Flex direction="column" gap={4}>
         <div>
           <Paragraph>
