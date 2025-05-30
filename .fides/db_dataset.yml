@@ -2544,3 +2544,15 @@ dataset:
         data_categories: [system.operations]
       - name: updated_at
         data_categories: [system.operations]
+  - name: stagedresourceancestor
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: descendant_urn
+        data_categories: [system.operations]
+      - name: ancestor_urn
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
