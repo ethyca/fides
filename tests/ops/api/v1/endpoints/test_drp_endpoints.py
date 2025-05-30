@@ -243,6 +243,50 @@ class TestCreateDrpPrivacyRequest:
         resp = api_client.post(url, json=data)
         assert resp.status_code == 404
 
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
+    )
+    def test_create_drp_privacy_request_with_masking_secrets(
+        self,
+        run_erasure_request_mock,
+        url,
+        db,
+        api_client: TestClient,
+        policy_drp_action_erasure_aes,
+    ):
+        """
+        Test that a DRP privacy request with a policy that needs masking secrets
+        persists the masking secrets to the database.
+        """
+
+        TEST_EMAIL = "test@example.com"
+        TEST_PHONE_NUMBER = "+12345678910"
+        identity = {
+            "email": TEST_EMAIL,
+            "phone_number": TEST_PHONE_NUMBER,
+        }
+        encoded_identity: str = jwt.encode(
+            identity, CONFIG.security.drp_jwt_secret, algorithm="HS256"
+        )
+        data = {
+            "meta": {"version": "0.5"},
+            "regime": "ccpa",
+            "exercise": [
+                DrpAction.deletion.value
+            ],  # Use deletion for AES erasure policy
+            "identity": encoded_identity,
+        }
+        resp = api_client.post(url, json=data)
+        assert resp.status_code == 200
+        response_data = resp.json()
+        assert response_data["status"] == "open"
+        assert response_data["received_at"]
+        assert response_data["request_id"]
+        pr = PrivacyRequest.get(db=db, object_id=response_data["request_id"])
+
+        # Verify that masking secrets were persisted to the database
+        assert len(pr.masking_secrets) > 0
+
     @pytest.mark.usefixtures(
         "messaging_config",
         "policy_drp_action",
