@@ -7,6 +7,7 @@ import {
 } from "~/features/common/copy/components";
 import ShowMoreContent from "~/features/common/copy/ShowMoreContent";
 import { ConnectionCategory } from "~/features/integrations/ConnectionCategory";
+import { IntegrationFeatureEnum } from "~/features/integrations/IntegrationFeatureEnum";
 import { AccessLevel, ConnectionType } from "~/types/api";
 
 export const SCYLLA_PLACEHOLDER = {
@@ -63,6 +64,7 @@ const SCYLLA_TYPE_INFO = {
   category: ConnectionCategory.DATABASE,
   overview: <ScyllaOverview />,
   tags: SCYLLA_TAGS,
+  enabledFeatures: [IntegrationFeatureEnum.DATA_DISCOVERY],
 };
 
 export default SCYLLA_TYPE_INFO;
