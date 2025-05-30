@@ -41,12 +41,11 @@ import useActionCenterTabs, {
   getIndexFromHash,
 } from "~/features/data-discovery-and-detection/action-center/tables/useActionCenterTabs";
 import { successToastContent } from "~/features/data-discovery-and-detection/action-center/utils/successToastContent";
-import { DiffStatus } from "~/types/api";
+import { DiffStatus, SystemStagedResourcesAggregateRecord } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
 import { useDiscoveredSystemAggregateColumns } from "../hooks/useDiscoveredSystemAggregateColumns";
-import { MonitorSystemAggregate } from "../types";
 
 interface DiscoveredSystemAggregateTableProps {
   monitorId: string;
@@ -147,20 +146,20 @@ export const DiscoveredSystemAggregateTable = ({
     return <TableSkeletonLoader rowHeight={36} numRows={36} />;
   }
 
-  const handleRowClick = (row: MonitorSystemAggregate) => {
+  const handleRowClick = (row: SystemStagedResourcesAggregateRecord) => {
     const newUrl = `${ACTION_CENTER_ROUTE}/${monitorId}/${row.id ?? UNCATEGORIZED_SEGMENT}${tabHash ? `#${tabHash}` : ""}`;
     router.push(newUrl);
   };
 
   const handleBulkAdd = async () => {
     const totalUpdates = selectedRows.reduce(
-      (acc, row) => acc + row.original.total_updates,
+      (acc, row) => acc + row.original.total_updates!,
       0,
     );
 
     const result = await addMonitorResultSystemsMutation({
       monitor_config_key: monitorId,
-      resolved_system_ids: selectedRows.map((row) => row.original.id),
+      resolved_system_ids: selectedRows.map((row) => row.original.id!),
     });
 
     if (isErrorResult(result)) {
@@ -180,7 +179,7 @@ export const DiscoveredSystemAggregateTable = ({
 
   const handleBulkIgnore = async () => {
     const totalUpdates = selectedRows.reduce(
-      (acc, row) => acc + row.original.total_updates,
+      (acc, row) => acc + row.original.total_updates!,
       0,
     );
 
