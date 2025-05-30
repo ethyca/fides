@@ -251,12 +251,28 @@ def upload_access_results(  # pylint: disable=R0912
             )
             if download_url:
                 download_urls.append(download_url)
+                privacy_request.add_success_execution_log(
+                    session,
+                    connection_key=None,
+                    dataset_name="Access Package Upload",
+                    collection_name=None,
+                    message=f"Access Package Upload successful for privacy request: {privacy_request.id}",
+                    action_type=ActionType.access,
+                )
         except common_exceptions.StorageUploadError as exc:
             logger.error(
                 "Error uploading subject access data for rule {} on policy {}: {}",
                 rule.key,
                 policy.key,
                 Pii(str(exc)),
+            )
+            privacy_request.add_error_execution_log(
+                session,
+                connection_key=None,
+                dataset_name="Access Package Upload",
+                collection_name=None,
+                message=f"Access Package Upload failed for privacy request: {privacy_request.id}",
+                action_type=ActionType.access,
             )
             privacy_request.status = PrivacyRequestStatus.error
     # Save the results we uploaded to the user for later retrieval
