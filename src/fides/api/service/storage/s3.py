@@ -130,7 +130,7 @@ def generic_retrieve_from_s3(
     file_key: str,
     auth_method: str,
     get_content: bool = False,
-) -> Tuple[int, Union[str, bytes]]:
+) -> Tuple[int, Union[str, IO[bytes]]]:
     """
     Retrieves a file from S3 and returns its size and either a presigned URL or the actual content.
 
@@ -148,17 +148,16 @@ def generic_retrieve_from_s3(
     s3_client = get_s3_client(auth_method, storage_secrets)
 
     try:
+        # Get file size using head_object
+        size_response = s3_client.head_object(Bucket=bucket_name, Key=file_key)
         if get_content:
             # Get the actual content
-            response = s3_client.get_object(Bucket=bucket_name, Key=file_key)
-            content = response["Body"].read()
-            return response["ContentLength"], content
+            response = s3_client.get_fileobj(Bucket=bucket_name, Key=file_key)
+            return int(size_response["ContentLength"]), response
 
         # Get presigned URL
         presigned_url = create_presigned_url_for_s3(s3_client, bucket_name, file_key)
-        # Get file size
-        response = s3_client.head_object(Bucket=bucket_name, Key=file_key)
-        return int(response["ContentLength"]), str(presigned_url)
+        return int(size_response["ContentLength"]), str(presigned_url)
     except ClientError as e:
         logger.error(f"Error retrieving file from S3: {e}")
         raise e

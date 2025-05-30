@@ -5,7 +5,7 @@ import zipfile
 from collections import defaultdict
 from io import BytesIO
 from pathlib import Path
-from typing import Any, Iterator, Optional
+from typing import Any, Optional
 
 import jinja2
 from jinja2 import Environment, FileSystemLoader
@@ -13,7 +13,6 @@ from loguru import logger
 
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.policy import ActionType
-from fides.api.service.storage.util import AllowedFileType
 from fides.api.util.storage_util import StorageJSONEncoder
 
 DSR_DIRECTORY = Path(__file__).parent.resolve()
@@ -169,92 +168,58 @@ class DsrReportBuilder:
 
     def _write_attachment_content(
         self,
-        file_name: str,
-        content: Any,
-        content_type: str,
+        attachments: list[dict[str, Any]],
         directory: str,
-    ) -> None:
+    ) -> dict[str, str]:
         """
-        Writes attachment content to the specified directory, handling different content types appropriately.
-        Uses streaming for large files to minimize memory usage.
+        Writes attachment content to the specified directory.
+        Handles file objects.
 
         Args:
-            file_name: The name of the file to write
-            content: The content to write
-            content_type: The content type of the file
+            attachments: The attachments to write
             directory: The directory to write to (without trailing slash)
+
+        Returns:
+            Dictionary mapping original filenames to unique filenames
         """
-        if not content:
-            return
+        attachment_links = {}  # Track unique filenames for this specific item
+        for attachment in attachments:
+            if not isinstance(attachment, dict):
+                continue
 
-        # Get a unique filename to prevent duplicates
-        unique_filename = self._get_unique_filename(directory, file_name)
-        if unique_filename != file_name:
-            logger.debug(
-                "Renamed duplicate file from {} to {}", file_name, unique_filename
-            )
+            file_name = attachment.get("file_name")
+            if not file_name:
+                logger.warning("Skipping attachment with no file name")
+                continue
 
-        # Handle text-based content types
-        if content_type in [AllowedFileType.txt.value, AllowedFileType.csv.value]:
-            if isinstance(content, bytes):
-                content = content.decode("utf-8")
-            self._add_file(f"{directory}/{unique_filename}", content)
-            return
+            fileobj = attachment.get("fileobj")
+            if not fileobj:
+                logger.warning("Skipping attachment with no fileobj")
+                continue
 
-        # Handle binary content types
-        if not isinstance(content, bytes):
-            content = content.encode("utf-8")
+            # Get a unique filename to prevent duplicates
+            unique_filename = self._get_unique_filename(directory, file_name)
+            if unique_filename != file_name:
+                logger.debug(
+                    "Renamed duplicate file from {} to {}", file_name, unique_filename
+                )
 
-        # For large files, write in chunks to minimize memory usage
-        chunk_size = 1024 * 1024  # 1MB chunks
-        if len(content) > chunk_size:
-            with BytesIO(content) as content_stream:
-                while chunk := content_stream.read(chunk_size):
-                    self.out.writestr(
-                        f"{directory}/{unique_filename}", chunk, zipfile.ZIP_DEFLATED
-                    )
-        else:
+            # Store the unique filename in the links dictionary
+            attachment_links[unique_filename] = unique_filename
+
+            # Read the content from the file object
+            content = fileobj.read()
+            if not content:
+                logger.warning("Skipping attachment with empty content")
+                continue
+
+            # Reset the file pointer to the beginning
+            fileobj.seek(0)
+
+            # Write the content to the zip
             self.out.writestr(f"{directory}/{unique_filename}", content)
 
-    def _process_attachments_in_chunks(
-        self, attachments: list[dict[str, Any]], chunk_size: int = 10
-    ) -> Iterator[list[dict[str, Any]]]:
-        """
-        Process attachments in smaller chunks to reduce memory usage.
-
-        Args:
-            attachments: List of attachments to process
-            chunk_size: Number of attachments to process at once
-
-        Yields:
-            Chunks of processed attachments
-        """
-        for i in range(0, len(attachments), chunk_size):
-            chunk = attachments[i : i + chunk_size]
-            processed_chunk = []
-            for attachment in chunk:
-                if not isinstance(attachment, dict):
-                    continue
-
-                file_name = attachment.get("file_name")
-                if not file_name:  # Skip if no file name
-                    logger.warning("Skipping attachment with no file name")
-                    continue
-
-                content = attachment.get("content")
-                content_type = attachment.get("content_type", "")
-
-                if content:
-                    processed_chunk.append(
-                        {
-                            "file_name": file_name,
-                            "content": content,
-                            "content_type": content_type,
-                        }
-                    )
-                else:
-                    logger.warning("Skipping attachment with no content")
-            yield processed_chunk
+        return attachment_links
 
     def _add_collection(
         self, rows: list[dict[str, Any]], dataset_name: str, collection_name: str
@@ -276,22 +241,10 @@ class DsrReportBuilder:
             if "attachments" in collection_item and isinstance(
                 collection_item["attachments"], list
             ):
-                # Process attachments in chunks to minimize memory usage
-                for chunk in self._process_attachments_in_chunks(
-                    collection_item["attachments"]
-                ):
-                    for attachment in chunk:
-                        directory = f"data/{dataset_name}/{collection_name}"
-                        unique_filename = self._get_unique_filename(
-                            directory, attachment["file_name"]
-                        )
-                        item_attachment_links[unique_filename] = unique_filename
-                        self._write_attachment_content(
-                            unique_filename,
-                            attachment["content"],
-                            attachment["content_type"],
-                            directory,
-                        )
+                item_attachment_links = self._write_attachment_content(
+                    collection_item["attachments"],
+                    f"data/{dataset_name}/{collection_name}",
+                )
 
             # Add item content to the list
             items_content.append(
@@ -317,7 +270,6 @@ class DsrReportBuilder:
     def _add_attachments(self, attachments: list[dict[str, Any]]) -> None:
         """
         Adds top-level attachments to the zip file.
-        Processes attachments in chunks to minimize memory usage.
 
         Args:
             attachments: the attachments to add
@@ -325,26 +277,8 @@ class DsrReportBuilder:
         if not attachments or not isinstance(attachments, list):
             return
 
-        # Create attachment links for the index page
-        attachment_links = {}
-
-        # Process attachments in chunks
-        for chunk in self._process_attachments_in_chunks(attachments):
-            for attachment in chunk:
-                file_name = attachment["file_name"]
-                content = attachment["content"]
-                content_type = attachment["content_type"]
-
-                # Get unique filename for the attachment
-                unique_filename = self._get_unique_filename("attachments", file_name)
-
-                # Store the unique filename in the links dictionary
-                attachment_links[unique_filename] = unique_filename
-
-                # Write the attachment to the top-level attachments directory
-                self._write_attachment_content(
-                    unique_filename, content, content_type, "attachments"
-                )
+        # Process attachments and get the links
+        attachment_links = self._write_attachment_content(attachments, "attachments")
 
         # Generate attachments index page using the attachments index template
         self._add_file(

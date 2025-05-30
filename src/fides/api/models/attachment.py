@@ -1,5 +1,6 @@
 import os
 from enum import Enum as EnumType
+from io import BytesIO
 from typing import IO, TYPE_CHECKING, Any, Tuple
 
 from fideslang.validation import AnyHttpUrlString
@@ -236,7 +237,7 @@ class Attachment(Base):
 
     def retrieve_attachment_content(
         self,
-    ) -> Tuple[int, bytes]:
+    ) -> Tuple[int, IO[bytes]]:
         """
         Retrieves the size of the attachment and its actual content.
         - For s3:
@@ -252,14 +253,14 @@ class Attachment(Base):
         if self.config.type == StorageType.s3:
             bucket_name = f"{self.config.details[StorageDetails.BUCKET.value]}"
             auth_method = self.config.details[StorageDetails.AUTH_METHOD.value]
-            size, content = generic_retrieve_from_s3(
+            size, fileobj = generic_retrieve_from_s3(
                 storage_secrets=self.config.secrets,
                 bucket_name=bucket_name,
                 file_key=f"{self.id}/{self.file_name}",
                 auth_method=auth_method,
                 get_content=True,
             )
-            return size, content
+            return size, fileobj
 
         if self.config.type == StorageType.gcs:
             bucket_name = f"{self.config.details[StorageDetails.BUCKET.value]}"
@@ -268,15 +269,17 @@ class Attachment(Base):
             bucket = storage_client.bucket(bucket_name)
             blob = bucket.blob(f"{self.id}/{self.file_name}")
 
-            content = blob.download_as_bytes()
-            return len(content), content
+            fileobj = BytesIO()
+            blob.download_to_file(fileobj)
+            fileobj.seek(0)  # Reset pointer to beginning after download
+            return len(fileobj.getvalue()), fileobj
 
         if self.config.type == StorageType.local:
             filename = get_local_filename(f"{self.id}/{self.file_name}")
             with open(filename, "rb") as file:
-                content = file.read()
-                size = len(content)
-                return size, content
+                fileobj = file.read()
+                size = len(fileobj)
+                return size, fileobj
 
         raise ValueError(f"Unsupported storage type: {self.config.type}")
 
