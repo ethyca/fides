@@ -25,8 +25,9 @@ import {
 import { ConnectionConfigurationResponse } from "~/types/api";
 
 import AddManualTaskModal from "./AddManualTaskModal";
+import { TASK_INPUT_TYPE_LABELS, TaskInputType } from "./types";
 
-const { Title, Text } = Typography;
+const { Title, Paragraph } = Typography;
 
 interface TaskConfigTabProps {
   integration: ConnectionConfigurationResponse;
@@ -63,7 +64,13 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
         id: `${index}`,
         name: field.pii_field || `Task ${index + 1}`,
         description: field.dsr_package_label || "Manual task",
-        types: field.types ? field.types.join(", ") : "N/A",
+        types: field.types
+          ? field.types
+              .map(
+                (type: TaskInputType) => TASK_INPUT_TYPE_LABELS[type] || type,
+              )
+              .join(", ")
+          : "N/A",
         status: "Active",
         originalField: field, // Store original field for editing
       }));
@@ -184,12 +191,11 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
     <Box maxW="720px">
       <Flex direction="column" gap={4}>
         <div>
-          <Title level={4}>Manual Tasks</Title>
-          <Text type="secondary">
+          <Paragraph>
             Configure and manage manual tasks for this integration. Tasks allow
             you to perform specific actions or operations related to your{" "}
             {integration.connection_type} integration.
-          </Text>
+          </Paragraph>
         </div>
 
         <Flex justify="space-between" align="center">
@@ -204,10 +210,10 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
           onRowClick={() => {}}
           emptyTableNotice={
             <Box textAlign="center" p={8}>
-              <Text type="secondary">
+              <Paragraph type="secondary">
                 No manual tasks configured yet. Click &apos;Add manual
                 task&apos; to get started.
-              </Text>
+              </Paragraph>
             </Box>
           }
         />

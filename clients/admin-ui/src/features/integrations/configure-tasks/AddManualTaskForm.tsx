@@ -7,6 +7,8 @@ import {
 } from "fidesui";
 import React from "react";
 
+import { TASK_INPUT_TYPE_OPTIONS, TaskInputType } from "./types";
+
 type Props = {
   isSubmitting: boolean;
   onSaveClick: (values: any) => void;
@@ -16,7 +18,7 @@ type Props = {
 interface TaskFormValues {
   name: string;
   description: string;
-  types: string;
+  types: TaskInputType;
 }
 
 const AddManualTaskForm = ({ isSubmitting, onSaveClick, onCancel }: Props) => {
@@ -68,10 +70,7 @@ const AddManualTaskForm = ({ isSubmitting, onSaveClick, onCancel }: Props) => {
       >
         <Select
           placeholder="Select task type"
-          options={[
-            { label: "String", value: "string" },
-            { label: "File", value: "file" },
-          ]}
+          options={TASK_INPUT_TYPE_OPTIONS}
         />
       </Form.Item>
 
