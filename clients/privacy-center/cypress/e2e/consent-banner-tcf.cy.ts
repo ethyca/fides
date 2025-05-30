@@ -4016,6 +4016,7 @@ describe("Fides-js TCF", () => {
           expect(body.purpose_consent_preferences).to.eql([]);
           expect(body.purpose_legitimate_interests_preferences).to.eql([]);
           expect(body.method).to.eql(ConsentMethod.SCRIPT);
+          cy.get("#fides-banner-container").should("not.exist");
         };
         it("rejects all notices automatically when set", () => {
           stubTCFExperience({
@@ -4130,6 +4131,7 @@ describe("Fides-js TCF", () => {
             },
           ]);
           expect(body.method).to.eql(ConsentMethod.SCRIPT);
+          cy.get("#fides-banner-container").should("not.exist");
         };
         it("accepts all notices automatically when set", () => {
           stubTCFExperience({

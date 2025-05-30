@@ -260,11 +260,15 @@ export const shouldResurfaceBanner = (
   if (!isPrivacyExperience(experience)) {
     return false;
   }
-  // Always resurface banner for TCF unless the saved version_hash matches
+  // Always resurface banner for TCF unless consent was set by override
+  // or the saved version_hash matches
   if (
     experience.experience_config?.component === ComponentType.TCF_OVERLAY &&
     !!cookie
   ) {
+    if (!!options && isConsentOverride(options)) {
+      return false;
+    }
     if (
       experience.meta?.version_hash &&
       cookie.fides_meta.consentMethod !== ConsentMethod.DISMISS
@@ -289,15 +293,13 @@ export const shouldResurfaceBanner = (
     return true;
   }
   // Never surface banner if consent was set by override
-  if (options && isConsentOverride(options)) {
+  if (!!options && isConsentOverride(options)) {
     return false;
   }
-
   // resurface in the special case where the saved consent is "gpc"
   if (cookie?.fides_meta.consentMethod === ConsentMethod.GPC) {
     return true;
   }
-
   // Lastly, if we do have a prior consent state, resurface if we find *any*
   // notices that don't have prior consent in that state
   const hasConsentInCookie = (
