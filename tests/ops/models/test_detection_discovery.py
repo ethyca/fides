@@ -715,7 +715,7 @@ class TestStagedResourceAncestorModel:
             data={
                 "urn": "test_urn_1",
                 "name": "Test Resource 1",
-                "resource_type": "Table",
+                "resource_type": "Table",  # not realistic, Table would not be ancestor of Table
             },
         )
         return resource
@@ -727,7 +727,7 @@ class TestStagedResourceAncestorModel:
             data={
                 "urn": "test_urn_2",
                 "name": "Test Resource 2",
-                "resource_type": "Table",
+                "resource_type": "Table",  # not realistic, Table would not be ancestor of Table
             },
         )
         return resource
@@ -739,7 +739,7 @@ class TestStagedResourceAncestorModel:
             data={
                 "urn": "test_urn_3",
                 "name": "Test Resource 3",
-                "resource_type": "Table",
+                "resource_type": "Table",  # not realistic # not realistic, Table would not be ancestor of Table
             },
         )
         return resource
