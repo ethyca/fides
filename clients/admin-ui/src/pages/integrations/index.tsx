@@ -8,7 +8,7 @@ import {
   useDisclosure,
 } from "fidesui";
 import type { NextPage } from "next";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 
 import { FidesTab } from "~/features/common/DataTabs";
 import FidesSpinner from "~/features/common/FidesSpinner";
@@ -48,13 +48,21 @@ const IntegrationListView: NextPage = () => {
     items?.map((i) => getIntegrationTypeInfo(i.connection_type)),
   );
 
-  const integrations =
-    items?.filter((integration) =>
-      filteredTypes.some(
-        (type) =>
-          type.placeholder.connection_type === integration.connection_type,
-      ),
-    ) ?? [];
+  const onChangeTabs = (newIndex: number) => {
+    setPage(1);
+    onChangeFilter(newIndex);
+  };
+
+  const integrations = useMemo(
+    () =>
+      items?.filter((integration) =>
+        filteredTypes.some(
+          (type) =>
+            type.placeholder.connection_type === integration.connection_type,
+        ),
+      ) ?? [],
+    [items, filteredTypes],
+  );
 
   return (
     <Layout title="Integrations">
@@ -67,7 +75,7 @@ const IntegrationListView: NextPage = () => {
         ]}
       />
       <Box data-testid="integration-tabs" display="flex">
-        <Tabs index={tabIndex} onChange={onChangeFilter} w="full">
+        <Tabs index={tabIndex} onChange={onChangeTabs} w="full">
           <TabList>
             {tabs.map((label) => (
               <FidesTab label={label} key={label} />
