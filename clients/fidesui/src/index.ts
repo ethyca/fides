@@ -49,6 +49,7 @@ export {
   List as AntList,
   Menu as AntMenu,
   message as AntMessage,
+  Pagination as AntPagination,
   Radio as AntRadio,
   Row as AntRow,
   Skeleton as AntSkeleton,

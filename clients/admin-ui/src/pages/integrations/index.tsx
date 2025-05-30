@@ -1,5 +1,6 @@
 import {
   AntButton as Button,
+  AntPagination as Pagination,
   Box,
   LinkIcon,
   TabList,
@@ -7,7 +8,7 @@ import {
   useDisclosure,
 } from "fidesui";
 import type { NextPage } from "next";
-import React from "react";
+import React, { useMemo, useState } from "react";
 
 import { FidesTab } from "~/features/common/DataTabs";
 import FidesSpinner from "~/features/common/FidesSpinner";
@@ -21,10 +22,19 @@ import getIntegrationTypeInfo, {
 import IntegrationList from "~/features/integrations/IntegrationList";
 import useIntegrationFilterTabs from "~/features/integrations/useIntegrationFilterTabs";
 
+const DEFAULT_PAGE_SIZE = 50;
+const MIN_ITEMS_FOR_PAGINATION = 10;
+
 const IntegrationListView: NextPage = () => {
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+
   const { data, isLoading } = useGetAllDatastoreConnectionsQuery({
     connection_type: SUPPORTED_INTEGRATIONS,
+    size: pageSize,
+    page,
   });
+  const { items, total } = data ?? {};
 
   const { onOpen, isOpen, onClose } = useDisclosure();
   const {
@@ -35,16 +45,24 @@ const IntegrationListView: NextPage = () => {
     filteredTypes,
     tabs,
   } = useIntegrationFilterTabs(
-    data?.items?.map((i) => getIntegrationTypeInfo(i.connection_type)),
+    items?.map((i) => getIntegrationTypeInfo(i.connection_type)),
   );
 
-  const integrations =
-    data?.items.filter((integration) =>
-      filteredTypes.some(
-        (type) =>
-          type.placeholder.connection_type === integration.connection_type,
-      ),
-    ) ?? [];
+  const onChangeTabs = (newIndex: number) => {
+    setPage(1);
+    onChangeFilter(newIndex);
+  };
+
+  const integrations = useMemo(
+    () =>
+      items?.filter((integration) =>
+        filteredTypes.some(
+          (type) =>
+            type.placeholder.connection_type === integration.connection_type,
+        ),
+      ) ?? [],
+    [items, filteredTypes],
+  );
 
   return (
     <Layout title="Integrations">
@@ -57,7 +75,7 @@ const IntegrationListView: NextPage = () => {
         ]}
       />
       <Box data-testid="integration-tabs" display="flex">
-        <Tabs index={tabIndex} onChange={onChangeFilter} w="full">
+        <Tabs index={tabIndex} onChange={onChangeTabs} w="full">
           <TabList>
             {tabs.map((label) => (
               <FidesTab label={label} key={label} />
@@ -84,11 +102,27 @@ const IntegrationListView: NextPage = () => {
       {isLoading || isFiltering ? (
         <FidesSpinner />
       ) : (
-        <IntegrationList
-          integrations={integrations}
-          onOpenAddModal={onOpen}
-          isFiltered={anyFiltersApplied}
-        />
+        <>
+          <IntegrationList
+            integrations={integrations}
+            onOpenAddModal={onOpen}
+            isFiltered={anyFiltersApplied}
+          />
+          {!!total && total > MIN_ITEMS_FOR_PAGINATION && (
+            <Pagination
+              data-testid="pagination-controls"
+              size="small"
+              total={total}
+              pageSize={pageSize}
+              current={page}
+              onChange={(pg, pgSize) => {
+                setPage(pg);
+                setPageSize(pgSize);
+              }}
+              showSizeChanger
+            />
+          )}
+        </>
       )}
       <AddIntegrationModal isOpen={isOpen} onClose={onClose} />
     </Layout>
