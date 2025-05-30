@@ -37,6 +37,7 @@ EXEC = "exec"
 FIDES_TAXONOMY = "fides_taxonomy"
 GENERATE = "generate"
 INSTANTIATE = "instantiate"
+MANUAL_STEPS = "manual-steps"
 MASKING = "masking"
 MESSAGING = "messaging"
 ORGANIZATION = "organization"
@@ -51,6 +52,7 @@ PRIVACY_REQUEST_NOTIFICATIONS = "privacy-request-notifications"
 READ = "read"
 REGISTER = "register"
 RESET = "reset"
+RESPOND = "respond"
 RESUME = "resume"
 REVIEW = "review"
 RULE = "rule"
@@ -174,6 +176,8 @@ PRIVACY_PREFERENCE_HISTORY_READ = f"{PRIVACY_PREFERENCE_HISTORY}:{READ}"
 PRIVACY_REQUEST_CALLBACK_RESUME = f"{PRIVACY_REQUEST}:{RESUME}"  # User has permission to restart a paused privacy request
 PRIVACY_REQUEST_CREATE = f"{PRIVACY_REQUEST}:{CREATE}"
 PRIVACY_REQUEST_DELETE = f"{PRIVACY_REQUEST}:{DELETE}"
+PRIVACY_REQUEST_MANUAL_STEPS_REVIEW = f"{PRIVACY_REQUEST}:{MANUAL_STEPS}:{REVIEW}"
+PRIVACY_REQUEST_MANUAL_STEPS_RESPOND = f"{PRIVACY_REQUEST}:{MANUAL_STEPS}:{RESPOND}"
 PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE = (
     f"{PRIVACY_REQUEST_NOTIFICATIONS}:{CREATE_OR_UPDATE}"
 )
@@ -312,6 +316,8 @@ SCOPE_DOCS = {
     PRIVACY_REQUEST_CALLBACK_RESUME: "Restart paused privacy requests",
     PRIVACY_REQUEST_READ_ACCESS_RESULTS: "Download access data for the privacy request",
     PRIVACY_REQUEST_DELETE: "Remove privacy requests",
+    PRIVACY_REQUEST_MANUAL_STEPS_RESPOND: "Respond to manual steps for the privacy request",
+    PRIVACY_REQUEST_MANUAL_STEPS_REVIEW: "Review manual steps for the privacy request",
     PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE: "",
     PRIVACY_REQUEST_NOTIFICATIONS_READ: "",
     PRIVACY_REQUEST_READ: "View privacy requests",

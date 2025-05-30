@@ -132,7 +132,7 @@ class TestCreateUserPermissions:
         response_body = response.json()
         assert HTTP_422_UNPROCESSABLE_ENTITY == response.status_code
         assert (
-            "Input should be 'owner', 'viewer_and_approver', 'viewer', 'approver' or 'contributor'"
+            "Input should be 'owner', 'viewer_and_approver', 'viewer', 'approver', 'contributor', 'respondent' or 'external_respondent'"
             in response_body["detail"][0]["msg"]
         )
 

@@ -585,6 +585,38 @@ dataset:
     - name: user_id
       data_categories:
       - system.operations
+  - name: fides_user_respondent_email_verification
+    fields:
+    - name: id
+      data_categories:
+      - system.operations
+    - name: username
+      data_categories:
+      - system.operations
+    - name: user_id
+      data_categories:
+      - system.operations
+    - name: access_token
+      data_categories:
+      - system.operations
+    - name: access_token_expires_at
+      data_categories:
+      - system.operations
+    - name: verification_code
+      data_categories:
+      - system.operations
+    - name: verification_code_expires_at
+      data_categories:
+      - system.operations
+    - name: attempts
+      data_categories:
+      - system.operations
+    - name: created_at
+      data_categories:
+      - system.operations
+    - name: updated_at
+      data_categories:
+      - system.operations
   - name: ctl_organizations
     fields:
     - name: controller
