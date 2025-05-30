@@ -1,6 +1,6 @@
-from typing import Dict, Optional
+from typing import Optional
 
-from google.cloud.storage import Client  # type: ignore
+from google.cloud.storage import Blob, Client  # type: ignore
 from google.oauth2 import service_account
 from loguru import logger
 
@@ -10,7 +10,7 @@ from fides.api.schemas.storage.storage import GCSAuthMethod
 
 def get_gcs_client(
     auth_method: str,
-    storage_secrets: Optional[Dict],
+    storage_secrets: Optional[dict],
 ) -> Client:
     """
     Abstraction to retrieve a GCS client using secrets.
@@ -36,3 +36,15 @@ def get_gcs_client(
         )
 
     return storage_client
+
+
+def get_gcs_blob(
+    auth_method: str, storage_secrets: Optional[dict], bucket_name: str, file_key: str
+) -> Blob:
+    try:
+        storage_client = get_gcs_client(auth_method, storage_secrets)
+        bucket = storage_client.bucket(bucket_name)
+        return bucket.blob(file_key)
+    except Exception as e:
+        logger.error(f"Error getting GCS blob: {str(e)}")
+        raise e
