@@ -32,6 +32,7 @@ from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.masking_secret import MaskingSecret
 from fides.api.models.policy import Policy
 from fides.api.models.pre_approval_webhook import PreApprovalWebhookReply
 from fides.api.models.privacy_request import (
@@ -645,6 +646,17 @@ class TestCreatePrivacyRequest:
             )
             is not None
         )
+
+        # Directly query the database for MaskingSecret records
+        db_secrets = (
+            db.query(MaskingSecret)
+            .filter(MaskingSecret.privacy_request_id == pr.id)
+            .all()
+        )
+
+        assert (
+            len(db_secrets) == 3
+        ), "Expected 3 secrets to be saved in the database for aes_encrypt"
 
         pr.delete(db=db)
         assert run_erasure_request_mock.called
