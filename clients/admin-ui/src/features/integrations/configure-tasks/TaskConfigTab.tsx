@@ -9,6 +9,7 @@ import {
   AntTypography as Typography,
   Box,
   Flex,
+  Icons,
   useDisclosure,
 } from "fidesui";
 import { useEffect, useMemo, useState } from "react";
@@ -38,7 +39,6 @@ interface Task {
   name: string;
   description: string;
   types: string;
-  status: string;
   originalField: any; // Store the original field data for editing
 }
 
@@ -71,7 +71,6 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
               )
               .join(", ")
           : "N/A",
-        status: "Active",
         originalField: field, // Store original field for editing
       }));
       setTasks(transformedTasks);
@@ -117,18 +116,22 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
     <DefaultCell value={props.getValue()} />
   );
   const renderTypes = (props: any) => <DefaultCell value={props.getValue()} />;
-  const renderStatus = (props: any) => <DefaultCell value={props.getValue()} />;
 
   const renderActions = (props: any) => {
     const task = props.row.original;
     return (
       <Flex gap={2}>
-        <Button size="small" onClick={() => handleEdit(task)}>
-          Edit
-        </Button>
-        <Button size="small" danger onClick={() => handleDelete(task)}>
-          Delete
-        </Button>
+        <Button
+          size="small"
+          icon={<Icons.Edit />}
+          onClick={() => handleEdit(task)}
+        />
+        <Button
+          size="small"
+          danger
+          icon={<Icons.TrashCan />}
+          onClick={() => handleDelete(task)}
+        />
       </Flex>
     );
   };
@@ -141,9 +144,6 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
   );
   const renderTypesHeader = (props: any) => (
     <DefaultHeaderCell value="Types" {...props} />
-  );
-  const renderStatusHeader = (props: any) => (
-    <DefaultHeaderCell value="Status" {...props} />
   );
   const renderActionsHeader = (props: any) => (
     <DefaultHeaderCell value="Actions" {...props} />
@@ -165,11 +165,6 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
         id: "types",
         cell: renderTypes,
         header: renderTypesHeader,
-      }),
-      columnHelper.accessor((row) => row.status, {
-        id: "status",
-        cell: renderStatus,
-        header: renderStatusHeader,
       }),
       columnHelper.display({
         id: "actions",
