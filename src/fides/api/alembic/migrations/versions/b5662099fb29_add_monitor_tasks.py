@@ -36,7 +36,17 @@ def upgrade():
         sa.Column("action_type", sa.String(), nullable=False),
         sa.Column(
             "status",
-            sa.Enum(name="executionlogstatus"),
+            sa.Enum(
+                "in_processing",
+                "pending",
+                "complete",
+                "error",
+                "paused",
+                "retrying",
+                "skipped",
+                name="executionlogstatus",
+                native_enum=False,
+            ),
             nullable=False,
         ),
         sa.Column("celery_id", sa.String(length=255), nullable=False),
@@ -66,7 +76,7 @@ def upgrade():
         sa.Column("id", sa.String(length=255), nullable=False),
         sa.Column(
             "status",
-            sa.Enum(name="executionlogstatus"),
+            postgresql.ENUM(name="executionlogstatus", create_type=False),
             nullable=False,
         ),
         sa.Column("message", sa.String(), nullable=True),
