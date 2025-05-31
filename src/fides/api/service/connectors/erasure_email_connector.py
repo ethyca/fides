@@ -10,9 +10,9 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.privacy_request import ExecutionLog
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.connection_configuration import EmailSchema
 from fides.api.schemas.policy import ActionType
-from fides.api.schemas.privacy_request import ExecutionLogStatus
 from fides.api.service.connectors.base_erasure_email_connector import (
     BaseErasureEmailConnector,
     filter_user_identities_for_connector,
