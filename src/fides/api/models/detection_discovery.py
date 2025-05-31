@@ -715,9 +715,9 @@ def create_monitor_task_with_execution_log(
     """
     Creates a monitor task with an execution log.
     """
-    status = ExecutionLogStatus.pending.value
+    status = ExecutionLogStatus.pending
     task_record = MonitorTask(  # type: ignore
-        status=status,
+        status=status.value,
         **monitor_task_data,
     )
     db.add(task_record)
@@ -747,25 +747,28 @@ def update_monitor_task_with_execution_log(
     It must be either celery_id or task_record. If it doesn't receive a celery_id, it's assumed a new one needs to be created because a new run is about to be performed.
     If it receives a celery_id, it means it only needs to update the status of an existing run. It can receive task_record to avoid querying the database again to get it.
     """
-    if celery_id:
-        uuid = celery_id
-        if not task_record:
-            task_record = MonitorTask.get_by(db=db, field="celery_id", value=celery_id)
-    elif task_record:
-        uuid = task_record.generate_uuid()
-        task_record.celery_id = uuid
-    else:
+    if not celery_id and not task_record:
         raise ValueError("Either celery_id or task_record must be provided")
 
+    if celery_id and not task_record:
+        task_record = MonitorTask.get_by(db=db, field="celery_id", value=celery_id)
+        if not task_record:
+            raise ValueError(f"Could not find MonitorTask with celery_id {celery_id}")
+
     assert task_record is not None  # help type checker understand the control flow
+
+    if not celery_id:
+        celery_id = task_record.generate_uuid()
+        task_record.celery_id = celery_id
+
     task_record.status = status.value  # type: ignore
     task_record.message = message
 
     MonitorTaskExecutionLog(  # type: ignore
         monitor_task=task_record,
-        status=status.value,
+        status=status,
         message=message,
-        celery_id=uuid,
+        celery_id=celery_id,
         run_type=run_type,
     )
 
