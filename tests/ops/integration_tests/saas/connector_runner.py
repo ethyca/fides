@@ -152,7 +152,7 @@ class ConnectorRunner:
                 ), f"No rows returned for collection '{collection['name']}'"
         return access_results
 
-    async def strict_erasure_request(
+    async def erasure_request(
         self,
         access_policy: Policy,
         erasure_policy: Policy,
@@ -161,43 +161,8 @@ class ConnectorRunner:
         skip_access_results_check: Optional[bool] = False,
     ) -> Tuple[Dict, Dict]:
         """
-        Erasure request with masking_strict set to true,
-        meaning we will only update data, not delete it
+        Erasure request for a given access policy and erasure policy and identities
         """
-
-        # store the existing masking_strict value so we can reset it at the end of the test
-        masking_strict = CONFIG.execution.masking_strict
-        CONFIG.execution.masking_strict = True
-        ApplicationConfig.update_config_set(self.db, CONFIG)
-
-        access_results, erasure_results = await self._base_erasure_request(
-            access_policy, erasure_policy, identities, privacy_request_id
-        )
-
-        # reset masking_strict value
-        CONFIG.execution.masking_strict = masking_strict
-        ApplicationConfig.update_config_set(self.db, CONFIG)
-        return access_results, erasure_results
-
-    async def non_strict_erasure_request(
-        self,
-        access_policy: Policy,
-        erasure_policy: Policy,
-        identities: Dict[str, Any],
-        privacy_request_id: Optional[str] = None,
-        skip_access_results_check: Optional[bool] = False,
-    ) -> Tuple[Dict, Dict]:
-        """
-        Erasure request with masking_strict set to false,
-        meaning we will use deletes to mask data if an update
-        is not available
-        """
-
-        # store the existing masking_strict value so we can reset it at the end of the test
-        masking_strict = CONFIG.execution.masking_strict
-        CONFIG.execution.masking_strict = False
-        ApplicationConfig.update_config_set(self.db, CONFIG)
-
         access_results, erasure_results = await self._base_erasure_request(
             access_policy,
             erasure_policy,
@@ -206,9 +171,6 @@ class ConnectorRunner:
             skip_access_results_check,
         )
 
-        # reset masking_strict value
-        CONFIG.execution.masking_strict = masking_strict
-        ApplicationConfig.update_config_set(self.db, CONFIG)
         return access_results, erasure_results
 
     async def old_consent_request(
