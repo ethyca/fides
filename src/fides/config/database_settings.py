@@ -131,7 +131,7 @@ class DatabaseSettings(FidesSettings):
         description="Programmatically created asynchronous connection string for the configured database (either application or test).",
         exclude=True,
     )
-    readonly_async_database_uri: str = Field(
+    readonly_async_database_uri: Optional[str] = Field(
         default=None,
         description="Programmatically created connection string for the read-only application database.",
         exclude=True,
