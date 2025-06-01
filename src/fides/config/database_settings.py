@@ -131,6 +131,11 @@ class DatabaseSettings(FidesSettings):
         description="Programmatically created asynchronous connection string for the configured database (either application or test).",
         exclude=True,
     )
+    readonly_async_database_uri: str = Field(
+        default="",
+        description="Programmatically created read-only asynchronous connection string for the configured database (either application or test).",
+        exclude=True,
+    )
     sync_database_uri: str = Field(
         default="",
         description="Programmatically created synchronous connection string for the configured database (either application or test).",
@@ -182,6 +187,43 @@ class DatabaseSettings(FidesSettings):
         """Join DB connection credentials into an async connection string."""
         if isinstance(value, str) and value:
             return value
+
+        db_name = info.data.get("test_db") if get_test_mode() else info.data.get("db")
+
+        # Workaround https://github.com/MagicStack/asyncpg/issues/737
+        # Required due to the unique way in which Asyncpg handles SSL
+        params = cast(Dict, deepcopy(info.data.get("params")))
+        if "sslmode" in params:
+            params["ssl"] = params.pop("sslmode")
+        # This must be constructed in fides.api.db.session as part of the ssl context
+        # ref: https://github.com/sqlalchemy/sqlalchemy/discussions/5975
+        params.pop("sslrootcert", None)
+        # End workaround
+
+        port: int = port_integer_converter(info)
+        return str(
+            PostgresDsn.build(  # pylint: disable=no-member
+                scheme="postgresql+asyncpg",
+                username=info.data.get("user"),
+                password=info.data.get("password"),
+                host=info.data.get("server"),
+                port=port,
+                path=f"{db_name or ''}",
+                query=urlencode(params, quote_via=quote, safe="/") if params else None,
+            )
+        )
+
+    @field_validator("readonly_async_database_uri", mode="before")
+    @classmethod
+    def assemble_readonly_async_database_uri(
+        cls, value: Optional[str], info: ValidationInfo
+    ) -> str:
+        """Join DB connection credentials into an async connection string."""
+        if isinstance(value, str) and value:
+            return value
+
+        if not info.data.get("readonly_server"):
+            return None
 
         db_name = info.data.get("test_db") if get_test_mode() else info.data.get("db")
 
