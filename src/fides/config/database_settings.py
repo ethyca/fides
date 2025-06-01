@@ -217,7 +217,7 @@ class DatabaseSettings(FidesSettings):
     @classmethod
     def assemble_readonly_async_database_uri(
         cls, value: Optional[str], info: ValidationInfo
-    ) -> str:
+    ) -> Optional[str]:
         """Join DB connection credentials into an async connection string."""
         if isinstance(value, str) and value:
             return value
