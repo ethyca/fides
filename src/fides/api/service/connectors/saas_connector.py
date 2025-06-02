@@ -530,6 +530,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         session = Session.object_session(privacy_request)
         masking_request = query_config.get_masking_request(session)
+        rows_updated = 0
 
         if not masking_request:
             logger.info(
@@ -537,7 +538,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 self.current_collection_name,
                 self.saas_config.fides_key,  # type: ignore
             )
-            return 0
+            return rows_updated
 
         self.set_saas_request_state(masking_request)
 
@@ -568,7 +569,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             cast(Optional[List[PostProcessorStrategy]], masking_request.postprocessors),
         )
 
-        rows_updated = 0
         client = self.create_client()
         for row in rows:
             try:
