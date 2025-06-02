@@ -27,6 +27,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Attachments can now retrieve their content as well as their download urls [#6169 ](https://github.com/ethyca/fides/pull/6169)
 - Added pagination support to integrations list page for better navigation with large datasets [#6184](https://github.com/ethyca/fides/pull/6184)
 - Shared monitor config model [#6167](https://github.com/ethyca/fides/pull/6167)
+- Added data_sales to Shopify consent_map [#6169](https://github.com/ethyca/fides/pull/6189)
 
 ### Changed
 - Deprecated `FidesInitialized` event and added `FidesConsentLoaded` and `FidesReady` events for more granular initialization state handling [#6181](https://github.com/ethyca/fides/pull/6181)
