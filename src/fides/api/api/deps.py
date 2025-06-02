@@ -87,7 +87,12 @@ def get_readonly_api_session() -> Session:
             keepalives_idle=CONFIG.database.api_engine_keepalives_idle,
             keepalives_interval=CONFIG.database.api_engine_keepalives_interval,
             keepalives_count=CONFIG.database.api_engine_keepalives_count,
+        ).execution_options(
+            isolation_level="SERIALIZABLE",
+            postgresql_readonly=True,
+            postgresql_deferrable=True,
         )
+
     SessionLocal = get_db_session(CONFIG, engine=_readonly_engine)
     db = SessionLocal()
     return db
