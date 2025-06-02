@@ -122,6 +122,11 @@ class FidesUserRespondentEmailVerification(Base):
 
         return self.access_token == token
 
+    def reset_attempts(self, db: Session) -> None:
+        """Reset the number of attempts to 0."""
+        self.attempts = 0
+        self.save(db)
+
     def generate_verification_code(self, db: Session) -> str:
         """Generate a new verification code when access link is used."""
         # Generate a 16 character string
@@ -142,21 +147,26 @@ class FidesUserRespondentEmailVerification(Base):
         If the verification code is expired, the user is not considered verified.
         If the user has reached the maximum number of attempts, the user is not considered verified.
         """
+        from loguru import logger
         if self.is_verification_code_expired():
+            self.attempts += 1
+            self.save(db)
             return False
 
+        logger.info(f"Attempts: {self.attempts}")
+        logger.info(f"Max attempts: {MAX_ATTEMPTS}")
+        logger.info(f"Attempts >= MAX_ATTEMPTS: {self.attempts >= MAX_ATTEMPTS}")
+        logger.info(f"type(self.attempts): {type(self.attempts)}")
+        logger.info(f"type(MAX_ATTEMPTS): {type(MAX_ATTEMPTS)}")
+
         if self.attempts >= MAX_ATTEMPTS:
+            logger.info(f"Maximum number of attempts for verification reached.")
             raise ValueError("Maximum number of attempts for verification reached.")
 
         if self.verification_code == code:
-            self.attempts = 0
+            self.reset_attempts(db)
             return True
 
         self.attempts += 1
         self.save(db)
         return False
-
-    def reset_attempts(self, db: Session) -> None:
-        """Reset the number of attempts to 0."""
-        self.attempts = 0
-        self.save(db)

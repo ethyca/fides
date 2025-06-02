@@ -196,21 +196,27 @@ class TestFidesUserRespondentEmailVerification:
 
         code = verification.generate_verification_code(db)
         assert verification.verify_code(code, db)
-        assert verification.attempts == 1
+        # Correct code should reset attempts and not increment
+        assert verification.attempts == 0
 
         # Test invalid code
+        # Incorrect code should increment attempts
         assert not verification.verify_code("000000", db)
-        assert verification.attempts == 2
+        assert verification.attempts == 1
 
         # Test expired code
+        # Expired code should increment attempts
         verification.verification_code_expires_at = datetime.now(
             timezone.utc
         ) - timedelta(hours=1)
         assert not verification.verify_code(code, db)
+        assert verification.attempts == 2
 
     def test_verify_code_max_attempts(
         self, db: Session, external_respondent: FidesUser
     ) -> None:
+        from loguru import logger
+
         verification = FidesUserRespondentEmailVerification.create(
             db=db,
             data={
@@ -218,8 +224,36 @@ class TestFidesUserRespondentEmailVerification:
                 "user_id": external_respondent.id,
             },
         )
+        verification.generate_verification_code(db)
         for _ in range(MAX_ATTEMPTS):
             assert not verification.verify_code("000000", db)
+            logger.info(f"Attempt {_ + 1} of {MAX_ATTEMPTS}")
+
+        # This attempt should raise ValueError since attempts > MAX_ATTEMPTS
         with pytest.raises(ValueError) as exc:
             verification.verify_code("000000", db)
         assert str(exc.value) == "Maximum number of attempts for verification reached."
+
+    def test_reset_attempts(self, db: Session, external_respondent: FidesUser) -> None:
+        verification = FidesUserRespondentEmailVerification.create(
+            db=db,
+            data={
+                "username": external_respondent.username,
+                "user_id": external_respondent.id,
+            },
+        )
+        # Should be 0 attempts
+        assert verification.attempts == 0
+        # Should be 1 attempt
+        verification.verify_code("000000", db)
+        assert verification.attempts == 1
+        # Should be 0 attempts
+        verification.reset_attempts(db)
+        assert verification.attempts == 0
+
+        code = verification.generate_verification_code(db)
+        verification.verify_code("000000", db)
+        assert verification.attempts == 1
+        # Correct code should reset attempts
+        verification.verify_code(code, db)
+        assert verification.attempts == 0
