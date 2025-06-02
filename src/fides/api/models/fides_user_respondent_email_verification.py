@@ -32,7 +32,7 @@ class FidesUserRespondentEmailVerification(Base):
     The verification code is sent to the respondent's email address and the respondent is prompted to enter the code.
     If the code is correct and has not expired, the respondent is considered verified.
     If the code is incorrect, the number of attempts is incremented and the verification is saved.
-    If the user attemptes to use a link with an expired access token the user is not verified.
+    If the user attempts to use a link with an expired access token the user is not verified.
     """
 
     @declared_attr
