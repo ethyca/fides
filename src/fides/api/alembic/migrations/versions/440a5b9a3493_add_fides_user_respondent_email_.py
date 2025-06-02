@@ -1,7 +1,7 @@
 """Add fides_user_respondent_email_verification table
 
 Revision ID: 440a5b9a3493
-Revises: d0cbfec0b2dd
+Revises: 2263583b0e44
 Create Date: 2025-05-29 15:41:59.521940
 
 """
@@ -12,7 +12,7 @@ from citext import CIText
 
 # revision identifiers, used by Alembic.
 revision = "440a5b9a3493"
-down_revision = "d0cbfec0b2dd"
+down_revision = "2263583b0e44"
 branch_labels = None
 depends_on = None
 

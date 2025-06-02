@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_respondent_email_verification import (
     ACCESS_LINK_TTL_DAYS,
+    MAX_ATTEMPTS,
     VERIFICATION_CODE_TTL_HOURS,
     FidesUserRespondentEmailVerification,
 )
@@ -206,3 +207,19 @@ class TestFidesUserRespondentEmailVerification:
             timezone.utc
         ) - timedelta(hours=1)
         assert not verification.verify_code(code, db)
+
+    def test_verify_code_max_attempts(
+        self, db: Session, external_respondent: FidesUser
+    ) -> None:
+        verification = FidesUserRespondentEmailVerification.create(
+            db=db,
+            data={
+                "username": external_respondent.username,
+                "user_id": external_respondent.id,
+            },
+        )
+        for _ in range(MAX_ATTEMPTS):
+            assert not verification.verify_code("000000", db)
+        with pytest.raises(ValueError) as exc:
+            verification.verify_code("000000", db)
+        assert str(exc.value) == "Maximum number of attempts for verification reached."

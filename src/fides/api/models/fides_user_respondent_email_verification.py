@@ -10,6 +10,10 @@ from sqlalchemy.orm import Session, relationship
 
 from fides.api.cryptography.cryptographic_util import generate_secure_random_string
 from fides.api.db.base_class import Base
+from fides.config import get_config
+
+CONFIG = get_config()
+
 
 if TYPE_CHECKING:
     from fides.api.models.fides_user import FidesUser
@@ -18,13 +22,14 @@ if TYPE_CHECKING:
 # The emails are created for new DSRs which are assigned to the respondent.
 ACCESS_LINK_TTL_DAYS = 45
 VERIFICATION_CODE_TTL_HOURS = 1  # Verification codes expire after 1 hour
+MAX_ATTEMPTS = CONFIG.security.respondent_verification_max_attempts
 
 
 class FidesUserRespondentEmailVerification(Base):
     """Model for handling email verification for external respondents.
 
     This handles two types of verification:
-    1. Access links - long-lived (7 days) for initial access
+    1. Access links - long-lived (45 days) for initial access
     2. Verification codes - short-lived (1 hour) for actual verification
 
     When an email is sent to an external respondent, a new verification is created with a new access token is created.
@@ -131,11 +136,27 @@ class FidesUserRespondentEmailVerification(Base):
         return code
 
     def verify_code(self, code: str, db: Session) -> bool:
-        """Verify the provided code and track attempts."""
+        """Verify the provided code and track attempts.
+        If the code is correct, the attempts are reset and the user is considered verified.
+        If the code is incorrect, the attempts are incremented and the user is not considered verified.
+        If the verification code is expired, the user is not considered verified.
+        If the user has reached the maximum number of attempts, the user is not considered verified.
+        """
         if self.is_verification_code_expired():
             return False
 
+        if self.attempts >= MAX_ATTEMPTS:
+            raise ValueError("Maximum number of attempts for verification reached.")
+
+        if self.verification_code == code:
+            self.attempts = 0
+            return True
+
         self.attempts += 1
         self.save(db)
+        return False
 
-        return self.verification_code == code
+    def reset_attempts(self, db: Session) -> None:
+        """Reset the number of attempts to 0."""
+        self.attempts = 0
+        self.save(db)
