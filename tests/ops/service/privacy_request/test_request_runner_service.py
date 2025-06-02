@@ -43,6 +43,7 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestStatus,
 )
 from fides.api.schemas.redis_cache import Identity
+from fides.api.schemas.storage.storage import ResponseFormat
 from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.service.privacy_request.request_runner_service import (
     AttachmentData,
@@ -1048,350 +1049,447 @@ class TestPrivacyRequestsManualWebhooks:
         # Clean up
         second_webhook.delete(db)
 
-    @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
-    )
+
+@mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
+@mock.patch(
+    "fides.api.service.privacy_request.request_runner_service.save_access_results"
+)
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
+class TestPrivacyRequestAttachments:
+    """Tests for attachments associated with privacy requests)"""
+
+    EMAIL = "customer-1@example.com"
+    LAST_NAME = "McCustomer"
+
+    def create_test_attachment(
+        self,
+        db: Session,
+        file_name: str,
+        content: bytes,
+        storage_config,
+        attachment_type: AttachmentType = AttachmentType.include_with_access_package,
+    ) -> Attachment:
+        """Helper function to create a test attachment"""
+        return Attachment.create_and_upload(
+            db=db,
+            data={
+                "file_name": file_name,
+                "attachment_type": attachment_type,
+                "storage_key": storage_config.key,
+            },
+            attachment_file=BytesIO(content),
+        )
+
+    def create_attachment_reference(
+        self,
+        db: Session,
+        attachment_id: str,
+        reference_id: str,
+        reference_type: AttachmentReferenceType,
+    ) -> None:
+        """Helper function to create an attachment reference"""
+        AttachmentReference.create(
+            db=db,
+            data={
+                "attachment_id": attachment_id,
+                "reference_type": reference_type,
+                "reference_id": reference_id,
+            },
+        )
+
+    def verify_upload_data_structure(
+        self, attachments: list[dict], storage_config, file_names: list[str]
+    ):
+        """Verify the structure of the upload data"""
+        attachment_files = {att["file_name"]: att for att in attachments}
+        assert len(attachment_files) == len(file_names)
+        for file_name in file_names:
+            assert file_name in attachment_files
+
+        for attachment in attachments:
+            assert attachment["content_type"] == "text/plain"
+            assert "https://s3.amazonaws.com/" in attachment["download_url"]
+            assert attachment["file_size"] == 5
+            if storage_config.format == ResponseFormat.html:
+                assert "fileobj" in attachment
+                assert isinstance(attachment["fileobj"], bytes)
+
+    def verify_stored_data_structure(self, stored_attachments: list[dict]):
+        """Verify the structure of the stored data"""
+        for attachment in stored_attachments:
+            assert "fileobj" not in attachment
+            assert "file_name" in attachment
+            assert "download_url" in attachment
+            assert "content_type" in attachment
+            assert "file_size" in attachment
+
+    def verify_webhook_data(
+        self, webhook_data: dict, integration_manual_webhook_config
+    ):
+        """Verify the structure of the webhook data"""
+        assert webhook_data["email"] == self.EMAIL
+        assert webhook_data["last_name"] == self.LAST_NAME
+        assert (
+            webhook_data["system_name"] == integration_manual_webhook_config.system.name
+        )
+
+    def test_privacy_request_with_attachments(
+        self,
+        mock_save,
+        mock_upload,
+        s3_client,
+        policy,
+        storage_config,
+        privacy_request: PrivacyRequest,
+        run_privacy_request_task,
+        db,
+        dsr_version,
+        request,
+        monkeypatch,
+    ):
+        """Test that top-level attachments (attachments directly associated with the privacy request)
+        are properly processed and included in both upload and storage"""
+        mock_upload.return_value = "http://www.data-download-url"
+
+        def mock_get_s3_client(auth_method, storage_secrets):
+            return s3_client
+
+        monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+        # Create test attachments
+        attachment1 = self.create_test_attachment(
+            db, "test1.txt", b"test1", storage_config
+        )
+        attachment2 = self.create_test_attachment(
+            db, "test2.txt", b"test2", storage_config
+        )
+
+        # Create attachment references to privacy request
+        for attachment in [attachment1, attachment2]:
+            self.create_attachment_reference(
+                db,
+                attachment.id,
+                privacy_request.id,
+                AttachmentReferenceType.privacy_request,
+            )
+
+        # Run the privacy request
+        run_privacy_request_task.delay(privacy_request.id).get(
+            timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+        )
+
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.complete
+        assert mock_upload.called
+        assert mock_save.called
+
+        # Verify upload format
+        uploaded_data = mock_upload.call_args.kwargs["data"]
+        assert "attachments" in uploaded_data
+        attachments = uploaded_data["attachments"]
+        assert len(attachments) == 2
+        self.verify_upload_data_structure(
+            attachments, storage_config, ["test1.txt", "test2.txt"]
+        )
+
+        # Verify storage format
+        stored_data = mock_save.call_args[0][3][
+            "access_request_rule"
+        ]  # rule_filtered_results
+        assert "attachments" in stored_data
+        stored_attachments = stored_data["attachments"]
+        assert len(stored_attachments) == 2
+        self.verify_stored_data_structure(stored_attachments)
+
+        # Clean up
+        attachment1.delete(db)
+        attachment2.delete(db)
+
+    def test_privacy_request_with_skipped_attachments(
+        self,
+        mock_save,
+        mock_upload,
+        s3_client,
+        policy,
+        storage_config,
+        privacy_request: PrivacyRequest,
+        run_privacy_request_task,
+        db,
+        dsr_version,
+        request,
+        monkeypatch,
+    ):
+        """Test that attachments with different types are properly handled for top-level attachments"""
+        mock_upload.return_value = "http://www.data-download-url"
+
+        def mock_get_s3_client(auth_method, storage_secrets):
+            return s3_client
+
+        monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+        # Create test attachments with different types
+        included_attachment = self.create_test_attachment(
+            db,
+            "test1.txt",
+            b"test1",
+            storage_config,
+            AttachmentType.include_with_access_package,
+        )
+        skipped_attachment = self.create_test_attachment(
+            db,
+            "test2.txt",
+            b"test2",
+            storage_config,
+            AttachmentType.internal_use_only,
+        )
+
+        # Create attachment references to privacy request
+        for attachment in [included_attachment, skipped_attachment]:
+            self.create_attachment_reference(
+                db,
+                attachment.id,
+                privacy_request.id,
+                AttachmentReferenceType.privacy_request,
+            )
+
+        # Run the privacy request
+        run_privacy_request_task.delay(privacy_request.id).get(
+            timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+        )
+
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.complete
+        assert mock_upload.called
+        assert mock_save.called
+
+        # Verify upload format
+        uploaded_data = mock_upload.call_args.kwargs["data"]
+        assert "attachments" in uploaded_data
+        attachments = uploaded_data["attachments"]
+        assert len(attachments) == 1  # Only the included attachment should be present
+        self.verify_upload_data_structure(attachments, storage_config, ["test1.txt"])
+
+        # Verify storage format (without fileobj)
+        stored_data = mock_save.call_args[0][3][
+            "access_request_rule"
+        ]  # rule_filtered_results
+        assert "attachments" in stored_data
+        stored_attachments = stored_data["attachments"]
+        assert (
+            len(stored_attachments) == 1
+        )  # Only the included attachment should be present
+        self.verify_stored_data_structure(stored_attachments)
+
+        # Clean up
+        included_attachment.delete(db)
+        skipped_attachment.delete(db)
+
     def test_manual_webhook_with_attachments(
         self,
+        mock_save,
         mock_upload,
+        s3_client,
         integration_manual_webhook_config,
         access_manual_webhook,
         policy,
+        storage_config,
         run_privacy_request_task,
         privacy_request_requires_input: PrivacyRequest,
         db,
         dsr_version,
         request,
+        monkeypatch,
     ):
-        """Test that manual webhook attachments are properly processed and included in the upload"""
+        """Test that attachments associated with manual webhooks are properly processed and included in both upload and storage"""
         mock_upload.return_value = "http://www.data-download-url"
+
+        def mock_get_s3_client(auth_method, storage_secrets):
+            return s3_client
+
+        monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
         request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
         # Create test attachments
-        attachment1 = Attachment.create(
-            db=db,
-            data={
-                "file_name": "test1.txt",
-                "content_type": "text/plain",
-                "attachment_type": AttachmentType.include_with_access_package,
-            },
+        attachment1 = self.create_test_attachment(
+            db, "test1.txt", b"test1", storage_config
         )
-        attachment2 = Attachment.create(
-            db=db,
-            data={
-                "file_name": "test2.txt",
-                "content_type": "text/plain",
-                "attachment_type": AttachmentType.include_with_access_package,
-            },
+        attachment2 = self.create_test_attachment(
+            db, "test2.txt", b"test2", storage_config
         )
 
-        # Create attachment references
-        AttachmentReference.create(
-            db=db,
-            data={
-                "attachment_id": attachment1.id,
-                "privacy_request_id": privacy_request_requires_input.id,
-                "reference_type": AttachmentReferenceType.access_manual_webhook,
-                "reference_id": access_manual_webhook.id,
-            },
+        # Create attachment references to manual webhook
+        for attachment in [attachment1, attachment2]:
+            self.create_attachment_reference(
+                db,
+                attachment.id,
+                access_manual_webhook.id,
+                AttachmentReferenceType.access_manual_webhook,
+            )
+            self.create_attachment_reference(
+                db,
+                attachment.id,
+                privacy_request_requires_input.id,
+                AttachmentReferenceType.privacy_request,
+            )
+
+        # Cache manual webhook input
+        privacy_request_requires_input.cache_manual_webhook_access_input(
+            access_manual_webhook,
+            {"email": self.EMAIL, "last_name": self.LAST_NAME},
         )
-        AttachmentReference.create(
-            db=db,
-            data={
-                "attachment_id": attachment2.id,
-                "privacy_request_id": privacy_request_requires_input.id,
-                "reference_type": AttachmentReferenceType.access_manual_webhook,
-                "reference_id": access_manual_webhook.id,
-            },
+
+        # Run the privacy request
+        run_privacy_request_task.delay(privacy_request_requires_input.id).get(
+            timeout=PRIVACY_REQUEST_TASK_TIMEOUT
         )
 
-        # Mock the attachment content retrieval
-        with (
-            mock.patch.object(
-                Attachment,
-                "retrieve_attachment",
-                return_value=(100, "http://test.com/file"),
-            ),
-            mock.patch.object(
-                Attachment,
-                "retrieve_attachment_content",
-                return_value=(100, BytesIO(b"test")),
-            ),
-        ):
-            # Cache manual webhook input
-            privacy_request_requires_input.cache_manual_webhook_access_input(
-                access_manual_webhook,
-                {"email": self.EMAIL, "last_name": self.LAST_NAME},
-            )
+        db.refresh(privacy_request_requires_input)
+        assert privacy_request_requires_input.status == PrivacyRequestStatus.complete
+        assert mock_upload.called
+        assert mock_save.called
 
-            run_privacy_request_task.delay(privacy_request_requires_input.id).get(
-                timeout=PRIVACY_REQUEST_TASK_TIMEOUT
-            )
+        # Get the data that was passed to upload
+        uploaded_data = mock_upload.call_args.kwargs["data"]
+        assert "manual_webhook_example" in uploaded_data
+        webhook_data = uploaded_data["manual_webhook_example"][0]
 
-            db.refresh(privacy_request_requires_input)
-            assert (
-                privacy_request_requires_input.status == PrivacyRequestStatus.complete
-            )
-            assert mock_upload.called
+        # Verify webhook data
+        self.verify_webhook_data(webhook_data, integration_manual_webhook_config)
 
-            # Verify the uploaded data contains both webhook data and attachments
-            uploaded_data = mock_upload.call_args.kwargs["data"]
-            assert "manual_webhook_example" in uploaded_data
-            webhook_data = uploaded_data["manual_webhook_example"][0]
-            assert webhook_data["email"] == self.EMAIL
-            assert webhook_data["last_name"] == self.LAST_NAME
-            assert (
-                webhook_data["system_name"]
-                == integration_manual_webhook_config.system.name
-            )
+        # Verify attachments in webhook data (upload format)
+        assert "attachments" in webhook_data
+        attachments = webhook_data["attachments"]
+        assert len(attachments) == 2
+        self.verify_upload_data_structure(
+            attachments, storage_config, ["test1.txt", "test2.txt"]
+        )
 
-            # Verify attachments are included
-            assert "attachments" in webhook_data
-            attachments = webhook_data["attachments"]
-            assert len(attachments) == 2
-            assert all(
-                attachment["file_name"] in ["test1.txt", "test2.txt"]
-                for attachment in attachments
-            )
-            assert all(
-                attachment["content_type"] == "text/plain" for attachment in attachments
-            )
-            assert all(
-                attachment["download_url"] == "http://test.com/file"
-                for attachment in attachments
-            )
-            assert all(attachment["file_size"] == 100 for attachment in attachments)
-            assert all("fileobj" in attachment for attachment in attachments)
+        # Verify storage format
+        stored_data = mock_save.call_args[0][3][
+            "access_request_rule"
+        ]  # rule_filtered_results
+        assert "manual_webhook_example" in stored_data
+        stored_webhook_data = stored_data["manual_webhook_example"][0]
+        assert "attachments" in stored_webhook_data
+        stored_attachments = stored_webhook_data["attachments"]
+        assert len(stored_attachments) == 2
+        self.verify_stored_data_structure(stored_attachments)
 
-            # Verify storage attachments are separate
-            assert "_storage_attachments" in webhook_data
-            storage_attachments = webhook_data["_storage_attachments"]
-            assert len(storage_attachments) == 2
-            assert all(
-                attachment["file_name"] in ["test1.txt", "test2.txt"]
-                for attachment in storage_attachments
-            )
-            assert all(
-                attachment["content_type"] == "text/plain"
-                for attachment in storage_attachments
-            )
-            assert all(
-                attachment["download_url"] == "http://test.com/file"
-                for attachment in storage_attachments
-            )
-            assert all(
-                attachment["file_size"] == 100 for attachment in storage_attachments
-            )
-            assert all(
-                "fileobj" not in attachment for attachment in storage_attachments
-            )
+        # Clean up
+        attachment1.delete(db)
+        attachment2.delete(db)
 
-    @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
-    )
     def test_manual_webhook_with_skipped_attachments(
         self,
+        mock_save,
         mock_upload,
+        s3_client,
         integration_manual_webhook_config,
         access_manual_webhook,
         policy,
+        storage_config,
         run_privacy_request_task,
         privacy_request_requires_input: PrivacyRequest,
         db,
         dsr_version,
         request,
+        monkeypatch,
     ):
-        """Test that attachments not marked for inclusion are skipped"""
+        """Test that attachments with different types are properly handled in manual webhooks"""
         mock_upload.return_value = "http://www.data-download-url"
+
+        def mock_get_s3_client(auth_method, storage_secrets):
+            return s3_client
+
+        monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
         request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-        # Create test attachments - one for inclusion, one not for inclusion
-        included_attachment = Attachment.create(
-            db=db,
-            data={
-                "file_name": "included.txt",
-                "content_type": "text/plain",
-                "attachment_type": AttachmentType.include_with_access_package,
-            },
+        # Create test attachments with different types
+        included_attachment = self.create_test_attachment(
+            db,
+            "test1.txt",
+            b"test1",
+            storage_config,
+            AttachmentType.include_with_access_package,
         )
-        skipped_attachment = Attachment.create(
-            db=db,
-            data={
-                "file_name": "skipped.txt",
-                "content_type": "text/plain",
-                "attachment_type": AttachmentType.internal_use_only,
-            },
+        skipped_attachment = self.create_test_attachment(
+            db,
+            "test2.txt",
+            b"test2",
+            storage_config,
+            AttachmentType.internal_use_only,
         )
 
-        # Create attachment references
-        AttachmentReference.create(
-            db=db,
-            data={
-                "attachment_id": included_attachment.id,
-                "privacy_request_id": privacy_request_requires_input.id,
-                "reference_type": AttachmentReferenceType.access_manual_webhook,
-                "reference_id": access_manual_webhook.id,
-            },
-        )
-        AttachmentReference.create(
-            db=db,
-            data={
-                "attachment_id": skipped_attachment.id,
-                "privacy_request_id": privacy_request_requires_input.id,
-                "reference_type": AttachmentReferenceType.access_manual_webhook,
-                "reference_id": access_manual_webhook.id,
-            },
-        )
-
-        # Mock the attachment content retrieval
-        with (
-            mock.patch.object(
-                Attachment,
-                "retrieve_attachment",
-                return_value=(100, "http://test.com/file"),
-            ),
-            mock.patch.object(
-                Attachment,
-                "retrieve_attachment_content",
-                return_value=(100, BytesIO(b"test")),
-            ),
-        ):
-            # Cache manual webhook input
-            privacy_request_requires_input.cache_manual_webhook_access_input(
-                access_manual_webhook,
-                {"email": self.EMAIL, "last_name": self.LAST_NAME},
+        # Create attachment references to manual webhook
+        for attachment in [included_attachment, skipped_attachment]:
+            self.create_attachment_reference(
+                db,
+                attachment.id,
+                access_manual_webhook.id,
+                AttachmentReferenceType.access_manual_webhook,
+            )
+            self.create_attachment_reference(
+                db,
+                attachment.id,
+                privacy_request_requires_input.id,
+                AttachmentReferenceType.privacy_request,
             )
 
-            run_privacy_request_task.delay(privacy_request_requires_input.id).get(
-                timeout=PRIVACY_REQUEST_TASK_TIMEOUT
-            )
-
-            db.refresh(privacy_request_requires_input)
-            assert (
-                privacy_request_requires_input.status == PrivacyRequestStatus.complete
-            )
-            assert mock_upload.called
-
-            # Verify only the included attachment is in the uploaded data
-            uploaded_data = mock_upload.call_args.kwargs["data"]
-            webhook_data = uploaded_data["manual_webhook_example"][0]
-            assert "attachments" in webhook_data
-            attachments = webhook_data["attachments"]
-            assert len(attachments) == 1
-            assert attachments[0]["file_name"] == "included.txt"
-
-            # Verify storage attachments also only include the included attachment
-            storage_attachments = webhook_data["_storage_attachments"]
-            assert len(storage_attachments) == 1
-            assert storage_attachments[0]["file_name"] == "included.txt"
-
-    @mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
-    )
-    def test_manual_webhook_with_failed_attachment(
-        self,
-        mock_upload,
-        integration_manual_webhook_config,
-        access_manual_webhook,
-        policy,
-        run_privacy_request_task,
-        privacy_request_requires_input: PrivacyRequest,
-        db,
-        dsr_version,
-        request,
-    ):
-        """Test that the request continues even if an attachment fails to process"""
-        mock_upload.return_value = "http://www.data-download-url"
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-        # Create test attachments
-        good_attachment = Attachment.create(
-            db=db,
-            data={
-                "file_name": "good.txt",
-                "content_type": "text/plain",
-                "attachment_type": AttachmentType.include_with_access_package,
-            },
-        )
-        bad_attachment = Attachment.create(
-            db=db,
-            data={
-                "file_name": "bad.txt",
-                "content_type": "text/plain",
-                "attachment_type": AttachmentType.include_with_access_package,
-            },
+        # Cache manual webhook input
+        privacy_request_requires_input.cache_manual_webhook_access_input(
+            access_manual_webhook,
+            {"email": self.EMAIL, "last_name": self.LAST_NAME},
         )
 
-        # Create attachment references
-        AttachmentReference.create(
-            db=db,
-            data={
-                "attachment_id": good_attachment.id,
-                "privacy_request_id": privacy_request_requires_input.id,
-                "reference_type": AttachmentReferenceType.access_manual_webhook,
-                "reference_id": access_manual_webhook.id,
-            },
-        )
-        AttachmentReference.create(
-            db=db,
-            data={
-                "attachment_id": bad_attachment.id,
-                "privacy_request_id": privacy_request_requires_input.id,
-                "reference_type": AttachmentReferenceType.access_manual_webhook,
-                "reference_id": access_manual_webhook.id,
-            },
+        # Run the privacy request
+        run_privacy_request_task.delay(privacy_request_requires_input.id).get(
+            timeout=PRIVACY_REQUEST_TASK_TIMEOUT
         )
 
-        # Mock the attachment content retrieval - one succeeds, one fails
-        def mock_retrieve_attachment(attachment):
-            if attachment.file_name == "good.txt":
-                return (100, "http://test.com/file")
-            raise Exception("Failed to retrieve attachment")
+        db.refresh(privacy_request_requires_input)
+        assert privacy_request_requires_input.status == PrivacyRequestStatus.complete
+        assert mock_upload.called
+        assert mock_save.called
 
-        with (
-            mock.patch.object(
-                Attachment, "retrieve_attachment", side_effect=mock_retrieve_attachment
-            ),
-            mock.patch.object(
-                Attachment,
-                "retrieve_attachment_content",
-                return_value=(100, BytesIO(b"test")),
-            ),
-        ):
-            # Cache manual webhook input
-            privacy_request_requires_input.cache_manual_webhook_access_input(
-                access_manual_webhook,
-                {"email": self.EMAIL, "last_name": self.LAST_NAME},
-            )
+        # Get the data that was passed to upload
+        uploaded_data = mock_upload.call_args.kwargs["data"]
+        assert "manual_webhook_example" in uploaded_data
+        webhook_data = uploaded_data["manual_webhook_example"][0]
 
-            run_privacy_request_task.delay(privacy_request_requires_input.id).get(
-                timeout=PRIVACY_REQUEST_TASK_TIMEOUT
-            )
+        # Verify webhook data
+        self.verify_webhook_data(webhook_data, integration_manual_webhook_config)
 
-            db.refresh(privacy_request_requires_input)
-            assert (
-                privacy_request_requires_input.status == PrivacyRequestStatus.complete
-            )
-            assert mock_upload.called
+        # Verify only included attachments are present in upload format
+        assert "attachments" in webhook_data
+        attachments = webhook_data["attachments"]
+        assert len(attachments) == 1  # Only the included attachment should be present
 
-            # Verify only the good attachment is in the uploaded data
-            uploaded_data = mock_upload.call_args.kwargs["data"]
-            webhook_data = uploaded_data["manual_webhook_example"][0]
-            assert "attachments" in webhook_data
-            attachments = webhook_data["attachments"]
-            assert len(attachments) == 1
-            assert attachments[0]["file_name"] == "good.txt"
+        # Verify upload format
+        self.verify_upload_data_structure(attachments, storage_config, ["test1.txt"])
 
-            # Verify storage attachments also only include the good attachment
-            storage_attachments = webhook_data["_storage_attachments"]
-            assert len(storage_attachments) == 1
-            assert storage_attachments[0]["file_name"] == "good.txt"
+        # Verify storage format (without fileobj)
+        stored_data = mock_save.call_args[0][3][
+            "access_request_rule"
+        ]  # rule_filtered_results
+        assert "manual_webhook_example" in stored_data
+        stored_webhook_data = stored_data["manual_webhook_example"][0]
+        assert "attachments" in stored_webhook_data
+        stored_attachments = stored_webhook_data["attachments"]
+        assert (
+            len(stored_attachments) == 1
+        )  # Only the included attachment should be present
+
+        # Verify storage format
+        self.verify_stored_data_structure(stored_attachments)
+
+        # Clean up
+        included_attachment.delete(db)
+        skipped_attachment.delete(db)
 
 
 def test_build_consent_dataset_graph(
