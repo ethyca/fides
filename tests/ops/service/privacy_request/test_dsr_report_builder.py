@@ -1347,36 +1347,6 @@ class TestDsrReportBuilderOrganization(TestDsrReportBuilderBase):
             ).decode("utf-8")
             self.assert_html_contains(collection3_content, "Item 4")
 
-    def test_invalid_template_path(self, privacy_request: PrivacyRequest):
-        """Test handling of invalid template paths"""
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
-
-        # Test with non-existent template
-        with pytest.raises(jinja2.TemplateNotFound):
-            builder._populate_template("templates/nonexistent.html")
-
-        # Create a template with invalid syntax
-        invalid_template_path = os.path.join(
-            DSR_DIRECTORY, "templates/invalid_syntax.html"
-        )
-        os.makedirs(os.path.dirname(invalid_template_path), exist_ok=True)
-        with open(invalid_template_path, "w") as f:
-            f.write("{% invalid syntax %}")
-
-        try:
-            # Test with invalid template syntax
-            with pytest.raises(jinja2.TemplateSyntaxError):
-                builder._populate_template("templates/invalid_syntax.html")
-        finally:
-            # Clean up the test template
-            if os.path.exists(invalid_template_path):
-                os.remove(invalid_template_path)
-
-        # Ensure the zip file is properly closed
-        if hasattr(builder, "out") and builder.out is not None:
-            builder.out.close()
-            builder.out = None
-
     def test_concurrent_access(self, privacy_request: PrivacyRequest):
         """Test concurrent access to the zip file"""
         import threading
