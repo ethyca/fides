@@ -78,6 +78,7 @@ const About: NextPage<{ showAlphaFeatures: boolean }> = ({
         ))}
       </Grid>
 
+      {/* Alpha Features flags are meant for internal use, until the feature is ready for public release */}
       {showAlphaFeatures && (
         <>
           <Flex alignItems="center" gap={4}>
