@@ -32,44 +32,53 @@ const CMP_VERSION = 1;
 const FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS = [1, 3, 4, 5, 6];
 
 // AC
-const AC_SPECIFICATION_VERSION = 1;
+const AC_SPECIFICATION_VERSION = 2;
 
 /**
- * Generates an Additional Consent (AC) string in the format `version~id1.id2.id3` where:
- * - version: The AC specification version (currently 1)
- * - id1.id2.id3: A sorted, dot-separated list of vendor IDs that have consent
+ * Generates an Additional Consent (AC) string in the format `version~id1.id2.id3~id4.id5.id6` where:
+ * - version: The AC specification version
+ * - id1.id2.id3: A sorted, dot-separated list of user-consented vendor IDs.
+ * - id4.id5.id6: "dv." followed by a sorted, dot-separated list of non-user-consented disclosed
+ *  vendor IDs.
  *
- * The function combines vendors from both consent and legitimate interest lists,
- * filters for AC vendors only (those with 'gacp' prefix), extracts their numeric IDs,
+ * Vendors included in the user-consented list should not be included in the disclosed vendor list
+ * to reduce the string size.
+ *
+ * The function filters for AC vendors only (those with 'gacp' prefix), extracts their numeric IDs,
  * and joins them in ascending order.
  *
  * @example
- * // Given vendors ["gacp.42", "gacp.33", "gvl.12", "gacp.49"]
- * generateAcString({tcStringPreferences: {
- *   vendorsConsent: ["gacp.42"],
- *   vendorsLegint: ["gacp.33", "gvl.12", "gacp.49"]
- * }})
- * // Returns "1~33.42.49"
+ * generateAcString({
+ *   userConsentedVendorIds: ["gacp.42"],
+ *   disclosedVendorIds: ["gacp.49", "gacp.33", "gvl.12", "gacp.42", "gvl.123"]
+ * })
+ * // Returns "2~42~dv.33.49"
  */
 const generateAcString = ({
-  tcStringPreferences,
+  userConsentedVendorIds,
+  disclosedVendorIds,
 }: {
-  tcStringPreferences: Pick<EnabledIds, "vendorsConsent" | "vendorsLegint">;
+  userConsentedVendorIds: string[];
+  disclosedVendorIds: string[];
 }) => {
-  const vendorIds = [
-    ...tcStringPreferences.vendorsConsent,
-    ...tcStringPreferences.vendorsLegint,
-  ]
-    .filter(vendorIsAc)
-    .map((id) => decodeVendorId(id).id)
-    .sort((a, b) => Number(a) - Number(b))
-    .join(".");
-  return `${AC_SPECIFICATION_VERSION}~${vendorIds}`;
+  const processIds = (ids: string[]) =>
+    ids
+      .filter(vendorIsAc)
+      .map((id) => decodeVendorId(id).id)
+      .sort((a, b) => Number(a) - Number(b))
+      .join(".");
+
+  const consentedIds = processIds(userConsentedVendorIds);
+  const disclosedIds = processIds(
+    disclosedVendorIds.filter((id) => !userConsentedVendorIds.includes(id)),
+  );
+
+  return `${AC_SPECIFICATION_VERSION}~${consentedIds}~dv.${disclosedIds}`;
 };
 
 /**
  * Generate FidesString based on TCF and AC-related info from privacy experience.
- * Called when there is either a FidesInitialized or FidesUpdated event
+ * Called when there is either a FidesConsentLoaded or FidesUpdated event
  */
 export const generateFidesString = async ({
   experience,
@@ -161,25 +170,17 @@ export const generateFidesString = async ({
         }
       });
 
-      // Set legitimate interest for special-purpose only vendors
+      // Set legitimate interest for special-purpose only vendors and vendors that
+      // have declared only purposes based on consent (no LI) + at least one SP
       if (experience.gvl?.vendors) {
         (experience as PrivacyExperience).tcf_vendor_relationships?.forEach(
           (relationship) => {
             const { id } = decodeVendorId(relationship.id);
             const vendor = experience.gvl?.vendors[id];
-            const isInVendorConsents = (
-              experience as PrivacyExperience
-            ).tcf_vendor_consents?.some(
-              (consent) => consent.id === relationship.id,
-            );
             if (
               vendor &&
               vendor.specialPurposes?.length &&
-              (!vendor.purposes || vendor.purposes.length === 0) &&
-              (!vendor.flexiblePurposes ||
-                vendor.flexiblePurposes.length === 0) &&
-              (!vendor.legIntPurposes || vendor.legIntPurposes.length === 0) &&
-              !isInVendorConsents
+              (!vendor.legIntPurposes || vendor.legIntPurposes.length === 0)
             ) {
               tcModel.vendorLegitimateInterests.set(+id);
             }
@@ -233,8 +234,21 @@ export const generateFidesString = async ({
         segments: [Segment.CORE],
       });
 
-      // Attach the AC string
-      const acString = generateAcString({ tcStringPreferences });
+      fidesDebugger(
+        "TC String encoded",
+        `https://iabgpp.com/#${encodedString}`,
+      );
+
+      // Attach the AC string, which only applies to tcf_vendor_consents (no LI exists in AC)
+      const disclosedVendorIds = experience.minimal_tcf
+        ? (experience as PrivacyExperienceMinimal).tcf_vendor_consent_ids
+        : (experience as PrivacyExperience).tcf_vendor_consents?.map(
+            (vendor) => vendor.id,
+          );
+      const acString = generateAcString({
+        userConsentedVendorIds: tcStringPreferences?.vendorsConsent ?? [],
+        disclosedVendorIds: disclosedVendorIds ?? [],
+      });
       encodedString = `${encodedString}${FIDES_SEPARATOR}${acString}`;
 
       // GPP string portion is handled by the GPP extension
@@ -279,13 +293,12 @@ export const initializeTcfCmpApi = () => {
   //   2. We are _not_ going to show the banner (i.e. the TCF hash has not changed).
   //   3. It is the _first_ init (This should only ever happen once per visit).
   // see https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/cmpapi#dont-show-ui--tc-string-does-not-need-an-update
-  window.addEventListener("FidesInitialized", (event) => {
+  window.addEventListener("FidesConsentLoaded", (event) => {
     const tcString = extractTCStringForCmpApi(event);
     if (
       !!tcString &&
       !!event.detail.extraDetails &&
-      !event.detail.extraDetails.shouldShowExperience &&
-      event.detail.extraDetails.firstInit
+      !event.detail.extraDetails.shouldShowExperience
     ) {
       // we are not showing the experience, so we use false
       cmpApi.update(tcString, false);

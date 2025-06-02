@@ -2,7 +2,6 @@
 
 import { headers } from "next/headers";
 
-import debugLogServer from "~/app/server-utils/debugLogServer";
 import { NextSearchParams } from "~/types/next";
 
 import {
@@ -11,6 +10,7 @@ import {
   VALID_ISO_3166_2_REGION_REGEX,
   VALID_ISO_3166_LOCATION_REGEX,
 } from "../../common/geolocation";
+import { createLogger } from "./logger";
 
 /**
  * Lookup the "geolocation" (ie country and region) for the given request by looking for either:
@@ -25,6 +25,7 @@ const lookupGeolocationServerSide = async ({
 }: {
   searchParams?: NextSearchParams;
 } = {}) => {
+  const log = createLogger();
   // 1. Check for a provided "geolocation" query param
   if (searchParams) {
     const { geolocation: geolocationQuery } = await searchParams;
@@ -37,7 +38,7 @@ const lookupGeolocationServerSide = async ({
 
       const [country, region] = geolocationQuery.split("-");
       const location = geolocationQuery.replace("-", "_");
-      debugLogServer(`Using location provided via query param: ${location}`);
+      log.debug(`Using location provided via query param: ${location}`);
 
       return {
         location,
@@ -68,7 +69,7 @@ const lookupGeolocationServerSide = async ({
     }
     if (VALID_ISO_3166_LOCATION_REGEX.test(geolocation)) {
       const location = geolocation.replace("-", "_").toLowerCase();
-      debugLogServer(`Using location provided by CDN headers: ${location}`);
+      log.debug(`Using location provided by CDN headers: ${location}`);
 
       return {
         location,
@@ -78,7 +79,7 @@ const lookupGeolocationServerSide = async ({
     }
   }
 
-  debugLogServer(`Using location: null`);
+  log.debug(`Using location: null`);
   return null;
 };
 export default lookupGeolocationServerSide;

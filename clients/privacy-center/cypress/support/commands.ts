@@ -137,7 +137,9 @@ Cypress.Commands.add(
         // will fail to compile. That's the point!
         const fidesEvents: Record<FidesEventType, true> = {
           FidesInitializing: true,
-          FidesInitialized: true,
+          FidesInitialized: true, // deprecated
+          FidesConsentLoaded: true,
+          FidesReady: true,
           FidesUpdating: true,
           FidesUpdated: true,
           FidesUIChanged: true,

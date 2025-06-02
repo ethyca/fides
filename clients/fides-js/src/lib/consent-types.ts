@@ -164,7 +164,8 @@ export interface FidesInitOptions {
  * ensure that the documented interface isn't overly specific in areas we may
  * need to change.
  */
-export interface FidesGlobal extends Omit<Fides, "gtm" | "consent"> {
+export interface FidesGlobal
+  extends Omit<Fides, "gtm" | "consent" | "updateConsent"> {
   cookie?: FidesCookie;
   config?: FidesConfig;
   consent: NoticeConsent;
@@ -200,6 +201,11 @@ export interface FidesGlobal extends Omit<Fides, "gtm" | "consent"> {
   shopify: typeof shopify;
   shouldShowExperience: () => boolean;
   showModal: () => void;
+  updateConsent: (options: {
+    consent?: NoticeConsent;
+    fidesString?: string;
+    validation?: UpdateConsentValidation;
+  }) => Promise<void>;
 }
 
 /**
@@ -218,6 +224,9 @@ export interface OtToFidesConsentMapping {
  * Store the user's consent preferences as well as implicit consent preferences if applicable
  * as notice_key -> boolean pairs or notice_key -> consent_mechanism pairs, depending on
  * the value of `Fides.options.fidesConsentFlagType` and `Fides.options.fidesConsentNonApplicableFlagMode`.
+ * NOTE: When sending consent preferences externally (browser cookie, window events, Fides.consent, etc.),
+ * use this `NoticeConsent` Type. For accepting preferences (updateConsent, etc.) and for internal tracking
+ * and processing, use the `NoticeValues` Type.
  * eg.
  * {
  *   "data_sales": false,
@@ -508,6 +517,7 @@ interface ExperienceConfigTranslationMinimal
 export interface ExperienceConfigMinimal
   extends Pick<
     ExperienceConfig,
+    | "id"
     | "component"
     | "auto_detect_language"
     | "dismissable"
@@ -714,6 +724,12 @@ export enum ConsentNonApplicableFlagMode {
 export enum ConsentFlagType {
   BOOLEAN = "boolean",
   CONSENT_MECHANISM = "consent_mechanism",
+}
+
+export enum UpdateConsentValidation {
+  THROW = "throw",
+  WARN = "warn",
+  IGNORE = "ignore",
 }
 
 // NOTE: This (and most enums!) could reasonably be replaced by string union

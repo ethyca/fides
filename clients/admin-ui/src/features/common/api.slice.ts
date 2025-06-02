@@ -59,6 +59,8 @@ export const baseApi = createApi({
     "Experience Config Translations",
     "Privacy Notices",
     "Privacy Notice Translations",
+    "Privacy Request Attachments",
+    "Privacy Request Comments",
     "Property",
     "Property-Specific Messaging Templates",
     "Purpose",

@@ -306,6 +306,16 @@ if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
         path: routes.FIDES_JS_DOCS,
         scopes: [],
       },
+      {
+        title: "Forms POC",
+        path: routes.FORMS_POC_ROUTE,
+        scopes: [],
+      },
+      {
+        title: "Table Migration POC",
+        path: routes.TABLE_MIGRATION_POC_ROUTE,
+        scopes: [],
+      },
     ],
   });
 }

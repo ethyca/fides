@@ -1,6 +1,5 @@
 import { TCString } from "@iabtechlabtcf/core";
 
-import { extractIds } from "../common-utils";
 import {
   ConsentMechanism,
   FidesCookie,
@@ -17,9 +16,9 @@ import {
   transformTcfPreferencesToCookieKeys,
 } from "../cookie";
 import {
+  consentIdsFromAcString,
   DecodedFidesString,
   decodeFidesString,
-  idsFromAcString,
 } from "../fides-string";
 import {
   transformConsentToFidesUserPreference,
@@ -97,7 +96,7 @@ export const buildTcfEntitiesFromCookieAndFidesString = (
     if (!tcString) {
       return tcfEntities;
     }
-    const acStringIds = idsFromAcString(acString);
+    const consentedAcStringIds = consentIdsFromAcString(acString);
 
     // Populate every field from tcModel
     const tcModel = TCString.decode(tcString);
@@ -108,13 +107,13 @@ export const buildTcfEntitiesFromCookieAndFidesString = (
       const tcIds = Array.from(tcModel[tcfModelKey])
         .filter(([, consented]) => consented)
         .map(([id]) => (isVendorKey ? `gvl.${id}` : id));
-      // @ts-ignore the array map should ensure we will get the right record type
+      // @ts-expect-error the array map should ensure we will get the correct record type
       tcfEntities[experienceKey] = experience[experienceKey]?.map((item) => {
         let consented = !!tcIds.find((id) => id === item.id);
         // Also check the AC string, which only applies to tcf_vendor_consents
         if (
           experienceKey === "tcf_vendor_consents" &&
-          acStringIds.find((id) => id === item.id)
+          consentedAcStringIds.find((id) => id === item.id)
         ) {
           consented = true;
         }
@@ -179,6 +178,19 @@ export const updateExperienceFromCookieConsentTcf = ({
       return { ...notice, current_preference: preference };
     });
   return { ...experience, ...tcfEntities, privacy_notices: noticesWithConsent };
+};
+
+/**
+ * Extracts the id value of each object in the list and returns a list
+ * of IDs, either strings or numbers based on the IDs' type.
+ */
+const extractIds = <T extends { id: string | number }[]>(
+  modelList?: T,
+): any[] => {
+  if (!modelList) {
+    return [];
+  }
+  return modelList.map((model) => model.id);
 };
 
 /**

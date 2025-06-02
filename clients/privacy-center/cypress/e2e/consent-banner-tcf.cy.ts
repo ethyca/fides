@@ -57,6 +57,10 @@ const VENDOR_1 = {
   id: "gvl.2",
   name: "Captify",
 };
+const VENDOR_2 = {
+  id: "gvl.3",
+  name: "Fides System",
+};
 const STACK_1 = {
   id: 7,
   name: "Selection of personalised advertising, advertising measurement, and audience research",
@@ -134,7 +138,7 @@ const assertTcOptIns = ({
   const tcString = fidesString?.split(FIDES_SEPARATOR)[0];
   expect(tcString).to.be.a("string");
   expect(tcString).to.not.equal("");
-  const model = TCString.decode(tcString!);
+  const model = TCString.decode(tcString);
   const values = Array.from(model[modelType].values()).sort();
   expect(values).to.eql(ids.sort());
 };
@@ -147,9 +151,10 @@ const assertAcOptIns = ({
   ids: number[];
 }) => {
   const { fides_string: fidesString } = cookie;
-  const acString = fidesString?.split("1~")[1];
+  const acString = fidesString?.split(",")[1];
   expect(acString).to.be.a("string");
-  const values = acString!
+  const acConsent = acString.split("~")[1];
+  const values = acConsent
     .split(".")
     .map((id) => +id)
     .sort();
@@ -439,7 +444,7 @@ describe("Fides-js TCF", () => {
             assertTcOptIns({
               cookie: cookieKeyConsent,
               modelType: "vendorLegitimateInterests",
-              ids: [],
+              ids: [fidesVendorIdToId(VENDOR_1.id)],
             });
             expect(
               cookieKeyConsent.tcf_consent.system_consent_preferences,
@@ -484,13 +489,34 @@ describe("Fides-js TCF", () => {
           }
           // verify the data layer variables
           cy.get("@dataLayerPush")
-            .should("have.been.callCount", 4) // FidesInitialized + FidesUIShown (banner) + FidesUpdating + FidesUpdated
-            // First call should be from initialization, before the user accepts all
+            .should("have.been.callCount", 5) // FidesReady + FidesInitialized + FidesUIShown (banner) + FidesUpdating + FidesUpdated
+            // First call should be from initialization ready, before the user accepts all
             .its("firstCall.args.0")
             .then((actual) => Cypress._.omit(actual, "Fides.timestamp"))
             .should("deep.equal", {
-              event: "FidesInitialized",
+              event: "FidesReady",
               Fides: {
+                consent: includeCustomPurposes
+                  ? {
+                      advertising: false,
+                      analytics_opt_out: true,
+                      essential: true,
+                    }
+                  : {},
+                extraDetails: {
+                  consentMethod: undefined,
+                  shouldShowExperience: true,
+                },
+                fides_string: undefined,
+              },
+            });
+          // Second call should be from deprecated FidesInitialized
+          cy.get("@dataLayerPush")
+            .its("args")
+            .then((args) => {
+              const call = args[1][0];
+              expect(call.event).to.equal("FidesInitialized");
+              expect(call.Fides).to.deep.include({
                 consent: includeCustomPurposes
                   ? {
                       advertising: false,
@@ -504,7 +530,7 @@ describe("Fides-js TCF", () => {
                   firstInit: false,
                 },
                 fides_string: undefined,
-              },
+              });
             });
 
           // Verify FidesUIShown events (banner and modal)
@@ -512,21 +538,21 @@ describe("Fides-js TCF", () => {
             .its("args")
             .then((args) => {
               // Banner shown event
-              const bannerEvent = args[1][0];
+              const bannerEvent = args[2][0];
               expect(bannerEvent.event).to.equal("FidesUIShown");
               expect(bannerEvent.Fides.extraDetails.servingComponent).to.equal(
                 "tcf_banner",
               );
 
               // FidesUpdating event
-              const updatingEvent = args[2][0];
+              const updatingEvent = args[3][0];
               expect(updatingEvent.event).to.equal("FidesUpdating");
               expect(
                 updatingEvent.Fides.extraDetails.servingComponent,
               ).to.equal(undefined);
 
               // FidesUpdated event
-              const updatedEvent = args[3][0];
+              const updatedEvent = args[4][0];
               expect(updatedEvent.event).to.equal("FidesUpdated");
               expect(updatedEvent.Fides.extraDetails.servingComponent).to.equal(
                 undefined,
@@ -537,7 +563,7 @@ describe("Fides-js TCF", () => {
           cy.get("@dataLayerPush")
             .its("args")
             .then((args) => {
-              const call = args[2][0];
+              const call = args[3][0];
               expect(call.event).to.equal("FidesUpdating");
               expect(call.Fides).to.deep.include({
                 consent: includeCustomPurposes
@@ -551,14 +577,14 @@ describe("Fides-js TCF", () => {
                   consentMethod: "accept",
                 },
               });
-              expect(call.Fides.fides_string).to.contain(",1~");
+              expect(call.Fides.fides_string).to.contain(",2~~dv.");
             });
 
           // FidesUpdated call
           cy.get("@dataLayerPush")
             .its("args")
             .then((args) => {
-              const call = args[3][0];
+              const call = args[4][0];
               expect(call.event).to.equal("FidesUpdated");
               expect(call.Fides).to.deep.include({
                 consent: includeCustomPurposes
@@ -572,7 +598,7 @@ describe("Fides-js TCF", () => {
                   consentMethod: "accept",
                 },
               });
-              expect(call.Fides.fides_string).to.contain(",1~");
+              expect(call.Fides.fides_string).to.contain(",2~~dv.");
             });
         });
 
@@ -665,7 +691,7 @@ describe("Fides-js TCF", () => {
               assertTcOptIns({
                 cookie: cookieKeyConsent,
                 modelType: "vendorLegitimateInterests",
-                ids: [],
+                ids: [fidesVendorIdToId(VENDOR_1.id)],
               });
               expect(
                 cookieKeyConsent.tcf_consent.system_consent_preferences,
@@ -985,6 +1011,15 @@ describe("Fides-js TCF", () => {
             cy.get("span")
               .contains(legintSpecialPurposeName)
               .should("not.exist");
+            cy.get("span").contains(PURPOSE_4.name).click();
+            // scroll to the vendor list
+            cy.get(".fides-tcf-purpose-vendor-list").first().scrollIntoView();
+            cy.get(".fides-tcf-purpose-vendor-list")
+              .contains(VENDOR_1.name)
+              .should("be.visible");
+            cy.get(".fides-tcf-purpose-vendor-list")
+              .contains(VENDOR_2.name)
+              .should("not.be.visible");
             cy.getByTestId(`toggle-${PURPOSE_2.name}`).should("not.exist");
 
             // Now check legint page
@@ -995,6 +1030,14 @@ describe("Fides-js TCF", () => {
             cy.getByTestId(`toggle-${PURPOSE_2.name}`);
             cy.get("span").contains(legintSpecialPurposeName);
             cy.get("span").contains(SPECIAL_PURPOSE_1.name).should("not.exist");
+            cy.get("span").contains(PURPOSE_2.name).click();
+            cy.get(".fides-tcf-purpose-vendor-list").first().scrollIntoView();
+            cy.get(".fides-tcf-purpose-vendor-list")
+              .contains(VENDOR_1.name)
+              .should("not.be.visible");
+            cy.get(".fides-tcf-purpose-vendor-list")
+              .contains(VENDOR_2.name)
+              .should("be.visible");
           });
         });
       });
@@ -1138,7 +1181,7 @@ describe("Fides-js TCF", () => {
               assertTcOptIns({
                 cookie: cookieKeyConsent,
                 modelType: "vendorLegitimateInterests",
-                ids: [],
+                ids: [fidesVendorIdToId(VENDOR_1.id)],
               });
               expect(
                 cookieKeyConsent.tcf_consent.system_consent_preferences,
@@ -1173,13 +1216,34 @@ describe("Fides-js TCF", () => {
             });
             // verify the data layer variables
             cy.get("@dataLayerPush")
-              .should("have.been.callCount", 6) // FidesInitialized + FidesUIShown (banner) + FidesUIShown (modal) + FidesModalClosed + FidesUpdating + FidesUpdated
-              // First call should be from initialization, before the user accepts all
+              .should("have.been.callCount", 7) // FidesReady + FidesInitialized + FidesUIShown (banner) + FidesUIShown (modal) + FidesModalClosed + FidesUpdating + FidesUpdated
+              // First call should be from initialization ready, before the user accepts all
               .its("firstCall.args.0")
               .then((actual) => Cypress._.omit(actual, "Fides.timestamp"))
               .should("deep.equal", {
-                event: "FidesInitialized",
+                event: "FidesReady",
                 Fides: {
+                  consent: includeCustomPurposes
+                    ? {
+                        advertising: false,
+                        analytics_opt_out: true,
+                        essential: true,
+                      }
+                    : {},
+                  extraDetails: {
+                    consentMethod: undefined,
+                    shouldShowExperience: true,
+                  },
+                  fides_string: undefined,
+                },
+              });
+            // Second call should be from deprecated FidesInitialized
+            cy.get("@dataLayerPush")
+              .its("args")
+              .then((args) => {
+                const call = args[1][0];
+                expect(call.event).to.equal("FidesInitialized");
+                expect(call.Fides).to.deep.include({
                   consent: includeCustomPurposes
                     ? {
                         advertising: false,
@@ -1193,7 +1257,7 @@ describe("Fides-js TCF", () => {
                     firstInit: false,
                   },
                   fides_string: undefined,
-                },
+                });
               });
 
             // Verify FidesUIShown events (banner and modal)
@@ -1201,21 +1265,21 @@ describe("Fides-js TCF", () => {
               .its("args")
               .then((args) => {
                 // Banner shown event
-                const bannerEvent = args[1][0];
+                const bannerEvent = args[2][0];
                 expect(bannerEvent.event).to.equal("FidesUIShown");
                 expect(
                   bannerEvent.Fides.extraDetails.servingComponent,
                 ).to.equal("tcf_banner");
 
                 // Modal shown event
-                const modalEvent = args[2][0];
+                const modalEvent = args[3][0];
                 expect(modalEvent.event).to.equal("FidesUIShown");
                 expect(modalEvent.Fides.extraDetails.servingComponent).to.equal(
                   "tcf_overlay",
                 );
 
                 // Modal closed event
-                const modalClosedEvent = args[3][0];
+                const modalClosedEvent = args[4][0];
                 expect(modalClosedEvent.event).to.equal("FidesModalClosed");
                 expect(
                   modalClosedEvent.Fides.extraDetails.servingComponent,
@@ -1226,7 +1290,7 @@ describe("Fides-js TCF", () => {
             cy.get("@dataLayerPush")
               .its("args")
               .then((args) => {
-                const call = args[4][0];
+                const call = args[5][0];
                 expect(call.event).to.equal("FidesUpdating");
                 expect(call.Fides).to.deep.include({
                   consent: includeCustomPurposes
@@ -1240,14 +1304,14 @@ describe("Fides-js TCF", () => {
                     consentMethod: "accept",
                   },
                 });
-                expect(call.Fides.fides_string).to.contain(",1~");
+                expect(call.Fides.fides_string).to.contain(",2~~dv.");
               });
 
             // FidesUpdated call
             cy.get("@dataLayerPush")
               .its("args")
               .then((args) => {
-                const call = args[5][0];
+                const call = args[6][0];
                 expect(call.event).to.equal("FidesUpdated");
                 expect(call.Fides).to.deep.include({
                   consent: includeCustomPurposes
@@ -1261,7 +1325,7 @@ describe("Fides-js TCF", () => {
                     consentMethod: "accept",
                   },
                 });
-                expect(call.Fides.fides_string).to.contain(",1~");
+                expect(call.Fides.fides_string).to.contain(",2~~dv.");
               });
           });
 
@@ -1354,7 +1418,7 @@ describe("Fides-js TCF", () => {
                 assertTcOptIns({
                   cookie: cookieKeyConsent,
                   modelType: "vendorLegitimateInterests",
-                  ids: [],
+                  ids: [fidesVendorIdToId(VENDOR_1.id)],
                 });
                 expect(
                   cookieKeyConsent.tcf_consent.system_consent_preferences,
@@ -1538,7 +1602,7 @@ describe("Fides-js TCF", () => {
               assertTcOptIns({
                 cookie: cookieKeyConsent,
                 modelType: "vendorLegitimateInterests",
-                ids: [],
+                ids: [fidesVendorIdToId(VENDOR_1.id)],
               });
               expect(
                 cookieKeyConsent.tcf_consent
@@ -1576,7 +1640,7 @@ describe("Fides-js TCF", () => {
               assertTcOptIns({
                 cookie: cookieKeyConsent,
                 modelType: "vendorLegitimateInterests",
-                ids: [],
+                ids: [fidesVendorIdToId(VENDOR_1.id)],
               });
               expect(
                 cookieKeyConsent.tcf_consent
@@ -1743,7 +1807,7 @@ describe("Fides-js TCF", () => {
               assertTcOptIns({
                 cookie: cookieKeyConsent,
                 modelType: "vendorLegitimateInterests",
-                ids: [],
+                ids: [fidesVendorIdToId(VENDOR_1.id)],
               });
               expect(
                 cookieKeyConsent.tcf_consent
@@ -1801,7 +1865,7 @@ describe("Fides-js TCF", () => {
                 expect(args[0]).to.equal(ConsentMethod.REJECT);
                 expect(args[1]).to.be.a("object");
                 // the TC str is dynamically updated upon save preferences with diff timestamp, so we do a fuzzy match
-                expect(args[2]).to.contain("AA,1~");
+                expect(args[2]).to.contain("AA,2~~dv.");
                 expect(args[3]).to.be.a("object");
                 // timeout means API call not made, which is expected
                 cy.on("fail", (error) => {
@@ -1872,7 +1936,7 @@ describe("Fides-js TCF", () => {
             assertTcOptIns({
               cookie: cookieKeyConsent,
               modelType: "vendorLegitimateInterests",
-              ids: [],
+              ids: [fidesVendorIdToId(VENDOR_1.id)],
             });
             expect(
               cookieKeyConsent.tcf_consent.system_consent_preferences,
@@ -1976,8 +2040,7 @@ describe("Fides-js TCF", () => {
               default_preference: "opt_out",
               purpose_consents: [
                 {
-                  id: 2,
-                  name: "Use limited data to select advertising",
+                  ...PURPOSE_2,
                   retention_period: "45",
                 },
               ],
@@ -2154,7 +2217,7 @@ describe("Fides-js TCF", () => {
           assertTcOptIns({
             cookie: cookieKeyConsent,
             modelType: "vendorLegitimateInterests",
-            ids: [],
+            ids: [fidesVendorIdToId(VENDOR_1.id)],
           });
           expect(
             cookieKeyConsent.tcf_consent
@@ -2240,7 +2303,6 @@ describe("Fides-js TCF", () => {
         cy.getByTestId("consent-modal").within(() => {
           cy.get("button").contains("Opt in to all").click();
         });
-        // On slow connections, we should explicitly wait for FidesUpdated
         cy.get("@FidesUpdated")
           .should("have.been.calledOnce")
           .its("lastCall.args.0.detail.extraDetails.consentMethod")
@@ -2272,7 +2334,10 @@ describe("Fides-js TCF", () => {
               1: false,
               [vendorIdOnly]: true,
             });
-            expect(tcData.vendor.legitimateInterests).to.eql({});
+            expect(tcData.vendor.legitimateInterests).to.eql({
+              1: false,
+              [vendorIdOnly]: true,
+            });
           });
       });
 
@@ -2339,7 +2404,10 @@ describe("Fides-js TCF", () => {
               1: false,
               [vendorIdOnly]: true,
             });
-            expect(tcData.vendor.legitimateInterests).to.eql({});
+            expect(tcData.vendor.legitimateInterests).to.eql({
+              1: false,
+              [vendorIdOnly]: true,
+            });
           });
       });
     });
@@ -2586,7 +2654,7 @@ describe("Fides-js TCF", () => {
       setFidesCookie();
       // Purpose 7, Special Feature 1
       const fidesStringOverride =
-        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA,1~";
+        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA,2~~dv.";
       const expectedTCString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA"; // without disclosed vendors
       stubTCFExperience({ stubOptions: { fidesString: fidesStringOverride } });
       cy.window().then((win) => {
@@ -2677,7 +2745,7 @@ describe("Fides-js TCF", () => {
      */
     it("prefers preferences from fides_string option when both fides_string and experience is provided and cookie does not exist", () => {
       const fidesStringOverride =
-        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA,1~";
+        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA,2~~dv.";
       const expectedTCString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA"; // without disclosed vendors
       stubTCFExperience({ stubOptions: { fidesString: fidesStringOverride } });
       cy.window().then((win) => {
@@ -2769,7 +2837,7 @@ describe("Fides-js TCF", () => {
      */
     it("does nothing when fides_string option when both fides_string option and cookie exist but no experience exists (neither prefetch nor API)", () => {
       const fidesStringOverride =
-        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA,1~";
+        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA,2~~dv.";
       setFidesCookie();
       stubConfig(
         {
@@ -2800,7 +2868,7 @@ describe("Fides-js TCF", () => {
      */
     it("prefers preferences from fides_string option when both fides_string option and cookie exist and experience is fetched from API", () => {
       const fidesStringOverride =
-        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA,1~";
+        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA,2~~dv.";
       const expectedTCString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA"; // without disclosed vendors
       setFidesCookie();
       cy.fixture("consent/geolocation_tcf.json").then((geo) => {
@@ -2898,7 +2966,7 @@ describe("Fides-js TCF", () => {
      * EXPECTED RESULT: ignore invalid fides_string option and render experience as-is
      */
     it("can handle an invalid fides_string option and continue rendering the experience", () => {
-      const fidesStringOverride = "invalid-string,1~";
+      const fidesStringOverride = "invalid-string,2~~dv.";
       cy.fixture("consent/geolocation_tcf.json").then((geo) => {
         stubTCFExperience({
           stubOptions: { fidesString: fidesStringOverride },
@@ -2949,8 +3017,8 @@ describe("Fides-js TCF", () => {
     it("prefers preferences from fides_string option when fides_string override, custom pref API and cookie exist and experience is fetched from API", () => {
       // This fide str override opts in to all
       const fidesStringOverride =
-        "CP0gqMAP0gqMAGXABBENATEIABaAAEAAAAAAABEAAAAA,1~";
-      const fidesString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA,1~";
+        "CP0gqMAP0gqMAGXABBENATEIABaAAEAAAAAAABEAAAAA,2~~dv.";
+      const fidesString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA,2~~dv.";
       const expectedTCString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA"; // without disclosed vendors
       setFidesCookie();
       cy.fixture("consent/geolocation_tcf.json").then((geo) => {
@@ -3054,7 +3122,7 @@ describe("Fides-js TCF", () => {
      * EXPECTED RESULT: use preferences from preferences API, overrides cookie tcf_version_hash if returned in preferences API
      */
     it("prefers preferences from preferences API when custom pref API and cookie exist and experience is fetched from API", () => {
-      const fidesString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA,1~";
+      const fidesString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA,2~~dv.";
       const versionHash = "091834y";
       const expectedTCString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA"; // without disclosed vendors
       setFidesCookie();
@@ -3248,7 +3316,7 @@ describe("Fides-js TCF", () => {
     it("can use a fides_string to override a vendor consent", () => {
       // Opts in to all
       const fidesStringOverride =
-        "CP0gqMAP0gqMAGXABBENATEIABaAAEAAAAAAABEAAAAA,1~";
+        "CP0gqMAP0gqMAGXABBENATEIABaAAEAAAAAAABEAAAAA,2~~dv.";
       stubTCFExperience({ stubOptions: { fidesString: fidesStringOverride } });
       cy.window().then((win) => {
         win.__tcfapi("addEventListener", 2, cy.stub().as("TCFEvent"));
@@ -3286,7 +3354,7 @@ describe("Fides-js TCF", () => {
   describe("fides_string override options", () => {
     it("uses fides_string when set via cookie", () => {
       const fidesStringOverride =
-        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA,1~";
+        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA,2~~dv.";
       const expectedTCString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA"; // without disclosed vendors
       cy.getCookie("fides_string").should("not.exist");
       cy.setCookie("fides_string", fidesStringOverride);
@@ -3327,7 +3395,7 @@ describe("Fides-js TCF", () => {
 
     it("uses fides_string when set via query param", () => {
       const fidesStringOverride =
-        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA,1~";
+        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA,2~~dv.";
       const expectedTCString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA"; // without disclosed vendors
       cy.getCookie("fides_string").should("not.exist");
       stubTCFExperience({
@@ -3369,7 +3437,7 @@ describe("Fides-js TCF", () => {
 
     it("uses fides_string when set via window obj", () => {
       const fidesStringOverride =
-        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA,1~";
+        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA,2~~dv.";
       const expectedTCString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA"; // without disclosed vendors
       cy.getCookie("fides_string").should("not.exist");
       stubTCFExperience({
@@ -3411,7 +3479,7 @@ describe("Fides-js TCF", () => {
 
     it("uses fides_string when set via window obj at custom config path", () => {
       const fidesStringOverride =
-        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA,1~";
+        "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA,2~~dv.";
       const expectedTCString = "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA";
       cy.getCookie("fides_string").should("not.exist");
       stubTCFExperience({
@@ -3517,8 +3585,9 @@ describe("Fides-js TCF", () => {
 
   describe("ac string", () => {
     const AC_IDS = [42, 33, 49];
-    const acceptAllAcString = `1~${AC_IDS.sort().join(".")}`;
-    const rejectAllAcString = "1~";
+    const acceptAllAcString = `2~${AC_IDS.sort().join(".")}~dv.`;
+    const acceptSomeAcString = `2~33.42~dv.49`;
+    const rejectAllAcString = "2~~dv.33.42.49";
     beforeEach(() => {
       cy.fixture("consent/experience_tcf.json").then((payload) => {
         const experience = payload.items[0];
@@ -3529,12 +3598,7 @@ describe("Fides-js TCF", () => {
           name: "Test",
           description: "A longer description",
           default_preference: "opt_out",
-          purpose_consents: [
-            {
-              id: 4,
-              name: "Use profiles to select personalised advertising",
-            },
-          ],
+          purpose_consents: [PURPOSE_4],
         };
         AC_IDS.forEach((id, idx) => {
           const vendor = { ...baseVendor, id: `gacp.${id}`, name: `AC ${id}` };
@@ -3554,7 +3618,7 @@ describe("Fides-js TCF", () => {
       });
     });
 
-    it("can opt in to AC vendors and generate string", () => {
+    it("can opt in to all AC vendors and generate string", () => {
       cy.get("#fides-tab-vendors").click();
       AC_IDS.forEach((id) => {
         // Turn all ACs on
@@ -3584,7 +3648,39 @@ describe("Fides-js TCF", () => {
       });
     });
 
-    it("can opt out of AC vendors and generate string", () => {
+    it("can opt in to some AC vendors and generate string", () => {
+      cy.get("#fides-tab-vendors").click();
+      AC_IDS.slice(0, 2).forEach((id) => {
+        cy.getByTestId(`toggle-AC ${id}`).click();
+      });
+      cy.get("button").contains("Save").click();
+      cy.wait("@patchPrivacyPreference").then((interception) => {
+        const { body } = interception.request;
+        const expected = [
+          { id: VENDOR_1.id, preference: "opt_out" },
+          ...AC_IDS.map((id) => ({
+            id: `gacp.${id}`,
+            preference: id === 49 ? "opt_out" : "opt_in",
+          })),
+        ];
+        expect(body.vendor_consent_preferences).to.eql(expected);
+        expect(body.method).to.eql(ConsentMethod.SAVE);
+
+        // Check the cookie
+        cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
+          cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+            const cookieKeyConsent: FidesCookie = JSON.parse(
+              decodeURIComponent(cookie!.value),
+            );
+            const { fides_string: tcString } = cookieKeyConsent;
+            const acString = tcString?.split(",")[1];
+            expect(acString).to.eql(acceptSomeAcString);
+          });
+        });
+      });
+    });
+
+    it("can opt out of all AC vendors and generate string", () => {
       cy.get("#fides-tab-vendors").click();
       cy.getByTestId("consent-modal").within(() => {
         cy.get("button").contains("Opt out of all").click();
@@ -3651,6 +3747,7 @@ describe("Fides-js TCF", () => {
           const parts = tcString.split(",");
           expect(parts.length).to.eql(1);
           expect(parts[0]).to.not.contain("1~");
+          expect(parts[0]).to.not.contain("2~");
           // But we can still access the AC string via `addtlConsent`
           expect(tcData.addtlConsent).to.eql(acceptAllAcString);
         });
@@ -3683,7 +3780,7 @@ describe("Fides-js TCF", () => {
       });
     });
 
-    it("can initialize from an AC string", () => {
+    it("can initialize from a v1 AC string", () => {
       const cookie = mockCookie({
         fides_string: "CPzbcgAPzbcgAGXABBENATEIAACAAAAAAAAAABEAAAAA",
       });
@@ -3692,6 +3789,33 @@ describe("Fides-js TCF", () => {
         stubOptions: {
           fidesString:
             "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA,1~42.43.44",
+        },
+      });
+
+      cy.get("@FidesInitialized")
+        .should("have.been.calledTwice")
+        .its("lastCall.args.0.detail")
+        .then((updatedCookie: FidesCookie) => {
+          // TC string setting worked
+          assertTcOptIns({
+            cookie: updatedCookie,
+            modelType: "purposeConsents",
+            ids: [PURPOSE_7.id],
+          });
+          // AC string setting worked
+          assertAcOptIns({ cookie: updatedCookie, ids: [42, 43, 44] });
+        });
+    });
+
+    it("can initialize from a v2 AC string", () => {
+      const cookie = mockCookie({
+        fides_string: "CPzbcgAPzbcgAGXABBENATEIAACAAAAAAAAAABEAAAAA",
+      });
+      cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
+      stubTCFExperience({
+        stubOptions: {
+          fidesString:
+            "CPzevcAPzevcAGXABBENATEIAAIAAAAAAAAAAAAAAAAA,2~42.43.44~dv.33.49",
         },
       });
 

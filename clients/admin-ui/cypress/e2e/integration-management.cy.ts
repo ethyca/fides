@@ -14,7 +14,7 @@ describe("Integration management for data detection & discovery", () => {
         test_status: "succeeded",
       },
     }).as("testConnection");
-    cy.intercept("GET", "/api/v1/connection_type", {
+    cy.intercept("GET", "/api/v1/connection_type?*", {
       fixture: "connectors/connection_types.json",
     }).as("getConnectionTypes");
     cy.intercept("GET", "/api/v1/connection_type/*/secret", {
@@ -85,6 +85,43 @@ describe("Integration management for data detection & discovery", () => {
           cy.url().should("contain", "/bq_integration");
         });
       });
+
+      it("should paginate integrations", () => {
+        cy.intercept("GET", "/api/v1/connection?*&page=1*", {
+          fixture: "connectors/list_page_1_50_items.json",
+        }).as("getConnectionsPage1");
+        cy.intercept("GET", "/api/v1/connection?*&page=2*", {
+          fixture: "connectors/list_page_2_30_items.json",
+        }).as("getConnectionsPage2");
+        cy.visit(INTEGRATION_MANAGEMENT_ROUTE);
+        cy.wait("@getConnectionsPage1");
+
+        // Set up intercept for page 2
+
+        // Check that pagination controls are visible
+        cy.getByTestId("pagination-controls").should("exist");
+
+        // Check that the correct number of items are displayed (50 items on page 1)
+        cy.get("[data-testid^='integration-info-']").should("have.length", 50);
+
+        // Verify we're on page 1 of 2
+        cy.getByTestId("pagination-controls").should("contain", "1");
+        cy.getByTestId("pagination-controls").should("contain", "2");
+
+        // Click to go to page 2
+        cy.getByTestId("pagination-controls").within(() => {
+          cy.contains("2").click();
+        });
+        cy.wait("@getConnectionsPage2");
+
+        // Check that the correct number of items are displayed (30 items on page 2)
+        cy.get("[data-testid^='integration-info-']").should("have.length", 30);
+
+        // Verify the first item on page 2 is different from page 1
+        cy.getByTestId("integration-info-snowflake_connector_11").should(
+          "exist",
+        );
+      });
     });
 
     describe("adding an integration", () => {
@@ -92,7 +129,7 @@ describe("Integration management for data detection & discovery", () => {
         cy.intercept("GET", "/api/v1/connection?*", {
           fixture: "connectors/bigquery_connection_list.json",
         }).as("getConnections");
-        cy.intercept("GET", "/api/v1/connection_type", {
+        cy.intercept("GET", "/api/v1/connection_type?*", {
           fixture: "connectors/connection_types.json",
         }).as("getConnectionTypes");
         cy.visit(INTEGRATION_MANAGEMENT_ROUTE);
@@ -178,7 +215,7 @@ describe("Integration management for data detection & discovery", () => {
       cy.intercept("GET", "/api/v1/connection?*", {
         fixture: "connectors/bigquery_connection_list.json",
       }).as("getConnections");
-      cy.intercept("GET", "/api/v1/connection_type", {
+      cy.intercept("GET", "/api/v1/connection_type?*", {
         fixture: "connectors/connection_types.json",
       }).as("getConnectionTypes");
       cy.intercept("GET", "/api/v1/system", {
@@ -461,7 +498,7 @@ describe("Integration management for data detection & discovery", () => {
         cy.intercept("GET", "/api/v1/plus/discovery-monitor*", {
           fixture: "detection-discovery/monitors/website_monitor_list.json",
         }).as("getMonitors");
-        cy.intercept("GET", "/api/v1/connection_type", {
+        cy.intercept("GET", "/api/v1/connection_type?*", {
           fixture: "connectors/connection_types.json",
         }).as("getConnectionTypes");
         cy.getByTestId("tab-Data discovery").click();
