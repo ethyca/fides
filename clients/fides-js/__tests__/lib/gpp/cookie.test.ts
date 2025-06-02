@@ -108,7 +108,6 @@ describe("GPP cookie handling", () => {
         identity: {},
         tcf_consent: {},
       },
-      false,
       {},
     );
 
@@ -128,7 +127,6 @@ describe("GPP cookie handling", () => {
         identity: {},
         tcf_consent: {},
       },
-      false,
       {},
     );
 
@@ -150,7 +148,6 @@ describe("GPP cookie handling", () => {
         identity: {},
         tcf_consent: {},
       },
-      false,
       {},
     );
 
@@ -171,7 +168,6 @@ describe("GPP cookie handling", () => {
         identity: {},
         tcf_consent: {},
       },
-      false,
       {},
     );
 
@@ -190,7 +186,6 @@ describe("GPP cookie handling", () => {
         identity: {},
         tcf_consent: {},
       },
-      false,
       {},
     );
 
