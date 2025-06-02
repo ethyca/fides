@@ -27,7 +27,32 @@ async_engine = create_async_engine(
     json_serializer=custom_json_serializer,
     json_deserializer=custom_json_deserializer,
 )
+
 async_session = sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
+
+readonly_async_engine = (
+    create_async_engine(
+        CONFIG.database.readonly_async_database_uri,
+        connect_args=connect_args,
+        echo=False,
+        hide_parameters=not CONFIG.dev_mode,
+        logging_name="AsyncEngine",
+        json_serializer=custom_json_serializer,
+        json_deserializer=custom_json_deserializer,
+    ).execution_options(
+        isolation_level="SERIALIZABLE",
+        postgresql_readonly=True,
+        postgresql_deferrable=True,
+    )
+    if CONFIG.database.readonly_async_database_uri
+    else None
+)
+
+readonly_async_session = (
+    sessionmaker(readonly_async_engine, class_=AsyncSession, expire_on_commit=False)
+    if CONFIG.database.readonly_async_database_uri
+    else None
+)
 
 sync_engine = create_engine(
     CONFIG.database.sync_database_uri,
@@ -49,3 +74,12 @@ async def get_async_db() -> AsyncGenerator:
     """Return an async session generator for dependency injection into API endpoints"""
     async with async_session() as session:
         yield session
+
+
+async def get_readonly_async_db() -> AsyncGenerator:
+    """Return an async session generator for dependency injection into API endpoints"""
+    if readonly_async_session:
+        async with readonly_async_session() as session:
+            yield session
+
+    yield get_async_db()
