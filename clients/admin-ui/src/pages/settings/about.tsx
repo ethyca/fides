@@ -25,8 +25,8 @@ const About: NextPage<{ showAlphaFeatures: boolean }> = ({
   const features = useFeatures();
   const { flags, override, reset } = useFlags();
 
-  const alphaFlags = FLAG_NAMES.filter((flag) => flag.startsWith("alpha-"));
-  const betaFlags = FLAG_NAMES.filter((flag) => !flag.startsWith("alpha-"));
+  const alphaFlags = FLAG_NAMES.filter((flag) => flag.startsWith("alpha"));
+  const betaFlags = FLAG_NAMES.filter((flag) => !flag.startsWith("alpha"));
 
   return (
     <Layout title="About Fides">

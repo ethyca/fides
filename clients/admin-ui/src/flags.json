@@ -54,7 +54,7 @@
     "test": true,
     "production": false
   },
-  "alpha-newManualIntegration": {
+  "alphaNewManualIntegration": {
     "description": "New DSR Workflow Manual Integration",
     "development": false,
     "test": false,
