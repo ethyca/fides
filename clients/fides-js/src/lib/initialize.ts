@@ -6,10 +6,6 @@ import { getGeolocation } from "../services/external/geolocation";
 import { automaticallyApplyPreferences } from "./automated-consent";
 import { getConsentContext } from "./consent-context";
 import {
-  readConsentFromAnyProvider,
-  registerDefaultProviders,
-} from "./consent-migration";
-import {
   ComponentType,
   FidesConfig,
   FidesCookie,
@@ -34,7 +30,6 @@ import {
 import {
   getCookieByName,
   getOrMakeFidesCookie,
-  isNewFidesCookie,
   makeConsentDefaultsLegacy,
   updateCookieFromExperience,
 } from "./cookie";
@@ -144,7 +139,7 @@ export const getInitialCookie = ({ consent, options }: FidesConfig) => {
 /**
  * If saved preferences are detected, immediately initialize from local cache
  */
-export const getInitialFides = ({
+export const getInitialFidesFromConsentCookie = ({
   cookie,
   savedConsent,
   experience,
@@ -160,23 +155,10 @@ export const getInitialFides = ({
       cookie: FidesCookie;
       debug: boolean;
     }) => PrivacyExperience;
-  }): Partial<FidesGlobal> | null => {
-  const hasExistingCookie = !isNewFidesCookie(cookie);
-
-  // Register any configured consent migration providers
-  registerDefaultProviders(options);
-
-  // Check if there's consent available to migrate from any provider
-  const { consent: migratedConsent } = readConsentFromAnyProvider(options);
-  const hasMigratableConsent = !!migratedConsent;
-
-  if (!hasExistingCookie && !options.fidesString && !hasMigratableConsent) {
-    // A TC str can be injected and take effect even if the user has no previous Fides Cookie
-    return null;
-  }
+  }): Partial<FidesGlobal> => {
   let updatedExperience = experience;
   if (isPrivacyExperience(experience)) {
-    // at this point, pre-fetched experience contains no user consent, so we populate with the Fides cookie
+    // at this point, a pre-fetched experience contains no user consent, so we populate with the Fides cookie. This method is passed in as a prop because it behaves differently for TCF than other experiences.
     updatedExperience = updateExperienceFromCookieConsent({
       experience,
       cookie,
@@ -201,11 +183,11 @@ export const getInitialFides = ({
 /**
  * The bulk of the initialization logic
  * 1. Validates options
- * 2. Retrieves geolocation
- * 3. Retrieves experience
- * 4. Updates cookie
- * 5. Initialize overlay components
- * 6. Apply GPC if necessary
+ * 2. Retrieves geolocation if necessary
+ * 3. Retrieves experience if necessary
+ * 4. Updates cookie as needed from the experience
+ * 5. Initializes overlay components
+ * 6. Applies automated consent (GPC, etc.) asynchronously if necessary
  */
 export const initialize = async ({
   fides,
@@ -315,7 +297,7 @@ export const initialize = async ({
        * Finally, update the "cookie" state to track the user's *current*
        * consent preferences as determined by the updatedExperience above. This
        * "cookie" state is then published to external listeners via the
-       * Fides.consent object and Fides events like FidesInitialized below, so
+       * Fides.consent object and Fides events like FidesReady below, so
        * we rely on keeping it up to date!
        *
        * DEFER (PROD-1780): This is quite *literally* duplicate state, and means
@@ -427,6 +409,8 @@ export const initialize = async ({
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const { fides_meta, identity, fides_string, tcf_consent } = fides.cookie;
+
+  // used to set Fides.consent
   const consent = applyOverridesToConsent(
     fides.cookie.consent,
     fides.experience?.non_applicable_privacy_notices,

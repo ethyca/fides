@@ -12,7 +12,7 @@ See the list of reliable properties below for details.
 
 NOTE: FidesJS will need to be downloaded, executed, and initialized before
 the `Fides` object is available. Therefore, your code should check for the
-existence of Fides *or* subscribe to the global `FidesInitialized` event (see
+existence of Fides *or* subscribe to the global `FidesReady` event (see
 [FidesEvent](FidesEvent.md)) for details) before using the `Fides` object in your own code.
 
 ## Properties
