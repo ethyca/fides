@@ -175,8 +175,11 @@ class TestS3Upload:
             document=document,
         )
 
-        response = s3_client.get_object(Bucket=bucket_name, Key=file_key)
-        assert response["Body"].read() == copy_document
+        # Verify file exists
+        file_obj = BytesIO()
+        s3_client.download_fileobj(Bucket=bucket_name, Key=file_key, Fileobj=file_obj)
+        file_obj.seek(0)
+        assert file_obj.read() == copy_document
         assert bucket_name in presigned_url
         assert file_size == len(copy_document)
 
@@ -208,6 +211,10 @@ class TestS3Upload:
                 document=document,
             )
             assert "NoSuchBucket" in str(e.value)
+
+        # Verify file doesn't exist using head_object
+        with pytest.raises(ClientError) as e:
+            s3_client.head_object(Bucket=bucket_name, Key=file_key)
 
     @pytest.mark.parametrize(
         "file_type",
@@ -242,6 +249,11 @@ class TestS3Upload:
             document=document,
         )
 
+        # Verify file exists
+        file_obj = BytesIO()
+        s3_client.download_fileobj(Bucket=bucket_name, Key=file_key, Fileobj=file_obj)
+        file_obj.seek(0)
+        assert file_obj.read() == copy_document
         assert file_size == len(copy_document)
         assert bucket_name in presigned_url
 
@@ -300,7 +312,12 @@ class TestS3Upload:
             size_threshold=custom_threshold,
         )
 
-        assert file_size == 1000
+        # Verify file exists
+        file_obj = BytesIO()
+        s3_client.download_fileobj(Bucket=bucket_name, Key=file_key, Fileobj=file_obj)
+        file_obj.seek(0)
+        assert file_obj.read() == document.getvalue()
+        assert file_size == len(document.getvalue())
         assert bucket_name in presigned_url
 
     def test_upload_with_invalid_file_pointer(
@@ -450,6 +467,11 @@ class TestS3Retrieve:
             auth_method=auth_method,
         )
 
+        # Verify file exists
+        file_obj = BytesIO()
+        s3_client.download_fileobj(Bucket=bucket_name, Key=file_key, Fileobj=file_obj)
+        file_obj.seek(0)
+        assert file_obj.read() == copy_document
         assert file_size == len(copy_document)
         assert bucket_name in presigned_url
 

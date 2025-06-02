@@ -269,10 +269,9 @@ class Attachment(Base):
             bucket = storage_client.bucket(bucket_name)
             blob = bucket.blob(f"{self.id}/{self.file_name}")
 
-            fileobj = BytesIO()
-            blob.download_to_file(fileobj)
+            fileobj = BytesIO(blob.download_as_bytes())
             fileobj.seek(0)  # Reset pointer to beginning after download
-            return len(fileobj.getvalue()), fileobj
+            return blob.size, fileobj
 
         if self.config.type == StorageType.local:
             filename = get_local_filename(f"{self.id}/{self.file_name}")
