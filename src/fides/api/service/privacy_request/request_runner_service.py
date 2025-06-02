@@ -134,7 +134,7 @@ def get_manual_webhook_access_inputs(
                 # Store only upload attachments in the webhook data
                 webhook_data["attachments"] = upload_attachments
                 # Store storage attachments separately for later use
-                webhook_data["_storage_attachments"] = storage_attachments
+                webhook_data["attachment_details"] = storage_attachments
             manual_inputs[manual_webhook.connection_config.key] = [webhook_data]
 
     except (
@@ -235,9 +235,9 @@ def upload_access_results(
     for _, data_list in results_for_storage.items():
         if isinstance(data_list, list):
             for data in data_list:
-                if isinstance(data, dict) and "_storage_attachments" in data:
+                if isinstance(data, dict) and "attachment_details" in data:
                     # Replace attachments with storage_attachments for storage
-                    data["attachments"] = data.pop("_storage_attachments")
+                    data["attachments"] = data.pop("attachment_details")
 
     return download_urls, results_for_storage
 

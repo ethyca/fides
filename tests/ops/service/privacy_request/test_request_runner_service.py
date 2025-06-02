@@ -1111,7 +1111,7 @@ class TestPrivacyRequestAttachments:
 
         for attachment in attachments:
             assert attachment["content_type"] == "text/plain"
-            assert "https://s3.amazonaws.com/" in attachment["download_url"]
+            assert attachment["download_url"].startswith("https://s3.amazonaws.com/")
             assert attachment["file_size"] == 5
             if storage_config.format == ResponseFormat.html:
                 assert "fileobj" in attachment
