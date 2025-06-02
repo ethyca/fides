@@ -25,6 +25,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added ability to add internal comments to privacy requests [#6165](https://github.com/ethyca/fides/pull/6165)
 - Attachments can now be stored with GCS [#6161](https://github.com/ethyca/fides/pull/6161)
 - Attachments can now retrieve their content as well as their download urls [#6169 ](https://github.com/ethyca/fides/pull/6169)
+- Added pagination support to integrations list page for better navigation with large datasets [#6184](https://github.com/ethyca/fides/pull/6184)
 
 ### Changed
 - Deprecated `FidesInitialized` event and added `FidesConsentLoaded` and `FidesReady` events for more granular initialization state handling [#6181](https://github.com/ethyca/fides/pull/6181)
