@@ -8,15 +8,20 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
 )
 
 
+class Environment(str, Enum):
+    DEVELOPMENT = "development"
+    STAGING = "staging"
+    PRODUCTION = "production"
+
+
 class TestSchema(ConnectionConfigSecretsSchema):
     """Schema to validate the secrets needed for testing multiselect functionality"""
 
     # Single select field with default value
-    environment: str = Field(
+    environment: Environment = Field(
         title="Environment",
         description="Select the environment to connect to",
         default="development",
-        options=["development", "staging", "production"],
     )
 
     # Multi-select field

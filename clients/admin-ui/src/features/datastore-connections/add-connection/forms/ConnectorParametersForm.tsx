@@ -71,6 +71,8 @@ const ConnectorParametersForm = ({
     selectConnectionTypeState,
   );
 
+  console.log(connection, connectionOption);
+
   const [trigger, result] = useLazyGetDatastoreConnectionStatusQuery();
 
   const validateConnectionIdentifier = (value: string) => {

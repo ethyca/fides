@@ -394,9 +394,9 @@ export const ConnectorParameters = ({
   const skip = connectionOption.type === SystemType.MANUAL;
   const { data: secretsSchema } = useGetConnectionTypeSecretSchemaQuery(
     connectionOption!.identifier,
-    {
-      skip,
-    },
+    // {
+    //   skip,
+    // },
   );
 
   const handleTestDatasetsClick = () => {
@@ -472,7 +472,6 @@ export const ConnectorParameters = ({
         onDelete={handleDelete}
         deleteResult={deleteDatastoreConnectionResult}
       />
-
       {connectionConfig ? (
         <Flex mt="4" justifyContent="between" alignItems="center">
           {response &&

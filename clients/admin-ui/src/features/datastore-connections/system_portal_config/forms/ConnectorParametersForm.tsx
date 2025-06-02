@@ -27,6 +27,7 @@ import React from "react";
 import { DatastoreConnectionStatus } from "src/features/datastore-connections/types";
 
 import { useFeatures } from "~/features/common/features";
+import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 import DisableConnectionModal from "~/features/datastore-connections/DisableConnectionModal";
 import SelectDataset from "~/features/datastore-connections/system_portal_config/forms/SelectDataset";
@@ -104,6 +105,8 @@ export const ConnectorParametersForm = ({
     useLazyGetDatastoreConnectionStatusQuery();
   const { plus: isPlusEnabled } = useFeatures();
 
+  console.log(secretsSchema);
+
   const validateField = (label: string, value: string, type?: string) => {
     let error;
     if (typeof value === "undefined" || value === "" || value === undefined) {
@@ -165,6 +168,14 @@ export const ConnectorParametersForm = ({
         const error = form.errors.secrets && form.errors.secrets[key];
         const touch = form.touched.secrets ? form.touched.secrets[key] : false;
 
+        // Check if this field has an enum definition
+        const enumDefinition = item.allOf?.[0]?.$ref
+          ? secretsSchema?.definitions[
+              item.allOf[0].$ref.replace("#/definitions/", "")
+            ]
+          : undefined;
+
+        const isSelect = !!enumDefinition?.enum;
         const isBoolean = item.type === "boolean";
         const isInteger = item.type === "integer";
 
@@ -176,7 +187,7 @@ export const ConnectorParametersForm = ({
           >
             {getFormLabel(key, item.title)}
             <VStack align="flex-start" w="inherit">
-              {!isInteger && !isBoolean && (
+              {!isInteger && !isBoolean && !isSelect && (
                 <Input
                   {...field}
                   type={item.sensitive ? "password" : "text"}
@@ -184,6 +195,21 @@ export const ConnectorParametersForm = ({
                   autoComplete="off"
                   color="gray.700"
                   size="sm"
+                />
+              )}
+              {isSelect && (
+                <ControlledSelect
+                  name={field.name}
+                  key={field.name}
+                  id={field.name}
+                  label={item.title}
+                  isRequired={isRequiredSecretValue(key)}
+                  tooltip={item.description}
+                  layout="stacked"
+                  options={enumDefinition.enum!.map((value) => ({
+                    label: value,
+                    value,
+                  }))}
                 />
               )}
               {isBoolean && (
@@ -395,7 +421,7 @@ export const ConnectorParametersForm = ({
                 </Field>
               )}
               {/* Dynamic connector secret fields */}
-              {connectionOption.type !== SystemType.MANUAL && secretsSchema
+              {secretsSchema
                 ? Object.entries(secretsSchema.properties).map(
                     ([key, item]) => {
                       if (key === "advanced_settings") {
