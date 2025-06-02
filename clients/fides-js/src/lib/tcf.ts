@@ -78,7 +78,7 @@ const generateAcString = ({
 
 /**
  * Generate FidesString based on TCF and AC-related info from privacy experience.
- * Called when there is either a FidesInitialized or FidesUpdated event
+ * Called when there is either a FidesConsentLoaded or FidesUpdated event
  */
 export const generateFidesString = async ({
   experience,
@@ -293,13 +293,12 @@ export const initializeTcfCmpApi = () => {
   //   2. We are _not_ going to show the banner (i.e. the TCF hash has not changed).
   //   3. It is the _first_ init (This should only ever happen once per visit).
   // see https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/cmpapi#dont-show-ui--tc-string-does-not-need-an-update
-  window.addEventListener("FidesInitialized", (event) => {
+  window.addEventListener("FidesConsentLoaded", (event) => {
     const tcString = extractTCStringForCmpApi(event);
     if (
       !!tcString &&
       !!event.detail.extraDetails &&
-      !event.detail.extraDetails.shouldShowExperience &&
-      event.detail.extraDetails.firstInit
+      !event.detail.extraDetails.shouldShowExperience
     ) {
       // we are not showing the experience, so we use false
       cmpApi.update(tcString, false);
