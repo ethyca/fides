@@ -1,11 +1,15 @@
+import json
+from datetime import datetime
+
 import pytest
+from bson import ObjectId
 
 from fides.api.schemas.storage.storage import (
     StorageSecretsGCS,
     StorageSecretsS3,
     StorageType,
 )
-from fides.api.util.storage_util import get_schema_for_secrets
+from fides.api.util.storage_util import StorageJSONEncoder, get_schema_for_secrets
 
 
 class TestStorageUtil:
@@ -106,3 +110,20 @@ class TestStorageUtil:
             "test-service%40test-project-123.iam.gserviceaccount.com"
         )
         assert secrets.universe_domain == "googleapis.com"
+
+    def test_storage_json_encoder(self):
+        encoder = StorageJSONEncoder()
+
+        # Test datetime handling
+        test_datetime = datetime(2024, 3, 15, 12, 30, 45)
+        assert encoder.default(test_datetime) == "2024-03-15T12:30:45"
+
+        # Test ObjectId handling
+        test_object_id = ObjectId("507f1f77bcf86cd799439011")
+        assert encoder.default(test_object_id) == {"$oid": "507f1f77bcf86cd799439011"}
+
+        # Test fallback to parent encoder for other types
+        test_dict = {"key": "value"}
+        assert (
+            encoder.default(test_dict) == "{'key': 'value'}"
+        )  # Should use parent encoder's default handling

@@ -6,11 +6,16 @@
  * {@link FidesEvent} provides a good reference. But when coding, it's still
  * useful to have this union type around!
  *
+ * `FidesInitialized` is deprecated and will be removed in a future release.
+ * Use `FidesConsentLoaded` or `FidesReady` instead.
+ *
  * @private
  */
 export type FidesEventType =
   | "FidesInitializing"
   | "FidesInitialized"
+  | "FidesConsentLoaded"
+  | "FidesReady"
   | "FidesUpdating"
   | "FidesUpdated"
   | "FidesUIShown"
@@ -46,9 +51,19 @@ export type FidesEventType =
  * immediately once the FidesJS script is loaded. If `Fides.init()` is called
  * multiple times, this event will also be dispatched each time.
  *
- * - `FidesInitialized`: Dispatched when initialization is complete and the
+ * - `FidesConsentLoaded`: If previously saved consent was found during initialization,
+ * we immediately set it on the `Fides` global object and dispatch this event.
+ * This event will only be dispatched if consent was found.
+ *
+ * - `FidesReady`: Dispatched when initialization is complete and the
  * current user's consent preferences - either previously saved or applicable
  * defaults - have been set on the `Fides` global object.
+ * This event will always be dispatched, even if no previous consent was found.
+ *
+ * - ~~`FidesInitialized`~~: _deprecated_ - We strongly encourage using `FidesConsentLoaded`
+ * and/or `FidesReady` instead. This event is dispatched at the same time as
+ * `FidesConsentLoaded` and `FidesReady` and has the potential to be dispatched
+ * multiple times which can be confusing, hence the deprecation.
  *
  * - `FidesUpdating`: Dispatched when a user action (e.g. accepting all, saving
  * changes, applying GPC) has started updating the user's consent preferences.
@@ -120,7 +135,7 @@ export interface FidesEvent extends CustomEvent {
       servingComponent?: "banner" | "modal" | "tcf_banner" | "tcf_overlay";
 
       /**
-       * Whether the user should be shown the consent experience. Only available on FidesInitialized events.
+       * Whether the user should be shown the consent experience. Only available on FidesConsentLoaded and FidesReady events.
        */
       shouldShowExperience?: boolean;
 

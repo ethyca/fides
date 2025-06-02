@@ -2,11 +2,10 @@ import {
   AntButton as Button,
   AntButtonProps as ButtonProps,
   AntTooltip as Tooltip,
+  Icons,
   useClipboard,
 } from "fidesui";
 import React, { useState } from "react";
-
-import { CopyIcon } from "./Icon";
 
 enum TooltipText {
   COPY = "Copy",
@@ -51,7 +50,7 @@ const ClipboardButton = ({ copyText, ...props }: ClipboardButtonProps) => {
       }}
     >
       <Button
-        icon={<CopyIcon />}
+        icon={<Icons.Copy />}
         aria-label="copy"
         type="text"
         data-testid="clipboard-btn"

@@ -3,7 +3,7 @@ import { FieldArray, useFormikContext } from "formik";
 import { useEffect } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import { dataUseIsConsentUse } from "~/features/configure-consent/vendor-transform";
+import { dataUseIsConsentUse } from "~/features/configure-consent/dataUseIsConsentUse";
 import {
   selectDataUseOptions,
   useGetAllDataUsesQuery,
@@ -106,8 +106,6 @@ const DataUsesForm = ({
           consent_use: d.data_use.split(".")[0],
           data_use: d.data_use,
           data_categories: d.data_categories,
-          cookieNames: d.cookies?.map((c) => c.name) || [],
-          cookies: d.cookies ?? [],
         }));
       setFieldValue("privacy_declarations", declarations);
     } else if (isCreate) {

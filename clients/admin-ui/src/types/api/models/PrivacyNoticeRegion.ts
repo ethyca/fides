@@ -310,11 +310,11 @@ export enum PrivacyNoticeRegion {
   CA_NT = "ca_nt",
   CA_NU = "ca_nu",
   CA_YT = "ca_yt",
+  GLOBAL = "global",
   CA = "ca",
   US = "us",
   MEXICO_CENTRAL_AMERICA = "mexico_central_america",
   CARIBBEAN = "caribbean",
   EEA = "eea",
   NON_EEA = "non_eea",
-  GLOBAL = "global",
 }

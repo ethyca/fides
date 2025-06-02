@@ -285,16 +285,16 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   }, [experience.privacy_notices, options.fidesConsentOverride]);
 
   const dispatchOpenBannerEvent = useCallback(() => {
-    dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
+    dispatchFidesEvent("FidesUIShown", cookie, {
       servingComponent: ServingComponent.BANNER,
     });
-  }, [cookie, options.debug]);
+  }, [cookie]);
 
   const dispatchOpenOverlayEvent = useCallback(() => {
-    dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
+    dispatchFidesEvent("FidesUIShown", cookie, {
       servingComponent: ServingComponent.MODAL,
     });
-  }, [cookie, options.debug]);
+  }, [cookie]);
 
   const handleDismiss = useCallback(() => {
     if (!consentCookieObjHasSomeConsentSet(parsedCookie?.consent)) {
@@ -390,12 +390,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
                     preference,
                   };
                 setDraftEnabledNoticeKeys(updatedKeys);
-                dispatchFidesEvent(
-                  "FidesUIChanged",
-                  cookie,
-                  options.debug,
-                  eventExtraDetails,
-                );
+                dispatchFidesEvent("FidesUIChanged", cookie, eventExtraDetails);
               }}
             />
           </div>
