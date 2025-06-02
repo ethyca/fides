@@ -11,7 +11,7 @@
  *
  * NOTE: FidesJS will need to be downloaded, executed, and initialized before
  * the `Fides` object is available. Therefore, your code should check for the
- * existence of Fides *or* subscribe to the global `FidesInitialized` event (see
+ * existence of Fides *or* subscribe to the global `FidesReady` event (see
  * {@link FidesEvent}) for details) before using the `Fides` object in your own code.
  *
  */
