@@ -103,12 +103,12 @@ const Overlay: FunctionComponent<Props> = ({
 
   const dispatchCloseEvent = useCallback(
     ({ saved = false }: { saved?: boolean }) => {
-      dispatchFidesEvent("FidesModalClosed", cookie, options.debug, { saved });
+      dispatchFidesEvent("FidesModalClosed", cookie, { saved });
       if (!saved) {
         onDismiss();
       }
     },
-    [cookie, onDismiss, options.debug],
+    [cookie, onDismiss],
   );
 
   const { instance, attributes } = useA11yDialog({

@@ -10,7 +10,7 @@
  *
  * NOTE: FidesJS will need to be downloaded, executed, and initialized before
  * the `Fides` object is available. Therefore, your code should check for the
- * existence of Fides *or* subscribe to the global `FidesInitialized` event (see
+ * existence of Fides *or* subscribe to the global `FidesReady` event (see
  * {@link FidesEvent}) for details) before using the `Fides` object in your own code.
  *
  * @example
@@ -113,7 +113,7 @@ export interface Fides {
    * current user's experience, consent preferences, etc.
    *
    * NOTE: To be notified when initialization has completed, you can subscribe
-   * to the `FidesInitialized` event. See {@link FidesEvent} for details.
+   * to the `FidesReady` event. See {@link FidesEvent} for details.
    */
   initialized: boolean;
 
@@ -140,7 +140,7 @@ export interface Fides {
    * <button class="my-custom-show-modal" id="fides-modal-link-label" onclick="Fides.showModal()"><button>
    * <script id="fides-js">
    *   function() {
-   *     addEventListener("FidesInitialized", ( function() {
+   *     addEventListener("FidesReady", ( function() {
    *       document.getElementById('fides-modal-link-label').innerText = Fides.getModalLinkLabel();
    *     }));
    *   }
@@ -330,7 +330,7 @@ export interface Fides {
    * });
    * ```
    *
-   * @param type The type of event to listen for, such as `FidesInitialized`, `FidesUpdated`, etc.
+   * @param type The type of event to listen for, such as `FidesReady`, `FidesUpdated`, etc.
    * @param callback The callback function to call when the event is triggered
    */
   onFidesEvent: (type: any, callback: (detail: any) => void) => () => void;

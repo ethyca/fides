@@ -23,6 +23,7 @@ export type ExperienceConfigResponse = {
   auto_detect_language?: boolean | null;
   auto_subdomain_cookie_deletion?: boolean | null;
   regions: Array<PrivacyNoticeRegion>;
+  tcf_configuration_id?: string | null;
   id: string;
   created_at: string;
   updated_at: string;
