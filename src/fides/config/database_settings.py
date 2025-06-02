@@ -243,7 +243,7 @@ class DatabaseSettings(FidesSettings):
                 scheme="postgresql+asyncpg",
                 username=info.data.get("user"),
                 password=info.data.get("password"),
-                host=info.data.get("server"),
+                host=info.data.get("readonly_server"),
                 port=port,
                 path=f"{db_name or ''}",
                 query=urlencode(params, quote_via=quote, safe="/") if params else None,
