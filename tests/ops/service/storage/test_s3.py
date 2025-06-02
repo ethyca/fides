@@ -499,7 +499,7 @@ class TestS3Retrieve:
         )
 
         assert file_size == len(document)
-        assert content == document
+        assert content.read() == document
 
     def test_retrieve_large_file_with_content(
         self, s3_client, storage_config, file_key, auth_method, bucket_name, monkeypatch
@@ -525,7 +525,7 @@ class TestS3Retrieve:
         )
 
         assert file_size == len(document)
-        assert content == document
+        assert content.read() == document
 
     def test_retrieve_nonexistent_file_with_content(
         self, s3_client, storage_config, file_key, auth_method, bucket_name, monkeypatch
@@ -545,7 +545,7 @@ class TestS3Retrieve:
                 auth_method=auth_method,
                 get_content=True,
             )
-        assert "NoSuchKey" in str(e.value)
+        assert "Not Found" in str(e.value)
 
 
 class TestS3Delete:
