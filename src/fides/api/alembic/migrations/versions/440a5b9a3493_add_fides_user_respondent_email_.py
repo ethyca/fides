@@ -9,7 +9,6 @@ Create Date: 2025-05-29 15:41:59.521940
 import sqlalchemy as sa
 from alembic import op
 from citext import CIText
-from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "440a5b9a3493"
