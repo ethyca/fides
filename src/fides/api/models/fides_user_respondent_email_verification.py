@@ -147,20 +147,12 @@ class FidesUserRespondentEmailVerification(Base):
         If the verification code is expired, the user is not considered verified.
         If the user has reached the maximum number of attempts, the user is not considered verified.
         """
-        from loguru import logger
         if self.is_verification_code_expired():
             self.attempts += 1
             self.save(db)
             return False
 
-        logger.info(f"Attempts: {self.attempts}")
-        logger.info(f"Max attempts: {MAX_ATTEMPTS}")
-        logger.info(f"Attempts >= MAX_ATTEMPTS: {self.attempts >= MAX_ATTEMPTS}")
-        logger.info(f"type(self.attempts): {type(self.attempts)}")
-        logger.info(f"type(MAX_ATTEMPTS): {type(MAX_ATTEMPTS)}")
-
         if self.attempts >= MAX_ATTEMPTS:
-            logger.info(f"Maximum number of attempts for verification reached.")
             raise ValueError("Maximum number of attempts for verification reached.")
 
         if self.verification_code == code:

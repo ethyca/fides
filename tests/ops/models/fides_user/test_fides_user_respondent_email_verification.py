@@ -215,8 +215,6 @@ class TestFidesUserRespondentEmailVerification:
     def test_verify_code_max_attempts(
         self, db: Session, external_respondent: FidesUser
     ) -> None:
-        from loguru import logger
-
         verification = FidesUserRespondentEmailVerification.create(
             db=db,
             data={
@@ -227,7 +225,6 @@ class TestFidesUserRespondentEmailVerification:
         verification.generate_verification_code(db)
         for _ in range(MAX_ATTEMPTS):
             assert not verification.verify_code("000000", db)
-            logger.info(f"Attempt {_ + 1} of {MAX_ATTEMPTS}")
 
         # This attempt should raise ValueError since attempts > MAX_ATTEMPTS
         with pytest.raises(ValueError) as exc:
