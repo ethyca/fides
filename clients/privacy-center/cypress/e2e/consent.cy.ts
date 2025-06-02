@@ -397,7 +397,7 @@ describe("Consent settings", () => {
           expect(win)
             .to.have.nested.property("dataLayer[0]")
             .that.eql({
-              event: "FidesInitialized",
+              event: "FidesReady",
               Fides: {
                 consent: {
                   data_sales: true,

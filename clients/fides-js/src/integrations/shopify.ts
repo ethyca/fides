@@ -85,7 +85,7 @@ const applyOptions = () => {
     console.error("Fides could not access Shopify's customerPrivacy API");
   }
   // Listen for Fides events and push them to Shopify
-  window.addEventListener("FidesInitialized", (event) =>
+  window.addEventListener("FidesReady", (event) =>
     pushConsentToShopify(event.detail.consent),
   );
   window.addEventListener("FidesUpdating", (event) =>
