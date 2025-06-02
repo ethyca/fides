@@ -72,8 +72,8 @@ async def get_async_db() -> AsyncGenerator:
 
 async def get_readonly_async_db() -> AsyncGenerator:
     """Return an async session generator for dependency injection into API endpoints"""
-    if not readonly_async_session:
-        yield get_async_db()
+    if readonly_async_engine:
+        async with readonly_async_session() as session:
+            yield session
 
-    async with readonly_async_session() as session:
-        yield session
+    yield get_async_db()
