@@ -52,7 +52,7 @@ const SharedMonitorConfigTable = ({
       <CustomTypography.Title level={2}>
         Shared monitor configurations
       </CustomTypography.Title>
-      <CustomTypography.Paragraph className="mt-2">
+      <CustomTypography.Paragraph className="mt-4">
         Shared monitor configurations can be applied to monitors to customize
         classification.
       </CustomTypography.Paragraph>
@@ -68,8 +68,9 @@ const SharedMonitorConfigTable = ({
           className: "cursor-pointer",
           "data-testid": `config-${row.id}`,
         })}
+        className="mt-6"
       />
-      <AntFlex justify="space-between">
+      <AntFlex justify="space-between" className="mt-4">
         <PaginationBar
           totalRows={data?.total || 0}
           pageSizes={PAGE_SIZES}

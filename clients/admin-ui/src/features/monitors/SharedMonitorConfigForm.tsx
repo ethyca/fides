@@ -204,7 +204,7 @@ const SharedMonitorConfigForm = ({
           {(fields, { add, remove }, { errors }) => (
             <>
               <AntFlex justify="space-between">
-                <CustomTypography.Title level={3} className="pb-4">
+                <CustomTypography.Title level={3} className="pb-5">
                   Regex patterns
                 </CustomTypography.Title>
                 {!config && (
@@ -216,7 +216,11 @@ const SharedMonitorConfigForm = ({
                       beforeUpload={() => false}
                       onChange={handleFileUpload}
                     >
-                      <AntButton icon={<Icons.Upload />} iconPosition="end">
+                      <AntButton
+                        icon={<Icons.Upload />}
+                        iconPosition="end"
+                        size="small"
+                      >
                         Upload CSV
                       </AntButton>
                     </AntUpload>
