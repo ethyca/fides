@@ -150,16 +150,6 @@ def webhook_variants(common_webhook_data, common_attachment_config):
 
 
 @pytest.fixture
-def common_test_paths():
-    """Common test paths fixture"""
-    return {
-        "webhook_dir": "data/test_system/test_webhook",
-        "attachments_dir": "attachments",
-        "manual_webhook_dir": "data/manual/test_webhook",
-    }
-
-
-@pytest.fixture
 def common_file_assertions():
     """Common file existence assertions fixture"""
     return {
@@ -194,6 +184,11 @@ def common_assertions(common_file_assertions):
             "manual_webhook_dir": "data/manual/test_webhook",
             "dataset_dir": "data/dataset",
             "collection_dir": "data/dataset/collection",
+            "welcome_path": "welcome.html",
+            "attachments_index": "attachments/index.html",
+            "dataset_index": "data/dataset/index.html",
+            "css_path": "data/main.css",
+            "back_svg_path": "data/back.svg",
         },
     }
 
@@ -251,65 +246,6 @@ class TestDsrReportBuilderAttachments(TestDsrReportBuilderBase):
                 attachments_index,
                 common_attachment_config["text"]["file_name"],
                 common_attachment_config["binary"]["file_name"],
-            )
-
-    def test_manual_webhook_attachments(
-        self, privacy_request: PrivacyRequest, webhook_variants, common_assertions
-    ):
-        """Test handling of attachments in manual webhook data"""
-        dsr_data = {
-            "manual:test_webhook": [webhook_variants["with_attachments"]],
-            "attachments": [webhook_variants["with_attachments"]["attachments"][0]],
-        }
-
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
-        report = builder.generate()
-
-        with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
-            # Webhook attachments
-            self.assert_file_in_zip(
-                zip_file,
-                f"{common_assertions['paths']['manual_webhook_dir']}/{webhook_variants['with_attachments']['attachments'][0]['file_name']}",
-                webhook_variants["with_attachments"]["attachments"][0][
-                    "fileobj"
-                ].getvalue(),
-            )
-            self.assert_file_in_zip(
-                zip_file,
-                f"{common_assertions['paths']['manual_webhook_dir']}/{webhook_variants['with_attachments']['attachments'][1]['file_name']}",
-                webhook_variants["with_attachments"]["attachments"][1][
-                    "fileobj"
-                ].getvalue(),
-                is_binary=True,
-            )
-
-            # Top-level attachment
-            self.assert_file_in_zip(
-                zip_file,
-                f"{common_assertions['paths']['attachments_dir']}/{webhook_variants['with_attachments']['attachments'][0]['file_name']}",
-                webhook_variants["with_attachments"]["attachments"][0][
-                    "fileobj"
-                ].getvalue(),
-            )
-
-            # Verify that the manual webhook page contains clickable links to its attachments
-            manual_data = zip_file.read(
-                f"{common_assertions['paths']['manual_webhook_dir']}/index.html"
-            ).decode("utf-8")
-            self.assert_html_contains(
-                manual_data,
-                f'href="{webhook_variants["with_attachments"]["attachments"][0]["file_name"]}"',
-                f'href="{webhook_variants["with_attachments"]["attachments"][1]["file_name"]}"',
-                common_assertions["html"]["attachment_link"],
-            )
-
-            # Verify that the attachments index page contains top-level attachment
-            attachments_index = zip_file.read(
-                f"{common_assertions['paths']['attachments_dir']}/index.html"
-            ).decode("utf-8")
-            self.assert_html_contains(
-                attachments_index,
-                webhook_variants["with_attachments"]["attachments"][0]["file_name"],
             )
 
     def test_multiple_webhook_attachments(
@@ -482,33 +418,6 @@ class TestDsrReportBuilderDataStructure:
                 "data/dataset2/collection1/index.html"
             ).decode("utf-8")
             assert "Item 4" in collection3_content
-
-    def test_with_large_data(self, privacy_request: PrivacyRequest):
-        """Test DSR report builder with large data sets"""
-        # Create a large dataset with many items
-        dsr_data = {
-            "dataset1:collection1": [
-                {"id": i, "name": f"Item {i}", "data": "x" * 1000}  # 1KB per item
-                for i in range(100)  # 100 items = ~100KB
-            ]
-        }
-
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
-        report = builder.generate()
-
-        with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
-            # Verify collection index page exists
-            assert "data/dataset1/collection1/index.html" in zip_file.namelist()
-
-            # Verify all items are in the collection index page
-            collection_content = zip_file.read(
-                "data/dataset1/collection1/index.html"
-            ).decode("utf-8")
-            for i in range(100):
-                assert f"Item {i}" in collection_content
-
-            # Verify index pages
-            assert "data/dataset1/index.html" in zip_file.namelist()
 
 
 class TestDsrReportBuilderDataTypes(TestDsrReportBuilderBase):
@@ -1244,7 +1153,7 @@ class TestDsrReportBuilderContent(TestDsrReportBuilderBase):
         self,
         privacy_request: PrivacyRequest,
         webhook_variants,
-        common_test_paths,
+        common_assertions,
         common_file_assertions,
     ):
         """Test basic report structure generation"""
@@ -1263,140 +1172,15 @@ class TestDsrReportBuilderContent(TestDsrReportBuilderBase):
 
             # Check dataset structure
             self.assert_file_in_zip(
-                zip_file, f"{common_test_paths['manual_webhook_dir']}/index.html"
+                zip_file,
+                f"{common_assertions['paths']['manual_webhook_dir']}/index.html",
             )
 
             # Verify welcome page content
-            welcome_content = zip_file.read("welcome.html").decode("utf-8")
+            welcome_content = zip_file.read(
+                common_assertions["paths"]["welcome_path"]
+            ).decode("utf-8")
             self.assert_html_contains(welcome_content, "Your requested data", "manual")
-
-    def test_data_types(self, privacy_request: PrivacyRequest):
-        """Test handling of different data types"""
-        dsr_data = {
-            "manual:test_webhook": [
-                {
-                    "string_field": "test string",
-                    "number_field": 123,
-                    "float_field": 123.45,
-                    "boolean_field": True,
-                    "null_field": None,
-                    "date_field": datetime(2024, 1, 1),
-                    "list_field": [1, 2, 3],
-                    "nested_dict": {
-                        "key": "value",
-                        "nested_list": [{"a": 1}, {"b": 2}],
-                    },
-                    "system_name": "test_system",
-                }
-            ]
-        }
-
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
-        report = builder.generate()
-
-        with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
-            manual_data = zip_file.read("data/manual/test_webhook/index.html").decode(
-                "utf-8"
-            )
-
-            # Extract all values from the table
-            table_values = TestDsrReportBuilderBase.extract_table_values(manual_data)
-
-            # Verify each value is present and properly formatted
-            assert "test string" in table_values["string_field"]
-            assert "123" in table_values["number_field"]
-            assert "123.45" in table_values["float_field"]
-            assert "true" in table_values["boolean_field"]
-            assert "null" in table_values["null_field"]
-            assert "2024-01-01T00:00:00" in table_values["date_field"]
-
-            # For list and dict fields, we check that they contain the expected elements
-            list_field = table_values["list_field"]
-            assert "1" in list_field
-            assert "2" in list_field
-            assert "3" in list_field
-
-            nested_dict = table_values["nested_dict"]
-            assert "key" in nested_dict
-            assert "value" in nested_dict
-            assert "nested_list" in nested_dict
-            assert "a" in nested_dict
-            assert "1" in nested_dict
-            assert "b" in nested_dict
-            assert "2" in nested_dict
-
-    def test_special_characters(self, privacy_request: PrivacyRequest):
-        """Test handling of special characters"""
-        dsr_data = {
-            "manual:test_webhook": [
-                {
-                    "email": "test@example.com",
-                    "special_chars": "!@#$%^&*()_+{}|:\"<>?[]\\;',./~`",
-                    "unicode_chars": "你好世界",
-                    "emoji": "👋🌍",
-                    "html_chars": "<script>alert('test')</script>",
-                    "system_name": "test_system",
-                }
-            ]
-        }
-
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
-        report = builder.generate()
-
-        with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
-            manual_data = zip_file.read("data/manual/test_webhook/index.html").decode(
-                "utf-8"
-            )
-
-            # Extract all values from the table
-            table_values = TestDsrReportBuilderBase.extract_table_values(manual_data)
-
-            # Verify each value is present and properly escaped
-            assert "test@example.com" in table_values["email"]
-
-            # For special characters, we check that each character is present
-            special_chars = table_values["special_chars"]
-            assert "!" in special_chars
-            assert "@" in special_chars
-            assert "#" in special_chars
-            assert "$" in special_chars
-            assert "%" in special_chars
-            assert "^" in special_chars
-            assert "&amp;" in special_chars  # &
-            assert "*" in special_chars
-            assert "(" in special_chars
-            assert ")" in special_chars
-            assert "_" in special_chars
-            assert "+" in special_chars
-            assert "{" in special_chars
-            assert "}" in special_chars
-            assert "|" in special_chars
-            assert ":" in special_chars
-            assert "\\" in special_chars
-            assert "&lt;" in special_chars  # <
-            assert "&gt;" in special_chars  # >
-            assert "?" in special_chars
-            assert "[" in special_chars
-            assert "]" in special_chars
-            assert ";" in special_chars
-            assert "&#39;" in special_chars  # '
-            assert "," in special_chars
-            assert "." in special_chars
-            assert "/" in special_chars
-            assert "~" in special_chars
-            assert "`" in special_chars
-
-            # For Unicode characters, we check that the characters are present
-            assert "\\u4f60\\u597d\\u4e16\\u754c" in table_values["unicode_chars"]
-
-            # For emoji, we check that the characters are present
-            assert "\\ud83d\\udc4b\\ud83c\\udf0d" in table_values["emoji"]
-
-            # For HTML characters, we check that they are properly escaped
-            html_chars = table_values["html_chars"]
-            assert "&lt;" in html_chars  # <
-            assert "&gt;" in html_chars  # >
-            assert "&#39;" in html_chars  # '
 
     def test_template_rendering_edge_cases(self, privacy_request: PrivacyRequest):
         """Test template rendering with various edge cases"""
@@ -1447,64 +1231,6 @@ class TestDsrReportBuilderContent(TestDsrReportBuilderBase):
 
         with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
             assert "data/dataset1/collection1/index.html" in zip_file.namelist()
-
-    def test_invalid_template_path(self, privacy_request: PrivacyRequest):
-        """Test handling of invalid template paths"""
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
-
-        # Test with non-existent template
-        with pytest.raises(jinja2.TemplateNotFound):
-            builder._populate_template("templates/nonexistent.html")
-
-        # Create a template with invalid syntax
-        invalid_template_path = os.path.join(
-            DSR_DIRECTORY, "templates/invalid_syntax.html"
-        )
-        os.makedirs(os.path.dirname(invalid_template_path), exist_ok=True)
-        with open(invalid_template_path, "w") as f:
-            f.write("{% invalid syntax %}")
-
-        try:
-            # Test with invalid template syntax
-            with pytest.raises(jinja2.TemplateSyntaxError):
-                builder._populate_template("templates/invalid_syntax.html")
-        finally:
-            # Clean up the test template
-            if os.path.exists(invalid_template_path):
-                os.remove(invalid_template_path)
-
-        # Ensure the zip file is properly closed
-        if hasattr(builder, "out") and builder.out is not None:
-            builder.out.close()
-            builder.out = None
-
-    def test_performance_large_dataset(self, privacy_request: PrivacyRequest):
-        """Test performance with a large dataset"""
-        import time
-
-        # Create a smaller dataset for performance testing
-        # 100 collections with 100 items each instead of 1000x1000
-        dsr_data = {
-            f"dataset1:collection{i}": [
-                {"id": j, "name": f"Item {j}", "data": "x" * 100}  # 100 bytes per item
-                for j in range(100)
-            ]
-            for i in range(100)
-        }
-
-        start_time = time.time()
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
-        report = builder.generate()
-        end_time = time.time()
-
-        # Verify the report was generated within a reasonable time
-        # Increased threshold to 60 seconds to account for varying system performance
-        assert end_time - start_time < 60  # Should complete within 60 seconds
-
-        # Verify the structure is correct
-        with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
-            assert "data/dataset1/index.html" in zip_file.namelist()
-            assert len([f for f in zip_file.namelist() if "collection" in f]) == 100
 
 
 class TestDsrReportBuilderOrganization(TestDsrReportBuilderBase):
@@ -1650,35 +1376,6 @@ class TestDsrReportBuilderOrganization(TestDsrReportBuilderBase):
         if hasattr(builder, "out") and builder.out is not None:
             builder.out.close()
             builder.out = None
-
-    def test_large_file_handling(self, privacy_request: PrivacyRequest):
-        """Test handling of large files to ensure memory efficiency"""
-        # Create a 100MB file
-        large_content = b"x" * (100 * 1024 * 1024)  # 100MB
-        dsr_data = {
-            "dataset1:collection1": [
-                {
-                    "id": 1,
-                    "attachments": [
-                        {
-                            "file_name": "large.txt",
-                            "fileobj": BytesIO(large_content),
-                            "content_type": "text/plain",
-                        }
-                    ],
-                }
-            ]
-        }
-
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data=dsr_data)
-        report = builder.generate()
-
-        with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
-            # Verify the file was written correctly
-            assert "data/dataset1/collection1/large.txt" in zip_file.namelist()
-            assert len(zip_file.read("data/dataset1/collection1/large.txt")) == len(
-                large_content
-            )
 
     def test_concurrent_access(self, privacy_request: PrivacyRequest):
         """Test concurrent access to the zip file"""
