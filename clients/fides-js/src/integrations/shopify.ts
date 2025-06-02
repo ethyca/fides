@@ -23,6 +23,7 @@ const CONSENT_MAP = {
   marketing: MARKETING_CONSENT_KEYS,
   sale_of_data: [
     "marketing",
+    "data_sales",
     "data_sales_and_sharing",
     "data_sales_sharing_gpp_us_state",
     "data_sharing_gpp_us_state",
@@ -85,7 +86,7 @@ const applyOptions = () => {
     console.error("Fides could not access Shopify's customerPrivacy API");
   }
   // Listen for Fides events and push them to Shopify
-  window.addEventListener("FidesInitialized", (event) =>
+  window.addEventListener("FidesReady", (event) =>
     pushConsentToShopify(event.detail.consent),
   );
   window.addEventListener("FidesUpdating", (event) =>

@@ -215,7 +215,7 @@
       if (Fides.initialized) {
         onInitialized();
       } else {
-        window.addEventListener("FidesInitialized", onInitialized);
+        window.addEventListener("FidesReady", onInitialized);
       }
       window.addEventListener("FidesUpdated", () => {
         console.log("Fides has been updated");
