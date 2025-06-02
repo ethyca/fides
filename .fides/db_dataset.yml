@@ -831,6 +831,24 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
+  - name: masking_secret
+    description: 'Fides Generated Description for Table: masking_secret'
+    data_categories: []
+    fields:
+    - name: created_at
+      data_categories: [system.operations]
+    - name: id
+      data_categories: [system.operations]
+    - name: masking_strategy
+      data_categories: [system.operations]
+    - name: privacy_request_id
+      data_categories: [system.operations]
+    - name: secret
+      data_categories: [system.operations]
+    - name: secret_type
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
   - name: authenticationrequest
     data_categories: []
     fields:
