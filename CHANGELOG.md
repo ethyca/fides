@@ -32,12 +32,14 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Changed
 - Deprecated `FidesInitialized` event and added `FidesConsentLoaded` and `FidesReady` events for more granular initialization state handling [#6181](https://github.com/ethyca/fides/pull/6181)
+- Changed GPC to support custom notices in TCF experiences [#6176](https://github.com/ethyca/fides/pull/6176)
 
 ### Developer Experience
 - Refactored FidesJS init logic for better clarity and TCF separation [#6173](https://github.com/ethyca/fides/pull/6173)
 
 ### Fixed
 - Fixed Monitor button not appearing for tables with both classified fields and new discoveries in Data detection view [#6179](https://github.com/ethyca/fides/pull/6179)
+- Fixed TCF banner incorrectly resurfacing when consent was previously set by override [#6186](https://github.com/ethyca/fides/pull/6186)
 
 ## [2.62.0](https://github.com/ethyca/fides/compare/2.61.1...2.62.0)
 
