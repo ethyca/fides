@@ -135,16 +135,6 @@
             "status": "in_processing",
             "updated_at": "2025-04-07T17:47:12.074540Z",
             "user_id": null
-          },
-          {
-            "connection_key": "klavyio_klaviyo_api",
-            "collection_name": "profiles",
-            "fields_affected": [],
-            "message": "Either no masking request configured or no valid masking request for profiles. Check that MASKING_STRICT env var is appropriately set",
-            "action_type": "erasure",
-            "status": "error",
-            "updated_at": "2025-04-07T17:47:13.092406Z",
-            "user_id": null
           }
         ],
         "teststest_shopify_api": [
