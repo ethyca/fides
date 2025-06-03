@@ -47,7 +47,7 @@ const SharedConfigModal = () => {
         onClick={() => setModalIsOpen(true)}
         data-testid="configurations-btn"
       >
-        Configurations
+        Shared monitor configurations
       </Button>
       <AntModal
         open={modalIsOpen}
