@@ -1,0 +1,16 @@
+{
+  "name": "Manual Integration",
+  "key": "manual_integration",
+  "description": "Manual process integration",
+  "connection_type": "manual_webhook",
+  "access": "read",
+  "created_at": "2024-05-24T13:35:57.509826+00:00",
+  "updated_at": "2024-05-24T13:35:57.509826+00:00",
+  "disabled": false,
+  "last_test_timestamp": null,
+  "last_test_succeeded": null,
+  "saas_config": null,
+  "secrets": null,
+  "authorized": false,
+  "enabled_actions": null
+}
