@@ -394,9 +394,9 @@ export const ConnectorParameters = ({
   const skip = connectionOption.type === SystemType.MANUAL;
   const { data: secretsSchema } = useGetConnectionTypeSecretSchemaQuery(
     connectionOption!.identifier,
-    // {
-    //   skip,
-    // },
+    {
+      skip,
+    },
   );
 
   const handleTestDatasetsClick = () => {

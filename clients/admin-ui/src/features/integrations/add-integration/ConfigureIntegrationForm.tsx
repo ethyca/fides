@@ -5,7 +5,10 @@ import * as Yup from "yup";
 
 import FidesSpinner from "~/features/common/FidesSpinner";
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
-import { CustomTextInput } from "~/features/common/form/inputs";
+import {
+  CustomNumberInput,
+  CustomTextInput,
+} from "~/features/common/form/inputs";
 import { getErrorMessage } from "~/features/common/helpers";
 import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
 import type { ConnectionTypeSecretSchemaResponse } from "~/features/connection-type/types";
@@ -209,8 +212,6 @@ const ConfigureIntegrationForm = ({
     return <FidesSpinner />;
   }
 
-  // TODO: handle multiselect property
-
   const generateFields = (secretsSchema: ConnectionTypeSecretSchemaResponse) =>
     Object.entries(secretsSchema.properties).map(([fieldKey, fieldInfo]) => {
       const fieldName = `secrets.${fieldKey}`;
@@ -222,12 +223,20 @@ const ConfigureIntegrationForm = ({
           ]
         : undefined;
 
-      if (enumDefinition?.enum) {
-        // Create select input for enum fields
-        const options = enumDefinition.enum.map((value) => ({
-          label: value,
-          value,
-        }));
+      const isSelect = !!enumDefinition?.enum || fieldInfo.options;
+      const isBoolean = fieldInfo.type === "boolean";
+      const isInteger = fieldInfo.type === "integer";
+
+      if (isSelect) {
+        const options =
+          enumDefinition?.enum?.map((value) => ({
+            label: value,
+            value,
+          })) ??
+          fieldInfo.options?.map((option) => ({
+            label: option,
+            value: option,
+          }));
 
         return (
           <ControlledSelect
@@ -239,11 +248,43 @@ const ConfigureIntegrationForm = ({
             isRequired={secretsSchema.required.includes(fieldKey)}
             tooltip={fieldInfo.description}
             layout="stacked"
+            mode={fieldInfo.multiselect ? "multiple" : undefined}
           />
         );
       }
 
-      // Default to text input for non-enum fields
+      if (isBoolean) {
+        return (
+          <ControlledSelect
+            name={fieldName}
+            key={fieldName}
+            id={fieldName}
+            label={fieldInfo.title}
+            isRequired={secretsSchema.required.includes(fieldKey)}
+            tooltip={fieldInfo.description}
+            layout="stacked"
+            options={[
+              { label: "False", value: "false" },
+              { label: "True", value: "true" },
+            ]}
+          />
+        );
+      }
+
+      if (isInteger) {
+        return (
+          <CustomNumberInput
+            name={fieldName}
+            key={fieldName}
+            id={fieldName}
+            label={fieldInfo.title}
+            isRequired={secretsSchema.required.includes(fieldKey)}
+            tooltip={fieldInfo.description}
+            variant="stacked"
+          />
+        );
+      }
+
       return (
         <CustomTextInput
           name={fieldName}
@@ -262,12 +303,58 @@ const ConfigureIntegrationForm = ({
     secretsSchema: ConnectionTypeSecretSchemaResponse,
   ) => {
     const fieldsFromSchema = Object.entries(secretsSchema.properties).map(
-      ([fieldKey, fieldInfo]) => [
-        fieldKey,
-        secretsSchema.required.includes(fieldKey)
-          ? Yup.string().required().label(fieldInfo.title)
-          : Yup.string().nullable().label(fieldInfo.title),
-      ],
+      ([fieldKey, fieldInfo]) => {
+        const baseValidation = secretsSchema.required.includes(fieldKey)
+          ? Yup.mixed().required().label(fieldInfo.title)
+          : Yup.mixed().nullable().label(fieldInfo.title);
+
+        // Handle different field types
+        if (fieldInfo.type === "boolean") {
+          return [
+            fieldKey,
+            baseValidation.transform((value) => {
+              if (value === "true") {
+                return true;
+              }
+              if (value === "false") {
+                return false;
+              }
+              return value;
+            }),
+          ];
+        }
+
+        if (fieldInfo.type === "integer") {
+          return [
+            fieldKey,
+            baseValidation
+              .transform((value) => {
+                const parsed = parseInt(value, 10);
+                return Number.isNaN(parsed) ? value : parsed;
+              })
+              .test("is-integer", "Must be a number", (value) => {
+                if (value === undefined || value === null || value === "") {
+                  return !secretsSchema.required.includes(fieldKey);
+                }
+                return Number.isInteger(Number(value));
+              }),
+          ];
+        }
+
+        if (fieldInfo.multiselect) {
+          return [
+            fieldKey,
+            baseValidation.test(
+              "is-array",
+              "Must be an array",
+              (value) =>
+                Array.isArray(value) || value === undefined || value === null,
+            ),
+          ];
+        }
+
+        return [fieldKey, baseValidation];
+      },
     );
 
     return Yup.object().shape({

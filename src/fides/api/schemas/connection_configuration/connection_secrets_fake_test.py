@@ -30,7 +30,6 @@ class TestSchema(ConnectionConfigSecretsSchema):
         title="Regions",
         description="Select one or more regions to sync data from",
         options=["us-east", "us-west", "eu-west", "ap-southeast"],
-        multiselect=True,
     )
 
     # Required single select field

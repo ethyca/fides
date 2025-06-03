@@ -15,6 +15,7 @@ import RDS_POSTGRES_TYPE_INFO from "~/features/integrations/integration-type-inf
 import S3_TYPE_INFO from "~/features/integrations/integration-type-info/s3Info";
 import SCYLLA_TYPE_INFO from "~/features/integrations/integration-type-info/scyllaInfo";
 import SNOWFLAKE_TYPE_INFO from "~/features/integrations/integration-type-info/snowflakeInfo";
+import { TEST_CONNECTOR_TYPE_INFO } from "~/features/integrations/integration-type-info/testIntInfo";
 import WEBSITE_INTEGRATION_TYPE_INFO from "~/features/integrations/integration-type-info/websiteInfo";
 import {
   AccessLevel,
@@ -48,6 +49,7 @@ const INTEGRATION_TYPE_MAP: { [K in ConnectionType]?: IntegrationTypeInfo } = {
   [ConnectionType.MYSQL]: MYSQL_TYPE_INFO,
   [ConnectionType.WEBSITE]: WEBSITE_INTEGRATION_TYPE_INFO,
   [ConnectionType.POSTGRES]: POSTGRES_TYPE_INFO,
+  [ConnectionType.TEST_CONNECTOR]: TEST_CONNECTOR_TYPE_INFO,
 };
 
 export const INTEGRATION_TYPE_LIST: IntegrationTypeInfo[] =

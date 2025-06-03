@@ -89,8 +89,6 @@ export const ConnectorParametersForm = ({
     useLazyGetDatastoreConnectionStatusQuery();
   const { plus: isPlusEnabled } = useFeatures();
 
-  console.log(secretsSchema);
-
   const validateField = (label: string, value: string, type?: string) => {
     let error;
     if (typeof value === "undefined" || value === "" || value === undefined) {
@@ -169,6 +167,7 @@ export const ConnectorParametersForm = ({
               tooltip={item.description}
               layout="inline"
               options={options}
+              mode={item.multiselect ? "multiple" : undefined}
             />
           );
         }
