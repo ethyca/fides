@@ -472,6 +472,7 @@ export const ConnectorParameters = ({
         onDelete={handleDelete}
         deleteResult={deleteDatastoreConnectionResult}
       />
+
       {connectionConfig ? (
         <Flex mt="4" justifyContent="between" alignItems="center">
           {response &&
