@@ -1,3 +1,4 @@
+import time
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Set, Tuple
 
@@ -210,6 +211,7 @@ def upload_access_results(  # pylint: disable=R0912
     fides_connector_datasets: Set[str],
 ) -> List[str]:
     """Process the data uploads after the access portion of the privacy request has completed"""
+    start_time = time.time()
     download_urls: List[str] = []
     if not access_result:
         logger.info("No results returned for access request")
@@ -259,6 +261,11 @@ def upload_access_results(  # pylint: disable=R0912
                     message=f"Access Package Upload successful for privacy request: {privacy_request.id}",
                     action_type=ActionType.access,
                 )
+            logger.bind(
+                "Access Package Upload successful for privacy request: {}. Time taken: {} seconds",
+                privacy_request.id,
+                time.time() - start_time,
+            )
         except common_exceptions.StorageUploadError as exc:
             logger.error(
                 "Error uploading subject access data for rule {} on policy {}: {}",
@@ -273,6 +280,11 @@ def upload_access_results(  # pylint: disable=R0912
                 collection_name=None,
                 message=f"Access Package Upload failed for privacy request: {privacy_request.id}",
                 action_type=ActionType.access,
+            )
+            logger.bind(
+                "Access Package Upload failed for privacy request: {}. Time taken: {} seconds",
+                privacy_request.id,
+                time.time() - start_time,
             )
             privacy_request.status = PrivacyRequestStatus.error
     # Save the results we uploaded to the user for later retrieval
