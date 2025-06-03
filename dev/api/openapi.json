@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.62.1b1.post0.dev4"
+    "version": "2.62.1b2.post0.dev1"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -24359,10 +24359,12 @@
           "viewer_and_approver",
           "viewer",
           "approver",
-          "contributor"
+          "contributor",
+          "respondent",
+          "external_respondent"
         ],
         "title": "RoleRegistryEnum",
-        "description": "Enum of available roles\n\nOwner - Full admin\nViewer - Can view everything\nApprover - Limited viewer but can approve Privacy Requests\nViewer + Approver = Full View and can approve Privacy Requests\nContributor - Can't configure storage and messaging"
+        "description": "Enum of available roles\n\nOwner - Full admin\nViewer - Can view everything\nApprover - Limited viewer but can approve Privacy Requests\nViewer + Approver = Full View and can approve Privacy Requests\nContributor - Can't configure storage and messaging\nRespondent - Internal user who can respond to manual steps\nExternal Respondent - External user who can only respond to assigned manual steps"
       },
       "RuleCreate": {
         "properties": {
@@ -25256,6 +25258,8 @@
           "privacy-request:resume",
           "privacy-request-access-results:read",
           "privacy-request:delete",
+          "privacy-request:manual-steps:respond",
+          "privacy-request:manual-steps:review",
           "privacy-request-notifications:create_or_update",
           "privacy-request-notifications:read",
           "privacy-request:read",
