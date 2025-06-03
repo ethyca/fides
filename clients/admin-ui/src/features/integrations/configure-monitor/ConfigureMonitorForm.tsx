@@ -138,13 +138,7 @@ const ConfigureMonitorForm = ({
               label="Automatic execution frequency"
               layout="stacked"
             />
-            <SharedConfigSelect
-              name="shared_config_id"
-              id="shared_config_id"
-              onManageClick={() => {
-                console.log("hello");
-              }}
-            />
+            <SharedConfigSelect name="shared_config_id" id="shared_config_id" />
             <CustomDateTimeInput
               name="execution_start_date"
               label="Automatic execution start time"

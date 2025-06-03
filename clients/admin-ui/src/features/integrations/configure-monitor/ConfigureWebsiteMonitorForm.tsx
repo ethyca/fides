@@ -14,7 +14,6 @@ import FormInfoBox from "~/features/common/modals/FormInfoBox";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import { SharedConfigSelect } from "~/features/integrations/configure-monitor/SharedConfigSelect";
 import { useGetOnlyCountryLocationsQuery } from "~/features/locations/locations.slice";
-import { useGetSharedMonitorConfigsQuery } from "~/features/monitors/shared-monitor-config.slice";
 import { getSelectedRegionIds } from "~/features/privacy-experience/form/helpers";
 import {
   MonitorConfig,
@@ -186,9 +185,6 @@ const ConfigureWebsiteMonitorForm = ({
               <SharedConfigSelect
                 name="shared_config_id"
                 id="shared_config_id"
-                onManageClick={() => {
-                  console.log("hello");
-                }}
               />
               <ControlledSelect
                 name="execution_frequency"
