@@ -599,13 +599,7 @@ dataset:
     - name: access_token_expires_at
       data_categories:
       - system.operations
-    - name: verification_code
-      data_categories:
-      - system.operations
-    - name: verification_code_expires_at
-      data_categories:
-      - system.operations
-    - name: attempts
+    - name: identity_verified_at
       data_categories:
       - system.operations
     - name: created_at
