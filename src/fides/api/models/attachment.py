@@ -269,7 +269,8 @@ class Attachment(Base):
             bucket = storage_client.bucket(bucket_name)
             blob = bucket.blob(f"{self.id}/{self.file_name}")
 
-            fileobj = BytesIO(blob.download_as_bytes())
+            fileobj = BytesIO()
+            blob.download_to_file(fileobj)
             fileobj.seek(0)  # Reset pointer to beginning after download
             return blob.size, fileobj
 

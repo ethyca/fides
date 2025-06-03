@@ -1,3 +1,4 @@
+import types
 import warnings
 from io import BytesIO
 from tempfile import SpooledTemporaryFile
@@ -161,6 +162,28 @@ class TestAttachmentCreation:
         # Update attachment data to use GCS storage config
         attachment_data["storage_key"] = storage_config_default_gcs.key
 
+        # Get the mock bucket and blob
+        mock_bucket = mock_gcs_client.bucket.return_value
+
+        # Configure the mock blob's download behavior
+        def mock_download_to_file(self, fileobj, *args, **kwargs):
+            print(f"mock_download_to_file called with fileobj: {fileobj}")
+            fileobj.write(attachment_file_copy)
+            fileobj.seek(0)
+            print(f"Content written to fileobj: {fileobj.getvalue()}")
+            return None
+
+        # Create a mock blob with our download behavior
+        mock_blob = MagicMock()
+        mock_blob.name = "test_blob"
+        mock_blob.size = len(attachment_file_copy)
+        mock_blob.download_to_file = types.MethodType(mock_download_to_file, mock_blob)
+        mock_blob.reload = MagicMock(return_value=None)
+
+        # Configure the bucket to always return our mock blob
+        mock_bucket.blob.return_value = mock_blob
+
+        # Patch both the model and service layer GCS client imports
         with (
             patch(
                 "fides.api.models.attachment.get_gcs_client",
@@ -174,11 +197,20 @@ class TestAttachmentCreation:
             attachment = Attachment.create_and_upload(
                 db=db, data=attachment_data, attachment_file=attachment_file[1]
             )
-
-            # Verify the attachment was created and uploaded
             verify_attachment_created_uploaded_gcs(attachment, attachment_file_copy)
 
-            # Delete the attachment
+            print("Retrieving attachment content...")
+            size, content = attachment.retrieve_attachment_content()
+            print(f"Retrieved size: {size}, content type: {type(content)}")
+            print(
+                f"Content before read: {content.getvalue() if hasattr(content, 'getvalue') else content}"
+            )
+
+            content_value = content.read()
+            print(f"Content after read: {content_value}")
+
+            assert size == len(attachment_file_copy)
+            assert content_value == attachment_file_copy
             attachment.delete(db)
 
 
@@ -235,6 +267,28 @@ class TestAttachmentRetrieval:
         # Update attachment data to use GCS storage config
         attachment_data["storage_key"] = storage_config_default_gcs.key
 
+        # Get the mock bucket and blob
+        mock_bucket = mock_gcs_client.bucket.return_value
+
+        # Configure the mock blob's download behavior
+        def mock_download_to_file(self, fileobj, *args, **kwargs):
+            print(f"mock_download_to_file called with fileobj: {fileobj}")
+            fileobj.write(attachment_file_copy)
+            fileobj.seek(0)
+            print(f"Content written to fileobj: {fileobj.getvalue()}")
+            return None
+
+        # Create a mock blob with our download behavior
+        mock_blob = MagicMock()
+        mock_blob.name = "test_blob"
+        mock_blob.size = len(attachment_file_copy)
+        mock_blob.download_to_file = types.MethodType(mock_download_to_file, mock_blob)
+        mock_blob.reload = MagicMock(return_value=None)
+
+        # Configure the bucket to always return our mock blob
+        mock_bucket.blob.return_value = mock_blob
+
+        # Patch both the model and service layer GCS client imports
         with (
             patch(
                 "fides.api.models.attachment.get_gcs_client",
@@ -249,6 +303,19 @@ class TestAttachmentRetrieval:
                 db=db, data=attachment_data, attachment_file=attachment_file[1]
             )
             verify_attachment_created_uploaded_gcs(attachment, attachment_file_copy)
+
+            print("Retrieving attachment content...")
+            size, content = attachment.retrieve_attachment_content()
+            print(f"Retrieved size: {size}, content type: {type(content)}")
+            print(
+                f"Content before read: {content.getvalue() if hasattr(content, 'getvalue') else content}"
+            )
+
+            content_value = content.read()
+            print(f"Content after read: {content_value}")
+
+            assert size == len(attachment_file_copy)
+            assert content_value == attachment_file_copy
             attachment.delete(db)
 
 
@@ -322,6 +389,28 @@ class TestAttachmentDeletion:
         # Update attachment data to use GCS storage config
         attachment_data["storage_key"] = storage_config_default_gcs.key
 
+        # Get the mock bucket and blob
+        mock_bucket = mock_gcs_client.bucket.return_value
+
+        # Configure the mock blob's download behavior
+        def mock_download_to_file(self, fileobj, *args, **kwargs):
+            print(f"mock_download_to_file called with fileobj: {fileobj}")
+            fileobj.write(attachment_file_copy)
+            fileobj.seek(0)
+            print(f"Content written to fileobj: {fileobj.getvalue()}")
+            return None
+
+        # Create a mock blob with our download behavior
+        mock_blob = MagicMock()
+        mock_blob.name = "test_blob"
+        mock_blob.size = len(attachment_file_copy)
+        mock_blob.download_to_file = types.MethodType(mock_download_to_file, mock_blob)
+        mock_blob.reload = MagicMock(return_value=None)
+
+        # Configure the bucket to always return our mock blob
+        mock_bucket.blob.return_value = mock_blob
+
+        # Patch both the model and service layer GCS client imports
         with (
             patch(
                 "fides.api.models.attachment.get_gcs_client",
@@ -677,19 +766,7 @@ class TestAttachmentContentRetrieval:
         # Update attachment data to use GCS storage config
         attachment_data["storage_key"] = storage_config_default_gcs.key
 
-        # # Set up the mock blob behavior for content retrieval
-        # mock_blob = MagicMock(spec=["size", "download_to_file"], autospec=True)
-        # mock_blob.size = len(attachment_file_copy)
-
-        # def mock_download_to_file(fileobj):
-        #     fileobj.write(attachment_file_copy)
-        #     fileobj.seek(0)
-
-        # mock_blob.download_to_file.side_effect = mock_download_to_file
-        # mock_bucket = MagicMock(spec=["blob"], autospec=True)
-        # mock_bucket.blob = mock_blob
-        # mock_gcs_client.bucket = mock_bucket
-
+        # Patch both the model and service layer GCS client imports
         with (
             patch(
                 "fides.api.models.attachment.get_gcs_client",
@@ -700,13 +777,20 @@ class TestAttachmentContentRetrieval:
                 return_value=mock_gcs_client,
             ) as mock2,
         ):
+            # Create and upload the attachment
             attachment = Attachment.create_and_upload(
                 db=db, data=attachment_data, attachment_file=attachment_file[1]
             )
             verify_attachment_created_uploaded_gcs(attachment, attachment_file_copy)
+
+            # Retrieve the attachment content
             size, content = attachment.retrieve_attachment_content()
+
+            # Read the content and verify it matches
+            content_value = content.read()
+
             assert size == len(attachment_file_copy)
-            assert content.read() == attachment_file_copy
+            assert content_value == attachment_file_copy
             attachment.delete(db)
 
     def test_retrieve_attachment_content_not_found(
