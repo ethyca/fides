@@ -2,6 +2,7 @@ import ast
 import json
 import zipfile
 from io import BytesIO
+from unittest import mock
 from unittest.mock import MagicMock, create_autospec, patch
 
 import pandas as pd
@@ -9,6 +10,7 @@ import pytest
 from botocore.exceptions import ClientError, ParamValidationError
 from google.cloud.storage import Blob, Bucket, Client
 
+from fides.api.common_exceptions import StorageUploadError
 from fides.api.schemas.storage.storage import (
     AWSAuthMethod,
     ResponseFormat,
@@ -644,7 +646,7 @@ class TestUploadToS3:
 
         privacy_request = MagicMock(id="test-request-id")
 
-        with pytest.raises(ClientError) as excinfo:
+        with pytest.raises(StorageUploadError) as excinfo:
             upload_to_s3(
                 storage_secrets={
                     "aws_access_key_id": "fake_access_key",
@@ -661,10 +663,18 @@ class TestUploadToS3:
             )
 
         assert error_code in str(excinfo.value)
+
+        # Verify that the error message is logged
         assert mock_logger.error.call_count == 1
         mock_logger.error.assert_any_call(
-            "Encountered error while generating link for s3 object: {}", excinfo.value
+            "Encountered error while uploading and generating link for s3 object: {}",
+            mock.ANY,  # Use mock.ANY to match any ClientError
         )
+        # Verify the error details separately
+        actual_error = mock_logger.error.call_args[0][1]
+        assert isinstance(actual_error, ClientError)
+        assert actual_error.response["Error"]["Code"] == error_code
+        assert actual_error.response["Error"]["Message"] == error_message
 
 
 class TestUploadToLocal:

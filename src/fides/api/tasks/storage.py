@@ -128,7 +128,7 @@ def upload_to_s3(  # pylint: disable=R0913
         )
     except (ClientError, ParamValidationError) as e:
         logger.error(f"Error getting s3 client: {str(e)}")
-        raise e
+        raise StorageUploadError(f"Error getting s3 client: {str(e)}")
 
     # handles file chunking
     try:
@@ -139,7 +139,7 @@ def upload_to_s3(  # pylint: disable=R0913
         )
     except ClientError as e:
         logger.error("Encountered error while uploading s3 object: {}", e)
-        raise e
+        raise StorageUploadError(f"Error uploading to S3: {e}")
 
     try:
         presigned_url: AnyHttpUrlString = create_presigned_url_for_s3(
