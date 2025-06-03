@@ -249,7 +249,9 @@ export type VendorRecord = TCFVendorConsentRecord &
     isGvl: boolean;
   };
 
-export interface PurposeRecord extends TCFPurposeConsentRecord {
+export interface PurposeRecord
+  extends TCFPurposeConsentRecord,
+    TCFPurposeLegitimateInterestsRecord {
   isConsent: boolean;
   isLegint: boolean;
 }

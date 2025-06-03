@@ -12,11 +12,13 @@ import {
   ListCellExpandable,
 } from "~/features/common/table/v2/cells";
 import DiscoveredSystemDataUseCell from "~/features/data-discovery-and-detection/action-center/tables/cells/DiscoveredSystemDataUseCell";
-import { PrivacyNoticeRegion } from "~/types/api";
+import {
+  PrivacyNoticeRegion,
+  SystemStagedResourcesAggregateRecord,
+} from "~/types/api";
 
 import { DiscoveredSystemActionsCell } from "../tables/cells/DiscoveredSystemAggregateActionsCell";
 import { DiscoveredSystemStatusCell } from "../tables/cells/DiscoveredSystemAggregateStatusCell";
-import { MonitorSystemAggregate } from "../types";
 
 interface UseDiscoveredSystemAggregateColumnsProps {
   monitorId: string;
@@ -31,7 +33,8 @@ export const useDiscoveredSystemAggregateColumns = ({
   allowIgnore,
   onTabChange,
 }: UseDiscoveredSystemAggregateColumnsProps) => {
-  const columnHelper = createColumnHelper<MonitorSystemAggregate>();
+  const columnHelper =
+    createColumnHelper<SystemStagedResourcesAggregateRecord>();
 
   const select = columnHelper.display({
     id: "select",
@@ -101,10 +104,13 @@ export const useDiscoveredSystemAggregateColumns = ({
     id: "locations",
     cell: (props) => (
       <BadgeCellExpandable
-        values={props.getValue().map((location) => ({
-          label: PRIVACY_NOTICE_REGION_RECORD[location as PrivacyNoticeRegion],
-          key: location,
-        }))}
+        values={
+          props.getValue()?.map((location) => ({
+            label:
+              PRIVACY_NOTICE_REGION_RECORD[location as PrivacyNoticeRegion],
+            key: location,
+          })) ?? []
+        }
       />
     ),
     header: (props) => <DefaultHeaderCell value="Locations" {...props} />,
@@ -158,7 +164,7 @@ export const useDiscoveredSystemAggregateColumns = ({
     };
   }
 
-  const columns: ColumnDef<MonitorSystemAggregate, any>[] = [
+  const columns: ColumnDef<SystemStagedResourcesAggregateRecord, any>[] = [
     select,
     ...readonlyColumns,
     actions,

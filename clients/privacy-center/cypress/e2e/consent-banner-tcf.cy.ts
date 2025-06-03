@@ -57,6 +57,10 @@ const VENDOR_1 = {
   id: "gvl.2",
   name: "Captify",
 };
+const VENDOR_2 = {
+  id: "gvl.3",
+  name: "Fides System",
+};
 const STACK_1 = {
   id: 7,
   name: "Selection of personalised advertising, advertising measurement, and audience research",
@@ -485,13 +489,34 @@ describe("Fides-js TCF", () => {
           }
           // verify the data layer variables
           cy.get("@dataLayerPush")
-            .should("have.been.callCount", 4) // FidesInitialized + FidesUIShown (banner) + FidesUpdating + FidesUpdated
-            // First call should be from initialization, before the user accepts all
+            .should("have.been.callCount", 5) // FidesReady + FidesInitialized + FidesUIShown (banner) + FidesUpdating + FidesUpdated
+            // First call should be from initialization ready, before the user accepts all
             .its("firstCall.args.0")
             .then((actual) => Cypress._.omit(actual, "Fides.timestamp"))
             .should("deep.equal", {
-              event: "FidesInitialized",
+              event: "FidesReady",
               Fides: {
+                consent: includeCustomPurposes
+                  ? {
+                      advertising: false,
+                      analytics_opt_out: true,
+                      essential: true,
+                    }
+                  : {},
+                extraDetails: {
+                  consentMethod: undefined,
+                  shouldShowExperience: true,
+                },
+                fides_string: undefined,
+              },
+            });
+          // Second call should be from deprecated FidesInitialized
+          cy.get("@dataLayerPush")
+            .its("args")
+            .then((args) => {
+              const call = args[1][0];
+              expect(call.event).to.equal("FidesInitialized");
+              expect(call.Fides).to.deep.include({
                 consent: includeCustomPurposes
                   ? {
                       advertising: false,
@@ -505,7 +530,7 @@ describe("Fides-js TCF", () => {
                   firstInit: false,
                 },
                 fides_string: undefined,
-              },
+              });
             });
 
           // Verify FidesUIShown events (banner and modal)
@@ -513,21 +538,21 @@ describe("Fides-js TCF", () => {
             .its("args")
             .then((args) => {
               // Banner shown event
-              const bannerEvent = args[1][0];
+              const bannerEvent = args[2][0];
               expect(bannerEvent.event).to.equal("FidesUIShown");
               expect(bannerEvent.Fides.extraDetails.servingComponent).to.equal(
                 "tcf_banner",
               );
 
               // FidesUpdating event
-              const updatingEvent = args[2][0];
+              const updatingEvent = args[3][0];
               expect(updatingEvent.event).to.equal("FidesUpdating");
               expect(
                 updatingEvent.Fides.extraDetails.servingComponent,
               ).to.equal(undefined);
 
               // FidesUpdated event
-              const updatedEvent = args[3][0];
+              const updatedEvent = args[4][0];
               expect(updatedEvent.event).to.equal("FidesUpdated");
               expect(updatedEvent.Fides.extraDetails.servingComponent).to.equal(
                 undefined,
@@ -538,7 +563,7 @@ describe("Fides-js TCF", () => {
           cy.get("@dataLayerPush")
             .its("args")
             .then((args) => {
-              const call = args[2][0];
+              const call = args[3][0];
               expect(call.event).to.equal("FidesUpdating");
               expect(call.Fides).to.deep.include({
                 consent: includeCustomPurposes
@@ -559,7 +584,7 @@ describe("Fides-js TCF", () => {
           cy.get("@dataLayerPush")
             .its("args")
             .then((args) => {
-              const call = args[3][0];
+              const call = args[4][0];
               expect(call.event).to.equal("FidesUpdated");
               expect(call.Fides).to.deep.include({
                 consent: includeCustomPurposes
@@ -986,6 +1011,15 @@ describe("Fides-js TCF", () => {
             cy.get("span")
               .contains(legintSpecialPurposeName)
               .should("not.exist");
+            cy.get("span").contains(PURPOSE_4.name).click();
+            // scroll to the vendor list
+            cy.get(".fides-tcf-purpose-vendor-list").first().scrollIntoView();
+            cy.get(".fides-tcf-purpose-vendor-list")
+              .contains(VENDOR_1.name)
+              .should("be.visible");
+            cy.get(".fides-tcf-purpose-vendor-list")
+              .contains(VENDOR_2.name)
+              .should("not.be.visible");
             cy.getByTestId(`toggle-${PURPOSE_2.name}`).should("not.exist");
 
             // Now check legint page
@@ -996,6 +1030,14 @@ describe("Fides-js TCF", () => {
             cy.getByTestId(`toggle-${PURPOSE_2.name}`);
             cy.get("span").contains(legintSpecialPurposeName);
             cy.get("span").contains(SPECIAL_PURPOSE_1.name).should("not.exist");
+            cy.get("span").contains(PURPOSE_2.name).click();
+            cy.get(".fides-tcf-purpose-vendor-list").first().scrollIntoView();
+            cy.get(".fides-tcf-purpose-vendor-list")
+              .contains(VENDOR_1.name)
+              .should("not.be.visible");
+            cy.get(".fides-tcf-purpose-vendor-list")
+              .contains(VENDOR_2.name)
+              .should("be.visible");
           });
         });
       });
@@ -1174,13 +1216,34 @@ describe("Fides-js TCF", () => {
             });
             // verify the data layer variables
             cy.get("@dataLayerPush")
-              .should("have.been.callCount", 6) // FidesInitialized + FidesUIShown (banner) + FidesUIShown (modal) + FidesModalClosed + FidesUpdating + FidesUpdated
-              // First call should be from initialization, before the user accepts all
+              .should("have.been.callCount", 7) // FidesReady + FidesInitialized + FidesUIShown (banner) + FidesUIShown (modal) + FidesModalClosed + FidesUpdating + FidesUpdated
+              // First call should be from initialization ready, before the user accepts all
               .its("firstCall.args.0")
               .then((actual) => Cypress._.omit(actual, "Fides.timestamp"))
               .should("deep.equal", {
-                event: "FidesInitialized",
+                event: "FidesReady",
                 Fides: {
+                  consent: includeCustomPurposes
+                    ? {
+                        advertising: false,
+                        analytics_opt_out: true,
+                        essential: true,
+                      }
+                    : {},
+                  extraDetails: {
+                    consentMethod: undefined,
+                    shouldShowExperience: true,
+                  },
+                  fides_string: undefined,
+                },
+              });
+            // Second call should be from deprecated FidesInitialized
+            cy.get("@dataLayerPush")
+              .its("args")
+              .then((args) => {
+                const call = args[1][0];
+                expect(call.event).to.equal("FidesInitialized");
+                expect(call.Fides).to.deep.include({
                   consent: includeCustomPurposes
                     ? {
                         advertising: false,
@@ -1194,7 +1257,7 @@ describe("Fides-js TCF", () => {
                     firstInit: false,
                   },
                   fides_string: undefined,
-                },
+                });
               });
 
             // Verify FidesUIShown events (banner and modal)
@@ -1202,21 +1265,21 @@ describe("Fides-js TCF", () => {
               .its("args")
               .then((args) => {
                 // Banner shown event
-                const bannerEvent = args[1][0];
+                const bannerEvent = args[2][0];
                 expect(bannerEvent.event).to.equal("FidesUIShown");
                 expect(
                   bannerEvent.Fides.extraDetails.servingComponent,
                 ).to.equal("tcf_banner");
 
                 // Modal shown event
-                const modalEvent = args[2][0];
+                const modalEvent = args[3][0];
                 expect(modalEvent.event).to.equal("FidesUIShown");
                 expect(modalEvent.Fides.extraDetails.servingComponent).to.equal(
                   "tcf_overlay",
                 );
 
                 // Modal closed event
-                const modalClosedEvent = args[3][0];
+                const modalClosedEvent = args[4][0];
                 expect(modalClosedEvent.event).to.equal("FidesModalClosed");
                 expect(
                   modalClosedEvent.Fides.extraDetails.servingComponent,
@@ -1227,7 +1290,7 @@ describe("Fides-js TCF", () => {
             cy.get("@dataLayerPush")
               .its("args")
               .then((args) => {
-                const call = args[4][0];
+                const call = args[5][0];
                 expect(call.event).to.equal("FidesUpdating");
                 expect(call.Fides).to.deep.include({
                   consent: includeCustomPurposes
@@ -1248,7 +1311,7 @@ describe("Fides-js TCF", () => {
             cy.get("@dataLayerPush")
               .its("args")
               .then((args) => {
-                const call = args[5][0];
+                const call = args[6][0];
                 expect(call.event).to.equal("FidesUpdated");
                 expect(call.Fides).to.deep.include({
                   consent: includeCustomPurposes
@@ -1977,8 +2040,7 @@ describe("Fides-js TCF", () => {
               default_preference: "opt_out",
               purpose_consents: [
                 {
-                  id: 2,
-                  name: "Use limited data to select advertising",
+                  ...PURPOSE_2,
                   retention_period: "45",
                 },
               ],
@@ -3536,12 +3598,7 @@ describe("Fides-js TCF", () => {
           name: "Test",
           description: "A longer description",
           default_preference: "opt_out",
-          purpose_consents: [
-            {
-              id: 4,
-              name: "Use profiles to select personalised advertising",
-            },
-          ],
+          purpose_consents: [PURPOSE_4],
         };
         AC_IDS.forEach((id, idx) => {
           const vendor = { ...baseVendor, id: `gacp.${id}`, name: `AC ${id}` };

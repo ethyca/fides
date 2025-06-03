@@ -12,6 +12,7 @@ from fides.api.models.detection_discovery import (
     MonitorConfig,
     MonitorExecution,
     MonitorFrequency,
+    SharedMonitorConfig,
     StagedResource,
     StagedResourceAncestor,
     fetch_staged_resources_by_type_query,
@@ -395,6 +396,26 @@ SAMPLE_START_DATE = datetime(2024, 5, 20, 0, 42, 5, 17137, tzinfo=timezone.utc)
 
 
 class TestMonitorConfigModel:
+
+    @pytest.fixture(scope="function")
+    def shared_monitor_config(self, db: Session) -> SharedMonitorConfig:
+        """Fixture for creating a test SharedMonitorConfig"""
+        shared_config = SharedMonitorConfig.create(
+            db=db,
+            data={
+                "name": "test shared config",
+                "key": "test_shared_config",
+                "description": "Test shared monitor configuration",
+                "classify_params": {
+                    "context_regex_pattern_mapping": [
+                        [".*([e|E]mail|[e|E]mail_address).*", "user.contact.email"],
+                        [".*[P|p]hone_number.*", "user.contact.phone_number"],
+                    ]
+                },
+            },
+        )
+        return shared_config
+
     def test_create_monitor_config(
         self, db: Session, monitor_config, connection_config: ConnectionConfig
     ) -> None:
@@ -657,7 +678,181 @@ class TestMonitorConfigModel:
             else SAMPLE_START_DATE
         )
         assert mc.execution_start_date == expected_date
-        db.delete(mc)
+
+    def test_monitor_config_with_shared_config(
+        self,
+        db: Session,
+        connection_config: ConnectionConfig,
+        shared_monitor_config: SharedMonitorConfig,
+    ) -> None:
+        """
+        Test creating a MonitorConfig with a reference to a SharedMonitorConfig
+        """
+        mc = MonitorConfig.create(
+            db=db,
+            data={
+                "name": "monitor with shared config",
+                "key": "monitor_with_shared_config",
+                "connection_config_id": connection_config.id,
+                "classify_params": {
+                    "context_regex_pattern_mapping": [],  # This will be overridden by shared config
+                },
+                "shared_config_id": shared_monitor_config.id,
+            },
+        )
+
+        # Verify it was created with the shared config relationship
+        mc_from_db = MonitorConfig.get(db=db, object_id=mc.id)
+        assert mc_from_db.shared_config_id == shared_monitor_config.id
+        assert mc_from_db.shared_config.name == "test shared config"
+
+        # Verify the classify_params contains the pattern mapping from the shared config
+        assert mc_from_db.classify_params["context_regex_pattern_mapping"] == [
+            [".*([e|E]mail|[e|E]mail_address).*", "user.contact.email"],
+            [".*[P|p]hone_number.*", "user.contact.phone_number"],
+        ]
+
+    def test_classify_params_merging(
+        self,
+        db: Session,
+        connection_config: ConnectionConfig,
+        shared_monitor_config: SharedMonitorConfig,
+    ) -> None:
+        """
+        Test the classify_params property that merges parameters from both sources
+        """
+        mc = MonitorConfig.create(
+            db=db,
+            data={
+                "name": "monitor for testing params merge",
+                "key": "monitor_params_merge",
+                "connection_config_id": connection_config.id,
+                "classify_params": {
+                    "num_samples": 25,  # Local parameter, not in shared config
+                    "custom_param": "local value",  # Not in shared config
+                    "context_regex_pattern_mapping": None,  # This should be overridden by shared config
+                },
+                "shared_config_id": shared_monitor_config.id,
+            },
+        )
+
+        # Verify merged parameters
+        mc_from_db = MonitorConfig.get(db=db, object_id=mc.id)
+        merged_params = mc_from_db.classify_params
+
+        # Params from shared config should be present
+        assert "context_regex_pattern_mapping" in merged_params
+        assert merged_params["context_regex_pattern_mapping"] == [
+            [".*([e|E]mail|[e|E]mail_address).*", "user.contact.email"],
+            [".*[P|p]hone_number.*", "user.contact.phone_number"],
+        ]
+
+        # Local params not in shared config should be preserved
+        assert merged_params["custom_param"] == "local value"
+        assert merged_params["num_samples"] == 25
+
+    def test_shared_config_override_priority(
+        self,
+        db: Session,
+        connection_config: ConnectionConfig,
+        shared_monitor_config: SharedMonitorConfig,
+    ) -> None:
+        """
+        Test that non-falsy shared config values override local config values
+        """
+        mc = MonitorConfig.create(
+            db=db,
+            data={
+                "name": "monitor for testing priority",
+                "key": "monitor_priority_test",
+                "connection_config_id": connection_config.id,
+                "classify_params": {
+                    "context_regex_pattern_mapping": None,  # Should be overridden by shared config
+                    "num_samples": 25,  # Should NOT be overridden (not in shared)
+                },
+                "shared_config_id": shared_monitor_config.id,
+            },
+        )
+
+        # Update shared config with some falsy values that shouldn't override
+        shared_monitor_config.update(
+            db=db,
+            data={
+                "classify_params": {
+                    "context_regex_pattern_mapping": [
+                        [".*([e|E]mail|[e|E]mail_address).*", "user.contact.email"],
+                        [".*[P|p]hone_number.*", "user.contact.phone_number"],
+                    ],
+                    "custom_field": None,  # This should not override local value since it's falsy
+                },
+            },
+        )
+
+        # Verify priority behavior in merged params
+        mc_from_db = MonitorConfig.get(db=db, object_id=mc.id)
+        merged_params = mc_from_db.classify_params
+
+        # None local value should be overridden
+        assert merged_params["context_regex_pattern_mapping"] == [
+            [".*([e|E]mail|[e|E]mail_address).*", "user.contact.email"],
+            [".*[P|p]hone_number.*", "user.contact.phone_number"],
+        ]
+
+        # Local value should not be overridden
+        assert merged_params["num_samples"] == 25  # Local value
+
+    def test_update_monitor_config_with_shared_config(
+        self,
+        db: Session,
+        connection_config: ConnectionConfig,
+        shared_monitor_config: SharedMonitorConfig,
+    ) -> None:
+        """
+        Test updating a MonitorConfig to add or change shared config reference
+        """
+        # Create monitor without shared config
+        mc = MonitorConfig.create(
+            db=db,
+            data={
+                "name": "monitor to update",
+                "key": "monitor_to_update",
+                "connection_config_id": connection_config.id,
+                "classify_params": {
+                    "num_samples": 25,
+                    "custom_param": "original value",
+                },
+            },
+        )
+
+        # Verify initial state
+        assert mc.shared_config_id is None
+        assert mc.classify_params == {
+            "num_samples": 25,
+            "custom_param": "original value",
+        }
+
+        # Update to add shared config reference
+        mc.update(
+            db=db,
+            data={
+                "shared_config_id": shared_monitor_config.id,
+            },
+        )
+
+        # Verify updated state
+        mc_from_db = MonitorConfig.get(db=db, object_id=mc.id)
+        assert mc_from_db.shared_config_id == shared_monitor_config.id
+
+        # Verify merged params
+        merged_params = mc_from_db.classify_params
+        assert merged_params["num_samples"] == 25  # Local value preserved
+        assert (
+            merged_params["custom_param"] == "original value"
+        )  # Local value preserved
+        assert merged_params["context_regex_pattern_mapping"] == [
+            [".*([e|E]mail|[e|E]mail_address).*", "user.contact.email"],
+            [".*[P|p]hone_number.*", "user.contact.phone_number"],
+        ]
 
 
 class TestMonitorExecutionModel:

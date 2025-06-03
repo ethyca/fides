@@ -16,7 +16,10 @@ import {
   NoticeValues,
   OverrideType,
 } from "./lib/consent-types";
-import { updateExperienceFromCookieConsentNotices } from "./lib/cookie";
+import {
+  isNewFidesCookie,
+  updateExperienceFromCookieConsentNotices,
+} from "./lib/cookie";
 import { initializeDebugger } from "./lib/debugger";
 import { dispatchFidesEvent } from "./lib/events";
 import { DecodedFidesString, decodeFidesString } from "./lib/fides-string";
@@ -28,7 +31,7 @@ import {
 } from "./lib/init-utils";
 import {
   getInitialCookie,
-  getInitialFides,
+  getInitialFidesFromConsentCookie,
   getOverridesByType,
   initialize,
 } from "./lib/initialize";
@@ -50,17 +53,12 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
 
   this.config = config; // no matter how the config is set, we want to store it on the global object
 
-  dispatchFidesEvent(
-    "FidesInitializing",
-    undefined,
-    this.config.options.debug,
-    {
-      gppEnabled:
-        this.config.options.gppEnabled ||
-        this.config.experience?.gpp_settings?.enabled,
-      tcfEnabled: this.config.options.tcfEnabled,
-    },
-  );
+  dispatchFidesEvent("FidesInitializing", undefined, {
+    gppEnabled:
+      this.config.options.gppEnabled ||
+      this.config.experience?.gpp_settings?.enabled,
+    tcfEnabled: this.config.options.tcfEnabled,
+  });
 
   const optionsOverrides: Partial<FidesInitOptionsOverrides> =
     getOverridesByType<Partial<FidesInitOptionsOverrides>>(
@@ -117,20 +115,35 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     }
   }
 
-  const initialFides = getInitialFides({
-    ...config,
-    cookie: this.cookie,
-    savedConsent: this.saved_consent,
-    updateExperienceFromCookieConsent: updateExperienceFromCookieConsentNotices,
-  });
-  if (initialFides) {
+  this.experience = config.experience; // pre-fetched experience if available
+  const hasExistingCookie = !isNewFidesCookie(this.cookie);
+  if (hasExistingCookie) {
+    /*
+     * We have enough information to initialize the Fides object before we have a valid experience.
+     * In this case, the experience is less important because the user has already consented to something.
+     * The earlier we can communicate consent to the vendor, the better.
+     */
+    const initialFides = getInitialFidesFromConsentCookie({
+      ...config,
+      cookie: this.cookie,
+      savedConsent: this.saved_consent,
+      updateExperienceFromCookieConsent:
+        updateExperienceFromCookieConsentNotices,
+    });
     Object.assign(this, initialFides);
     updateWindowFides(this);
-    dispatchFidesEvent("FidesInitialized", this.cookie, config.options.debug, {
+    this.experience = initialFides.experience; // pre-fetched experience, if available, with consent applied
+
+    // Vendors (GTM, etc.) can use this event to know when the consent is loaded.
+    dispatchFidesEvent("FidesConsentLoaded", this.cookie, {
+      shouldShowExperience: this.shouldShowExperience(),
+    });
+    /** @deprecated - FidesInitialized is used for backwards compatibility only */
+    dispatchFidesEvent("FidesInitialized", this.cookie, {
       shouldShowExperience: this.shouldShowExperience(),
     });
   }
-  this.experience = initialFides?.experience ?? config.experience;
+
   const updatedFides = await initialize({
     ...config,
     fides: this,
@@ -140,8 +153,13 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   });
   Object.assign(this, updatedFides);
   updateWindowFides(this);
-  // Dispatch the "FidesInitialized" event to update listeners with the initial state.
-  dispatchFidesEvent("FidesInitialized", this.cookie, config.options.debug, {
+
+  // The window.Fides object and the Overlay are now fully initialized and ready to be used.
+  dispatchFidesEvent("FidesReady", this.cookie, {
+    shouldShowExperience: this.shouldShowExperience(),
+  });
+  /** @deprecated - FidesInitialized is used for backwards compatibility only */
+  dispatchFidesEvent("FidesInitialized", this.cookie, {
     shouldShowExperience: this.shouldShowExperience(),
   });
 }
