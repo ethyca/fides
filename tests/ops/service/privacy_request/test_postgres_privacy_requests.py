@@ -456,6 +456,7 @@ def test_create_and_process_access_request_postgres_with_disabled_integration(
 
     assert logs == {
         ("Dataset reference validation", "complete", None),
+        ("Access Package Upload", "complete", None),
         (
             "Dataset traversal",
             "skipped",
