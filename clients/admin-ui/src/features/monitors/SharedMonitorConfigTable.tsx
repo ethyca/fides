@@ -1,4 +1,11 @@
-import { AntButton, AntFlex, AntSpin, AntTable } from "fidesui";
+import {
+  AntButton,
+  AntEmpty,
+  AntFlex,
+  AntSpin,
+  AntTable,
+  AntTypography,
+} from "fidesui";
 import { CustomTypography } from "fidesui/src/hoc";
 
 import {
@@ -29,10 +36,19 @@ const SharedMonitorConfigTable = ({
     pageIndex,
   } = useServerSidePagination();
 
-  const { data, isLoading, isFetching } = useGetSharedMonitorConfigsQuery({
+  const {
+    // data,
+    isLoading,
+    isFetching,
+  } = useGetSharedMonitorConfigsQuery({
     page: pageIndex,
     size: pageSize,
   });
+
+  const data = {
+    items: [],
+    total: 0,
+  };
 
   const columns = useSharedMonitorConfigColumns({ onEditClick: onRowClick });
 
@@ -56,18 +72,31 @@ const SharedMonitorConfigTable = ({
         Shared monitor configurations can be applied to monitors to customize
         classification.
       </CustomTypography.Paragraph>
+      <AntFlex className="absolute right-16 top-4">
+        <AntButton
+          type="primary"
+          onClick={onNewClick}
+          data-testid="create-new-btn"
+        >
+          Create new
+        </AntButton>
+      </AntFlex>
       <AntTable
         columns={columns}
         dataSource={data?.items}
         size="small"
         pagination={false}
+        // @ts-ignore -- TS doesn't like the data-testid prop on rows
         onRow={(row) => ({
-          onClick: () => {
-            onRowClick(row);
-          },
-          className: "cursor-pointer",
           "data-testid": `config-${row.id}`,
         })}
+        locale={{
+          emptyText: (
+            <CustomTypography.Paragraph className="py-8">
+              No shared monitor configs found
+            </CustomTypography.Paragraph>
+          ),
+        }}
         className="mt-6"
       />
       <AntFlex justify="space-between" className="mt-4">
@@ -82,14 +111,6 @@ const SharedMonitorConfigTable = ({
           startRange={startRange}
           endRange={endRange}
         />
-        <AntButton
-          type="primary"
-          onClick={onNewClick}
-          className="mt-2"
-          data-testid="create-new-btn"
-        >
-          Create new
-        </AntButton>
       </AntFlex>
     </>
   );

@@ -78,6 +78,7 @@ const ConfigureWebsiteMonitorForm = ({
 
   const initialValues: WebsiteMonitorConfig = {
     name: monitor?.name || "",
+    shared_config_id: monitor?.shared_config_id ?? undefined,
     execution_frequency:
       monitor?.execution_frequency || MonitorFrequency.NOT_SCHEDULED,
     execution_start_date: format(initialDate, "yyyy-MM-dd'T'HH:mm"),

@@ -100,6 +100,7 @@ const SharedMonitorConfigForm = ({
             : "Monitor config updated successfully",
         ),
       );
+      onBackClick();
     }
   };
 

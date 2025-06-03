@@ -106,6 +106,7 @@ const ConfigureMonitorForm = ({
 
   const initialValues = {
     name: monitor?.name ?? "",
+    shared_config_id: monitor?.shared_config_id ?? undefined,
     execution_start_date: format(initialDate, "yyyy-MM-dd'T'HH:mm"),
     execution_frequency:
       monitor?.execution_frequency ?? MonitorFrequency.MONTHLY,
