@@ -590,9 +590,6 @@ dataset:
     - name: id
       data_categories:
       - system.operations
-    - name: username
-      data_categories:
-      - system.operations
     - name: user_id
       data_categories:
       - system.operations
