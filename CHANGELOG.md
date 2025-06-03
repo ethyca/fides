@@ -29,6 +29,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Shared monitor config model [#6167](https://github.com/ethyca/fides/pull/6167)
 - Added data_sales to Shopify consent_map [#6169](https://github.com/ethyca/fides/pull/6189)
 - Added new user types respondent and external_respondent [#6177](https://github.com/ethyca/fides/pull/6177) https://github.com/ethyca/fides/labels/db-migration
+- Added Execution logging for uploading Access Packages [#6191](https://github.com/ethyca/fides/pull/6191)
 
 ### Changed
 - Deprecated `FidesInitialized` event and added `FidesConsentLoaded` and `FidesReady` events for more granular initialization state handling [#6181](https://github.com/ethyca/fides/pull/6181)

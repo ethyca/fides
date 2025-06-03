@@ -399,7 +399,7 @@ class TestDeleteCollection:
         )
 
         # DSR 3.0 has an extra Dataset reference validation from re-entering the run_privacy_request function
-        expected_log_count = 25 if dsr_version == "use_dsr_3_0" else 24
+        expected_log_count = 26 if dsr_version == "use_dsr_3_0" else 25
 
         assert pr.get_results() != {}
         logs = get_sorted_execution_logs(db, pr)
@@ -747,7 +747,7 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
         )
 
         # DSR 3.0 has an extra Dataset reference validation from re-entering the run_privacy_request function
-        expected_log_count = 25 if dsr_version == "use_dsr_3_0" else 24
+        expected_log_count = 26 if dsr_version == "use_dsr_3_0" else 25
 
         assert pr.get_results() != {}
         logs = get_sorted_execution_logs(db, pr)
