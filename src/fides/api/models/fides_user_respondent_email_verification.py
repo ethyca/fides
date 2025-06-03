@@ -52,7 +52,6 @@ class FidesUserRespondentEmailVerification(Base, IdentityVerificationMixin):
     )  # Token for the access link
     access_token_expires_at = Column(DateTime(timezone=True), nullable=False)
     identity_verified_at = Column(DateTime(timezone=True), nullable=True)
-    created_at = Column(DateTime(timezone=True), nullable=False, server_default="now()")
 
     user = relationship(
         "FidesUser",
