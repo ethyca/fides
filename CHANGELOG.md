@@ -31,6 +31,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Changed
 - Deprecated `FidesInitialized` event and added `FidesConsentLoaded` and `FidesReady` events for more granular initialization state handling [#6181](https://github.com/ethyca/fides/pull/6181)
+- Changed GPC to support custom notices in TCF experiences [#6176](https://github.com/ethyca/fides/pull/6176)
 
 ### Developer Experience
 - Refactored FidesJS init logic for better clarity and TCF separation [#6173](https://github.com/ethyca/fides/pull/6173)
