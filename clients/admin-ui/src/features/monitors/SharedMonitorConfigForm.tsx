@@ -1,13 +1,13 @@
 import {
-  AntButton,
-  AntCol,
-  AntFlex,
-  AntForm,
-  AntInput,
-  AntRow,
-  AntUpload,
-  AntUploadChangeParam,
-  AntUploadFile,
+  AntButton as Button,
+  AntCol as Col,
+  AntFlex as Flex,
+  AntForm as Form,
+  AntInput as Input,
+  AntRow as Row,
+  AntUpload as Upload,
+  AntUploadChangeParam as UploadChangeParam,
+  AntUploadFile as UploadFile,
   Icons,
   useToast,
 } from "fidesui";
@@ -50,7 +50,7 @@ const SharedMonitorConfigForm = ({
   config?: SharedMonitorConfig;
   onBackClick: () => void;
 }) => {
-  const [form] = AntForm.useForm<SharedMonitorConfigFormValues>();
+  const [form] = Form.useForm<SharedMonitorConfigFormValues>();
   const toast = useToast();
 
   const [createMonitorTemplate, { isLoading: createIsLoading }] =
@@ -115,7 +115,7 @@ const SharedMonitorConfigForm = ({
     handleResult(result, !config);
   };
 
-  const handleFileUpload = (info: AntUploadChangeParam<AntUploadFile>) => {
+  const handleFileUpload = (info: UploadChangeParam<UploadFile>) => {
     const { file } = info;
     if (!file) {
       return;
@@ -155,7 +155,7 @@ const SharedMonitorConfigForm = ({
       <CustomTypography.Paragraph className="mt-2">
         {FORM_COPY}
       </CustomTypography.Paragraph>
-      <AntForm
+      <Form
         name="monitor-template"
         layout="vertical"
         form={form}
@@ -168,26 +168,26 @@ const SharedMonitorConfigForm = ({
         }
         validateTrigger={["onBlur", "onChange"]}
       >
-        <AntRow>
-          <AntCol span={24}>
-            <AntForm.Item
+        <Row>
+          <Col span={24}>
+            <Form.Item
               label="Configuration name"
               name="name"
               rules={[{ required: true, message: "Config name is required" }]}
               data-testid="form-item-name"
             >
-              <AntInput autoFocus data-testid="input-name" />
-            </AntForm.Item>
-            <AntForm.Item
+              <Input autoFocus data-testid="input-name" />
+            </Form.Item>
+            <Form.Item
               label="Description"
               name="description"
               data-testid="form-item-description"
             >
-              <AntInput.TextArea data-testid="input-description" />
-            </AntForm.Item>
-          </AntCol>
-        </AntRow>
-        <AntForm.List
+              <Input.TextArea data-testid="input-description" />
+            </Form.Item>
+          </Col>
+        </Row>
+        <Form.List
           name="rules"
           rules={[
             {
@@ -204,52 +204,52 @@ const SharedMonitorConfigForm = ({
         >
           {(fields, { add, remove }, { errors }) => (
             <>
-              <AntFlex justify="space-between">
+              <Flex justify="space-between">
                 <CustomTypography.Title level={3} className="pb-5">
                   Regex patterns
                 </CustomTypography.Title>
                 {!config && (
-                  <AntFlex gap={8} align="center">
+                  <Flex gap={8} align="center">
                     <InfoTooltip label={TOOLTIP_COPY} placement="left" />
-                    <AntUpload
+                    <Upload
                       accept=".csv"
                       showUploadList={false}
                       beforeUpload={() => false}
                       onChange={handleFileUpload}
                     >
-                      <AntButton
+                      <Button
                         icon={<Icons.Upload />}
                         iconPosition="end"
                         size="small"
                         data-testid="upload-csv-btn"
                       >
                         Upload CSV
-                      </AntButton>
-                    </AntUpload>
-                  </AntFlex>
+                      </Button>
+                    </Upload>
+                  </Flex>
                 )}
-              </AntFlex>
+              </Flex>
               {fields.map(({ key, name, ...field }, idx) => (
-                <AntRow key={key} align="middle">
-                  <AntCol span={11}>
-                    <AntForm.Item
+                <Row key={key} align="middle">
+                  <Col span={11}>
+                    <Form.Item
                       label="On match"
                       {...field}
                       name={[name, "regex"]}
                       rules={[{ required: true, message: "Regex is required" }]}
                       data-testid={`form-item-rules.${name}.regex`}
                     >
-                      <AntInput
+                      <Input
                         placeholder="Enter a regular expression"
                         data-testid={`input-rules.${name}.regex`}
                       />
-                    </AntForm.Item>
-                  </AntCol>
-                  <AntCol span={1} className="flex justify-center pt-[5px]">
+                    </Form.Item>
+                  </Col>
+                  <Col span={1} className="flex justify-center pt-[5px]">
                     -&gt;
-                  </AntCol>
-                  <AntCol span={11} className="pr-2">
-                    <AntForm.Item
+                  </Col>
+                  <Col span={11} className="pr-2">
+                    <Form.Item
                       label="Assign"
                       {...field}
                       name={[name, "dataCategory"]}
@@ -269,45 +269,45 @@ const SharedMonitorConfigForm = ({
                         allowClear
                         data-testid={`input-rules.${name}.dataCategory`}
                       />
-                    </AntForm.Item>
-                  </AntCol>
-                  <AntCol span={1} className="mt-[7.25px]">
+                    </Form.Item>
+                  </Col>
+                  <Col span={1} className="mt-[7.25px]">
                     {idx === fields.length - 1 ? (
-                      <AntButton
+                      <Button
                         onClick={() => add()}
                         icon={<Icons.Add />}
                         aria-label="Add new rule"
                         data-testid="add-rule-btn"
                       />
                     ) : (
-                      <AntButton
+                      <Button
                         onClick={() => remove(name)}
                         icon={<Icons.TrashCan />}
                         aria-label="Remove rule"
                         data-testid={`remove-rule-${name}`}
                       />
                     )}
-                  </AntCol>
-                </AntRow>
+                  </Col>
+                </Row>
               ))}
-              <AntForm.ErrorList errors={errors} />
-              <AntForm.Item label={null} className="mb-0">
-                <AntFlex justify="end" gap={8}>
-                  <AntButton onClick={onBackClick}>Cancel</AntButton>
-                  <AntButton
+              <Form.ErrorList errors={errors} />
+              <Form.Item label={null} className="mb-0">
+                <Flex justify="end" gap={8}>
+                  <Button onClick={onBackClick}>Cancel</Button>
+                  <Button
                     type="primary"
                     htmlType="submit"
                     loading={createIsLoading || updateIsLoading}
                     data-testid="save-btn"
                   >
                     Save
-                  </AntButton>
-                </AntFlex>
-              </AntForm.Item>
+                  </Button>
+                </Flex>
+              </Form.Item>
             </>
           )}
-        </AntForm.List>
-      </AntForm>
+        </Form.List>
+      </Form>
     </>
   );
 };

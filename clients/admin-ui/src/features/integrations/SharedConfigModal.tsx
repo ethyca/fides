@@ -1,4 +1,4 @@
-import { AntButton as Button, AntModal, Icons } from "fidesui";
+import { AntButton as Button, AntModal as Modal, Icons } from "fidesui";
 import { useState } from "react";
 
 import SharedMonitorConfigForm from "~/features/monitors/SharedMonitorConfigForm";
@@ -49,7 +49,7 @@ const SharedConfigModal = () => {
       >
         Shared monitor configurations
       </Button>
-      <AntModal
+      <Modal
         open={modalIsOpen}
         onCancel={handleCancel}
         destroyOnClose
@@ -69,7 +69,7 @@ const SharedConfigModal = () => {
             onRowClick={handleRowClick}
           />
         )}
-      </AntModal>
+      </Modal>
     </>
   );
 };

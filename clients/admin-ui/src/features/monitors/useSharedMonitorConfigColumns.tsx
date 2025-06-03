@@ -1,4 +1,10 @@
-import { AntButton, AntFlex, AntTableProps, Icons, useToast } from "fidesui";
+import {
+  AntButton as Button,
+  AntFlex as Flex,
+  AntTableProps as TableProps,
+  Icons,
+  useToast,
+} from "fidesui";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
@@ -30,7 +36,7 @@ const useSharedMonitorConfigColumns = ({
     }
   };
 
-  const columns: AntTableProps<SharedMonitorConfig>["columns"] = [
+  const columns: TableProps<SharedMonitorConfig>["columns"] = [
     {
       title: "Name",
       dataIndex: "name",
@@ -46,18 +52,18 @@ const useSharedMonitorConfigColumns = ({
       key: "actions",
       render: (_, data) => {
         return (
-          <AntFlex className="gap-2">
-            <AntButton
+          <Flex className="gap-2">
+            <Button
               size="small"
               onClick={() => onEditClick(data)}
               icon={<Icons.Edit />}
             />
-            <AntButton
+            <Button
               size="small"
               onClick={() => handleDeleteMonitorConfig(data.id!)}
               icon={<Icons.TrashCan />}
             />
-          </AntFlex>
+          </Flex>
         );
       },
     },

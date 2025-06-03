@@ -1,10 +1,8 @@
 import {
-  AntButton,
-  AntEmpty,
-  AntFlex,
-  AntSpin,
-  AntTable,
-  AntTypography,
+  AntButton as Button,
+  AntFlex as Flex,
+  AntSpin as Spin,
+  AntTable as Table,
 } from "fidesui";
 import { CustomTypography } from "fidesui/src/hoc";
 
@@ -56,10 +54,7 @@ const SharedMonitorConfigTable = ({
 
   if (showSpinner) {
     return (
-      <AntSpin
-        size="large"
-        className="flex h-full items-center justify-center"
-      />
+      <Spin size="large" className="flex h-full items-center justify-center" />
     );
   }
 
@@ -72,16 +67,16 @@ const SharedMonitorConfigTable = ({
         Shared monitor configurations can be applied to monitors to customize
         classification.
       </CustomTypography.Paragraph>
-      <AntFlex className="absolute right-16 top-4">
-        <AntButton
+      <Flex className="absolute right-16 top-4">
+        <Button
           type="primary"
           onClick={onNewClick}
           data-testid="create-new-btn"
         >
           Create new
-        </AntButton>
-      </AntFlex>
-      <AntTable
+        </Button>
+      </Flex>
+      <Table
         columns={columns}
         dataSource={data?.items}
         size="small"
@@ -99,7 +94,7 @@ const SharedMonitorConfigTable = ({
         }}
         className="mt-6"
       />
-      <AntFlex justify="space-between" className="mt-4">
+      <Flex justify="space-between" className="mt-4">
         <PaginationBar
           totalRows={data?.total || 0}
           pageSizes={PAGE_SIZES}
@@ -111,7 +106,7 @@ const SharedMonitorConfigTable = ({
           startRange={startRange}
           endRange={endRange}
         />
-      </AntFlex>
+      </Flex>
     </>
   );
 };
