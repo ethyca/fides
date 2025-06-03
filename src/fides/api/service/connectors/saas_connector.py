@@ -530,11 +530,15 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         session = Session.object_session(privacy_request)
         masking_request = query_config.get_masking_request(session)
+        rows_updated = 0
+
         if not masking_request:
-            raise Exception(
-                f"Either no masking request configured or no valid masking request for {node.address.collection}. "
-                f"Check that MASKING_STRICT env var is appropriately set"
+            logger.info(
+                "No masking request found for the '{}' collection in {}",
+                self.current_collection_name,
+                self.saas_config.fides_key,  # type: ignore
             )
+            return rows_updated
 
         self.set_saas_request_state(masking_request)
 
@@ -565,7 +569,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             cast(Optional[List[PostProcessorStrategy]], masking_request.postprocessors),
         )
 
-        rows_updated = 0
         client = self.create_client()
         for row in rows:
             try:
