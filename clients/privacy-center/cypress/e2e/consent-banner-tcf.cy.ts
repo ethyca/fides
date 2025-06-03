@@ -489,13 +489,34 @@ describe("Fides-js TCF", () => {
           }
           // verify the data layer variables
           cy.get("@dataLayerPush")
-            .should("have.been.callCount", 4) // FidesInitialized + FidesUIShown (banner) + FidesUpdating + FidesUpdated
-            // First call should be from initialization, before the user accepts all
+            .should("have.been.callCount", 5) // FidesReady + FidesInitialized + FidesUIShown (banner) + FidesUpdating + FidesUpdated
+            // First call should be from initialization ready, before the user accepts all
             .its("firstCall.args.0")
             .then((actual) => Cypress._.omit(actual, "Fides.timestamp"))
             .should("deep.equal", {
-              event: "FidesInitialized",
+              event: "FidesReady",
               Fides: {
+                consent: includeCustomPurposes
+                  ? {
+                      advertising: false,
+                      analytics_opt_out: true,
+                      essential: true,
+                    }
+                  : {},
+                extraDetails: {
+                  consentMethod: undefined,
+                  shouldShowExperience: true,
+                },
+                fides_string: undefined,
+              },
+            });
+          // Second call should be from deprecated FidesInitialized
+          cy.get("@dataLayerPush")
+            .its("args")
+            .then((args) => {
+              const call = args[1][0];
+              expect(call.event).to.equal("FidesInitialized");
+              expect(call.Fides).to.deep.include({
                 consent: includeCustomPurposes
                   ? {
                       advertising: false,
@@ -509,7 +530,7 @@ describe("Fides-js TCF", () => {
                   firstInit: false,
                 },
                 fides_string: undefined,
-              },
+              });
             });
 
           // Verify FidesUIShown events (banner and modal)
@@ -517,21 +538,21 @@ describe("Fides-js TCF", () => {
             .its("args")
             .then((args) => {
               // Banner shown event
-              const bannerEvent = args[1][0];
+              const bannerEvent = args[2][0];
               expect(bannerEvent.event).to.equal("FidesUIShown");
               expect(bannerEvent.Fides.extraDetails.servingComponent).to.equal(
                 "tcf_banner",
               );
 
               // FidesUpdating event
-              const updatingEvent = args[2][0];
+              const updatingEvent = args[3][0];
               expect(updatingEvent.event).to.equal("FidesUpdating");
               expect(
                 updatingEvent.Fides.extraDetails.servingComponent,
               ).to.equal(undefined);
 
               // FidesUpdated event
-              const updatedEvent = args[3][0];
+              const updatedEvent = args[4][0];
               expect(updatedEvent.event).to.equal("FidesUpdated");
               expect(updatedEvent.Fides.extraDetails.servingComponent).to.equal(
                 undefined,
@@ -542,7 +563,7 @@ describe("Fides-js TCF", () => {
           cy.get("@dataLayerPush")
             .its("args")
             .then((args) => {
-              const call = args[2][0];
+              const call = args[3][0];
               expect(call.event).to.equal("FidesUpdating");
               expect(call.Fides).to.deep.include({
                 consent: includeCustomPurposes
@@ -563,7 +584,7 @@ describe("Fides-js TCF", () => {
           cy.get("@dataLayerPush")
             .its("args")
             .then((args) => {
-              const call = args[3][0];
+              const call = args[4][0];
               expect(call.event).to.equal("FidesUpdated");
               expect(call.Fides).to.deep.include({
                 consent: includeCustomPurposes
@@ -1195,13 +1216,34 @@ describe("Fides-js TCF", () => {
             });
             // verify the data layer variables
             cy.get("@dataLayerPush")
-              .should("have.been.callCount", 6) // FidesInitialized + FidesUIShown (banner) + FidesUIShown (modal) + FidesModalClosed + FidesUpdating + FidesUpdated
-              // First call should be from initialization, before the user accepts all
+              .should("have.been.callCount", 7) // FidesReady + FidesInitialized + FidesUIShown (banner) + FidesUIShown (modal) + FidesModalClosed + FidesUpdating + FidesUpdated
+              // First call should be from initialization ready, before the user accepts all
               .its("firstCall.args.0")
               .then((actual) => Cypress._.omit(actual, "Fides.timestamp"))
               .should("deep.equal", {
-                event: "FidesInitialized",
+                event: "FidesReady",
                 Fides: {
+                  consent: includeCustomPurposes
+                    ? {
+                        advertising: false,
+                        analytics_opt_out: true,
+                        essential: true,
+                      }
+                    : {},
+                  extraDetails: {
+                    consentMethod: undefined,
+                    shouldShowExperience: true,
+                  },
+                  fides_string: undefined,
+                },
+              });
+            // Second call should be from deprecated FidesInitialized
+            cy.get("@dataLayerPush")
+              .its("args")
+              .then((args) => {
+                const call = args[1][0];
+                expect(call.event).to.equal("FidesInitialized");
+                expect(call.Fides).to.deep.include({
                   consent: includeCustomPurposes
                     ? {
                         advertising: false,
@@ -1215,7 +1257,7 @@ describe("Fides-js TCF", () => {
                     firstInit: false,
                   },
                   fides_string: undefined,
-                },
+                });
               });
 
             // Verify FidesUIShown events (banner and modal)
@@ -1223,21 +1265,21 @@ describe("Fides-js TCF", () => {
               .its("args")
               .then((args) => {
                 // Banner shown event
-                const bannerEvent = args[1][0];
+                const bannerEvent = args[2][0];
                 expect(bannerEvent.event).to.equal("FidesUIShown");
                 expect(
                   bannerEvent.Fides.extraDetails.servingComponent,
                 ).to.equal("tcf_banner");
 
                 // Modal shown event
-                const modalEvent = args[2][0];
+                const modalEvent = args[3][0];
                 expect(modalEvent.event).to.equal("FidesUIShown");
                 expect(modalEvent.Fides.extraDetails.servingComponent).to.equal(
                   "tcf_overlay",
                 );
 
                 // Modal closed event
-                const modalClosedEvent = args[3][0];
+                const modalClosedEvent = args[4][0];
                 expect(modalClosedEvent.event).to.equal("FidesModalClosed");
                 expect(
                   modalClosedEvent.Fides.extraDetails.servingComponent,
@@ -1248,7 +1290,7 @@ describe("Fides-js TCF", () => {
             cy.get("@dataLayerPush")
               .its("args")
               .then((args) => {
-                const call = args[4][0];
+                const call = args[5][0];
                 expect(call.event).to.equal("FidesUpdating");
                 expect(call.Fides).to.deep.include({
                   consent: includeCustomPurposes
@@ -1269,7 +1311,7 @@ describe("Fides-js TCF", () => {
             cy.get("@dataLayerPush")
               .its("args")
               .then((args) => {
-                const call = args[5][0];
+                const call = args[6][0];
                 expect(call.event).to.equal("FidesUpdated");
                 expect(call.Fides).to.deep.include({
                   consent: includeCustomPurposes
@@ -3974,6 +4016,7 @@ describe("Fides-js TCF", () => {
           expect(body.purpose_consent_preferences).to.eql([]);
           expect(body.purpose_legitimate_interests_preferences).to.eql([]);
           expect(body.method).to.eql(ConsentMethod.SCRIPT);
+          cy.get("#fides-banner-container").should("not.exist");
         };
         it("rejects all notices automatically when set", () => {
           stubTCFExperience({
@@ -4088,6 +4131,7 @@ describe("Fides-js TCF", () => {
             },
           ]);
           expect(body.method).to.eql(ConsentMethod.SCRIPT);
+          cy.get("#fides-banner-container").should("not.exist");
         };
         it("accepts all notices automatically when set", () => {
           stubTCFExperience({

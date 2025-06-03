@@ -123,7 +123,7 @@ export const updateConsentPreferences = async ({
   Object.assign(cookie.fides_meta, { consentMethod }); // save extra details to meta (i.e. consentMethod)
 
   // 2. Dispatch a "FidesUpdating" event with the new preferences
-  dispatchFidesEvent("FidesUpdating", cookie, options.debug);
+  dispatchFidesEvent("FidesUpdating", cookie);
 
   // 3. Update the window.Fides object
   fidesDebugger("Updating window.Fides");
@@ -185,7 +185,7 @@ export const updateConsentPreferences = async ({
   }
 
   // 7. Dispatch a "FidesUpdated" event
-  dispatchFidesEvent("FidesUpdated", cookie, options.debug);
+  dispatchFidesEvent("FidesUpdated", cookie);
 };
 
 const validateConsent = (fides: FidesGlobal, consent: NoticeConsent) => {

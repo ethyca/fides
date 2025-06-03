@@ -11,6 +11,6 @@ export type LocationRegulationBase = {
   id: string;
   selected?: boolean;
   name: string;
-  continent: Continent;
+  continent?: Continent | null;
   default_selected?: boolean;
 };

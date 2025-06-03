@@ -11,7 +11,7 @@ for details.
 
 NOTE: FidesJS will need to be downloaded, executed, and initialized before
 the `Fides` object is available. Therefore, your code should check for the
-existence of Fides *or* subscribe to the global `FidesInitialized` event (see
+existence of Fides *or* subscribe to the global `FidesReady` event (see
 [FidesEvent](FidesEvent.md)) for details) before using the `Fides` object in your own code.
 
 ## Example
@@ -126,7 +126,7 @@ Whether or not FidesJS has finished initialization and has loaded the
 current user's experience, consent preferences, etc.
 
 NOTE: To be notified when initialization has completed, you can subscribe
-to the `FidesInitialized` event. See [FidesEvent](FidesEvent.md) for details.
+to the `FidesReady` event. See [FidesEvent](FidesEvent.md) for details.
 
 ***
 
@@ -167,7 +167,7 @@ Apply the link text to a custom modal link element on Fides initialization:
 <button class="my-custom-show-modal" id="fides-modal-link-label" onclick="Fides.showModal()"><button>
 <script id="fides-js">
   function() {
-    addEventListener("FidesInitialized", ( function() {
+    addEventListener("FidesReady", ( function() {
       document.getElementById('fides-modal-link-label').innerText = Fides.getModalLinkLabel();
     }));
   }
@@ -383,7 +383,7 @@ Returns an unsubscribe function that can be called to remove the event listener.
 
 | Parameter | Type | Description |
 | ------ | ------ | ------ |
-| `type` | `any` | The type of event to listen for, such as `FidesInitialized`, `FidesUpdated`, etc. |
+| `type` | `any` | The type of event to listen for, such as `FidesReady`, `FidesUpdated`, etc. |
 | `callback` | (`detail`) => `void` | The callback function to call when the event is triggered |
 
 #### Returns
