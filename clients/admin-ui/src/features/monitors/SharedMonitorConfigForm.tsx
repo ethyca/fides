@@ -220,6 +220,7 @@ const SharedMonitorConfigForm = ({
                         icon={<Icons.Upload />}
                         iconPosition="end"
                         size="small"
+                        data-testid="upload-csv-btn"
                       >
                         Upload CSV
                       </AntButton>
