@@ -1,15 +1,15 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Optional
 
-from citext import CIText
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Column, DateTime, ForeignKey, String
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
 
 from fides.api.cryptography.cryptographic_util import generate_secure_random_string
 from fides.api.db.base_class import Base
+from fides.api.util.identity_verification import IdentityVerificationMixin
 from fides.config import get_config
 
 CONFIG = get_config()
@@ -21,11 +21,9 @@ if TYPE_CHECKING:
 # Access links stay active for 45 days - the same as the DSR expiration. A new link is generated for each email.
 # The emails are created for new DSRs which are assigned to the respondent.
 ACCESS_LINK_TTL_DAYS = 45
-VERIFICATION_CODE_TTL_HOURS = 1  # Verification codes expire after 1 hour
-MAX_ATTEMPTS = CONFIG.security.respondent_verification_max_attempts
 
 
-class FidesUserRespondentEmailVerification(Base):
+class FidesUserRespondentEmailVerification(Base, IdentityVerificationMixin):
     """Model for handling email verification for external respondents.
 
     This handles two types of verification:
@@ -35,21 +33,13 @@ class FidesUserRespondentEmailVerification(Base):
     When an email is sent to an external respondent, a new verification is created with a new access token is created.
     When a respondent clicks the link in the email, the access token is verified and a verification code is generated.
     The verification code is sent to the respondent's email address and the respondent is prompted to enter the code.
-    If the code is correct and has not expired, the respondent is considered verified.
-    If the code is incorrect, the number of attempts is incremented and the verification is saved.
-    If the user attempts to use a link with an expired access token the user is not verified.
+    Verification is handled by the `IdentityVerificationMixin` class.
     """
 
     @declared_attr
     def __tablename__(self) -> str:
         return "fides_user_respondent_email_verification"
 
-    username = Column(  # type: ignore
-        CIText,
-        ForeignKey("fidesuser.username", ondelete="CASCADE"),
-        nullable=True,
-        index=False,
-    )
     user_id = Column(
         String,
         ForeignKey("fidesuser.id", ondelete="CASCADE"),
@@ -61,11 +51,7 @@ class FidesUserRespondentEmailVerification(Base):
         String, nullable=False, unique=True, index=True
     )  # Token for the access link
     access_token_expires_at = Column(DateTime(timezone=True), nullable=False)
-    verification_code = Column(
-        String, nullable=True
-    )  # Optional until access link is used
-    verification_code_expires_at = Column(DateTime(timezone=True), nullable=True)
-    attempts = Column(Integer, nullable=False, server_default="0")
+    identity_verified_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), nullable=False, server_default="now()")
 
     user = relationship(
@@ -89,11 +75,9 @@ class FidesUserRespondentEmailVerification(Base):
         verification = super().create(
             db,
             data={
-                "username": data["username"],
                 "user_id": data["user_id"],
                 "access_token": access_token,
                 "access_token_expires_at": expires_at,
-                "attempts": 0,
             },
         )
 
@@ -107,14 +91,6 @@ class FidesUserRespondentEmailVerification(Base):
         current_time_utc = datetime.now(timezone.utc)
         return current_time_utc > self.access_token_expires_at
 
-    def is_verification_code_expired(self) -> bool:
-        """Check if the verification code has expired."""
-        if not self.verification_code_expires_at:
-            return True
-
-        current_time_utc = datetime.now(timezone.utc)
-        return current_time_utc > self.verification_code_expires_at
-
     def verify_access_token(self, token: str) -> bool:
         """Verify the access token and generate a verification code if valid."""
         if self.is_access_token_expired():
@@ -122,43 +98,16 @@ class FidesUserRespondentEmailVerification(Base):
 
         return self.access_token == token
 
-    def reset_attempts(self, db: Session) -> None:
-        """Reset the number of attempts to 0."""
-        self.attempts = 0
+    def verify_identity(
+        self,
+        db: Session,
+        provided_code: Optional[str] = None,
+    ) -> None:
+        """A method to call the internal identity verification method provided by the
+        `IdentityVerificationMixin`."""
+        if self.is_access_token_expired():
+            raise ValueError("Access token has expired.")
+
+        self._verify_identity(provided_code=provided_code)
+        self.identity_verified_at = datetime.now(timezone.utc)
         self.save(db)
-
-    def generate_verification_code(self, db: Session) -> str:
-        """Generate a new verification code when access link is used."""
-        # Generate a 16 character string
-        # This is a hex string, so it will double the input parameter length
-        code = generate_secure_random_string(8)
-        self.verification_code = code
-        self.verification_code_expires_at = datetime.now(timezone.utc) + timedelta(
-            hours=VERIFICATION_CODE_TTL_HOURS
-        )
-        self.attempts = 0
-        self.save(db)
-        return code
-
-    def verify_code(self, code: str, db: Session) -> bool:
-        """Verify the provided code and track attempts.
-        If the code is correct, the attempts are reset and the user is considered verified.
-        If the code is incorrect, the attempts are incremented and the user is not considered verified.
-        If the verification code is expired, the user is not considered verified.
-        If the user has reached the maximum number of attempts, the user is not considered verified.
-        """
-        if self.is_verification_code_expired():
-            self.attempts += 1
-            self.save(db)
-            return False
-
-        if self.attempts >= MAX_ATTEMPTS:
-            raise ValueError("Maximum number of attempts for verification reached.")
-
-        if self.verification_code == code:
-            self.reset_attempts(db)
-            return True
-
-        self.attempts += 1
-        self.save(db)
-        return False

@@ -42,7 +42,6 @@ oauth_root_client_id = "fidesadmin"
 oauth_root_client_secret = "fidesadminsecret"
 drp_jwt_secret = "secret"
 env = "prod"
-respondent_verification_max_attempts = 5
 
 [execution]
 masking_strict = true

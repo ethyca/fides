@@ -8,7 +8,6 @@ Create Date: 2025-05-29 15:41:59.521940
 
 import sqlalchemy as sa
 from alembic import op
-from citext import CIText
 
 # revision identifiers, used by Alembic.
 revision = "440a5b9a3493"
@@ -21,17 +20,12 @@ def upgrade():
     op.create_table(
         "fides_user_respondent_email_verification",
         sa.Column("id", sa.String(), nullable=False),
-        sa.Column("username", CIText(), nullable=False),
         sa.Column("user_id", sa.String(), nullable=False),
         sa.Column("access_token", sa.String(), nullable=False),
         sa.Column(
             "access_token_expires_at", sa.DateTime(timezone=True), nullable=False
         ),
-        sa.Column("verification_code", sa.String(), nullable=True),
-        sa.Column(
-            "verification_code_expires_at", sa.DateTime(timezone=True), nullable=True
-        ),
-        sa.Column("attempts", sa.Integer(), nullable=False, server_default="0"),
+        sa.Column("identity_verified_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column(
             "created_at",
             sa.DateTime(timezone=True),
@@ -43,11 +37,6 @@ def upgrade():
             sa.DateTime(timezone=True),
             nullable=False,
             server_default=sa.text("now()"),
-        ),
-        sa.ForeignKeyConstraint(
-            ["username"],
-            ["fidesuser.username"],
-            ondelete="CASCADE",
         ),
         sa.ForeignKeyConstraint(
             ["user_id"],

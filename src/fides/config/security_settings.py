@@ -154,10 +154,6 @@ class SecuritySettings(FidesSettings):
         default=10,
         description="The timeout in seconds for tunnel connection (open_channel timeout)",
     )
-    respondent_verification_max_attempts: int = Field(
-        default=5,
-        description="The number of times identity verification will be attempted before raising an error.",
-    )
 
     @field_validator("app_encryption_key", mode="before")
     @classmethod
