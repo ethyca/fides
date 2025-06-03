@@ -297,7 +297,7 @@ export const initialize = async ({
        * Finally, update the "cookie" state to track the user's *current*
        * consent preferences as determined by the updatedExperience above. This
        * "cookie" state is then published to external listeners via the
-       * Fides.consent object and Fides events like FidesInitialized below, so
+       * Fides.consent object and Fides events like FidesReady below, so
        * we rely on keeping it up to date!
        *
        * DEFER (PROD-1780): This is quite *literally* duplicate state, and means
