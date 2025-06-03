@@ -585,6 +585,29 @@ dataset:
     - name: user_id
       data_categories:
       - system.operations
+  - name: fides_user_respondent_email_verification
+    fields:
+    - name: id
+      data_categories:
+      - system.operations
+    - name: user_id
+      data_categories:
+      - system.operations
+    - name: access_token
+      data_categories:
+      - system.operations
+    - name: access_token_expires_at
+      data_categories:
+      - system.operations
+    - name: identity_verified_at
+      data_categories:
+      - system.operations
+    - name: created_at
+      data_categories:
+      - system.operations
+    - name: updated_at
+      data_categories:
+      - system.operations
   - name: ctl_organizations
     fields:
     - name: controller
@@ -2310,6 +2333,24 @@ dataset:
     - name: enabled
       data_categories: [system]
     - name: last_monitored
+      data_categories: [system]
+    - name: shared_config_id
+      data_categories: [system]
+  - name: shared_monitor_config
+    fields:
+    - name: created_at
+      data_categories: [system]
+    - name: description
+      data_categories: [system]
+    - name: id
+      data_categories: [system]
+    - name: key
+      data_categories: [system]
+    - name: name
+      data_categories: [system]
+    - name: updated_at
+      data_categories: [system]
+    - name: classify_params
       data_categories: [system]
   - name: stagedresource
     fields:
