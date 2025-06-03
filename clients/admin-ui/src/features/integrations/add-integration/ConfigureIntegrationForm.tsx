@@ -1,14 +1,12 @@
 import { AntButton as Button, Box, useToast, VStack } from "fidesui";
 import { Form, Formik } from "formik";
 import { isEmpty, isUndefined, mapValues, omitBy } from "lodash";
-import * as Yup from "yup";
 
 import FidesSpinner from "~/features/common/FidesSpinner";
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
-import {
-  CustomNumberInput,
-  CustomTextInput,
-} from "~/features/common/form/inputs";
+import { FormFieldFromSchema } from "~/features/common/form/FormFieldFromSchema";
+import { CustomTextInput } from "~/features/common/form/inputs";
+import { useFormFieldsFromSchema } from "~/features/common/form/useFormFieldsFromSchema";
 import { getErrorMessage } from "~/features/common/helpers";
 import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
 import type { ConnectionTypeSecretSchemaResponse } from "~/features/connection-type/types";
@@ -90,6 +88,9 @@ const ConfigureIntegrationForm = ({
       connectionConfig: connection,
     });
 
+  const { getFieldValidation, preprocessValues } =
+    useFormFieldsFromSchema(secrets);
+
   const submitPending =
     secretsIsLoading || patchIsLoading || systemPatchIsLoading;
 
@@ -120,6 +121,7 @@ const ConfigureIntegrationForm = ({
 
   const handleSubmit = async (values: FormValues) => {
     const newSecretsValues = excludeUnchangedSecrets(values.secrets!);
+    const processedValues = preprocessValues(values);
 
     const connectionPayload = isEditing
       ? {
@@ -136,7 +138,7 @@ const ConfigureIntegrationForm = ({
           access: AccessLevel.READ,
           disabled: false,
           description: values.description,
-          secrets: values.secrets,
+          secrets: processedValues.secrets,
           dataset: values.dataset,
         };
 
@@ -215,153 +217,18 @@ const ConfigureIntegrationForm = ({
   const generateFields = (secretsSchema: ConnectionTypeSecretSchemaResponse) =>
     Object.entries(secretsSchema.properties).map(([fieldKey, fieldInfo]) => {
       const fieldName = `secrets.${fieldKey}`;
-
-      const enumDefinition = fieldInfo.allOf?.[0]?.$ref
-        ? secretsSchema.definitions[
-            fieldInfo.allOf[0].$ref.replace("#/definitions/", "")
-          ]
-        : undefined;
-
-      const isSelect = !!enumDefinition?.enum || fieldInfo.options;
-      const isBoolean = fieldInfo.type === "boolean";
-      const isInteger = fieldInfo.type === "integer";
-
-      if (isSelect) {
-        const options =
-          enumDefinition?.enum?.map((value) => ({
-            label: value,
-            value,
-          })) ??
-          fieldInfo.options?.map((option) => ({
-            label: option,
-            value: option,
-          }));
-
-        return (
-          <ControlledSelect
-            name={fieldName}
-            key={fieldName}
-            id={fieldName}
-            options={options}
-            label={fieldInfo.title}
-            isRequired={secretsSchema.required.includes(fieldKey)}
-            tooltip={fieldInfo.description}
-            layout="stacked"
-            mode={fieldInfo.multiselect ? "multiple" : undefined}
-          />
-        );
-      }
-
-      if (isBoolean) {
-        return (
-          <ControlledSelect
-            name={fieldName}
-            key={fieldName}
-            id={fieldName}
-            label={fieldInfo.title}
-            isRequired={secretsSchema.required.includes(fieldKey)}
-            tooltip={fieldInfo.description}
-            layout="stacked"
-            options={[
-              { label: "False", value: "false" },
-              { label: "True", value: "true" },
-            ]}
-          />
-        );
-      }
-
-      if (isInteger) {
-        return (
-          <CustomNumberInput
-            name={fieldName}
-            key={fieldName}
-            id={fieldName}
-            label={fieldInfo.title}
-            isRequired={secretsSchema.required.includes(fieldKey)}
-            tooltip={fieldInfo.description}
-            variant="stacked"
-          />
-        );
-      }
-
       return (
-        <CustomTextInput
-          name={fieldName}
+        <FormFieldFromSchema
           key={fieldName}
-          id={fieldName}
-          type={fieldInfo.sensitive ? "password" : undefined}
-          label={fieldInfo.title}
+          name={fieldName}
+          fieldSchema={fieldInfo}
           isRequired={secretsSchema.required.includes(fieldKey)}
-          tooltip={fieldInfo.description}
-          variant="stacked"
+          secretsSchema={secretsSchema}
+          validate={getFieldValidation(fieldKey, fieldInfo)}
         />
       );
     });
 
-  const generateValidationSchema = (
-    secretsSchema: ConnectionTypeSecretSchemaResponse,
-  ) => {
-    const fieldsFromSchema = Object.entries(secretsSchema.properties).map(
-      ([fieldKey, fieldInfo]) => {
-        const baseValidation = secretsSchema.required.includes(fieldKey)
-          ? Yup.mixed().required().label(fieldInfo.title)
-          : Yup.mixed().nullable().label(fieldInfo.title);
-
-        // Handle different field types
-        if (fieldInfo.type === "boolean") {
-          return [
-            fieldKey,
-            baseValidation.transform((value) => {
-              if (value === "true") {
-                return true;
-              }
-              if (value === "false") {
-                return false;
-              }
-              return value;
-            }),
-          ];
-        }
-
-        if (fieldInfo.type === "integer") {
-          return [
-            fieldKey,
-            baseValidation
-              .transform((value) => {
-                const parsed = parseInt(value, 10);
-                return Number.isNaN(parsed) ? value : parsed;
-              })
-              .test("is-integer", "Must be a number", (value) => {
-                if (value === undefined || value === null || value === "") {
-                  return !secretsSchema.required.includes(fieldKey);
-                }
-                return Number.isInteger(Number(value));
-              }),
-          ];
-        }
-
-        if (fieldInfo.multiselect) {
-          return [
-            fieldKey,
-            baseValidation.test(
-              "is-array",
-              "Must be an array",
-              (value) =>
-                Array.isArray(value) || value === undefined || value === null,
-            ),
-          ];
-        }
-
-        return [fieldKey, baseValidation];
-      },
-    );
-
-    return Yup.object().shape({
-      name: Yup.string().required().label("Name"),
-      description: Yup.string().nullable().label("Description"),
-      secrets: Yup.object().shape(Object.fromEntries(fieldsFromSchema)),
-    });
-  };
   return (
     <>
       {description && (
@@ -381,7 +248,6 @@ const ConfigureIntegrationForm = ({
         initialValues={initialValues}
         enableReinitialize
         onSubmit={handleSubmit}
-        validationSchema={generateValidationSchema(secrets!)}
       >
         {({ dirty, isValid, resetForm }) => (
           <Form>

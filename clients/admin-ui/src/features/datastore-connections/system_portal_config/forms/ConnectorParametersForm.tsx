@@ -1,18 +1,17 @@
-import { CustomNumberInput, CustomTextInput, Option } from "common/form/inputs";
-import {
-  ConnectionTypeSecretSchemaProperty,
-  ConnectionTypeSecretSchemaResponse,
-} from "connection-type/types";
+import { CustomTextInput, Option } from "common/form/inputs";
+import { ConnectionTypeSecretSchemaResponse } from "connection-type/types";
 import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
 import DSRCustomizationModal from "datastore-connections/system_portal_config/forms/DSRCustomizationForm/DSRCustomizationModal";
 import { AntButton as Button, Spacer, VStack } from "fidesui";
-import { Field, FieldInputProps, Form, Formik, FormikProps } from "formik";
+import { Form, Formik, FormikProps } from "formik";
 import _ from "lodash";
 import React from "react";
 import { DatastoreConnectionStatus } from "src/features/datastore-connections/types";
 
 import { useFeatures } from "~/features/common/features";
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
+import { FormFieldFromSchema } from "~/features/common/form/FormFieldFromSchema";
+import { useFormFieldsFromSchema } from "~/features/common/form/useFormFieldsFromSchema";
 import DisableConnectionModal from "~/features/datastore-connections/DisableConnectionModal";
 import SelectDataset from "~/features/datastore-connections/system_portal_config/forms/SelectDataset";
 import {
@@ -89,136 +88,8 @@ export const ConnectorParametersForm = ({
     useLazyGetDatastoreConnectionStatusQuery();
   const { plus: isPlusEnabled } = useFeatures();
 
-  const validateField = (label: string, value: string, type?: string) => {
-    let error;
-    if (typeof value === "undefined" || value === "" || value === undefined) {
-      error = `${label} is required`;
-    }
-    if (type === FIDES_DATASET_REFERENCE) {
-      if (!value.includes(".")) {
-        error = "Dataset reference must be dot delimited";
-      } else {
-        const parts = value.split(".");
-        if (parts.length < 3) {
-          error = "Dataset reference must include at least three parts";
-        }
-      }
-    }
-    return error;
-  };
-
-  const getPlaceholder = (item: ConnectionTypeSecretSchemaProperty) => {
-    if (item.allOf?.[0].$ref === FIDES_DATASET_REFERENCE) {
-      return "Enter dataset.collection.field";
-    }
-    return undefined;
-  };
-
-  const isRequiredSecretValue = (key: string): boolean =>
-    secretsSchema?.required?.includes(key) ||
-    (secretsSchema?.properties?.[key] !== undefined &&
-      "default" in secretsSchema.properties[key]);
-
-  const getFormField = (
-    key: string,
-    item: ConnectionTypeSecretSchemaProperty,
-  ): JSX.Element => (
-    <Field
-      id={`secrets.${key}`}
-      name={`secrets.${key}`}
-      key={`secrets.${key}`}
-      validate={
-        isRequiredSecretValue(key) || item.type === "integer"
-          ? (value: string) =>
-              validateField(item.title, value, item.allOf?.[0].$ref)
-          : false
-      }
-    >
-      {({ field }: { field: FieldInputProps<string> }) => {
-        // Check if this field has an enum definition
-        const enumDefinition = item.allOf?.[0]?.$ref
-          ? secretsSchema?.definitions[
-              item.allOf[0].$ref.replace("#/definitions/", "")
-            ]
-          : undefined;
-
-        const isSelect = !!enumDefinition?.enum || item.options;
-        const isBoolean = item.type === "boolean";
-        const isInteger = item.type === "integer";
-
-        if (isSelect) {
-          const options =
-            enumDefinition?.enum?.map((value) => ({
-              label: value,
-              value,
-            })) ??
-            item.options?.map((option) => ({
-              label: option,
-              value: option,
-            }));
-
-          return (
-            <ControlledSelect
-              name={field.name}
-              key={field.name}
-              id={field.name}
-              label={item.title}
-              isRequired={isRequiredSecretValue(key)}
-              tooltip={item.description}
-              layout="inline"
-              options={options}
-              mode={item.multiselect ? "multiple" : undefined}
-            />
-          );
-        }
-
-        if (isBoolean) {
-          return (
-            <ControlledSelect
-              name={field.name}
-              key={field.name}
-              id={field.name}
-              label={item.title}
-              isRequired={isRequiredSecretValue(key)}
-              tooltip={item.description}
-              layout="inline"
-              options={[
-                { label: "False", value: "false" },
-                { label: "True", value: "true" },
-              ]}
-            />
-          );
-        }
-
-        if (isInteger) {
-          return (
-            <CustomNumberInput
-              {...field}
-              label={item.title}
-              tooltip={item.description}
-              isRequired={isRequiredSecretValue(key)}
-              placeholder={getPlaceholder(item)}
-              variant="inline"
-            />
-          );
-        }
-
-        return (
-          <CustomTextInput
-            {...field}
-            label={item.title}
-            tooltip={item.description}
-            isRequired={isRequiredSecretValue(key)}
-            type={item.sensitive ? "password" : "text"}
-            placeholder={getPlaceholder(item)}
-            autoComplete="off"
-            color="gray.700"
-            size="sm"
-          />
-        );
-      }}
-    </Field>
-  );
+  const { getFieldValidation, preprocessValues } =
+    useFormFieldsFromSchema(secretsSchema);
 
   const getInitialValues = () => {
     const initialValues = { ...defaultValues };
@@ -266,37 +137,7 @@ export const ConnectorParametersForm = ({
     return fillInDefaults(initialValues, secretsSchema);
   };
 
-  /**
-   * Preprocesses the input values.
-   * Currently, it is only used to convert FIDES_DATASET_REFERENCE fields.
-   * @param values ConnectionConfigFormValues - The original values.
-   * @returns ConnectionConfigFormValues - The processed values.
-   */
-  const preprocessValues = (
-    values: ConnectionConfigFormValues,
-  ): ConnectionConfigFormValues => {
-    const updatedValues = _.cloneDeep(values);
-    if (secretsSchema) {
-      Object.keys(secretsSchema.properties).forEach((key) => {
-        if (
-          secretsSchema.properties[key].allOf?.[0].$ref ===
-          FIDES_DATASET_REFERENCE
-        ) {
-          const referencePath = updatedValues.secrets[key].split(".");
-          updatedValues.secrets[key] = {
-            dataset: referencePath.shift(),
-            field: referencePath.join("."),
-            direction: "from",
-          };
-        }
-      });
-    }
-    return updatedValues;
-  };
-
   const handleSubmit = (values: any, actions: any) => {
-    // convert each property value of type FidesopsDatasetReference
-    // from a dot delimited string to a FidesopsDatasetReference
     const processedValues = preprocessValues(values);
     onSaveClick(processedValues, actions);
   };
@@ -380,7 +221,17 @@ export const ConnectorParametersForm = ({
                         // TODO: advanced settings
                         return null;
                       }
-                      return getFormField(key, item);
+                      return (
+                        <FormFieldFromSchema
+                          key={`secrets.${key}`}
+                          name={`secrets.${key}`}
+                          fieldSchema={item}
+                          isRequired={secretsSchema.required.includes(key)}
+                          secretsSchema={secretsSchema}
+                          validate={getFieldValidation(key, item)}
+                          layout="inline"
+                        />
+                      );
                     },
                   )
                 : null}
