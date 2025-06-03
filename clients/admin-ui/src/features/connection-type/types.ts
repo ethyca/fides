@@ -23,6 +23,7 @@ export type ConnectionTypeSecretSchemaProperty = {
   }[];
   items?: { $ref: string };
   sensitive?: boolean;
+  options?: string[];
 };
 
 export type ConnectionTypeSecretSchemaResponse = {

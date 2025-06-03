@@ -1,26 +1,11 @@
-import { Option } from "common/form/inputs";
+import { CustomNumberInput, CustomTextInput, Option } from "common/form/inputs";
 import {
   ConnectionTypeSecretSchemaProperty,
   ConnectionTypeSecretSchemaResponse,
 } from "connection-type/types";
 import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
 import DSRCustomizationModal from "datastore-connections/system_portal_config/forms/DSRCustomizationForm/DSRCustomizationModal";
-import {
-  AntButton as Button,
-  AntSelect as Select,
-  Flex,
-  FormControl,
-  FormErrorMessage,
-  FormLabel,
-  Input,
-  NumberDecrementStepper,
-  NumberIncrementStepper,
-  NumberInput,
-  NumberInputField,
-  NumberInputStepper,
-  Spacer,
-  VStack,
-} from "fidesui";
+import { AntButton as Button, Spacer, VStack } from "fidesui";
 import { Field, FieldInputProps, Form, Formik, FormikProps } from "formik";
 import _ from "lodash";
 import React from "react";
@@ -28,7 +13,6 @@ import { DatastoreConnectionStatus } from "src/features/datastore-connections/ty
 
 import { useFeatures } from "~/features/common/features";
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
-import { InfoTooltip } from "~/features/common/InfoTooltip";
 import DisableConnectionModal from "~/features/datastore-connections/DisableConnectionModal";
 import SelectDataset from "~/features/datastore-connections/system_portal_config/forms/SelectDataset";
 import {
@@ -105,8 +89,6 @@ export const ConnectorParametersForm = ({
     useLazyGetDatastoreConnectionStatusQuery();
   const { plus: isPlusEnabled } = useFeatures();
 
-  console.log(secretsSchema);
-
   const validateField = (label: string, value: string, type?: string) => {
     let error;
     if (typeof value === "undefined" || value === "" || value === undefined) {
@@ -124,18 +106,6 @@ export const ConnectorParametersForm = ({
     }
     return error;
   };
-
-  const getFormLabel = (id: string, value: string): JSX.Element => (
-    <FormLabel
-      color="gray.900"
-      fontSize="14px"
-      fontWeight="semibold"
-      htmlFor={id}
-      minWidth="150px"
-    >
-      {value}
-    </FormLabel>
-  );
 
   const getPlaceholder = (item: ConnectionTypeSecretSchemaProperty) => {
     if (item.allOf?.[0].$ref === FIDES_DATASET_REFERENCE) {
@@ -164,10 +134,7 @@ export const ConnectorParametersForm = ({
           : false
       }
     >
-      {({ field, form }: { field: FieldInputProps<string>; form: any }) => {
-        const error = form.errors.secrets && form.errors.secrets[key];
-        const touch = form.touched.secrets ? form.touched.secrets[key] : false;
-
+      {({ field }: { field: FieldInputProps<string> }) => {
         // Check if this field has an enum definition
         const enumDefinition = item.allOf?.[0]?.$ref
           ? secretsSchema?.definitions[
@@ -175,77 +142,78 @@ export const ConnectorParametersForm = ({
             ]
           : undefined;
 
-        const isSelect = !!enumDefinition?.enum;
+        const isSelect = !!enumDefinition?.enum || item.options;
         const isBoolean = item.type === "boolean";
         const isInteger = item.type === "integer";
 
+        if (isSelect) {
+          const options =
+            enumDefinition?.enum?.map((value) => ({
+              label: value,
+              value,
+            })) ??
+            item.options?.map((option) => ({
+              label: option,
+              value: option,
+            }));
+
+          return (
+            <ControlledSelect
+              name={field.name}
+              key={field.name}
+              id={field.name}
+              label={item.title}
+              isRequired={isRequiredSecretValue(key)}
+              tooltip={item.description}
+              layout="inline"
+              options={options}
+            />
+          );
+        }
+
+        if (isBoolean) {
+          return (
+            <ControlledSelect
+              name={field.name}
+              key={field.name}
+              id={field.name}
+              label={item.title}
+              isRequired={isRequiredSecretValue(key)}
+              tooltip={item.description}
+              layout="inline"
+              options={[
+                { label: "False", value: "false" },
+                { label: "True", value: "true" },
+              ]}
+            />
+          );
+        }
+
+        if (isInteger) {
+          return (
+            <CustomNumberInput
+              {...field}
+              label={item.title}
+              tooltip={item.description}
+              isRequired={isRequiredSecretValue(key)}
+              placeholder={getPlaceholder(item)}
+              variant="inline"
+            />
+          );
+        }
+
         return (
-          <FormControl
-            display="flex"
-            isRequired={isRequiredSecretValue(key) && !isBoolean}
-            isInvalid={error && touch}
-          >
-            {getFormLabel(key, item.title)}
-            <VStack align="flex-start" w="inherit">
-              {!isInteger && !isBoolean && !isSelect && (
-                <Input
-                  {...field}
-                  type={item.sensitive ? "password" : "text"}
-                  placeholder={getPlaceholder(item)}
-                  autoComplete="off"
-                  color="gray.700"
-                  size="sm"
-                />
-              )}
-              {isSelect && (
-                <ControlledSelect
-                  name={field.name}
-                  key={field.name}
-                  id={field.name}
-                  label={item.title}
-                  isRequired={isRequiredSecretValue(key)}
-                  tooltip={item.description}
-                  layout="stacked"
-                  options={enumDefinition.enum!.map((value) => ({
-                    label: value,
-                    value,
-                  }))}
-                />
-              )}
-              {isBoolean && (
-                <Select
-                  value={!!field.value}
-                  onChange={(value) => form.setFieldValue(field.name, value)}
-                  options={[
-                    { label: "False", value: false },
-                    { label: "True", value: true },
-                  ]}
-                />
-              )}
-              {isInteger && (
-                <NumberInput
-                  allowMouseWheel
-                  color="gray.700"
-                  onChange={(value) => {
-                    form.setFieldValue(field.name, value);
-                  }}
-                  value={field.value ?? 0}
-                  min={0}
-                  size="sm"
-                >
-                  <NumberInputField {...field} autoComplete="off" />
-                  <NumberInputStepper>
-                    <NumberIncrementStepper />
-                    <NumberDecrementStepper />
-                  </NumberInputStepper>
-                </NumberInput>
-              )}
-              <FormErrorMessage>{error}</FormErrorMessage>
-            </VStack>
-            <Flex alignItems="center" h={8} ml={2}>
-              <InfoTooltip label={item.description} />
-            </Flex>
-          </FormControl>
+          <CustomTextInput
+            {...field}
+            label={item.title}
+            tooltip={item.description}
+            isRequired={isRequiredSecretValue(key)}
+            type={item.sensitive ? "password" : "text"}
+            placeholder={getPlaceholder(item)}
+            autoComplete="off"
+            color="gray.700"
+            size="sm"
+          />
         );
       }}
     </Field>
@@ -366,13 +334,12 @@ export const ConnectorParametersForm = ({
       enableReinitialize
       initialValues={getInitialValues()}
       onSubmit={handleSubmit}
-      validateOnBlur={false}
-      validateOnChange={false}
+      validateOnBlur
     >
       {(props) => {
         const authorized = !props.dirty && connectionConfig?.authorized;
         return (
-          <Form noValidate>
+          <Form>
             <VStack align="stretch" gap="16px">
               <div className="flex flex-row">
                 {connectionConfig ? (
@@ -394,31 +361,15 @@ export const ConnectorParametersForm = ({
               </div>
               {/* Connection Identifier */}
               {!!connectionConfig?.key && (
-                <Field id="instance_key" name="instance_key">
-                  {({ field }: { field: FieldInputProps<string> }) => (
-                    <FormControl display="flex">
-                      {getFormLabel("instance_key", "Integration identifier")}
-                      <VStack align="flex-start" w="inherit">
-                        <Input
-                          {...field}
-                          autoComplete="off"
-                          color="gray.700"
-                          isDisabled={!!connectionConfig?.key}
-                          placeholder={`A unique identifier for your new ${
-                            connectionOption!.human_readable
-                          } integration`}
-                          size="sm"
-                        />
-                        <FormErrorMessage>
-                          {props.errors.instance_key as string}
-                        </FormErrorMessage>
-                      </VStack>
-                      <Flex alignItems="center" h={8} ml={2}>
-                        <InfoTooltip label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this integration." />
-                      </Flex>
-                    </FormControl>
-                  )}
-                </Field>
+                <CustomTextInput
+                  name="instance_key"
+                  key="instance_key"
+                  id="instance_key"
+                  label="Integration identifier"
+                  isRequired
+                  disabled={!!connectionConfig?.key}
+                  tooltip="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this integration."
+                />
               )}
               {/* Dynamic connector secret fields */}
               {secretsSchema
@@ -433,64 +384,20 @@ export const ConnectorParametersForm = ({
                   )
                 : null}
               {isPlusEnabled && (
-                <Field
-                  id="enabled_actions"
+                <ControlledSelect
                   name="enabled_actions"
-                  validate={(value: string[]) => {
-                    let error;
-                    if (!value || value.length === 0) {
-                      error = "At least one request type must be selected";
-                    }
-                    return error;
-                  }}
-                >
-                  {({
-                    field,
-                    form,
-                  }: {
-                    field: FieldInputProps<string>;
-                    form: any;
-                  }) => (
-                    <FormControl
-                      data-testid="enabled-actions"
-                      display="flex"
-                      isInvalid={
-                        form.touched.enabled_actions &&
-                        form.errors.enabled_actions
-                      }
-                      isRequired
-                    >
-                      {/* Known as enabled_actions throughout the front-end and back-end but it's displayed to the user as "Request types" */}
-                      {getFormLabel("enabled_actions", "Request types")}
-                      <VStack align="flex-start" w="inherit">
-                        <Select
-                          {...field}
-                          placeholder="Select..."
-                          mode="multiple"
-                          options={connectionOption.supported_actions.map(
-                            (action) => ({
-                              label: _.upperFirst(action),
-                              value: action,
-                            }),
-                          )}
-                          onChange={(value) => {
-                            form.setFieldValue(field.name, value);
-                          }}
-                          disabled={
-                            connectionOption.supported_actions.length === 1
-                          }
-                          className="w-full"
-                        />
-                        <FormErrorMessage>
-                          {props.errors.enabled_actions as string}
-                        </FormErrorMessage>
-                      </VStack>
-                      <Flex alignItems="center" h={8} ml={2}>
-                        <InfoTooltip label="The request types that are supported for this integration." />
-                      </Flex>
-                    </FormControl>
-                  )}
-                </Field>
+                  key="enabled_actions"
+                  id="enabled_actions"
+                  label="Request types"
+                  isRequired
+                  layout="inline"
+                  mode="multiple"
+                  tooltip="The request types that are supported for this integration"
+                  options={connectionOption.supported_actions.map((action) => ({
+                    label: _.upperFirst(action),
+                    value: action,
+                  }))}
+                />
               )}
               {SystemType.DATABASE === connectionOption.type &&
                 !isCreatingConnectionConfig && (
