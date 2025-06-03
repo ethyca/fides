@@ -13,6 +13,7 @@ import { enumToOptions } from "~/features/common/helpers";
 import FormInfoBox from "~/features/common/modals/FormInfoBox";
 import { MONITOR_CONFIG_ROUTE } from "~/features/common/nav/routes";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
+import { SharedConfigSelect } from "~/features/integrations/configure-monitor/SharedConfigSelect";
 import { useGetOnlyCountryLocationsQuery } from "~/features/locations/locations.slice";
 import { useGetSharedMonitorConfigsQuery } from "~/features/monitors/shared-monitor-config.slice";
 import { getSelectedRegionIds } from "~/features/privacy-experience/form/helpers";
@@ -138,15 +139,6 @@ const ConfigureWebsiteMonitorForm = ({
     ].includes(option.value as MonitorFrequency),
   );
 
-  const handleViewSharedMonitorConfigs = () => {
-    const a = document.createElement("a");
-    a.target = "_blank";
-    a.rel = "noopener noreferrer";
-    a.href = `${MONITOR_CONFIG_ROUTE}`;
-    a.click();
-    a.remove();
-  };
-
   return (
     <Flex vertical className="pt-4">
       <FormInfoBox>
@@ -204,21 +196,13 @@ const ConfigureWebsiteMonitorForm = ({
                 tooltip={REGIONS_TOOLTIP_COPY}
                 layout="stacked"
               />
-              <Flex className="w-full items-end gap-2">
-                <ControlledSelect
-                  name="shared_config_id"
-                  id="shared_config_id"
-                  options={sharedMonitorConfigOptions}
-                  label="Shared monitor config"
-                  tooltip="If a shared monitor config is selected, the monitor will use the shared config to classify resources"
-                  layout="stacked"
-                />
-                <Button
-                  onClick={handleViewSharedMonitorConfigs}
-                  icon={<Icons.Settings />}
-                  aria-label="View shared monitor configs"
-                />
-              </Flex>
+              <SharedConfigSelect
+                name="shared_config_id"
+                id="shared_config_id"
+                onManageClick={() => {
+                  console.log("hello");
+                }}
+              />
               <ControlledSelect
                 name="execution_frequency"
                 id="execution_frequency"

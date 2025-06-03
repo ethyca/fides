@@ -1,5 +1,5 @@
 import { format, parseISO } from "date-fns";
-import { AntButton as Button, AntFlex, Icons, VStack } from "fidesui";
+import { AntButton as Button, VStack } from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import * as Yup from "yup";
@@ -10,8 +10,7 @@ import {
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { enumToOptions } from "~/features/common/helpers";
-import { MONITOR_CONFIG_ROUTE } from "~/features/common/nav/routes";
-import { useGetSharedMonitorConfigsQuery } from "~/features/monitors/shared-monitor-config.slice";
+import { SharedConfigSelect } from "~/features/integrations/configure-monitor/SharedConfigSelect";
 import {
   ConnectionSystemTypeMap,
   ConnectionType,
@@ -56,18 +55,6 @@ const ConfigureMonitorForm = ({
     execution_frequency: Yup.string().nullable().label("Execution frequency"),
     execution_start_date: Yup.date().nullable().label("Execution start date"),
   });
-
-  const { data: sharedMonitorConfigs } = useGetSharedMonitorConfigsQuery({
-    page: 1,
-    size: 100,
-  });
-
-  const sharedMonitorConfigOptions = sharedMonitorConfigs?.items.map(
-    (config) => ({
-      label: config.name,
-      value: config.id,
-    }),
-  );
 
   const handleNextClicked = (values: MonitorConfigFormValues) => {
     const executionInfo =
@@ -151,21 +138,13 @@ const ConfigureMonitorForm = ({
               label="Automatic execution frequency"
               layout="stacked"
             />
-            <AntFlex className="w-full items-end gap-2">
-              <ControlledSelect
-                name="shared_config_id"
-                id="shared_config_id"
-                options={sharedMonitorConfigOptions}
-                label="Shared monitor config"
-                tooltip="If a shared monitor config is selected, the monitor will use the shared config to classify resources"
-                layout="stacked"
-              />
-              <Button
-                onClick={() => router.push(MONITOR_CONFIG_ROUTE)}
-                icon={<Icons.Settings />}
-                aria-label="View shared monitor configs"
-              />
-            </AntFlex>
+            <SharedConfigSelect
+              name="shared_config_id"
+              id="shared_config_id"
+              onManageClick={() => {
+                console.log("hello");
+              }}
+            />
             <CustomDateTimeInput
               name="execution_start_date"
               label="Automatic execution start time"
