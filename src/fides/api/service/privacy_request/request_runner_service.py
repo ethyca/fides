@@ -1,3 +1,5 @@
+import time
+
 from copy import deepcopy
 from datetime import datetime, timedelta
 from typing import Any, Iterator, Optional, Tuple
@@ -75,6 +77,7 @@ from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.api.util.collection_util import Row
 from fides.api.util.logger import Pii, _log_exception, _log_warning
+from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
 from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_TRANSFER_TO_PARENT,
     V1_URL_PREFIX,
@@ -176,6 +179,11 @@ def get_manual_webhook_erasure_inputs(
     return ManualWebhookResults(manual_data=manual_inputs, proceed=True)
 
 
+@log_context(
+    capture_args={
+        "privacy_request_id": LoggerContextKeys.privacy_request_id,
+    }
+)
 def upload_access_results(
     session: Session,
     policy: Policy,
@@ -187,6 +195,7 @@ def upload_access_results(
     attachments: Iterator[AttachmentData],
 ) -> Tuple[list[str], dict[str, list[dict[str, Optional[Any]]]]]:
     """Upload results for a single rule and return download URLs and modified results."""
+    start_time = time.time()
     download_urls: list[str] = []
     storage_destination = rule.get_storage_destination(session)
 
@@ -216,12 +225,31 @@ def upload_access_results(
         )
         if download_url:
             download_urls.append(download_url)
+            logger.bind(
+                time_taken=time.time() - start_time,
+            ).info("Access Package Upload successful for privacy request.")
+            privacy_request.add_success_execution_log(
+                    session,
+                    connection_key=None,
+                    dataset_name="Access Package Upload",
+                    collection_name=None,
+                    message="Access Package Upload successful for privacy request.",
+                    action_type=ActionType.access,
+                )
     except common_exceptions.StorageUploadError as exc:
         logger.error(
             "Error uploading subject access data for rule {} on policy {}: {}",
             rule.key,
             policy.key,
             Pii(str(exc)),
+        )
+        privacy_request.add_error_execution_log(
+            session,
+            connection_key=None,
+            dataset_name="Access Package Upload",
+            collection_name=None,
+            message="Access Package Upload failed for privacy request.",
+            action_type=ActionType.access,
         )
         privacy_request.status = PrivacyRequestStatus.error
 
@@ -257,6 +285,11 @@ def save_access_results(
     privacy_request.save(session)
 
 
+@log_context(
+    capture_args={
+        "privacy_request_id": LoggerContextKeys.privacy_request_id,
+    }
+)
 def upload_and_save_access_results(  # pylint: disable=R0912
     session: Session,
     policy: Policy,
@@ -278,6 +311,7 @@ def upload_and_save_access_results(  # pylint: disable=R0912
     ]
     attachments = get_attachments_content(loaded_attachments)
     logger.info(f"Processing attachments for privacy request {privacy_request.id}")
+
     if not access_result:
         logger.info("No results returned for access request")
 
@@ -641,19 +675,22 @@ def run_privacy_request(
                     # If dev mode, log traceback
                     _log_exception(e, CONFIG.dev_mode)
                     return
-            privacy_request.finished_processing_at = datetime.utcnow()
-            AuditLog.create(
-                db=session,
-                data={
-                    "user_id": "system",
-                    "privacy_request_id": privacy_request.id,
-                    "action": AuditLogAction.finished,
-                    "message": "",
-                },
-            )
-            privacy_request.status = PrivacyRequestStatus.complete
-            logger.info("Privacy request run completed.")
-            privacy_request.save(db=session)
+
+            # Only mark as complete if not in error state
+            if privacy_request.status != PrivacyRequestStatus.error:
+                privacy_request.finished_processing_at = datetime.utcnow()
+                AuditLog.create(
+                    db=session,
+                    data={
+                        "user_id": "system",
+                        "privacy_request_id": privacy_request.id,
+                        "action": AuditLogAction.finished,
+                        "message": "",
+                    },
+                )
+                privacy_request.status = PrivacyRequestStatus.complete
+                logger.info("Privacy request run completed.")
+                privacy_request.save(db=session)
 
 
 def initiate_privacy_request_completion_email(

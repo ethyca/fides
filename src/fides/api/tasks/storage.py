@@ -9,6 +9,7 @@ from botocore.exceptions import ClientError, ParamValidationError
 from fideslang.validation import AnyHttpUrlString
 from loguru import logger
 
+from fides.api.common_exceptions import StorageUploadError
 from fides.api.schemas.storage.storage import ResponseFormat, StorageSecrets
 from fides.api.service.privacy_request.dsr_package.dsr_report_builder import (
     DsrReportBuilder,
@@ -147,8 +148,10 @@ def upload_to_s3(  # pylint: disable=R0913
 
         return presigned_url
     except ClientError as e:
-        logger.error("Encountered error while generating link for s3 object: {}", e)
-        raise e
+        logger.error(
+            "Encountered error while uploading and generating link for s3 object: {}", e
+        )
+        raise StorageUploadError(f"Error uploading to S3: {e}")
 
 
 def upload_to_gcs(
@@ -193,8 +196,11 @@ def upload_to_gcs(
         )
         return presigned_url
     except Exception as e:
-        logger.error("Error generating presigned URL: {}", str(e))
-        raise
+        logger.error(
+            "Encountered error while uploading and generating link for Google Cloud Storage object: {}",
+            e,
+        )
+        raise StorageUploadError(f"Error uploading to Google Cloud Storage: {e}")
 
 
 def upload_to_local(
