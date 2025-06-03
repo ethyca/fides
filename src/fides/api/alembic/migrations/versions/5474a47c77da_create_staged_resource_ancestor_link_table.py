@@ -1,7 +1,7 @@
-"""create staged resource parent link table
+"""create staged resource ancestor link table
 
 Revision ID: 5474a47c77da
-Revises: d0cbfec0b2dd
+Revises: 2263583b0e44
 Create Date: 2025-05-27 19:02:43.802783
 
 """
@@ -12,7 +12,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "5474a47c77da"
-down_revision = "d0cbfec0b2dd"
+down_revision = "2263583b0e44"
 branch_labels = None
 depends_on = None
 
