@@ -64,7 +64,8 @@ const ConfigureIntegrationForm = ({
     usePatchSystemConnectionConfigsMutation();
 
   const hasSecrets =
-    connectionOption.identifier === ConnectionType.MANUAL_WEBHOOK;
+    connectionOption.identifier !== ConnectionType.MANUAL_WEBHOOK;
+
   const { data: secrets, isLoading: secretsSchemaIsLoading } =
     useGetConnectionTypeSecretSchemaQuery(connectionOption.identifier, {
       skip: !hasSecrets,
@@ -172,6 +173,7 @@ const ConfigureIntegrationForm = ({
           isEditing ? "updated" : "created"
         } successfully`,
       });
+      onCancel();
       return;
     }
 
