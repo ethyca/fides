@@ -275,9 +275,7 @@ def upload_access_results(  # pylint: disable=R0912
                 policy_key=policy.key,
                 rule_key=rule.key,
                 error=Pii(str(exc)),
-            ).error(
-                "Error uploading subject access data for rule."
-            )
+            ).error("Error uploading subject access data for rule.")
             privacy_request.add_error_execution_log(
                 session,
                 connection_key=None,
