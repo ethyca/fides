@@ -68,6 +68,7 @@ from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.api.util.collection_util import Row
 from fides.api.util.logger import Pii, _log_exception, _log_warning
+from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
 from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_TRANSFER_TO_PARENT,
     V1_URL_PREFIX,
@@ -201,6 +202,11 @@ def run_webhooks_and_report_status(
     return True
 
 
+@log_context(
+    capture_args={
+        "privacy_request_id": LoggerContextKeys.privacy_request_id,
+    }
+)
 def upload_access_results(  # pylint: disable=R0912
     session: Session,
     policy: Policy,
@@ -258,29 +264,26 @@ def upload_access_results(  # pylint: disable=R0912
                     connection_key=None,
                     dataset_name="Access Package Upload",
                     collection_name=None,
-                    message=f"Access Package Upload successful for privacy request: {privacy_request.id}",
+                    message="Access Package Upload successful for privacy request.",
                     action_type=ActionType.access,
                 )
             logger.bind(
-                privacy_request_id=privacy_request.id,
                 time_taken=time.time() - start_time,
-            ).info(
-                f"Access Package Upload successful for privacy request: {privacy_request.id}. Time taken: {time.time() - start_time} seconds"
-            )
+            ).info("Access Package Upload successful for privacy request.")
         except common_exceptions.StorageUploadError as exc:
             logger.bind(
-                rule_key=rule.key,
                 policy_key=policy.key,
+                rule_key=rule.key,
                 error=Pii(str(exc)),
             ).error(
-                "Error uploading subject access data for rule {rule_key} on policy {policy_key}: {error}"
+                "Error uploading subject access data for rule."
             )
             privacy_request.add_error_execution_log(
                 session,
                 connection_key=None,
                 dataset_name="Access Package Upload",
                 collection_name=None,
-                message=f"Access Package Upload failed for privacy request: {privacy_request.id}",
+                message="Access Package Upload failed for privacy request.",
                 action_type=ActionType.access,
             )
             privacy_request.status = PrivacyRequestStatus.error
