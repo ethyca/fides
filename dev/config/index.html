@@ -1531,13 +1531,7 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">416</span>
 <span class="normal">417</span>
 <span class="normal">418</span>
-<span class="normal">419</span>
-<span class="normal">420</span>
-<span class="normal">421</span>
-<span class="normal">422</span>
-<span class="normal">423</span>
-<span class="normal">424</span>
-<span class="normal">425</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">419</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -1578,7 +1572,7 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># A fully anonymized unique identifier that is automatically generated</span>
 <span class="c1"># by the application. Used for anonymous analytics when opted-in.</span>
-<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;b9c7cece9cfb96b3670ad4b5bfc09409&quot;</span><span class="w"> </span><span class="c1"># string</span>
+<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;8bf495d6126d07348a1ecbae77f13fe6&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># When set to True, disables functionality that requires making calls</span>
 <span class="c1"># to a Fides webserver.</span>
@@ -1699,12 +1693,6 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1">#-- EXECUTION --#</span>
 <span class="c1">#--------------------------------------------------------------------#</span>
 <span class="k">[execution]</span><span class="w"> </span><span class="c1"># Configuration settings for DSR execution.</span>
-
-<span class="c1"># If set to True, only use UPDATE requests to mask data. If False,</span>
-<span class="c1"># Fides will use any defined DELETE or GDPR DELETE endpoints to remove</span>
-<span class="c1"># PII, which may extend beyond the specific data categories that</span>
-<span class="c1"># configured in your execution policy.</span>
-<span class="n">masking_strict</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="c1"># boolean</span>
 
 <span class="c1"># The amount of time to wait for actions which delay privacy requests</span>
 <span class="c1"># (e.g., pre- and post-processing webhooks).</span>

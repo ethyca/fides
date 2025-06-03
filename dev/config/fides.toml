@@ -39,7 +39,7 @@ task_always_eager = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "b9c7cece9cfb96b3670ad4b5bfc09409" # string
+analytics_id = "8bf495d6126d07348a1ecbae77f13fe6" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -160,12 +160,6 @@ params = {} # object
 #-- EXECUTION --#
 #--------------------------------------------------------------------#
 [execution] # Configuration settings for DSR execution.
-
-# If set to True, only use UPDATE requests to mask data. If False,
-# Fides will use any defined DELETE or GDPR DELETE endpoints to remove
-# PII, which may extend beyond the specific data categories that
-# configured in your execution policy.
-masking_strict = true # boolean
 
 # The amount of time to wait for actions which delay privacy requests
 # (e.g., pre- and post-processing webhooks).
