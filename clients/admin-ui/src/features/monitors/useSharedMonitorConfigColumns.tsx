@@ -1,18 +1,17 @@
 import { AntButton, AntFlex, AntTableProps, Icons, useToast } from "fidesui";
-import { useRouter } from "next/router";
 
 import { getErrorMessage } from "~/features/common/helpers";
-import { MONITOR_CONFIG_ROUTE } from "~/features/common/nav/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useDeleteSharedMonitorConfigMutation } from "~/features/monitors/shared-monitor-config.slice";
 import { SharedMonitorConfig } from "~/types/api/models/SharedMonitorConfig";
 import { isErrorResult } from "~/types/errors";
 
-const useSharedMonitorConfigColumns = () => {
+const useSharedMonitorConfigColumns = ({
+  onEditClick,
+}: {
+  onEditClick: (row: SharedMonitorConfig) => void;
+}) => {
   const [deleteMonitorConfig] = useDeleteSharedMonitorConfigMutation();
-
-  const router = useRouter();
-
   const toast = useToast();
 
   const handleDeleteMonitorConfig = async (id: string) => {
@@ -50,7 +49,7 @@ const useSharedMonitorConfigColumns = () => {
           <AntFlex className="gap-2">
             <AntButton
               size="small"
-              onClick={() => router.push(`${MONITOR_CONFIG_ROUTE}/${data.id}`)}
+              onClick={() => onEditClick(data)}
               icon={<Icons.Edit />}
             />
             <AntButton

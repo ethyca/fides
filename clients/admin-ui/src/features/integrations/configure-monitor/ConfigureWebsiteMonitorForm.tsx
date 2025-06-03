@@ -1,5 +1,5 @@
 import { format, parseISO } from "date-fns";
-import { AntButton as Button, AntFlex as Flex, Icons, Text } from "fidesui";
+import { AntButton as Button, AntFlex as Flex, Text } from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import * as Yup from "yup";
@@ -11,7 +11,6 @@ import {
 } from "~/features/common/form/inputs";
 import { enumToOptions } from "~/features/common/helpers";
 import FormInfoBox from "~/features/common/modals/FormInfoBox";
-import { MONITOR_CONFIG_ROUTE } from "~/features/common/nav/routes";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import { SharedConfigSelect } from "~/features/integrations/configure-monitor/SharedConfigSelect";
 import { useGetOnlyCountryLocationsQuery } from "~/features/locations/locations.slice";
@@ -72,18 +71,6 @@ const ConfigureWebsiteMonitorForm = ({
     ...getSelectedRegionIds(locationRegulationResponse?.locations ?? []),
     ...getSelectedRegionIds(locationRegulationResponse?.location_groups ?? []),
   ];
-
-  const { data: sharedMonitorConfigs } = useGetSharedMonitorConfigsQuery({
-    page: 1,
-    size: 100,
-  });
-
-  const sharedMonitorConfigOptions = sharedMonitorConfigs?.items.map(
-    (config) => ({
-      label: config.name,
-      value: config.id,
-    }),
-  );
 
   const regionOptions = allSelectedRegions.map((region) => ({
     value: region,

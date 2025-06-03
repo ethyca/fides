@@ -34,7 +34,7 @@ const SharedMonitorConfigTable = ({
     size: pageSize,
   });
 
-  const columns = useSharedMonitorConfigColumns();
+  const columns = useSharedMonitorConfigColumns({ onEditClick: onRowClick });
 
   const showSpinner = isLoading || isFetching;
 
