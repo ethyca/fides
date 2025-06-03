@@ -216,7 +216,6 @@ const ConfigureIntegrationForm = ({
     Object.entries(secretsSchema.properties).map(([fieldKey, fieldInfo]) => {
       const fieldName = `secrets.${fieldKey}`;
 
-      // Check if this field has an enum definition
       const enumDefinition = fieldInfo.allOf?.[0]?.$ref
         ? secretsSchema.definitions[
             fieldInfo.allOf[0].$ref.replace("#/definitions/", "")
