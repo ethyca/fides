@@ -1,5 +1,4 @@
 import time
-
 from copy import deepcopy
 from datetime import datetime, timedelta
 from typing import Any, Iterator, Optional, Tuple
@@ -229,13 +228,13 @@ def upload_access_results(
                 time_taken=time.time() - start_time,
             ).info("Access Package Upload successful for privacy request.")
             privacy_request.add_success_execution_log(
-                    session,
-                    connection_key=None,
-                    dataset_name="Access Package Upload",
-                    collection_name=None,
-                    message="Access Package Upload successful for privacy request.",
-                    action_type=ActionType.access,
-                )
+                session,
+                connection_key=None,
+                dataset_name="Access Package Upload",
+                collection_name=None,
+                message="Access Package Upload successful for privacy request.",
+                action_type=ActionType.access,
+            )
     except common_exceptions.StorageUploadError as exc:
         logger.error(
             "Error uploading subject access data for rule {} on policy {}: {}",
