@@ -89,6 +89,8 @@ export const ConnectorParametersForm = ({
     useLazyGetDatastoreConnectionStatusQuery();
   const { plus: isPlusEnabled } = useFeatures();
 
+  console.log(secretsSchema);
+
   const validateField = (label: string, value: string, type?: string) => {
     let error;
     if (typeof value === "undefined" || value === "" || value === undefined) {

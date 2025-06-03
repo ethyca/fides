@@ -30,7 +30,7 @@ class TestSchema(ConnectionConfigSecretsSchema):
         title="Regions",
         description="Select one or more regions to sync data from",
         options=["us-east", "us-west", "eu-west", "ap-southeast"],
-        json_schema_extra={"multiselect": True},
+        multiselect=True,
     )
 
     # Required single select field
@@ -45,14 +45,14 @@ class TestSchema(ConnectionConfigSecretsSchema):
         title="Sync Frequency",
         description="How often to sync each data type",
         options=["hourly", "daily", "weekly", "monthly"],
-        json_schema_extra={"multiselect": True},
+        multiselect=True,
     )
 
     # Sensitive field
     api_key: str = Field(
         title="API Key",
         description="API key for authentication",
-        json_schema_extra={"sensitive": True},
+        sensitive=True,
     )
 
     # External reference fields
