@@ -63,8 +63,13 @@ const ConfigureIntegrationForm = ({
   const [patchSystemConnectionsTrigger, { isLoading: systemPatchIsLoading }] =
     usePatchSystemConnectionConfigsMutation();
 
+  const hasSecrets =
+    connectionOption.identifier !== ConnectionType.MANUAL_WEBHOOK;
+
   const { data: secrets, isLoading: secretsSchemaIsLoading } =
-    useGetConnectionTypeSecretSchemaQuery(connectionOption.identifier);
+    useGetConnectionTypeSecretSchemaQuery(connectionOption.identifier, {
+      skip: !hasSecrets,
+    });
 
   const { data: allSystems } = useGetAllSystemsQuery();
 
@@ -93,10 +98,12 @@ const ConfigureIntegrationForm = ({
   const initialValues: FormValues = {
     name: connection?.name ?? "",
     description: connection?.description ?? "",
-    secrets: mapValues(
-      secrets?.properties,
-      (s, key) => connection?.secrets?.[key] ?? "",
-    ),
+    ...(hasSecrets && {
+      secrets: mapValues(
+        secrets?.properties,
+        (s, key) => connection?.secrets?.[key] ?? "",
+      ),
+    }),
     dataset: initialDatasets,
   };
 
@@ -116,7 +123,9 @@ const ConfigureIntegrationForm = ({
     );
 
   const handleSubmit = async (values: FormValues) => {
-    const newSecretsValues = excludeUnchangedSecrets(values.secrets!);
+    const newSecretsValues = hasSecrets
+      ? excludeUnchangedSecrets(values.secrets!)
+      : {};
 
     const connectionPayload = isEditing
       ? {
@@ -157,13 +166,14 @@ const ConfigureIntegrationForm = ({
       toast({ status: "error", description: patchErrorMsg });
       return;
     }
-    if (!values.secrets) {
+    if (!hasSecrets || !values.secrets) {
       toast({
         status: "success",
         description: `Integration ${
           isEditing ? "updated" : "created"
         } successfully`,
       });
+      onCancel();
       return;
     }
 
@@ -227,8 +237,17 @@ const ConfigureIntegrationForm = ({
     });
 
   const generateValidationSchema = (
-    secretsSchema: ConnectionTypeSecretSchemaResponse,
+    secretsSchema?: ConnectionTypeSecretSchemaResponse,
   ) => {
+    const baseSchema = {
+      name: Yup.string().required().label("Name"),
+      description: Yup.string().nullable().label("Description"),
+    };
+
+    if (!hasSecrets || !secretsSchema) {
+      return Yup.object().shape(baseSchema);
+    }
+
     const fieldsFromSchema = Object.entries(secretsSchema.properties).map(
       ([fieldKey, fieldInfo]) => [
         fieldKey,
@@ -239,8 +258,7 @@ const ConfigureIntegrationForm = ({
     );
 
     return Yup.object().shape({
-      name: Yup.string().required().label("Name"),
-      description: Yup.string().nullable().label("Description"),
+      ...baseSchema,
       secrets: Yup.object().shape(Object.fromEntries(fieldsFromSchema)),
     });
   };
@@ -263,7 +281,7 @@ const ConfigureIntegrationForm = ({
         initialValues={initialValues}
         enableReinitialize
         onSubmit={handleSubmit}
-        validationSchema={generateValidationSchema(secrets!)}
+        validationSchema={generateValidationSchema(secrets)}
       >
         {({ dirty, isValid, resetForm }) => (
           <Form>
@@ -281,7 +299,7 @@ const ConfigureIntegrationForm = ({
                 label="Description"
                 variant="stacked"
               />
-              {generateFields(secrets!)}
+              {hasSecrets && secrets && generateFields(secrets)}
               {!isEditing && (
                 <ControlledSelect
                   id="system_fides_key"

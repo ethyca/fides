@@ -11,6 +11,7 @@ import {
 } from "~/features/common/copy/components";
 import ShowMoreContent from "~/features/common/copy/ShowMoreContent";
 import { ConnectionCategory } from "~/features/integrations/ConnectionCategory";
+import { IntegrationFeatureEnum } from "~/features/integrations/IntegrationFeatureEnum";
 import { AccessLevel, ConnectionType } from "~/types/api";
 
 const PROJECT_CREATION_GUIDE_URL =
@@ -173,7 +174,7 @@ export const BigQueryInstructions = () => (
         by your Fides service account to run queries:
       </InfoText>
       <InfoPermissionsTable data={FIDES_PERMISSIONS} />
-      <InfoHeading text="Step 4: Assign permissions to any project you’d like Fides to monitor" />
+      <InfoHeading text="Step 4: Assign permissions to any project you'd like Fides to monitor" />
       <InfoText>
         Grant the following permissions to the Fides service account in every
         project where you would like Fides detection and discovery monitoring.
@@ -214,6 +215,7 @@ const BIGQUERY_TYPE_INFO = {
   overview: <BigQueryOverview />,
   instructions: <BigQueryInstructions />,
   tags: BIGQUERY_TAGS,
+  enabledFeatures: [IntegrationFeatureEnum.DATA_DISCOVERY],
 };
 
 export default BIGQUERY_TYPE_INFO;
