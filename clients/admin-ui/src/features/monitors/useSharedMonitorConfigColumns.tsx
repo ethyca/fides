@@ -57,6 +57,7 @@ const useSharedMonitorConfigColumns = ({
               size="small"
               onClick={() => onEditClick(data)}
               icon={<Icons.Edit />}
+              data-testid="edit-btn"
             />
             <Button
               size="small"

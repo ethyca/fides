@@ -497,7 +497,9 @@ describe("Integration management for data detection & discovery", () => {
 
         it("can edit an existing shared monitor config", () => {
           cy.getByTestId("configurations-btn").click();
-          cy.getByTestId("config-shared-config-1").click();
+          cy.getByTestId("config-shared-config-1").within(() => {
+            cy.getByTestId("edit-btn").click();
+          });
           cy.getByTestId("upload-csv-btn").should("not.exist");
           cy.getByTestId("input-name").should("have.value", "Shared Config 1");
           cy.getByTestId("input-rules.0.regex").should(
