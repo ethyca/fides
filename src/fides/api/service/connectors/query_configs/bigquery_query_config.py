@@ -15,6 +15,7 @@ from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.namespace_meta.bigquery_namespace_meta import (
     BigQueryNamespaceMeta,
 )
+from fides.api.schemas.partitioning import BigQueryTimeBasedPartitioning
 from fides.api.service.connectors.query_configs.query_config import (
     QueryStringWithoutTuplesOverrideQueryConfig,
 )
@@ -37,7 +38,7 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
 
     @property
     def partitioning(self) -> Optional[Dict]:
-        # Overriden from base implementation to allow for _only_ BQ partitioning, for now
+        # Overridden from base implementation to allow for _only_ BQ partitioning, for now
         return self.node.collection.partitioning
 
     def get_partition_clauses(
@@ -65,7 +66,16 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         if where_clauses := partition_spec.get("where_clauses"):
             return where_clauses
 
-        # TODO: implement more advanced partitioning support!
+        if all(
+            field in partition_spec for field in ["field", "start", "end", "interval"]
+        ):
+            bigquery_time_based_partitioning = BigQueryTimeBasedPartitioning(
+                field=partition_spec["field"],
+                start=partition_spec["start"],
+                end=partition_spec["end"],
+                interval=partition_spec["interval"],
+            )
+            return bigquery_time_based_partitioning.generate_where_clauses()
 
         raise ValueError(
             "`where_clauses` must be specified in partitioning specification!"
