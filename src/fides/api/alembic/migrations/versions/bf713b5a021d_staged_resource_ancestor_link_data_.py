@@ -6,6 +6,11 @@ Create Date: 2025-06-03 09:44:58.769535
 
 """
 
+import csv
+import uuid
+from io import StringIO
+from pathlib import Path
+
 import sqlalchemy as sa
 from alembic import op
 from loguru import logger
@@ -70,29 +75,100 @@ def upgrade():
 
     logger.info(f"Found {len(ancestor_links)} ancestor links to insert")
 
-    # Bulk insert all ancestor links in batches of 10000
-    if ancestor_links:
-        insert_query = """
-        INSERT INTO stagedresourceancestor (id, ancestor_urn, descendant_urn)
-        VALUES (
-            encode(digest(:ancestor_urn || :descendant_urn, 'sha256'), 'hex'),
-            :ancestor_urn,
-            :descendant_urn
-        )
-        ON CONFLICT DO NOTHING
-        """
+    logger.info(f"Writing {len(ancestor_links)} ancestor links to memory buffer")
 
-        batch_size = 100000
-        for i in range(0, len(ancestor_links), batch_size):
-            batch = ancestor_links[i : i + batch_size]
-            conn.execute(sa.text(insert_query), batch)
-            logger.info(
-                f"Inserted batch of {len(batch)} ancestor links ({i + len(batch)}/{len(ancestor_links)} total)"
-            )
+    # Create in-memory string buffer
+    csv_buffer = StringIO()
+    writer = csv.DictWriter(
+        csv_buffer, fieldnames=["id", "ancestor_urn", "descendant_urn"]
+    )
+    writer.writeheader()
+    for link in ancestor_links:
+        # Generate a UUID for each row
+        link["id"] = f"srl_{uuid.uuid4()}"
+        writer.writerow(link)
+
+    # Reset buffer position to start
+    csv_buffer.seek(0)
 
     logger.info(
-        f"Completed populating {len(ancestor_links)} staged resource ancestor links"
+        "Copying ancestor links data from memory buffer into stagedresourceancestor table..."
     )
+    copy_query = """
+        COPY stagedresourceancestor (id, ancestor_urn, descendant_urn)
+        FROM STDIN
+        WITH (FORMAT CSV, HEADER TRUE)
+    """
+    conn.connection.cursor().copy_expert(copy_query, csv_buffer)
+    logger.info(
+        "Completed copying ancestor links data from memory buffer into stagedresourceancestor table"
+    )
+
+    if len(ancestor_links) < 1000000:
+
+        logger.info("Creating primary key index on stagedresourceancestor table...")
+
+        op.create_index(
+            "ix_staged_resource_ancestor_pkey",
+            "stagedresourceancestor",
+            ["id"],
+            unique=True,
+        )
+
+        logger.info("Completed creating primary key index")
+
+        logger.info("Creating foreign key constraints stagedresourceancestor table...")
+
+        op.create_foreign_key(
+            "fk_staged_resource_ancestor_ancestor",
+            "stagedresourceancestor",
+            "stagedresource",
+            ["ancestor_urn"],
+            ["urn"],
+            ondelete="CASCADE",
+        )
+
+        op.create_foreign_key(
+            "fk_staged_resource_ancestor_descendant",
+            "stagedresourceancestor",
+            "stagedresource",
+            ["descendant_urn"],
+            ["urn"],
+            ondelete="CASCADE",
+        )
+
+        logger.info("Completed creating foreign key constraints")
+
+        logger.info("Creating unique constraint on stagedresourceancestor table...")
+
+        op.create_unique_constraint(
+            "uq_staged_resource_ancestor",
+            "stagedresourceancestor",
+            ["ancestor_urn", "descendant_urn"],
+        )
+
+        logger.info("Completed creating unique constraint")
+
+        logger.info("Creating indexes on stagedresourceancestor table...")
+
+        op.create_index(
+            "ix_staged_resource_ancestor_ancestor",
+            "stagedresourceancestor",
+            ["ancestor_urn"],
+            unique=False,
+        )
+        op.create_index(
+            "ix_staged_resource_ancestor_descendant",
+            "stagedresourceancestor",
+            ["descendant_urn"],
+            unique=False,
+        )
+
+        logger.info("Completed creating indexes on stagedresourceancestor table")
+    else:
+        logger.info(
+            "Skipping creation of primary key index, foreign key constraints, unique constraint, and indexes on stagedresourceancestor table because there are more than 1,000,000 ancestor links. Please run `post_upgrade_index_creation.py` to create these indexes and constraints."
+        )
 
 
 def downgrade():
@@ -120,4 +196,19 @@ def downgrade():
 
     logger.info(
         f"Downgraded staged resource ancestor link data migration, completed populating child_diff_statuses for {updated_rows} rows"
+    )
+
+    # drop the StagedResourceAncestor table and its indexes
+
+    op.drop_index(
+        "ix_staged_resource_ancestor_descendant",
+        table_name="stagedresourceancestor",
+    )
+    op.drop_index(
+        "ix_staged_resource_ancestor_ancestor", table_name="stagedresourceancestor"
+    )
+
+    op.drop_index(
+        "ix_staged_resource_ancestor_pkey",
+        table_name="stagedresourceancestor",
     )

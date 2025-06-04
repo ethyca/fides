@@ -44,29 +44,13 @@ def upgrade():
         ),
         sa.Column("ancestor_urn", sa.String(), nullable=False),
         sa.Column("descendant_urn", sa.String(), nullable=False),
-        sa.ForeignKeyConstraint(
-            ["ancestor_urn"], ["stagedresource.urn"], ondelete="CASCADE"
-        ),
-        sa.ForeignKeyConstraint(
-            ["descendant_urn"], ["stagedresource.urn"], ondelete="CASCADE"
-        ),
-        sa.PrimaryKeyConstraint("id", "ancestor_urn", "descendant_urn"),
-        sa.UniqueConstraint(
-            "ancestor_urn", "descendant_urn", name="uq_staged_resource_parent_link"
-        ),
+        # primary key, foreign key and unique constraints are deferred
+        # until after the data migration that populates the table,
+        # to avoid slowing down the data migration
     )
-    op.create_index(
-        "ix_staged_resource_ancestor_ancestor",
-        "stagedresourceancestor",
-        ["ancestor_urn"],
-        unique=False,
-    )
-    op.create_index(
-        "ix_staged_resource_ancestor_descendant",
-        "stagedresourceancestor",
-        ["descendant_urn"],
-        unique=False,
-    )
+
+    # defer creating `stagedresourceancestor` indexes until after the data migration
+    # that populates the table, to avoid slowing down the data migration
 
     # add an index for StagedResource.diff_status to improve queries against the diff_status field
     op.create_index(
@@ -83,14 +67,5 @@ def downgrade():
     # drop the StagedResource.diff_status index created in the migration
     op.drop_index(op.f("ix_stagedresource_diff_status"), table_name="stagedresource")
 
-    # drop the StagedResourceAncestor table and its indexes
-
-    op.drop_index(
-        "ix_staged_resource_ancestor_descendant",
-        table_name="stagedresourceancestor",
-    )
-    op.drop_index(
-        "ix_staged_resource_ancestor_ancestor", table_name="stagedresourceancestor"
-    )
     op.drop_table("stagedresourceancestor")
     # ### end Alembic commands ###
