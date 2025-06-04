@@ -112,7 +112,6 @@ export const FormFieldFromSchema = ({
             placeholder={getPlaceholder()}
             autoComplete="off"
             color="gray.700"
-            size="sm"
             variant={layout}
           />
         );
