@@ -33,7 +33,6 @@ export enum ConnectionType {
   SCYLLA = "scylla",
   SNOWFLAKE = "snowflake",
   SOVRN = "sovrn",
-  TEST_CONNECTOR = "test_connector",
   TIMESCALE = "timescale",
   WEBSITE = "website",
 }
