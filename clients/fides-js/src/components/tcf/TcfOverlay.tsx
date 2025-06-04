@@ -505,16 +505,16 @@ export const TcfOverlay = ({
   const [activeTabIndex, setActiveTabIndex] = useState(0);
 
   const dispatchOpenBannerEvent = useCallback(() => {
-    dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
+    dispatchFidesEvent("FidesUIShown", cookie, {
       servingComponent: ServingComponent.TCF_BANNER,
     });
-  }, [cookie, options.debug]);
+  }, [cookie]);
 
   const dispatchOpenOverlayEvent = useCallback(() => {
-    dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
+    dispatchFidesEvent("FidesUIShown", cookie, {
       servingComponent: ServingComponent.TCF_OVERLAY,
     });
-  }, [cookie, options.debug]);
+  }, [cookie]);
 
   const handleDismiss = useCallback(() => {
     if (!consentCookieObjHasSomeConsentSet(parsedCookie?.consent)) {
@@ -607,7 +607,6 @@ export const TcfOverlay = ({
                   dispatchFidesEvent(
                     "FidesUIChanged",
                     cookie,
-                    options.debug,
                     eventExtraDetails,
                   );
                 }}

@@ -28,6 +28,7 @@ export type ExperienceConfigUpdate = {
   auto_detect_language?: boolean | null;
   auto_subdomain_cookie_deletion?: boolean | null;
   regions: Array<PrivacyNoticeRegion>;
+  tcf_configuration_id?: string | null;
   translations: Array<ExperienceTranslation>;
   privacy_notice_ids: Array<string>;
   properties: Array<MinimalProperty>;
