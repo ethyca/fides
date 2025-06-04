@@ -481,6 +481,76 @@ class TestMonitorConfigModel:
         assert mc.excluded_databases == ["db3"]
         db.delete(mc)
 
+    def test_delete_monitor_config_cascades_to_monitor_tasks(
+        self, db: Session, monitor_config
+    ) -> None:
+        """Test that deleting a monitor config cascades to its monitor tasks."""
+        # Create multiple monitor tasks for the config
+        task_1 = MonitorTask.create(
+            db=db,
+            data={
+                "celery_id": "test-celery-id-1",
+                "action_type": MonitorTaskType.DETECTION.value,
+                "status": ExecutionLogStatus.pending.value,
+                "monitor_config_id": monitor_config.id,
+            },
+        )
+        task_2 = MonitorTask.create(
+            db=db,
+            data={
+                "celery_id": "test-celery-id-2",
+                "action_type": MonitorTaskType.CLASSIFICATION.value,
+                "status": ExecutionLogStatus.in_processing.value,
+                "monitor_config_id": monitor_config.id,
+            },
+        )
+
+        # Create execution logs for the tasks to verify deep cascading
+        execution_log_1 = MonitorTaskExecutionLog.create(
+            db=db,
+            data={
+                "celery_id": "test-celery-id-exec-1",
+                "monitor_task_id": task_1.id,
+                "status": ExecutionLogStatus.pending.value,
+            },
+        )
+        execution_log_2 = MonitorTaskExecutionLog.create(
+            db=db,
+            data={
+                "celery_id": "test-celery-id-exec-2",
+                "monitor_task_id": task_2.id,
+                "status": ExecutionLogStatus.in_processing.value,
+            },
+        )
+
+        # Store IDs for later verification
+        monitor_config_id = monitor_config.id
+        task_1_id = task_1.id
+        task_2_id = task_2.id
+        execution_log_1_id = execution_log_1.id
+        execution_log_2_id = execution_log_2.id
+
+        # Delete the monitor config
+        db.delete(monitor_config)
+        db.commit()
+
+        # Verify monitor config is deleted
+        assert db.query(MonitorConfig).filter_by(id=monitor_config_id).first() is None
+
+        # Verify tasks are deleted
+        assert db.query(MonitorTask).filter_by(id=task_1_id).first() is None
+        assert db.query(MonitorTask).filter_by(id=task_2_id).first() is None
+
+        # Verify execution logs are deleted (deep cascade)
+        assert (
+            db.query(MonitorTaskExecutionLog).filter_by(id=execution_log_1_id).first()
+            is None
+        )
+        assert (
+            db.query(MonitorTaskExecutionLog).filter_by(id=execution_log_2_id).first()
+            is None
+        )
+
     @pytest.mark.parametrize(
         "monitor_frequency,expected_dict",
         [
@@ -1214,7 +1284,7 @@ class TestMonitorTask:
                 "status": ExecutionLogStatus.pending.value,
                 "message": "Test message",
                 "monitor_config_id": monitor_config.id,
-                "staged_resource_urn": "test-urn",
+                "staged_resource_urns": ["test-urn"],
                 "child_resource_urns": ["child-urn-1", "child-urn-2"],
                 "task_arguments": {"arg1": "value1"},
             },
@@ -1225,7 +1295,7 @@ class TestMonitorTask:
         assert task.status.value == ExecutionLogStatus.pending.value
         assert task.message == "Test message"
         assert task.monitor_config_id == monitor_config.id
-        assert task.staged_resource_urn == "test-urn"
+        assert task.staged_resource_urns == ["test-urn"]
         assert task.child_resource_urns == ["child-urn-1", "child-urn-2"]
         assert task.task_arguments == {"arg1": "value1"}
         assert task.created_at is not None
@@ -1255,7 +1325,7 @@ class TestMonitorTask:
 
         # Optional fields should have default values
         assert task.message is None
-        assert task.staged_resource_urn is None
+        assert task.staged_resource_urns is None
         assert task.child_resource_urns is None
         assert task.task_arguments is None
         assert task.created_at is not None
@@ -1283,7 +1353,7 @@ class TestMonitorTask:
                     "action_type": "invalid_type",
                     "status": ExecutionLogStatus.pending.value,
                     "monitor_config_id": monitor_config.id,
-                    "staged_resource_urn": "test-urn",
+                    "staged_resource_urns": ["test-urn"],
                 },
             )
         assert "Invalid action_type 'invalid_type'" in str(exc.value)
@@ -1317,6 +1387,61 @@ class TestMonitorTask:
         # Clean up
         db.delete(task)
         db.commit()
+
+    def test_delete_monitor_task_cascades_to_execution_logs(
+        self, db: Session, monitor_config
+    ) -> None:
+        """Test that deleting a monitor task cascades to its execution logs."""
+        # Create a monitor task
+        task = MonitorTask.create(
+            db=db,
+            data={
+                "celery_id": "test-celery-id",
+                "action_type": MonitorTaskType.DETECTION.value,
+                "status": ExecutionLogStatus.pending.value,
+                "monitor_config_id": monitor_config.id,
+            },
+        )
+
+        # Create multiple execution logs for the task
+        execution_log_1 = MonitorTaskExecutionLog.create(
+            db=db,
+            data={
+                "celery_id": "test-celery-id-1",
+                "monitor_task_id": task.id,
+                "status": ExecutionLogStatus.pending.value,
+            },
+        )
+        execution_log_2 = MonitorTaskExecutionLog.create(
+            db=db,
+            data={
+                "celery_id": "test-celery-id-2",
+                "monitor_task_id": task.id,
+                "status": ExecutionLogStatus.in_processing.value,
+            },
+        )
+
+        # Store IDs for later verification
+        task_id = task.id
+        execution_log_1_id = execution_log_1.id
+        execution_log_2_id = execution_log_2.id
+
+        # Delete the task
+        db.delete(task)
+        db.commit()
+
+        # Verify task is deleted
+        assert db.query(MonitorTask).filter_by(id=task_id).first() is None
+
+        # Verify execution logs are deleted
+        assert (
+            db.query(MonitorTaskExecutionLog).filter_by(id=execution_log_1_id).first()
+            is None
+        )
+        assert (
+            db.query(MonitorTaskExecutionLog).filter_by(id=execution_log_2_id).first()
+            is None
+        )
 
 
 class TestMonitorTaskExecutionLog:
@@ -1433,7 +1558,7 @@ class TestCreateMonitorTaskWithExecutionLog:
         monitor_task_data = {
             "action_type": MonitorTaskType.DETECTION.value,
             "monitor_config_id": monitor_config.id,
-            "staged_resource_urn": "test-urn",
+            "staged_resource_urns": ["test-urn"],
             "child_resource_urns": ["child-1", "child-2"],
             "task_arguments": {"arg1": "value1"},
             "message": "Test message",
@@ -1450,7 +1575,7 @@ class TestCreateMonitorTaskWithExecutionLog:
         assert task.task_arguments == {"arg1": "value1"}
         assert task.message == "Test message"
         assert task.monitor_config_id == monitor_config.id
-        assert task.staged_resource_urn == "test-urn"
+        assert task.staged_resource_urns == ["test-urn"]
         assert task.child_resource_urns == ["child-1", "child-2"]
 
         # Verify execution log was created
@@ -1486,7 +1611,7 @@ class TestCreateMonitorTaskWithExecutionLog:
         assert task.task_arguments is None
         assert task.message is None
         assert task.monitor_config_id == monitor_config.id
-        assert task.staged_resource_urn is None
+        assert task.staged_resource_urns is None
         assert task.child_resource_urns is None
 
         # Verify execution log was created
@@ -1580,8 +1705,6 @@ class TestUpdateMonitorTaskWithExecutionLog:
         assert latest_log.run_type == TaskRunType.MANUAL
 
         # Clean up
-        for log in task.execution_logs:
-            db.delete(log)
         db.delete(task)
         db.commit()
 
@@ -1622,8 +1745,6 @@ class TestUpdateMonitorTaskWithExecutionLog:
         assert latest_log.run_type == TaskRunType.SYSTEM  # Default value
 
         # Clean up
-        for log in task.execution_logs:
-            db.delete(log)
         db.delete(task)
         db.commit()
 
@@ -1635,7 +1756,6 @@ class TestUpdateMonitorTaskWithExecutionLog:
                 celery_id="non-existent-id",
                 status=ExecutionLogStatus.in_processing,
             )
-            db.rollback()
         assert "Could not find MonitorTask with celery_id non-existent-id" in str(exc)
 
     def test_update_without_required_params(self, db: Session) -> None:

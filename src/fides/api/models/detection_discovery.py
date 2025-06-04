@@ -669,14 +669,16 @@ class MonitorTask(WorkerTask, Base):
     # Contains info, warning, or error messages
     message = Column(String)
     monitor_config_id = Column(
-        String, ForeignKey(MonitorConfig.id_field_path), nullable=False
+        String,
+        ForeignKey(MonitorConfig.id_field_path, ondelete="CASCADE"),
+        nullable=False,
     )
-    staged_resource_urn = Column(String, nullable=True)
+    staged_resource_urns = Column(ARRAY(String), nullable=True)
     child_resource_urns = Column(ARRAY(String), nullable=True)
 
-    monitor_config = relationship(MonitorConfig)
+    monitor_config = relationship(MonitorConfig, cascade="all, delete")
     execution_logs = relationship(
-        "MonitorTaskExecutionLog", back_populates="monitor_task"
+        "MonitorTaskExecutionLog", back_populates="monitor_task", cascade="all, delete"
     )
 
     @classmethod
@@ -700,7 +702,10 @@ class MonitorTaskExecutionLog(TaskExecutionLog, Base):
 
     celery_id = Column(String(255), nullable=False)
     monitor_task_id = Column(
-        String, ForeignKey(MonitorTask.id_field_path), index=True, nullable=False
+        String,
+        ForeignKey(MonitorTask.id_field_path, ondelete="CASCADE"),
+        index=True,
+        nullable=False,
     )
     run_type = Column(
         SQLAlchemyEnum(TaskRunType), nullable=False, default=TaskRunType.SYSTEM
