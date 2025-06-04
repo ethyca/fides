@@ -21,8 +21,29 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.62.0...main)
 
+### Added
+- Added ability to add internal comments to privacy requests [#6165](https://github.com/ethyca/fides/pull/6165)
+- Attachments can now be stored with GCS [#6161](https://github.com/ethyca/fides/pull/6161)
+- Attachments can now retrieve their content as well as their download urls [#6169 ](https://github.com/ethyca/fides/pull/6169)
+- Added pagination support to integrations list page for better navigation with large datasets [#6184](https://github.com/ethyca/fides/pull/6184)
+- Shared monitor config model [#6167](https://github.com/ethyca/fides/pull/6167)
+- Added data_sales to Shopify consent_map [#6169](https://github.com/ethyca/fides/pull/6189)
+- Added new user types respondent and external_respondent [#6177](https://github.com/ethyca/fides/pull/6177) https://github.com/ethyca/fides/labels/db-migration
+- Added Execution logging for uploading Access Packages [#6191](https://github.com/ethyca/fides/pull/6191)
+- Added UI for creating shared monitor configurations [#6188](https://github.com/ethyca/fides/pull/6188)
 
+### Changed
+- Deprecated `FidesInitialized` event and added `FidesConsentLoaded` and `FidesReady` events for more granular initialization state handling [#6181](https://github.com/ethyca/fides/pull/6181)
+- Changed GPC to support custom notices in TCF experiences [#6176](https://github.com/ethyca/fides/pull/6176)
+- Removed `masking_strict` configuration for a better onboarding experience [#6180](https://github.com/ethyca/fides/pull/6180)
+- Detection resources can no longer show a "Confirm" button and will always show "Monitor" [#6193](https://github.com/ethyca/fides/pull/6193)
 
+### Developer Experience
+- Refactored FidesJS init logic for better clarity and TCF separation [#6173](https://github.com/ethyca/fides/pull/6173)
+
+### Fixed
+- Fixed Monitor button not appearing for tables with both classified fields and new discoveries in Data detection view [#6179](https://github.com/ethyca/fides/pull/6179)
+- Fixed TCF banner incorrectly resurfacing when consent was previously set by override [#6186](https://github.com/ethyca/fides/pull/6186)
 
 ## [2.62.0](https://github.com/ethyca/fides/compare/2.61.1...2.62.0)
 

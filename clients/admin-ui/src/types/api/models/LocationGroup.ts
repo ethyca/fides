@@ -11,7 +11,7 @@ export type LocationGroup = {
   id: string;
   selected?: boolean;
   name: string;
-  continent: Continent;
+  continent?: Continent | null;
   default_selected?: boolean;
   belongs_to?: Array<string>;
   regulation?: Array<string>;

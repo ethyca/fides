@@ -32,7 +32,7 @@ const MANUAL_TAGS = ["DSR", "Manual tasks"];
 
 const MANUAL_TYPE_INFO = {
   placeholder: MANUAL_PLACEHOLDER,
-  category: ConnectionCategory.OTHER,
+  category: ConnectionCategory.MANUAL,
   tags: MANUAL_TAGS,
   overview: <ManualOverview />,
   enabledFeatures: [

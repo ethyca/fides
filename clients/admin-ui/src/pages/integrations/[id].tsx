@@ -25,6 +25,7 @@ import ConfigureIntegrationModal from "~/features/integrations/ConfigureIntegrat
 import ConnectionStatusNotice from "~/features/integrations/ConnectionStatusNotice";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
 import { IntegrationFeatureEnum } from "~/features/integrations/IntegrationFeatureEnum";
+import SharedConfigModal from "~/features/integrations/SharedConfigModal";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
 import { ConnectionType } from "~/types/api";
 
@@ -176,6 +177,7 @@ const IntegrationDetailView: NextPage = () => {
           },
         ]}
       >
+        <SharedConfigModal />
         <IntegrationBox integration={connection} showDeleteButton />
         {integrationIsLoading ? (
           <Spinner />

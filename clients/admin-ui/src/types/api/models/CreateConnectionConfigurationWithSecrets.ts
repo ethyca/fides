@@ -54,10 +54,10 @@ export type CreateConnectionConfigurationWithSecrets = {
     | MongoDBDocsSchema
     | MSSQLDocsSchema
     | MySQLDocsSchema
-    | RDSMySQLDocsSchema
-    | RDSPostgresDocsSchema
     | OktaDocsSchema
     | PostgreSQLDocsSchema
+    | RDSMySQLDocsSchema
+    | RDSPostgresDocsSchema
     | RedshiftDocsSchema
     | S3DocsSchema
     | SaaSSchema

@@ -1,0 +1,19 @@
+{
+  "items": [
+    {
+      "id": "shared-config-1",
+      "name": "Shared Config 1",
+      "description": "Shared Config 1 Description",
+      "classify_params": {
+        "context_regex_pattern_mapping": [
+          ["[E|e]mail", "user.contact.email"],
+          [".*[P|p]hone.*", "user.contact.phone"]
+        ]
+      }
+    }
+  ],
+  "page": 1,
+  "size": 100,
+  "total": 1,
+  "pages": 1
+}

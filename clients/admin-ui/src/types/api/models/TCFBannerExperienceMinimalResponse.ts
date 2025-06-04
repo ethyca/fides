@@ -3,6 +3,7 @@
 /* eslint-disable */
 
 import type { ExperienceMinimalMeta } from "./ExperienceMinimalMeta";
+import type { fidesplus__schemas__tcf_experience__TCFPublisherRestrictionResponse } from "./fidesplus__schemas__tcf_experience__TCFPublisherRestrictionResponse";
 import type { MinimalTCFExperienceConfig } from "./MinimalTCFExperienceConfig";
 import type { PrivacyExperienceGPPSettings } from "./PrivacyExperienceGPPSettings";
 import type { PrivacyNoticeResponse } from "./PrivacyNoticeResponse";
@@ -83,6 +84,10 @@ export type TCFBannerExperienceMinimalResponse = {
    * Vendor IDs using data with legal basis of legitimate interests
    */
   tcf_vendor_legitimate_interest_ids: Array<string>;
+  /**
+   * Publisher restrictions for the TCF Experience
+   */
+  tcf_publisher_restrictions?: Array<fidesplus__schemas__tcf_experience__TCFPublisherRestrictionResponse>;
   /**
    * The country code of the country that determines the legislation of reference. Commonly, this corresponds to the country in which the publisher's business entity is established.
    */

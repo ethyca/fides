@@ -225,12 +225,14 @@ class TestApplicationConfigModel:
 
         # change a few config values, set the db record, ensure it's updated
         notification_service_type = CONFIG.notifications.notification_service_type
-        execution_strict = CONFIG.execution.masking_strict
+        require_manual_request_approval = (
+            CONFIG.execution.require_manual_request_approval
+        )
         CONFIG.notifications.notification_service_type = (
             notification_service_type + "_changed"
         )
-        CONFIG.execution.masking_strict = (
-            not execution_strict
+        CONFIG.execution.require_manual_request_approval = (
+            not require_manual_request_approval
         )  # since it's a boolean, switch the value
 
         # these shouldn't be equal before we update the db record
@@ -239,7 +241,8 @@ class TestApplicationConfigModel:
             != CONFIG.notifications.notification_service_type
         )
         assert (
-            db_config["execution"]["masking_strict"] != CONFIG.execution.masking_strict
+            db_config["execution"]["require_manual_request_approval"]
+            != CONFIG.execution.require_manual_request_approval
         )
         # now we update the db record and all values should align again
         ApplicationConfig.update_config_set(db, CONFIG)
@@ -248,7 +251,9 @@ class TestApplicationConfigModel:
 
         # reset config values to initial values to ensure we don't mess up any state
         CONFIG.notifications.notification_service_type = notification_service_type
-        CONFIG.execution.masking_strict = execution_strict
+        CONFIG.execution.require_manual_request_approval = (
+            require_manual_request_approval
+        )
 
     def test_update_config_nondict_errors(
         self, db: Session, example_config_record: Dict[str, Any]
