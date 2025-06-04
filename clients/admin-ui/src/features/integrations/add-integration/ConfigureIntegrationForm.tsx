@@ -1,11 +1,12 @@
 import { AntButton as Button, Box, useToast, VStack } from "fidesui";
 import { Form, Formik } from "formik";
 import { isEmpty, isUndefined, mapValues, omitBy } from "lodash";
-import * as Yup from "yup";
 
 import FidesSpinner from "~/features/common/FidesSpinner";
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
+import { FormFieldFromSchema } from "~/features/common/form/FormFieldFromSchema";
 import { CustomTextInput } from "~/features/common/form/inputs";
+import { useFormFieldsFromSchema } from "~/features/common/form/useFormFieldsFromSchema";
 import { getErrorMessage } from "~/features/common/helpers";
 import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
 import type { ConnectionTypeSecretSchemaResponse } from "~/features/connection-type/types";
@@ -92,6 +93,9 @@ const ConfigureIntegrationForm = ({
       connectionConfig: connection,
     });
 
+  const { getFieldValidation, preprocessValues } =
+    useFormFieldsFromSchema(secrets);
+
   const submitPending =
     secretsIsLoading || patchIsLoading || systemPatchIsLoading;
 
@@ -126,6 +130,7 @@ const ConfigureIntegrationForm = ({
     const newSecretsValues = hasSecrets
       ? excludeUnchangedSecrets(values.secrets!)
       : {};
+    const processedValues = preprocessValues(values);
 
     const connectionPayload = isEditing
       ? {
@@ -142,7 +147,7 @@ const ConfigureIntegrationForm = ({
           access: AccessLevel.READ,
           disabled: false,
           description: values.description,
-          secrets: values.secrets,
+          secrets: processedValues.secrets,
           dataset: values.dataset,
         };
 
@@ -223,45 +228,17 @@ const ConfigureIntegrationForm = ({
     Object.entries(secretsSchema.properties).map(([fieldKey, fieldInfo]) => {
       const fieldName = `secrets.${fieldKey}`;
       return (
-        <CustomTextInput
-          name={fieldName}
+        <FormFieldFromSchema
           key={fieldName}
-          id={fieldName}
-          type={fieldInfo.sensitive ? "password" : undefined}
-          label={fieldInfo.title}
+          name={fieldName}
+          fieldSchema={fieldInfo}
           isRequired={secretsSchema.required.includes(fieldKey)}
-          tooltip={fieldInfo.description}
-          variant="stacked"
+          secretsSchema={secretsSchema}
+          validate={getFieldValidation(fieldKey, fieldInfo)}
         />
       );
     });
 
-  const generateValidationSchema = (
-    secretsSchema?: ConnectionTypeSecretSchemaResponse,
-  ) => {
-    const baseSchema = {
-      name: Yup.string().required().label("Name"),
-      description: Yup.string().nullable().label("Description"),
-    };
-
-    if (!hasSecrets || !secretsSchema) {
-      return Yup.object().shape(baseSchema);
-    }
-
-    const fieldsFromSchema = Object.entries(secretsSchema.properties).map(
-      ([fieldKey, fieldInfo]) => [
-        fieldKey,
-        secretsSchema.required.includes(fieldKey)
-          ? Yup.string().required().label(fieldInfo.title)
-          : Yup.string().nullable().label(fieldInfo.title),
-      ],
-    );
-
-    return Yup.object().shape({
-      ...baseSchema,
-      secrets: Yup.object().shape(Object.fromEntries(fieldsFromSchema)),
-    });
-  };
   return (
     <>
       {description && (
@@ -281,7 +258,6 @@ const ConfigureIntegrationForm = ({
         initialValues={initialValues}
         enableReinitialize
         onSubmit={handleSubmit}
-        validationSchema={generateValidationSchema(secrets)}
       >
         {({ dirty, isValid, resetForm }) => (
           <Form>

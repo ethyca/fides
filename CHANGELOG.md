@@ -37,6 +37,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Changed GPC to support custom notices in TCF experiences [#6176](https://github.com/ethyca/fides/pull/6176)
 - Removed `masking_strict` configuration for a better onboarding experience [#6180](https://github.com/ethyca/fides/pull/6180)
 - Detection resources can no longer show a "Confirm" button and will always show "Monitor" [#6193](https://github.com/ethyca/fides/pull/6193)
+- Integration secrets forms now show select inputs for enums and schemas with `options` [#6190](https://github.com/ethyca/fides/pull/6190/)
 
 ### Developer Experience
 - Refactored FidesJS init logic for better clarity and TCF separation [#6173](https://github.com/ethyca/fides/pull/6173)
