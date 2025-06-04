@@ -55,11 +55,12 @@ def upgrade():
         ),
         sa.Column("message", sa.String(), nullable=True),
         sa.Column("monitor_config_id", sa.String(), nullable=False),
-        sa.Column("staged_resource_urn", sa.String(), nullable=True),
+        sa.Column("staged_resource_urns", sa.ARRAY(sa.String()), nullable=True),
         sa.Column("child_resource_urns", sa.ARRAY(sa.String()), nullable=True),
         sa.ForeignKeyConstraint(
             ["monitor_config_id"],
             ["monitorconfig.id"],
+            ondelete="CASCADE",
         ),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("celery_id"),
@@ -100,6 +101,7 @@ def upgrade():
         sa.ForeignKeyConstraint(
             ["monitor_task_id"],
             ["monitortask.id"],
+            ondelete="CASCADE",
         ),
         sa.PrimaryKeyConstraint("id"),
     )
