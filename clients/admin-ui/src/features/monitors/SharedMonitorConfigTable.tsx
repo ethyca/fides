@@ -34,19 +34,10 @@ const SharedMonitorConfigTable = ({
     pageIndex,
   } = useServerSidePagination();
 
-  const {
-    // data,
-    isLoading,
-    isFetching,
-  } = useGetSharedMonitorConfigsQuery({
+  const { data, isLoading, isFetching } = useGetSharedMonitorConfigsQuery({
     page: pageIndex,
     size: pageSize,
   });
-
-  const data = {
-    items: [],
-    total: 0,
-  };
 
   const columns = useSharedMonitorConfigColumns({ onEditClick: onRowClick });
 
