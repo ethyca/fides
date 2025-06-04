@@ -78,11 +78,11 @@ describe("discovery and detection", () => {
         ).should("contain", "Pending review");
       });
 
-      it("should be able to confirm or ignore", () => {
+      it("should be able to monitor or ignore", () => {
         cy.getByTestId(
           "row-my_bigquery_monitor.prj-bigquery-000001.test_dataset_2-col-action",
         ).within(() => {
-          cy.getByTestId("action-Confirm").click();
+          cy.getByTestId("action-Monitor").click();
           cy.wait("@confirmResource");
           cy.getByTestId("action-Ignore").click();
           cy.wait("@ignoreResource");
