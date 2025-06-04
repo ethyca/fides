@@ -23,8 +23,8 @@ import DatahubDataSyncTab from "~/features/integrations/configure-scan/DatahubDa
 import ConfigureIntegrationModal from "~/features/integrations/ConfigureIntegrationModal";
 import ConnectionStatusNotice from "~/features/integrations/ConnectionStatusNotice";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
-import SharedConfigModal from "~/features/integrations/SharedConfigModal";
 import { IntegrationFeatureEnum } from "~/features/integrations/IntegrationFeatureEnum";
+import SharedConfigModal from "~/features/integrations/SharedConfigModal";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
 import { ConnectionType } from "~/types/api";
 
