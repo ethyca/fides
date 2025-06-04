@@ -16,7 +16,6 @@ import RDS_POSTGRES_TYPE_INFO from "~/features/integrations/integration-type-inf
 import S3_TYPE_INFO from "~/features/integrations/integration-type-info/s3Info";
 import SCYLLA_TYPE_INFO from "~/features/integrations/integration-type-info/scyllaInfo";
 import SNOWFLAKE_TYPE_INFO from "~/features/integrations/integration-type-info/snowflakeInfo";
-import { TEST_CONNECTOR_TYPE_INFO } from "~/features/integrations/integration-type-info/testIntInfo";
 import WEBSITE_INTEGRATION_TYPE_INFO from "~/features/integrations/integration-type-info/websiteInfo";
 import { IntegrationFeatureEnum } from "~/features/integrations/IntegrationFeatureEnum";
 import {
