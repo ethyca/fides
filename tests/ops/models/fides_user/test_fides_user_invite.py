@@ -12,27 +12,11 @@ from fides.api.oauth.roles import VIEWER
 
 class TestFidesUserInvite:
 
-    @pytest.fixture(scope="function")
-    def fides_user(self, db: Session) -> Generator:
-        user = FidesUser.create(
-            db=db,
-            data={
-                "username": "test",
-            },
-        )
-        FidesUserPermissions.create(
-            db=db,
-            data={"user_id": user.id, "roles": [VIEWER]},
-        )
-        yield user
-        user.delete(db)
-
-    @pytest.mark.usefixtures("fides_user")
-    def test_create(self, db: Session):
-        username = "test"
+    @pytest.mark.usefixtures("approver")
+    def test_create(self, db: Session, username: str):
         invite_code = "test_invite"
         user_invite = FidesUserInvite.create(
-            db=db, data={"username": "test", "invite_code": invite_code}
+            db=db, data={"username": username, "invite_code": invite_code}
         )
 
         assert user_invite.username == username
@@ -41,9 +25,8 @@ class TestFidesUserInvite:
         assert user_invite.created_at is not None
         assert user_invite.updated_at is not None
 
-    @pytest.mark.usefixtures("fides_user")
-    def test_invite_code_valid(self, db: Session):
-        username = "test"
+    @pytest.mark.usefixtures("approver")
+    def test_invite_code_valid(self, db: Session, username: str):
         invite_code = "test_invite"
         user_invite = FidesUserInvite.create(
             db=db, data={"username": username, "invite_code": invite_code}
@@ -52,9 +35,8 @@ class TestFidesUserInvite:
         assert user_invite.invite_code_valid(invite_code) is True
         assert user_invite.invite_code_valid("wrong_code") is False
 
-    @pytest.mark.usefixtures("fides_user")
-    def test_is_expired(self, db: Session):
-        username = "test"
+    @pytest.mark.usefixtures("approver")
+    def test_is_expired(self, db: Session, username: str):
         invite_code = "test_invite"
         user_invite = FidesUserInvite.create(
             db=db, data={"username": username, "invite_code": invite_code}
@@ -67,9 +49,8 @@ class TestFidesUserInvite:
         )
         assert user_invite.is_expired() is True
 
-    @pytest.mark.usefixtures("fides_user")
-    def test_renew_invite(self, db: Session):
-        username = "test"
+    @pytest.mark.usefixtures("approver")
+    def test_renew_invite(self, db: Session, username: str):
         initial_invite_code = "initial_invite"
         new_invite_code = "new_invite"
 
