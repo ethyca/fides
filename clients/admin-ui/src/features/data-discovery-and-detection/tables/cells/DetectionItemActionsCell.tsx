@@ -146,7 +146,7 @@ const DetectionItemActionsCell = ({
 
   return (
     <HStack>
-      {showStartMonitoringAction && (
+      {(showStartMonitoringAction || showConfirmAction) && (
         <ActionButton
           title="Monitor"
           icon={<MonitorOnIcon />}
@@ -171,15 +171,6 @@ const DetectionItemActionsCell = ({
           icon={<MonitorOnIcon />}
           // This is a special case where we are monitoring a muted schema/table, we need to un-mute all children
           onClick={handleStartMonitoringOnMutedParent}
-          disabled={anyActionIsLoading}
-          loading={confirmIsLoading}
-        />
-      )}
-      {showConfirmAction && (
-        <ActionButton
-          title="Confirm"
-          icon={<CheckIcon />}
-          onClick={handleConfirm}
           disabled={anyActionIsLoading}
           loading={confirmIsLoading}
         />
