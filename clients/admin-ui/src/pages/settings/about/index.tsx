@@ -19,9 +19,14 @@ import { FlagControl } from "~/features/common/features/FlagControl";
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
 
-const About: NextPage = () => {
+const About: NextPage<{ showAlphaFeatures: boolean }> = ({
+  showAlphaFeatures = false,
+}) => {
   const features = useFeatures();
   const { flags, override, reset } = useFlags();
+
+  const alphaFlags = FLAG_NAMES.filter((flag) => flag.startsWith("alpha"));
+  const betaFlags = FLAG_NAMES.filter((flag) => !flag.startsWith("alpha"));
 
   return (
     <Layout title="About Fides">
@@ -63,7 +68,7 @@ const About: NextPage = () => {
         alignItems="center"
         className="py-6"
       >
-        {FLAG_NAMES.map((flag) => (
+        {betaFlags.map((flag) => (
           <FlagControl
             key={flag}
             flag={flag}
@@ -72,6 +77,34 @@ const About: NextPage = () => {
           />
         ))}
       </Grid>
+
+      {/* Alpha Features flags are meant for internal use, until the feature is ready for public release */}
+      {showAlphaFeatures && (
+        <>
+          <Flex alignItems="center" gap={4}>
+            <Heading as="h2" fontSize="xl">
+              Alpha Features
+            </Heading>
+            <Button onClick={reset}>Reset</Button>
+          </Flex>
+          <Grid
+            gridTemplateColumns="1fr 2fr 6fr"
+            gridColumnGap={4}
+            gridRowGap={2}
+            alignItems="center"
+            className="py-6"
+          >
+            {alphaFlags.map((flag) => (
+              <FlagControl
+                key={flag}
+                flag={flag}
+                value={flags[flag]}
+                override={override}
+              />
+            ))}
+          </Grid>
+        </>
+      )}
 
       <Box>
         <Text fontSize="sm">

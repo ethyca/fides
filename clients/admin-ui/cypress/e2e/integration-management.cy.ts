@@ -200,6 +200,21 @@ describe("Integration management for data detection & discovery", () => {
         cy.getByTestId("save-btn").click();
         cy.wait("@patchSystemConnection");
       });
+
+      it("should be able to add a new integration without secrets", () => {
+        cy.intercept("PATCH", "/api/v1/connection", { statusCode: 200 }).as(
+          "patchConnection",
+        );
+        cy.getByTestId("add-integration-btn").click();
+        cy.getByTestId("add-modal-content").within(() => {
+          cy.getByTestId("integration-info-manual_placeholder").within(() => {
+            cy.getByTestId("configure-btn").click();
+          });
+        });
+        cy.getByTestId("input-name").type("Manual Integration Test");
+        cy.getByTestId("save-btn").click();
+        cy.wait("@patchConnection");
+      });
     });
   });
 
