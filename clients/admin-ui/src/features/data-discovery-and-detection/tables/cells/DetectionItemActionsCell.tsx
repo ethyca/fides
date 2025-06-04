@@ -1,4 +1,4 @@
-import { CheckIcon, HStack } from "fidesui";
+import { HStack } from "fidesui";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
@@ -76,21 +76,6 @@ const DetectionItemActionsCell = ({
       successAlert(
         "Data discovery has started. The results may take some time to appear in the “Data discovery“ tab.",
         `${resource.name || "The resource"} is now being monitored.`,
-      );
-    }
-  };
-
-  const handleConfirm = async () => {
-    const result = await confirmResourceMutation({
-      staged_resource_urn: resource.urn,
-      monitor_config_id: resource.monitor_config_id!,
-    });
-    if (isErrorResult(result)) {
-      errorAlert(getErrorMessage(result.error), "Failed to confirm resource");
-    } else {
-      successAlert(
-        `These changes have been added to a Fides dataset. To view, navigate to "Manage datasets".`,
-        `Table changes confirmed`,
       );
     }
   };
