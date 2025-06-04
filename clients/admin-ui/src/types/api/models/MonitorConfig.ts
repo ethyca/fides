@@ -41,5 +41,9 @@ export type MonitorConfig = {
    * Indicates whether the monitor is enabled or not. Disabled monitors won't be executed
    */
   enabled?: boolean | null;
+  /**
+   * Reference to a shared monitor configuration
+   */
+  shared_config_id?: string | null;
   last_monitored?: string | null;
 };

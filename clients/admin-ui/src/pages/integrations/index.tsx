@@ -20,6 +20,7 @@ import getIntegrationTypeInfo, {
   SUPPORTED_INTEGRATIONS,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
 import IntegrationList from "~/features/integrations/IntegrationList";
+import SharedConfigModal from "~/features/integrations/SharedConfigModal";
 import useIntegrationFilterTabs from "~/features/integrations/useIntegrationFilterTabs";
 
 const DEFAULT_PAGE_SIZE = 50;
@@ -73,7 +74,9 @@ const IntegrationListView: NextPage = () => {
             title: "All integrations",
           },
         ]}
-      />
+      >
+        <SharedConfigModal />
+      </PageHeader>
       <Box data-testid="integration-tabs" display="flex">
         <Tabs index={tabIndex} onChange={onChangeTabs} w="full">
           <TabList>
