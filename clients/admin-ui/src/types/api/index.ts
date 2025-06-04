@@ -181,6 +181,7 @@ export type { EmbeddedVendor } from "./models/EmbeddedVendor";
 export type { Endpoint } from "./models/Endpoint";
 export { EnforcementLevel } from "./models/EnforcementLevel";
 export { ErrorNotificationMode } from "./models/ErrorNotificationMode";
+export type { ErrorResponse } from "./models/ErrorResponse";
 export type { Evaluation } from "./models/Evaluation";
 export type { ExecutionAndAuditLogResponse } from "./models/ExecutionAndAuditLogResponse";
 export type { ExecutionApplicationConfig } from "./models/ExecutionApplicationConfig";
@@ -291,6 +292,7 @@ export type { MessagingTemplateWithPropertiesBodyParams } from "./models/Messagi
 export type { MessagingTemplateWithPropertiesDetail } from "./models/MessagingTemplateWithPropertiesDetail";
 export type { MessagingTemplateWithPropertiesPatchBodyParams } from "./models/MessagingTemplateWithPropertiesPatchBodyParams";
 export type { MessagingTemplateWithPropertiesSummary } from "./models/MessagingTemplateWithPropertiesSummary";
+export type { MinimalClassifyParams } from "./models/MinimalClassifyParams";
 export type { MinimalMessagingTemplate } from "./models/MinimalMessagingTemplate";
 export type { MinimalPrivacyExperienceConfig } from "./models/MinimalPrivacyExperienceConfig";
 export type { MinimalPrivacyNotice } from "./models/MinimalPrivacyNotice";
@@ -351,6 +353,7 @@ export type { Page_PrivacyExperienceMetaResponse_ } from "./models/Page_PrivacyE
 export type { Page_Property_ } from "./models/Page_Property_";
 export type { Page_RuleResponseWithTargets_ } from "./models/Page_RuleResponseWithTargets_";
 export type { Page_RuleTarget_ } from "./models/Page_RuleTarget_";
+export type { Page_SharedMonitorConfig_ } from "./models/Page_SharedMonitorConfig_";
 export type { Page_StagedResourceAPIResponse_ } from "./models/Page_StagedResourceAPIResponse_";
 export type { Page_StorageDestinationResponse_ } from "./models/Page_StorageDestinationResponse_";
 export type { Page_str_ } from "./models/Page_str_";
@@ -469,6 +472,7 @@ export type { SecurityApplicationConfig } from "./models/SecurityApplicationConf
 export type { Selection } from "./models/Selection";
 export { ServiceHealth } from "./models/ServiceHealth";
 export { ServingComponent } from "./models/ServingComponent";
+export type { SharedMonitorConfig } from "./models/SharedMonitorConfig";
 export type { SnowflakeDocsSchema } from "./models/SnowflakeDocsSchema";
 export type { SovrnDocsSchema } from "./models/SovrnDocsSchema";
 export { SpecialCategoryLegalBasisEnum } from "./models/SpecialCategoryLegalBasisEnum";
