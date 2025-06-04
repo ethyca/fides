@@ -519,6 +519,7 @@ describe("Privacy Requests", () => {
   describe("Request Comments", () => {
     beforeEach(() => {
       cy.assumeRole(RoleRegistryEnum.OWNER);
+      stubPlus(true);
 
       cy.intercept("GET", "/api/v1/plus/privacy-request/*/comment*", {
         statusCode: 200,
