@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Union
+from typing import Any, Dict, Union
 
 from bson import ObjectId
 from pydantic import ValidationError

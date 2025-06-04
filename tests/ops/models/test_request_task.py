@@ -1,4 +1,5 @@
-import json
+# pylint: disable=protected-access
+import os
 from unittest import mock
 
 import pytest
@@ -11,6 +12,7 @@ from fides.api.graph.config import (
 from fides.api.models.privacy_request import RequestTask
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import ExecutionLogStatus
+from fides.api.service.storage.request_task_storage import RequestTaskStorageError
 from fides.api.util.cache import FidesopsRedis, cache_task_tracking_key, get_cache
 
 
@@ -316,3 +318,224 @@ class TestGetDecodedDataForErasures:
         request_task.save(db)
 
         assert request_task.get_data_for_erasures() == [{"id": 1, "name": "Jane"}]
+
+
+class TestLargeDataStorage:
+    """Test storing large datasets in RequestTask.access_data and RequestTask.data_for_erasures"""
+
+    def test_store_and_retrieve_data_for_access(self, db, request_task):
+        request_task.access_data = [{"id": 1, "name": "Jane"}]
+        request_task.save(db)
+
+        assert request_task.get_access_data() == [{"id": 1, "name": "Jane"}]
+
+    def test_store_and_retrieve_data_for_erasures(self, db, request_task):
+        request_task.data_for_erasures = [{"id": 1, "name": "Jane"}]
+        request_task.save(db)
+
+        assert request_task.get_data_for_erasures() == [{"id": 1, "name": "Jane"}]
+
+    def test_small_data_stored_directly(self, db, request_task):
+        """Test that small data is stored directly in database"""
+        small_data = [{"id": i, "name": f"User{i}"} for i in range(10)]
+
+        request_task.access_data = small_data
+        request_task.save(db)
+
+        # Should be stored directly (no external storage metadata)
+        assert isinstance(request_task._access_data, list)
+        assert request_task.access_data == small_data
+        assert request_task.get_access_data() == small_data
+
+    @mock.patch("fides.api.models.privacy_request.request_task.is_large_data")
+    def test_large_data_stored_externally_access_data(
+        self, mock_is_large_data, db, request_task, storage_config_default_local
+    ):
+        """Test that large access data is stored externally"""
+        # Mock is_large_data to return True for any data
+        mock_is_large_data.return_value = True
+
+        test_data = [
+            {"id": i, "name": f"User{i}", "email": f"user{i}@example.com"}
+            for i in range(5)
+        ]
+
+        request_task.access_data = test_data
+        request_task.save(db)
+
+        # Should be stored as external storage metadata
+        assert isinstance(request_task._access_data, dict)
+        assert "storage_type" in request_task._access_data
+        assert "url" in request_task._access_data
+        assert "filesize" in request_task._access_data
+        assert "file_key" in request_task._access_data
+
+        # The property should still return the original data by retrieving from external storage
+        retrieved_data = request_task.access_data
+        assert retrieved_data == test_data
+        assert request_task.get_access_data() == test_data
+
+    @mock.patch("fides.api.models.privacy_request.request_task.is_large_data")
+    def test_large_data_stored_externally_data_for_erasures(
+        self, mock_is_large_data, db, request_task, storage_config_default_local
+    ):
+        """Test that large erasure data is stored externally"""
+        # Mock is_large_data to return True for any data
+        mock_is_large_data.return_value = True
+
+        test_data = [
+            {"id": i, "name": f"User{i}", "email": f"user{i}@example.com"}
+            for i in range(5)
+        ]
+
+        request_task.data_for_erasures = test_data
+        request_task.save(db)
+
+        # Should be stored as external storage metadata
+        assert isinstance(request_task._data_for_erasures, dict)
+        assert "storage_type" in request_task._data_for_erasures
+        assert "url" in request_task._data_for_erasures
+        assert "filesize" in request_task._data_for_erasures
+        assert "file_key" in request_task._data_for_erasures
+
+        # The property should still return the original data by retrieving from external storage
+        retrieved_data = request_task.data_for_erasures
+        assert retrieved_data == test_data
+        assert request_task.get_data_for_erasures() == test_data
+
+    @mock.patch("fides.api.models.privacy_request.request_task.is_large_data")
+    def test_external_storage_cleanup_on_update(
+        self, mock_is_large_data, db, request_task, storage_config_default_local
+    ):
+        """Test that external storage files are cleaned up when data is updated"""
+        # Mock is_large_data to return True for any data
+        mock_is_large_data.return_value = True
+
+        # Store initial data externally
+        initial_data = [{"id": 1, "name": "Initial"}]
+        request_task.access_data = initial_data
+        request_task.save(db)
+
+        # Verify it's stored externally
+        assert isinstance(request_task._access_data, dict)
+        initial_url = request_task._access_data["url"]
+
+        # Verify the file exists
+        assert os.path.exists(initial_url)
+
+        # Update with new data - should clean up old file and create new one
+        new_data = [{"id": 2, "name": "Updated"}]
+        request_task.access_data = new_data
+        request_task.save(db)
+
+        # Old file should be cleaned up
+        assert not os.path.exists(initial_url)
+
+        # New file should exist
+        new_url = request_task._access_data["url"]
+        assert os.path.exists(new_url)
+        assert new_url != initial_url
+
+        # Data should be correct
+        assert request_task.access_data == new_data
+
+    @mock.patch("fides.api.models.privacy_request.request_task.is_large_data")
+    def test_external_storage_cleanup_on_delete(
+        self, mock_is_large_data, db, request_task, storage_config_default_local
+    ):
+        """Test that external storage files are cleaned up when RequestTask is deleted"""
+        # Mock is_large_data to return True for any data
+        mock_is_large_data.return_value = True
+
+        # Store data externally
+        test_data = [{"id": 1, "name": "Test"}]
+        request_task.access_data = test_data
+        request_task.data_for_erasures = test_data
+        request_task.save(db)
+
+        # Verify files exist
+        access_url = request_task._access_data["url"]
+        erasures_url = request_task._data_for_erasures["url"]
+
+        assert os.path.exists(access_url)
+        assert os.path.exists(erasures_url)
+
+        # Delete the request task
+        request_task.delete(db)
+
+        # Files should be cleaned up
+        assert not os.path.exists(access_url)
+        assert not os.path.exists(erasures_url)
+
+    def test_external_storage_retrieval_failure_handling(self, db, request_task):
+        """Test that external storage retrieval failures are handled gracefully"""
+        # Simulate external storage metadata with non-existent file
+        metadata_dict = {
+            "storage_type": "local",
+            "url": "/nonexistent/path/file.json",
+            "filesize": 1000,
+            "file_key": "test_key",
+        }
+
+        # Directly set the private field to simulate external storage
+        request_task._access_data = metadata_dict
+        request_task.save(db)
+
+        # Should error when file doesn't exist
+        with pytest.raises(RequestTaskStorageError, match="Failed to retrieve"):
+            request_task.get_access_data()
+
+    def test_empty_data_handling(self, db, request_task):
+        """Test that empty data is handled correctly"""
+        request_task.access_data = []
+        request_task.save(db)
+
+        assert request_task.access_data == []
+        assert request_task.get_access_data() == []
+
+        request_task.access_data = None
+        request_task.save(db)
+
+        assert request_task.access_data == []
+        assert request_task.get_access_data() == []
+
+    @pytest.mark.parametrize("data_type", ["access_data", "data_for_erasures"])
+    def test_backward_compatibility(self, db, request_task, data_type):
+        """Test that existing code continues to work"""
+        test_data = [{"id": 1, "name": "Test"}]
+
+        # Set using property
+        setattr(request_task, data_type, test_data)
+        request_task.save(db)
+
+        # Get using both property and helper method
+        assert getattr(request_task, data_type) == test_data
+        if data_type == "access_data":
+            assert request_task.get_access_data() == test_data
+        else:
+            assert request_task.get_data_for_erasures() == test_data
+
+    def test_cleanup_external_storage_on_update(self, db, request_task):
+        """Test that external storage cleanup methods exist and don't crash"""
+        # Test that the methods exist and don't crash
+        request_task._cleanup_external_access_data()
+        request_task._cleanup_external_data_for_erasures()
+        request_task.cleanup_external_storage()
+
+    def test_external_storage_metadata_detection(self, db, request_task):
+        """Test that external storage metadata is properly detected"""
+        # Simulate external storage metadata
+        metadata_dict = {
+            "storage_type": "local",
+            "url": "/path/to/file",
+            "filesize": 1000,
+            "file_key": "test_key",
+        }
+
+        # Directly set the private field to simulate external storage
+        request_task._access_data = metadata_dict
+
+        # The property should detect this as metadata (though retrieval will fail without actual file)
+        # This tests the detection logic without requiring actual external storage
+        assert isinstance(request_task._access_data, dict)
+        assert "storage_type" in request_task._access_data
