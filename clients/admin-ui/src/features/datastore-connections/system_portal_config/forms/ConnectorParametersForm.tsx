@@ -13,7 +13,6 @@ import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { FormFieldFromSchema } from "~/features/common/form/FormFieldFromSchema";
 import { useFormFieldsFromSchema } from "~/features/common/form/useFormFieldsFromSchema";
 import DisableConnectionModal from "~/features/datastore-connections/DisableConnectionModal";
-import SelectDataset from "~/features/datastore-connections/system_portal_config/forms/SelectDataset";
 import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
@@ -253,7 +252,6 @@ export const ConnectorParametersForm = ({
               )}
               {SystemType.DATABASE === connectionOption.type &&
                 !isCreatingConnectionConfig && (
-                  // <SelectDataset options={datasetDropdownOptions} />
                   <ControlledSelect
                     name="dataset"
                     id="dataset"
@@ -261,6 +259,7 @@ export const ConnectorParametersForm = ({
                     label="Datasets"
                     options={datasetDropdownOptions}
                     layout="inline"
+                    mode="multiple"
                   />
                 )}
               <div className="flex gap-4">
