@@ -253,7 +253,15 @@ export const ConnectorParametersForm = ({
               )}
               {SystemType.DATABASE === connectionOption.type &&
                 !isCreatingConnectionConfig && (
-                  <SelectDataset options={datasetDropdownOptions} />
+                  // <SelectDataset options={datasetDropdownOptions} />
+                  <ControlledSelect
+                    name="dataset"
+                    id="dataset"
+                    tooltip="Select datasets to associate with this integration"
+                    label="Datasets"
+                    options={datasetDropdownOptions}
+                    layout="inline"
+                  />
                 )}
               <div className="flex gap-4">
                 {!connectionOption.authorization_required || authorized ? (
