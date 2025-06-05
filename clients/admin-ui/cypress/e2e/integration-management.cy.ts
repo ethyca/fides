@@ -1,4 +1,11 @@
-import { stubLocations, stubPlus, stubSystemCrud } from "cypress/support/stubs";
+import {
+  stubLocations,
+  stubPlus,
+  stubSharedMonitorConfig,
+  stubSystemCrud,
+  stubTaxonomyEntities,
+} from "cypress/support/stubs";
+import { AntSelect } from "fidesui";
 
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 
@@ -200,6 +207,21 @@ describe("Integration management for data detection & discovery", () => {
         cy.getByTestId("save-btn").click();
         cy.wait("@patchSystemConnection");
       });
+
+      it("should be able to add a new integration without secrets", () => {
+        cy.intercept("PATCH", "/api/v1/connection", { statusCode: 200 }).as(
+          "patchConnection",
+        );
+        cy.getByTestId("add-integration-btn").click();
+        cy.getByTestId("add-modal-content").within(() => {
+          cy.getByTestId("integration-info-manual_placeholder").within(() => {
+            cy.getByTestId("configure-btn").click();
+          });
+        });
+        cy.getByTestId("input-name").type("Manual Integration Test");
+        cy.getByTestId("save-btn").click();
+        cy.wait("@patchConnection");
+      });
     });
   });
 
@@ -305,6 +327,7 @@ describe("Integration management for data detection & discovery", () => {
         }).as("deleteMonitor");
         cy.getByTestId("tab-Data discovery").click();
         cy.wait("@getMonitors");
+        stubSharedMonitorConfig();
       });
 
       it("shows a table of monitors", () => {
@@ -334,6 +357,9 @@ describe("Integration management for data detection & discovery", () => {
         cy.getByTestId("add-monitor-btn").click();
         cy.getByTestId("add-modal-content").should("be.visible");
         cy.getByTestId("input-name").type("A new monitor");
+        cy.getByTestId("controlled-select-shared_config_id").antSelect(
+          "Shared Config 1",
+        );
         cy.getByTestId("controlled-select-execution_frequency").antSelect(
           "Daily",
         );
@@ -459,6 +485,55 @@ describe("Integration management for data detection & discovery", () => {
           cy.getByTestId("toggle-switch").click();
         });
         cy.wait("@putMonitor");
+      });
+
+      describe("shared monitor configs", () => {
+        beforeEach(() => {
+          stubTaxonomyEntities();
+        });
+        it("shows a table of shared monitor configs", () => {
+          cy.getByTestId("configurations-btn").click();
+          cy.getByTestId("config-shared-config-1").should("exist");
+        });
+
+        it("can create a new shared monitor config", () => {
+          cy.getByTestId("configurations-btn").click();
+          cy.getByTestId("create-new-btn").click();
+          cy.getByTestId("input-name").type("A new shared monitor config");
+          cy.getByTestId("input-rules.0.regex").type(".*");
+          cy.getByTestId("input-rules.0.dataCategory").antSelect("system");
+          cy.getByTestId("add-rule-btn").click();
+          cy.getByTestId("input-rules.1.regex").type(".*");
+          cy.getByTestId("input-rules.1.dataCategory").antSelect("system");
+          cy.getByTestId("upload-csv-btn").should("be.visible");
+          cy.getByTestId("save-btn").click();
+          cy.wait("@createSharedMonitorConfig");
+        });
+
+        it("can edit an existing shared monitor config", () => {
+          cy.getByTestId("configurations-btn").click();
+          cy.getByTestId("config-shared-config-1").within(() => {
+            cy.getByTestId("edit-btn").click();
+          });
+          cy.getByTestId("upload-csv-btn").should("not.exist");
+          cy.getByTestId("input-name").should("have.value", "Shared Config 1");
+          cy.getByTestId("input-rules.0.regex").should(
+            "have.value",
+            "[E|e]mail",
+          );
+          cy.getByTestId("input-rules.0.dataCategory").should(
+            "contain",
+            "user.contact.email",
+          );
+          cy.getByTestId("input-rules.1.regex").should(
+            "have.value",
+            ".*[P|p]hone.*",
+          );
+          cy.getByTestId("input-rules.1.dataCategory").should(
+            "contain",
+            "user.contact.phone",
+          );
+        });
       });
     });
 

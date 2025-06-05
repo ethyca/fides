@@ -7,6 +7,7 @@ import {
 } from "~/features/common/copy/components";
 import ShowMoreContent from "~/features/common/copy/ShowMoreContent";
 import { ConnectionCategory } from "~/features/integrations/ConnectionCategory";
+import { IntegrationFeatureEnum } from "~/features/integrations/IntegrationFeatureEnum";
 import { AccessLevel, ConnectionType } from "~/types/api";
 
 export const MYSQL_PLACEHOLDER = {
@@ -61,6 +62,7 @@ const MYSQL_TYPE_INFO = {
   category: ConnectionCategory.DATABASE,
   overview: <MySQLOverview />,
   tags: MYSQL_TAGS,
+  enabledFeatures: [IntegrationFeatureEnum.DATA_DISCOVERY],
 };
 
 export default MYSQL_TYPE_INFO;

@@ -65,7 +65,7 @@ class TestHubspotConnector:
         (
             _,
             erasure_results,
-        ) = await hubspot_runner.non_strict_erasure_request(
+        ) = await hubspot_runner.erasure_request(
             access_policy=policy,
             erasure_policy=erasure_policy_string_rewrite_name_and_email,
             identities={"email": hubspot_identity_email},
