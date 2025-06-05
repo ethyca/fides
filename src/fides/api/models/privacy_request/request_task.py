@@ -247,7 +247,7 @@ class RequestTask(Base):
                 with get_autoclose_db_session() as session:
                     metadata = store_large_data(
                         db=session,
-                        privacy_request_id=self.privacy_request_id,
+                        privacy_request_id=self.privacy_request_id,  # type: ignore[arg-type]
                         collection_name=self.collection_name,
                         data=value,
                         data_type="access_data",
@@ -316,7 +316,7 @@ class RequestTask(Base):
                 with get_autoclose_db_session() as session:
                     metadata = store_large_data(
                         db=session,
-                        privacy_request_id=self.privacy_request_id,
+                        privacy_request_id=self.privacy_request_id,  # type: ignore[arg-type]
                         collection_name=self.collection_name,
                         data=value,
                         data_type="data_for_erasures",

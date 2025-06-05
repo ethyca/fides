@@ -1,3 +1,4 @@
+# pylint: disable=protected-access
 import json
 import os
 from datetime import datetime
@@ -6,6 +7,7 @@ from typing import List
 
 from loguru import logger
 from sqlalchemy.orm import Session
+from sqlalchemy_utils.types.encrypted.encrypted_type import AesGcmEngine
 
 from fides.api.models.storage import StorageConfig, get_active_default_storage_config
 from fides.api.schemas.request_task.external_storage import ExternalStorageMetadata
@@ -15,10 +17,75 @@ from fides.api.service.storage.s3 import generic_upload_to_s3
 from fides.api.service.storage.util import get_local_filename
 from fides.api.util.collection_util import Row
 from fides.api.util.storage_util import StorageJSONEncoder
+from fides.config import CONFIG
 
 
 class RequestTaskStorageError(Exception):
     """Raised when external storage operations fail"""
+
+
+def _encrypt_data(data_bytes: bytes) -> bytes:
+    """
+    Encrypt data bytes using AesGcmEngine with the same key as database columns
+
+    Args:
+        data_bytes: Raw data bytes to encrypt
+
+    Returns:
+        Encrypted bytes
+
+    Raises:
+        RequestTaskStorageError: If encryption fails
+    """
+    try:
+        engine = AesGcmEngine()
+        # Use the same key as database columns
+        key = CONFIG.security.app_encryption_key
+        engine._update_key(key)
+        # Convert bytes to string for encryption, as AesGcmEngine expects string input
+        data_str = data_bytes.decode("utf-8")
+        encrypted_data = engine.encrypt(data_str)
+        # Convert encrypted string back to bytes for storage
+        encrypted_bytes = encrypted_data.encode("utf-8")
+        logger.debug(
+            f"Encrypted {len(data_bytes)} bytes to {len(encrypted_bytes)} bytes"
+        )
+        return encrypted_bytes
+    except Exception as e:
+        logger.error(f"Failed to encrypt data: {e}")
+        raise RequestTaskStorageError(f"Failed to encrypt data: {str(e)}")
+
+
+def _decrypt_data(encrypted_bytes: bytes) -> bytes:
+    """
+    Decrypt data bytes using AesGcmEngine with the same key as database columns
+
+    Args:
+        encrypted_bytes: Encrypted data bytes to decrypt
+
+    Returns:
+        Decrypted bytes
+
+    Raises:
+        RequestTaskStorageError: If decryption fails
+    """
+    try:
+        engine = AesGcmEngine()
+        # Use the same key as database columns
+        key = CONFIG.security.app_encryption_key
+        engine._update_key(key)
+        # Convert bytes to string for decryption, as AesGcmEngine expects string input
+        encrypted_str = encrypted_bytes.decode("utf-8")
+        decrypted_data = engine.decrypt(encrypted_str)
+        # Convert decrypted string back to bytes
+        decrypted_bytes = decrypted_data.encode("utf-8")
+        logger.debug(
+            f"Decrypted {len(encrypted_bytes)} bytes to {len(decrypted_bytes)} bytes"
+        )
+        return decrypted_bytes
+    except Exception as e:
+        logger.error(f"Failed to decrypt data: {e}")
+        raise RequestTaskStorageError(f"Failed to decrypt data: {str(e)}")
 
 
 def store_large_data(
@@ -50,9 +117,9 @@ def store_large_data(
             "No active default storage configuration available for large data"
         )
 
-    # Generate file key: {data_type}/{privacy_request_id}/{collection_name}/{timestamp}.json
+    # Generate file key: {data_type}/{privacy_request_id}/{collection_name}/{timestamp}
     timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S_%f")
-    file_key = f"{data_type}/{privacy_request_id}/{collection_name}/{timestamp}.json"
+    file_key = f"{data_type}/{privacy_request_id}/{collection_name}/{timestamp}"
 
     # Serialize data using StorageJSONEncoder to handle ObjectIds
     try:
@@ -60,24 +127,29 @@ def store_large_data(
             data, cls=StorageJSONEncoder, separators=(",", ":")
         )
         data_bytes = serialized_data.encode("utf-8")
-        file_size = len(data_bytes)
+
+        # Encrypt the data before storing
+        encrypted_bytes = _encrypt_data(data_bytes)
+        file_size = len(encrypted_bytes)
+
+        logger.info(f"Encrypted data from {len(data_bytes)} to {file_size} bytes")
     except (TypeError, ValueError) as e:
         raise RequestTaskStorageError(f"Failed to serialize data: {str(e)}")
 
     try:
         if storage_config.type == StorageType.s3:
-            url = _store_to_s3(storage_config, file_key, data_bytes)
+            url = _store_to_s3(storage_config, file_key, encrypted_bytes)
         elif storage_config.type == StorageType.gcs:
-            url = _store_to_gcs(storage_config, file_key, data_bytes)
+            url = _store_to_gcs(storage_config, file_key, encrypted_bytes)
         elif storage_config.type == StorageType.local:
-            url = _store_to_local(storage_config, file_key, data_bytes)
+            url = _store_to_local(storage_config, file_key, encrypted_bytes)
         else:
             raise RequestTaskStorageError(
                 f"Unsupported storage type: {storage_config.type}"
             )
 
         logger.info(
-            f"Stored large {data_type} for privacy request {privacy_request_id} "
+            f"Stored encrypted large {data_type} for privacy request {privacy_request_id} "
             f"collection {collection_name} to {storage_config.type} storage ({file_size} bytes)"
         )
 
@@ -118,15 +190,19 @@ def retrieve_large_data(metadata: ExternalStorageMetadata) -> List[Row]:
         )
 
         if storage_type_value == StorageType.s3.value:
-            data_bytes = _retrieve_from_s3(metadata)
+            encrypted_bytes = _retrieve_from_s3(metadata)
         elif storage_type_value == StorageType.gcs.value:
-            data_bytes = _retrieve_from_gcs(metadata)
+            encrypted_bytes = _retrieve_from_gcs(metadata)
         elif storage_type_value == StorageType.local.value:
-            data_bytes = _retrieve_from_local(metadata)
+            encrypted_bytes = _retrieve_from_local(metadata)
         else:
             raise RequestTaskStorageError(
                 f"Unsupported storage type: {metadata.storage_type}"
             )
+
+        # Decrypt the retrieved data
+        logger.info("Decrypting retrieved data")
+        data_bytes = _decrypt_data(encrypted_bytes)
 
         data_str = data_bytes.decode("utf-8")
         return json.loads(data_str)
@@ -189,7 +265,7 @@ def _store_to_s3(config: StorageConfig, file_key: str, data: bytes) -> str:
         auth_method=auth_method,
         document=document,
     )
-    return presigned_url
+    return str(presigned_url)
 
 
 def _store_to_gcs(config: StorageConfig, file_key: str, data: bytes) -> str:

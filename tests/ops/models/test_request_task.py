@@ -368,7 +368,6 @@ class TestLargeDataStorage:
         assert "storage_type" in request_task._access_data
         assert "url" in request_task._access_data
         assert "filesize" in request_task._access_data
-        assert "file_key" in request_task._access_data
 
         # The property should still return the original data by retrieving from external storage
         retrieved_data = request_task.access_data
@@ -396,7 +395,6 @@ class TestLargeDataStorage:
         assert "storage_type" in request_task._data_for_erasures
         assert "url" in request_task._data_for_erasures
         assert "filesize" in request_task._data_for_erasures
-        assert "file_key" in request_task._data_for_erasures
 
         # The property should still return the original data by retrieving from external storage
         retrieved_data = request_task.data_for_erasures
@@ -474,7 +472,6 @@ class TestLargeDataStorage:
             "storage_type": "local",
             "url": "/nonexistent/path/file.json",
             "filesize": 1000,
-            "file_key": "test_key",
         }
 
         # Directly set the private field to simulate external storage
@@ -529,7 +526,6 @@ class TestLargeDataStorage:
             "storage_type": "local",
             "url": "/path/to/file",
             "filesize": 1000,
-            "file_key": "test_key",
         }
 
         # Directly set the private field to simulate external storage
