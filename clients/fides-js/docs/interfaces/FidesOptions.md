@@ -22,6 +22,7 @@ order of precedence:
 
 ## Example
 
+Configure `window.fides_overrides` before loading Fides.js tag
 ```html
 <head>
   <script>
@@ -33,6 +34,27 @@ order of precedence:
     };
   </script>
   <script src="path/to/fides.js"></script>
+</head>
+```
+Configure `window.fides_overrides` after loading Fides.js tag
+```html
+<head>
+  <script src="path/to/fides.js">
+    // Loading Fides.js before setting window.fides_overrides requires re-initialization
+  </script>
+
+  <script>
+    function onChange(newData) {
+      // Update Fides options
+      window.fides_overrides = window.fides_overrides || {};
+      window.fides_overrides = {
+        fides_locale: newData,
+      };
+
+      // Reinitialize FidesJS
+      window.Fides.init();
+    };
+  </script>
 </head>
 ```
 
@@ -153,17 +175,25 @@ The string consists of four parts separated by commas in the format:
 
 #### Example
 
-// Complete string with all parts:
-// "CPzHq4APzHq4AAMABBENAUEAALAAAEOAAAAAAEAEACACAAAA,1~61.70,DBABLA~BVAUAAAAAWA.QA,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9"
+Complete string with all parts:
+```
+"CPzHq4APzHq4AAMABBENAUEAALAAAEOAAAAAAEAEACACAAAA,2~61.70~dv.33,DBABLA~BVAUAAAAAWA.QA,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9"
+```
 
-// TC and AC strings only:
-// "CPzHq4APzHq4AAMABBENAUEAALAAAEOAAAAAAEAEACACAAAA,1~61.70"
+TC and AC strings only:
+```
+"CPzHq4APzHq4AAMABBENAUEAALAAAEOAAAAAAEAEACACAAAA,2~61.70~dv.33"
+```
 
-// GPP string only:
-// ",,DBABLA~BVAUAAAAAWA.QA"
+GPP string only:
+```
+",,DBABLA~BVAUAAAAAWA.QA"
+```
 
-// Notice Consent string only:
-// ",,,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9"
+Notice Consent string only:
+```
+",,,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9"
+```
 
 To properly encode the Notice Consent string, use the
 `window.Fides.encodeNoticeConsentString` function (see [Fides.encodeNoticeConsentString](Fides.md#encodenoticeconsentstring)) or write your own function that
@@ -216,9 +246,9 @@ Defaults to `undefined`.
 
 > **ot\_fides\_mapping**: `string`
 
-Given a OneTrust → Fides notice mapping exists and the OneTrust cookie exists, Fides will “migrate” those consents to Fides privacy notices, and write to the Fides cookie.
+Given a OneTrust → Fides notice mapping exists and the OneTrust cookie exists, Fides will "migrate" those consents to Fides privacy notices, and write to the Fides cookie.
 
-This way, Fides customers that are migrating away from OneTrust don’t need to show their users new consent dialogues when switching to Fides.
+This way, Fides customers that are migrating away from OneTrust don't need to show their users new consent dialogues when switching to Fides.
 that those preferences are respected.
 
 Example original otFidesMapping data:
@@ -235,6 +265,35 @@ To decode this field, use:
 JSON.parse(decodeURIComponent(ot_fides_mapping))
 
 Field defaults to `undefined`.
+
+***
+
+### fides\_consent\_non\_applicable\_flag\_mode
+
+> **fides\_consent\_non\_applicable\_flag\_mode**: `"omit"` \| `"include"`
+
+Define how non-applicable privacy notices are handled.
+
+When set to "include", consent preferences will include notices in the system that are not applicable
+to the current experience, and will set the notice as implicitly consented.
+
+When set to "omit" (default), non-applicable notices will be omitted.
+
+Defaults to "omit".
+
+***
+
+### fides\_consent\_flag\_type
+
+> **fides\_consent\_flag\_type**: `"boolean"` \| `"consent_mechanism"`
+
+Define the type of flag to use for consent values.
+
+When set to "boolean", consent preferences will be set as boolean values.
+When set to "consent_mechanism", consent preferences will be set as string values based on the
+consent mechanism (e.g. "opt-in", "opt-out", "non-applicable").
+
+Defaults to "boolean".
 
 ***
 

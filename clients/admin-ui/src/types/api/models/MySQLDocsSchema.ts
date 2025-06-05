@@ -2,6 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { MySQLSSLMode } from "./MySQLSSLMode";
+
 /**
  * MySQL Secrets Schema for API Docs
  */
@@ -30,4 +32,8 @@ export type MySQLDocsSchema = {
    * Indicates whether an SSH tunnel is required for the connection. Enable this option if your MySQL server is behind a firewall and requires SSH tunneling for remote connections.
    */
   ssh_required?: boolean;
+  /**
+   * The SSL mode to use for the connection. Accepted values are: 'required', 'preferred', 'disabled', or an empty value.
+   */
+  ssl_mode?: MySQLSSLMode | null;
 };

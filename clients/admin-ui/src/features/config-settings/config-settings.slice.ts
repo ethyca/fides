@@ -11,7 +11,7 @@ import {
   PrivacyExperienceGPPSettings,
   SecurityApplicationConfig,
 } from "~/types/api";
-import { PlusConsentSettings } from "~/types/api/models/PlusConsentSettings";
+import { PlusConsentSettingsApplicationConfig } from "~/types/api/models/PlusConsentSettingsApplicationConfig";
 
 import type { RootState } from "../../app/store";
 
@@ -111,12 +111,14 @@ export const selectCORSOrigins: (state: RootState) => CORSOriginsSettings =
     },
   );
 
-export const selectApplicationConfig = () =>
+export const selectApplicationConfig = (
+  { api_set = true }: { api_set: boolean } = { api_set: true },
+) =>
   createSelector(
     [
       (state) => state,
       configSettingsApi.endpoints.getConfigurationSettings.select({
-        api_set: true,
+        api_set,
       }),
     ],
     (_, { data }) => data as ApplicationConfig,
@@ -173,13 +175,13 @@ export const selectGppSettings: (
   },
 );
 
-const defaultPlusConsentSettings: PlusConsentSettings = {
+const defaultPlusConsentSettings: PlusConsentSettingsApplicationConfig = {
   tcf_publisher_country_code: null,
 };
 
 export const selectPlusConsentSettings: (
   state: RootState,
-) => PlusConsentSettings = createSelector(
+) => PlusConsentSettingsApplicationConfig = createSelector(
   [
     (state) => state,
     configSettingsApi.endpoints.getConfigurationSettings.select({
@@ -193,6 +195,32 @@ export const selectPlusConsentSettings: (
     return selectSetting(
       "plus_consent_settings",
       defaultPlusConsentSettings,
+      apiSetConfig,
+      config,
+    );
+  },
+);
+
+const defaultPlusSecuritySettings = {
+  allow_username_password_login: false,
+};
+
+export const selectPlusSecuritySettings: (
+  state: RootState,
+) => typeof defaultPlusSecuritySettings = createSelector(
+  [
+    (state) => state,
+    configSettingsApi.endpoints.getConfigurationSettings.select({
+      api_set: true,
+    }),
+    configSettingsApi.endpoints.getConfigurationSettings.select({
+      api_set: false,
+    }),
+  ],
+  (state, { data: apiSetConfig }, { data: config }) => {
+    return selectSetting(
+      "plus_security_settings",
+      defaultPlusSecuritySettings,
       apiSetConfig,
       config,
     );

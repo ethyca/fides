@@ -119,11 +119,17 @@ services:
 
   worker:
     image: ethyca/fides:local
-    command: fides worker --exclude-queues=fides.dsr,fides.privacy_preferences  # exclude DSRs and privacy preferences queues
+    command: fides worker --exclude-queues=fides.dsr,fides.privacy_preferences,fidesplus.discovery_monitors_detection,fidesplus.discovery_monitors_classification,fidesplus.discovery_monitors_promotion # exclude DSRs, privacy preferences, and discovery monitor queues
     depends_on:
       redis:
         condition: service_started
     restart: always
+    healthcheck:
+      test: ["CMD", "celery", "-A", "fides.api.tasks", "inspect", "ping"]
+      start_period: 60s
+      interval: 20s
+      timeout: 5s
+      retries: 10
     environment:
       FIDES__CONFIG_PATH: ${FIDES__CONFIG_PATH:-/fides/.fides/fides.toml}
       FIDES__LOGGING__COLORIZE: "True"
@@ -142,6 +148,12 @@ services:
       redis:
         condition: service_started
     restart: always
+    healthcheck:
+      test: ["CMD", "celery", "-A", "fides.api.tasks", "inspect", "ping"]
+      start_period: 60s
+      interval: 20s
+      timeout: 5s
+      retries: 10
     environment:
       FIDES__CONFIG_PATH: ${FIDES__CONFIG_PATH:-/fides/.fides/fides.toml}
       FIDES__LOGGING__COLORIZE: "True"
@@ -160,6 +172,12 @@ services:
       redis:
         condition: service_started
     restart: always
+    healthcheck:
+      test: ["CMD", "celery", "-A", "fides.api.tasks", "inspect", "ping"]
+      start_period: 60s
+      interval: 20s
+      timeout: 5s
+      retries: 10
     environment:
       FIDES__CONFIG_PATH: ${FIDES__CONFIG_PATH:-/fides/.fides/fides.toml}
       FIDES__LOGGING__COLORIZE: "True"

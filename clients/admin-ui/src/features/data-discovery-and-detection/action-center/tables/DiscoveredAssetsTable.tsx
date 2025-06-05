@@ -6,17 +6,14 @@ import {
 import {
   AntButton as Button,
   AntDefaultOptionType as DefaultOptionType,
+  AntDropdown as Dropdown,
   AntEmpty as Empty,
   AntTooltip as Tooltip,
   Flex,
   HStack,
   Icons,
-  Menu,
-  MenuButton,
-  MenuDivider,
-  MenuItem,
-  MenuList,
   Text,
+  useToast,
 } from "fidesui";
 import { uniq } from "lodash";
 import { useRouter } from "next/router";
@@ -24,9 +21,9 @@ import { useEffect, useState } from "react";
 
 import DataTabsHeader from "~/features/common/DataTabsHeader";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { useAlert } from "~/features/common/hooks";
 import {
   ACTION_CENTER_ROUTE,
+  SYSTEM_ROUTE,
   UNCATEGORIZED_SEGMENT,
 } from "~/features/common/nav/routes";
 import {
@@ -36,19 +33,22 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   useAddMonitorResultAssetsMutation,
   useAddMonitorResultSystemsMutation,
   useGetDiscoveredAssetsQuery,
   useIgnoreMonitorResultAssetsMutation,
+  useRestoreMonitorResultAssetsMutation,
   useUpdateAssetsMutation,
   useUpdateAssetsSystemMutation,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import AddDataUsesModal from "~/features/data-discovery-and-detection/action-center/AddDataUsesModal";
-import useDiscoveredAssetsTabs from "~/features/data-discovery-and-detection/action-center/tables/useDiscoveredAssetsTabs";
+import useActionCenterTabs from "~/features/data-discovery-and-detection/action-center/tables/useActionCenterTabs";
+import { successToastContent } from "~/features/data-discovery-and-detection/action-center/utils/successToastContent";
 import { DiffStatus } from "~/types/api";
 
-import { SearchInput } from "../../SearchInput";
+import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
 import { AssignSystemModal } from "../AssignSystemModal";
 import { useDiscoveredAssetsColumns } from "../hooks/useDiscoveredAssetsColumns";
 
@@ -64,6 +64,8 @@ export const DiscoveredAssetsTable = ({
   onSystemName,
 }: DiscoveredAssetsTableProps) => {
   const router = useRouter();
+  const tabHash = router.asPath.split("#")[1];
+
   const [systemName, setSystemName] = useState(systemId);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [isAssignSystemModalOpen, setIsAssignSystemModalOpen] =
@@ -80,12 +82,17 @@ export const DiscoveredAssetsTable = ({
     useUpdateAssetsSystemMutation();
   const [updateAssetsMutation, { isLoading: isBulkAddingDataUses }] =
     useUpdateAssetsMutation();
+  const [
+    restoreMonitorResultAssetsMutation,
+    { isLoading: isRestoringResults },
+  ] = useRestoreMonitorResultAssetsMutation();
 
   const anyBulkActionIsLoading =
     isAddingResults ||
     isIgnoringResults ||
     isAddingAllResults ||
-    isBulkUpdatingSystem;
+    isBulkUpdatingSystem ||
+    isRestoringResults;
 
   const disableAddAll =
     anyBulkActionIsLoading || systemId === UNCATEGORIZED_SEGMENT;
@@ -105,14 +112,20 @@ export const DiscoveredAssetsTable = ({
     resetPageIndexToDefault,
   } = useServerSidePagination();
   const [searchQuery, setSearchQuery] = useState("");
-  const { successAlert, errorAlert } = useAlert();
+
+  const toast = useToast();
 
   useEffect(() => {
     resetPageIndexToDefault();
   }, [monitorId, searchQuery, resetPageIndexToDefault]);
 
-  const { filterTabs, filterTabIndex, onTabChange, activeParams } =
-    useDiscoveredAssetsTabs({ systemId });
+  const {
+    filterTabs,
+    filterTabIndex,
+    onTabChange,
+    activeParams,
+    actionsDisabled,
+  } = useActionCenterTabs({ systemId, initialHash: tabHash });
 
   const { data, isLoading, isFetching } = useGetDiscoveredAssetsQuery({
     key: monitorId,
@@ -133,7 +146,8 @@ export const DiscoveredAssetsTable = ({
   }, [data, systemId, onSystemName, setTotalPages, systemName]);
 
   const { columns } = useDiscoveredAssetsColumns({
-    readonly: activeParams.diff_status.includes(DiffStatus.MONITORED),
+    readonly: actionsDisabled,
+    onTabChange,
   });
 
   const tableInstance = useReactTable({
@@ -143,25 +157,53 @@ export const DiscoveredAssetsTable = ({
     data: data?.items || [],
     columnResizeMode: "onChange",
     onRowSelectionChange: setRowSelection,
+    getRowId: (row) => row.urn,
     state: {
       rowSelection,
     },
   });
 
-  const selectedRows = tableInstance.getSelectedRowModel().rows;
-  const selectedUrns = selectedRows.map((row) => row.original.urn);
+  const selectedUrns = tableInstance
+    .getSelectedRowModel()
+    .rows.map((row) => row.original.urn);
 
   const handleBulkAdd = async () => {
     const result = await addMonitorResultAssetsMutation({
       urnList: selectedUrns,
     });
+    const selectedAssets =
+      data?.items.filter((asset) => selectedUrns.includes(asset.urn)) ?? [];
+
+    const systemKey =
+      selectedAssets[0]?.user_assigned_system_key ||
+      selectedAssets[0]?.system_key;
+    const allAssetsHaveSameSystemKey = selectedAssets.every((a) => {
+      const assetKey = a.user_assigned_system_key || a.system_key;
+      return assetKey === systemKey;
+    });
+
+    const systemKeyFromResult = result.data?.[0]?.promoted_system_key;
+
+    const systemToLink = allAssetsHaveSameSystemKey
+      ? (systemKeyFromResult ?? systemKey)
+      : undefined;
+
     if (isErrorResult(result)) {
-      errorAlert(getErrorMessage(result.error));
+      toast(errorToastParams(getErrorMessage(result.error)));
     } else {
       tableInstance.resetRowSelection();
-      successAlert(
-        `${selectedUrns.length} assets from ${systemName} have been added to the system inventory.`,
-        `Confirmed`,
+      toast(
+        successToastParams(
+          successToastContent(
+            `${selectedUrns.length} assets from ${systemName} have been added to the system inventory.`,
+            systemToLink
+              ? () =>
+                  router.push(
+                    `${SYSTEM_ROUTE}/configure/${systemToLink}#assets`,
+                  )
+              : () => router.push(SYSTEM_ROUTE),
+          ),
+        ),
       );
     }
   };
@@ -174,12 +216,13 @@ export const DiscoveredAssetsTable = ({
         systemKey: selectedSystem.value,
       });
       if (isErrorResult(result)) {
-        errorAlert(getErrorMessage(result.error));
+        toast(errorToastParams(getErrorMessage(result.error)));
       } else {
-        tableInstance.resetRowSelection();
-        successAlert(
-          `${selectedUrns.length} assets have been assigned to ${selectedSystem.label}.`,
-          `Confirmed`,
+        toast(
+          successToastParams(
+            `${selectedUrns.length} assets have been assigned to ${selectedSystem.label}.`,
+            `Confirmed`,
+          ),
         );
       }
     }
@@ -209,30 +252,53 @@ export const DiscoveredAssetsTable = ({
       assets,
     });
     if (isErrorResult(result)) {
-      errorAlert(getErrorMessage(result.error));
+      toast(errorToastParams(getErrorMessage(result.error)));
     } else {
-      tableInstance.resetRowSelection();
-      successAlert(
-        `Consent categories added to ${selectedUrns.length} assets${
-          systemName ? ` from ${systemName}` : ""
-        }.`,
-        `Confirmed`,
+      toast(
+        successToastParams(
+          `Consent categories added to ${selectedUrns.length} assets${
+            systemName ? ` from ${systemName}` : ""
+          }.`,
+          `Confirmed`,
+        ),
       );
     }
     setIsAddDataUseModalOpen(false);
   };
 
+  // TODO: add toast link to ignored tab
   const handleBulkIgnore = async () => {
     const result = await ignoreMonitorResultAssetsMutation({
       urnList: selectedUrns,
     });
     if (isErrorResult(result)) {
-      errorAlert(getErrorMessage(result.error));
+      toast(errorToastParams(getErrorMessage(result.error)));
     } else {
       tableInstance.resetRowSelection();
-      successAlert(
-        `${selectedUrns.length} assets from ${systemName} have been ignored and will not appear in future scans.`,
-        `Confirmed`,
+      toast(
+        successToastParams(
+          systemName === UNCATEGORIZED_SEGMENT
+            ? `${selectedUrns.length} uncategorized assets have been ignored and will not appear in future scans.`
+            : `${selectedUrns.length} assets from ${systemName} have been ignored and will not appear in future scans.`,
+          `Confirmed`,
+        ),
+      );
+    }
+  };
+
+  const handleBulkRestore = async () => {
+    const result = await restoreMonitorResultAssetsMutation({
+      urnList: selectedUrns,
+    });
+    if (isErrorResult(result)) {
+      toast(errorToastParams(getErrorMessage(result.error)));
+    } else {
+      tableInstance.resetRowSelection();
+      toast(
+        successToastParams(
+          `${selectedUrns.length} assets have been restored and will appear in future scans.`,
+          `Confirmed`,
+        ),
       );
     }
   };
@@ -245,14 +311,21 @@ export const DiscoveredAssetsTable = ({
     });
 
     if (isErrorResult(result)) {
-      errorAlert(getErrorMessage(result.error));
+      toast(errorToastParams(getErrorMessage(result.error)));
     } else {
       router.push(`${ACTION_CENTER_ROUTE}/${monitorId}`);
-      successAlert(
-        `${assetCount} assets from ${systemName} have been added to the system inventory.`,
-        `Confirmed`,
+      toast(
+        successToastParams(
+          `${assetCount} assets from ${systemName} have been added to the system inventory.`,
+          `Confirmed`,
+        ),
       );
     }
+  };
+
+  const handleTabChange = (index: number) => {
+    onTabChange(index);
+    setRowSelection({});
   };
 
   if (!monitorId || !systemId) {
@@ -267,14 +340,18 @@ export const DiscoveredAssetsTable = ({
     <>
       <DataTabsHeader
         data={filterTabs}
-        data-testid="system-tabs"
+        data-testid="filter-tabs"
         index={filterTabIndex}
         isLazy
         isManual
-        onChange={onTabChange}
+        onChange={handleTabChange}
       />
       <TableActionBar>
-        <SearchInput value={searchQuery} onChange={setSearchQuery} />
+        <DebouncedSearchInput
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder="Search by asset name..."
+        />
         <Flex alignItems="center">
           {!!selectedUrns.length && (
             <Text
@@ -286,53 +363,61 @@ export const DiscoveredAssetsTable = ({
             >{`${selectedUrns.length} selected`}</Text>
           )}
           <HStack>
-            <Menu>
-              <MenuButton
-                as={Button}
+            <Dropdown
+              menu={{
+                items: [
+                  {
+                    key: "add",
+                    label: "Add",
+                    onClick: handleBulkAdd,
+                  },
+                  {
+                    key: "add-data-use",
+                    label: "Add consent category",
+                    onClick: () => setIsAddDataUseModalOpen(true),
+                  },
+                  {
+                    key: "assign-system",
+                    label: "Assign system",
+                    onClick: () => setIsAssignSystemModalOpen(true),
+                  },
+                  ...(activeParams.diff_status.includes(DiffStatus.MUTED)
+                    ? [
+                        {
+                          key: "restore",
+                          label: "Restore",
+                          onClick: handleBulkRestore,
+                        },
+                      ]
+                    : [
+                        {
+                          type: "divider" as const,
+                        },
+                        {
+                          key: "ignore",
+                          label: "Ignore",
+                          onClick: handleBulkIgnore,
+                        },
+                      ]),
+                ],
+              }}
+              trigger={["click"]}
+            >
+              <Button
                 icon={<Icons.ChevronDown />}
                 iconPosition="end"
                 loading={anyBulkActionIsLoading}
                 data-testid="bulk-actions-menu"
-                disabled={!selectedUrns.length || anyBulkActionIsLoading}
-                // @ts-ignore - `type` prop is for Ant button, not Chakra MenuButton
+                disabled={
+                  !selectedUrns.length ||
+                  anyBulkActionIsLoading ||
+                  actionsDisabled
+                }
                 type="primary"
               >
                 Actions
-              </MenuButton>
-              <MenuList>
-                <MenuItem
-                  fontSize="small"
-                  onClick={handleBulkAdd}
-                  data-testid="bulk-add"
-                >
-                  Add
-                </MenuItem>
-                <MenuItem
-                  fontSize="small"
-                  onClick={() => setIsAddDataUseModalOpen(true)}
-                  data-testid="bulk-add-data-use"
-                >
-                  Add consent category
-                </MenuItem>
-                <MenuItem
-                  fontSize="small"
-                  onClick={() => {
-                    setIsAssignSystemModalOpen(true);
-                  }}
-                  data-testid="bulk-assign-system"
-                >
-                  Assign system
-                </MenuItem>
-                <MenuDivider />
-                <MenuItem
-                  fontSize="small"
-                  onClick={handleBulkIgnore}
-                  data-testid="bulk-ignore"
-                >
-                  Ignore
-                </MenuItem>
-              </MenuList>
-            </Menu>
+              </Button>
+            </Dropdown>
 
             <Tooltip
               title={

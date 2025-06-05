@@ -4,3 +4,4 @@ node_modules/
 out/
 dist/
 public/lib/
+public/scripts/

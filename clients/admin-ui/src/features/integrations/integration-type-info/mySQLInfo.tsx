@@ -7,6 +7,7 @@ import {
 } from "~/features/common/copy/components";
 import ShowMoreContent from "~/features/common/copy/ShowMoreContent";
 import { ConnectionCategory } from "~/features/integrations/ConnectionCategory";
+import { IntegrationFeatureEnum } from "~/features/integrations/IntegrationFeatureEnum";
 import { AccessLevel, ConnectionType } from "~/types/api";
 
 export const MYSQL_PLACEHOLDER = {
@@ -17,12 +18,17 @@ export const MYSQL_PLACEHOLDER = {
   created_at: "",
 };
 
-export const MYSQL_TAGS = ["Database", "Detection", "Discovery", "MySQL"];
+export const MYSQL_TAGS = ["DSR Automation", "Discovery", "Detection"];
 
 export const MySQLOverview = () => (
   <>
     <InfoHeading text="Overview" />
-    <InfoText>Add infotext</InfoText>
+    <InfoText>
+      Continuously monitor MySQL databases to detect and track schema-level
+      changes, automatically discover and label data categories as well as
+      automatically process DSR (privacy requests) and consent enforcement to
+      proactively manage data governance risks.
+    </InfoText>
     <ShowMoreContent>
       <InfoHeading text="Categories" />
       <InfoUnorderedList>
@@ -56,6 +62,7 @@ const MYSQL_TYPE_INFO = {
   category: ConnectionCategory.DATABASE,
   overview: <MySQLOverview />,
   tags: MYSQL_TAGS,
+  enabledFeatures: [IntegrationFeatureEnum.DATA_DISCOVERY],
 };
 
 export default MYSQL_TYPE_INFO;

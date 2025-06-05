@@ -365,8 +365,6 @@ class TestPutStorageConfigSecretsS3:
         )
         assert response.status_code == 400
         assert response.json()["detail"] == [
-            "Field required ('aws_access_key_id',)",
-            "Field required ('aws_secret_access_key',)",
             "Extra inputs are not permitted ('bad_key',)",
         ]
 
@@ -459,8 +457,10 @@ class TestPutStorageConfigSecretsS3:
         get_aws_session_mock.assert_called_once_with(
             AWSAuthMethod.SECRET_KEYS.value,
             {
+                "assume_role_arn": None,
                 "aws_access_key_id": payload["aws_access_key_id"],
                 "aws_secret_access_key": payload["aws_secret_access_key"],
+                "region_name": None,
             },
         )
 
@@ -1110,8 +1110,6 @@ class TestPutDefaultStorageConfigSecretsS3:
         )
 
         assert response.json()["detail"] == [
-            "Field required ('aws_access_key_id',)",
-            "Field required ('aws_secret_access_key',)",
             "Extra inputs are not permitted ('bad_key',)",
         ]
         assert response.status_code == 400
@@ -1221,10 +1219,12 @@ class TestPutDefaultStorageConfigSecretsS3:
         response = api_client.put(url, headers=auth_header, json=payload)
         assert 200 == response.status_code
         get_aws_session_mock.assert_called_once_with(
-            AWSAuthMethod.SECRET_KEYS.value,
+            AWSAuthMethod.AUTOMATIC.value,
             {
                 "aws_access_key_id": payload["aws_access_key_id"],
                 "aws_secret_access_key": payload["aws_secret_access_key"],
+                "region_name": None,
+                "assume_role_arn": None,
             },
         )
 
@@ -1650,3 +1650,55 @@ class TestGetStorageStatus:
         response = StorageConfigStatusMessage(**response.json())
         assert response.config_status == StorageConfigStatus.configured
         assert StorageType.s3.value in (response.detail)
+
+    @pytest.fixture(scope="function")
+    def active_default_storage_gcs(self, db, config_proxy: ConfigProxy):
+        """Set gcs as the `active_default_storage_type` property"""
+        original_value = config_proxy.storage.active_default_storage_type
+        ApplicationConfig.update_api_set(
+            db, {"storage": {"active_default_storage_type": StorageType.gcs.value}}
+        )
+        yield
+        ApplicationConfig.update_api_set(
+            db, {"storage": {"active_default_storage_type": original_value}}
+        )
+
+    @pytest.mark.usefixtures("active_default_storage_gcs", "storage_config_default_gcs")
+    def test_get_storage_status_gcs(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        """
+        We should get back a successful response now that
+        we set gcs as the `active_default_storage_type` via app setting
+        and the config has been added via fixture
+        """
+        auth_header = generate_auth_header([STORAGE_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+        response = StorageConfigStatusMessage(**response.json())
+        assert response.config_status == StorageConfigStatus.configured
+        assert StorageType.gcs.value in (response.detail)
+
+    @pytest.mark.usefixtures(
+        "active_default_storage_gcs", "storage_config_default_gcs_service_account_keys"
+    )
+    def test_get_storage_status_gcs_service_account_keys(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        """
+        We should get back a successful response now that
+        we set gcs as the `active_default_storage_type` via app setting
+        and the config has been added via fixture
+        """
+        auth_header = generate_auth_header([STORAGE_READ])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 200
+        response = StorageConfigStatusMessage(**response.json())
+        assert response.config_status == StorageConfigStatus.configured
+        assert StorageType.gcs.value in (response.detail)

@@ -94,14 +94,11 @@ const CustomAssetUploadModal = ({
             To customize the appearance of your consent experiences, you may
             upload a CSS stylesheet. To download a template as a helpful
             starting point, click{" "}
-            <DocsLink
-              href="https://raw.githubusercontent.com/ethyca/fides/main/clients/fides-js/src/components/fides.css"
-              isExternal
-            >
+            <DocsLink href="https://raw.githubusercontent.com/ethyca/fides/main/clients/fides-js/src/components/fides.css">
               here
             </DocsLink>
             .{" "}
-            <DocsLink href="https://fid.es/customize-styles" isExternal>
+            <DocsLink href="https://fid.es/customize-styles">
               Learn more
             </DocsLink>
             .

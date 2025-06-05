@@ -16,6 +16,7 @@ export type RecordListType =
 export interface RecordListItem {
   id: string | number;
   name?: string;
+  notice_key?: string; // guaranteed to be present on custom purposes. Not present for TCF records
   bestTranslation?: PrivacyNoticeTranslation | null; // only used for custom purposes
   disabled?: boolean; // only used for custom purposes
 }
@@ -32,6 +33,7 @@ interface Props<T extends RecordListItem> {
     triggerDetails: FidesEventDetailsTrigger,
   ) => void;
   renderBadgeLabel?: (item: T) => string | undefined;
+  renderGpcBadge?: (item: T) => VNode | undefined;
   hideToggles?: boolean;
 }
 
@@ -42,6 +44,7 @@ const RecordsList = <T extends RecordListItem>({
   enabledIds,
   renderToggleChild,
   renderBadgeLabel,
+  renderGpcBadge,
   onToggle,
   hideToggles,
 }: Props<T>) => {
@@ -72,8 +75,8 @@ const RecordsList = <T extends RecordListItem>({
   }
 
   const getNameForItem = (item: RecordListItem) => {
-    if (type === "vendors") {
-      // Return the (non-localized!) name for vendors
+    if (type === "vendors" || item.notice_key) {
+      // Return the (non-localized!) name for vendors and custom purposes with no translation
       return item.name as string;
     }
     // Otherwise, return the localized name for purposes/features/etc.
@@ -93,6 +96,7 @@ const RecordsList = <T extends RecordListItem>({
           }}
           checked={enabledIds.indexOf(`${item.id}`) !== -1}
           badge={renderBadgeLabel ? renderBadgeLabel(item) : undefined}
+          gpcBadge={renderGpcBadge ? renderGpcBadge(item) : undefined}
           includeToggle={!hideToggles}
           onLabel={toggleOnLabel}
           offLabel={toggleOffLabel}

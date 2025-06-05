@@ -1,13 +1,15 @@
 import { FidesEventType } from "../../src/docs";
+import { gtm } from "../../src/integrations/gtm";
 import {
-  gtm,
-  GtmFlagType,
-  GtmNonApplicableFlagMode,
-} from "../../src/integrations/gtm";
+  ConsentFlagType,
+  ConsentNonApplicableFlagMode,
+} from "../../src/lib/consent-types";
 
 const fidesEvents: Record<FidesEventType, boolean> = {
   FidesInitializing: false,
-  FidesInitialized: true,
+  FidesInitialized: true, // deprecated
+  FidesConsentLoaded: true,
+  FidesReady: true,
   FidesUpdating: true,
   FidesUpdated: true,
   FidesUIChanged: true,
@@ -77,7 +79,7 @@ describe("gtm", () => {
       } as any,
     } as any;
 
-    gtm({ flag_type: GtmFlagType.CONSENT_MECHANISM });
+    gtm({ flag_type: ConsentFlagType.CONSENT_MECHANISM });
     window.dispatchEvent(
       new CustomEvent("FidesUpdated", {
         detail: {
@@ -118,7 +120,7 @@ describe("gtm", () => {
       } as any,
     } as any;
 
-    gtm({ non_applicable_flag_mode: GtmNonApplicableFlagMode.INCLUDE });
+    gtm({ non_applicable_flag_mode: ConsentNonApplicableFlagMode.INCLUDE });
     window.dispatchEvent(
       new CustomEvent("FidesUpdated", {
         detail: {
@@ -138,7 +140,7 @@ describe("gtm", () => {
   });
 
   test("that fides includes not applicable privacy notices and transforms them to strings", () => {
-    gtm({ non_applicable_flag_mode: GtmNonApplicableFlagMode.INCLUDE });
+    gtm({ non_applicable_flag_mode: ConsentNonApplicableFlagMode.INCLUDE });
     window.Fides = {
       experience: {
         privacy_notices: [
@@ -160,8 +162,8 @@ describe("gtm", () => {
     } as any;
 
     gtm({
-      non_applicable_flag_mode: GtmNonApplicableFlagMode.INCLUDE,
-      flag_type: GtmFlagType.CONSENT_MECHANISM,
+      non_applicable_flag_mode: ConsentNonApplicableFlagMode.INCLUDE,
+      flag_type: ConsentFlagType.CONSENT_MECHANISM,
     });
     window.dispatchEvent(
       new CustomEvent("FidesUpdated", {

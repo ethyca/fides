@@ -1,11 +1,10 @@
-import { Flex, Text, Tooltip } from "fidesui";
+import { AntTooltip as Tooltip, Flex, Text } from "fidesui";
 
 import { STATUS_INDICATOR_MAP } from "~/features/data-discovery-and-detection/statusIndicators";
-
-import { MonitorSystemAggregate } from "../../types";
+import { SystemStagedResourcesAggregateRecord } from "~/types/api";
 
 interface DiscoveredSystemStatusCellProps {
-  system: MonitorSystemAggregate;
+  system: SystemStagedResourcesAggregateRecord;
 }
 
 export const DiscoveredSystemStatusCell = ({
@@ -14,7 +13,7 @@ export const DiscoveredSystemStatusCell = ({
   return (
     <Flex alignItems="center" height="100%">
       {!system?.system_key && (
-        <Tooltip label="New system">
+        <Tooltip title="New system">
           {/* icon has to be wrapped in a span for the tooltip to work */}
           <span>{STATUS_INDICATOR_MAP.Change}</span>
         </Tooltip>

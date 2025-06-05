@@ -12,7 +12,7 @@ See the list of reliable properties below for details.
 
 NOTE: FidesJS will need to be downloaded, executed, and initialized before
 the `Fides` object is available. Therefore, your code should check for the
-existence of Fides *or* subscribe to the global `FidesInitialized` event (see
+existence of Fides *or* subscribe to the global `FidesReady` event (see
 [FidesEvent](FidesEvent.md)) for details) before using the `Fides` object in your own code.
 
 ## Properties
@@ -66,7 +66,7 @@ distinguish it from other experiences.
 
 This property corresponds with the "Banner options" in the Banner
 and Modal components. This helps determine which buttons are visible
-on the banner presented to the user. (e.g. `"acknowledge"` or `"opt_in_opt_out"`)
+on the banner presented to the user. (e.g. `"acknowledge"`, `"opt_in_opt_out"`, or `"opt_in_only" (TCF)`)
 
 ***
 
@@ -106,3 +106,12 @@ On Banner and Modal components, this option corresponds to the "Add privacy noti
 > **translations**: `Record`\<`string`, `any`\>[]
 
 List of all available translations for the current experience.
+
+***
+
+### reject\_all\_mechanism
+
+> **reject\_all\_mechanism**: `string`
+
+This corresponds with the "Reject all mechanism" configuration option for TCF overlay experiences.
+Determines whether opting out of all purposes blocks everything (both consent and legitimate interest processing) or only blocks consent-based processing while allowing legitimate interest to continue.

@@ -10,6 +10,7 @@ import {
 } from "~/features/common/copy/components";
 import ShowMoreContent from "~/features/common/copy/ShowMoreContent";
 import { ConnectionCategory } from "~/features/integrations/ConnectionCategory";
+import { IntegrationFeatureEnum } from "~/features/integrations/IntegrationFeatureEnum";
 import { AccessLevel, ConnectionType } from "~/types/api";
 
 export const DYNAMO_PLACEHOLDER = {
@@ -20,7 +21,12 @@ export const DYNAMO_PLACEHOLDER = {
   created_at: "",
 };
 
-export const DYNAMO_TAGS = ["Database", "DynamoDB", "Discovery", "Inventory"];
+export const DYNAMO_TAGS = [
+  "Database",
+  "DSR Automation",
+  "Discovery",
+  "Detection",
+];
 
 export const DynamoOverview = () => (
   <>
@@ -132,6 +138,7 @@ const DYNAMO_TYPE_INFO = {
   overview: <DynamoOverview />,
   instructions: <DynamoInstructions />,
   tags: DYNAMO_TAGS,
+  enabledFeatures: [IntegrationFeatureEnum.DATA_DISCOVERY],
 };
 
 export default DYNAMO_TYPE_INFO;

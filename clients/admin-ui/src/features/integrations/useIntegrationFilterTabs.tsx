@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { useFlags } from "~/features/common/features/features.slice";
 import { IntegrationTypeInfo } from "~/features/integrations/add-integration/allIntegrationTypes";
 
 export enum IntegrationFilterTabs {
@@ -7,11 +8,18 @@ export enum IntegrationFilterTabs {
   DATABASE = "Database",
   DATA_CATALOG = "Data Catalog",
   DATA_WAREHOUSE = "Data Warehouse",
+  IDENTITY_PROVIDER = "Identity Provider",
   WEBSITE = "Website",
+  MANUAL = "Manual",
 }
 
 const useIntegrationFilterTabs = (integrationTypes?: IntegrationTypeInfo[]) => {
-  const tabs = Object.values(IntegrationFilterTabs);
+  const { flags } = useFlags();
+  const tabs = Object.values(IntegrationFilterTabs).filter(
+    (tab) =>
+      (tab !== IntegrationFilterTabs.IDENTITY_PROVIDER || flags.oktaMonitor) &&
+      (tab !== IntegrationFilterTabs.MANUAL || flags.alphaNewManualIntegration), // DEFER (ENG-675): Remove this once the alpha feature is released
+  );
 
   const [tabIndex, setTabIndex] = useState(0);
   const currentTab = tabs[tabIndex];

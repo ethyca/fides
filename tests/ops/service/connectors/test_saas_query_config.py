@@ -547,19 +547,11 @@ class TestSaaSQueryConfig:
         endpoints["conversations"].requests.delete = SaaSRequest(
             method="DELETE", path="/api/0/<conversation>/<conversation_id>/"
         )
-        # Delete endpoint not used because masking_strict is True
-        assert CONFIG.execution.masking_strict is True
-
-        query_config = SaaSQueryConfig(conversations, endpoints, {})
-        saas_request = query_config.get_masking_request(db)
-        assert saas_request is None
-
-        # Override masking_strict to False
-        original_value = CONFIG.execution.masking_strict
-        CONFIG.execution.masking_strict = False
-        ApplicationConfig.update_config_set(db, CONFIG)
 
         # Now delete endpoint is selected as conversations masking request
+        query_config = SaaSQueryConfig(
+            conversations, endpoints, {}
+        )  # Re-initialize for conversations
         saas_request: SaaSRequest = query_config.get_masking_request(db)
         assert saas_request.path == "/api/0/<conversation>/<conversation_id>/"
         assert saas_request.method == "DELETE"
@@ -574,11 +566,6 @@ class TestSaaSQueryConfig:
         saas_request: SaaSRequest = query_config.get_masking_request(db)
         assert saas_request.path == "/api/0/gdpr_delete"
         assert saas_request.method == "PUT"
-
-        # Reset
-        CONFIG.notifications.enable_property_specific_messaging = original_value
-        ApplicationConfig.update_config_set(db, CONFIG)
-        del endpoints["conversations"].requests.delete
 
     def test_list_param_values(
         self, combined_traversal, saas_example_connection_config, policy

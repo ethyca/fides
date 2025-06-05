@@ -7,6 +7,7 @@ import {
 } from "~/features/common/copy/components";
 import ShowMoreContent from "~/features/common/copy/ShowMoreContent";
 import { ConnectionCategory } from "~/features/integrations/ConnectionCategory";
+import { IntegrationFeatureEnum } from "~/features/integrations/IntegrationFeatureEnum";
 import { AccessLevel, ConnectionType } from "~/types/api";
 
 export const SNOWFLAKE_PLACEHOLDER = {
@@ -17,12 +18,7 @@ export const SNOWFLAKE_PLACEHOLDER = {
   created_at: "",
 };
 
-export const SNOWFLAKE_TAGS = [
-  "Data warehouse",
-  "Detection",
-  "Discovery",
-  "DSR automation",
-];
+export const SNOWFLAKE_TAGS = ["DSR Automation", "Discovery", "Detection"];
 
 export const SnowflakeOverview = () => (
   <>
@@ -64,9 +60,10 @@ export const SnowflakeOverview = () => (
 
 const SNOWFLAKE_TYPE_INFO = {
   placeholder: SNOWFLAKE_PLACEHOLDER,
-  category: ConnectionCategory.DATABASE,
+  category: ConnectionCategory.DATA_WAREHOUSE,
   overview: <SnowflakeOverview />,
   tags: SNOWFLAKE_TAGS,
+  enabledFeatures: [IntegrationFeatureEnum.DATA_DISCOVERY],
 };
 
 export default SNOWFLAKE_TYPE_INFO;

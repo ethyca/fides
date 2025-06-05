@@ -6,30 +6,20 @@ from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 
 
-@pytest.mark.skip(
-    "Flaky Test - to be investigated in https://ethyca.atlassian.net/browse/LJ-425"
-)
 @pytest.mark.integration_saas
 class TestHubspotConnector:
 
     def test_hubspot_connection_test(self, hubspot_runner: ConnectorRunner) -> None:
         hubspot_runner.test_connection()
 
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
-    )
     async def test_hubspot_access_request_task(
         self,
         hubspot_runner: ConnectorRunner,
-        dsr_version,
-        request,
         policy: Policy,
         hubspot_identity_email,
         hubspot_data,
     ) -> None:
         """Full access request based on the Hubspot SaaS config"""
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
         dataset_name = hubspot_runner.dataset_config.fides_key
 
@@ -75,7 +65,7 @@ class TestHubspotConnector:
         (
             _,
             erasure_results,
-        ) = await hubspot_runner.non_strict_erasure_request(
+        ) = await hubspot_runner.erasure_request(
             access_policy=policy,
             erasure_policy=erasure_policy_string_rewrite_name_and_email,
             identities={"email": hubspot_identity_email},

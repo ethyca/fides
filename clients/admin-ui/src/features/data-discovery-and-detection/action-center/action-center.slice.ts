@@ -3,14 +3,13 @@ import { getQueryParamsFromArray } from "~/features/common/utils";
 import {
   DiffStatus,
   Page_StagedResourceAPIResponse_,
+  Page_SystemStagedResourcesAggregateRecord_,
   StagedResourceAPIResponse,
 } from "~/types/api";
+import { PromotedResourceResponse } from "~/types/api/models/PromotedResourceResponse";
 import { PaginationQueryParams } from "~/types/common/PaginationQueryParams";
 
-import {
-  MonitorSummaryPaginatedResponse,
-  MonitorSystemAggregatePaginatedResponse,
-} from "./types";
+import { MonitorSummaryPaginatedResponse } from "./types";
 
 interface MonitorResultSystemQueryParams {
   monitor_config_key: string;
@@ -39,20 +38,21 @@ const actionCenterApi = baseApi.injectEndpoints({
       providesTags: ["Discovery Monitor Results"],
     }),
     getDiscoveredSystemAggregate: build.query<
-      MonitorSystemAggregatePaginatedResponse,
+      Page_SystemStagedResourcesAggregateRecord_,
       {
         key: string;
         search?: string;
+        diff_status?: DiffStatus[];
       } & PaginationQueryParams
     >({
-      query: ({ key, page = 1, size = 20, search }) => ({
+      query: ({ key, page = 1, size = 20, search, diff_status }) => ({
         url: `/plus/discovery-monitor/system-aggregate-results`,
         params: {
           monitor_config_id: key,
           page,
           size,
           search,
-          diff_status: "addition",
+          diff_status,
         },
       }),
       providesTags: ["Discovery Monitor Results"],
@@ -106,7 +106,10 @@ const actionCenterApi = baseApi.injectEndpoints({
       },
       invalidatesTags: ["Discovery Monitor Results"],
     }),
-    addMonitorResultAssets: build.mutation<any, { urnList?: string[] }>({
+    addMonitorResultAssets: build.mutation<
+      PromotedResourceResponse[],
+      { urnList?: string[] }
+    >({
       query: (params) => {
         const queryParams = new URLSearchParams();
         params.urnList?.forEach((urn) =>
@@ -128,6 +131,21 @@ const actionCenterApi = baseApi.injectEndpoints({
         return {
           method: "POST",
           url: `/plus/discovery-monitor/mute?${queryParams}`,
+        };
+      },
+      invalidatesTags: ["Discovery Monitor Results"],
+    }),
+    restoreMonitorResultAssets: build.mutation<any, { urnList?: string[] }>({
+      query: (params) => {
+        const queryParams = new URLSearchParams({
+          status_to_set: DiffStatus.ADDITION,
+        });
+        params.urnList?.forEach((urn) =>
+          queryParams.append("staged_resource_urns", urn),
+        );
+        return {
+          method: "POST",
+          url: `/plus/discovery-monitor/un-mute?${queryParams}`,
         };
       },
       invalidatesTags: ["Discovery Monitor Results"],
@@ -190,6 +208,7 @@ export const {
   useIgnoreMonitorResultSystemsMutation,
   useAddMonitorResultAssetsMutation,
   useIgnoreMonitorResultAssetsMutation,
+  useRestoreMonitorResultAssetsMutation,
   useUpdateAssetsSystemMutation,
   useUpdateAssetsDataUseMutation,
   useUpdateAssetsMutation,

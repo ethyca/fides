@@ -266,7 +266,7 @@ describe("Privacy experiences", () => {
         cy.get("#preview-container")
           .find("#fides-banner")
           .find("#fides-banner-notices")
-          .contains("Essential");
+          .contains("Data Sales and Sharing");
       });
 
       it("does not show option to display privacy notices in modal preview when clicked", () => {
@@ -322,7 +322,7 @@ describe("Privacy experiences", () => {
         );
       });
 
-      it("doesn't show a preview while editing TCF experience", () => {
+      it("shows a preview while editing TCF experience", () => {
         cy.fixture("privacy-experiences/experienceConfig.json").then((data) => {
           cy.intercept("GET", "/api/v1/experience-config/pri*", {
             ...data,
@@ -331,9 +331,124 @@ describe("Privacy experiences", () => {
         });
         cy.wait("@getTCFExperience");
         cy.getByTestId("input-dismissable").should("be.visible");
-        cy.getByTestId("no-preview-notice").contains(
-          "TCF overlay preview not available",
+        cy.get(`#${PREVIEW_CONTAINER_ID}`).contains(
+          "Manage your consent preferences",
         );
+      });
+
+      it("can edit the TCF configuration for a TCF experience", () => {
+        cy.intercept("GET", "/api/v1/config*", {
+          body: {
+            consent: {
+              override_vendor_purposes: true,
+            },
+          },
+        });
+        // Load a TCF experience that already has a config assigned
+        cy.fixture("privacy-experiences/experienceConfig.json").then((data) => {
+          cy.intercept("GET", "/api/v1/experience-config/pri_001", {
+            ...data,
+            id: "pri_001",
+            component: "tcf_overlay",
+            tcf_configuration_id: "tcf_config_1", // Assign initial config
+          }).as("getTCFExperience");
+        });
+        cy.intercept("PATCH", "/api/v1/experience-config/pri_001", {
+          fixture: "privacy-experiences/experienceConfig.json",
+        }).as("patchExperience");
+
+        cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/pri_001`);
+        cy.wait("@getTCFExperience");
+        cy.wait("@getTcfConfigs"); // Make sure configs are loaded
+
+        // Verify the select is visible and has the initial value
+        cy.getByTestId("controlled-select-tcf_configuration_id")
+          .should("be.visible")
+          .contains("Default TCF Config");
+
+        // Change the TCF config
+        cy.getByTestId("controlled-select-tcf_configuration_id").antSelect(
+          "Strict TCF Config",
+        );
+        cy.getByTestId("save-btn").click();
+        cy.wait("@patchExperience").then((interception) => {
+          const { body } = interception.request;
+          expect(body.tcf_configuration_id).to.eql("tcf_config_2");
+        });
+        cy.getByTestId("toast-success-msg").should("exist");
+
+        // Clear the TCF config
+        cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/pri_001`); // Re-visit to reset state
+        cy.wait("@getTCFExperience");
+        cy.wait("@getTcfConfigs");
+        cy.getByTestId("controlled-select-tcf_configuration_id")
+          .should("be.visible")
+          .find(".ant-select-clear")
+          .click();
+        cy.getByTestId("save-btn").click();
+        cy.wait("@patchExperience").then((interception) => {
+          const { body } = interception.request;
+          // Depending on backend behavior, this might be null or undefined
+          expect(body.tcf_configuration_id).to.be.oneOf([null, undefined]);
+        });
+        cy.getByTestId("toast-success-msg").should("exist");
+      });
+
+      it("disables the TCF Publisher Override configuration when the consent override is disabled", () => {
+        cy.intercept("GET", "/api/v1/config*", {
+          body: {
+            consent: {
+              override_vendor_purposes: false,
+            },
+          },
+        });
+        // Load a TCF experience that already has a config assigned
+        cy.fixture("privacy-experiences/experienceConfig.json").then((data) => {
+          cy.intercept("GET", "/api/v1/experience-config/pri_001", {
+            ...data,
+            id: "pri_001",
+            component: "tcf_overlay",
+            tcf_configuration_id: "tcf_config_1", // Assign initial config
+          }).as("getTCFExperience");
+        });
+        cy.intercept("PATCH", "/api/v1/experience-config/pri_001", {
+          fixture: "privacy-experiences/experienceConfig.json",
+        }).as("patchExperience");
+
+        cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/pri_001`);
+        cy.wait("@getTCFExperience");
+        cy.wait("@getTcfConfigs"); // Make sure configs are loaded
+        cy.getByTestId("controlled-select-tcf_configuration_id")
+          .should("be.visible")
+          .should("have.class", "ant-select-disabled");
+      });
+
+      it("disables the TCF Publisher Override configuration when there are no TCF configs", () => {
+        cy.intercept("GET", "/api/v1/config*", {
+          body: {
+            consent: {
+              override_vendor_purposes: true,
+            },
+          },
+        });
+        // Load a TCF experience that already has a config assigned
+        cy.fixture("privacy-experiences/experienceConfig.json").then((data) => {
+          cy.intercept("GET", "/api/v1/experience-config/pri_001", {
+            ...data,
+            id: "pri_001",
+            component: "tcf_overlay",
+          }).as("getTCFExperience");
+        });
+        cy.intercept("GET", "/api/v1/plus/tcf/configurations*", {
+          items: [],
+        }).as("getTcfConfigs");
+
+        cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/pri_001`);
+        cy.wait("@getTCFExperience");
+        cy.wait("@getTcfConfigs"); // Make sure configs are loaded
+        cy.getByTestId("controlled-select-tcf_configuration_id")
+          .should("be.visible")
+          .should("have.class", "ant-select-disabled");
       });
     });
 
@@ -348,14 +463,16 @@ describe("Privacy experiences", () => {
       });
 
       it("shows the preview for the translation currently being edited", () => {
-        cy.getByTestId("language-row-fr").click();
+        cy.getByTestId("language-row-fr").realHover();
+        cy.getByTestId("edit-language-row-fr").click({ force: true });
         cy.get(`#${PREVIEW_CONTAINER_ID}`).contains(
           "Gestion du consentement et des préférences",
         );
       });
 
       it("allows discarding unsaved changes after showing a modal", () => {
-        cy.getByTestId("language-row-en").click();
+        cy.getByTestId("language-row-en").realHover();
+        cy.getByTestId("edit-language-row-en").click({ force: true });
         cy.getByTestId("input-translations.0.title")
           .clear()
           .type("Some other title");
@@ -367,7 +484,8 @@ describe("Privacy experiences", () => {
       });
 
       it("allows changing the default language after showing a modal", () => {
-        cy.getByTestId("language-row-fr").click();
+        cy.getByTestId("language-row-fr").realHover();
+        cy.getByTestId("edit-language-row-fr").click({ force: true });
         cy.getByTestId("input-translations.1.is_default").click();
         cy.getByTestId("save-btn").click();
         cy.getByTestId("warning-modal-confirm-btn").click();
@@ -380,6 +498,7 @@ describe("Privacy experiences", () => {
       it("can add new translations with all required fields", () => {
         const components = [
           { type: ComponentType.PRIVACY_CENTER, displayName: "Privacy center" },
+          { type: ComponentType.HEADLESS, displayName: "Headless" },
           { type: ComponentType.MODAL, displayName: "Modal" },
           {
             type: ComponentType.BANNER_AND_MODAL,

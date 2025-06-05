@@ -15,6 +15,7 @@ import {
   ADD_SYSTEMS_ROUTE,
   DATAMAP_ROUTE,
   INDEX_ROUTE,
+  INTEGRATION_MANAGEMENT_ROUTE,
   SYSTEM_ROUTE,
 } from "~/features/common/nav/routes";
 import { RoleRegistryEnum } from "~/types/api";
@@ -37,16 +38,25 @@ describe("System management with Plus features", () => {
   });
 
   describe("permissions", () => {
-    it("can view a system page as a viewer", () => {
+    beforeEach(() => {
       cy.assumeRole(RoleRegistryEnum.VIEWER);
       cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system`);
+    });
+
+    it("can view a system page as a viewer", () => {
       cy.getByTestId("input-name").should("exist");
+    });
+
+    it("can access integration management page from system edit page", () => {
+      cy.getByTestId("integration-page-btn").click();
+      cy.url().should("contain", INTEGRATION_MANAGEMENT_ROUTE);
     });
   });
 
   describe("vendor list", () => {
     beforeEach(() => {
       stubVendorList();
+      stubSystemAssets();
       cy.visit(`${ADD_SYSTEMS_MANUAL_ROUTE}`);
       cy.wait(["@getDictionaryEntries", "@getSystems"]);
     });
@@ -148,6 +158,20 @@ describe("System management with Plus features", () => {
       cy.getByTestId("delete-btn").should("not.exist");
       cy.getByTestId("row-functional.service.improve").click();
       cy.getByTestId("input-name").should("be.disabled");
+    });
+
+    it("does not allow system assets to be edited when locked", () => {
+      cy.getByTestId("vendor-name-select").find("input").type("Aniview{enter}");
+      cy.getByTestId("save-btn").click();
+      cy.wait(["@postSystem", "@getSystem", "@getSystems"]);
+      cy.getByTestId("tab-Assets").click();
+      cy.getByTestId("col-select").should("not.exist");
+      cy.getByTestId("col-actions").should("not.exist");
+      cy.getByTestId("add-asset-btn").should("not.exist");
+      cy.getByTestId("row-0").within(() => {
+        cy.getByTestId("system-badge").should("not.have.attr", "onClick");
+        cy.getByTestId("taxonomy-add-btn").should("not.exist");
+      });
     });
 
     it("does not lock editing for a non-GVL vendor", () => {
@@ -368,6 +392,7 @@ describe("System management with Plus features", () => {
     it("select page checkbox only selects rows on the displayed page", () => {
       cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
       cy.wait("@getSystemVendors");
+      cy.wait("@getDict");
       // unreliable test because when dictionary loads it overrides the rows selected
       // adding a .wait to make it more reliable
       // eslint-disable-next-line cypress/no-unnecessary-waiting
@@ -375,15 +400,26 @@ describe("System management with Plus features", () => {
       cy.getByTestId("select-page-checkbox")
         .get("[type='checkbox']")
         .check({ force: true });
+      // allow UI to update the selected rows
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(500);
       cy.getByTestId("selected-row-count").contains("6 row(s) selected.");
     });
 
     it("select all button selects all rows across every page", () => {
       cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
       cy.wait("@getSystemVendors");
+      cy.wait("@getDict");
+      // unreliable test because when dictionary loads it overrides the rows selected
+      // adding a .wait to make it more reliable
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(500);
       cy.getByTestId("select-page-checkbox")
         .get("[type='checkbox']")
         .check({ force: true });
+      // allow UI to update the selected rows
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(500);
       cy.getByTestId("select-all-rows-btn").click();
       cy.getByTestId("selected-row-count").contains("8 row(s) selected.");
     });
@@ -491,6 +527,7 @@ describe("System management with Plus features", () => {
       cy.wait("@getSystemAssets");
       cy.getByTestId("row-0-col-name").should("contain", "ar_debug");
       cy.getByTestId("row-0-col-locations").should("contain", "United States");
+      cy.getByTestId("row-0-col-data_uses").should("contain", "Essential");
     });
 
     describe("asset operations", () => {
@@ -506,7 +543,7 @@ describe("System management with Plus features", () => {
         cy.getByTestId("input-domain").type("example.com");
         cy.getByTestId("controlled-select-asset_type").antSelect("Cookie");
         cy.getByTestId("controlled-select-data_uses").antSelect("analytics");
-        cy.getByTestId("save-btn").click();
+        cy.getByTestId("save-btn").click({ force: true });
         cy.wait("@addSystemAsset");
       });
 
@@ -522,19 +559,26 @@ describe("System management with Plus features", () => {
         cy.getByTestId("controlled-select-asset_type")
           .should("contain", "Cookie")
           .should("have.class", "ant-select-disabled");
-        cy.getByTestId("controlled-select-data_uses")
-          .should("contain", "analytics")
-          .should("not.be.disabled");
+        cy.getByTestId("controlled-select-data_uses").should(
+          "contain",
+          "essential",
+        );
+        cy.getByTestId("controlled-select-data_uses").antSelect(0);
         cy.getByTestId("input-domain")
           .should("have.value", ".doubleclick.net")
           .should("be.disabled");
         cy.getByTestId("input-description")
           .should("have.value", "This is a test description")
-          .clear()
+          .clear({ force: true })
           .type("Updating the description");
 
         cy.getByTestId("save-btn").click();
-        cy.wait("@updateSystemAssets");
+        cy.wait("@updateSystemAssets").then((interception) => {
+          expect(interception.request.body[0].data_uses).to.eql([
+            "essential",
+            "analytics",
+          ]);
+        });
       });
 
       it("can delete an asset", () => {
@@ -543,7 +587,7 @@ describe("System management with Plus features", () => {
         });
 
         cy.getByTestId("confirmation-modal").should("exist");
-        cy.getByTestId("continue-btn").click();
+        cy.getByTestId("continue-btn").click({ force: true });
         cy.wait("@deleteSystemAssets");
       });
 
@@ -557,6 +601,10 @@ describe("System management with Plus features", () => {
           "Javascript tag",
         );
         cy.getByTestId("controlled-select-data_uses").antSelect("analytics");
+        cy.getByTestId("controlled-select-data_uses").within(() => {
+          // force select menu to close so it doesn't cover the input
+          cy.get("input").focus().blur();
+        });
         // blur the input without entering anything to trigger the error
         cy.getByTestId("input-base_url").clear().blur();
         cy.getByTestId("save-btn").should("be.disabled");

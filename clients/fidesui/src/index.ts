@@ -1,4 +1,6 @@
 // Unmodified components exported directly from ChakraUI
+import { CustomTypography } from "./hoc/CustomTypography";
+
 export * from "@chakra-ui/icons";
 export * from "@chakra-ui/react";
 export { getCSSVar } from "@chakra-ui/react";
@@ -8,6 +10,7 @@ export * from "@chakra-ui/utils";
 export type { ThemeConfig as AntThemeConfig } from "antd/es";
 export type {
   ButtonProps as AntButtonProps,
+  CollapseProps as AntCollapseProps,
   FlexProps as AntFlexProps,
   FormInstance as AntFormInstance,
   InputProps as AntInputProps,
@@ -16,11 +19,16 @@ export type {
   RadioGroupProps as AntRadioGroupProps,
   SelectProps as AntSelectProps,
   SwitchProps as AntSwitchProps,
+  TableProps as AntTableProps,
   TabsProps as AntTabsProps,
   TagProps as AntTagProps,
+  TooltipProps as AntTooltipProps,
+  UploadFile as AntUploadFile,
   GetProps,
   InputRef,
   RadioChangeEvent,
+  UploadFile,
+  UploadProps,
 } from "antd/lib";
 export {
   Alert as AntAlert,
@@ -30,24 +38,31 @@ export {
   Card as AntCard,
   Checkbox as AntCheckbox,
   Col as AntCol,
+  Collapse as AntCollapse,
+  DatePicker as AntDatePicker,
   Divider as AntDivider,
   Dropdown as AntDropdown,
   Empty as AntEmpty,
   Flex as AntFlex,
   Form as AntForm,
   Input as AntInput,
+  InputNumber as AntInputNumber,
   Layout as AntLayout,
   List as AntList,
   Menu as AntMenu,
-  message as antMessage,
+  message as AntMessage,
+  Modal as AntModal,
+  Pagination as AntPagination,
   Radio as AntRadio,
   Row as AntRow,
   Skeleton as AntSkeleton,
   Space as AntSpace,
+  Spin as AntSpin,
   Switch as AntSwitch,
+  Table as AntTable,
   Tabs as AntTabs,
   Tooltip as AntTooltip,
-  Typography as AntTypography,
+  Upload as AntUpload,
 } from "antd/lib";
 export type {
   BreadcrumbItemType as AntBreadcrumbItemType,
@@ -58,10 +73,21 @@ export type {
   BaseOptionType as AntBaseOptionType,
   DefaultOptionType as AntDefaultOptionType,
 } from "antd/lib/select";
+export type { UploadChangeParam as AntUploadChangeParam } from "antd/lib/upload";
 
 // Higher-order components
-export { CustomSelect as AntSelect } from "./hoc";
-export { CustomDateRangePicker as AntDateRangePicker } from "./hoc";
+export {
+  CustomDateRangePicker as AntDateRangePicker,
+  CustomSelect as AntSelect,
+  CustomTag as AntTag,
+  CustomTypography as AntTypography,
+} from "./hoc";
+
+// Export the destructured Typography components individually
+export const AntText = CustomTypography.Text;
+export const AntTitle = CustomTypography.Title;
+export const AntParagraph = CustomTypography.Paragraph;
+export const AntLink = CustomTypography.Link;
 
 /**
  * Custom Re-exports
@@ -97,4 +123,3 @@ export { ExampleComponent } from "./components/example-component";
 export { FloatingMenu } from "./components/floating-menu";
 export { PrimaryLink, SecondaryLink } from "./components/links";
 export { SystemsCheckboxTable } from "./components/systems-checkbox-table";
-export { CustomTag as AntTag } from "./hoc";

@@ -130,7 +130,7 @@ describe("blueconic", () => {
     ).not.toHaveBeenCalled();
   });
 
-  test.each(["FidesInitialized", "FidesUpdated", "onBlueConicLoaded"])(
+  test.each(["FidesReady", "FidesUpdated", "onBlueConicLoaded"])(
     "that %s event can cause objectives to be set",
     (eventName) => {
       const spy = jest.spyOn(window, "addEventListener");

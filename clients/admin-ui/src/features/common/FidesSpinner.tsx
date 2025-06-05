@@ -1,7 +1,14 @@
 import { Flex, Spinner, SpinnerProps } from "fidesui";
 
-const FidesSpinner = ({ ...props }: SpinnerProps) => (
-  <Flex boxSize="full" align="center" justify="center">
+interface FidesSpinnerProps extends SpinnerProps {
+  alignment?: "center" | "start" | "end";
+}
+
+const FidesSpinner = ({
+  alignment = "center",
+  ...props
+}: FidesSpinnerProps) => (
+  <Flex boxSize="full" align="center" justify={alignment}>
     <Spinner color="primary" {...props} />
   </Flex>
 );

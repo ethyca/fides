@@ -30,7 +30,6 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
     allDataCategories: allEnabledDataCategories,
     allDataUses: allEnabledDataUses,
     allDataSubject: allEnabledDataSubjects,
-    cookies: system.cookies,
   };
 
   return (
@@ -55,7 +54,6 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
         <PrivacyDeclarationFormTab
           system={system}
           includeCustomFields
-          includeCookies
           {...filteredDataProps}
         />
       )}

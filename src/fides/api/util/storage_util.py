@@ -1,15 +1,17 @@
 from datetime import datetime
-from typing import Any, Dict, Union
+from typing import Any, Union
 
 from bson import ObjectId
 from pydantic import ValidationError
 
 from fides.api.schemas.storage.storage import (
     SUPPORTED_STORAGE_SECRETS,
+    StorageSecretsGCS,
     StorageSecretsS3,
     StorageType,
 )
 from fides.api.schemas.storage.storage_secrets_docs_only import possible_storage_secrets
+from fides.api.util.custom_json_encoder import CustomJSONEncoder
 
 
 def get_schema_for_secrets(
@@ -31,6 +33,7 @@ def get_schema_for_secrets(
     try:
         schema = {
             StorageType.s3: StorageSecretsS3,
+            StorageType.gcs: StorageSecretsGCS,
         }[storage_type]
     except KeyError:
         raise ValueError(
@@ -46,10 +49,15 @@ def get_schema_for_secrets(
         raise ValueError(errors)
 
 
-def storage_json_encoder(field: Any) -> Union[str, Dict[str, str]]:
-    """Specify str format for datetime objects"""
-    if isinstance(field, datetime):
-        return field.strftime("%Y-%m-%dT%H:%M:%S")
-    if isinstance(field, ObjectId):
-        return {"$oid": str(field)}
-    return field
+class StorageJSONEncoder(CustomJSONEncoder):
+    """
+    A JSON encoder specifically for storage operations that maintains the original
+    format for datetime and ObjectId while inheriting other functionality from CustomJSONEncoder.
+    """
+
+    def default(self, o: Any) -> Any:
+        if isinstance(o, datetime):
+            return o.strftime("%Y-%m-%dT%H:%M:%S")
+        if isinstance(o, ObjectId):
+            return {"$oid": str(o)}
+        return super().default(o)

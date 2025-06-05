@@ -1,3 +1,7 @@
+import {
+  ConsentFlagType,
+  ConsentNonApplicableFlagMode,
+} from "fides-js/src/lib/consent-types";
 import type { FidesEventDetail, FidesEventType } from "fides-js/src/lib/events";
 
 import { stubConfig, stubTCFExperience } from "../support/stubs";
@@ -81,6 +85,7 @@ describe("Consent FidesEvents", () => {
       // Initialize and show banner on page load
       expectedEvents.push(
         { type: "FidesInitializing", detail: {} },
+        { type: "FidesReady", detail: {} },
         { type: "FidesInitialized", detail: {} },
         {
           type: "FidesUIShown",
@@ -95,8 +100,9 @@ describe("Consent FidesEvents", () => {
         detail: { extraDetails: { servingComponent: "modal" } },
       });
 
-      // Toggle first notice on then off
-      cy.get("#fides-modal .fides-toggle-input").first().click().click();
+      // Toggle Advertising notice on then off
+      cy.getByTestId("toggle-Advertising").click().click();
+      // cy.get("#fides-modal .fides-toggle-input").first().click().click();
       expectedEvents.push(
         {
           type: "FidesUIChanged",
@@ -135,7 +141,7 @@ describe("Consent FidesEvents", () => {
       );
 
       // Toggle second notice off (Analytics opt out)
-      cy.get("#fides-modal .fides-toggle-input").eq(1).click();
+      cy.get("#fides-modal .fides-toggle-input").eq(2).click();
       expectedEvents.push({
         type: "FidesUIChanged",
         detail: {
@@ -300,6 +306,7 @@ describe("Consent FidesEvents", () => {
       // Initialize and show TCF banner on page load
       expectedEvents.push(
         { type: "FidesInitializing", detail: {} },
+        { type: "FidesReady", detail: {} },
         { type: "FidesInitialized", detail: {} },
         {
           type: "FidesUIShown",
@@ -653,6 +660,7 @@ describe("Consent FidesEvents", () => {
     it("should use notice_key in FidesUIChanged events for custom purposes", () => {
       const expectedEvents: FidesEventExpectation[] = [
         { type: "FidesInitializing", detail: {} },
+        { type: "FidesReady", detail: {} },
         { type: "FidesInitialized", detail: {} },
         {
           type: "FidesUIShown",
@@ -690,6 +698,107 @@ describe("Consent FidesEvents", () => {
       });
 
       expectFidesEventSequence(expectedEvents);
+    });
+  });
+
+  describe("when using consent mechanism flags and non-applicable notices", () => {
+    beforeEach(() => {
+      // Load the banner_and_modal experience
+      const fixture = "experience_banner_modal.json";
+      cy.fixture(`consent/${fixture}`).then((data) => {
+        let experience = data.items[0];
+
+        // Add non-applicable privacy notices
+        experience.non_applicable_privacy_notices = [
+          "essential",
+          "personalization",
+        ];
+
+        stubConfig({
+          experience,
+          options: {
+            fidesConsentFlagType: ConsentFlagType.CONSENT_MECHANISM,
+            fidesConsentNonApplicableFlagMode:
+              ConsentNonApplicableFlagMode.INCLUDE,
+          },
+        });
+      });
+    });
+
+    it("should correctly format consent values in events based on flag type and mode", () => {
+      // Create our array of expected events
+      const expectedEvents: FidesEventExpectation[] = [];
+
+      // Initialize and show banner
+      expectedEvents.push(
+        { type: "FidesInitializing", detail: {} },
+        { type: "FidesReady", detail: {} },
+        { type: "FidesInitialized", detail: {} },
+        {
+          type: "FidesUIShown",
+          detail: { extraDetails: { servingComponent: "banner" } },
+        },
+      );
+
+      // Open modal from banner button
+      cy.get("#fides-banner .fides-manage-preferences-button").click();
+      expectedEvents.push({
+        type: "FidesUIShown",
+        detail: { extraDetails: { servingComponent: "modal" } },
+      });
+
+      // Save preferences - this should trigger FidesUpdating and FidesUpdated events
+      cy.get("#fides-modal .fides-save-button").click();
+      expectedEvents.push(
+        { type: "FidesModalClosed", detail: {} },
+        {
+          type: "FidesUpdating",
+          detail: {
+            extraDetails: {
+              consentMethod: "save",
+            },
+          },
+        },
+        {
+          type: "FidesUpdated",
+          detail: {
+            extraDetails: {
+              consentMethod: "save",
+            },
+          },
+        },
+      );
+
+      // Verify the sequence of events
+      cy.log(
+        "Verify FidesUpdated event has correctly formatted consent values",
+      );
+      cy.get("@AllFidesEvents").then((stub: any) => {
+        // Get the FidesUpdated event
+        const updatedEvent = stub
+          .getCalls()
+          .find((call) => call.args[0].type === "FidesUpdated");
+        expect(updatedEvent).to.exist;
+
+        const { detail } = updatedEvent.args[0];
+
+        // Check consent formatting - values should be strings like "opt_in" not booleans
+        expect(detail.consent).to.be.an("object");
+        Object.values(detail.consent).forEach((value) => {
+          expect(value).to.be.a("string");
+        });
+
+        // Verify consent contains values for applicable notices with string mechanisms
+        expect(detail.consent).to.have.any.keys([
+          "advertising",
+          "analytics_opt_out",
+        ]);
+
+        // Verify non-applicable notices are included with "not_applicable" value
+        expect(detail.consent).to.include.keys("essential", "personalization");
+        expect(detail.consent.essential).to.equal("acknowledge");
+        expect(detail.consent.personalization).to.equal("not_applicable");
+      });
     });
   });
 });

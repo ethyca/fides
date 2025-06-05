@@ -7,6 +7,7 @@ import {
 } from "~/features/common/copy/components";
 import ShowMoreContent from "~/features/common/copy/ShowMoreContent";
 import { ConnectionCategory } from "~/features/integrations/ConnectionCategory";
+import { IntegrationFeatureEnum } from "~/features/integrations/IntegrationFeatureEnum";
 import { AccessLevel, ConnectionType } from "~/types/api";
 
 export const SCYLLA_PLACEHOLDER = {
@@ -17,13 +18,7 @@ export const SCYLLA_PLACEHOLDER = {
   created_at: "",
 };
 
-export const SCYLLA_TAGS = [
-  "Database",
-  "Detection",
-  "Discovery",
-  "DSR automation",
-  "ScyllaDB",
-];
+export const SCYLLA_TAGS = ["DSR Automation", "Discovery", "Detection"];
 
 export const ScyllaOverview = () => (
   <>
@@ -69,6 +64,7 @@ const SCYLLA_TYPE_INFO = {
   category: ConnectionCategory.DATABASE,
   overview: <ScyllaOverview />,
   tags: SCYLLA_TAGS,
+  enabledFeatures: [IntegrationFeatureEnum.DATA_DISCOVERY],
 };
 
 export default SCYLLA_TYPE_INFO;

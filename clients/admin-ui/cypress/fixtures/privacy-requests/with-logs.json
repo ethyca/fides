@@ -1,0 +1,239 @@
+{
+  "items": [
+    {
+      "id": "pri_96bb91d3-cdb9-46c3-9546-0c276eb05a5c",
+      "created_at": "2025-04-07T17:46:32.882213Z",
+      "started_processing_at": "2025-04-07T17:47:01.731710Z",
+      "reviewed_at": "2025-04-07T17:47:00.213351Z",
+      "reviewed_by": null,
+      "reviewer": null,
+      "finished_processing_at": "2025-04-07T17:47:13.103766Z",
+      "identity_verified_at": "2025-04-07T17:46:42.251327Z",
+      "paused_at": null,
+      "status": "error",
+      "external_id": null,
+      "identity": {
+        "phone_number": {
+          "label": "Phone number",
+          "value": null
+        },
+        "email": {
+          "label": "Email",
+          "value": "example@example.com"
+        },
+        "ga_client_id": {
+          "label": "GA client ID",
+          "value": null
+        },
+        "ljt_readerID": {
+          "label": "LJT reader ID",
+          "value": null
+        },
+        "fides_user_device_id": {
+          "label": "Fides user device ID",
+          "value": null
+        },
+        "external_id": {
+          "label": "External ID",
+          "value": null
+        }
+      },
+      "custom_privacy_request_fields": {},
+      "policy": {
+        "name": "Default Erasure Policy",
+        "key": "default_erasure_policy",
+        "drp_action": "deletion",
+        "execution_timeframe": 45,
+        "rules": [
+          {
+            "name": "Default Erasure Rule",
+            "key": "default_erasure_policy_rule",
+            "action_type": "erasure",
+            "storage_destination": null,
+            "masking_strategy": {
+              "strategy": "hmac"
+            }
+          }
+        ]
+      },
+      "action_required_details": {
+        "step": "erasure",
+        "collection": null,
+        "action_needed": null
+      },
+      "resume_endpoint": "/privacy-request/pri_96bb91d3-cdb9-46c3-9546-0c276eb05a5c/retry",
+      "days_left": 43,
+      "custom_privacy_request_fields_approved_by": null,
+      "custom_privacy_request_fields_approved_at": null,
+      "source": "Privacy Center",
+      "deleted_at": null,
+      "deleted_by": null,
+      "results": {
+        "Request approved": [
+          {
+            "connection_key": null,
+            "collection_name": null,
+            "fields_affected": null,
+            "message": null,
+            "action_type": null,
+            "status": "approved",
+            "updated_at": "2025-04-07T17:47:00.216548Z",
+            "user_id": null
+          }
+        ],
+        "Dataset reference validation": [
+          {
+            "connection_key": null,
+            "collection_name": null,
+            "fields_affected": null,
+            "message": "Dataset reference validation successful for privacy request: pri_96bb91d3-cdb9-46c3-9546-0c276eb05a5c",
+            "action_type": "erasure",
+            "status": "complete",
+            "updated_at": "2025-04-07T17:47:10.932124Z",
+            "user_id": null
+          }
+        ],
+        "Dataset traversal": [
+          {
+            "connection_key": null,
+            "collection_name": null,
+            "fields_affected": null,
+            "message": "Traversal successful for privacy request: pri_96bb91d3-cdb9-46c3-9546-0c276eb05a5c",
+            "action_type": "access",
+            "status": "complete",
+            "updated_at": "2025-04-07T17:47:10.944590Z",
+            "user_id": null
+          }
+        ],
+        "klavyio_klaviyo_api": [
+          {
+            "connection_key": "klavyio_klaviyo_api",
+            "collection_name": "profiles",
+            "fields_affected": [],
+            "message": "starting",
+            "action_type": "access",
+            "status": "in_processing",
+            "updated_at": "2025-04-07T17:47:10.969791Z",
+            "user_id": null
+          },
+          {
+            "connection_key": "klavyio_klaviyo_api",
+            "collection_name": "profiles",
+            "fields_affected": [],
+            "message": "success",
+            "action_type": "access",
+            "status": "complete",
+            "updated_at": "2025-04-07T17:47:11.245131Z",
+            "user_id": null
+          },
+          {
+            "connection_key": "klavyio_klaviyo_api",
+            "collection_name": "profiles",
+            "fields_affected": [],
+            "message": "starting",
+            "action_type": "erasure",
+            "status": "in_processing",
+            "updated_at": "2025-04-07T17:47:12.074540Z",
+            "user_id": null
+          },
+          {
+            "connection_key": "klavyio_klaviyo_api",
+            "collection_name": "profiles",
+            "fields_affected": [],
+            "message": "Connector request failed with status code 401",
+            "action_type": "erasure",
+            "status": "error",
+            "updated_at": "2025-04-07T17:47:13.092406Z",
+            "user_id": null
+          }
+        ],
+        "teststest_shopify_api": [
+          {
+            "connection_key": "teststest_shopify_api",
+            "collection_name": "blog_article_comments",
+            "fields_affected": [],
+            "message": "starting",
+            "action_type": "access",
+            "status": "in_processing",
+            "updated_at": "2025-04-07T17:47:11.250603Z",
+            "user_id": null
+          },
+          {
+            "connection_key": "teststest_shopify_api",
+            "collection_name": "blog_article_comments",
+            "fields_affected": [],
+            "message": "success",
+            "action_type": "access",
+            "status": "complete",
+            "updated_at": "2025-04-07T17:47:11.664194Z",
+            "user_id": null
+          },
+          {
+            "connection_key": "teststest_shopify_api",
+            "collection_name": "customers",
+            "fields_affected": [],
+            "message": "starting",
+            "action_type": "access",
+            "status": "in_processing",
+            "updated_at": "2025-04-07T17:47:11.669987Z",
+            "user_id": null
+          },
+          {
+            "connection_key": "teststest_shopify_api",
+            "collection_name": "customers",
+            "fields_affected": [],
+            "message": "success",
+            "action_type": "access",
+            "status": "complete",
+            "updated_at": "2025-04-07T17:47:12.025101Z",
+            "user_id": null
+          },
+          {
+            "connection_key": "teststest_shopify_api",
+            "collection_name": "customer_addresses",
+            "fields_affected": [],
+            "message": "starting",
+            "action_type": "access",
+            "status": "in_processing",
+            "updated_at": "2025-04-07T17:47:12.030846Z",
+            "user_id": null
+          },
+          {
+            "connection_key": "teststest_shopify_api",
+            "collection_name": "customer_addresses",
+            "fields_affected": [],
+            "message": "success",
+            "action_type": "access",
+            "status": "complete",
+            "updated_at": "2025-04-07T17:47:12.036650Z",
+            "user_id": null
+          },
+          {
+            "connection_key": "teststest_shopify_api",
+            "collection_name": "customer_orders",
+            "fields_affected": [],
+            "message": "starting",
+            "action_type": "access",
+            "status": "in_processing",
+            "updated_at": "2025-04-07T17:47:12.040498Z",
+            "user_id": null
+          },
+          {
+            "connection_key": "teststest_shopify_api",
+            "collection_name": "customer_orders",
+            "fields_affected": [],
+            "message": "success",
+            "action_type": "access",
+            "status": "complete",
+            "updated_at": "2025-04-07T17:47:12.045719Z",
+            "user_id": null
+          }
+        ]
+      }
+    }
+  ],
+  "total": 1,
+  "page": 1,
+  "size": 50,
+  "pages": 1
+}

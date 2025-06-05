@@ -12,7 +12,7 @@ import {
 import { enumToOptions } from "~/features/common/helpers";
 import FormInfoBox from "~/features/common/modals/FormInfoBox";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
-import { formatKey } from "~/features/datastore-connections/add-connection/helpers";
+import { SharedConfigSelect } from "~/features/integrations/configure-monitor/SharedConfigSelect";
 import { useGetOnlyCountryLocationsQuery } from "~/features/locations/locations.slice";
 import { getSelectedRegionIds } from "~/features/privacy-experience/form/helpers";
 import {
@@ -55,10 +55,10 @@ const ConfigureWebsiteMonitorForm = ({
   onClose: () => void;
   onSubmit: (values: MonitorConfig) => Promise<void>;
 }) => {
-  const { query } = useRouter();
-  const integrationId = Array.isArray(query.id)
-    ? query.id[0]
-    : (query.id as string);
+  const router = useRouter();
+  const integrationId = Array.isArray(router.query.id)
+    ? router.query.id[0]
+    : (router.query.id as string);
   const initialDate = monitor?.execution_start_date
     ? parseISO(monitor.execution_start_date)
     : Date.now();
@@ -78,8 +78,9 @@ const ConfigureWebsiteMonitorForm = ({
 
   const initialValues: WebsiteMonitorConfig = {
     name: monitor?.name || "",
+    shared_config_id: monitor?.shared_config_id ?? undefined,
     execution_frequency:
-      monitor?.execution_frequency || MonitorFrequency.MONTHLY,
+      monitor?.execution_frequency || MonitorFrequency.NOT_SCHEDULED,
     execution_start_date: format(initialDate, "yyyy-MM-dd'T'HH:mm"),
     url,
     connection_config_key: integrationId,
@@ -106,13 +107,24 @@ const ConfigureWebsiteMonitorForm = ({
       ...monitor,
       ...values,
       ...executionInfo,
-      key: monitor?.key || formatKey(values.name),
+      key: monitor?.key,
       classify_params: monitor?.classify_params || {},
       datasource_params: values.datasource_params || {},
       connection_config_key: integrationId,
     };
     onSubmit(payload);
   };
+
+  // Website monitors should only support
+  // monthly, quarterly, yearly, and not scheduled frequencies
+  const frequencyOptions = enumToOptions(MonitorFrequency).filter((option) =>
+    [
+      MonitorFrequency.MONTHLY,
+      MonitorFrequency.QUARTERLY,
+      MonitorFrequency.YEARLY,
+      MonitorFrequency.NOT_SCHEDULED,
+    ].includes(option.value as MonitorFrequency),
+  );
 
   return (
     <Flex vertical className="pt-4">
@@ -171,10 +183,14 @@ const ConfigureWebsiteMonitorForm = ({
                 tooltip={REGIONS_TOOLTIP_COPY}
                 layout="stacked"
               />
+              <SharedConfigSelect
+                name="shared_config_id"
+                id="shared_config_id"
+              />
               <ControlledSelect
                 name="execution_frequency"
                 id="execution_frequency"
-                options={enumToOptions(MonitorFrequency)}
+                options={frequencyOptions}
                 label="Automatic execution frequency"
                 layout="stacked"
               />

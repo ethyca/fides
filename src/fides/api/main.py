@@ -136,7 +136,7 @@ if CONFIG.dev_mode:
             await call_next(request)
             profiler.stop()
             logger.debug("Request Profiled!")
-            return HTMLResponse(profiler.output_text(timeline=True))
+            return HTMLResponse(profiler.output_text(timeline=True, show_all=True))
 
         return await call_next(request)
 
@@ -240,6 +240,7 @@ async def log_request(request: Request, call_next: Callable) -> Response:
         status_code=response.status_code,
         handler_time=f"{total_time}ms",
         path=request.url.path,
+        fides_client=request.headers.get("Fides-Client", "unknown"),
     ).info("Request received")
     return response
 

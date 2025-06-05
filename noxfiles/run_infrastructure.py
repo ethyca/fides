@@ -73,11 +73,18 @@ EXTERNAL_DATASTORE_CONFIG = {
         "RDS_POSTGRES_DB_USERNAME",
         "RDS_POSTGRES_REGION",
     ],
+    "okta": [
+        "OKTA_ORG_URL",
+        "OKTA_API_TOKEN",
+    ],
 }
 EXTERNAL_DATASTORES = list(EXTERNAL_DATASTORE_CONFIG.keys())
 ALL_DATASTORES = DOCKERFILE_DATASTORES + EXTERNAL_DATASTORES
 OPS_TEST_DIR = "tests/ops/"
-API_TEST_DIRS = [f"{OPS_TEST_DIR}api/", "tests/api/v1/endpoints/"]
+OPS_API_TEST_DIRS = [
+    f"{OPS_TEST_DIR}api/",
+]
+API_TEST_DIR = "tests/api/"
 
 
 def run_infrastructure(

@@ -2,13 +2,7 @@
 import "./fides.css";
 
 import { FunctionComponent, h, VNode } from "preact";
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "preact/hooks";
+import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 
 import { useA11yDialog } from "../lib/a11y-dialog";
 import { FIDES_OVERLAY_WRAPPER } from "../lib/consent-constants";
@@ -74,13 +68,25 @@ const Overlay: FunctionComponent<Props> = ({
     !experience || !!options.fidesEmbed || options.modalLinkId === "";
   const modalLink = useElementById(modalLinkId, modalLinkIsDisabled);
   const modalLinkRef = useRef<HTMLElement | null>(null);
+  const [disableBanner, setDisableBanner] = useState<boolean | null>(null);
 
-  const showBanner = useMemo(() => {
-    return shouldResurfaceBanner(experience, cookie, savedConsent, options);
-  }, [cookie, savedConsent, experience, options]);
+  useEffect(() => {
+    if (disableBanner === null) {
+      // We check for disableBanner being `null` so that this only ever gets set
+      // during initialization and not with every change to the cookie/consent.
+      // This is also why exaustive-deps is being ignored below.
+      setDisableBanner(
+        !shouldResurfaceBanner(experience, cookie, savedConsent, options),
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disableBanner]);
 
+  // When fidesEmbed is enabled, this should be set immediately (don't wait for css animation support)
   const [bannerIsOpen, setBannerIsOpen] = useState(
-    options.fidesEmbed ? showBanner : false,
+    options.fidesEmbed
+      ? shouldResurfaceBanner(experience, cookie, savedConsent, options)
+      : false,
   );
 
   useEffect(() => {
@@ -97,12 +103,12 @@ const Overlay: FunctionComponent<Props> = ({
 
   const dispatchCloseEvent = useCallback(
     ({ saved = false }: { saved?: boolean }) => {
-      dispatchFidesEvent("FidesModalClosed", cookie, options.debug, { saved });
+      dispatchFidesEvent("FidesModalClosed", cookie, { saved });
       if (!saved) {
         onDismiss();
       }
     },
-    [cookie, onDismiss, options.debug],
+    [cookie, onDismiss],
   );
 
   const { instance, attributes } = useA11yDialog({
@@ -140,12 +146,12 @@ const Overlay: FunctionComponent<Props> = ({
   // The delay is needed for the banner CSS animation
   useEffect(() => {
     const delayBanner = setTimeout(() => {
-      if (showBanner) {
+      if (!disableBanner) {
         setBannerIsOpen(true);
       }
     }, delayBannerMilliseconds);
     return () => clearTimeout(delayBanner);
-  }, [showBanner, setBannerIsOpen]);
+  }, [disableBanner, setBannerIsOpen]);
 
   useEffect(() => {
     if (!!experience && !options.fidesEmbed) {
@@ -200,20 +206,9 @@ const Overlay: FunctionComponent<Props> = ({
 
   return (
     <div id={FIDES_OVERLAY_WRAPPER} tabIndex={-1}>
-      {showBanner && bannerIsOpen && isUiBlocking && (
+      {!disableBanner && bannerIsOpen && isUiBlocking && (
         <div className="fides-modal-overlay" />
       )}
-
-      {showBanner
-        ? renderBanner({
-            isOpen: bannerIsOpen,
-            isEmbedded: options.fidesEmbed,
-            onClose: () => {
-              setBannerIsOpen(false);
-            },
-            onManagePreferencesClick: handleManagePreferencesClick,
-          })
-        : null}
       {options.fidesEmbed ? (
         bannerIsOpen || !renderModalContent || !renderModalFooter ? null : (
           <ConsentContent
@@ -253,6 +248,15 @@ const Overlay: FunctionComponent<Props> = ({
           {renderModalContent && renderModalContent()}
         </ConsentModal>
       )}
+      {!disableBanner &&
+        renderBanner({
+          isOpen: bannerIsOpen,
+          isEmbedded: options.fidesEmbed,
+          onClose: () => {
+            setBannerIsOpen(false);
+          },
+          onManagePreferencesClick: handleManagePreferencesClick,
+        })}
     </div>
   );
 };

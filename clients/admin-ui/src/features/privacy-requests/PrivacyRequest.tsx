@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useGetAllPrivacyRequestsQuery } from "~/features/privacy-requests";
 import { PrivacyRequestStatus } from "~/types/api";
 
-import ActivityTimeline from "./events-and-logs/ActivityTimeline";
+import ActivityTab from "./events-and-logs/ActivityTab";
 import ManualProcessingList from "./manual-processing/ManualProcessingList";
 import RequestDetails from "./RequestDetails";
 import { PrivacyRequestEntity } from "./types";
@@ -46,7 +46,7 @@ const PrivacyRequest = ({ data: initialData }: PrivacyRequestProps) => {
       {
         key: "activity",
         label: "Activity",
-        children: <ActivityTimeline subjectRequest={subjectRequest} />,
+        children: <ActivityTab subjectRequest={subjectRequest} />,
       },
       {
         key: "manual-steps",
@@ -72,7 +72,10 @@ const PrivacyRequest = ({ data: initialData }: PrivacyRequestProps) => {
           onChange={setActiveTabKey}
         />
       </div>
-      <div className="w-[432px]" data-testid="privacy-request-details">
+      <div
+        className="w-1/3 2xl:w-[432px]"
+        data-testid="privacy-request-details"
+      >
         <RequestDetails subjectRequest={subjectRequest} />
       </div>
     </div>

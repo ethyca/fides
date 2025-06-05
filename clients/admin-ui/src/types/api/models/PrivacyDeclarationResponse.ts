@@ -2,7 +2,6 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Cookies } from "./Cookies";
 import type { LegalBasisForProcessingEnum } from "./LegalBasisForProcessingEnum";
 import type { SpecialCategoryLegalBasisEnum } from "./SpecialCategoryLegalBasisEnum";
 
@@ -78,7 +77,6 @@ export type PrivacyDeclarationResponse = {
    * The categories of personal data that this system shares with third parties.
    */
   shared_categories?: Array<string>;
-  cookies?: Array<Cookies> | null;
   /**
    * The database-assigned ID of the privacy declaration on the system. This is meant to be a read-only field, returned only in API responses
    */

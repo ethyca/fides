@@ -11,7 +11,7 @@ for details.
 
 NOTE: FidesJS will need to be downloaded, executed, and initialized before
 the `Fides` object is available. Therefore, your code should check for the
-existence of Fides *or* subscribe to the global `FidesInitialized` event (see
+existence of Fides *or* subscribe to the global `FidesReady` event (see
 [FidesEvent](FidesEvent.md)) for details) before using the `Fides` object in your own code.
 
 ## Example
@@ -36,12 +36,17 @@ existence of Fides *or* subscribe to the global `FidesInitialized` event (see
 
 ### consent
 
-> **consent**: `Record`\<`string`, `boolean`\>
+> **consent**: `Record`\<`string`, `string` \| `boolean`\>
 
 User's current consent preferences, formatted as a key/value object with:
 - key: the applicable Fides `notice_key` (e.g. `data_sales_and_sharing`, `analytics`)
-- value: `true` or `false`, depending on whether or not the current user
-has consented to the notice
+- value:
+  - `true` or `false` boolean values (where true means opt-in/consent granted, false means opt-out/consent declined)
+  - or one of these string values:
+    - `"opt_in"` - user has explicitly opted in to this notice
+    - `"opt_out"` - user has explicitly opted out of this notice
+    - `"acknowledge"` - user has acknowledged this notice (for notice-only consent mechanisms)
+    - `"not_applicable"` - notice is not applicable to the user's region/context
 
 Note that FidesJS will automatically set default consent preferences based
 on the type of notice - so, for example a typical "opt-in" analytics notice
@@ -69,6 +74,21 @@ A `Fides.consent` value showing the user has opted-in to analytics, but not mark
 }
 ```
 
+A `Fides.consent` value showing the user has opted-in to analytics, but not marketing using consent mechanism strings:
+```ts
+{
+  "analytics": "opt_in",
+  "marketing": "opt_out"
+}
+```
+
+A `Fides.consent` value showing a notice-only consent mechanism with acknowledgment:
+```ts
+{
+  "terms_of_service": "acknowledge"
+}
+```
+
 ***
 
 ### fides\_string?
@@ -93,7 +113,7 @@ The string consists of four parts separated by commas in the format:
 
 ```ts
 console.log(Fides.fides_string);
-// "CPzHq4APzHq4AAMABBENAUEAALAAAEOAAAAAAEAEACACAAAA,1~61.70,DBABLA~BVAUAAAAAWA.QA,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9"
+// "CPzHq4APzHq4AAMABBENAUEAALAAAEOAAAAAAEAEACACAAAA,2~61.70~dv.33,DBABLA~BVAUAAAAAWA.QA,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9"
 ```
 
 ***
@@ -106,7 +126,7 @@ Whether or not FidesJS has finished initialization and has loaded the
 current user's experience, consent preferences, etc.
 
 NOTE: To be notified when initialization has completed, you can subscribe
-to the `FidesInitialized` event. See [FidesEvent](FidesEvent.md) for details.
+to the `FidesReady` event. See [FidesEvent](FidesEvent.md) for details.
 
 ***
 
@@ -132,21 +152,25 @@ To always return in the default language only, pass the `disableLocalization` op
 
 #### Examples
 
-Getting the link text in the user's current locale (eg. Spanish):
+Get the link text in the user's current locale (eg. Spanish):
 ```ts
 console.log(Fides.getModalLinkLabel()); // "Tus preferencias de privacidad"
 ```
 
-Getting the link text in the default locale to match other links on the page:
+Get the link text in the default locale to match other links on the page:
 ```ts
 console.log(Fides.getModalLinkLabel({ disableLocalization: true })); // "Your Privacy Choices"
 ```
 
-Applying the link text to a custom modal link element:
+Apply the link text to a custom modal link element on Fides initialization:
 ```html
 <button class="my-custom-show-modal" id="fides-modal-link-label" onclick="Fides.showModal()"><button>
-<script>
- document.getElementById('fides-modal-link-label').innerText = Fides.getModalLinkLabel();
+<script id="fides-js">
+  function() {
+    addEventListener("FidesReady", ( function() {
+      document.getElementById('fides-modal-link-label').innerText = Fides.getModalLinkLabel();
+    }));
+  }
 </script>
 ```
 
@@ -226,7 +250,7 @@ function myCustomShowModalFunction() {
 
 ### gtm()
 
-> **gtm**: () => `void`
+> **gtm**: (`options`?) => `void`
 
 Enable the Google Tag Manager (GTM) integration. This should be called
 immediately after FidesJS is included, and once enabled, FidesJS will
@@ -234,19 +258,40 @@ automatically push all [FidesEvent](FidesEvent.md) events to the GTM data layer 
 they occur, which can then be used to trigger/block tags in GTM based on
 `Fides.consent` preferences or other business logic.
 
-See the Google Tag Manager tutorial for more: [https://fid.es/configuring-gtm-consent](https://fid.es/configuring-gtm-consent)
+See the [Google Tag Manager tutorial](/tutorials/consent-management/consent-management-configuration/google-tag-manager-consent-mode) for more.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `options`? | `object` | Optional configuration for the GTM integration |
+| `options.non_applicable_flag_mode`? | `"omit"` \| `"include"` | Controls how non-applicable privacy notices are handled in the data layer. Can be "omit" (default) to exclude non-applicable notices, or "include" to include them with a default value. |
+| `options.flag_type`? | `"boolean"` \| `"consent_mechanism"` | Controls how consent values are represented in the data layer. Can be "boolean" (default) for true/false values, or "consent_mechanism" for string values like "opt_in", "opt_out", "acknowledge", "not_applicable". |
 
 #### Returns
 
 `void`
 
-#### Example
+#### Examples
 
-Enabling the GTM integration in your site's `<head>`:
+Basic usage in your site's `<head>`:
 ```html
 <head>
   <script src="path/to/fides.js"></script>
   <script>Fides.gtm()</script>
+</head>
+```
+
+With options to include non-applicable notices and use consent mechanism strings:
+```html
+<head>
+  <script src="path/to/fides.js"></script>
+  <script>
+    Fides.gtm({
+      non_applicable_flag_mode: "include",
+      flag_type: "consent_mechanism"
+    });
+  </script>
 </head>
 ```
 
@@ -267,7 +312,7 @@ However, initialization can be called manually if needed - for example to delay
 initialization until after your own custom JavaScript has run to set up some
 config options. In this case, you can disable the automatic initialization
 by including the query param `initialize=false` in the Fides script URL
-(see (Privacy Center FidesJS Hosting)[/docs/dev-docs/js/privacy-center-fidesjs-hosting] for details).
+(see [Privacy Center FidesJS Hosting](/dev-docs/js/privacy-center-fidesjs-hosting) for details).
 You will then need to call `Fides.init()` manually at the appropriate time.
 
 This function can also be used to reinitialize FidesJS. This is useful when
@@ -288,6 +333,40 @@ such as the `fides_overrides` global or the query params.
 
 `Promise`\<`void`\>
 
+#### Example
+
+Disable FidesJS initialization and trigger manually instead:
+```html
+<head>
+  <script src="https://privacy.example.com/fides.js?initialize=false"></script>
+</head>
+<body>
+  <!--- Later, in your own application code... -->
+  <script>Fides.init()</script>
+</body>
+```
+Configure overrides after loading Fides.js tag.
+```html
+<head>
+  <script src="path/to/fides.js">
+    // Loading Fides.js before setting window.fides_overrides requires re-initialization
+  </script>
+
+  <script>
+    function onChange(newData) {
+      // Update Fides options
+      window.fides_overrides = window.fides_overrides || {};
+      window.fides_overrides = {
+        fides_locale: newData,
+      };
+
+      // Reinitialize FidesJS
+      window.Fides.init();
+    };
+  </script>
+</head>
+```
+
 ***
 
 ### onFidesEvent()
@@ -304,7 +383,7 @@ Returns an unsubscribe function that can be called to remove the event listener.
 
 | Parameter | Type | Description |
 | ------ | ------ | ------ |
-| `type` | `any` | The type of event to listen for, such as `FidesInitialized`, `FidesUpdated`, etc. |
+| `type` | `any` | The type of event to listen for, such as `FidesReady`, `FidesUpdated`, etc. |
 | `callback` | (`detail`) => `void` | The callback function to call when the event is triggered |
 
 #### Returns
@@ -456,3 +535,70 @@ The user's identity values, which only include a copy of the fides user device i
 ```
 
 This field is read-only.
+
+***
+
+### updateConsent()
+
+> **updateConsent**: (`options`) => `Promise`\<`void`\>
+
+Updates user consent preferences with either a `consent` object or `fidesString`.
+If both are provided, `fidesString` takes priority.
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `options` | `object` | Options for updating consent |
+| `options.consent`? | `Record`\<`string`, `string` \| `boolean`\> | Object mapping notice keys to consent values: - Boolean values: `true` (opt-in/consent granted) or `false` (opt-out/consent declined) - String values: - `"opt_in"` - user has explicitly opted in to this notice - `"opt_out"` - user has explicitly opted out of this notice - `"acknowledge"` - ONLY valid for notices with "notice_only" consent mechanism |
+| `options.fidesString`? | `string` | A Fides string containing encoded consent preferences |
+| `options.validation`? | `"throw"` \| `"warn"` \| `"ignore"` | Controls validation behavior: "throw" (default), "warn", or "ignore" - "throw": Throws an error if any consent value is invalid (default) - "warn": Logs a warning if any consent value is invalid, but continues processing - "ignore": Silently accepts invalid values without validation |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+#### Examples
+
+Update consent using notice keys and boolean values:
+```ts
+Fides.updateConsent({
+  consent: {
+    data_sales_and_sharing: false,
+    analytics: true
+  }
+});
+```
+
+Update consent using string values instead of booleans:
+```ts
+Fides.updateConsent({
+  consent: {
+    data_sales_and_sharing: "opt_out",
+    analytics: "opt_in",
+    terms_of_service: "acknowledge"
+  }
+});
+```
+
+Update consent using a fidesString:
+```ts
+Fides.updateConsent({
+  fidesString: ",,,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9"
+});
+```
+
+Control validation behavior:
+```ts
+// With validation="warn" - logs warnings but doesn't throw errors
+Fides.updateConsent({
+  consent: { notice_key: invalidValue },
+  validation: "warn"
+});
+
+// With validation="ignore" - silently accepts invalid values
+Fides.updateConsent({
+  consent: { notice_key: invalidValue },
+  validation: "ignore"
+});
+```

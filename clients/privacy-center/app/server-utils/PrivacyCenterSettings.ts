@@ -1,4 +1,25 @@
-import { ConsentMethod } from "~/types/api";
+import type { ConsentMethod } from "~/types/api";
+import type {
+  ConsentFlagType,
+  ConsentNonApplicableFlagMode,
+} from "~/types/config";
+
+export const MISSING_EXPERIENCE_BEHAVIORS = [
+  "throw",
+  "empty_experience",
+] as const;
+export type MissingExperienceBehaviors =
+  (typeof MISSING_EXPERIENCE_BEHAVIORS)[number];
+
+export const LOG_LEVEL_LABELS = [
+  "fatal",
+  "error",
+  "warn",
+  "info",
+  "debug",
+  "trace",
+] as const;
+export type LogLevels = (typeof LOG_LEVEL_LABELS)[number];
 
 /**
  * Settings that can be controlled using ENV vars on the server.
@@ -16,6 +37,8 @@ export interface PrivacyCenterSettings {
   ROOT_PROPERTY_PATH: string | null; // (optional) force a property path to be fetched from the API. If "/foo" is set, it will attempt to return the property with "/foo" path.
   USE_API_CONFIG: boolean; // (optional) (default: false) when set to true, the privacy center will attempt to fetch a property from the API before falling back to the static config.
   FIDES_JS_MAX_AGE_SECONDS: number; // (optional) how long to cache the /fides.js bundle for, in seconds. Defaults to 1 hour (DEFAULT_FIDES_JS_MAX_AGE_SECONDS)
+  MISSING_EXPERIENCE_BEHAVIOR: MissingExperienceBehaviors; // (optional) controls what Privacy Center does when the api call to fetch an experience fails
+  LOG_LEVEL: LogLevels; // (optional) controls the log level of the Privacy Center. Defaults to info.
 
   // Fides.js options
   DEBUG: boolean; // whether console logs are enabled for consent components
@@ -43,4 +66,6 @@ export interface PrivacyCenterSettings {
   SHOW_BRAND_LINK: boolean; // whether to render the Ethyca brand link
   FIDES_CONSENT_OVERRIDE: ConsentMethod.ACCEPT | ConsentMethod.REJECT | null; // (optional) sets a previously learned consent preference for the user
   FIDES_DISABLED_NOTICES: string | null; // (optional) comma-separated list of notice_keys to disable in the CMP Overlay
+  FIDES_CONSENT_NON_APPLICABLE_FLAG_MODE: ConsentNonApplicableFlagMode | null; // (optional) determines how non-applicable privacy notices are handled (omit|include)
+  FIDES_CONSENT_FLAG_TYPE: ConsentFlagType | null; // (optional) determines the type of value to use for consent (boolean|consent_mechanism)
 }

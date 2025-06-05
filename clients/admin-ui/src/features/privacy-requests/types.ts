@@ -21,6 +21,29 @@ export enum ExecutionLogStatus {
   SKIPPED = "skipped",
 }
 
+export const ExecutionLogStatusLabels: Record<ExecutionLogStatus, string> = {
+  [ExecutionLogStatus.IN_PROCESSING]: "In processing",
+  [ExecutionLogStatus.PENDING]: "Pending",
+  [ExecutionLogStatus.COMPLETE]: "Complete",
+  [ExecutionLogStatus.ERROR]: "Error",
+  [ExecutionLogStatus.PAUSED]: "Paused",
+  [ExecutionLogStatus.RETRYING]: "Retrying",
+  [ExecutionLogStatus.SKIPPED]: "Skipped",
+};
+
+export const ExecutionLogStatusColors: Record<
+  ExecutionLogStatus,
+  string | undefined
+> = {
+  [ExecutionLogStatus.ERROR]: "error",
+  [ExecutionLogStatus.SKIPPED]: "warning",
+  [ExecutionLogStatus.IN_PROCESSING]: undefined,
+  [ExecutionLogStatus.PENDING]: undefined,
+  [ExecutionLogStatus.COMPLETE]: undefined,
+  [ExecutionLogStatus.PAUSED]: undefined,
+  [ExecutionLogStatus.RETRYING]: undefined,
+};
+
 export interface ExecutionLog {
   collection_name: string | null;
   fields_affected: FieldsAffected[];
@@ -136,12 +159,28 @@ export interface ConfigStorageDetailsRequest {
   format?: string;
 }
 
+export interface S3SecretsDetails {
+  aws_access_key_id: string;
+  aws_secret_access_key: string;
+}
+
+export interface GCSSecretsDetails {
+  type: string;
+  project_id: string;
+  private_key_id: string;
+  private_key: string;
+  client_email: string;
+  client_id: string;
+  auth_uri: string;
+  token_uri: string;
+  auth_provider_x509_cert_url: string;
+  client_x509_cert_url: string;
+  universe_domain: string;
+}
+
 export interface ConfigStorageSecretsDetailsRequest {
   type?: string;
-  details?: {
-    aws_access_key_id: string;
-    aws_secret_access_key: string;
-  };
+  details?: S3SecretsDetails | GCSSecretsDetails;
 }
 
 export interface ConfigMessagingRequest {
@@ -167,4 +206,30 @@ export interface ConfigMessagingSecretsRequest {
     twilio_messaging_service_sid?: string;
     twilio_sender_phone_number?: string;
   };
+}
+
+export enum ActivityTimelineItemTypeEnum {
+  REQUEST_UPDATE = "Request update",
+  INTERNAL_COMMENT = "Internal comment",
+}
+
+export const TimelineItemColorMap: Record<
+  ActivityTimelineItemTypeEnum,
+  string
+> = {
+  [ActivityTimelineItemTypeEnum.REQUEST_UPDATE]: "sandstone",
+  [ActivityTimelineItemTypeEnum.INTERNAL_COMMENT]: "marble",
+};
+
+export interface ActivityTimelineItem {
+  author: string;
+  title?: string;
+  date: Date;
+  type: ActivityTimelineItemTypeEnum;
+  showViewLog: boolean;
+  onClick?: () => void;
+  description?: string;
+  isError: boolean;
+  isSkipped: boolean;
+  id: string;
 }

@@ -6,7 +6,7 @@ import { baseApi } from "~/features/common/api.slice";
 import {
   DiffStatus,
   MonitorConfig,
-  Page_MonitorConfig_,
+  Page_MonitorStatusResponse_,
   Page_StagedResourceAPIResponse_,
   Page_str_,
 } from "~/types/api";
@@ -63,7 +63,7 @@ interface ChangeResourceCategoryQueryParam {
 
 const discoveryDetectionApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    getMonitorsByIntegration: build.query<Page_MonitorConfig_, any>({
+    getMonitorsByIntegration: build.query<Page_MonitorStatusResponse_, any>({
       query: (params) => ({
         method: "GET",
         url: `/plus/discovery-monitor`,

@@ -559,6 +559,12 @@ dataset:
     - name: email_address
       data_categories:
       - user.contact.email
+    - name: password_login_enabled
+      data_categories:
+      - system.operations
+    - name: totp_secret
+      data_categories:
+      - system.operations
   - name: fidesuserpermissions
     fields:
     - name: created_at
@@ -577,6 +583,29 @@ dataset:
       data_categories:
       - system.operations
     - name: user_id
+      data_categories:
+      - system.operations
+  - name: fides_user_respondent_email_verification
+    fields:
+    - name: id
+      data_categories:
+      - system.operations
+    - name: user_id
+      data_categories:
+      - system.operations
+    - name: access_token
+      data_categories:
+      - system.operations
+    - name: access_token_expires_at
+      data_categories:
+      - system.operations
+    - name: identity_verified_at
+      data_categories:
+      - system.operations
+    - name: created_at
+      data_categories:
+      - system.operations
+    - name: updated_at
       data_categories:
       - system.operations
   - name: ctl_organizations
@@ -1185,6 +1214,8 @@ dataset:
       data_categories: [system.operations]
     - name: reject_all_mechanism
       data_categories: [system.operations]
+    - name: tcf_configuration_id
+      data_categories: [system.operations]
   - name: privacyexperienceconfighistory
     description: 'Historical table to store all versions of Experience Config History for record keeping'
     fields:
@@ -1251,6 +1282,8 @@ dataset:
     - name: version
       data_categories: [system.operations]
     - name: reject_all_mechanism
+      data_categories: [system.operations]
+    - name: tcf_configuration_id
       data_categories: [system.operations]
   - name: privacynoticetemplate
     data_categories: []
@@ -2301,6 +2334,24 @@ dataset:
       data_categories: [system]
     - name: last_monitored
       data_categories: [system]
+    - name: shared_config_id
+      data_categories: [system]
+  - name: shared_monitor_config
+    fields:
+    - name: created_at
+      data_categories: [system]
+    - name: description
+      data_categories: [system]
+    - name: id
+      data_categories: [system]
+    - name: key
+      data_categories: [system]
+    - name: name
+      data_categories: [system]
+    - name: updated_at
+      data_categories: [system]
+    - name: classify_params
+      data_categories: [system]
   - name: stagedresource
     fields:
     - name: child_diff_statuses
@@ -2507,4 +2558,32 @@ dataset:
       - name: description
         data_categories: [system.operations]
       - name: page
+        data_categories: [system.operations]
+  - name: tcf_configuration
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: name
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+  - name: tcf_publisher_restriction
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: tcf_configuration_id
+        data_categories: [system.operations]
+      - name: purpose_id
+        data_categories: [system.operations]
+      - name: restriction_type
+        data_categories: [system.operations]
+      - name: vendor_restriction
+        data_categories: [system.operations]
+      - name: range_entries
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
         data_categories: [system.operations]

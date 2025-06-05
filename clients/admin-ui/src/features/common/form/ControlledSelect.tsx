@@ -1,16 +1,17 @@
-import type { FormLabelProps } from "fidesui";
 import {
   AntFlex as Flex,
   AntSelect as Select,
   AntSelectProps as SelectProps,
   FormControl,
+  FormHelperText,
+  FormLabelProps,
   Grid,
   VStack,
 } from "fidesui";
 import { useField } from "formik";
 import { useState } from "react";
 
-import QuestionTooltip from "../QuestionTooltip";
+import { InfoTooltip } from "../InfoTooltip";
 import { ErrorMessage, Label } from "./inputs";
 
 export interface ControlledSelectProps extends SelectProps {
@@ -20,6 +21,7 @@ export interface ControlledSelectProps extends SelectProps {
   tooltip?: string | null;
   isRequired?: boolean;
   layout?: "inline" | "stacked";
+  helperText?: string | null;
 }
 
 export const ControlledSelect = ({
@@ -29,6 +31,7 @@ export const ControlledSelect = ({
   tooltip,
   isRequired,
   layout = "inline",
+  helperText,
   ...props
 }: ControlledSelectProps) => {
   const [field, meta, { setValue }] = useField(name);
@@ -100,13 +103,17 @@ export const ControlledSelect = ({
                 value={field.value || undefined} // solves weird bug where placeholder won't appear if value is an empty string ""
                 status={isInvalid ? "error" : undefined}
               />
+              {helperText && <FormHelperText>{helperText}</FormHelperText>}
               <ErrorMessage
                 isInvalid={isInvalid}
                 message={meta.error}
                 fieldName={field.name}
               />
             </Flex>
-            {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+            <InfoTooltip
+              label={tooltip}
+              className={isInvalid ? "mt-2 self-start" : undefined}
+            />
           </Flex>
         </Grid>
       </FormControl>
@@ -127,7 +134,7 @@ export const ControlledSelect = ({
               {label}
             </Label>
           ) : null}
-          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+          <InfoTooltip label={tooltip} />
         </Flex>
         <Select
           {...field}
@@ -140,6 +147,9 @@ export const ControlledSelect = ({
           value={field.value || undefined} // solves weird bug where placeholder won't appear if value is an empty string ""
           status={isInvalid ? "error" : undefined}
         />
+        {helperText && (
+          <FormHelperText style={{ marginTop: 0 }}>{helperText}</FormHelperText>
+        )}
         <ErrorMessage
           isInvalid={isInvalid}
           message={meta.error}

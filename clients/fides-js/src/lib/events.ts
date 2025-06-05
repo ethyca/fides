@@ -1,5 +1,6 @@
 import type { FidesEvent as DocsFidesEvent, FidesEventType } from "../docs";
 import { FidesCookie } from "./consent-types";
+import { applyOverridesToConsent } from "./consent-utils";
 
 // Bonus points: update the WindowEventMap interface with our custom event types
 declare global {
@@ -60,7 +61,7 @@ export type { FidesEventType };
  *
  * Example usage:
  * ```
- * window.addEventListener("FidesInitialized", (evt) => console.log("Fides.consent initialized:", evt.detail.consent));
+ * window.addEventListener("FidesReady", (evt) => console.log("Fides.consent initialized:", evt.detail.consent));
  * window.addEventListener("FidesUpdated", (evt) => console.log("Fides.consent updated:", evt.detail.consent));
  * ```
  *
@@ -72,10 +73,10 @@ export type { FidesEventType };
  */
 export const dispatchFidesEvent = (
   type: FidesEventType,
-  cookie: FidesCookie | undefined,
-  debug: boolean,
+  fidesCookie: FidesCookie | undefined,
   extraDetails?: FidesEventExtraDetails,
 ) => {
+  const cookie = fidesCookie ? { ...fidesCookie } : undefined;
   if (typeof window !== "undefined" && typeof CustomEvent !== "undefined") {
     // Extracts consentMethod directly from the cookie instead of having to pass in duplicate data to this method
     const constructedExtraDetails: FidesEventExtraDetails = {
@@ -85,10 +86,18 @@ export const dispatchFidesEvent = (
     };
     const perfMark = performance?.mark?.(type);
     const timestamp = perfMark?.startTime;
+    const normalizedCookie: FidesCookie | undefined = cookie;
+    if (normalizedCookie && cookie?.consent) {
+      normalizedCookie.consent = applyOverridesToConsent(
+        cookie.consent,
+        window.Fides?.experience?.non_applicable_privacy_notices,
+        window.Fides?.experience?.privacy_notices,
+      );
+    }
     const event = new CustomEvent(type, {
       detail: {
-        ...cookie,
-        debug,
+        ...normalizedCookie,
+        debug: !!window.Fides?.options?.debug,
         extraDetails: constructedExtraDetails,
         timestamp,
       },

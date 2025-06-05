@@ -17,6 +17,7 @@ from fides.api.util.cors_middleware_utils import (
 )
 from fides.common.api import scope_registry as scopes
 from fides.common.api.v1 import urn_registry as urls
+from fides.config import CONFIG
 
 
 @pytest.fixture(scope="function")
@@ -42,6 +43,7 @@ def original_cors_middleware_origins() -> Generator:
     )
 
 
+@pytest.mark.usefixtures("original_cors_middleware_origins")
 class TestPatchApplicationConfig:
     @pytest.fixture(scope="function")
     def url(self) -> str:
@@ -99,7 +101,11 @@ class TestPatchApplicationConfig:
         assert 200 == response.status_code
 
     def test_patch_application_config_admin_role(
-        self, api_client: TestClient, payload, url, generate_role_header
+        self,
+        api_client: TestClient,
+        payload,
+        url,
+        generate_role_header,
     ):
         auth_header = generate_role_header(roles=[OWNER])
         response = api_client.patch(url, headers=auth_header, json=payload)
@@ -137,7 +143,10 @@ class TestPatchApplicationConfig:
         assert response.status_code == 422
 
     def test_patch_application_config_with_invalid_value(
-        self, api_client: TestClient, generate_auth_header, url
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
     ):
         auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
         response = api_client.patch(
@@ -154,12 +163,12 @@ class TestPatchApplicationConfig:
         )
         assert response.status_code == 422
 
-        # gcs is valid storage type but not allowed currently
+        # ethyca is valid storage type but not allowed currently
         # as an `active_default_storage_type``
         response = api_client.patch(
             url,
             headers=auth_header,
-            json={"storage": {"active_default_storage_type": StorageType.gcs.value}},
+            json={"storage": {"active_default_storage_type": StorageType.ethyca.value}},
         )
         assert response.status_code == 422
 
@@ -337,13 +346,17 @@ class TestPatchApplicationConfig:
 
     def test_patch_application_config_updates_cors_domains_in_middleware(
         self,
+        db: Session,
         api_client: TestClient,
         generate_auth_header,
-        original_cors_middleware_origins,
         url,
         payload,
-        db: Session,
+        original_cors_middleware_origins,
     ):
+        # Create a new application config with the original cors origins
+        CONFIG.security.cors_origins = original_cors_middleware_origins
+        ApplicationConfig.update_config_set(db, CONFIG)
+
         auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
         response = api_client.patch(
             url,
@@ -515,6 +528,7 @@ class TestPatchApplicationConfig:
         )
 
 
+@pytest.mark.usefixtures("original_cors_middleware_origins")
 class TestPutApplicationConfig:
     @pytest.fixture(scope="function")
     def url(self) -> str:
@@ -550,14 +564,22 @@ class TestPutApplicationConfig:
         assert 401 == response.status_code
 
     def test_put_application_config_wrong_scope(
-        self, api_client: TestClient, payload, url, generate_auth_header
+        self,
+        api_client: TestClient,
+        payload,
+        url,
+        generate_auth_header,
     ):
         auth_header = generate_auth_header([scopes.CONFIG_READ])
         response = api_client.put(url, headers=auth_header, json=payload)
         assert 403 == response.status_code
 
     def test_put_application_config_viewer_role(
-        self, api_client: TestClient, payload, url, generate_role_header
+        self,
+        api_client: TestClient,
+        payload,
+        url,
+        generate_role_header,
     ):
         auth_header = generate_role_header(roles=[VIEWER])
         response = api_client.put(url, headers=auth_header, json=payload)
@@ -571,7 +593,11 @@ class TestPutApplicationConfig:
         assert 200 == response.status_code
 
     def test_put_application_config_admin_role(
-        self, api_client: TestClient, payload, url, generate_role_header
+        self,
+        api_client: TestClient,
+        payload,
+        url,
+        generate_role_header,
     ):
         auth_header = generate_role_header(roles=[OWNER])
         response = api_client.put(url, headers=auth_header, json=payload)
@@ -609,7 +635,10 @@ class TestPutApplicationConfig:
         assert response.status_code == 422
 
     def test_put_application_config_with_invalid_value(
-        self, api_client: TestClient, generate_auth_header, url
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
     ):
         auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
         response = api_client.put(
@@ -626,12 +655,12 @@ class TestPutApplicationConfig:
         )
         assert response.status_code == 422
 
-        # gcs is valid storage type but not allowed currently
+        # ethyca is valid storage type but not allowed currently
         # as an `active_default_storage_type``
         response = api_client.put(
             url,
             headers=auth_header,
-            json={"storage": {"active_default_storage_type": StorageType.gcs.value}},
+            json={"storage": {"active_default_storage_type": StorageType.ethyca.value}},
         )
         assert response.status_code == 422
 
@@ -761,12 +790,17 @@ class TestPutApplicationConfig:
 
     def test_put_application_config_updates_cors_domains_in_middleware(
         self,
+        db: Session,
         api_client: TestClient,
         generate_auth_header,
         url,
         payload,
         original_cors_middleware_origins,
     ):
+        # Create a new application config with the original cors origins
+        CONFIG.security.cors_origins = original_cors_middleware_origins
+        ApplicationConfig.update_config_set(db, CONFIG)
+
         auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
         new_cors_origins = payload["security"]["cors_origins"]
 
@@ -867,6 +901,7 @@ class TestPutApplicationConfig:
         assert response.text == "Disallowed CORS origin"
 
 
+@pytest.mark.usefixtures("original_cors_middleware_origins")
 class TestGetApplicationConfigApiSet:
     @pytest.fixture(scope="function")
     def url(self) -> str:
@@ -894,7 +929,10 @@ class TestGetApplicationConfigApiSet:
         assert 401 == response.status_code
 
     def test_get_application_config_wrong_scope(
-        self, api_client: TestClient, url, generate_auth_header
+        self,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
     ):
         auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
         response = api_client.get(url, headers=auth_header)
@@ -979,6 +1017,7 @@ class TestGetApplicationConfigApiSet:
         )
 
 
+@pytest.mark.usefixtures("original_cors_middleware_origins")
 class TestDeleteApplicationConfig:
     @pytest.fixture(scope="function")
     def url(self) -> str:
@@ -1008,12 +1047,7 @@ class TestDeleteApplicationConfig:
         }
 
     def test_reset_application_config(
-        self,
-        api_client: TestClient,
-        generate_auth_header,
-        url,
-        db: Session,
-        payload,
+        self, api_client: TestClient, generate_auth_header, url, db: Session, payload
     ):
         # first we PATCH in some settings
         auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
@@ -1072,6 +1106,10 @@ class TestDeleteApplicationConfig:
         """
         Test that a DELETE works even if no 'api-set' settings have been set yet
         """
+
+        # Create an empty application config record
+        ApplicationConfig.create_or_update(db, data={})
+
         # we ensure they are not returned
         auth_header = generate_auth_header([scopes.CONFIG_READ])
         response = api_client.get(
@@ -1134,12 +1172,7 @@ class TestDeleteApplicationConfig:
         assert response_settings == {}
 
     def test_reset_removes_all_cors_domain_from_middleware(
-        self,
-        api_client: TestClient,
-        generate_auth_header,
-        url,
-        db: Session,
-        payload,
+        self, api_client: TestClient, generate_auth_header, url, db: Session, payload
     ):
         auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
         response = api_client.patch(
@@ -1309,5 +1342,10 @@ class TestGetConfig:
 
         execution_keys = set(config["admin_ui"].keys())
         assert (
-            len(execution_keys.difference(set(["enabled", "url"]))) == 0
+            len(
+                execution_keys.difference(
+                    set(["enabled", "url", "error_notification_mode"])
+                )
+            )
+            == 0
         ), "Unexpected config API change, please review with Ethyca security team"

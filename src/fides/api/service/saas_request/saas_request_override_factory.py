@@ -251,7 +251,7 @@ def validate_update_consent_function(f: Callable) -> None:
         )
     if len(sig.parameters) < 5:
         raise InvalidSaaSRequestOverrideException(
-            "Provided SaaS update consent function must declare at least 4 parameters"
+            "Provided SaaS update consent function must declare at least 5 parameters"
         )
 
 
@@ -261,9 +261,9 @@ def validate_process_consent_webhook_function(f: Callable) -> None:
         raise InvalidSaaSRequestOverrideException(
             "Provided SaaS process consent webhook function must return a ConsentWebhookResult"
         )
-    if len(sig.parameters) < 5:
+    if len(sig.parameters) < 4:
         raise InvalidSaaSRequestOverrideException(
-            "Provided SaaS process consent webhook function must declare at least 5 parameters"
+            "Provided SaaS process consent webhook function must declare at least 4 parameters"
         )
 
 

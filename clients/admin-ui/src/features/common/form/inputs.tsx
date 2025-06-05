@@ -6,6 +6,7 @@ import {
   AntButton as Button,
   AntDefaultOptionType as DefaultOptionType,
   AntSwitch as Switch,
+  AntSwitchProps as SwitchProps,
   Box,
   Checkbox,
   Code,
@@ -49,7 +50,7 @@ import React, {
 } from "react";
 
 import ClipboardButton from "~/features/common/ClipboardButton";
-import QuestionTooltip from "~/features/common/QuestionTooltip";
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 
 type Variant = "inline" | "stacked" | "block";
 
@@ -216,7 +217,10 @@ export const CustomTextInput = ({
                 fieldName={field.name}
               />
             </Flex>
-            {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+            <InfoTooltip
+              label={tooltip}
+              className={isInvalid ? "mt-2 self-start" : undefined}
+            />
           </Flex>
         </Grid>
       </FormControl>
@@ -235,7 +239,7 @@ export const CustomTextInput = ({
             >
               {label}
             </Label>
-            {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+            <InfoTooltip label={tooltip} />
           </Flex>
         ) : null}
         {innerInput}
@@ -316,7 +320,7 @@ export const CustomTextArea = ({
               fieldName={field.name}
             />
           </Flex>
-          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+          <InfoTooltip label={tooltip} />
         </Flex>
       </FormControl>
     );
@@ -336,7 +340,7 @@ export const CustomTextArea = ({
                 fieldName={field.name}
               />
             </Flex>
-            {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+            <InfoTooltip label={tooltip} />
           </Flex>
         </Grid>
       </FormControl>
@@ -349,7 +353,7 @@ export const CustomTextArea = ({
           <Label htmlFor={props.id || props.name} fontSize="xs" my={0} mr={1}>
             {label}
           </Label>
-          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+          <InfoTooltip label={tooltip} />
         </Flex>
         {innerTextArea}
         <ErrorMessage
@@ -398,7 +402,7 @@ export const CustomNumberInput = ({
                 </NumberInputStepper>
               </NumberInput>
             </Flex>
-            {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+            <InfoTooltip label={tooltip} />
           </Flex>
         </Grid>
       </FormControl>
@@ -411,7 +415,7 @@ export const CustomNumberInput = ({
           <Label htmlFor={props.id || props.name} fontSize="xs" my={0} mr={1}>
             {label}
           </Label>
-          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+          <InfoTooltip label={tooltip} />
         </Flex>
         <NumberInput
           {...field}
@@ -445,13 +449,16 @@ interface CustomSwitchProps {
   label?: string;
   tooltip?: string;
   variant?: "inline" | "condensed" | "stacked" | "switchFirst";
+  size?: SwitchProps["size"];
   isDisabled?: boolean;
   onChange?: (checked: boolean) => void;
+  className?: string;
 }
 export const CustomSwitch = ({
   label,
   tooltip,
   variant = "inline",
+  size = "small",
   onChange,
   isDisabled,
   ...props
@@ -474,7 +481,7 @@ export const CustomSwitch = ({
           disabled={isDisabled}
           className="mr-2"
           data-testid={`input-${field.name}`}
-          size="small"
+          size={size}
         />
       )}
     </Field>
@@ -489,7 +496,7 @@ export const CustomSwitch = ({
           </Label>
           <Box display="flex" alignItems="center">
             {innerSwitch}
-            {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+            <InfoTooltip label={tooltip} />
           </Box>
         </Grid>
       </FormControl>
@@ -504,7 +511,7 @@ export const CustomSwitch = ({
           <Label htmlFor={props.id || props.name} my={0} fontSize="sm" mr={2}>
             {label}
           </Label>
-          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+          <InfoTooltip label={tooltip} />
         </Flex>
       </FormControl>
     );
@@ -518,7 +525,7 @@ export const CustomSwitch = ({
             <Label htmlFor={props.id || props.name} fontSize="xs" my={0} mr={0}>
               {label}
             </Label>
-            {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+            <InfoTooltip label={tooltip} />
           </HStack>
           <HStack>{innerSwitch}</HStack>
         </Box>
@@ -539,7 +546,7 @@ export const CustomSwitch = ({
           {label}
         </Label>
         {innerSwitch}
-        {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+        <InfoTooltip label={tooltip} />
       </Box>
     </FormControl>
   );
@@ -580,7 +587,7 @@ export const CustomCheckbox = ({
           </Text>
         </Checkbox>
 
-        {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+        <InfoTooltip label={tooltip} />
       </Flex>
     </FormControl>
   );
@@ -625,7 +632,7 @@ export const CustomClipboardCopy = ({
             <Flex flexDir="column" flexGrow={1} mr="2">
               {innerInput}
             </Flex>
-            {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+            <InfoTooltip label={tooltip} />
           </Flex>
         </Grid>
       </FormControl>
@@ -639,7 +646,7 @@ export const CustomClipboardCopy = ({
             <Label htmlFor={props.id || props.name} fontSize="xs" my={0} mr={1}>
               {label}
             </Label>
-            {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+            <InfoTooltip label={tooltip} />
           </Flex>
         ) : null}
         {innerInput}
@@ -679,7 +686,7 @@ export const CustomDatePicker = ({
             <Label htmlFor={props.id || name} fontSize="xs" my={0} mr={1}>
               {label}
             </Label>
-            {!!tooltip && <QuestionTooltip label={tooltip} />}
+            {!!tooltip && <InfoTooltip label={tooltip} />}
           </Flex>
         )}
         <Input
@@ -732,7 +739,7 @@ export const CustomDateTimeInput = ({
             <Label htmlFor={fieldId} fontSize="xs" my={0} mr={1}>
               {label}
             </Label>
-            {!!tooltip && <QuestionTooltip label={tooltip} />}
+            {!!tooltip && <InfoTooltip label={tooltip} />}
           </Flex>
         )}
         <Input

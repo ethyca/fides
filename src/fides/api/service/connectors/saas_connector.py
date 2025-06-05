@@ -4,6 +4,7 @@ from json import JSONDecodeError
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
 import pydash
+from fideslang.validation import FidesKey
 from loguru import logger
 from requests import Response
 from sqlalchemy.orm import Session
@@ -18,7 +19,6 @@ from fides.api.common_exceptions import (
 from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.policy import Policy
-from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.consentable_item import (
     ConsentableItem,
@@ -530,11 +530,15 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         session = Session.object_session(privacy_request)
         masking_request = query_config.get_masking_request(session)
+        rows_updated = 0
+
         if not masking_request:
-            raise Exception(
-                f"Either no masking request configured or no valid masking request for {node.address.collection}. "
-                f"Check that MASKING_STRICT env var is appropriately set"
+            logger.info(
+                "No masking request found for the '{}' collection in {}",
+                self.current_collection_name,
+                self.saas_config.fides_key,  # type: ignore
             )
+            return rows_updated
 
         self.set_saas_request_state(masking_request)
 
@@ -565,7 +569,6 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             cast(Optional[List[PostProcessorStrategy]], masking_request.postprocessors),
         )
 
-        rows_updated = 0
         client = self.create_client()
         for row in rows:
             try:
@@ -687,15 +690,16 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         if notice_based_override_function:
             # follow the notice-based SaaS consent flow
-            notice_id_to_preference_map, filtered_preferences = (
-                build_user_consent_and_filtered_preferences_for_service(
-                    self.configuration.system,
-                    privacy_request,
-                    session,
-                    True,
-                )
+            (
+                notice_preference_map,
+                filtered_preferences,
+            ) = build_user_consent_and_filtered_preferences_for_service(
+                self.configuration.system,
+                privacy_request,
+                session,
+                True,
             )
-            if not notice_id_to_preference_map:
+            if not notice_preference_map:
                 logger.info(
                     "Skipping consent requests on node {}: No actionable consent preferences to propagate",
                     node.address.value,
@@ -723,12 +727,13 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 )
             consent_propagation_status = self._invoke_consent_request_override(
                 notice_based_override_function,
+                self.configuration.key,
                 self.create_client(),
                 policy,
                 privacy_request,
                 self.secrets,
                 identity_data,
-                notice_id_to_preference_map,  # type: ignore[arg-type]
+                notice_preference_map,  # type: ignore[arg-type]
                 notice_based_consentable_item_hierarchy,
             )
             if consent_propagation_status == ConsentPropagationStatus.no_update_needed:
@@ -800,6 +805,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                     )
                     consent_propagation_status = self._invoke_consent_request_override(
                         override_function,
+                        self.configuration.key,
                         self.create_client(),
                         policy,
                         privacy_request,
@@ -997,12 +1003,13 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
     @staticmethod
     def _invoke_consent_request_override(
         override_function: RequestOverrideFunction,
+        connection_key: FidesKey,
         client: AuthenticatedClient,
         policy: Policy,
         privacy_request: PrivacyRequest,
         secrets: Any,
         identity_data: Optional[Dict[str, Any]] = None,
-        notice_id_to_preference_map: Optional[Dict[str, UserConsentPreference]] = None,
+        notice_preference_map: Optional[Dict[str, Dict[str, Any]]] = None,
         consentable_items_hierarchy: Optional[List[ConsentableItem]] = None,
     ) -> ConsentPropagationStatus:
         """
@@ -1011,13 +1018,14 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         """
         try:
             logger.info("Invoking consent request override function...")
-            if notice_id_to_preference_map:
+            if notice_preference_map:
                 # At this point, we've already validated the override function signature to take these params
                 return override_function(
+                    connection_key,
                     client,
                     secrets,
                     identity_data,
-                    notice_id_to_preference_map,
+                    notice_preference_map,
                     consentable_items_hierarchy,
                 )  # type: ignore
             return override_function(

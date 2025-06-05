@@ -19,10 +19,14 @@ import getIntegrationTypeInfo, {
   SUPPORTED_INTEGRATIONS,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
 import MonitorConfigTab from "~/features/integrations/configure-monitor/MonitorConfigTab";
+import DatahubDataSyncTab from "~/features/integrations/configure-scan/DatahubDataSyncTab";
 import ConfigureIntegrationModal from "~/features/integrations/ConfigureIntegrationModal";
 import ConnectionStatusNotice from "~/features/integrations/ConnectionStatusNotice";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
+import { IntegrationFeatureEnum } from "~/features/integrations/IntegrationFeatureEnum";
+import SharedConfigModal from "~/features/integrations/SharedConfigModal";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
+import { ConnectionType } from "~/types/api";
 
 const IntegrationDetailView: NextPage = () => {
   const { query } = useRouter();
@@ -40,9 +44,8 @@ const IntegrationDetailView: NextPage = () => {
 
   const { onOpen, isOpen, onClose } = useDisclosure();
 
-  const { overview, instructions } = getIntegrationTypeInfo(
-    connection?.connection_type,
-  );
+  const { overview, instructions, description, enabledFeatures } =
+    getIntegrationTypeInfo(connection?.connection_type);
 
   const router = useRouter();
   if (
@@ -52,46 +55,96 @@ const IntegrationDetailView: NextPage = () => {
     router.push(INTEGRATION_MANAGEMENT_ROUTE);
   }
 
-  const tabs: TabData[] = [
-    {
-      label: "Connection",
+  const supportsConnectionTest =
+    connection?.connection_type !== ConnectionType.MANUAL_WEBHOOK;
+
+  const tabs: TabData[] = [];
+
+  // Show Details tab for integrations without connection, Connection tab for others
+  if (enabledFeatures?.includes(IntegrationFeatureEnum.WITHOUT_CONNECTION)) {
+    tabs.push({
+      label: "Details",
       content: (
         <Box maxW="720px">
-          <Flex
-            borderRadius="md"
-            outline="1px solid"
-            outlineColor="gray.100"
-            align="center"
-            p={3}
-          >
-            <Flex flexDirection="column">
-              <ConnectionStatusNotice testData={testData} />
-            </Flex>
-            <Spacer />
-            <div className="flex gap-4">
-              <Button
-                onClick={testConnection}
-                loading={testIsLoading}
-                data-testid="test-connection-btn"
-              >
-                Test connection
-              </Button>
-              <Button onClick={onOpen} data-testid="manage-btn">
-                Manage
-              </Button>
-            </div>
+          <Flex>
+            <Button onClick={onOpen} data-testid="manage-btn">
+              Edit integration
+            </Button>
           </Flex>
+
           <ConfigureIntegrationModal
             isOpen={isOpen}
             onClose={onClose}
             connection={connection!}
+            description={description}
           />
           {overview}
           {instructions}
         </Box>
       ),
-    },
-    {
+    });
+  } else {
+    tabs.push({
+      label: "Connection",
+      content: (
+        <Box maxW="720px">
+          {supportsConnectionTest && (
+            <Flex
+              borderRadius="md"
+              outline="1px solid"
+              outlineColor="gray.100"
+              align="center"
+              p={3}
+            >
+              <Flex flexDirection="column">
+                <ConnectionStatusNotice testData={testData} />
+              </Flex>
+              <Spacer />
+              <div className="flex gap-4">
+                <Button
+                  onClick={testConnection}
+                  loading={testIsLoading}
+                  data-testid="test-connection-btn"
+                >
+                  Test connection
+                </Button>
+                <Button onClick={onOpen} data-testid="manage-btn">
+                  Manage
+                </Button>
+              </div>
+            </Flex>
+          )}
+          {!supportsConnectionTest && (
+            <Flex>
+              <Button onClick={onOpen} data-testid="manage-btn">
+                Edit integration
+              </Button>
+            </Flex>
+          )}
+
+          <ConfigureIntegrationModal
+            isOpen={isOpen}
+            onClose={onClose}
+            connection={connection!}
+            description={description}
+          />
+          {overview}
+          {instructions}
+        </Box>
+      ),
+    });
+  }
+
+  // Add conditional tabs based on enabled features
+  if (enabledFeatures?.includes(IntegrationFeatureEnum.DATA_SYNC)) {
+    tabs.push({
+      label: "Data sync",
+      content: <DatahubDataSyncTab integration={connection!} />,
+    });
+  }
+
+  if (enabledFeatures?.includes(IntegrationFeatureEnum.DATA_DISCOVERY)) {
+    tabs.push({
       label: "Data discovery",
       content: (
         <MonitorConfigTab
@@ -99,8 +152,8 @@ const IntegrationDetailView: NextPage = () => {
           integrationOption={integrationOption}
         />
       ),
-    },
-  ];
+    });
+  }
 
   return (
     <Layout title="Integrations">
@@ -116,6 +169,7 @@ const IntegrationDetailView: NextPage = () => {
           },
         ]}
       >
+        <SharedConfigModal />
         <IntegrationBox integration={connection} showDeleteButton />
         {integrationIsLoading ? (
           <Spinner />

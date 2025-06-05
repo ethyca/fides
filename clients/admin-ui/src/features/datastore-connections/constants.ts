@@ -47,6 +47,7 @@ export const CONNECTION_TYPE_LOGO_MAP = new Map<ConnectionType, string>([
   [ConnectionType.MONGODB, "mongodb.svg"],
   [ConnectionType.MSSQL, "sqlserver.svg"],
   [ConnectionType.MYSQL, "mysql.svg"],
+  [ConnectionType.OKTA, "okta.svg"],
   [ConnectionType.POSTGRES, "postgres.svg"],
   [ConnectionType.RDS_MYSQL, "rds.svg"],
   [ConnectionType.RDS_POSTGRES, "rds.svg"],
@@ -56,6 +57,7 @@ export const CONNECTION_TYPE_LOGO_MAP = new Map<ConnectionType, string>([
   [ConnectionType.SNOWFLAKE, "snowflake.svg"],
   [ConnectionType.SOVRN, "sovrn.svg"],
   [ConnectionType.TIMESCALE, "timescaledb.svg"],
+  [ConnectionType.WEBSITE, "website.svg"],
 ]);
 
 /**

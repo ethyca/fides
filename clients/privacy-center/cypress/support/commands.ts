@@ -11,6 +11,12 @@ import {
 import type { AppDispatch } from "~/app/store";
 import VisitOptions = Cypress.VisitOptions;
 
+declare global {
+  interface Window {
+    config: any;
+  }
+}
+
 Cypress.Commands.add("getByTestId", (selector, ...args) =>
   cy.get(`[data-testid='${selector}']`, ...args),
 );
@@ -109,29 +115,19 @@ Cypress.Commands.add(
 
 Cypress.Commands.add(
   "visitConsentDemo",
-  (
-    options?: FidesConfig,
-    queryParams?: Cypress.VisitOptions["qs"] | null,
-    windowParams?: any,
-  ) => {
+  (options?: FidesConfig, queryParams?: any, windowParams?: any) => {
     const visitOptions: Partial<VisitOptions> = {
       onBeforeLoad: (win) => {
-        // eslint-disable-next-line no-param-reassign
         win.fidesConfig = options;
 
         if (windowParams) {
-          // @ts-ignore
-          // eslint-disable-next-line no-param-reassign
           if (options?.options.customOptionsPath) {
             // hard-code path for now, as dynamically assigning to win obj is challenging in Cypress
-            // @ts-ignore
-            // eslint-disable-next-line no-param-reassign
             win.config = {
               tc_info: undefined,
               overrides: windowParams,
             };
           } else {
-            // eslint-disable-next-line no-param-reassign
             win.fides_overrides = windowParams;
           }
         }
@@ -141,7 +137,9 @@ Cypress.Commands.add(
         // will fail to compile. That's the point!
         const fidesEvents: Record<FidesEventType, true> = {
           FidesInitializing: true,
-          FidesInitialized: true,
+          FidesInitialized: true, // deprecated
+          FidesConsentLoaded: true,
+          FidesReady: true,
           FidesUpdating: true,
           FidesUpdated: true,
           FidesUIChanged: true,
@@ -160,11 +158,16 @@ Cypress.Commands.add(
         });
 
         // Add GTM stub
-        // eslint-disable-next-line no-param-reassign
         win.dataLayer = [];
         cy.stub(win.dataLayer, "push").as("dataLayerPush");
       },
     };
+    if (!queryParams || !queryParams.disable_animations) {
+      if (!queryParams) {
+        queryParams = {};
+      }
+      queryParams.disable_animations = "true";
+    }
     if (queryParams) {
       visitOptions.qs = queryParams;
     }

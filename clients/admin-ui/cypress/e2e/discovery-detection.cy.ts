@@ -16,6 +16,14 @@ describe("discovery and detection", () => {
     stubPlus(true);
     stubStagedResourceActions();
     stubTaxonomyEntities();
+    cy.intercept("GET", "/api/v1/config*", {
+      body: {
+        detection_discovery: {
+          monitor_celery_tasks_enabled: true,
+          website_monitor_enabled: true,
+        },
+      },
+    });
   });
 
   describe("activity table", () => {
@@ -70,11 +78,11 @@ describe("discovery and detection", () => {
         ).should("contain", "Pending review");
       });
 
-      it("should be able to confirm or ignore", () => {
+      it("should be able to monitor or ignore", () => {
         cy.getByTestId(
           "row-my_bigquery_monitor.prj-bigquery-000001.test_dataset_2-col-action",
         ).within(() => {
-          cy.getByTestId("action-Confirm").click();
+          cy.getByTestId("action-Monitor").click();
           cy.wait("@confirmResource");
           cy.getByTestId("action-Ignore").click();
           cy.wait("@ignoreResource");
@@ -207,6 +215,15 @@ describe("discovery and detection", () => {
           cy.getByTestId(
             "row-my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20-col-name",
           ).should("contain", "consent-reports-20");
+        });
+        cy.getByTestId(
+          "row-my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-18",
+        ).should("exist");
+        cy.getByTestId(
+          "row-my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-18",
+        ).within(() => {
+          cy.getByTestId("action-Monitor").click();
+          cy.wait("@confirmResource");
         });
         cy.getByTestId(
           "row-my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-19",
@@ -442,6 +459,14 @@ describe("discovery and detection", () => {
         ).within(() => {
           cy.getByTestId("no-classifications").should("exist");
           cy.getByTestId("taxonomy-add-btn").should("not.exist");
+        });
+      });
+
+      it("doesn't allow reclassifying fields", () => {
+        cy.getByTestId(
+          "row-my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20.address-col-actions",
+        ).within(() => {
+          cy.getByTestId("action-reclassify").should("not.exist");
         });
       });
     });

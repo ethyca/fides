@@ -6,12 +6,6 @@
     "production": false,
     "userCannotModify": true
   },
-  "datasetClassificationUpdates": {
-    "description": "Enable per-collection dataset classification instead of bulk updates.",
-    "development": true,
-    "production": false,
-    "test": false
-  },
   "organizationManagement": {
     "description": "Management page to configure Organization details for RoPA reporting, messaging, etc.",
     "development": true,
@@ -20,12 +14,6 @@
   },
   "standaloneConnections": {
     "description": "Allow the creation of standalone connections for testing",
-    "development": true,
-    "test": true,
-    "production": false
-  },
-  "dataDiscoveryAndDetection": {
-    "description": "Data discovery and detection",
     "development": true,
     "test": true,
     "production": false
@@ -42,6 +30,12 @@
     "test": true,
     "production": false
   },
+  "oktaMonitor": {
+    "description": "Monitor Okta for activity",
+    "development": true,
+    "test": true,
+    "production": false
+  },
   "ssoAuthentication": {
     "description": "SSO Authentication Providers (OpenID)",
     "development": true,
@@ -50,6 +44,18 @@
   },
   "downloadAccessRequestResults": {
     "description": "Download access data from completed requests",
+    "development": true,
+    "test": true,
+    "production": false
+  },
+  "publisherRestrictions": {
+    "description": "TCF publisher restrictions",
+    "development": true,
+    "test": true,
+    "production": false
+  },
+  "alphaNewManualIntegration": {
+    "description": "New DSR Workflow Manual Integration",
     "development": true,
     "test": true,
     "production": false

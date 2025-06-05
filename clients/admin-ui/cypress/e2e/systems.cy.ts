@@ -299,28 +299,12 @@ describe("System management page", () => {
       cy.url().should("contain", "/systems/configure/fidesctl_system");
     });
 
-    it("Can access integration management page from system edit page", () => {
-      cy.visit("/systems/configure/fidesctl_system");
-      cy.wait("@getFidesctlSystem");
-      cy.getByTestId("integration-page-btn").click();
-      cy.url().should("contain", INTEGRATION_MANAGEMENT_ROUTE);
-    });
-
     it("Can persist fields not directly in the form", () => {
       cy.visit("/systems/configure/fidesctl_system");
       cy.wait("@getFidesctlSystem");
       cy.getByTestId("input-name").type("edit");
       cy.getByTestId("save-btn").click();
-      cy.wait("@putSystem").then((interception) => {
-        const { body } = interception.request;
-        expect(body.cookies).to.eql([
-          {
-            name: "test_cookie",
-            path: "/",
-            domain: "https://www.example.com",
-          },
-        ]);
-      });
+      cy.wait("@putSystem");
     });
 
     it.skip("Can go through the edit flow", () => {

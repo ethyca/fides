@@ -1,5 +1,6 @@
 import { MARKETING_CONSENT_KEYS } from "../lib/consent-constants";
 import { NoticeConsent } from "../lib/consent-types";
+import { processExternalConsentValue } from "../lib/shared-consent-utils";
 
 declare global {
   interface Window {
@@ -22,6 +23,7 @@ const CONSENT_MAP = {
   marketing: MARKETING_CONSENT_KEYS,
   sale_of_data: [
     "marketing",
+    "data_sales",
     "data_sales_and_sharing",
     "data_sales_sharing_gpp_us_state",
     "data_sharing_gpp_us_state",
@@ -40,23 +42,28 @@ type ShopifyConsentResponse = {
 };
 
 type ShopifyConsent = {
-  marketing: boolean | undefined;
-  analytics: boolean | undefined;
-  preferences: boolean | undefined;
+  marketing: boolean;
+  analytics: boolean;
+  preferences: boolean;
   sale_of_data: boolean;
 };
 
-function createShopifyConsent(
-  fidesConsent: Record<string, boolean>,
-): ShopifyConsent {
-  const consent = Object.fromEntries(
-    Object.entries(CONSENT_MAP).map(([key, values]) => [
-      key,
-      values.some((value) => fidesConsent[value] === true) ||
-        (values.some((value) => fidesConsent[value] === false)
-          ? false
-          : undefined),
+function createShopifyConsent(fidesConsent: NoticeConsent): ShopifyConsent {
+  const processedConsent = Object.fromEntries(
+    Object.entries(fidesConsent).map(([k, v]) => [
+      k,
+      processExternalConsentValue(v),
     ]),
+  );
+  const consent = Object.fromEntries(
+    Object.entries(CONSENT_MAP).map(([key, values]) => {
+      const hasTrue = values.some((value) => processedConsent[value] === true);
+      const hasFalse = values.some(
+        (value) => processedConsent[value] === false,
+      );
+
+      return [key, hasTrue || (hasFalse ? false : undefined)];
+    }),
   ) as Partial<ShopifyConsent>;
 
   // Ensure sale_of_data is always boolean
@@ -67,8 +74,7 @@ function createShopifyConsent(
 
 // Helper function to push consent to Shopify from a Fides Consent object
 const pushConsentToShopify = (fidesConsent: NoticeConsent) => {
-  // @ts-ignore - Shopify is loaded at this point
-  window.Shopify.customerPrivacy.setTrackingConsent(
+  window.Shopify!.customerPrivacy!.setTrackingConsent(
     createShopifyConsent(fidesConsent),
     () => {},
   );
@@ -80,7 +86,7 @@ const applyOptions = () => {
     console.error("Fides could not access Shopify's customerPrivacy API");
   }
   // Listen for Fides events and push them to Shopify
-  window.addEventListener("FidesInitialized", (event) =>
+  window.addEventListener("FidesReady", (event) =>
     pushConsentToShopify(event.detail.consent),
   );
   window.addEventListener("FidesUpdating", (event) =>
@@ -91,8 +97,9 @@ const applyOptions = () => {
   );
 
   // If Fides was already initialized, push consent to Shopify immediately
-  if (window.Fides?.initialized) {
-    pushConsentToShopify(window.Fides.consent);
+  if (window.Fides?.initialized && window.Fides.cookie) {
+    // cookie will always be present in the Fides object after initialization. Event details above also use the cookie.consent so let's stay consistent.
+    pushConsentToShopify(window.Fides.cookie.consent);
   }
 };
 

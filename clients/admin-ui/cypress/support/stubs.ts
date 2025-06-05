@@ -148,6 +148,10 @@ export const stubDatasetCrud = () => {
     "getDataset",
   );
 
+  cy.intercept("GET", "/api/v1/dataset?only_unlinked_datasets=false", []).as(
+    "getUnlinkedDatasets",
+  );
+
   // Update
   cy.intercept("PUT", "/api/v1/dataset*", { fixture: "dataset.json" }).as(
     "putDataset",
@@ -510,6 +514,9 @@ export const stubExperienceConfig = () => {
   cy.intercept("POST", "/api/v1/experience-config", {
     fixture: "privacy-experiences/experienceConfig.json",
   }).as("postExperience");
+  cy.intercept("GET", "/api/v1/plus/tcf/configurations*", {
+    fixture: "tcf/configurations.json",
+  }).as("getTcfConfigs");
   stubPlus(true);
 };
 
@@ -563,6 +570,9 @@ export const stubWebsiteMonitor = () => {
   cy.intercept("PATCH", "/api/v1/plus/discovery-monitor/*/results", {
     response: 200,
   }).as("patchAssets");
+  cy.intercept("POST", "/api/v1/plus/discovery-monitor/un-mute*", {
+    response: 200,
+  }).as("restoreAssets");
 };
 
 export const stubSystemAssets = () => {
@@ -597,4 +607,58 @@ export const stubDataCatalog = () => {
     total: 1,
     pages: 1,
   }).as("getAvailableDatabases");
+};
+
+export const stubTCFConfig = () => {
+  cy.intercept("/api/v1/config?api_set=false", {
+    body: { consent: { override_vendor_purposes: true } },
+  });
+  cy.intercept("/api/v1/config?api_set=true", {
+    body: { consent: { override_vendor_purposes: true } },
+  });
+  cy.intercept("PATCH", "/api/v1/config", { body: {} }).as("patchConfig");
+  cy.intercept("GET", "/api/v1/plus/tcf/configurations*", {
+    fixture: "tcf/configurations.json",
+  }).as("getTcfConfigs");
+  cy.intercept("GET", "/api/v1/purposes", {
+    fixture: "tcf/purposes.json",
+  }).as("getTcfPurposes");
+  cy.intercept(
+    "GET",
+    "/api/v1/plus/tcf/configurations/*/publisher_restrictions?purpose_id=*",
+    {
+      fixture: "tcf/publisher-restrictions.json",
+    },
+  ).as("getTcfRestrictions");
+  cy.intercept(
+    "DELETE",
+    "/api/v1/plus/tcf/configurations/*/publisher_restrictions/*",
+    {
+      body: {},
+    },
+  ).as("deleteRestriction");
+  cy.fixture("tcf/configurations.json").then((data) => {
+    cy.intercept("GET", "/api/v1/plus/tcf/configurations/*", {
+      body: data.items[0],
+    }).as("getTCFConfig");
+  });
+  cy.intercept("POST", "/api/v1/plus/tcf/configurations", {
+    body: { id: "new-config-id" },
+  }).as("createConfig");
+  cy.intercept(
+    "POST",
+    "/api/v1/plus/tcf/configurations/*/publisher_restrictions",
+    {
+      body: {},
+    },
+  ).as("createRestriction");
+};
+
+export const stubSharedMonitorConfig = () => {
+  cy.intercept("GET", "/api/v1/plus/shared-monitor-config*", {
+    fixture: "detection-discovery/monitors/shared_config_response.json",
+  }).as("getSharedMonitorConfig");
+  cy.intercept("POST", "/api/v1/plus/shared-monitor-config", {
+    response: 200,
+  }).as("createSharedMonitorConfig");
 };

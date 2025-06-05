@@ -6,7 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { type TabData } from "~/features/common/DataTabs";
-import { useFeatures, useFlags } from "~/features/common/features";
+import { useFeatures } from "~/features/common/features";
 import {
   DirtyFormConfirmationModal,
   useIsAnyFormDirty,
@@ -88,10 +88,9 @@ const ToastMessage = ({
     <Text fontWeight="700">System has been saved successfully</Text>
     <Text textColor="gray.700" whiteSpace="inherit">
       Your system has been added to your data map. You can{" "}
-      <ToastLink onClick={onViewDatamap}>view it now</ToastLink> and come back
-      to finish this setup when you’re ready. Or you can progress to{" "}
+      <ToastLink onClick={onViewDatamap}>view it now</ToastLink> or{" "}
       <ToastLink onClick={onAddPrivacyDeclaration}>
-        adding your privacy declarations in the next tab
+        add privacy declarations in the next tab
       </ToastLink>
       .
     </Text>
@@ -125,9 +124,6 @@ const useSystemFormTabs = ({
   const [systemProcessesPersonalData, setSystemProcessesPersonalData] =
     useState<boolean | undefined>(undefined);
   const { plus: isPlusEnabled } = useFeatures();
-  const {
-    flags: { dataDiscoveryAndDetection, webMonitor },
-  } = useFlags();
   const { plus: hasPlus } = useFeatures();
 
   // Once we have saved the system basics, subscribe to the query so that activeSystem
@@ -246,7 +242,7 @@ const useSystemFormTabs = ({
     }
   }, [router.query, onTabChange]);
 
-  const showNewIntegrationNotice = hasPlus && dataDiscoveryAndDetection;
+  const showNewIntegrationNotice = hasPlus;
 
   const tabData: TabData[] = [
     {
@@ -354,7 +350,7 @@ const useSystemFormTabs = ({
     },
   ];
 
-  if (isPlusEnabled && webMonitor) {
+  if (isPlusEnabled) {
     tabData.push({
       label: "Assets",
       content: activeSystem ? (

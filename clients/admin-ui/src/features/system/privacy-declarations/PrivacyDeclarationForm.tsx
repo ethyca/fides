@@ -41,9 +41,8 @@ export const ValidationSchema = Yup.object().shape({
     .label("Data subjects"),
 });
 
-export type FormValues = Omit<PrivacyDeclarationResponse, "cookies"> & {
+export type FormValues = PrivacyDeclarationResponse & {
   customFieldValues: CustomFieldValues;
-  cookies: string[];
 };
 
 const defaultInitialValues: FormValues = {
@@ -53,7 +52,6 @@ const defaultInitialValues: FormValues = {
   dataset_references: [],
   customFieldValues: {},
   id: "",
-  cookies: [],
 };
 
 const transformFormValueToDeclaration = (values: FormValues) => {
@@ -63,8 +61,6 @@ const transformFormValueToDeclaration = (values: FormValues) => {
     ...declaration,
     // Fill in an empty string for name because of https://github.com/ethyca/fideslang/issues/98
     name: values.name ?? "",
-    // Transform cookies from string back to an object with default values
-    cookies: declaration.cookies.map((name) => ({ name, path: "/" })),
   };
 };
 
@@ -81,12 +77,10 @@ export const PrivacyDeclarationFormComponents = ({
   allDataSubjects,
   allDatasets,
   privacyDeclarationId,
-  includeCookies,
   includeCustomFields,
 }: DataProps &
   Pick<Props, "onDelete"> & {
     privacyDeclarationId?: string;
-    includeCookies?: boolean;
     includeCustomFields?: boolean;
   }) => {
   const datasetOptions = allDatasets
@@ -142,14 +136,6 @@ export const PrivacyDeclarationFormComponents = ({
         layout="stacked"
         disabled
       />
-      {includeCookies ? (
-        <ControlledSelect
-          name="cookies"
-          label="Cookies"
-          mode="tags"
-          layout="stacked"
-        />
-      ) : null}
       {allDatasets ? (
         <ControlledSelect
           name="dataset_references"
@@ -178,7 +164,6 @@ export const transformPrivacyDeclarationToFormValues = (
     ? {
         ...privacyDeclaration,
         customFieldValues: customFieldValues || {},
-        cookies: privacyDeclaration.cookies?.map((cookie) => cookie.name) ?? [],
       }
     : defaultInitialValues;
 
@@ -292,7 +277,6 @@ interface Props {
   initialValues?: PrivacyDeclarationResponse;
   privacyDeclarationId?: string;
   includeCustomFields?: boolean;
-  includeCookies?: boolean;
 }
 
 export const PrivacyDeclarationForm = ({

@@ -68,7 +68,7 @@ describe("System integrations", () => {
     });
 
     it("should not Request types (enabled-actions) field", () => {
-      cy.getByTestId("enabled-actions").should("not.exist");
+      cy.getByTestId("controlled-select-enabled_actions").should("not.exist");
     });
   });
 

@@ -1,4 +1,11 @@
-import { stubLocations, stubPlus, stubSystemCrud } from "cypress/support/stubs";
+import {
+  stubLocations,
+  stubPlus,
+  stubSharedMonitorConfig,
+  stubSystemCrud,
+  stubTaxonomyEntities,
+} from "cypress/support/stubs";
+import { AntSelect } from "fidesui";
 
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 
@@ -14,7 +21,7 @@ describe("Integration management for data detection & discovery", () => {
         test_status: "succeeded",
       },
     }).as("testConnection");
-    cy.intercept("GET", "/api/v1/connection_type", {
+    cy.intercept("GET", "/api/v1/connection_type?*", {
       fixture: "connectors/connection_types.json",
     }).as("getConnectionTypes");
     cy.intercept("GET", "/api/v1/connection_type/*/secret", {
@@ -85,6 +92,43 @@ describe("Integration management for data detection & discovery", () => {
           cy.url().should("contain", "/bq_integration");
         });
       });
+
+      it("should paginate integrations", () => {
+        cy.intercept("GET", "/api/v1/connection?*&page=1*", {
+          fixture: "connectors/list_page_1_50_items.json",
+        }).as("getConnectionsPage1");
+        cy.intercept("GET", "/api/v1/connection?*&page=2*", {
+          fixture: "connectors/list_page_2_30_items.json",
+        }).as("getConnectionsPage2");
+        cy.visit(INTEGRATION_MANAGEMENT_ROUTE);
+        cy.wait("@getConnectionsPage1");
+
+        // Set up intercept for page 2
+
+        // Check that pagination controls are visible
+        cy.getByTestId("pagination-controls").should("exist");
+
+        // Check that the correct number of items are displayed (50 items on page 1)
+        cy.get("[data-testid^='integration-info-']").should("have.length", 50);
+
+        // Verify we're on page 1 of 2
+        cy.getByTestId("pagination-controls").should("contain", "1");
+        cy.getByTestId("pagination-controls").should("contain", "2");
+
+        // Click to go to page 2
+        cy.getByTestId("pagination-controls").within(() => {
+          cy.contains("2").click();
+        });
+        cy.wait("@getConnectionsPage2");
+
+        // Check that the correct number of items are displayed (30 items on page 2)
+        cy.get("[data-testid^='integration-info-']").should("have.length", 30);
+
+        // Verify the first item on page 2 is different from page 1
+        cy.getByTestId("integration-info-snowflake_connector_11").should(
+          "exist",
+        );
+      });
     });
 
     describe("adding an integration", () => {
@@ -92,7 +136,7 @@ describe("Integration management for data detection & discovery", () => {
         cy.intercept("GET", "/api/v1/connection?*", {
           fixture: "connectors/bigquery_connection_list.json",
         }).as("getConnections");
-        cy.intercept("GET", "/api/v1/connection_type", {
+        cy.intercept("GET", "/api/v1/connection_type?*", {
           fixture: "connectors/connection_types.json",
         }).as("getConnectionTypes");
         cy.visit(INTEGRATION_MANAGEMENT_ROUTE);
@@ -163,6 +207,21 @@ describe("Integration management for data detection & discovery", () => {
         cy.getByTestId("save-btn").click();
         cy.wait("@patchSystemConnection");
       });
+
+      it("should be able to add a new integration without secrets", () => {
+        cy.intercept("PATCH", "/api/v1/connection", { statusCode: 200 }).as(
+          "patchConnection",
+        );
+        cy.getByTestId("add-integration-btn").click();
+        cy.getByTestId("add-modal-content").within(() => {
+          cy.getByTestId("integration-info-manual_placeholder").within(() => {
+            cy.getByTestId("configure-btn").click();
+          });
+        });
+        cy.getByTestId("input-name").type("Manual Integration Test");
+        cy.getByTestId("save-btn").click();
+        cy.wait("@patchConnection");
+      });
     });
   });
 
@@ -178,7 +237,7 @@ describe("Integration management for data detection & discovery", () => {
       cy.intercept("GET", "/api/v1/connection?*", {
         fixture: "connectors/bigquery_connection_list.json",
       }).as("getConnections");
-      cy.intercept("GET", "/api/v1/connection_type", {
+      cy.intercept("GET", "/api/v1/connection_type?*", {
         fixture: "connectors/connection_types.json",
       }).as("getConnectionTypes");
       cy.intercept("GET", "/api/v1/system", {
@@ -189,7 +248,7 @@ describe("Integration management for data detection & discovery", () => {
 
     it("redirects to list view if the integration type is incorrect", () => {
       cy.intercept("GET", "/api/v1/connection/*", {
-        fixture: "connectors/postgres_connector.json",
+        fixture: "connectors/sovrn_connector.json",
       }).as("getConnection");
       cy.wait("@getConnection");
       cy.url().should("not.contain", "bq_integration");
@@ -268,10 +327,27 @@ describe("Integration management for data detection & discovery", () => {
         }).as("deleteMonitor");
         cy.getByTestId("tab-Data discovery").click();
         cy.wait("@getMonitors");
+        stubSharedMonitorConfig();
       });
 
       it("shows a table of monitors", () => {
         cy.getByTestId("row-test monitor 1").should("exist");
+        // scan status column
+        cy.getByTestId("row-test monitor 1-col-monitor_status").should(
+          "contain",
+          "Scanning",
+        );
+        cy.getByTestId("row-test monitor 2-col-monitor_status").within(() => {
+          cy.getByTestId("tag-success").should("exist");
+        });
+        cy.getByTestId("row-test monitor 3-col-monitor_status").within(() => {
+          cy.getByTestId("tag-error").should("exist").click();
+        });
+        cy.getByTestId("error-log-drawer")
+          .should("be.visible")
+          .within(() => {
+            cy.getByTestId("error-log-message").should("have.length", 2);
+          });
       });
 
       it("can configure a new monitor", () => {
@@ -281,6 +357,9 @@ describe("Integration management for data detection & discovery", () => {
         cy.getByTestId("add-monitor-btn").click();
         cy.getByTestId("add-modal-content").should("be.visible");
         cy.getByTestId("input-name").type("A new monitor");
+        cy.getByTestId("controlled-select-shared_config_id").antSelect(
+          "Shared Config 1",
+        );
         cy.getByTestId("controlled-select-execution_frequency").antSelect(
           "Daily",
         );
@@ -407,6 +486,55 @@ describe("Integration management for data detection & discovery", () => {
         });
         cy.wait("@putMonitor");
       });
+
+      describe("shared monitor configs", () => {
+        beforeEach(() => {
+          stubTaxonomyEntities();
+        });
+        it("shows a table of shared monitor configs", () => {
+          cy.getByTestId("configurations-btn").click();
+          cy.getByTestId("config-shared-config-1").should("exist");
+        });
+
+        it("can create a new shared monitor config", () => {
+          cy.getByTestId("configurations-btn").click();
+          cy.getByTestId("create-new-btn").click();
+          cy.getByTestId("input-name").type("A new shared monitor config");
+          cy.getByTestId("input-rules.0.regex").type(".*");
+          cy.getByTestId("input-rules.0.dataCategory").antSelect("system");
+          cy.getByTestId("add-rule-btn").click();
+          cy.getByTestId("input-rules.1.regex").type(".*");
+          cy.getByTestId("input-rules.1.dataCategory").antSelect("system");
+          cy.getByTestId("upload-csv-btn").should("be.visible");
+          cy.getByTestId("save-btn").click();
+          cy.wait("@createSharedMonitorConfig");
+        });
+
+        it("can edit an existing shared monitor config", () => {
+          cy.getByTestId("configurations-btn").click();
+          cy.getByTestId("config-shared-config-1").within(() => {
+            cy.getByTestId("edit-btn").click();
+          });
+          cy.getByTestId("upload-csv-btn").should("not.exist");
+          cy.getByTestId("input-name").should("have.value", "Shared Config 1");
+          cy.getByTestId("input-rules.0.regex").should(
+            "have.value",
+            "[E|e]mail",
+          );
+          cy.getByTestId("input-rules.0.dataCategory").should(
+            "contain",
+            "user.contact.email",
+          );
+          cy.getByTestId("input-rules.1.regex").should(
+            "have.value",
+            ".*[P|p]hone.*",
+          );
+          cy.getByTestId("input-rules.1.dataCategory").should(
+            "contain",
+            "user.contact.phone",
+          );
+        });
+      });
     });
 
     describe("data discovery tab with no projects/databases", () => {
@@ -445,7 +573,7 @@ describe("Integration management for data detection & discovery", () => {
         cy.intercept("GET", "/api/v1/plus/discovery-monitor*", {
           fixture: "detection-discovery/monitors/website_monitor_list.json",
         }).as("getMonitors");
-        cy.intercept("GET", "/api/v1/connection_type", {
+        cy.intercept("GET", "/api/v1/connection_type?*", {
           fixture: "connectors/connection_types.json",
         }).as("getConnectionTypes");
         cy.getByTestId("tab-Data discovery").click();
@@ -478,7 +606,7 @@ describe("Integration management for data detection & discovery", () => {
           force: true,
         });
         cy.getByTestId("controlled-select-execution_frequency").antSelect(
-          "Daily",
+          "Quarterly",
         );
         cy.getByTestId("input-execution_start_date").type("2034-06-03T10:00");
         cy.getByTestId("save-btn").click();

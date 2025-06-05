@@ -4,6 +4,7 @@
 
 import type { ExperienceConfigResponseNoNotices } from "./ExperienceConfigResponseNoNotices";
 import type { ExperienceMeta } from "./ExperienceMeta";
+import type { fidesplus__schemas__tcf_experience__TCFPublisherRestrictionResponse } from "./fidesplus__schemas__tcf_experience__TCFPublisherRestrictionResponse";
 import type { PrivacyExperienceGPPSettings } from "./PrivacyExperienceGPPSettings";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 import type { PrivacyNoticeResponse } from "./PrivacyNoticeResponse";
@@ -42,10 +43,16 @@ export type PrivacyExperienceResponse = {
   tcf_system_consents?: Array<TCFVendorConsentRecord>;
   tcf_system_legitimate_interests?: Array<TCFVendorLegitimateInterestsRecord>;
   tcf_system_relationships?: Array<TCFVendorRelationships>;
+  tcf_publisher_restrictions?: Array<fidesplus__schemas__tcf_experience__TCFPublisherRestrictionResponse>;
+  tcf_publisher_country_code?: string | null;
   /**
    * The Privacy Notices associated with this experience, if applicable
    */
   privacy_notices?: Array<PrivacyNoticeResponse> | null;
+  /**
+   * The notice keys of the Privacy Notices that are enabled, but not applicable to the experience
+   */
+  non_applicable_privacy_notices?: Array<string> | null;
   /**
    * The Experience Config and its translations
    */

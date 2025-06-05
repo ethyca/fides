@@ -63,7 +63,7 @@ export const blueconic = (
     throw new Error("Unsupported approach");
   }
 
-  window.addEventListener("FidesInitialized", configureObjectives);
+  window.addEventListener("FidesReady", configureObjectives);
   window.addEventListener("FidesUpdated", configureObjectives);
   window.addEventListener("onBlueConicLoaded", configureObjectives);
 

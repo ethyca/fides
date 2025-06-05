@@ -16,17 +16,20 @@ const useUserForm = (profile: User) => {
   const currentUser = useSelector(selectUser);
   const [editUser] = useEditUserMutation();
 
-  const initialValues = {
+  const initialValues: FormValues = {
     username: profile.username ?? "",
     email_address: profile.email_address ?? "",
     first_name: profile.first_name ?? "",
     last_name: profile.last_name ?? "",
     password: "",
-    id: profile.id,
+    password_login_enabled: Boolean(profile.password_login_enabled),
   };
 
   const handleSubmit = async (values: FormValues) => {
-    const userBody = { ...profile, ...values };
+    const userBody = {
+      ...values,
+      id: profile.id,
+    };
     return editUser(userBody);
   };
 
