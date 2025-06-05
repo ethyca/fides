@@ -1,4 +1,22 @@
-"""staged resource ancestor link data migration
+"""
+Staged resource ancestor link data migration.
+
+Indexes and constraints are created on this table _after_ data is populated.
+If > 1,000,000 stagedresourceancestor records are created as part
+of the data migration, the migration will skip creating the indexes
+and constraints, and will instead log a message
+indicating that index migration should be performed as part of app runtime.
+
+The data migration has the following steps:
+- Query for all staged resources and their children
+- Build a list in-memory of all ancestor-descendant pairs to insert by recursively
+    processing each resource's children
+- Write the ancestor links to a CSV string in-memory
+- Copy the CSV string into the stagedresourceancestor table via a PostgreSQL COPY
+    command
+- Create the indexes and constraints on the stagedresourceancestor table if
+    < 1,000,000 ancestor links are created
+
 
 Revision ID: bf713b5a021d
 Revises: 5474a47c77da
