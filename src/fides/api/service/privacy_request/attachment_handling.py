@@ -52,7 +52,7 @@ def get_attachments_content(
 ) -> Iterator[AttachmentData]:
     """
     Retrieves all attachments associated with a privacy request that are marked to be included with the access package.
-    Yields AttachmentData objects containing attachment metadata and content.
+    Yields AttachmentData objects containing attachment metadata and download urls.
     Uses generators to minimize memory usage.
 
     Args:
