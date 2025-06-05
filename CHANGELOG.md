@@ -22,7 +22,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.62.0...main)
 
 
-
+## [2.62.1](https://github.com/ethyca/fides/compare/2.62.0..2.62.1)
+- Added Fides-Client header to http logger middleware [#6195](https://github.com/ethyca/fides/pull/6195)
 
 ## [2.62.0](https://github.com/ethyca/fides/compare/2.61.1...2.62.0)
 
