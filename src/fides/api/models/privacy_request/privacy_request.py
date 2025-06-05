@@ -1274,7 +1274,7 @@ class PrivacyRequest(
         return None
 
     def get_filtered_final_upload(self) -> Dict[str, Dict[str, List[Row]]]:
-        """Fetched the filtered access results we uploaded to the user"""
+        """Fetched the same filtered access results we uploaded to the user"""
         return self.filtered_final_upload or {}
 
     def add_success_execution_log(
