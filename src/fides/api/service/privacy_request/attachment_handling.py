@@ -59,7 +59,7 @@ def get_attachments_content(
         loaded_attachments: List of Attachment objects to process
 
     Yields:
-        AttachmentData object containing attachment metadata and content
+        AttachmentData object containing attachment metadata and url
     """
     start_time = time_module.time()
     processed_count = 0
