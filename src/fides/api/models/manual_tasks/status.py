@@ -24,11 +24,11 @@ class StatusType(str, EnumType):
             list[StatusType]: List of valid transitions
         """
         if current_status == cls.pending:
-            return [cls.in_progress, cls.failed, cls.completed]
+            return [cls.in_progress, cls.failed]
         if current_status == cls.in_progress:
             return [cls.completed, cls.failed]
         if current_status == cls.completed:
-            return [cls.in_progress, cls.failed]
+            return [cls.failed]
         if current_status == cls.failed:
             return [cls.pending, cls.in_progress]
         return []
@@ -66,9 +66,11 @@ class StatusTransitionMixin(Generic[T]):
         Raises:
             ValueError: If the transition is not allowed
         """
-        # Allow transitions to the same status
+        # Don't allow transitions to the same status
         if new_status == self.status:
-            return
+            raise ValueError(
+                f"Invalid status transition: already in status {new_status}"
+            )
 
         # Get valid transitions for current status
         valid_transitions = self._get_valid_transitions()

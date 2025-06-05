@@ -204,9 +204,16 @@ class TestManualTaskLog:
         assert instance_log.details.get("entity_type") == "privacy_request"
         assert instance_log.details.get("entity_id") == "test_privacy_request"
 
-        # Verify submission creation log
-        submission_log = all_logs[1]
-        assert submission_log.message == "Updated submission for field test_form_field"
+        # Find submission creation log by message
+        submission_log = next(
+            (
+                log
+                for log in all_logs
+                if log.message == "Created submission for field test_form_field"
+            ),
+            None,
+        )
+        assert submission_log is not None, "Could not find submission creation log"
         assert submission_log.details is not None
         assert (
             submission_log.details.get("field_key") == manual_task_form_field.field_key
@@ -216,34 +223,7 @@ class TestManualTaskLog:
             == manual_task_form_field.field_type
         )
         assert submission_log.details.get("submitted_by") == 1
-        assert submission_log.details.get("status") == "in_progress"
-
-        # Verify submission completion log
-        completion_log = all_logs[2]
-        assert (
-            completion_log.message == "Completed submission for field test_form_field"
-        )
-        assert completion_log.details is not None
-        assert (
-            completion_log.details.get("field_key") == manual_task_form_field.field_key
-        )
-        assert (
-            completion_log.details.get("field_type")
-            == manual_task_form_field.field_type
-        )
-        assert completion_log.details.get("completed_by") == "1"
-        assert "completion_time" in completion_log.details
-
-        # Verify status update log
-        status_log = all_logs[3]
-        assert (
-            status_log.message
-            == "Task instance status transitioning from pending to in_progress"
-        )
-        assert status_log.details is not None
-        assert status_log.details.get("previous_status") == "pending"
-        assert status_log.details.get("new_status") == "in_progress"
-        assert status_log.details.get("user_id") is None
+        assert submission_log.details.get("status") == "completed"
 
     def test_log_creation_with_completion(
         self,
@@ -264,26 +244,22 @@ class TestManualTaskLog:
                 "data": {"test_form_field": "test value"},
             },
         )
-        submission.complete(db, "test_user")
 
-        # Verify completion log was created
+        # Verify submission log was created
         log = (
             db.query(ManualTaskLog)
             .filter(
                 ManualTaskLog.task_id == submission.task_id,
                 ManualTaskLog.instance_id == submission.instance_id,
-                ManualTaskLog.message.like("Completed submission%"),
+                ManualTaskLog.message == "Created submission for field test_form_field",
             )
             .first()
         )
         assert log is not None
         assert log.status == ManualTaskLogStatus.complete
-        assert "Completed submission" in log.message
-        assert log.details is not None
-        assert "field_key" in log.details
-        assert "field_type" in log.details
-        assert "completed_by" in log.details
-        assert "completion_time" in log.details
+        assert log.details["field_key"] == "test_form_field"
+        assert log.details["field_type"] == manual_task_form_field.field_type
+        assert log.details["submitted_by"] == 1
 
     def test_get_all_logs(self, db: Session, manual_task_instance: ManualTaskInstance):
         """Test getting all logs for an instance."""
@@ -337,10 +313,30 @@ class TestManualTaskLog:
             },
         )
 
+        # Create a new config for the test task
+        test_config = ManualTaskConfig.create(
+            db=db,
+            data={
+                "task_id": test_task.id,
+                "config_type": "test_config",
+                "fields": [
+                    {
+                        "field_key": "test_field",
+                        "field_type": "form",
+                        "field_metadata": {
+                            "label": "Test Field",
+                            "required": True,
+                            "help_text": "Test field",
+                        },
+                    }
+                ],
+            },
+        )
+
         # Create a new instance properly
         instance = test_task.create_entity_instance(
             db=db,
-            config_id=manual_task_instance.config_id,
+            config_id=test_config.id,
             entity_id="test",
             entity_type="test",
         )
@@ -354,7 +350,7 @@ class TestManualTaskLog:
         non_existent_instance = ManualTaskInstance(
             id="non_existent",
             task_id=test_task.id,
-            config_id=manual_task_instance.config_id,
+            config_id=test_config.id,
             entity_id="test",
             entity_type="test",
         )
@@ -527,118 +523,74 @@ class TestManualTaskLog:
         assert logs[0].created_at <= logs[1].created_at <= logs[2].created_at
 
     def test_log_statuses_in_operations(
-        self,
-        db: Session,
-        manual_task: ManualTask,
-        manual_task_config: ManualTaskConfig,
-        manual_task_instance: ManualTaskInstance,
-        manual_task_form_field: ManualTaskConfigField,
+        self, db: Session, manual_task_instance: ManualTaskInstance
     ):
-        """Test that different operations use appropriate log statuses."""
-        # Test error status for invalid submission
-        with pytest.raises(ValueError):
-            ManualTaskSubmission.create_or_update(
-                db=db,
-                data={
-                    "task_id": manual_task_instance.task_id,
-                    "config_id": manual_task_instance.config_id,
-                    "field_id": manual_task_form_field.id,
-                    "instance_id": manual_task_instance.id,
-                    "submitted_by": 1,
-                    "data": {"invalid_field": "invalid value"},
+        """Test that different operations log appropriate statuses."""
+        # Create a field definition
+        field = ManualTaskConfigField.create(
+            db=db,
+            data={
+                "task_id": manual_task_instance.task_id,
+                "config_id": manual_task_instance.config_id,
+                "field_key": "test_form_field",
+                "field_type": "form",
+                "field_metadata": {
+                    "label": "Test Field",
+                    "required": True,
+                    "help_text": "Test field",
                 },
-            )
-
-        # Verify error log was created
-        error_log = (
-            db.query(ManualTaskLog)
-            .filter(
-                ManualTaskLog.task_id == manual_task_instance.task_id,
-                ManualTaskLog.config_id == manual_task_instance.config_id,
-                ManualTaskLog.instance_id == manual_task_instance.id,
-                ManualTaskLog.status == ManualTaskLogStatus.error,
-                ManualTaskLog.message.like("%Invalid submission data%"),
-            )
-            .order_by(ManualTaskLog.created_at.desc())  # Get the most recent log
-            .first()
+            },
         )
-        assert error_log is not None
-        assert "Invalid submission data" in error_log.message
+        manual_task_instance.config.field_definitions.append(field)
+        db.commit()
 
-        # Test in_processing status for status transition
+        # Test status transition log
         manual_task_instance.update_status(db, StatusType.in_progress)
-        processing_log = (
+        log = (
             db.query(ManualTaskLog)
             .filter(
                 ManualTaskLog.task_id == manual_task_instance.task_id,
-                ManualTaskLog.config_id == manual_task_instance.config_id,
                 ManualTaskLog.instance_id == manual_task_instance.id,
                 ManualTaskLog.status == ManualTaskLogStatus.in_processing,
                 ManualTaskLog.message.like("%status transitioning%"),
             )
-            .order_by(ManualTaskLog.created_at.desc())  # Get the most recent log
             .first()
         )
-        assert processing_log is not None
-        assert "status transitioning" in processing_log.message
+        assert log is not None
+        assert log.status == ManualTaskLogStatus.in_processing
+        assert "status transitioning" in log.message
 
-        # Test awaiting_input status for already completed submission
+        # Test submission to completed task
+        manual_task_instance.update_status(db, StatusType.completed)
         submission = ManualTaskSubmission.create_or_update(
             db=db,
             data={
                 "task_id": manual_task_instance.task_id,
                 "config_id": manual_task_instance.config_id,
-                "field_id": manual_task_form_field.id,
+                "field_id": field.id,
                 "instance_id": manual_task_instance.id,
                 "submitted_by": 1,
                 "data": {"test_form_field": "test value"},
             },
         )
-        submission.complete(db, "test_user")
-        # Try to complete again
-        submission.complete(db, "test_user")
-        awaiting_log = (
+        # Submission should be None for completed tasks
+        assert submission is None
+
+        # Verify error log was created
+        log = (
             db.query(ManualTaskLog)
             .filter(
                 ManualTaskLog.task_id == manual_task_instance.task_id,
-                ManualTaskLog.config_id == manual_task_instance.config_id,
                 ManualTaskLog.instance_id == manual_task_instance.id,
-                ManualTaskLog.status == ManualTaskLogStatus.awaiting_input,
-                ManualTaskLog.message.like("%already completed%"),
+                ManualTaskLog.status == ManualTaskLogStatus.error,
+                ManualTaskLog.message == "Cannot submit to a completed task instance",
             )
-            .order_by(ManualTaskLog.created_at.desc())  # Get the most recent log
             .first()
         )
-        assert awaiting_log is not None
-        assert "already completed" in awaiting_log.message
-
-        # Test paused status by creating a paused log directly
-        ManualTaskLog.create_log(
-            db=db,
-            task_id=manual_task_instance.task_id,
-            config_id=manual_task_instance.config_id,
-            instance_id=manual_task_instance.id,
-            status=ManualTaskLogStatus.paused,
-            message="Task instance paused due to external dependency",
-            details={
-                "reason": "External dependency not available",
-                "paused_at": datetime.now(timezone.utc).isoformat(),
-            },
-        )
-
-        paused_log = (
-            db.query(ManualTaskLog)
-            .filter(
-                ManualTaskLog.task_id == manual_task_instance.task_id,
-                ManualTaskLog.config_id == manual_task_instance.config_id,
-                ManualTaskLog.instance_id == manual_task_instance.id,
-                ManualTaskLog.status == ManualTaskLogStatus.paused,
-                ManualTaskLog.message.like("%paused due to external dependency%"),
-            )
-            .order_by(ManualTaskLog.created_at.desc())  # Get the most recent log
-            .first()
-        )
-        assert paused_log is not None
-        assert "paused due to external dependency" in paused_log.message
-        assert paused_log.details is not None
-        assert paused_log.details.get("reason") == "External dependency not available"
+        assert log is not None
+        assert log.status == ManualTaskLogStatus.error
+        assert log.message == "Cannot submit to a completed task instance"
+        assert log.details is not None
+        assert log.details["field_key"] == "test_form_field"
+        assert log.details["field_type"] == "form"
+        assert log.details["submitted_by"] == 1

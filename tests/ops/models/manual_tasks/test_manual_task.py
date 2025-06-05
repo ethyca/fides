@@ -102,6 +102,40 @@ class TestManualTaskReferences:
         assert any(r.reference_id == "ref1" for r in manual_task.references)
         assert any(r.reference_id == "ref2" for r in manual_task.references)
 
+    def test_task_reference_relationships(self, db: Session, manual_task: ManualTask):
+        """Test relationships between tasks and references."""
+        # Create a reference
+        ref = ManualTaskReference(
+            task_id=manual_task.id,
+            reference_id="test_ref",
+            reference_type=ManualTaskReferenceType.privacy_request,
+        )
+        db.add(ref)
+        db.commit()
+
+        # Verify bidirectional relationship
+        assert ref.task == manual_task
+        assert ref in manual_task.references
+
+    def test_task_reference_deletion(self, db: Session, manual_task: ManualTask):
+        """Test deleting task references."""
+        # Create a reference
+        ref = ManualTaskReference(
+            task_id=manual_task.id,
+            reference_id="test_ref",
+            reference_type=ManualTaskReferenceType.privacy_request,
+        )
+        db.add(ref)
+        db.commit()
+
+        # Delete the reference
+        db.delete(ref)
+        db.commit()
+
+        # Verify reference is gone
+        assert len(manual_task.references) == 0
+        assert db.query(ManualTaskReference).filter_by(id=ref.id).first() is None
+
 
 class TestManualTaskUserManagement:
     """Tests for managing user assignments."""
@@ -109,14 +143,14 @@ class TestManualTaskUserManagement:
     def test_assign_user(self, db: Session, manual_task: ManualTask):
         """Test assigning a user to a task."""
         manual_task.assign_user(db, "test_user")
-        assert manual_task.get_assigned_user() == "test_user"
+        assert manual_task.assigned_users == ["test_user"]
 
     def test_unassign_user(self, db: Session, manual_task: ManualTask):
         """Test unassigning a user from a task."""
         manual_task.assign_user(db, "test_user")
-        assert manual_task.get_assigned_user() == "test_user"
+        assert manual_task.assigned_users == ["test_user"]
         manual_task.unassign_user(db)
-        assert manual_task.get_assigned_user() is None
+        assert manual_task.assigned_users == []
 
     def test_assign_user_error_handling(self, db: Session, manual_task: ManualTask):
         """Test error handling when assigning invalid user."""
@@ -127,18 +161,6 @@ class TestManualTaskUserManagement:
         # Test with empty user_id
         with pytest.raises(ValueError, match="User ID is required for assignment"):
             manual_task.assign_user(db, "")
-
-    def test_complete_submission_error_handling(
-        self, db: Session, manual_task_submission: ManualTaskSubmission
-    ):
-        """Test error handling when completing submission with invalid user."""
-        # Test with None user_id
-        with pytest.raises(ValueError, match="User ID is required for completion"):
-            manual_task_submission.complete(db, None)
-
-        # Test with empty user_id
-        with pytest.raises(ValueError, match="User ID is required for completion"):
-            manual_task_submission.complete(db, "")
 
 
 class TestManualTaskInstanceManagement:
@@ -196,6 +218,47 @@ class TestManualTaskInstanceManagement:
         assert len(instances) == 1
         assert instances[0].id == manual_task_instance.id
 
+    def test_get_entity_instances_with_multiple_types(
+        self,
+        db: Session,
+        manual_task: ManualTask,
+        manual_task_config: ManualTaskConfig,
+    ):
+        """Test retrieving instances when there are multiple entity types."""
+        # Create instances for different entity types
+        instance1 = manual_task.create_entity_instance(
+            db=db,
+            config_id=manual_task_config.id,
+            entity_id="test_entity_1",
+            entity_type="type_1",
+        )
+        instance2 = manual_task.create_entity_instance(
+            db=db,
+            config_id=manual_task_config.id,
+            entity_id="test_entity_2",
+            entity_type="type_2",
+        )
+
+        # Test getting instances for type_1
+        type1_instances = manual_task.get_entity_instances("type_1")
+        assert len(type1_instances) == 1
+        assert type1_instances[0].id == instance1.id
+
+        # Test getting instances for type_2
+        type2_instances = manual_task.get_entity_instances("type_2")
+        assert len(type2_instances) == 1
+        assert type2_instances[0].id == instance2.id
+
+    def test_get_entity_instances_with_empty_task(
+        self,
+        db: Session,
+        manual_task: ManualTask,
+    ):
+        """Test retrieving instances from a task with no instances."""
+        instances = manual_task.get_entity_instances("any_type")
+        assert len(instances) == 0
+        assert isinstance(instances, list)
+
     def test_get_instance_for_entity(
         self,
         db: Session,
@@ -210,103 +273,8 @@ class TestManualTaskInstanceManagement:
         assert instance.id == manual_task_instance.id
 
 
-class TestManualTaskSubmission:
-    """Tests for manual task submissions."""
-
-    def test_create_submission_with_invalid_data(
-        self, db: Session, manual_task_instance: ManualTaskInstance
-    ):
-        """Test creating submissions with invalid data."""
-        form_field = ManualTaskConfigField.create(
-            db=db,
-            data={
-                "task_id": manual_task_instance.task_id,
-                "config_id": manual_task_instance.config_id,
-                "field_key": "test_form_field",
-                "field_type": ManualTaskFieldType.form,
-                "field_metadata": {
-                    "label": "Test Form Field",
-                    "required": True,
-                    "help_text": "This is a test form field",
-                },
-            },
-        )
-
-        # Add field to config
-        config = manual_task_instance.config
-        config.field_definitions.append(form_field)
-        db.commit()
-
-        # Test with missing required field
-        with pytest.raises(ValueError, match="Invalid submission data"):
-            ManualTaskSubmission.create_or_update(
-                db=db,
-                data={
-                    "task_id": manual_task_instance.task_id,
-                    "config_id": manual_task_instance.config_id,
-                    "field_id": form_field.id,
-                    "instance_id": manual_task_instance.id,
-                    "submitted_by": 1,
-                    "data": {},
-                },
-            )
-
-        # Test with invalid type
-        with pytest.raises(ValueError, match="Invalid submission data"):
-            ManualTaskSubmission.create_or_update(
-                db=db,
-                data={
-                    "task_id": manual_task_instance.task_id,
-                    "config_id": manual_task_instance.config_id,
-                    "field_id": form_field.id,
-                    "instance_id": manual_task_instance.id,
-                    "submitted_by": 1,
-                    "data": {"test_form_field": 123},
-                },
-            )
-
-    def test_complete_submission(
-        self,
-        db: Session,
-        manual_task_submission: ManualTaskSubmission,
-    ):
-        """Test completing a submission."""
-        # Complete the submission
-        manual_task_submission.complete(db, "test_user")
-
-        # Verify completion
-        assert manual_task_submission.status == StatusType.completed
-        assert manual_task_submission.completed_at is not None
-        assert manual_task_submission.completed_by_id is not None
-
-        # Verify log was created
-        log = (
-            db.query(ManualTaskLog)
-            .filter(
-                ManualTaskLog.task_id == manual_task_submission.task_id,
-                ManualTaskLog.instance_id == manual_task_submission.instance_id,
-                ManualTaskLog.message.like("Completed submission%"),
-            )
-            .first()
-        )
-        assert log is not None
-        assert log.status == ManualTaskLogStatus.complete
-
-    def test_complete_submission_error_handling(
-        self, db: Session, manual_task_submission: ManualTaskSubmission
-    ):
-        """Test error handling when completing submission with invalid user."""
-        # Test with None user_id
-        with pytest.raises(ValueError, match="User ID is required for completion"):
-            manual_task_submission.complete(db, None)
-
-        # Test with empty user_id
-        with pytest.raises(ValueError, match="User ID is required for completion"):
-            manual_task_submission.complete(db, "")
-
-
 class TestManualTaskInstance:
-    """Tests for manual task instance logging functionality."""
+    """Tests for manual task instance functionality."""
 
     def test_get_attachments(
         self, db: Session, manual_task_instance: ManualTaskInstance
@@ -333,6 +301,11 @@ class TestManualTaskInstance:
             },
         )
 
+        # Add field to config
+        config = manual_task_instance.config
+        config.field_definitions.append(field)
+        db.commit()
+
         # Create a submission with attachment references
         submission = ManualTaskSubmission.create_or_update(
             db=db,
@@ -356,69 +329,58 @@ class TestManualTaskInstance:
         attachments = manual_task_instance.get_attachments(db)
         assert isinstance(attachments, list)
 
-    def test_get_incomplete_fields(
+    def test_update_status_with_same_status(
         self, db: Session, manual_task_instance: ManualTaskInstance
     ):
-        """Test getting incomplete fields for an instance."""
-        # Create required fields
-        required_field = ManualTaskConfigField.create(
-            db=db,
-            data={
-                "task_id": manual_task_instance.task_id,
-                "config_id": manual_task_instance.config_id,
-                "field_key": "required_field",
-                "field_type": ManualTaskFieldType.form,
-                "field_metadata": {
-                    "label": "Required Field",
-                    "required": True,
-                    "help_text": "This field is required",
-                },
-            },
+        """Test updating status to the same status."""
+        # Get initial log count
+        initial_logs = (
+            db.query(ManualTaskLog)
+            .filter(
+                ManualTaskLog.task_id == manual_task_instance.task_id,
+                ManualTaskLog.instance_id == manual_task_instance.id,
+            )
+            .all()
         )
+        initial_log_count = len(initial_logs)
 
-        optional_field = ManualTaskConfigField.create(
-            db=db,
-            data={
-                "task_id": manual_task_instance.task_id,
-                "config_id": manual_task_instance.config_id,
-                "field_key": "optional_field",
-                "field_type": ManualTaskFieldType.form,
-                "field_metadata": {
-                    "label": "Optional Field",
-                    "required": False,
-                    "help_text": "This field is optional",
-                },
-            },
+        # Update to in_progress
+        manual_task_instance.update_status(db, StatusType.in_progress)
+        assert manual_task_instance.status == StatusType.in_progress
+
+        # Try to update to the same status - should raise ValueError
+        with pytest.raises(
+            ValueError, match="Invalid status transition: already in status in_progress"
+        ):
+            manual_task_instance.update_status(db, StatusType.in_progress)
+
+        # Verify no additional log was created
+        logs = (
+            db.query(ManualTaskLog)
+            .filter(
+                ManualTaskLog.task_id == manual_task_instance.task_id,
+                ManualTaskLog.instance_id == manual_task_instance.id,
+            )
+            .all()
         )
+        assert (
+            len(logs) == initial_log_count + 1
+        )  # Initial logs + one status change log
 
-        # Add fields to config
-        config = manual_task_instance.config
-        config.field_definitions.extend([required_field, optional_field])
-        db.commit()
-
-        # Get incomplete fields
-        incomplete_fields = manual_task_instance.get_incomplete_fields()
-        assert len(incomplete_fields) == 1  # Only required field should be incomplete
-        assert incomplete_fields[0].field_key == "required_field"
-
-        # Create a submission for the required field
-        submission = ManualTaskSubmission.create_or_update(
-            db=db,
-            data={
-                "task_id": manual_task_instance.task_id,
-                "config_id": manual_task_instance.config_id,
-                "field_id": required_field.id,
-                "instance_id": manual_task_instance.id,
-                "submitted_by": 1,
-                "data": {"required_field": "test value"},
-            },
+    def test_get_attachments_with_invalid_instance(
+        self, db: Session, manual_task_instance: ManualTaskInstance
+    ):
+        """Test getting attachments for an invalid instance."""
+        # Create an instance that's not in the database
+        invalid_instance = ManualTaskInstance(
+            id="invalid",
+            task_id=manual_task_instance.task_id,
+            config_id=manual_task_instance.config_id,
+            entity_id="test",
+            entity_type="test",
         )
-        # Complete the submission
-        submission.complete(db, "test_user")
-
-        # Get incomplete fields again
-        incomplete_fields = manual_task_instance.get_incomplete_fields()
-        assert len(incomplete_fields) == 0  # No incomplete fields now
+        attachments = invalid_instance.get_attachments(db)
+        assert len(attachments) == 0
 
 
 class TestManualTaskErrorHandling:
@@ -473,26 +435,6 @@ class TestManualTaskErrorHandling:
         instances = manual_task.get_entity_instances("nonexistent_type")
         assert len(instances) == 0
 
-    def test_create_manual_task_config_with_invalid_fields(
-        self, db: Session, manual_task: ManualTask
-    ):
-        """Test creating a config with invalid field definitions."""
-        with pytest.raises(ValueError, match="Invalid field type"):
-            manual_task.create_manual_task_config(
-                db=db,
-                config_type="test_type",
-                fields=[
-                    {
-                        "field_key": "test_field",
-                        "field_type": "invalid_type",
-                        "field_metadata": {
-                            "label": "Test Field",
-                            "required": True,
-                        },
-                    }
-                ],
-            )
-
     def test_assign_user_with_invalid_user(self, db: Session, manual_task: ManualTask):
         """Test assigning an invalid user to a task."""
         with pytest.raises(ValueError, match="User ID is required for assignment"):
@@ -506,97 +448,7 @@ class TestManualTaskErrorHandling:
     ):
         """Test unassigning a user when no user is assigned."""
         manual_task.unassign_user(db)  # Should not raise an error
-        assert manual_task.get_assigned_user() is None
-
-    def test_create_submission_with_invalid_field(
-        self, db: Session, manual_task_instance: ManualTaskInstance
-    ):
-        """Test creating a submission with an invalid field ID."""
-        with pytest.raises(ValueError, match="Field not found"):
-            ManualTaskSubmission.create_or_update(
-                db=db,
-                data={
-                    "task_id": manual_task_instance.task_id,
-                    "config_id": manual_task_instance.config_id,
-                    "field_id": "invalid_field_id",
-                    "instance_id": manual_task_instance.id,
-                    "submitted_by": 1,
-                    "data": {"test_field": "test value"},
-                },
-            )
-
-    def test_complete_submission_with_invalid_user(
-        self, db: Session, manual_task_submission: ManualTaskSubmission
-    ):
-        """Test completing a submission with an invalid user ID."""
-        with pytest.raises(ValueError, match="User ID is required for completion"):
-            manual_task_submission.complete(db, None)
-
-        with pytest.raises(ValueError, match="User ID is required for completion"):
-            manual_task_submission.complete(db, "")
-
-    def test_complete_already_completed_submission(
-        self, db: Session, manual_task_submission: ManualTaskSubmission
-    ):
-        """Test completing a submission that is already completed."""
-        # Complete the submission first
-        manual_task_submission.complete(db, "test_user")
-        assert manual_task_submission.status == StatusType.completed
-
-        # Try to complete it again
-        manual_task_submission.complete(db, "test_user")
-        assert manual_task_submission.status == StatusType.completed
-
-        # Verify log was created for the second attempt
-        log = (
-            db.query(ManualTaskLog)
-            .filter(
-                ManualTaskLog.task_id == manual_task_submission.task_id,
-                ManualTaskLog.instance_id == manual_task_submission.instance_id,
-                ManualTaskLog.message.like("Submission for field%already completed%"),
-            )
-            .first()
-        )
-        assert log is not None
-        assert log.status == ManualTaskLogStatus.awaiting_input
-
-    def test_update_status_with_same_status(
-        self, db: Session, manual_task_instance: ManualTaskInstance
-    ):
-        """Test updating status to the same status."""
-        # Update to in_progress
-        manual_task_instance.update_status(db, StatusType.in_progress)
-        assert manual_task_instance.status == StatusType.in_progress
-
-        # Update to the same status
-        manual_task_instance.update_status(db, StatusType.in_progress)
-        assert manual_task_instance.status == StatusType.in_progress
-
-        # Verify no additional log was created
-        logs = (
-            db.query(ManualTaskLog)
-            .filter(
-                ManualTaskLog.task_id == manual_task_instance.task_id,
-                ManualTaskLog.instance_id == manual_task_instance.id,
-            )
-            .all()
-        )
-        assert len(logs) == 1  # Only the initial creation log
-
-    def test_get_attachments_with_invalid_instance(
-        self, db: Session, manual_task_instance: ManualTaskInstance
-    ):
-        """Test getting attachments for an invalid instance."""
-        # Create an instance that's not in the database
-        invalid_instance = ManualTaskInstance(
-            id="invalid",
-            task_id=manual_task_instance.task_id,
-            config_id=manual_task_instance.config_id,
-            entity_id="test",
-            entity_type="test",
-        )
-        attachments = invalid_instance.get_attachments(db)
-        assert len(attachments) == 0
+        assert manual_task.assigned_users == []
 
     def test_get_incomplete_fields_with_no_fields(
         self, db: Session, manual_task_instance: ManualTaskInstance
@@ -641,8 +493,8 @@ class TestManualTaskErrorHandling:
         config.field_definitions.append(field)
         db.commit()
 
-        # Create a submission with invalid data
-        with pytest.raises(ValueError, match="Invalid submission data"):
+        # Create a submission with invalid data - wrong field key
+        with pytest.raises(ValueError, match="Data must be for field test_field"):
             ManualTaskSubmission.create_or_update(
                 db=db,
                 data={
@@ -651,7 +503,23 @@ class TestManualTaskErrorHandling:
                     "field_id": field.id,
                     "instance_id": manual_task_instance.id,
                     "submitted_by": 1,
-                    "data": {"test_field": 123},  # Invalid type
+                    "data": {"wrong_field": "test value"},
+                },
+            )
+
+        # Create a submission with invalid data - multiple fields
+        with pytest.raises(
+            ValueError, match="Submission must contain data for exactly one field"
+        ):
+            ManualTaskSubmission.create_or_update(
+                db=db,
+                data={
+                    "task_id": manual_task_instance.task_id,
+                    "config_id": manual_task_instance.config_id,
+                    "field_id": field.id,
+                    "instance_id": manual_task_instance.id,
+                    "submitted_by": 1,
+                    "data": {"test_field": "value1", "another_field": "value2"},
                 },
             )
 

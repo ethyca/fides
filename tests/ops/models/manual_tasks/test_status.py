@@ -90,9 +90,6 @@ class TestStatusTransitions:
             },
         )
 
-        # Complete the submission
-        submission.complete(db, "test_user")
-
         # Status should be completed
         assert manual_task_instance.status == StatusType.completed
 
@@ -167,10 +164,6 @@ class TestStatusTransitions:
                 "data": {"test_field2": "updated value 2"},
             },
         )
-
-        # Complete both submissions
-        submission1.complete(db, "test_user")
-        submission2.complete(db, "test_user")
 
         # Status should be completed
         assert manual_task_instance.status == StatusType.completed

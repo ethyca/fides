@@ -1,7 +1,7 @@
+from datetime import datetime, timezone
 from typing import Any, Optional, Union
 
-from pydantic import ConfigDict, ValidationError, create_model
-from sqlalchemy import CheckConstraint, Column, ForeignKey, String
+from sqlalchemy import CheckConstraint, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Session, relationship
 
@@ -11,7 +11,6 @@ from fides.api.models.manual_tasks.manual_task_log import (
     ManualTaskLogStatus,
 )
 from fides.api.models.manual_tasks.status import StatusType
-from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.manual_tasks.manual_task_schemas import (
     ManualTaskAttachmentField,
     ManualTaskCheckboxField,
@@ -44,248 +43,6 @@ class ManualTaskConfig(Base):
         primaryjoin="and_(ManualTaskConfig.id == ManualTaskLog.config_id, ManualTaskLog.instance_id.is_(None))",
         viewonly=True,
     )
-
-    @property
-    def fields_schema(self) -> FidesSchema:
-        """Get the Pydantic model for validating submissions.
-
-        Returns:
-            FidesSchema: A Pydantic model for validating submissions
-        """
-        fields = {}
-        for field in self.field_definitions:
-            if field.field_type == ManualTaskFieldType.form:
-                fields[field.field_key] = (Optional[str], None)
-            elif field.field_type == ManualTaskFieldType.checkbox:
-                fields[field.field_key] = (Optional[bool], False)
-            elif field.field_type == ManualTaskFieldType.attachment:
-                fields[field.field_key] = (Optional[dict], None)
-
-        return create_model(  # type: ignore
-            __model_name="ManualTaskValidationModel",
-            __config__=ConfigDict(extra="forbid"),
-            **fields,
-        )
-
-    @property
-    def fields_non_strict_schema(self) -> FidesSchema:
-        """Get the Pydantic model for validating submissions with extra fields allowed.
-
-        Returns:
-            FidesSchema: A Pydantic model for validating submissions with extra fields allowed
-        """
-        fields = {}
-        for field in self.field_definitions:
-            if field.field_type == ManualTaskFieldType.form:
-                fields[field.field_key] = (Optional[str], None)
-            elif field.field_type == ManualTaskFieldType.checkbox:
-                fields[field.field_key] = (Optional[bool], False)
-            elif field.field_type == ManualTaskFieldType.attachment:
-                fields[field.field_key] = (Optional[dict], None)
-
-        return create_model(  # type: ignore
-            __model_name="ManualTaskValidationModel",
-            __config__=ConfigDict(extra="ignore"),
-            **fields,
-        )
-
-    @property
-    def empty_fields_dict(self) -> dict[str, Any]:
-        """Return a dictionary that maps defined field keys to their default values.
-
-        Returns:
-            dict: Dictionary of field keys to default values
-        """
-        defaults = {}
-        for field in self.field_definitions:
-            if field.field_type == ManualTaskFieldType.checkbox:
-                defaults[field.field_key] = False
-            else:
-                defaults[field.field_key] = None
-        return defaults
-
-    def add_field(self, field: "ManualTaskConfigField") -> None:
-        """Add a field to this configuration.
-
-        Args:
-            field: The field to add
-        """
-        # Set the task_id from the config
-        field.task_id = self.task_id
-
-        # Validate the field using Pydantic models
-        field_model = field._get_field_model()
-        field_model.model_validate(
-            {
-                "field_key": field.field_key,
-                "field_type": field.field_type,
-                "field_metadata": field.field_metadata,
-            }
-        )
-
-        self.field_definitions.append(field)
-
-        # Log the field addition as a task-level log
-        ManualTaskLog.create_log(
-            db=field._sa_instance_state.session,
-            task_id=self.task_id,
-            config_id=self.id,
-            status=ManualTaskLogStatus.complete,
-            message=f"Added field {field.field_key} to configuration",
-            details={
-                "field_key": field.field_key,
-                "field_type": field.field_type,
-                "field_metadata": field.field_metadata,
-            },
-        )
-
-    def remove_field(self, field_key: str) -> None:
-        """Remove a field from this configuration.
-
-        Args:
-            field_key: The key of the field to remove
-        """
-        # Find the field before removing it
-        field = self.get_field(field_key)
-        if field:
-            # Log the field removal as a task-level log
-            ManualTaskLog.create_log(
-                db=field._sa_instance_state.session,
-                task_id=self.task_id,
-                config_id=self.id,
-                status=ManualTaskLogStatus.complete,
-                message=f"Removed field {field_key} from configuration",
-                details={
-                    "field_key": field_key,
-                    "field_type": field.field_type,
-                    "field_metadata": field.field_metadata,
-                },
-            )
-
-        self.field_definitions = [
-            f for f in self.field_definitions if f.field_key != field_key
-        ]
-
-    def get_field(self, field_key: str) -> Optional["ManualTaskConfigField"]:
-        """Get a field by its key.
-
-        Args:
-            field_key: The key of the field to get
-
-        Returns:
-            Optional[ManualTaskConfigField]: The field if found, None otherwise
-        """
-        for field in self.field_definitions:
-            if field.field_key == field_key:
-                return field
-        return None
-
-    def validate_submission(
-        self, data: dict[str, Any], field_id: Optional[str] = None
-    ) -> bool:
-        """Validate a submission against all fields in this configuration.
-
-        Args:
-            data: The submission data to validate
-            field_id: Optional ID of the field being submitted. If provided, only validates that field.
-
-        Returns:
-            bool: True if valid, False otherwise
-        """
-        try:
-            # If field_id is provided, only validate that field
-            if field_id:
-                field = next(
-                    (f for f in self.field_definitions if f.id == field_id), None
-                )
-                if not field:
-                    return False
-
-                # For required fields, ensure the data is present and valid
-                if field.required and field.field_key not in data:
-                    return False
-
-                # Validate the field data
-                if field.field_type == ManualTaskFieldType.attachment:
-                    attachment_data = data.get(field.field_key)
-                    if attachment_data is not None:
-                        # Check required attachment_ids
-                        if "attachment_ids" not in attachment_data:
-                            return False
-
-                        # Check file type
-                        if "filename" in attachment_data:
-                            file_extension = (
-                                attachment_data["filename"].split(".")[-1].lower()
-                            )
-                            allowed_types = field.field_metadata.get("file_types", [])
-                            if allowed_types and file_extension not in allowed_types:
-                                return False
-
-                        # Check file size
-                        if "size" in attachment_data:
-                            max_size = field.field_metadata.get("max_file_size")
-                            if max_size and attachment_data["size"] > max_size:
-                                return False
-
-                        # Check number of files
-                        if field.field_metadata.get("multiple", False):
-                            max_files = field.field_metadata.get("max_files")
-                            if (
-                                max_files
-                                and len(attachment_data["attachment_ids"]) > max_files
-                            ):
-                                return False
-
-                # Validate against the non-strict schema for single field
-                field_data = {field.field_key: data.get(field.field_key)}
-                self.fields_non_strict_schema.model_validate(field_data)
-                return True
-
-            # Otherwise validate all fields (for backward compatibility)
-            for field in self.field_definitions:
-                if field.required and field.field_key not in data:
-                    return False
-
-                # Check attachment fields for required attachment_ids
-                if (
-                    field.field_type == ManualTaskFieldType.attachment
-                    and field.field_metadata.get("require_attachment_id", True)
-                    and data.get(field.field_key) is not None
-                ):
-                    attachment_data = data[field.field_key]
-                    if "attachment_ids" not in attachment_data:
-                        return False
-
-                    # Check file type
-                    if "filename" in attachment_data:
-                        file_extension = (
-                            attachment_data["filename"].split(".")[-1].lower()
-                        )
-                        allowed_types = field.field_metadata.get("file_types", [])
-                        if allowed_types and file_extension not in allowed_types:
-                            return False
-
-                    # Check file size
-                    if "size" in attachment_data:
-                        max_size = field.field_metadata.get("max_file_size")
-                        if max_size and attachment_data["size"] > max_size:
-                            return False
-
-                    # Check number of files
-                    if field.field_metadata.get("multiple", False):
-                        max_files = field.field_metadata.get("max_files")
-                        if (
-                            max_files
-                            and len(attachment_data["attachment_ids"]) > max_files
-                        ):
-                            return False
-
-            # Then validate against the strict schema
-            self.fields_schema.model_validate(data)
-            return True
-        except ValidationError:
-            return False
 
     @classmethod
     def create(cls, db: Session, data: dict[str, Any]) -> "ManualTaskConfig":
@@ -369,6 +126,139 @@ class ManualTaskConfig(Base):
         # Delete the configuration
         super().delete(db)
 
+    # Configuration Management
+    @classmethod
+    def get_by_type(
+        cls, db: Session, task_id: str, config_type: str
+    ) -> Optional["ManualTaskConfig"]:
+        """Get a specific task configuration by type.
+
+        Args:
+            db: Database session
+            task_id: ID of the task
+            config_type: Type of configuration to get
+
+        Returns:
+            Optional[ManualTaskConfig]: The configuration if it exists
+        """
+        return db.query(cls).filter_by(task_id=task_id, config_type=config_type).first()
+
+    @classmethod
+    def get_by_id(
+        cls, db: Session, task_id: str, task_config_id: str
+    ) -> Optional["ManualTaskConfig"]:
+        """Get a specific task configuration by ID.
+
+        Args:
+            db: Database session
+            task_id: ID of the task
+            task_config_id: ID of the configuration to get
+
+        Returns:
+            Optional[ManualTaskConfig]: The configuration if it exists
+        """
+        return db.query(cls).filter_by(task_id=task_id, id=task_config_id).first()
+
+    @classmethod
+    def create_for_task(
+        cls,
+        db: Session,
+        task_id: str,
+        config_type: str,
+        fields: list[Optional[dict[str, Any]]],
+    ) -> "ManualTaskConfig":
+        """Create a new manual task configuration for a task.
+
+        Args:
+            db: Database session
+            task_id: ID of the task
+            config_type: Type of configuration to create
+            fields: List of field definitions
+
+        Returns:
+            ManualTaskConfig: The created configuration
+        """
+        config = cls.create(
+            db=db,
+            data={
+                "task_id": task_id,
+                "config_type": config_type,
+                "fields": fields,
+            },
+        )
+        ManualTaskLog.create_log(
+            db=db,
+            task_id=task_id,
+            config_id=config.id,
+            status=ManualTaskLogStatus.complete,
+            message=f"Created manual task configuration for {config_type}",
+        )
+        return config
+
+    def update(
+        self,
+        db: Session,
+        data: dict[str, Any],
+    ) -> "ManualTaskConfig":
+        """Update the configuration.
+
+        Args:
+            db: Database session
+            data: Dictionary containing fields to update
+
+        Returns:
+            ManualTaskConfig: The updated configuration
+        """
+        # Update fields if provided
+        if "fields" in data:
+            # Remove existing fields
+            for field in self.field_definitions:
+                db.delete(field)
+            self.field_definitions = []
+            db.commit()
+
+            # Add new fields
+            for field_data in data["fields"]:
+                field = ManualTaskConfigField.create(
+                    db=db,
+                    data={
+                        "task_id": self.task_id,
+                        "config_id": self.id,
+                        **field_data,
+                    },
+                )
+                self.field_definitions.append(field)
+            db.commit()
+
+        # Log the update
+        ManualTaskLog.create_log(
+            db=db,
+            task_id=self.task_id,
+            config_id=self.id,
+            status=ManualTaskLogStatus.complete,
+            message=f"Updated manual task configuration for {self.config_type}",
+            details={
+                "config_type": self.config_type,
+                "fields": data.get("fields", []),
+            },
+        )
+
+        return self
+
+    def get_field(self, field_key: str) -> Optional["ManualTaskConfigField"]:
+        """Get a field by its key.
+
+        Args:
+            field_key: The key of the field to get
+
+        Returns:
+            Optional[ManualTaskConfigField]: The field if found, None otherwise
+        """
+        for field in self.field_definitions:
+            if field.field_key == field_key:
+                return field
+        return None
+
 
 class ManualTaskConfigField(Base):
     """Model for storing fields associated with each config.
@@ -398,36 +288,20 @@ class ManualTaskConfigField(Base):
         ),
     )
 
-    def validate_field_data(self, data: Any) -> bool:
-        """Validate field data using Pydantic models.
+    @property
+    def label(self) -> str:
+        """Get the field label."""
+        return self.field_metadata.get("label", "")
 
-        Args:
-            data: The data to validate
+    @property
+    def required(self) -> bool:
+        """Get whether the field is required."""
+        return self.field_metadata.get("required", False)
 
-        Returns:
-            bool: True if valid, False otherwise
-        """
-        try:
-            if self.field_metadata.get("required", False) and data is None:
-                return False
-
-            if data is None:
-                return True
-
-            # Validate based on field type
-            if self.field_type == ManualTaskFieldType.form:
-                return isinstance(data, str)
-            elif self.field_type == ManualTaskFieldType.checkbox:
-                return isinstance(data, bool)
-            elif self.field_type == ManualTaskFieldType.attachment:
-                if not isinstance(data, dict):
-                    return False
-                if self.field_metadata.get("require_attachment_id", True):
-                    return "attachment_ids" in data
-                return True
-            return False
-        except Exception:
-            return False
+    @property
+    def help_text(self) -> Optional[str]:
+        """Get the help text."""
+        return self.field_metadata.get("help_text")
 
     def _get_field_model(
         self,
@@ -452,21 +326,6 @@ class ManualTaskConfigField(Base):
             dict: Field metadata
         """
         return self.field_metadata
-
-    @property
-    def label(self) -> str:
-        """Get the field label."""
-        return self.field_metadata.get("label", "")
-
-    @property
-    def required(self) -> bool:
-        """Get whether the field is required."""
-        return self.field_metadata.get("required", False)
-
-    @property
-    def help_text(self) -> Optional[str]:
-        """Get the help text."""
-        return self.field_metadata.get("help_text")
 
     def update_metadata(self, metadata: dict[str, Any]) -> None:
         """Update field metadata.
@@ -511,3 +370,149 @@ class ManualTaskConfigField(Base):
             message=f"Created manual task config field for {data['field_key']}",
         )
         return field
+
+
+class ManualTaskSubmission(Base):
+    """Model for storing user submissions.
+
+    Each submission represents data for a single field.
+    """
+
+    # 1. Table Definition
+    __tablename__ = "manual_task_submission"
+    task_id = Column(String, ForeignKey("manual_task.id"))
+    config_id = Column(String, ForeignKey("manual_task_config.id"))
+    field_id = Column(String, ForeignKey("manual_task_config_field.id"))
+    instance_id = Column(String, ForeignKey("manual_task_instance.id"), nullable=True)
+    submitted_by = Column(Integer, nullable=False)
+    submitted_at = Column(DateTime, default=datetime.now(timezone.utc))
+    data = Column(JSONB, nullable=False)
+
+    # 2. Relationships
+    task = relationship("ManualTask", back_populates="submissions")
+    config = relationship("ManualTaskConfig", back_populates="submissions")
+    field = relationship("ManualTaskConfigField", back_populates="submissions")
+    instance = relationship("ManualTaskInstance", back_populates="submissions")
+
+    # 3. CRUD Operations
+    @classmethod
+    def create(
+        cls, db: Session, data: dict[str, Any], check_name: Optional[bool]
+    ) -> None:
+        """Create a new submission for a single field."""
+        # Validate that data contains only one field
+        if len(data["data"]) != 1:
+            raise ValueError("Submission must contain data for exactly one field")
+
+        # Get the field being submitted
+        field = ManualTaskConfigField.get_by_key_or_id(
+            db=db, data={"id": data["field_id"]}
+        )
+        if not field:
+            raise ValueError(f"No field found with ID {data['field_id']}")
+
+        # Validate that the data is for the correct field
+        field_key = next(iter(data["data"].keys()))
+        if field_key != field.field_key:
+            raise ValueError(f"Data must be for field {field.field_key}")
+
+        return super().create(db=db, data=data, check_name=check_name)
+
+    @classmethod
+    def create_or_update(
+        cls, db: Session, *, data: dict[str, Any], check_name: Optional[bool] = True
+    ) -> "ManualTaskSubmission":
+        """Create or update a submission for a single field."""
+        try:
+            # Validate that data contains only one field
+            if len(data["data"]) != 1:
+                raise ValueError("Submission must contain data for exactly one field")
+
+            # Get the field being submitted
+            field = ManualTaskConfigField.get_by_key_or_id(
+                db=db, data={"id": data["field_id"]}
+            )
+            if not field:
+                raise ValueError(f"No field found with ID {data['field_id']}")
+
+            # Validate that the data is for the correct field
+            field_key = next(iter(data["data"].keys()))
+            if field_key != field.field_key:
+                raise ValueError(f"Data must be for field {field.field_key}")
+
+            # Check if instance is completed
+            if data.get("instance_id"):
+                # Query instance status directly without importing ManualTaskInstance
+                instance_status = db.execute(
+                    "SELECT status FROM manual_task_instance WHERE id = :instance_id",
+                    {"instance_id": data["instance_id"]},
+                ).scalar()
+
+                if instance_status == StatusType.completed:
+                    # Log error for completed task
+                    ManualTaskLog.create_log(
+                        db=db,
+                        task_id=data["task_id"],
+                        config_id=data["config_id"],
+                        instance_id=data["instance_id"],
+                        status=ManualTaskLogStatus.error,
+                        message="Cannot submit to a completed task instance",
+                        details={
+                            "field_key": field_key,
+                            "field_type": field.field_type,
+                            "submitted_by": data["submitted_by"],
+                        },
+                    )
+                    return None
+
+            submission = super().create_or_update(
+                db=db, data=data, check_name=check_name
+            )
+
+            # Update instance status based on submissions
+            if submission.instance:
+                submission.instance.update_status_from_submissions(db)
+
+            # Get instance status after update
+            instance_status = (
+                db.execute(
+                    "SELECT status FROM manual_task_instance WHERE id = :instance_id",
+                    {"instance_id": data["instance_id"]},
+                ).scalar()
+                if data.get("instance_id")
+                else None
+            )
+
+            # Log submission creation/update
+            ManualTaskLog.create_log(
+                db=db,
+                task_id=data["task_id"],
+                config_id=data["config_id"],
+                instance_id=data["instance_id"],
+                status=ManualTaskLogStatus.complete,
+                message=f"Created submission for field {field_key}",
+                details={
+                    "field_key": field_key,
+                    "field_type": field.field_type,
+                    "submitted_by": data["submitted_by"],
+                    "status": instance_status,
+                },
+            )
+
+            return submission
+        except ValueError as e:
+            # Create error log for validation failures
+            ManualTaskLog.create_log(
+                db=db,
+                task_id=data["task_id"],
+                config_id=data["config_id"],
+                instance_id=data.get("instance_id"),
+                status=ManualTaskLogStatus.error,
+                message=f"Invalid field data: {str(e)}",
+                details={
+                    "error": str(e),
+                    "field_id": data.get("field_id"),
+                    "submitted_by": data.get("submitted_by"),
+                },
+            )
+            raise

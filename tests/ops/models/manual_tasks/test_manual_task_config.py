@@ -1,4 +1,5 @@
 import pytest
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from fides.api.models.manual_tasks.manual_task import (
@@ -6,13 +7,20 @@ from fides.api.models.manual_tasks.manual_task import (
     ManualTaskConfig,
     ManualTaskConfigField,
     ManualTaskInstance,
+    ManualTaskReference,
     ManualTaskSubmission,
 )
-from fides.api.models.manual_tasks.manual_task_log import ManualTaskLogStatus
+from fides.api.models.manual_tasks.manual_task_log import (
+    ManualTaskLog,
+    ManualTaskLogStatus,
+)
+from fides.api.models.manual_tasks.status import StatusType
 from fides.api.schemas.manual_tasks.manual_task_schemas import (
+    ManualTaskAttachmentField,
+    ManualTaskCheckboxField,
     ManualTaskConfigurationType,
     ManualTaskFieldType,
-    ManualTaskType,
+    ManualTaskFormField,
 )
 
 
@@ -32,197 +40,91 @@ class TestManualTaskConfigManagement:
         assert config.task_id == manual_task.id
         assert config.config_type == ManualTaskConfigurationType.access_privacy_request
 
-    @pytest.mark.parametrize(
-        "field_type,field_metadata,expected_data",
-        [
-            (
-                ManualTaskFieldType.form,
-                {
-                    "label": "Test Form Field",
-                    "required": True,
-                    "help_text": "This is a test form field",
-                },
-                {"test_form_field": "test form value"},
-            ),
-            (
-                ManualTaskFieldType.checkbox,
-                {
-                    "label": "Test Checkbox Field",
-                    "required": True,
-                    "help_text": "This is a test checkbox field",
-                    "default_value": False,
-                },
-                {"test_checkbox_field": True},
-            ),
-            (
-                ManualTaskFieldType.attachment,
-                {
-                    "label": "Test Attachment Field",
-                    "required": True,
-                    "help_text": "This is a test attachment field",
-                    "file_types": ["pdf"],
-                    "max_file_size": 1048576,
-                    "multiple": True,
-                    "max_files": 2,
-                    "require_attachment_id": True,
-                },
-                {
-                    "test_attachment_field": {
-                        "filename": "test.pdf",
-                        "size": 1024,
-                        "attachment_ids": ["test_attachment_1", "test_attachment_2"],
-                    }
-                },
-            ),
-        ],
-    )
-    def test_add_field(
-        self,
-        db: Session,
-        manual_task_config: ManualTaskConfig,
-        field_type,
-        field_metadata,
-        expected_data,
-    ):
-        """Test adding different types of fields to a configuration."""
-        field = ManualTaskConfigField(
-            config_id=manual_task_config.id,
-            field_key=f"test_{field_type}_field",
-            field_type=field_type,
-            field_metadata=field_metadata,
-        )
-        manual_task_config.add_field(field)
-        assert len(manual_task_config.field_definitions) == 1
-        assert (
-            manual_task_config.field_definitions[0].field_key
-            == f"test_{field_type}_field"
-        )
-        assert manual_task_config.field_definitions[0].field_type == field_type
-
-    def test_remove_field(
-        self,
-        db: Session,
-        manual_task_config: ManualTaskConfig,
-        manual_task_field: ManualTaskConfigField,
-    ):
-        """Test removing a field from a configuration."""
-        assert len(manual_task_config.field_definitions) == 1
-        manual_task_config.remove_field("test_field")
-        assert len(manual_task_config.field_definitions) == 0
-
-    def test_get_field(
-        self,
-        db: Session,
-        manual_task_config: ManualTaskConfig,
-        manual_task_field: ManualTaskConfigField,
-    ):
-        """Test retrieving a field by key."""
-        field = manual_task_config.get_field("test_field")
-        assert field is not None
-        assert field.id == manual_task_field.id
-
-
-class TestManualTaskConfigValidation:
-    """Tests for manual task configuration validation."""
-
-    def test_validate_submission(
-        self,
-        db: Session,
-        manual_task_config_with_fields: ManualTaskConfig,
-    ):
-        """Test validating submissions against a configuration."""
-        # Test valid submission
-        valid_submission = {
-            "test_form_field": "test value",
-            "test_checkbox_field": True,
-            "test_attachment_field": {
-                "filename": "test.pdf",
-                "size": 1024,
-                "attachment_ids": ["test_attachment_1"],
+    def test_get_by_type(self, db: Session, manual_task: ManualTask):
+        """Test getting a config by type."""
+        # Create a config
+        config = ManualTaskConfig.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_type": ManualTaskConfigurationType.access_privacy_request,
             },
-        }
-        assert (
-            manual_task_config_with_fields.validate_submission(valid_submission) is True
         )
 
-        # Test invalid submission (missing required field)
-        invalid_submission = {
-            "test_form_field": "test value",
-            "test_checkbox_field": True,
-        }
-        assert (
-            manual_task_config_with_fields.validate_submission(invalid_submission)
-            is False
+        # Get by type
+        found_config = ManualTaskConfig.get_by_type(
+            db=db,
+            task_id=manual_task.id,
+            config_type=ManualTaskConfigurationType.access_privacy_request,
         )
+        assert found_config is not None
+        assert found_config.id == config.id
 
-        # Test invalid submission (wrong type)
-        invalid_type_submission = {
-            "test_form_field": "test value",
-            "test_checkbox_field": "not a boolean",
-            "test_attachment_field": {
-                "filename": "test.pdf",
-                "size": 1024,
-                "attachment_ids": ["test_attachment_1"],
+        # Test with non-existent type
+        not_found = ManualTaskConfig.get_by_type(
+            db=db,
+            task_id=manual_task.id,
+            config_type="non_existent_type",
+        )
+        assert not_found is None
+
+    def test_get_by_id(self, db: Session, manual_task: ManualTask):
+        """Test getting a config by ID."""
+        # Create a config
+        config = ManualTaskConfig.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_type": ManualTaskConfigurationType.access_privacy_request,
             },
-        }
-        assert (
-            manual_task_config_with_fields.validate_submission(invalid_type_submission)
-            is False
         )
 
-        # Test invalid submission (missing attachment_ids)
-        invalid_attachment_submission = {
-            "test_form_field": "test value",
-            "test_checkbox_field": True,
-            "test_attachment_field": {"filename": "test.pdf", "size": 1024},
-        }
-        assert (
-            manual_task_config_with_fields.validate_submission(
-                invalid_attachment_submission
-            )
-            is False
+        # Get by ID
+        found_config = ManualTaskConfig.get_by_id(
+            db=db,
+            task_id=manual_task.id,
+            task_config_id=config.id,
+        )
+        assert found_config is not None
+        assert found_config.id == config.id
+
+        # Test with non-existent ID
+        not_found = ManualTaskConfig.get_by_id(
+            db=db,
+            task_id=manual_task.id,
+            task_config_id="non_existent_id",
+        )
+        assert not_found is None
+
+    def test_create_for_task(self, db: Session, manual_task: ManualTask):
+        """Test creating a config for a task with fields."""
+        fields = [
+            {
+                "field_key": "test_field",
+                "field_type": ManualTaskFieldType.form,
+                "field_metadata": {
+                    "label": "Test Field",
+                    "required": True,
+                },
+            }
+        ]
+
+        config = ManualTaskConfig.create_for_task(
+            db=db,
+            task_id=manual_task.id,
+            config_type=ManualTaskConfigurationType.access_privacy_request,
+            fields=fields,
         )
 
-        # Test invalid submission (too many attachments)
-        too_many_attachments_submission = {
-            "test_form_field": "test value",
-            "test_checkbox_field": True,
-            "test_attachment_field": {
-                "filename": "test.pdf",
-                "size": 1024,
-                "attachment_ids": [
-                    "test_attachment_1",
-                    "test_attachment_2",
-                    "test_attachment_3",
-                ],
-            },
-        }
-        assert (
-            manual_task_config_with_fields.validate_submission(
-                too_many_attachments_submission
-            )
-            is False
-        )
+        assert config.id is not None
+        assert config.task_id == manual_task.id
+        assert config.config_type == ManualTaskConfigurationType.access_privacy_request
+        assert len(config.field_definitions) == 1
+        assert config.field_definitions[0].field_key == "test_field"
 
 
 class TestManualTaskConfigField:
     """Tests for manual task configuration fields."""
-
-    def test_validate_field_data(
-        self,
-        db: Session,
-        manual_task_form_field: ManualTaskConfigField,
-        manual_task_checkbox_field: ManualTaskConfigField,
-    ):
-        """Test validating field data."""
-        # Test form field
-        assert manual_task_form_field.validate_field_data("test value") is True
-        assert manual_task_form_field.validate_field_data(None) is False
-
-        # Test checkbox field
-        assert manual_task_checkbox_field.validate_field_data(True) is True
-        assert manual_task_checkbox_field.validate_field_data(False) is True
-        assert manual_task_checkbox_field.validate_field_data("not a boolean") is False
 
     def test_field_properties(
         self,
@@ -245,80 +147,77 @@ class TestManualTaskConfigField:
         assert manual_task_form_field.required is False
         assert manual_task_form_field.help_text == "Updated help text"
 
-
-class TestManualTaskConfig:
-    def test_create_config_with_invalid_fields(
-        self, db: Session, manual_task: ManualTask
+    def test_get_field_model(
+        self, db: Session, manual_task_form_field: ManualTaskConfigField
     ):
-        """Test creating a config with invalid field definitions."""
-        # Test with missing required field metadata
-        with pytest.raises(ValueError, match="Field metadata is required"):
-            ManualTaskConfig.create(
-                db=db,
-                data={
-                    "task_id": manual_task.id,
-                    "config_type": ManualTaskConfigurationType.access_privacy_request,
-                    "fields": [
-                        {
-                            "field_key": "test_field",
-                            "field_type": ManualTaskFieldType.form,
-                        }
-                    ],
-                },
-            )
+        """Test getting the appropriate field model."""
+        # Test form field
+        form_model = manual_task_form_field._get_field_model()
+        assert form_model == ManualTaskFormField
 
-        # Test with invalid field type
-        with pytest.raises(ValueError, match="Invalid field type"):
-            ManualTaskConfig.create(
-                db=db,
-                data={
-                    "task_id": manual_task.id,
-                    "config_type": ManualTaskConfigurationType.access_privacy_request,
-                    "fields": [
-                        {
-                            "field_key": "test_field",
-                            "field_type": "invalid_type",
-                            "field_metadata": {
-                                "label": "Test Field",
-                                "required": True,
-                            },
-                        }
-                    ],
-                },
-            )
-
-    def test_validate_submission_with_invalid_data(
-        self, db: Session, manual_task_config: ManualTaskConfig
-    ):
-        """Test validation of submissions with invalid data."""
-        # Create a required field
-        field = ManualTaskConfigField.create(
+        # Test checkbox field
+        checkbox_field = ManualTaskConfigField.create(
             db=db,
             data={
-                "task_id": manual_task_config.task_id,
-                "config_id": manual_task_config.id,
-                "field_key": "test_field",
-                "field_type": ManualTaskFieldType.form,
+                "task_id": manual_task_form_field.task_id,
+                "config_id": manual_task_form_field.config_id,
+                "field_key": "checkbox_field",
+                "field_type": ManualTaskFieldType.checkbox,
                 "field_metadata": {
-                    "label": "Test Field",
-                    "required": True,
-                    "help_text": "This is a test field",
+                    "label": "Checkbox Field",
+                    "required": False,
                 },
             },
         )
+        checkbox_model = checkbox_field._get_field_model()
+        assert checkbox_model == ManualTaskCheckboxField
 
-        # Test with missing required field
-        assert not manual_task_config.validate_submission({}, field_id=field.id)
-
-        # Test with invalid field type
-        assert not manual_task_config.validate_submission(
-            {"test_field": 123}, field_id=field.id
+        # Test attachment field
+        attachment_field = ManualTaskConfigField.create(
+            db=db,
+            data={
+                "task_id": manual_task_form_field.task_id,
+                "config_id": manual_task_form_field.config_id,
+                "field_key": "attachment_field",
+                "field_type": ManualTaskFieldType.attachment,
+                "field_metadata": {
+                    "label": "Attachment Field",
+                    "required": True,
+                },
+            },
         )
+        attachment_model = attachment_field._get_field_model()
+        assert attachment_model == ManualTaskAttachmentField
 
-        # Test with invalid field_id
-        assert not manual_task_config.validate_submission(
-            {"test_field": "test value"}, field_id="invalid_field_id"
-        )
+        # Test invalid field type by creating a field with invalid type
+        with pytest.raises(ValueError, match="Invalid field type"):
+            ManualTaskConfigField.create(
+                db=db,
+                data={
+                    "task_id": manual_task_form_field.task_id,
+                    "config_id": manual_task_form_field.config_id,
+                    "field_key": "invalid_field",
+                    "field_type": "invalid_type",
+                    "field_metadata": {
+                        "label": "Invalid Field",
+                        "required": True,
+                    },
+                },
+            )
+
+    def test_get_field_metadata(
+        self, db: Session, manual_task_form_field: ManualTaskConfigField
+    ):
+        """Test getting field metadata."""
+        metadata = manual_task_form_field.get_field_metadata()
+        assert metadata == manual_task_form_field.field_metadata
+        assert metadata["label"] == "Test Form Field"
+        assert metadata["required"] is True
+        assert metadata["help_text"] == "This is a test form field"
+
+
+class TestManualTaskConfig:
+    """Tests for manual task configuration."""
 
     def test_config_with_multiple_field_types(
         self, db: Session, manual_task: ManualTask
@@ -380,6 +279,43 @@ class TestManualTaskConfig:
             for f in config.field_definitions
         )
 
+    def test_config_relationships(self, db: Session, manual_task: ManualTask):
+        """Test relationships between config and related models."""
+        # Create a config
+        config = ManualTaskConfig.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_type": ManualTaskConfigurationType.access_privacy_request,
+                "fields": [
+                    {
+                        "field_key": "test_field",
+                        "field_type": ManualTaskFieldType.form,
+                        "field_metadata": {
+                            "label": "Test Field",
+                            "required": True,
+                        },
+                    },
+                ],
+            },
+        )
+
+        # Create reference using the model
+        ManualTaskReference.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "reference_id": config.id,
+                "reference_type": "manual_task_config",
+            },
+        )
+
+        # Verify relationships
+        assert config.task == manual_task
+        assert config in manual_task.configs
+        assert len(config.field_definitions) == 1
+        assert config.field_definitions[0].config == config
+
     def test_config_deletion_with_active_instances(
         self, db: Session, manual_task_config: ManualTaskConfig
     ):
@@ -424,115 +360,428 @@ class TestManualTaskConfig:
             is None
         )
 
-    def test_config_field_validation(
-        self, db: Session, manual_task_config: ManualTaskConfig
-    ):
-        """Test validation of different field types."""
-        # Create a checkbox field
-        checkbox_field = ManualTaskConfigField.create(
+    def test_config_update(self, db: Session, manual_task: ManualTask):
+        """Test updating a config's fields."""
+        # Create initial config
+        config = ManualTaskConfig.create(
             db=db,
             data={
-                "task_id": manual_task_config.task_id,
-                "config_id": manual_task_config.id,
-                "field_key": "checkbox_field",
-                "field_type": ManualTaskFieldType.checkbox,
-                "field_metadata": {
-                    "label": "Checkbox Field",
-                    "required": True,
-                    "help_text": "This is a checkbox field",
-                    "default_value": False,
-                },
-            },
-        )
-
-        # Test checkbox validation
-        assert manual_task_config.validate_submission(
-            {"checkbox_field": True}, field_id=checkbox_field.id
-        )
-        assert not manual_task_config.validate_submission(
-            {"checkbox_field": "not_a_boolean"}, field_id=checkbox_field.id
-        )
-
-        # Create an attachment field
-        attachment_field = ManualTaskConfigField.create(
-            db=db,
-            data={
-                "task_id": manual_task_config.task_id,
-                "config_id": manual_task_config.id,
-                "field_key": "attachment_field",
-                "field_type": ManualTaskFieldType.attachment,
-                "field_metadata": {
-                    "label": "Attachment Field",
-                    "required": True,
-                    "help_text": "This is an attachment field",
-                    "file_types": ["pdf"],
-                    "max_file_size": 1048576,
-                    "multiple": True,
-                    "max_files": 2,
-                    "require_attachment_id": True,
-                },
-            },
-        )
-
-        # Test attachment validation
-        valid_attachment_data = {
-            "attachment_field": {
-                "filename": "test.pdf",
-                "size": 1024,
-                "attachment_ids": ["test_attachment_1", "test_attachment_2"],
-            }
-        }
-        assert manual_task_config.validate_submission(
-            valid_attachment_data, field_id=attachment_field.id
-        )
-
-        # Test invalid attachment data - wrong file type
-        invalid_file_type_data = {
-            "attachment_field": {
-                "filename": "test.txt",
-                "size": 1024,
-                "attachment_ids": ["test_attachment_1"],
-            }
-        }
-        assert not manual_task_config.validate_submission(
-            invalid_file_type_data, field_id=attachment_field.id
-        )
-
-        # Test invalid attachment data - file too large
-        invalid_size_data = {
-            "attachment_field": {
-                "filename": "test.pdf",
-                "size": 2048576,
-                "attachment_ids": ["test_attachment_1"],
-            }
-        }
-        assert not manual_task_config.validate_submission(
-            invalid_size_data, field_id=attachment_field.id
-        )
-
-        # Test invalid attachment data - too many files
-        too_many_files_data = {
-            "attachment_field": {
-                "filename": "test.pdf",
-                "size": 1024,
-                "attachment_ids": [
-                    "test_attachment_1",
-                    "test_attachment_2",
-                    "test_attachment_3",
+                "task_id": manual_task.id,
+                "config_type": ManualTaskConfigurationType.access_privacy_request,
+                "fields": [
+                    {
+                        "field_key": "initial_field",
+                        "field_type": ManualTaskFieldType.form,
+                        "field_metadata": {
+                            "label": "Initial Field",
+                            "required": True,
+                        },
+                    },
                 ],
-            }
-        }
-        assert not manual_task_config.validate_submission(
-            too_many_files_data, field_id=attachment_field.id
+            },
         )
 
-        # Test invalid attachment data - missing required attachment_ids
-        missing_attachment_ids_data = {
-            "attachment_field": {
-                "filename": "test.pdf",
-                "size": 1024,
-            }
-        }
-        assert not manual_task_config.validate_submission(
-            missing_attachment_ids_data, field_id=attachment_field.id
+        # Update config with new fields
+        updated_config = config.update(
+            db=db,
+            data={
+                "fields": [
+                    {
+                        "field_key": "updated_field",
+                        "field_type": ManualTaskFieldType.form,
+                        "field_metadata": {
+                            "label": "Updated Field",
+                            "required": True,
+                        },
+                    },
+                ],
+            },
         )
+
+        # Verify fields were updated
+        assert len(updated_config.field_definitions) == 1
+        assert updated_config.field_definitions[0].field_key == "updated_field"
+        assert (
+            updated_config.field_definitions[0].field_metadata["label"]
+            == "Updated Field"
+        )
+
+
+class TestManualTaskSubmission:
+    """Tests for manual task submissions."""
+
+    def test_create_submission(
+        self, db: Session, manual_task_instance: ManualTaskInstance
+    ):
+        """Test creating a new submission."""
+        form_field = ManualTaskConfigField.create(
+            db=db,
+            data={
+                "task_id": manual_task_instance.task_id,
+                "config_id": manual_task_instance.config_id,
+                "field_key": "test_form_field",
+                "field_type": ManualTaskFieldType.form,
+                "field_metadata": {
+                    "label": "Test Form Field",
+                    "required": True,
+                },
+            },
+        )
+
+        # Add field to config
+        config = manual_task_instance.config
+        config.field_definitions.append(form_field)
+        db.commit()
+
+        # Create submission
+        submission = ManualTaskSubmission.create(
+            db=db,
+            data={
+                "task_id": manual_task_instance.task_id,
+                "config_id": manual_task_instance.config_id,
+                "field_id": form_field.id,
+                "instance_id": manual_task_instance.id,
+                "submitted_by": 1,
+                "data": {"test_form_field": "test value"},
+            },
+            check_name=True,
+        )
+
+        assert submission.id is not None
+        assert submission.task_id == manual_task_instance.task_id
+        assert submission.config_id == manual_task_instance.config_id
+        assert submission.field_id == form_field.id
+        assert submission.instance_id == manual_task_instance.id
+        assert submission.submitted_by == 1
+        assert submission.data == {"test_form_field": "test value"}
+
+    def test_create_submission_with_invalid_data(
+        self, db: Session, manual_task_instance: ManualTaskInstance
+    ):
+        """Test creating a submission with invalid data."""
+        form_field = ManualTaskConfigField.create(
+            db=db,
+            data={
+                "task_id": manual_task_instance.task_id,
+                "config_id": manual_task_instance.config_id,
+                "field_key": "test_form_field",
+                "field_type": ManualTaskFieldType.form,
+                "field_metadata": {
+                    "label": "Test Form Field",
+                    "required": True,
+                },
+            },
+        )
+
+        # Add field to config
+        config = manual_task_instance.config
+        config.field_definitions.append(form_field)
+        db.commit()
+
+        # Test with no data
+        with pytest.raises(
+            ValueError, match="Submission must contain data for exactly one field"
+        ):
+            ManualTaskSubmission.create(
+                db=db,
+                data={
+                    "task_id": manual_task_instance.task_id,
+                    "config_id": manual_task_instance.config_id,
+                    "field_id": form_field.id,
+                    "instance_id": manual_task_instance.id,
+                    "submitted_by": 1,
+                    "data": {},
+                },
+                check_name=True,
+            )
+
+        # Test with multiple fields
+        with pytest.raises(
+            ValueError, match="Submission must contain data for exactly one field"
+        ):
+            ManualTaskSubmission.create(
+                db=db,
+                data={
+                    "task_id": manual_task_instance.task_id,
+                    "config_id": manual_task_instance.config_id,
+                    "field_id": form_field.id,
+                    "instance_id": manual_task_instance.id,
+                    "submitted_by": 1,
+                    "data": {
+                        "test_form_field": "value1",
+                        "another_field": "value2",
+                    },
+                },
+                check_name=True,
+            )
+
+        # Test with wrong field key
+        with pytest.raises(ValueError, match="Data must be for field test_form_field"):
+            ManualTaskSubmission.create(
+                db=db,
+                data={
+                    "task_id": manual_task_instance.task_id,
+                    "config_id": manual_task_instance.config_id,
+                    "field_id": form_field.id,
+                    "instance_id": manual_task_instance.id,
+                    "submitted_by": 1,
+                    "data": {"wrong_field": "value"},
+                },
+                check_name=True,
+            )
+
+
+class TestManualTaskFieldValidation:
+    """Tests for field validation and status updates."""
+
+    def test_get_incomplete_fields(
+        self, db: Session, manual_task_instance: ManualTaskInstance
+    ):
+        """Test getting incomplete fields for an instance."""
+        # Create required fields
+        required_field = ManualTaskConfigField.create(
+            db=db,
+            data={
+                "task_id": manual_task_instance.task_id,
+                "config_id": manual_task_instance.config_id,
+                "field_key": "required_field",
+                "field_type": ManualTaskFieldType.form,
+                "field_metadata": {
+                    "label": "Required Field",
+                    "required": True,
+                    "help_text": "This field is required",
+                },
+            },
+        )
+
+        optional_field = ManualTaskConfigField.create(
+            db=db,
+            data={
+                "task_id": manual_task_instance.task_id,
+                "config_id": manual_task_instance.config_id,
+                "field_key": "optional_field",
+                "field_type": ManualTaskFieldType.form,
+                "field_metadata": {
+                    "label": "Optional Field",
+                    "required": False,
+                    "help_text": "This field is optional",
+                },
+            },
+        )
+
+        # Add fields to config
+        config = manual_task_instance.config
+        config.field_definitions.extend([required_field, optional_field])
+        db.commit()
+
+        # Get incomplete fields
+        incomplete_fields = manual_task_instance.get_incomplete_fields()
+        assert len(incomplete_fields) == 1  # Only required field should be incomplete
+        assert incomplete_fields[0].field_key == "required_field"
+
+        # Create a submission for the required field
+        ManualTaskSubmission.create_or_update(
+            db=db,
+            data={
+                "task_id": manual_task_instance.task_id,
+                "config_id": manual_task_instance.config_id,
+                "field_id": required_field.id,
+                "instance_id": manual_task_instance.id,
+                "submitted_by": 1,
+                "data": {"required_field": "test value"},
+            },
+        )
+
+        # Get incomplete fields again
+        incomplete_fields = manual_task_instance.get_incomplete_fields()
+        assert len(incomplete_fields) == 0  # No incomplete fields now
+
+    def test_get_incomplete_fields_with_no_fields(
+        self, db: Session, manual_task_instance: ManualTaskInstance
+    ):
+        """Test getting incomplete fields when there are no fields."""
+        # Remove all fields from the config
+        manual_task_instance.config.field_definitions = []
+        db.commit()
+
+        incomplete_fields = manual_task_instance.get_incomplete_fields()
+        assert len(incomplete_fields) == 0
+
+    def test_update_status_from_submissions_with_no_submissions(
+        self, db: Session, manual_task_instance: ManualTaskInstance
+    ):
+        """Test updating status from submissions when there are no submissions."""
+        manual_task_instance.update_status_from_submissions(db)
+        assert manual_task_instance.status == StatusType.pending
+
+
+class TestManualTaskConfigFieldValidation:
+    """Tests for field validation at the model level."""
+
+    @pytest.fixture
+    def task_config(self, db: Session, manual_task: ManualTask):
+        """Create a config for the test."""
+        return ManualTaskConfig.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_type": ManualTaskConfigurationType.access_privacy_request,
+            },
+        )
+
+    def test_invalid_field_type(
+        self, db: Session, manual_task: ManualTask, task_config: ManualTaskConfig
+    ):
+        """Test that invalid field types are rejected."""
+        with pytest.raises(ValueError, match="Invalid field type"):
+            ManualTaskConfigField.create(
+                db=db,
+                data={
+                    "task_id": manual_task.id,
+                    "config_id": task_config.id,
+                    "field_key": "test_field",
+                    "field_type": "invalid_type",
+                    "field_metadata": {
+                        "label": "Test Field",
+                        "required": True,
+                    },
+                },
+            )
+
+    def test_missing_field_metadata(
+        self, db: Session, manual_task: ManualTask, task_config: ManualTaskConfig
+    ):
+        """Test that field metadata is required."""
+        with pytest.raises(ValueError, match="Field metadata is required"):
+            ManualTaskConfigField.create(
+                db=db,
+                data={
+                    "task_id": manual_task.id,
+                    "config_id": task_config.id,
+                    "field_key": "test_field",
+                    "field_type": ManualTaskFieldType.form,
+                },
+            )
+
+    def test_field_metadata_validation(
+        self, db: Session, manual_task: ManualTask, task_config: ManualTaskConfig
+    ):
+        """Test that field metadata is required and field type is valid."""
+
+        # Test with valid field type and metadata
+        field = ManualTaskConfigField.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_id": task_config.id,
+                "field_key": "test_field",
+                "field_type": ManualTaskFieldType.form,
+                "field_metadata": {
+                    "label": "Test Field",
+                    "required": True,
+                },
+            },
+        )
+        assert field.id is not None
+        assert field.field_type == ManualTaskFieldType.form
+        assert field.field_metadata["label"] == "Test Field"
+        assert field.field_metadata["required"] is True
+
+
+class TestManualTaskSubmissionValidation:
+    """Tests for submission validation at the model level."""
+
+    def test_submission_with_multiple_fields(
+        self, db: Session, manual_task_instance: ManualTaskInstance
+    ):
+        """Test that submissions must contain exactly one field."""
+        form_field = ManualTaskConfigField.create(
+            db=db,
+            data={
+                "task_id": manual_task_instance.task_id,
+                "config_id": manual_task_instance.config_id,
+                "field_key": "test_form_field",
+                "field_type": ManualTaskFieldType.form,
+                "field_metadata": {
+                    "label": "Test Form Field",
+                    "required": True,
+                },
+            },
+        )
+
+        # Add field to config
+        config = manual_task_instance.config
+        config.field_definitions.append(form_field)
+        db.commit()
+
+        # Test with multiple fields
+        with pytest.raises(
+            ValueError, match="Submission must contain data for exactly one field"
+        ):
+            ManualTaskSubmission.create_or_update(
+                db=db,
+                data={
+                    "task_id": manual_task_instance.task_id,
+                    "config_id": manual_task_instance.config_id,
+                    "field_id": form_field.id,
+                    "instance_id": manual_task_instance.id,
+                    "submitted_by": 1,
+                    "data": {"test_form_field": "value1", "another_field": "value2"},
+                },
+            )
+
+    def test_submission_with_no_fields(
+        self, db: Session, manual_task_instance: ManualTaskInstance
+    ):
+        """Test that submissions must contain at least one field."""
+        form_field = ManualTaskConfigField.create(
+            db=db,
+            data={
+                "task_id": manual_task_instance.task_id,
+                "config_id": manual_task_instance.config_id,
+                "field_key": "test_form_field",
+                "field_type": ManualTaskFieldType.form,
+                "field_metadata": {
+                    "label": "Test Form Field",
+                    "required": True,
+                },
+            },
+        )
+
+        # Add field to config
+        config = manual_task_instance.config
+        config.field_definitions.append(form_field)
+        db.commit()
+
+        # Test with no fields
+        with pytest.raises(
+            ValueError, match="Submission must contain data for exactly one field"
+        ):
+            ManualTaskSubmission.create_or_update(
+                db=db,
+                data={
+                    "task_id": manual_task_instance.task_id,
+                    "config_id": manual_task_instance.config_id,
+                    "field_id": form_field.id,
+                    "instance_id": manual_task_instance.id,
+                    "submitted_by": 1,
+                    "data": {},
+                },
+            )
+
+    def test_submission_with_nonexistent_field(
+        self, db: Session, manual_task_instance: ManualTaskInstance
+    ):
+        """Test that submissions must reference an existing field."""
+        with pytest.raises(ValueError, match="No field found with ID"):
+            ManualTaskSubmission.create_or_update(
+                db=db,
+                data={
+                    "task_id": manual_task_instance.task_id,
+                    "config_id": manual_task_instance.config_id,
+                    "field_id": "nonexistent_field_id",
+                    "instance_id": manual_task_instance.id,
+                    "submitted_by": 1,
+                    "data": {"test_field": "value"},
+                },
+            )
