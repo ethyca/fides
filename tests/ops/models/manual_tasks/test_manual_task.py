@@ -493,9 +493,7 @@ class TestManualTaskErrorHandling:
                 ],
             )
 
-    def test_assign_user_with_invalid_user(
-        self, db: Session, manual_task: ManualTask
-    ):
+    def test_assign_user_with_invalid_user(self, db: Session, manual_task: ManualTask):
         """Test assigning an invalid user to a task."""
         with pytest.raises(ValueError, match="User ID is required for assignment"):
             manual_task.assign_user(db, None)
@@ -638,19 +636,24 @@ class TestManualTaskErrorHandling:
             },
         )
 
-        # Create a submission with invalid data
-        submission = ManualTaskSubmission.create_or_update(
-            db=db,
-            data={
-                "task_id": manual_task_instance.task_id,
-                "config_id": manual_task_instance.config_id,
-                "field_id": field.id,
-                "instance_id": manual_task_instance.id,
-                "submitted_by": 1,
-                "data": {"test_field": 123},  # Invalid type
-            },
-        )
+        # Add field to config
+        config = manual_task_instance.config
+        config.field_definitions.append(field)
+        db.commit()
 
-        # Update status
-        manual_task_instance.update_status_from_submissions(db)
-        assert manual_task_instance.status == StatusType.in_progress  # Should not be completed due to invalid data
+        # Create a submission with invalid data
+        with pytest.raises(ValueError, match="Invalid submission data"):
+            ManualTaskSubmission.create_or_update(
+                db=db,
+                data={
+                    "task_id": manual_task_instance.task_id,
+                    "config_id": manual_task_instance.config_id,
+                    "field_id": field.id,
+                    "instance_id": manual_task_instance.id,
+                    "submitted_by": 1,
+                    "data": {"test_field": 123},  # Invalid type
+                },
+            )
+
+        # Status should remain pending since no valid submission was created
+        assert manual_task_instance.status == StatusType.pending

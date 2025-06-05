@@ -368,9 +368,17 @@ class TestManualTaskConfig:
         )
 
         assert len(config.field_definitions) == 3
-        assert any(f.field_type == ManualTaskFieldType.form for f in config.field_definitions)
-        assert any(f.field_type == ManualTaskFieldType.checkbox for f in config.field_definitions)
-        assert any(f.field_type == ManualTaskFieldType.attachment for f in config.field_definitions)
+        assert any(
+            f.field_type == ManualTaskFieldType.form for f in config.field_definitions
+        )
+        assert any(
+            f.field_type == ManualTaskFieldType.checkbox
+            for f in config.field_definitions
+        )
+        assert any(
+            f.field_type == ManualTaskFieldType.attachment
+            for f in config.field_definitions
+        )
 
     def test_config_deletion_with_active_instances(
         self, db: Session, manual_task_config: ManualTaskConfig
@@ -388,7 +396,9 @@ class TestManualTaskConfig:
         )
 
         # Try to delete the config
-        with pytest.raises(ValueError, match="Cannot delete configuration with active instances"):
+        with pytest.raises(
+            ValueError, match="Cannot delete configuration with 1 active instances"
+        ):
             manual_task_config.delete(db)
 
         # Verify the config still exists
@@ -505,7 +515,11 @@ class TestManualTaskConfig:
             "attachment_field": {
                 "filename": "test.pdf",
                 "size": 1024,
-                "attachment_ids": ["test_attachment_1", "test_attachment_2", "test_attachment_3"],
+                "attachment_ids": [
+                    "test_attachment_1",
+                    "test_attachment_2",
+                    "test_attachment_3",
+                ],
             }
         }
         assert not manual_task_config.validate_submission(

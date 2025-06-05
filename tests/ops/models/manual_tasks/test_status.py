@@ -180,17 +180,23 @@ class TestStatusTransitions:
     ):
         """Test invalid status transitions."""
         # Test invalid status type
-        with pytest.raises(ValueError, match="Invalid status transition from pending to invalid_status"):
+        with pytest.raises(
+            ValueError, match="Invalid status transition from pending to invalid_status"
+        ):
             manual_task_instance.update_status(db, "invalid_status")
 
         # Test direct transition from pending to completed
-        with pytest.raises(ValueError, match="Invalid status transition from pending to completed"):
+        with pytest.raises(
+            ValueError, match="Invalid status transition from pending to completed"
+        ):
             manual_task_instance.update_status(db, StatusType.completed)
 
         # Test transition from completed to in_progress
         manual_task_instance.update_status(db, StatusType.in_progress)
         manual_task_instance.update_status(db, StatusType.completed)
-        with pytest.raises(ValueError, match="Invalid status transition from completed to in_progress"):
+        with pytest.raises(
+            ValueError, match="Invalid status transition from completed to in_progress"
+        ):
             manual_task_instance.update_status(db, StatusType.in_progress)
 
     def test_status_transition_with_user(
@@ -198,12 +204,16 @@ class TestStatusTransitions:
     ):
         """Test status transitions with user information."""
         # Test status transition with user
-        manual_task_instance.update_status(db, StatusType.in_progress, user_id="test_user")
+        manual_task_instance.update_status(
+            db, StatusType.in_progress, user_id="test_user"
+        )
         assert manual_task_instance.status == StatusType.in_progress
         assert manual_task_instance.completed_by_id is None
 
         # Test completion with user
-        manual_task_instance.update_status(db, StatusType.completed, user_id="test_user")
+        manual_task_instance.update_status(
+            db, StatusType.completed, user_id="test_user"
+        )
         assert manual_task_instance.status == StatusType.completed
         assert manual_task_instance.completed_by_id == "test_user"
         assert manual_task_instance.completed_at is not None

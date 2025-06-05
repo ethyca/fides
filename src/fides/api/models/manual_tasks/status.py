@@ -49,19 +49,33 @@ class StatusTransitionMixin(Generic[T]):
     completed_at: Optional[datetime]
     completed_by_id: Optional[str]
 
-    def _validate_status_transition(self, new_status: T) -> None:
-        """Validate that the status transition is allowed."""
-        valid_transitions = {
-            StatusType.pending: [StatusType.in_progress, StatusType.failed],
-            StatusType.in_progress: [StatusType.completed, StatusType.failed],
-            StatusType.completed: [],  # No transitions from completed
-            StatusType.failed: [StatusType.pending],  # Can retry from failed
-        }
+    def _get_valid_transitions(self) -> list[StatusType]:
+        """Get valid transitions from the current status.
 
-        if new_status not in valid_transitions.get(self.status, []):
+        Returns:
+            list[StatusType]: List of valid transitions
+        """
+        return StatusType.get_valid_transitions(self.status)
+
+    def _validate_status_transition(self, new_status: StatusType) -> None:
+        """Validate that a status transition is allowed.
+
+        Args:
+            new_status: The new status to transition to
+
+        Raises:
+            ValueError: If the transition is not allowed
+        """
+        # Allow transitions to the same status
+        if new_status == self.status:
+            return
+
+        # Get valid transitions for current status
+        valid_transitions = self._get_valid_transitions()
+        if new_status not in valid_transitions:
             raise ValueError(
                 f"Invalid status transition from {self.status} to {new_status}. "
-                f"Valid transitions are: {valid_transitions.get(self.status, [])}"
+                f"Valid transitions are: {valid_transitions}"
             )
 
     def update_status(

@@ -209,8 +209,26 @@ class ManualTaskConfig(Base):
                 if field.field_type == ManualTaskFieldType.attachment:
                     attachment_data = data.get(field.field_key)
                     if attachment_data is not None:
+                        # Check required attachment_ids
                         if "attachment_ids" not in attachment_data:
                             return False
+
+                        # Check file type
+                        if "filename" in attachment_data:
+                            file_extension = (
+                                attachment_data["filename"].split(".")[-1].lower()
+                            )
+                            allowed_types = field.field_metadata.get("file_types", [])
+                            if allowed_types and file_extension not in allowed_types:
+                                return False
+
+                        # Check file size
+                        if "size" in attachment_data:
+                            max_size = field.field_metadata.get("max_file_size")
+                            if max_size and attachment_data["size"] > max_size:
+                                return False
+
+                        # Check number of files
                         if field.field_metadata.get("multiple", False):
                             max_files = field.field_metadata.get("max_files")
                             if (
@@ -235,12 +253,26 @@ class ManualTaskConfig(Base):
                     and field.field_metadata.get("require_attachment_id", True)
                     and data.get(field.field_key) is not None
                 ):
-
                     attachment_data = data[field.field_key]
                     if "attachment_ids" not in attachment_data:
                         return False
 
-                    # Check if number of attachments exceeds max_files limit
+                    # Check file type
+                    if "filename" in attachment_data:
+                        file_extension = (
+                            attachment_data["filename"].split(".")[-1].lower()
+                        )
+                        allowed_types = field.field_metadata.get("file_types", [])
+                        if allowed_types and file_extension not in allowed_types:
+                            return False
+
+                    # Check file size
+                    if "size" in attachment_data:
+                        max_size = field.field_metadata.get("max_file_size")
+                        if max_size and attachment_data["size"] > max_size:
+                            return False
+
+                    # Check number of files
                     if field.field_metadata.get("multiple", False):
                         max_files = field.field_metadata.get("max_files")
                         if (
@@ -258,7 +290,26 @@ class ManualTaskConfig(Base):
     @classmethod
     def create(cls, db: Session, data: dict[str, Any]) -> "ManualTaskConfig":
         """Create a new manual task configuration."""
+        # Extract fields from data
+        fields = data.pop("fields", [])
+
+        # Create the config without fields
         config = super().create(db=db, data=data)
+
+        # Add fields if provided
+        if fields:
+            for field_data in fields:
+                field = ManualTaskConfigField.create(
+                    db=db,
+                    data={
+                        "task_id": config.task_id,
+                        "config_id": config.id,
+                        **field_data,
+                    },
+                )
+                config.field_definitions.append(field)
+            db.commit()
+
         # Log the config creation as a task-level log
         ManualTaskLog.create_log(
             db=db,
@@ -268,7 +319,7 @@ class ManualTaskConfig(Base):
             message=f"Created manual task configuration for {data['config_type']}",
             details={
                 "config_type": data["config_type"],
-                "fields": data.get("fields", []),
+                "fields": fields,
             },
         )
         return config
@@ -437,6 +488,14 @@ class ManualTaskConfigField(Base):
     @classmethod
     def create(cls, db: Session, data: dict[str, Any]) -> "ManualTaskConfigField":
         """Create a new manual task config field."""
+        # Validate field metadata
+        if "field_metadata" not in data:
+            raise ValueError("Field metadata is required")
+
+        # Validate field type
+        if data["field_type"] not in ["form", "checkbox", "attachment"]:
+            raise ValueError("Invalid field type")
+
         field = super().create(db=db, data=data)
         # Get the config to access its task_id
         config = (

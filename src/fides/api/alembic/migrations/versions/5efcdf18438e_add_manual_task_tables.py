@@ -157,6 +157,7 @@ def upgrade():
         sa.ForeignKeyConstraint(
             ["config_id"],
             ["manual_task_config.id"],
+            ondelete="CASCADE",
         ),
         sa.ForeignKeyConstraint(
             ["instance_id"],
