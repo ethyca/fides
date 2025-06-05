@@ -217,7 +217,10 @@ export const CustomTextInput = ({
                 fieldName={field.name}
               />
             </Flex>
-            <InfoTooltip label={tooltip} />
+            <InfoTooltip
+              label={tooltip}
+              className={isInvalid ? "mt-2 self-start" : undefined}
+            />
           </Flex>
         </Grid>
       </FormControl>

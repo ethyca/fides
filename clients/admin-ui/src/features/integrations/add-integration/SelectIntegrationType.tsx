@@ -25,7 +25,7 @@ const SelectIntegrationType = ({
     useIntegrationFilterTabs(INTEGRATION_TYPE_LIST);
 
   const {
-    flags: { oktaMonitor },
+    flags: { oktaMonitor, alphaNewManualIntegration },
   } = useFlags();
 
   return (
@@ -45,6 +45,14 @@ const SelectIntegrationType = ({
             if (!oktaMonitor && i.placeholder.connection_type === "okta") {
               return null;
             }
+            // DEFER (ENG-675): Remove this once the alpha feature is released
+            if (
+              !alphaNewManualIntegration &&
+              i.placeholder.connection_type === "manual_webhook"
+            ) {
+              return null;
+            }
+
             return (
               <IntegrationBox
                 integration={i.placeholder}

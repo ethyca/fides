@@ -1,6 +1,7 @@
 import { AntMessage as message } from "fidesui";
 import { useEffect } from "react";
 
+import { useFeatures } from "~/features/common/features";
 import { useGetCommentsQuery } from "~/features/privacy-requests/comments/privacy-request-comments.slice";
 import {
   ActivityTimelineItem,
@@ -12,15 +13,22 @@ import { CommentResponse } from "~/types/api/models/CommentResponse";
  * Hook for fetching and processing privacy request comments
  */
 export const usePrivacyRequestComments = (privacyRequestId: string) => {
+  const { plus: isPlusEnabled } = useFeatures();
+
   // Fetch comments data for this privacy request
   const {
     data: commentsData,
     isLoading,
     error,
-  } = useGetCommentsQuery({
-    privacy_request_id: privacyRequestId,
-    size: 100, // Use a reasonable limit
-  });
+  } = useGetCommentsQuery(
+    {
+      privacy_request_id: privacyRequestId,
+      size: 100, // Use a reasonable limit
+    },
+    {
+      skip: !isPlusEnabled,
+    },
+  );
 
   // Handle error state
   useEffect(() => {
