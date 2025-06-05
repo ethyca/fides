@@ -269,10 +269,7 @@ export const shouldResurfaceBanner = (
     if (!!options && isConsentOverride(options)) {
       return false;
     }
-    if (
-      experience.meta?.version_hash &&
-      cookie.fides_meta.consentMethod !== ConsentMethod.DISMISS
-    ) {
+    if (experience.meta?.version_hash) {
       return experience.meta.version_hash !== cookie.tcf_version_hash;
     }
     return true;
