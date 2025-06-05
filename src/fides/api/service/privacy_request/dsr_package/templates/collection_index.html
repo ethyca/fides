@@ -26,13 +26,20 @@
                   <div class="table-row">
                      <div class="table-cell">{{ field }}</div>
                      <div class="table-cell">
-                        {% if field == "attachments" and value is sequence and value is not string %}
-                           {% for attachment_name, attachment_url in item.attachments.items() %}
-                              <a href="{{ attachment_url }}" target="_blank" class="attachment-link">
-                                 {{ attachment_name }}
+                        {% if field == "attachments" and value is mapping and value|length > 0 %}
+                           <p class="expiration-notice">Note: All download links will expire in 7 days.</p>
+                           <div class="table table-hover">
+                              <div class="table-row">
+                                 <div class="table-cell" style="text-align: left;">File Name</div>
+                                 <div class="table-cell" style="text-align: left;">Size</div>
+                              </div>
+                              {% for attachment_name, attachment_info in value.items() %}
+                              <a href="{{ attachment_info.url }}" class="table-row" target="_blank">
+                                 <div class="table-cell" style="text-align: left;">{{ attachment_name }}</div>
+                                 <div class="table-cell" style="text-align: left;">{{ attachment_info.size }}</div>
                               </a>
-                              {% if not loop.last %}<br>{% endif %}
-                           {% endfor %}
+                              {% endfor %}
+                           </div>
                         {% else %}
                            <pre>{{ value | pretty_print }}</pre>
                         {% endif %}

@@ -76,6 +76,9 @@ class DsrReportBuilder:
         self.request_data = _map_privacy_request(privacy_request)
         self.dsr_data = dsr_data
 
+        # Track used filenames across all attachments
+        self.used_filenames: set[str] = set()
+
     def _populate_template(
         self,
         template_path: str,
@@ -144,12 +147,12 @@ class DsrReportBuilder:
             ),
         )
 
-    def _get_unique_filename(self, directory: str, filename: str) -> str:
+    def _get_unique_filename(self, filename: str) -> str:
         """
         Generates a unique filename by appending a counter if the file already exists.
+        Now tracks filenames across all directories to ensure global uniqueness.
 
         Args:
-            directory: The directory path
             filename: The original filename
 
         Returns:
@@ -159,11 +162,13 @@ class DsrReportBuilder:
         counter = 1
         unique_filename = filename
 
-        # Check if file exists in zip
-        while f"{directory}/{unique_filename}" in self.out.namelist():
+        # Check if file exists in used_filenames set
+        while unique_filename in self.used_filenames:
             unique_filename = f"{base_name}_{counter}{extension}"
             counter += 1
 
+        # Add the new filename to the set
+        self.used_filenames.add(unique_filename)
         return unique_filename
 
     def _write_attachment_content(
@@ -183,7 +188,6 @@ class DsrReportBuilder:
         """
         # First process all attachments into a list of tuples (filename, data)
         processed_attachments = []
-        used_filenames = set()
 
         for attachment in attachments:
             if not isinstance(attachment, dict):
@@ -206,16 +210,7 @@ class DsrReportBuilder:
                 file_size = "Unknown"
 
             # Get a unique filename to prevent duplicates
-            base_name, extension = os.path.splitext(file_name)
-            counter = 1
-            unique_filename = file_name
-
-            # Check if filename is already used in this batch
-            while unique_filename in used_filenames:
-                unique_filename = f"{base_name}_{counter}{extension}"
-                counter += 1
-
-            used_filenames.add(unique_filename)
+            unique_filename = self._get_unique_filename(file_name)
 
             # Add to processed attachments
             processed_attachments.append(
@@ -239,24 +234,27 @@ class DsrReportBuilder:
         items_content = []
 
         for index, collection_item in enumerate(rows, 1):
-            item_attachment_links = {}  # Track unique filenames for this specific item
+            # Create a copy of the item data to avoid modifying the original
+            item_data = collection_item.copy()
 
             # Process any attachments in the item
-            if "attachments" in collection_item and isinstance(
-                collection_item["attachments"], list
+            if "attachments" in item_data and isinstance(
+                item_data["attachments"], list
             ):
-                item_attachment_links = self._write_attachment_content(
-                    collection_item["attachments"],
+                # Process attachments and get their URLs
+                attachment_links = self._write_attachment_content(
+                    item_data["attachments"],
                     f"data/{dataset_name}/{collection_name}",
                 )
+                # Add the attachment URLs to the item data
+                item_data["attachments"] = attachment_links
 
             # Add item content to the list
             items_content.append(
                 {
                     "index": index,
                     "heading": f"{collection_name} (item #{index})",
-                    "data": collection_item,
-                    "attachments": item_attachment_links,  # Use item-specific attachment links
+                    "data": item_data,
                 }
             )
 
