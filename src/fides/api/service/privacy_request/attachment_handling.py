@@ -52,14 +52,14 @@ def get_attachments_content(
 ) -> Iterator[AttachmentData]:
     """
     Retrieves all attachments associated with a privacy request that are marked to be included with the access package.
-    Yields AttachmentData objects containing attachment metadata and content.
+    Yields AttachmentData objects containing attachment metadata and download urls.
     Uses generators to minimize memory usage.
 
     Args:
         loaded_attachments: List of Attachment objects to process
 
     Yields:
-        AttachmentData object containing attachment metadata and content
+        AttachmentData object containing attachment metadata and url
     """
     start_time = time_module.time()
     processed_count = 0
@@ -119,7 +119,7 @@ def process_attachments_for_upload(
     """
     Process attachments into separate upload and storage formats.
     Returns both formats:
-    - upload_attachments: Used for webhook delivery
+    - upload_attachments: Used for uploading to access packages
     - storage_attachments: Used for saving filtered access results
     """
     upload_attachments = []

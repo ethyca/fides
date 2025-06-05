@@ -34,7 +34,6 @@ class DsrReportBuilder:
     - data/dataset_name/collection_name/index.html: the index page for the collection
     - data/dataset_name/collection_name/item_index.html: the detail page for the item
     - attachments/index.html: the index page for the attachments
-    - attachments/attachment_name: the attachment file
 
     Args:
         privacy_request: the privacy request object
