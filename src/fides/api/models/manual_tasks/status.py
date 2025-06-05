@@ -1,18 +1,40 @@
+from datetime import datetime, timezone
 from enum import Enum as EnumType
-from typing import Optional, TypeVar, Generic
-from datetime import datetime, UTC
+from typing import Generic, Optional, TypeVar
+
 from sqlalchemy.orm import Session
 
 
 class StatusType(str, EnumType):
     """Enum for manual task status."""
+
     pending = "pending"
     in_progress = "in_progress"
     completed = "completed"
     failed = "failed"
 
+    @classmethod
+    def get_valid_transitions(cls, current_status: "StatusType") -> list["StatusType"]:
+        """Get valid transitions from the current status.
 
-T = TypeVar('T', bound=StatusType)
+        Args:
+            current_status: The current status
+
+        Returns:
+            list[StatusType]: List of valid transitions
+        """
+        if current_status == cls.pending:
+            return [cls.in_progress, cls.failed, cls.completed]
+        if current_status == cls.in_progress:
+            return [cls.completed, cls.failed]
+        if current_status == cls.completed:
+            return [cls.in_progress, cls.failed]
+        if current_status == cls.failed:
+            return [cls.pending, cls.in_progress]
+        return []
+
+
+T = TypeVar("T", bound=StatusType)
 
 
 class StatusTransitionMixin(Generic[T]):
@@ -55,7 +77,7 @@ class StatusTransitionMixin(Generic[T]):
         self._validate_status_transition(new_status)
 
         if new_status == StatusType.completed:
-            self.completed_at = datetime.now(UTC)
+            self.completed_at = datetime.now(timezone.utc)
             self.completed_by_id = user_id
         elif new_status == StatusType.pending:
             # Reset completion fields if going back to pending

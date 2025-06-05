@@ -1,24 +1,17 @@
-from enum import Enum as EnumType
-from typing import Optional, Any
-from sqlalchemy import Column, String, ForeignKey, JSONB, DateTime
-from sqlalchemy.orm import relationship, Session
-from datetime import datetime, UTC
+from datetime import datetime, timezone
+from typing import Any, Optional
+
+from sqlalchemy import Column, DateTime, ForeignKey, String
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import Session, relationship
 
 from fides.api.db.base_class import Base
-
-
-class ManualTaskLogStatus(str, EnumType):
-    """Enum for manual task log status."""
-    in_processing = "in_processing"
-    complete = "complete"
-    error = "error"
-    retrying = "retrying"
-    paused = "paused"
-    awaiting_input = "awaiting_input"
+from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskLogStatus
 
 
 class ManualTaskLog(Base):
     """Model for storing manual task execution logs."""
+
     __tablename__ = "manual_task_log"
 
     task_id = Column(String, ForeignKey("manual_task.id"), nullable=False)
@@ -27,10 +20,12 @@ class ManualTaskLog(Base):
     status = Column(String, nullable=False)
     message = Column(String, nullable=True)
     details = Column(JSONB, nullable=True)
-    created_at = Column(DateTime, nullable=False, default=datetime.now(UTC))
+    created_at = Column(DateTime, nullable=False, default=datetime.now(timezone.utc))
 
     # Relationships
     task = relationship("ManualTask", back_populates="logs")
+    config = relationship("ManualTaskConfig", back_populates="logs")
+    instance = relationship("ManualTaskInstance", back_populates="logs")
 
     @classmethod
     def create_log(

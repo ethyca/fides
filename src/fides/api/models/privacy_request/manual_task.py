@@ -1,137 +1,22 @@
-from datetime import datetime
-from enum import Enum as EnumType
-from typing import Any, Optional, List
-from sqlalchemy import or_, and_
+from typing import Any, List, Optional
+
+from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
 from fides.api.models.connectionconfig import ConnectionConfig
-from fides.api.models.privacy_request.privacy_request import PrivacyRequest
 from fides.api.models.manual_tasks.manual_task import (
     ManualTask,
     ManualTaskConfig,
     ManualTaskConfigField,
-    ManualTaskSubmission,
-    ManualTaskType,
-    ManualTaskConfigurationType,
     ManualTaskInstance,
+    ManualTaskReference,
 )
-
-
-def get_privacy_request_tasks(
-    db: Session, task_type: Optional[ManualTaskType] = None
-) -> List[ManualTask]:
-    """Get all privacy request tasks.
-
-    Args:
-        db: Database session
-        task_type: Optional task type to filter by
-    """
-    query = db.query(ManualTask).filter(
-        ManualTask.task_type == ManualTaskType.privacy_request
-    )
-
-    if task_type:
-        query = query.filter(ManualTask.task_type == task_type)
-
-    return query.all()
-
-
-def get_enabled_privacy_request_tasks(
-    db: Session, task_type: Optional[ManualTaskType] = None
-) -> List[ManualTask]:
-    """Get all enabled privacy request tasks.
-
-    Args:
-        db: Database session
-        task_type: Optional task type to filter by
-    """
-    query = db.query(ManualTask).filter(
-        ManualTask.task_type == ManualTaskType.privacy_request,
-        ManualTask.parent_entity_type == "connection_config",
-        ConnectionConfig.disabled.is_(False),
-    )
-
-    if task_type:
-        query = query.filter(ManualTask.task_type == task_type)
-
-    return query.all()
-
-
-def get_privacy_request_task_configs(task: ManualTask) -> List[ManualTaskConfig]:
-    """Get all privacy request task configurations for a task."""
-    return [
-        config for config in task.configs
-        if config.config_type in [
-            ManualTaskConfigurationType.access_privacy_request,
-            ManualTaskConfigurationType.erasure_privacy_request,
-        ]
-    ]
-
-
-def get_privacy_request_task_fields(config: ManualTaskConfig) -> List[ManualTaskConfigField]:
-    """Get all privacy request task fields for a configuration."""
-    return [
-        field for field in config.fields
-        if hasattr(field, "dsr_package_label") and field.dsr_package_label is not None
-    ]
-
-
-def get_privacy_request_task_submissions(task: ManualTask) -> List[ManualTaskSubmission]:
-    """Get all privacy request task submissions for a task."""
-    return task.submissions
-
-
-def get_privacy_request_task_instances(task: ManualTask) -> List[ManualTaskInstance]:
-    """Get all privacy request task instances for a task."""
-    return task.get_entity_instances(entity_type="privacy_request")
-
-
-def get_privacy_request_task_instance(
-    task: ManualTask, privacy_request_id: str
-) -> Optional[ManualTaskInstance]:
-    """Get the task instance for a specific privacy request.
-
-    Args:
-        task: The task to get the instance for
-        privacy_request_id: ID of the privacy request
-    """
-    return task.get_instance_for_entity(
-        entity_id=privacy_request_id,
-        entity_type="privacy_request"
-    )
-
-
-def get_privacy_request_task_parent_entity(task: ManualTask, db: Session) -> Optional[Any]:
-    """Get the parent entity associated with this privacy request task.
-
-    For privacy request tasks, this will be either a ConnectionConfig or a PrivacyRequest.
-    """
-    if task.parent_entity_type == "connection_config":
-        return db.query(ConnectionConfig).filter(
-            ConnectionConfig.id == task.parent_entity_id
-        ).first()
-    elif task.parent_entity_type == "privacy_request":
-        return db.query(PrivacyRequest).filter(
-            PrivacyRequest.id == task.parent_entity_id
-        ).first()
-    return None
-
-
-def get_field_definitions_for_privacy_request(config: ManualTaskConfig) -> dict[str, Any]:
-    """Get field definitions based on the privacy request configuration type."""
-    field_definitions = {}
-    for field in config.fields or []:
-        if config.config_type == ManualTaskConfigurationType.access_privacy_request:
-            # Include all fields for access, regardless of type
-            if "dsr_package_label" in field:
-                field_definitions[field["dsr_package_label"]] = (Optional[str], None)
-        elif config.config_type == ManualTaskConfigurationType.erasure_privacy_request:
-            # Use types if present, otherwise default to ["string"]
-            field_types = field.get("types", ["string"])
-            # Only include string fields for erasure
-            if "dsr_package_label" in field and "string" in field_types:
-                field_definitions[field["dsr_package_label"]] = (Optional[bool], None)
-    return field_definitions
+from fides.api.models.privacy_request.privacy_request import PrivacyRequest
+from fides.api.schemas.manual_tasks.manual_task_schemas import (
+    ManualTaskConfigurationType,
+    ManualTaskFieldType,
+    ManualTaskType,
+)
 
 
 def create_privacy_request_task(
@@ -177,13 +62,36 @@ def create_privacy_request_task_config(
         fields: List of field definitions
         **kwargs: Additional configuration attributes
     """
-    data = {
-        "task_id": task_id,
-        "config_type": config_type,
-        "fields": fields,
-        **kwargs,
-    }
-    return ManualTaskConfig.create(db=db, data=data)
+    # Create the config first
+    config = ManualTaskConfig.create(
+        db=db,
+        data={
+            "task_id": task_id,
+            "config_type": config_type,
+            **kwargs,
+        },
+    )
+
+    # Create each field
+    for field_data in fields:
+        ManualTaskConfigField.create(
+            db=db,
+            data={
+                "task_id": task_id,
+                "config_id": config.id,
+                "field_key": field_data["dsr_package_label"],
+                "field_type": ManualTaskFieldType.form,  # Default to form for DSR fields
+                "metadata": {
+                    "dsr_package_label": field_data["dsr_package_label"],
+                    "label": field_data.get("label", field_data["dsr_package_label"]),
+                    "required": field_data.get("required", False),
+                    "help_text": field_data.get("help_text"),
+                    "types": field_data.get("types", ["string"]),
+                },
+            },
+        )
+
+    return config
 
 
 def create_privacy_request_task_instance(
@@ -205,5 +113,228 @@ def create_privacy_request_task_instance(
         db=db,
         config_id=config_id,
         entity_id=privacy_request_id,
-        entity_type="privacy_request"
+        entity_type="privacy_request",
     )
+
+
+def _add_privacy_request_join(query, base_model):
+    """Add the privacy request reference join to a query.
+
+    Args:
+        query: The query to modify
+        base_model: The base model to join from (ManualTask, ManualTaskConfig, or ManualTaskInstance)
+    """
+    if base_model == ManualTask:
+        return query.join(
+            ManualTaskReference,
+            and_(
+                ManualTask.id == ManualTaskReference.task_id,
+                ManualTaskReference.reference_type == "privacy_request",
+            ),
+        )
+    elif base_model == ManualTaskConfig:
+        return query.join(ManualTask, ManualTaskConfig.task_id == ManualTask.id).join(
+            ManualTaskReference,
+            and_(
+                ManualTask.id == ManualTaskReference.task_id,
+                ManualTaskReference.reference_type == "privacy_request",
+            ),
+        )
+    elif base_model == ManualTaskInstance:
+        return query.join(
+            ManualTask, ManualTaskInstance.task_id == ManualTask.id
+        ).filter(ManualTaskInstance.entity_type == "privacy_request")
+    return query
+
+
+def _add_connection_config_filter(query, base_model, connection_config_id):
+    """Add connection config filter to a query.
+
+    Args:
+        query: The query to modify
+        base_model: The base model to filter on
+        connection_config_id: The connection config ID to filter by
+    """
+    if connection_config_id:
+        if base_model == ManualTaskInstance:
+            return query.filter(ManualTask.parent_entity_id == connection_config_id)
+        return query.filter(base_model.parent_entity_id == connection_config_id)
+    return query
+
+
+def _add_enabled_filter(query, base_model, enabled):
+    """Add enabled filter to a query.
+
+    Args:
+        query: The query to modify
+        base_model: The base model to filter on
+        enabled: Whether to filter for enabled or disabled tasks
+    """
+    if enabled is not None:
+        if base_model == ManualTaskInstance:
+            return query.join(
+                ConnectionConfig, ManualTask.parent_entity_id == ConnectionConfig.id
+            ).filter(ConnectionConfig.disabled.is_(not enabled))
+        return query.join(
+            ConnectionConfig, base_model.parent_entity_id == ConnectionConfig.id
+        ).filter(ConnectionConfig.disabled.is_(not enabled))
+    return query
+
+
+def _add_privacy_request_filter(query, base_model, privacy_request):
+    """Add privacy request filter to a query.
+
+    Args:
+        query: The query to modify
+        base_model: The base model to filter on
+        privacy_request: The privacy request to filter by
+    """
+    if privacy_request:
+        if base_model == ManualTaskInstance:
+            return query.filter(ManualTaskInstance.entity_id == privacy_request.id)
+        return query.filter(ManualTaskReference.reference_id == privacy_request.id)
+    return query
+
+
+def _add_status_filter(query, base_model, status):
+    """Add status filter to a query.
+
+    Args:
+        query: The query to modify
+        base_model: The base model to filter on
+        status: The status to filter by
+    """
+    if status:
+        if base_model == ManualTaskInstance:
+            return query.filter(ManualTaskInstance.status == status)
+        elif base_model == ManualTaskConfig:
+            return query.join(
+                ManualTaskInstance,
+                and_(
+                    ManualTaskConfig.id == ManualTaskInstance.config_id,
+                    ManualTaskInstance.entity_type == "privacy_request",
+                ),
+            ).filter(ManualTaskInstance.status == status)
+        return query.join(
+            ManualTaskInstance,
+            and_(
+                ManualTask.id == ManualTaskInstance.task_id,
+                ManualTaskInstance.entity_type == "privacy_request",
+            ),
+        ).filter(ManualTaskInstance.status == status)
+    return query
+
+
+def _add_user_filter(query, base_model, user_id):
+    """Add user filter to a query.
+
+    Args:
+        query: The query to modify
+        base_model: The base model to filter on
+        user_id: The user ID to filter by
+    """
+    if user_id:
+        if base_model == ManualTaskInstance:
+            return query.join(
+                ManualTaskReference,
+                and_(
+                    ManualTask.id == ManualTaskReference.task_id,
+                    ManualTaskReference.reference_type == "assigned_user",
+                    ManualTaskReference.reference_id == str(user_id),
+                ),
+            )
+        return query.join(
+            ManualTaskReference,
+            and_(
+                base_model.id == ManualTaskReference.task_id,
+                ManualTaskReference.reference_type == "assigned_user",
+                ManualTaskReference.reference_id == str(user_id),
+            ),
+        )
+    return query
+
+
+def get_privacy_request_tasks(
+    db: Session,
+    privacy_request: Optional[PrivacyRequest] = None,
+    status: Optional[str] = None,
+    user_id: Optional[int] = None,
+    connection_config_id: Optional[str] = None,
+    enabled: Optional[bool] = None,
+) -> List[ManualTask]:
+    """Get tasks for privacy requests with optional filtering by privacy request, status, user ID, connection config, and enabled status.
+
+    Args:
+        db: Database session
+        privacy_request: Optional privacy request to filter tasks by. If None, returns tasks for all privacy requests.
+        status: Optional status to filter tasks by (pending, in_progress, completed, failed)
+        user_id: Optional user ID to filter tasks by
+        connection_config_id: Optional connection config ID to filter tasks by
+        enabled: Optional boolean to filter tasks by enabled status
+    """
+    query = db.query(ManualTask)
+    query = _add_privacy_request_join(query, ManualTask)
+    query = _add_connection_config_filter(query, ManualTask, connection_config_id)
+    query = _add_enabled_filter(query, ManualTask, enabled)
+    query = _add_privacy_request_filter(query, ManualTask, privacy_request)
+    query = _add_status_filter(query, ManualTask, status)
+    query = _add_user_filter(query, ManualTask, user_id)
+    return query.all()
+
+
+def get_privacy_request_task_configs_filtered(
+    db: Session,
+    privacy_request: Optional[PrivacyRequest] = None,
+    status: Optional[str] = None,
+    user_id: Optional[int] = None,
+    connection_config_id: Optional[str] = None,
+    enabled: Optional[bool] = None,
+) -> List[ManualTaskConfig]:
+    """Get task configurations for privacy requests with optional filtering.
+
+    Args:
+        db: Database session
+        privacy_request: Optional privacy request to filter configs by
+        status: Optional status to filter configs by (pending, in_progress, completed, failed)
+        user_id: Optional user ID to filter configs by
+        connection_config_id: Optional connection config ID to filter configs by
+        enabled: Optional boolean to filter configs by enabled status
+    """
+    query = db.query(ManualTaskConfig)
+    query = _add_privacy_request_join(query, ManualTaskConfig)
+    query = _add_connection_config_filter(query, ManualTaskConfig, connection_config_id)
+    query = _add_enabled_filter(query, ManualTaskConfig, enabled)
+    query = _add_privacy_request_filter(query, ManualTaskConfig, privacy_request)
+    query = _add_status_filter(query, ManualTaskConfig, status)
+    query = _add_user_filter(query, ManualTaskConfig, user_id)
+    return query.all()
+
+
+def get_privacy_request_task_instances_filtered(
+    db: Session,
+    privacy_request: Optional[PrivacyRequest] = None,
+    status: Optional[str] = None,
+    user_id: Optional[int] = None,
+    connection_config_id: Optional[str] = None,
+    enabled: Optional[bool] = None,
+) -> List[ManualTaskInstance]:
+    """Get task instances for privacy requests with optional filtering.
+
+    Args:
+        db: Database session
+        privacy_request: Optional privacy request to filter instances by
+        status: Optional status to filter instances by (pending, in_progress, completed, failed)
+        user_id: Optional user ID to filter instances by
+        connection_config_id: Optional connection config ID to filter instances by
+        enabled: Optional boolean to filter instances by enabled status
+    """
+    query = db.query(ManualTaskInstance)
+    query = _add_privacy_request_join(query, ManualTaskInstance)
+    query = _add_connection_config_filter(
+        query, ManualTaskInstance, connection_config_id
+    )
+    query = _add_enabled_filter(query, ManualTaskInstance, enabled)
+    query = _add_privacy_request_filter(query, ManualTaskInstance, privacy_request)
+    query = _add_status_filter(query, ManualTaskInstance, status)
+    query = _add_user_filter(query, ManualTaskInstance, user_id)
+    return query.all()
