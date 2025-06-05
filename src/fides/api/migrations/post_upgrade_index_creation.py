@@ -210,7 +210,7 @@ def check_and_create_objects(
     return object_info
 
 
-def post_upgrade_index_creation_task():
+def post_upgrade_index_creation_task() -> None:
     """
     Task for creating indices and constraints that were deferred
     as part of a standard Fides/Alembic migration.
