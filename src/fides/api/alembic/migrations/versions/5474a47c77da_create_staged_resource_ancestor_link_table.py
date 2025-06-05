@@ -9,7 +9,7 @@ that populates the staged resource ancestor link table, to prevent
 unintended data loss.
 
 Revision ID: 5474a47c77da
-Revises: 2263583b0e44
+Revises: 440a5b9a3493
 Create Date: 2025-05-27 19:02:43.802783
 
 """
@@ -20,7 +20,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "5474a47c77da"
-down_revision = "2263583b0e44"
+down_revision = "440a5b9a3493"
 branch_labels = None
 depends_on = None
 
