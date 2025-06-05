@@ -42,6 +42,7 @@ export const SkipTaskModal = ({
       setComment("");
       onClose();
     } catch (error) {
+      /* eslint-disable-next-line no-console */
       console.error("Failed to skip task:", error);
     }
   };
