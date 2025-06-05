@@ -32,6 +32,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - TCF Banners will no longer resurface on reload after dismissal [#6200](https://github.com/ethyca/fides/pull/6200)
 - Earlier initialization strategy for Shopify integration [#6202](https://github.com/ethyca/fides/pull/6202)
 
+### Changed
 
 ## [2.63.1](https://github.com/ethyca/fides/compare/2.63.0...2.63.1)
 - Added support for large (>1GB) database columns by writing the contents to external storage [#6199](https://github.com/ethyca/fides/pull/6199)
