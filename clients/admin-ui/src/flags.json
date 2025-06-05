@@ -53,5 +53,11 @@
     "development": true,
     "test": true,
     "production": false
+  },
+  "alphaNewManualIntegration": {
+    "description": "New DSR Workflow Manual Integration",
+    "development": true,
+    "test": true,
+    "production": false
   }
 }
