@@ -20,7 +20,6 @@ from fides.api.service.storage.s3 import (
     generic_upload_to_s3,
 )
 from fides.api.service.storage.util import AllowedFileType, get_local_filename
-from fides.config import CONFIG
 
 if TYPE_CHECKING:
     from fides.api.models.comment import Comment

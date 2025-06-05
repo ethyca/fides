@@ -101,13 +101,13 @@ def get_manual_webhook_access_inputs(
 
     This data will be uploaded to the user as-is, without filtering.
     """
-    manual_inputs: dict[str, list[dict[str, Optional[Any]]]] = {}
+    manual_inputs_for_upload: dict[str, list[dict[str, Optional[Any]]]] = {}
     manual_inputs_for_storage: dict[str, list[dict[str, Optional[Any]]]] = {}
 
     if not policy.get_rules_for_action(action_type=ActionType.access):
         # Don't fetch manual inputs unless this policy has an access rule
         return ManualWebhookResults(
-            manual_data_for_upload=manual_inputs,
+            manual_data_for_upload=manual_inputs_for_upload,
             manual_data_for_storage=manual_inputs_for_storage,
             proceed=True,
         )
@@ -115,44 +115,37 @@ def get_manual_webhook_access_inputs(
     try:
         for manual_webhook in AccessManualWebhook.get_enabled(db, ActionType.access):
             # Get the manual webhook input data
-            webhook_data = privacy_request.get_manual_webhook_access_input_strict(
-                manual_webhook
+            webhook_data_for_storage = (
+                privacy_request.get_manual_webhook_access_input_strict(manual_webhook)
             )
             # Add the system name to the webhook data for display purposes
-            webhook_data["system_name"] = manual_webhook.connection_config.system.name
+            webhook_data_for_storage["system_name"] = (
+                manual_webhook.connection_config.system.name
+            )
+            webhook_data_for_upload = deepcopy(webhook_data_for_storage)
 
-            # Create copies for upload and storage
-            webhook_data_for_upload = deepcopy(webhook_data)
-            webhook_data_for_storage = webhook_data
-
-            # Get any attachments for this webhook
+            # Get any attachments for this webhook, load from db to ensure they have their configs
             webhook_attachments = privacy_request.get_access_manual_webhook_attachments(
                 db, manual_webhook.id
             )
             if webhook_attachments:
-                # Load attachments from database to ensure they have their configs
-                # lazy loading may cause issues
                 loaded_attachments: list[Attachment] = [
                     attachment
                     for webhook_attachment in webhook_attachments
                     if (attachment := db.query(Attachment).get(webhook_attachment.id))
                     is not None
                 ]
-                # Process attachments for both upload and storage
-                upload_attachments, storage_attachments = (
-                    process_attachments_for_upload(
-                        get_attachments_content(loaded_attachments)
-                    )
+                (
+                    webhook_data_for_upload["attachments"],
+                    webhook_data_for_storage["attachments"],
+                ) = process_attachments_for_upload(
+                    get_attachments_content(loaded_attachments)
                 )
-                # Store upload attachments in the upload version
-                webhook_data_for_upload["attachments"] = upload_attachments
-                # Store storage attachments in the storage version
-                webhook_data_for_storage["attachments"] = storage_attachments
 
-            manual_inputs[manual_webhook.connection_config.key] = [
+            manual_inputs_for_upload[manual_webhook.connection_config.key] = [
                 webhook_data_for_upload
             ]
-            manual_inputs_for_storage[manual_webhook.connection_config.key] = [
+            manual_inputs_for_storage[manual_webhook.connection_config.key] = [  # type: ignore[assignment]
                 webhook_data_for_storage
             ]
 
@@ -165,13 +158,13 @@ def get_manual_webhook_access_inputs(
         privacy_request.status = PrivacyRequestStatus.requires_input
         privacy_request.save(db)
         return ManualWebhookResults(
-            manual_data_for_upload=manual_inputs,
+            manual_data_for_upload=manual_inputs_for_upload,
             manual_data_for_storage=manual_inputs_for_storage,
             proceed=False,
         )
 
     return ManualWebhookResults(
-        manual_data_for_upload=manual_inputs,
+        manual_data_for_upload=manual_inputs_for_upload,
         manual_data_for_storage=manual_inputs_for_storage,
         proceed=True,
     )
@@ -215,11 +208,7 @@ def get_manual_webhook_erasure_inputs(
     )
 
 
-@log_context(
-    capture_args={
-        "privacy_request_id": LoggerContextKeys.privacy_request_id,
-    }
-)
+@log_context(capture_args={"privacy_request_id": LoggerContextKeys.privacy_request_id})
 def upload_access_results(
     session: Session,
     policy: Policy,
@@ -228,19 +217,16 @@ def upload_access_results(
     dataset_graph: DatasetGraph,
     privacy_request: PrivacyRequest,
     upload_attachments: Iterator[AttachmentData],
-) -> Tuple[list[str], dict[str, list[dict[str, Optional[Any]]]]]:
+) -> list[str]:
     """Upload results for a single rule and return download URLs and modified results."""
     start_time = time.time()
     download_urls: list[str] = []
     storage_destination = rule.get_storage_destination(session)
 
     if upload_attachments:
-        results_to_upload["attachments"] = upload_attachments
+        results_to_upload["attachments"] = upload_attachments  # type: ignore[assignment]
 
-    logger.info(
-        "Starting access request upload for rule {}",
-        rule.key,
-    )
+    logger.info("Starting access request upload for rule {}", rule.key)
     try:
         download_url: Optional[str] = upload(
             db=session,
