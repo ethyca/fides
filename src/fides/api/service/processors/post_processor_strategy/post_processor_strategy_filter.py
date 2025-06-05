@@ -2,6 +2,7 @@ from typing import Any, Dict, List, Optional, Union
 
 import pydash
 from loguru import logger
+from requests import Response
 
 from fides.api.common_exceptions import FidesopsException
 from fides.api.models.privacy_request import PrivacyRequest
@@ -54,6 +55,7 @@ class FilterPostProcessorStrategy(PostProcessorStrategy):
         data: Union[List[Dict[str, Any]], Dict[str, Any]],
         identity_data: Optional[Dict[str, Any]] = None,
         privacy_request: Optional[PrivacyRequest] = None,
+        response: Optional[Response] = None,
     ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
         """
         - data: A list or a dict
