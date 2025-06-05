@@ -4,8 +4,8 @@ import pytest
 from sqlalchemy.orm import Session
 
 from fides.api.models.privacy_request import ExecutionLog
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
-from fides.api.schemas.privacy_request import ExecutionLogStatus
 
 
 def test_execution_log_timestamps(db: Session):

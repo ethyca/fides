@@ -16,7 +16,12 @@ from fides.api.models.custom_connector_template import CustomConnectorTemplate
 from fides.api.models.custom_report import CustomReport
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.db_cache import DBCache
-from fides.api.models.detection_discovery import MonitorConfig, StagedResource
+from fides.api.models.detection_discovery import (
+    MonitorConfig,
+    MonitorTask,
+    MonitorTaskExecutionLog,
+    StagedResource,
+)
 from fides.api.models.experience_notices import ExperienceNotices
 from fides.api.models.fides_cloud import FidesCloud
 from fides.api.models.fides_user import FidesUser
