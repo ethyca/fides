@@ -3,6 +3,10 @@ from enum import Enum as EnumType
 
 from loguru import logger
 
+# This is the max file size for downloading the content of an attachment.
+# This is an industry standard used by companies like Google and Microsoft.
+LARGE_FILE_THRESHOLD = 25 * 1024 * 1024  # 25 MB
+
 
 class AllowedFileType(EnumType):
     """
@@ -23,9 +27,6 @@ class AllowedFileType(EnumType):
 
 
 LOCAL_FIDES_UPLOAD_DIRECTORY = "fides_uploads"
-
-# Default to 10MB if not specified in environment
-LARGE_FILE_THRESHOLD = 10 * 1024 * 1024  # 10 MB threshold
 
 
 def get_local_filename(file_key: str) -> str:

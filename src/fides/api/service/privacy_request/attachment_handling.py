@@ -5,7 +5,7 @@ from typing import Any, Dict, Iterator, List, Optional, Tuple
 from loguru import logger
 
 from fides.api.models.attachment import Attachment, AttachmentType
-from fides.api.schemas.storage.storage import ResponseFormat
+from fides.api.schemas.storage.storage import StorageDetails
 
 
 @dataclass
@@ -22,25 +22,28 @@ class AttachmentData:
     file_size: Optional[int]
     download_url: Optional[str]
     content_type: str
-    fileobj: Optional[Any] = None
+    bucket_name: str
+    file_key: str
+    storage_key: str
 
     def to_upload_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary for upload, including fileobj."""
+        """Convert to dictionary for upload, including presigned URL."""
         return {
             "file_name": self.file_name,
             "file_size": self.file_size,
             "download_url": self.download_url,
             "content_type": self.content_type,
-            "fileobj": self.fileobj,
         }
 
     def to_storage_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary for storage, excluding fileobj."""
+        """Convert to dictionary for storage, including the elements needed to recreated the presigned URL."""
         return {
             "file_name": self.file_name,
             "file_size": self.file_size,
-            "download_url": self.download_url,
             "content_type": self.content_type,
+            "bucket_name": self.bucket_name,
+            "file_key": self.file_key,
+            "storage_key": self.storage_key,
         }
 
 
@@ -73,17 +76,12 @@ def get_attachments_content(
             # Get size and download URL using retrieve_attachment
             size, url = attachment.retrieve_attachment()
             total_size += size if size else 0
-
-            # If config response format is html, we need to get the fileobj
-            fileobj = None
-            if attachment.config.format.value == ResponseFormat.html.value:  # type: ignore[attr-defined]
-                _, fileobj = attachment.retrieve_attachment_content()
-                if not fileobj:
-                    logger.warning(
-                        "No content retrieved for attachment {}", attachment.file_name
-                    )
-                    skipped_count += 1
-                    continue
+            if url is None:
+                logger.warning(
+                    "No download URL retrieved for attachment {}", attachment.file_name
+                )
+                skipped_count += 1
+                continue
 
             processed_count += 1
             yield AttachmentData(
@@ -91,7 +89,9 @@ def get_attachments_content(
                 file_size=size,
                 download_url=str(url) if url else None,
                 content_type=attachment.content_type,
-                fileobj=fileobj,
+                bucket_name=attachment.config.details[StorageDetails.BUCKET.value],
+                file_key=attachment.file_key,
+                storage_key=attachment.storage_key,
             )
 
         except Exception as e:
@@ -118,13 +118,15 @@ def process_attachments_for_upload(
 ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     """
     Process attachments into separate upload and storage formats.
-    Returns both formats to avoid processing attachments twice.
+    Returns both formats:
+    - upload_attachments: Used for webhook delivery
+    - storage_attachments: Used for saving filtered access results
     """
     upload_attachments = []
     storage_attachments = []
 
     for attachment in attachments:
-        upload_attachments.append(attachment.to_upload_dict())
         storage_attachments.append(attachment.to_storage_dict())
+        upload_attachments.append(attachment.to_upload_dict())
 
     return upload_attachments, storage_attachments

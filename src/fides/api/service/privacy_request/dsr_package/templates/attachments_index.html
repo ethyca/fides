@@ -17,10 +17,12 @@
             <div class="table table-hover">
                <div class="table-row">
                   <div class="table-cell" style="text-align: left;">File Name</div>
+                  <div class="table-cell" style="text-align: left;">Size</div>
                </div>
-               {% for name, url in data.items() %}
-               <a href="{{ url }}" class="table-row" target="_blank">
+               {% for name, info in data.items() %}
+               <a href="{{ info.url }}" class="table-row" target="_blank">
                   <div class="table-cell" style="text-align: left;">{{ name }}</div>
+                  <div class="table-cell" style="text-align: left;">{{ info.size }}</div>
                </a>
                {% endfor %}
             </div>

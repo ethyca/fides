@@ -1,10 +1,9 @@
 import io
-import os
+import re
 import zipfile
 from datetime import datetime
 from io import BytesIO
 
-import jinja2
 import pytest
 
 from fides.api.models.privacy_request import PrivacyRequest
@@ -19,71 +18,49 @@ class TestDsrReportBuilderBase:
 
     @staticmethod
     def assert_file_in_zip(zip_file, file_path, content=None, is_binary=False):
-        """Helper method to assert file exists in zip and optionally check content"""
+        """Assert that a file exists in the zip file and optionally check its content."""
         assert file_path in zip_file.namelist()
         if content is not None:
             if is_binary:
                 assert zip_file.read(file_path) == content
             else:
-                # Convert content to bytes if it's a string
-                expected_content = (
-                    content.encode("utf-8") if isinstance(content, str) else content
-                )
-                assert zip_file.read(file_path) == expected_content
+                assert zip_file.read(file_path).decode("utf-8") == content
 
     @staticmethod
     def assert_html_contains(html_content, *strings):
-        """Helper method to assert HTML content contains strings"""
+        """Assert that the HTML content contains all the given strings."""
         for string in strings:
             assert string in html_content
 
     @staticmethod
     def assert_html_not_contains(html_content, *strings):
-        """Helper method to assert HTML content does not contain strings"""
+        """Assert that the HTML content does not contain any of the given strings."""
         for string in strings:
             assert string not in html_content
 
     @staticmethod
     def extract_table_values(html_content: str) -> dict[str, str]:
-        """Extract field-value pairs from the HTML table."""
+        """Extract values from HTML table cells."""
         values = {}
-        # Find all table rows
-        start = 0
-        while True:
-            # Find the next table row
-            row_start = html_content.find('<div class="table-row">', start)
-            if row_start == -1:
-                break
+        # Find all table rows (div with class table-row), being lenient with whitespace
+        rows = re.findall(
+            r'<div\s+class="table-row">\s*<div\s+class="table-cell">(.*?)</div>\s*<div\s+class="table-cell">(.*?)</div>\s*</div>',
+            html_content,
+            re.DOTALL,
+        )
 
-            # Find the field cell
-            field_start = html_content.find('<div class="table-cell">', row_start)
-            if field_start == -1:
-                break
-            field_end = html_content.find("</div>", field_start)
-            if field_end == -1:
-                break
-            field = html_content[field_start:field_end].split(">")[-1].strip()
+        for i, (key_cell, value_cell) in enumerate(rows):
+            # Extract the key
+            key = re.sub(r"<[^>]+>", "", key_cell).strip()
 
-            # Find the value cell
-            value_start = html_content.find('<div class="table-cell">', field_end)
-            if value_start == -1:
-                break
-            value_end = html_content.find("</div>", value_start)
-            if value_end == -1:
-                break
-
-            # Extract the value from the pre tag
-            value_content = html_content[value_start:value_end]
-            pre_start = value_content.find("<pre>")
-            pre_end = value_content.find("</pre>")
-            if pre_start != -1 and pre_end != -1:
-                value = value_content[pre_start + 5 : pre_end].strip()
-                # Remove the surrounding quotes and unescape HTML entities
-                if value.startswith("&#34;") and value.endswith("&#34;"):
-                    value = value[4:-4]  # Remove the HTML-escaped quotes
-                values[field] = value
-
-            start = value_end + 1
+            # Extract the value from pre tag
+            value_match = re.search(r"<pre>(.*?)</pre>", value_cell, re.DOTALL)
+            if value_match:
+                value = value_match.group(1).strip()
+                # Unescape HTML entities
+                value = value.replace("&#34;", '"')
+                if key and value:  # Only add non-empty values
+                    values[key] = value
 
         return values
 
@@ -168,27 +145,25 @@ def common_file_assertions():
 
 @pytest.fixture
 def common_assertions(common_file_assertions):
-    """Combined fixture for common assertions"""
+    """Common assertions for DSR report builder tests"""
     return {
         "files": common_file_assertions,
-        "html": {
-            "attachment_link": 'class="attachment-link"',
-            "back_link": 'href="../index.html"',
-            "main_link": 'href="welcome.html"',
-            "table_row": '<div class="table-row">',
-            "table_cell": '<div class="table-cell">',
-        },
         "paths": {
             "webhook_dir": "data/test_system/test_webhook",
+            "webhook_dir2": "data/test_system2/test_webhook2",
             "attachments_dir": "attachments",
             "manual_webhook_dir": "data/manual/test_webhook",
-            "dataset_dir": "data/dataset",
-            "collection_dir": "data/dataset/collection",
             "welcome_path": "welcome.html",
             "attachments_index": "attachments/index.html",
-            "dataset_index": "data/dataset/index.html",
-            "css_path": "data/main.css",
             "back_svg_path": "data/back.svg",
+            "collection_dir": "data/dataset/collection",
+            "collection_index": "data/dataset/collection/index.html",
+            "item_index": "data/dataset/collection/item_index.html",
+        },
+        "html": {
+            "attachment_link": "attachment-link",
+            "attachment_size": "attachment-size",
+            "attachment_name": "attachment-name",
         },
     }
 
@@ -216,36 +191,28 @@ class TestDsrReportBuilderAttachments(TestDsrReportBuilderBase):
         report = builder.generate()
 
         with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
-            # Check that all attachment files are present in the attachments directory
+            # Verify that the attachments index file exists
             self.assert_file_in_zip(
-                zip_file,
-                f"{common_assertions['paths']['attachments_dir']}/{common_attachment_config['text']['file_name']}",
-                common_attachment_config["text"]["fileobj"].getvalue(),
-            )
-            self.assert_file_in_zip(
-                zip_file,
-                f"{common_assertions['paths']['attachments_dir']}/{common_attachment_config['binary']['file_name']}",
-                common_attachment_config["binary"]["fileobj"].getvalue(),
-                is_binary=True,
+                zip_file, f"{common_assertions['paths']['attachments_dir']}/index.html"
             )
 
-            # Verify that the webhook page exists but has no attachment links
-            webhook_data = zip_file.read(
-                f"{common_assertions['paths']['webhook_dir']}/index.html"
-            ).decode("utf-8")
-            self.assert_html_contains(webhook_data, webhook_variants["basic"]["email"])
-            self.assert_html_not_contains(
-                webhook_data, common_assertions["html"]["attachment_link"]
-            )
-
-            # Verify that the attachments index page exists and contains links
-            attachments_index = zip_file.read(
+            # Read and verify the content of the attachments index file
+            attachments_content = zip_file.read(
                 f"{common_assertions['paths']['attachments_dir']}/index.html"
             ).decode("utf-8")
+
+            # Verify both attachment links are present with their details
             self.assert_html_contains(
-                attachments_index,
+                attachments_content,
                 common_attachment_config["text"]["file_name"],
+                common_attachment_config["text"]["download_url"],
+                "1.0 KB",  # Assuming the file size is formatted as 1.0 KB
+            )
+            self.assert_html_contains(
+                attachments_content,
                 common_attachment_config["binary"]["file_name"],
+                common_attachment_config["binary"]["download_url"],
+                "2.0 KB",  # Assuming the file size is formatted as 2.0 KB
             )
 
     def test_multiple_webhook_attachments(
@@ -277,62 +244,36 @@ class TestDsrReportBuilderAttachments(TestDsrReportBuilderBase):
         report = builder.generate()
 
         with zipfile.ZipFile(io.BytesIO(report.getvalue())) as zip_file:
-            # Verify that webhook attachments are in their collection directories
+            # Verify that webhook index files exist
             self.assert_file_in_zip(
-                zip_file,
-                f"{common_assertions['paths']['webhook_dir']}/{webhook_variants['with_attachments']['attachments'][0]['file_name']}",
-                webhook_variants["with_attachments"]["attachments"][0][
-                    "fileobj"
-                ].getvalue(),
+                zip_file, f"{common_assertions['paths']['webhook_dir']}/index.html"
             )
             self.assert_file_in_zip(
-                zip_file,
-                f"data/test_system2/test_webhook2/{webhook_variants['with_attachments']['attachments'][1]['file_name']}",
-                webhook_variants["with_attachments"]["attachments"][1][
-                    "fileobj"
-                ].getvalue(),
-                is_binary=True,
+                zip_file, f"{common_assertions['paths']['webhook_dir2']}/index.html"
             )
 
-            # Verify that top-level attachment is in attachments directory
-            self.assert_file_in_zip(
-                zip_file,
-                f"{common_assertions['paths']['attachments_dir']}/{webhook_variants['with_attachments']['attachments'][0]['file_name']}",
-                webhook_variants["with_attachments"]["attachments"][0][
-                    "fileobj"
-                ].getvalue(),
-            )
-
-            # Verify that the webhook pages contain clickable links to their attachments
-            webhook1_data = zip_file.read(
+            # Read and verify the content of the webhook index files
+            webhook1_content = zip_file.read(
                 f"{common_assertions['paths']['webhook_dir']}/index.html"
             ).decode("utf-8")
-            self.assert_html_contains(
-                webhook1_data,
-                f'href="{webhook_variants["with_attachments"]["attachments"][0]["file_name"]}"',
-                common_assertions["html"]["attachment_link"],
-                webhook_variants["basic"]["email"],
-                webhook_variants["basic"]["name"],
-            )
-
-            webhook2_data = zip_file.read(
-                "data/test_system2/test_webhook2/index.html"
+            webhook2_content = zip_file.read(
+                f"{common_assertions['paths']['webhook_dir2']}/index.html"
             ).decode("utf-8")
-            self.assert_html_contains(
-                webhook2_data,
-                f'href="{webhook_variants["with_attachments"]["attachments"][1]["file_name"]}"',
-                common_assertions["html"]["attachment_link"],
-                webhook_variants["basic"]["phone"],
-                "test_system2",
-            )
 
-            # Verify that the attachments index page contains top-level attachment
-            attachments_index = zip_file.read(
-                f"{common_assertions['paths']['attachments_dir']}/index.html"
-            ).decode("utf-8")
+            # Verify attachment links in webhook1
             self.assert_html_contains(
-                attachments_index,
+                webhook1_content,
                 webhook_variants["with_attachments"]["attachments"][0]["file_name"],
+                webhook_variants["with_attachments"]["attachments"][0]["download_url"],
+                "1.0 KB",  # Assuming the file size is formatted as 1.0 KB
+            )
+
+            # Verify attachment links in webhook2
+            self.assert_html_contains(
+                webhook2_content,
+                webhook_variants["with_attachments"]["attachments"][1]["file_name"],
+                webhook_variants["with_attachments"]["attachments"][1]["download_url"],
+                "2.0 KB",  # Assuming the file size is formatted as 2.0 KB
             )
 
     @pytest.mark.parametrize("webhook_type", ["empty_attachments", "malformed"])
@@ -654,22 +595,22 @@ class TestDsrReportBuilder(TestDsrReportBuilderBase):
         """Test that attachment links in the index page correctly match the files"""
         builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
 
-        # Create multiple files with the same name
+        # Create multiple attachments with the same name but different URLs
         attachments = [
             {
                 "file_name": "test.txt",
-                "fileobj": BytesIO(b"content1"),
-                "content_type": "text/plain",
+                "download_url": "https://example.com/test1.txt",
+                "file_size": 1024,
             },
             {
                 "file_name": "test.txt",
-                "fileobj": BytesIO(b"content2"),
-                "content_type": "text/plain",
+                "download_url": "https://example.com/test2.txt",
+                "file_size": 2048,
             },
             {
                 "file_name": "test.txt",
-                "fileobj": BytesIO(b"content3"),
-                "content_type": "text/plain",
+                "download_url": "https://example.com/test3.txt",
+                "file_size": 3072,
             },
         ]
 
@@ -678,285 +619,202 @@ class TestDsrReportBuilder(TestDsrReportBuilderBase):
         builder.out.close()
 
         with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
-            # Verify files exist with unique names
-            assert "attachments/test.txt" in zip_file.namelist()
-            assert "attachments/test_1.txt" in zip_file.namelist()
-            assert "attachments/test_2.txt" in zip_file.namelist()
+            # Verify index file exists
+            assert "attachments/index.html" in zip_file.namelist()
 
-            # Verify index page contains correct links
-            index_content = zip_file.read("attachments/index.html").decode("utf-8")
-            assert 'href="test.txt"' in index_content
-            assert 'href="test_1.txt"' in index_content
-            assert 'href="test_2.txt"' in index_content
+            # Read and verify the index content
+            html_content = zip_file.read("attachments/index.html").decode("utf-8")
 
-            # Verify content is preserved
-            assert zip_file.read("attachments/test.txt").decode("utf-8") == "content1"
-            assert zip_file.read("attachments/test_1.txt").decode("utf-8") == "content2"
-            assert zip_file.read("attachments/test_2.txt").decode("utf-8") == "content3"
+            # Check that all three files are listed with their unique names
+            TestDsrReportBuilderBase.assert_html_contains(
+                html_content,
+                "test.txt",  # First file keeps original name
+                "test_1.txt",  # Second file gets _1 suffix
+                "test_2.txt",  # Third file gets _2 suffix
+                "https://example.com/test1.txt",
+                "https://example.com/test2.txt",
+                "https://example.com/test3.txt",
+                "1.0 KB",
+                "2.0 KB",
+                "3.0 KB",
+            )
 
 
 class TestDsrReportBuilderAttachmentHandling:
     """Tests for DSR report builder's attachment handling functions"""
 
     def test_handle_attachment_text(self, privacy_request: PrivacyRequest):
-        """Test handling a text attachment"""
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+        """Test handling of text attachments with download URLs"""
+        builder = DsrReportBuilder(privacy_request, {})
         attachments = [
             {
                 "file_name": "test.txt",
-                "fileobj": BytesIO(b"test content"),
-                "content_type": "text/plain",
+                "download_url": "https://example.com/test.txt",
+                "file_size": 1024,
             }
         ]
 
-        attachment_links = builder._write_attachment_content(
-            attachments,
-            "data/dataset1/collection1",
-        )
-        builder.out.close()
+        result = builder._write_attachment_content(attachments, "attachments")
 
-        with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
-            # Check only collection directory location
-            assert "data/dataset1/collection1/test.txt" in zip_file.namelist()
-            assert "attachments/test.txt" not in zip_file.namelist()
-
-            # Verify content
-            content = zip_file.read("data/dataset1/collection1/test.txt").decode(
-                "utf-8"
-            )
-            assert content == "test content"
-
-            # Verify attachment links
-            assert "test.txt" in attachment_links
-            assert attachment_links["test.txt"] == "test.txt"
+        assert "test.txt" in result
+        assert result["test.txt"]["url"] == "https://example.com/test.txt"
+        assert result["test.txt"]["size"] == "1.0 KB"
 
     def test_handle_attachment_binary(self, privacy_request: PrivacyRequest):
-        """Test handling a binary attachment"""
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+        """Test handling of binary attachments with download URLs"""
+        builder = DsrReportBuilder(privacy_request, {})
         attachments = [
             {
                 "file_name": "test.pdf",
-                "fileobj": BytesIO(b"test content"),
-                "content_type": "application/pdf",
+                "download_url": "https://example.com/test.pdf",
+                "file_size": 2048576,  # 2MB
             }
         ]
 
-        attachment_links = builder._write_attachment_content(
-            attachments,
-            "data/dataset1/collection1",
-        )
-        builder.out.close()
+        result = builder._write_attachment_content(attachments, "attachments")
 
-        with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
-            # Check only collection directory location
-            assert "data/dataset1/collection1/test.pdf" in zip_file.namelist()
-            assert "attachments/test.pdf" not in zip_file.namelist()
-
-            # Verify content
-            content = zip_file.read("data/dataset1/collection1/test.pdf")
-            assert content == b"test content"
-
-            # Verify attachment links
-            assert "test.pdf" in attachment_links
-            assert attachment_links["test.pdf"] == "test.pdf"
+        assert "test.pdf" in result
+        assert result["test.pdf"]["url"] == "https://example.com/test.pdf"
+        assert result["test.pdf"]["size"] == "2.0 MB"
 
     def test_handle_attachment_no_content(self, privacy_request: PrivacyRequest):
-        """Test handling an attachment with no content"""
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+        """Test handling of attachments with missing content"""
+        builder = DsrReportBuilder(privacy_request, {})
         attachments = [
-            {
-                "file_name": "test.txt",
-                "fileobj": None,
-                "content_type": "text/plain",
-            }
+            {"file_name": "test.txt", "download_url": None, "file_size": None}
         ]
 
-        attachment_links = builder._write_attachment_content(
-            attachments,
-            "data/dataset1/collection1",
-        )
-        builder.out.close()
-
-        with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
-            assert "data/dataset1/collection1/test.txt" not in zip_file.namelist()
-            assert not attachment_links
+        result = builder._write_attachment_content(attachments, "attachments")
+        assert not result  # Should return empty dict for invalid attachments
 
     def test_add_attachments_top_level(self, privacy_request: PrivacyRequest):
-        """Test adding top-level attachments"""
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+        """Test adding top-level attachments to the report"""
         attachments = [
             {
                 "file_name": "test1.txt",
-                "fileobj": BytesIO(b"content1"),
-                "content_type": "text/plain",
+                "download_url": "https://example.com/test1.txt",
+                "file_size": 1024,
             },
             {
                 "file_name": "test2.pdf",
-                "fileobj": BytesIO(b"content2"),
-                "content_type": "application/pdf",
+                "download_url": "https://example.com/test2.pdf",
+                "file_size": 2048576,
             },
         ]
 
-        attachment_links = builder._write_attachment_content(attachments, "attachments")
-        builder.out.close()
+        dsr_data = {"attachments": attachments}
+        builder = DsrReportBuilder(privacy_request, dsr_data)
+        zip_file = builder.generate()
 
-        with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
-            # Check attachments directory
-            assert "attachments/test1.txt" in zip_file.namelist()
-            assert "attachments/test2.pdf" in zip_file.namelist()
+        # Create a ZipFile object from the BytesIO
+        with zipfile.ZipFile(zip_file) as zip_file_obj:
+            # Check that attachments index was created
+            TestDsrReportBuilderBase.assert_file_in_zip(
+                zip_file_obj, "attachments/index.html"
+            )
 
-            # Verify content
-            assert zip_file.read("attachments/test1.txt").decode("utf-8") == "content1"
-            assert zip_file.read("attachments/test2.pdf") == b"content2"
-
-            # Verify attachment links
-            assert "test1.txt" in attachment_links
-            assert "test2.pdf" in attachment_links
-            assert attachment_links["test1.txt"] == "test1.txt"
-            assert attachment_links["test2.pdf"] == "test2.pdf"
+            # Check that the HTML contains the attachment links
+            html_content = zip_file_obj.read("attachments/index.html").decode("utf-8")
+            TestDsrReportBuilderBase.assert_html_contains(
+                html_content,
+                "test1.txt",
+                "test2.pdf",
+                "https://example.com/test1.txt",
+                "https://example.com/test2.pdf",
+                "1.0 KB",
+                "2.0 MB",
+            )
 
     def test_process_item_attachments(self, privacy_request: PrivacyRequest):
-        """Test processing attachments in an item"""
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
-        items = [
-            {
-                "id": 1,
-                "attachments": [
-                    {
-                        "file_name": "test1.txt",
-                        "fileobj": BytesIO(b"content1"),
-                        "content_type": "text/plain",
-                    },
-                    {
-                        "file_name": "test2.pdf",
-                        "fileobj": BytesIO(b"content2"),
-                        "content_type": "application/pdf",
-                    },
-                ],
-            }
-        ]
+        """Test processing attachments within collection items"""
+        dsr_data = {
+            "dataset1:collection1": [
+                {
+                    "id": 1,
+                    "name": "Item 1",
+                    "attachments": [
+                        {
+                            "file_name": "item1.txt",
+                            "download_url": "https://example.com/item1.txt",
+                            "file_size": 1024,
+                        }
+                    ],
+                }
+            ]
+        }
 
-        builder._add_collection(items, "dataset1", "collection1")
-        builder.out.close()
+        builder = DsrReportBuilder(privacy_request, dsr_data)
+        zip_file = builder.generate()
 
-        with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
-            # Verify attachments are in the collection directory
-            assert "data/dataset1/collection1/test1.txt" in zip_file.namelist()
-            assert "data/dataset1/collection1/test2.pdf" in zip_file.namelist()
-
-            # Verify attachments are not in the top-level attachments directory
-            assert "attachments/test1.txt" not in zip_file.namelist()
-            assert "attachments/test2.pdf" not in zip_file.namelist()
-
-            # Verify the index page exists
-            assert "data/dataset1/collection1/index.html" in zip_file.namelist()
-
-            # Verify attachment content
-            assert (
-                zip_file.read("data/dataset1/collection1/test1.txt").decode("utf-8")
-                == "content1"
+        # Create a ZipFile object from the BytesIO
+        with zipfile.ZipFile(zip_file) as zip_file_obj:
+            # Check that collection index was created
+            TestDsrReportBuilderBase.assert_file_in_zip(
+                zip_file_obj, "data/dataset1/collection1/index.html"
             )
-            assert zip_file.read("data/dataset1/collection1/test2.pdf") == b"content2"
 
-            # Verify index page contains attachment links
-            index_content = zip_file.read(
+            # Check that the HTML contains the attachment link
+            html_content = zip_file_obj.read(
                 "data/dataset1/collection1/index.html"
             ).decode("utf-8")
-            assert 'href="test1.txt"' in index_content
-            assert 'href="test2.pdf"' in index_content
+            TestDsrReportBuilderBase.assert_html_contains(
+                html_content, "item1.txt", "https://example.com/item1.txt", "1.0 KB"
+            )
 
     def test_handle_duplicate_filenames(self, privacy_request: PrivacyRequest):
         """Test handling of duplicate filenames in the same directory"""
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
-
-        # Create multiple files with the same name
+        builder = DsrReportBuilder(privacy_request, {})
         attachments = [
             {
                 "file_name": "test.txt",
-                "fileobj": BytesIO(b"content1"),
-                "content_type": "text/plain",
+                "download_url": "https://example.com/test1.txt",
+                "file_size": 1024,
             },
             {
                 "file_name": "test.txt",
-                "fileobj": BytesIO(b"content2"),
-                "content_type": "text/plain",
-            },
-            {
-                "file_name": "test.txt",
-                "fileobj": BytesIO(b"content3"),
-                "content_type": "text/plain",
+                "download_url": "https://example.com/test2.txt",
+                "file_size": 2048,
             },
         ]
 
-        # Add all attachments to the same directory
-        attachment_links = builder._write_attachment_content(attachments, "attachments")
-        builder.out.close()
+        result = builder._write_attachment_content(attachments, "attachments")
 
-        with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
-            # Verify all files exist with unique names
-            assert "attachments/test.txt" in zip_file.namelist()
-            assert "attachments/test_1.txt" in zip_file.namelist()
-            assert "attachments/test_2.txt" in zip_file.namelist()
-
-            # Verify content is preserved
-            assert zip_file.read("attachments/test.txt").decode("utf-8") == "content1"
-            assert zip_file.read("attachments/test_1.txt").decode("utf-8") == "content2"
-            assert zip_file.read("attachments/test_2.txt").decode("utf-8") == "content3"
-
-            # Verify attachment links
-            assert "test.txt" in attachment_links
-            assert "test_1.txt" in attachment_links
-            assert "test_2.txt" in attachment_links
-            assert attachment_links["test.txt"] == "test.txt"
-            assert attachment_links["test_1.txt"] == "test_1.txt"
-            assert attachment_links["test_2.txt"] == "test_2.txt"
+        assert "test.txt" in result
+        assert "test_1.txt" in result
+        assert result["test.txt"]["url"] == "https://example.com/test1.txt"
+        assert result["test_1.txt"]["url"] == "https://example.com/test2.txt"
 
     def test_handle_duplicate_filenames_different_directories(
         self, privacy_request: PrivacyRequest
     ):
         """Test handling of duplicate filenames in different directories"""
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+        builder = DsrReportBuilder(privacy_request, {})
 
-        # Create files with the same name in different directories
-        attachments = [
+        # Test attachments in different directories
+        attachments1 = [
             {
                 "file_name": "test.txt",
-                "fileobj": BytesIO(b"content1"),
-                "content_type": "text/plain",
-            },
+                "download_url": "https://example.com/test1.txt",
+                "file_size": 1024,
+            }
+        ]
+        attachments2 = [
             {
                 "file_name": "test.txt",
-                "fileobj": BytesIO(b"content2"),
-                "content_type": "text/plain",
-            },
+                "download_url": "https://example.com/test2.txt",
+                "file_size": 2048,
+            }
         ]
 
-        # Add attachments to different directories
-        attachment_links1 = builder._write_attachment_content(
-            attachments[:1], "attachments"
+        result1 = builder._write_attachment_content(attachments1, "attachments")
+        result2 = builder._write_attachment_content(
+            attachments2, "data/dataset1/collection1"
         )
-        attachment_links2 = builder._write_attachment_content(
-            attachments[1:], "data/dataset1/collection1"
-        )
-        builder.out.close()
 
-        with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
-            # Verify files exist in their respective directories
-            assert "attachments/test.txt" in zip_file.namelist()
-            assert "data/dataset1/collection1/test.txt" in zip_file.namelist()
-
-            # Verify content is preserved
-            assert zip_file.read("attachments/test.txt").decode("utf-8") == "content1"
-            assert (
-                zip_file.read("data/dataset1/collection1/test.txt").decode("utf-8")
-                == "content2"
-            )
-
-            # Verify attachment links
-            assert "test.txt" in attachment_links1
-            assert attachment_links1["test.txt"] == "test.txt"
-            assert "test.txt" in attachment_links2
-            assert attachment_links2["test.txt"] == "test.txt"
+        assert "test.txt" in result1
+        assert "test.txt" in result2
+        assert result1["test.txt"]["url"] == "https://example.com/test1.txt"
+        assert result2["test.txt"]["url"] == "https://example.com/test2.txt"
 
 
 class TestDsrReportBuilderDatasetHandling:
@@ -1002,148 +860,103 @@ class TestDsrReportBuilderAttachmentContentWriting:
     """Tests for DSR report builder's attachment content writing functionality"""
 
     @pytest.mark.parametrize(
-        "file_name,content,content_type,expected,is_binary",
+        "file_name,download_url,file_size,expected_size",
         [
-            ("test.txt", "test content", "text/plain", "test content", False),
-            (
-                "test.csv",
-                "header1,header2\nvalue1,value2",
-                "text/csv",
-                "header1,header2\nvalue1,value2",
-                False,
-            ),
-            (
-                "test.txt",
-                b"fake text content",
-                "text/plain",
-                "fake text content",
-                False,
-            ),
-            (
-                "test.pdf",
-                b"fake pdf content",
-                "application/pdf",
-                b"fake pdf content",
-                True,
-            ),
-            (
-                "test.docx",
-                b"fake word content",
-                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                b"fake word content",
-                True,
-            ),
-            (
-                "test.xlsx",
-                b"fake excel content",
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                b"fake excel content",
-                True,
-            ),
-            (
-                "test.zip",
-                b"fake zip content",
-                "application/zip",
-                b"fake zip content",
-                True,
-            ),
-            (
-                "test.jpg",
-                b"fake jpeg content",
-                "image/jpeg",
-                b"fake jpeg content",
-                True,
-            ),
-            ("test.png", b"fake png content", "image/png", b"fake png content", True),
+            ("test.txt", "https://example.com/test.txt", 1024, "1.0 KB"),
+            ("test.pdf", "https://example.com/test.pdf", 2048576, "2.0 MB"),
+            ("test.txt", "https://example.com/test.txt", None, "Unknown"),
         ],
     )
     def test_write_attachment_content_parametrized(
         self,
         privacy_request: PrivacyRequest,
         file_name,
-        content,
-        content_type,
-        expected,
-        is_binary,
+        download_url,
+        file_size,
+        expected_size,
     ):
-        """Test writing various attachment content types using parameterization"""
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+        """Test attachment content writing with various file types and sizes"""
+        builder = DsrReportBuilder(privacy_request, {})
         attachments = [
             {
                 "file_name": file_name,
-                "fileobj": BytesIO(
-                    content if isinstance(content, bytes) else content.encode("utf-8")
-                ),
-                "content_type": content_type,
+                "download_url": download_url,
+                "file_size": file_size,
             }
         ]
 
-        attachment_links = builder._write_attachment_content(attachments, "attachments")
-        builder.out.close()
+        result = builder._write_attachment_content(attachments, "attachments")
 
-        with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
-            assert f"attachments/{file_name}" in zip_file.namelist()
-            if is_binary:
-                assert zip_file.read(f"attachments/{file_name}") == expected
-            else:
-                assert (
-                    zip_file.read(f"attachments/{file_name}").decode("utf-8")
-                    == expected
-                )
-            assert file_name in attachment_links
-            assert attachment_links[file_name] == file_name
+        assert file_name in result
+        assert result[file_name]["url"] == download_url
+        assert result[file_name]["size"] == expected_size
 
     @pytest.mark.parametrize(
-        "file_name,content,content_type",
+        "file_name,download_url,file_size,expected_size",
         [
-            ("test.txt", None, "text/plain"),
-            ("test.pdf", None, "application/pdf"),
+            ("test.txt", None, 1024, None),  # Missing URL should be invalid
+            (
+                "test.pdf",
+                "https://example.com/test.pdf",
+                None,
+                "Unknown",
+            ),  # Missing size is valid
+            (
+                None,
+                "https://example.com/test.txt",
+                1024,
+                None,
+            ),  # Missing filename should be invalid
         ],
     )
     def test_write_attachment_content_no_content_parametrized(
-        self, privacy_request: PrivacyRequest, file_name, content, content_type
+        self,
+        privacy_request: PrivacyRequest,
+        file_name,
+        download_url,
+        file_size,
+        expected_size,
     ):
-        """Test writing attachment content with no content using parameterization"""
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+        """Test attachment content writing with missing required fields"""
+        builder = DsrReportBuilder(privacy_request, {})
         attachments = [
             {
                 "file_name": file_name,
-                "fileobj": None,
-                "content_type": content_type,
+                "download_url": download_url,
+                "file_size": file_size,
             }
         ]
 
-        attachment_links = builder._write_attachment_content(attachments, "attachments")
-        builder.out.close()
+        result = builder._write_attachment_content(attachments, "attachments")
 
-        with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
-            assert f"attachments/{file_name}" not in zip_file.namelist()
-            assert not attachment_links
+        if expected_size is None:
+            # Should return empty dict for invalid attachments (missing filename or URL)
+            assert not result
+        else:
+            # Should include attachment with missing size
+            assert file_name in result
+            assert result[file_name]["url"] == download_url
+            assert result[file_name]["size"] == expected_size
 
     @pytest.mark.parametrize("directory", ["attachments", "data/dataset1/collection1"])
     def test_write_attachment_content_different_directories_parametrized(
         self, privacy_request: PrivacyRequest, directory
     ):
-        """Test writing attachment content to different directories using parameterization"""
-        builder = DsrReportBuilder(privacy_request=privacy_request, dsr_data={})
+        """Test attachment content writing in different directories"""
+        builder = DsrReportBuilder(privacy_request, {})
         attachments = [
             {
                 "file_name": "test.txt",
-                "fileobj": BytesIO(b"test content"),
-                "content_type": "text/plain",
+                "download_url": "https://example.com/test.txt",
+                "file_size": 1024,
             }
         ]
 
-        attachment_links = builder._write_attachment_content(attachments, directory)
-        builder.out.close()
+        result = builder._write_attachment_content(attachments, directory)
 
-        with zipfile.ZipFile(io.BytesIO(builder.baos.getvalue())) as zip_file:
-            assert f"{directory}/test.txt" in zip_file.namelist()
-            assert (
-                zip_file.read(f"{directory}/test.txt").decode("utf-8") == "test content"
-            )
-            assert "test.txt" in attachment_links
-            assert attachment_links["test.txt"] == "test.txt"
+        assert "test.txt" in result
+        assert result["test.txt"]["url"] == "https://example.com/test.txt"
+        assert result["test.txt"]["size"] == "1.0 KB"
 
 
 class TestDsrReportBuilderContent(TestDsrReportBuilderBase):

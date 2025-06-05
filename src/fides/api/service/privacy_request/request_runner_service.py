@@ -88,7 +88,8 @@ from fides.config.config_proxy import ConfigProxy
 class ManualWebhookResults(FidesSchema):
     """Represents manual webhook data retrieved from the cache and whether privacy request execution should continue"""
 
-    manual_data: dict[str, list[dict[str, Optional[Any]]]]
+    manual_data_for_upload: dict[str, list[dict[str, Optional[Any]]]]
+    manual_data_for_storage: dict[str, list[dict[str, Optional[Any]]]]
     proceed: bool
 
 
@@ -101,10 +102,15 @@ def get_manual_webhook_access_inputs(
     This data will be uploaded to the user as-is, without filtering.
     """
     manual_inputs: dict[str, list[dict[str, Optional[Any]]]] = {}
+    manual_inputs_for_storage: dict[str, list[dict[str, Optional[Any]]]] = {}
 
     if not policy.get_rules_for_action(action_type=ActionType.access):
         # Don't fetch manual inputs unless this policy has an access rule
-        return ManualWebhookResults(manual_data=manual_inputs, proceed=True)
+        return ManualWebhookResults(
+            manual_data_for_upload=manual_inputs,
+            manual_data_for_storage=manual_inputs_for_storage,
+            proceed=True,
+        )
 
     try:
         for manual_webhook in AccessManualWebhook.get_enabled(db, ActionType.access):
@@ -114,6 +120,11 @@ def get_manual_webhook_access_inputs(
             )
             # Add the system name to the webhook data for display purposes
             webhook_data["system_name"] = manual_webhook.connection_config.system.name
+
+            # Create copies for upload and storage
+            webhook_data_for_upload = deepcopy(webhook_data)
+            webhook_data_for_storage = webhook_data
+
             # Get any attachments for this webhook
             webhook_attachments = privacy_request.get_access_manual_webhook_attachments(
                 db, manual_webhook.id
@@ -133,11 +144,17 @@ def get_manual_webhook_access_inputs(
                         get_attachments_content(loaded_attachments)
                     )
                 )
-                # Store only upload attachments in the webhook data
-                webhook_data["attachments"] = upload_attachments
-                # Store storage attachments separately for later use
-                webhook_data["attachment_details"] = storage_attachments
-            manual_inputs[manual_webhook.connection_config.key] = [webhook_data]
+                # Store upload attachments in the upload version
+                webhook_data_for_upload["attachments"] = upload_attachments
+                # Store storage attachments in the storage version
+                webhook_data_for_storage["attachments"] = storage_attachments
+
+            manual_inputs[manual_webhook.connection_config.key] = [
+                webhook_data_for_upload
+            ]
+            manual_inputs_for_storage[manual_webhook.connection_config.key] = [
+                webhook_data_for_storage
+            ]
 
     except (
         NoCachedManualWebhookEntry,
@@ -147,9 +164,17 @@ def get_manual_webhook_access_inputs(
         logger.info(exc)
         privacy_request.status = PrivacyRequestStatus.requires_input
         privacy_request.save(db)
-        return ManualWebhookResults(manual_data=manual_inputs, proceed=False)
+        return ManualWebhookResults(
+            manual_data_for_upload=manual_inputs,
+            manual_data_for_storage=manual_inputs_for_storage,
+            proceed=False,
+        )
 
-    return ManualWebhookResults(manual_data=manual_inputs, proceed=True)
+    return ManualWebhookResults(
+        manual_data_for_upload=manual_inputs,
+        manual_data_for_storage=manual_inputs_for_storage,
+        proceed=True,
+    )
 
 
 def get_manual_webhook_erasure_inputs(
@@ -159,7 +184,11 @@ def get_manual_webhook_erasure_inputs(
 
     if not policy.get_rules_for_action(action_type=ActionType.erasure):
         # Don't fetch manual inputs unless this policy has an access rule
-        return ManualWebhookResults(manual_data=manual_inputs, proceed=True)
+        return ManualWebhookResults(
+            manual_data_for_upload=manual_inputs,
+            manual_data_for_storage=manual_inputs,
+            proceed=True,
+        )
     try:
         for manual_webhook in AccessManualWebhook().get_enabled(db, ActionType.erasure):
             manual_inputs[manual_webhook.connection_config.key] = [
@@ -173,9 +202,17 @@ def get_manual_webhook_erasure_inputs(
         logger.info(exc)
         privacy_request.status = PrivacyRequestStatus.requires_input
         privacy_request.save(db)
-        return ManualWebhookResults(manual_data=manual_inputs, proceed=False)
+        return ManualWebhookResults(
+            manual_data_for_upload=manual_inputs,
+            manual_data_for_storage=manual_inputs,
+            proceed=False,
+        )
 
-    return ManualWebhookResults(manual_data=manual_inputs, proceed=True)
+    return ManualWebhookResults(
+        manual_data_for_upload=manual_inputs,
+        manual_data_for_storage=manual_inputs,
+        proceed=True,
+    )
 
 
 @log_context(
@@ -187,25 +224,16 @@ def upload_access_results(
     session: Session,
     policy: Policy,
     rule: Rule,
-    filtered_results: dict[str, list[dict[str, Optional[Any]]]],
+    results_to_upload: dict[str, list[dict[str, Optional[Any]]]],
     dataset_graph: DatasetGraph,
     privacy_request: PrivacyRequest,
-    manual_data: dict[str, list[dict[str, Optional[Any]]]],
-    attachments: Iterator[AttachmentData],
+    upload_attachments: Iterator[AttachmentData],
 ) -> Tuple[list[str], dict[str, list[dict[str, Optional[Any]]]]]:
     """Upload results for a single rule and return download URLs and modified results."""
     start_time = time.time()
     download_urls: list[str] = []
     storage_destination = rule.get_storage_destination(session)
 
-    # Process attachments once for both upload and storage
-    upload_attachments, storage_attachments = process_attachments_for_upload(
-        attachments
-    )
-
-    # Create a copy of filtered results to modify
-    results_to_upload = deepcopy(filtered_results)
-    results_to_upload.update(manual_data)
     if upload_attachments:
         results_to_upload["attachments"] = upload_attachments
 
@@ -252,21 +280,7 @@ def upload_access_results(
         )
         privacy_request.status = PrivacyRequestStatus.error
 
-    # Create results for storage without fileobj
-    results_for_storage = deepcopy(filtered_results)
-    results_for_storage.update(manual_data)
-    if storage_attachments:
-        results_for_storage["attachments"] = storage_attachments
-
-    # Handle storage attachments from manual webhooks
-    for _, data_list in results_for_storage.items():
-        if isinstance(data_list, list):
-            for data in data_list:
-                if isinstance(data, dict) and "attachment_details" in data:
-                    # Replace attachments with storage_attachments for storage
-                    data["attachments"] = data.pop("attachment_details")
-
-    return download_urls, results_for_storage
+    return download_urls
 
 
 def save_access_results(
@@ -295,7 +309,7 @@ def upload_and_save_access_results(  # pylint: disable=R0912
     access_result: dict[str, list[Row]],
     dataset_graph: DatasetGraph,
     privacy_request: PrivacyRequest,
-    manual_data: dict[str, list[dict[str, Optional[Any]]]],
+    manual_data_access_results: ManualWebhookResults,
     fides_connector_datasets: set[str],
 ) -> list[str]:
     """Process the data uploads after the access portion of the privacy request has completed"""
@@ -309,7 +323,10 @@ def upload_and_save_access_results(  # pylint: disable=R0912
         not in [ref.reference_type for ref in attachment.references]
     ]
     attachments = get_attachments_content(loaded_attachments)
-    logger.info(f"Processing attachments for privacy request {privacy_request.id}")
+    # Process attachments once for both upload and storage
+    upload_attachments, storage_attachments = process_attachments_for_upload(
+        attachments
+    )
 
     if not access_result:
         logger.info("No results returned for access request")
@@ -328,19 +345,26 @@ def upload_and_save_access_results(  # pylint: disable=R0912
                 fides_connector_datasets,
             )
         )
+        # Create a copy of filtered results to modify for upload
+        results_to_upload = deepcopy(filtered_results)
+        results_to_upload.update(manual_data_access_results.manual_data_for_upload)
 
-        rule_download_urls, rule_results = upload_access_results(
+        rule_download_urls = upload_access_results(
             session,
             policy,
             rule,
-            filtered_results,
+            results_to_upload,
             dataset_graph,
             privacy_request,
-            manual_data,
-            attachments,
+            upload_attachments,
         )
         download_urls.extend(rule_download_urls)
-        rule_filtered_results[rule.key] = rule_results
+
+        # Create results for storage
+        filtered_results.update(manual_data_access_results.manual_data_for_storage)
+        if storage_attachments:
+            filtered_results["attachments"] = storage_attachments
+        rule_filtered_results[rule.key] = filtered_results
 
     save_access_results(session, privacy_request, download_urls, rule_filtered_results)
     return download_urls
@@ -506,7 +530,7 @@ def run_privacy_request(
                         filtered_access_results,
                         dataset_graph,
                         privacy_request,
-                        manual_webhook_access_results.manual_data,
+                        manual_webhook_access_results,
                         fides_connector_datasets,
                     )
 

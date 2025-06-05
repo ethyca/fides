@@ -377,6 +377,33 @@ class TestS3Retrieve:
         assert file_size == len(document)
         assert bucket_name in download_link
 
+    def test_retrieve_small_file_with_ttl(
+        self, s3_client, storage_config, file_key, auth_method, bucket_name, monkeypatch
+    ):
+        """Test retrieving a small file from S3 with custom TTL."""
+
+        def mock_get_s3_client(auth_method, storage_secrets):
+            return s3_client
+
+        monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
+
+        s3 = s3_client
+        document = b"This is a test document."
+
+        s3.put_object(Bucket=bucket_name, Key=file_key, Body=document)
+
+        ttl_seconds = 3600  # 1 hour
+        file_size, download_link = generic_retrieve_from_s3(
+            storage_secrets=storage_config.secrets,
+            bucket_name=bucket_name,
+            file_key=file_key,
+            auth_method=auth_method,
+            ttl_seconds=ttl_seconds,
+        )
+
+        assert file_size == len(document)
+        assert bucket_name in download_link
+
     def test_retrieve_large_file(
         self, s3_client, storage_config, file_key, auth_method, bucket_name, monkeypatch
     ):
@@ -525,7 +552,8 @@ class TestS3Retrieve:
         )
 
         assert file_size == len(document)
-        assert content.read() == document
+        # content is a presigned URL
+        assert isinstance(content, str)
 
     def test_retrieve_nonexistent_file_with_content(
         self, s3_client, storage_config, file_key, auth_method, bucket_name, monkeypatch
@@ -661,6 +689,55 @@ class TestS3PresignedUrlAndFileSize:
         assert bucket_name in presigned_url
         assert file_key in presigned_url
         assert presigned_url.startswith("https://")
+
+    def test_create_presigned_url_with_ttl(
+        self, s3_client, storage_config, file_key, auth_method, bucket_name, monkeypatch
+    ):
+        """Test creating a presigned URL for an S3 object with custom TTL."""
+
+        def mock_get_s3_client(auth_method, storage_secrets):
+            return s3_client
+
+        monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
+
+        s3 = s3_client
+        document = b"This is a test document."
+
+        # Upload a test file
+        s3.put_object(Bucket=bucket_name, Key=file_key, Body=document)
+
+        # Create presigned URL with custom TTL
+        ttl_seconds = 3600  # 1 hour
+        presigned_url = create_presigned_url_for_s3(
+            s3_client, bucket_name, file_key, ttl_seconds
+        )
+
+        # Verify the presigned URL contains the bucket and file key
+        assert bucket_name in presigned_url
+        assert file_key in presigned_url
+        assert presigned_url.startswith("https://")
+
+    def test_create_presigned_url_with_invalid_ttl(
+        self, s3_client, storage_config, file_key, auth_method, bucket_name, monkeypatch
+    ):
+        """Test creating a presigned URL with invalid TTL."""
+
+        def mock_get_s3_client(auth_method, storage_secrets):
+            return s3_client
+
+        monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
+
+        s3 = s3_client
+        document = b"This is a test document."
+
+        # Upload a test file
+        s3.put_object(Bucket=bucket_name, Key=file_key, Body=document)
+
+        # Try to create presigned URL with invalid TTL
+        invalid_ttl = 604801  # More than 7 days
+        with pytest.raises(ValueError) as e:
+            create_presigned_url_for_s3(s3_client, bucket_name, file_key, invalid_ttl)
+        assert "TTL must be less than 7 days" in str(e.value)
 
     def test_get_file_size(
         self, s3_client, storage_config, file_key, auth_method, bucket_name, monkeypatch

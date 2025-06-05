@@ -1110,21 +1110,20 @@ class TestPrivacyRequestAttachments:
             assert file_name in attachment_files
 
         for attachment in attachments:
+            assert attachment["file_name"] in file_names
             assert attachment["content_type"] == "text/plain"
             assert attachment["download_url"].startswith("https://s3.amazonaws.com/")
             assert attachment["file_size"] == 5
-            if storage_config.format == ResponseFormat.html:
-                assert "fileobj" in attachment
-                assert isinstance(attachment["fileobj"], bytes)
 
     def verify_stored_data_structure(self, stored_attachments: list[dict]):
         """Verify the structure of the stored data"""
         for attachment in stored_attachments:
-            assert "fileobj" not in attachment
             assert "file_name" in attachment
-            assert "download_url" in attachment
             assert "content_type" in attachment
             assert "file_size" in attachment
+            assert "file_key" in attachment
+            assert "storage_key" in attachment
+            assert "bucket_name" in attachment
 
     def verify_webhook_data(
         self, webhook_data: dict, integration_manual_webhook_config
@@ -1204,6 +1203,10 @@ class TestPrivacyRequestAttachments:
         stored_attachments = stored_data["attachments"]
         assert len(stored_attachments) == 2
         self.verify_stored_data_structure(stored_attachments)
+
+        # Verify that attachments are separate from manual webhook data
+        assert "manual_webhook_data" not in uploaded_data
+        assert "manual_webhook_data" not in stored_data
 
         # Clean up
         attachment1.delete(db)
@@ -1305,7 +1308,7 @@ class TestPrivacyRequestAttachments:
         request,
         monkeypatch,
     ):
-        """Test that attachments associated with manual webhooks are properly processed and included in both upload and storage"""
+        """Test that manual webhook attachments are properly processed and included in both upload and storage"""
         mock_upload.return_value = "http://www.data-download-url"
 
         def mock_get_s3_client(auth_method, storage_secrets):
@@ -1337,12 +1340,14 @@ class TestPrivacyRequestAttachments:
                 AttachmentReferenceType.privacy_request,
             )
 
-        # Cache manual webhook input
+        # Cache manual webhook data before running the privacy request
         privacy_request_requires_input.cache_manual_webhook_access_input(
             access_manual_webhook,
-            {"email": self.EMAIL, "last_name": self.LAST_NAME},
+            {
+                "email": "test@example.com",
+                "last_name": "Test User",
+            },
         )
-
         # Run the privacy request
         run_privacy_request_task.delay(privacy_request_requires_input.id).get(
             timeout=PRIVACY_REQUEST_TASK_TIMEOUT
@@ -1353,32 +1358,25 @@ class TestPrivacyRequestAttachments:
         assert mock_upload.called
         assert mock_save.called
 
-        # Get the data that was passed to upload
+        # Verify upload format
         uploaded_data = mock_upload.call_args.kwargs["data"]
-        assert "manual_webhook_example" in uploaded_data
-        webhook_data = uploaded_data["manual_webhook_example"][0]
-
-        # Verify webhook data
-        self.verify_webhook_data(webhook_data, integration_manual_webhook_config)
-
-        # Verify attachments in webhook data (upload format)
-        assert "attachments" in webhook_data
-        attachments = webhook_data["attachments"]
-        assert len(attachments) == 2
-        self.verify_upload_data_structure(
-            attachments, storage_config, ["test1.txt", "test2.txt"]
-        )
+        for manual_webhook_data in uploaded_data["manual_webhook_data"]:
+            assert "attachments" in manual_webhook_data
+            attachments = manual_webhook_data["attachments"]
+            assert len(attachments) == 2
+            self.verify_upload_data_structure(
+                attachments, storage_config, ["test1.txt", "test2.txt"]
+            )
 
         # Verify storage format
         stored_data = mock_save.call_args[0][3][
             "access_request_rule"
         ]  # rule_filtered_results
-        assert "manual_webhook_example" in stored_data
-        stored_webhook_data = stored_data["manual_webhook_example"][0]
-        assert "attachments" in stored_webhook_data
-        stored_attachments = stored_webhook_data["attachments"]
-        assert len(stored_attachments) == 2
-        self.verify_stored_data_structure(stored_attachments)
+        for manual_webhook_data in stored_data["manual_webhook_data"]:
+            assert "attachments" in manual_webhook_data
+            stored_attachments = manual_webhook_data["attachments"]
+            assert len(stored_attachments) == 2
+            self.verify_stored_data_structure(stored_attachments)
 
         # Clean up
         attachment1.delete(db)
@@ -1400,7 +1398,7 @@ class TestPrivacyRequestAttachments:
         request,
         monkeypatch,
     ):
-        """Test that attachments with different types are properly handled in manual webhooks"""
+        """Test that manual webhook attachments are properly processed and included in both upload and storage"""
         mock_upload.return_value = "http://www.data-download-url"
 
         def mock_get_s3_client(auth_method, storage_secrets):
@@ -1440,10 +1438,13 @@ class TestPrivacyRequestAttachments:
                 AttachmentReferenceType.privacy_request,
             )
 
-        # Cache manual webhook input
+        # Cache manual webhook data before running the privacy request
         privacy_request_requires_input.cache_manual_webhook_access_input(
             access_manual_webhook,
-            {"email": self.EMAIL, "last_name": self.LAST_NAME},
+            {
+                "email": "test@example.com",
+                "last_name": "Test User",
+            },
         )
 
         # Run the privacy request
@@ -1453,39 +1454,30 @@ class TestPrivacyRequestAttachments:
 
         db.refresh(privacy_request_requires_input)
         assert privacy_request_requires_input.status == PrivacyRequestStatus.complete
-        assert mock_upload.called
-        assert mock_save.called
-
-        # Get the data that was passed to upload
-        uploaded_data = mock_upload.call_args.kwargs["data"]
-        assert "manual_webhook_example" in uploaded_data
-        webhook_data = uploaded_data["manual_webhook_example"][0]
-
-        # Verify webhook data
-        self.verify_webhook_data(webhook_data, integration_manual_webhook_config)
-
-        # Verify only included attachments are present in upload format
-        assert "attachments" in webhook_data
-        attachments = webhook_data["attachments"]
-        assert len(attachments) == 1  # Only the included attachment should be present
 
         # Verify upload format
-        self.verify_upload_data_structure(attachments, storage_config, ["test1.txt"])
+        uploaded_data = mock_upload.call_args.kwargs["data"]
+        for manual_webhook_data in uploaded_data["manual_webhook_data"]:
+            assert "attachments" in manual_webhook_data
+            attachments = manual_webhook_data["attachments"]
+            assert (
+                len(attachments) == 1
+            )  # Only the included attachment should be present
+            self.verify_upload_data_structure(
+                attachments, storage_config, ["test1.txt"]
+            )
 
-        # Verify storage format (without fileobj)
+        # Verify storage format
         stored_data = mock_save.call_args[0][3][
             "access_request_rule"
         ]  # rule_filtered_results
-        assert "manual_webhook_example" in stored_data
-        stored_webhook_data = stored_data["manual_webhook_example"][0]
-        assert "attachments" in stored_webhook_data
-        stored_attachments = stored_webhook_data["attachments"]
-        assert (
-            len(stored_attachments) == 1
-        )  # Only the included attachment should be present
-
-        # Verify storage format
-        self.verify_stored_data_structure(stored_attachments)
+        for manual_webhook_data in stored_data["manual_webhook_data"]:
+            assert "attachments" in manual_webhook_data
+            stored_attachments = manual_webhook_data["attachments"]
+            assert (
+                len(stored_attachments) == 1
+            )  # Only the included attachment should be present
+            self.verify_stored_data_structure(stored_attachments)
 
         # Clean up
         included_attachment.delete(db)

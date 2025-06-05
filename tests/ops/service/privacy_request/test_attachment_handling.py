@@ -3,7 +3,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from fides.api.models.attachment import Attachment, AttachmentType
-from fides.api.schemas.storage.storage import ResponseFormat
+from fides.api.schemas.storage.storage import StorageDetails
 from fides.api.service.privacy_request.attachment_handling import (
     AttachmentData,
     get_attachments_content,
@@ -19,14 +19,18 @@ class TestAttachmentData:
             file_size=100,
             download_url="https://example.com/test.txt",
             content_type="text/plain",
-            fileobj=Mock(),
+            bucket_name="test-bucket",
+            file_key="test-key",
+            storage_key="test-storage",
         )
         result = attachment_data.to_upload_dict()
         assert result["file_name"] == "test.txt"
         assert result["file_size"] == 100
         assert result["download_url"] == "https://example.com/test.txt"
         assert result["content_type"] == "text/plain"
-        assert result["fileobj"] is not None
+        assert "bucket_name" not in result
+        assert "file_key" not in result
+        assert "storage_key" not in result
 
     def test_to_storage_dict(self):
         """Test converting AttachmentData to storage dictionary format"""
@@ -35,26 +39,33 @@ class TestAttachmentData:
             file_size=100,
             download_url="https://example.com/test.txt",
             content_type="text/plain",
-            fileobj=Mock(),
+            bucket_name="test-bucket",
+            file_key="test-key",
+            storage_key="test-storage",
         )
         result = attachment_data.to_storage_dict()
         assert result["file_name"] == "test.txt"
         assert result["file_size"] == 100
-        assert result["download_url"] == "https://example.com/test.txt"
         assert result["content_type"] == "text/plain"
-        assert "fileobj" not in result
+        assert result["bucket_name"] == "test-bucket"
+        assert result["file_key"] == "test-key"
+        assert result["storage_key"] == "test-storage"
+        assert "download_url" not in result
 
 
 class TestGetAttachmentsContent:
     @pytest.fixture
     def mock_attachment(self):
         """Create a mock attachment for testing"""
-        attachment = Mock(spec=Attachment)
+        attachment = Mock(autospec=Attachment)
         attachment.attachment_type = AttachmentType.include_with_access_package
         attachment.file_name = "test.txt"
         attachment.content_type = "text/plain"
         attachment.config = Mock()
-        attachment.config.format.value = ResponseFormat.json.value
+        attachment.config.details = {StorageDetails.BUCKET.value: "test-bucket"}
+        attachment.id = "test-id"
+        attachment.storage_key = "test-storage"
+        attachment.file_key = f"{attachment.id}/{attachment.file_name}"
         return attachment
 
     def test_get_attachments_content_success(self, mock_attachment):
@@ -74,23 +85,9 @@ class TestGetAttachmentsContent:
         assert result.file_size == 100
         assert result.download_url == "https://example.com/test.txt"
         assert result.content_type == "text/plain"
-        assert result.fileobj is None
-
-    def test_get_attachments_content_html_format(self, mock_attachment):
-        """Test attachment content retrieval for HTML format"""
-        mock_attachment.retrieve_attachment.return_value = (
-            100,
-            "https://example.com/test.txt",
-        )
-        mock_attachment.config.format.value = ResponseFormat.html.value
-        mock_attachment.retrieve_attachment_content.return_value = (100, Mock())
-
-        attachments = [mock_attachment]
-        results = list(get_attachments_content(attachments))
-
-        assert len(results) == 1
-        result = results[0]
-        assert result.fileobj is not None
+        assert result.bucket_name == "test-bucket"
+        assert result.file_key == f"{mock_attachment.id}/{mock_attachment.file_name}"
+        assert result.storage_key == "test-storage"
 
     def test_get_attachments_content_skip_non_included(self, mock_attachment):
         """Test skipping attachments not marked for inclusion"""
@@ -110,14 +107,9 @@ class TestGetAttachmentsContent:
 
         assert len(results) == 0
 
-    def test_get_attachments_content_html_missing_content(self, mock_attachment):
-        """Test handling missing content for HTML format"""
-        mock_attachment.retrieve_attachment.return_value = (
-            100,
-            "https://example.com/test.txt",
-        )
-        mock_attachment.config.format.value = ResponseFormat.html.value
-        mock_attachment.retrieve_attachment_content.return_value = (100, None)
+    def test_get_attachments_content_missing_url(self, mock_attachment):
+        """Test handling missing download URL"""
+        mock_attachment.retrieve_attachment.return_value = (100, None)
 
         attachments = [mock_attachment]
         results = list(get_attachments_content(attachments))
@@ -134,7 +126,9 @@ class TestProcessAttachmentsForUpload:
             file_size=100,
             download_url="https://example.com/test.txt",
             content_type="text/plain",
-            fileobj=Mock(),
+            bucket_name="test-bucket",
+            file_key="test-key",
+            storage_key="test-storage",
         )
 
     def test_process_attachments_for_upload(self, mock_attachment_data):
@@ -152,14 +146,18 @@ class TestProcessAttachmentsForUpload:
         assert upload_attachment["file_size"] == 100
         assert upload_attachment["download_url"] == "https://example.com/test.txt"
         assert upload_attachment["content_type"] == "text/plain"
-        assert upload_attachment["fileobj"] is not None
+        assert "bucket_name" not in upload_attachment
+        assert "file_key" not in upload_attachment
+        assert "storage_key" not in upload_attachment
 
         storage_attachment = storage_attachments[0]
         assert storage_attachment["file_name"] == "test.txt"
         assert storage_attachment["file_size"] == 100
-        assert storage_attachment["download_url"] == "https://example.com/test.txt"
         assert storage_attachment["content_type"] == "text/plain"
-        assert "fileobj" not in storage_attachment
+        assert storage_attachment["bucket_name"] == "test-bucket"
+        assert storage_attachment["file_key"] == "test-key"
+        assert storage_attachment["storage_key"] == "test-storage"
+        assert "download_url" not in storage_attachment
 
     def test_process_attachments_for_upload_empty(self):
         """Test processing empty attachment list"""

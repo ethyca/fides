@@ -170,19 +170,21 @@ class DsrReportBuilder:
         self,
         attachments: list[dict[str, Any]],
         directory: str,
-    ) -> dict[str, str]:
+    ) -> dict[str, dict[str, str]]:
         """
-        Writes attachment content to the specified directory.
-        Handles file objects.
+        Processes attachments and returns a dictionary mapping filenames to their download URLs and sizes.
 
         Args:
-            attachments: The attachments to write
-            directory: The directory to write to (without trailing slash)
+            attachments: The attachments to process
+            directory: The directory path (unused for presigned URLs)
 
         Returns:
-            Dictionary mapping original filenames to unique filenames
+            Dictionary mapping filenames to dictionaries containing url and size
         """
-        attachment_links = {}  # Track unique filenames for this specific item
+        # First process all attachments into a list of tuples (filename, data)
+        processed_attachments = []
+        used_filenames = set()
+
         for attachment in attachments:
             if not isinstance(attachment, dict):
                 continue
@@ -192,34 +194,36 @@ class DsrReportBuilder:
                 logger.warning("Skipping attachment with no file name")
                 continue
 
-            fileobj = attachment.get("fileobj")
-            if not fileobj:
-                logger.warning("Skipping attachment with no fileobj")
+            download_url = attachment.get("download_url")
+            if not download_url:
+                logger.warning("Skipping attachment with no download URL")
                 continue
+
+            file_size = attachment.get("file_size")
+            if isinstance(file_size, (int, float)):
+                file_size = self._format_size(float(file_size))
+            else:
+                file_size = "Unknown"
 
             # Get a unique filename to prevent duplicates
-            unique_filename = self._get_unique_filename(directory, file_name)
-            if unique_filename != file_name:
-                logger.debug(
-                    "Renamed duplicate file from {} to {}", file_name, unique_filename
-                )
+            base_name, extension = os.path.splitext(file_name)
+            counter = 1
+            unique_filename = file_name
 
-            # Store the unique filename in the links dictionary
-            attachment_links[unique_filename] = unique_filename
+            # Check if filename is already used in this batch
+            while unique_filename in used_filenames:
+                unique_filename = f"{base_name}_{counter}{extension}"
+                counter += 1
 
-            # Read the content from the file object
-            content = fileobj.read()
-            if not content:
-                logger.warning("Skipping attachment with empty content")
-                continue
+            used_filenames.add(unique_filename)
 
-            # Reset the file pointer to the beginning
-            fileobj.seek(0)
+            # Add to processed attachments
+            processed_attachments.append(
+                (unique_filename, {"url": download_url, "size": file_size})
+            )
 
-            # Write the content to the zip
-            self.out.writestr(f"{directory}/{unique_filename}", content)
-
-        return attachment_links
+        # Convert list of tuples to dictionary
+        return dict(processed_attachments)
 
     def _add_collection(
         self, rows: list[dict[str, Any]], dataset_name: str, collection_name: str
