@@ -1,8 +1,8 @@
 """add_monitor_tasks
 
-Revision ID: b5662099fb29
-Revises: d0cbfec0b2dd
-Create Date: 2025-05-28 21:12:22.370944
+Revision ID: 4d9b696a3c3b
+Revises: 440a5b9a3493
+Create Date: 2025-06-05 14:59:07.707675
 
 """
 
@@ -11,8 +11,8 @@ from alembic import op
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = "b5662099fb29"
-down_revision = "d0cbfec0b2dd"
+revision = "4d9b696a3c3b"
+down_revision = "440a5b9a3493"
 branch_labels = None
 depends_on = None
 
