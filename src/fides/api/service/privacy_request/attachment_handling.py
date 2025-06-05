@@ -119,7 +119,7 @@ def process_attachments_for_upload(
     """
     Process attachments into separate upload and storage formats.
     Returns both formats:
-    - upload_attachments: Used for webhook delivery
+    - upload_attachments: Used for uploading to access packages
     - storage_attachments: Used for saving filtered access results
     """
     upload_attachments = []
