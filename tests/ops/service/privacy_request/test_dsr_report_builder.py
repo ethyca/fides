@@ -762,7 +762,7 @@ class TestDsrReportBuilderAttachmentHandling:
             )
 
     def test_handle_duplicate_filenames(self, privacy_request: PrivacyRequest):
-        """Test handling of duplicate filenames in the same directory"""
+        """Test handling of duplicate filenames across all directories"""
         builder = DsrReportBuilder(privacy_request, {})
         attachments = [
             {
@@ -775,19 +775,27 @@ class TestDsrReportBuilderAttachmentHandling:
                 "download_url": "https://example.com/test2.txt",
                 "file_size": 2048,
             },
+            {
+                "file_name": "test.txt",
+                "download_url": "https://example.com/test3.txt",
+                "file_size": 3072,
+            },
         ]
 
         result = builder._write_attachment_content(attachments, "attachments")
 
-        assert "test.txt" in result
-        assert "test_1.txt" in result
+        # Verify that all files get unique names
+        assert "test.txt" in result  # First file keeps original name
+        assert "test_1.txt" in result  # Second file gets _1 suffix
+        assert "test_2.txt" in result  # Third file gets _2 suffix
         assert result["test.txt"]["url"] == "https://example.com/test1.txt"
         assert result["test_1.txt"]["url"] == "https://example.com/test2.txt"
+        assert result["test_2.txt"]["url"] == "https://example.com/test3.txt"
 
-    def test_handle_duplicate_filenames_different_directories(
+    def test_handle_duplicate_filenames_across_directories(
         self, privacy_request: PrivacyRequest
     ):
-        """Test handling of duplicate filenames in different directories"""
+        """Test handling of duplicate filenames across different directories"""
         builder = DsrReportBuilder(privacy_request, {})
 
         # Test attachments in different directories
@@ -806,15 +814,17 @@ class TestDsrReportBuilderAttachmentHandling:
             }
         ]
 
+        # Process attachments in sequence
         result1 = builder._write_attachment_content(attachments1, "attachments")
         result2 = builder._write_attachment_content(
             attachments2, "data/dataset1/collection1"
         )
 
-        assert "test.txt" in result1
-        assert "test.txt" in result2
+        # Verify that the second file gets a unique name
+        assert "test.txt" in result1  # First file keeps original name
+        assert "test_1.txt" in result2  # Second file gets _1 suffix
         assert result1["test.txt"]["url"] == "https://example.com/test1.txt"
-        assert result2["test.txt"]["url"] == "https://example.com/test2.txt"
+        assert result2["test_1.txt"]["url"] == "https://example.com/test2.txt"
 
 
 class TestDsrReportBuilderDatasetHandling:
