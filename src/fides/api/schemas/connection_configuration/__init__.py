@@ -161,6 +161,10 @@ from fides.api.schemas.connection_configuration.connections_secrets_https import
     HttpsSchema as HttpsSchema,
 )
 from fides.api.schemas.saas.saas_config import SaaSConfig as SaaSConfig
+from fides.api.schemas.connection_configuration.connection_secrets_fake_test import (
+    TestDocsSchema,
+    TestSchema,
+)
 
 secrets_schemas: Dict[str, Any] = {
     ConnectionType.attentive_email.value: AttentiveSchema,
@@ -189,6 +193,7 @@ secrets_schemas: Dict[str, Any] = {
     ConnectionType.scylla.value: ScyllaSchema,
     ConnectionType.snowflake.value: SnowflakeSchema,
     ConnectionType.sovrn.value: SovrnSchema,
+    ConnectionType.test_connector.value: TestSchema,
     ConnectionType.timescale.value: TimescaleSchema,
     ConnectionType.website.value: WebsiteSchema,
 }
@@ -248,6 +253,7 @@ connection_secrets_schemas = Union[
     ScyllaDocsSchema,
     SnowflakeDocsSchema,
     SovrnDocsSchema,
+    TestDocsSchema,
     TimescaleDocsSchema,
     WebsiteSchema,
 ]

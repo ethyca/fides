@@ -67,6 +67,7 @@ class ConnectionType(enum.Enum):
     scylla = "scylla"
     snowflake = "snowflake"
     sovrn = "sovrn"
+    test_connector = "test_connector"  # For testing multiselect functionality
     timescale = "timescale"
     website = "website"
 
@@ -103,6 +104,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.scylla.value: "Scylla DB",
             ConnectionType.snowflake.value: "Snowflake",
             ConnectionType.sovrn.value: "Sovrn",
+            ConnectionType.test_connector.value: "Test Connector",  # For testing multiselect functionality
             ConnectionType.timescale.value: "TimescaleDB",
             ConnectionType.website.value: "Website",
         }
@@ -147,6 +149,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.scylla.value: SystemType.database,
             ConnectionType.snowflake.value: SystemType.database,
             ConnectionType.sovrn.value: SystemType.email,
+            ConnectionType.test_connector.value: SystemType.manual,  # For testing multiselect functionality
             ConnectionType.timescale.value: SystemType.database,
             ConnectionType.website.value: SystemType.website,
         }
