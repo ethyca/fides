@@ -11,6 +11,7 @@ import type { NextPage } from "next";
 import React, { useMemo, useState } from "react";
 
 import { FidesTab } from "~/features/common/DataTabs";
+import { useFlags } from "~/features/common/features/features.slice";
 import FidesSpinner from "~/features/common/FidesSpinner";
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
@@ -30,8 +31,18 @@ const IntegrationListView: NextPage = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
+  // DEFER (ENG-675): Remove this once the alpha feature is released
+  const { flags } = useFlags();
+  const supportedIntegrations = useMemo(() => {
+    return SUPPORTED_INTEGRATIONS.filter((integration) => {
+      return (
+        integration !== "manual_webhook" || flags.alphaNewManualIntegration
+      );
+    });
+  }, [flags.alphaNewManualIntegration]);
+
   const { data, isLoading } = useGetAllDatastoreConnectionsQuery({
-    connection_type: SUPPORTED_INTEGRATIONS,
+    connection_type: supportedIntegrations,
     size: pageSize,
     page,
   });
