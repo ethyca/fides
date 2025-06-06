@@ -38,6 +38,7 @@ def redis_lock(lock_key: str, timeout: int) -> Generator[Lock | None, None, None
         logger.info(f"Acquired lock for '{lock_key}'.")
         yield lock
     finally:
-        # Always release the lock
-        lock.release()
-        logger.info(f"Released lock for '{lock_key}'.")
+        # Always release the lock if we own it
+        if lock.owned():
+            lock.release()
+            logger.info(f"Released lock for '{lock_key}'.")

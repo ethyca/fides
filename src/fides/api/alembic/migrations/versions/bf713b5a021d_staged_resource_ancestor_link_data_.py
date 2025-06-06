@@ -36,6 +36,7 @@ from loguru import logger
 # revision identifiers, used by Alembic.
 revision = "bf713b5a021d"
 down_revision = "5474a47c77da"
+
 branch_labels = None
 depends_on = None
 
@@ -45,20 +46,36 @@ def upgrade():
 
     conn = op.get_bind()
 
-    # Get all resources and their children into memory
-    resources_query = """
-    SELECT urn, children
-    FROM stagedresource
+    # Get all resources and their children in batches
+    BATCH_SIZE = 500000
+
+    # Query resources in batches using yield_per
+    resources_query = sa.text(
+        """
+        SELECT urn, children
+        FROM stagedresource
     """
-    resources = conn.execute(resources_query).fetchall()
-
-    # Build resource -> children map in memory
+    )
     resource_children = {}
-    for resource in resources:
-        if resource.children:
-            resource_children[resource.urn] = resource.children
 
-    # Build list of all ancestor-descendant pairs to insert
+    # process resources and populate resource_children map in batches
+    # to limit memory usage
+    for batch in (
+        conn.execution_options(stream_results=True)
+        .execute(resources_query)
+        .yield_per(BATCH_SIZE)
+        .partitions()
+    ):
+        logger.info(f"Processing batch of {BATCH_SIZE} resources")
+
+        # Build resource -> children map for this batch
+        for result in batch:
+            urn = result.urn
+            children = result.children
+            if children:
+                resource_children[urn] = children
+
+    # Build list of ancestor-descendant pairs
     ancestor_links = []
 
     def process_children(ancestor_urn, children, visited=None):
@@ -72,7 +89,7 @@ def upgrade():
                 # Add direct ancestor link
                 ancestor_links.append(
                     {
-                        "id": f"{ancestor_urn}_{child_urn}",
+                        "id": f"srl_{uuid.uuid4()}",
                         "ancestor_urn": ancestor_urn,
                         "descendant_urn": child_urn,
                     }
@@ -85,44 +102,52 @@ def upgrade():
                     )
 
     logger.info(
-        f"Recursively processing {len(resource_children)} resources for ancestor links"
+        f"Recursively processing {len(resource_children)} resources for ancestor links in current batch"
     )
+
     # Process each resource's children recursively
     for ancestor_urn, children in resource_children.items():
         process_children(ancestor_urn, children)
 
-    logger.info(f"Found {len(ancestor_links)} ancestor links to insert")
+    # remove the resource_children map from memory
+    del resource_children
 
-    logger.info(f"Writing {len(ancestor_links)} ancestor links to memory buffer")
+    ancestor_links_count = len(ancestor_links)
+    logger.info(f"Found {ancestor_links_count} ancestor links in current batch")
 
-    # Create in-memory string buffer
-    csv_buffer = StringIO()
-    writer = csv.DictWriter(
-        csv_buffer, fieldnames=["id", "ancestor_urn", "descendant_urn"]
-    )
-    writer.writeheader()
-    for link in ancestor_links:
-        # Generate a UUID for each row
-        link["id"] = f"srl_{uuid.uuid4()}"
-        writer.writerow(link)
+    if ancestor_links_count > 0:
+        # Create temporary CSV file
+        temp_csv_path = Path("staged_resource_ancestors.csv")
+        with open(temp_csv_path, "w", newline="") as csv_file:
+            writer = csv.DictWriter(
+                csv_file, fieldnames=["id", "ancestor_urn", "descendant_urn"]
+            )
+            writer.writeheader()
+            logger.info(f"Writing {ancestor_links_count} ancestor links to CSV file")
+            writer.writerows(ancestor_links)
 
-    # Reset buffer position to start
-    csv_buffer.seek(0)
+        del ancestor_links
 
-    logger.info(
-        "Copying ancestor links data from memory buffer into stagedresourceancestor table..."
-    )
-    copy_query = """
-        COPY stagedresourceancestor (id, ancestor_urn, descendant_urn)
-        FROM STDIN
-        WITH (FORMAT CSV, HEADER TRUE)
-    """
-    conn.connection.cursor().copy_expert(copy_query, csv_buffer)
-    logger.info(
-        "Completed copying ancestor links data from memory buffer into stagedresourceancestor table"
-    )
+        # Copy all data from CSV file into table
+        logger.info(
+            f"Copying {ancestor_links_count} ancestor links from CSV file into stagedresourceancestor table..."
+        )
+        with open(temp_csv_path, "r") as csv_file:
+            copy_query = """
+                COPY stagedresourceancestor (id, ancestor_urn, descendant_urn)
+                FROM STDIN
+                WITH (FORMAT CSV, HEADER TRUE)
+            """
+            conn.connection.cursor().copy_expert(copy_query, csv_file)
 
-    if len(ancestor_links) < 1000000:
+        # Clean up temp file
+        temp_csv_path.unlink()
+
+        logger.info(
+            f"Completed copying all ancestor links. Total ancestor links created: {ancestor_links_count}"
+        )
+
+    if ancestor_links_count < 1000000:
 
         logger.info("Creating primary key index on stagedresourceancestor table...")
 
@@ -216,17 +241,10 @@ def downgrade():
         f"Downgraded staged resource ancestor link data migration, completed populating child_diff_statuses for {updated_rows} rows"
     )
 
-    # drop the StagedResourceAncestor table and its indexes
+    # Intentionally not dropping the stagedresourceancestor indexes here because they
+    # may not have been created as part of the data migration above. If they were not created,
+    # then the downgrade would fail trying to drop the non-existent indexes.
 
-    op.drop_index(
-        "ix_staged_resource_ancestor_descendant",
-        table_name="stagedresourceancestor",
-    )
-    op.drop_index(
-        "ix_staged_resource_ancestor_ancestor", table_name="stagedresourceancestor"
-    )
-
-    op.drop_index(
-        "ix_staged_resource_ancestor_pkey",
-        table_name="stagedresourceancestor",
-    )
+    # The indexes and constraints will be dropped as part of the overall table drop that's done
+    # as part of the downgrade in the `5474a47c77da_create_staged_resource_ancestor_link_table.py`
+    # migration.

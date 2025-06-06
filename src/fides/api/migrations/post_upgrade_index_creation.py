@@ -171,7 +171,7 @@ def check_object_exists(db: Session, object_name: str) -> bool:
 
 def create_object(db: Session, object_statement: str, object_name: str) -> None:
     """Executes the index or constraint creation statement."""
-    logger.info(f"Creating index/constraint object by executing: '{object_name}'...")
+    logger.info(f"Creating index/constraint object: '{object_name}'...")
     with db.bind.connect().execution_options(
         isolation_level="AUTOCOMMIT"
     ) as connection:

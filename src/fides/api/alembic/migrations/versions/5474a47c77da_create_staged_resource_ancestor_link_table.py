@@ -67,5 +67,6 @@ def downgrade():
     # drop the StagedResource.diff_status index created in the migration
     op.drop_index(op.f("ix_stagedresource_diff_status"), table_name="stagedresource")
 
+    # drop the stagedresourceancestor table (and all its indexes and constraints)
     op.drop_table("stagedresourceancestor")
     # ### end Alembic commands ###

@@ -13,7 +13,6 @@ Create Date: 2025-06-03 09:47:11.389652
 
 import sqlalchemy as sa
 from alembic import op
-from loguru import logger
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
