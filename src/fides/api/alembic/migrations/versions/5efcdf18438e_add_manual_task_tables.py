@@ -1,7 +1,7 @@
 """add manual task tables
 
 Revision ID: 5efcdf18438e
-Revises: 440a5b9a3493
+Revises: c586a56c25e7
 Create Date: 2025-06-04 17:24:00.300170
 
 """
@@ -13,7 +13,7 @@ from sqlalchemy.sql import func
 
 # revision identifiers, used by Alembic.
 revision = "5efcdf18438e"
-down_revision = "440a5b9a3493"
+down_revision = "c586a56c25e7"
 branch_labels = None
 depends_on = None
 
