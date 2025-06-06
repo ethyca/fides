@@ -1,7 +1,7 @@
 import time
 from copy import deepcopy
 from datetime import datetime, timedelta
-from typing import Any, Iterator, Optional, Tuple
+from typing import Any, Optional, Tuple
 
 import requests
 from loguru import logger
@@ -60,7 +60,6 @@ from fides.api.service.messaging.message_dispatch_service import (
     message_send_enabled,
 )
 from fides.api.service.privacy_request.attachment_handling import (
-    AttachmentData,
     get_attachments_content,
     process_attachments_for_upload,
 )
@@ -130,9 +129,9 @@ def get_manual_webhook_access_inputs(
             )
             if webhook_attachments:
                 attachment_ids = [wa.id for wa in webhook_attachments]
-                loaded_attachments = db.query(Attachment).filter(
-                    Attachment.id.in_(attachment_ids)
-                ).all()
+                loaded_attachments = (
+                    db.query(Attachment).filter(Attachment.id.in_(attachment_ids)).all()
+                )
                 (
                     webhook_data_for_upload["attachments"],
                     webhook_data_for_storage["attachments"],
@@ -214,7 +213,7 @@ def upload_access_results(
     results_to_upload: dict[str, list[dict[str, Optional[Any]]]],
     dataset_graph: DatasetGraph,
     privacy_request: PrivacyRequest,
-    upload_attachments: Iterator[AttachmentData],
+    upload_attachments: list[dict[str, Any]],
 ) -> list[str]:
     """Upload results for a single rule and return download URLs and modified results."""
     start_time = time.time()
@@ -222,7 +221,7 @@ def upload_access_results(
     storage_destination = rule.get_storage_destination(session)
 
     if upload_attachments:
-        results_to_upload["attachments"] = upload_attachments  # type: ignore[assignment]
+        results_to_upload["attachments"] = upload_attachments
 
     logger.info("Starting access request upload for rule {}", rule.key)
     try:
