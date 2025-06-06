@@ -23,6 +23,7 @@ import getIntegrationTypeInfo, {
 import IntegrationList from "~/features/integrations/IntegrationList";
 import SharedConfigModal from "~/features/integrations/SharedConfigModal";
 import useIntegrationFilterTabs from "~/features/integrations/useIntegrationFilterTabs";
+import { ConnectionType } from "~/types/api";
 
 const DEFAULT_PAGE_SIZE = 50;
 const MIN_ITEMS_FOR_PAGINATION = 10;
@@ -36,7 +37,8 @@ const IntegrationListView: NextPage = () => {
   const supportedIntegrations = useMemo(() => {
     return SUPPORTED_INTEGRATIONS.filter((integration) => {
       return (
-        integration !== "manual_webhook" || flags.alphaNewManualIntegration
+        integration !== ConnectionType.MANUAL_WEBHOOK ||
+        flags.alphaNewManualIntegration
       );
     });
   }, [flags.alphaNewManualIntegration]);
