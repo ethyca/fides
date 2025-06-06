@@ -4,6 +4,7 @@ import {
   Modal,
   ModalBody,
   ModalContent,
+  ModalContentProps,
   ModalHeader,
   ModalOverlay,
   ModalProps,
@@ -13,6 +14,7 @@ import { ReactNode } from "react";
 interface FormModalProps extends ModalProps {
   title: string;
   children: ReactNode;
+  modalContentProps?: ModalContentProps;
 }
 
 const FormModal = ({
@@ -20,6 +22,7 @@ const FormModal = ({
   children,
   isOpen,
   onClose,
+  modalContentProps,
   ...props
 }: FormModalProps) => (
   <Modal
@@ -32,7 +35,12 @@ const FormModal = ({
     {...props}
   >
     <ModalOverlay />
-    <ModalContent textAlign="left" p={0} data-testid="add-modal-content">
+    <ModalContent
+      textAlign="left"
+      p={0}
+      data-testid="add-modal-content"
+      {...modalContentProps}
+    >
       <ModalHeader p={0}>
         <Box
           backgroundColor="gray.50"
