@@ -107,33 +107,56 @@ const applyOptions = () => {
  * Call Fides.shopify to configure Shopify customer privacy.
  */
 export const shopify = () => {
-  setTimeout(() => {
-    if (!window.Shopify) {
-      throw Error(
-        "Fides.shopify was called but Shopify is not present in the page.",
+  let timeoutId: ReturnType<typeof setTimeout>;
+  let pollId: ReturnType<typeof setTimeout>;
+
+  const cleanup = () => {
+    clearTimeout(timeoutId);
+    clearTimeout(pollId);
+  };
+
+  // Poll for the Shopify API to be available
+  const poll = () => {
+    if (window.Shopify) {
+      cleanup();
+
+      // If the API is already present, simply call it.
+      if (window.Shopify.customerPrivacy) {
+        applyOptions();
+        return;
+      }
+
+      // Otherwise we need to load the feature before applying the options.
+      window.Shopify.loadFeatures(
+        [
+          {
+            name: "consent-tracking-api",
+            version: "0.1",
+          },
+        ],
+        (error) => {
+          if (error) {
+            throw Error("Fides could not load Shopify's consent-tracking-api");
+          }
+
+          applyOptions();
+        },
       );
-    }
-    // If the API is already present, simply call it.
-    if (window.Shopify.customerPrivacy) {
-      applyOptions();
       return;
     }
 
-    // Otherwise we need to load the feature before applying the options.
-    window.Shopify.loadFeatures(
-      [
-        {
-          name: "consent-tracking-api",
-          version: "0.1",
-        },
-      ],
-      (error) => {
-        if (error) {
-          throw Error("Fides could not load Shopify's consent-tracking-api");
-        }
+    // Continue polling every 200ms
+    pollId = setTimeout(poll, 200);
+  };
 
-        applyOptions();
-      },
+  // Set up 3-second timeout
+  timeoutId = setTimeout(() => {
+    cleanup();
+    throw Error(
+      "Fides.shopify was called but Shopify is not present in the page after 3 seconds.",
     );
   }, 3000);
+
+  // Start polling immediately
+  poll();
 };
