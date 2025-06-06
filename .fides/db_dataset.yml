@@ -1046,6 +1046,8 @@ dataset:
       data_categories: [system.operations]
   - name: manual_task_reference
     fields:
+    - name: id
+      data_categories: [system.operations]
     - name: task_id
       data_categories: [system.operations]
     - name: reference_id
