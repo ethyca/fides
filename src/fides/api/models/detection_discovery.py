@@ -3,16 +3,27 @@ from __future__ import annotations
 from datetime import datetime
 from enum import Enum
 from re import match
-from typing import Any, Dict, Iterable, List, Optional, Type
+from typing import Any, Dict, Iterable, List, Optional, Set, Type
 
 from loguru import logger
-from sqlalchemy import ARRAY, Boolean, Column, DateTime, ForeignKey, String, func
+from sqlalchemy import (
+    ARRAY,
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Index,
+    String,
+    UniqueConstraint,
+    func,
+    text,
+)
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.future import select
-from sqlalchemy.orm import Session, relationship
+from sqlalchemy.orm import RelationshipProperty, Session, relationship
 from sqlalchemy.orm.query import Query
 
 from fides.api.db.base_class import Base, FidesBase
@@ -320,6 +331,86 @@ class MonitorConfig(Base):
             data["monitor_execution_trigger"] = cron_trigger_dict
 
 
+class StagedResourceAncestor(Base):
+    """
+    A simple junction table that is used to store the many-to-many relationship
+    between staged resources and their ancestors.
+
+    This table is used to easily lookup all ancestors of a given staged resource,
+    as its indexed by both ancestor and descendant URN columns.
+
+    Its entries should be deleted when the staged resource is deleted, via cascade.
+    """
+
+    ancestor_urn = Column(
+        String,
+        ForeignKey("stagedresource.urn", ondelete="CASCADE"),
+        primary_key=True,
+        nullable=False,
+    )
+    descendant_urn = Column(
+        String,
+        ForeignKey("stagedresource.urn", ondelete="CASCADE"),
+        primary_key=True,
+        nullable=False,
+    )
+
+    ancestor_staged_resource = relationship(
+        "StagedResource",
+        back_populates="ancestor_links",
+        lazy="selectin",
+        foreign_keys=[ancestor_urn],
+    )
+    descendant_staged_resource = relationship(
+        "StagedResource",
+        back_populates="descendant_links",
+        lazy="selectin",
+        foreign_keys=[descendant_urn],
+    )
+
+    __table_args__ = (
+        UniqueConstraint(
+            "ancestor_urn", "descendant_urn", name="uq_staged_resource_ancestor"
+        ),
+        Index("ix_staged_resource_ancestor_ancestor", "ancestor_urn"),
+        Index("ix_staged_resource_ancestor_descendant", "descendant_urn"),
+    )
+
+    @classmethod
+    def create_staged_resource_ancestor_links(
+        cls,
+        db: Session,
+        resource_urn: str,
+        ancestor_urns: Set[str],
+    ) -> None:
+        """
+        Bulk inserts entries in the StagedResourceAncestor table
+        based on the provided resource URN and the set of its ancestor URNs.
+
+        We execute the bulk INSERT with the provided (synchronous) db session,
+        but the transaction is _not_ committed, so the caller must commit the transaction
+        to persist the changes.
+        """
+        links_to_insert = []
+
+        for ancestor_urn in ancestor_urns:
+            links_to_insert.append(
+                {"ancestor_urn": ancestor_urn, "descendant_urn": resource_urn}
+            )
+
+        if links_to_insert:
+            # Using raw SQL for ON CONFLICT with parameters for safety
+            stmt_text = text(
+                """
+                INSERT INTO stagedresourceancestor (id, ancestor_urn, descendant_urn)
+                VALUES ('srl_' || gen_random_uuid(), :ancestor_urn, :descendant_urn)
+                ON CONFLICT (ancestor_urn, descendant_urn) DO NOTHING;
+                """
+            )
+
+            db.execute(stmt_text, links_to_insert)
+
+
 class StagedResource(Base):
     """
     Base DB model that represents a staged resource, fields common to all types of staged resources
@@ -396,13 +487,35 @@ class StagedResource(Base):
     parent = Column(String, nullable=True)
 
     # diff-related fields
-    diff_status = Column(String, nullable=True)
-    child_diff_statuses = Column(
-        MutableDict.as_mutable(JSONB),
-        nullable=False,
-        server_default="{}",
-        default=dict,
+    diff_status = Column(String, nullable=True, index=True)
+
+    ancestor_links: RelationshipProperty[List[StagedResourceAncestor]] = relationship(
+        "StagedResourceAncestor",
+        back_populates="descendant_staged_resource",
+        lazy="dynamic",
+        cascade="all, delete",
+        foreign_keys=[StagedResourceAncestor.descendant_urn],
     )
+
+    descendant_links: RelationshipProperty[List[StagedResourceAncestor]] = relationship(
+        "StagedResourceAncestor",
+        back_populates="ancestor_staged_resource",
+        lazy="dynamic",
+        cascade="all, delete",
+        foreign_keys=[StagedResourceAncestor.ancestor_urn],
+    )
+
+    def ancestors(self) -> List[StagedResource]:
+        """
+        Returns the ancestors of the staged resource
+        """
+        return [link.ancestor_staged_resource for link in self.ancestor_links]
+
+    def descendants(self) -> List[StagedResource]:
+        """
+        Returns the descendants of the staged resource
+        """
+        return [link.descendant_staged_resource for link in self.descendant_links]
 
     # placeholder for additional attributes
     meta = Column(
@@ -456,28 +569,15 @@ class StagedResource(Base):
         )
         return results.scalars().all()
 
-    def add_child_diff_status(self, diff_status: DiffStatus) -> None:
-        """Increments the specified child diff status"""
-        self.child_diff_statuses[diff_status.value] = (
-            self.child_diff_statuses.get(diff_status.value, 0) + 1
-        )
-
     def mark_as_addition(
         self,
         db: Session,
         parent_resource_urns: Iterable[str] = [],
     ) -> None:
         """
-        Marks the resource as an addition and the child diff status of
-        the given parent resource URNs accordingly
+        Marks the resource as an addition
         """
         self.diff_status = DiffStatus.ADDITION.value
-        for parent_resource_urn in parent_resource_urns:
-            parent_resource: Optional[StagedResource] = StagedResource.get_urn(
-                db, parent_resource_urn
-            )
-            if parent_resource:
-                parent_resource.add_child_diff_status(DiffStatus.ADDITION)
 
 
 class MonitorExecution(Base):
