@@ -1,14 +1,18 @@
 import {
-  AntButton as Button,
+  AntDropdown as Dropdown,
+  ChevronDownIcon,
+  LinkIcon,
   Modal,
   ModalBody,
   ModalContent,
+  ModalFooter,
   ModalHeader,
   ModalOverlay,
   Stack,
-  useDisclosure,
   useToast,
 } from "fidesui";
+import { Formik } from "formik";
+import { useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import InfoBox from "~/features/common/InfoBox";
@@ -87,14 +91,62 @@ const SubmitPrivacyRequestModal = ({
   );
 };
 
+const PrivacyRequestLinkModal = ({
+  isOpen,
+  onClose,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+}) => {
+  return (
+    <Modal size="md" isOpen={isOpen} onClose={onClose}>
+      <ModalOverlay />
+      <ModalContent>
+        <ModalHeader>Create a Privacy Request Link</ModalHeader>
+        <ModalBody>
+          <Stack spacing={4} />
+        </ModalBody>
+      </ModalContent>
+    </Modal>
+  );
+};
+
 const SubmitPrivacyRequest = () => {
-  const { onOpen, isOpen, onClose } = useDisclosure();
+  const [state, setState] = useState<
+    "closed" | "create-link" | "submit-request"
+  >("closed");
+
+  const createLinkOpen = state === "create-link";
+  const submitRequestOpen = state === "submit-request";
+  const handleSubmitRequestOpen = () => setState("submit-request");
+  const handleCreateLinkOpen = () => setState("create-link");
+  const handleClose = () => setState("closed");
+
   return (
     <>
-      <SubmitPrivacyRequestModal isOpen={isOpen} onClose={onClose} />
-      <Button type="primary" onClick={onOpen} data-testid="submit-request-btn">
+      <PrivacyRequestLinkModal isOpen={createLinkOpen} onClose={handleClose} />
+      <SubmitPrivacyRequestModal
+        isOpen={submitRequestOpen}
+        onClose={handleClose}
+      />
+      <Dropdown.Button
+        type="primary"
+        onClick={handleSubmitRequestOpen}
+        data-testid="submit-request-btn"
+        menu={{
+          items: [
+            {
+              label: "Create request link",
+              key: "create-request-link",
+              icon: <LinkIcon />,
+              onClick: handleCreateLinkOpen,
+            },
+          ],
+        }}
+        icon={<ChevronDownIcon />}
+      >
         Create request
-      </Button>
+      </Dropdown.Button>
     </>
   );
 };
