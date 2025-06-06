@@ -313,9 +313,9 @@ class ManualTaskConfigField(Base):
         """
         if self.field_type == ManualTaskFieldType.form:
             return ManualTaskFormField
-        elif self.field_type == ManualTaskFieldType.checkbox:
+        if self.field_type == ManualTaskFieldType.checkbox:
             return ManualTaskCheckboxField
-        elif self.field_type == ManualTaskFieldType.attachment:
+        if self.field_type == ManualTaskFieldType.attachment:
             return ManualTaskAttachmentField
         raise ValueError(f"Invalid field type: {self.field_type}")
 
