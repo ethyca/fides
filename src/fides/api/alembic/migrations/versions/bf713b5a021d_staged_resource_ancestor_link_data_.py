@@ -185,7 +185,7 @@ def upgrade():
         logger.info("Completed creating indexes on stagedresourceancestor table")
     else:
         logger.info(
-            "Skipping creation of primary key index, foreign key constraints, unique constraint, and indexes on stagedresourceancestor table because there are more than 1,000,000 ancestor links. Please run `post_upgrade_index_creation.py` to create these indexes and constraints."
+            "Skipping creation of primary key index, foreign key constraints, unique constraint, and indexes on stagedresourceancestor table because there are more than 1,000,000 ancestor links. These will be populated as part of the `post_upgrade_index_creation.py` task kicked off during application startup."
         )
 
 

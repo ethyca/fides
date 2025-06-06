@@ -2,11 +2,13 @@ import json
 from typing import Dict, List
 
 from loguru import logger
+from redis.lock import Lock
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from fides.api.db.session import get_db_session
 from fides.api.tasks.scheduled.scheduler import scheduler
+from fides.api.util.lock import redis_lock
 from fides.config import CONFIG
 
 """
@@ -178,7 +180,7 @@ def create_object(db: Session, object_statement: str, object_name: str) -> None:
 
 
 def check_and_create_objects(
-    db: Session, table_object_map: Dict[str, List[Dict[str, str]]]
+    db: Session, table_object_map: Dict[str, List[Dict[str, str]]], lock: Lock
 ) -> Dict[str, str]:
     """Returns a dictionary of any indices or constraints that are in the process of being created."""
     object_info: Dict[str, str] = {}
@@ -206,8 +208,15 @@ def check_and_create_objects(
                 logger.debug(
                     f"Object {object_name} already exists, skipping index/constraint creation"
                 )
+            lock.reacquire()
 
     return object_info
+
+
+# Lock key for the post upgrade index creation
+POST_UPGRADE_INDEX_CREATION_LOCK = "post_upgrade_index_creation_lock"
+# The timeout of the lock for the post upgrade index creation, in seconds
+POST_UPGRADE_INDEX_CREATION_LOCK_TIMEOUT_SECONDS = 600  # 10 minutes
 
 
 def post_upgrade_index_creation_task() -> None:
@@ -222,15 +231,24 @@ def post_upgrade_index_creation_task() -> None:
     a no-op, as it checks for the presence of the objects in the database before
     creating them.
     """
-    SessionLocal = get_db_session(CONFIG)
-    with SessionLocal() as db:
-        object_info: Dict[str, str] = check_and_create_objects(db, TABLE_OBJECT_MAP)
-        if object_info:
-            logger.info(
-                f"Post upgrade index creation output: {json.dumps(object_info)}"
+    with redis_lock(
+        POST_UPGRADE_INDEX_CREATION_LOCK,
+        POST_UPGRADE_INDEX_CREATION_LOCK_TIMEOUT_SECONDS,
+    ) as lock:
+        if not lock:
+            return
+
+        SessionLocal = get_db_session(CONFIG)
+        with SessionLocal() as db:
+            object_info: Dict[str, str] = check_and_create_objects(
+                db, TABLE_OBJECT_MAP, lock
             )
-        else:
-            logger.debug("All indices and constraints created")
+            if object_info:
+                logger.info(
+                    f"Post upgrade index creation output: {json.dumps(object_info)}"
+                )
+            else:
+                logger.debug("All indices and constraints created")
 
 
 def initiate_post_upgrade_index_creation() -> None:
