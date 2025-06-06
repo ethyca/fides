@@ -14,6 +14,7 @@ from fides.api.models.detection_discovery import (
     MonitorFrequency,
     SharedMonitorConfig,
     StagedResource,
+    StagedResourceAncestor,
     fetch_staged_resources_by_type_query,
 )
 
@@ -48,7 +49,6 @@ class TestStagedResourceModel:
                     },
                 ],
                 "diff_status": DiffStatus.MONITORED.value,
-                "child_diff_statuses": {DiffStatus.CLASSIFICATION_ADDITION.value: 9},
                 "children": [
                     "bq_monitor_1.prj-bigquery-418515.test_dataset_1.consent-reports-20.Notice_title",
                     "bq_monitor_1.prj-bigquery-418515.test_dataset_1.consent-reports-20.Email",
@@ -94,7 +94,6 @@ class TestStagedResourceModel:
                     },
                 ],
                 "diff_status": DiffStatus.MONITORED.value,
-                "child_diff_statuses": {DiffStatus.CLASSIFICATION_ADDITION.value: 9},
                 "children": [
                     "bq_monitor_1.prj-bigquery-418515.test_dataset_1.consent-reports-20",
                     "bq_monitor_1.prj-bigquery-418515.test_dataset_1.consent-reports-21",
@@ -133,7 +132,6 @@ class TestStagedResourceModel:
                     },
                 ],
                 "diff_status": DiffStatus.MONITORED.value,
-                "child_diff_statuses": {DiffStatus.CLASSIFICATION_ADDITION.value: 9},
                 "children": [
                     "bq_monitor_1.prj-bigquery-418515.test_dataset_1",
                     "bq_monitor_1.prj-bigquery-418515.test_dataset_2",
@@ -190,9 +188,7 @@ class TestStagedResourceModel:
             },
         ]
         assert saved_resource.meta == {"num_rows": 19}
-        assert saved_resource.child_diff_statuses == {
-            DiffStatus.CLASSIFICATION_ADDITION.value: 9
-        }
+
         assert saved_resource.diff_status == DiffStatus.MONITORED.value
 
     def test_update_staged_resource(self, db: Session, create_staged_resource) -> None:
@@ -245,24 +241,6 @@ class TestStagedResourceModel:
                 "classification_paradigm": "content",
             },
         ]
-
-    def test_staged_resource_helpers(self, db: Session, create_staged_resource):
-        saved_resource: StagedResource = StagedResource.get_urn(
-            db, create_staged_resource.urn
-        )
-        saved_resource.add_child_diff_status(diff_status=DiffStatus.REMOVAL)
-        saved_resource.add_child_diff_status(
-            diff_status=DiffStatus.CLASSIFICATION_ADDITION
-        )
-        saved_resource.save(db)
-
-        updated_resource: StagedResource = StagedResource.get_urn(
-            db, saved_resource.urn
-        )
-        assert updated_resource.child_diff_statuses == {
-            DiffStatus.REMOVAL.value: 1,
-            DiffStatus.CLASSIFICATION_ADDITION.value: 10,
-        }
 
     def test_fetch_staged_resources_by_type_query(
         self,
@@ -922,3 +900,296 @@ class TestMonitorExecutionModel:
 
         # Verify second timestamp is later than first
         assert second_execution.started > first_execution.started
+
+
+class TestStagedResourceAncestorModel:
+    @pytest.fixture
+    def staged_resource_1(self, db: Session) -> StagedResource:
+        resource = StagedResource.create(
+            db=db,
+            data={
+                "urn": "test_urn_1",
+                "name": "Test Resource 1",
+                "resource_type": "Table",  # not realistic, Table would not be ancestor of Table
+            },
+        )
+        return resource
+
+    @pytest.fixture
+    def staged_resource_2(self, db: Session) -> StagedResource:
+        resource = StagedResource.create(
+            db=db,
+            data={
+                "urn": "test_urn_2",
+                "name": "Test Resource 2",
+                "resource_type": "Table",  # not realistic, Table would not be ancestor of Table
+            },
+        )
+        return resource
+
+    @pytest.fixture
+    def staged_resource_3(self, db: Session) -> StagedResource:
+        resource = StagedResource.create(
+            db=db,
+            data={
+                "urn": "test_urn_3",
+                "name": "Test Resource 3",
+                "resource_type": "Table",  # not realistic # not realistic, Table would not be ancestor of Table
+            },
+        )
+        return resource
+
+    def test_create_staged_resource_ancestor_links(
+        self,
+        db: Session,
+        staged_resource_1: StagedResource,
+        staged_resource_2: StagedResource,
+        staged_resource_3: StagedResource,
+    ):
+        """Test creating ancestor links for a staged resource."""
+        descendant_urn = staged_resource_3.urn
+        ancestor_urns = {staged_resource_1.urn, staged_resource_2.urn}
+
+        StagedResourceAncestor.create_staged_resource_ancestor_links(
+            db=db, resource_urn=descendant_urn, ancestor_urns=ancestor_urns
+        )
+
+        links = (
+            db.query(StagedResourceAncestor)
+            .filter_by(descendant_urn=descendant_urn)
+            .all()
+        )
+        assert len(links) == 2
+        created_ancestor_urns = {link.ancestor_urn for link in links}
+        assert created_ancestor_urns == ancestor_urns
+
+        # Verify relationships
+        sr3 = StagedResource.get_urn(db, staged_resource_3.urn)
+        assert len(sr3.ancestors()) == 2
+        ancestor_resources_from_descendant = {
+            ancestor.urn for ancestor in sr3.ancestors()
+        }
+        assert ancestor_resources_from_descendant == ancestor_urns
+
+        sr1 = StagedResource.get_urn(db, staged_resource_1.urn)
+        assert len(sr1.descendants()) == 1
+        assert sr1.descendants()[0].urn == descendant_urn
+
+    def test_create_staged_resource_ancestor_links_empty_ancestors(
+        self, db: Session, staged_resource_1: StagedResource
+    ):
+        """Test creating links when the ancestor set is empty."""
+        descendant_urn = staged_resource_1.urn
+        ancestor_urns = set()
+
+        StagedResourceAncestor.create_staged_resource_ancestor_links(
+            db=db, resource_urn=descendant_urn, ancestor_urns=ancestor_urns
+        )
+
+        links = (
+            db.query(StagedResourceAncestor)
+            .filter_by(descendant_urn=descendant_urn)
+            .all()
+        )
+        assert len(links) == 0
+
+    def test_create_staged_resource_ancestor_links_idempotent(
+        self,
+        db: Session,
+        staged_resource_1: StagedResource,
+        staged_resource_2: StagedResource,
+    ):
+        """Test that creating the same links multiple times is idempotent."""
+        descendant_urn = staged_resource_2.urn
+        ancestor_urns = {staged_resource_1.urn}
+
+        # Create links for the first time
+        StagedResourceAncestor.create_staged_resource_ancestor_links(
+            db=db, resource_urn=descendant_urn, ancestor_urns=ancestor_urns
+        )
+        links_first_call = (
+            db.query(StagedResourceAncestor)
+            .filter_by(descendant_urn=descendant_urn)
+            .all()
+        )
+        assert len(links_first_call) == 1
+
+        # Create links for the second time with the same data
+        StagedResourceAncestor.create_staged_resource_ancestor_links(
+            db=db, resource_urn=descendant_urn, ancestor_urns=ancestor_urns
+        )
+        links_second_call = (
+            db.query(StagedResourceAncestor)
+            .filter_by(descendant_urn=descendant_urn)
+            .all()
+        )
+        assert (
+            len(links_second_call) == 1
+        )  # Should still be 1 due to ON CONFLICT DO NOTHING
+
+        # Verify the link is correct
+        assert links_second_call[0].ancestor_urn == staged_resource_1.urn
+        assert links_second_call[0].descendant_urn == staged_resource_2.urn
+
+    def test_cascade_delete_when_descendant_is_deleted(
+        self,
+        db: Session,
+        staged_resource_1: StagedResource,  # Ancestor
+        staged_resource_2: StagedResource,  # Descendant to be deleted
+        staged_resource_3: StagedResource,  # Another descendant
+    ):
+        """Test ancestor links and ORM relationships after descendant resource deletion."""
+        ancestor_urn = staged_resource_1.urn
+        descendant_to_delete_urn = staged_resource_2.urn
+        other_descendant_urn = staged_resource_3.urn
+
+        # Link ancestor to both descendants
+        StagedResourceAncestor.create_staged_resource_ancestor_links(
+            db=db, resource_urn=descendant_to_delete_urn, ancestor_urns={ancestor_urn}
+        )
+        StagedResourceAncestor.create_staged_resource_ancestor_links(
+            db=db, resource_urn=other_descendant_urn, ancestor_urns={ancestor_urn}
+        )
+        db.commit()  # Commit to ensure links are queryable for relationship loading
+
+        # Refresh to ensure relationships are loaded from DB state
+        db.refresh(staged_resource_1)
+        db.refresh(staged_resource_2)
+        db.refresh(staged_resource_3)
+
+        # Verify initial links and relationships
+        assert (
+            db.query(StagedResourceAncestor)
+            .filter_by(
+                descendant_urn=descendant_to_delete_urn, ancestor_urn=ancestor_urn
+            )
+            .first()
+            is not None
+        )
+        assert (
+            db.query(StagedResourceAncestor)
+            .filter_by(descendant_urn=other_descendant_urn, ancestor_urn=ancestor_urn)
+            .first()
+            is not None
+        )
+        assert {desc.urn for desc in staged_resource_1.descendants()} == {
+            descendant_to_delete_urn,
+            other_descendant_urn,
+        }
+        assert {anc.urn for anc in staged_resource_2.ancestors()} == {ancestor_urn}
+        assert {anc.urn for anc in staged_resource_3.ancestors()} == {ancestor_urn}
+
+        # Delete one descendant resource
+        db.delete(staged_resource_2)
+        db.commit()
+
+        # Verify link to deleted descendant is gone
+        assert (
+            db.query(StagedResourceAncestor)
+            .filter_by(
+                descendant_urn=descendant_to_delete_urn, ancestor_urn=ancestor_urn
+            )
+            .first()
+            is None
+        )
+        # Verify link to other descendant still exists
+        assert (
+            db.query(StagedResourceAncestor)
+            .filter_by(descendant_urn=other_descendant_urn, ancestor_urn=ancestor_urn)
+            .first()
+            is not None
+        )
+
+        # Refresh remaining resources to update relationships
+        db.refresh(staged_resource_1)
+        db.refresh(staged_resource_3)
+
+        # Verify relationships are updated
+        assert {desc.urn for desc in staged_resource_1.descendants()} == {
+            other_descendant_urn
+        }
+        assert {anc.urn for anc in staged_resource_3.ancestors()} == {ancestor_urn}
+
+    def test_cascade_delete_when_ancestor_is_deleted(
+        self,
+        db: Session,
+        staged_resource_1: StagedResource,  # Ancestor to be deleted
+        staged_resource_2: StagedResource,  # Another ancestor
+        staged_resource_3: StagedResource,  # Descendant
+    ):
+        """Test ancestor links and ORM relationships after ancestor resource deletion."""
+        ancestor_to_delete_urn = staged_resource_1.urn
+        other_ancestor_urn = staged_resource_2.urn
+        descendant_urn = staged_resource_3.urn
+
+        # Link both ancestors to the descendant
+        StagedResourceAncestor.create_staged_resource_ancestor_links(
+            db=db,
+            resource_urn=descendant_urn,
+            ancestor_urns={ancestor_to_delete_urn, other_ancestor_urn},
+        )
+        db.commit()  # Commit to ensure links are queryable for relationship loading
+
+        # Refresh to ensure relationships are loaded from DB state
+        db.refresh(staged_resource_1)
+        db.refresh(staged_resource_2)
+        db.refresh(staged_resource_3)
+
+        # Verify initial links and relationships
+        assert (
+            db.query(StagedResourceAncestor)
+            .filter_by(
+                descendant_urn=descendant_urn, ancestor_urn=ancestor_to_delete_urn
+            )
+            .first()
+            is not None
+        )
+        assert (
+            db.query(StagedResourceAncestor)
+            .filter_by(descendant_urn=descendant_urn, ancestor_urn=other_ancestor_urn)
+            .first()
+            is not None
+        )
+        assert {anc.urn for anc in staged_resource_3.ancestors()} == {
+            ancestor_to_delete_urn,
+            other_ancestor_urn,
+        }
+        assert {desc.urn for desc in staged_resource_1.descendants()} == {
+            descendant_urn
+        }
+        assert {desc.urn for desc in staged_resource_2.descendants()} == {
+            descendant_urn
+        }
+
+        # Delete one ancestor resource
+        db.delete(staged_resource_1)
+        db.commit()
+
+        # Verify link from deleted ancestor is gone
+        assert (
+            db.query(StagedResourceAncestor)
+            .filter_by(
+                descendant_urn=descendant_urn, ancestor_urn=ancestor_to_delete_urn
+            )
+            .first()
+            is None
+        )
+        # Verify link from other ancestor still exists
+        assert (
+            db.query(StagedResourceAncestor)
+            .filter_by(descendant_urn=descendant_urn, ancestor_urn=other_ancestor_urn)
+            .first()
+            is not None
+        )
+
+        # Refresh remaining resources to update relationships
+        db.refresh(staged_resource_2)
+        db.refresh(staged_resource_3)
+
+        # Verify relationships are updated
+        assert {anc.urn for anc in staged_resource_3.ancestors()} == {
+            other_ancestor_urn
+        }
+        assert {desc.urn for desc in staged_resource_2.descendants()} == {
+            descendant_urn
+        }

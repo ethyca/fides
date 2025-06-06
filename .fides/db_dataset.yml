@@ -2402,8 +2402,6 @@ dataset:
       data_categories: [system]
   - name: stagedresource
     fields:
-    - name: child_diff_statuses
-      data_categories: [system]
     - name: children
       data_categories: [system]
     - name: classifications
@@ -2630,6 +2628,18 @@ dataset:
       - name: vendor_restriction
         data_categories: [system.operations]
       - name: range_entries
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+  - name: stagedresourceancestor
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: descendant_urn
+        data_categories: [system.operations]
+      - name: ancestor_urn
         data_categories: [system.operations]
       - name: created_at
         data_categories: [system.operations]
