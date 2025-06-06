@@ -45,7 +45,7 @@ const IntegrationListView: NextPage = () => {
     size: pageSize,
     page,
   });
-  const { items, total } = data ?? {};
+  const { items } = data ?? {};
 
   const { onOpen, isOpen, onClose } = useDisclosure();
 
@@ -220,7 +220,7 @@ const IntegrationListView: NextPage = () => {
   const paginationConfig: TableProps<IntegrationTableData>["pagination"] = {
     current: page,
     pageSize,
-    total: total || 0,
+    total: tableData.length,
     showSizeChanger: true,
     showQuickJumper: false,
     showTotal: (totalItems, range) =>
@@ -232,6 +232,12 @@ const IntegrationListView: NextPage = () => {
       }
     },
     pageSizeOptions: ["10", "25", "50", "100"],
+  };
+
+  const tableLocale = {
+    emptyText: searchTerm.trim()
+      ? "No integrations match your search"
+      : 'You have not configured any integrations. Click "Add Integration" to connect and configure systems now.',
   };
 
   return (
@@ -278,6 +284,7 @@ const IntegrationListView: NextPage = () => {
           loading={isLoading}
           scroll={{ x: "max-content" }}
           size="middle"
+          locale={tableLocale}
         />
       )}
 
