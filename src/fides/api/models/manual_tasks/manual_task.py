@@ -59,10 +59,6 @@ class ManualTask(Base):
         viewonly=True,
         order_by="ManualTaskLog.created_at",
     )
-    # TODO: Add instances relationship when it is implemented
-    # instances = relationship("ManualTaskInstance", back_populates="task")
-    # TODO: Add field_definitions relationship when it is implemented
-    # field_definitions = relationship("ManualTaskConfigField", back_populates="task")
 
     # Properties
     @property
