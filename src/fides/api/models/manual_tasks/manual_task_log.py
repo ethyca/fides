@@ -30,7 +30,6 @@ class ManualTaskLog(Base):
     status = Column(String, nullable=False)
     message = Column(String, nullable=True)
     details = Column(JSONB, nullable=True)
-    created_at = Column(DateTime, nullable=False, default=datetime.now(timezone.utc))
 
     # Relationships - using string references to avoid circular imports
     task = relationship("ManualTask", back_populates="logs", foreign_keys=[task_id])

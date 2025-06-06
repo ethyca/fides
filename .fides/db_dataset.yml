@@ -1028,6 +1028,54 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
+  - name: manual_task
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: task_type
+      data_categories: [system.operations]
+    - name: parent_entity_id
+      data_categories: [system.operations]
+    - name: parent_entity_type
+      data_categories: [system.operations]
+    - name: due_date
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+  - name: manual_task_reference
+    fields:
+    - name: task_id
+      data_categories: [system.operations]
+    - name: reference_id
+      data_categories: [system.operations]
+    - name: reference_type
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+  - name: manual_task_log
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: task_id
+      data_categories: [system.operations]
+    - name: config_id
+      data_categories: [system.operations]
+    - name: instance_id
+      data_categories: [system.operations]
+    - name: status
+      data_categories: [system.operations]
+    - name: message
+      data_categories: [system.operations]
+    - name: details
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
   - name: monitorexecution
     data_categories: []
     fields:
