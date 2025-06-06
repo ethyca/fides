@@ -129,12 +129,10 @@ def get_manual_webhook_access_inputs(
                 db, manual_webhook.id
             )
             if webhook_attachments:
-                loaded_attachments: list[Attachment] = [
-                    attachment
-                    for webhook_attachment in webhook_attachments
-                    if (attachment := db.query(Attachment).get(webhook_attachment.id))
-                    is not None
-                ]
+                attachment_ids = [wa.id for wa in webhook_attachments]
+                loaded_attachments = db.query(Attachment).filter(
+                    Attachment.id.in_(attachment_ids)
+                ).all()
                 (
                     webhook_data_for_upload["attachments"],
                     webhook_data_for_storage["attachments"],
