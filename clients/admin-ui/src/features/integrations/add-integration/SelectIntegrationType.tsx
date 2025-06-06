@@ -1,6 +1,12 @@
-import { AntButton as Button, Flex, Spacer, TabList, Tabs } from "fidesui";
+import {
+  AntButton as Button,
+  AntInput as Input,
+  AntSelect as Select,
+  Flex,
+  Spacer,
+} from "fidesui";
+import { useMemo, useState } from "react";
 
-import { FidesTab } from "~/features/common/DataTabs";
 import { useFlags } from "~/features/common/features";
 import FidesSpinner from "~/features/common/FidesSpinner";
 import {
@@ -8,7 +14,7 @@ import {
   IntegrationTypeInfo,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
-import useIntegrationFilterTabs from "~/features/integrations/useIntegrationFilterTabs";
+import { IntegrationFilterTabs } from "~/features/integrations/useIntegrationFilterTabs";
 
 type Props = {
   onCancel: () => void;
@@ -21,49 +27,103 @@ const SelectIntegrationType = ({
   onDetailClick,
   onConfigureClick,
 }: Props) => {
-  const { tabIndex, onChangeFilter, isFiltering, filteredTypes, tabs } =
-    useIntegrationFilterTabs(INTEGRATION_TYPE_LIST);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>(
+    IntegrationFilterTabs.ALL,
+  );
+  const [isFiltering, setIsFiltering] = useState(false);
 
   const {
     flags: { oktaMonitor, alphaNewManualIntegration },
   } = useFlags();
 
+  // Get available categories based on flags
+  const availableCategories = useMemo(() => {
+    return Object.values(IntegrationFilterTabs).filter(
+      (tab) =>
+        (tab !== IntegrationFilterTabs.IDENTITY_PROVIDER || oktaMonitor) &&
+        (tab !== IntegrationFilterTabs.MANUAL || alphaNewManualIntegration),
+    );
+  }, [oktaMonitor, alphaNewManualIntegration]);
+
+  // Filter integrations based on search and category
+  const filteredTypes = useMemo(() => {
+    let filtered = INTEGRATION_TYPE_LIST;
+
+    // Filter by category
+    if (selectedCategory !== IntegrationFilterTabs.ALL) {
+      filtered = filtered.filter((i) => i.category === selectedCategory);
+    }
+
+    // Filter by search term (name only)
+    if (searchTerm.trim()) {
+      const searchLower = searchTerm.toLowerCase();
+      filtered = filtered.filter((i) =>
+        (i.placeholder.name || "").toLowerCase().includes(searchLower),
+      );
+    }
+
+    // Apply flag-based filtering
+    return filtered.filter((i) => {
+      if (!oktaMonitor && i.placeholder.connection_type === "okta") {
+        return false;
+      }
+      if (
+        !alphaNewManualIntegration &&
+        i.placeholder.connection_type === "manual_webhook"
+      ) {
+        return false;
+      }
+      return true;
+    });
+  }, [searchTerm, selectedCategory, oktaMonitor, alphaNewManualIntegration]);
+
+  const handleCategoryChange = (value: string) => {
+    setIsFiltering(true);
+    setSelectedCategory(value);
+    setTimeout(() => setIsFiltering(false), 100);
+  };
+
+  const categoryOptions = availableCategories.map((category) => ({
+    label: category,
+    value: category,
+  }));
+
   return (
     <>
-      <Tabs index={tabIndex} onChange={onChangeFilter} mb={4}>
-        <TabList>
-          {tabs.map((label) => (
-            <FidesTab label={label} key={label} />
-          ))}
-        </TabList>
-      </Tabs>
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <Input.Search
+          placeholder="Search by name..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          onSearch={setSearchTerm}
+          className="w-64"
+          allowClear
+          enterButton
+        />
+        <Select
+          value={selectedCategory}
+          onChange={handleCategoryChange}
+          options={categoryOptions}
+          className="w-48"
+          placeholder="Select category"
+        />
+      </div>
+
       {isFiltering ? (
         <FidesSpinner />
       ) : (
         <Flex direction="column">
-          {filteredTypes.map((i) => {
-            if (!oktaMonitor && i.placeholder.connection_type === "okta") {
-              return null;
-            }
-            // DEFER (ENG-675): Remove this once the alpha feature is released
-            if (
-              !alphaNewManualIntegration &&
-              i.placeholder.connection_type === "manual_webhook"
-            ) {
-              return null;
-            }
-
-            return (
-              <IntegrationBox
-                integration={i.placeholder}
-                key={i.placeholder.key}
-                onConfigureClick={() => onConfigureClick(i)}
-                otherButtons={
-                  <Button onClick={() => onDetailClick(i)}>Details</Button>
-                }
-              />
-            );
-          })}
+          {filteredTypes.map((i) => (
+            <IntegrationBox
+              integration={i.placeholder}
+              key={i.placeholder.key}
+              onConfigureClick={() => onConfigureClick(i)}
+              otherButtons={
+                <Button onClick={() => onDetailClick(i)}>Details</Button>
+              }
+            />
+          ))}
         </Flex>
       )}
       <Flex>

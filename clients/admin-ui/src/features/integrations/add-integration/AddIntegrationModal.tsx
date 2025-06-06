@@ -60,6 +60,8 @@ const AddIntegrationModal = ({
       isOpen={isOpen}
       onClose={handleCancel}
       title={modalTitle}
+      scrollBehavior="inside"
+      modalContentProps={{ height: "700px" }}
     >
       {step === IntegrationModalStep.LIST_VIEW && (
         <SelectIntegrationType
