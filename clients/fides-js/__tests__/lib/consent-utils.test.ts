@@ -328,6 +328,25 @@ describe("shouldResurfaceBanner", () => {
       expected: false,
     },
     {
+      label: "returns false for TCF when consent was set by override",
+      experience: { ...mockTCFExperience, meta: { version_hash: undefined } },
+      cookie: mockCookie,
+      savedConsent: undefined,
+      options: { fidesConsentOverride: ConsentMethod.ACCEPT },
+      expected: false,
+    },
+    {
+      label: "returns false for TCF when banner has been dismissed",
+      experience: { ...mockTCFExperience, meta: { version_hash: "v1" } },
+      cookie: {
+        ...mockCookie,
+        fides_meta: { consentMethod: ConsentMethod.DISMISS },
+      },
+      savedConsent: mockSavedConsent,
+      options: {},
+      expected: false,
+    },
+    {
       label: "returns false for modal component",
       experience: {
         ...mockExperience,
