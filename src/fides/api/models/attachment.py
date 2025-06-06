@@ -28,6 +28,11 @@ if TYPE_CHECKING:
     from fides.api.models.storage import StorageConfig
 
 
+# This is 7 days in seconds and is currently the max allowed
+# configurable expiration time for presigned URLs for both s3 and gcs.
+MAX_TTL_SECONDS = 604800
+
+
 class AttachmentType(str, EnumType):
     """
     Enum for attachment types. Indicates attachment usage.
@@ -213,7 +218,7 @@ class Attachment(Base):
                 file_key=self.file_key,
                 auth_method=auth_method,
                 get_content=False,
-                ttl_seconds=604800,
+                ttl_seconds=MAX_TTL_SECONDS,
             )
             return size, url
 
@@ -229,7 +234,7 @@ class Attachment(Base):
             # Expiration is set to 7 days
             url = blob.generate_signed_url(
                 version="v4",
-                expiration=604800,
+                expiration=MAX_TTL_SECONDS,
                 method="GET",
             )
             return blob.size, url
@@ -282,10 +287,11 @@ class Attachment(Base):
 
         if self.config.type == StorageType.local:
             filename = get_local_filename(self.file_key)
-            with open(filename, "rb") as file:
-                fileobj = file.read()
-                size = len(fileobj)
-                return size, fileobj
+            size = os.path.getsize(filename)
+            with open(filename, "rb") as fileobj:
+                content = BytesIO(fileobj.read())
+                content.seek(0)  # Reset pointer to beginning
+                return size, content
 
         raise ValueError(f"Unsupported storage type: {self.config.type}")
 

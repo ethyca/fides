@@ -747,7 +747,11 @@ class TestAttachmentContentRetrieval:
         )
         size, content = attachment.retrieve_attachment_content()
         assert size == len(attachment_file_copy)
-        assert content == attachment_file_copy
+        # Read the content while the file is still open
+        content_value = content.read()
+        assert content_value == attachment_file_copy
+        # Close the file after we're done with it
+        content.close()
         attachment.delete(db)
 
     def test_retrieve_attachment_content_from_gcs(
