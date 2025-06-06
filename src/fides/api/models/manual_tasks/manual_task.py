@@ -52,16 +52,6 @@ class ManualTask(Base):
         uselist=True,
         cascade="all, delete-orphan",
     )
-    # TODO: Add configs relationship when it is implemented
-    # configs = relationship(
-    #     "ManualTaskConfig",
-    #     secondary="manual_task_reference",
-    #     primaryjoin="and_(ManualTask.id == ManualTaskReference.task_id, ManualTaskReference.reference_type == 'manual_task_config')",
-    #     secondaryjoin="ManualTaskConfig.id == ManualTaskReference.reference_id",
-    #     viewonly=True,
-    # )
-    # TODO: Add submissions relationship when it is implemented
-    # submissions = relationship("ManualTaskSubmission", back_populates="task")
     logs = relationship(
         "ManualTaskLog",
         back_populates="task",
