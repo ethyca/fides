@@ -8,6 +8,7 @@ export * from "@chakra-ui/utils";
 
 // Unmodified component exported directly from Ant Design
 export type { ThemeConfig as AntThemeConfig } from "antd/es";
+export type { ColumnsType as AntColumnsType } from "antd/es/table";
 export type {
   ButtonProps as AntButtonProps,
   CollapseProps as AntCollapseProps,
