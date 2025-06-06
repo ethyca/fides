@@ -30,6 +30,7 @@ class TestSchema(ConnectionConfigSecretsSchema):
         title="Regions",
         description="Select one or more regions to sync data from",
         options=["us-east", "us-west", "eu-west", "ap-southeast"],
+        multiselect=True,
     )
 
     # Required single select field
@@ -44,7 +45,6 @@ class TestSchema(ConnectionConfigSecretsSchema):
         title="Sync Frequency",
         description="How often to sync each data type",
         options=["hourly", "daily", "weekly", "monthly"],
-        multiselect=True,
     )
 
     # Sensitive field
