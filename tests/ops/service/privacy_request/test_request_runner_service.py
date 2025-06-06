@@ -7,7 +7,6 @@ from unittest.mock import ANY, Mock, call
 
 import pydash
 import pytest
-from moto import mock_aws
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import flag_modified
@@ -43,16 +42,11 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestStatus,
 )
 from fides.api.schemas.redis_cache import Identity
-from fides.api.schemas.storage.storage import ResponseFormat
 from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.service.privacy_request.request_runner_service import (
-    AttachmentData,
     build_consent_dataset_graph,
-    get_attachments_content,
-    get_manual_webhook_access_inputs,
     needs_batch_email_send,
     run_webhooks_and_report_status,
-    upload_access_results,
 )
 from fides.common.api.v1.urn_registry import REQUEST_TASK_CALLBACK, V1_URL_PREFIX
 from fides.config import CONFIG
