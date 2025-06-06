@@ -3,6 +3,10 @@ from enum import Enum as EnumType
 
 from loguru import logger
 
+# This is the max file size for downloading the content of an attachment.
+# This is an industry standard used by companies like Google and Microsoft.
+LARGE_FILE_THRESHOLD = 25 * 1024 * 1024  # 25 MB
+
 
 class AllowedFileType(EnumType):
     """
@@ -24,15 +28,49 @@ class AllowedFileType(EnumType):
 
 LOCAL_FIDES_UPLOAD_DIRECTORY = "fides_uploads"
 
-# Default to 10MB if not specified in environment
-LARGE_FILE_THRESHOLD = 10 * 1024 * 1024  # 10 MB threshold
-
 
 def get_local_filename(file_key: str) -> str:
-    """Verifies that the local storage directory exists and returns the local filepath"""
-    if not os.path.exists(LOCAL_FIDES_UPLOAD_DIRECTORY):
-        os.makedirs(LOCAL_FIDES_UPLOAD_DIRECTORY)
-    return f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{file_key}"
+    """Verifies that the local storage directory exists and returns the local filepath.
+
+    This extra security checks are to prevent directory traversal attacks and "complete business and technical destruction".
+    Thanks Claude.
+
+    Args:
+        file_key: The key/path for the file
+
+    Returns:
+        The full local filepath
+
+    Raises:
+        ValueError: If the file_key is invalid or would result in a path outside the upload directory
+    """
+    # Basic validation
+    if not file_key:
+        raise ValueError("File key cannot be empty")
+
+    # Security checks before normalization
+    if file_key.startswith("/"):
+        raise ValueError("Invalid file key: cannot start with '/'")
+
+    # Normalize the path to handle any path separators consistently
+    # First normalize using os.path.normpath to handle any redundant separators
+    normalized_key = os.path.normpath(file_key)
+    # Then convert all separators to forward slashes for consistency
+    normalized_key = normalized_key.replace("\\", "/")
+
+    # Additional security: ensure the final path is within the upload directory
+    final_path = os.path.join(LOCAL_FIDES_UPLOAD_DIRECTORY, normalized_key)
+    if not os.path.abspath(final_path).startswith(
+        os.path.abspath(LOCAL_FIDES_UPLOAD_DIRECTORY)
+    ):
+        raise ValueError(
+            "Invalid file key: would result in path outside upload directory"
+        )
+
+    # Create all necessary directories
+    os.makedirs(os.path.dirname(final_path), exist_ok=True)
+
+    return final_path
 
 
 def get_allowed_file_type_or_raise(file_key: str) -> str:

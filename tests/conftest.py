@@ -2208,6 +2208,16 @@ def mock_gcs_client(
             mock_download_as_bytes, mock_blob
         )
 
+        def mock_download_to_file(self, fileobj, *args, **kwargs):
+            """Mock implementation of download_to_file method.
+            Cannot use autospec because it is bound to the mock_blob instance.
+            """
+            fileobj.write(file_content)
+            fileobj.seek(0)
+            return None
+
+        mock_blob.download_to_file = types.MethodType(mock_download_to_file, mock_blob)
+
         def mock_upload_from_file(
             self,
             file_obj,
