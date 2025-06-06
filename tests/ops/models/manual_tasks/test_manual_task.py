@@ -235,4 +235,3 @@ class TestManualTaskRelationships:
         # Verify logs relationship
         assert len(manual_task.logs) == 2  # One from creation + one we just added
         assert any(l.message == "Test log" for l in manual_task.logs)
-
