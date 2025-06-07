@@ -15,8 +15,7 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 )
 
 from fides.api.api.deps import get_autoclose_db_session
-from fides.api.db.base_class import Base  # type: ignore[attr-defined]
-from fides.api.db.base_class import JSONTypeOverride
+from fides.api.db.base_class import Base, JSONTypeOverride  # type: ignore[attr-defined]
 from fides.api.db.util import EnumColumn
 from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
@@ -26,16 +25,11 @@ from fides.api.graph.config import (
 from fides.api.models.privacy_request.execution_log import (
     COMPLETED_EXECUTION_LOG_STATUSES,
 )
+from fides.api.models.storage import StorageConfig, get_active_default_storage_config
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import ExecutionLogStatus
 from fides.api.schemas.request_task.external_storage import ExternalStorageMetadata
-from fides.api.service.storage.request_task_storage import (
-    RequestTaskStorageError,
-    delete_large_data,
-    retrieve_large_data,
-    store_large_data,
-)
 from fides.api.util.cache import (
     FidesopsRedis,
     celery_tasks_in_flight,
@@ -43,7 +37,15 @@ from fides.api.util.cache import (
     get_cache,
 )
 from fides.api.util.collection_util import Row
-from fides.api.util.request_task_util import is_large_data
+from fides.api.util.request_task_storage_util import (
+    RequestTaskStorageError,
+    RequestTaskStorageUtil,
+)
+from fides.api.util.request_task_util import (
+    LARGE_DATA_THRESHOLD_BYTES,
+    calculate_data_size,
+    is_large_data,
+)
 from fides.config import CONFIG
 
 if TYPE_CHECKING:
@@ -194,6 +196,45 @@ class RequestTask(Base):
         task_id = cache.get(get_async_task_tracking_cache_key(self.id))
         return task_id
 
+    def _store_large_data(
+        self,
+        db: Session,
+        data: List[Row],
+        data_type: str,
+        storage_key: Optional[str] = None,
+    ) -> ExternalStorageMetadata:
+        """Store large data in external storage and return metadata
+
+        Args:
+            db: Database session
+            data: The data to store
+            data_type: Type of data being stored ("access_data" or "data_for_erasures")
+            storage_key: Optional specific storage config key to use, defaults to active default
+
+        Returns:
+            ExternalStorageMetadata with storage details
+        """
+        return RequestTaskStorageUtil.store_large_data(
+            db=db,
+            privacy_request_id=self.privacy_request_id,
+            collection_name=self.collection_name,
+            data=data,
+            data_type=data_type,
+            storage_key=storage_key,
+        )
+
+    def _retrieve_large_data(
+        self, db: Session, metadata: ExternalStorageMetadata
+    ) -> List[Row]:
+        """Retrieve large data from external storage"""
+        return RequestTaskStorageUtil.retrieve_large_data(db=db, metadata=metadata)
+
+    def _delete_large_data(
+        self, db: Session, metadata: ExternalStorageMetadata
+    ) -> None:
+        """Delete large data from external storage"""
+        RequestTaskStorageUtil.delete_large_data(db=db, metadata=metadata)
+
     @property
     def access_data(self) -> List[Row]:
         """Get access data, handling both direct storage and external storage"""
@@ -209,65 +250,54 @@ class RequestTask(Base):
             )
             try:
                 metadata = ExternalStorageMetadata.model_validate(raw_data)
-                data = retrieve_large_data(metadata)
+                with get_autoclose_db_session() as session:
+                    data = self._retrieve_large_data(session, metadata)
                 logger.info(
-                    f"Successfully retrieved {len(data)} rows from external storage"
+                    f"Successfully retrieved {len(data)} records from external storage"
                 )
                 return data
-            except Exception as exc:
-                logger.error(f"Failed to retrieve external access_data: {exc}")
-                raise RequestTaskStorageError(
-                    f"Failed to retrieve external access_data: {str(exc)}"
+            except Exception as e:
+                logger.error(
+                    f"Failed to retrieve access_data from external storage: {str(e)}"
                 )
+                raise RequestTaskStorageError(
+                    f"Failed to retrieve access_data: {str(e)}"
+                ) from e
         else:
-            # It's the actual data stored directly
-            data = raw_data or []
-            return data
+            # It's direct storage (small data)
+            return raw_data if raw_data else []
 
     @access_data.setter
-    def access_data(self, value: List[Row]) -> None:
+    def access_data(self, value: Optional[List[Row]]) -> None:
         """Set access data, automatically using external storage for large data"""
         if not value:
-            logger.debug("Setting empty access_data")
+            # Clean up any existing external storage
+            self._cleanup_external_access_data()
             self._access_data = []
             return
 
-        data_count = len(value)
-        logger.debug(f"Setting access_data with {data_count} rows")
-
-        # Clean up any existing external storage
-        self._cleanup_external_access_data()
-
+        # Check if data is large enough for external storage
         if is_large_data(value):
-            # Store externally and save metadata
             logger.info(
-                f"Large access_data detected ({data_count} rows), storing externally"
+                f"Data size ({calculate_data_size(value)} bytes) exceeds threshold "
+                f"({LARGE_DATA_THRESHOLD_BYTES} bytes), storing externally"
             )
-            try:
-                with get_autoclose_db_session() as session:
-                    metadata = store_large_data(
-                        db=session,
-                        privacy_request_id=self.privacy_request_id,  # type: ignore[arg-type]
-                        collection_name=self.collection_name,
-                        data=value,
-                        data_type="access_data",
-                    )
-                    self._access_data = metadata.model_dump()
-                    logger.info(
-                        f"Successfully stored access_data externally to {metadata.storage_type}"
-                    )
-            except Exception as exc:
-                logger.error(f"Failed to store large access_data externally: {exc}")
-                raise RequestTaskStorageError(
-                    f"Failed to store large access_data: {str(exc)}"
-                )
+            # Clean up any existing external storage first
+            self._cleanup_external_access_data()
+
+            # Store in external storage
+            with get_autoclose_db_session() as session:
+                metadata = self._store_large_data(session, value, "access_data")
+                self._access_data = metadata.model_dump()
         else:
-            # Store data directly in database
+            # Clean up any existing external storage
+            self._cleanup_external_access_data()
+            # Store directly in database
             self._access_data = value
 
     @property
     def data_for_erasures(self) -> List[Row]:
-        """Get erasure data, handling both direct storage and external storage"""
+        """Get data for erasures, handling both direct storage and external storage"""
         raw_data = self._data_for_erasures
         if not raw_data:
             return []
@@ -280,61 +310,82 @@ class RequestTask(Base):
             )
             try:
                 metadata = ExternalStorageMetadata.model_validate(raw_data)
-                data = retrieve_large_data(metadata)
+                with get_autoclose_db_session() as session:
+                    data = self._retrieve_large_data(session, metadata)
                 logger.info(
-                    f"Successfully retrieved {len(data)} rows for erasures from external storage"
+                    f"Successfully retrieved {len(data)} records from external storage"
                 )
                 return data
             except Exception as e:
-                logger.error(f"Failed to retrieve external data_for_erasures: {e}")
-                raise RequestTaskStorageError(
-                    f"Failed to retrieve external data_for_erasures: {str(e)}"
+                logger.error(
+                    f"Failed to retrieve data_for_erasures from external storage: {str(e)}"
                 )
+                raise RequestTaskStorageError(
+                    f"Failed to retrieve data_for_erasures: {str(e)}"
+                ) from e
         else:
-            # It's the actual data stored directly
-            data = raw_data or []
-            return data
+            # It's direct storage (small data)
+            return raw_data if raw_data else []
 
     @data_for_erasures.setter
-    def data_for_erasures(self, value: List[Row]) -> None:
-        """Set erasure data, automatically using external storage for large data"""
+    def data_for_erasures(self, value: Optional[List[Row]]) -> None:
+        """Set data for erasures, automatically using external storage for large data"""
         if not value:
+            # Clean up any existing external storage
+            self._cleanup_external_data_for_erasures()
             self._data_for_erasures = []
             return
 
-        data_count = len(value)
-
-        # Clean up any existing external storage
-        self._cleanup_external_data_for_erasures()
-
+        # Check if data is large enough for external storage
         if is_large_data(value):
-            # Store externally and save metadata
             logger.info(
-                f"Large data_for_erasures detected ({data_count} rows), storing externally"
+                f"Data size ({calculate_data_size(value)} bytes) exceeds threshold "
+                f"({LARGE_DATA_THRESHOLD_BYTES} bytes), storing externally"
             )
-            try:
-                with get_autoclose_db_session() as session:
-                    metadata = store_large_data(
-                        db=session,
-                        privacy_request_id=self.privacy_request_id,  # type: ignore[arg-type]
-                        collection_name=self.collection_name,
-                        data=value,
-                        data_type="data_for_erasures",
-                    )
-                    self._data_for_erasures = metadata.model_dump()
-                    logger.info(
-                        f"Successfully stored data_for_erasures externally to {metadata.storage_type}"
-                    )
-            except Exception as exc:
-                logger.error(
-                    f"Failed to store large data_for_erasures externally: {exc}"
-                )
-                raise RequestTaskStorageError(
-                    f"Failed to store large data_for_erasures: {str(exc)}"
-                )
+            # Clean up any existing external storage first
+            self._cleanup_external_data_for_erasures()
+
+            # Store in external storage
+            with get_autoclose_db_session() as session:
+                metadata = self._store_large_data(session, value, "data_for_erasures")
+                self._data_for_erasures = metadata.model_dump()
         else:
-            # Store data directly in database
+            # Clean up any existing external storage
+            self._cleanup_external_data_for_erasures()
+            # Store directly in database
             self._data_for_erasures = value
+
+    def _cleanup_external_access_data(self) -> None:
+        """Clean up external storage for access_data if it exists"""
+        if isinstance(self._access_data, dict) and "storage_type" in self._access_data:
+            try:
+                metadata = ExternalStorageMetadata.model_validate(self._access_data)
+                with get_autoclose_db_session() as session:
+                    self._delete_large_data(session, metadata)
+            except Exception as e:
+                logger.warning(f"Failed to cleanup external access_data: {str(e)}")
+
+    def _cleanup_external_data_for_erasures(self) -> None:
+        """Clean up external storage for data_for_erasures if it exists"""
+        if (
+            isinstance(self._data_for_erasures, dict)
+            and "storage_type" in self._data_for_erasures
+        ):
+            try:
+                metadata = ExternalStorageMetadata.model_validate(
+                    self._data_for_erasures
+                )
+                with get_autoclose_db_session() as session:
+                    self._delete_large_data(session, metadata)
+            except Exception as e:
+                logger.warning(
+                    f"Failed to cleanup external data_for_erasures: {str(e)}"
+                )
+
+    def cleanup_external_storage(self) -> None:
+        """Clean up all external storage files for this request task"""
+        self._cleanup_external_access_data()
+        self._cleanup_external_data_for_erasures()
 
     def get_access_data(self) -> List[Row]:
         """Helper to retrieve access data or default to empty list"""
@@ -344,45 +395,8 @@ class RequestTask(Base):
         """Helper to retrieve erasure data needed to build masking requests or default to empty list"""
         return self.data_for_erasures
 
-    def _cleanup_external_access_data(self) -> None:
-        """Clean up external storage for access_data if it exists"""
-        if not self._access_data:
-            return
-
-        if isinstance(self._access_data, dict) and "storage_type" in self._access_data:
-            try:
-                metadata = ExternalStorageMetadata.model_validate(self._access_data)
-                delete_large_data(metadata)
-            except Exception as exc:
-                logger.warning(f"Failed to cleanup external access_data storage: {exc}")
-
-    def _cleanup_external_data_for_erasures(self) -> None:
-        """Clean up external storage for data_for_erasures if it exists"""
-        if not self._data_for_erasures:
-            return
-
-        if (
-            isinstance(self._data_for_erasures, dict)
-            and "storage_type" in self._data_for_erasures
-        ):
-            try:
-                metadata = ExternalStorageMetadata.model_validate(
-                    self._data_for_erasures
-                )
-                delete_large_data(metadata)
-            except Exception as exc:
-                logger.warning(
-                    f"Failed to cleanup external data_for_erasures storage: {exc}"
-                )
-
-    def cleanup_external_storage(self) -> None:
-        """Clean up any external storage files associated with this task"""
-        self._cleanup_external_access_data()
-        self._cleanup_external_data_for_erasures()
-
     def delete(self, db: Session) -> None:
-        """Override delete to clean up external storage"""
-        # Clean up external storage before deleting
+        """Override delete to cleanup external storage first"""
         self.cleanup_external_storage()
         super().delete(db)
 

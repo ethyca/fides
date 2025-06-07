@@ -7,8 +7,8 @@ from loguru import logger
 from fides.api.util.collection_util import Row
 
 # 1GB threshold for external storage
-LARGE_DATA_THRESHOLD_BYTES = 1024 * 1024 * 1024  # 1GB
-
+# LARGE_DATA_THRESHOLD_BYTES = 1024 * 1024 * 1024  # 1GB
+LARGE_DATA_THRESHOLD_BYTES = 1
 
 def calculate_data_size(data: List[Row]) -> int:
     """Calculate the approximate serialized size of access data in bytes using a memory-efficient approach"""

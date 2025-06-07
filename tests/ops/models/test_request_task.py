@@ -12,8 +12,9 @@ from fides.api.graph.config import (
 from fides.api.models.privacy_request import RequestTask
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import ExecutionLogStatus
-from fides.api.service.storage.request_task_storage import RequestTaskStorageError
+from fides.api.service.storage.util import get_local_filename
 from fides.api.util.cache import FidesopsRedis, cache_task_tracking_key, get_cache
+from fides.api.util.request_task_storage_util import RequestTaskStorageError
 
 
 class TestRequestTask:
@@ -366,7 +367,7 @@ class TestLargeDataStorage:
         # Should be stored as external storage metadata
         assert isinstance(request_task._access_data, dict)
         assert "storage_type" in request_task._access_data
-        assert "url" in request_task._access_data
+        assert "file_key" in request_task._access_data
         assert "filesize" in request_task._access_data
 
         # The property should still return the original data by retrieving from external storage
@@ -393,7 +394,7 @@ class TestLargeDataStorage:
         # Should be stored as external storage metadata
         assert isinstance(request_task._data_for_erasures, dict)
         assert "storage_type" in request_task._data_for_erasures
-        assert "url" in request_task._data_for_erasures
+        assert "file_key" in request_task._data_for_erasures
         assert "filesize" in request_task._data_for_erasures
 
         # The property should still return the original data by retrieving from external storage
@@ -416,10 +417,12 @@ class TestLargeDataStorage:
 
         # Verify it's stored externally
         assert isinstance(request_task._access_data, dict)
-        initial_url = request_task._access_data["url"]
+        initial_file_key = request_task._access_data["file_key"]
+
+        initial_path = get_local_filename(initial_file_key)
 
         # Verify the file exists
-        assert os.path.exists(initial_url)
+        assert os.path.exists(initial_path)
 
         # Update with new data - should clean up old file and create new one
         new_data = [{"id": 2, "name": "Updated"}]
@@ -427,12 +430,13 @@ class TestLargeDataStorage:
         request_task.save(db)
 
         # Old file should be cleaned up
-        assert not os.path.exists(initial_url)
+        assert not os.path.exists(initial_path)
 
         # New file should exist
-        new_url = request_task._access_data["url"]
-        assert os.path.exists(new_url)
-        assert new_url != initial_url
+        new_file_key = request_task._access_data["file_key"]
+        new_path = get_local_filename(new_file_key)
+        assert os.path.exists(new_path)
+        assert new_file_key != initial_file_key
 
         # Data should be correct
         assert request_task.access_data == new_data
@@ -452,25 +456,28 @@ class TestLargeDataStorage:
         request_task.save(db)
 
         # Verify files exist
-        access_url = request_task._access_data["url"]
-        erasures_url = request_task._data_for_erasures["url"]
+        access_file_key = request_task._access_data["file_key"]
+        erasures_file_key = request_task._data_for_erasures["file_key"]
 
-        assert os.path.exists(access_url)
-        assert os.path.exists(erasures_url)
+        access_path = get_local_filename(access_file_key)
+        erasures_path = get_local_filename(erasures_file_key)
+
+        assert os.path.exists(access_path)
+        assert os.path.exists(erasures_path)
 
         # Delete the request task
         request_task.delete(db)
 
         # Files should be cleaned up
-        assert not os.path.exists(access_url)
-        assert not os.path.exists(erasures_url)
+        assert not os.path.exists(access_path)
+        assert not os.path.exists(erasures_path)
 
     def test_external_storage_retrieval_failure_handling(self, db, request_task):
         """Test that external storage retrieval failures are handled gracefully"""
         # Simulate external storage metadata with non-existent file
         metadata_dict = {
             "storage_type": "local",
-            "url": "/nonexistent/path/file.json",
+            "file_key": "nonexistent/path/file.json",
             "filesize": 1000,
         }
 
@@ -524,7 +531,7 @@ class TestLargeDataStorage:
         # Simulate external storage metadata
         metadata_dict = {
             "storage_type": "local",
-            "url": "/path/to/file",
+            "file_key": "/path/to/file",
             "filesize": 1000,
         }
 

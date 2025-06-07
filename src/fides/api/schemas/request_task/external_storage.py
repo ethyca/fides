@@ -10,7 +10,7 @@ class ExternalStorageMetadata(FidesSchema):
     """Metadata for externally stored request task data"""
 
     storage_type: StorageType
-    url: str = Field(description="URL or path to retrieve the external data")
+    file_key: str = Field(description="Key of the file in external storage")
     filesize: int = Field(description="Size of the stored file in bytes", ge=0)
     storage_key: Optional[str] = Field(
         default=None, description="Storage configuration key used"
