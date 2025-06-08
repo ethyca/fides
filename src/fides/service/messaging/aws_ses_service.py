@@ -1,5 +1,6 @@
 from typing import Any, Optional
 
+from fides.api.models.property import CONFIG
 from loguru import logger
 
 from fides.api.models.messaging import MessagingConfig
@@ -86,7 +87,10 @@ class AWS_SES_Service:
         aws_session = get_aws_session(
             auth_method=self.messaging_config_secrets.auth_method.value,
             storage_secrets=storage_secrets,  # type: ignore[arg-type]
-            assume_role_arn=self.messaging_config_secrets.aws_assume_role_arn,
+            assume_role_arn=CONFIG.credentials.get("notifications", {}).get(
+                "aws_ses_assume_role_arn"
+            )
+            or self.messaging_config_secrets.aws_assume_role_arn,
         )
         aws_ses_client = aws_session.client(
             "ses", region_name=self.messaging_config_details.aws_region
