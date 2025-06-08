@@ -254,7 +254,7 @@ class RequestTask(Base):
                 logger.info(
                     f"Successfully retrieved {len(data)} records from external storage"
                 )
-                return data
+                return data if data is not None else []
             except Exception as e:
                 logger.error(
                     f"Failed to retrieve access_data from external storage: {str(e)}"
@@ -269,11 +269,10 @@ class RequestTask(Base):
     def access_data(self, value: Optional[List[Row]]) -> None:
         """Set access data, automatically using external storage for large data"""
         if not value:
-            # Only update if current value is not already empty
-            if self._access_data not in (None, []):
-                # Clean up any existing external storage
-                self._cleanup_external_access_data()
-                self._access_data = []
+            # Clean up any existing external storage
+            self._cleanup_external_access_data()
+            # Always set to [] when explicitly setting empty data
+            self._access_data = []
             return
 
         # Check if the data is the same as what's already stored
@@ -321,7 +320,7 @@ class RequestTask(Base):
                 logger.info(
                     f"Successfully retrieved {len(data)} records from external storage"
                 )
-                return data
+                return data if data is not None else []
             except Exception as e:
                 logger.error(
                     f"Failed to retrieve data_for_erasures from external storage: {str(e)}"
@@ -336,11 +335,10 @@ class RequestTask(Base):
     def data_for_erasures(self, value: Optional[List[Row]]) -> None:
         """Set data for erasures, automatically using external storage for large data"""
         if not value:
-            # Only update if current value is not already empty
-            if self._data_for_erasures not in (None, []):
-                # Clean up any existing external storage
-                self._cleanup_external_data_for_erasures()
-                self._data_for_erasures = []
+            # Clean up any existing external storage
+            self._cleanup_external_data_for_erasures()
+            # Always set to [] when explicitly setting empty data
+            self._data_for_erasures = []
             return
 
         # Check if the data is the same as what's already stored
