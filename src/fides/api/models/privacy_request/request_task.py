@@ -269,9 +269,17 @@ class RequestTask(Base):
     def access_data(self, value: Optional[List[Row]]) -> None:
         """Set access data, automatically using external storage for large data"""
         if not value:
-            # Clean up any existing external storage
-            self._cleanup_external_access_data()
-            self._access_data = []
+            # Only update if current value is not already empty
+            if self._access_data not in (None, []):
+                # Clean up any existing external storage
+                self._cleanup_external_access_data()
+                self._access_data = []
+            return
+
+        # Check if the data is the same as what's already stored
+        current_data = self.access_data
+        if current_data == value:
+            # Data is identical, no need to update
             return
 
         # Check if data is large enough for external storage
@@ -328,9 +336,17 @@ class RequestTask(Base):
     def data_for_erasures(self, value: Optional[List[Row]]) -> None:
         """Set data for erasures, automatically using external storage for large data"""
         if not value:
-            # Clean up any existing external storage
-            self._cleanup_external_data_for_erasures()
-            self._data_for_erasures = []
+            # Only update if current value is not already empty
+            if self._data_for_erasures not in (None, []):
+                # Clean up any existing external storage
+                self._cleanup_external_data_for_erasures()
+                self._data_for_erasures = []
+            return
+
+        # Check if the data is the same as what's already stored
+        current_data = self.data_for_erasures
+        if current_data == value:
+            # Data is identical, no need to update
             return
 
         # Check if data is large enough for external storage

@@ -5,6 +5,7 @@ from typing import List, Optional
 from loguru import logger
 
 from fides.api.util.collection_util import Row
+from fides.api.util.custom_json_encoder import CustomJSONEncoder
 
 # 1GB threshold for external storage
 # LARGE_DATA_THRESHOLD_BYTES = 1024 * 1024 * 1024  # 1GB
@@ -29,7 +30,9 @@ def calculate_data_size(data: List[Row]) -> int:
             sample = data[:sample_size]
 
             # Calculate sample size
-            sample_json = json.dumps(sample, separators=(",", ":"))
+            sample_json = json.dumps(
+                sample, cls=CustomJSONEncoder, separators=(",", ":")
+            )
             sample_bytes = len(sample_json.encode("utf-8"))
 
             # Estimate total size (with some overhead for JSON structure)
@@ -43,7 +46,7 @@ def calculate_data_size(data: List[Row]) -> int:
             return estimated_size
 
         # For smaller datasets, calculate exact size
-        json_str = json.dumps(data, separators=(",", ":"))
+        json_str = json.dumps(data, cls=CustomJSONEncoder, separators=(",", ":"))
         size = len(json_str.encode("utf-8"))
         return size
 
