@@ -239,7 +239,7 @@ class RequestTask(Base):
         """Get access data, handling both direct storage and external storage"""
         raw_data = self._access_data
         if raw_data is None:
-            return []
+            return None
 
         # Check if it's metadata (dict with storage info) or actual data (list)
         if isinstance(raw_data, dict) and "storage_type" in raw_data:
@@ -263,8 +263,7 @@ class RequestTask(Base):
                     f"Failed to retrieve access_data: {str(e)}"
                 ) from e
         else:
-            # It's direct storage (small data)
-            return raw_data if raw_data is not None else []
+            return raw_data
 
     @access_data.setter
     def access_data(self, value: Optional[List[Row]]) -> None:
@@ -299,7 +298,7 @@ class RequestTask(Base):
         """Get data for erasures, handling both direct storage and external storage"""
         raw_data = self._data_for_erasures
         if raw_data is None:
-            return []
+            return None
 
         # Check if it's metadata (dict with storage info) or actual data (list)
         if isinstance(raw_data, dict) and "storage_type" in raw_data:
@@ -323,8 +322,7 @@ class RequestTask(Base):
                     f"Failed to retrieve data_for_erasures: {str(e)}"
                 ) from e
         else:
-            # It's direct storage (small data)
-            return raw_data if raw_data is not None else []
+            return raw_data
 
     @data_for_erasures.setter
     def data_for_erasures(self, value: Optional[List[Row]]) -> None:
