@@ -203,6 +203,7 @@ async def test_timescale_erasure_request_task(
     assert not any([card.name is None for card in payment_cards]) is None
 
 
+@pytest.mark.failed_request_tasks
 @pytest.mark.integration_timescale
 @pytest.mark.integration
 @pytest.mark.asyncio

@@ -1,4 +1,3 @@
-import json
 import os
 from datetime import datetime
 from io import BytesIO
@@ -23,7 +22,6 @@ from fides.api.util.encryption.request_task_aes_gcm_util import (
     decrypt_data,
     encrypt_data,
 )
-from fides.api.util.storage_util import StorageJSONEncoder
 
 
 class RequestTaskStorageError(Exception):
@@ -84,16 +82,11 @@ class RequestTaskStorageUtil:
 
         # Serialize and encrypt data
         try:
-            serialized_data = json.dumps(
-                data, cls=StorageJSONEncoder, separators=(",", ":")
-            )
-            data_bytes = serialized_data.encode("utf-8")
-
-            # Encrypt the data before storing
-            encrypted_bytes = encrypt_data(data_bytes)
+            # Encrypt the data with JSON serialization built-in
+            encrypted_bytes = encrypt_data(data)
             file_size = len(encrypted_bytes)
 
-            logger.info(f"Encrypted data from {len(data_bytes)} to {file_size} bytes")
+            logger.info(f"Encrypted and serialized data to {file_size} bytes")
         except (TypeError, ValueError) as e:
             raise RequestTaskStorageError(f"Failed to serialize data: {str(e)}")
         except RequestTaskEncryptionError as e:
@@ -193,9 +186,7 @@ class RequestTaskStorageUtil:
 
             # Decrypt and deserialize data
             logger.info("Decrypting retrieved data")
-            data_bytes = decrypt_data(encrypted_bytes)
-            data_str = data_bytes.decode("utf-8")
-            return json.loads(data_str)
+            return decrypt_data(encrypted_bytes)
 
         except RequestTaskEncryptionError as e:
             raise RequestTaskStorageError(f"Failed to decrypt data: {str(e)}")
@@ -317,7 +308,7 @@ class RequestTaskStorageUtil:
             auth_method=auth_method,
             get_content=True,
         )
-        return data_bytes
+        return data_bytes  # type: ignore
 
     @staticmethod
     def _retrieve_from_gcs(

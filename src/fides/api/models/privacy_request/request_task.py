@@ -25,7 +25,6 @@ from fides.api.graph.config import (
 from fides.api.models.privacy_request.execution_log import (
     COMPLETED_EXECUTION_LOG_STATUSES,
 )
-from fides.api.models.storage import StorageConfig, get_active_default_storage_config
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import ExecutionLogStatus
@@ -216,7 +215,7 @@ class RequestTask(Base):
         """
         return RequestTaskStorageUtil.store_large_data(
             db=db,
-            privacy_request_id=self.privacy_request_id,
+            privacy_request_id=self.privacy_request_id,  # type: ignore[arg-type]
             collection_name=self.collection_name,
             data=data,
             data_type=data_type,
@@ -236,11 +235,11 @@ class RequestTask(Base):
         RequestTaskStorageUtil.delete_large_data(db=db, metadata=metadata)
 
     @property
-    def access_data(self) -> List[Row]:
+    def access_data(self) -> Optional[List[Row]]:
         """Get access data, handling both direct storage and external storage"""
         raw_data = self._access_data
         if not raw_data:
-            return []
+            return None
 
         # Check if it's metadata (dict with storage info) or actual data (list)
         if isinstance(raw_data, dict) and "storage_type" in raw_data:
@@ -296,11 +295,11 @@ class RequestTask(Base):
             self._access_data = value
 
     @property
-    def data_for_erasures(self) -> List[Row]:
+    def data_for_erasures(self) -> Optional[List[Row]]:
         """Get data for erasures, handling both direct storage and external storage"""
         raw_data = self._data_for_erasures
         if not raw_data:
-            return []
+            return None
 
         # Check if it's metadata (dict with storage info) or actual data (list)
         if isinstance(raw_data, dict) and "storage_type" in raw_data:
@@ -389,11 +388,11 @@ class RequestTask(Base):
 
     def get_access_data(self) -> List[Row]:
         """Helper to retrieve access data or default to empty list"""
-        return self.access_data
+        return self.access_data or []
 
     def get_data_for_erasures(self) -> List[Row]:
         """Helper to retrieve erasure data needed to build masking requests or default to empty list"""
-        return self.data_for_erasures
+        return self.data_for_erasures or []
 
     def delete(self, db: Session) -> None:
         """Override delete to cleanup external storage first"""

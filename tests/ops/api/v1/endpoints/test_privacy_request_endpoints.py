@@ -7878,6 +7878,7 @@ class TestRequestTaskAsyncCallback:
             == f"Callback failed. Cannot queue access task '{request_task.id}' with request task status 'pending'"
         )
 
+    @pytest.mark.failed_request_tasks
     @mock.patch(
         "fides.api.api.v1.endpoints.privacy_request_endpoints.queue_request_task",
     )
@@ -7960,6 +7961,7 @@ class TestRequestTaskAsyncCallback:
         )
         assert 422 == response.status_code
 
+    @pytest.mark.failed_request_tasks
     @mock.patch(
         "fides.api.api.v1.endpoints.privacy_request_endpoints.queue_request_task",
     )
