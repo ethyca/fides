@@ -66,7 +66,12 @@ const validateBundle = (fileName: string, format: "iife" | "esm"): void => {
   }
 };
 
-const iifeBundles = ["fides.js", "fides-tcf.js", "fides-headless.js"];
+const iifeBundles = [
+  "fides.js",
+  "fides-tcf.js",
+  "fides-headless.js",
+  "fides-preview.js",
+];
 
 const esmBundles = [
   "fides.mjs",

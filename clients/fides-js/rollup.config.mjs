@@ -230,9 +230,12 @@ const previewScript = {
   output: [
     {
       file: "dist/fides-preview.js",
-      format: "umd",
+      format: "iife",
       name: "FidesPreview",
       sourcemap: false,
+      exports: "named",
+      extend: true,
+      manualChunks: false,
     },
   ],
 };

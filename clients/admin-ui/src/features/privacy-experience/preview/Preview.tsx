@@ -113,7 +113,7 @@ const Preview = ({
         setPreviewMode("standard");
       }
     } else if (window.FidesPreview) {
-      window.FidesPreview?.cleanup();
+      window.FidesPreview.cleanup();
     }
 
     return () => {
