@@ -896,14 +896,12 @@ class TestSkipMarkedCollections:
             )
 
             access_runner_tester(
-                (
-                    privacy_request,
-                    policy,
-                    postgres_graph,
-                    [integration_postgres_config],
-                    {"email": "customer-4@example.com"},
-                    db,
-                )
+                privacy_request,
+                policy,
+                postgres_graph,
+                [integration_postgres_config],
+                {"email": "customer-4@example.com"},
+                db,
             )
 
 

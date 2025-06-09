@@ -2,7 +2,6 @@ import json
 import sys
 from datetime import datetime
 from typing import Any, List, Optional, Type
-from uuid import uuid4
 
 from loguru import logger
 
@@ -16,7 +15,7 @@ from fides.api.util.collection_util import Row
 from fides.api.util.custom_json_encoder import CustomJSONEncoder
 
 # 1GB threshold for external storage
-LARGE_DATA_THRESHOLD_BYTES = 100 * 1024 * 1024  # 100MB
+LARGE_DATA_THRESHOLD_BYTES = 1024 * 1024 * 1024  # 1GB
 
 
 def calculate_data_size(data: List[Row]) -> int:
@@ -107,7 +106,7 @@ class EncryptedLargeDataDescriptor:
     3. Handles cleanup of external storage files when data changes
     4. Works transparently - fields behave like normal Python attributes
 
-    Storage paths use the format: {ModelName}/{instance_id}/{field_name}/{timestamp}-{random}.enc
+    Storage paths use the format: {model_name}/{instance_id}/{field_name}/{timestamp}
 
     This pattern eliminates duplicate code across multiple encrypted fields while providing
     a clean, reusable interface that works with any SQLAlchemy model with an 'id' attribute.
@@ -131,8 +130,8 @@ class EncryptedLargeDataDescriptor:
         self.private_field = f"_{field_name}"
         self.empty_default = empty_default if empty_default is not None else []
         self.threshold_bytes = threshold_bytes or LARGE_DATA_THRESHOLD_BYTES
-        self.model_class: Optional[str] = None  # Set by __set_name__
-        self.name: Optional[str] = None  # Set by __set_name__
+        self.model_class: Optional[str] = None
+        self.name: Optional[str] = None
 
     def __set_name__(self, owner: Type, name: str) -> None:
         """Called when the descriptor is assigned to a class attribute."""
@@ -143,16 +142,15 @@ class EncryptedLargeDataDescriptor:
         """
         Generate a storage path using generic naming.
 
-        Format: {model_type}/{instance_id}/{field_name}/{timestamp}-{random}.enc
+        Format: {model_type}/{instance_id}/{field_name}/{timestamp}
         """
         instance_id = getattr(instance, "id", None)
         if not instance_id:
             raise ValueError(f"Instance {instance} must have an 'id' attribute")
 
-        timestamp = datetime.utcnow().strftime("%Y%m%d-%H%M%S")
-        random_suffix = str(uuid4())[:8]
+        timestamp = datetime.utcnow().strftime("%Y%m%d-%H%M%S.%f")
 
-        return f"{self.model_class}/{instance_id}/{self.field_name}/{timestamp}-{random_suffix}.enc"
+        return f"{self.model_class}/{instance_id}/{self.field_name}/{timestamp}"
 
     def __get__(self, instance: Any, owner: Type) -> Any:
         """

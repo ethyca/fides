@@ -9,7 +9,7 @@ This module provides simplified encrypt/decrypt functions using two approaches:
 import hashlib
 import json
 import os
-from typing import Any, List, Union
+from typing import Any, List, Optional, Union
 
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
@@ -104,16 +104,16 @@ def decrypt_with_sqlalchemy_utils(encrypted_bytes: bytes) -> List[Row]:
 
 # Cryptography Library Implementation (standard, chunked processing)
 def encrypt_with_cryptography(
-    data: Union[List[Row], Any], chunk_size: int = 64 * 1024  # 64KB chunks
+    data: Union[List[Row], Any], chunk_size: Optional[int] = None
 ) -> bytes:
     """
     Serialize and encrypt data using the standard cryptography library with chunked processing.
 
-    This provides excellent performance and memory efficiency for large datasets.
+    This provides fast performance and memory efficiency for large datasets.
 
     Args:
         data: Raw data to serialize and encrypt
-        chunk_size: Size of chunks for processing (default 64KB)
+        chunk_size: Size of chunks for processing (default 4MB)
 
     Returns:
         Encrypted bytes in format: [nonce(12)][ciphertext][tag(16)]
@@ -122,14 +122,24 @@ def encrypt_with_cryptography(
         EncryptionError: If serialization or encryption fails
     """
     try:
+        # Set default chunk size
+        if chunk_size is None:
+            chunk_size = 4 * 1024 * 1024  # 4MB chunks
+
         # Serialize using CustomJSONEncoder for consistent handling
         serialized_data = json.dumps(data, cls=CustomJSONEncoder, separators=(",", ":"))
         plaintext = serialized_data.encode("utf-8")
 
         data_size_mb = len(plaintext) / (1024 * 1024)
+        chunk_size_mb = chunk_size / (1024 * 1024)
+        estimated_chunks = len(plaintext) // chunk_size + (
+            1 if len(plaintext) % chunk_size else 0
+        )
         record_count = len(data) if isinstance(data, list) else "N/A"
+
         logger.info(
-            f"Cryptography: Encrypting {record_count} records ({data_size_mb:.1f} MB)"
+            f"Cryptography: Encrypting {record_count} records ({data_size_mb:.1f} MB) "
+            f"using {chunk_size_mb:.0f}MB chunks (~{estimated_chunks} chunks)"
         )
 
         # Generate encryption components
@@ -170,14 +180,14 @@ def encrypt_with_cryptography(
 
 
 def decrypt_with_cryptography(
-    encrypted_bytes: bytes, chunk_size: int = 64 * 1024  # 64KB chunks
+    encrypted_bytes: bytes, chunk_size: Optional[int] = None
 ) -> Union[List[Row], Any]:
     """
     Decrypt and deserialize data using the cryptography library with chunked processing.
 
     Args:
         encrypted_bytes: Encrypted data in format: [nonce(12)][ciphertext][tag(16)]
-        chunk_size: Size of chunks for processing (default 64KB)
+        chunk_size: Size of chunks for processing (default 4MB)
 
     Returns:
         Deserialized data
@@ -186,6 +196,10 @@ def decrypt_with_cryptography(
         EncryptionError: If decryption or deserialization fails
     """
     try:
+        # Set default chunk size
+        if chunk_size is None:
+            chunk_size = 4 * 1024 * 1024  # 4MB chunks
+
         # Extract components
         if len(encrypted_bytes) < 28:  # 12 (nonce) + 16 (tag)
             raise ValueError("Encrypted data too short")
@@ -195,7 +209,15 @@ def decrypt_with_cryptography(
         tag = encrypted_bytes[-16:]
 
         encrypted_size_mb = len(encrypted_bytes) / (1024 * 1024)
-        logger.info(f"Cryptography: Decrypting {encrypted_size_mb:.1f} MB")
+        chunk_size_mb = chunk_size / (1024 * 1024)
+        estimated_chunks = len(ciphertext) // chunk_size + (
+            1 if len(ciphertext) % chunk_size else 0
+        )
+
+        logger.info(
+            f"Cryptography: Decrypting {encrypted_size_mb:.1f} MB "
+            f"using {chunk_size_mb:.0f}MB chunks (~{estimated_chunks} chunks)"
+        )
 
         # Generate key and create cipher
         key = _get_encryption_key()

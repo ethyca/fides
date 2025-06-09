@@ -354,9 +354,7 @@ class TestLargeDataStorage:
     ):
         """Test that large access data is stored externally"""
         # Mock calculate_data_size to return a value larger than threshold
-        mock_calculate_data_size.return_value = (
-            110 * 1024 * 1024
-        )  # 110MB (larger than 100MB threshold)
+        mock_calculate_data_size.return_value = 1024 * 1024 * 1024 + 1  # 1GB + 1 byte
 
         test_data = [
             {"id": i, "name": f"User{i}", "email": f"user{i}@example.com"}
@@ -383,9 +381,7 @@ class TestLargeDataStorage:
     ):
         """Test that large erasure data is stored externally"""
         # Mock calculate_data_size to return a value larger than threshold
-        mock_calculate_data_size.return_value = (
-            110 * 1024 * 1024
-        )  # 110MB (larger than 100MB threshold)
+        mock_calculate_data_size.return_value = 1024 * 1024 * 1024 + 1  # 1GB + 1 byte
 
         test_data = [
             {"id": i, "name": f"User{i}", "email": f"user{i}@example.com"}
@@ -412,9 +408,7 @@ class TestLargeDataStorage:
     ):
         """Test that external storage files are cleaned up when data is updated"""
         # Mock calculate_data_size to return a value larger than threshold
-        mock_calculate_data_size.return_value = (
-            110 * 1024 * 1024
-        )  # 110MB (larger than 100MB threshold)
+        mock_calculate_data_size.return_value = 1024 * 1024 * 1024 + 1  # 1GB + 1 byte
 
         # Store initial data externally
         initial_data = [{"id": 1, "name": "Initial"}]
@@ -453,9 +447,7 @@ class TestLargeDataStorage:
     ):
         """Test that external storage files are cleaned up when RequestTask is deleted"""
         # Mock calculate_data_size to return a value larger than threshold
-        mock_calculate_data_size.return_value = (
-            110 * 1024 * 1024
-        )  # 110MB (larger than 100MB threshold)
+        mock_calculate_data_size.return_value = 1024 * 1024 * 1024 + 1  # 1GB + 1 byte
 
         # Store data externally
         test_data = [{"id": 1, "name": "Test"}]
