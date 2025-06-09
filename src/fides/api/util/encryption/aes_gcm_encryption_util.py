@@ -6,10 +6,11 @@ This module provides simplified encrypt/decrypt functions using two approaches:
 2. Cryptography library with chunked processing (better performance, standard library)
 """
 
+import hashlib
 import json
 import os
 from typing import Any, List, Union
-import hashlib
+
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from loguru import logger

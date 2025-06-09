@@ -222,7 +222,6 @@ class TestRunTestAccessRequest:
     Run test requests against the postgres_example database
     """
 
-    @pytest.mark.failed_request_tasks
     @pytest.mark.usefixtures("postgres_integration_db")
     def test_run_test_access_request(
         self,

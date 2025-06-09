@@ -539,7 +539,6 @@ class TestPersistAccessRequestTasks:
 
 class TestPersistErasureRequestTasks:
 
-    @pytest.mark.failed_request_tasks
     def test_persist_initial_erasure_request_tasks(
         self, db, privacy_request, postgres_dataset_graph
     ):
@@ -1376,7 +1375,6 @@ class TestGetExistingReadyTasks:
 
 class TestRunAccessRequestWithRequestTasks:
 
-    @pytest.mark.failed_request_tasks
     @pytest.mark.timeout(5)
     @pytest.mark.integration
     @pytest.mark.integration_postgres
@@ -1606,7 +1604,6 @@ class TestRunAccessRequestWithRequestTasks:
 
 class TestRunErasureRequestWithRequestTasks:
 
-    @pytest.mark.failed_request_tasks
     @pytest.mark.timeout(15)
     @pytest.mark.integration
     @pytest.mark.integration_postgres

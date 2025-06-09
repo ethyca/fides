@@ -32,7 +32,6 @@ from ..task.traversal_data import (
 empty_policy = Policy()
 
 
-@pytest.mark.failed_request_tasks
 @pytest.mark.integration
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
@@ -265,7 +264,6 @@ async def test_combined_erasure_task(
     assert employee_4["email"] is None
 
 
-@pytest.mark.failed_request_tasks
 @pytest.mark.integration_mongodb
 @pytest.mark.integration
 @pytest.mark.asyncio
@@ -470,7 +468,6 @@ async def test_composite_key_erasure(
     assert access_request_data["mongo_test:composite_pk_test"][0]["description"] is None
 
 
-@pytest.mark.failed_request_tasks
 @pytest.mark.integration_mongodb
 @pytest.mark.integration
 @pytest.mark.asyncio
@@ -558,7 +555,6 @@ async def test_access_erasure_type_conversion(
     assert erasure == {"mongo_test:employee": 0, "mongo_test:type_link_test": 1}
 
 
-@pytest.mark.failed_request_tasks
 @pytest.mark.integration
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
@@ -847,7 +843,6 @@ async def test_return_all_elements_config_access_request(
     ]
 
 
-@pytest.mark.failed_request_tasks
 @pytest.mark.integration
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
@@ -935,7 +930,6 @@ async def test_return_all_elements_config_erasure(
     ]["derived_phone"] == [None, None]
 
 
-@pytest.mark.failed_request_tasks
 @pytest.mark.integration
 @pytest.mark.asyncio
 @pytest.mark.parametrize(

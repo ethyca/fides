@@ -336,7 +336,6 @@ class TestLargeDataStorage:
 
         assert request_task.get_data_for_erasures() == [{"id": 1, "name": "Jane"}]
 
-    @pytest.mark.failed_request_tasks
     def test_small_data_stored_directly(self, db, request_task):
         """Test that small data is stored directly in database"""
         small_data = [{"id": i, "name": f"User{i}"} for i in range(10)]
