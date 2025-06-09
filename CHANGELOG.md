@@ -19,9 +19,12 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.63.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.64.0...main)
 
+### Changed
 
+- TCF Banners will no longer resurface on reload after dismissal [#6200](https://github.com/ethyca/fides/pull/6200)
+- Earlier initialization strategy for Shopify integration [#6202](https://github.com/ethyca/fides/pull/6202)
 
 ## [2.63.0](https://github.com/ethyca/fides/compare/2.62.0...2.63.0)
 
@@ -35,7 +38,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added new user types respondent and external_respondent [#6177](https://github.com/ethyca/fides/pull/6177) https://github.com/ethyca/fides/labels/db-migration
 - Added Execution logging for uploading Access Packages [#6191](https://github.com/ethyca/fides/pull/6191)
 - Added UI for creating shared monitor configurations [#6188](https://github.com/ethyca/fides/pull/6188)
-- Added Fides-Client header to http logger middleware [#6195](https://github.com/ethyca/fides/pull/6195)
+- Added StagedResourceAncestor table to support dynamic `child_diff_statuses` calculations [#6185](https://github.com/ethyca/fides/pull/6185) https://github.com/ethyca/fides/labels/high-risk https://github.com/ethyca/fides/labels/db-migration
 
 ### Changed
 - Deprecated `FidesInitialized` event and added `FidesConsentLoaded` and `FidesReady` events for more granular initialization state handling [#6181](https://github.com/ethyca/fides/pull/6181)
