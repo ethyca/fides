@@ -74,6 +74,11 @@ def upgrade():
             children = result.children
             if children:
                 resource_children[urn] = children
+            else:
+                # even if no children, we still add the resource to the map
+                # so that we maintain a record of all resources and can
+                # check for orphaned descendant records later
+                resource_children[urn] = []
 
     # Build list of ancestor-descendant pairs
     ancestor_links = []
@@ -86,17 +91,21 @@ def upgrade():
         for child_urn in children:
             if child_urn not in visited:
                 visited.add(child_urn)
-                # Add direct ancestor link
-                ancestor_links.append(
-                    {
-                        "id": f"srl_{uuid.uuid4()}",
-                        "ancestor_urn": ancestor_urn,
-                        "descendant_urn": child_urn,
-                    }
-                )
+                if child_urn not in resource_children:
+                    logger.warning(
+                        f"Found orphaned descendant URN: {child_urn}, not adding ancestor link"
+                    )
+                else:
+                    # Add direct ancestor link
+                    ancestor_links.append(
+                        {
+                            "id": f"srl_{uuid.uuid4()}",
+                            "ancestor_urn": ancestor_urn,
+                            "descendant_urn": child_urn,
+                        }
+                    )
 
-                # Recursively process this child's children
-                if child_urn in resource_children:
+                    # Recursively process this child's children
                     process_children(
                         ancestor_urn, resource_children[child_urn], visited
                     )
