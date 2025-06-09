@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import IO, Any, Dict, Tuple, Union
+from io import BytesIO
+from typing import IO, Any, Dict, Optional, Tuple, Union
 
 from boto3.s3.transfer import TransferConfig
 from botocore.exceptions import ClientError, ParamValidationError
@@ -34,7 +35,7 @@ def maybe_get_s3_client(
 
 
 def create_presigned_url_for_s3(
-    s3_client: Any, bucket_name: str, file_key: str
+    s3_client: Any, bucket_name: str, file_key: str, ttl_seconds: Optional[int] = None
 ) -> AnyHttpUrlString:
     """
     Generates a presigned URL to share an S3 object
@@ -45,10 +46,16 @@ def create_presigned_url_for_s3(
     :return: Presigned URL as string.
     """
     params = {"Bucket": bucket_name, "Key": file_key}
+    if ttl_seconds:
+        if ttl_seconds > 604800:
+            raise ValueError("TTL must be less than 7 days")
+        expires_in = ttl_seconds
+    else:
+        expires_in = CONFIG.security.subject_request_download_link_ttl_seconds
     response = s3_client.generate_presigned_url(
         "get_object",
         Params=params,
-        ExpiresIn=CONFIG.security.subject_request_download_link_ttl_seconds,
+        ExpiresIn=expires_in,
     )
 
     # The response contains the presigned URL
@@ -68,7 +75,7 @@ def generic_upload_to_s3(  # pylint: disable=R0913
     file_key: str,
     auth_method: str,
     document: IO[bytes],
-    size_threshold: int = LARGE_FILE_THRESHOLD,  # 5 MB threshold
+    size_threshold: int = LARGE_FILE_THRESHOLD,  # 25 MB threshold
 ) -> Tuple[int, AnyHttpUrlString]:
     """
     Uploads file like objects to S3.
@@ -130,7 +137,8 @@ def generic_retrieve_from_s3(
     file_key: str,
     auth_method: str,
     get_content: bool = False,
-) -> Tuple[int, Union[str, bytes]]:
+    ttl_seconds: Optional[int] = None,
+) -> Tuple[int, Union[str, IO[bytes]]]:
     """
     Retrieves a file from S3 and returns its size and either a presigned URL or the actual content.
 
@@ -148,17 +156,23 @@ def generic_retrieve_from_s3(
     s3_client = get_s3_client(auth_method, storage_secrets)
 
     try:
-        if get_content:
-            # Get the actual content
-            response = s3_client.get_object(Bucket=bucket_name, Key=file_key)
-            content = response["Body"].read()
-            return response["ContentLength"], content
+        # Get file size using head_object
+        size_response = s3_client.head_object(Bucket=bucket_name, Key=file_key)
+        # If the file is less than 25MB, we can get the content otherwise return the presigned URL
+        if get_content and size_response["ContentLength"] <= LARGE_FILE_THRESHOLD:
+            # Get the actual content using download_fileobj
+            file_obj = BytesIO()
+            s3_client.download_fileobj(
+                Bucket=bucket_name, Key=file_key, Fileobj=file_obj
+            )
+            file_obj.seek(0)  # Reset file pointer to beginning
+            return int(size_response["ContentLength"]), file_obj
 
         # Get presigned URL
-        presigned_url = create_presigned_url_for_s3(s3_client, bucket_name, file_key)
-        # Get file size
-        response = s3_client.head_object(Bucket=bucket_name, Key=file_key)
-        return int(response["ContentLength"]), str(presigned_url)
+        presigned_url = create_presigned_url_for_s3(
+            s3_client, bucket_name, file_key, ttl_seconds
+        )
+        return int(size_response["ContentLength"]), str(presigned_url)
     except ClientError as e:
         logger.error(f"Error retrieving file from S3: {e}")
         raise e

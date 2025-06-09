@@ -45,14 +45,18 @@
                <div id="requestedAt">{{ request.requested_at }}</div>
             </div>
          </div>
-         <div class="table table-hover">
-            <div class="table-row">
-               <div class="table-cell">Dataset</div>
-            </div>
+         <div class="dsr-information-text">
+            <p>
+               This web link contains all data requested as part of your Data Subject Request (DSR). Your
+               information has been compiled from the following areas. Click on each section to open a file and view
+               your data in PDF format.
+            </p>
+         </div>
+         <div class="dataset-list">
             {% for name, link in data.items() %}
-            <a href="{{ link }}" class="table-row">
-               <div class="table-cell">{{ name }}</div>
-            </a>
+            <div class="dataset-item">
+               <a href="{{ link }}" class="dataset-link">{{ name }}</a>
+            </div>
             {% endfor %}
          </div>
       </div>
