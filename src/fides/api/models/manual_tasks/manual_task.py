@@ -59,6 +59,11 @@ class ManualTask(Base):
         viewonly=True,
         order_by="ManualTaskLog.created_at",
     )
+    configs = relationship(
+        "ManualTaskConfig",
+        back_populates="task",
+        cascade="all, delete-orphan",
+    )
 
     # Properties
     @property

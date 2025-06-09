@@ -10,6 +10,7 @@ from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskLogStat
 
 if TYPE_CHECKING:
     from fides.api.models.manual_tasks.manual_task import ManualTask
+    from fides.api.models.manual_tasks.manual_task_config import ManualTaskConfig
 
 
 class ManualTaskLog(Base):
@@ -23,28 +24,29 @@ class ManualTaskLog(Base):
     task_id = Column(
         String, ForeignKey("manual_task.id", ondelete="CASCADE"), nullable=False
     )
-    # TODO: Add foreign key constraints when config and instance are implemented
-    config_id = Column(String, nullable=True)
+    config_id = Column(String, ForeignKey("manual_task_config.id"), nullable=True)
     instance_id = Column(String, nullable=True)
     status = Column(String, nullable=False)
-    message = Column(String, nullable=True)
+    message = Column(String, nullable=False)
     details = Column(JSONB, nullable=True)
 
     # Relationships - using string references to avoid circular imports
     task = relationship("ManualTask", back_populates="logs", foreign_keys=[task_id])
-    # TODO: Add config and instance relationships when they are implemented
-    # config = relationship("ManualTaskConfig", back_populates="logs")
+    config = relationship(
+        "ManualTaskConfig", back_populates="logs", foreign_keys=[config_id]
+    )
+    # TODO: Add instance relationship when it is implemented
     # instance = relationship("ManualTaskInstance", back_populates="logs")
 
     @classmethod
     def create_log(
         cls,
         db: Session,
-        status: ManualTaskLogStatus,
         task_id: str,
+        status: ManualTaskLogStatus,
+        message: str,
         config_id: Optional[str] = None,
         instance_id: Optional[str] = None,
-        message: Optional[str] = None,
         details: Optional[dict[str, Any]] = None,
     ) -> "ManualTaskLog":
         """Create a new task log entry.

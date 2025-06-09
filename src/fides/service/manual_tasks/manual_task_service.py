@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.manual_tasks.manual_task import ManualTask, ManualTaskReference
+from fides.api.models.manual_tasks.manual_task_config import ManualTaskConfig
 from fides.api.models.manual_tasks.manual_task_log import ManualTaskLog
 from fides.api.schemas.manual_tasks.manual_task_schemas import (
     ManualTaskLogStatus,
@@ -13,11 +14,15 @@ from fides.api.schemas.manual_tasks.manual_task_schemas import (
     ManualTaskReferenceType,
     ManualTaskType,
 )
+from fides.service.manual_tasks.manual_task_config_service import (
+    ManualTaskConfigService,
+)
 
 
 class ManualTaskService:
     def __init__(self, db: Session):
         self.db = db
+        self.config_service = ManualTaskConfigService(db)
 
     def get_task(
         self,
@@ -140,3 +145,39 @@ class ManualTaskService:
                 f"Failed to unassign users {left_over_user_ids} from task {task.id}: "
                 "users were not assigned to the task"
             )
+
+    def create_config(
+        self, task: ManualTask, config_type: str, fields: list[dict]
+    ) -> None:
+        """Create a new config for a task.
+
+        Args:
+            db: Database session
+            task_id: The task ID
+            config_type: The config type
+            fields: The fields for the config
+        """
+        self.config_service.create_new_version(task, config_type, fields)
+
+    def delete_config(self, task: ManualTask, config: ManualTaskConfig) -> None:
+        """Delete this configuration.
+        Args:
+            db: Database session
+            task: The task to delete the config from
+            config: The config to delete
+        Raises:
+            ValueError: If there are active instances using this configuration
+        """
+        # TODO: when instances are implemented, we need to check for active instances
+
+        # Log the deletion
+        ManualTaskLog.create_log(
+            db=self.db,
+            task_id=task.id,
+            config_id=None,
+            status=ManualTaskLogStatus.complete,
+            message=f"Deleted manual task configuration for {config.config_type}",
+        )
+
+        # Delete the configuration
+        self.config_service.delete_config(task, config.id)
