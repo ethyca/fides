@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from sqlalchemy import Column, DateTime, ForeignKey, String
 from sqlalchemy.ext.declarative import declared_attr
@@ -13,6 +13,9 @@ from fides.api.schemas.manual_tasks.manual_task_schemas import (
     ManualTaskReferenceType,
     ManualTaskType,
 )
+
+if TYPE_CHECKING:
+    from fides.api.models.manual_tasks.manual_task_config import ManualTaskConfig
 
 
 class ManualTask(Base):

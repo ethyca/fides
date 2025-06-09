@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import TYPE_CHECKING, Optional, Union
 
-from pydantic import ConfigDict, Field, field_validator
+from pydantic import ConfigDict, Field, ValidationInfo, field_validator
 
 from fides.api.schemas.base_class import FidesSchema
 
@@ -64,7 +64,7 @@ class ManualTaskTextFieldMetadata(ManualTaskFieldMetadata):
 
     @field_validator("min_length", "max_length")
     @classmethod
-    def validate_lengths(cls, v: Optional[int], info) -> Optional[int]:
+    def validate_lengths(cls, v: Optional[int], info: ValidationInfo) -> Optional[int]:
         """Validate that min_length is not greater than max_length."""
         if v is None:
             return v
@@ -133,7 +133,9 @@ class ManualTaskAttachmentFieldMetadata(ManualTaskFieldMetadata):
 
     @field_validator("max_files")
     @classmethod
-    def validate_max_files(cls, v: Optional[int], info) -> Optional[int]:
+    def validate_max_files(
+        cls, v: Optional[int], info: ValidationInfo
+    ) -> Optional[int]:
         """Validate that max_files is set when multiple is True."""
         if info.data.get("multiple") and v is None:
             raise ValueError("max_files must be set when multiple is True")

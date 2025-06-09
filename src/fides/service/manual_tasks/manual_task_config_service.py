@@ -65,7 +65,7 @@ class ManualTaskConfigService:
         for field in fields:
             field_key = field.get("field_key")
             if not field_key:
-                raise ValueError("Field key is required")
+                raise ValueError("Invalid field data: field_key is required")
             if field_key in field_keys:
                 raise ValueError(f"Multiple updates found for field key: {field_key}")
             field_keys[field_key] = True
@@ -78,6 +78,8 @@ class ManualTaskConfigService:
 
             try:
                 field_type = field.get("field_type")
+                if not field_type:
+                    raise ValueError("Invalid field data: field_type is required")
                 if field_type == ManualTaskFieldType.text:
                     ManualTaskTextField.model_validate(field)
                 elif field_type == ManualTaskFieldType.checkbox:
@@ -163,7 +165,9 @@ class ManualTaskConfigService:
             .filter(
                 ManualTaskConfig.task_id == task.id,
                 ManualTaskConfig.config_type == config_type,
-                ManualTaskConfig.is_current is True,
+                ManualTaskConfig.is_current.is_(
+                    True
+                ),  # Use is_ for proper SQL comparison
             )
             .first()
         )
@@ -301,6 +305,7 @@ class ManualTaskConfigService:
             raise ValueError(
                 f"No current config found for task {task.id} and type {config_type}"
             )
+
         self.create_new_version(task, config_type, fields, current_config)
 
     def remove_fields(
@@ -319,11 +324,12 @@ class ManualTaskConfigService:
                 f"No current config found for task {task.id} and type {config_type}"
             )
 
-        # Get the actual ManualTaskConfig object
+        # Get the actual ManualTaskConfig object with field definitions
         config = self.db.query(ManualTaskConfig).filter_by(id=current_config.id).first()
         if not config:
             raise ValueError(f"Config with ID {current_config.id} not found")
 
+        # Create field updates with empty metadata to indicate removal
         fields_to_remove = [
             {
                 "field_key": field.field_key,
@@ -333,15 +339,9 @@ class ManualTaskConfigService:
             for field in config.field_definitions
             if field.field_key in field_keys
         ]
-        self.create_new_version(task, config_type, fields_to_remove, config)
 
-        # After creating the new version, remove the fields with empty metadata
-        new_config = self.get_current_config(task, config_type)
-        if new_config:
-            for field in new_config.field_definitions:
-                if field.field_key in field_keys:
-                    field.delete(self.db)
-            self.db.commit()
+        # Create new version with removed fields
+        self.create_new_version(task, config_type, fields_to_remove, config)
 
     def delete_config(self, task: ManualTask, config_id: str) -> None:
         """Delete a config for a task.

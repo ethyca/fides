@@ -1,18 +1,20 @@
-from typing import Any, Optional
+from typing import Any, Optional, TYPE_CHECKING
 
 from sqlalchemy import Boolean, CheckConstraint, Column, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Session, relationship
+from sqlalchemy.orm import declared_attr
 
 from fides.api.db.base_class import Base
-from fides.api.models.manual_tasks.manual_task_log import (
-    ManualTaskLog,
-    ManualTaskLogStatus,
-)
+from fides.api.models.manual_tasks.manual_task_log import ManualTaskLog
 from fides.api.schemas.manual_tasks.manual_task_config import (
     ManualTaskConfigurationType,
     ManualTaskFieldMetadata,
 )
+
+if TYPE_CHECKING:
+    from fides.api.models.manual_tasks.manual_task import ManualTask
+    from fides.api.models.manual_tasks.manual_task_log import ManualTaskLogStatus
 
 
 class ManualTaskConfig(Base):
@@ -20,7 +22,9 @@ class ManualTaskConfig(Base):
     A single configuration may have many fields of different types.
     """
 
-    __tablename__ = "manual_task_config"
+    @declared_attr
+    def __tablename__(cls) -> str:
+        return "manual_task_config"
 
     task_id = Column(String, ForeignKey("manual_task.id"), nullable=False)
     config_type = Column(String, nullable=False)  # Using ManualTaskConfigurationType
@@ -48,7 +52,9 @@ class ManualTaskConfig(Base):
     )
 
     @classmethod
-    def create(cls, db: Session, data: dict[str, Any]) -> "ManualTaskConfig":
+    def create(
+        cls, db: Session, *, data: dict[str, Any], check_name: bool = True
+    ) -> "ManualTaskConfig":
         """Create a new manual task configuration."""
         # Validate config_type
         try:
@@ -56,7 +62,7 @@ class ManualTaskConfig(Base):
         except ValueError:
             raise ValueError(f"Invalid config type: {data['config_type']}")
 
-        config = super().create(db=db, data=data)
+        config = super().create(db=db, data=data, check_name=check_name)
 
         # Log the config creation as a task-level log
         ManualTaskLog.create_log(
@@ -82,7 +88,9 @@ class ManualTaskConfig(Base):
 class ManualTaskConfigField(Base):
     """Model for storing fields associated with each config."""
 
-    __tablename__ = "manual_task_config_field"
+    @declared_attr
+    def __tablename__(cls) -> str:
+        return "manual_task_config_field"
 
     task_id = Column(String, ForeignKey("manual_task.id"), nullable=False)
     config_id = Column(String, ForeignKey("manual_task_config.id"))
@@ -107,10 +115,12 @@ class ManualTaskConfigField(Base):
         return ManualTaskFieldMetadata.model_validate(self.field_metadata)
 
     @classmethod
-    def create(cls, db: Session, data: dict[str, Any]) -> "ManualTaskConfigField":
+    def create(
+        cls, db: Session, *, data: dict[str, Any], check_name: bool = True
+    ) -> "ManualTaskConfigField":
         """Create a new manual task config field."""
         # Create the field and let SQLAlchemy complex type validation handled in service.
-        field = super().create(db=db, data=data)
+        field = super().create(db=db, data=data, check_name=check_name)
 
         # Get the config to access its task_id
         config = (
