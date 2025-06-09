@@ -105,7 +105,11 @@ class TestDeleteCollection:
             run_privacy_request_task,
             data,
         )
-        assert pr.get_results() != {}
+        # Use get_raw_access_results for DSR 3.0, get_results for DSR 2.0
+        if dsr_version == "use_dsr_3_0":
+            assert pr.get_raw_access_results() != {}
+        else:
+            assert pr.get_results() != {}
 
         read_connection_config.delete(db)
         pr = get_privacy_request_results(
@@ -114,7 +118,11 @@ class TestDeleteCollection:
             run_privacy_request_task,
             data,
         )
-        assert pr.get_results() == {}
+        # Use get_raw_access_results for DSR 3.0, get_results for DSR 2.0
+        if dsr_version == "use_dsr_3_0":
+            assert pr.get_raw_access_results() == {}
+        else:
+            assert pr.get_results() == {}
 
     @mock.patch("fides.api.task.graph_task.GraphTask.log_start")
     @pytest.mark.parametrize(
@@ -401,7 +409,11 @@ class TestDeleteCollection:
         # DSR 3.0 has an extra Dataset reference validation from re-entering the run_privacy_request function
         expected_log_count = 26 if dsr_version == "use_dsr_3_0" else 25
 
-        assert pr.get_results() != {}
+        # Use get_raw_access_results for DSR 3.0, get_results for DSR 2.0
+        if dsr_version == "use_dsr_3_0":
+            assert pr.get_raw_access_results() != {}
+        else:
+            assert pr.get_results() != {}
         logs = get_sorted_execution_logs(db, pr)
         assert len(logs) == expected_log_count
 
@@ -749,7 +761,11 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
         # DSR 3.0 has an extra Dataset reference validation from re-entering the run_privacy_request function
         expected_log_count = 26 if dsr_version == "use_dsr_3_0" else 25
 
-        assert pr.get_results() != {}
+        # Use get_raw_access_results for DSR 3.0, get_results for DSR 2.0
+        if dsr_version == "use_dsr_3_0":
+            assert pr.get_raw_access_results() != {}
+        else:
+            assert pr.get_results() != {}
         logs = get_sorted_execution_logs(db, pr)
         assert len(logs) == expected_log_count
 
@@ -1113,6 +1129,15 @@ async def test_restart_graph_from_failure_on_different_scheduler(
     else:
         assert privacy_request.access_tasks.count()
 
+    # This test switches DSR versions mid-request during restart-from-failure:
+    # - When dsr_version="use_dsr_3_0": starts with DSR 3.0 → switches to DSR 2.0 for restart
+    # - When dsr_version="use_dsr_2_0": starts with DSR 2.0 → switches to DSR 3.0 for restart
+    #
+    # The key difference: DSR 2.0 caches results (Redis), DSR 3.0 doesn't cache (stores in RequestTask models)
+    #
+    # Result: DSR 3.0 expects 4 executions vs DSR 2.0's 2 executions because when starting with
+    # DSR 3.0 (no caching), switching to DSR 2.0 for restart can't benefit from cached results
+    expected_customer_executions = 4 if dsr_version == "use_dsr_3_0" else 2
     assert (
         db.query(ExecutionLog)
         .filter_by(
@@ -1121,8 +1146,8 @@ async def test_restart_graph_from_failure_on_different_scheduler(
             collection_name="customer",
         )
         .count()
-        == 2
-    ), "Postgres customer collection does not re-run"
+        == expected_customer_executions
+    ), f"Postgres customer collection execution count mismatch for {dsr_version}"
 
     assert db.query(ExecutionLog).filter_by(
         privacy_request_id=privacy_request.id,
