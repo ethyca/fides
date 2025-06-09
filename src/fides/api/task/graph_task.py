@@ -519,9 +519,10 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         # TODO Remove when we stop support for DSR 2.0
         # Save data to build masking requests for DSR 2.0 in Redis.
         # Results saved with matching array elements preserved
-        self.resources.cache_results_with_placeholders(
-            f"access_request__{self.key}", placeholder_output
-        )
+        if not CONFIG.execution.use_dsr_3_0:
+            self.resources.cache_results_with_placeholders(
+                f"access_request__{self.key}", placeholder_output
+            )
 
         # For access request results, cache results with non-matching array elements *removed*
         for row in output:
@@ -537,7 +538,8 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
         # TODO Remove when we stop support for DSR 2.0
         # Saves intermediate access results for DSR 2.0 in Redis
-        self.resources.cache_object(f"access_request__{self.key}", output)
+        if not CONFIG.execution.use_dsr_3_0:
+            self.resources.cache_object(f"access_request__{self.key}", output)
 
         # Return filtered rows with non-matched array data removed.
         return output

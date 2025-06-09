@@ -47,6 +47,9 @@ from fides.api.models.attachment import (
 from fides.api.models.audit_log import AuditLog
 from fides.api.models.client import ClientDetail
 from fides.api.models.comment import Comment, CommentReference, CommentReferenceType
+from fides.api.models.encrypted_large_data import (
+    EncryptedLargeDataDescriptor,
+)
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.policy import (
@@ -251,13 +254,19 @@ class PrivacyRequest(
     awaiting_email_send_at = Column(DateTime(timezone=True), nullable=True)
 
     # Encrypted filtered access results saved for later retrieval
-    filtered_final_upload = Column(  # An encrypted JSON String - Dict[Dict[str, List[Row]]] - rule keys mapped to the filtered access results
+    _filtered_final_upload = Column(  # An encrypted JSON String - Dict[Dict[str, List[Row]]] - rule keys mapped to the filtered access results
+        "filtered_final_upload",
         StringEncryptedType(
             type_in=JSONTypeOverride,
             key=CONFIG.security.app_encryption_key,
             engine=AesGcmEngine,
             padding="pkcs5",
         ),
+    )
+
+    # Use descriptor for automatic external storage handling
+    filtered_final_upload = EncryptedLargeDataDescriptor(
+        field_name="filtered_final_upload", empty_default={}
     )
 
     # Encrypted filtered access results saved for later retrieval
@@ -334,6 +343,7 @@ class PrivacyRequest(
         deleting this object from the database
         """
         self.clear_cached_values()
+        self.cleanup_external_storage()
         Attachment.delete_attachments_for_reference_and_type(
             db, self.id, AttachmentReferenceType.privacy_request
         )
@@ -1257,6 +1267,11 @@ class PrivacyRequest(
         # DSR 2.0 does not cache the results so nothing to do here
         return {}
 
+    def cleanup_external_storage(self) -> None:
+        """Clean up all external storage files for this privacy request"""
+        # Access the descriptor from the class to call cleanup
+        PrivacyRequest.filtered_final_upload.cleanup(self)
+
     def save_filtered_access_results(
         self, db: Session, results: Dict[str, Dict[str, List[Row]]]
     ) -> None:
@@ -1544,7 +1559,7 @@ def get_action_required_details(
 
 
 def _parse_cache_to_checkpoint_action_required(
-    cache: dict[str, Any]
+    cache: dict[str, Any],
 ) -> CheckpointActionRequired:
     collection = (
         CollectionAddress(

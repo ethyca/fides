@@ -1,0 +1,286 @@
+"""
+Descriptor for encrypted database fields with automatic external storage fallback.
+
+This module provides a reusable pattern for fields that:
+1. Are encrypted in the database using SQLAlchemy-Utils
+2. Automatically use external storage when data exceeds size thresholds
+3. Handle cleanup of external storage files
+"""
+
+import json
+import sys
+from datetime import datetime
+from typing import Any, List, Optional, Type
+from uuid import uuid4
+
+from loguru import logger
+
+from fides.api.api.deps import get_autoclose_db_session
+from fides.api.schemas.external_storage import ExternalStorageMetadata
+from fides.api.service.external_data_storage import (
+    ExternalDataStorageError,
+    ExternalDataStorageService,
+)
+from fides.api.util.collection_util import Row
+from fides.api.util.custom_json_encoder import CustomJSONEncoder
+
+# 1GB threshold for external storage
+LARGE_DATA_THRESHOLD_BYTES = 100 * 1024 * 1024  # 100MB
+
+
+def calculate_data_size(data: List[Row]) -> int:
+    """Calculate the approximate serialized size of access data in bytes using a memory-efficient approach"""
+    if not data:
+        return 0
+
+    try:
+        data_count = len(data)
+
+        # For very large datasets, estimate size from a sample to avoid memory issues
+        if data_count > 1000:  # For large datasets, use sampling
+            logger.debug(
+                f"Calculating size for large dataset ({data_count} rows) using sampling"
+            )
+            # Take a representative sample
+            sample_size = min(100, data_count)
+            sample = data[:sample_size]
+
+            # Calculate sample size
+            sample_json = json.dumps(
+                sample, cls=CustomJSONEncoder, separators=(",", ":")
+            )
+            sample_bytes = len(sample_json.encode("utf-8"))
+
+            # Estimate total size (with some overhead for JSON structure)
+            estimated_size = (sample_bytes * data_count) // sample_size
+            # Add overhead for JSON array brackets and commas
+            estimated_size += data_count * 2  # Rough estimate for commas and spacing
+
+            logger.debug(
+                f"Estimated size: {estimated_size:,} bytes ({estimated_size / (1024*1024*1024):.2f} GB)"
+            )
+            return estimated_size
+
+        # For smaller datasets, calculate exact size
+        json_str = json.dumps(data, cls=CustomJSONEncoder, separators=(",", ":"))
+        size = len(json_str.encode("utf-8"))
+        return size
+
+    except (TypeError, ValueError) as e:
+        logger.warning(
+            f"Failed to calculate JSON size, falling back to sys.getsizeof: {e}"
+        )
+        # Fallback to sys.getsizeof if JSON serialization fails
+        return sys.getsizeof(data)
+
+
+def is_large_data(data: List[Row], threshold_bytes: Optional[int] = None) -> bool:
+    """Check if data exceeds the large data threshold
+
+    Args:
+        data: The data to check
+        threshold_bytes: Custom threshold in bytes. If None, uses LARGE_DATA_THRESHOLD_BYTES
+    """
+    if not data:
+        return False
+
+    threshold = (
+        threshold_bytes if threshold_bytes is not None else LARGE_DATA_THRESHOLD_BYTES
+    )
+    size = calculate_data_size(data)
+    is_large = size > threshold
+
+    if is_large:
+        logger.info(
+            f"Data size ({size:,} bytes) exceeds threshold ({threshold:,} bytes) - using external storage"
+        )
+
+    return is_large
+
+
+class EncryptedLargeDataDescriptor:
+    """
+    A descriptor for database fields that:
+    1. Are encrypted using SQLAlchemy-Utils StringEncryptedType
+    2. Automatically use external storage for large data
+    3. Handle cleanup of external storage
+
+    This pattern allows us to DRY up the code for fields like access_data,
+    data_for_erasures, and filtered_final_upload.
+    """
+
+    def __init__(
+        self,
+        field_name: str,
+        empty_default: Optional[Any] = None,
+        threshold_bytes: Optional[int] = None,
+    ):
+        """
+        Initialize the descriptor.
+
+        Args:
+            field_name: The name of the database column (e.g., "access_data")
+            empty_default: Default value when data is None/empty ([] for lists, {} for dicts)
+            threshold_bytes: Optional custom threshold for external storage
+        """
+        self.field_name = field_name
+        self.private_field = f"_{field_name}"
+        self.empty_default = empty_default if empty_default is not None else []
+        self.threshold_bytes = threshold_bytes or LARGE_DATA_THRESHOLD_BYTES
+        self.model_class = None  # Set by __set_name__
+
+    def __set_name__(self, owner: Type, name: str):
+        """Called when the descriptor is assigned to a class attribute."""
+        self.name = name
+        self.model_class = owner.__name__
+
+    def _generate_storage_path(self, instance: Any) -> str:
+        """
+        Generate a storage path using generic naming.
+
+        Format: {model_type}/{instance_id}/{field_name}/{timestamp}-{random}.enc
+        """
+        instance_id = getattr(instance, "id", None)
+        if not instance_id:
+            raise ValueError(f"Instance {instance} must have an 'id' attribute")
+
+        timestamp = datetime.utcnow().strftime("%Y%m%d-%H%M%S")
+        random_suffix = str(uuid4())[:8]
+
+        return f"{self.model_class}/{instance_id}/{self.field_name}/{timestamp}-{random_suffix}.enc"
+
+    def __get__(self, instance: Any, owner: Type) -> Any:
+        """
+        Get the value, handling external storage retrieval if needed.
+        """
+        if instance is None:
+            return self
+
+        # Get the raw data from the private field
+        raw_data = getattr(instance, self.private_field)
+        if raw_data is None:
+            return None
+
+        # Check if it's external storage metadata
+        if isinstance(raw_data, dict) and "storage_type" in raw_data:
+            logger.info(
+                f"Reading {self.model_class}.{self.field_name} from external storage "
+                f"({raw_data.get('storage_type')})"
+            )
+            try:
+                metadata = ExternalStorageMetadata.model_validate(raw_data)
+                data = self._retrieve_external_data(metadata)
+
+                # Log retrieval details
+                record_count = len(data) if isinstance(data, list) else "N/A"
+                logger.info(
+                    f"Successfully retrieved {self.model_class}.{self.field_name} "
+                    f"from external storage (records: {record_count})"
+                )
+                return data if data is not None else self.empty_default
+            except Exception as e:
+                logger.error(
+                    f"Failed to retrieve {self.model_class}.{self.field_name} "
+                    f"from external storage: {str(e)}"
+                )
+                raise ExternalDataStorageError(
+                    f"Failed to retrieve {self.field_name}: {str(e)}"
+                ) from e
+        else:
+            return raw_data
+
+    def __set__(self, instance: Any, value: Any) -> None:
+        """
+        Set the value, automatically using external storage for large data.
+        """
+        if not value:
+            # Clean up any existing external storage
+            self._cleanup_external_data(instance)
+            # Set to empty default
+            setattr(instance, self.private_field, self.empty_default)
+            return
+
+        # Check if the data is the same as what's already stored
+        try:
+            current_data = self.__get__(instance, type(instance))
+            if current_data == value:
+                # Data is identical, no need to update
+                return
+        except Exception:
+            # If we can't get current data, proceed with update
+            pass
+
+        # Calculate data size
+        data_size = calculate_data_size(value)
+
+        # Check if data exceeds threshold
+        if data_size > self.threshold_bytes:
+            logger.info(
+                f"{self.model_class}.{self.field_name}: Data size ({data_size:,} bytes) "
+                f"exceeds threshold ({self.threshold_bytes:,} bytes), storing externally"
+            )
+            # Clean up any existing external storage first
+            self._cleanup_external_data(instance)
+
+            # Store in external storage
+            metadata = self._store_external_data(instance, value)
+            setattr(instance, self.private_field, metadata.model_dump())
+        else:
+            # Clean up any existing external storage
+            self._cleanup_external_data(instance)
+            # Store directly in database
+            setattr(instance, self.private_field, value)
+
+    def _store_external_data(self, instance: Any, data: Any) -> ExternalStorageMetadata:
+        """
+        Store data in external storage using generic path structure.
+        """
+        storage_path = self._generate_storage_path(instance)
+
+        with get_autoclose_db_session() as session:
+            metadata = ExternalDataStorageService.store_data(
+                db=session,
+                storage_path=storage_path,
+                data=data,
+            )
+
+            logger.info(
+                f"Stored {self.model_class}.{self.field_name} to external storage: {storage_path}"
+            )
+
+            return metadata
+
+    def _retrieve_external_data(self, metadata: ExternalStorageMetadata) -> Any:
+        """
+        Retrieve data from external storage.
+        """
+        with get_autoclose_db_session() as session:
+            return ExternalDataStorageService.retrieve_data(
+                db=session,
+                metadata=metadata,
+            )
+
+    def _cleanup_external_data(self, instance: Any) -> None:
+        """Clean up external storage if it exists."""
+        raw_data = getattr(instance, self.private_field, None)
+        if isinstance(raw_data, dict) and "storage_type" in raw_data:
+            try:
+                metadata = ExternalStorageMetadata.model_validate(raw_data)
+                with get_autoclose_db_session() as session:
+                    ExternalDataStorageService.delete_data(
+                        db=session,
+                        metadata=metadata,
+                    )
+
+                logger.info(
+                    f"Cleaned up external storage for {self.model_class}.{self.field_name}: "
+                    f"{metadata.file_key}"
+                )
+            except Exception as e:
+                logger.warning(
+                    f"Failed to cleanup external {self.field_name}: {str(e)}"
+                )
+
+    def cleanup(self, instance: Any) -> None:
+        """Public method to cleanup external storage."""
+        self._cleanup_external_data(instance)

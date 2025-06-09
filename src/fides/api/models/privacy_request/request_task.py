@@ -14,7 +14,6 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
     StringEncryptedType,
 )
 
-from fides.api.api.deps import get_autoclose_db_session
 from fides.api.db.base_class import Base, JSONTypeOverride  # type: ignore[attr-defined]
 from fides.api.db.util import EnumColumn
 from fides.api.graph.config import (
@@ -22,13 +21,15 @@ from fides.api.graph.config import (
     TERMINATOR_ADDRESS,
     CollectionAddress,
 )
+from fides.api.models.encrypted_large_data import (
+    EncryptedLargeDataDescriptor,
+)
 from fides.api.models.privacy_request.execution_log import (
     COMPLETED_EXECUTION_LOG_STATUSES,
 )
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import ExecutionLogStatus
-from fides.api.schemas.request_task.external_storage import ExternalStorageMetadata
 from fides.api.util.cache import (
     FidesopsRedis,
     celery_tasks_in_flight,
@@ -36,15 +37,6 @@ from fides.api.util.cache import (
     get_cache,
 )
 from fides.api.util.collection_util import Row
-from fides.api.util.request_task_storage_util import (
-    RequestTaskStorageError,
-    RequestTaskStorageUtil,
-)
-from fides.api.util.request_task_util import (
-    LARGE_DATA_THRESHOLD_BYTES,
-    calculate_data_size,
-    is_large_data,
-)
 from fides.config import CONFIG
 
 if TYPE_CHECKING:
@@ -153,6 +145,15 @@ class RequestTask(Base):
         ),
     )
 
+    # Use descriptors for automatic external storage handling
+    access_data = EncryptedLargeDataDescriptor(
+        field_name="access_data", empty_default=[]
+    )
+
+    data_for_erasures = EncryptedLargeDataDescriptor(
+        field_name="data_for_erasures", empty_default=[]
+    )
+
     # Written after an erasure is completed
     rows_masked = Column(Integer)
     # Written after a consent request is completed - not all consent
@@ -195,208 +196,11 @@ class RequestTask(Base):
         task_id = cache.get(get_async_task_tracking_cache_key(self.id))
         return task_id
 
-    def _store_large_data(
-        self,
-        db: Session,
-        data: List[Row],
-        data_type: str,
-        storage_key: Optional[str] = None,
-    ) -> ExternalStorageMetadata:
-        """Store large data in external storage and return metadata
-
-        Args:
-            db: Database session
-            data: The data to store
-            data_type: Type of data being stored ("access_data" or "data_for_erasures")
-            storage_key: Optional specific storage config key to use, defaults to active default
-
-        Returns:
-            ExternalStorageMetadata with storage details
-        """
-        return RequestTaskStorageUtil.store_large_data(
-            db=db,
-            privacy_request_id=self.privacy_request_id,  # type: ignore[arg-type]
-            collection_name=self.collection_name,
-            data=data,
-            data_type=data_type,
-            storage_key=storage_key,
-        )
-
-    def _retrieve_large_data(
-        self, db: Session, metadata: ExternalStorageMetadata
-    ) -> List[Row]:
-        """Retrieve large data from external storage"""
-        return RequestTaskStorageUtil.retrieve_large_data(db=db, metadata=metadata)
-
-    def _delete_large_data(
-        self, db: Session, metadata: ExternalStorageMetadata
-    ) -> None:
-        """Delete large data from external storage"""
-        RequestTaskStorageUtil.delete_large_data(db=db, metadata=metadata)
-
-    @property
-    def access_data(self) -> Optional[List[Row]]:
-        """Get access data, handling both direct storage and external storage"""
-        raw_data = self._access_data
-        if raw_data is None:
-            return None
-
-        # Check if it's metadata (dict with storage info) or actual data (list)
-        if isinstance(raw_data, dict) and "storage_type" in raw_data:
-            # It's external storage metadata
-            logger.info(
-                f"Reading access_data from external storage ({raw_data.get('storage_type')})"
-            )
-            try:
-                metadata = ExternalStorageMetadata.model_validate(raw_data)
-                with get_autoclose_db_session() as session:
-                    data = self._retrieve_large_data(session, metadata)
-                logger.info(
-                    f"Successfully retrieved {len(data)} records from external storage"
-                )
-                return data if data is not None else []
-            except Exception as e:
-                logger.error(
-                    f"Failed to retrieve access_data from external storage: {str(e)}"
-                )
-                raise RequestTaskStorageError(
-                    f"Failed to retrieve access_data: {str(e)}"
-                ) from e
-        else:
-            return raw_data
-
-    @access_data.setter
-    def access_data(self, value: Optional[List[Row]]) -> None:
-        """Set access data, automatically using external storage for large data"""
-        if not value:
-            # Clean up any existing external storage
-            self._cleanup_external_access_data()
-            # Always set to [] when explicitly setting empty data
-            self._access_data = []
-            return
-
-        # Check if the data is the same as what's already stored
-        current_data = self.access_data
-        if current_data == value:
-            # Data is identical, no need to update
-            return
-
-        # Check if data is large enough for external storage
-        if is_large_data(value):
-            logger.info(
-                f"Data size ({calculate_data_size(value)} bytes) exceeds threshold "
-                f"({LARGE_DATA_THRESHOLD_BYTES} bytes), storing externally"
-            )
-            # Clean up any existing external storage first
-            self._cleanup_external_access_data()
-
-            # Store in external storage
-            with get_autoclose_db_session() as session:
-                metadata = self._store_large_data(session, value, "access_data")
-                self._access_data = metadata.model_dump()
-        else:
-            # Clean up any existing external storage
-            self._cleanup_external_access_data()
-            # Store directly in database
-            self._access_data = value
-
-    @property
-    def data_for_erasures(self) -> Optional[List[Row]]:
-        """Get data for erasures, handling both direct storage and external storage"""
-        raw_data = self._data_for_erasures
-        if raw_data is None:
-            return None
-
-        # Check if it's metadata (dict with storage info) or actual data (list)
-        if isinstance(raw_data, dict) and "storage_type" in raw_data:
-            # It's external storage metadata
-            logger.info(
-                f"Reading data_for_erasures from external storage ({raw_data.get('storage_type')})"
-            )
-            try:
-                metadata = ExternalStorageMetadata.model_validate(raw_data)
-                with get_autoclose_db_session() as session:
-                    data = self._retrieve_large_data(session, metadata)
-                logger.info(
-                    f"Successfully retrieved {len(data)} records from external storage"
-                )
-                return data if data is not None else []
-            except Exception as e:
-                logger.error(
-                    f"Failed to retrieve data_for_erasures from external storage: {str(e)}"
-                )
-                raise RequestTaskStorageError(
-                    f"Failed to retrieve data_for_erasures: {str(e)}"
-                ) from e
-        else:
-            return raw_data
-
-    @data_for_erasures.setter
-    def data_for_erasures(self, value: Optional[List[Row]]) -> None:
-        """Set data for erasures, automatically using external storage for large data"""
-        if not value:
-            # Clean up any existing external storage
-            self._cleanup_external_data_for_erasures()
-            # Always set to [] when explicitly setting empty data
-            self._data_for_erasures = []
-            return
-
-        # Check if the data is the same as what's already stored
-        current_data = self.data_for_erasures
-        if current_data == value:
-            # Data is identical, no need to update
-            return
-
-        # Check if data is large enough for external storage
-        if is_large_data(value):
-            logger.info(
-                f"Data size ({calculate_data_size(value)} bytes) exceeds threshold "
-                f"({LARGE_DATA_THRESHOLD_BYTES} bytes), storing externally"
-            )
-            # Clean up any existing external storage first
-            self._cleanup_external_data_for_erasures()
-
-            # Store in external storage
-            with get_autoclose_db_session() as session:
-                metadata = self._store_large_data(session, value, "data_for_erasures")
-                self._data_for_erasures = metadata.model_dump()
-        else:
-            # Clean up any existing external storage
-            self._cleanup_external_data_for_erasures()
-            # Store directly in database
-            self._data_for_erasures = value
-
-    def _cleanup_external_access_data(self) -> None:
-        """Clean up external storage for access_data if it exists"""
-        if isinstance(self._access_data, dict) and "storage_type" in self._access_data:
-            try:
-                metadata = ExternalStorageMetadata.model_validate(self._access_data)
-                with get_autoclose_db_session() as session:
-                    self._delete_large_data(session, metadata)
-            except Exception as e:
-                logger.warning(f"Failed to cleanup external access_data: {str(e)}")
-
-    def _cleanup_external_data_for_erasures(self) -> None:
-        """Clean up external storage for data_for_erasures if it exists"""
-        if (
-            isinstance(self._data_for_erasures, dict)
-            and "storage_type" in self._data_for_erasures
-        ):
-            try:
-                metadata = ExternalStorageMetadata.model_validate(
-                    self._data_for_erasures
-                )
-                with get_autoclose_db_session() as session:
-                    self._delete_large_data(session, metadata)
-            except Exception as e:
-                logger.warning(
-                    f"Failed to cleanup external data_for_erasures: {str(e)}"
-                )
-
     def cleanup_external_storage(self) -> None:
         """Clean up all external storage files for this request task"""
-        self._cleanup_external_access_data()
-        self._cleanup_external_data_for_erasures()
+        # Access the descriptor from the class to call cleanup
+        RequestTask.access_data.cleanup(self)
+        RequestTask.data_for_erasures.cleanup(self)
 
     def get_access_data(self) -> List[Row]:
         """Helper to retrieve access data or default to empty list"""

@@ -1,13 +1,19 @@
+"""
+Service for handling external storage of large encrypted data.
+
+This service provides a generic interface for storing large data that would
+otherwise exceed database column size limits or impact performance.
+"""
+
 import os
-from datetime import datetime
 from io import BytesIO
-from typing import List, Optional
+from typing import Any, Optional
 
 from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.models.storage import StorageConfig, get_active_default_storage_config
-from fides.api.schemas.request_task.external_storage import ExternalStorageMetadata
+from fides.api.schemas.external_storage import ExternalStorageMetadata
 from fides.api.schemas.storage.storage import StorageDetails, StorageType
 from fides.api.service.storage.gcs import get_gcs_client
 from fides.api.service.storage.s3 import (
@@ -16,134 +22,124 @@ from fides.api.service.storage.s3 import (
     generic_upload_to_s3,
 )
 from fides.api.service.storage.util import get_local_filename
-from fides.api.util.collection_util import Row
-from fides.api.util.encryption.request_task_aes_gcm_util import (
-    RequestTaskEncryptionError,
+from fides.api.util.encryption.aes_gcm_encryption_util import (
     decrypt_data,
     encrypt_data,
 )
 
 
-class RequestTaskStorageError(Exception):
-    """Raised when external storage operations fail"""
+class ExternalDataStorageError(Exception):
+    """Raised when external data storage operations fail."""
 
 
-class RequestTaskStorageUtil:
-    """Utility class to handle external storage operations for RequestTask data
+class ExternalDataStorageService:
+    """
+    Service for storing large encrypted data externally.
 
-    Provides encrypted storage/retrieval of RequestTask data using existing storage functions.
+    Handles:
+    - Automatic encryption/decryption
+    - Multiple storage backends (S3, local, GCS, etc.)
+    - Consistent file organization
+    - Cleanup operations
     """
 
     @staticmethod
-    def store_large_data(
+    def store_data(
         db: Session,
-        privacy_request_id: str,
-        collection_name: str,
-        data: List[Row],
-        data_type: str,  # "access_data" or "data_for_erasures"
+        storage_path: str,
+        data: Any,
         storage_key: Optional[str] = None,
     ) -> ExternalStorageMetadata:
         """
-        Store large data to external storage with encryption and return metadata
+        Store data in external storage with encryption.
 
         Args:
             db: Database session
-            privacy_request_id: ID of the privacy request
-            collection_name: Name of the collection
-            data: The data to store
-            data_type: Type of data being stored
+            storage_path: Path where data should be stored (e.g., "Model/id/field/timestamp.enc")
+            data: The data to store (will be serialized and encrypted)
             storage_key: Optional specific storage config key to use
 
         Returns:
             ExternalStorageMetadata with storage details
 
         Raises:
-            RequestTaskStorageError: If storage fails
+            ExternalDataStorageError: If storage operation fails
         """
-        # Get storage config
-        if storage_key:
-            storage_config = (
-                db.query(StorageConfig).filter(StorageConfig.key == storage_key).first()
-            )
-            if not storage_config:
-                raise RequestTaskStorageError(
-                    f"Storage configuration with key '{storage_key}' not found"
-                )
-        else:
-            storage_config = get_active_default_storage_config(db)
-            if not storage_config:
-                raise RequestTaskStorageError(
-                    "No active default storage configuration available for large data"
-                )
-
-        # Generate file key
-        timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S_%f")
-        file_key = f"{data_type}/{privacy_request_id}/{collection_name}/{timestamp}"
-
-        # Serialize and encrypt data
         try:
-            # Encrypt the data with JSON serialization built-in
-            encrypted_bytes = encrypt_data(data)
-            file_size = len(encrypted_bytes)
+            # Get storage config
+            if storage_key:
+                storage_config = (
+                    db.query(StorageConfig)
+                    .filter(StorageConfig.key == storage_key)
+                    .first()
+                )
+                if not storage_config:
+                    msg = f"Storage configuration with key '{storage_key}' not found"
+                    logger.error(msg)
+                    raise ExternalDataStorageError(msg)
+            else:
+                storage_config = get_active_default_storage_config(db)
+                if not storage_config:
+                    msg = "No active default storage configuration available for large data"
+                    logger.error(msg)
+                    raise ExternalDataStorageError(msg)
 
-            logger.info(f"Encrypted and serialized data to {file_size} bytes")
-        except (TypeError, ValueError) as e:
-            raise RequestTaskStorageError(f"Failed to serialize data: {str(e)}")
-        except RequestTaskEncryptionError as e:
-            raise RequestTaskStorageError(f"Failed to encrypt data: {str(e)}")
+            # Serialize and encrypt the data
+            encrypted_data = encrypt_data(data)
+            file_size = len(encrypted_data)
 
-        # Store to external storage
-        try:
+            # Store to external storage based on type
             if storage_config.type == StorageType.s3:
-                RequestTaskStorageUtil._store_to_s3(
-                    storage_config, file_key, encrypted_bytes
+                ExternalDataStorageService._store_to_s3(
+                    storage_config, storage_path, encrypted_data
                 )
             elif storage_config.type == StorageType.gcs:
-                RequestTaskStorageUtil._store_to_gcs(
-                    storage_config, file_key, encrypted_bytes
+                ExternalDataStorageService._store_to_gcs(
+                    storage_config, storage_path, encrypted_data
                 )
             elif storage_config.type == StorageType.local:
-                RequestTaskStorageUtil._store_to_local(file_key, encrypted_bytes)
+                ExternalDataStorageService._store_to_local(storage_path, encrypted_data)
             else:
-                raise RequestTaskStorageError(
+                raise ExternalDataStorageError(
                     f"Unsupported storage type: {storage_config.type}"
                 )
 
-            logger.info(
-                f"Stored encrypted large {data_type} for privacy request {privacy_request_id} "
-                f"collection {collection_name} to {storage_config.type} storage ({file_size} bytes)"
-            )
-
-            return ExternalStorageMetadata(
+            # Create and return metadata
+            metadata = ExternalStorageMetadata(
                 storage_type=StorageType(storage_config.type.value),
-                file_key=file_key,
+                file_key=storage_path,
                 filesize=file_size,
                 storage_key=storage_config.key,
             )
 
-        except Exception as e:
-            logger.error(
-                f"Failed to store large data for privacy request {privacy_request_id} "
-                f"collection {collection_name}: {e}"
+            logger.info(
+                f"Stored {file_size:,} bytes to {storage_config.type} storage "
+                f"at path: {storage_path}"
             )
-            raise RequestTaskStorageError(f"Failed to store large data: {str(e)}")
+
+            return metadata
+
+        except Exception as e:
+            logger.error(f"Failed to store data externally: {str(e)}")
+            raise ExternalDataStorageError(f"Failed to store data: {str(e)}") from e
 
     @staticmethod
-    def retrieve_large_data(
-        db: Session, metadata: ExternalStorageMetadata
-    ) -> List[Row]:
+    def retrieve_data(
+        db: Session,
+        metadata: ExternalStorageMetadata,
+    ) -> Any:
         """
-        Retrieve and decrypt large data from external storage
+        Retrieve and decrypt data from external storage.
 
         Args:
             db: Database session
-            metadata: External storage metadata
+            metadata: Storage metadata containing location and details
 
         Returns:
-            The retrieved and decrypted data
+            Decrypted and deserialized data
 
         Raises:
-            RequestTaskStorageError: If retrieval fails
+            ExternalDataStorageError: If retrieval operation fails
         """
         try:
             # Get storage config
@@ -154,15 +150,15 @@ class RequestTaskStorageUtil:
                     .first()
                 )
                 if not storage_config:
-                    raise RequestTaskStorageError(
+                    raise ExternalDataStorageError(
                         f"Storage configuration with key '{metadata.storage_key}' not found"
                     )
             else:
                 storage_config = get_active_default_storage_config(db)
                 if not storage_config:
-                    raise RequestTaskStorageError("No storage configuration found")
+                    raise ExternalDataStorageError("No storage configuration found")
 
-            # Retrieve encrypted data
+            # Retrieve encrypted data based on storage type
             storage_type_value = (
                 metadata.storage_type.value
                 if isinstance(metadata.storage_type, StorageType)
@@ -170,43 +166,59 @@ class RequestTaskStorageUtil:
             )
 
             if storage_type_value == StorageType.s3.value:
-                encrypted_bytes = RequestTaskStorageUtil._retrieve_from_s3(
+                encrypted_data = ExternalDataStorageService._retrieve_from_s3(
                     storage_config, metadata
                 )
             elif storage_type_value == StorageType.gcs.value:
-                encrypted_bytes = RequestTaskStorageUtil._retrieve_from_gcs(
+                encrypted_data = ExternalDataStorageService._retrieve_from_gcs(
                     storage_config, metadata
                 )
             elif storage_type_value == StorageType.local.value:
-                encrypted_bytes = RequestTaskStorageUtil._retrieve_from_local(metadata)
+                encrypted_data = ExternalDataStorageService._retrieve_from_local(
+                    metadata
+                )
             else:
-                raise RequestTaskStorageError(
+                raise ExternalDataStorageError(
                     f"Unsupported storage type: {storage_type_value}"
                 )
 
-            # Decrypt and deserialize data
-            logger.info("Decrypting retrieved data")
-            return decrypt_data(encrypted_bytes)
+            # Handle case where download returns None
+            if encrypted_data is None:
+                raise ExternalDataStorageError(
+                    f"No data found at path: {metadata.file_key}"
+                )
 
-        except RequestTaskEncryptionError as e:
-            raise RequestTaskStorageError(f"Failed to decrypt data: {str(e)}")
+            # Decrypt and deserialize
+            data = decrypt_data(encrypted_data)
+
+            logger.info(
+                f"Retrieved {metadata.filesize:,} bytes from {storage_type_value} storage "
+                f"at path: {metadata.file_key}"
+            )
+
+            return data
+
+        except ExternalDataStorageError:
+            raise
         except Exception as e:
-            raise RequestTaskStorageError(
-                f"Failed to retrieve data from {metadata.storage_type} "
-                f"storage (key: {metadata.file_key}): {str(e)}"
-            ) from e
+            logger.error(f"Failed to retrieve data from external storage: {str(e)}")
+            raise ExternalDataStorageError(f"Failed to retrieve data: {str(e)}") from e
 
     @staticmethod
-    def delete_large_data(db: Session, metadata: ExternalStorageMetadata) -> None:
+    def delete_data(
+        db: Session,
+        metadata: ExternalStorageMetadata,
+    ) -> None:
         """
-        Delete large data from external storage
+        Delete data from external storage.
 
         Args:
             db: Database session
-            metadata: External storage metadata
+            metadata: Storage metadata containing location
 
-        Raises:
-            RequestTaskStorageError: If deletion fails (but doesn't stop execution)
+        Note:
+            This operation is best-effort and will log warnings on failure
+            rather than raising exceptions, to support cleanup scenarios.
         """
         try:
             # Get storage config
@@ -227,7 +239,7 @@ class RequestTaskStorageUtil:
                     logger.warning("No storage configuration found for cleanup")
                     return
 
-            # Delete from external storage
+            # Delete from external storage based on type
             storage_type_value = (
                 metadata.storage_type.value
                 if isinstance(metadata.storage_type, StorageType)
@@ -235,11 +247,11 @@ class RequestTaskStorageUtil:
             )
 
             if storage_type_value == StorageType.s3.value:
-                RequestTaskStorageUtil._delete_from_s3(storage_config, metadata)
+                ExternalDataStorageService._delete_from_s3(storage_config, metadata)
             elif storage_type_value == StorageType.gcs.value:
-                RequestTaskStorageUtil._delete_from_gcs(storage_config, metadata)
+                ExternalDataStorageService._delete_from_gcs(storage_config, metadata)
             elif storage_type_value == StorageType.local.value:
-                RequestTaskStorageUtil._delete_from_local(metadata)
+                ExternalDataStorageService._delete_from_local(metadata)
             else:
                 logger.warning(
                     f"Unsupported storage type for cleanup: {storage_type_value}"
@@ -247,16 +259,17 @@ class RequestTaskStorageUtil:
                 return
 
             logger.info(
-                f"Deleted external storage file: {metadata.file_key} "
-                f"from {storage_type_value} storage"
+                f"Deleted external storage file from {storage_type_value} storage "
+                f"at path: {metadata.file_key}"
             )
 
         except Exception as e:
+            # Log but don't raise - cleanup should be best effort
             logger.warning(
-                f"Failed to delete external storage file {metadata.file_key}: {str(e)}"
+                f"Failed to delete external storage file at {metadata.file_key}: {str(e)}"
             )
 
-    # Private helper methods using existing storage functions
+    # Private helper methods for each storage type
 
     @staticmethod
     def _store_to_s3(config: StorageConfig, file_key: str, data: bytes) -> None:
