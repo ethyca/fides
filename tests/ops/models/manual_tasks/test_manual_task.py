@@ -127,13 +127,14 @@ class TestManualTaskReferences:
     def test_task_reference_relationships(self, db: Session, manual_task: ManualTask):
         """Test relationships between tasks and references."""
         # Create a reference
-        ref = ManualTaskReference(
-            task_id=manual_task.id,
-            reference_id="test_ref",
-            reference_type=ManualTaskReferenceType.privacy_request,
+        ref = ManualTaskReference.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "reference_id": "test_ref",
+                "reference_type": ManualTaskReferenceType.privacy_request,
+            },
         )
-        db.add(ref)
-        db.commit()
 
         # Verify bidirectional relationship
         assert ref.task == manual_task
@@ -142,17 +143,17 @@ class TestManualTaskReferences:
     def test_task_reference_deletion(self, db: Session, manual_task: ManualTask):
         """Test deleting task references."""
         # Create a reference
-        ref = ManualTaskReference(
-            task_id=manual_task.id,
-            reference_id="test_ref",
-            reference_type=ManualTaskReferenceType.privacy_request,
+        ref = ManualTaskReference.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "reference_id": "test_ref",
+                "reference_type": ManualTaskReferenceType.privacy_request,
+            },
         )
-        db.add(ref)
-        db.commit()
 
         # Delete the reference
-        db.delete(ref)
-        db.commit()
+        ref.delete(db)
 
         # Verify reference is gone
         assert len(manual_task.references) == 0
@@ -162,15 +163,16 @@ class TestManualTaskReferences:
         """Test the assigned_users property."""
         # Create user references
         user_refs = [
-            ManualTaskReference(
-                task_id=manual_task.id,
-                reference_id=f"user_{i}",
-                reference_type=ManualTaskReferenceType.assigned_user,
+            ManualTaskReference.create(
+                db=db,
+                data={
+                    "task_id": manual_task.id,
+                    "reference_id": f"user_{i}",
+                    "reference_type": ManualTaskReferenceType.assigned_user,
+                },
             )
             for i in range(3)
         ]
-        db.add_all(user_refs)
-        db.commit()
 
         # Verify assigned_users property
         assert len(manual_task.assigned_users) == 3
@@ -191,8 +193,13 @@ class TestManualTaskReferences:
         assert ref.reference_type == ManualTaskReferenceType.privacy_request
         ref.delete(db)
 
-        # Test invalid reference type
-        with pytest.raises(LookupError):
+        # Test enum validation
+        with pytest.raises(ValueError) as exc_info:
+            ManualTaskReferenceType("invalid_type")
+        assert "invalid_type" in str(exc_info)
+
+        # Test database-level validation
+        with pytest.raises(LookupError) as exc_info:
             ManualTaskReference.create(
                 db=db,
                 data={
@@ -201,6 +208,7 @@ class TestManualTaskReferences:
                     "reference_type": "invalid_type",
                 },
             )
+        assert "invalid_type" in str(exc_info)
 
 
 class TestManualTaskRelationships:

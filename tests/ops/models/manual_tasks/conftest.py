@@ -1,3 +1,5 @@
+from typing import Generator
+
 import pytest
 from sqlalchemy.orm import Session
 
@@ -10,7 +12,9 @@ from fides.api.schemas.manual_tasks.manual_task_schemas import (
 
 
 @pytest.fixture
-def manual_task(db: Session, connection_config: ConnectionConfig) -> ManualTask:
+def manual_task(
+    db: Session, connection_config: ConnectionConfig
+) -> Generator[ManualTask, None, None]:
     """Create a test manual task."""
     task = ManualTask.create(
         db=db,
@@ -21,4 +25,7 @@ def manual_task(db: Session, connection_config: ConnectionConfig) -> ManualTask:
         },
     )
     yield task
-    task.delete(db)
+    try:
+        task.delete(db)
+    except Exception as e:
+        pass
