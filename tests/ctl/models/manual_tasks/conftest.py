@@ -1,0 +1,23 @@
+import pytest
+from sqlalchemy.orm import Session
+from fides.api.models.manual_tasks.manual_task import ManualTask
+from fides.api.schemas.manual_tasks.manual_task_schemas import (
+    ManualTaskType,
+    ManualTaskParentEntityType,
+)
+from fides.api.models.connectionconfig import ConnectionConfig
+
+
+@pytest.fixture
+def manual_task(db: Session, connection_config: ConnectionConfig) -> ManualTask:
+    """Create a test manual task."""
+    task = ManualTask.create(
+        db=db,
+        data={
+            "task_type": ManualTaskType.privacy_request,
+            "parent_entity_id": f"{connection_config.id}_task",
+            "parent_entity_type": ManualTaskParentEntityType.connection_config,
+        },
+    )
+    yield task
+    task.delete(db)

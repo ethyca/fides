@@ -1,30 +1,8 @@
-from datetime import datetime, timezone
-from typing import Generator
-
-import pytest
 from sqlalchemy.orm import Session
 
 from fides.api.models.manual_tasks.manual_task import ManualTask
 from fides.api.models.manual_tasks.manual_task_log import ManualTaskLog
-from fides.api.schemas.manual_tasks.manual_task_schemas import (
-    ManualTaskLogStatus,
-    ManualTaskParentEntityType,
-    ManualTaskType,
-)
-
-
-@pytest.fixture
-def manual_task(db: Session) -> ManualTask:
-    """Create a test manual task."""
-    task = ManualTask.create(
-        db=db,
-        data={
-            "task_type": ManualTaskType.privacy_request,
-            "parent_entity_id": "test_connection",
-            "parent_entity_type": ManualTaskParentEntityType.connection_config,
-        },
-    )
-    return task
+from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskLogStatus
 
 
 class TestManualTaskLog:
