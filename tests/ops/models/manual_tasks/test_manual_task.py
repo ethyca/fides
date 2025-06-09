@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+
 import pytest
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session

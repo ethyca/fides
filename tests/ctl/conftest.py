@@ -14,7 +14,7 @@ orig_requests_patch = requests.patch
 orig_requests_delete = requests.delete
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 @pytest.mark.usefixtures("monkeypatch_requests")
 def setup_ctl_db(test_config, test_client, config):
     "Sets up the database for testing."

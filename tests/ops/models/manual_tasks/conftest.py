@@ -1,11 +1,12 @@
 import pytest
 from sqlalchemy.orm import Session
+
+from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.manual_tasks.manual_task import ManualTask
 from fides.api.schemas.manual_tasks.manual_task_schemas import (
-    ManualTaskType,
     ManualTaskParentEntityType,
+    ManualTaskType,
 )
-from fides.api.models.connectionconfig import ConnectionConfig
 
 
 @pytest.fixture
