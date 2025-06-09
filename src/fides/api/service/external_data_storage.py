@@ -22,10 +22,7 @@ from fides.api.service.storage.s3 import (
     generic_upload_to_s3,
 )
 from fides.api.service.storage.util import get_local_filename
-from fides.api.util.encryption.aes_gcm_encryption_util import (
-    decrypt_data,
-    encrypt_data,
-)
+from fides.api.util.encryption.aes_gcm_encryption_util import decrypt_data, encrypt_data
 
 
 class ExternalDataStorageError(Exception):

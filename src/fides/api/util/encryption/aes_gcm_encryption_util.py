@@ -9,7 +9,7 @@ This module provides simplified encrypt/decrypt functions using two approaches:
 import json
 import os
 from typing import Any, List, Union
-
+import hashlib
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from loguru import logger
@@ -48,7 +48,7 @@ def encrypt_with_sqlalchemy_utils(data: List[Row]) -> bytes:
         # Encrypt using SQLAlchemy-Utils AesGcmEngine
         engine = AesGcmEngine()
         key = CONFIG.security.app_encryption_key
-        engine._update_key(key)
+        engine._update_key(key)  # pylint: disable=protected-access
 
         # AesGcmEngine expects string input
         data_str = data_bytes.decode("utf-8")
@@ -82,7 +82,7 @@ def decrypt_with_sqlalchemy_utils(encrypted_bytes: bytes) -> List[Row]:
         # Decrypt using SQLAlchemy-Utils AesGcmEngine
         engine = AesGcmEngine()
         key = CONFIG.security.app_encryption_key
-        engine._update_key(key)
+        engine._update_key(key)  # pylint: disable=protected-access
 
         # AesGcmEngine expects string input
         encrypted_str = encrypted_bytes.decode("utf-8")
@@ -232,11 +232,8 @@ def _get_encryption_key() -> bytes:
     app_key = CONFIG.security.app_encryption_key.encode(CONFIG.security.encoding)
     if len(app_key) == 32:
         return app_key
-    else:
-        # Pad or truncate to 32 bytes
-        import hashlib
 
-        return hashlib.sha256(app_key).digest()
+    return hashlib.sha256(app_key).digest()
 
 
 # Public API - Use cryptography by default for new operations

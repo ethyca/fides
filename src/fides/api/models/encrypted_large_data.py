@@ -1,12 +1,3 @@
-"""
-Descriptor for encrypted database fields with automatic external storage fallback.
-
-This module provides a reusable pattern for fields that:
-1. Are encrypted in the database using SQLAlchemy-Utils
-2. Automatically use external storage when data exceeds size thresholds
-3. Handle cleanup of external storage files
-"""
-
 import json
 import sys
 from datetime import datetime
@@ -100,13 +91,26 @@ def is_large_data(data: List[Row], threshold_bytes: Optional[int] = None) -> boo
 
 class EncryptedLargeDataDescriptor:
     """
-    A descriptor for database fields that:
-    1. Are encrypted using SQLAlchemy-Utils StringEncryptedType
-    2. Automatically use external storage for large data
-    3. Handle cleanup of external storage
+    A Python descriptor for database fields with encrypted external storage fallback.
 
-    This pattern allows us to DRY up the code for fields like access_data,
-    data_for_erasures, and filtered_final_upload.
+    This implements Python's descriptor protocol (by defining __get__ and __set__ methods)
+    to intercept attribute access and provide custom behavior. When you declare:
+
+    ```python
+    class RequestTask(Base):
+        access_data = EncryptedLargeDataDescriptor("access_data")
+    ```
+
+    The descriptor automatically:
+    1. Encrypts data using SQLAlchemy-Utils StringEncryptedType
+    2. Uses external storage (S3, GCS, local) when data exceeds size thresholds
+    3. Handles cleanup of external storage files when data changes
+    4. Works transparently - fields behave like normal Python attributes
+
+    Storage paths use the format: {ModelName}/{instance_id}/{field_name}/{timestamp}-{random}.enc
+
+    This pattern eliminates duplicate code across multiple encrypted fields while providing
+    a clean, reusable interface that works with any SQLAlchemy model with an 'id' attribute.
     """
 
     def __init__(
@@ -127,9 +131,10 @@ class EncryptedLargeDataDescriptor:
         self.private_field = f"_{field_name}"
         self.empty_default = empty_default if empty_default is not None else []
         self.threshold_bytes = threshold_bytes or LARGE_DATA_THRESHOLD_BYTES
-        self.model_class = None  # Set by __set_name__
+        self.model_class: Optional[str] = None  # Set by __set_name__
+        self.name: Optional[str] = None  # Set by __set_name__
 
-    def __set_name__(self, owner: Type, name: str):
+    def __set_name__(self, owner: Type, name: str) -> None:
         """Called when the descriptor is assigned to a class attribute."""
         self.name = name
         self.model_class = owner.__name__
