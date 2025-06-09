@@ -7,6 +7,24 @@
   "source": "./src/fides.ts",
   "module": "./dist/fides.mjs",
   "types": "./dist/fides.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/fides.mjs",
+      "require": "./dist/fides.js",
+      "types": "./dist/fides.d.ts"
+    },
+    "./tcf": {
+      "import": "./dist/fides-tcf.mjs",
+      "require": "./dist/fides-tcf.js",
+      "types": "./dist/fides-tcf.d.ts"
+    },
+    "./headless": {
+      "import": "./dist/fides-headless.mjs",
+      "require": "./dist/fides-headless.js",
+      "types": "./dist/fides-headless.d.ts"
+    },
+    "./dist/*": "./dist/*"
+  },
   "files": [
     "dist/**"
   ],

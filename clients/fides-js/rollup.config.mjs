@@ -147,11 +147,12 @@ SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
     }),
     output: [
       {
-        // Intended for browser <script> tag - defines `Fides` global. Also supports UMD loaders.
+        // Intended for browser <script> tag - defines `Fides` global. Uses IIFE to avoid RequireJS conflicts.
         file: `dist/${name}.js`,
         name: isExtension ? undefined : "Fides",
-        format: isExtension ? undefined : "umd",
+        format: isExtension ? "es" : "iife",
         sourcemap: IS_DEV ? "inline" : false,
+        extend: true, // avoid overwriting existing window.Fides if it exists
       },
     ],
   };
