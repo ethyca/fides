@@ -1,8 +1,7 @@
-import { Box, Flex } from "fidesui";
+import { AntTabs, Box, Flex } from "fidesui";
 import RoleDescriptionDrawer from "user-management/RoleDescriptionDrawer";
 
 import { useAppSelector } from "~/app/hooks";
-import DataTabs, { type TabData } from "~/features/common/DataTabs";
 import { ScopeRegistryEnum } from "~/types/api";
 
 import { useHasPermission } from "../common/Restrict";
@@ -30,10 +29,11 @@ const UserManagementTabs = ({
   // If it is a new user, or if the user does not have permission
   const permissionsTabDisabled = !activeUserId || !canUpdateUserPermissions;
 
-  const tabs: TabData[] = [
+  const tabs = [
     {
       label: "Profile",
-      content: (
+      key: "profile",
+      children: (
         <UserForm
           onSubmit={onSubmit}
           initialValues={initialValues}
@@ -43,7 +43,8 @@ const UserManagementTabs = ({
     },
     {
       label: "Permissions",
-      content: (
+      key: "permissions",
+      children: (
         <Flex gap="97px">
           <Box w={{ base: "100%", md: "50%", xl: "50%" }}>
             <PermissionsForm />
@@ -66,7 +67,7 @@ const UserManagementTabs = ({
     },
   ];
 
-  return <DataTabs data={tabs} />;
+  return <AntTabs items={tabs} />;
 };
 
 export default UserManagementTabs;

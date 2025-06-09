@@ -1,5 +1,7 @@
 import {
   AntButton as Button,
+  AntTabs,
+  AntTabsProps,
   Box,
   Flex,
   Spacer,
@@ -9,7 +11,6 @@ import {
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 
-import DataTabs, { TabData } from "~/features/common/DataTabs";
 import Layout from "~/features/common/Layout";
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
@@ -58,13 +59,14 @@ const IntegrationDetailView: NextPage = () => {
   const supportsConnectionTest =
     connection?.connection_type !== ConnectionType.MANUAL_WEBHOOK;
 
-  const tabs: TabData[] = [];
+  const tabs: AntTabsProps["items"] = [];
 
   // Show Details tab for integrations without connection, Connection tab for others
   if (enabledFeatures?.includes(IntegrationFeatureEnum.WITHOUT_CONNECTION)) {
     tabs.push({
       label: "Details",
-      content: (
+      key: "details",
+      children: (
         <Box maxW="720px">
           <Flex>
             <Button onClick={onOpen} data-testid="manage-btn">
@@ -86,7 +88,8 @@ const IntegrationDetailView: NextPage = () => {
   } else {
     tabs.push({
       label: "Connection",
-      content: (
+      key: "connection",
+      children: (
         <Box maxW="720px">
           {supportsConnectionTest && (
             <Flex
@@ -139,14 +142,16 @@ const IntegrationDetailView: NextPage = () => {
   if (enabledFeatures?.includes(IntegrationFeatureEnum.DATA_SYNC)) {
     tabs.push({
       label: "Data sync",
-      content: <DatahubDataSyncTab integration={connection!} />,
+      key: "data-sync",
+      children: <DatahubDataSyncTab integration={connection!} />,
     });
   }
 
   if (enabledFeatures?.includes(IntegrationFeatureEnum.DATA_DISCOVERY)) {
     tabs.push({
       label: "Data discovery",
-      content: (
+      key: "data-discovery",
+      children: (
         <MonitorConfigTab
           integration={connection!}
           integrationOption={integrationOption}
@@ -174,7 +179,7 @@ const IntegrationDetailView: NextPage = () => {
         {integrationIsLoading ? (
           <Spinner />
         ) : (
-          !!connection && <DataTabs data={tabs} isLazy />
+          !!connection && <AntTabs items={tabs} />
         )}
       </PageHeader>
     </Layout>

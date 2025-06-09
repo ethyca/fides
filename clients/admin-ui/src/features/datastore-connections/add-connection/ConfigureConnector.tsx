@@ -3,7 +3,7 @@ import {
   selectConnectionTypeState,
   setStep,
 } from "connection-type/connection-type.slice";
-import { VStack } from "fidesui";
+import { AntTabs, AntTabsProps, VStack } from "fidesui";
 import React, {
   useCallback,
   useEffect,
@@ -14,7 +14,6 @@ import React, {
 import { useDispatch } from "react-redux";
 
 import { useAppSelector } from "~/app/hooks";
-import DataTabs, { TabData } from "~/features/common/DataTabs";
 import { SystemType } from "~/types/api";
 
 import { ConnectorParameters } from "./ConnectorParameters";
@@ -42,51 +41,51 @@ const ConfigureConnector = () => {
     setCanRedirect(true);
   };
 
-  const getTabs = useMemo(
-    () => () => {
-      const result: TabData[] = [];
-      if (connector?.options) {
-        connector.options.forEach((option) => {
-          let data: TabData | undefined;
-          switch (option) {
-            case ConfigurationSettings.CONNECTOR_PARAMETERS:
-              data = {
-                label: option,
-                content: (
-                  <ConnectorParameters
-                    onConnectionCreated={handleConnectionCreated}
-                  />
-                ),
-              };
-              break;
-            case ConfigurationSettings.DATASET_CONFIGURATION:
-              data = connection?.key
-                ? {
-                    label: option,
-                    content: <DatasetConfiguration />,
-                  }
-                : undefined;
-              break;
-            case ConfigurationSettings.DSR_CUSTOMIZATION:
-              data = connection?.key
-                ? {
-                    label: option,
-                    content: <DSRCustomization />,
-                  }
-                : undefined;
-              break;
-            default:
-              break;
-          }
-          if (data) {
-            result.push(data);
-          }
-        });
-      }
-      return result;
-    },
-    [connection?.key, connector?.options],
-  );
+  const tabData = useMemo(() => {
+    const result: AntTabsProps["items"] = [];
+    if (connector?.options) {
+      connector.options.forEach((option) => {
+        let data: NonNullable<AntTabsProps["items"]>[number] | undefined;
+        switch (option) {
+          case ConfigurationSettings.CONNECTOR_PARAMETERS:
+            data = {
+              label: option,
+              key: option,
+              children: (
+                <ConnectorParameters
+                  onConnectionCreated={handleConnectionCreated}
+                />
+              ),
+            };
+            break;
+          case ConfigurationSettings.DATASET_CONFIGURATION:
+            data = connection?.key
+              ? {
+                  label: option,
+                  key: option,
+                  children: <DatasetConfiguration />,
+                }
+              : undefined;
+            break;
+          case ConfigurationSettings.DSR_CUSTOMIZATION:
+            data = connection?.key
+              ? {
+                  label: option,
+                  key: option,
+                  children: <DSRCustomization />,
+                }
+              : undefined;
+            break;
+          default:
+            break;
+        }
+        if (data) {
+          result.push(data);
+        }
+      });
+    }
+    return result;
+  }, [connection?.key, connector?.options]);
 
   const handleNavChange = useCallback(
     (value: string) => {
@@ -136,13 +135,10 @@ const ConfigureConnector = () => {
 
   return (
     <VStack alignItems="stretch" gap="18px">
-      <DataTabs
-        data={getTabs()}
-        flexGrow={1}
-        index={connector?.options.findIndex(
-          (option) => option === selectedItem,
-        )}
-        isLazy
+      <AntTabs
+        items={tabData}
+        activeKey={selectedItem}
+        onChange={handleNavChange}
       />
     </VStack>
   );

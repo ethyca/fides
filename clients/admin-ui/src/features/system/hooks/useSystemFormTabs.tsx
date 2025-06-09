@@ -1,11 +1,10 @@
 import { DataFlowAccordion } from "common/system-data-flow/DataFlowAccordion";
-import { Box, Link, Text, useToast } from "fidesui";
+import { AntTabsProps, Box, Link, Text, useToast } from "fidesui";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import { type TabData } from "~/features/common/DataTabs";
 import { useFeatures } from "~/features/common/features";
 import {
   DirtyFormConfirmationModal,
@@ -195,7 +194,7 @@ const useSystemFormTabs = ({
 
   const { attemptAction } = useIsAnyFormDirty();
 
-  const onTabChange = useCallback(
+  const changeTabIndex = useCallback(
     (index: number) => {
       attemptAction().then(async (modalConfirmed: boolean) => {
         if (modalConfirmed) {
@@ -235,19 +234,30 @@ const useSystemFormTabs = ({
     [attemptAction, router, toast],
   );
 
+  const onTabChange = useCallback(
+    (key: string) => {
+      const index = getTabFromHash(key)?.index;
+      if (index !== undefined) {
+        changeTabIndex(index);
+      }
+    },
+    [changeTabIndex],
+  );
+
   useEffect(() => {
     const { status } = router.query;
     if (status) {
-      onTabChange(SYSTEM_TABS.INTEGRATIONS.index);
+      changeTabIndex(SYSTEM_TABS.INTEGRATIONS.index);
     }
-  }, [router.query, onTabChange]);
+  }, [router.query, changeTabIndex]);
 
   const showNewIntegrationNotice = hasPlus;
 
-  const tabData: TabData[] = [
+  const tabData: NonNullable<AntTabsProps["items"]> = [
     {
       label: "Information",
-      content: (
+      key: "information",
+      children: (
         <>
           <Box px={6} mb={9}>
             <DirtyFormConfirmationModal />
@@ -281,16 +291,18 @@ const useSystemFormTabs = ({
     },
     {
       label: "Data uses",
-      content: activeSystem ? (
+      key: "data-uses",
+      children: activeSystem ? (
         <Box px={6} width={{ base: "100%", lg: "70%" }}>
           <PrivacyDeclarationStep system={activeSystem} />
         </Box>
       ) : null,
-      isDisabled: !activeSystem || !systemProcessesPersonalData,
+      disabled: !activeSystem || !systemProcessesPersonalData,
     },
     {
       label: "Data flow",
-      content: activeSystem ? (
+      key: "data-flow",
+      children: activeSystem ? (
         <Box width={{ base: "100%", lg: "70%" }}>
           <Box px={6} paddingBottom={2}>
             <Text
@@ -312,11 +324,12 @@ const useSystemFormTabs = ({
           <DataFlowAccordion system={activeSystem} isSystemTab />
         </Box>
       ) : null,
-      isDisabled: !activeSystem,
+      disabled: !activeSystem,
     },
     {
       label: "Integrations",
-      content: activeSystem ? (
+      key: "integrations",
+      children: activeSystem ? (
         <Box width={{ base: "100%", lg: "70%" }}>
           <Box px={6} paddingBottom={2}>
             <Text fontSize="sm" lineHeight={5}>
@@ -346,24 +359,26 @@ const useSystemFormTabs = ({
           )}
         </Box>
       ) : null,
-      isDisabled: !activeSystem,
+      disabled: !activeSystem,
     },
   ];
 
   if (isPlusEnabled) {
     tabData.push({
       label: "Assets",
-      content: activeSystem ? (
+      key: "assets",
+      children: activeSystem ? (
         <SystemAssetsTable system={activeSystem} />
       ) : null,
-      isDisabled: !activeSystem,
+      disabled: !activeSystem,
     });
   }
 
   if (isPlusEnabled) {
     tabData.push({
       label: "History",
-      content: activeSystem ? (
+      key: "history",
+      children: activeSystem ? (
         <Box width={{ base: "100%", lg: "70%" }}>
           <Box px={6} paddingBottom={6}>
             <Text fontSize="sm" lineHeight={5} fontWeight="medium">
@@ -375,10 +390,12 @@ const useSystemFormTabs = ({
           <SystemHistoryTable system={activeSystem} />
         </Box>
       ) : null,
-      isDisabled: !activeSystem,
+      disabled: !activeSystem,
     });
   }
 
-  return { tabData, tabIndex, onTabChange };
+  const activeKey = tabData[tabIndex].key;
+
+  return { tabData, activeKey, onTabChange };
 };
 export default useSystemFormTabs;

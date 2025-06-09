@@ -1,10 +1,9 @@
-import { Box, Heading, Text } from "fidesui";
+import { AntTabs, Box, Heading, Text } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import React, { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import DataTabs from "~/features/common/DataTabs";
 import Layout from "~/features/common/Layout";
 import { ADD_SYSTEMS_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
@@ -30,7 +29,7 @@ const NewManualSystem: NextPage = () => {
   const router = useRouter();
   const { connectorType } = router.query;
 
-  const { tabData, tabIndex, onTabChange } = useSystemFormTabs({
+  const { tabData, activeKey, onTabChange } = useSystemFormTabs({
     isCreate: true,
   });
 
@@ -66,14 +65,7 @@ const NewManualSystem: NextPage = () => {
         <Text fontSize="sm" mb={8}>
           {DESCRIBE_SYSTEM_COPY}
         </Text>
-        <DataTabs
-          data={tabData}
-          data-testid="system-tabs"
-          index={tabIndex}
-          isLazy
-          isManual
-          onChange={onTabChange}
-        />
+        <AntTabs items={tabData} activeKey={activeKey} onChange={onTabChange} />
       </Box>
     </Layout>
   );
