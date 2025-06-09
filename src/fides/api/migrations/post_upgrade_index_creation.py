@@ -182,7 +182,7 @@ def create_object(db: Session, object_statement: str, object_name: str) -> None:
 def check_and_create_objects(
     db: Session, table_object_map: Dict[str, List[Dict[str, str]]], lock: Lock
 ) -> Dict[str, str]:
-    """Returns a dictionary of any indices or constraints that are in the process of being created."""
+    """Returns a dictionary of any indices or constraints that were created."""
     object_info: Dict[str, str] = {}
     for _, objects in table_object_map.items():
         for object_data in objects:
@@ -203,7 +203,7 @@ def check_and_create_objects(
                             continue
 
                 create_object(db, object_statement, object_name)
-                object_info[object_name] = "in progress"
+                object_info[object_name] = "created"
             else:
                 logger.debug(
                     f"Object {object_name} already exists, skipping index/constraint creation"
@@ -248,7 +248,7 @@ def post_upgrade_index_creation_task() -> None:
                     f"Post upgrade index creation output: {json.dumps(object_info)}"
                 )
             else:
-                logger.debug("All indices and constraints created")
+                logger.debug("All indices and constraints already created")
 
 
 def initiate_post_upgrade_index_creation() -> None:
