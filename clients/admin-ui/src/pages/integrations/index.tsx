@@ -4,6 +4,7 @@ import {
   AntTable as Table,
   AntTableProps as TableProps,
   AntTag as Tag,
+  AntTypography as Typography,
   useDisclosure,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
@@ -114,10 +115,16 @@ const IntegrationListView: NextPage = () => {
       title: "Name",
       dataIndex: "name",
       key: "name",
+      minWidth: 150,
       render: (name: string | null, record) => (
         <div className="flex items-center gap-3">
           <ConnectionTypeLogo data={record} boxSize="20px" />
-          <span className="font-semibold">{name || "(No name)"}</span>
+          <Typography.Text
+            ellipsis={{ tooltip: name || "(No name)" }}
+            className="font-semibold"
+          >
+            {name || "(No name)"}
+          </Typography.Text>
         </div>
       ),
     },
@@ -125,6 +132,7 @@ const IntegrationListView: NextPage = () => {
       title: "Type",
       dataIndex: "connection_type",
       key: "connection_type",
+      width: 150,
       render: (connectionType) => {
         const typeInfo = getIntegrationTypeInfo(connectionType);
         return <Tag>{typeInfo.placeholder.name || connectionType}</Tag>;
@@ -134,12 +142,14 @@ const IntegrationListView: NextPage = () => {
       title: "Category",
       dataIndex: ["integrationTypeInfo", "category"],
       key: "category",
+      width: 150,
       render: (category: ConnectionCategory) => category,
     },
     {
       title: "Capabilities",
       dataIndex: ["integrationTypeInfo", "tags"],
       key: "capabilities",
+      width: 300,
       render: (tags: string[]) => (
         <div className="flex flex-wrap gap-1">
           {tags.map((tag) => (
@@ -152,12 +162,14 @@ const IntegrationListView: NextPage = () => {
       title: "Last Connection",
       dataIndex: "last_test_timestamp",
       key: "last_connection",
+      width: 300,
       render: (lastTestTimestamp, record) =>
         formatLastConnection(lastTestTimestamp, record.last_test_succeeded),
     },
     {
       title: "Actions",
       key: "actions",
+      width: 100,
       render: (_, record) => (
         <Button
           onClick={() => handleManageClick(record)}
@@ -226,7 +238,6 @@ const IntegrationListView: NextPage = () => {
           rowKey="key"
           pagination={paginationConfig}
           loading={isLoading}
-          scroll={{ x: "max-content" }}
           size="small"
           locale={tableLocale}
           bordered
