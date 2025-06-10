@@ -187,9 +187,9 @@ class EncryptedLargeDataDescriptor:
         if not instance_id:
             raise ValueError(f"Instance {instance} must have an 'id' attribute")
 
-        timestamp = datetime.utcnow().strftime("%Y%m%d-%H%M%S.%f")
+        timestamp = datetime.utcnow().strftime("%Y%m%d-%H%M%S-%f")
 
-        return f"{self.model_class}/{instance_id}/{self.field_name}/{timestamp}"
+        return f"{self.model_class}/{instance_id}/{self.field_name}/{timestamp}.txt"
 
     def __get__(self, instance: Any, owner: Type) -> Any:
         """

@@ -16,12 +16,9 @@ from fides.api.models.storage import StorageConfig, get_active_default_storage_c
 from fides.api.schemas.external_storage import ExternalStorageMetadata
 from fides.api.schemas.storage.storage import StorageDetails, StorageType
 from fides.api.service.storage.gcs import get_gcs_client
-from fides.api.service.storage.s3 import (
-    generic_delete_from_s3,
-    generic_retrieve_from_s3,
-    generic_upload_to_s3,
-)
+from fides.api.service.storage.s3 import generic_delete_from_s3, generic_upload_to_s3
 from fides.api.service.storage.util import get_local_filename
+from fides.api.util.aws_util import get_s3_client
 from fides.api.util.encryption.aes_gcm_encryption_util import decrypt_data, encrypt_data
 
 
@@ -307,18 +304,25 @@ class ExternalDataStorageService:
     def _retrieve_from_s3(
         config: StorageConfig, metadata: ExternalStorageMetadata
     ) -> bytes:
-        """Retrieve data from S3 using existing generic_retrieve_from_s3"""
+        """Retrieve data from S3 directly, bypassing file size limits"""
+
         bucket_name = config.details[StorageDetails.BUCKET.value]
         auth_method = config.details[StorageDetails.AUTH_METHOD.value]
 
-        _, data_bytes = generic_retrieve_from_s3(
-            storage_secrets=config.secrets,
-            bucket_name=bucket_name,
-            file_key=metadata.file_key,
-            auth_method=auth_method,
-            get_content=True,
-        )
-        return data_bytes  # type: ignore
+        # Get S3 client directly and download content regardless of file size
+        s3_client = get_s3_client(auth_method, config.secrets)
+
+        try:
+            # Download content directly to BytesIO buffer
+            file_obj = BytesIO()
+            s3_client.download_fileobj(
+                Bucket=bucket_name, Key=metadata.file_key, Fileobj=file_obj
+            )
+            file_obj.seek(0)  # Reset file pointer to beginning
+            return file_obj.read()
+        except Exception as e:
+            logger.error(f"Error retrieving file from S3: {e}")
+            raise e
 
     @staticmethod
     def _retrieve_from_gcs(
