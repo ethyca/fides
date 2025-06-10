@@ -7,7 +7,6 @@ import {
   useDisclosure,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
-import { isEqual } from "lodash";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import React, { useCallback, useMemo, useState } from "react";
@@ -38,7 +37,6 @@ const IntegrationListView: NextPage = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [searchTerm, setSearchTerm] = useState("");
-  const [connectionTypes, setConnectionTypes] = useState<string[]>([]);
   const router = useRouter();
 
   const handleSearchChange = (value: string) => {
@@ -47,28 +45,19 @@ const IntegrationListView: NextPage = () => {
   };
 
   const handleTableChange = useCallback(
-    (pagination: any, filters: any) => {
+    (pagination: any) => {
       if (pagination?.current !== page) {
         setPage(pagination.current);
       }
       if (pagination?.pageSize && pagination.pageSize !== pageSize) {
         setPageSize(pagination.pageSize);
       }
-
-      const newFilters = filters?.connection_type || [];
-      if (!isEqual(newFilters, connectionTypes)) {
-        setConnectionTypes(newFilters);
-        setPage(1);
-      }
     },
-    [page, pageSize, connectionTypes],
+    [page, pageSize],
   );
 
   const { data, isLoading } = useGetAllDatastoreConnectionsQuery({
-    connection_type:
-      connectionTypes.length > 0
-        ? connectionTypes
-        : (SUPPORTED_INTEGRATIONS as string[]),
+    connection_type: SUPPORTED_INTEGRATIONS as string[],
     size: pageSize,
     page,
     search: searchTerm.trim() || undefined,
@@ -120,13 +109,6 @@ const IntegrationListView: NextPage = () => {
     return formattedDate;
   };
 
-  const availableConnectionTypes = useMemo(() => {
-    return SUPPORTED_INTEGRATIONS.map((type) => ({
-      text: getIntegrationTypeInfo(type as any).placeholder.name || type,
-      value: type,
-    }));
-  }, []);
-
   const columns: ColumnsType<IntegrationTableData> = [
     {
       title: "Name",
@@ -143,11 +125,6 @@ const IntegrationListView: NextPage = () => {
       title: "Type",
       dataIndex: "connection_type",
       key: "connection_type",
-      filters: availableConnectionTypes,
-      filteredValue: connectionTypes,
-      filterMultiple: true,
-      filterSearch: true,
-      onFilter: () => true, // Server-side filtering
       render: (connectionType) => {
         const typeInfo = getIntegrationTypeInfo(connectionType);
         return <Tag>{typeInfo.placeholder.name || connectionType}</Tag>;
