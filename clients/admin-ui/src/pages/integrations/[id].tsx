@@ -168,8 +168,8 @@ const IntegrationDetailView: NextPage = () => {
             title: connection?.name ?? connection?.key ?? "",
           },
         ]}
+        rightContent={<SharedConfigModal />}
       >
-        <SharedConfigModal />
         <IntegrationBox integration={connection} showDeleteButton />
         {integrationIsLoading ? (
           <Spinner />

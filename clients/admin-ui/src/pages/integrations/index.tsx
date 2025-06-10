@@ -141,14 +141,14 @@ const IntegrationListView: NextPage = () => {
       key: "name",
       render: (name: string | null, record) => (
         <div className="flex items-center gap-3">
-          <ConnectionTypeLogo data={record} boxSize="32px" />
-          <span className="font-medium">{name || "(No name)"}</span>
+          <ConnectionTypeLogo data={record} boxSize="20px" />
+          <span className="font-semibold">{name || "(No name)"}</span>
         </div>
       ),
       sorter: (a, b) => (a.name || "").localeCompare(b.name || ""),
     },
     {
-      title: "Connection",
+      title: "Type",
       dataIndex: "connection_type",
       key: "connection_type",
       filters: connectionTypes,
@@ -156,7 +156,7 @@ const IntegrationListView: NextPage = () => {
       onFilter: (value, record) => record.connection_type === value,
       render: (connectionType) => {
         const typeInfo = getIntegrationTypeInfo(connectionType);
-        return typeInfo.placeholder.name || connectionType;
+        return <Tag>{typeInfo.placeholder.name || connectionType}</Tag>;
       },
     },
     {
@@ -282,8 +282,13 @@ const IntegrationListView: NextPage = () => {
           pagination={paginationConfig}
           loading={isLoading}
           scroll={{ x: "max-content" }}
-          size="middle"
+          size="small"
           locale={tableLocale}
+          bordered
+          onRow={(record) => ({
+            onClick: () => handleManageClick(record),
+          })}
+          rowClassName="cursor-pointer"
         />
       )}
 
