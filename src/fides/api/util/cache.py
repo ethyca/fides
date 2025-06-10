@@ -21,6 +21,7 @@ from fides.api.tasks import (
 )
 from fides.api.util.custom_json_encoder import CustomJSONEncoder, _custom_decoder
 from fides.config import CONFIG
+from fides.config.utils import get_test_mode
 
 # This constant represents every type a redis key may contain, and can be
 # extended if needed
@@ -165,15 +166,21 @@ def get_cache(should_log: Optional[bool] = False) -> FidesopsRedis:
             "Application Redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a Redis cache."
         )
 
+    is_test_mode = get_test_mode()
+    db_index = CONFIG.redis.test_db_index if is_test_mode else CONFIG.redis.db_index
+
     global _connection  # pylint: disable=W0603
     if _connection is None:
-        logger.debug("Creating new Redis connection...")
+        if is_test_mode:
+            logger.debug("Creating new test Redis connection...")
+        else:
+            logger.debug("Creating new Redis connection...")
         _connection = FidesopsRedis(  # type: ignore[call-overload]
             charset=CONFIG.redis.charset,
             decode_responses=CONFIG.redis.decode_responses,
             host=CONFIG.redis.host,
             port=CONFIG.redis.port,
-            db=CONFIG.redis.db_index,
+            db=db_index,
             username=CONFIG.redis.user,
             password=CONFIG.redis.password,
             ssl=CONFIG.redis.ssl,

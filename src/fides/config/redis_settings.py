@@ -20,6 +20,10 @@ class RedisSettings(FidesSettings):
         default=0,
         description="The application will use this index in the Redis cache to cache data.",
     )
+    test_db_index: int = Field(
+        default=1,
+        description="The application will use this index in the Redis cache to cache data for testing.",
+    )
     decode_responses: bool = Field(
         default=True,
         description="Whether or not to automatically decode the values fetched from Redis. Decodes using the `charset` configuration value.",
