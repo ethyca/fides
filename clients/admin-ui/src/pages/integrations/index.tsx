@@ -213,7 +213,6 @@ const IntegrationListView: NextPage = () => {
           value={searchTerm}
           onChange={handleSearchChange}
           className="max-w-sm"
-          allowClear
         />
         <SharedConfigModal />
       </div>
