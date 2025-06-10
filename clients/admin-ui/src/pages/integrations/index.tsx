@@ -37,6 +37,7 @@ const IntegrationListView: NextPage = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [searchTerm, setSearchTerm] = useState("");
+  const [connectionTypes, setConnectionTypes] = useState<string[]>([]);
   const router = useRouter();
 
   // Handle search change and reset page to 1
@@ -45,8 +46,17 @@ const IntegrationListView: NextPage = () => {
     setPage(1);
   };
 
+  // Handle connection type filter change and reset page to 1
+  const handleConnectionTypeChange = (filters: string[]) => {
+    setConnectionTypes(filters);
+    setPage(1);
+  };
+
   const { data, isLoading } = useGetAllDatastoreConnectionsQuery({
-    connection_type: SUPPORTED_INTEGRATIONS,
+    connection_type:
+      connectionTypes.length > 0
+        ? connectionTypes
+        : (SUPPORTED_INTEGRATIONS as string[]),
     size: pageSize,
     page,
     search: searchTerm.trim() || undefined,
@@ -98,34 +108,13 @@ const IntegrationListView: NextPage = () => {
     return formattedDate;
   };
 
-  // Get unique values for filters
-  const connectionTypes = useMemo(() => {
-    const types = new Set(tableData.map((item) => item.connection_type));
-    return Array.from(types).map((type) => ({
+  // Get available connection types for filters from supported integrations
+  const availableConnectionTypes = useMemo(() => {
+    return SUPPORTED_INTEGRATIONS.map((type) => ({
       text: getIntegrationTypeInfo(type).placeholder.name || type,
       value: type,
     }));
-  }, [tableData]);
-
-  const categories = useMemo(() => {
-    const cats = new Set(
-      tableData.map((item) => item.integrationTypeInfo.category),
-    );
-    return Array.from(cats).map((category) => ({
-      text: category,
-      value: category,
-    }));
-  }, [tableData]);
-
-  const capabilities = useMemo(() => {
-    const caps = new Set(
-      tableData.flatMap((item) => item.integrationTypeInfo.tags),
-    );
-    return Array.from(caps).map((capability) => ({
-      text: capability,
-      value: capability,
-    }));
-  }, [tableData]);
+  }, []);
 
   const columns: ColumnsType<IntegrationTableData> = [
     {
@@ -138,15 +127,16 @@ const IntegrationListView: NextPage = () => {
           <span className="font-semibold">{name || "(No name)"}</span>
         </div>
       ),
-      sorter: (a, b) => (a.name || "").localeCompare(b.name || ""),
     },
     {
       title: "Type",
       dataIndex: "connection_type",
       key: "connection_type",
-      filters: connectionTypes,
+      filters: availableConnectionTypes,
+      filteredValue: connectionTypes,
       filterMultiple: true,
-      onFilter: (value, record) => record.connection_type === value,
+      filterSearch: true,
+      onFilter: () => true, // Server-side filtering
       render: (connectionType) => {
         const typeInfo = getIntegrationTypeInfo(connectionType);
         return <Tag>{typeInfo.placeholder.name || connectionType}</Tag>;
@@ -156,20 +146,12 @@ const IntegrationListView: NextPage = () => {
       title: "Category",
       dataIndex: ["integrationTypeInfo", "category"],
       key: "category",
-      filters: categories,
-      filterMultiple: true,
-      onFilter: (value, record) =>
-        record.integrationTypeInfo.category === value,
       render: (category: ConnectionCategory) => category,
     },
     {
       title: "Capabilities",
       dataIndex: ["integrationTypeInfo", "tags"],
       key: "capabilities",
-      filters: capabilities,
-      filterMultiple: true,
-      onFilter: (value, record) =>
-        record.integrationTypeInfo.tags.includes(value as string),
       render: (tags: string[]) => (
         <div className="flex flex-wrap gap-1">
           {tags.map((tag) => (
@@ -184,15 +166,6 @@ const IntegrationListView: NextPage = () => {
       key: "last_connection",
       render: (lastTestTimestamp, record) =>
         formatLastConnection(lastTestTimestamp, record.last_test_succeeded),
-      sorter: (a, b) => {
-        const aTime = a.last_test_timestamp
-          ? new Date(a.last_test_timestamp).getTime()
-          : 0;
-        const bTime = b.last_test_timestamp
-          ? new Date(b.last_test_timestamp).getTime()
-          : 0;
-        return aTime - bTime;
-      },
     },
     {
       title: "Actions",
@@ -217,12 +190,6 @@ const IntegrationListView: NextPage = () => {
     showQuickJumper: false,
     showTotal: (totalItems, range) =>
       `${range[0]}-${range[1]} of ${totalItems} integrations`,
-    onChange: (newPage, newPageSize) => {
-      setPage(newPage);
-      if (newPageSize !== pageSize) {
-        setPageSize(newPageSize);
-      }
-    },
     pageSizeOptions: ["10", "25", "50", "100"],
   };
 
@@ -280,6 +247,33 @@ const IntegrationListView: NextPage = () => {
             onClick: () => handleManageClick(record),
           })}
           rowClassName="cursor-pointer"
+          onChange={(pagination, filters) => {
+            // Handle pagination changes
+            if (pagination?.current) {
+              setPage(pagination.current);
+            }
+            if (pagination?.pageSize && pagination.pageSize !== pageSize) {
+              setPageSize(pagination.pageSize);
+            }
+
+            // Handle filter changes - only when they actually change
+            const connectionTypeFilters = filters?.connection_type as
+              | string[]
+              | undefined;
+            if (connectionTypeFilters !== undefined) {
+              // Handle the case where filters might be null (when cleared)
+              const newFilters = connectionTypeFilters || [];
+              const currentFilters = connectionTypes || [];
+
+              // Check if filters actually changed (create copies to avoid mutating readonly arrays)
+              const filtersChanged =
+                JSON.stringify([...newFilters].sort()) !==
+                JSON.stringify([...currentFilters].sort());
+              if (filtersChanged) {
+                handleConnectionTypeChange(newFilters);
+              }
+            }
+          }}
         />
       )}
 
