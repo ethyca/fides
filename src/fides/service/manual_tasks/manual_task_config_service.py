@@ -11,14 +11,11 @@ from fides.api.models.manual_tasks.manual_task_config import (
 )
 from fides.api.models.manual_tasks.manual_task_log import ManualTaskLog
 from fides.api.schemas.manual_tasks.manual_task_config import (
-    ManualTaskAttachmentField,
-    ManualTaskCheckboxField,
     ManualTaskConfigResponse,
     ManualTaskConfigurationType,
-    ManualTaskFieldType,
-    ManualTaskTextField,
 )
 from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskLogStatus
+from fides.service.manual_tasks.utils import validate_fields
 
 
 class ManualTaskConfigService:
@@ -53,39 +50,6 @@ class ManualTaskConfigService:
             "updated_at": config.updated_at,
         }
 
-    def _validate_fields(self, fields: list[dict[str, Any]]) -> None:
-        """Validate field data against the appropriate Pydantic model.
-        Raises a ValueError if the field data is invalid.
-        """
-        # Check for duplicate field keys
-        field_keys_set: set[str] = {str(field.get("field_key")) for field in fields}
-        if len(field_keys_set) != len(fields):
-            raise ValueError(
-                "Duplicate field keys found in field updates, field keys must be unique."
-            )
-        # Check that field_key is present for each field
-        for field in fields:
-            field_key = field.get("field_key")
-            if not field_key:
-                raise ValueError("Invalid field data: field_key is required")
-            # Skip validation for fields with empty metadata (used for removal)
-            if field.get("field_metadata") == {}:
-                continue
-
-            try:
-                field_type = field.get("field_type")
-                if not field_type:
-                    raise ValueError("Invalid field data: field_type is required")
-                if field_type == ManualTaskFieldType.text:
-                    ManualTaskTextField.model_validate(field)
-                elif field_type == ManualTaskFieldType.checkbox:
-                    ManualTaskCheckboxField.model_validate(field)
-                elif field_type == ManualTaskFieldType.attachment:
-                    ManualTaskAttachmentField.model_validate(field)
-                else:
-                    raise ValueError(f"Invalid field type: {field_type}")
-            except ValidationError as e:
-                raise ValueError(f"Invalid field data: {str(e)}")
 
     def _re_create_existing_fields(
         self,
@@ -119,7 +83,7 @@ class ManualTaskConfigService:
             new_config: The config to add fields to
             field_updates: The fields to add or update
         """
-        self._validate_fields(field_updates)
+        validate_fields(field_updates)
 
         for update in field_updates:
             # Do not recreate if this field is empty - This is a removal
@@ -262,7 +226,7 @@ class ManualTaskConfigService:
         # Validate fields if provided
         # Handle field updates (additions and modifications, removals)
         if field_updates:
-            self._validate_fields(field_updates)
+            validate_fields(field_updates)
             self._new_field_updates(new_config, field_updates)
             modified_field_keys = {
                 str(update.get("field_key"))
@@ -308,7 +272,7 @@ class ManualTaskConfigService:
             config_type: The type of config to add fields to
             fields: The fields to add
         """
-        self._validate_fields(fields)
+        validate_fields(fields)
         current_config = self.get_current_config(task, config_type)
         if not current_config:
             raise ValueError(
