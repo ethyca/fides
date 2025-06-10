@@ -168,7 +168,9 @@ const IntegrationDetailView: NextPage = () => {
           },
         ]}
       >
-        <IntegrationBox integration={connection} showDeleteButton />
+        <div className="mb-6 max-w-[720px]">
+          <IntegrationBox integration={connection} showDeleteButton />
+        </div>
         {integrationIsLoading ? (
           <Spinner />
         ) : (

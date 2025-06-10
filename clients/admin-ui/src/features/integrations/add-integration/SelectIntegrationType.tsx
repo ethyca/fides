@@ -19,14 +19,9 @@ import { IntegrationFilterTabs } from "~/features/integrations/useIntegrationFil
 type Props = {
   onCancel: () => void;
   onDetailClick: (type: IntegrationTypeInfo) => void;
-  onConfigureClick: (type: IntegrationTypeInfo) => void;
 };
 
-const SelectIntegrationType = ({
-  onCancel,
-  onDetailClick,
-  onConfigureClick,
-}: Props) => {
+const SelectIntegrationType = ({ onCancel, onDetailClick }: Props) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>(
     IntegrationFilterTabs.ALL,
@@ -114,18 +109,17 @@ const SelectIntegrationType = ({
       {isFiltering ? (
         <FidesSpinner />
       ) : (
-        <Flex direction="column">
+        <div className="grid grid-cols-3 gap-6">
           {filteredTypes.map((i) => (
             <IntegrationBox
               integration={i.placeholder}
               key={i.placeholder.key}
-              onConfigureClick={() => onConfigureClick(i)}
               otherButtons={
                 <Button onClick={() => onDetailClick(i)}>Details</Button>
               }
             />
           ))}
-        </Flex>
+        </div>
       )}
       <Flex>
         <Spacer />

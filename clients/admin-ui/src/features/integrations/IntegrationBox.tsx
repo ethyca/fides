@@ -39,12 +39,10 @@ const IntegrationBox = ({
 
   return (
     <Box
-      maxW="760px"
       borderWidth={1}
       borderRadius="lg"
       overflow="hidden"
       padding="12px"
-      marginBottom="24px"
       data-testid={`integration-info-${integration?.key}`}
     >
       <Flex>

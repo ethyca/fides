@@ -3,6 +3,7 @@ import {
   Heading,
   Modal,
   ModalBody,
+  ModalCloseButton,
   ModalContent,
   ModalContentProps,
   ModalHeader,
@@ -15,6 +16,7 @@ interface FormModalProps extends ModalProps {
   title: string;
   children: ReactNode;
   modalContentProps?: ModalContentProps;
+  showCloseButton?: boolean;
 }
 
 const FormModal = ({
@@ -22,6 +24,7 @@ const FormModal = ({
   children,
   isOpen,
   onClose,
+  showCloseButton = false,
   modalContentProps,
   ...props
 }: FormModalProps) => (
@@ -41,6 +44,7 @@ const FormModal = ({
       data-testid="add-modal-content"
       {...modalContentProps}
     >
+      {showCloseButton && <ModalCloseButton />}
       <ModalHeader p={0}>
         <Box
           backgroundColor="gray.50"
