@@ -58,7 +58,7 @@ class ManualTaskTextFieldMetadata(ManualTaskFieldMetadata):
         None,
         description=(
             "Regex pattern for validation, for example if the field is an email address, "
-            "you could use: ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+            r"you could use: ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
         ),
     )
 

@@ -2,7 +2,6 @@ from typing import Any, Optional
 
 from loguru import logger
 from pydantic import ValidationError
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from fides.api.models.manual_tasks.manual_task import ManualTask
@@ -10,30 +9,26 @@ from fides.api.models.manual_tasks.manual_task_config import (
     ManualTaskConfig,
     ManualTaskConfigField,
 )
-from fides.api.models.manual_tasks.manual_task_log import (
-    ManualTaskLog,
-    ManualTaskLogStatus,
-)
+from fides.api.models.manual_tasks.manual_task_log import ManualTaskLog
 from fides.api.schemas.manual_tasks.manual_task_config import (
     ManualTaskAttachmentField,
     ManualTaskCheckboxField,
     ManualTaskConfigResponse,
     ManualTaskConfigurationType,
-    ManualTaskField,
     ManualTaskFieldType,
     ManualTaskTextField,
 )
+from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskLogStatus
 
 
 class ManualTaskConfigService:
     def __init__(self, db: Session):
         self.db = db
 
-    # Private Helper Methods
+    # ------- Private Helper Methods -------
 
-    def _get_fields(self, config: ManualTaskConfig) -> list[ManualTaskField]:
-        """Get the fields for a config."""
-        # Convert field_definitions to the format expected by ManualTaskConfigResponse
+    def _get_fields(self, config: ManualTaskConfig) -> list[dict[str, Any]]:
+        """Get the fields for a config and returns them in the format expected by ManualTaskConfigResponse"""
         fields = []
         for field in config.field_definitions:
             field_data = {
@@ -45,7 +40,7 @@ class ManualTaskConfigService:
         return fields
 
     def _get_response_data(self, config: ManualTaskConfig) -> dict[str, Any]:
-        # Create response with fields
+        """Get the data for a config and returns it in the format expected by ManualTaskConfigResponse"""
         fields = self._get_fields(config)
         return {
             "id": config.id,
@@ -59,19 +54,20 @@ class ManualTaskConfigService:
         }
 
     def _validate_fields(self, fields: list[dict[str, Any]]) -> None:
-        """Validate field data against the appropriate Pydantic model."""
+        """Validate field data against the appropriate Pydantic model.
+        Raises a ValueError if the field data is invalid.
+        """
         # Check for duplicate field keys
-        field_keys = {}
+        field_keys_set: set[str] = {str(field.get("field_key")) for field in fields}
+        if len(field_keys_set) != len(fields):
+            raise ValueError(
+                "Duplicate field keys found in field updates, field keys must be unique."
+            )
+        # Check that field_key is present for each field
         for field in fields:
             field_key = field.get("field_key")
             if not field_key:
                 raise ValueError("Invalid field data: field_key is required")
-            if field_key in field_keys:
-                raise ValueError(f"Multiple updates found for field key: {field_key}")
-            field_keys[field_key] = True
-
-        # Validate each field
-        for field in fields:
             # Skip validation for fields with empty metadata (used for removal)
             if field.get("field_metadata") == {}:
                 continue
@@ -116,34 +112,34 @@ class ManualTaskConfigService:
     def _new_field_updates(
         self, new_config: ManualTaskConfig, field_updates: list[dict[str, Any]]
     ) -> None:
-        # Handle field updates (additions and modifications)
-        if field_updates:
-            for update in field_updates:
-                field_key = update.get("field_key")
-                if not field_key:
-                    continue
+        """Updates fields for a config.
+        If a field has updates it will be recreated for new version.
+        If a the field updates metadata is empty it will not be recreated for new version.
+        Args:
+            new_config: The config to add fields to
+            field_updates: The fields to add or update
+        """
+        self._validate_fields(field_updates)
 
-                # Do not recreate if this field is empty - This is a removal
-                if update["field_metadata"] == {}:
-                    continue
-                self._validate_fields([update])
-                # Create new field with updated data - This is an add or update
-                ManualTaskConfigField.create(
-                    db=self.db,
-                    data={
-                        "task_id": new_config.task_id,
-                        "config_id": new_config.id,
-                        "field_key": field_key,
-                        "field_type": update.get("field_type"),
-                        "field_metadata": update.get("field_metadata", {}),
-                    },
-                )
+        for update in field_updates:
+            # Do not recreate if this field is empty - This is a removal
+            if update["field_metadata"] == {}:
+                continue
+            # Create new field with updated data - This is an add or update
+            ManualTaskConfigField.create(
+                db=self.db,
+                data={
+                    "task_id": new_config.task_id,
+                    "config_id": new_config.id,
+                    "field_key": update["field_key"],
+                    "field_type": update.get("field_type"),
+                    "field_metadata": update.get("field_metadata", {}),
+                },
+            )
 
-    # Public Configuration Methods
+    # ------- Public Configuration Methods -------
 
-    def to_response(
-        self, config: Optional[ManualTaskConfig]
-    ) -> Optional[ManualTaskConfigResponse]:
+    def to_response(self, config: ManualTaskConfig) -> ManualTaskConfigResponse:
         """Convert a ManualTaskConfig model to a ManualTaskConfigResponse.
 
         Args:
@@ -152,8 +148,6 @@ class ManualTaskConfigService:
         Returns:
             Optional[ManualTaskConfigResponse]: The response object, or None if config is None
         """
-        if not config:
-            return None
         return ManualTaskConfigResponse.model_validate(self._get_response_data(config))
 
     def get_current_config(
@@ -165,16 +159,17 @@ class ManualTaskConfigService:
             .filter(
                 ManualTaskConfig.task_id == task.id,
                 ManualTaskConfig.config_type == config_type,
-                ManualTaskConfig.is_current.is_(
-                    True
-                ),  # Use is_ for proper SQL comparison
+                ManualTaskConfig.is_current.is_(True),
             )
             .first()
         )
 
         if config:
             self.db.refresh(config)
-        return config
+            return config
+        raise ValueError(
+            f"No current config found for task {task.id} and type {config_type}"
+        )
 
     def list_config_type_versions(
         self, task: ManualTask, config_type: str
@@ -204,23 +199,39 @@ class ManualTaskConfigService:
             logger.warning("No filters provided to get_config. Returning None.")
             return None
 
-        stmt = select(ManualTaskConfig)
+        query = self.db.query(ManualTaskConfig)
+
         if task:
-            stmt = stmt.where(ManualTaskConfig.task_id == task.id)
+            query = query.filter(ManualTaskConfig.task_id == task.id)
         if config_id:
-            stmt = stmt.where(ManualTaskConfig.id == config_id)
+            query = query.filter(ManualTaskConfig.id == config_id)
         if field_id:
-            stmt = stmt.where(ManualTaskConfig.field_id == field_id)
+            query = query.join(ManualTaskConfigField).filter(
+                ManualTaskConfigField.id == field_id
+            )
         if field_key:
-            stmt = stmt.join(ManualTaskConfigField).where(
+            query = query.join(ManualTaskConfigField).filter(
                 ManualTaskConfigField.field_key == field_key
             )
         if version:
-            stmt = stmt.where(ManualTaskConfig.version == version)
+            query = query.filter(ManualTaskConfig.version == version)
         if config_type:
-            stmt = stmt.where(ManualTaskConfig.config_type == config_type)
+            query = query.filter(ManualTaskConfig.config_type == config_type)
 
-        return self.db.execute(stmt).scalar_one_or_none()
+        result = query.first()
+        if not result:
+            logger.warning(
+                "No config found that matches filters: "
+                f"task {task.id}, "
+                f"config_id {config_id}, "
+                f"field_id {field_id}, "
+                f"field_key {field_key}, "
+                f"version {version}, "
+                f"config_type {config_type}"
+            )
+            return None
+        self.db.refresh(result)
+        return result
 
     def create_new_version(
         self,
@@ -230,25 +241,12 @@ class ManualTaskConfigService:
         previous_config: Optional[ManualTaskConfig] = None,
     ) -> ManualTaskConfig:
         """Create a new version of the configuration."""
+        new_version = previous_config.version + 1 if previous_config else 1
         # Validate config_type
         try:
             ManualTaskConfigurationType(config_type)
         except ValueError:
             raise ValueError(f"Invalid config type: {config_type}")
-
-        # Validate fields if provided
-        if field_updates:
-            self._validate_fields(field_updates)
-
-        version = 0
-        if previous_config is not None:
-            version = previous_config.version
-            previous_config.is_current = False
-
-        # Track which fields are being modified or removed
-        modified_field_keys = set()
-        if field_updates:
-            modified_field_keys = {update.get("field_key") for update in field_updates}
 
         # Create new version
         new_config = ManualTaskConfig.create(
@@ -256,19 +254,30 @@ class ManualTaskConfigService:
             data={
                 "task_id": task.id,
                 "config_type": config_type,
-                "version": version + 1,
+                "version": new_version,
                 "is_current": True,
             },
         )
+        modified_field_keys = set()
+        # Validate fields if provided
+        # Handle field updates (additions and modifications, removals)
+        if field_updates:
+            self._validate_fields(field_updates)
+            self._new_field_updates(new_config, field_updates)
+            modified_field_keys = {
+                str(update.get("field_key"))
+                for update in field_updates
+                if field_updates
+            }
 
         # Handle field updates (fields with no changes)
         if previous_config is not None:
+            previous_config.is_current = False
             self._re_create_existing_fields(
-                previous_config, new_config, modified_field_keys
+                previous_config,
+                new_config,
+                modified_field_keys,
             )
-
-        # Handle field updates (additions and modifications, removals)
-        self._new_field_updates(new_config, field_updates)
 
         self.db.commit()
 

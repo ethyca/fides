@@ -1,9 +1,17 @@
-from typing import Any, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Optional
 
-from sqlalchemy import Boolean, CheckConstraint, Column, ForeignKey, Integer, String
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    Column,
+    ForeignKey,
+    Integer,
+    String,
+    UniqueConstraint,
+)
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
-from sqlalchemy.orm import declared_attr
 
 from fides.api.db.base_class import Base
 from fides.api.models.manual_tasks.manual_task_log import ManualTaskLog
@@ -11,10 +19,10 @@ from fides.api.schemas.manual_tasks.manual_task_config import (
     ManualTaskConfigurationType,
     ManualTaskFieldMetadata,
 )
+from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskLogStatus
 
 if TYPE_CHECKING:
     from fides.api.models.manual_tasks.manual_task import ManualTask
-    from fides.api.models.manual_tasks.manual_task_log import ManualTaskLogStatus
 
 
 class ManualTaskConfig(Base):
@@ -34,7 +42,10 @@ class ManualTaskConfig(Base):
     # Relationships
     task = relationship("ManualTask", back_populates="configs")
     field_definitions = relationship(
-        "ManualTaskConfigField", back_populates="config", cascade="all, delete-orphan"
+        "ManualTaskConfigField",
+        back_populates="config",
+        cascade="all, delete-orphan",
+        uselist=True,
     )
     logs = relationship(
         "ManualTaskLog",
@@ -107,6 +118,8 @@ class ManualTaskConfigField(Base):
             "field_type IN ('text', 'checkbox', 'attachment')", name="valid_field_type"
         ),
         CheckConstraint("field_key IS NOT NULL", name="valid_field_key"),
+        # Add unique constraint for field_key per config_id
+        UniqueConstraint("config_id", "field_key", name="unique_field_key_per_config"),
     )
 
     @property
@@ -128,11 +141,13 @@ class ManualTaskConfigField(Base):
             .filter(ManualTaskConfig.id == data["config_id"])
             .first()
         )
+        if not config:
+            raise ValueError(f"Config with id {data['config_id']} not found")
 
         # Create a log entry
         ManualTaskLog.create_log(
             db=db,
-            task_id=config.task_id if config else None,
+            task_id=config.task_id,
             config_id=data["config_id"],
             status=ManualTaskLogStatus.created,
             message=f"Created manual task config field for {data['field_key']}",

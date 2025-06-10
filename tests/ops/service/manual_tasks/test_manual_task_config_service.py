@@ -270,7 +270,8 @@ class TestManualTaskConfigValidation(TestManualTaskConfigServiceBase):
             },
         ]
         with pytest.raises(
-            ValueError, match="Multiple updates found for field key: field1"
+            ValueError,
+            match="Duplicate field keys found in field updates, field keys must be unique.",
         ):
             manual_task_config_service.create_new_version(
                 task=manual_task,
@@ -673,7 +674,6 @@ class TestManualTaskConfigFieldManagement(TestManualTaskConfigServiceBase):
             config_type=self.config_type,
             field_updates=self.fields,
         )
-
         # Execute - remove field1
         manual_task_config_service.remove_fields(
             manual_task, self.config_type, ["field1"]
@@ -783,13 +783,3 @@ class TestManualTaskConfigResponseConversion(TestManualTaskConfigServiceBase):
                 field.field_metadata.required
                 == expected_field["field_metadata"]["required"]
             )
-
-    def test_to_response_none(
-        self,
-        db: Session,
-        manual_task: ManualTask,
-        manual_task_config_service: ManualTaskConfigService,
-    ):
-        """Test converting None to a response object."""
-        response = manual_task_config_service.to_response(None)
-        assert response is None

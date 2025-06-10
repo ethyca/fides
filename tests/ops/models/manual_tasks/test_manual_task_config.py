@@ -56,19 +56,6 @@ ATTACHMENT_FIELD_DATA = {
 }
 
 
-@pytest.fixture
-def manual_task_config(db: Session, manual_task: ManualTask) -> ManualTaskConfig:
-    return ManualTaskConfig.create(
-        db,
-        data={
-            "task_id": manual_task.id,
-            "config_type": "access_privacy_request",
-            "version": 1,
-            "is_current": True,
-        },
-    )
-
-
 class TestManualTaskConfig:
     def test_create_config(self, db: Session, manual_task: ManualTask):
         config = ManualTaskConfig.create(
