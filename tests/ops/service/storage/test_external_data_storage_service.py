@@ -1,15 +1,16 @@
-import os
-import pytest
 import json
+import os
+
+import pytest
 from loguru import logger
 
+from fides.api.models.encrypted_large_data import calculate_data_size
+from fides.api.schemas.external_storage import ExternalStorageMetadata
 from fides.api.service.external_data_storage import (
     ExternalDataStorageError,
     ExternalDataStorageService,
 )
-from fides.api.schemas.external_storage import ExternalStorageMetadata
 from fides.api.service.storage.util import get_local_filename
-from fides.api.models.encrypted_large_data import calculate_data_size
 
 
 class TestExternalDataStorageService:

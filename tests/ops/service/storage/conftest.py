@@ -4,15 +4,8 @@ from uuid import uuid4
 import pytest
 from sqlalchemy.orm import Session
 
-from fides.api.models.storage import (
-    ResponseFormat,
-    StorageConfig,
-)
-from fides.api.schemas.storage.storage import (
-    FileNaming,
-    StorageDetails,
-    StorageType,
-)
+from fides.api.models.storage import ResponseFormat, StorageConfig
+from fides.api.schemas.storage.storage import FileNaming, StorageDetails, StorageType
 
 
 @pytest.fixture(scope="function")

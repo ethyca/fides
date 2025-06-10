@@ -8,13 +8,20 @@ This module tests:
 
 import random
 import string
-from typing import List
 from datetime import datetime
+from typing import List
 
 import pytest
 from bson import ObjectId
+from loguru import logger
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from fides.api.models.policy import Policy
+from fides.api.models.privacy_request.privacy_request import PrivacyRequest
+from fides.api.models.privacy_request.request_task import RequestTask
+from fides.api.schemas.policy import ActionType
+from fides.api.schemas.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
 from fides.api.util.collection_util import Row
 from fides.api.util.encryption.aes_gcm_encryption_util import (
     EncryptionError,
@@ -25,7 +32,6 @@ from fides.api.util.encryption.aes_gcm_encryption_util import (
     encrypt_with_cryptography,
     encrypt_with_sqlalchemy_utils,
 )
-from loguru import logger
 
 
 class TestAESGCMEncryptionUtil:
@@ -319,6 +325,7 @@ class TestAESGCMEncryptionUtil:
         assert decrypted1 == small_test_data
         assert decrypted2 == small_test_data
 
+    @pytest.mark.usefixtures("default_access_policy")
     def test_database_integration_request_task_compatibility(self, db: Session):
         """
         COMPREHENSIVE DATABASE INTEGRATION TEST
@@ -333,16 +340,6 @@ class TestAESGCMEncryptionUtil:
         4. Encrypt the same data using our cryptography utility
         5. Write back to database and verify SQLAlchemy-Utils can read it
         """
-        from fides.api.models.privacy_request.privacy_request import PrivacyRequest
-        from fides.api.models.privacy_request.request_task import RequestTask
-        from fides.api.models.policy import Policy
-        from fides.api.schemas.policy import ActionType
-        from fides.api.schemas.privacy_request import (
-            ExecutionLogStatus,
-            PrivacyRequestStatus,
-        )
-        from sqlalchemy import text
-        from loguru import logger
 
         # Create test data - realistic privacy request data
         test_data = [
