@@ -40,7 +40,6 @@ const SharedConfigModal = () => {
   return (
     <>
       <Button
-        type="primary"
         icon={<Icons.Settings />}
         iconPosition="end"
         onClick={() => setModalIsOpen(true)}

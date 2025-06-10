@@ -249,7 +249,11 @@ const IntegrationListView: NextPage = () => {
           },
         ]}
         rightContent={
-          <Button onClick={onOpen} data-testid="add-integration-btn">
+          <Button
+            onClick={onOpen}
+            data-testid="add-integration-btn"
+            type="primary"
+          >
             Add integration
           </Button>
         }
