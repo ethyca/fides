@@ -17,12 +17,16 @@ from fides.api.schemas.manual_tasks.manual_task_schemas import (
 from fides.service.manual_tasks.manual_task_config_service import (
     ManualTaskConfigService,
 )
+from fides.service.manual_tasks.manual_task_instance_service import (
+    ManualTaskInstanceService,
+)
 
 
 class ManualTaskService:
     def __init__(self, db: Session):
         self.db = db
         self.config_service = ManualTaskConfigService(db)
+        self.instance_service = ManualTaskInstanceService(db)
 
     def get_task(
         self,
@@ -168,7 +172,8 @@ class ManualTaskService:
         Raises:
             ValueError: If there are active instances using this configuration
         """
-        # TODO: when instances are implemented, we need to check for active instances
+        # Delete the configuration
+        self.config_service.delete_config(task, config.id)
 
         # Log the deletion
         ManualTaskLog.create_log(
@@ -176,8 +181,5 @@ class ManualTaskService:
             task_id=task.id,
             config_id=None,
             status=ManualTaskLogStatus.complete,
-            message=f"Deleted manual task configuration for {config.config_type}",
+            message=f"Deleted manual task configuration {config.id} for task {task.id}",
         )
-
-        # Delete the configuration
-        self.config_service.delete_config(task, config.id)

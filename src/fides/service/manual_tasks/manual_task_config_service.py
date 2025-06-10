@@ -9,12 +9,13 @@ from fides.api.models.manual_tasks.manual_task_config import (
     ManualTaskConfig,
     ManualTaskConfigField,
 )
+from fides.api.models.manual_tasks.manual_task_instance import ManualTaskInstance
 from fides.api.models.manual_tasks.manual_task_log import ManualTaskLog
 from fides.api.schemas.manual_tasks.manual_task_config import (
     ManualTaskConfigResponse,
     ManualTaskConfigurationType,
 )
-from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskLogStatus
+from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskLogStatus, StatusType
 from fides.service.manual_tasks.utils import validate_fields
 
 
@@ -316,6 +317,17 @@ class ManualTaskConfigService:
         # Create new version with removed fields
         self.create_new_version(task, config_type, fields_to_remove, config)
 
+    def get_active_instances(self, config_id: str) -> list[ManualTaskInstance]:
+        """Get all active instances for a config."""
+        return (
+            self.db.query(ManualTaskInstance)
+            .filter(
+                ManualTaskInstance.config_id == config_id,
+                ManualTaskInstance.status != StatusType.completed
+            )
+            .all()
+        )
+
     def delete_config(self, task: ManualTask, config_id: str) -> None:
         """Delete a config for a task.
 
@@ -326,8 +338,6 @@ class ManualTaskConfigService:
         Raises:
             ValueError: If there are active instances using this config
         """
-        # TODO: when instances are implemented, we need to check for active instances
-
         config = (
             self.db.query(ManualTaskConfig)
             .filter(ManualTaskConfig.id == config_id)
@@ -335,5 +345,7 @@ class ManualTaskConfigService:
         )
         if not config:
             raise ValueError(f"Config with ID {config_id} not found")
+        if self.get_active_instances(config_id):
+            raise ValueError(f"Cannot delete config with active instances")
 
         config.delete(self.db)

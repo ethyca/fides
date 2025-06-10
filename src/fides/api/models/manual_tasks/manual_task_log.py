@@ -30,13 +30,12 @@ class ManualTaskLog(Base):
     message = Column(String, nullable=False)
     details = Column(JSONB, nullable=True)
 
-    # Relationships - using string references to avoid circular imports
+    # Relationships
     task = relationship("ManualTask", back_populates="logs", foreign_keys=[task_id])
     config = relationship(
         "ManualTaskConfig", back_populates="logs", foreign_keys=[config_id]
     )
-    # TODO: Add instance relationship when it is implemented
-    # instance = relationship("ManualTaskInstance", back_populates="logs")
+    instance = relationship("ManualTaskInstance", back_populates="logs")
 
     @classmethod
     def create_log(

@@ -41,6 +41,7 @@ class ManualTaskConfig(Base):
 
     # Relationships
     task = relationship("ManualTask", back_populates="configs")
+    instances = relationship("ManualTaskInstance", back_populates="config")
     field_definitions = relationship(
         "ManualTaskConfigField",
         back_populates="config",

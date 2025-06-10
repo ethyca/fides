@@ -1,24 +1,16 @@
 from typing import Any, Optional
 
 from loguru import logger
-from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
-from fides.api.models.manual_tasks.manual_task import ManualTask
+from fides.api.models.attachment import Attachment
 from fides.api.models.manual_tasks.manual_task_config import (
     ManualTaskConfig,
     ManualTaskConfigField,
 )
 from fides.api.models.manual_tasks.manual_task_instance import ManualTaskInstance, ManualTaskSubmission
 from fides.api.models.manual_tasks.manual_task_log import ManualTaskLog
-from fides.api.schemas.manual_tasks.manual_task_config import (
-    ManualTaskAttachmentField,
-    ManualTaskCheckboxField,
-    ManualTaskConfigResponse,
-    ManualTaskConfigurationType,
-    ManualTaskFieldType,
-    ManualTaskTextField,
-)
+
 from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskLogStatus, StatusType
 from fides.service.manual_tasks.utils import validate_fields
 
@@ -175,6 +167,7 @@ class ManualTaskInstanceService:
                 }
             )
             # Log submission creation
+            logger.info(f"Creating submission log for field {field.field_key}")
             ManualTaskLog.create_log(
                 db=self.db,
                 task_id=instance.task_id,
@@ -187,6 +180,7 @@ class ManualTaskInstanceService:
             self.update_status_from_submissions(self.db, instance.id)
             return submission
         except Exception as e:
+            logger.error(f"Error creating submission for field {field.field_key}: {e}")
             ManualTaskLog.create_log(
                 db=self.db,
                 task_id=instance.task_id,
@@ -213,6 +207,7 @@ class ManualTaskInstanceService:
                     "data": data,
                 }
             )
+            logger.info(f"Updating submission for field {submission.field.field_key}")
             ManualTaskLog.create_log(
                 db=self.db,
                 task_id=data["task_id"],
@@ -230,6 +225,7 @@ class ManualTaskInstanceService:
             self.update_status_from_submissions(self.db, instance.id)
             return submission
         except Exception as e:
+            logger.error(f"Error updating submission for field {submission.field.field_key}: {e}")
             ManualTaskLog.create_log(
                 db=self.db,
                 task_id=instance.task_id,
@@ -253,6 +249,63 @@ class ManualTaskInstanceService:
         validate_fields([data])
 
         if self.get_submission_for_field(instance_id, field_id) == None:
+            logger.info(f"Creating submission for field {field.field_key}")
             return self.create_submission(instance, field, data)
         else:
+            logger.info(f"Updating submission for field {field.field_key}")
             return self.update_submission(instance, field, data)
+
+    def delete_attachment_by_id(self, instance_id: Optional[str], field_id: Optional[str], submission_id: Optional[str], attachment_id: str) -> None:
+        """Delete an attachment for a field.
+        If the instance ID is provided, the field ID is required. This is so we can get the submission
+        id.
+
+        If the instance is completed we cannot delete the attachment.
+        If there was only one attachment, delete the submission.
+        If there was more than one attachment, delete the attachment.
+
+        Update the instance status based on the submission changes.
+        """
+        if instance_id:
+            if not field_id:
+                raise ValueError(f"Field ID is required when instance ID is provided")
+            submission = self.get_submission_for_field(instance_id, field_id)
+            if not submission:
+                raise ValueError(f"No submission found for field with ID {field_id}")
+        else:
+            if not submission_id:
+                raise ValueError(f"Submission ID is required when instance ID is not provided")
+            submission = self.db.query(ManualTaskSubmission).filter_by(id=submission_id).first()
+            if not submission:
+                raise ValueError(f"Submission with ID {submission_id} not found")
+            instance_id = submission.instance_id
+
+        self._validate_instance_for_submission(instance_id)
+        attachment = self.db.query(Attachment).filter_by(id=attachment_id).first()
+        if attachment not in submission.attachments:
+            raise ValueError(f"Attachment with ID {attachment_id} not found for submission with ID {submission.id}")
+        # if there is only one attachment delete the submission
+        if len(submission.attachments) == 1:
+            logger.info(f"Deleting submission {submission.id} for field {submission.field.field_key}")
+            submission.delete(self.db)
+        else:
+            logger.info(f"Deleting attachment {attachment.id} for submission {submission.id}")
+            attachment.delete(self.db)
+        self.update_status_from_submissions(self.db, instance_id)
+
+    def complete_task_instance(self, instance_id: str, user_id: str) -> None:
+        """Complete a task instance."""
+        instance = self.db.query(ManualTaskInstance).filter_by(id=instance_id).first()
+        instance.update_status(self.db, StatusType.completed, user_id)
+        logger.info(f"Task instance {instance.id} completed by user {user_id}")
+        ManualTaskLog.create_log(
+            db=self.db,
+            task_id=instance.task_id,
+            config_id=instance.config_id,
+            instance_id=instance.id,
+            message=f"Task instance {instance.id} completed by user {user_id}",
+            status=ManualTaskLogStatus.complete,
+            details={
+                "user_id": user_id,
+            },
+        )

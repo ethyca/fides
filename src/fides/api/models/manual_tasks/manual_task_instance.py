@@ -27,7 +27,9 @@ class ManualTaskInstance(Base, StatusTransitionMixin[StatusType]):
     # Database columns
     task_id = Column(String, ForeignKey("manual_task.id"), nullable=False)
     config_id = Column(String, ForeignKey("manual_task_config.id"), nullable=False)
-    entity_id = Column(String, nullable=False)
+    # entity id is the entity that the instance is for (e.g. privacy request)
+    # TODO: Add to schemas
+   entity_id = Column(String, nullable=False)
     entity_type = Column(String, nullable=False)
     status = Column(String, nullable=False, default=StatusType.pending)
     completed_at = Column(DateTime, nullable=True)
@@ -133,6 +135,12 @@ class ManualTaskSubmission(Base):
     config = relationship("ManualTaskConfig", back_populates="submissions")
     field = relationship("ManualTaskConfigField", back_populates="submissions")
     instance = relationship("ManualTaskInstance", back_populates="submissions")
+    attachments = relationship(
+        "Attachment",
+        secondary="attachment_reference",
+        back_populates="references",
+        cascade="all, delete-orphan",
+    )
 
     # 3. CRUD Operations
     @classmethod
