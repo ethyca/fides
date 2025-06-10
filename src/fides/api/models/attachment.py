@@ -1,5 +1,6 @@
 import os
 from enum import Enum as EnumType
+from io import BytesIO
 from typing import IO, TYPE_CHECKING, Any, Tuple
 
 from fideslang.validation import AnyHttpUrlString
@@ -19,13 +20,17 @@ from fides.api.service.storage.s3 import (
     generic_upload_to_s3,
 )
 from fides.api.service.storage.util import AllowedFileType, get_local_filename
-from fides.config import CONFIG
 
 if TYPE_CHECKING:
     from fides.api.models.comment import Comment
     from fides.api.models.fides_user import FidesUser
     from fides.api.models.privacy_request import PrivacyRequest
     from fides.api.models.storage import StorageConfig
+
+
+# This is 7 days in seconds and is currently the max allowed
+# configurable expiration time for presigned URLs for both s3 and gcs.
+MAX_TTL_SECONDS = 604800
 
 
 class AttachmentType(str, EnumType):
@@ -122,6 +127,11 @@ class Attachment(Base):
         """Returns the content type of the attachment."""
         return AllowedFileType[self.file_name.split(".")[-1]].value
 
+    @property
+    def file_key(self) -> str:
+        """Returns the file key of the attachment."""
+        return f"{self.id}/{self.file_name}"
+
     def upload(self, attachment: IO[bytes]) -> None:
         """Uploads an attachment to S3, GCS, or local storage."""
         if self.config.type == StorageType.s3:
@@ -130,7 +140,7 @@ class Attachment(Base):
             generic_upload_to_s3(
                 storage_secrets=self.config.secrets,
                 bucket_name=bucket_name,
-                file_key=f"{self.id}/{self.file_name}",
+                file_key=self.file_key,
                 document=attachment,
                 auth_method=auth_method,
             )
@@ -142,7 +152,7 @@ class Attachment(Base):
             auth_method = self.config.details[StorageDetails.AUTH_METHOD.value]
             storage_client = get_gcs_client(auth_method, self.config.secrets)
             bucket = storage_client.bucket(bucket_name)
-            blob = bucket.blob(f"{self.id}/{self.file_name}")
+            blob = bucket.blob(self.file_key)
 
             # Reset the file pointer to the beginning
             try:
@@ -155,7 +165,7 @@ class Attachment(Base):
             return
 
         if self.config.type == StorageType.local:
-            filename = get_local_filename(f"{self.id}/{self.file_name}")
+            filename = get_local_filename(self.file_key)
 
             # Validate that attachment is a file-like object
             if not hasattr(attachment, "read"):
@@ -205,9 +215,10 @@ class Attachment(Base):
             size, url = generic_retrieve_from_s3(
                 storage_secrets=self.config.secrets,
                 bucket_name=bucket_name,
-                file_key=f"{self.id}/{self.file_name}",
+                file_key=self.file_key,
                 auth_method=auth_method,
                 get_content=False,
+                ttl_seconds=MAX_TTL_SECONDS,
             )
             return size, url
 
@@ -216,19 +227,20 @@ class Attachment(Base):
             auth_method = self.config.details[StorageDetails.AUTH_METHOD.value]
             storage_client = get_gcs_client(auth_method, self.config.secrets)
             bucket = storage_client.bucket(bucket_name)
-            blob = bucket.blob(f"{self.id}/{self.file_name}")
+            blob = bucket.blob(self.file_key)
 
             # Ensure we have the blob metadata
             blob.reload()
+            # Expiration is set to 7 days
             url = blob.generate_signed_url(
                 version="v4",
-                expiration=CONFIG.security.subject_request_download_link_ttl_seconds,
+                expiration=MAX_TTL_SECONDS,
                 method="GET",
             )
             return blob.size, url
 
         if self.config.type == StorageType.local:
-            filename = get_local_filename(f"{self.id}/{self.file_name}")
+            filename = get_local_filename(self.file_key)
             size = os.path.getsize(filename)
             return size, filename
 
@@ -236,7 +248,7 @@ class Attachment(Base):
 
     def retrieve_attachment_content(
         self,
-    ) -> Tuple[int, bytes]:
+    ) -> Tuple[int, IO[bytes]]:
         """
         Retrieves the size of the attachment and its actual content.
         - For s3:
@@ -252,30 +264,33 @@ class Attachment(Base):
         if self.config.type == StorageType.s3:
             bucket_name = f"{self.config.details[StorageDetails.BUCKET.value]}"
             auth_method = self.config.details[StorageDetails.AUTH_METHOD.value]
-            size, content = generic_retrieve_from_s3(
+            size, fileobj = generic_retrieve_from_s3(
                 storage_secrets=self.config.secrets,
                 bucket_name=bucket_name,
-                file_key=f"{self.id}/{self.file_name}",
+                file_key=self.file_key,
                 auth_method=auth_method,
                 get_content=True,
             )
-            return size, content
+            return size, fileobj
 
         if self.config.type == StorageType.gcs:
             bucket_name = f"{self.config.details[StorageDetails.BUCKET.value]}"
             auth_method = self.config.details[StorageDetails.AUTH_METHOD.value]
             storage_client = get_gcs_client(auth_method, self.config.secrets)
             bucket = storage_client.bucket(bucket_name)
-            blob = bucket.blob(f"{self.id}/{self.file_name}")
+            blob = bucket.blob(self.file_key)
 
-            content = blob.download_as_bytes()
-            return len(content), content
+            fileobj = BytesIO()
+            blob.download_to_file(fileobj)
+            fileobj.seek(0)  # Reset pointer to beginning after download
+            return blob.size, fileobj
 
         if self.config.type == StorageType.local:
-            filename = get_local_filename(f"{self.id}/{self.file_name}")
-            with open(filename, "rb") as file:
-                content = file.read()
-                size = len(content)
+            filename = get_local_filename(self.file_key)
+            size = os.path.getsize(filename)
+            with open(filename, "rb") as fileobj:
+                content = BytesIO(fileobj.read())
+                content.seek(0)  # Reset pointer to beginning
                 return size, content
 
         raise ValueError(f"Unsupported storage type: {self.config.type}")
@@ -288,7 +303,7 @@ class Attachment(Base):
             generic_delete_from_s3(
                 storage_secrets=self.config.secrets,
                 bucket_name=bucket_name,
-                file_key=f"{self.id}/{self.file_name}",
+                file_key=self.file_key,
                 auth_method=auth_method,
             )
             return
@@ -307,9 +322,7 @@ class Attachment(Base):
             return
 
         if self.config.type == StorageType.local:
-            folder_path = os.path.dirname(
-                get_local_filename(f"{self.id}/{self.file_name}")
-            )
+            folder_path = os.path.dirname(get_local_filename(self.file_key))
             if os.path.exists(folder_path):
                 import shutil
 
