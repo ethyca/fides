@@ -1,7 +1,6 @@
 import {
   AntButton as Button,
   AntColumnsType as ColumnsType,
-  AntInput as Input,
   AntTable as Table,
   AntTableProps as TableProps,
   AntTag as Tag,
@@ -12,6 +11,7 @@ import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import React, { useMemo, useState } from "react";
 
+import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import FidesSpinner from "~/features/common/FidesSpinner";
 import Layout from "~/features/common/Layout";
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
@@ -39,16 +39,23 @@ const IntegrationListView: NextPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const router = useRouter();
 
+  // Handle search change and reset page to 1
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setPage(1);
+  };
+
   const { data, isLoading } = useGetAllDatastoreConnectionsQuery({
     connection_type: SUPPORTED_INTEGRATIONS,
     size: pageSize,
     page,
+    search: searchTerm.trim() || undefined,
   });
-  const { items } = data ?? {};
+  const { items, total } = data ?? {};
 
   const { onOpen, isOpen, onClose } = useDisclosure();
 
-  const allTableData: IntegrationTableData[] = useMemo(
+  const tableData: IntegrationTableData[] = useMemo(
     () =>
       items?.map((integration) => ({
         ...integration,
@@ -58,20 +65,6 @@ const IntegrationListView: NextPage = () => {
       })) ?? [],
     [items],
   );
-
-  // Filter data based on search term
-  const tableData = useMemo(() => {
-    if (!searchTerm.trim()) {
-      return allTableData;
-    }
-
-    const lowerSearchTerm = searchTerm.toLowerCase();
-    return allTableData.filter((integration) => {
-      const name = (integration.name || "").toLowerCase();
-
-      return name.includes(lowerSearchTerm);
-    });
-  }, [allTableData, searchTerm]);
 
   const handleManageClick = (integration: ConnectionConfigurationResponse) => {
     router.push(`${INTEGRATION_MANAGEMENT_ROUTE}/${integration.key}`);
@@ -219,7 +212,7 @@ const IntegrationListView: NextPage = () => {
   const paginationConfig: TableProps<IntegrationTableData>["pagination"] = {
     current: page,
     pageSize,
-    total: tableData.length,
+    total,
     showSizeChanger: true,
     showQuickJumper: false,
     showTotal: (totalItems, range) =>
@@ -260,14 +253,12 @@ const IntegrationListView: NextPage = () => {
       />
 
       <div className="mb-4 flex items-center justify-between gap-4">
-        <Input.Search
+        <DebouncedSearchInput
           placeholder="Search by name..."
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          onSearch={setSearchTerm}
+          onChange={handleSearchChange}
           className="max-w-sm"
           allowClear
-          enterButton
         />
         <SharedConfigModal />
       </div>
