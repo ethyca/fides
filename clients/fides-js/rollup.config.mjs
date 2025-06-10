@@ -152,6 +152,9 @@ SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
         name: isExtension ? undefined : "Fides",
         format: isExtension ? undefined : "umd",
         sourcemap: IS_DEV ? "inline" : false,
+        amd: {
+          define: undefined, // prevent the bundle from registering itself as an AMD module, even if an AMD loader (like RequireJS) is present on the page. (FidesJS is not an AMD module.)
+        },
       },
     ],
   };
