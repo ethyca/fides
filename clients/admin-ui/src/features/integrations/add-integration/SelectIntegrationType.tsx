@@ -68,6 +68,7 @@ const SelectIntegrationType = ({
       if (!oktaMonitor && i.placeholder.connection_type === "okta") {
         return false;
       }
+      // DEFER (ENG-675): Remove this once the alpha feature is released
       if (
         !alphaNewManualIntegration &&
         i.placeholder.connection_type === "manual_webhook"
