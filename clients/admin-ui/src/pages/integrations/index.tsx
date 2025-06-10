@@ -5,7 +5,6 @@ import {
   AntTable as Table,
   AntTableProps as TableProps,
   AntTag as Tag,
-  LinkIcon,
   useDisclosure,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
@@ -249,9 +248,12 @@ const IntegrationListView: NextPage = () => {
             title: "All integrations",
           },
         ]}
-      >
-        <SharedConfigModal />
-      </PageHeader>
+        rightContent={
+          <Button onClick={onOpen} data-testid="add-integration-btn">
+            Add integration
+          </Button>
+        }
+      />
 
       <div className="mb-4 flex items-center justify-between gap-4">
         <Input.Search
@@ -263,14 +265,7 @@ const IntegrationListView: NextPage = () => {
           allowClear
           enterButton
         />
-        <Button
-          onClick={onOpen}
-          data-testid="add-integration-btn"
-          icon={<LinkIcon />}
-          iconPosition="end"
-        >
-          Add Integration
-        </Button>
+        <SharedConfigModal />
       </div>
 
       {isLoading ? (
