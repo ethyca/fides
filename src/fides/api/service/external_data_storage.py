@@ -52,7 +52,7 @@ class ExternalDataStorageService:
 
         Args:
             db: Database session
-            storage_path: Path where data should be stored (e.g., "Model/id/field/timestamp.enc")
+            storage_path: Path where data should be stored (e.g., "model/id/field/timestamp")
             data: The data to store (will be serialized and encrypted)
             storage_key: Optional specific storage config key to use
 

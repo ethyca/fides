@@ -17,12 +17,14 @@ from loguru import logger
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from fides.api.db.seed import get_client_id, load_default_access_policy
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request.privacy_request import PrivacyRequest
 from fides.api.models.privacy_request.request_task import RequestTask
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
 from fides.api.util.collection_util import Row
+from fides.api.util.data_category import get_user_data_categories
 from fides.api.util.encryption.aes_gcm_encryption_util import (
     EncryptionError,
     decrypt_data,
@@ -36,6 +38,10 @@ from fides.api.util.encryption.aes_gcm_encryption_util import (
 
 class TestAESGCMEncryptionUtil:
     """Test suite for AES GCM encryption utilities."""
+
+    @pytest.fixture(scope="function")
+    def default_access_policy(self, db, default_data_categories) -> None:
+        load_default_access_policy(db, get_client_id(db), get_user_data_categories())
 
     @pytest.fixture
     def small_test_data(self) -> List[Row]:
