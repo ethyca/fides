@@ -7,9 +7,10 @@ import {
   useDisclosure,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
+import { isEqual } from "lodash";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import FidesSpinner from "~/features/common/FidesSpinner";
@@ -40,17 +41,28 @@ const IntegrationListView: NextPage = () => {
   const [connectionTypes, setConnectionTypes] = useState<string[]>([]);
   const router = useRouter();
 
-  // Handle search change and reset page to 1
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
     setPage(1);
   };
 
-  // Handle connection type filter change and reset page to 1
-  const handleConnectionTypeChange = (filters: string[]) => {
-    setConnectionTypes(filters);
-    setPage(1);
-  };
+  const handleTableChange = useCallback(
+    (pagination: any, filters: any) => {
+      if (pagination?.current !== page) {
+        setPage(pagination.current);
+      }
+      if (pagination?.pageSize && pagination.pageSize !== pageSize) {
+        setPageSize(pagination.pageSize);
+      }
+
+      const newFilters = filters?.connection_type || [];
+      if (!isEqual(newFilters, connectionTypes)) {
+        setConnectionTypes(newFilters);
+        setPage(1);
+      }
+    },
+    [page, pageSize, connectionTypes],
+  );
 
   const { data, isLoading } = useGetAllDatastoreConnectionsQuery({
     connection_type:
@@ -108,10 +120,9 @@ const IntegrationListView: NextPage = () => {
     return formattedDate;
   };
 
-  // Get available connection types for filters from supported integrations
   const availableConnectionTypes = useMemo(() => {
     return SUPPORTED_INTEGRATIONS.map((type) => ({
-      text: getIntegrationTypeInfo(type).placeholder.name || type,
+      text: getIntegrationTypeInfo(type as any).placeholder.name || type,
       value: type,
     }));
   }, []);
@@ -247,33 +258,7 @@ const IntegrationListView: NextPage = () => {
             onClick: () => handleManageClick(record),
           })}
           rowClassName="cursor-pointer"
-          onChange={(pagination, filters) => {
-            // Handle pagination changes
-            if (pagination?.current) {
-              setPage(pagination.current);
-            }
-            if (pagination?.pageSize && pagination.pageSize !== pageSize) {
-              setPageSize(pagination.pageSize);
-            }
-
-            // Handle filter changes - only when they actually change
-            const connectionTypeFilters = filters?.connection_type as
-              | string[]
-              | undefined;
-            if (connectionTypeFilters !== undefined) {
-              // Handle the case where filters might be null (when cleared)
-              const newFilters = connectionTypeFilters || [];
-              const currentFilters = connectionTypes || [];
-
-              // Check if filters actually changed (create copies to avoid mutating readonly arrays)
-              const filtersChanged =
-                JSON.stringify([...newFilters].sort()) !==
-                JSON.stringify([...currentFilters].sort());
-              if (filtersChanged) {
-                handleConnectionTypeChange(newFilters);
-              }
-            }
-          }}
+          onChange={handleTableChange}
         />
       )}
 
