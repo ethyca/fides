@@ -43,6 +43,8 @@ import {
   WebsiteSchema,
 } from "~/types/api";
 
+import SharedConfigModal from "../SharedConfigModal";
+
 const EMPTY_RESPONSE = {
   items: [] as MonitorConfig[],
   total: 0,
@@ -313,6 +315,7 @@ const MonitorConfigTab = ({
         {monitorCopy}
       </Text>
       <TableActionBar>
+        <SharedConfigModal />
         <Spacer />
         <Button
           onClick={modal.onOpen}
