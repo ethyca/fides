@@ -14,12 +14,27 @@ from fides.api.service.external_data_storage import (
 from fides.api.util.collection_util import Row
 from fides.api.util.custom_json_encoder import CustomJSONEncoder
 
-# 1GB threshold for external storage
-LARGE_DATA_THRESHOLD_BYTES = 1024 * 1024 * 1024  # 1GB
+# 896MB threshold for external storage
+# We only generate an estimated size for large datasets so we want to be conservative
+# and fallback to external storage even if we haven't hit the 1GB max limit
+LARGE_DATA_THRESHOLD_BYTES = 896 * 1024 * 1024  # 896MB
 
 
 def calculate_data_size(data: List[Row]) -> int:
-    """Calculate the approximate serialized size of access data in bytes using a memory-efficient approach"""
+    """Calculate the approximate serialized size of access data in bytes using a memory-efficient approach
+
+    We need to determine the size of data in a memory-efficient way. Calling `sys.getsizeof` is not accurate for
+    `Dict` and the way to calculate exact size could take up a lot of memory (`json.dumps`). I went with a
+    sampling approach where we only need to call `json.dumps` on a sample of data. We know the most
+    likely reason for large data is a large number of rows vs. a row with a lot of data.
+
+    We use this knowledge to:
+
+    - Take a sample of records from the list of data
+    - Calculate exact size of the samples
+    - Extrapolate the estimated size based on the total number of records
+    """
+
     if not data:
         return 0
 
@@ -31,9 +46,21 @@ def calculate_data_size(data: List[Row]) -> int:
             logger.debug(
                 f"Calculating size for large dataset ({data_count} rows) using sampling"
             )
-            # Take a representative sample
-            sample_size = min(100, data_count)
-            sample = data[:sample_size]
+
+            # Use larger sample size for better accuracy (up to 500 records)
+            sample_size = min(
+                500, max(100, data_count // 20)
+            )  # At least 100, up to 500, or 5% of data
+
+            # Use stratified sampling for better representation
+            if data_count > sample_size * 3:
+                # Take samples from beginning, middle, and end
+                step = data_count // sample_size
+                sample_indices = list(range(0, data_count, step))[:sample_size]
+                sample = [data[i] for i in sample_indices]
+            else:
+                # For smaller datasets, just take from the beginning
+                sample = data[:sample_size]
 
             # Calculate sample size
             sample_json = json.dumps(
@@ -41,11 +68,23 @@ def calculate_data_size(data: List[Row]) -> int:
             )
             sample_bytes = len(sample_json.encode("utf-8"))
 
-            # Estimate total size (with some overhead for JSON structure)
-            estimated_size = (sample_bytes * data_count) // sample_size
-            # Add overhead for JSON array brackets and commas
-            estimated_size += data_count * 2  # Rough estimate for commas and spacing
+            # Better estimation accounting for JSON structure overhead
+            # Calculate per-record average
+            avg_record_size = sample_bytes / sample_size
 
+            # Estimate content size
+            content_size = int(avg_record_size * data_count)
+
+            # Add more accurate JSON structure overhead
+            # - Array brackets: 2 bytes
+            # - Commas between records: (data_count - 1) bytes
+            # - Some padding for variations: 1% of content size
+            structure_overhead = 2 + (data_count - 1) + int(content_size * 0.01)
+
+            estimated_size = content_size + structure_overhead
+
+            logger.debug(f"Sample: {sample_size} records, {sample_bytes} bytes")
+            logger.debug(f"Avg per record: {avg_record_size:.1f} bytes")
             logger.debug(
                 f"Estimated size: {estimated_size:,} bytes ({estimated_size / (1024*1024*1024):.2f} GB)"
             )

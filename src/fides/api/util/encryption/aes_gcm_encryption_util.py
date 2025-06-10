@@ -6,6 +6,7 @@ This module provides simplified encrypt/decrypt functions using two approaches:
 2. Cryptography library with chunked processing (better performance, standard library)
 """
 
+import base64
 import hashlib
 import json
 import os
@@ -116,7 +117,7 @@ def encrypt_with_cryptography(
         chunk_size: Size of chunks for processing (default 4MB)
 
     Returns:
-        Encrypted bytes in format: [nonce(12)][ciphertext][tag(16)]
+        Encrypted bytes (base64-encoded string as bytes)
 
     Raises:
         EncryptionError: If serialization or encryption fails
@@ -142,8 +143,8 @@ def encrypt_with_cryptography(
             f"using {chunk_size_mb:.0f}MB chunks (~{estimated_chunks} chunks)"
         )
 
-        # Generate encryption components
-        key = _get_encryption_key()
+        # Use SQLAlchemy-Utils compatible key (SHA256 hash of app key)
+        key = _get_sqlalchemy_compatible_key()
         nonce = os.urandom(12)  # 96-bit nonce for AES-GCM
 
         # Create cipher
@@ -162,17 +163,21 @@ def encrypt_with_cryptography(
         encryptor.finalize()
         tag = encryptor.tag
 
-        # Combine: [nonce][ciphertext][tag]
+        # Combine in same format as SQLAlchemy-Utils: [nonce/iv][tag][ciphertext]
         ciphertext = b"".join(ciphertext_chunks)
-        result = nonce + ciphertext + tag
+        binary_result = nonce + tag + ciphertext
 
-        encrypted_size_mb = len(result) / (1024 * 1024)
+        # Base64 encode to match SQLAlchemy-Utils format
+        base64_result = base64.b64encode(binary_result).decode("utf-8")
+        result_bytes = base64_result.encode("utf-8")
+
+        encrypted_size_mb = len(result_bytes) / (1024 * 1024)
         logger.info(
             f"Cryptography: Encrypted successfully - "
-            f"{len(ciphertext_chunks)} chunks, {encrypted_size_mb:.1f} MB output"
+            f"{len(ciphertext_chunks)} chunks, {encrypted_size_mb:.1f} MB output (base64)"
         )
 
-        return result
+        return result_bytes
 
     except Exception as e:
         logger.error(f"Cryptography encryption failed: {e}")
@@ -186,7 +191,7 @@ def decrypt_with_cryptography(
     Decrypt and deserialize data using the cryptography library with chunked processing.
 
     Args:
-        encrypted_bytes: Encrypted data in format: [nonce(12)][ciphertext][tag(16)]
+        encrypted_bytes: Encrypted data (base64-encoded string as bytes)
         chunk_size: Size of chunks for processing (default 4MB)
 
     Returns:
@@ -200,13 +205,17 @@ def decrypt_with_cryptography(
         if chunk_size is None:
             chunk_size = 4 * 1024 * 1024  # 4MB chunks
 
-        # Extract components
-        if len(encrypted_bytes) < 28:  # 12 (nonce) + 16 (tag)
+        # Decode from base64
+        encrypted_str = encrypted_bytes.decode("utf-8")
+        binary_data = base64.b64decode(encrypted_str)
+
+        # Extract components in SQLAlchemy-Utils format: [nonce/iv][tag][ciphertext]
+        if len(binary_data) < 28:  # 12 (nonce) + 16 (tag)
             raise ValueError("Encrypted data too short")
 
-        nonce = encrypted_bytes[:12]
-        ciphertext = encrypted_bytes[12:-16]
-        tag = encrypted_bytes[-16:]
+        nonce = binary_data[:12]  # First 12 bytes: nonce/IV
+        tag = binary_data[12:28]  # Next 16 bytes: tag
+        ciphertext = binary_data[28:]  # Remaining bytes: ciphertext
 
         encrypted_size_mb = len(encrypted_bytes) / (1024 * 1024)
         chunk_size_mb = chunk_size / (1024 * 1024)
@@ -219,8 +228,8 @@ def decrypt_with_cryptography(
             f"using {chunk_size_mb:.0f}MB chunks (~{estimated_chunks} chunks)"
         )
 
-        # Generate key and create cipher
-        key = _get_encryption_key()
+        # Use SQLAlchemy-Utils compatible key
+        key = _get_sqlalchemy_compatible_key()
         cipher = Cipher(
             algorithms.AES(key), modes.GCM(nonce, tag), backend=default_backend()
         )
@@ -250,12 +259,10 @@ def decrypt_with_cryptography(
         raise EncryptionError(f"Cryptography decryption failed: {str(e)}")
 
 
-def _get_encryption_key() -> bytes:
-    """Get standardized 32-byte encryption key."""
+def _get_sqlalchemy_compatible_key() -> bytes:
+    """Get 32-byte encryption key compatible with SQLAlchemy-Utils AesGcmEngine."""
     app_key = CONFIG.security.app_encryption_key.encode(CONFIG.security.encoding)
-    if len(app_key) == 32:
-        return app_key
-
+    # SQLAlchemy-Utils always uses SHA256 hash of the key
     return hashlib.sha256(app_key).digest()
 
 
