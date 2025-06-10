@@ -2,6 +2,7 @@ import asyncio
 import copy
 import json
 import os
+import re
 import time
 import types
 from datetime import datetime
@@ -1974,6 +1975,18 @@ def pytest_configure_node(node):
         )
 
         os.environ["FIDES__DATABASE__TEST_DB"] = f"fides_test_{worker_id}"
+
+        worker_id_reg_ex = r"gw(\d+)"
+        # Match the worker_id to the regex and extract the digit
+        match = re.match(worker_id_reg_ex, worker_id)
+        if match:
+            worker_number = match.group(1)  # Extract the captured digit(s)
+            # worker numbers start at 0, but we use 0 for the dev Redis, so we need to add 1
+            os.environ["FIDES__REDIS__TEST_DB_INDEX"] = str(int(worker_number) + 1)
+        else:
+            print(
+                f"[Configure Node] Worker ID {worker_id} doesn't match expected pattern"
+            )
 
         get_config.cache_clear()
         fides_config = get_config()
