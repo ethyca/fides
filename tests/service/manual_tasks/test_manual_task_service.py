@@ -22,7 +22,7 @@ from fides.api.schemas.manual_tasks.manual_task_schemas import (
     ManualTaskType,
 )
 from fides.service.manual_tasks.manual_task_service import ManualTaskService
-from tests.ops.service.manual_tasks.conftest import FIELDS
+from tests.service.manual_tasks.conftest import FIELDS
 
 
 @pytest.fixture
