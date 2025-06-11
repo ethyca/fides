@@ -503,12 +503,20 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             self.post_process_input_data(formatted_input_data)
         )
 
-        # For erasures: cache results with non-matching array elements *replaced* with placeholder text
-        placeholder_output: List[Row] = copy.deepcopy(output)
-        for row in placeholder_output:
+        # For erasures: build placeholder version incrementally to avoid holding two full
+        # copies of the data in memory simultaneously.
+        placeholder_output: List[Row] = []
+        for original_row in output:
+            # Create a deep copy of the *single* row, transform it, then append to
+            # the placeholder list.  Peak memory at any point is one extra row rather
+            # than an entire dataset.
+            row_copy = copy.deepcopy(original_row)
             filter_element_match(
-                row, query_paths=post_processed_node_input_data, delete_elements=False
+                row_copy,
+                query_paths=post_processed_node_input_data,
+                delete_elements=False,
             )
+            placeholder_output.append(row_copy)
 
         # For DSR 3.0, save data to build masking requests directly
         # on the Request Task.
@@ -524,7 +532,9 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 f"access_request__{self.key}", placeholder_output
             )
 
-        # For access request results, cache results with non-matching array elements *removed*
+        # For access request results, mutate rows in-place to remove non-matching
+        # array elements.  We already iterated over `output` above, so reuse the same
+        # loop structure to keep cache locality.
         for row in output:
             logger.info(
                 "Filtering row in {} for matching array elements.",

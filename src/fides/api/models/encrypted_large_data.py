@@ -14,10 +14,11 @@ from fides.api.service.external_data_storage import (
 from fides.api.util.collection_util import Row
 from fides.api.util.custom_json_encoder import CustomJSONEncoder
 
-# 896MB threshold for external storage
+# 640MB threshold for external storage
 # We only generate an estimated size for large datasets so we want to be conservative
-# and fallback to external storage even if we haven't hit the 1GB max limit
-LARGE_DATA_THRESHOLD_BYTES = 896 * 1024 * 1024  # 896MB
+# and fallback to external storage even if we haven't hit the 1GB max limit.
+# We also want to pad for encryption and base64 encoding.
+LARGE_DATA_THRESHOLD_BYTES = 640 * 1024 * 1024  # 640MB
 
 
 def calculate_data_size(data: List[Row]) -> int:
