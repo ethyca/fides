@@ -194,8 +194,11 @@ class RedisSettings(FidesSettings):
             else info.data.get("port", "")
         )
 
+        # Only include database index in URL if it's not the default (0)
+        db_path = f"{db_index}" if db_index != 0 else ""
+
         connection_url = (
-            f"{connection_protocol}://{auth_prefix}{host}:{port}/{db_index}{params_str}"
+            f"{connection_protocol}://{auth_prefix}{host}:{port}/{db_path}{params_str}"
         )
         return connection_url
 

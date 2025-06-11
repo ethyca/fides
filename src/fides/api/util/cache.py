@@ -241,6 +241,9 @@ def get_read_only_cache() -> FidesopsRedis:
     """
     # If read-only is not enabled, return the regular cache
     if not CONFIG.redis.read_only_enabled:
+        logger.debug(
+            "Read-only Redis is not enabled. Returning writeable cache connection instead."
+        )
         return get_cache()
 
     global _read_only_connection  # pylint: disable=W0603
@@ -262,6 +265,7 @@ def get_read_only_cache() -> FidesopsRedis:
 
     try:
         connected = _read_only_connection.ping()
+        logger.debug("Read-only Redis connection succeeded.")
     except ConnectionErrorFromRedis:
         connected = False
 
