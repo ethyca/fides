@@ -1,7 +1,7 @@
 import json
+import os
 from typing import Any, Dict, List, Optional, Union
 from urllib.parse import unquote_to_bytes
-import os
 
 from loguru import logger
 from redis import Redis
@@ -28,6 +28,7 @@ from fides.config import CONFIG
 RedisValue = Union[bytes, float, int, str]
 
 _connection = None
+_read_only_connection = None
 
 
 class FidesopsRedis(Redis):
@@ -158,7 +159,13 @@ class FidesopsRedis(Redis):
         return list_length
 
 
-def _determine_redis_db_index() -> int:  # pragma: no cover
+# FIXME: Ideally we don't want our code to be aware of the way tests are run,
+# e.g that we run them in parallel with pytest-xdist. We need to find a way
+# to change the pytest_configure_node hook to set the correct environment variable
+# like we do for the readonly database. It wasn't working so we're using this workaround for now.
+def _determine_redis_db_index(
+    read_only: Optional[bool] = False,
+) -> int:  # pragma: no cover
     """Return the Redis DB index that should be used for the current process.
 
     Behavior:
@@ -176,10 +183,10 @@ def _determine_redis_db_index() -> int:  # pragma: no cover
             suffix = worker_id[2:]
             if suffix.isdigit():
                 return int(suffix) + 1  # gw0 -> 1, gw1 -> 2, etc.
-        return 1
+        return CONFIG.redis.test_db_index
 
     # 2. Non-test mode
-    return CONFIG.redis.db_index
+    return CONFIG.redis.read_only_db_index if read_only else CONFIG.redis.db_index
 
 
 def get_cache(should_log: Optional[bool] = False) -> FidesopsRedis:
@@ -225,6 +232,46 @@ def get_cache(should_log: Optional[bool] = False) -> FidesopsRedis:
         )
 
     return _connection
+
+
+def get_read_only_cache() -> FidesopsRedis:
+    """
+    Return a singleton connection to the read-only Redis cache.
+    If read-only is not enabled, return the regular cache.
+    """
+    # If read-only is not enabled, return the regular cache
+    if not CONFIG.redis.read_only_enabled:
+        return get_cache()
+
+    global _read_only_connection  # pylint: disable=W0603
+    if _read_only_connection is None:
+        logger.debug("Creating new read-only Redis connection...")
+        _read_only_connection = FidesopsRedis(  # type: ignore[call-overload]
+            charset=CONFIG.redis.charset,
+            decode_responses=CONFIG.redis.decode_responses,
+            host=CONFIG.redis.read_only_host,
+            port=CONFIG.redis.read_only_port,
+            db=_determine_redis_db_index(read_only=True),
+            username=CONFIG.redis.read_only_user,
+            password=CONFIG.redis.read_only_password,
+            ssl=CONFIG.redis.read_only_ssl,
+            ssl_ca_certs=CONFIG.redis.read_only_ssl_ca_certs,
+            ssl_cert_reqs=CONFIG.redis.read_only_ssl_cert_reqs,
+        )
+        logger.debug("New read-only Redis connection created.")
+
+    try:
+        connected = _read_only_connection.ping()
+    except ConnectionErrorFromRedis:
+        connected = False
+
+    if not connected:
+        logger.error(
+            "Unable to establish read-only Redis connection. Returning writeable cache connection instead."
+        )
+        return get_cache()
+
+    return _read_only_connection
 
 
 def get_identity_cache_key(privacy_request_id: str, identity_attribute: str) -> str:
