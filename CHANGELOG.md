@@ -28,12 +28,12 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added support for large (>1GB) database columns by writing the contents to external storage [#6199](https://github.com/ethyca/fides/pull/6199)
 
 ### Changed
-
 - TCF Banners will no longer resurface on reload after dismissal [#6200](https://github.com/ethyca/fides/pull/6200)
 - Earlier initialization strategy for Shopify integration [#6202](https://github.com/ethyca/fides/pull/6202)
 
 ### Fixed
 - Added missing "Awaiting email send" status to privacy request statuses [#6218](https://github.com/ethyca/fides/pull/6218)
+- Fixed FidesJS AMD module loading conflicts when RequireJS or other AMD loaders are present [#6210](https://github.com/ethyca/fides/pull/6210)
 
 ## [2.63.0](https://github.com/ethyca/fides/compare/2.62.0...2.63.0)
 
