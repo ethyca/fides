@@ -24,6 +24,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Added
 - AWS SES notification service now supports assumed roles through environment variable configuration through `FIDES__CREDENTIALS__NOTIFICATIONS__AWS_SES_ASSUME_ROLE_ARN` [#6206](https://github.com/ethyca/fides/pull/6206)
 - Added ManualTask and ManualTaskReference models, foundational for for ManualDSRs [#6205](https://github.com/ethyca/fides/pull/6205) https://github.com/ethyca/fides/labels/db-migration
+- Added settings for read-only Redis instance [#6217](https://github.com/ethyca/fides/pull/6217)
 
 ### Changed
 
