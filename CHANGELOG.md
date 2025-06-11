@@ -21,7 +21,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.64.0...main)
 
-### Addded
+### Added
 - AWS SES notification service now supports assumed roles through environment variable configuration through `FIDES__CREDENTIALS__NOTIFICATIONS__AWS_SES_ASSUME_ROLE_ARN` [#6206](https://github.com/ethyca/fides/pull/6206)
 - Added ManualTask and ManualTaskReference models, foundational for for ManualDSRs [#6205](https://github.com/ethyca/fides/pull/6205) https://github.com/ethyca/fides/labels/db-migration
 
@@ -29,6 +29,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 - TCF Banners will no longer resurface on reload after dismissal [#6200](https://github.com/ethyca/fides/pull/6200)
 - Earlier initialization strategy for Shopify integration [#6202](https://github.com/ethyca/fides/pull/6202)
+
+### Fixed
+- Added missing "Awaiting Email Send" status to privacy request statuses [#6218](https://github.com/ethyca/fides/pull/6218)
 
 ## [2.63.0](https://github.com/ethyca/fides/compare/2.62.0...2.63.0)
 
