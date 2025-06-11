@@ -109,7 +109,7 @@ def upgrade():
     op.create_index(
         "ix_manual_task_parent_entity",
         "manual_task",
-        ["parent_entity_id", "parent_entity_type"],
+        ["parent_entity_type", "parent_entity_id"],
     )
     op.create_index("ix_manual_task_due_date", "manual_task", ["due_date"])
 
