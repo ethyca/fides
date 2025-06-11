@@ -2,7 +2,6 @@ import asyncio
 import copy
 import json
 import os
-import re
 import time
 import types
 from datetime import datetime
