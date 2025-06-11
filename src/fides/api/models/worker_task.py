@@ -48,11 +48,17 @@ class WorkerTask:
 
     @classmethod
     def validate_action_type(cls, action_type: str) -> None:
+        """
+        Validates that the action type is allowed for the worker task.
+        """
         if action_type not in cls.allowed_action_types():
             raise ValueError(f"Invalid action_type '{action_type}' for {cls.__name__}")
 
     @classmethod
     def allowed_action_types(cls) -> List[str]:
+        """
+        Subclasses must implement this method to return a list of allowed action types.
+        """
         raise NotImplementedError("Subclasses must implement allowed_action_types")
 
 

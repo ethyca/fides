@@ -67,6 +67,7 @@ class TraversalDetails(FidesSchema):
         )
 
 
+# TODO: At some point we will refactor this model to store all task types in a common table that links to tables with specific task attributes.
 class RequestTask(WorkerTask, Base):
     """
     An individual Task for a Privacy Request.

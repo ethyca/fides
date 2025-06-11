@@ -662,6 +662,9 @@ class MonitorTask(WorkerTask, Base):
     A monitor task executed by a worker.
     """
 
+    # celery_id is used to track task executions. While MonitorTask.id remains constant,
+    # celery_id changes with each execution or retry of the task, allowing us to track
+    # the current execution state while maintaining a stable reference to the original task.
     celery_id = Column(
         String(255), unique=True, nullable=False, default=FidesBase.generate_uuid
     )
@@ -671,6 +674,7 @@ class MonitorTask(WorkerTask, Base):
     monitor_config_id = Column(
         String,
         ForeignKey(MonitorConfig.id_field_path, ondelete="CASCADE"),
+        index=True,
         nullable=False,
     )
     staged_resource_urns = Column(ARRAY(String), nullable=True)
@@ -700,6 +704,9 @@ class MonitorTaskExecutionLog(TaskExecutionLog, Base):
     Stores the individual execution logs associated with a MonitorTask.
     """
 
+    # This celery_id preserves the specific execution ID for historical tracking,
+    # unlike MonitorTask.celery_id which is updated with each execution.
+    # This allows us to maintain a complete history of all task execution attempts.
     celery_id = Column(String(255), nullable=False)
     monitor_task_id = Column(
         String,
@@ -719,6 +726,7 @@ def create_monitor_task_with_execution_log(
 ) -> MonitorTask:
     """
     Creates a monitor task with an execution log.
+    The default status is pending for the task and pending for the execution log.
     """
     status = ExecutionLogStatus.pending
     task_record = MonitorTask(  # type: ignore

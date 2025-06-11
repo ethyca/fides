@@ -1,8 +1,8 @@
 """add_monitor_tasks
 
-Revision ID: 4d9b696a3c3b
+Revision ID: 29e56fa1fdb3
 Revises: c586a56c25e7
-Create Date: 2025-06-05 14:59:07.707675
+Create Date: 2025-06-11 14:40:08.384571
 
 """
 
@@ -11,7 +11,7 @@ from alembic import op
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = "4d9b696a3c3b"
+revision = "29e56fa1fdb3"
 down_revision = "c586a56c25e7"
 branch_labels = None
 depends_on = None
@@ -58,9 +58,7 @@ def upgrade():
         sa.Column("staged_resource_urns", sa.ARRAY(sa.String()), nullable=True),
         sa.Column("child_resource_urns", sa.ARRAY(sa.String()), nullable=True),
         sa.ForeignKeyConstraint(
-            ["monitor_config_id"],
-            ["monitorconfig.id"],
-            ondelete="CASCADE",
+            ["monitor_config_id"], ["monitorconfig.id"], ondelete="CASCADE"
         ),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("celery_id"),
@@ -69,6 +67,12 @@ def upgrade():
         op.f("ix_monitortask_action_type"), "monitortask", ["action_type"], unique=False
     )
     op.create_index(op.f("ix_monitortask_id"), "monitortask", ["id"], unique=False)
+    op.create_index(
+        op.f("ix_monitortask_monitor_config_id"),
+        "monitortask",
+        ["monitor_config_id"],
+        unique=False,
+    )
     op.create_index(
         op.f("ix_monitortask_status"), "monitortask", ["status"], unique=False
     )
@@ -99,9 +103,7 @@ def upgrade():
             "run_type", sa.Enum("MANUAL", "SYSTEM", name="taskruntype"), nullable=False
         ),
         sa.ForeignKeyConstraint(
-            ["monitor_task_id"],
-            ["monitortask.id"],
-            ondelete="CASCADE",
+            ["monitor_task_id"], ["monitortask.id"], ondelete="CASCADE"
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -138,6 +140,7 @@ def downgrade():
     )
     op.drop_table("monitortaskexecutionlog")
     op.drop_index(op.f("ix_monitortask_status"), table_name="monitortask")
+    op.drop_index(op.f("ix_monitortask_monitor_config_id"), table_name="monitortask")
     op.drop_index(op.f("ix_monitortask_id"), table_name="monitortask")
     op.drop_index(op.f("ix_monitortask_action_type"), table_name="monitortask")
     op.drop_table("monitortask")
