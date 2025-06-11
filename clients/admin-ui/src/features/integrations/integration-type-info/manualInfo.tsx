@@ -20,7 +20,7 @@ const ManualOverview = () => (
     </InfoText>
     <InfoText>
       If you have manual integrations defined, privacy request execution will
-      exit early and remain in a state of <em>Requires input</em>. Once data has
+      exit early and remain in a state of <em>Requires Input</em>. Once data has
       been manually uploaded for all the manual integrations, then the privacy
       request can be resumed. Data uploaded for manual integrations is passed on
       directly to the data subject alongside the data package.

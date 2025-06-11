@@ -2,7 +2,7 @@ import { ActionType, PrivacyRequestStatus } from "~/types/api";
 
 export const SubjectRequestStatusMap = new Map<PrivacyRequestStatus, string>([
   [PrivacyRequestStatus.APPROVED, "Approved"],
-  [PrivacyRequestStatus.AWAITING_EMAIL_SEND, "Awaiting email send"],
+  [PrivacyRequestStatus.AWAITING_EMAIL_SEND, "Awaiting Email Send"],
   [PrivacyRequestStatus.CANCELED, "Canceled"],
   [PrivacyRequestStatus.COMPLETE, "Completed"],
   [PrivacyRequestStatus.DENIED, "Denied"],
@@ -11,7 +11,7 @@ export const SubjectRequestStatusMap = new Map<PrivacyRequestStatus, string>([
   [PrivacyRequestStatus.PENDING, "New"],
   [PrivacyRequestStatus.PAUSED, "Paused"],
   [PrivacyRequestStatus.IDENTITY_UNVERIFIED, "Unverified"],
-  [PrivacyRequestStatus.REQUIRES_INPUT, "Requires input"],
+  [PrivacyRequestStatus.REQUIRES_INPUT, "Requires Input"],
 ]);
 
 export const SubjectRequestStatusOptions = [...SubjectRequestStatusMap].map(
