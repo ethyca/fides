@@ -1,10 +1,7 @@
-import json
 import os
 
 import pytest
-from loguru import logger
 
-from fides.api.models.encrypted_large_data import calculate_data_size
 from fides.api.schemas.external_storage import ExternalStorageMetadata
 from fides.api.service.external_data_storage import (
     ExternalDataStorageError,
@@ -267,105 +264,3 @@ class TestExternalDataStorageService:
         assert metadata.filesize == actual_file_size
 
         ExternalDataStorageService.delete_data(db=db, metadata=metadata)
-
-
-class TestCalculateDataSize:
-    """Test cases for calculate_data_size utility function - focusing on accuracy"""
-
-    def test_calculate_data_size_empty_data(self):
-        """Test size calculation with empty data returns 0"""
-        result = calculate_data_size([])
-        assert result == 0
-
-    def test_calculate_data_size_small_dataset_exact_match(self):
-        """Test that small datasets return exact JSON byte size"""
-        test_data = [
-            {"id": 1, "name": "Alice", "email": "alice@example.com"},
-            {"id": 2, "name": "Bob", "email": "bob@example.com"},
-        ]
-
-        # Calculate actual JSON size
-        json_str = json.dumps(test_data, separators=(",", ":"))
-        expected_size = len(json_str.encode("utf-8"))
-
-        result = calculate_data_size(test_data)
-
-        # Should match exactly for small datasets
-        assert result == expected_size
-
-    def test_calculate_data_size_large_dataset_estimation_accuracy(self):
-        """Test that estimates for large datasets are reasonably accurate"""
-        # Create a large dataset (>1000 rows)
-        large_data = [
-            {"id": i, "name": f"user_{i}", "email": f"user{i}@example.com"}
-            for i in range(2000)
-        ]
-
-        # Get the estimated size
-        estimated_size = calculate_data_size(large_data)
-
-        # Calculate actual size for comparison
-        actual_json = json.dumps(large_data, separators=(",", ":"))
-        actual_size = len(actual_json.encode("utf-8"))
-
-        logger.info(f"Estimated size: {estimated_size}")
-        logger.info(f"Actual size: {actual_size}")
-
-        # With improved sampling algorithm, estimate should be within ±5%
-        variance_ratio = abs(estimated_size - actual_size) / actual_size
-        assert (
-            variance_ratio < 0.05  # 5%
-        ), f"Estimate {estimated_size} vs actual {actual_size} (variance: {variance_ratio:.2%})"
-
-    def test_calculate_data_size_unicode_precision(self):
-        """Test that unicode characters are measured accurately"""
-        # Test data with multi-byte unicode characters
-        unicode_data = [
-            {"name": "José", "city": "São Paulo", "emoji": "🚀"},
-            {"name": "François", "description": "测试数据"},
-        ]
-
-        result = calculate_data_size(unicode_data)
-
-        # Calculate expected size manually
-        json_str = json.dumps(unicode_data, separators=(",", ":"))
-        expected_size = len(json_str.encode("utf-8"))
-
-        # Should match exactly for small unicode data
-        assert result == expected_size
-
-    def test_calculate_data_size_nested_structures_exact(self):
-        """Test that complex nested data structures are measured exactly for small datasets"""
-        complex_data = [
-            {
-                "user": {
-                    "id": 1,
-                    "profile": {
-                        "name": "Alice",
-                        "settings": {"theme": "dark", "notifications": True},
-                    },
-                    "history": [
-                        {"action": "login", "timestamp": "2024-01-01T10:00:00"},
-                        {
-                            "action": "view_page",
-                            "timestamp": "2024-01-01T10:05:00",
-                            "page": "/dashboard",
-                        },
-                    ],
-                },
-                "metadata": {
-                    "version": "1.0",
-                    "tags": ["premium", "active"],
-                    "score": 95.5,
-                },
-            }
-        ]
-
-        result = calculate_data_size(complex_data)
-
-        # Calculate expected size
-        json_str = json.dumps(complex_data, separators=(",", ":"))
-        expected_size = len(json_str.encode("utf-8"))
-
-        # Should match exactly for complex but small data
-        assert result == expected_size

@@ -47,8 +47,8 @@ from fides.api.models.attachment import (
 from fides.api.models.audit_log import AuditLog
 from fides.api.models.client import ClientDetail
 from fides.api.models.comment import Comment, CommentReference, CommentReferenceType
-from fides.api.models.encrypted_large_data import EncryptedLargeDataDescriptor
 from fides.api.models.fides_user import FidesUser
+from fides.api.models.field_types import EncryptedLargeDataDescriptor
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.policy import (
     Policy,

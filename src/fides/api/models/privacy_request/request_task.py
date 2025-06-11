@@ -21,7 +21,7 @@ from fides.api.graph.config import (
     TERMINATOR_ADDRESS,
     CollectionAddress,
 )
-from fides.api.models.encrypted_large_data import EncryptedLargeDataDescriptor
+from fides.api.models.field_types import EncryptedLargeDataDescriptor
 from fides.api.models.privacy_request.execution_log import (
     COMPLETED_EXECUTION_LOG_STATUSES,
 )

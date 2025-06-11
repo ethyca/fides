@@ -38,6 +38,37 @@ class ExternalDataStorageService:
     """
 
     @staticmethod
+    def _get_storage_config(db: Session, storage_key: Optional[str]) -> "StorageConfig":
+        """Resolve and return the StorageConfig to use.
+
+        Preference order:
+
+        1. If *storage_key* is provided, fetch that specific configuration.
+        2. Otherwise, fall back to the *active* default storage configuration.
+
+        Raises ExternalDataStorageError when no suitable configuration is found.
+        """
+
+        if storage_key:
+            storage_config = (
+                db.query(StorageConfig).filter(StorageConfig.key == storage_key).first()
+            )
+            if not storage_config:
+                msg = f"Storage configuration with key '{storage_key}' not found"
+                logger.error(msg)
+                raise ExternalDataStorageError(msg)
+            return storage_config
+
+        # No explicit key – use the active default
+        storage_config = get_active_default_storage_config(db)
+        if not storage_config:
+            msg = "No active default storage configuration available for large data"
+            logger.error(msg)
+            raise ExternalDataStorageError(msg)
+
+        return storage_config
+
+    @staticmethod
     def store_data(
         db: Session,
         storage_path: str,
@@ -60,23 +91,9 @@ class ExternalDataStorageService:
             ExternalDataStorageError: If storage operation fails
         """
         try:
-            # Get storage config
-            if storage_key:
-                storage_config = (
-                    db.query(StorageConfig)
-                    .filter(StorageConfig.key == storage_key)
-                    .first()
-                )
-                if not storage_config:
-                    msg = f"Storage configuration with key '{storage_key}' not found"
-                    logger.error(msg)
-                    raise ExternalDataStorageError(msg)
-            else:
-                storage_config = get_active_default_storage_config(db)
-                if not storage_config:
-                    msg = "No active default storage configuration available for large data"
-                    logger.error(msg)
-                    raise ExternalDataStorageError(msg)
+            storage_config = ExternalDataStorageService._get_storage_config(
+                db, storage_key
+            )
 
             # Serialize and encrypt the data
             encrypted_data = encrypt_data(data)
@@ -136,21 +153,9 @@ class ExternalDataStorageService:
             ExternalDataStorageError: If retrieval operation fails
         """
         try:
-            # Get storage config
-            if metadata.storage_key:
-                storage_config = (
-                    db.query(StorageConfig)
-                    .filter(StorageConfig.key == metadata.storage_key)
-                    .first()
-                )
-                if not storage_config:
-                    raise ExternalDataStorageError(
-                        f"Storage configuration with key '{metadata.storage_key}' not found"
-                    )
-            else:
-                storage_config = get_active_default_storage_config(db)
-                if not storage_config:
-                    raise ExternalDataStorageError("No storage configuration found")
+            storage_config = ExternalDataStorageService._get_storage_config(
+                db, metadata.storage_key
+            )
 
             # Retrieve encrypted data based on storage type
             storage_type_value = (
@@ -215,23 +220,9 @@ class ExternalDataStorageService:
             rather than raising exceptions, to support cleanup scenarios.
         """
         try:
-            # Get storage config
-            if metadata.storage_key:
-                storage_config = (
-                    db.query(StorageConfig)
-                    .filter(StorageConfig.key == metadata.storage_key)
-                    .first()
-                )
-                if not storage_config:
-                    logger.warning(
-                        f"Storage configuration with key '{metadata.storage_key}' not found for cleanup"
-                    )
-                    return
-            else:
-                storage_config = get_active_default_storage_config(db)
-                if not storage_config:
-                    logger.warning("No storage configuration found for cleanup")
-                    return
+            storage_config = ExternalDataStorageService._get_storage_config(
+                db, metadata.storage_key
+            )
 
             # Delete from external storage based on type
             storage_type_value = (
