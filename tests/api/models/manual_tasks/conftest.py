@@ -5,8 +5,14 @@ from sqlalchemy.orm import Session
 
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.manual_tasks.manual_task import ManualTask
-from fides.api.models.manual_tasks.manual_task_config import ManualTaskConfig, ManualTaskConfigField
-from fides.api.models.manual_tasks.manual_task_instance import ManualTaskInstance, ManualTaskSubmission
+from fides.api.models.manual_tasks.manual_task_config import (
+    ManualTaskConfig,
+    ManualTaskConfigField,
+)
+from fides.api.models.manual_tasks.manual_task_instance import (
+    ManualTaskInstance,
+    ManualTaskSubmission,
+)
 from fides.api.models.privacy_request.privacy_request import PrivacyRequest
 from fides.api.schemas.manual_tasks.manual_task_schemas import (
     ManualTaskParentEntityType,
@@ -46,35 +52,54 @@ def manual_task_config(db: Session, manual_task: ManualTask) -> ManualTaskConfig
         },
     )
 
-def manual_task_config_field_1(db: Session, manual_task_config: ManualTaskConfig) -> ManualTaskConfigField:
-    return ManualTaskConfigField.create(
+
+@pytest.fixture
+def manual_task_config_field_1(
+    db: Session, manual_task_config: ManualTaskConfig
+) -> Generator[ManualTaskConfigField, None, None]:
+    field = ManualTaskConfigField.create(
         db,
         data={
+            "task_id": manual_task_config.task_id,
             "config_id": manual_task_config.id,
             "field_type": "text",
             "field_key": "field_1",
-            "required": True,
+            "field_metadata": {
+                "required": True,
+            },
         },
     )
+    yield field
+    field.delete(db)
 
-def manual_task_config_field_2(db: Session, manual_task_config: ManualTaskConfig) -> ManualTaskConfigField:
-    return ManualTaskConfigField.create(
+
+@pytest.fixture
+def manual_task_config_field_2(
+    db: Session, manual_task_config: ManualTaskConfig
+) -> Generator[ManualTaskConfigField, None, None]:
+    field = ManualTaskConfigField.create(
         db,
         data={
+            "task_id": manual_task_config.task_id,
             "config_id": manual_task_config.id,
             "field_type": "text",
             "field_key": "field_2",
-            "required": False,
+            "field_metadata": {
+                "required": False,
+            },
         },
     )
+    yield field
+    field.delete(db)
+
 
 @pytest.fixture
 def manual_task_instance(
     db: Session,
     manual_task: ManualTask,
     manual_task_config: ManualTaskConfig,
-    privacy_request: PrivacyRequest
-) -> ManualTaskInstance:
+    privacy_request: PrivacyRequest,
+) -> Generator[ManualTaskInstance, None, None]:
     """Create a test manual task instance."""
     instance = ManualTaskInstance.create(
         db=db,
@@ -85,21 +110,29 @@ def manual_task_instance(
             "entity_type": "privacy_request",
         },
     )
-    return instance
+    yield instance
+    instance.delete(db)
 
 
 @pytest.fixture
-def manual_task_submission(db: Session, manual_task_instance: ManualTaskInstance) -> ManualTaskSubmission:
+def manual_task_submission(
+    db: Session,
+    manual_task: ManualTask,
+    manual_task_config: ManualTaskConfig,
+    manual_task_instance: ManualTaskInstance,
+    manual_task_config_field_1: ManualTaskConfigField,
+) -> Generator[ManualTaskSubmission, None, None]:
     """Create a test manual task submission."""
     submission = ManualTaskSubmission.create(
         db=db,
         data={
-            "task_id": manual_task_instance.task_id,
-            "config_id": manual_task_instance.config_id,
+            "task_id": manual_task.id,
+            "config_id": manual_task_config.id,
             "field_id": manual_task_config_field_1.id,
             "instance_id": manual_task_instance.id,
             "submitted_by": 1,
             "data": {"value": "test"},
         },
     )
-    return submission
+    yield submission
+    submission.delete(db)

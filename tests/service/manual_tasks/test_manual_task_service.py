@@ -24,66 +24,6 @@ from fides.api.schemas.manual_tasks.manual_task_schemas import (
 from fides.service.manual_tasks.manual_task_service import ManualTaskService
 from tests.service.manual_tasks.conftest import FIELDS
 
-
-@pytest.fixture
-def manual_task(db: Session):
-    task = ManualTask.create(
-        db=db,
-        data={
-            "parent_entity_id": "test-parent-id",
-            "parent_entity_type": ManualTaskParentEntityType.connection_config,
-            "task_type": ManualTaskType.privacy_request,
-        },
-    )
-
-    ManualTaskReference.create(
-        db=db,
-        data={
-            "task_id": task.id,
-            "reference_id": task.parent_entity_id,
-            "reference_type": ManualTaskReferenceType.connection_config,
-        },
-    )
-
-    yield task
-    task.delete(db)
-
-
-@pytest.fixture
-def respondent_user(db: Session):
-    user = FidesUser.create(
-        db=db,
-        data={
-            "username": "test_respondent_user",
-            "email_address": "fides.user@ethyca.com",
-        },
-    )
-    FidesUserPermissions.create(db=db, data={"user_id": user.id, "roles": [RESPONDENT]})
-    yield user
-    user.delete(db)
-
-
-@pytest.fixture
-def external_user(db: Session):
-    user = FidesUser.create(
-        db=db,
-        data={
-            "username": "test_external_user",
-            "email_address": "user@not_ethyca.com",
-        },
-    )
-    FidesUserPermissions.create(
-        db=db, data={"user_id": user.id, "roles": [EXTERNAL_RESPONDENT]}
-    )
-    yield user
-    user.delete(db)
-
-
-@pytest.fixture
-def manual_task_service(db: Session):
-    return ManualTaskService(db)
-
-
 # Helper functions
 
 

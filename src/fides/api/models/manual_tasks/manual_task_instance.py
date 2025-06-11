@@ -1,45 +1,56 @@
 from datetime import datetime, timezone
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Optional, cast
 
-from sqlalchemy import Column, DateTime, ForeignKey, String, Integer
-from sqlalchemy.orm import Session, relationship
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.orm import relationship
 
 from fides.api.db.base_class import Base
-from fides.api.models.attachment import Attachment, AttachmentReference
-from fides.api.models.manual_tasks.manual_task_config import (
-    ManualTaskConfig,
-    ManualTaskConfigField,
-    ManualTaskSubmission,
+from fides.api.models.manual_tasks.manual_task_config import ManualTaskConfigField
+from fides.api.schemas.manual_tasks.manual_task_status import (
+    StatusTransitionMixin,
+    StatusType,
 )
-from fides.api.models.manual_tasks.manual_task_log import (
-    ManualTaskLog,
-    ManualTaskLogStatus,
-)
-from fides.api.schemas.manual_tasks.manual_task_schemas import StatusTransitionMixin, StatusType
+
+if TYPE_CHECKING:
+    from fides.api.models.attachment import Attachment
+    from fides.api.models.manual_tasks.manual_task import ManualTask
+    from fides.api.models.manual_tasks.manual_task_config import ManualTaskConfig
+    from fides.api.models.manual_tasks.manual_task_log import ManualTaskLog
 
 
-class ManualTaskInstance(Base, StatusTransitionMixin[StatusType]):
+class ManualTaskInstance(Base, StatusTransitionMixin):
     """Model for tracking task status per entity instance."""
 
-    __tablename__ = "manual_task_instance"
+    @declared_attr
+    def __tablename__(cls) -> str:
+        """Overriding base class method to set the table name."""
+        return "manual_task_instance"
 
     # Database columns
     task_id = Column(String, ForeignKey("manual_task.id"), nullable=False)
     config_id = Column(String, ForeignKey("manual_task_config.id"), nullable=False)
     # entity id is the entity that the instance is for (e.g. privacy request)
     # TODO: Add to schemas
-   entity_id = Column(String, nullable=False)
+    entity_id = Column(String, nullable=False)
     entity_type = Column(String, nullable=False)
-    status = Column(String, nullable=False, default=StatusType.pending)
-    completed_at = Column(DateTime, nullable=True)
-    completed_by_id = Column(String, nullable=True)
+    status: StatusType = cast(
+        StatusType, Column(String, nullable=False, default=StatusType.pending)
+    )
+    completed_at: Optional[datetime] = cast(
+        Optional[datetime], Column(DateTime, nullable=True)
+    )
+    completed_by_id: Optional[str] = cast(Optional[str], Column(String, nullable=True))
 
     # Relationships
     task = relationship("ManualTask", back_populates="instances")
     config = relationship("ManualTaskConfig", back_populates="instances")
     submissions = relationship(
-        "ManualTaskSubmission", back_populates="instance", cascade="all, delete-orphan"
+        "ManualTaskSubmission",
+        back_populates="instance",
+        cascade="all, delete-orphan",
+        uselist=True,
     )
     logs = relationship(
         "ManualTaskLog",
@@ -47,43 +58,28 @@ class ManualTaskInstance(Base, StatusTransitionMixin[StatusType]):
         primaryjoin="ManualTaskInstance.id == ManualTaskLog.instance_id",
         viewonly=True,
         order_by="ManualTaskLog.created_at",
+        uselist=True,
     )
-
-    @property
-    def attachments(self, db: Session) -> list["Attachment"]:
-        """Get all attachments associated with this task instance.
-        This includes attachments from all submissions for this instance.
-        Args:
-            db: Database session
-        Returns:
-            list[Attachment]: List of attachments associated with this instance
-        """
-        # Get all submissions for this instance
-        submissions = self.submissions
-
-        # Get all attachment references for these submissions
-        attachment_refs = (
-            db.query(AttachmentReference)
-            .filter(
-                AttachmentReference.reference_id.in_([s.id for s in submissions]),
-                AttachmentReference.reference_type == "manual_task_submission",
-            )
-            .all()
-        )
-
-        # Get the actual attachments
-        attachments = (
-            db.query(Attachment)
-            .filter(Attachment.id.in_([ref.attachment_id for ref in attachment_refs]))
-            .all()
-        )
-
-        return attachments
+    attachments = relationship(
+        "Attachment",
+        secondary="attachment_reference",
+        primaryjoin="and_(ManualTaskInstance.id == ManualTaskSubmission.instance_id, "
+        "ManualTaskSubmission.id == AttachmentReference.reference_id, "
+        "AttachmentReference.reference_type == 'manual_task_submission')",
+        secondaryjoin="Attachment.id == AttachmentReference.attachment_id",
+        order_by="Attachment.created_at",
+        viewonly=True,
+        uselist=True,
+    )
 
     @property
     def required_fields(self) -> list["ManualTaskConfigField"]:
         """Get all required fields."""
-        return [field for field in self.config.field_definitions if field.required]
+        return [
+            field
+            for field in self.config.field_definitions
+            if field.field_metadata.get("required", False)
+        ]
 
     @property
     def incomplete_fields(self) -> list["ManualTaskConfigField"]:
@@ -93,27 +89,41 @@ class ManualTaskInstance(Base, StatusTransitionMixin[StatusType]):
         Returns:
             list[ManualTaskConfigField]: List of incomplete fields
         """
-        return [field for field in self.required_fields if not self.get_submission_for_field(field.id)]
+        return [
+            field
+            for field in self.required_fields
+            if not self.get_submission_for_field(field.id)
+        ]
 
     @property
     def completed_fields(self) -> list["ManualTaskConfigField"]:
         """Get all fields that have been completed."""
-        return [field for field in self.config.field_definitions if field.required and self.get_submission_for_field(field.id)]
+        return [
+            field
+            for field in self.config.field_definitions
+            if field.field_metadata.get("required", False)
+            and self.get_submission_for_field(field.id)
+        ]
 
-    # CRUD Operations
-    @classmethod
-    def create(
-        cls,
-        db: Session,
-        data: dict[str, Any],
-    ) -> "ManualTaskInstance":
-        """Create a new task instance for an entity.
+    def get_submission_for_field(
+        self, field_id: str
+    ) -> Optional["ManualTaskSubmission"]:
+        """Get the submission for a specific field.
+
         Args:
-            db: Database session
-            data: Dictionary containing task_id, config_id, entity_id, and entity_type
-        """
-        return super().create(db=db, data=data)
+            field_id: The ID of the field to get the submission for
 
+        Returns:
+            Optional[ManualTaskSubmission]: The submission for the field, or None if no submission exists
+        """
+        return next(
+            (
+                submission
+                for submission in self.submissions
+                if submission.field_id == field_id
+            ),
+            None,
+        )
 
 
 class ManualTaskSubmission(Base):
@@ -121,7 +131,12 @@ class ManualTaskSubmission(Base):
     Each submission represents data for a single field.
     """
 
-    __tablename__ = "manual_task_submission"
+    @declared_attr
+    def __tablename__(cls) -> str:
+        """Overriding base class method to set the table name."""
+        return "manual_task_submission"
+
+    # Database columns
     task_id = Column(String, ForeignKey("manual_task.id"))
     config_id = Column(String, ForeignKey("manual_task_config.id"))
     field_id = Column(String, ForeignKey("manual_task_config_field.id"))
@@ -131,28 +146,23 @@ class ManualTaskSubmission(Base):
     data = Column(JSONB, nullable=False)
 
     # Relationships
-    task = relationship("ManualTask", back_populates="submissions")
-    config = relationship("ManualTaskConfig", back_populates="submissions")
-    field = relationship("ManualTaskConfigField", back_populates="submissions")
-    instance = relationship("ManualTaskInstance", back_populates="submissions")
+    task = relationship("ManualTask", back_populates="submissions", viewonly=True)
+    config = relationship(
+        "ManualTaskConfig", back_populates="submissions", viewonly=True
+    )
+    field = relationship(
+        "ManualTaskConfigField", back_populates="submissions", viewonly=True
+    )
+    instance = relationship(
+        "ManualTaskInstance", back_populates="submissions", viewonly=True
+    )
     attachments = relationship(
         "Attachment",
         secondary="attachment_reference",
-        back_populates="references",
-        cascade="all, delete-orphan",
+        primaryjoin="and_(ManualTaskSubmission.id == AttachmentReference.reference_id, "
+        "AttachmentReference.reference_type == 'manual_task_submission')",
+        secondaryjoin="Attachment.id == AttachmentReference.attachment_id",
+        order_by="Attachment.created_at",
+        viewonly=True,
+        uselist=True,
     )
-
-    # 3. CRUD Operations
-    @classmethod
-    def create(
-        cls, db: Session, data: dict[str, Any], check_name: Optional[bool]
-    ) -> None:
-        """Create a new submission for a single field."""
-        return super().create(db=db, data=data, check_name=check_name)
-
-    @classmethod
-    def update(
-        cls, db: Session, *, data: dict[str, Any], check_name: Optional[bool] = True
-    ) -> "ManualTaskSubmission":
-        """Create or update a submission for a single field."""
-        return super().create_or_update(db=db, data=data, check_name=check_name)

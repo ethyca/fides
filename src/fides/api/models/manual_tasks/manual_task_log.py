@@ -11,6 +11,7 @@ from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskLogStat
 if TYPE_CHECKING:
     from fides.api.models.manual_tasks.manual_task import ManualTask
     from fides.api.models.manual_tasks.manual_task_config import ManualTaskConfig
+    from fides.api.models.manual_tasks.manual_task_instance import ManualTaskInstance
 
 
 class ManualTaskLog(Base):
@@ -25,17 +26,22 @@ class ManualTaskLog(Base):
         String, ForeignKey("manual_task.id", ondelete="CASCADE"), nullable=False
     )
     config_id = Column(String, ForeignKey("manual_task_config.id"), nullable=True)
-    instance_id = Column(String, nullable=True)
+    instance_id = Column(String, ForeignKey("manual_task_instance.id"), nullable=True)
     status = Column(String, nullable=False)
     message = Column(String, nullable=False)
     details = Column(JSONB, nullable=True)
 
     # Relationships
-    task = relationship("ManualTask", back_populates="logs", foreign_keys=[task_id])
-    config = relationship(
-        "ManualTaskConfig", back_populates="logs", foreign_keys=[config_id]
+    task = relationship(
+        "ManualTask", back_populates="logs", foreign_keys=[task_id], viewonly=True
     )
-    instance = relationship("ManualTaskInstance", back_populates="logs")
+    config = relationship(
+        "ManualTaskConfig",
+        back_populates="logs",
+        foreign_keys=[config_id],
+        viewonly=True,
+    )
+    instance = relationship("ManualTaskInstance", back_populates="logs", viewonly=True)
 
     @classmethod
     def create_log(

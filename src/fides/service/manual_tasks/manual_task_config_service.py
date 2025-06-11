@@ -1,7 +1,6 @@
 from typing import Any, Optional
 
 from loguru import logger
-from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from fides.api.models.manual_tasks.manual_task import ManualTask
@@ -15,7 +14,8 @@ from fides.api.schemas.manual_tasks.manual_task_config import (
     ManualTaskConfigResponse,
     ManualTaskConfigurationType,
 )
-from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskLogStatus, StatusType
+from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskLogStatus
+from fides.api.schemas.manual_tasks.manual_task_status import StatusType
 from fides.service.manual_tasks.utils import validate_fields
 
 
@@ -50,7 +50,6 @@ class ManualTaskConfigService:
             "created_at": config.created_at,
             "updated_at": config.updated_at,
         }
-
 
     def _re_create_existing_fields(
         self,
@@ -323,7 +322,7 @@ class ManualTaskConfigService:
             self.db.query(ManualTaskInstance)
             .filter(
                 ManualTaskInstance.config_id == config_id,
-                ManualTaskInstance.status != StatusType.completed
+                ManualTaskInstance.status != StatusType.completed,
             )
             .all()
         )
@@ -346,6 +345,6 @@ class ManualTaskConfigService:
         if not config:
             raise ValueError(f"Config with ID {config_id} not found")
         if self.get_active_instances(config_id):
-            raise ValueError(f"Cannot delete config with active instances")
+            raise ValueError("Cannot delete config with active instances")
 
         config.delete(self.db)

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, Optional, cast
 
 from sqlalchemy import (
     Boolean,
@@ -23,6 +23,10 @@ from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskLogStat
 
 if TYPE_CHECKING:
     from fides.api.models.manual_tasks.manual_task import ManualTask
+    from fides.api.models.manual_tasks.manual_task_instance import (
+        ManualTaskInstance,
+        ManualTaskSubmission,
+    )
 
 
 class ManualTaskConfig(Base):
@@ -40,8 +44,13 @@ class ManualTaskConfig(Base):
     is_current = Column(Boolean, nullable=False, default=True)
 
     # Relationships
-    task = relationship("ManualTask", back_populates="configs")
-    instances = relationship("ManualTaskInstance", back_populates="config")
+    task = relationship("ManualTask", back_populates="configs", viewonly=True)
+    instances = relationship(
+        "ManualTaskInstance", back_populates="config", uselist=True, viewonly=True
+    )
+    submissions = relationship(
+        "ManualTaskSubmission", back_populates="config", uselist=True, viewonly=True
+    )
     field_definitions = relationship(
         "ManualTaskConfigField",
         back_populates="config",
@@ -108,10 +117,20 @@ class ManualTaskConfigField(Base):
     config_id = Column(String, ForeignKey("manual_task_config.id"))
     field_key = Column(String, nullable=False)
     field_type = Column(String, nullable=False)  # Using ManualTaskFieldType
-    field_metadata = Column(JSONB, nullable=False, default={})
+    field_metadata: dict[str, Any] = cast(
+        dict[str, Any], Column(JSONB, nullable=False, default={})
+    )
 
     # Relationships
-    config = relationship("ManualTaskConfig", back_populates="field_definitions")
+    config = relationship(
+        "ManualTaskConfig", back_populates="field_definitions", viewonly=True
+    )
+    submissions = relationship(
+        "ManualTaskSubmission",
+        back_populates="field",
+        uselist=True,
+        cascade="all, delete-orphan",
+    )
 
     __table_args__ = (
         # Add check constraint for field_type
@@ -126,6 +145,9 @@ class ManualTaskConfigField(Base):
     @property
     def field_metadata_model(self) -> ManualTaskFieldMetadata:
         """Get the field metadata as a Pydantic model."""
+        assert isinstance(
+            self.field_metadata, dict
+        ), "field_metadata must be a dictionary"
         return ManualTaskFieldMetadata.model_validate(self.field_metadata)
 
     @classmethod

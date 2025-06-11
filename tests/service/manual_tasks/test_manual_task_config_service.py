@@ -17,25 +17,6 @@ from fides.service.manual_tasks.manual_task_config_service import (
 from tests.service.manual_tasks.conftest import CONFIG_TYPE, FIELDS
 
 
-@pytest.fixture
-def manual_task(db: Session):
-    task = ManualTask.create(
-        db=db,
-        data={
-            "parent_entity_id": "test-parent-id",
-            "parent_entity_type": "connection_config",
-            "task_type": "privacy_request",
-        },
-    )
-    yield task
-    task.delete(db)
-
-
-@pytest.fixture
-def manual_task_config_service(db: Session):
-    return ManualTaskConfigService(db)
-
-
 class TestManualTaskConfigServiceBase:
     """Base test class with common test data and utilities."""
 
