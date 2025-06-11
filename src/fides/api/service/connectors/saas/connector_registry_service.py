@@ -6,8 +6,6 @@ from zipfile import ZipFile
 
 from fideslang.models import Dataset
 from loguru import logger
-from packaging.version import Version
-from packaging.version import parse as parse_version
 from sqlalchemy.orm import Session
 
 from fides.api.api.deps import get_api_session
@@ -32,7 +30,6 @@ from fides.api.util.saas_util import (
     load_yaml_as_string,
     replace_config_placeholders,
     replace_dataset_placeholders,
-    replace_version,
 )
 from fides.api.util.unsafe_file_util import verify_svg, verify_zip
 
@@ -114,15 +111,13 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
         logger.info("Loading connectors templates from the database.")
         db = get_api_session()
         for template in CustomConnectorTemplate.all(db=db):
-            if (
-                template.replaceable
-                and CustomConnectorTemplateLoader._replacement_available(template)
-            ):
-                logger.info(
-                    f"Replacing {template.key} connector template with newer version."
-                )
-                template.delete(db=db)
-                continue
+            # # we only want to replace the template if the user chooses to do so. so for now just keep the custom template
+            # if CustomConnectorTemplateLoader._replacement_available(template):
+            #     logger.info(
+            #         f"Replacing {template.key} connector template with newer version."
+            #     )
+            #     template.delete(db=db)
+            #     continue
             try:
                 CustomConnectorTemplateLoader._register_template(template)
             except Exception:
@@ -139,13 +134,7 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
         if not replacement_connector:
             return False
 
-        custom_saas_config = SaaSConfig(**load_config_from_string(template.config))
-        replacement_saas_config = SaaSConfig(
-            **load_config_from_string(replacement_connector.config)
-        )
-        return parse_version(replacement_saas_config.version) > parse_version(
-            custom_saas_config.version
-        )
+        return True
 
     @classmethod
     def _register_template(
@@ -240,24 +229,7 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
         # extract connector_type, human_readable, and replaceable values from the SaaS config
         connector_type = saas_config.type
         human_readable = saas_config.name
-        replaceable = saas_config.replaceable
 
-        # if the incoming connector is flagged as replaceable we will update the version to match
-        # that of the existing connector template this way the custom connector template can be
-        # removed once a newer version is bundled with Fides
-        if replaceable:
-            existing_connector = (
-                FileConnectorTemplateLoader.get_connector_templates().get(
-                    connector_type
-                )
-            )
-            if existing_connector:
-                existing_config = SaaSConfig(
-                    **load_config_from_string(existing_connector.config)
-                )
-                config_contents = replace_version(
-                    config_contents, existing_config.version
-                )
 
         template = CustomConnectorTemplate(
             key=connector_type,
@@ -265,7 +237,6 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
             config=config_contents,
             dataset=dataset_contents,
             icon=icon_contents,
-            replaceable=replaceable,
         )
 
         # attempt to register the template, raises an exception if validation fails
@@ -281,9 +252,43 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
                 "dataset": dataset_contents,
                 "icon": icon_contents,
                 "functions": function_contents,
-                "replaceable": replaceable,
             },
         )
+
+        # update any existing connection configs that use this connector type
+        connector_template = ConnectorRegistry.get_connector_template(connector_type)
+        if connector_template:
+            update_existing_connection_configs_for_connector_type(db, connector_type, connector_template)
+
+
+def update_existing_connection_configs_for_connector_type(
+    db: Session, connector_type: str, template: ConnectorTemplate
+) -> None:
+    """
+    Updates all existing connection configs that use the specified connector type
+    with the provided template.
+    """
+    connection_configs: Iterable[ConnectionConfig] = ConnectionConfig.filter(
+        db=db,
+        conditions=(ConnectionConfig.saas_config["type"].astext == connector_type),
+    ).all()
+
+    for connection_config in connection_configs:
+        saas_config_instance = SaaSConfig.model_validate(
+            connection_config.saas_config
+        )
+        try:
+            update_saas_instance(
+                db,
+                connection_config,
+                template,
+                saas_config_instance,
+            )
+        except Exception:
+            logger.exception(
+                "Encountered error attempting to update SaaS config instance {}",
+                saas_config_instance.fides_key,
+            )
 
 
 class ConnectorRegistry:
@@ -374,43 +379,14 @@ def update_saas_configs(db: Session) -> None:
     """
     for connector_type in ConnectorRegistry.connector_types():
         logger.debug(
-            "Determining if any updates are needed for connectors of type {} based on templates...",
+            "Updating connector type {} based on templates...",
             connector_type,
         )
         template: ConnectorTemplate = ConnectorRegistry.get_connector_template(  # type: ignore
             connector_type
         )
-        saas_config = SaaSConfig(**load_config_from_string(template.config))
-        template_version: Version = parse_version(saas_config.version)
 
-        connection_configs: Iterable[ConnectionConfig] = ConnectionConfig.filter(
-            db=db,
-            conditions=(ConnectionConfig.saas_config["type"].astext == connector_type),
-        ).all()
-        for connection_config in connection_configs:
-            saas_config_instance = SaaSConfig.model_validate(
-                connection_config.saas_config
-            )
-            if parse_version(saas_config_instance.version) < template_version:
-                logger.info(
-                    "Updating SaaS config instance '{}' of type '{}' as its version, {}, was found to be lower than the template version {}",
-                    saas_config_instance.fides_key,
-                    connector_type,
-                    saas_config_instance.version,
-                    template_version,
-                )
-                try:
-                    update_saas_instance(
-                        db,
-                        connection_config,
-                        template,
-                        saas_config_instance,
-                    )
-                except Exception:
-                    logger.exception(
-                        "Encountered error attempting to update SaaS config instance {}",
-                        saas_config_instance.fides_key,
-                    )
+        update_existing_connection_configs_for_connector_type(db, connector_type, template)
 
 
 def update_saas_instance(
