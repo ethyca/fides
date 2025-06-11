@@ -56,7 +56,7 @@ class ManualTaskService:
     def assign_users_to_task(
         self, db: Session, task: ManualTask, user_ids: list[str]
     ) -> None:
-        """Assign a user to this task. This assumes there is a single user assigned to the task.
+        """Assigns users to this task. We can assign one or more users to a task.
 
         Args:
             db: Database session
