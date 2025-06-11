@@ -32,7 +32,7 @@ class EncryptedLargeDataDescriptor:
         self.model_class: Optional[str] = None
         self.name: Optional[str] = None
 
-    # --- Descriptor protocol helpers -------------------------------------------------
+    # Descriptor protocol helpers
 
     def __set_name__(
         self, owner: Type, name: str
@@ -103,7 +103,7 @@ class EncryptedLargeDataDescriptor:
             self._cleanup_external_data(instance)
             setattr(instance, self.private_field, value)
 
-    # --- External storage helpers ----------------------------------------------------
+    # External storage helpers
 
     def _store_external_data(self, instance: Any, data: Any) -> ExternalStorageMetadata:
         storage_path = self._generate_storage_path(instance)
@@ -145,7 +145,7 @@ class EncryptedLargeDataDescriptor:
                     f"Failed to cleanup external {self.field_name}: {str(e)}"
                 )
 
-    # Public helper ------------------------------------------------------------------
+    # Public helper
 
     def cleanup(self, instance: Any) -> None:  # noqa: D401
         self._cleanup_external_data(instance)
