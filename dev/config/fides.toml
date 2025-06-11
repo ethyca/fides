@@ -39,7 +39,7 @@ task_always_eager = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "ba0837dc07fae2590ad3f751471a5d79" # string
+analytics_id = "e5f2d19e8384225e6c2d7b93029e1d8e" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -264,6 +264,10 @@ charset = "utf8" # string
 # The application will use this index in the Redis cache to cache data.
 db_index = 0 # integer
 
+# The application will use this index in the Redis cache to cache data
+# for testing.
+test_db_index = 1 # integer
+
 # Whether or not to automatically decode the values fetched from Redis.
 # Decodes using the `charset` configuration value.
 decode_responses = true # boolean
@@ -305,6 +309,39 @@ ssl_ca_certs = "" # string
 
 # The user with which to login to the Redis cache.
 user = "" # string
+
+# Whether a read-only Redis cache is enabled.
+read_only_enabled = false # boolean
+
+# The network address for the read-only Redis cache.
+read_only_host = "" # string
+
+# The port at which the read-only Redis cache will be accessible.
+read_only_port = 6379 # integer
+
+# The user with which to login to the read-only Redis cache.
+read_only_user = "" # string
+
+# The password with which to login to the read-only Redis cache.
+read_only_password = "" # string
+
+# The application will use this index in the read-only Redis cache to
+# cache data.
+read_only_db_index = 0 # integer
+
+# Whether the application's connections to the read-only cache should
+# be encrypted using TLS.
+read_only_ssl = false # boolean
+
+# If using TLS encryption, set this to 'required' if you wish to
+# enforce the read-only Redis cache to provide a certificate. Note that
+# not all cache providers support this without setting ssl_ca_certs
+# (e.g. AWS Elasticache).
+read_only_ssl_cert_reqs = "required" # string
+
+# If using TLS encryption rooted with a custom Certificate Authority,
+# set this to the path of the CA certificate.
+read_only_ssl_ca_certs = "" # string
 
 #--------------#
 #-- SECURITY --#
