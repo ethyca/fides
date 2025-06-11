@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from sqlalchemy import Column, DateTime, ForeignKey, String
 from sqlalchemy.ext.declarative import declared_attr
