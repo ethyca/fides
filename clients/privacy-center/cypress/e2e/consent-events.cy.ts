@@ -332,7 +332,7 @@ describe("Consent FidesEvents", () => {
           type: "FidesUIChanged",
           detail: {
             extraDetails: {
-              servingComponent: "modal",
+              servingComponent: "tcf_overlay",
               trigger: {
                 type: "toggle",
                 label: "Use profiles to select personalised advertising",
@@ -349,7 +349,7 @@ describe("Consent FidesEvents", () => {
           type: "FidesUIChanged",
           detail: {
             extraDetails: {
-              servingComponent: "modal",
+              servingComponent: "tcf_overlay",
               trigger: {
                 type: "toggle",
                 label: "Use profiles to select personalised advertising",
@@ -373,7 +373,7 @@ describe("Consent FidesEvents", () => {
         type: "FidesUIChanged",
         detail: {
           extraDetails: {
-            servingComponent: "modal",
+            servingComponent: "tcf_overlay",
             trigger: {
               type: "toggle",
               label: "Use profiles to select personalised content",
@@ -402,7 +402,7 @@ describe("Consent FidesEvents", () => {
         type: "FidesUIChanged",
         detail: {
           extraDetails: {
-            servingComponent: "modal",
+            servingComponent: "tcf_overlay",
             trigger: {
               type: "toggle",
               label: "Use limited data to select advertising",
@@ -438,7 +438,7 @@ describe("Consent FidesEvents", () => {
           type: "FidesUIChanged",
           detail: {
             extraDetails: {
-              servingComponent: "modal",
+              servingComponent: "tcf_overlay",
               trigger: {
                 type: "toggle",
                 label: "Captify",
@@ -459,7 +459,7 @@ describe("Consent FidesEvents", () => {
           type: "FidesUIChanged",
           detail: {
             extraDetails: {
-              servingComponent: "modal",
+              servingComponent: "tcf_overlay",
               trigger: {
                 type: "toggle",
                 label: "Captify",
@@ -485,7 +485,7 @@ describe("Consent FidesEvents", () => {
           type: "FidesUIChanged",
           detail: {
             extraDetails: {
-              servingComponent: "modal",
+              servingComponent: "tcf_overlay",
               trigger: {
                 type: "toggle",
                 label: "Meta",
@@ -506,7 +506,7 @@ describe("Consent FidesEvents", () => {
           type: "FidesUIChanged",
           detail: {
             extraDetails: {
-              servingComponent: "modal",
+              servingComponent: "tcf_overlay",
               trigger: {
                 type: "toggle",
                 label: "Meta",
@@ -683,7 +683,7 @@ describe("Consent FidesEvents", () => {
         type: "FidesUIChanged",
         detail: {
           extraDetails: {
-            servingComponent: "modal",
+            servingComponent: "tcf_overlay",
             trigger: {
               type: "toggle",
               label: "Advertising English",

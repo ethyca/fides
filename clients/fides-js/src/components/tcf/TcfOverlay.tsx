@@ -24,7 +24,11 @@ import {
   consentCookieObjHasSomeConsentSet,
   getFidesConsentCookie,
 } from "../../lib/cookie";
-import { dispatchFidesEvent } from "../../lib/events";
+import {
+  dispatchFidesEvent,
+  FidesEventDetailsPreference,
+  FidesEventDetailsTrigger,
+} from "../../lib/events";
 import { useNoticesServed } from "../../lib/hooks";
 import {
   DEFAULT_LOCALE,
@@ -522,6 +526,30 @@ export const TcfOverlay = ({
     }
   }, [handleUpdateAllPreferences, draftIds, parsedCookie?.consent]);
 
+  const handleToggleChange = useCallback(
+    (
+      updatedIds: EnabledIds,
+      triggerDetails: FidesEventDetailsTrigger,
+      preference: FidesEventDetailsPreference,
+    ) => {
+      const eventExtraDetails: FidesEvent["detail"]["extraDetails"] = {
+        servingComponent: ServingComponent.TCF_OVERLAY,
+        trigger: triggerDetails,
+        preference,
+      };
+      setDraftIds(updatedIds);
+      dispatchFidesEvent("FidesUIChanged", cookie, eventExtraDetails);
+    },
+    [cookie, setDraftIds],
+  );
+
+  const handleTabChange = useCallback(
+    (tabIndex: number) => {
+      setActiveTabIndex(tabIndex);
+    },
+    [setActiveTabIndex],
+  );
+
   const experienceConfig =
     experienceFull?.experience_config || experienceMinimal.experience_config;
   if (!experienceConfig) {
@@ -596,22 +624,9 @@ export const TcfOverlay = ({
                 experience={experienceFull}
                 customNotices={privacyNoticesWithBestTranslation}
                 enabledIds={draftIds}
-                onChange={(updatedIds, triggerDetails, preference) => {
-                  const eventExtraDetails: FidesEvent["detail"]["extraDetails"] =
-                    {
-                      servingComponent: "modal",
-                      trigger: triggerDetails,
-                      preference,
-                    };
-                  setDraftIds(updatedIds);
-                  dispatchFidesEvent(
-                    "FidesUIChanged",
-                    cookie,
-                    eventExtraDetails,
-                  );
-                }}
+                onChange={handleToggleChange}
                 activeTabIndex={activeTabIndex}
-                onTabChange={setActiveTabIndex}
+                onTabChange={handleTabChange}
               />
             )
       }
