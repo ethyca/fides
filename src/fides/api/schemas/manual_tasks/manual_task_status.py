@@ -5,6 +5,14 @@ from typing import Optional
 from sqlalchemy.orm import Session
 
 
+class StatusTransitionNotAllowed(Exception):
+    """Exception raised when a status transition is not allowed."""
+
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(self.message)
+
+
 class StatusType(str, EnumType):
     """Enum for manual task status."""
 
@@ -65,14 +73,14 @@ class StatusTransitionMixin:
         """
         # Don't allow transitions to the same status
         if new_status == self.status:
-            raise ValueError(
+            raise StatusTransitionNotAllowed(
                 f"Invalid status transition: already in status {new_status}"
             )
 
         # Get valid transitions for current status
         valid_transitions = self._get_valid_transitions()
         if new_status not in valid_transitions:
-            raise ValueError(
+            raise StatusTransitionNotAllowed(
                 f"Invalid status transition from {self.status} to {new_status}. "
                 f"Valid transitions are: {valid_transitions}"
             )

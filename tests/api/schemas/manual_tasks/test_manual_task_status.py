@@ -5,6 +5,7 @@ import pytest
 
 from fides.api.schemas.manual_tasks.manual_task_status import (
     StatusTransitionMixin,
+    StatusTransitionNotAllowed,
     StatusType,
 )
 
@@ -66,7 +67,9 @@ class TestStatusTransitionMixin:
 
     def test_update_status_completed_to_failed(self, model, mock_db):
         model.status = StatusType.completed
-        with pytest.raises(ValueError, match="Invalid status transition"):
+        with pytest.raises(
+            StatusTransitionNotAllowed, match="Invalid status transition"
+        ):
             model.update_status(mock_db, StatusType.failed)
 
     def test_update_status_failed_to_pending(self, model, mock_db):
@@ -77,11 +80,13 @@ class TestStatusTransitionMixin:
         assert model.completed_by_id is None
 
     def test_invalid_transition_same_status(self, model, mock_db):
-        with pytest.raises(ValueError, match="already in status"):
+        with pytest.raises(StatusTransitionNotAllowed, match="already in status"):
             model.update_status(mock_db, StatusType.pending)
 
     def test_invalid_transition_pending_to_completed(self, model, mock_db):
-        with pytest.raises(ValueError, match="Invalid status transition"):
+        with pytest.raises(
+            StatusTransitionNotAllowed, match="Invalid status transition"
+        ):
             model.update_status(mock_db, StatusType.completed)
 
     def test_mark_completed(self, model, mock_db):
