@@ -69,7 +69,7 @@ class StatusTransitionMixin:
             new_status: The new status to transition to
 
         Raises:
-            ValueError: If the transition is not allowed
+            StatusTransitionNotAllowed: If the transition is not allowed
         """
         # Don't allow transitions to the same status
         if new_status == self.status:
