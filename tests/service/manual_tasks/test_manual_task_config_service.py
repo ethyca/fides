@@ -14,7 +14,7 @@ from fides.api.schemas.manual_tasks.manual_task_config import (
 from fides.service.manual_tasks.manual_task_config_service import (
     ManualTaskConfigService,
 )
-from tests.ops.service.manual_tasks.conftest import CONFIG_TYPE, FIELDS
+from tests.service.manual_tasks.conftest import CONFIG_TYPE, FIELDS
 
 
 @pytest.fixture

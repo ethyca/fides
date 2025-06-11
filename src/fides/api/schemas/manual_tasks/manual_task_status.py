@@ -1,8 +1,16 @@
 from datetime import datetime, timezone
 from enum import Enum as EnumType
-from typing import Generic, Optional, TypeVar, cast
+from typing import Optional
 
 from sqlalchemy.orm import Session
+
+
+class StatusTransitionNotAllowed(Exception):
+    """Exception raised when a status transition is not allowed."""
+
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(self.message)
 
 
 class StatusType(str, EnumType):
@@ -34,10 +42,7 @@ class StatusType(str, EnumType):
         return []
 
 
-T = TypeVar("T", bound=StatusType)
-
-
-class StatusTransitionMixin(Generic[T]):
+class StatusTransitionMixin:
     """Mixin for handling status transitions.
 
     This mixin provides methods for managing status transitions and completion tracking.
@@ -45,7 +50,7 @@ class StatusTransitionMixin(Generic[T]):
     """
 
     # These should be overridden by the implementing class
-    status: T
+    status: StatusType
     completed_at: Optional[datetime]
     completed_by_id: Optional[str]
 
@@ -57,31 +62,31 @@ class StatusTransitionMixin(Generic[T]):
         """
         return StatusType.get_valid_transitions(self.status)
 
-    def _validate_status_transition(self, new_status: T) -> None:
+    def _validate_status_transition(self, new_status: StatusType) -> None:
         """Validate that a status transition is allowed.
 
         Args:
             new_status: The new status to transition to
 
         Raises:
-            ValueError: If the transition is not allowed
+            StatusTransitionNotAllowed: If the transition is not allowed
         """
         # Don't allow transitions to the same status
         if new_status == self.status:
-            raise ValueError(
+            raise StatusTransitionNotAllowed(
                 f"Invalid status transition: already in status {new_status}"
             )
 
         # Get valid transitions for current status
         valid_transitions = self._get_valid_transitions()
         if new_status not in valid_transitions:
-            raise ValueError(
+            raise StatusTransitionNotAllowed(
                 f"Invalid status transition from {self.status} to {new_status}. "
                 f"Valid transitions are: {valid_transitions}"
             )
 
     def update_status(
-        self, db: Session, new_status: T, user_id: Optional[str] = None
+        self, db: Session, new_status: StatusType, user_id: Optional[str] = None
     ) -> None:
         """Update the status with validation and completion handling.
 
@@ -111,19 +116,19 @@ class StatusTransitionMixin(Generic[T]):
             db: Database session
             user_id: user ID who completed the task
         """
-        self.update_status(db, cast(T, StatusType.completed), user_id)
+        self.update_status(db, StatusType.completed, user_id)
 
     def mark_failed(self, db: Session) -> None:
         """Mark as failed."""
-        self.update_status(db, cast(T, StatusType.failed))
+        self.update_status(db, StatusType.failed)
 
     def start_progress(self, db: Session) -> None:
         """Mark as in progress."""
-        self.update_status(db, cast(T, StatusType.in_progress))
+        self.update_status(db, StatusType.in_progress)
 
     def reset_to_pending(self, db: Session) -> None:
         """Reset to pending status."""
-        self.update_status(db, cast(T, StatusType.pending))
+        self.update_status(db, StatusType.pending)
 
     @property
     def is_completed(self) -> bool:
