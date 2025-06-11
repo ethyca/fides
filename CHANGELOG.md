@@ -32,6 +32,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - TCF Banners will no longer resurface on reload after dismissal [#6200](https://github.com/ethyca/fides/pull/6200)
 - Earlier initialization strategy for Shopify integration [#6202](https://github.com/ethyca/fides/pull/6202)
 
+### Fixed
+- Added missing "Awaiting email send" status to privacy request statuses [#6218](https://github.com/ethyca/fides/pull/6218)
+
 ## [2.63.0](https://github.com/ethyca/fides/compare/2.62.0...2.63.0)
 
 ### Added
