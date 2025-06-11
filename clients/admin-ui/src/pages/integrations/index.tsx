@@ -7,7 +7,6 @@ import {
   AntTypography as Typography,
   useDisclosure,
 } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import React, { useCallback, useMemo, useState } from "react";
@@ -18,7 +17,6 @@ import FidesSpinner from "~/features/common/FidesSpinner";
 import Layout from "~/features/common/Layout";
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
-import { formatDate } from "~/features/common/utils";
 import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
 import { useGetAllDatastoreConnectionsQuery } from "~/features/datastore-connections/datastore-connection.slice";
 import AddIntegrationModal from "~/features/integrations/add-integration/AddIntegrationModal";
@@ -94,40 +92,12 @@ const IntegrationListView: NextPage = () => {
     router.push(`${INTEGRATION_MANAGEMENT_ROUTE}/${integration.key}`);
   };
 
-  const formatLastConnection = (
-    lastTestTimestamp?: string | null,
-    lastTestSucceeded?: boolean | null,
-  ) => {
-    if (!lastTestTimestamp) {
-      return "-";
-    }
-
-    const formattedDate = formatDate(lastTestTimestamp);
-
-    if (lastTestSucceeded === true) {
-      return (
-        <span style={{ color: palette.FIDESUI_SUCCESS_TEXT }}>
-          ✓ {formattedDate}
-        </span>
-      );
-    }
-    if (lastTestSucceeded === false) {
-      return (
-        <span style={{ color: palette.FIDESUI_ERROR_TEXT }}>
-          ✗ {formattedDate}
-        </span>
-      );
-    }
-
-    return formattedDate;
-  };
-
   const columns: ColumnsType<IntegrationTableData> = [
     {
       title: "Name",
       dataIndex: "name",
       key: "name",
-      minWidth: 150,
+      width: 250,
       render: (name: string | null, record) => (
         <div className="flex items-center gap-3">
           <ConnectionTypeLogo data={record} boxSize="20px" />
@@ -169,14 +139,6 @@ const IntegrationListView: NextPage = () => {
           ))}
         </div>
       ),
-    },
-    {
-      title: "Last Connection",
-      dataIndex: "last_test_timestamp",
-      key: "last_connection",
-      width: 300,
-      render: (lastTestTimestamp, record) =>
-        formatLastConnection(lastTestTimestamp, record.last_test_succeeded),
     },
     {
       title: "Actions",
