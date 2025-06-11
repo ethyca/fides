@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import Any, Optional
+from typing import Annotated, Any, Optional
 
 from pydantic import ConfigDict, Field
 
@@ -51,12 +51,14 @@ class ManualTaskLogCreate(FidesSchema):
 
     model_config = ConfigDict(extra="forbid")
 
-    task_id: str = Field(..., description="ID of the task")
-    status: ManualTaskLogStatus = Field(..., description="Log status")
-    message: Optional[str] = Field(None, description="Log message")
-    details: Optional[dict[str, Any]] = Field(None, description="Additional details")
-    config_id: Optional[str] = Field(None, description="Configuration ID")
-    instance_id: Optional[str] = Field(None, description="Instance ID")
+    task_id: Annotated[str, Field(..., description="ID of the task")]
+    status: Annotated[ManualTaskLogStatus, Field(..., description="Log status")]
+    message: Annotated[Optional[str], Field(None, description="Log message")]
+    details: Annotated[
+        Optional[dict[str, Any]], Field(None, description="Additional details")
+    ]
+    config_id: Annotated[Optional[str], Field(None, description="Configuration ID")]
+    instance_id: Annotated[Optional[str], Field(None, description="Instance ID")]
 
 
 class ManualTaskLogResponse(FidesSchema):
@@ -64,12 +66,14 @@ class ManualTaskLogResponse(FidesSchema):
 
     model_config = ConfigDict(extra="forbid")
 
-    id: str = Field(..., description="Log ID")
-    task_id: str = Field(..., description="Task ID")
-    status: ManualTaskLogStatus = Field(..., description="Log status")
-    message: Optional[str] = Field(None, description="Log message")
-    details: Optional[dict[str, Any]] = Field(None, description="Additional details")
-    config_id: Optional[str] = Field(None, description="Configuration ID")
-    instance_id: Optional[str] = Field(None, description="Instance ID")
-    created_at: datetime = Field(..., description="Creation timestamp")
-    updated_at: datetime = Field(..., description="Last update timestamp")
+    id: Annotated[str, Field(..., description="Log ID")]
+    task_id: Annotated[str, Field(..., description="Task ID")]
+    status: Annotated[ManualTaskLogStatus, Field(..., description="Log status")]
+    message: Annotated[Optional[str], Field(None, description="Log message")]
+    details: Annotated[
+        Optional[dict[str, Any]], Field(None, description="Additional details")
+    ]
+    config_id: Annotated[Optional[str], Field(None, description="Configuration ID")]
+    instance_id: Annotated[Optional[str], Field(None, description="Instance ID")]
+    created_at: Annotated[datetime, Field(..., description="Creation timestamp")]
+    updated_at: Annotated[datetime, Field(..., description="Last update timestamp")]

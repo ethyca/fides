@@ -27,7 +27,7 @@ class TestStatusType:
         assert set(transitions) == {StatusType.pending, StatusType.in_progress}
 
 
-class TestModel(StatusTransitionMixin[StatusType]):
+class TestModel(StatusTransitionMixin):
     """Test implementation of StatusTransitionMixin"""
 
     def __init__(self):
