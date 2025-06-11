@@ -26,7 +26,11 @@ import {
   getFidesConsentCookie,
   updateCookieFromNoticePreferences,
 } from "../../lib/cookie";
-import { dispatchFidesEvent } from "../../lib/events";
+import {
+  dispatchFidesEvent,
+  FidesEventDetailsPreference,
+  FidesEventDetailsTrigger,
+} from "../../lib/events";
 import { useNoticesServed } from "../../lib/hooks";
 import {
   selectBestExperienceConfigTranslation,
@@ -309,6 +313,23 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     parsedCookie?.consent,
   ]);
 
+  const handleToggleChange = useCallback(
+    (
+      updatedKeys: Array<string>,
+      triggerDetails: FidesEventDetailsTrigger,
+      preference: FidesEventDetailsPreference,
+    ) => {
+      const eventExtraDetails: FidesEvent["detail"]["extraDetails"] = {
+        servingComponent: ServingComponent.MODAL,
+        trigger: triggerDetails,
+        preference,
+      };
+      setDraftEnabledNoticeKeys(updatedKeys);
+      dispatchFidesEvent("FidesUIChanged", cookie, eventExtraDetails);
+    },
+    [cookie, setDraftEnabledNoticeKeys],
+  );
+
   const experienceConfig = experience.experience_config;
   if (!experienceConfig) {
     fidesDebugger("No experience config found");
@@ -382,16 +403,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
             <NoticeToggles
               noticeToggles={noticeToggles}
               enabledNoticeKeys={draftEnabledNoticeKeys}
-              onChange={(updatedKeys, triggerDetails, preference) => {
-                const eventExtraDetails: FidesEvent["detail"]["extraDetails"] =
-                  {
-                    servingComponent: "modal",
-                    trigger: triggerDetails,
-                    preference,
-                  };
-                setDraftEnabledNoticeKeys(updatedKeys);
-                dispatchFidesEvent("FidesUIChanged", cookie, eventExtraDetails);
-              }}
+              onChange={handleToggleChange}
             />
           </div>
         </div>
