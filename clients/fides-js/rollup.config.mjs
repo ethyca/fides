@@ -150,10 +150,10 @@ SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
         // Intended for browser <script> tag - defines `Fides` global. Also supports UMD loaders.
         file: `dist/${name}.js`,
         name: isExtension ? undefined : "Fides",
-        format: isExtension ? undefined : "umd",
+        format: isExtension ? "es" : "umd",
         sourcemap: IS_DEV ? "inline" : false,
         amd: {
-          define: undefined, // prevent the bundle from registering itself as an AMD module, even if an AMD loader (like RequireJS) is present on the page. (FidesJS is not an AMD module.)
+          define: undefined, // prevent the bundle from registering itself as an AMD module, even if an AMD loader (like RequireJS) is present on the page. This allows FidesJS to use Rollup's `umd` format to support both `iife` and `cjs` modules, but excludes AMD.
         },
       },
     ],
