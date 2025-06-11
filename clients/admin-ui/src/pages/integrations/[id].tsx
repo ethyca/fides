@@ -25,7 +25,9 @@ import ConfigureIntegrationModal from "~/features/integrations/ConfigureIntegrat
 import ConnectionStatusNotice from "~/features/integrations/ConnectionStatusNotice";
 import { useIntegrationAuthorization } from "~/features/integrations/hooks/useIntegrationAuthorization";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
+import { IntegrationFeatureEnum } from "~/features/integrations/IntegrationFeatureEnum";
 import { IntegrationSetupSteps } from "~/features/integrations/setup-steps/IntegrationSetupSteps";
+import SharedConfigModal from "~/features/integrations/SharedConfigModal";
 import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
 import { ConnectionType } from "~/types/api";
@@ -60,9 +62,8 @@ const IntegrationDetailView: NextPage = () => {
 
   const { onOpen, isOpen, onClose } = useDisclosure();
 
-  const { overview, instructions, description, tags } = getIntegrationTypeInfo(
-    connection?.connection_type,
-  );
+  const { overview, instructions, description, tags, enabledFeatures } =
+    getIntegrationTypeInfo(connection?.connection_type);
 
   const router = useRouter();
   if (
@@ -75,48 +76,23 @@ const IntegrationDetailView: NextPage = () => {
   // Check if the integration has detection support capability
   const hasDetectionSupport = tags?.includes("Detection");
 
-  const tabs: TabData[] = [
-    {
-      label: "Connection",
+  const supportsConnectionTest =
+    connection?.connection_type !== ConnectionType.MANUAL_WEBHOOK;
+
+  const tabs: TabData[] = [];
+
+  // Show Details tab for integrations without connection, Connection tab for others
+  if (enabledFeatures?.includes(IntegrationFeatureEnum.WITHOUT_CONNECTION)) {
+    tabs.push({
+      label: "Details",
       content: (
-        <Box>
-          <Flex
-            borderRadius="md"
-            outline="1px solid"
-            outlineColor="gray.100"
-            align="center"
-            p={3}
-          >
-            <Flex flexDirection="column">
-              <ConnectionStatusNotice
-                testData={testData}
-                connectionOption={integrationOption}
-              />
-            </Flex>
-            <Spacer />
-            <div className="flex gap-4">
-              {needsAuthorization && (
-                <Button
-                  onClick={handleAuthorize}
-                  data-testid="authorize-integration-btn"
-                >
-                  Authorize integration
-                </Button>
-              )}
-              {!needsAuthorization && (
-                <Button
-                  onClick={testConnection}
-                  loading={testIsLoading}
-                  data-testid="test-connection-btn"
-                >
-                  Test connection
-                </Button>
-              )}
-              <Button onClick={onOpen} data-testid="manage-btn">
-                Manage
-              </Button>
-            </div>
+        <Box maxW="720px">
+          <Flex>
+            <Button onClick={onOpen} data-testid="manage-btn">
+              Edit integration
+            </Button>
           </Flex>
+
           <ConfigureIntegrationModal
             isOpen={isOpen}
             onClose={onClose}
@@ -127,15 +103,73 @@ const IntegrationDetailView: NextPage = () => {
           {instructions}
         </Box>
       ),
-    },
-  ];
+    });
+  } else {
+    tabs.push({
+      label: "Connection",
+      content: (
+        <Box maxW="720px">
+          {supportsConnectionTest && (
+            <Flex
+              borderRadius="md"
+              outline="1px solid"
+              outlineColor="gray.100"
+              align="center"
+              p={3}
+            >
+              <Flex flexDirection="column">
+                <ConnectionStatusNotice
+                  testData={testData}
+                  connectionOption={integrationOption}
+                />
+              </Flex>
+              <Spacer />
+              <div className="flex gap-4">
+                {needsAuthorization && (
+                  <Button
+                    onClick={handleAuthorize}
+                    data-testid="authorize-integration-btn"
+                  >
+                    Authorize integration
+                  </Button>
+                )}
+                {!needsAuthorization && (
+                  <Button
+                    onClick={testConnection}
+                    loading={testIsLoading}
+                    data-testid="test-connection-btn"
+                  >
+                    Test connection
+                  </Button>
+                )}
+                <Button onClick={onOpen} data-testid="manage-btn">
+                  Manage
+                </Button>
+              </div>
+            </Flex>
+          )}
+          <ConfigureIntegrationModal
+            isOpen={isOpen}
+            onClose={onClose}
+            connection={connection!}
+            description={description}
+          />
+          {overview}
+          {instructions}
+        </Box>
+      ),
+    });
+  }
 
-  if (connection?.connection_type === ConnectionType.DATAHUB) {
+  // Add conditional tabs based on enabled features
+  if (enabledFeatures?.includes(IntegrationFeatureEnum.DATA_SYNC)) {
     tabs.push({
       label: "Data sync",
       content: <DatahubDataSyncTab integration={connection!} />,
     });
-  } else {
+  }
+
+  if (enabledFeatures?.includes(IntegrationFeatureEnum.DATA_DISCOVERY)) {
     tabs.push({
       label: "Data discovery",
       content: (
@@ -163,6 +197,7 @@ const IntegrationDetailView: NextPage = () => {
       >
         <AntFlex gap={24}>
           <div className="grow">
+            <SharedConfigModal />
             <IntegrationBox integration={connection} showDeleteButton />
             {integrationIsLoading ? (
               <Spinner />

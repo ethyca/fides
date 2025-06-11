@@ -3,7 +3,9 @@ import { useMemo, useState } from "preact/hooks";
 
 import { UpdateEnabledIds } from "~/components/tcf/TcfTabs";
 
+import { getConsentContext } from "../../lib/consent-context";
 import { PrivacyExperience } from "../../lib/consent-types";
+import { getGpcStatusFromNotice } from "../../lib/consent-utils";
 import {
   FidesEventDetailsPreference,
   FidesEventDetailsTrigger,
@@ -20,14 +22,10 @@ import {
   TCFPurposeLegitimateInterestsRecord,
   TCFSpecialPurposeRecord,
 } from "../../lib/tcf/types";
+import { GpcBadge } from "../GpcBadge";
 import EmbeddedVendorList from "./EmbeddedVendorList";
 import RadioGroup from "./RadioGroup";
 import RecordsList, { RecordListItem, RecordListType } from "./RecordsList";
-
-type TCFPurposeRecord =
-  | TCFPurposeConsentRecord
-  | TCFPurposeLegitimateInterestsRecord
-  | PrivacyNoticeWithBestTranslation;
 
 const PurposeDetails = ({
   type,
@@ -35,7 +33,10 @@ const PurposeDetails = ({
   isCustomPurpose = false,
 }: {
   type: RecordListType;
-  purpose: TCFPurposeRecord;
+  purpose:
+    | PurposeRecord
+    | TCFSpecialPurposeRecord
+    | PrivacyNoticeWithBestTranslation;
   isCustomPurpose?: boolean;
 }) => {
   const { i18n } = useI18n();
@@ -52,9 +53,7 @@ const PurposeDetails = ({
     );
   }
   // eslint-disable-next-line no-param-reassign
-  purpose = purpose as
-    | TCFPurposeConsentRecord
-    | TCFPurposeLegitimateInterestsRecord;
+  purpose = purpose as PurposeRecord | TCFSpecialPurposeRecord;
   const vendors = [...(purpose.vendors || []), ...(purpose.systems || [])];
   return (
     <div>
@@ -110,6 +109,8 @@ const TcfPurposes = ({
     [allPurposesConsent, allPurposesLegint],
   );
 
+  const consentContext = getConsentContext();
+
   const [activeLegalBasisOption, setActiveLegalBasisOption] = useState(
     LEGAL_BASIS_OPTIONS[0],
   );
@@ -124,9 +125,21 @@ const TcfPurposes = ({
     enabledSpecialPurposeIds: string[];
   } = useMemo(() => {
     const specialPurposes = allSpecialPurposes ?? [];
+    const consentPurposes: PurposeRecord[] = uniquePurposes
+      .filter((p) => p.isConsent)
+      .map((p) => ({
+        ...p,
+        vendors: allPurposesConsent.find((q) => q.id === p.id)?.vendors,
+      }));
+    const legintPurposes: PurposeRecord[] = uniquePurposes
+      .filter((p) => p.isLegint)
+      .map((p) => ({
+        ...p,
+        vendors: allPurposesLegint.find((q) => q.id === p.id)?.vendors,
+      }));
     if (activeLegalBasisOption.value === LegalBasisEnum.CONSENT.toString()) {
       return {
-        purposes: uniquePurposes.filter((p) => p.isConsent),
+        purposes: consentPurposes,
         customPurposes: allCustomPurposesConsent.map((purpose) => ({
           ...purpose,
           disabled: purpose.disabled,
@@ -141,7 +154,7 @@ const TcfPurposes = ({
       };
     }
     return {
-      purposes: uniquePurposes.filter((p) => p.isLegint),
+      purposes: legintPurposes,
       purposeModelType: "purposesLegint",
       enabledPurposeIds: enabledPurposeLegintIds,
       specialPurposes: specialPurposes.filter((sp) =>
@@ -151,10 +164,12 @@ const TcfPurposes = ({
     };
   }, [
     allSpecialPurposes,
-    activeLegalBasisOption,
     uniquePurposes,
+    activeLegalBasisOption.value,
     enabledPurposeLegintIds,
     enabledSpecialPurposeIds,
+    allPurposesConsent,
+    allPurposesLegint,
     allCustomPurposesConsent,
     enabledPurposeConsentIds,
     enabledCustomPurposeConsentIds,
@@ -264,12 +279,30 @@ const TcfPurposes = ({
             isCustomPurpose={isCustomPurpose}
           />
         )}
-        renderBadgeLabel={(item: RecordListItem) => {
+        renderBadgeLabel={(
+          item: RecordListItem | PrivacyNoticeWithBestTranslation,
+        ) => {
           // Denote which purposes are standard IAB purposes if we have custom ones in the mix
-          if (!activeData.customPurposes) {
+          const isCustomPurpose = "bestTranslation" in item;
+          if (!activeData.customPurposes || isCustomPurpose) {
             return undefined;
           }
-          return item.bestTranslation ? "" : "IAB TCF";
+          return "IAB TCF";
+        }}
+        renderGpcBadge={(
+          item: RecordListItem | PrivacyNoticeWithBestTranslation,
+        ) => {
+          const isCustomPurpose = "bestTranslation" in item;
+          if (isCustomPurpose) {
+            const notice = item as PrivacyNoticeWithBestTranslation;
+            const gpcStatus = getGpcStatusFromNotice({
+              value: !!activeData.enabledCustomPurposeIds?.includes(notice.id),
+              notice,
+              consentContext,
+            });
+            return <GpcBadge status={gpcStatus} />;
+          }
+          return undefined;
         }}
         // This key forces a rerender when legal basis changes, which allows paging to reset properly
         key={`purpose-record-${activeLegalBasisOption.value}`}

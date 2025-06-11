@@ -680,9 +680,11 @@ class TestReadRoleMapping:
         assert 200 == response.status_code
         assert set(response_body["owner"]) == set(SCOPE_REGISTRY)
         assert set(response_body.keys()) == {
-            "owner",
-            "viewer_and_approver",
             "approver",
-            "viewer",
             "contributor",
+            "external_respondent",
+            "owner",
+            "respondent",
+            "viewer",
+            "viewer_and_approver",
         }

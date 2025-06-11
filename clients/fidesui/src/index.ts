@@ -19,9 +19,11 @@ export type {
   RadioGroupProps as AntRadioGroupProps,
   SelectProps as AntSelectProps,
   SwitchProps as AntSwitchProps,
+  TableProps as AntTableProps,
   TabsProps as AntTabsProps,
   TagProps as AntTagProps,
   TooltipProps as AntTooltipProps,
+  UploadFile as AntUploadFile,
   GetProps,
   InputRef,
   RadioChangeEvent,
@@ -49,12 +51,16 @@ export {
   List as AntList,
   Menu as AntMenu,
   message as AntMessage,
+  Modal as AntModal,
+  Pagination as AntPagination,
   Radio as AntRadio,
   Row as AntRow,
   Skeleton as AntSkeleton,
   Space as AntSpace,
+  Spin as AntSpin,
   Steps as AntSteps,
   Switch as AntSwitch,
+  Table as AntTable,
   Tabs as AntTabs,
   Tooltip as AntTooltip,
   Upload as AntUpload,
@@ -68,6 +74,7 @@ export type {
   BaseOptionType as AntBaseOptionType,
   DefaultOptionType as AntDefaultOptionType,
 } from "antd/lib/select";
+export type { UploadChangeParam as AntUploadChangeParam } from "antd/lib/upload";
 
 // Higher-order components
 export {

@@ -61,7 +61,7 @@ export type { FidesEventType };
  *
  * Example usage:
  * ```
- * window.addEventListener("FidesInitialized", (evt) => console.log("Fides.consent initialized:", evt.detail.consent));
+ * window.addEventListener("FidesReady", (evt) => console.log("Fides.consent initialized:", evt.detail.consent));
  * window.addEventListener("FidesUpdated", (evt) => console.log("Fides.consent updated:", evt.detail.consent));
  * ```
  *
@@ -74,7 +74,6 @@ export type { FidesEventType };
 export const dispatchFidesEvent = (
   type: FidesEventType,
   fidesCookie: FidesCookie | undefined,
-  debug: boolean,
   extraDetails?: FidesEventExtraDetails,
 ) => {
   const cookie = fidesCookie ? { ...fidesCookie } : undefined;
@@ -98,7 +97,7 @@ export const dispatchFidesEvent = (
     const event = new CustomEvent(type, {
       detail: {
         ...normalizedCookie,
-        debug,
+        debug: !!window.Fides?.options?.debug,
         extraDetails: constructedExtraDetails,
         timestamp,
       },
@@ -135,4 +134,39 @@ export const onFidesEvent = (
   return () => {
     window.removeEventListener(type, listener);
   };
+};
+
+/**
+ * Helper function to dispatch the deprecated FidesInitialized event with standard parameters
+ * @deprecated - FidesInitialized is used for backwards compatibility only
+ */
+export const dispatchFidesInitialized = (
+  fidesCookie: FidesCookie,
+  extraDetails?: FidesEventExtraDetails,
+) => {
+  dispatchFidesEvent("FidesInitialized", fidesCookie, extraDetails);
+};
+
+/**
+ * Helper function to dispatch both FidesConsentLoaded and FidesInitialized events
+ * for backwards compatibility.
+ */
+export const dispatchConsentLoadedEvents = (
+  fidesCookie: FidesCookie,
+  extraDetails?: FidesEventExtraDetails,
+) => {
+  dispatchFidesEvent("FidesConsentLoaded", fidesCookie, extraDetails);
+  dispatchFidesInitialized(fidesCookie, extraDetails);
+};
+
+/**
+ * Helper function to dispatch both FidesReady and FidesInitialized events
+ * for backwards compatibility.
+ */
+export const dispatchReadyEvents = (
+  fidesCookie: FidesCookie,
+  extraDetails?: FidesEventExtraDetails,
+) => {
+  dispatchFidesEvent("FidesReady", fidesCookie, extraDetails);
+  dispatchFidesInitialized(fidesCookie, extraDetails);
 };

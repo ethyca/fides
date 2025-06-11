@@ -146,7 +146,7 @@ const initializeGppCmpApi = () => {
   makeStub();
   const cmpApi = new CmpApi(ETHYCA_CMP_ID, CMP_VERSION);
   cmpApi.setCmpStatus(CmpStatus.LOADED);
-  window.addEventListener("FidesInitialized", (event) => {
+  window.addEventListener("FidesReady", (event) => {
     const { experience, saved_consent: savedConsent, options } = window.Fides;
     const experienceSupportedApis = getSupportedApis();
 

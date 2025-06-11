@@ -14,16 +14,16 @@ import {
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { getIndexFromHash } from "~/features/data-discovery-and-detection/action-center/tables/useActionCenterTabs";
 import { successToastContent } from "~/features/data-discovery-and-detection/action-center/utils/successToastContent";
+import { SystemStagedResourcesAggregateRecord } from "~/types/api";
 
 import {
   useAddMonitorResultSystemsMutation,
   useIgnoreMonitorResultSystemsMutation,
 } from "../../action-center.slice";
-import { MonitorSystemAggregate } from "../../types";
 
 interface DiscoveredSystemActionsCellProps {
   monitorId: string;
-  system: MonitorSystemAggregate;
+  system: SystemStagedResourcesAggregateRecord;
   allowIgnore?: boolean;
   onTabChange: (index: number) => void;
 }
@@ -54,13 +54,14 @@ export const DiscoveredSystemActionsCell = ({
   const handleAdd = async () => {
     const result = await addMonitorResultSystemsMutation({
       monitor_config_key: monitorId,
-      resolved_system_ids: [resolvedSystemId],
+      resolved_system_ids: [resolvedSystemId!],
     });
-    const systemToLink = result.data?.items?.[0]?.system_key ?? systemKey;
-    const href = `${SYSTEM_ROUTE}/configure/${systemToLink}#assets`;
     if (isErrorResult(result)) {
       toast(errorToastParams(getErrorMessage(result.error)));
     } else {
+      const promotedSystemKey = result.data?.items?.[0]?.promoted_system_key;
+      const systemToLink = promotedSystemKey || systemKey;
+      const href = `${SYSTEM_ROUTE}/configure/${systemToLink}#assets`;
       toast(
         successToastParams(
           successToastContent(

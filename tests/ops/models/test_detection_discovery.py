@@ -12,7 +12,9 @@ from fides.api.models.detection_discovery import (
     MonitorConfig,
     MonitorExecution,
     MonitorFrequency,
+    SharedMonitorConfig,
     StagedResource,
+    StagedResourceAncestor,
     fetch_staged_resources_by_type_query,
 )
 
@@ -47,7 +49,6 @@ class TestStagedResourceModel:
                     },
                 ],
                 "diff_status": DiffStatus.MONITORED.value,
-                "child_diff_statuses": {DiffStatus.CLASSIFICATION_ADDITION.value: 9},
                 "children": [
                     "bq_monitor_1.prj-bigquery-418515.test_dataset_1.consent-reports-20.Notice_title",
                     "bq_monitor_1.prj-bigquery-418515.test_dataset_1.consent-reports-20.Email",
@@ -93,7 +94,6 @@ class TestStagedResourceModel:
                     },
                 ],
                 "diff_status": DiffStatus.MONITORED.value,
-                "child_diff_statuses": {DiffStatus.CLASSIFICATION_ADDITION.value: 9},
                 "children": [
                     "bq_monitor_1.prj-bigquery-418515.test_dataset_1.consent-reports-20",
                     "bq_monitor_1.prj-bigquery-418515.test_dataset_1.consent-reports-21",
@@ -132,7 +132,6 @@ class TestStagedResourceModel:
                     },
                 ],
                 "diff_status": DiffStatus.MONITORED.value,
-                "child_diff_statuses": {DiffStatus.CLASSIFICATION_ADDITION.value: 9},
                 "children": [
                     "bq_monitor_1.prj-bigquery-418515.test_dataset_1",
                     "bq_monitor_1.prj-bigquery-418515.test_dataset_2",
@@ -189,9 +188,7 @@ class TestStagedResourceModel:
             },
         ]
         assert saved_resource.meta == {"num_rows": 19}
-        assert saved_resource.child_diff_statuses == {
-            DiffStatus.CLASSIFICATION_ADDITION.value: 9
-        }
+
         assert saved_resource.diff_status == DiffStatus.MONITORED.value
 
     def test_update_staged_resource(self, db: Session, create_staged_resource) -> None:
@@ -244,24 +241,6 @@ class TestStagedResourceModel:
                 "classification_paradigm": "content",
             },
         ]
-
-    def test_staged_resource_helpers(self, db: Session, create_staged_resource):
-        saved_resource: StagedResource = StagedResource.get_urn(
-            db, create_staged_resource.urn
-        )
-        saved_resource.add_child_diff_status(diff_status=DiffStatus.REMOVAL)
-        saved_resource.add_child_diff_status(
-            diff_status=DiffStatus.CLASSIFICATION_ADDITION
-        )
-        saved_resource.save(db)
-
-        updated_resource: StagedResource = StagedResource.get_urn(
-            db, saved_resource.urn
-        )
-        assert updated_resource.child_diff_statuses == {
-            DiffStatus.REMOVAL.value: 1,
-            DiffStatus.CLASSIFICATION_ADDITION.value: 10,
-        }
 
     def test_fetch_staged_resources_by_type_query(
         self,
@@ -417,6 +396,26 @@ SAMPLE_START_DATE = datetime(2024, 5, 20, 0, 42, 5, 17137, tzinfo=timezone.utc)
 
 
 class TestMonitorConfigModel:
+
+    @pytest.fixture(scope="function")
+    def shared_monitor_config(self, db: Session) -> SharedMonitorConfig:
+        """Fixture for creating a test SharedMonitorConfig"""
+        shared_config = SharedMonitorConfig.create(
+            db=db,
+            data={
+                "name": "test shared config",
+                "key": "test_shared_config",
+                "description": "Test shared monitor configuration",
+                "classify_params": {
+                    "context_regex_pattern_mapping": [
+                        [".*([e|E]mail|[e|E]mail_address).*", "user.contact.email"],
+                        [".*[P|p]hone_number.*", "user.contact.phone_number"],
+                    ]
+                },
+            },
+        )
+        return shared_config
+
     def test_create_monitor_config(
         self, db: Session, monitor_config, connection_config: ConnectionConfig
     ) -> None:
@@ -679,7 +678,181 @@ class TestMonitorConfigModel:
             else SAMPLE_START_DATE
         )
         assert mc.execution_start_date == expected_date
-        db.delete(mc)
+
+    def test_monitor_config_with_shared_config(
+        self,
+        db: Session,
+        connection_config: ConnectionConfig,
+        shared_monitor_config: SharedMonitorConfig,
+    ) -> None:
+        """
+        Test creating a MonitorConfig with a reference to a SharedMonitorConfig
+        """
+        mc = MonitorConfig.create(
+            db=db,
+            data={
+                "name": "monitor with shared config",
+                "key": "monitor_with_shared_config",
+                "connection_config_id": connection_config.id,
+                "classify_params": {
+                    "context_regex_pattern_mapping": [],  # This will be overridden by shared config
+                },
+                "shared_config_id": shared_monitor_config.id,
+            },
+        )
+
+        # Verify it was created with the shared config relationship
+        mc_from_db = MonitorConfig.get(db=db, object_id=mc.id)
+        assert mc_from_db.shared_config_id == shared_monitor_config.id
+        assert mc_from_db.shared_config.name == "test shared config"
+
+        # Verify the classify_params contains the pattern mapping from the shared config
+        assert mc_from_db.classify_params["context_regex_pattern_mapping"] == [
+            [".*([e|E]mail|[e|E]mail_address).*", "user.contact.email"],
+            [".*[P|p]hone_number.*", "user.contact.phone_number"],
+        ]
+
+    def test_classify_params_merging(
+        self,
+        db: Session,
+        connection_config: ConnectionConfig,
+        shared_monitor_config: SharedMonitorConfig,
+    ) -> None:
+        """
+        Test the classify_params property that merges parameters from both sources
+        """
+        mc = MonitorConfig.create(
+            db=db,
+            data={
+                "name": "monitor for testing params merge",
+                "key": "monitor_params_merge",
+                "connection_config_id": connection_config.id,
+                "classify_params": {
+                    "num_samples": 25,  # Local parameter, not in shared config
+                    "custom_param": "local value",  # Not in shared config
+                    "context_regex_pattern_mapping": None,  # This should be overridden by shared config
+                },
+                "shared_config_id": shared_monitor_config.id,
+            },
+        )
+
+        # Verify merged parameters
+        mc_from_db = MonitorConfig.get(db=db, object_id=mc.id)
+        merged_params = mc_from_db.classify_params
+
+        # Params from shared config should be present
+        assert "context_regex_pattern_mapping" in merged_params
+        assert merged_params["context_regex_pattern_mapping"] == [
+            [".*([e|E]mail|[e|E]mail_address).*", "user.contact.email"],
+            [".*[P|p]hone_number.*", "user.contact.phone_number"],
+        ]
+
+        # Local params not in shared config should be preserved
+        assert merged_params["custom_param"] == "local value"
+        assert merged_params["num_samples"] == 25
+
+    def test_shared_config_override_priority(
+        self,
+        db: Session,
+        connection_config: ConnectionConfig,
+        shared_monitor_config: SharedMonitorConfig,
+    ) -> None:
+        """
+        Test that non-falsy shared config values override local config values
+        """
+        mc = MonitorConfig.create(
+            db=db,
+            data={
+                "name": "monitor for testing priority",
+                "key": "monitor_priority_test",
+                "connection_config_id": connection_config.id,
+                "classify_params": {
+                    "context_regex_pattern_mapping": None,  # Should be overridden by shared config
+                    "num_samples": 25,  # Should NOT be overridden (not in shared)
+                },
+                "shared_config_id": shared_monitor_config.id,
+            },
+        )
+
+        # Update shared config with some falsy values that shouldn't override
+        shared_monitor_config.update(
+            db=db,
+            data={
+                "classify_params": {
+                    "context_regex_pattern_mapping": [
+                        [".*([e|E]mail|[e|E]mail_address).*", "user.contact.email"],
+                        [".*[P|p]hone_number.*", "user.contact.phone_number"],
+                    ],
+                    "custom_field": None,  # This should not override local value since it's falsy
+                },
+            },
+        )
+
+        # Verify priority behavior in merged params
+        mc_from_db = MonitorConfig.get(db=db, object_id=mc.id)
+        merged_params = mc_from_db.classify_params
+
+        # None local value should be overridden
+        assert merged_params["context_regex_pattern_mapping"] == [
+            [".*([e|E]mail|[e|E]mail_address).*", "user.contact.email"],
+            [".*[P|p]hone_number.*", "user.contact.phone_number"],
+        ]
+
+        # Local value should not be overridden
+        assert merged_params["num_samples"] == 25  # Local value
+
+    def test_update_monitor_config_with_shared_config(
+        self,
+        db: Session,
+        connection_config: ConnectionConfig,
+        shared_monitor_config: SharedMonitorConfig,
+    ) -> None:
+        """
+        Test updating a MonitorConfig to add or change shared config reference
+        """
+        # Create monitor without shared config
+        mc = MonitorConfig.create(
+            db=db,
+            data={
+                "name": "monitor to update",
+                "key": "monitor_to_update",
+                "connection_config_id": connection_config.id,
+                "classify_params": {
+                    "num_samples": 25,
+                    "custom_param": "original value",
+                },
+            },
+        )
+
+        # Verify initial state
+        assert mc.shared_config_id is None
+        assert mc.classify_params == {
+            "num_samples": 25,
+            "custom_param": "original value",
+        }
+
+        # Update to add shared config reference
+        mc.update(
+            db=db,
+            data={
+                "shared_config_id": shared_monitor_config.id,
+            },
+        )
+
+        # Verify updated state
+        mc_from_db = MonitorConfig.get(db=db, object_id=mc.id)
+        assert mc_from_db.shared_config_id == shared_monitor_config.id
+
+        # Verify merged params
+        merged_params = mc_from_db.classify_params
+        assert merged_params["num_samples"] == 25  # Local value preserved
+        assert (
+            merged_params["custom_param"] == "original value"
+        )  # Local value preserved
+        assert merged_params["context_regex_pattern_mapping"] == [
+            [".*([e|E]mail|[e|E]mail_address).*", "user.contact.email"],
+            [".*[P|p]hone_number.*", "user.contact.phone_number"],
+        ]
 
 
 class TestMonitorExecutionModel:
@@ -727,3 +900,296 @@ class TestMonitorExecutionModel:
 
         # Verify second timestamp is later than first
         assert second_execution.started > first_execution.started
+
+
+class TestStagedResourceAncestorModel:
+    @pytest.fixture
+    def staged_resource_1(self, db: Session) -> StagedResource:
+        resource = StagedResource.create(
+            db=db,
+            data={
+                "urn": "test_urn_1",
+                "name": "Test Resource 1",
+                "resource_type": "Table",  # not realistic, Table would not be ancestor of Table
+            },
+        )
+        return resource
+
+    @pytest.fixture
+    def staged_resource_2(self, db: Session) -> StagedResource:
+        resource = StagedResource.create(
+            db=db,
+            data={
+                "urn": "test_urn_2",
+                "name": "Test Resource 2",
+                "resource_type": "Table",  # not realistic, Table would not be ancestor of Table
+            },
+        )
+        return resource
+
+    @pytest.fixture
+    def staged_resource_3(self, db: Session) -> StagedResource:
+        resource = StagedResource.create(
+            db=db,
+            data={
+                "urn": "test_urn_3",
+                "name": "Test Resource 3",
+                "resource_type": "Table",  # not realistic # not realistic, Table would not be ancestor of Table
+            },
+        )
+        return resource
+
+    def test_create_staged_resource_ancestor_links(
+        self,
+        db: Session,
+        staged_resource_1: StagedResource,
+        staged_resource_2: StagedResource,
+        staged_resource_3: StagedResource,
+    ):
+        """Test creating ancestor links for a staged resource."""
+        descendant_urn = staged_resource_3.urn
+        ancestor_urns = {staged_resource_1.urn, staged_resource_2.urn}
+
+        StagedResourceAncestor.create_staged_resource_ancestor_links(
+            db=db, resource_urn=descendant_urn, ancestor_urns=ancestor_urns
+        )
+
+        links = (
+            db.query(StagedResourceAncestor)
+            .filter_by(descendant_urn=descendant_urn)
+            .all()
+        )
+        assert len(links) == 2
+        created_ancestor_urns = {link.ancestor_urn for link in links}
+        assert created_ancestor_urns == ancestor_urns
+
+        # Verify relationships
+        sr3 = StagedResource.get_urn(db, staged_resource_3.urn)
+        assert len(sr3.ancestors()) == 2
+        ancestor_resources_from_descendant = {
+            ancestor.urn for ancestor in sr3.ancestors()
+        }
+        assert ancestor_resources_from_descendant == ancestor_urns
+
+        sr1 = StagedResource.get_urn(db, staged_resource_1.urn)
+        assert len(sr1.descendants()) == 1
+        assert sr1.descendants()[0].urn == descendant_urn
+
+    def test_create_staged_resource_ancestor_links_empty_ancestors(
+        self, db: Session, staged_resource_1: StagedResource
+    ):
+        """Test creating links when the ancestor set is empty."""
+        descendant_urn = staged_resource_1.urn
+        ancestor_urns = set()
+
+        StagedResourceAncestor.create_staged_resource_ancestor_links(
+            db=db, resource_urn=descendant_urn, ancestor_urns=ancestor_urns
+        )
+
+        links = (
+            db.query(StagedResourceAncestor)
+            .filter_by(descendant_urn=descendant_urn)
+            .all()
+        )
+        assert len(links) == 0
+
+    def test_create_staged_resource_ancestor_links_idempotent(
+        self,
+        db: Session,
+        staged_resource_1: StagedResource,
+        staged_resource_2: StagedResource,
+    ):
+        """Test that creating the same links multiple times is idempotent."""
+        descendant_urn = staged_resource_2.urn
+        ancestor_urns = {staged_resource_1.urn}
+
+        # Create links for the first time
+        StagedResourceAncestor.create_staged_resource_ancestor_links(
+            db=db, resource_urn=descendant_urn, ancestor_urns=ancestor_urns
+        )
+        links_first_call = (
+            db.query(StagedResourceAncestor)
+            .filter_by(descendant_urn=descendant_urn)
+            .all()
+        )
+        assert len(links_first_call) == 1
+
+        # Create links for the second time with the same data
+        StagedResourceAncestor.create_staged_resource_ancestor_links(
+            db=db, resource_urn=descendant_urn, ancestor_urns=ancestor_urns
+        )
+        links_second_call = (
+            db.query(StagedResourceAncestor)
+            .filter_by(descendant_urn=descendant_urn)
+            .all()
+        )
+        assert (
+            len(links_second_call) == 1
+        )  # Should still be 1 due to ON CONFLICT DO NOTHING
+
+        # Verify the link is correct
+        assert links_second_call[0].ancestor_urn == staged_resource_1.urn
+        assert links_second_call[0].descendant_urn == staged_resource_2.urn
+
+    def test_cascade_delete_when_descendant_is_deleted(
+        self,
+        db: Session,
+        staged_resource_1: StagedResource,  # Ancestor
+        staged_resource_2: StagedResource,  # Descendant to be deleted
+        staged_resource_3: StagedResource,  # Another descendant
+    ):
+        """Test ancestor links and ORM relationships after descendant resource deletion."""
+        ancestor_urn = staged_resource_1.urn
+        descendant_to_delete_urn = staged_resource_2.urn
+        other_descendant_urn = staged_resource_3.urn
+
+        # Link ancestor to both descendants
+        StagedResourceAncestor.create_staged_resource_ancestor_links(
+            db=db, resource_urn=descendant_to_delete_urn, ancestor_urns={ancestor_urn}
+        )
+        StagedResourceAncestor.create_staged_resource_ancestor_links(
+            db=db, resource_urn=other_descendant_urn, ancestor_urns={ancestor_urn}
+        )
+        db.commit()  # Commit to ensure links are queryable for relationship loading
+
+        # Refresh to ensure relationships are loaded from DB state
+        db.refresh(staged_resource_1)
+        db.refresh(staged_resource_2)
+        db.refresh(staged_resource_3)
+
+        # Verify initial links and relationships
+        assert (
+            db.query(StagedResourceAncestor)
+            .filter_by(
+                descendant_urn=descendant_to_delete_urn, ancestor_urn=ancestor_urn
+            )
+            .first()
+            is not None
+        )
+        assert (
+            db.query(StagedResourceAncestor)
+            .filter_by(descendant_urn=other_descendant_urn, ancestor_urn=ancestor_urn)
+            .first()
+            is not None
+        )
+        assert {desc.urn for desc in staged_resource_1.descendants()} == {
+            descendant_to_delete_urn,
+            other_descendant_urn,
+        }
+        assert {anc.urn for anc in staged_resource_2.ancestors()} == {ancestor_urn}
+        assert {anc.urn for anc in staged_resource_3.ancestors()} == {ancestor_urn}
+
+        # Delete one descendant resource
+        db.delete(staged_resource_2)
+        db.commit()
+
+        # Verify link to deleted descendant is gone
+        assert (
+            db.query(StagedResourceAncestor)
+            .filter_by(
+                descendant_urn=descendant_to_delete_urn, ancestor_urn=ancestor_urn
+            )
+            .first()
+            is None
+        )
+        # Verify link to other descendant still exists
+        assert (
+            db.query(StagedResourceAncestor)
+            .filter_by(descendant_urn=other_descendant_urn, ancestor_urn=ancestor_urn)
+            .first()
+            is not None
+        )
+
+        # Refresh remaining resources to update relationships
+        db.refresh(staged_resource_1)
+        db.refresh(staged_resource_3)
+
+        # Verify relationships are updated
+        assert {desc.urn for desc in staged_resource_1.descendants()} == {
+            other_descendant_urn
+        }
+        assert {anc.urn for anc in staged_resource_3.ancestors()} == {ancestor_urn}
+
+    def test_cascade_delete_when_ancestor_is_deleted(
+        self,
+        db: Session,
+        staged_resource_1: StagedResource,  # Ancestor to be deleted
+        staged_resource_2: StagedResource,  # Another ancestor
+        staged_resource_3: StagedResource,  # Descendant
+    ):
+        """Test ancestor links and ORM relationships after ancestor resource deletion."""
+        ancestor_to_delete_urn = staged_resource_1.urn
+        other_ancestor_urn = staged_resource_2.urn
+        descendant_urn = staged_resource_3.urn
+
+        # Link both ancestors to the descendant
+        StagedResourceAncestor.create_staged_resource_ancestor_links(
+            db=db,
+            resource_urn=descendant_urn,
+            ancestor_urns={ancestor_to_delete_urn, other_ancestor_urn},
+        )
+        db.commit()  # Commit to ensure links are queryable for relationship loading
+
+        # Refresh to ensure relationships are loaded from DB state
+        db.refresh(staged_resource_1)
+        db.refresh(staged_resource_2)
+        db.refresh(staged_resource_3)
+
+        # Verify initial links and relationships
+        assert (
+            db.query(StagedResourceAncestor)
+            .filter_by(
+                descendant_urn=descendant_urn, ancestor_urn=ancestor_to_delete_urn
+            )
+            .first()
+            is not None
+        )
+        assert (
+            db.query(StagedResourceAncestor)
+            .filter_by(descendant_urn=descendant_urn, ancestor_urn=other_ancestor_urn)
+            .first()
+            is not None
+        )
+        assert {anc.urn for anc in staged_resource_3.ancestors()} == {
+            ancestor_to_delete_urn,
+            other_ancestor_urn,
+        }
+        assert {desc.urn for desc in staged_resource_1.descendants()} == {
+            descendant_urn
+        }
+        assert {desc.urn for desc in staged_resource_2.descendants()} == {
+            descendant_urn
+        }
+
+        # Delete one ancestor resource
+        db.delete(staged_resource_1)
+        db.commit()
+
+        # Verify link from deleted ancestor is gone
+        assert (
+            db.query(StagedResourceAncestor)
+            .filter_by(
+                descendant_urn=descendant_urn, ancestor_urn=ancestor_to_delete_urn
+            )
+            .first()
+            is None
+        )
+        # Verify link from other ancestor still exists
+        assert (
+            db.query(StagedResourceAncestor)
+            .filter_by(descendant_urn=descendant_urn, ancestor_urn=other_ancestor_urn)
+            .first()
+            is not None
+        )
+
+        # Refresh remaining resources to update relationships
+        db.refresh(staged_resource_2)
+        db.refresh(staged_resource_3)
+
+        # Verify relationships are updated
+        assert {anc.urn for anc in staged_resource_3.ancestors()} == {
+            other_ancestor_urn
+        }
+        assert {desc.urn for desc in staged_resource_2.descendants()} == {
+            descendant_urn
+        }

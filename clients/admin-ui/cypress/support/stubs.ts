@@ -740,3 +740,12 @@ export const stubIntegrationManagement = (
     fixture: "systems/systems.json",
   }).as("getSystems");
 };
+
+export const stubSharedMonitorConfig = () => {
+  cy.intercept("GET", "/api/v1/plus/shared-monitor-config*", {
+    fixture: "detection-discovery/monitors/shared_config_response.json",
+  }).as("getSharedMonitorConfig");
+  cy.intercept("POST", "/api/v1/plus/shared-monitor-config", {
+    response: 200,
+  }).as("createSharedMonitorConfig");
+};

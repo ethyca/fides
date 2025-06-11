@@ -22,8 +22,13 @@ from fides.api.models.fides_cloud import FidesCloud
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_invite import FidesUserInvite
 from fides.api.models.fides_user_permissions import FidesUserPermissions
+from fides.api.models.fides_user_respondent_email_verification import (
+    FidesUserRespondentEmailVerification,
+)
 from fides.api.models.identity_salt import IdentitySalt
 from fides.api.models.location_regulation_selections import LocationRegulationSelections
+from fides.api.models.manual_tasks.manual_task import ManualTask, ManualTaskReference
+from fides.api.models.manual_tasks.manual_task_log import ManualTaskLog
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.messaging import MessagingConfig
 from fides.api.models.messaging_template import MessagingTemplate

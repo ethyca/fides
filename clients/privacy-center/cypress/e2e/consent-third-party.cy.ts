@@ -59,12 +59,12 @@ describe("Consent third party extensions", () => {
                 .click();
             });
             cy.get("@dataLayerPush")
-              .should("have.been.callCount", 4) // FidesInitialized + FidesUIShown + FidesUpdating + FidesUpdated
-              // First call should be from initialization, before the user accepts all
+              .should("have.been.callCount", 5) // FidesReady + FidesInitialized + FidesUIShown + FidesUpdating + FidesUpdated
+              // First call should be from initialization ready, before the user accepts all
               .its("firstCall.args.0")
               .then((actual) => Cypress._.omit(actual, "Fides.timestamp"))
               .should("deep.equal", {
-                event: "FidesInitialized",
+                event: "FidesReady",
                 Fides: {
                   consent: {
                     [PRIVACY_NOTICE_KEY_1]: false,
@@ -78,9 +78,28 @@ describe("Consent third party extensions", () => {
                   fides_string: undefined,
                 },
               });
+            // Second call should be from deprecated FidesInitialized
             cy.get("@dataLayerPush")
-              // Second call is FidesUIShown when banner appears
-              .its("secondCall.args.0")
+              .its("args")
+              .then((args) => {
+                const call = args[1][0];
+                expect(call.event).to.equal("FidesInitialized");
+                expect(call.Fides).to.deep.include({
+                  consent: {
+                    [PRIVACY_NOTICE_KEY_1]: false,
+                    [PRIVACY_NOTICE_KEY_2]: true,
+                    [PRIVACY_NOTICE_KEY_3]: true,
+                  },
+                  extraDetails: {
+                    consentMethod: undefined,
+                    shouldShowExperience: true,
+                  },
+                  fides_string: undefined,
+                });
+              });
+            cy.get("@dataLayerPush")
+              // Third call is FidesUIShown when banner appears
+              .its("thirdCall.args.0")
               .then((actual) => Cypress._.omit(actual, "Fides.timestamp"))
               .should("deep.equal", {
                 event: "FidesUIShown",
@@ -98,8 +117,9 @@ describe("Consent third party extensions", () => {
                 },
               });
             cy.get("@dataLayerPush")
-              // Third call is when the user accepts all
-              .its("thirdCall.args.0")
+              // Fourth call is when the user accepts all
+              .its("args")
+              .then((args) => args[3][0])
               .then((actual) => Cypress._.omit(actual, "Fides.timestamp"))
               .should("deep.equal", {
                 event: "FidesUpdating",
@@ -116,7 +136,7 @@ describe("Consent third party extensions", () => {
                 },
               });
             cy.get("@dataLayerPush")
-              // Fourth call is when the preferences finish updating
+              // Fifth call is when the preferences finish updating
               .its("lastCall.args.0")
               .then((actual) => Cypress._.omit(actual, "Fides.timestamp"))
               .should("deep.equal", {
@@ -180,12 +200,12 @@ describe("Consent third party extensions", () => {
                   .should("be.visible")
                   .click();
               });
-              cy.get("@dataLayerPush").should("have.been.callCount", 4); // FidesInitialized + FidesUIShown + FidesUpdating + FidesUpdated
+              cy.get("@dataLayerPush").should("have.been.callCount", 5); // FidesReady + FidesInitialized + FidesUIShown + FidesUpdating + FidesUpdated
 
               // First call should be from initialization, before the user accepts all
               cy.get("@dataLayerPush")
                 .its("firstCall.args.0.event")
-                .should("eq", "FidesInitialized");
+                .should("eq", "FidesReady");
               cy.get("@dataLayerPush")
                 .its("firstCall.args.0.Fides.consent")
                 .should("deep.equal", {
@@ -201,18 +221,16 @@ describe("Consent third party extensions", () => {
                     ? {
                         consentMethod: undefined,
                         shouldShowExperience: true,
-                        firstInit: false,
                       }
                     : {
                         consentMethod: undefined,
                         shouldShowExperience: true,
                       },
                 );
-
-              // Second call is FidesUIShown when banner appears
+              // Second call should be from deprecated FidesInitialized
               cy.get("@dataLayerPush")
                 .its("secondCall.args.0.event")
-                .should("eq", "FidesUIShown");
+                .should("eq", "FidesInitialized");
               cy.get("@dataLayerPush")
                 .its("secondCall.args.0.Fides.consent")
                 .should("deep.equal", {
@@ -223,28 +241,49 @@ describe("Consent third party extensions", () => {
               cy.get("@dataLayerPush")
                 .its("secondCall.args.0.Fides.extraDetails")
                 .should("deep.equal", {
-                  servingComponent: isTCF ? "tcf_banner" : "banner",
                   consentMethod: undefined,
+                  shouldShowExperience: true,
                 });
 
-              // Third call is when the user accepts all
+              // Third call is FidesUIShown when banner appears
               cy.get("@dataLayerPush")
                 .its("thirdCall.args.0.event")
-                .should("eq", "FidesUpdating");
+                .should("eq", "FidesUIShown");
               cy.get("@dataLayerPush")
                 .its("thirdCall.args.0.Fides.consent")
                 .should("deep.equal", {
-                  [PRIVACY_NOTICE_KEY_1]: "opt_in",
+                  [PRIVACY_NOTICE_KEY_1]: "opt_out",
                   [PRIVACY_NOTICE_KEY_2]: "acknowledge",
                   [PRIVACY_NOTICE_KEY_3]: "opt_in",
                 });
               cy.get("@dataLayerPush")
                 .its("thirdCall.args.0.Fides.extraDetails")
                 .should("deep.equal", {
+                  servingComponent: isTCF ? "tcf_banner" : "banner",
+                  consentMethod: undefined,
+                });
+
+              // Fourth call is when the user accepts all
+              cy.get("@dataLayerPush")
+                .its("args")
+                .then((args) => args[3][0].event)
+                .should("eq", "FidesUpdating");
+              cy.get("@dataLayerPush")
+                .its("args")
+                .then((args) => args[3][0].Fides.consent)
+                .should("deep.equal", {
+                  [PRIVACY_NOTICE_KEY_1]: "opt_in",
+                  [PRIVACY_NOTICE_KEY_2]: "acknowledge",
+                  [PRIVACY_NOTICE_KEY_3]: "opt_in",
+                });
+              cy.get("@dataLayerPush")
+                .its("args")
+                .then((args) => args[3][0].Fides.extraDetails)
+                .should("deep.equal", {
                   consentMethod: "accept",
                 });
 
-              // Fourth call is when the preferences finish updating
+              // Last call is when the preferences finish updating
               cy.get("@dataLayerPush")
                 .its("lastCall.args.0.event")
                 .should("eq", "FidesUpdated");
@@ -317,12 +356,12 @@ describe("Consent third party extensions", () => {
                   .should("be.visible")
                   .click();
               });
-              cy.get("@dataLayerPush").should("have.been.callCount", 4); // FidesInitialized + FidesUIShown + FidesUpdating + FidesUpdated
+              cy.get("@dataLayerPush").should("have.been.callCount", 5); // FidesReady + FidesInitialized + FidesUIShown + FidesUpdating + FidesUpdated
 
               // First call should be from initialization, before the user accepts all
               cy.get("@dataLayerPush")
                 .its("firstCall.args.0.event")
-                .should("eq", "FidesInitialized");
+                .should("eq", "FidesReady");
               cy.get("@dataLayerPush")
                 .its("firstCall.args.0.Fides.consent")
                 .should("deep.equal", {
@@ -340,7 +379,6 @@ describe("Consent third party extensions", () => {
                     ? {
                         consentMethod: undefined,
                         shouldShowExperience: true,
-                        firstInit: false,
                       }
                     : {
                         consentMethod: undefined,
@@ -348,10 +386,10 @@ describe("Consent third party extensions", () => {
                       },
                 );
 
-              // Second call is FidesUIShown when banner appears
+              // Second call should be from deprecated FidesInitialized
               cy.get("@dataLayerPush")
                 .its("secondCall.args.0.event")
-                .should("eq", "FidesUIShown");
+                .should("eq", "FidesInitialized");
               cy.get("@dataLayerPush")
                 .its("secondCall.args.0.Fides.consent")
                 .should("deep.equal", {
@@ -364,18 +402,18 @@ describe("Consent third party extensions", () => {
               cy.get("@dataLayerPush")
                 .its("secondCall.args.0.Fides.extraDetails")
                 .should("deep.equal", {
-                  servingComponent: isTCF ? "tcf_banner" : "banner",
                   consentMethod: undefined,
+                  shouldShowExperience: true,
                 });
 
-              // Third call is when the user accepts all
+              // Third call is FidesUIShown when banner appears
               cy.get("@dataLayerPush")
                 .its("thirdCall.args.0.event")
-                .should("eq", "FidesUpdating");
+                .should("eq", "FidesUIShown");
               cy.get("@dataLayerPush")
                 .its("thirdCall.args.0.Fides.consent")
                 .should("deep.equal", {
-                  [PRIVACY_NOTICE_KEY_1]: true,
+                  [PRIVACY_NOTICE_KEY_1]: false,
                   [PRIVACY_NOTICE_KEY_2]: true,
                   [PRIVACY_NOTICE_KEY_3]: true,
                   na_notice_1: true,
@@ -384,10 +422,33 @@ describe("Consent third party extensions", () => {
               cy.get("@dataLayerPush")
                 .its("thirdCall.args.0.Fides.extraDetails")
                 .should("deep.equal", {
+                  servingComponent: isTCF ? "tcf_banner" : "banner",
+                  consentMethod: undefined,
+                });
+
+              // Fourth call is when the user accepts all
+              cy.get("@dataLayerPush")
+                .its("args")
+                .then((args) => args[3][0].event)
+                .should("eq", "FidesUpdating");
+              cy.get("@dataLayerPush")
+                .its("args")
+                .then((args) => args[3][0].Fides.consent)
+                .should("deep.equal", {
+                  [PRIVACY_NOTICE_KEY_1]: true,
+                  [PRIVACY_NOTICE_KEY_2]: true,
+                  [PRIVACY_NOTICE_KEY_3]: true,
+                  na_notice_1: true,
+                  na_notice_2: true,
+                });
+              cy.get("@dataLayerPush")
+                .its("args")
+                .then((args) => args[3][0].Fides.extraDetails)
+                .should("deep.equal", {
                   consentMethod: "accept",
                 });
 
-              // Fourth call is when the preferences finish updating
+              // Last call is when the preferences finish updating
               cy.get("@dataLayerPush")
                 .its("lastCall.args.0.event")
                 .should("eq", "FidesUpdated");
