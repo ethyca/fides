@@ -108,30 +108,38 @@ class ManualTaskService:
 
         Args:
             db: Database session
+            task: The task to unassign users from
+            user_ids: List of user IDs to unassign
         """
         user_ids = list(set(user_ids))
         if not user_ids:
             raise ValueError("User ID is required for unassignment")
 
-        unassigned_user_ids = []
-        for ref in task.references:
-            if (
-                ref.reference_type == ManualTaskReferenceType.assigned_user
-                and ref.reference_id in user_ids
-            ):
-                ref.delete(db)
-                unassigned_user_ids.append(ref.reference_id)
+        # Get references to unassign
+        references_to_unassign = (
+            db.query(ManualTaskReference)
+            .filter(
+                ManualTaskReference.task_id == task.id,
+                ManualTaskReference.reference_type
+                == ManualTaskReferenceType.assigned_user,
+                ManualTaskReference.reference_id.in_(user_ids),
+            )
+            .all()
+        )
 
-                # Log the user unassignment
-                ManualTaskLog.create_log(
-                    db=db,
-                    task_id=task.id,
-                    status=ManualTaskLogStatus.updated,
-                    message=f"User {ref.reference_id} unassigned from task",
-                    details={"unassigned_user_id": ref.reference_id},
-                )
-            if len(unassigned_user_ids) == len(user_ids):
-                break
+        # Delete references and log unassignments
+        for ref in references_to_unassign:
+            ref.delete(db)
+            ManualTaskLog.create_log(
+                db=db,
+                task_id=task.id,
+                status=ManualTaskLogStatus.updated,
+                message=f"User {ref.reference_id} unassigned from task",
+                details={"unassigned_user_id": ref.reference_id},
+            )
+
+        # Check if any users weren't unassigned
+        unassigned_user_ids = [ref.reference_id for ref in references_to_unassign]
         left_over_user_ids = [
             user_id for user_id in user_ids if user_id not in unassigned_user_ids
         ]
