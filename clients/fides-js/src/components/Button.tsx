@@ -7,7 +7,7 @@ interface ButtonProps {
   buttonType: ButtonType;
   label?: string;
   id?: string;
-  onClick?: () => void;
+  onClick?: (event: MouseEvent) => void;
   className?: string;
   disabled?: boolean;
   loading?: boolean;

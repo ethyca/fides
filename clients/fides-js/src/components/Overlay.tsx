@@ -14,7 +14,7 @@ import {
   PrivacyExperienceMinimal,
 } from "../lib/consent-types";
 import { defaultShowModal, shouldResurfaceBanner } from "../lib/consent-utils";
-import { dispatchFidesEvent } from "../lib/events";
+import { dispatchFidesEvent, FidesEventDetailsTrigger } from "../lib/events";
 import { useElementById, useHasMounted } from "../lib/hooks";
 import { useI18n } from "../lib/i18n/i18n-context";
 import { blockPageScrolling, unblockPageScrolling } from "../lib/ui-utils";
@@ -25,7 +25,7 @@ interface RenderBannerProps {
   isOpen: boolean;
   isEmbedded: boolean;
   onClose: () => void;
-  onManagePreferencesClick: () => void;
+  onManagePreferencesClick: (trigger?: FidesEventDetailsTrigger) => void;
 }
 
 interface RenderModalFooterProps {
@@ -38,7 +38,7 @@ interface Props {
   experience: PrivacyExperience | PrivacyExperienceMinimal;
   cookie: FidesCookie;
   savedConsent: NoticeConsent;
-  onOpen: () => void;
+  onOpen: (trigger?: FidesEventDetailsTrigger) => void;
   onDismiss: () => void;
   renderBanner: (props: RenderBannerProps) => VNode | null;
   renderModalContent?: () => VNode | null;
@@ -120,15 +120,18 @@ const Overlay: FunctionComponent<Props> = ({
     },
   });
 
-  const handleOpenModal = useCallback(() => {
-    if (options.fidesEmbed) {
-      setBannerIsOpen(false);
-    } else if (instance) {
-      setBannerIsOpen(false);
-      instance.show();
-      onOpen();
-    }
-  }, [instance, onOpen, options]);
+  const handleOpenModal = useCallback(
+    (trigger?: FidesEventDetailsTrigger) => {
+      if (options.fidesEmbed) {
+        setBannerIsOpen(false);
+      } else if (instance) {
+        setBannerIsOpen(false);
+        instance.show();
+        onOpen(trigger);
+      }
+    },
+    [instance, onOpen, options],
+  );
 
   const handleCloseModalAfterSave = useCallback(() => {
     if (instance && !options.fidesEmbed) {
@@ -172,7 +175,9 @@ const Overlay: FunctionComponent<Props> = ({
           "Modal link element found, updating it to show and trigger modal on click.",
         );
         modalLinkRef.current = modalLink;
-        modalLinkRef.current.addEventListener("click", window.Fides.showModal);
+        modalLinkRef.current.addEventListener("click", () => {
+          window.Fides.showModal();
+        });
         // show the modal link in the DOM
         modalLinkRef.current.classList.add("fides-modal-link-shown");
       } else {
@@ -183,17 +188,12 @@ const Overlay: FunctionComponent<Props> = ({
     }
     return () => {
       if (modalLinkRef.current) {
-        modalLinkRef.current.removeEventListener(
-          "click",
-          window.Fides.showModal,
+        modalLinkRef.current.removeEventListener("click", () =>
+          window.Fides.showModal(),
         );
       }
     };
   }, [modalLink, modalLinkIsDisabled, modalLinkId]);
-
-  const handleManagePreferencesClick = (): void => {
-    handleOpenModal();
-  };
 
   if (!hasMounted) {
     return null;
@@ -255,7 +255,7 @@ const Overlay: FunctionComponent<Props> = ({
           onClose: () => {
             setBannerIsOpen(false);
           },
-          onManagePreferencesClick: handleManagePreferencesClick,
+          onManagePreferencesClick: handleOpenModal,
         })}
     </div>
   );

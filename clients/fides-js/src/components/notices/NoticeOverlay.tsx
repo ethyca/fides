@@ -294,11 +294,15 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     });
   }, [cookie]);
 
-  const dispatchOpenOverlayEvent = useCallback(() => {
-    dispatchFidesEvent("FidesUIShown", cookie, {
-      servingComponent: ServingComponent.MODAL,
-    });
-  }, [cookie]);
+  const dispatchOpenOverlayEvent = useCallback(
+    (trigger?: FidesEventDetailsTrigger) => {
+      dispatchFidesEvent("FidesUIShown", cookie, {
+        servingComponent: ServingComponent.MODAL,
+        trigger,
+      });
+    },
+    [cookie],
+  );
 
   const handleDismiss = useCallback(() => {
     if (!consentCookieObjHasSomeConsentSet(parsedCookie?.consent)) {

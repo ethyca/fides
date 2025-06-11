@@ -7,7 +7,9 @@ import {
   FidesInitOptions,
   PrivacyExperience,
   PrivacyNotice,
+  TriggerType,
 } from "../lib/consent-types";
+import { FidesEventDetailsTrigger } from "../lib/events";
 import { useMediaQuery } from "../lib/hooks/useMediaQuery";
 import { DEFAULT_LOCALE, Locale, messageExists } from "../lib/i18n";
 import { useI18n } from "../lib/i18n/i18n-context";
@@ -18,7 +20,7 @@ import PrivacyPolicyLink from "./PrivacyPolicyLink";
 
 interface ConsentButtonProps {
   availableLocales?: Locale[];
-  onManagePreferencesClick?: () => void;
+  onManagePreferencesClick?: (trigger: FidesEventDetailsTrigger) => void;
   renderFirstButton?: () => VNode | null;
   onAcceptAll: () => void;
   onRejectAll: () => void;
@@ -51,18 +53,24 @@ export const ConsentButtons = ({
   const includePrivacyPolicyLink =
     messageExists(i18n, "exp.privacy_policy_link_label") &&
     messageExists(i18n, "exp.privacy_policy_url");
-  const handleManagePreferencesClick = () => {
+  const handleTCFManagePreferencesClick = () => {
+    const trigger: FidesEventDetailsTrigger = {
+      type: TriggerType.BUTTON,
+      label: i18n.t("exp.privacy_preferences_link_label"),
+    };
     const isReady = !isTCF || !isMinimalTCF;
     setIsLoadingModal(!isReady);
     if (onManagePreferencesClick && isReady) {
-      onManagePreferencesClick();
+      onManagePreferencesClick(trigger);
     }
   };
   const includeBrandLink = isInModal && options.showFidesBrandLink;
 
   useEffect(() => {
     if (isLoadingModal && !isMinimalTCF) {
-      handleManagePreferencesClick();
+      // The Full TCF wasn't ready yet when the button was clicked (the button is spinning),
+      // so we watch for isMinimalTCF to be false which means the modal is ready and we can open it.
+      handleTCFManagePreferencesClick();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoadingModal, isMinimalTCF]);
@@ -83,7 +91,7 @@ export const ConsentButtons = ({
               <Button
                 buttonType={ButtonType.SECONDARY}
                 label={i18n.t("exp.privacy_preferences_link_label")}
-                onClick={handleManagePreferencesClick}
+                onClick={handleTCFManagePreferencesClick}
                 className="fides-manage-preferences-button"
                 loading={isLoadingModal}
               />
@@ -127,7 +135,12 @@ export const ConsentButtons = ({
           <Button
             buttonType={isMobile ? ButtonType.SECONDARY : ButtonType.TERTIARY}
             label={i18n.t("exp.privacy_preferences_link_label")}
-            onClick={onManagePreferencesClick}
+            onClick={() =>
+              onManagePreferencesClick({
+                type: TriggerType.BUTTON,
+                label: i18n.t("exp.privacy_preferences_link_label"),
+              })
+            }
             className="fides-manage-preferences-button"
           />
         )}
@@ -145,7 +158,7 @@ interface NoticeConsentButtonProps {
   onAcceptAll: () => void;
   onRejectAll: () => void;
   onSave: (consentMethod: ConsentMethod, noticeKeys: NoticeKeys) => void;
-  onManagePreferencesClick?: () => void;
+  onManagePreferencesClick?: (trigger: FidesEventDetailsTrigger) => void;
   enabledKeys: NoticeKeys;
   isAcknowledge: boolean;
   options: FidesInitOptions;

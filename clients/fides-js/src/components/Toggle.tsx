@@ -1,5 +1,6 @@
 import { h } from "preact";
 
+import { TriggerType } from "../lib/consent-types";
 import { FidesEventDetailsTrigger } from "../lib/events";
 
 const Toggle = ({
@@ -34,7 +35,7 @@ const Toggle = ({
         className="fides-toggle-input"
         onChange={() => {
           onChange(id, {
-            type: "toggle",
+            type: TriggerType.TOGGLE,
             label,
             checked: !checked,
           });

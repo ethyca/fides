@@ -6,12 +6,13 @@ import {
   PrivacyExperience,
   PrivacyExperienceMinimal,
 } from "../../lib/consent-types";
+import { FidesEventDetailsTrigger } from "../../lib/events";
 import { ConsentButtons } from "../ConsentButtons";
 
 interface TcfConsentButtonProps {
   experience: PrivacyExperience | PrivacyExperienceMinimal;
   options: FidesInitOptions;
-  onManagePreferencesClick?: () => void;
+  onManagePreferencesClick?: (trigger: FidesEventDetailsTrigger) => void;
   onRejectAll: () => void;
   onAcceptAll: () => void;
   renderFirstButton?: () => VNode;

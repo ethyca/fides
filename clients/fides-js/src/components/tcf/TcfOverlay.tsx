@@ -514,11 +514,15 @@ export const TcfOverlay = ({
     });
   }, [cookie]);
 
-  const dispatchOpenOverlayEvent = useCallback(() => {
-    dispatchFidesEvent("FidesUIShown", cookie, {
-      servingComponent: ServingComponent.TCF_OVERLAY,
-    });
-  }, [cookie]);
+  const dispatchOpenOverlayEvent = useCallback(
+    (trigger?: FidesEventDetailsTrigger) => {
+      dispatchFidesEvent("FidesUIShown", cookie, {
+        servingComponent: ServingComponent.TCF_OVERLAY,
+        trigger,
+      });
+    },
+    [cookie],
+  );
 
   const handleDismiss = useCallback(() => {
     if (!consentCookieObjHasSomeConsentSet(parsedCookie?.consent)) {

@@ -150,9 +150,9 @@ export interface FidesEvent extends CustomEvent {
       trigger?: {
         /**
          * The type of element that triggered the event. Additional types may be
-         * added over time (e.g. "button", "link"), so expect this type to grow.
+         * added over time (e.g. "link"), so expect this type to grow.
          */
-        type: "toggle";
+        type: "toggle" | "button";
 
         /**
          * The UI label of the element that triggered the event.

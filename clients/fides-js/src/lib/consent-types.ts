@@ -909,6 +909,11 @@ export enum ServingComponent {
   TCF_OVERLAY = "tcf_overlay",
   TCF_BANNER = "tcf_banner",
 }
+// NOTE: updates to this enum should be reflected in the FidesEventDetailsTrigger type and vice versa
+export enum TriggerType {
+  TOGGLE = "toggle",
+  BUTTON = "button",
+}
 /**
  * Request body when indicating that notices were served in the UI
  */
