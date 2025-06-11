@@ -107,12 +107,9 @@ def upgrade():
     # Create indexes for manual_task
     op.create_index("ix_manual_task_task_type", "manual_task", ["task_type"])
     op.create_index(
-        "ix_manual_task_parent_entity_type", "manual_task", ["parent_entity_type"]
-    )
-    op.create_index(
         "ix_manual_task_parent_entity",
         "manual_task",
-        ["parent_entity_id", "parent_entity_type"],
+        ["parent_entity_type", "parent_entity_id"],
     )
     op.create_index("ix_manual_task_due_date", "manual_task", ["due_date"])
 
@@ -154,7 +151,6 @@ def downgrade():
     )
     op.drop_index("ix_manual_task_due_date", table_name="manual_task")
     op.drop_index("ix_manual_task_parent_entity", table_name="manual_task")
-    op.drop_index("ix_manual_task_parent_entity_type", table_name="manual_task")
     op.drop_index("ix_manual_task_task_type", table_name="manual_task")
 
     # Then drop tables
