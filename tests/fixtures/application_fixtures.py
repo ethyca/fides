@@ -1824,7 +1824,7 @@ def request_task(db: Session, privacy_request) -> RequestTask:
     yield request_task
 
     try:
-        end_task.delete(db).delete(db)
+        end_task.delete(db)
     except ObjectDeletedError:
         pass
     try:
