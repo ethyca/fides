@@ -19,6 +19,7 @@ from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import PolicyPostWebhook, PolicyPreWebhook
 from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.masking.masking_configuration import MaskingConfiguration
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
 from fides.api.schemas.messaging.messaging import (
@@ -30,7 +31,6 @@ from fides.api.schemas.policy import ActionType, CurrentStep, Rule
 from fides.api.schemas.privacy_request import (
     CheckpointActionRequired,
     Consent,
-    ExecutionLogStatus,
     PrivacyRequestStatus,
 )
 from fides.api.schemas.redis_cache import Identity

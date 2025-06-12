@@ -18,7 +18,7 @@ from fides.api.models.policy import ActionType
 from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.models.sql_models import System
-from fides.api.schemas.privacy_request import ExecutionLogStatus
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.service.connectors import PostgreSQLConnector
 from fides.config import CONFIG
 from tests.ops.test_helpers.dataset_utils import remove_primary_keys
