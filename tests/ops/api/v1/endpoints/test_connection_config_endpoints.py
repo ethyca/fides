@@ -17,7 +17,7 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.models.detection_discovery import MonitorConfig
+from fides.api.models.detection_discovery.core import MonitorConfig
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.sql_models import Dataset
 from fides.api.oauth.roles import APPROVER, OWNER, VIEWER
@@ -1227,6 +1227,7 @@ class TestGetConnection:
             "secrets",
             "authorized",
             "enabled_actions",
+            "system_key",
         }
 
         assert response_body["key"] == "my_postgres_db_1"

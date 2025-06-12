@@ -19,6 +19,7 @@ from fides.api.service.connectors.saas_connector import SaaSConnector
 from fides.api.util.saas_util import (
     CUSTOM_PRIVACY_REQUEST_FIELDS,
     FIDESOPS_GROUPED_INPUTS,
+    FIELD_LIST,
 )
 from fides.config import CONFIG
 from tests.ops.graph.graph_test_util import generate_node
@@ -72,13 +73,13 @@ class TestSaaSQueryConfig:
 
         member = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "member")
-        ]
+        ].to_mock_execution_node()
         conversations = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "conversations")
-        ]
+        ].to_mock_execution_node()
         messages = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "messages")
-        ]
+        ].to_mock_execution_node()
         payment_methods = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "payment_methods")
         ].to_mock_execution_node()
@@ -577,7 +578,7 @@ class TestSaaSQueryConfig:
 
         accounts = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "accounts")
-        ]
+        ].to_mock_execution_node()  # Convert to ExecutionNode
 
         config = SaaSQueryConfig(
             accounts,
@@ -639,7 +640,7 @@ class TestSaaSQueryConfig:
 
         mailing_lists = combined_traversal.traversal_node_dict[
             CollectionAddress(saas_config.fides_key, "mailing_lists")
-        ]
+        ].to_mock_execution_node()  # Convert to ExecutionNode
 
         config = SaaSQueryConfig(
             mailing_lists,
@@ -1025,6 +1026,92 @@ class TestSaaSQueryConfig:
                 },
             ],
         }
+
+    def test_generate_update_stmt_sets_field_list(
+        self,
+        privacy_request,
+        erasure_policy_string_rewrite,
+        combined_traversal,
+        saas_example_connection_config,
+    ):
+        """
+        Test that FIELD_LIST is set to a comma-separated list of top-level field names
+        in the param_values when generating an update statement.
+        """
+        saas_config: SaaSConfig = saas_example_connection_config.get_saas_config()
+        endpoints = saas_config.top_level_endpoint_dict
+
+        # Use field_list_example collection which is specifically for this test
+        field_list_collection = combined_traversal.traversal_node_dict[
+            CollectionAddress(saas_config.fides_key, "field_list_example")
+        ].to_mock_execution_node()
+
+        # Use the dedicated update request for field_list_example
+        update_request = endpoints["field_list_example"].requests.update
+
+        config = SaaSQueryConfig(field_list_collection, endpoints, {}, update_request)
+        row = {
+            "id": "123",
+            "customer_name": "Test Customer",
+            "customer_email": "test@example.com",
+        }
+
+        # Call generate_update_stmt which should include FIELD_LIST in the body
+        request_params = config.generate_update_stmt(
+            row, erasure_policy_string_rewrite, privacy_request
+        )
+
+        # Verify request was built correctly
+        assert request_params.method == HTTPMethod.POST.value
+        assert request_params.path == "/v1/field_list_example"
+
+        # Verify FIELD_LIST was included in the body
+        body = json.loads(request_params.body)
+        assert "fields" in body
+        field_list_str = body["fields"]
+
+        # Verify field list contains the expected fields
+        field_names = field_list_str.split(",")
+        assert set(field_names) == {"id", "customer_name", "customer_email"}
+
+    def test_field_list_in_generate_query(
+        self,
+        policy,
+        combined_traversal,
+        saas_example_connection_config,
+    ):
+        """
+        Test that FIELD_LIST is correctly set when calling generate_query
+        """
+        saas_config: SaaSConfig = saas_example_connection_config.get_saas_config()
+        endpoints = saas_config.top_level_endpoint_dict
+
+        # Use field_list_example collection which is specifically for this test
+        field_list_collection = combined_traversal.traversal_node_dict[
+            CollectionAddress(saas_config.fides_key, "field_list_example")
+        ].to_mock_execution_node()  # Convert to ExecutionNode
+
+        # Create a privacy request
+        privacy_request = PrivacyRequest(id="test-request-id")
+
+        # Create the query config
+        config = SaaSQueryConfig(
+            field_list_collection, endpoints, {}, privacy_request=privacy_request
+        )
+
+        # Use the collection's own read request
+        config.current_request = endpoints["field_list_example"].requests.read
+
+        # Call generate_query directly
+        request_params = config.generate_query({"email": ["test@example.com"]}, policy)
+
+        # Verify the request has FIELD_LIST in query params
+        assert "query" in request_params.query_params
+        field_list_str = request_params.query_params["query"]
+
+        # Verify field list contains the expected fields
+        field_names = field_list_str.split(",")
+        assert set(field_names) == {"id", "customer_name", "customer_email"}
 
 
 class TestGenerateProductList:

@@ -14,6 +14,7 @@ import POSTGRES_TYPE_INFO from "~/features/integrations/integration-type-info/po
 import RDS_MYSQL_TYPE_INFO from "~/features/integrations/integration-type-info/rdsMySQLInfo";
 import RDS_POSTGRES_TYPE_INFO from "~/features/integrations/integration-type-info/rdsPostgresInfo";
 import S3_TYPE_INFO from "~/features/integrations/integration-type-info/s3Info";
+import SALESFORCE_TYPE_INFO from "~/features/integrations/integration-type-info/salesforceInfo";
 import SCYLLA_TYPE_INFO from "~/features/integrations/integration-type-info/scyllaInfo";
 import SNOWFLAKE_TYPE_INFO from "~/features/integrations/integration-type-info/snowflakeInfo";
 import WEBSITE_INTEGRATION_TYPE_INFO from "~/features/integrations/integration-type-info/websiteInfo";
@@ -33,6 +34,9 @@ export type IntegrationTypeInfo = {
   tags: string[];
   enabledFeatures: IntegrationFeatureEnum[];
 };
+
+// Define SaaS-specific integrations separately
+export const SAAS_INTEGRATIONS: IntegrationTypeInfo[] = [SALESFORCE_TYPE_INFO];
 
 const INTEGRATION_TYPE_MAP: { [K in ConnectionType]?: IntegrationTypeInfo } = {
   [ConnectionType.BIGQUERY]: BIGQUERY_TYPE_INFO,
@@ -54,10 +58,16 @@ const INTEGRATION_TYPE_MAP: { [K in ConnectionType]?: IntegrationTypeInfo } = {
   [ConnectionType.MANUAL_WEBHOOK]: MANUAL_TYPE_INFO,
 };
 
-export const INTEGRATION_TYPE_LIST: IntegrationTypeInfo[] =
-  Object.values(INTEGRATION_TYPE_MAP);
+// Include both regular integrations and SaaS integrations in the list
+export const INTEGRATION_TYPE_LIST: IntegrationTypeInfo[] = [
+  ...Object.values(INTEGRATION_TYPE_MAP),
+  ...SAAS_INTEGRATIONS,
+];
 
-export const SUPPORTED_INTEGRATIONS = Object.keys(INTEGRATION_TYPE_MAP);
+export const SUPPORTED_INTEGRATIONS = [
+  ...Object.keys(INTEGRATION_TYPE_MAP),
+  ConnectionType.SAAS,
+];
 
 const EMPTY_TYPE = {
   placeholder: {
@@ -78,6 +88,12 @@ const getIntegrationTypeInfo = (
   if (!type) {
     return EMPTY_TYPE;
   }
+
+  // For SAAS type, return the first SaaS integration (temporary until we have a better way to handle this)
+  if (type === ConnectionType.SAAS) {
+    return SAAS_INTEGRATIONS[0] ?? EMPTY_TYPE;
+  }
+
   return INTEGRATION_TYPE_MAP[type] ?? EMPTY_TYPE;
 };
 

@@ -237,13 +237,13 @@ def upload_access_results(
             download_urls.append(download_url)
             logger.bind(
                 time_taken=time.time() - start_time,
-            ).info("Access Package Upload successful for privacy request.")
+            ).info("Access package upload successful for privacy request.")
             privacy_request.add_success_execution_log(
                 session,
                 connection_key=None,
-                dataset_name="Access Package Upload",
+                dataset_name="Access package upload",
                 collection_name=None,
-                message="Access Package Upload successful for privacy request.",
+                message="Access package upload successful for privacy request.",
                 action_type=ActionType.access,
             )
     except common_exceptions.StorageUploadError as exc:
@@ -256,9 +256,9 @@ def upload_access_results(
         privacy_request.add_error_execution_log(
             session,
             connection_key=None,
-            dataset_name="Access Package Upload",
+            dataset_name="Access package upload",
             collection_name=None,
-            message="Access Package Upload failed for privacy request.",
+            message="Access package upload failed for privacy request.",
             action_type=ActionType.access,
         )
         privacy_request.status = PrivacyRequestStatus.error

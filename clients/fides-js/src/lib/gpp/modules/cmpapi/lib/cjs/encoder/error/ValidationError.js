@@ -1,1 +1,0 @@
-"use strict";Object.defineProperty(exports,"__esModule",{value:!0}),exports.ValidationError=void 0;class ValidationError extends Error{constructor(r){super(r),this.name="ValidationError"}}exports.ValidationError=ValidationError;

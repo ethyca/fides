@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 
 from fides.api.models.connectionconfig import ConnectionConfig
-from fides.api.models.detection_discovery import MonitorConfig, SharedMonitorConfig
+from fides.api.models.detection_discovery.core import MonitorConfig, SharedMonitorConfig
 
 
 @pytest.fixture(scope="function")

@@ -10,6 +10,7 @@ import {
   UsNe,
   UsNh,
   UsNj,
+  UsOr,
   UsTn,
   UsTx,
   UsUt,
@@ -35,6 +36,7 @@ export const FIDES_US_REGION_TO_GPP_SECTION: Record<string, GPPSection> = {
   us_ne: { name: UsNe.NAME, id: UsNe.ID },
   us_nh: { name: UsNh.NAME, id: UsNh.ID },
   us_nj: { name: UsNj.NAME, id: UsNj.ID },
+  us_or: { name: UsOr.NAME, id: UsOr.ID },
   us_tn: { name: UsTn.NAME, id: UsTn.ID },
   us_tx: { name: UsTx.NAME, id: UsTx.ID },
 };

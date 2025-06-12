@@ -580,7 +580,6 @@ describe("Fides-js GPP extension", () => {
           .then((args) => {
             const [data] = args;
             expect(data.pingData.applicableSections).to.eql([8]);
-            // TODO: (HJ-196) as locations and regulations are set, this value may change as it is currently hard coded
             expect(data.pingData.supportedAPIs).to.eql([
               "8:usca",
               "10:usco",
@@ -594,6 +593,7 @@ describe("Fides-js GPP extension", () => {
               "19:usne",
               "20:usnh",
               "21:usnj",
+              "15:usor",
               "22:ustn",
               "16:ustx",
             ]);

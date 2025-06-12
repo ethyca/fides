@@ -3,7 +3,8 @@ import pytest
 from fides.api.common_exceptions import TraversalError
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.privacy_request import ExecutionLog
-from fides.api.schemas.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
+from fides.api.models.worker_task import ExecutionLogStatus
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.deprecated_graph_task import run_access_request_deprecated
 
 

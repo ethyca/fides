@@ -5,8 +5,9 @@ from unittest import mock
 import pytest
 
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
-from fides.api.schemas.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.service.privacy_request.request_service import (
     REQUEUE_INTERRUPTED_TASKS_LOCK,
     requeue_interrupted_tasks,

@@ -127,3 +127,48 @@ class TestStorageUtil:
         assert (
             encoder.default(test_dict) == "{'key': 'value'}"
         )  # Should use parent encoder's default handling
+
+    def test_storage_json_encoder_with_object_ids(self):
+        """Test that data containing ObjectIds can be serialized using StorageJSONEncoder"""
+        test_data = [
+            {
+                "_id": ObjectId("507f1f77bcf86cd799439011"),
+                "user_id": ObjectId("507f1f77bcf86cd799439012"),
+                "name": "test_user",
+                "active": True,
+            }
+        ]
+
+        # This should not raise an error
+        serialized = json.dumps(test_data, cls=StorageJSONEncoder)
+
+        # Verify ObjectIds are converted to {"$oid": "..."} format
+        assert '{"$oid": "507f1f77bcf86cd799439011"}' in serialized
+        assert '{"$oid": "507f1f77bcf86cd799439012"}' in serialized
+        assert '"name": "test_user"' in serialized
+        assert '"active": true' in serialized
+
+    def test_storage_json_encoder_roundtrip_serialization(self):
+        """Test that we can serialize data with ObjectIds and get consistent JSON"""
+        test_data = [
+            {
+                "_id": ObjectId("507f1f77bcf86cd799439011"),
+                "nested": {"user_id": ObjectId("507f1f77bcf86cd799439012")},
+                "metadata": {"created": datetime(2024, 3, 15, 12, 30, 45)},
+            }
+        ]
+
+        # Serialize with StorageJSONEncoder
+        serialized = json.dumps(
+            test_data, cls=StorageJSONEncoder, separators=(",", ":")
+        )
+
+        # Should be able to deserialize with standard json.loads
+        deserialized = json.loads(serialized)
+
+        # Check structure is maintained with proper conversions
+        assert deserialized[0]["_id"] == {"$oid": "507f1f77bcf86cd799439011"}
+        assert deserialized[0]["nested"]["user_id"] == {
+            "$oid": "507f1f77bcf86cd799439012"
+        }
+        assert deserialized[0]["metadata"]["created"] == "2024-03-15T12:30:45"

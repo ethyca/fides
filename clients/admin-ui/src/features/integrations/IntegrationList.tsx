@@ -18,10 +18,18 @@ const IntegrationList = ({
   onOpenAddModal: () => void;
 }) => {
   const router = useRouter();
+
+  // Hide legacy connections created from the system page
+  const filteredIntegrations = integrations.filter((connection) => {
+    const isLegacyConnection =
+      !connection.name && connection.saas_config?.type === "salesforce";
+    return !isLegacyConnection;
+  });
+
   return (
     <Box marginTop="24px">
-      {integrations.length ? (
-        integrations.map((item) => {
+      {filteredIntegrations.length ? (
+        filteredIntegrations.map((item) => {
           const integrationTypeInfo = getIntegrationTypeInfo(
             item.connection_type,
           );
@@ -44,7 +52,7 @@ const IntegrationList = ({
       ) : (
         <NoIntegrations
           onOpenAddModal={onOpenAddModal}
-          isFiltered={isFiltered}
+          isFiltered={isFiltered || filteredIntegrations.length > 0}
         />
       )}
     </Box>
