@@ -102,20 +102,23 @@ class ManualTaskConfigService:
             new_config: The new version being created
             modified_field_keys: Set of field keys that are being updated or removed in the new version
         """
-        # Copy only the fields that aren't being modified
-        for field in previous_config.field_definitions:
-            if field.field_key not in modified_field_keys:
-                # Create new field record with same data
-                ManualTaskConfigField.create(
-                    db=self.db,
-                    data={
-                        "task_id": new_config.task_id,
-                        "config_id": new_config.id,
-                        "field_key": field.field_key,
-                        "field_type": field.field_type,
-                        "field_metadata": field.field_metadata,
-                    },
-                )
+        # Prepare bulk insert data for unmodified fields
+        fields_to_create = [
+            {
+                "task_id": new_config.task_id,
+                "config_id": new_config.id,
+                "field_key": field.field_key,
+                "field_type": field.field_type,
+                "field_metadata": field.field_metadata,
+            }
+            for field in previous_config.field_definitions
+            if field.field_key not in modified_field_keys
+        ]
+
+        # Perform bulk insert if there are fields to create
+        if fields_to_create:
+            self.db.bulk_insert_mappings(ManualTaskConfigField, fields_to_create)
+            self.db.flush()
 
     def _new_field_updates(
         self, new_config: ManualTaskConfig, field_updates: list[dict[str, Any]]
@@ -127,18 +130,22 @@ class ManualTaskConfigService:
         """
         self._validate_fields(field_updates)
 
-        for update in field_updates:
-            # Create new field with updated data
-            ManualTaskConfigField.create(
-                db=self.db,
-                data={
-                    "task_id": new_config.task_id,
-                    "config_id": new_config.id,
-                    "field_key": update["field_key"],
-                    "field_type": update.get("field_type"),
-                    "field_metadata": update.get("field_metadata", {}),
-                },
-            )
+        # Prepare bulk insert data
+        fields_to_create = [
+            {
+                "task_id": new_config.task_id,
+                "config_id": new_config.id,
+                "field_key": update["field_key"],
+                "field_type": update.get("field_type"),
+                "field_metadata": update.get("field_metadata", {}),
+            }
+            for update in field_updates
+        ]
+
+        # Perform bulk insert
+        if fields_to_create:
+            self.db.bulk_insert_mappings(ManualTaskConfigField, fields_to_create)
+            self.db.flush()
 
     # ------- Public Configuration Methods -------
 
@@ -197,35 +204,57 @@ class ManualTaskConfigService:
         field_key: str,
         version: int,
     ) -> Optional[ManualTaskConfig]:
-        """Get a task config by its id, field id, or config type."""
+        """Get a task config by its id, field id, or config type.
+
+        This is a flexible lookup method that can find configs based on various filters.
+        It's normal for this method to return None if no config matches the given filters.
+
+        Args:
+            task: The task to get the config for
+            config_type: The type of config to get
+            field_id: The ID of a field in the config
+            config_id: The ID of the config
+            field_key: The key of a field in the config
+            version: The version number of the config
+
+        Returns:
+            The matching config if found, None otherwise
+        """
         if not any([task, config_id, field_id, config_type]):
-            logger.warning("No filters provided to get_config. Returning None.")
+            logger.debug("No filters provided to get_config. Returning None.")
             return None
 
+        # Start with base query and add joins only if needed
         query = self.db.query(ManualTaskConfig)
 
+        # Add join only once if either field_id or field_key is provided
+        if field_id or field_key:
+            query = query.join(ManualTaskConfigField)
+
+        # Build filter conditions
+        filters = []
         if task:
-            query = query.filter(ManualTaskConfig.task_id == task.id)
+            filters.append(ManualTaskConfig.task_id == task.id)
         if config_id:
-            query = query.filter(ManualTaskConfig.id == config_id)
+            filters.append(ManualTaskConfig.id == config_id)
         if field_id:
-            query = query.join(ManualTaskConfigField).filter(
-                ManualTaskConfigField.id == field_id
-            )
+            filters.append(ManualTaskConfigField.id == field_id)
         if field_key:
-            query = query.join(ManualTaskConfigField).filter(
-                ManualTaskConfigField.field_key == field_key
-            )
+            filters.append(ManualTaskConfigField.field_key == field_key)
         if version:
-            query = query.filter(ManualTaskConfig.version == version)
+            filters.append(ManualTaskConfig.version == version)
         if config_type:
-            query = query.filter(ManualTaskConfig.config_type == config_type)
+            filters.append(ManualTaskConfig.config_type == config_type)
+
+        # Apply all filters at once
+        if filters:
+            query = query.filter(*filters)
 
         result = query.first()
         if not result:
-            logger.warning(
+            logger.debug(
                 "No config found that matches filters: "
-                f"task {task.id}, "
+                f"task {task.id if task else None}, "
                 f"config_id {config_id}, "
                 f"field_id {field_id}, "
                 f"field_key {field_key}, "
@@ -233,6 +262,7 @@ class ManualTaskConfigService:
                 f"config_type {config_type}"
             )
             return None
+
         self.db.refresh(result)
         return result
 

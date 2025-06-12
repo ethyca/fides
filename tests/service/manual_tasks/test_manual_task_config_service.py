@@ -9,10 +9,7 @@ from fides.api.models.manual_tasks.manual_task_log import (
     ManualTaskLog,
     ManualTaskLogStatus,
 )
-from fides.api.schemas.manual_tasks.manual_task_config import (
-    ManualTaskConfigurationType,
-    ManualTaskFieldType,
-)
+from fides.api.schemas.manual_tasks.manual_task_config import ManualTaskFieldType
 from fides.service.manual_tasks.manual_task_config_service import (
     ManualTaskConfigService,
 )
