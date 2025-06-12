@@ -186,8 +186,8 @@ class TestManualTaskConfigField:
                 IntegrityError,
                 id="invalid_field_type",
             ),
-            pytest.param({"task_id": 9}, IntegrityError, id="invalid_task_id"),
-            pytest.param({"config_id": 9}, IntegrityError, id="invalid_config_id"),
+            pytest.param({"task_id": "9"}, IntegrityError, id="invalid_task_id"),
+            pytest.param({"config_id": "9"}, ValueError, id="invalid_config_id"),
             pytest.param({"invalid_key": "invalid_value"}, TypeError, id="invalid_key"),
         ],
     )
@@ -208,7 +208,12 @@ class TestManualTaskConfigField:
         data.update(invalid_types)
         with pytest.raises(expected_error) as exc_info:
             ManualTaskConfigField.create(db, data=data)
-        assert list(invalid_types.keys())[0] in str(exc_info.value)
+        if "config_id" in invalid_types:
+            assert f"Config with id {data['config_id']} not found" in str(
+                exc_info.value
+            )
+        else:
+            assert list(invalid_types.keys())[0] in str(exc_info.value)
 
 
 class TestManualTaskConfigGetField:

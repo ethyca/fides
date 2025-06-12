@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import TYPE_CHECKING, Optional, Union
 
-from pydantic import ConfigDict, Field, ValidationInfo, field_validator
+from pydantic import ConfigDict, Field, ValidationInfo, field_validator, model_validator
 
 from fides.api.schemas.base_class import FidesSchema
 
@@ -76,7 +76,7 @@ class ManualTaskTextFieldMetadata(ManualTaskFieldMetadata):
         elif info.field_name == "max_length":
             min_length = info.data.get("min_length")
             if min_length is not None and v < min_length:
-                raise ValueError("max_length cannot be less than min_length")
+                raise ValueError("min_length cannot be greater than max_length")
 
         return v
 
@@ -89,14 +89,6 @@ class ManualTaskCheckboxFieldMetadata(ManualTaskFieldMetadata):
     )
     label_true: Optional[str] = Field(None, description="Label for checked state")
     label_false: Optional[str] = Field(None, description="Label for unchecked state")
-
-    @field_validator("default_value")
-    @classmethod
-    def validate_default_value(cls, v: Optional[bool]) -> Optional[bool]:
-        """Validate that default_value is a boolean."""
-        if v is not None and not isinstance(v, bool):
-            raise ValueError("default_value must be a boolean")
-        return v
 
 
 class ManualTaskAttachmentFieldMetadata(ManualTaskFieldMetadata):
@@ -121,25 +113,12 @@ class ManualTaskAttachmentFieldMetadata(ManualTaskFieldMetadata):
         None, description="List of attachment IDs associated with this field"
     )
 
-    @field_validator("file_types")
-    @classmethod
-    def validate_file_types(cls, v: list[str]) -> list[str]:
-        """Validate that file_types is a list of strings."""
-        if not isinstance(v, list):
-            raise ValueError("file_types must be a list")
-        if not all(isinstance(t, str) for t in v):
-            raise ValueError("file_types must be a list of strings")
-        return v
-
-    @field_validator("max_files")
-    @classmethod
-    def validate_max_files(
-        cls, v: Optional[int], info: ValidationInfo
-    ) -> Optional[int]:
+    @model_validator(mode="after")
+    def validate_multiple_max_files(self) -> "ManualTaskAttachmentFieldMetadata":
         """Validate that max_files is set when multiple is True."""
-        if info.data.get("multiple") and v is None:
+        if self.multiple and self.max_files is None:
             raise ValueError("max_files must be set when multiple is True")
-        return v
+        return self
 
 
 class ManualTaskTextField(FidesSchema):

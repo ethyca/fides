@@ -125,17 +125,20 @@ class ManualTaskConfigField(Base):
         cls, db: Session, *, data: dict[str, Any], check_name: bool = True
     ) -> "ManualTaskConfigField":
         """Create a new manual task config field."""
+        # Get the config to access its task_id and check if it exists
+        try:
+            config = (
+                db.query(ManualTaskConfig)
+                .filter(ManualTaskConfig.id == data["config_id"])
+                .first()
+            )
+            if not config:
+                raise ValueError(f"Config with id {data['config_id']} not found")
+        except Exception as e:
+            raise ValueError(f"Config with id {data['config_id']} not found: {e}")
+
         # Create the field and let SQLAlchemy complex type validation handled in service.
         field = super().create(db=db, data=data, check_name=check_name)
-
-        # Get the config to access its task_id
-        config = (
-            db.query(ManualTaskConfig)
-            .filter(ManualTaskConfig.id == data["config_id"])
-            .first()
-        )
-        if not config:
-            raise ValueError(f"Config with id {data['config_id']} not found")
 
         # Create a log entry
         ManualTaskLog.create_log(
