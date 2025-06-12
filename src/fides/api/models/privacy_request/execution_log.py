@@ -4,15 +4,14 @@ from __future__ import annotations
 
 from typing import Optional
 
-from sqlalchemy import Column, DateTime, String
+from sqlalchemy import Column, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.mutable import MutableList
-from sqlalchemy.sql import text
 
 from fides.api.db.base_class import Base  # type: ignore[attr-defined]
 from fides.api.db.util import EnumColumn
+from fides.api.models.worker_task import ExecutionLogStatus, TaskExecutionLog
 from fides.api.schemas.policy import ActionType, CurrentStep
-from fides.api.schemas.privacy_request import ExecutionLogStatus
 
 # Locations from which privacy request execution can be resumed, in order.
 EXECUTION_CHECKPOINTS = [
@@ -53,7 +52,7 @@ def can_run_checkpoint(
     ) >= EXECUTION_CHECKPOINTS.index(from_checkpoint)
 
 
-class ExecutionLog(Base):
+class ExecutionLog(TaskExecutionLog, Base):
     """
     Stores the individual execution logs associated with a PrivacyRequest.
 
@@ -68,21 +67,8 @@ class ExecutionLog(Base):
     collection_name = Column(String, index=True)
     # A JSON Array describing affected fields along with their data categories and paths
     fields_affected = Column(MutableList.as_mutable(JSONB), nullable=True)
-    # Contains info, warning, or error messages
-    message = Column(String)
     action_type = Column(
         EnumColumn(ActionType),
-        index=True,
-        nullable=False,
-    )
-    status = Column(
-        EnumColumn(
-            ExecutionLogStatus,
-            native_enum=True,
-            values_callable=lambda x: [
-                i.value for i in x
-            ],  # Using ExecutionLogStatus values in database, even though app is using the names.
-        ),
         index=True,
         nullable=False,
     )
@@ -91,18 +77,4 @@ class ExecutionLog(Base):
         String,
         nullable=False,
         index=True,
-    )
-
-    # Use clock_timestamp() instead of NOW() to get the actual current time at row creation,
-    # regardless of transaction state. This prevents timestamp caching within transactions
-    # and ensures more accurate creation times.
-    # https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-CURRENT
-
-    created_at = Column(
-        DateTime(timezone=True), server_default=text("clock_timestamp()")
-    )
-    updated_at = Column(
-        DateTime(timezone=True),
-        server_default=text("clock_timestamp()"),
-        onupdate=text("clock_timestamp()"),
     )

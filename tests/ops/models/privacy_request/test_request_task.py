@@ -2,7 +2,8 @@ import pytest
 from sqlalchemy.orm import Query
 
 from fides.api.models.privacy_request.request_task import RequestTask, TraversalDetails
-from fides.api.schemas.privacy_request import ActionType, ExecutionLogStatus
+from fides.api.models.worker_task import ExecutionLogStatus
+from fides.api.schemas.privacy_request import ActionType
 from fides.api.util.cache import cache_task_tracking_key
 
 

@@ -17,11 +17,12 @@ from fides.api.models.privacy_request import (
     RequestTask,
     TraversalDetails,
 )
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.connection_configuration.connection_secrets_dynamic_erasure_email import (
     DynamicErasureEmailSchema,
 )
 from fides.api.schemas.policy import ActionType
-from fides.api.schemas.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.base_erasure_email_connector import (
     BaseErasureEmailConnector,

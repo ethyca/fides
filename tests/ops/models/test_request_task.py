@@ -348,7 +348,7 @@ class TestLargeDataStorage:
         assert request_task.access_data == small_data
         assert request_task.get_access_data() == small_data
 
-    @mock.patch("fides.api.util.data_size.calculate_data_size")
+    @mock.patch("fides.api.models.field_types.encrypted_large_data.calculate_data_size")
     def test_large_data_stored_externally_access_data(
         self, mock_calculate_data_size, db, request_task, storage_config_default_local
     ):
@@ -375,7 +375,7 @@ class TestLargeDataStorage:
         assert retrieved_data == test_data
         assert request_task.get_access_data() == test_data
 
-    @mock.patch("fides.api.util.data_size.calculate_data_size")
+    @mock.patch("fides.api.models.field_types.encrypted_large_data.calculate_data_size")
     def test_large_data_stored_externally_data_for_erasures(
         self, mock_calculate_data_size, db, request_task, storage_config_default_local
     ):
@@ -402,7 +402,7 @@ class TestLargeDataStorage:
         assert retrieved_data == test_data
         assert request_task.get_data_for_erasures() == test_data
 
-    @mock.patch("fides.api.util.data_size.calculate_data_size")
+    @mock.patch("fides.api.models.field_types.encrypted_large_data.calculate_data_size")
     def test_external_storage_cleanup_on_update(
         self, mock_calculate_data_size, db, request_task, storage_config_default_local
     ):
@@ -441,7 +441,7 @@ class TestLargeDataStorage:
         # Data should be correct
         assert request_task.access_data == new_data
 
-    @mock.patch("fides.api.util.data_size.calculate_data_size")
+    @mock.patch("fides.api.models.field_types.encrypted_large_data.calculate_data_size")
     def test_external_storage_cleanup_on_delete(
         self, mock_calculate_data_size, db, request_task, storage_config_default_local
     ):

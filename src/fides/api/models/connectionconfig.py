@@ -23,7 +23,7 @@ from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.config import CONFIG
 
 if TYPE_CHECKING:
-    from fides.api.models.detection_discovery import MonitorConfig
+    from fides.api.models.detection_discovery.core import MonitorConfig
     from fides.api.schemas.connection_configuration.enums.system_type import SystemType
 
 
