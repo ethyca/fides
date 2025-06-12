@@ -84,6 +84,12 @@ export const dispatchFidesEvent = (
         .consentMethod as FidesEventExtraDetails["consentMethod"],
       ...extraDetails,
     };
+    if (!(extraDetails?.trigger as FidesEventDetailsTrigger)?.origin) {
+      constructedExtraDetails.trigger = {
+        ...(constructedExtraDetails.trigger as FidesEventDetailsTrigger),
+        ...({ origin: "fides" } as FidesEventDetailsTrigger),
+      } as FidesEventDetailsTrigger;
+    }
     const perfMark = performance?.mark?.(type);
     const timestamp = perfMark?.startTime;
     const normalizedCookie: FidesCookie | undefined = cookie;
