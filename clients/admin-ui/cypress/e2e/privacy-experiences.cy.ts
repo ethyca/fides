@@ -556,9 +556,6 @@ describe("Privacy experiences", () => {
         cy.intercept("GET", "/api/v1/experience-config/*", {
           fixture: "privacy-experiences/tcf-experience.json",
         }).as("getTCFExperience");
-        cy.intercept("GET", "/api/v1/privacy-experience/gvl/translations*", {
-          body: {},
-        }).as("getLanguage");
 
         // Visit the TCF experience page
         cy.visit(
