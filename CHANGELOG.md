@@ -21,6 +21,11 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.63.2...main)
 
+### Added
+- Added support for Salesforce custom object monitoring using Helios [#6096](https://github.com/ethyca/fides/pull/6096)
+
+### Changed
+- Integrations detail page now includes a setup guide component. [#6096](https://github.com/ethyca/fides/pull/6096)
 
 ### Fixed
 - Added missing "Awaiting email send" status to privacy request statuses [#6218](https://github.com/ethyca/fides/pull/6218)
