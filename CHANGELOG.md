@@ -19,26 +19,29 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.63.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.63.2...main)
 
-### Added
-- AWS SES notification service now supports assumed roles through environment variable configuration through `FIDES__CREDENTIALS__NOTIFICATIONS__AWS_SES_ASSUME_ROLE_ARN` [#6206](https://github.com/ethyca/fides/pull/6206)
-- Added ManualTask and ManualTaskReference models, foundational for for ManualDSRs [#6205](https://github.com/ethyca/fides/pull/6205) https://github.com/ethyca/fides/labels/db-migration
-- Added settings for read-only Redis instance [#6217](https://github.com/ethyca/fides/pull/6217)
-
-
-### Changed
-- TCF Banners will no longer resurface on reload after dismissal [#6200](https://github.com/ethyca/fides/pull/6200)
-- Earlier initialization strategy for Shopify integration [#6202](https://github.com/ethyca/fides/pull/6202)
 
 ### Fixed
 - Added missing "Awaiting email send" status to privacy request statuses [#6218](https://github.com/ethyca/fides/pull/6218)
 - Fixed FidesJS AMD module loading conflicts when RequireJS or other AMD loaders are present [#6210](https://github.com/ethyca/fides/pull/6210)
 
+## [2.63.2](https://github.com/ethyca/fides/compare/2.63.1...2.63.2)
+
+### Added
+- AWS SES notification service now supports assumed roles through environment variable configuration through `FIDES__CREDENTIALS__NOTIFICATIONS__AWS_SES_ASSUME_ROLE_ARN` [#6206](https://github.com/ethyca/fides/pull/6206)
+- Added Fides-Client header to http logger middleware [#6195](https://github.com/ethyca/fides/pull/6195)
+- Added settings for read-only Redis instance [#6217](https://github.com/ethyca/fides/pull/6217)
+
+### Changed
+- TCF Banners will no longer resurface on reload after dismissal [#6200](https://github.com/ethyca/fides/pull/6200)
+- Earlier initialization strategy for Shopify integration [#6202](https://github.com/ethyca/fides/pull/6202)
+
 
 ## [2.63.1](https://github.com/ethyca/fides/compare/2.63.0...2.63.1)
 - Added support for large (>1GB) database columns by writing the contents to external storage [#6199](https://github.com/ethyca/fides/pull/6199)
 - Added `MonitorTask` and `MonitorTaskExecutionLog` models and db tables [#6178](https://github.com/ethyca/fides/pull/6178) https://github.com/ethyca/fides/labels/db-migration
+- Added ManualTask and ManualTaskReference models, foundational for for ManualDSRs [#6205](https://github.com/ethyca/fides/pull/6205) https://github.com/ethyca/fides/labels/db-migration
 
 ## [2.63.0](https://github.com/ethyca/fides/compare/2.62.0...2.63.0)
 
