@@ -61,7 +61,7 @@ const IntegrationDetailView: NextPage = () => {
 
   const { onOpen, isOpen, onClose } = useDisclosure();
 
-  const { overview, instructions, description, tags, enabledFeatures } =
+  const { overview, instructions, description, enabledFeatures } =
     getIntegrationTypeInfo(connection?.connection_type);
 
   const router = useRouter();
@@ -71,9 +71,6 @@ const IntegrationDetailView: NextPage = () => {
   ) {
     router.push(INTEGRATION_MANAGEMENT_ROUTE);
   }
-
-  // Check if the integration has detection support capability
-  const hasDetectionSupport = tags?.includes("Detection");
 
   const supportsConnectionTest =
     connection?.connection_type !== ConnectionType.MANUAL_WEBHOOK;
@@ -207,16 +204,14 @@ const IntegrationDetailView: NextPage = () => {
               )
             )}
           </div>
-          {hasDetectionSupport && (
-            <div className="w-[350px] shrink-0">
-              <IntegrationSetupSteps
-                testData={testData}
-                testIsLoading={testIsLoading}
-                connectionOption={integrationOption}
-                connection={connection}
-              />
-            </div>
-          )}
+          <div className="w-[350px] shrink-0">
+            <IntegrationSetupSteps
+              testData={testData}
+              testIsLoading={testIsLoading}
+              connectionOption={integrationOption}
+              connection={connection}
+            />
+          </div>
         </AntFlex>
       </PageHeader>
     </Layout>
