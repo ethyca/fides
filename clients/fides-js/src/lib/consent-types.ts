@@ -831,6 +831,7 @@ export enum RejectAllMechanism {
   REJECT_CONSENT_ONLY = "reject_consent_only", // do not reject legitimate interests
 }
 
+// NOTE: updates to this enum should be reflected in the FidesEventDetailsTrigger type and vice versa
 export enum ConsentMethod {
   BUTTON = "button", // deprecated- keeping for backwards-compatibility
   REJECT = "reject",
@@ -839,7 +840,7 @@ export enum ConsentMethod {
   SAVE = "save",
   DISMISS = "dismiss",
   GPC = "gpc",
-  INDIVIDUAL_NOTICE = "individual_notice",
+  INDIVIDUAL_NOTICE = "individual_notice", // api only
   ACKNOWLEDGE = "acknowledge",
   OT_MIGRATION = "ot_migration",
 }

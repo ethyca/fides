@@ -79,6 +79,10 @@ export const dispatchFidesEvent = (
   const cookie = fidesCookie ? { ...fidesCookie } : undefined;
   if (typeof window !== "undefined" && typeof CustomEvent !== "undefined") {
     // Extracts consentMethod directly from the cookie instead of having to pass in duplicate data to this method
+    const trigger = extraDetails?.trigger;
+    if (trigger && typeof trigger === "object" && !("origin" in trigger)) {
+      trigger.origin = "fides";
+    }
     const constructedExtraDetails: FidesEventExtraDetails = {
       consentMethod: cookie?.fides_meta
         .consentMethod as FidesEventExtraDetails["consentMethod"],

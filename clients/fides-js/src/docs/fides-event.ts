@@ -142,17 +142,35 @@ export interface FidesEvent extends CustomEvent {
       /**
        * What consent method (if any) caused this event.
        */
-      consentMethod?: "accept" | "reject" | "save" | "dismiss" | "gpc";
+      consentMethod?:
+        | "accept"
+        | "reject"
+        | "save"
+        | "dismiss"
+        | "acknowledge"
+        | "gpc"
+        | "script"
+        | "ot_migration";
 
       /**
-       * What UI element (if any) triggered this event.
+       * What UI element (if any) triggered this event. Some scripts accept a
+       * trigger object as an optional parameter which can be used to customize
+       * the event details.
        */
       trigger?: {
         /**
+         * Where the event originated from. If the event was triggered using an
+         * SDK script, for example, this will be "external", meaning the event
+         * was triggered by something other than a FidesJS UI element.
+         */
+        origin?: "fides" | "external" | string;
+
+        /**
          * The type of element that triggered the event. Additional types may be
          * added over time (e.g. "link"), so expect this type to grow.
+         * Only present when origin is "fides".
          */
-        type: "toggle" | "button";
+        type?: "toggle" | "button";
 
         /**
          * The UI label of the element that triggered the event.
