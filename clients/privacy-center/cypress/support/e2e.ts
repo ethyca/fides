@@ -19,7 +19,7 @@ import "./commands";
 import { stubIdVerification } from "./stubs";
 
 beforeEach(() => {
-  cy.intercept("/api/v1/**", { statusCode: 200 }).as("unstubbedRequest"); // default stub for all requests
+  cy.intercept("/api/v1/**", { statusCode: 404 }).as("unstubbedRequest"); // default stub for all requests
   // All of these tests assume identity verification is required.
   stubIdVerification();
 });

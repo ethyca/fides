@@ -25,7 +25,7 @@ import { stubHomePage, stubPlus, stubSystemCrud } from "./stubs";
 // Stub global subscriptions because they are required for every page. These just default
 // responses -- interceptions defined later will override them.
 beforeEach(() => {
-  cy.intercept("/api/v1/**", { statusCode: 200 }).as("unstubbedRequest"); // default stub for all requests
+  cy.intercept("/api/v1/**", { statusCode: 404 }).as("unstubbedRequest"); // default stub for all requests
   stubHomePage();
   stubSystemCrud();
   stubPlus(false);
