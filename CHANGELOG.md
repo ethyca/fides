@@ -39,11 +39,17 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Changed
 - TCF Banners will no longer resurface on reload after dismissal [#6200](https://github.com/ethyca/fides/pull/6200)
 - Earlier initialization strategy for Shopify integration [#6202](https://github.com/ethyca/fides/pull/6202)
+<<<<<<< HEAD
 - Integrations detail page now includes a setup guide component. [#6096](https://github.com/ethyca/fides/pull/6096)
+=======
+- Upgraded GPP library to `3.1.7` and added support for Oregon section [#6215](https://github.com/ethyca/fides/pull/6215)
+
+>>>>>>> b03a9f18a016ef8f20254aa76d92b09e5e487efd
 
 ## [2.63.1](https://github.com/ethyca/fides/compare/2.63.0...2.63.1)
 - Added support for large (>1GB) database columns by writing the contents to external storage [#6199](https://github.com/ethyca/fides/pull/6199)
 - Added `MonitorTask` and `MonitorTaskExecutionLog` models and db tables [#6178](https://github.com/ethyca/fides/pull/6178) https://github.com/ethyca/fides/labels/db-migration
+- Added ManualTask and ManualTaskReference models, foundational for for ManualDSRs [#6205](https://github.com/ethyca/fides/pull/6205) https://github.com/ethyca/fides/labels/db-migration
 
 ## [2.63.0](https://github.com/ethyca/fides/compare/2.62.0...2.63.0)
 
