@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.manual_tasks.manual_task import ManualTask, ManualTaskReference
-from fides.api.models.manual_tasks.manual_task_config import ManualTaskConfig
+from fides.api.models.manual_tasks.manual_task_config import ManualTaskConfig, ManualTaskConfigField
 from fides.api.oauth.roles import EXTERNAL_RESPONDENT, RESPONDENT
 from fides.api.schemas.manual_tasks.manual_task_config import ManualTaskFieldType
 from fides.api.schemas.manual_tasks.manual_task_schemas import (
@@ -19,7 +19,11 @@ from fides.service.manual_tasks.manual_task_service import ManualTaskService
 
 # Shared test data
 CONFIG_TYPE = "access_privacy_request"
+TEXT_FIELD_KEY = "test_field"
+CHECKBOX_FIELD_KEY = "test_checkbox_field"
+ATTACHMENT_FIELD_KEY = "test_attachment_field"
 FIELDS = [
+    # Text fields
     {
         "field_key": "field1",
         "field_type": ManualTaskFieldType.text,
@@ -39,6 +43,43 @@ FIELDS = [
             "help_text": "This is field 2",
         },
     },
+    {
+        "field_key": TEXT_FIELD_KEY,
+        "field_type": "text",
+        "field_metadata": {
+            "required": True,
+            "label": "Test Field",
+            "help_text": "This is a test field",
+            "min_length": 1,
+            "max_length": 100,
+            "pattern": "^[a-zA-Z0-9]+$",
+            "placeholder": "Enter a value",
+            "default_value": "default_value",
+        },
+    },
+    # Checkbox fields
+    {
+        "field_key": CHECKBOX_FIELD_KEY,
+        "field_type": "checkbox",
+        "field_metadata": {
+            "required": True,
+            "label": "Test Checkbox Field",
+            "help_text": "This is a test checkbox field",
+        },
+    },
+    # Attachment fields
+    {
+        "field_key": ATTACHMENT_FIELD_KEY,
+        "field_type": "attachment",
+        "field_metadata": {
+            "required": True,
+            "label": "Test Attachment Field",
+            "help_text": "This is a test attachment field",
+            "file_types": ["text/plain", "application/pdf"],
+            "max_file_size": 1000000,
+            "max_file_count": 1,
+        },
+    }
 ]
 
 
@@ -96,6 +137,8 @@ def external_user(db: Session):
     user.delete(db)
 
 
+
+
 @pytest.fixture
 def manual_task_config_service(db: Session):
     return ManualTaskConfigService(db)
@@ -107,7 +150,7 @@ def manual_task_config(
     manual_task: ManualTask,
     manual_task_config_service: ManualTaskConfigService,
 ):
-    manual_task_config_service.create_new_version(
+    return manual_task_config_service.create_new_version(
         task=manual_task,
         config_type=CONFIG_TYPE,
         field_updates=FIELDS,
@@ -117,3 +160,13 @@ def manual_task_config(
 @pytest.fixture
 def manual_task_service(db: Session):
     return ManualTaskService(db)
+
+
+@pytest.fixture
+def manual_task_config_field_1(db: Session, manual_task_config: ManualTaskConfig):
+    return next(field for field in manual_task_config.field_definitions if field.field_key == "field1")
+
+
+@pytest.fixture
+def manual_task_config_field_2(db: Session, manual_task_config: ManualTaskConfig):
+    return next(field for field in manual_task_config.field_definitions if field.field_key == "field2")

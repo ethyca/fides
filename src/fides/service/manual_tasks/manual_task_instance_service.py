@@ -11,7 +11,10 @@ from fides.api.models.manual_tasks.manual_task_instance import (
 )
 from fides.api.models.manual_tasks.manual_task_log import ManualTaskLog
 from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskLogStatus
-from fides.api.schemas.manual_tasks.manual_task_status import StatusType
+from fides.api.schemas.manual_tasks.manual_task_status import (
+    StatusTransitionNotAllowed,
+    StatusType,
+)
 from fides.service.manual_tasks.utils import validate_fields
 
 
@@ -27,7 +30,9 @@ class ManualTaskInstanceService:
         if not instance:
             raise ValueError(f"Instance with ID {instance_id} not found")
         if instance.status == StatusType.completed:
-            raise ValueError(f"Instance with ID {instance.id} is already completed")
+            raise StatusTransitionNotAllowed(
+                f"Instance with ID {instance.id} is already completed"
+            )
 
         return instance
 
@@ -323,8 +328,9 @@ class ManualTaskInstanceService:
             raise ValueError(
                 f"Attachment with ID {attachment_id} not found for submission with ID {submission.id}"
             )
-        # if there is only one attachment delete the submission
-        if len(submission.attachments) == 1:
+        # if there is only one attachment and the submission is for an attachment field, delete the submission
+        if len(submission.attachments) == 1 and submission.field.field_type == "attachment":
+            attachment.delete(self.db)
             logger.info(
                 f"Deleting submission {submission.id} for field {submission.field.field_key}"
             )

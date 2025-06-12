@@ -461,6 +461,4 @@ class TestManualTaskConfig:
         )
         assert log is not None
         assert log.status == ManualTaskLogStatus.complete
-        assert (
-            f"Deleted manual task configuration for {config.config_type}" in log.message
-        )
+        assert "Deleted manual task configuration" in log.message

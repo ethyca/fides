@@ -94,8 +94,8 @@ def upgrade():
         sa.Column("config_id", sa.String(), nullable=False),
         sa.Column("field_id", sa.String(), nullable=False),
         sa.Column("instance_id", sa.String(), nullable=False),
-        sa.Column("submitted_by", sa.Integer(), nullable=False),
-        sa.Column("submitted_at", sa.DateTime(timezone=True), nullable=True),
+        sa.Column("submitted_by", sa.String(), nullable=True),
+        sa.Column("submitted_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("data", JSONB, nullable=False),
         sa.ForeignKeyConstraint(
             ["config_id"], ["manual_task_config.id"], ondelete="CASCADE"
@@ -107,6 +107,9 @@ def upgrade():
             ["instance_id"], ["manual_task_instance.id"], ondelete="CASCADE"
         ),
         sa.ForeignKeyConstraint(["task_id"], ["manual_task.id"], ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(
+            ["submitted_by"], ["fidesuser.id"], ondelete="SET NULL"
+        ),
         sa.PrimaryKeyConstraint("id"),
     )
 

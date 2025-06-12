@@ -140,9 +140,9 @@ class ManualTaskSubmission(Base):
     task_id = Column(String, ForeignKey("manual_task.id"))
     config_id = Column(String, ForeignKey("manual_task_config.id"))
     field_id = Column(String, ForeignKey("manual_task_config_field.id"))
-    instance_id = Column(String, ForeignKey("manual_task_instance.id"), nullable=True)
-    submitted_by = Column(Integer, nullable=False)
-    submitted_at = Column(DateTime, default=datetime.now(timezone.utc))
+    instance_id = Column(String, ForeignKey("manual_task_instance.id"), nullable=False)
+    submitted_by = Column(String, ForeignKey("fidesuser.id"), nullable=True)
+    submitted_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
     data = Column(JSONB, nullable=False)
 
     # Relationships
@@ -166,3 +166,5 @@ class ManualTaskSubmission(Base):
         viewonly=True,
         uselist=True,
     )
+
+    user = relationship("FidesUser", primaryjoin="FidesUser.id == ManualTaskSubmission.submitted_by", viewonly=True)
