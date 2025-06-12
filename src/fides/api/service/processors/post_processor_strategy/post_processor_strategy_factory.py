@@ -9,6 +9,9 @@ from fides.api.schemas.saas.strategy_configuration import StrategyConfiguration
 from fides.api.service.processors.post_processor_strategy.post_processor_strategy import (
     PostProcessorStrategy,
 )
+from fides.api.service.processors.post_processor_strategy.post_processor_strategy_extract_for_execution_log import (
+    ExtractForExecutionLogPostProcessorStrategy,
+)
 from fides.api.service.processors.post_processor_strategy.post_processor_strategy_filter import (
     FilterPostProcessorStrategy,
 )
@@ -24,6 +27,7 @@ class SupportedPostProcessorStrategies(Enum):
 
     unwrap = UnwrapPostProcessorStrategy
     filter = FilterPostProcessorStrategy
+    extract_for_execution_log = ExtractForExecutionLogPostProcessorStrategy
 
     @classmethod
     def __contains__(cls, item: str) -> bool:

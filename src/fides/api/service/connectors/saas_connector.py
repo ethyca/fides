@@ -423,6 +423,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             response_data,
             identity_data,
             cast(Optional[List[PostProcessorStrategy]], saas_request.postprocessors),
+            response,
         )
 
         logger.info(
@@ -456,6 +457,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         response_data: Union[List[Dict[str, Any]], Dict[str, Any]],
         identity_data: Dict[str, Any],
         postprocessors: Optional[List[PostProcessorStrategy]],
+        response: Optional[Response] = None,
     ) -> List[Row]:
         """
         Runs the raw response through all available postprocessors for the request,
@@ -481,7 +483,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                     processed_data,
                     identity_data,
                     privacy_request,
+                    response,
                 )
+
             except Exception as exc:
                 raise PostProcessingException(
                     f"Exception occurred during the '{postprocessor.strategy}' postprocessor "  # type: ignore
@@ -567,6 +571,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             rows,
             privacy_request.get_cached_identity_data(),
             cast(Optional[List[PostProcessorStrategy]], masking_request.postprocessors),
+            None,
         )
 
         client = self.create_client()
