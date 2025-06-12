@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import flag_modified
 
 from fides.api.models.connectionconfig import ConnectionConfig
-from fides.api.models.detection_discovery import (
+from fides.api.models.detection_discovery.core import (
     DiffStatus,
     MonitorConfig,
     MonitorExecution,
@@ -17,6 +17,12 @@ from fides.api.models.detection_discovery import (
     StagedResourceAncestor,
     fetch_staged_resources_by_type_query,
 )
+from fides.api.models.detection_discovery.monitor_task import (
+    MonitorTask,
+    MonitorTaskExecutionLog,
+    MonitorTaskType,
+)
+from fides.api.models.worker_task import ExecutionLogStatus
 
 
 class TestStagedResourceModel:
@@ -472,6 +478,76 @@ class TestMonitorConfigModel:
         )
         assert mc.excluded_databases == ["db3"]
         db.delete(mc)
+
+    def test_delete_monitor_config_cascades_to_monitor_tasks(
+        self, db: Session, monitor_config
+    ) -> None:
+        """Test that deleting a monitor config cascades to its monitor tasks."""
+        # Create multiple monitor tasks for the config
+        task_1 = MonitorTask.create(
+            db=db,
+            data={
+                "celery_id": "test-celery-id-1",
+                "action_type": MonitorTaskType.DETECTION.value,
+                "status": ExecutionLogStatus.pending.value,
+                "monitor_config_id": monitor_config.id,
+            },
+        )
+        task_2 = MonitorTask.create(
+            db=db,
+            data={
+                "celery_id": "test-celery-id-2",
+                "action_type": MonitorTaskType.CLASSIFICATION.value,
+                "status": ExecutionLogStatus.in_processing.value,
+                "monitor_config_id": monitor_config.id,
+            },
+        )
+
+        # Create execution logs for the tasks to verify deep cascading
+        execution_log_1 = MonitorTaskExecutionLog.create(
+            db=db,
+            data={
+                "celery_id": "test-celery-id-exec-1",
+                "monitor_task_id": task_1.id,
+                "status": ExecutionLogStatus.pending.value,
+            },
+        )
+        execution_log_2 = MonitorTaskExecutionLog.create(
+            db=db,
+            data={
+                "celery_id": "test-celery-id-exec-2",
+                "monitor_task_id": task_2.id,
+                "status": ExecutionLogStatus.in_processing.value,
+            },
+        )
+
+        # Store IDs for later verification
+        monitor_config_id = monitor_config.id
+        task_1_id = task_1.id
+        task_2_id = task_2.id
+        execution_log_1_id = execution_log_1.id
+        execution_log_2_id = execution_log_2.id
+
+        # Delete the monitor config
+        db.delete(monitor_config)
+        db.commit()
+
+        # Verify monitor config is deleted
+        assert db.query(MonitorConfig).filter_by(id=monitor_config_id).first() is None
+
+        # Verify tasks are deleted
+        assert db.query(MonitorTask).filter_by(id=task_1_id).first() is None
+        assert db.query(MonitorTask).filter_by(id=task_2_id).first() is None
+
+        # Verify execution logs are deleted (deep cascade)
+        assert (
+            db.query(MonitorTaskExecutionLog).filter_by(id=execution_log_1_id).first()
+            is None
+        )
+        assert (
+            db.query(MonitorTaskExecutionLog).filter_by(id=execution_log_2_id).first()
+            is None
+        )
 
     @pytest.mark.parametrize(
         "monitor_frequency,expected_dict",

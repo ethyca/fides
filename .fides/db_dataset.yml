@@ -2681,3 +2681,45 @@ dataset:
         data_categories: [system.operations]
       - name: updated_at
         data_categories: [system.operations]
+  - name: monitortask
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: action_type
+        data_categories: [system.operations]
+      - name: status
+        data_categories: [system.operations]
+      - name: celery_id
+        data_categories: [system.operations]
+      - name: task_arguments
+        data_categories: [system.operations]
+      - name: message
+        data_categories: [system.operations]
+      - name: monitor_config_id
+        data_categories: [system.operations]
+      - name: staged_resource_urns
+        data_categories: [system.operations]
+      - name: child_resource_urns
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+  - name: monitortaskexecutionlog
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: celery_id
+        data_categories: [system.operations]
+      - name: monitor_task_id
+        data_categories: [system.operations]
+      - name: run_type
+        data_categories: [system.operations]
+      - name: status
+        data_categories: [system.operations]
+      - name: message
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
