@@ -169,11 +169,7 @@ const IntegrationDetailView: NextPage = () => {
   }
 
   if (enabledFeatures?.includes(IntegrationFeatureEnum.DATA_DISCOVERY)) {
-    const isLegacyConnection =
-      !connection?.name && connection?.saas_config?.type === "salesforce";
-
     tabs.push({
-      isDisabled: isLegacyConnection,
       label: "Data discovery",
       content: (
         <MonitorConfigTab
