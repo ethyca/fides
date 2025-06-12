@@ -31,7 +31,7 @@
     "directory": "clients/fides-js"
   },
   "dependencies": {
-    "@iabgpp/cmpapi": "file:./src/lib/gpp/modules/cmpapi",
+    "@iabgpp/cmpapi": "3.1.7",
     "@iabtechlabtcf/cmpapi": "1.5.15",
     "@iabtechlabtcf/core": "1.5.15",
     "@rollup/plugin-replace": "^6.0.2",

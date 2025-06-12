@@ -36,6 +36,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Changed
 - TCF Banners will no longer resurface on reload after dismissal [#6200](https://github.com/ethyca/fides/pull/6200)
 - Earlier initialization strategy for Shopify integration [#6202](https://github.com/ethyca/fides/pull/6202)
+- Upgraded GPP library to `3.1.7` and added support for Oregon section [#6215](https://github.com/ethyca/fides/pull/6215)
 
 
 ## [2.63.1](https://github.com/ethyca/fides/compare/2.63.0...2.63.1)
