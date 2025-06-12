@@ -13,6 +13,7 @@ from fides.api.schemas.manual_tasks.manual_task_config import (
     ManualTaskConfigUpdate,
     ManualTaskConfigurationType,
     ManualTaskField,
+    ManualTaskFieldBase,
     ManualTaskFieldMetadata,
     ManualTaskFieldType,
     ManualTaskTextField,
@@ -373,3 +374,73 @@ class TestManualTaskConfigFieldResponse:
         )
         assert field_response.field_key == "text_field"
         assert field_response.field_type == ManualTaskFieldType.text
+
+
+class TestManualTaskFieldBase:
+    """Tests for the ManualTaskFieldBase class."""
+
+    @pytest.mark.parametrize(
+        "field_type, expected_model",
+        [
+            pytest.param(
+                ManualTaskFieldType.text,
+                ManualTaskTextField,
+                id="text_field_enum",
+            ),
+            pytest.param(
+                "text",
+                ManualTaskTextField,
+                id="text_field_str",
+            ),
+            pytest.param(
+                ManualTaskFieldType.checkbox,
+                ManualTaskCheckboxField,
+                id="checkbox_field_enum",
+            ),
+            pytest.param(
+                "checkbox",
+                ManualTaskCheckboxField,
+                id="checkbox_field_str",
+            ),
+            pytest.param(
+                ManualTaskFieldType.attachment,
+                ManualTaskAttachmentField,
+                id="attachment_field_enum",
+            ),
+            pytest.param(
+                "attachment",
+                ManualTaskAttachmentField,
+                id="attachment_field_str",
+            ),
+        ],
+    )
+    def test_get_field_model_for_type_success(self, field_type, expected_model):
+        """Test successful retrieval of field model classes."""
+        model_class = ManualTaskFieldBase.get_field_model_for_type(field_type)
+        assert model_class == expected_model
+
+    @pytest.mark.parametrize(
+        "invalid_type, expected_error_msg",
+        [
+            pytest.param(
+                "invalid_type",
+                "Invalid field type: 'invalid_type' is not a valid ManualTaskFieldType",
+                id="invalid_string",
+            ),
+            pytest.param(
+                None,
+                "Invalid field type: expected string or ManualTaskFieldType, got NoneType",
+                id="none_type",
+            ),
+            pytest.param(
+                123,
+                "Invalid field type: expected string or ManualTaskFieldType, got int",
+                id="non_string_type",
+            ),
+        ],
+    )
+    def test_get_field_model_for_type_error(self, invalid_type, expected_error_msg):
+        """Test error cases for get_field_model_for_type."""
+        with pytest.raises(ValueError) as exc_info:
+            ManualTaskFieldBase.get_field_model_for_type(invalid_type)
+        assert str(exc_info.value) == expected_error_msg

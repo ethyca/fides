@@ -11,12 +11,9 @@ from fides.api.models.manual_tasks.manual_task_config import (
 )
 from fides.api.models.manual_tasks.manual_task_log import ManualTaskLog
 from fides.api.schemas.manual_tasks.manual_task_config import (
-    ManualTaskAttachmentField,
-    ManualTaskCheckboxField,
     ManualTaskConfigResponse,
     ManualTaskConfigurationType,
-    ManualTaskFieldType,
-    ManualTaskTextField,
+    ManualTaskFieldBase,
 )
 from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskLogStatus
 
@@ -76,16 +73,13 @@ class ManualTaskConfigService:
                 field_type = field.get("field_type")
                 if not field_type:
                     raise ValueError("Invalid field data: field_type is required")
-                if field_type == ManualTaskFieldType.text:
-                    ManualTaskTextField.model_validate(field)
-                elif field_type == ManualTaskFieldType.checkbox:
-                    ManualTaskCheckboxField.model_validate(field)
-                elif field_type == ManualTaskFieldType.attachment:
-                    ManualTaskAttachmentField.model_validate(field)
-                else:
-                    raise ValueError(f"Invalid field type: {field_type}")
+
+                field_model = ManualTaskFieldBase.get_field_model_for_type(field_type)
+                field_model.model_validate(field)
             except ValidationError as e:
                 raise ValueError(f"Invalid field data: {str(e)}")
+            except ValueError as e:
+                raise ValueError(str(e))
 
     def _re_create_existing_fields(
         self,
@@ -93,7 +87,21 @@ class ManualTaskConfigService:
         new_config: ManualTaskConfig,
         modified_field_keys: set[str],
     ) -> None:
-        """Re-create existing fields that aren't being modified with references to the new config."""
+        """Re-create fields from the previous config version that aren't being modified in the new version.
+
+        When creating a new config version, we need to carry over any fields that aren't being
+        modified or removed. This method handles that by:
+        1. Looking at all fields in the previous config
+        2. For each field not in modified_field_keys (not being updated or removed):
+           - Creates a new field record with the same data but linked to the new config
+
+        This ensures that fields maintain continuity across versions unless explicitly changed.
+
+        Args:
+            previous_config: The previous version of the configuration
+            new_config: The new version being created
+            modified_field_keys: Set of field keys that are being updated or removed in the new version
+        """
         # Copy only the fields that aren't being modified
         for field in previous_config.field_definitions:
             if field.field_key not in modified_field_keys:
@@ -113,8 +121,6 @@ class ManualTaskConfigService:
         self, new_config: ManualTaskConfig, field_updates: list[dict[str, Any]]
     ) -> None:
         """Updates fields for a config.
-        If a field has updates it will be recreated for new version.
-        If a the field updates metadata is empty it will not be recreated for new version.
         Args:
             new_config: The config to add fields to
             field_updates: The fields to add or update
@@ -122,10 +128,7 @@ class ManualTaskConfigService:
         self._validate_fields(field_updates)
 
         for update in field_updates:
-            # Do not recreate if this field is empty - This is a removal
-            if update["field_metadata"] == {}:
-                continue
-            # Create new field with updated data - This is an add or update
+            # Create new field with updated data
             ManualTaskConfigField.create(
                 db=self.db,
                 data={
@@ -238,9 +241,18 @@ class ManualTaskConfigService:
         task: ManualTask,
         config_type: str,
         field_updates: Optional[list[dict[str, Any]]] = None,
+        fields_to_remove: Optional[list[str]] = None,
         previous_config: Optional[ManualTaskConfig] = None,
     ) -> ManualTaskConfig:
-        """Create a new version of the configuration."""
+        """Create a new version of the configuration.
+
+        Args:
+            task: The task to create a config for
+            config_type: The type of config to create
+            field_updates: Fields to add or update
+            fields_to_remove: Field keys to remove
+            previous_config: The previous config version, if any
+        """
         new_version = previous_config.version + 1 if previous_config else 1
         # Validate config_type
         try:
@@ -258,17 +270,19 @@ class ManualTaskConfigService:
                 "is_current": True,
             },
         )
-        modified_field_keys = set()
-        # Validate fields if provided
-        # Handle field updates (additions and modifications, removals)
+        modified_field_keys: set[str] = set()
+
+        # Handle field updates (additions and modifications)
         if field_updates:
             self._validate_fields(field_updates)
             self._new_field_updates(new_config, field_updates)
-            modified_field_keys = {
-                str(update.get("field_key"))
-                for update in field_updates
-                if field_updates
-            }
+            modified_field_keys.update(
+                str(update.get("field_key")) for update in field_updates
+            )
+
+        # Handle field removals
+        if fields_to_remove:
+            modified_field_keys.update(fields_to_remove)
 
         # Handle field updates (fields with no changes)
         if previous_config is not None:
@@ -293,6 +307,7 @@ class ManualTaskConfigService:
                     previous_config.version if previous_config else None
                 ),
                 "field_updates": field_updates,
+                "fields_removed": fields_to_remove,
             },
         )
 
@@ -315,7 +330,12 @@ class ManualTaskConfigService:
                 f"No current config found for task {task.id} and type {config_type}"
             )
 
-        self.create_new_version(task, config_type, fields, current_config)
+        self.create_new_version(
+            task=task,
+            config_type=config_type,
+            field_updates=fields,
+            previous_config=current_config,
+        )
 
     def remove_fields(
         self, task: ManualTask, config_type: str, field_keys: list[str]
@@ -338,19 +358,13 @@ class ManualTaskConfigService:
         if not config:
             raise ValueError(f"Config with ID {current_config.id} not found")
 
-        # Create field updates with empty metadata to indicate removal
-        fields_to_remove = [
-            {
-                "field_key": field.field_key,
-                "field_type": field.field_type,
-                "field_metadata": {},
-            }
-            for field in config.field_definitions
-            if field.field_key in field_keys
-        ]
-
         # Create new version with removed fields
-        self.create_new_version(task, config_type, fields_to_remove, config)
+        self.create_new_version(
+            task=task,
+            config_type=config_type,
+            fields_to_remove=field_keys,
+            previous_config=config,
+        )
 
     def delete_config(self, task: ManualTask, config_id: str) -> None:
         """Delete a config for a task.

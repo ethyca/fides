@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import TYPE_CHECKING, Annotated, Literal, Optional
+from typing import TYPE_CHECKING, Annotated, Literal, Optional, Union
 
 from pydantic import ConfigDict, Field, ValidationInfo, field_validator, model_validator
 
@@ -154,6 +154,49 @@ class ManualTaskFieldBase(FidesSchema):
     field_metadata: Annotated[
         ManualTaskFieldMetadata, Field(description="Field metadata and configuration")
     ]
+
+    @classmethod
+    def get_field_model_for_type(
+        cls, field_type: Union[str, ManualTaskFieldType]
+    ) -> type["ManualTaskFieldBase"]:
+        """Get the appropriate field model class for a given field type.
+
+        Args:
+            field_type: The field type as a string or ManualTaskFieldType enum value
+
+        Returns:
+            The appropriate field model class
+
+        Raises:
+            ValueError: If the field type is not recognized
+        """
+        # Handle non-string/non-enum types
+        if not isinstance(field_type, (str, ManualTaskFieldType)):
+            raise ValueError(
+                f"Invalid field type: expected string or ManualTaskFieldType, got {type(field_type).__name__}"
+            )
+
+        # Convert string to enum if needed
+        if isinstance(field_type, str):
+            try:
+                field_type = ManualTaskFieldType(field_type)
+            except ValueError:
+                raise ValueError(
+                    f"Invalid field type: '{field_type}' is not a valid ManualTaskFieldType"
+                )
+
+        # Map field types to their model classes
+        field_type_to_model = {
+            ManualTaskFieldType.text: ManualTaskTextField,
+            ManualTaskFieldType.checkbox: ManualTaskCheckboxField,
+            ManualTaskFieldType.attachment: ManualTaskAttachmentField,
+        }
+
+        model_class = field_type_to_model.get(field_type)
+        if not model_class:
+            raise ValueError(f"No model class found for field type: {field_type}")
+
+        return model_class
 
 
 class ManualTaskTextField(ManualTaskFieldBase):

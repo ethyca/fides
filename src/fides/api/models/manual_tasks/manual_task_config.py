@@ -1,12 +1,6 @@
 from typing import TYPE_CHECKING, Any, Optional
 
-from sqlalchemy import (
-    Boolean,
-    Column,
-    ForeignKey,
-    Integer,
-    String,
-)
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship

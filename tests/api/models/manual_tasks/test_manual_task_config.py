@@ -15,7 +15,6 @@ from fides.api.schemas.manual_tasks.manual_task_config import (
     ManualTaskFieldType,
 )
 
-
 TEXT_FIELD_DATA = {
     "field_key": "test_field",
     "field_type": "text",
