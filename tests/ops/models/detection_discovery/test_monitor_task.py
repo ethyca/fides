@@ -78,10 +78,11 @@ class TestMonitorTask:
     def test_allowed_action_types(self) -> None:
         """Test that allowed_action_types returns the correct list of action types."""
         allowed_types = MonitorTask.allowed_action_types()
-        assert len(allowed_types) == 3
+        assert len(allowed_types) == 4
         assert MonitorTaskType.DETECTION.value in allowed_types
         assert MonitorTaskType.CLASSIFICATION.value in allowed_types
         assert MonitorTaskType.PROMOTION.value in allowed_types
+        assert MonitorTaskType.REMOVAL_PROMOTION.value in allowed_types
 
     def test_invalid_action_type(self, db: Session, monitor_config) -> None:
         """Test that creating a task with an invalid action type raises an error."""
