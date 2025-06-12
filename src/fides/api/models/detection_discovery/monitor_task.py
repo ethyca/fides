@@ -26,6 +26,7 @@ class MonitorTaskType(Enum):
     DETECTION = "detection"
     CLASSIFICATION = "classification"
     PROMOTION = "promotion"
+    REMOVAL_PROMOTION = "removal_promotion"
 
 
 class MonitorTask(WorkerTask, Base):
