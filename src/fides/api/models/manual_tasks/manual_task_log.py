@@ -8,9 +8,11 @@ from sqlalchemy.orm import Session, relationship
 from fides.api.db.base_class import Base
 from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskLogStatus
 
-if TYPE_CHECKING:
-    from fides.api.models.manual_tasks.manual_task import ManualTask
-    from fides.api.models.manual_tasks.manual_task_config import ManualTaskConfig
+if TYPE_CHECKING:  # pragma: no cover
+    from fides.api.models.manual_tasks.manual_task import ManualTask  # pragma: no cover
+    from fides.api.models.manual_tasks.manual_task_config import (
+        ManualTaskConfig,  # pragma: no cover
+    )
 
 
 class ManualTaskLog(Base):

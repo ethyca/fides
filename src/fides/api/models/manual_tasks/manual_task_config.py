@@ -14,6 +14,7 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
 
 from fides.api.db.base_class import Base
+from fides.api.db.util import EnumColumn
 from fides.api.models.manual_tasks.manual_task_log import ManualTaskLog
 from fides.api.schemas.manual_tasks.manual_task_config import (
     ManualTaskConfigurationType,
@@ -21,8 +22,8 @@ from fides.api.schemas.manual_tasks.manual_task_config import (
 )
 from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskLogStatus
 
-if TYPE_CHECKING:
-    from fides.api.models.manual_tasks.manual_task import ManualTask
+if TYPE_CHECKING:  # pragma: no cover
+    from fides.api.models.manual_tasks.manual_task import ManualTask  # pragma: no cover
 
 
 class ManualTaskConfig(Base):
@@ -35,7 +36,7 @@ class ManualTaskConfig(Base):
         return "manual_task_config"
 
     task_id = Column(String, ForeignKey("manual_task.id"), nullable=False)
-    config_type = Column(String, nullable=False)  # Using ManualTaskConfigurationType
+    config_type = Column(EnumColumn(ManualTaskConfigurationType), nullable=False)
     version = Column(Integer, nullable=False, default=1)
     is_current = Column(Boolean, nullable=False, default=True)
 
@@ -52,14 +53,6 @@ class ManualTaskConfig(Base):
         back_populates="config",
         primaryjoin="ManualTaskConfig.id == ManualTaskLog.config_id",
         viewonly=True,
-    )
-
-    __table_args__ = (
-        # Add check constraint for config_type
-        CheckConstraint(
-            "config_type IN ('access_privacy_request', 'erasure_privacy_request')",
-            name="valid_config_type",
-        ),
     )
 
     @classmethod
