@@ -12,6 +12,8 @@ import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectio
 import { AccessLevel } from "~/types/api";
 import { ConnectionType } from "~/types/api/models/ConnectionType";
 
+import { IntegrationFeatureEnum } from "../IntegrationFeatureEnum";
+
 export const SALESFORCE_PLACEHOLDER = {
   name: "Salesforce",
   key: "salesforce_placeholder",
@@ -142,6 +144,7 @@ const SALESFORCE_TYPE_INFO = {
   category: ConnectionCategory.CRM,
   overview: <SalesforceOverview />,
   tags: SALESFORCE_TAGS,
+  enabledFeatures: [IntegrationFeatureEnum.DATA_DISCOVERY],
 };
 
 export default SALESFORCE_TYPE_INFO;
