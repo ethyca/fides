@@ -8,6 +8,7 @@ import getIntegrationTypeInfo, {
 import ConfigureIntegrationForm from "~/features/integrations/add-integration/ConfigureIntegrationForm";
 import IntegrationTypeDetail from "~/features/integrations/add-integration/IntegrationTypeDetail";
 import SelectIntegrationType from "~/features/integrations/add-integration/SelectIntegrationType";
+import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
 
 enum IntegrationModalStep {
@@ -28,6 +29,7 @@ const AddIntegrationModal = ({
 
   const connectionOption = useIntegrationOption(
     integrationType?.placeholder.connection_type,
+    integrationType?.placeholder?.saas_config?.type as SaasConnectionTypes,
   );
 
   const { description } = getIntegrationTypeInfo(

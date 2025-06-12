@@ -43,6 +43,7 @@ from fides.api.util.saas_util import (
     ALL_OBJECT_FIELDS,
     CUSTOM_PRIVACY_REQUEST_FIELDS,
     FIDESOPS_GROUPED_INPUTS,
+    FIELD_LIST,
     ISO_8601_DATETIME,
     MASKED_OBJECT_FIELDS,
     PRIVACY_REQUEST_ID,
@@ -353,6 +354,13 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         param_values[UUID] = str(uuid4())
         param_values[ISO_8601_DATETIME] = datetime.now().date().isoformat()
+        param_values[FIELD_LIST] = ",".join(
+            [
+                field.name
+                for field in self.top_level_field_map().values()
+                if field.data_type() != "None"
+            ]
+        )
         if self.request_task and self.request_task.id:
             param_values[REPLY_TO_TOKEN] = generate_request_task_callback_jwe(
                 self.request_task
@@ -458,6 +466,13 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         param_values[CUSTOM_PRIVACY_REQUEST_FIELDS] = custom_privacy_request_fields
         param_values[UUID] = str(uuid4())
         param_values[ISO_8601_DATETIME] = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
+        param_values[FIELD_LIST] = ",".join(
+            [
+                field.name
+                for field in self.top_level_field_map().values()
+                if field.data_type() != "None"
+            ]
+        )
         if self.request_task and self.request_task.id:
             param_values[REPLY_TO_TOKEN] = generate_request_task_callback_jwe(
                 self.request_task
