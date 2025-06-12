@@ -15,7 +15,6 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
 )
 
 from fides.api.db.base_class import Base, JSONTypeOverride  # type: ignore[attr-defined]
-from fides.api.db.util import EnumColumn
 from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
@@ -25,9 +24,9 @@ from fides.api.models.field_types import EncryptedLargeDataDescriptor
 from fides.api.models.privacy_request.execution_log import (
     COMPLETED_EXECUTION_LOG_STATUSES,
 )
+from fides.api.models.worker_task import ExecutionLogStatus, WorkerTask
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.policy import ActionType
-from fides.api.schemas.privacy_request import ExecutionLogStatus
 from fides.api.util.cache import (
     FidesopsRedis,
     celery_tasks_in_flight,
@@ -68,7 +67,8 @@ class TraversalDetails(FidesSchema):
         )
 
 
-class RequestTask(Base):
+# TODO: At some point we will refactor this model to store all task types in a common table that links to tables with specific task attributes.
+class RequestTask(WorkerTask, Base):
     """
     An individual Task for a Privacy Request.
 
@@ -91,21 +91,6 @@ class RequestTask(Base):
     )  # Of the format dataset_name:collection_name for convenience
     dataset_name = Column(String, nullable=False, index=True)
     collection_name = Column(String, nullable=False, index=True)
-    action_type = Column(EnumColumn(ActionType), nullable=False, index=True)
-
-    # Note that RequestTasks share statuses with ExecutionLogs.  When a RequestTask changes state, an ExecutionLog
-    # is also created with that state.  These are tied tightly together in GraphTask.
-    status = Column(
-        EnumColumn(
-            ExecutionLogStatus,
-            native_enum=False,
-            values_callable=lambda x: [
-                i.value for i in x
-            ],  # Using ExecutionLogStatus values in database, even though app is using the names.
-        ),  # character varying in database
-        index=True,
-        nullable=False,
-    )
 
     upstream_tasks = Column(
         MutableList.as_mutable(JSONB)
@@ -188,6 +173,10 @@ class RequestTask(Base):
         """Convenience helper for asserting whether the task is a terminator task"""
         return self.request_task_address == TERMINATOR_ADDRESS
 
+    @classmethod
+    def allowed_action_types(cls) -> List[str]:
+        return [e.value for e in ActionType]
+
     def get_cached_task_id(self) -> Optional[str]:
         """Gets the cached celery task ID for this request task."""
         cache: FidesopsRedis = get_cache()
@@ -258,7 +247,7 @@ class RequestTask(Base):
         if not tasks_complete and should_log:
             logger.debug(
                 "Upstream tasks incomplete for {} task {}.",
-                self.action_type.value,
+                self.action_type,
                 self.collection_address,
             )
 
@@ -289,7 +278,7 @@ class RequestTask(Base):
             logger.debug(
                 "Celery Task ID {} found for {} task {}.",
                 celery_task_id,
-                self.action_type.value,
+                self.action_type,
                 self.collection_address,
             )
 
@@ -299,7 +288,7 @@ class RequestTask(Base):
             logger.debug(
                 "Celery Task {} already processing for {} task {}.",
                 celery_task_id,
-                self.action_type.value,
+                self.action_type,
                 self.collection_address,
             )
 
