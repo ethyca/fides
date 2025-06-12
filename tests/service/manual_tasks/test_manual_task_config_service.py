@@ -1,3 +1,5 @@
+from typing import Any
+
 import pytest
 from sqlalchemy.orm import Session
 
@@ -7,9 +9,7 @@ from fides.api.models.manual_tasks.manual_task_log import (
     ManualTaskLog,
     ManualTaskLogStatus,
 )
-from fides.api.schemas.manual_tasks.manual_task_config import (
-    ManualTaskFieldType,
-)
+from fides.api.schemas.manual_tasks.manual_task_config import ManualTaskFieldType
 from fides.service.manual_tasks.manual_task_config_service import (
     ManualTaskConfigService,
 )
@@ -170,12 +170,64 @@ class TestManualTaskConfigValidation(TestManualTaskConfigServiceBase):
                 },
             }
         ]
-        with pytest.raises(ValueError, match="Invalid field type: invalid_type"):
+        with pytest.raises(ValueError) as exc_info:
             manual_task_config_service.create_new_version(
                 task=manual_task,
                 config_type=self.config_type,
                 field_updates=invalid_fields,
             )
+        assert (
+            "Invalid field type: 'invalid_type' is not a valid ManualTaskFieldType"
+            in str(exc_info.value)
+        )
+
+    @pytest.mark.parametrize(
+        "field_type, field_metadata, expected_error",
+        [
+            pytest.param(
+                None,
+                {"label": "Field 1", "required": True},
+                "Invalid field data: field_type is required",
+                id="missing_field_type",
+            ),
+            pytest.param(
+                123,
+                {"label": "Field 1", "required": True},
+                "Invalid field type: expected string or ManualTaskFieldType, got int",
+                id="non_string_field_type",
+            ),
+            pytest.param(
+                "text",
+                {"invalid_key": "value"},
+                "Invalid field data",  # Pydantic validation error for missing required field
+                id="invalid_metadata_for_type",
+            ),
+        ],
+    )
+    def test_field_type_validation_cases(
+        self,
+        db: Session,
+        manual_task: ManualTask,
+        manual_task_config_service: ManualTaskConfigService,
+        field_type: Any,
+        field_metadata: dict,
+        expected_error: str,
+    ):
+        """Test various field type validation scenarios."""
+        invalid_fields = [
+            {
+                "field_key": "field1",
+                "field_type": field_type,
+                "field_metadata": field_metadata,
+            }
+        ]
+        with pytest.raises(ValueError) as exc_info:
+            manual_task_config_service.create_new_version(
+                task=manual_task,
+                config_type=self.config_type,
+                field_updates=invalid_fields,
+            )
+        assert expected_error in str(exc_info.value)
 
     def test_invalid_field_metadata(
         self,
@@ -500,7 +552,7 @@ class TestManualTaskConfigFieldUpdates(TestManualTaskConfigServiceBase):
         manual_task: ManualTask,
         manual_task_config_service: ManualTaskConfigService,
     ):
-        """Test updating a field's metadata to empty."""
+        """Test removing a field using fields_to_remove parameter."""
         # Create initial config
         initial_config = manual_task_config_service.create_new_version(
             task=manual_task,
@@ -508,27 +560,28 @@ class TestManualTaskConfigFieldUpdates(TestManualTaskConfigServiceBase):
             field_updates=self.fields,
         )
 
-        # Update field metadata to empty
-        modified_fields = [
-            {
-                "field_key": "field1",
-                "field_type": ManualTaskFieldType.text,
-                "field_metadata": {},  # Empty metadata
-            }
-        ]
+        # Remove field1 using explicit removal
         new_config = manual_task_config_service.create_new_version(
             task=manual_task,
             config_type=self.config_type,
-            field_updates=modified_fields,
+            fields_to_remove=["field1"],
             previous_config=db.query(ManualTaskConfig)
             .filter_by(id=initial_config.id)
             .first(),
         )
 
-        # Verify field was removed (empty metadata indicates removal)
+        # Verify field was removed
+        assert len(new_config.field_definitions) == 1  # Only field2 remains
         assert all(
             field.field_key != "field1" for field in new_config.field_definitions
         )
+        # Verify field2 is still present and unchanged
+        field2 = next(
+            field
+            for field in new_config.field_definitions
+            if field.field_key == "field2"
+        )
+        assert field2.field_metadata["label"] == "Field 2"
 
     def test_update_nonexistent_field(
         self,
@@ -690,6 +743,54 @@ class TestManualTaskConfigFieldManagement(TestManualTaskConfigServiceBase):
             manual_task_config_service.remove_fields(
                 manual_task, self.config_type, ["field1"]
             )
+
+    def test_remove_fields_explicit(
+        self,
+        db: Session,
+        manual_task: ManualTask,
+        manual_task_config_service: ManualTaskConfigService,
+    ):
+        """Test removing fields using explicit field removal."""
+        # Setup - create initial config
+        initial_config = manual_task_config_service.create_new_version(
+            task=manual_task,
+            config_type=self.config_type,
+            field_updates=self.fields,
+        )
+
+        # Execute - remove field1 using explicit removal
+        new_config = manual_task_config_service.create_new_version(
+            task=manual_task,
+            config_type=self.config_type,
+            fields_to_remove=["field1"],
+            previous_config=initial_config,
+        )
+
+        # Verify
+        assert new_config is not None
+        assert new_config.config_type == self.config_type
+        assert new_config.version == 2
+        assert new_config.is_current is True
+        assert len(new_config.field_definitions) == 1  # Only field2 remains
+        assert all(
+            field.field_key != "field1" for field in new_config.field_definitions
+        )
+        field2 = next(
+            field
+            for field in new_config.field_definitions
+            if field.field_key == "field2"
+        )
+        assert field2.field_metadata["label"] == "Field 2"
+
+        # Verify log details include removed fields
+        log = (
+            db.query(ManualTaskLog)
+            .filter_by(task_id=manual_task.id)
+            .order_by(ManualTaskLog.created_at.desc())
+            .first()
+        )
+        assert log is not None
+        assert log.details.get("fields_removed") == ["field1"]
 
 
 class TestManualTaskConfigDeletion(TestManualTaskConfigServiceBase):

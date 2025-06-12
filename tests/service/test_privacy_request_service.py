@@ -14,10 +14,10 @@ from fides.api.models.policy import Policy
 from fides.api.models.pre_approval_webhook import PreApprovalWebhook
 from fides.api.models.privacy_request import ExecutionLog
 from fides.api.models.property import Property
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.oauth.roles import APPROVER
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import (
-    ExecutionLogStatus,
     PrivacyRequestCreate,
     PrivacyRequestSource,
     PrivacyRequestStatus,

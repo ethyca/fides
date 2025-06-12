@@ -1,23 +1,17 @@
 from typing import TYPE_CHECKING, Any, Optional, cast
 
-from sqlalchemy import (
-    Boolean,
-    CheckConstraint,
-    Column,
-    ForeignKey,
-    Integer,
-    String,
-    UniqueConstraint,
-)
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
 
 from fides.api.db.base_class import Base
+from fides.api.db.util import EnumColumn
 from fides.api.models.manual_tasks.manual_task_log import ManualTaskLog
 from fides.api.schemas.manual_tasks.manual_task_config import (
     ManualTaskConfigurationType,
     ManualTaskFieldMetadata,
+    ManualTaskFieldType,
 )
 from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskLogStatus
 
@@ -39,7 +33,7 @@ class ManualTaskConfig(Base):
         return "manual_task_config"
 
     task_id = Column(String, ForeignKey("manual_task.id"), nullable=False)
-    config_type = Column(String, nullable=False)  # Using ManualTaskConfigurationType
+    config_type = Column(EnumColumn(ManualTaskConfigurationType), nullable=False)
     version = Column(Integer, nullable=False, default=1)
     is_current = Column(Boolean, nullable=False, default=True)
 
@@ -62,14 +56,6 @@ class ManualTaskConfig(Base):
         back_populates="config",
         primaryjoin="ManualTaskConfig.id == ManualTaskLog.config_id",
         viewonly=True,
-    )
-
-    __table_args__ = (
-        # Add check constraint for config_type
-        CheckConstraint(
-            "config_type IN ('access_privacy_request', 'erasure_privacy_request')",
-            name="valid_config_type",
-        ),
     )
 
     @classmethod
@@ -114,9 +100,11 @@ class ManualTaskConfigField(Base):
         return "manual_task_config_field"
 
     task_id = Column(String, ForeignKey("manual_task.id"), nullable=False)
-    config_id = Column(String, ForeignKey("manual_task_config.id"))
+    config_id = Column(String, ForeignKey("manual_task_config.id"), nullable=False)
     field_key = Column(String, nullable=False)
-    field_type = Column(String, nullable=False)  # Using ManualTaskFieldType
+    field_type = Column(
+        EnumColumn(ManualTaskFieldType), nullable=False
+    )  # Using ManualTaskFieldType
     field_metadata: dict[str, Any] = cast(
         dict[str, Any], Column(JSONB, nullable=False, default={})
     )
@@ -132,16 +120,6 @@ class ManualTaskConfigField(Base):
         cascade="all, delete-orphan",
     )
 
-    __table_args__ = (
-        # Add check constraint for field_type
-        CheckConstraint(
-            "field_type IN ('text', 'checkbox', 'attachment')", name="valid_field_type"
-        ),
-        CheckConstraint("field_key IS NOT NULL", name="valid_field_key"),
-        # Add unique constraint for field_key per config_id
-        UniqueConstraint("config_id", "field_key", name="unique_field_key_per_config"),
-    )
-
     @property
     def field_metadata_model(self) -> ManualTaskFieldMetadata:
         """Get the field metadata as a Pydantic model."""
@@ -155,17 +133,20 @@ class ManualTaskConfigField(Base):
         cls, db: Session, *, data: dict[str, Any], check_name: bool = True
     ) -> "ManualTaskConfigField":
         """Create a new manual task config field."""
+        # Get the config to access its task_id and check if it exists
+        try:
+            config = (
+                db.query(ManualTaskConfig)
+                .filter(ManualTaskConfig.id == data["config_id"])
+                .first()
+            )
+            if not config:
+                raise ValueError(f"Config with id {data['config_id']} not found")
+        except Exception as e:
+            raise ValueError(f"Config with id {data['config_id']} not found: {e}")
+
         # Create the field and let SQLAlchemy complex type validation handled in service.
         field = super().create(db=db, data=data, check_name=check_name)
-
-        # Get the config to access its task_id
-        config = (
-            db.query(ManualTaskConfig)
-            .filter(ManualTaskConfig.id == data["config_id"])
-            .first()
-        )
-        if not config:
-            raise ValueError(f"Config with id {data['config_id']} not found")
 
         # Create a log entry
         ManualTaskLog.create_log(

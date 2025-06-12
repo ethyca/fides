@@ -1,7 +1,7 @@
 """create manual task config tables
 
 Revision ID: ba414a58ba90
-Revises: 5efcdf18438e
+Revises: 29e56fa1fdb3
 Create Date: 2025-06-09 19:56:18.254209
 
 """
@@ -12,7 +12,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 
 # revision identifiers, used by Alembic.
 revision = "ba414a58ba90"
-down_revision = "5efcdf18438e"
+down_revision = "29e56fa1fdb3"
 branch_labels = None
 depends_on = None
 
@@ -40,10 +40,6 @@ def upgrade():
         sa.Column("is_current", sa.Boolean(), nullable=False, server_default="true"),
         sa.ForeignKeyConstraint(["task_id"], ["manual_task.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
-        sa.CheckConstraint(
-            "config_type IN ('access_privacy_request', 'erasure_privacy_request')",
-            name="valid_config_type",
-        ),
     )
 
     # Create manual_task_config_field table
@@ -63,7 +59,7 @@ def upgrade():
             server_default=sa.text("now()"),
         ),
         sa.Column("task_id", sa.String(), nullable=False),
-        sa.Column("config_id", sa.String(), nullable=True),
+        sa.Column("config_id", sa.String(), nullable=False),
         sa.Column("field_key", sa.String(), nullable=False),
         sa.Column("field_type", sa.String(), nullable=False),
         sa.Column("field_metadata", JSONB, nullable=False, server_default="{}"),
@@ -72,8 +68,8 @@ def upgrade():
             ["config_id"], ["manual_task_config.id"], ondelete="CASCADE"
         ),
         sa.PrimaryKeyConstraint("id"),
-        sa.CheckConstraint(
-            "field_type IN ('text', 'checkbox', 'attachment')", name="valid_field_type"
+        sa.UniqueConstraint(
+            "config_id", "field_key", name="unique_field_key_per_config"
         ),
     )
 

@@ -4,21 +4,16 @@ import pytest
 from sqlalchemy.exc import DataError, IntegrityError, StatementError
 from sqlalchemy.orm import Session
 
-from fides.api.models.manual_tasks.manual_task import ManualTask, ManualTaskReference
+from fides.api.models.manual_tasks.manual_task import ManualTask
 from fides.api.models.manual_tasks.manual_task_config import (
     ManualTaskConfig,
     ManualTaskConfigField,
 )
-from fides.api.models.manual_tasks.manual_task_log import (
-    ManualTaskLog,
-    ManualTaskLogStatus,
-)
+from fides.api.models.manual_tasks.manual_task_log import ManualTaskLogStatus
 from fides.api.schemas.manual_tasks.manual_task_config import (
-    ManualTaskConfigurationType,
     ManualTaskFieldMetadata,
     ManualTaskFieldType,
 )
-from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskReferenceType
 
 TEXT_FIELD_DATA = {
     "field_key": "test_field",
@@ -183,11 +178,11 @@ class TestManualTaskConfigField:
             pytest.param({"field_key": None}, IntegrityError, id="invalid_field_key"),
             pytest.param(
                 {"field_type": "invalid_field_type"},
-                IntegrityError,
+                LookupError,
                 id="invalid_field_type",
             ),
-            pytest.param({"task_id": 9}, IntegrityError, id="invalid_task_id"),
-            pytest.param({"config_id": 9}, IntegrityError, id="invalid_config_id"),
+            pytest.param({"task_id": "9"}, IntegrityError, id="invalid_task_id"),
+            pytest.param({"config_id": "9"}, ValueError, id="invalid_config_id"),
             pytest.param({"invalid_key": "invalid_value"}, TypeError, id="invalid_key"),
         ],
     )
@@ -208,4 +203,46 @@ class TestManualTaskConfigField:
         data.update(invalid_types)
         with pytest.raises(expected_error) as exc_info:
             ManualTaskConfigField.create(db, data=data)
-        assert list(invalid_types.keys())[0] in str(exc_info.value)
+        if "config_id" in invalid_types:
+            assert f"Config with id {data['config_id']} not found" in str(
+                exc_info.value
+            )
+        else:
+            assert list(invalid_types.keys())[0] in str(exc_info.value)
+
+
+class TestManualTaskConfigGetField:
+    def test_get_field_exists(
+        self, db: Session, manual_task: ManualTask, manual_task_config: ManualTaskConfig
+    ):
+        """Test getting a field that exists in the config."""
+        field_data = TEXT_FIELD_DATA.copy()
+        field_data["task_id"] = manual_task.id
+        field_data["config_id"] = manual_task_config.id
+        field = ManualTaskConfigField.create(db, data=field_data)
+
+        result = manual_task_config.get_field(field.field_key)
+        assert result == field
+        assert result.field_key == field_data["field_key"]
+        assert result.field_type == ManualTaskFieldType.text
+
+    @pytest.mark.usefixtures("manual_task", "db")
+    def test_get_field_not_exists(self, manual_task_config: ManualTaskConfig):
+        """Test getting a field that doesn't exist in the config."""
+        result = manual_task_config.get_field("non_existent_field")
+        assert result is None
+
+    def test_get_field_empty_definitions(self, db: Session, manual_task: ManualTask):
+        """Test getting a field when field_definitions is empty."""
+        config = ManualTaskConfig.create(
+            db,
+            data={
+                "task_id": manual_task.id,
+                "config_type": "access_privacy_request",
+                "version": 1,
+                "is_current": True,
+            },
+        )
+        result = config.get_field("any_field")
+        assert result is None
+        assert config.field_definitions == []
