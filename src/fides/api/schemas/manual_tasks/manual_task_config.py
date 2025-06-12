@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, Annotated, Literal, Optional
 
 from pydantic import ConfigDict, Field, ValidationInfo, field_validator, model_validator
 
@@ -32,35 +32,41 @@ class ManualTaskFieldMetadata(FidesSchema):
 
     model_config = ConfigDict(extra="allow")
 
-    label: str = Field(..., description="Display label for the field")
-    required: bool = Field(default=False, description="Whether the field is required")
-    help_text: Optional[str] = Field(
-        None, description="Help text to display with the field"
-    )
+    label: Annotated[str, Field(description="Display label for the field")]
+    required: Annotated[
+        bool, Field(default=False, description="Whether the field is required")
+    ]
+    help_text: Annotated[
+        Optional[str],
+        Field(default=None, description="Help text to display with the field"),
+    ]
 
 
 class ManualTaskTextFieldMetadata(ManualTaskFieldMetadata):
     """Schema text field metadata."""
 
-    placeholder: Optional[str] = Field(
-        None, description="Placeholder text for the field"
-    )
-    default_value: Optional[str] = Field(
-        None, description="Default value for the field"
-    )
-    max_length: Optional[int] = Field(
-        None, description="Maximum length for text fields"
-    )
-    min_length: Optional[int] = Field(
-        None, description="Minimum length for text fields"
-    )
-    pattern: Optional[str] = Field(
-        None,
-        description=(
-            "Regex pattern for validation, for example if the field is an email address, "
-            r"you could use: ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+    placeholder: Annotated[
+        Optional[str], Field(default=None, description="Placeholder text for the field")
+    ]
+    default_value: Annotated[
+        Optional[str], Field(default=None, description="Default value for the field")
+    ]
+    max_length: Annotated[
+        Optional[int], Field(default=None, description="Maximum length for text fields")
+    ]
+    min_length: Annotated[
+        Optional[int], Field(default=None, description="Minimum length for text fields")
+    ]
+    pattern: Annotated[
+        Optional[str],
+        Field(
+            default=None,
+            description=(
+                "Regex pattern for validation, for example if the field is an email address, "
+                r"you could use: ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+            ),
         ),
-    )
+    ]
 
     @field_validator("min_length", "max_length")
     @classmethod
@@ -84,34 +90,51 @@ class ManualTaskTextFieldMetadata(ManualTaskFieldMetadata):
 class ManualTaskCheckboxFieldMetadata(ManualTaskFieldMetadata):
     """Schema for checkbox field metadata."""
 
-    default_value: Optional[bool] = Field(
-        False, description="Default value for the checkbox"
-    )
-    label_true: Optional[str] = Field(None, description="Label for checked state")
-    label_false: Optional[str] = Field(None, description="Label for unchecked state")
+    default_value: Annotated[
+        Optional[bool],
+        Field(default=False, description="Default value for the checkbox"),
+    ]
+    label_true: Annotated[
+        Optional[str], Field(default=None, description="Label for checked state")
+    ]
+    label_false: Annotated[
+        Optional[str], Field(default=None, description="Label for unchecked state")
+    ]
 
 
 class ManualTaskAttachmentFieldMetadata(ManualTaskFieldMetadata):
     """Schema for attachment field metadata."""
 
-    file_types: list[str] = Field(
-        ..., description="Allowed file types for upload fields"
-    )
-    max_file_size: int = Field(
-        ..., description="Maximum file size in bytes for upload fields"
-    )
-    multiple: bool = Field(
-        default=False, description="Whether multiple files can be uploaded"
-    )
-    max_files: Optional[int] = Field(
-        None, description="Maximum number of files allowed when multiple is true"
-    )
-    require_attachment_id: bool = Field(
-        default=True, description="Whether an attachment ID is required for this field"
-    )
-    attachment_ids: Optional[list[str]] = Field(
-        None, description="List of attachment IDs associated with this field"
-    )
+    file_types: Annotated[
+        list[str], Field(description="Allowed file types for upload fields")
+    ]
+    max_file_size: Annotated[
+        int, Field(description="Maximum file size in bytes for upload fields")
+    ]
+    multiple: Annotated[
+        bool, Field(default=False, description="Whether multiple files can be uploaded")
+    ]
+    max_files: Annotated[
+        Optional[int],
+        Field(
+            default=None,
+            description="Maximum number of files allowed when multiple is true",
+        ),
+    ]
+    require_attachment_id: Annotated[
+        bool,
+        Field(
+            default=True,
+            description="Whether an attachment ID is required for this field",
+        ),
+    ]
+    attachment_ids: Annotated[
+        Optional[list[str]],
+        Field(
+            default=None,
+            description="List of attachment IDs associated with this field",
+        ),
+    ]
 
     @model_validator(mode="after")
     def validate_multiple_max_files(self) -> "ManualTaskAttachmentFieldMetadata":
@@ -121,52 +144,56 @@ class ManualTaskAttachmentFieldMetadata(ManualTaskFieldMetadata):
         return self
 
 
-class ManualTaskTextField(FidesSchema):
+class ManualTaskFieldBase(FidesSchema):
+    """Base schema for all field definitions."""
+
+    model_config = ConfigDict(extra="allow")
+
+    field_key: Annotated[str, Field(description="Unique key for the field")]
+    field_type: Annotated[ManualTaskFieldType, Field(description="Type of the field")]
+    field_metadata: Annotated[
+        ManualTaskFieldMetadata, Field(description="Field metadata and configuration")
+    ]
+
+
+class ManualTaskTextField(ManualTaskFieldBase):
     """Schema for text field definition."""
 
-    model_config = ConfigDict(extra="allow")
-
-    field_key: str = Field(..., description="Unique key for the field")
-    field_type: ManualTaskFieldType = Field(
-        ManualTaskFieldType.text, description="Type of the field"
-    )
-    field_metadata: ManualTaskTextFieldMetadata = Field(
-        ..., description="Field metadata and configuration"
-    )
+    field_type: Annotated[
+        Literal[ManualTaskFieldType.text], Field(description="Type of the field")
+    ]
+    field_metadata: Annotated[
+        ManualTaskTextFieldMetadata,
+        Field(description="Field metadata and configuration"),
+    ]
 
 
-class ManualTaskCheckboxField(FidesSchema):
+class ManualTaskCheckboxField(ManualTaskFieldBase):
     """Schema for checkbox field definition."""
 
-    model_config = ConfigDict(extra="allow")
-
-    field_key: str = Field(..., description="Unique key for the field")
-    field_type: ManualTaskFieldType = Field(
-        ManualTaskFieldType.checkbox, description="Type of the field"
-    )
-    field_metadata: ManualTaskCheckboxFieldMetadata = Field(
-        ..., description="Field metadata and configuration"
-    )
+    field_type: Annotated[
+        Literal[ManualTaskFieldType.checkbox], Field(description="Type of the field")
+    ]
+    field_metadata: Annotated[
+        ManualTaskCheckboxFieldMetadata,
+        Field(description="Field metadata and configuration"),
+    ]
 
 
-class ManualTaskAttachmentField(FidesSchema):
+class ManualTaskAttachmentField(ManualTaskFieldBase):
     """Schema for attachment field definition."""
 
-    model_config = ConfigDict(extra="allow")
-
-    field_key: str = Field(..., description="Unique key for the field")
-    field_type: ManualTaskFieldType = Field(
-        ManualTaskFieldType.attachment, description="Type of the field"
-    )
-    field_metadata: ManualTaskAttachmentFieldMetadata = Field(
-        ..., description="Field metadata and configuration"
-    )
+    field_type: Annotated[
+        Literal[ManualTaskFieldType.attachment], Field(description="Type of the field")
+    ]
+    field_metadata: Annotated[
+        ManualTaskAttachmentFieldMetadata,
+        Field(description="Field metadata and configuration"),
+    ]
 
 
-# Union type for all field types
-ManualTaskField = Union[
-    ManualTaskTextField, ManualTaskCheckboxField, ManualTaskAttachmentField
-]
+# Type alias for all field types
+ManualTaskField = ManualTaskFieldBase
 
 
 class ManualTaskConfigCreate(FidesSchema):
@@ -174,13 +201,15 @@ class ManualTaskConfigCreate(FidesSchema):
 
     model_config = ConfigDict(extra="forbid")
 
-    task_id: str = Field(
-        ..., description="ID of the task this configuration belongs to"
-    )
-    config_type: ManualTaskConfigurationType = Field(
-        ..., description="Type of configuration"
-    )
-    fields: list[ManualTaskField] = Field(..., description="List of field definitions")
+    task_id: Annotated[
+        str, Field(description="ID of the task this configuration belongs to")
+    ]
+    config_type: Annotated[
+        ManualTaskConfigurationType, Field(description="Type of configuration")
+    ]
+    fields: Annotated[
+        list[ManualTaskFieldBase], Field(description="List of field definitions")
+    ]
 
 
 class ManualTaskConfigResponse(FidesSchema):
@@ -188,16 +217,20 @@ class ManualTaskConfigResponse(FidesSchema):
 
     model_config = ConfigDict(extra="forbid")
 
-    id: str = Field(..., description="Configuration ID")
-    task_id: str = Field(..., description="Task ID")
-    config_type: ManualTaskConfigurationType = Field(
-        ..., description="Type of configuration"
-    )
-    version: int = Field(..., description="Version of the configuration")
-    is_current: bool = Field(..., description="Whether this is the current version")
-    fields: list[ManualTaskField] = Field(..., description="List of field definitions")
-    created_at: datetime = Field(..., description="Creation timestamp")
-    updated_at: datetime = Field(..., description="Last update timestamp")
+    id: Annotated[str, Field(description="Configuration ID")]
+    task_id: Annotated[str, Field(description="Task ID")]
+    config_type: Annotated[
+        ManualTaskConfigurationType, Field(description="Type of configuration")
+    ]
+    version: Annotated[int, Field(description="Version of the configuration")]
+    is_current: Annotated[
+        bool, Field(description="Whether this is the current version")
+    ]
+    fields: Annotated[
+        list[ManualTaskFieldBase], Field(description="List of field definitions")
+    ]
+    created_at: Annotated[datetime, Field(description="Creation timestamp")]
+    updated_at: Annotated[datetime, Field(description="Last update timestamp")]
 
 
 class ManualTaskConfigUpdate(FidesSchema):
@@ -205,11 +238,13 @@ class ManualTaskConfigUpdate(FidesSchema):
 
     model_config = ConfigDict(extra="forbid", arbitrary_types_allowed=True)
 
-    task_id: str = Field(..., description="ID of the task")
-    config_type: ManualTaskConfigurationType = Field(
-        ..., description="Type of configuration"
-    )
-    fields: list[ManualTaskField] = Field(..., description="List of field definitions")
+    task_id: Annotated[str, Field(description="ID of the task")]
+    config_type: Annotated[
+        ManualTaskConfigurationType, Field(description="Type of configuration")
+    ]
+    fields: Annotated[
+        list[ManualTaskFieldBase], Field(description="List of field definitions")
+    ]
 
 
 class ManualTaskConfigFieldResponse(FidesSchema):
@@ -217,8 +252,8 @@ class ManualTaskConfigFieldResponse(FidesSchema):
 
     model_config = ConfigDict(extra="forbid")
 
-    field_key: str = Field(..., description="Unique key for the field")
-    field_type: ManualTaskFieldType = Field(..., description="Type of the field")
-    field_metadata: ManualTaskFieldMetadata = Field(
-        ..., description="Field metadata and configuration"
-    )
+    field_key: Annotated[str, Field(description="Unique key for the field")]
+    field_type: Annotated[ManualTaskFieldType, Field(description="Type of the field")]
+    field_metadata: Annotated[
+        ManualTaskFieldMetadata, Field(description="Field metadata and configuration")
+    ]
