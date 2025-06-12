@@ -220,6 +220,7 @@ const IntegrationListView: NextPage = () => {
           })}
           rowClassName="cursor-pointer"
           onChange={handleTableChange}
+          data-testid="integrations-table"
         />
       )}
 
