@@ -22,7 +22,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.63.2...main)
 
 ### Added
-- Added ManualTask and ManualTaskReference models, foundational for for ManualDSRs [#6205](https://github.com/ethyca/fides/pull/6205) https://github.com/ethyca/fides/labels/db-migration
 - Added support for Salesforce custom object monitoring using Helios [#6096](https://github.com/ethyca/fides/pull/6096)
 
 ### Changed
