@@ -234,7 +234,7 @@ export const getTcfDefaultPreference = (tcfObject: TcfModelsRecord) =>
  * The banner WILL be shown if:
  * - No prior consent exists
  * - For TCF experiences, when version_hash doesn't match saved hash
- * - Prior consent was only recorded via "dismiss" or "gpc" methods
+ * - Prior consent was only recorded via the "gpc" method
  *
  * @param experience - The privacy experience configuration
  * @param cookie - The current Fides cookie state
@@ -269,10 +269,7 @@ export const shouldResurfaceBanner = (
     if (!!options && isConsentOverride(options)) {
       return false;
     }
-    if (
-      experience.meta?.version_hash &&
-      cookie.fides_meta.consentMethod !== ConsentMethod.DISMISS
-    ) {
+    if (experience.meta?.version_hash) {
       return experience.meta.version_hash !== cookie.tcf_version_hash;
     }
     return true;
