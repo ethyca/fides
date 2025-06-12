@@ -1,17 +1,12 @@
 import {
   AntButton as Button,
   AntSelect as Select,
+  AntTabs as Tabs,
   Box,
   DeleteIcon,
   Flex,
   Heading,
-  HStack,
   SmallAddIcon,
-  Tab,
-  TabList,
-  TabPanel,
-  TabPanels,
-  Tabs,
   VStack,
 } from "fidesui";
 import { FieldArray, useFormikContext } from "formik";
@@ -71,22 +66,23 @@ const TranslationTabButton = ({
   translation,
   name,
   onLanguageDeleted,
+  isActive,
+  onClick,
 }: {
   translation: NoticeTranslationCreate;
   name: string;
   onLanguageDeleted?: (language: string) => void;
+  isActive?: boolean;
+  onClick?: () => void;
 }) => (
   <Flex gap={2} direction="row" w="100%">
-    <Tab
-      as={Button}
-      fontWeight="normal"
+    <Button
+      onClick={onClick}
       key={translation.language}
-      className="grow overflow-x-hidden border-gray-300"
-      textOverflow="ellipsis"
-      _selected={{ color: "white", bg: "gray.500" }}
+      className={`grow overflow-hidden text-ellipsis whitespace-nowrap border-gray-300 ${isActive ? "bg-gray-500 text-white" : ""}`}
     >
       {name}
-    </Tab>
+    </Button>
     {onLanguageDeleted && (
       <Button
         aria-label="Delete translation"
@@ -176,38 +172,29 @@ const PrivacyNoticeTranslationForm = ({
 
   return (
     <FormSection title="Localizations">
-      <Tabs
-        index={tabIndex}
-        onChange={handleTabSelected}
-        as={HStack}
-        spacing={8}
-        align="start"
-        w="100%"
-        orientation="vertical"
-        variant="unstyled"
-      >
+      <Flex gap={8} align="start" w="100%">
         <VStack spacing={4} minW="30%" p={2}>
-          <TabList w="100%">
-            <VStack
-              spacing={2}
-              w="100%"
-              p={4}
-              maxH={60}
-              overflow="scroll"
-              outline="1px solid"
-              outlineColor="gray.200"
-              borderRadius="md"
-            >
-              {values.translations!.map((translation) => (
-                <TranslationTabButton
-                  translation={translation}
-                  key={translation.language}
-                  name={getLanguageDisplayName(translation.language)}
-                  onLanguageDeleted={handleLanguageDeleted}
-                />
-              ))}
-            </VStack>
-          </TabList>
+          <VStack
+            spacing={2}
+            w="100%"
+            p={4}
+            maxH={60}
+            overflow="scroll"
+            outline="1px solid"
+            outlineColor="gray.200"
+            borderRadius="md"
+          >
+            {values.translations!.map((translation, idx) => (
+              <TranslationTabButton
+                translation={translation}
+                key={translation.language}
+                name={getLanguageDisplayName(translation.language)}
+                onLanguageDeleted={handleLanguageDeleted}
+                isActive={idx === tabIndex}
+                onClick={() => handleTabSelected(idx)}
+              />
+            ))}
+          </VStack>
           {isSelectingLanguage && (
             <Select
               autoFocus
@@ -235,21 +222,27 @@ const PrivacyNoticeTranslationForm = ({
           <FieldArray
             name="translations"
             render={() => (
-              <TabPanels w="100%">
-                {values.translations!.map((translation, idx) => (
-                  <TabPanel key={translation.language}>
+              <Tabs
+                activeKey={tabIndex.toString()}
+                onChange={(key) => handleTabSelected(parseInt(key, 10))}
+                items={values.translations!.map((translation, idx) => ({
+                  key: idx.toString(),
+                  label: getLanguageDisplayName(translation.language),
+                  children: (
                     <TranslationFormBlock
                       index={idx}
                       name={getLanguageDisplayName(translation.language)}
                       isOOB={translationIsOOB}
                     />
-                  </TabPanel>
-                ))}
-              </TabPanels>
+                  ),
+                }))}
+                // @ts-ignore -- Ant requires a tab bar but we want to skip it
+                renderTabBar={() => null}
+              />
             )}
           />
         </Box>
-      </Tabs>
+      </Flex>
     </FormSection>
   );
 };
