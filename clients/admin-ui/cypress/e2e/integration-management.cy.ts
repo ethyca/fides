@@ -4,6 +4,7 @@ import {
   stubPlus,
   stubSharedMonitorConfig,
   stubSystemCrud,
+  stubTaxonomyEntities,
 } from "cypress/support/stubs";
 
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
