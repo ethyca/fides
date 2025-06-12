@@ -1,8 +1,6 @@
-import { AntButton as Button, Flex, Spacer, TabList, Tabs } from "fidesui";
+import { AntButton as Button, AntSpin, AntTabs, Flex, Spacer } from "fidesui";
 
-import { FidesTab } from "~/features/common/DataTabs";
 import { useFlags } from "~/features/common/features";
-import FidesSpinner from "~/features/common/FidesSpinner";
 import {
   INTEGRATION_TYPE_LIST,
   IntegrationTypeInfo,
@@ -21,8 +19,13 @@ const SelectIntegrationType = ({
   onDetailClick,
   onConfigureClick,
 }: Props) => {
-  const { tabIndex, onChangeFilter, isFiltering, filteredTypes, tabs } =
-    useIntegrationFilterTabs(INTEGRATION_TYPE_LIST);
+  const {
+    activeKey,
+    onChangeFilter,
+    isUpdatingFilter,
+    filteredTypes,
+    tabItems,
+  } = useIntegrationFilterTabs(INTEGRATION_TYPE_LIST);
 
   const {
     flags: { oktaMonitor, alphaNewManualIntegration },
@@ -30,15 +33,17 @@ const SelectIntegrationType = ({
 
   return (
     <>
-      <Tabs index={tabIndex} onChange={onChangeFilter} mb={4}>
-        <TabList>
-          {tabs.map((label) => (
-            <FidesTab label={label} key={label} />
-          ))}
-        </TabList>
-      </Tabs>
-      {isFiltering ? (
-        <FidesSpinner />
+      <AntTabs
+        activeKey={activeKey}
+        onChange={onChangeFilter}
+        items={tabItems}
+        className="mb-4"
+      />
+      {isUpdatingFilter ? (
+        <AntSpin
+          size="large"
+          className="my-24 flex h-full items-center justify-center"
+        />
       ) : (
         <Flex direction="column">
           {filteredTypes.map((i) => {

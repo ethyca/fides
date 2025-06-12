@@ -1,16 +1,14 @@
 import {
   AntButton as Button,
   AntPagination as Pagination,
+  AntTabs,
   Box,
   LinkIcon,
-  TabList,
-  Tabs,
   useDisclosure,
 } from "fidesui";
 import type { NextPage } from "next";
 import React, { useMemo, useState } from "react";
 
-import { FidesTab } from "~/features/common/DataTabs";
 import FidesSpinner from "~/features/common/FidesSpinner";
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
@@ -39,19 +37,19 @@ const IntegrationListView: NextPage = () => {
 
   const { onOpen, isOpen, onClose } = useDisclosure();
   const {
-    tabIndex,
+    activeKey,
     onChangeFilter,
     anyFiltersApplied,
-    isFiltering,
+    isUpdatingFilter,
     filteredTypes,
-    tabs,
+    tabItems,
   } = useIntegrationFilterTabs(
     items?.map((i) => getIntegrationTypeInfo(i.connection_type)),
   );
 
-  const onChangeTabs = (newIndex: number) => {
+  const onChangeTabs = (newKey: string) => {
     setPage(1);
-    onChangeFilter(newIndex);
+    onChangeFilter(newKey);
   };
 
   const integrations = useMemo(
@@ -78,13 +76,12 @@ const IntegrationListView: NextPage = () => {
         <SharedConfigModal />
       </PageHeader>
       <Box data-testid="integration-tabs" display="flex">
-        <Tabs index={tabIndex} onChange={onChangeTabs} w="full">
-          <TabList>
-            {tabs.map((label) => (
-              <FidesTab label={label} key={label} />
-            ))}
-          </TabList>
-        </Tabs>
+        <AntTabs
+          activeKey={activeKey}
+          onChange={onChangeTabs}
+          items={tabItems}
+          className="w-full"
+        />
         <Box
           borderBottom="2px solid"
           borderColor="gray.200"
@@ -102,7 +99,7 @@ const IntegrationListView: NextPage = () => {
           </Button>
         </Box>
       </Box>
-      {isLoading || isFiltering ? (
+      {isLoading || isUpdatingFilter ? (
         <FidesSpinner />
       ) : (
         <>

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useFlags } from "~/features/common/features/features.slice";
 import { IntegrationTypeInfo } from "~/features/integrations/add-integration/allIntegrationTypes";
 
-export enum IntegrationFilterTabs {
+export enum IntegrationFilterTabLabel {
   ALL = "All",
   DATABASE = "Database",
   DATA_CATALOG = "Data Catalog",
@@ -13,38 +13,46 @@ export enum IntegrationFilterTabs {
   MANUAL = "Manual",
 }
 
+const CHANGE_FILTER_DELAY = 300;
+
 const useIntegrationFilterTabs = (integrationTypes?: IntegrationTypeInfo[]) => {
   const { flags } = useFlags();
-  const tabs = Object.values(IntegrationFilterTabs).filter(
-    (tab) =>
-      (tab !== IntegrationFilterTabs.IDENTITY_PROVIDER || flags.oktaMonitor) &&
-      (tab !== IntegrationFilterTabs.MANUAL || flags.alphaNewManualIntegration), // DEFER (ENG-675): Remove this once the alpha feature is released
-  );
+  const tabItems = Object.values(IntegrationFilterTabLabel)
+    .filter(
+      (tab) =>
+        (tab !== IntegrationFilterTabLabel.IDENTITY_PROVIDER ||
+          flags.oktaMonitor) &&
+        (tab !== IntegrationFilterTabLabel.MANUAL ||
+          flags.alphaNewManualIntegration), // DEFER (ENG-675): Remove this once the alpha feature is released
+    )
+    .map((t) => ({
+      key: t,
+      label: t,
+    }));
 
-  const [tabIndex, setTabIndex] = useState(0);
-  const currentTab = tabs[tabIndex];
+  const [activeKey, setActiveKey] = useState(IntegrationFilterTabLabel.ALL);
 
-  const [isFiltering, setIsFiltering] = useState(false);
+  const [isUpdatingFilter, setIsUpdatingFilter] = useState(false);
 
-  const onChangeFilter = (newIndex: number) => {
-    setIsFiltering(true);
-    setTabIndex(newIndex);
-    setTimeout(() => setIsFiltering(false), 100);
+  const onChangeFilter = (newKey: string) => {
+    setIsUpdatingFilter(true);
+    setActiveKey(newKey as IntegrationFilterTabLabel);
+    setTimeout(() => setIsUpdatingFilter(false), CHANGE_FILTER_DELAY);
   };
 
-  const anyFiltersApplied = currentTab !== IntegrationFilterTabs.ALL;
+  const anyFiltersApplied = activeKey !== IntegrationFilterTabLabel.ALL;
 
   const filteredTypes =
     integrationTypes?.filter(
       (i) =>
-        !anyFiltersApplied || (i.category as string) === (currentTab as string),
+        !anyFiltersApplied || (i.category as string) === (activeKey as string),
     ) ?? [];
 
   return {
-    tabs,
-    tabIndex,
+    tabItems,
+    activeKey,
     anyFiltersApplied,
-    isFiltering,
+    isUpdatingFilter,
     onChangeFilter,
     filteredTypes,
   };
