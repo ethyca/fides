@@ -59,7 +59,7 @@ def upgrade():
             server_default=sa.text("now()"),
         ),
         sa.Column("task_id", sa.String(), nullable=False),
-        sa.Column("config_id", sa.String(), nullable=True),
+        sa.Column("config_id", sa.String(), nullable=False),
         sa.Column("field_key", sa.String(), nullable=False),
         sa.Column("field_type", sa.String(), nullable=False),
         sa.Column("field_metadata", JSONB, nullable=False, server_default="{}"),
@@ -68,8 +68,8 @@ def upgrade():
             ["config_id"], ["manual_task_config.id"], ondelete="CASCADE"
         ),
         sa.PrimaryKeyConstraint("id"),
-        sa.CheckConstraint(
-            "field_type IN ('text', 'checkbox', 'attachment')", name="valid_field_type"
+        sa.UniqueConstraint(
+            "config_id", "field_key", name="unique_field_key_per_config"
         ),
     )
 

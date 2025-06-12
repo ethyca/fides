@@ -4,21 +4,17 @@ import pytest
 from sqlalchemy.exc import DataError, IntegrityError, StatementError
 from sqlalchemy.orm import Session
 
-from fides.api.models.manual_tasks.manual_task import ManualTask, ManualTaskReference
+from fides.api.models.manual_tasks.manual_task import ManualTask
 from fides.api.models.manual_tasks.manual_task_config import (
     ManualTaskConfig,
     ManualTaskConfigField,
 )
-from fides.api.models.manual_tasks.manual_task_log import (
-    ManualTaskLog,
-    ManualTaskLogStatus,
-)
+from fides.api.models.manual_tasks.manual_task_log import ManualTaskLogStatus
 from fides.api.schemas.manual_tasks.manual_task_config import (
-    ManualTaskConfigurationType,
     ManualTaskFieldMetadata,
     ManualTaskFieldType,
 )
-from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskReferenceType
+
 
 TEXT_FIELD_DATA = {
     "field_key": "test_field",
@@ -183,7 +179,7 @@ class TestManualTaskConfigField:
             pytest.param({"field_key": None}, IntegrityError, id="invalid_field_key"),
             pytest.param(
                 {"field_type": "invalid_field_type"},
-                IntegrityError,
+                LookupError,
                 id="invalid_field_type",
             ),
             pytest.param({"task_id": "9"}, IntegrityError, id="invalid_task_id"),

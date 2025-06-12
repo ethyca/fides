@@ -6,8 +6,8 @@ from pydantic import ConfigDict, Field, ValidationInfo, field_validator, model_v
 
 from fides.api.schemas.base_class import FidesSchema
 
-if TYPE_CHECKING:
-    from fides.api.models.manual_tasks.manual_task import ManualTask
+if TYPE_CHECKING:  # pragma: no cover
+    from fides.api.models.manual_tasks.manual_task import ManualTask  # pragma: no cover
 
 
 class ManualTaskConfigurationType(str, Enum):

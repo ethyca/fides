@@ -2,12 +2,10 @@ from typing import TYPE_CHECKING, Any, Optional
 
 from sqlalchemy import (
     Boolean,
-    CheckConstraint,
     Column,
     ForeignKey,
     Integer,
     String,
-    UniqueConstraint,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
@@ -19,6 +17,7 @@ from fides.api.models.manual_tasks.manual_task_log import ManualTaskLog
 from fides.api.schemas.manual_tasks.manual_task_config import (
     ManualTaskConfigurationType,
     ManualTaskFieldMetadata,
+    ManualTaskFieldType,
 )
 from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskLogStatus
 
@@ -97,23 +96,15 @@ class ManualTaskConfigField(Base):
         return "manual_task_config_field"
 
     task_id = Column(String, ForeignKey("manual_task.id"), nullable=False)
-    config_id = Column(String, ForeignKey("manual_task_config.id"))
+    config_id = Column(String, ForeignKey("manual_task_config.id"), nullable=False)
     field_key = Column(String, nullable=False)
-    field_type = Column(String, nullable=False)  # Using ManualTaskFieldType
+    field_type = Column(
+        EnumColumn(ManualTaskFieldType), nullable=False
+    )  # Using ManualTaskFieldType
     field_metadata = Column(JSONB, nullable=False, default={})
 
     # Relationships
     config = relationship("ManualTaskConfig", back_populates="field_definitions")
-
-    __table_args__ = (
-        # Add check constraint for field_type
-        CheckConstraint(
-            "field_type IN ('text', 'checkbox', 'attachment')", name="valid_field_type"
-        ),
-        CheckConstraint("field_key IS NOT NULL", name="valid_field_key"),
-        # Add unique constraint for field_key per config_id
-        UniqueConstraint("config_id", "field_key", name="unique_field_key_per_config"),
-    )
 
     @property
     def field_metadata_model(self) -> ManualTaskFieldMetadata:
