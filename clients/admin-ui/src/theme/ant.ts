@@ -50,6 +50,9 @@ export const antTheme: AntThemeConfig = {
       colorLink: palette.FIDESUI_MINOS,
       colorLinkHover: palette.FIDESUI_NEUTRAL_500,
     },
+    Card: {
+      colorBorderSecondary: palette.FIDESUI_NEUTRAL_200,
+    },
     Input: {
       colorBgContainer: palette.FIDESUI_FULL_WHITE,
     },

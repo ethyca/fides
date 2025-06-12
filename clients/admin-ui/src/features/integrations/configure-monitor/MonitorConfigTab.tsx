@@ -12,6 +12,7 @@ import {
   AntButton as Button,
   Spacer,
   Text,
+  Tooltip,
   useDisclosure,
   VStack,
 } from "fidesui";
@@ -39,6 +40,7 @@ import {
   ConnectionSystemTypeMap,
   ConnectionType,
   MonitorConfig,
+  SystemType,
   WebsiteMonitorParams,
   WebsiteSchema,
 } from "~/types/api";
@@ -66,32 +68,6 @@ const MONITOR_COPIES: Partial<Record<ConnectionType, string>> = {
 
 const columnHelper = createColumnHelper<MonitorConfig>();
 
-const EmptyTableNotice = ({ onAddClick }: { onAddClick: () => void }) => (
-  <VStack
-    mt={6}
-    p={10}
-    spacing={4}
-    borderRadius="base"
-    maxW="70%"
-    data-testid="no-results-notice"
-    alignSelf="center"
-    margin="auto"
-  >
-    <VStack>
-      <Text fontSize="md" fontWeight="600">
-        No monitors
-      </Text>
-      <Text fontSize="sm">
-        You have not configured any data discovery monitors. Click &quot;Add
-        monitor&quot; to configure data discovery now.
-      </Text>
-      <Button onClick={onAddClick} type="primary">
-        Add monitor
-      </Button>
-    </VStack>
-  </VStack>
-);
-
 const MonitorConfigTab = ({
   integration,
   integrationOption,
@@ -101,6 +77,9 @@ const MonitorConfigTab = ({
 }) => {
   const isWebsiteMonitor =
     integrationOption?.identifier === ConnectionType.WEBSITE;
+
+  // Check if this is a SaaS type integration
+  const isSaasIntegration = integrationOption?.type === SystemType.SAAS;
 
   const {
     PAGE_SIZES,
@@ -301,9 +280,38 @@ const MonitorConfigTab = ({
     columnResizeMode: "onChange",
   });
 
+  const EmptyTableNotice = ({ onAddClick }: { onAddClick: () => void }) => (
+    <VStack
+      mt={6}
+      p={10}
+      spacing={4}
+      borderRadius="base"
+      maxW="70%"
+      data-testid="no-results-notice"
+      alignSelf="center"
+      margin="auto"
+    >
+      <VStack>
+        <Text fontSize="md" fontWeight="600">
+          No monitors
+        </Text>
+        <Text fontSize="sm">
+          You have not configured any data discovery monitors. Click &quot;Add
+          monitor&quot; to configure data discovery now.
+        </Text>
+        <Button onClick={onAddClick} type="primary">
+          Add monitor
+        </Button>
+      </VStack>
+    </VStack>
+  );
+
   if (isLoading) {
     return <FidesSpinner />;
   }
+
+  // Check if monitor already exists for SaaS integration
+  const monitorExistsForSaas = isSaasIntegration && monitors.length > 0;
 
   const monitorCopy =
     MONITOR_COPIES[integrationOption?.identifier as ConnectionType] ??
@@ -317,14 +325,30 @@ const MonitorConfigTab = ({
       <TableActionBar>
         <SharedConfigModal />
         <Spacer />
-        <Button
-          onClick={modal.onOpen}
-          icon={<MonitorIcon />}
-          iconPosition="end"
-          data-testid="add-monitor-btn"
-        >
-          Add monitor
-        </Button>
+        {monitorExistsForSaas ? (
+          <Tooltip label="API integrations only use a single monitor">
+            <span>
+              <Button
+                onClick={modal.onOpen}
+                icon={<MonitorIcon />}
+                iconPosition="end"
+                data-testid="add-monitor-btn"
+                disabled
+              >
+                Add monitor
+              </Button>
+            </span>
+          </Tooltip>
+        ) : (
+          <Button
+            onClick={modal.onOpen}
+            icon={<MonitorIcon />}
+            iconPosition="end"
+            data-testid="add-monitor-btn"
+          >
+            Add monitor
+          </Button>
+        )}
         <ConfigureMonitorModal
           isOpen={modal.isOpen}
           onClose={handleCloseModal}

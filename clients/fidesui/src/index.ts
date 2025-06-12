@@ -59,6 +59,7 @@ export {
   Skeleton as AntSkeleton,
   Space as AntSpace,
   Spin as AntSpin,
+  Steps as AntSteps,
   Switch as AntSwitch,
   Table as AntTable,
   Tabs as AntTabs,
