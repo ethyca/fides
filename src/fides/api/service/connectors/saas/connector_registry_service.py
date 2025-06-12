@@ -111,13 +111,6 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
         logger.info("Loading connectors templates from the database.")
         db = get_api_session()
         for template in CustomConnectorTemplate.all(db=db):
-            # # we only want to replace the template if the user chooses to do so. so for now just keep the custom template
-            # if CustomConnectorTemplateLoader._replacement_available(template):
-            #     logger.info(
-            #         f"Replacing {template.key} connector template with newer version."
-            #     )
-            #     template.delete(db=db)
-            #     continue
             try:
                 CustomConnectorTemplateLoader._register_template(template)
             except Exception:
@@ -162,6 +155,7 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
             authorization_required=authorization_required,
             user_guide=config.user_guide,
             supported_actions=config.supported_actions,
+            is_custom=True,
         )
 
         # register the template in the loader's template dictionary

@@ -273,6 +273,7 @@ def get_connection_types(
                         authorization_required=connector_template.authorization_required,
                         user_guide=connector_template.user_guide,
                         supported_actions=connector_template.supported_actions,
+                        is_custom=connector_template.is_custom,
                     )
                 )
 

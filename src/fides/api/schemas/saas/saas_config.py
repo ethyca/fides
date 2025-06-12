@@ -426,6 +426,7 @@ class SaaSConfig(SaaSConfigBase):
     rate_limit_config: Optional[RateLimitConfig] = None
     consent_requests: Optional[ConsentRequestMap] = None
     user_guide: Optional[str] = None
+    is_custom: bool = False
 
     @property
     def top_level_endpoint_dict(self) -> Dict[str, Endpoint]:
