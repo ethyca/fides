@@ -85,7 +85,7 @@ const IntegrationDetailView: NextPage = () => {
     tabs.push({
       label: "Details",
       content: (
-        <Box maxW="720px">
+        <Box>
           <Flex>
             <Button onClick={onOpen} data-testid="manage-btn">
               Edit integration
@@ -107,7 +107,7 @@ const IntegrationDetailView: NextPage = () => {
     tabs.push({
       label: "Connection",
       content: (
-        <Box maxW="720px">
+        <Box>
           {supportsConnectionTest && (
             <Flex
               borderRadius="md"
@@ -169,7 +169,11 @@ const IntegrationDetailView: NextPage = () => {
   }
 
   if (enabledFeatures?.includes(IntegrationFeatureEnum.DATA_DISCOVERY)) {
+    const isLegacyConnection =
+      !connection?.name && connection?.saas_config?.type === "salesforce";
+
     tabs.push({
+      isDisabled: isLegacyConnection,
       label: "Data discovery",
       content: (
         <MonitorConfigTab
@@ -195,8 +199,10 @@ const IntegrationDetailView: NextPage = () => {
         ]}
       >
         <AntFlex gap={24}>
-          <div className="mb-6 grow">
-            <IntegrationBox integration={connection} showDeleteButton />
+          <div className="grow">
+            <div className="mb-6">
+              <IntegrationBox integration={connection} showDeleteButton />
+            </div>
             {integrationIsLoading ? (
               <Spinner />
             ) : (
