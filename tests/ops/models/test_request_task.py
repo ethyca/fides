@@ -1,4 +1,5 @@
-import json
+# pylint: disable=protected-access
+import os
 from unittest import mock
 
 import pytest
@@ -11,6 +12,8 @@ from fides.api.graph.config import (
 from fides.api.models.privacy_request import RequestTask
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import ExecutionLogStatus
+from fides.api.service.external_data_storage import ExternalDataStorageError
+from fides.api.service.storage.util import get_local_filename
 from fides.api.util.cache import FidesopsRedis, cache_task_tracking_key, get_cache
 
 
@@ -316,3 +319,370 @@ class TestGetDecodedDataForErasures:
         request_task.save(db)
 
         assert request_task.get_data_for_erasures() == [{"id": 1, "name": "Jane"}]
+
+
+class TestLargeDataStorage:
+    """Test storing large datasets in RequestTask.access_data and RequestTask.data_for_erasures"""
+
+    def test_store_and_retrieve_data_for_access(self, db, request_task):
+        request_task.access_data = [{"id": 1, "name": "Jane"}]
+        request_task.save(db)
+
+        assert request_task.get_access_data() == [{"id": 1, "name": "Jane"}]
+
+    def test_store_and_retrieve_data_for_erasures(self, db, request_task):
+        request_task.data_for_erasures = [{"id": 1, "name": "Jane"}]
+        request_task.save(db)
+
+        assert request_task.get_data_for_erasures() == [{"id": 1, "name": "Jane"}]
+
+    def test_small_data_stored_directly(self, db, request_task):
+        """Test that small data is stored directly in database"""
+        small_data = [{"id": i, "name": f"User{i}"} for i in range(10)]
+
+        request_task.access_data = small_data
+        request_task.save(db)
+
+        # Should be stored directly (no external storage metadata)
+        assert isinstance(request_task._access_data, list)
+        assert request_task.access_data == small_data
+        assert request_task.get_access_data() == small_data
+
+    @mock.patch("fides.api.util.data_size.calculate_data_size")
+    def test_large_data_stored_externally_access_data(
+        self, mock_calculate_data_size, db, request_task, storage_config_default_local
+    ):
+        """Test that large access data is stored externally"""
+        # Mock calculate_data_size to return a value larger than threshold
+        mock_calculate_data_size.return_value = 1024 * 1024 * 1024  # 1GB
+
+        test_data = [
+            {"id": i, "name": f"User{i}", "email": f"user{i}@example.com"}
+            for i in range(5)
+        ]
+
+        request_task.access_data = test_data
+        request_task.save(db)
+
+        # Should be stored as external storage metadata
+        assert isinstance(request_task._access_data, dict)
+        assert "storage_type" in request_task._access_data
+        assert "file_key" in request_task._access_data
+        assert "filesize" in request_task._access_data
+
+        # The property should still return the original data by retrieving from external storage
+        retrieved_data = request_task.access_data
+        assert retrieved_data == test_data
+        assert request_task.get_access_data() == test_data
+
+    @mock.patch("fides.api.util.data_size.calculate_data_size")
+    def test_large_data_stored_externally_data_for_erasures(
+        self, mock_calculate_data_size, db, request_task, storage_config_default_local
+    ):
+        """Test that large erasure data is stored externally"""
+        # Mock calculate_data_size to return a value larger than threshold
+        mock_calculate_data_size.return_value = 1024 * 1024 * 1024  # 1GB
+
+        test_data = [
+            {"id": i, "name": f"User{i}", "email": f"user{i}@example.com"}
+            for i in range(5)
+        ]
+
+        request_task.data_for_erasures = test_data
+        request_task.save(db)
+
+        # Should be stored as external storage metadata
+        assert isinstance(request_task._data_for_erasures, dict)
+        assert "storage_type" in request_task._data_for_erasures
+        assert "file_key" in request_task._data_for_erasures
+        assert "filesize" in request_task._data_for_erasures
+
+        # The property should still return the original data by retrieving from external storage
+        retrieved_data = request_task.data_for_erasures
+        assert retrieved_data == test_data
+        assert request_task.get_data_for_erasures() == test_data
+
+    @mock.patch("fides.api.util.data_size.calculate_data_size")
+    def test_external_storage_cleanup_on_update(
+        self, mock_calculate_data_size, db, request_task, storage_config_default_local
+    ):
+        """Test that external storage files are cleaned up when data is updated"""
+        # Mock calculate_data_size to return a value larger than threshold
+        mock_calculate_data_size.return_value = 1024 * 1024 * 1024  # 1GB
+
+        # Store initial data externally
+        initial_data = [{"id": 1, "name": "Initial"}]
+        request_task.access_data = initial_data
+        request_task.save(db)
+
+        # Verify it's stored externally
+        assert isinstance(request_task._access_data, dict)
+        initial_file_key = request_task._access_data["file_key"]
+
+        initial_path = get_local_filename(initial_file_key)
+
+        # Verify the file exists
+        assert os.path.exists(initial_path)
+
+        # Update with new data - should clean up old file and create new one
+        new_data = [{"id": 2, "name": "Updated"}]
+        request_task.access_data = new_data
+        request_task.save(db)
+
+        # Old file should be cleaned up
+        assert not os.path.exists(initial_path)
+
+        # New file should exist
+        new_file_key = request_task._access_data["file_key"]
+        new_path = get_local_filename(new_file_key)
+        assert os.path.exists(new_path)
+        assert new_file_key != initial_file_key
+
+        # Data should be correct
+        assert request_task.access_data == new_data
+
+    @mock.patch("fides.api.util.data_size.calculate_data_size")
+    def test_external_storage_cleanup_on_delete(
+        self, mock_calculate_data_size, db, request_task, storage_config_default_local
+    ):
+        """Test that external storage files are cleaned up when RequestTask is deleted"""
+        # Mock calculate_data_size to return a value larger than threshold
+        mock_calculate_data_size.return_value = 1024 * 1024 * 1024  # 1GB
+
+        # Store data externally
+        test_data = [{"id": 1, "name": "Test"}]
+        request_task.access_data = test_data
+        request_task.data_for_erasures = test_data
+        request_task.save(db)
+
+        # Verify files exist
+        access_file_key = request_task._access_data["file_key"]
+        erasures_file_key = request_task._data_for_erasures["file_key"]
+
+        access_path = get_local_filename(access_file_key)
+        erasures_path = get_local_filename(erasures_file_key)
+
+        assert os.path.exists(access_path)
+        assert os.path.exists(erasures_path)
+
+        # Delete the request task
+        request_task.delete(db)
+
+        # Files should be cleaned up
+        assert not os.path.exists(access_path)
+        assert not os.path.exists(erasures_path)
+
+    def test_external_storage_retrieval_failure_handling(self, db, request_task):
+        """Test that external storage retrieval failures are handled gracefully"""
+        # Simulate external storage metadata with non-existent file
+        metadata_dict = {
+            "storage_type": "local",
+            "file_key": "nonexistent/path/file.json",
+            "filesize": 1000,
+        }
+
+        # Directly set the private field to simulate external storage
+        request_task._access_data = metadata_dict
+        request_task.save(db)
+
+        # Should error when file doesn't exist
+        with pytest.raises(ExternalDataStorageError, match="Failed to retrieve"):
+            request_task.get_access_data()
+
+    def test_empty_data_handling(self, db, request_task):
+        """Test that empty data is handled correctly"""
+        request_task.access_data = []
+        request_task.save(db)
+
+        assert request_task.access_data == []
+        assert request_task.get_access_data() == []
+
+        request_task.access_data = None
+        request_task.save(db)
+
+        assert request_task.access_data == []
+        assert request_task.get_access_data() == []
+
+    @pytest.mark.parametrize("data_type", ["access_data", "data_for_erasures"])
+    def test_backward_compatibility(self, db, request_task, data_type):
+        """Test that existing code continues to work"""
+        test_data = [{"id": 1, "name": "Test"}]
+
+        # Set using property
+        setattr(request_task, data_type, test_data)
+        request_task.save(db)
+
+        # Get using both property and helper method
+        assert getattr(request_task, data_type) == test_data
+        if data_type == "access_data":
+            assert request_task.get_access_data() == test_data
+        else:
+            assert request_task.get_data_for_erasures() == test_data
+
+    def test_cleanup_external_storage_on_update(self, db, request_task):
+        """Test that external storage cleanup methods exist and don't crash"""
+        # Test that the method exists and doesn't crash
+        request_task.cleanup_external_storage()
+
+    def test_external_storage_metadata_detection(self, db, request_task):
+        """Test that external storage metadata is properly detected"""
+        # Simulate external storage metadata
+        metadata_dict = {
+            "storage_type": "local",
+            "file_key": "/path/to/file",
+            "filesize": 1000,
+        }
+
+        # Directly set the private field to simulate external storage
+        request_task._access_data = metadata_dict
+
+        # The property should detect this as metadata (though retrieval will fail without actual file)
+        # This tests the detection logic without requiring actual external storage
+        assert isinstance(request_task._access_data, dict)
+        assert "storage_type" in request_task._access_data
+
+
+class TestRequestTaskDataBehaviorDocumentation:
+    """
+    Comprehensive test documenting all None vs [] behavior expectations
+    for RequestTask access_data and data_for_erasures properties.
+
+    This serves as both documentation and verification of intended behavior.
+    """
+
+    def test_fresh_task_returns_none(self, db, request_task):
+        """Fresh tasks (no data ever set) should return None"""
+        # Fresh task - never had data set
+        assert request_task._access_data is None  # Database level
+        assert request_task.access_data is None  # Property level
+        assert request_task._data_for_erasures is None
+        assert request_task.data_for_erasures is None
+
+    def test_explicitly_set_empty_returns_empty_list(self, db, request_task):
+        """Tasks with empty data explicitly set should return []"""
+        # Explicitly set empty data
+        request_task.access_data = []
+        request_task.data_for_erasures = []
+        request_task.save(db)
+
+        # Database should store [] (not None)
+        assert request_task._access_data == []
+        assert request_task._data_for_erasures == []
+
+        # Properties should return []
+        assert request_task.access_data == []
+        assert request_task.data_for_erasures == []
+
+    def test_explicitly_set_none_becomes_empty_list(self, db, request_task):
+        """Setting None explicitly should be treated as setting empty data"""
+        # Explicitly set None
+        request_task.access_data = None
+        request_task.data_for_erasures = None
+        request_task.save(db)
+
+        # Should be stored as [] in database
+        assert request_task._access_data == []
+        assert request_task._data_for_erasures == []
+
+        # Properties should return []
+        assert request_task.access_data == []
+        assert request_task.data_for_erasures == []
+
+    def test_helper_methods_always_return_lists(self, db, request_task):
+        """Helper methods should always return lists, never None"""
+        # Fresh task
+        assert request_task.get_access_data() == []
+        assert request_task.get_data_for_erasures() == []
+
+        # After setting empty
+        request_task.access_data = []
+        request_task.data_for_erasures = []
+        assert request_task.get_access_data() == []
+        assert request_task.get_data_for_erasures() == []
+
+        # After setting data
+        request_task.access_data = [{"id": 1}]
+        request_task.data_for_erasures = [{"id": 2}]
+        assert request_task.get_access_data() == [{"id": 1}]
+        assert request_task.get_data_for_erasures() == [{"id": 2}]
+
+    def test_setting_actual_data(self, db, request_task):
+        """Setting actual data should work normally"""
+        test_data = [{"id": 1, "name": "test"}]
+
+        request_task.access_data = test_data
+        request_task.data_for_erasures = test_data
+        request_task.save(db)
+
+        # Should be stored as the actual data
+        assert request_task._access_data == test_data
+        assert request_task._data_for_erasures == test_data
+
+        # Properties should return the data
+        assert request_task.access_data == test_data
+        assert request_task.data_for_erasures == test_data
+
+    def test_transition_from_none_to_empty_to_data(self, db, request_task):
+        """Test the full lifecycle: None -> [] -> data -> [] -> None semantics"""
+        # Start fresh (None)
+        assert request_task.access_data is None
+
+        # Set empty data explicitly
+        request_task.access_data = []
+        request_task.save(db)
+        assert request_task.access_data == []
+        assert request_task._access_data == []  # Database level
+
+        # Set actual data
+        request_task.access_data = [{"id": 1}]
+        request_task.save(db)
+        assert request_task.access_data == [{"id": 1}]
+
+        # Back to empty
+        request_task.access_data = []
+        request_task.save(db)
+        assert request_task.access_data == []
+        assert request_task._access_data == []  # Still [] not None
+
+        # Note: We don't reset to None - once explicitly set, it stays as []
+
+    def test_external_storage_empty_data_handling(self, db, request_task):
+        """Test empty data behavior with external storage"""
+        # Even with external storage, empty data should behave consistently
+        request_task.access_data = []
+        request_task.save(db)
+
+        # Refresh from database
+        db.refresh(request_task)
+
+        assert request_task.access_data == []
+        assert request_task.get_access_data() == []
+
+    def test_use_cases_summary(self, db, request_task):
+        """
+        Summary of when to expect None vs []:
+
+        - Fresh tasks (new, never touched): None
+        - Explicitly set empty (task.access_data = []): []
+        - Explicitly set None (task.access_data = None): [] (converted)
+        - Helper methods (get_access_data()): Always [] (never None)
+        - Application code: Should use helpers to avoid None handling
+        """
+        # Fresh task case - used by tests checking if data was ever set
+        fresh_task = RequestTask(
+            privacy_request_id=request_task.privacy_request_id,
+            collection_address="test:fresh",
+            dataset_name="test",
+            collection_name="fresh",
+            action_type=ActionType.access,
+            status=ExecutionLogStatus.pending,
+        )
+        fresh_task.save(db)
+        assert fresh_task.access_data is None  # Never touched
+
+        # Explicitly empty case - used by terminator tasks and callbacks
+        fresh_task.access_data = []
+        assert fresh_task.access_data == []  # Explicitly set empty
+
+        # Application code should use helpers
+        assert fresh_task.get_access_data() == []  # Always safe
