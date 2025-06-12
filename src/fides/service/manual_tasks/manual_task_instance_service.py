@@ -134,7 +134,7 @@ class ManualTaskInstanceService:
                 task_id=instance.task_id,
                 config_id=instance.config_id,
                 instance_id=instance.id,
-                status=ManualTaskLogStatus.in_processing,
+                status=ManualTaskLogStatus.in_progress,
                 message=f"Task instance status transitioning from {previous_status} to {new_status}",
                 details={
                     "previous_status": previous_status,
@@ -179,6 +179,8 @@ class ManualTaskInstanceService:
             submission = ManualTaskSubmission.create(
                 self.db,
                 data={
+                    "task_id": instance.task_id,
+                    "config_id": instance.config_id,
                     "instance_id": instance.id,
                     "field_id": field.id,
                     "data": data,

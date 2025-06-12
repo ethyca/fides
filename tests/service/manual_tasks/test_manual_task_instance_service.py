@@ -28,25 +28,6 @@ from tests.service.manual_tasks.conftest import TEXT_FIELD_KEY, CHECKBOX_FIELD_K
 
 
 @pytest.fixture
-def attachment(db: Session, manual_task_submission: ManualTaskSubmission, attachment_data: dict[str, Any]):
-    attachment = Attachment.create_and_upload(
-        db=db,
-        data=attachment_data,
-        attachment_file=BytesIO(b"test contents"),
-    )
-    # Link attachment to submission
-    AttachmentReference.create(
-        db=db,
-        data={
-            "attachment_id": attachment.id,
-            "reference_id": manual_task_submission.id,
-            "reference_type": "manual_task_submission",
-        },
-    )
-    yield attachment
-    attachment.delete(db)
-
-@pytest.fixture
 def manual_task_instance_service(db: Session) -> ManualTaskInstanceService:
     """Fixture for ManualTaskInstanceService."""
     return ManualTaskInstanceService(db)
@@ -127,7 +108,6 @@ def manual_task_submission_checkbox(
 def manual_task_submission_attachment(
     db: Session,
     manual_task_instance: ManualTaskInstance,
-    manual_task_config_field_3: ManualTaskConfigField,
     respondent_user: FidesUser,
 ):
     submission = ManualTaskSubmission.create(
@@ -150,6 +130,27 @@ def manual_task_submission_attachment(
     )
     yield submission
     submission.delete(db)
+
+
+@pytest.fixture
+def attachment(db: Session, manual_task_submission_attachment: ManualTaskSubmission, attachment_data: dict[str, Any]):
+    attachment = Attachment.create_and_upload(
+        db=db,
+        data=attachment_data,
+        attachment_file=BytesIO(b"test contents"),
+    )
+    # Link attachment to submission
+    AttachmentReference.create(
+        db=db,
+        data={
+            "attachment_id": attachment.id,
+            "reference_id": manual_task_submission_attachment.id,
+            "reference_type": "manual_task_submission",
+        },
+    )
+    yield attachment
+    attachment.delete(db)
+
 
 
 
@@ -200,7 +201,7 @@ class TestManualTaskInstanceService:
 
         # Verify log was created
         log = manual_task_instance.logs[-1]
-        assert log.status == ManualTaskLogStatus.in_processing
+        assert log.status == ManualTaskLogStatus.in_progress
         assert "status transitioning" in log.message
 
     def test_create_submission(
@@ -232,7 +233,7 @@ class TestManualTaskInstanceService:
 
         # Verify log was created
         log = manual_task_instance.logs[-1]
-        assert log.status == ManualTaskLogStatus.complete
+        assert log.status == ManualTaskLogStatus.in_progress
         assert "Created submission" in log.message
 
     def test_update_submission(
@@ -294,11 +295,15 @@ class TestManualTaskInstanceService:
         }
 
         submission = manual_task_instance_service.create_or_update_submission(
+            task_id=manual_task_instance.task_id,
+            config_id=manual_task_instance.config_id,
             instance_id=manual_task_instance.id,
             field_id=manual_task_config_field_1.id,
             data=data,
         )
 
+        assert submission.task_id == manual_task_instance.task_id
+        assert submission.config_id == manual_task_instance.config_id
         assert submission.instance_id == manual_task_instance.id
         assert submission.field_id == manual_task_config_field_1.id
         assert submission.data == data
@@ -402,9 +407,8 @@ class TestManualTaskInstanceService:
         manual_task_instance_service: ManualTaskInstanceService,
         manual_task_instance: ManualTaskInstance,
         manual_task_config_field_1: ManualTaskConfigField,
-        submission: ManualTaskSubmission,
+        manual_task_submission_attachment: ManualTaskSubmission,
         attachment: Attachment,
-        attachment_data: dict[str, Any],
     ) -> None:
         """Test deleting the only attachment for a submission."""
 
@@ -412,13 +416,13 @@ class TestManualTaskInstanceService:
         manual_task_instance_service.delete_attachment_by_id(
             instance_id=manual_task_instance.id,
             field_id=manual_task_config_field_1.id,
-            submission_id=None,
+            submission_id=manual_task_submission_attachment.id,
             attachment_id=attachment.id,
         )
 
         # Verify submission was deleted
         assert (
-            db.query(ManualTaskSubmission).filter_by(id=submission.id).first() is None
+            db.query(ManualTaskSubmission).filter_by(id=manual_task_submission_attachment.id).first() is None
         )
 
     @pytest.mark.usefixtures("mock_s3_client", "s3_client")
@@ -428,7 +432,7 @@ class TestManualTaskInstanceService:
         manual_task_instance_service: ManualTaskInstanceService,
         manual_task_instance: ManualTaskInstance,
         manual_task_config_field_1: ManualTaskConfigField,
-        manual_task_submission: ManualTaskSubmission,
+        manual_task_submission_attachment: ManualTaskSubmission,
         respondent_user: FidesUser,
         attachment: Attachment,
         attachment_data: dict[str, Any],
@@ -447,7 +451,7 @@ class TestManualTaskInstanceService:
             db=db,
             data={
                 "attachment_id": attachment2.id,
-                "reference_id": manual_task_submission.id,
+                "reference_id": manual_task_submission_attachment.id,
                 "reference_type": "manual_task_submission",
             },
         )
@@ -464,11 +468,11 @@ class TestManualTaskInstanceService:
         assert db.query(Attachment).filter_by(id=attachment.id).first() is None
         assert db.query(Attachment).filter_by(id=attachment2.id).first() is not None
         assert (
-            db.query(ManualTaskSubmission).filter_by(id=manual_task_submission.id).first()
+            db.query(ManualTaskSubmission).filter_by(id=manual_task_submission_attachment.id).first()
             is not None
         )
-        assert len(manual_task_submission.attachments) == 1
-        assert manual_task_submission.attachments[0].id == attachment2.id
+        assert len(manual_task_submission_attachment.attachments) == 1
+        assert manual_task_submission_attachment.attachments[0].id == attachment2.id
 
     def test_delete_attachment_by_id_completed_instance(
         self,
@@ -476,21 +480,10 @@ class TestManualTaskInstanceService:
         manual_task_instance_service: ManualTaskInstanceService,
         manual_task_instance: ManualTaskInstance,
         manual_task_config_field_1: ManualTaskConfigField,
+        manual_task_submission_attachment: ManualTaskSubmission,
         attachment: Attachment,
     ) -> None:
         """Test deleting attachment fails for completed instance."""
-        # Create a submission with an attachment
-        data = {
-            "field_key": manual_task_config_field_1.field_key,
-            "field_type": manual_task_config_field_1.field_type,
-            "value": "test value",
-        }
-        submission = manual_task_instance_service.create_submission(
-            instance=manual_task_instance,
-            field=manual_task_config_field_1,
-            data=data,
-        )
-
         # Complete the instance
         manual_task_instance_service.complete_task_instance(
             instance_id=manual_task_instance.id,
@@ -512,17 +505,17 @@ class TestManualTaskInstanceService:
         manual_task_instance_service: ManualTaskInstanceService,
         manual_task_instance: ManualTaskInstance,
         manual_task_config_field_1: ManualTaskConfigField,
-        manual_task_submission: ManualTaskSubmission,
+        manual_task_submission_attachment: ManualTaskSubmission,
     ) -> None:
         """Test deleting non-existent attachment."""
-        # Create a submission
-
-
-        # Try to delete the unlinked attachment
+        field = next(
+            field for field in manual_task_instance.config.field_definitions
+            if field.field_key == ATTACHMENT_FIELD_KEY
+        )
         with pytest.raises(ValueError, match="not found for submission"):
             manual_task_instance_service.delete_attachment_by_id(
                 instance_id=manual_task_instance.id,
-                field_id=manual_task_config_field_1.id,
-                submission_id=manual_task_submission.id,
+                field_id=field.id,
+                submission_id=manual_task_submission_attachment.id,
                 attachment_id = "invalid-attachment-id"
             )

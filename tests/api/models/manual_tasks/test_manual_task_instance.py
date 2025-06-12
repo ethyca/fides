@@ -101,6 +101,7 @@ def test_completed_fields(
     db: Session,
     manual_task_instance: ManualTaskInstance,
     manual_task_config_field_1: ManualTaskConfigField,
+    user: FidesUser,
 ):
     """Test getting completed fields."""
     # Initially no completed fields
@@ -114,7 +115,7 @@ def test_completed_fields(
             "config_id": manual_task_instance.config_id,
             "field_id": manual_task_config_field_1.id,
             "instance_id": manual_task_instance.id,
-            "submitted_by": 1,
+            "submitted_by": user.id,
             "data": {"value": "test"},
         },
     )
@@ -131,6 +132,7 @@ def test_attachments(
     manual_task_instance: ManualTaskInstance,
     manual_task_config_field_1: ManualTaskConfigField,
     attachment_data: dict[str, Any],
+    user: FidesUser,
 ):
     """Test getting attachments."""
     # Create a submission with an attachment
@@ -141,7 +143,7 @@ def test_attachments(
             "config_id": manual_task_instance.config_id,
             "field_id": manual_task_config_field_1.id,
             "instance_id": manual_task_instance.id,
-            "submitted_by": 1,
+            "submitted_by": user.id,
             "data": {"value": "test"},
         },
     )
@@ -192,6 +194,7 @@ def test_create_manual_task_submission(
     db: Session,
     manual_task_instance: ManualTaskInstance,
     manual_task_config_field_1: ManualTaskConfigField,
+    user: FidesUser,
 ):
     """Test creating a manual task submission."""
     submission = ManualTaskSubmission.create(
@@ -201,7 +204,7 @@ def test_create_manual_task_submission(
             "config_id": manual_task_instance.config_id,
             "field_id": manual_task_config_field_1.id,
             "instance_id": manual_task_instance.id,
-            "submitted_by": 1,
+            "submitted_by": user.id,
             "data": {"value": "test"},
         },
     )
@@ -210,7 +213,7 @@ def test_create_manual_task_submission(
     assert submission.config_id == manual_task_instance.config_id
     assert submission.field_id == manual_task_config_field_1.id
     assert submission.instance_id == manual_task_instance.id
-    assert submission.submitted_by == 1
+    assert submission.submitted_by == user.id
     assert submission.data == {"value": "test"}
     assert submission.submitted_at is not None
 
@@ -289,6 +292,7 @@ def test_submission_data_validation(
     db: Session,
     manual_task_instance: ManualTaskInstance,
     manual_task_config_field_1: ManualTaskConfigField,
+    user: FidesUser,
 ):
     """Test submission data validation."""
     # Test with valid data
@@ -299,7 +303,7 @@ def test_submission_data_validation(
             "config_id": manual_task_instance.config_id,
             "field_id": manual_task_config_field_1.id,
             "instance_id": manual_task_instance.id,
-            "submitted_by": 1,
+            "submitted_by": user.id,
             "data": {"value": "test"},
         },
     )
@@ -314,7 +318,7 @@ def test_submission_data_validation(
             "config_id": manual_task_instance.config_id,
             "field_id": manual_task_config_field_1.id,
             "instance_id": manual_task_instance.id,
-            "submitted_by": 1,
+            "submitted_by": user.id,
             "data": {},
         },
     )
@@ -324,6 +328,7 @@ def test_submission_cascade_delete(
     db: Session,
     manual_task_instance: ManualTaskInstance,
     manual_task_config_field_1: ManualTaskConfigField,
+    user: FidesUser,
 ):
     """Test that submissions are deleted when instance is deleted."""
     # Create a submission
@@ -334,7 +339,7 @@ def test_submission_cascade_delete(
             "config_id": manual_task_instance.config_id,
             "field_id": manual_task_config_field_1.id,
             "instance_id": manual_task_instance.id,
-            "submitted_by": 1,
+            "submitted_by": user.id,
             "data": {"value": "test"},
         },
     )
@@ -354,6 +359,7 @@ def test_submission_timestamps(
     db: Session,
     manual_task_instance: ManualTaskInstance,
     manual_task_config_field_1: ManualTaskConfigField,
+    user: FidesUser,
 ):
     """Test submission timestamp handling."""
     # Create initial submission
@@ -364,7 +370,7 @@ def test_submission_timestamps(
             "config_id": manual_task_instance.config_id,
             "field_id": manual_task_config_field_1.id,
             "instance_id": manual_task_instance.id,
-            "submitted_by": 1,
+            "submitted_by": user.id,
             "data": {"value": "test"},
         },
     )

@@ -13,11 +13,11 @@ from fides.api.schemas.manual_tasks.manual_task_status import (
     StatusType,
 )
 
-if TYPE_CHECKING:
-    from fides.api.models.attachment import Attachment
-    from fides.api.models.manual_tasks.manual_task import ManualTask
-    from fides.api.models.manual_tasks.manual_task_config import ManualTaskConfig
-    from fides.api.models.manual_tasks.manual_task_log import ManualTaskLog
+if TYPE_CHECKING:  # pragma: no cover
+    from fides.api.models.attachment import Attachment  # pragma: no cover
+    from fides.api.models.manual_tasks.manual_task import ManualTask  # pragma: no cover
+    from fides.api.models.manual_tasks.manual_task_config import ManualTaskConfig  # pragma: no cover
+    from fides.api.models.manual_tasks.manual_task_log import ManualTaskLog  # pragma: no cover
 
 
 class ManualTaskInstance(Base, StatusTransitionMixin):

@@ -8,7 +8,6 @@ from fides.api.models.manual_tasks.manual_task_log import (
     ManualTaskLogStatus,
 )
 from fides.api.schemas.manual_tasks.manual_task_config import (
-    ManualTaskConfigurationType,
     ManualTaskFieldType,
 )
 from fides.service.manual_tasks.manual_task_config_service import (
@@ -121,7 +120,7 @@ class TestManualTaskConfigCreation(TestManualTaskConfigServiceBase):
 
         # Verify fields
         assert (
-            len(new_config.field_definitions) == 2
+            len(new_config.field_definitions) == len(self.fields)
         )  # one original field, one modified field
         field1 = next(
             field
@@ -569,8 +568,9 @@ class TestManualTaskConfigFieldUpdates(TestManualTaskConfigServiceBase):
         assert (
             len(new_config.field_definitions) == len(self.fields) + 1
         )  # one original fields, one new field
+        field_keys = [field["field_key"] for field in self.fields]
         assert all(
-            field.field_key in ["field1", "field2", "nonexistent_field"]
+            field.field_key in field_keys + ["nonexistent_field"]
             for field in new_config.field_definitions
         )
 
@@ -611,7 +611,7 @@ class TestManualTaskConfigFieldManagement(TestManualTaskConfigServiceBase):
             manual_task, self.config_type
         )
         assert current_config is not None
-        assert len(current_config.field_definitions) == 3
+        assert len(current_config.field_definitions) == len(self.fields) + 1
         field3 = next(
             field
             for field in current_config.field_definitions
@@ -665,7 +665,7 @@ class TestManualTaskConfigFieldManagement(TestManualTaskConfigServiceBase):
             manual_task, self.config_type
         )
         assert current_config is not None
-        assert len(current_config.field_definitions) == 1
+        assert len(current_config.field_definitions) == len(self.fields) - 1
         assert all(
             field.field_key != "field1" for field in current_config.field_definitions
         )

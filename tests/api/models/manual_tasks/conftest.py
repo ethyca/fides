@@ -4,6 +4,7 @@ import pytest
 from sqlalchemy.orm import Session
 
 from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.fides_user import FidesUser
 from fides.api.models.manual_tasks.manual_task import ManualTask
 from fides.api.models.manual_tasks.manual_task_config import (
     ManualTaskConfig,
@@ -121,6 +122,7 @@ def manual_task_submission(
     manual_task_config: ManualTaskConfig,
     manual_task_instance: ManualTaskInstance,
     manual_task_config_field_1: ManualTaskConfigField,
+    user: FidesUser,
 ) -> Generator[ManualTaskSubmission, None, None]:
     """Create a test manual task submission."""
     submission = ManualTaskSubmission.create(
@@ -130,7 +132,7 @@ def manual_task_submission(
             "config_id": manual_task_config.id,
             "field_id": manual_task_config_field_1.id,
             "instance_id": manual_task_instance.id,
-            "submitted_by": 1,
+            "submitted_by": user.id,
             "data": {"value": "test"},
         },
     )

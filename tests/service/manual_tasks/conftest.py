@@ -150,12 +150,13 @@ def manual_task_config(
     manual_task: ManualTask,
     manual_task_config_service: ManualTaskConfigService,
 ):
-    return manual_task_config_service.create_new_version(
+    config = manual_task_config_service.create_new_version(
         task=manual_task,
         config_type=CONFIG_TYPE,
         field_updates=FIELDS,
     )
-
+    yield config
+    config.delete(db)
 
 @pytest.fixture
 def manual_task_service(db: Session):
@@ -164,9 +165,13 @@ def manual_task_service(db: Session):
 
 @pytest.fixture
 def manual_task_config_field_1(db: Session, manual_task_config: ManualTaskConfig):
-    return next(field for field in manual_task_config.field_definitions if field.field_key == "field1")
+    field = next(field for field in manual_task_config.field_definitions if field.field_key == "field1")
+    yield field
+    field.delete(db)
 
 
 @pytest.fixture
 def manual_task_config_field_2(db: Session, manual_task_config: ManualTaskConfig):
-    return next(field for field in manual_task_config.field_definitions if field.field_key == "field2")
+    field = next(field for field in manual_task_config.field_definitions if field.field_key == "field2")
+    yield field
+    field.delete(db)
