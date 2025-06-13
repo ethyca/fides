@@ -105,7 +105,10 @@ const useDatamapGraph = ({ data }: UseDatamapGraphProps) => {
     );
 
     // 2. Lay out the unlinked nodes in a simple grid
-    const GRID_COLS = 4; // number of columns in top grid
+    // Choose a column count that approximates a square grid so the layout
+    // remains compact horizontally and vertically. For N nodes, use
+    // ceil(sqrt(N)) columns (with a minimum of 1).
+    const GRID_COLS = Math.max(1, Math.ceil(Math.sqrt(gridNodes.length)));
     const H_SPACING = 240; // horizontal distance between nodes (px)
     const V_SPACING = 120; // vertical distance between nodes (px)
 
