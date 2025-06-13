@@ -943,7 +943,6 @@ describe("Integration management for data detection & discovery", () => {
         cy.visit("/integrations/salesforce_integration");
         cy.wait("@getAuthorizedSalesforceConnection");
         cy.wait("@getConnectionTypes");
-        cy.wait("@getMonitors");
 
         cy.getByTestId("integration-setup-card")
           .should("exist")

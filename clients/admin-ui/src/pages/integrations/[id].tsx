@@ -43,7 +43,9 @@ const IntegrationDetailView: NextPage = () => {
     Object.values(SaasConnectionTypes).includes(type as SaasConnectionTypes);
 
   const integrationOption = useIntegrationOption(
-    connection?.connection_type,
+    connection?.connection_type === ConnectionType.SAAS
+      ? ConnectionType.SAAS
+      : connection?.connection_type,
     saasType && isSaasType(saasType) ? saasType : undefined,
   );
 
@@ -62,7 +64,10 @@ const IntegrationDetailView: NextPage = () => {
   const { onOpen, isOpen, onClose } = useDisclosure();
 
   const { overview, instructions, description, enabledFeatures } =
-    getIntegrationTypeInfo(connection?.connection_type);
+    getIntegrationTypeInfo(
+      connection?.connection_type,
+      connection?.saas_config?.type,
+    );
 
   const router = useRouter();
   if (

@@ -83,6 +83,7 @@ const IntegrationListView: NextPage = () => {
         ...integration,
         integrationTypeInfo: getIntegrationTypeInfo(
           integration.connection_type,
+          integration.saas_config?.type,
         ),
       })) ?? [],
     [items],
@@ -116,7 +117,11 @@ const IntegrationListView: NextPage = () => {
       key: "connection_type",
       width: 150,
       render: (connectionType) => {
-        const typeInfo = getIntegrationTypeInfo(connectionType);
+        const typeInfo = getIntegrationTypeInfo(
+          connectionType,
+          items?.find((item) => item.connection_type === connectionType)
+            ?.saas_config?.type,
+        );
         return <Tag>{typeInfo.placeholder.name || connectionType}</Tag>;
       },
     },

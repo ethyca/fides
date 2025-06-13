@@ -10,7 +10,12 @@ export const useCreateMonitorStep = (
 ): Step | null => {
   // Get the integration type info to check enabled features
   const { enabledFeatures } = getIntegrationTypeInfo(
-    params.connectionOption?.identifier as ConnectionType | undefined,
+    params.connectionOption?.type === "saas"
+      ? ConnectionType.SAAS
+      : (params.connectionOption?.identifier as ConnectionType | undefined),
+    params.connectionOption?.type === "saas"
+      ? params.connectionOption?.identifier
+      : undefined,
   );
 
   const hasDataDiscoverySupport = enabledFeatures?.includes(

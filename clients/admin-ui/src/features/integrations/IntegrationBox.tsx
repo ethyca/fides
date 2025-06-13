@@ -38,6 +38,7 @@ const IntegrationBox = ({
 
   const integrationTypeInfo = getIntegrationTypeInfo(
     integration?.connection_type,
+    integration?.saas_config?.type,
   );
 
   // Only pass the saas type if it's a valid SaasConnectionTypes value
@@ -46,7 +47,9 @@ const IntegrationBox = ({
     Object.values(SaasConnectionTypes).includes(type as SaasConnectionTypes);
 
   const connectionOption = useIntegrationOption(
-    integration?.connection_type as ConnectionType | undefined,
+    integration?.connection_type === ConnectionType.SAAS
+      ? ConnectionType.SAAS
+      : (integration?.connection_type as ConnectionType | undefined),
     saasType && isSaasType(saasType) ? saasType : undefined,
   );
 
