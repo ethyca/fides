@@ -654,6 +654,93 @@ export const stubTCFConfig = () => {
   ).as("createRestriction");
 };
 
+export const stubConnectionTypes = () => {
+  cy.intercept(
+    {
+      method: "GET",
+      pathname: "/api/v1/connection_type",
+      query: {
+        page: "*",
+        size: "*",
+      },
+    },
+    {
+      fixture: "connectors/connection_types.json",
+    },
+  ).as("getConnectionTypes");
+
+  cy.intercept("GET", "/api/v1/connection_type/*/secret", {
+    fixture: "connectors/bigquery_secret.json",
+  }).as("getSecretsSchema");
+};
+
+interface IntegrationManagementOptions {
+  connectionListFixture?: string;
+  connectionFixture?: string;
+  secretSchemaFixture?: string;
+}
+
+export const stubIntegrationManagement = (
+  options: IntegrationManagementOptions = {},
+) => {
+  const {
+    connectionListFixture = "connectors/bigquery_connection_list.json",
+    connectionFixture = "connectors/bigquery_connection.json",
+    secretSchemaFixture = "connectors/bigquery_secret.json",
+  } = options;
+
+  // Use customized connection_type with specified secret schema fixture
+  cy.intercept(
+    {
+      method: "GET",
+      pathname: "/api/v1/connection_type",
+      query: {
+        page: "*",
+        size: "*",
+      },
+    },
+    {
+      fixture: "connectors/connection_types.json",
+    },
+  ).as("getConnectionTypes");
+
+  cy.intercept("GET", "/api/v1/connection_type/*/secret", {
+    fixture: secretSchemaFixture,
+  }).as("getSecretsSchema");
+
+  cy.intercept("GET", "/api/v1/connection/*/test", {
+    statusCode: 200,
+    body: {
+      test_status: "succeeded",
+    },
+  }).as("testConnection");
+
+  cy.intercept(
+    {
+      method: "GET",
+      pathname: "/api/v1/connection",
+      query: {
+        connection_type: "*",
+      },
+    },
+    {
+      fixture: connectionListFixture,
+    },
+  ).as("getConnections");
+
+  cy.intercept("GET", "/api/v1/connection/*", {
+    fixture: connectionFixture,
+  }).as("getConnection");
+
+  cy.intercept("GET", "/api/v1/connection", { body: undefined }).as(
+    "unknownConnection",
+  );
+
+  cy.intercept("GET", "/api/v1/system", {
+    fixture: "systems/systems.json",
+  }).as("getSystems");
+};
+
 export const stubSharedMonitorConfig = () => {
   cy.intercept("GET", "/api/v1/plus/shared-monitor-config*", {
     fixture: "detection-discovery/monitors/shared_config_response.json",
