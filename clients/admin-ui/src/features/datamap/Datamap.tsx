@@ -19,7 +19,15 @@ import GetStarted from "./GetStarted";
 // Use dynamic import with SSR disabled for ReactFlow
 const SpatialDatamap = dynamic(
   () => import("~/features/datamap/SpatialDatamap"),
-  { ssr: false },
+  {
+    ssr: false,
+    loading: () => (
+      <Center width="100%" flex="1">
+        <Spinner />
+      </Center>
+    ),
+    // Add error fallback
+  },
 );
 
 const useHome = () => {

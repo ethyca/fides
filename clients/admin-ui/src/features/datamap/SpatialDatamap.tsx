@@ -73,8 +73,13 @@ const useSpatialDatamap = (rows: Row<DatamapRow>[]) => {
   };
 };
 
+/**
+ * Props for the SpatialDatamap component
+ */
 type SpatialDatamapProps = {
+  /** Function to call when a system node is selected in the graph */
   setSelectedSystemId: (id: string) => void;
+  /** Currently selected system ID to highlight in the graph */
   selectedSystemId?: string;
 };
 

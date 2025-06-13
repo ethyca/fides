@@ -16,18 +16,24 @@ import {
 } from "@xyflow/react";
 import { Box } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-} from "react";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
 
-import { DatamapGraphContext } from "~/features/datamap/datamap-graph/DatamapGraphContext";
 import DatamapSystemNode from "~/features/datamap/DatamapSystemNode";
 import { getLayoutedElements } from "~/features/datamap/layout-utils";
 import { SpatialData } from "~/features/datamap/types";
+
+/**
+ * DatamapGraph - Interactive system data flow visualization using ReactFlow
+ *
+ * This component renders an interactive graph of systems and their data flows,
+ * replacing the previous Cytoscape implementation with ReactFlow + Dagre for
+ * better React integration and performance.
+ *
+ * Features:
+ * - Custom layout with grid for isolated nodes and Dagre for connected components
+ * - Smart viewport management for drawer interactions
+ * - Node selection and highlighting
+ */
 
 type UseDatamapGraphProps = {
   data: SpatialData;
@@ -164,7 +170,6 @@ const DatamapGraph = ({
 }: DatamapGraphProps) => {
   const { nodes: baseNodes, edges } = useDatamapGraph({ data });
   const reactFlowInstance = useReactFlow();
-  const datamapGraphRef = useContext(DatamapGraphContext);
   const originalViewportRef = useRef<{
     x: number;
     y: number;
@@ -188,16 +193,6 @@ const DatamapGraph = ({
     }),
     [],
   );
-
-  // Store the ReactFlow instance in the context
-  useEffect(() => {
-    datamapGraphRef.current = reactFlowInstance;
-
-    // Cleanup function
-    return () => {
-      datamapGraphRef.current = undefined;
-    };
-  }, [reactFlowInstance, datamapGraphRef]);
 
   // Center (or re-center) the graph only when the underlying layout
   // changes – not when merely toggling the `selected` flag on nodes.
