@@ -5,8 +5,9 @@ import { IntegrationTypeInfo } from "~/features/integrations/add-integration/all
 
 export enum IntegrationFilterTabs {
   ALL = "All",
-  DATABASE = "Database",
+  CRM = "CRM",
   DATA_CATALOG = "Data Catalog",
+  DATABASE = "Database",
   DATA_WAREHOUSE = "Data Warehouse",
   IDENTITY_PROVIDER = "Identity Provider",
   WEBSITE = "Website",

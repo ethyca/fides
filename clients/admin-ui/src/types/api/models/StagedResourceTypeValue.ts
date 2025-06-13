@@ -15,4 +15,5 @@ export enum StagedResourceTypeValue {
   IMAGE = "Image",
   I_FRAME = "iFrame",
   JAVASCRIPT_TAG = "Javascript tag",
+  ENDPOINT = "Endpoint",
 }

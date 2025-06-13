@@ -2,6 +2,7 @@ import { UseDisclosureReturn } from "fidesui";
 
 import FormModal from "~/features/common/modals/FormModal";
 import ConfigureIntegrationForm from "~/features/integrations/add-integration/ConfigureIntegrationForm";
+import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
 import { ConnectionConfigurationResponse } from "~/types/api";
 
@@ -14,7 +15,10 @@ const ConfigureIntegrationModal = ({
   connection: ConnectionConfigurationResponse;
   description: React.ReactNode;
 }) => {
-  const connectionOption = useIntegrationOption(connection.connection_type);
+  const connectionOption = useIntegrationOption(
+    connection.connection_type,
+    connection?.saas_config?.type as SaasConnectionTypes,
+  );
 
   return (
     <FormModal
