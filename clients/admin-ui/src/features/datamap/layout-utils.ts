@@ -14,17 +14,21 @@ export const getLayoutedElements = (
   // Clear the layout
   dagreGraph.setGraph({
     rankdir: direction,
-    ranksep: 10, // Increase vertical spacing between nodes
-    nodesep: 10, // Increase horizontal spacing between nodes
-    edgesep: 10, // Edge separation
-    marginx: 10, // Margin on x axis
-    marginy: 10, // Margin on y axis
+    // Bring the graph a bit tighter while still maintaining breathing room
+    ranksep: 40, // Vertical spacing between ranks (rows/columns)
+    nodesep: 40, // Horizontal spacing between individual nodes
+    edgesep: 25, // Minimum distance between edges and other graph elements
+    marginx: 15, // Extra margin on the x-axis
+    marginy: 15, // Extra margin on the y-axis
   });
 
   // Set node width and height for layout calculation
-  // Make these larger to ensure proper spacing
+  // We intentionally add some padding to the node dimensions so that dagre
+  // allocates extra whitespace around each rendered node. This prevents
+  // edges (especially those with large arrowheads) from hugging the node
+  // border too closely.
   nodes.forEach((node) => {
-    dagreGraph.setNode(node.id, { width: 180, height: 60 });
+    dagreGraph.setNode(node.id, { width: 220, height: 70 });
   });
 
   // Add edges
