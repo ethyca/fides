@@ -1,3 +1,4 @@
+// External libraries
 import {
   AccordionButton,
   AccordionIcon,
@@ -15,16 +16,18 @@ import {
 import { Form, Formik, FormikHelpers } from "formik";
 import React, { useEffect, useMemo, useState } from "react";
 
+// Internal features
 import { isErrorResult } from "~/features/common/helpers";
 import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
 import { GearLightIcon } from "~/features/common/Icon";
 import { DataFlowSystemsDeleteTable } from "~/features/common/system-data-flow/DataFlowSystemsDeleteTable";
 import DataFlowSystemsModal from "~/features/common/system-data-flow/DataFlowSystemsModal";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
+// API types and hooks
 import {
   useGetAllSystemsQuery,
   useUpdateSystemMutation,
-} from "~/features/system";
+} from "~/features/system/system.slice";
 import { DataFlow, System } from "~/types/api";
 
 const defaultInitialValues = {
