@@ -15,9 +15,10 @@ export const getLayoutedElements = (
   dagreGraph.setGraph({
     rankdir: direction,
     // Bring the graph a bit tighter while still maintaining breathing room
-    ranksep: 40, // Vertical spacing between ranks (rows/columns)
-    nodesep: 40, // Horizontal spacing between individual nodes
-    edgesep: 25, // Minimum distance between edges and other graph elements
+    // Additional spacing to give edges gentler angles and reduce overlap.
+    ranksep: 60, // Vertical spacing between ranks (rows/columns)
+    nodesep: 60, // Horizontal spacing between individual nodes
+    edgesep: 50, // Minimum distance between edges and other graph elements
     marginx: 15, // Extra margin on the x-axis
     marginy: 15, // Extra margin on the y-axis
   });
