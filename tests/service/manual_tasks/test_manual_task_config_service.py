@@ -1,7 +1,10 @@
-from typing import Any
+from typing import Any, Union
 
 import pytest
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, scoped_session, sessionmaker
+from unittest.mock import MagicMock, patch
+import threading
+from pydantic import ValidationError
 
 from fides.api.models.manual_tasks.manual_task import ManualTask
 from fides.api.models.manual_tasks.manual_task_config import ManualTaskConfig
@@ -9,11 +12,27 @@ from fides.api.models.manual_tasks.manual_task_log import (
     ManualTaskLog,
     ManualTaskLogStatus,
 )
+from fides.api.models.manual_tasks.manual_task_instance import ManualTaskInstance
 from fides.api.schemas.manual_tasks.manual_task_config import ManualTaskFieldType
+from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskLogStatus
+from fides.api.schemas.manual_tasks.manual_task_status import (
+    StatusTransitionNotAllowed,
+    StatusType,
+)
 from fides.service.manual_tasks.manual_task_config_service import (
     ManualTaskConfigService,
 )
-from tests.service.manual_tasks.conftest import CONFIG_TYPE, FIELDS, TEXT_FIELD_KEY, CHECKBOX_FIELD_KEY, ATTACHMENT_FIELD_KEY
+from fides.service.manual_tasks.manual_task_instance_service import (
+    ManualTaskInstanceService,
+)
+from tests.service.manual_tasks.conftest import (
+    ATTACHMENT_FIELD_KEY,
+    CHECKBOX_FIELD_KEY,
+    CONFIG_TYPE,
+    FIELDS,
+    TEXT_FIELD_KEY,
+)
+from fides.api.db.session import get_db_engine
 
 
 @pytest.fixture
@@ -58,6 +77,7 @@ class TestManualTaskConfigCreation(TestManualTaskConfigServiceBase):
             config_type=self.config_type,
             field_updates=self.fields,
         )
+        config = db.query(ManualTaskConfig).filter_by(id=config["config_id"]).first()
 
         # Verify
         assert config is not None
@@ -66,16 +86,31 @@ class TestManualTaskConfigCreation(TestManualTaskConfigServiceBase):
         assert config.is_current is True
         assert len(config.field_definitions) == len(self.fields)
         text_field = next(
-            field for field in config.field_definitions if field.field_key == TEXT_FIELD_KEY
+            field
+            for field in config.field_definitions
+            if field.field_key == TEXT_FIELD_KEY
         )
         checkbox_field = next(
-            field for field in config.field_definitions if field.field_key == CHECKBOX_FIELD_KEY
+            field
+            for field in config.field_definitions
+            if field.field_key == CHECKBOX_FIELD_KEY
+        )
+        attachment_field = next(
+            field
+            for field in config.field_definitions
+            if field.field_key == ATTACHMENT_FIELD_KEY
         )
         assert (
-            text_field.field_metadata["label"] == self.fields[0]["field_metadata"]["label"]
+            text_field.field_metadata["label"]
+            == self.fields[0]["field_metadata"]["label"]
         )
         assert (
-            checkbox_field.field_metadata["label"] == self.fields[1]["field_metadata"]["label"]
+            checkbox_field.field_metadata["label"]
+            == self.fields[1]["field_metadata"]["label"]
+        )
+        assert (
+            attachment_field.field_metadata["label"]
+            == self.fields[2]["field_metadata"]["label"]
         )
 
         # Verify log was created
@@ -86,8 +121,8 @@ class TestManualTaskConfigCreation(TestManualTaskConfigServiceBase):
             .first()
         )
         assert log is not None
-        assert log.status == ManualTaskLogStatus.created
-        assert "Created new version 1 of configuration" in log.message
+        assert log.status == ManualTaskLogStatus.complete
+        assert "Creating new configuration version" in log.message
         assert log.config_id == config.id
 
     def test_create_new_version_with_previous_config(
@@ -103,6 +138,9 @@ class TestManualTaskConfigCreation(TestManualTaskConfigServiceBase):
             config_type=self.config_type,
             field_updates=self.fields,
         )
+        previous_config = (
+            db.query(ManualTaskConfig).filter_by(id=initial_config["config_id"]).first()
+        )
 
         # Execute - create new version with modified fields
         modified_fields = [
@@ -112,7 +150,7 @@ class TestManualTaskConfigCreation(TestManualTaskConfigServiceBase):
                 "field_metadata": {
                     "label": "Text Field Updated",
                     "required": True,
-                    "help_text": "This is field 1 updated",
+                    "help_text": "This is text field updated",
                 },
             }
         ]
@@ -120,11 +158,12 @@ class TestManualTaskConfigCreation(TestManualTaskConfigServiceBase):
             task=manual_task,
             config_type=self.config_type,
             field_updates=modified_fields,
-            previous_config=db.query(ManualTaskConfig)
-            .filter_by(id=initial_config.id)
-            .first(),
+            previous_config=previous_config,
         )
 
+        new_config = (
+            db.query(ManualTaskConfig).filter_by(id=new_config["config_id"]).first()
+        )
         # Verify
         assert new_config is not None
         assert new_config.config_type == self.config_type
@@ -132,15 +171,10 @@ class TestManualTaskConfigCreation(TestManualTaskConfigServiceBase):
         assert new_config.is_current is True
 
         # Verify previous config is no longer current
-        previous_config = (
-            db.query(ManualTaskConfig).filter_by(id=initial_config.id).first()
-        )
         assert previous_config.is_current is False
 
         # Verify fields
-        assert (
-            len(new_config.field_definitions) == len(self.fields)
-        )  # one original field, one modified field
+        assert len(new_config.field_definitions) == len(self.fields)
         text_field = next(
             field
             for field in new_config.field_definitions
@@ -205,13 +239,13 @@ class TestManualTaskConfigValidation(TestManualTaskConfigServiceBase):
         [
             pytest.param(
                 None,
-                {"label": "Text Field", "required": True},
+                {"label": "Field 1", "required": True},
                 "Invalid field data: field_type is required",
                 id="missing_field_type",
             ),
             pytest.param(
                 123,
-                {"label": "Text Field", "required": True},
+                {"label": "Field 1", "required": True},
                 "Invalid field type: expected string or ManualTaskFieldType, got int",
                 id="non_string_field_type",
             ),
@@ -283,7 +317,7 @@ class TestManualTaskConfigValidation(TestManualTaskConfigServiceBase):
                 "field_key": "",  # Empty field key
                 "field_type": ManualTaskFieldType.text,
                 "field_metadata": {
-                    "label": "Text Field",
+                    "label": "Field 1",
                     "required": True,
                 },
             }
@@ -307,7 +341,7 @@ class TestManualTaskConfigValidation(TestManualTaskConfigServiceBase):
                 "field_key": TEXT_FIELD_KEY,
                 "field_type": ManualTaskFieldType.text,
                 "field_metadata": {
-                    "label": "Text Field",
+                    "label": "Field 1",
                     "required": True,
                 },
             },
@@ -315,7 +349,7 @@ class TestManualTaskConfigValidation(TestManualTaskConfigServiceBase):
                 "field_key": TEXT_FIELD_KEY,  # Duplicate field key
                 "field_type": ManualTaskFieldType.text,
                 "field_metadata": {
-                    "label": "Text Field Duplicate",
+                    "label": "Field 1 Duplicate",
                     "required": False,
                 },
             },
@@ -356,7 +390,7 @@ class TestManualTaskConfigRetrieval(TestManualTaskConfigServiceBase):
 
         # Verify
         assert current_config is not None
-        assert current_config.id == config.id
+        assert current_config.id == config["config_id"]
         assert current_config.version == 1
         assert current_config.is_current is True
 
@@ -379,14 +413,14 @@ class TestManualTaskConfigRetrieval(TestManualTaskConfigServiceBase):
             task=manual_task,
             config_type=self.config_type,
             field_id=None,
-            config_id=config.id,
+            config_id=config["config_id"],
             field_key=None,
             version=None,
         )
 
         # Verify
         assert found_config is not None
-        assert found_config.id == config.id
+        assert found_config.id == config["config_id"]
         assert found_config.version == 1
         assert found_config.is_current is True
 
@@ -416,7 +450,7 @@ class TestManualTaskConfigRetrieval(TestManualTaskConfigServiceBase):
 
         # Verify
         assert found_config is not None
-        assert found_config.id == config.id
+        assert found_config.id == config["config_id"]
         assert found_config.version == 1
         assert found_config.is_current is True
 
@@ -446,9 +480,10 @@ class TestManualTaskConfigRetrieval(TestManualTaskConfigServiceBase):
 
         # Verify
         assert found_config is not None
-        assert found_config.id == config.id
+        assert found_config.id == config["config_id"]
         assert any(
-            field.field_key == TEXT_FIELD_KEY for field in found_config.field_definitions
+            field.field_key == TEXT_FIELD_KEY
+            for field in found_config.field_definitions
         )
 
     def test_get_config_no_filters(
@@ -492,17 +527,17 @@ class TestManualTaskConfigVersioning(TestManualTaskConfigServiceBase):
             config_type=self.config_type,
             field_updates=self.fields,
             previous_config=db.query(ManualTaskConfig)
-            .filter_by(id=version1.id)
+            .filter_by(id=version1["config_id"])
             .first(),
         )
 
         # Create third version
-        version3 = manual_task_config_service.create_new_version(
+        manual_task_config_service.create_new_version(
             task=manual_task,
             config_type=self.config_type,
             field_updates=self.fields,
             previous_config=db.query(ManualTaskConfig)
-            .filter_by(id=version2.id)
+            .filter_by(id=version2["config_id"])
             .first(),
         )
 
@@ -513,10 +548,10 @@ class TestManualTaskConfigVersioning(TestManualTaskConfigServiceBase):
         )
         assert len(versions) == 3
         assert versions[0].version == 3
-        assert versions[1].version == 2
-        assert versions[2].version == 1
         assert versions[0].is_current is True
+        assert versions[1].version == 2
         assert versions[1].is_current is False
+        assert versions[2].version == 1
         assert versions[2].is_current is False
 
 
@@ -531,10 +566,15 @@ class TestManualTaskConfigFieldUpdates(TestManualTaskConfigServiceBase):
     ):
         """Test updating a field's type."""
         # Create initial config with text field
-        initial_config = manual_task_config_service.create_new_version(
+        initial_config_result = manual_task_config_service.create_new_version(
             task=manual_task,
             config_type=self.config_type,
             field_updates=self.fields,
+        )
+        initial_config = (
+            db.query(ManualTaskConfig)
+            .filter_by(id=initial_config_result["config_id"])
+            .first()
         )
 
         # Update field type to checkbox
@@ -543,12 +583,12 @@ class TestManualTaskConfigFieldUpdates(TestManualTaskConfigServiceBase):
                 "field_key": TEXT_FIELD_KEY,
                 "field_type": ManualTaskFieldType.checkbox,
                 "field_metadata": {
-                    "label": "Text Field",
+                    "label": "Field 1",
                     "required": True,
                 },
             }
         ]
-        new_config = manual_task_config_service.create_new_version(
+        new_config_result = manual_task_config_service.create_new_version(
             task=manual_task,
             config_type=self.config_type,
             field_updates=modified_fields,
@@ -557,13 +597,19 @@ class TestManualTaskConfigFieldUpdates(TestManualTaskConfigServiceBase):
             .first(),
         )
 
+        new_config = (
+            db.query(ManualTaskConfig)
+            .filter_by(id=new_config_result["config_id"])
+            .first()
+        )
+
         # Verify field type was updated
-        field1 = next(
+        text_field = next(
             field
             for field in new_config.field_definitions
             if field.field_key == TEXT_FIELD_KEY
         )
-        assert field1.field_type == ManualTaskFieldType.checkbox
+        assert text_field.field_type == ManualTaskFieldType.checkbox
 
     def test_update_nonexistent_field(
         self,
@@ -573,10 +619,15 @@ class TestManualTaskConfigFieldUpdates(TestManualTaskConfigServiceBase):
     ):
         """Test updating a field that doesn't exist."""
         # Create initial config
-        initial_config = manual_task_config_service.create_new_version(
+        initial_config_result = manual_task_config_service.create_new_version(
             task=manual_task,
             config_type=self.config_type,
             field_updates=self.fields,
+        )
+        initial_config = (
+            db.query(ManualTaskConfig)
+            .filter_by(id=initial_config_result["config_id"])
+            .first()
         )
 
         # Try to update non-existent field
@@ -590,7 +641,7 @@ class TestManualTaskConfigFieldUpdates(TestManualTaskConfigServiceBase):
                 },
             }
         ]
-        new_config = manual_task_config_service.create_new_version(
+        new_config_result = manual_task_config_service.create_new_version(
             task=manual_task,
             config_type=self.config_type,
             field_updates=modified_fields,
@@ -599,12 +650,20 @@ class TestManualTaskConfigFieldUpdates(TestManualTaskConfigServiceBase):
             .first(),
         )
 
+        new_config = (
+            db.query(ManualTaskConfig)
+            .filter_by(id=new_config_result["config_id"])
+            .first()
+        )
+
         # Verify original fields remain unchanged
         assert (
             len(new_config.field_definitions) == len(self.fields) + 1
         )  # one original fields, one new field
+
         assert all(
-            field.field_key in [TEXT_FIELD_KEY, CHECKBOX_FIELD_KEY, "nonexistent_field"]
+            field.field_key
+            in [field["field_key"] for field in self.fields] + ["nonexistent_field"]
             for field in new_config.field_definitions
         )
 
@@ -678,7 +737,6 @@ class TestManualTaskConfigFieldManagement(TestManualTaskConfigServiceBase):
 
     def test_remove_fields(
         self,
-        db: Session,
         manual_task: ManualTask,
         manual_task_config_service: ManualTaskConfigService,
     ):
@@ -689,7 +747,7 @@ class TestManualTaskConfigFieldManagement(TestManualTaskConfigServiceBase):
             config_type=self.config_type,
             field_updates=self.fields,
         )
-        # Execute - remove field1
+        # Execute - remove text field
         manual_task_config_service.remove_fields(
             manual_task, self.config_type, [TEXT_FIELD_KEY]
         )
@@ -701,14 +759,21 @@ class TestManualTaskConfigFieldManagement(TestManualTaskConfigServiceBase):
         assert current_config is not None
         assert len(current_config.field_definitions) == len(self.fields) - 1
         assert all(
-            field.field_key != TEXT_FIELD_KEY for field in current_config.field_definitions
+            field.field_key != TEXT_FIELD_KEY
+            for field in current_config.field_definitions
         )
-        field2 = next(
+        checkbox_field = next(
             field
             for field in current_config.field_definitions
             if field.field_key == CHECKBOX_FIELD_KEY
         )
-        assert field2.field_metadata["label"] == "Test Checkbox Field"
+        assert checkbox_field.field_metadata["label"] == "Test Checkbox Field"
+        attachment_field = next(
+            field
+            for field in current_config.field_definitions
+            if field.field_key == ATTACHMENT_FIELD_KEY
+        )
+        assert attachment_field.field_metadata["label"] == "Test Attachment Field"
 
     def test_remove_fields_no_current_config(
         self,
@@ -737,15 +802,15 @@ class TestManualTaskConfigFieldManagement(TestManualTaskConfigServiceBase):
             task=manual_task,
             config_type=self.config_type,
             field_updates=self.fields,
-        )
+        )["config"]
 
-        # Execute - remove field1 using explicit removal
+        # Execute - remove text_field using explicit removal
         new_config = manual_task_config_service.create_new_version(
             task=manual_task,
             config_type=self.config_type,
             fields_to_remove=[TEXT_FIELD_KEY],
             previous_config=initial_config,
-        )
+        )["config"]
 
         # Verify
         assert new_config is not None
@@ -756,12 +821,18 @@ class TestManualTaskConfigFieldManagement(TestManualTaskConfigServiceBase):
         assert all(
             field.field_key != TEXT_FIELD_KEY for field in new_config.field_definitions
         )
-        field2 = next(
+        checkbox_field = next(
             field
             for field in new_config.field_definitions
             if field.field_key == CHECKBOX_FIELD_KEY
         )
-        assert field2.field_metadata["label"] == "Test Checkbox Field"
+        assert checkbox_field.field_metadata["label"] == "Test Checkbox Field"
+        attachment_field = next(
+            field
+            for field in new_config.field_definitions
+            if field.field_key == ATTACHMENT_FIELD_KEY
+        )
+        assert attachment_field.field_metadata["label"] == "Test Attachment Field"
 
         # Verify log details include removed fields
         log = (
@@ -771,7 +842,7 @@ class TestManualTaskConfigFieldManagement(TestManualTaskConfigServiceBase):
             .first()
         )
         assert log is not None
-        assert log.details.get("fields_removed") == [TEXT_FIELD_KEY]
+        assert log.details.get("removed_field_keys") == [TEXT_FIELD_KEY]
 
 
 class TestManualTaskConfigDeletion(TestManualTaskConfigServiceBase):
@@ -790,12 +861,16 @@ class TestManualTaskConfigDeletion(TestManualTaskConfigServiceBase):
             config_type=self.config_type,
             field_updates=self.fields,
         )
+        assert response["config"] is not None
 
         # Execute
-        manual_task_config_service.delete_config(manual_task, response.id)
+        manual_task_config_service.delete_config(manual_task, response["config_id"])
 
         # Verify
-        assert db.query(ManualTaskConfig).filter_by(id=response.id).first() is None
+        assert (
+            db.query(ManualTaskConfig).filter_by(id=response["config_id"]).first()
+            is None
+        )
 
     def test_delete_config_not_found(
         self,
@@ -823,7 +898,7 @@ class TestManualTaskConfigResponseConversion(TestManualTaskConfigServiceBase):
             task=manual_task,
             config_type=self.config_type,
             field_updates=self.fields,
-        )
+        )["config"]
 
         # Convert to response
         response = manual_task_config_service.to_response(config)

@@ -9,8 +9,6 @@ from fides.api.models.manual_tasks.manual_task_instance import (
     ManualTaskInstance,
     ManualTaskSubmission,
 )
-from fides.api.models.manual_tasks.manual_task_log import ManualTaskLog
-from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskLogStatus
 from fides.api.schemas.manual_tasks.manual_task_status import (
     StatusTransitionNotAllowed,
     StatusType,
@@ -57,7 +55,7 @@ class ManualTaskInstanceService:
 
     # ------- Public Instance Methods -------
 
-    @with_error_logging("Create task instance")
+    @with_error_logging("Created task instance")
     def create_instance(
         self, task_id: str, config_id: str, entity_id: str, entity_type: str
     ) -> ManualTaskInstance:
@@ -85,10 +83,11 @@ class ManualTaskInstanceService:
         instance = self._validate_instance_for_submission(instance_id)
         return instance.get_submission_for_field(field_id)
 
-    @with_error_logging("Update task instance status")
+    @with_error_logging("Updated task instance status")
     def update_status(
         self,
-        db: Session,
+        task_id: str,
+        config_id: str,
         instance_id: str,
         new_status: StatusType,
         user_id: Optional[str] = None,
@@ -96,7 +95,8 @@ class ManualTaskInstanceService:
         """Update instance status with logging.
 
         Args:
-            db: Database session
+            task_id: The task ID
+            config_id: The config ID
             instance_id: The instance ID
             new_status: The new status
             user_id: Optional user ID making the change
@@ -106,12 +106,22 @@ class ManualTaskInstanceService:
         """
         instance = self._validate_instance_for_submission(instance_id)
         previous_status = instance.status
-        instance.update_status(db, new_status, user_id)
-        return instance
+        instance.update_status(self.db, new_status, user_id)
+        return {
+            "instance": instance,
+            "instance_id": instance.id,
+            "task_id": instance.task_id,
+            "config_id": instance.config_id,
+            "details": {
+                "previous_status": previous_status,
+                "new_status": new_status,
+                "user_id": user_id,
+            },
+        }
 
-    @with_error_logging("Update task instance status from submissions")
+    @with_error_logging("Updated task instance status from submissions")
     def update_status_from_submissions(
-        self, db: Session, instance_id: str
+        self, task_id: str, config_id: str, instance_id: str
     ) -> ManualTaskInstance:
         """Update the instance status based on submissions.
         The status updates when a new submissions is created or updated. This function can
@@ -119,7 +129,8 @@ class ManualTaskInstanceService:
         Only a user can transition to completed.
 
         Args:
-            db: Database session
+            task_id: The task ID
+            config_id: The config ID
             instance_id: The instance ID to update
 
         Returns:
@@ -137,10 +148,10 @@ class ManualTaskInstanceService:
         # Update status based on field submissions
         if instance.status == StatusType.pending and any_submissions:
             # First transition to in_progress if we have any submissions
-            self.update_status(db, instance_id, StatusType.in_progress)
+            self.update_status(task_id, config_id, instance_id, StatusType.in_progress)
         if not any_submissions and instance.status != StatusType.pending:
             # Only go back to pending if we have no valid submissions
-            self.update_status(db, instance_id, StatusType.pending)
+            self.update_status(task_id, config_id, instance_id, StatusType.pending)
 
         return instance
 
@@ -152,7 +163,7 @@ class ManualTaskInstanceService:
         instance = self._validate_instance_for_submission(instance_id)
         field = self._validate_field_for_submission(field_id, data)
         # Validate data against field metadata
-        validate_fields([data])
+        validate_fields([data], is_submission=True)
 
         submission = self.get_submission_for_field(instance_id, field_id)
         # If the submission does not exist, create it
@@ -164,7 +175,7 @@ class ManualTaskInstanceService:
         logger.info(f"Updating submission for field {field.field_key}")
         return self.update_submission(instance, submission, data)
 
-    @with_error_logging("Create task submission")
+    @with_error_logging("Created task submission")
     def create_submission(
         self,
         instance: ManualTaskInstance,
@@ -183,10 +194,21 @@ class ManualTaskInstanceService:
             },
         )
         # Update instance status
-        self.update_status_from_submissions(self.db, instance.id)
-        return submission
+        self.update_status_from_submissions(
+            instance.task_id, instance.config_id, instance.id
+        )
+        return {
+            "submission": submission,
+            "instance_id": instance.id,
+            "task_id": instance.task_id,
+            "config_id": instance.config_id,
+            "details": {
+                "field_key": field.field_key,
+                "field_type": field.field_type,
+            },
+        }
 
-    @with_error_logging("Update task submission")
+    @with_error_logging("Updated task submission")
     def update_submission(
         self,
         instance: ManualTaskInstance,
@@ -200,7 +222,9 @@ class ManualTaskInstanceService:
                 "data": data,
             },
         )
-        self.update_status_from_submissions(self.db, instance.id)
+        self.update_status_from_submissions(
+            instance.task_id, instance.config_id, instance.id
+        )
         return submission
 
     @with_error_logging("Delete task attachment")
@@ -211,31 +235,39 @@ class ManualTaskInstanceService:
         submission_id: Optional[str],
         attachment_id: str,
     ) -> None:
-        """Delete an attachment for a field."""
+        """Delete an attachment for a field.
+        If instance_id and field_id are provided, the submission is retrieved from the instance.
+        If submission_id is provided, the submission is retrieved from the submission id.
+        If neither are provided, will raise ValueError.
+        """
         # Get the attachment
         attachment = self.db.query(Attachment).filter_by(id=attachment_id).first()
         if not attachment:
             raise ValueError(f"Attachment with ID {attachment_id} not found")
 
         # Get the submission
-        submission = None
-        if submission_id:
-            submission = ManualTaskSubmission.get_by_id(
+
+        submission = (
+            ManualTaskSubmission.get_by_key_or_id(
                 db=self.db, data={"id": submission_id}
             )
-        elif instance_id and field_id:
-            submission = self.get_submission_for_field(instance_id, field_id)
+            if submission_id
+            else self.get_submission_for_field(instance_id, field_id)
+        )
 
         if not submission:
             raise ValueError(
-                f"Attachment with ID {attachment_id} not found for submission with ID {submission.id}"
+                f"Cannot retrieve submission with ID {submission_id} or field ID {field_id}, and instance ID {instance_id}"
             )
 
         # if there is only one attachment and the submission is for an attachment field, delete the submission
-        if len(submission.attachments) == 1 and submission.field.field_type == "attachment":
+        if (
+            len(submission.attachments) == 1
+            and submission.field.field_type == "attachment"
+        ):
             attachment.delete(self.db)
             logger.info(
-                f"Deleting submission {submission.id} for field {submission.field.field_key}"
+                f"Deleting submission {submission.id} for {submission.field.field_key}"
             )
             submission.delete(self.db)
         else:
@@ -244,14 +276,15 @@ class ManualTaskInstanceService:
             )
             attachment.delete(self.db)
 
-        if instance_id:
-            self.update_status_from_submissions(self.db, instance_id)
-
-    @with_error_logging("Complete task instance")
-    def complete_task_instance(self, instance_id: str, user_id: str) -> ManualTaskInstance:
+    @with_error_logging("Completed task instance")
+    def complete_task_instance(
+        self, task_id: str, config_id: str, instance_id: str, user_id: str
+    ) -> ManualTaskInstance:
         """Complete a task instance.
 
         Args:
+            task_id: The task ID
+            config_id: The config ID
             instance_id: The instance ID to complete
             user_id: The user ID completing the instance
 
@@ -269,7 +302,7 @@ class ManualTaskInstanceService:
                     missing_required_fields.append(field.field_key)
 
         if missing_required_fields:
-            raise ValueError(
+            raise StatusTransitionNotAllowed(
                 f"Cannot complete task instance. Missing required fields: {', '.join(missing_required_fields)}"
             )
 
@@ -278,4 +311,11 @@ class ManualTaskInstanceService:
         instance.completed_by_id = user_id
         instance.save(self.db)
 
-        return instance
+        # Return both instance and details for proper logging
+        return {
+            "task_id": task_id,
+            "config_id": config_id,
+            "instance_id": instance_id,
+            "details": {"completed_by": user_id},
+            "instance": instance,
+        }

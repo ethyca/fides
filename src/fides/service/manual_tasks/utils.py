@@ -5,7 +5,10 @@ from loguru import logger
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
-from fides.api.models.manual_tasks.manual_task_config import ManualTaskConfigField
+from fides.api.models.manual_tasks.manual_task_config import (
+    ManualTaskConfig,
+    ManualTaskConfigField,
+)
 from fides.api.models.manual_tasks.manual_task_instance import (
     ManualTaskInstance,
     ManualTaskSubmission,
@@ -78,13 +81,19 @@ def validate_status_transition(
     Raises:
         StatusTransitionNotAllowed: If the transition is not allowed
     """
-    if current_status == StatusType.completed:
-        raise StatusTransitionNotAllowed("Cannot transition from completed status")
+    # Don't allow transitions to the same status
+    if new_status == current_status:
+        raise StatusTransitionNotAllowed(
+            f"Invalid status transition: already in status {new_status}"
+        )
 
-    # Add any other status transition rules here
-    # For example:
-    # if current_status == StatusType.pending and new_status == StatusType.completed:
-    #     raise StatusTransitionNotAllowed("Cannot complete a pending task directly")
+    # Get valid transitions for current status
+    valid_transitions = StatusType.get_valid_transitions(current_status)
+    if new_status not in valid_transitions:
+        raise StatusTransitionNotAllowed(
+            f"Invalid status transition from {current_status} to {new_status}. "
+            f"Valid transitions are: {valid_transitions}"
+        )
 
 
 def create_operation_logs(
@@ -131,7 +140,10 @@ def create_operation_logs(
     ]
 
 
-def with_error_logging(operation_name: str):
+def with_error_logging(
+    operation_name: str,
+    success_status: ManualTaskLogStatus = ManualTaskLogStatus.complete,
+):
     """Decorator for logging operation success/failure in service methods.
 
     This decorator handles:
@@ -141,10 +153,12 @@ def with_error_logging(operation_name: str):
 
     Args:
         operation_name: Name of the operation being performed
+        success_status: Status to use for successful operations (defaults to complete)
 
     Returns:
         Decorator function that wraps service methods with error logging
     """
+
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
         @wraps(func)
         def wrapper(self, *args, **kwargs):
@@ -157,11 +171,21 @@ def with_error_logging(operation_name: str):
                 instance_id = None
                 details = {}
 
-                # Try to get IDs from result object
-                if hasattr(result, "task_id"):
+                # Try to get IDs and details from result object
+                if isinstance(result, dict):
+                    # Handle dictionary results
+                    task_id = result.get("task_id")
+                    config_id = result.get("config_id")
+                    instance_id = result.get("instance_id")
+                    details = result.get("details", {})
+                elif hasattr(result, "task_id"):
+                    # Handle model objects
                     task_id = result.task_id
-                    config_id = getattr(result, "config_id", None)
-                    instance_id = getattr(result, "id", None)
+                    if hasattr(result, "id"):
+                        if isinstance(result, ManualTaskConfig):
+                            config_id = result.id
+                        elif isinstance(result, ManualTaskInstance):
+                            instance_id = result.id
 
                 # Try to get IDs from kwargs if not in result
                 if not task_id and "task_id" in kwargs:
@@ -169,9 +193,16 @@ def with_error_logging(operation_name: str):
                     config_id = kwargs.get("config_id")
                     instance_id = kwargs.get("instance_id")
 
-                # Add any additional details from kwargs
-                if "details" in kwargs:
-                    details = kwargs["details"]
+                # Debug logging
+                logger.debug(f"Creating log for operation {operation_name}")
+                logger.debug(f"task_id: {task_id}")
+                logger.debug(f"config_id: {config_id}")
+                logger.debug(f"instance_id: {instance_id}")
+                logger.debug(f"details: {details}")
+                logger.debug(f"kwargs: {kwargs}")
+                logger.debug(f"result type: {type(result)}")
+                if hasattr(result, "__dict__"):
+                    logger.debug(f"result attrs: {result.__dict__}")
 
                 # Only create log if we have a task_id
                 if task_id and hasattr(self, "db"):
@@ -180,7 +211,7 @@ def with_error_logging(operation_name: str):
                         task_id=task_id,
                         config_id=config_id,
                         instance_id=instance_id,
-                        status=ManualTaskLogStatus.complete,
+                        status=success_status,
                         message=operation_name,
                         details=details,
                     )
@@ -190,6 +221,7 @@ def with_error_logging(operation_name: str):
             except Exception as e:
                 # Log the error
                 logger.error(f"Error in {operation_name}: {str(e)}")
+                logger.debug(f"Error kwargs: {kwargs}")
 
                 # Create error log if we have task_id and db
                 task_id = kwargs.get("task_id")
@@ -206,6 +238,7 @@ def with_error_logging(operation_name: str):
                 raise
 
         return wrapper
+
     return decorator
 
 
@@ -271,41 +304,3 @@ def create_error_log(
         "message": str(error),
         "details": context,
     }
-
-
-def validate_not_none(entity_type: str) -> Callable:
-    """Decorator to validate that the first argument after self is not None.
-
-    Args:
-        entity_type: String describing the type of entity being validated (e.g. "Field", "Instance")
-
-    Returns:
-        Decorator function that checks for None values
-
-    Raises:
-        ValueError: If the entity is None
-    """
-    def decorator(func: Callable[..., V]) -> Callable[..., V]:
-        @wraps(func)
-        def wrapper(self, entity_id: str, *args, **kwargs) -> V:
-            if entity_type == "Instance":
-                entity = (
-                    self.db.query(ManualTaskInstance).filter_by(id=entity_id).first()
-                )
-            elif entity_type == "Field":
-                entity = ManualTaskConfigField.get_by_key_or_id(
-                    db=self.db, data={"id": entity_id}
-                )
-            elif entity_type == "Submission":
-                entity = ManualTaskSubmission.get_by_id(
-                    db=self.db, data={"id": entity_id}
-                )
-            else:
-                raise ValueError(f"Unknown entity type: {entity_type}")
-
-            if entity is None:
-                raise ValueError(f"{entity_type} with ID {entity_id} not found")
-            return func(self, entity_id, *args, **kwargs)
-
-        return wrapper
-    return decorator

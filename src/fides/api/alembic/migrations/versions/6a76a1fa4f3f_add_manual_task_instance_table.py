@@ -152,7 +152,7 @@ def upgrade():
         "manual_task_instance",
         ["instance_id"],
         ["id"],
-        ondelete="CASCADE",
+        ondelete="SET NULL",
     )
 
 
