@@ -35,7 +35,7 @@ export type IntegrationTypeInfo = {
   enabledFeatures: IntegrationFeatureEnum[];
 };
 
-// Define SaaS-specific integrations separately
+// Define SaaS integrations
 export const SAAS_INTEGRATIONS: IntegrationTypeInfo[] = [SALESFORCE_TYPE_INFO];
 
 const INTEGRATION_TYPE_MAP: { [K in ConnectionType]?: IntegrationTypeInfo } = {
@@ -58,7 +58,6 @@ const INTEGRATION_TYPE_MAP: { [K in ConnectionType]?: IntegrationTypeInfo } = {
   [ConnectionType.MANUAL_WEBHOOK]: MANUAL_TYPE_INFO,
 };
 
-// Include both regular integrations and SaaS integrations in the list
 export const INTEGRATION_TYPE_LIST: IntegrationTypeInfo[] = [
   ...Object.values(INTEGRATION_TYPE_MAP),
   ...SAAS_INTEGRATIONS,
@@ -84,17 +83,29 @@ const EMPTY_TYPE = {
 
 const getIntegrationTypeInfo = (
   type: ConnectionType | undefined,
+  saasType?: string,
 ): IntegrationTypeInfo => {
   if (!type) {
     return EMPTY_TYPE;
   }
 
-  // For SAAS type, return the first SaaS integration (temporary until we have a better way to handle this)
-  if (type === ConnectionType.SAAS) {
-    return SAAS_INTEGRATIONS[0] ?? EMPTY_TYPE;
+  if (type === ConnectionType.SAAS && saasType) {
+    const saasIntegration = SAAS_INTEGRATIONS.find(
+      (integration) => integration.placeholder.saas_config?.type === saasType,
+    );
+    if (saasIntegration) {
+      return saasIntegration;
+    }
   }
 
-  return INTEGRATION_TYPE_MAP[type] ?? EMPTY_TYPE;
+  if (type !== ConnectionType.SAAS) {
+    const integration = INTEGRATION_TYPE_MAP[type];
+    if (integration) {
+      return integration;
+    }
+  }
+
+  return EMPTY_TYPE;
 };
 
 export default getIntegrationTypeInfo;

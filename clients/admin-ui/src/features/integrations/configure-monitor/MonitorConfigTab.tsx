@@ -45,6 +45,8 @@ import {
   WebsiteSchema,
 } from "~/types/api";
 
+import SharedConfigModal from "../SharedConfigModal";
+
 const EMPTY_RESPONSE = {
   items: [] as MonitorConfig[],
   total: 0,
@@ -278,7 +280,7 @@ const MonitorConfigTab = ({
     columnResizeMode: "onChange",
   });
 
-  const EmptyTableNotice = ({ onAddClick }: { onAddClick: () => void }) => (
+  const EmptyTableNotice = () => (
     <VStack
       mt={6}
       p={10}
@@ -297,9 +299,6 @@ const MonitorConfigTab = ({
           You have not configured any data discovery monitors. Click &quot;Add
           monitor&quot; to configure data discovery now.
         </Text>
-        <Button onClick={onAddClick} type="primary">
-          Add monitor
-        </Button>
       </VStack>
     </VStack>
   );
@@ -308,12 +307,34 @@ const MonitorConfigTab = ({
     return <FidesSpinner />;
   }
 
-  // Check if monitor already exists for SaaS integration
-  const monitorExistsForSaas = isSaasIntegration && monitors.length > 0;
-
   const monitorCopy =
     MONITOR_COPIES[integrationOption?.identifier as ConnectionType] ??
     DATA_DISCOVERY_MONITOR_COPY;
+
+  const getMonitorButtonState = () => {
+    if (isSaasIntegration && monitors.length > 0) {
+      return {
+        isDisabled: true,
+        tooltip: "API integrations only use a single monitor",
+      };
+    }
+    const isLegacyConnection =
+      !integration.name && integration.saas_config?.type === "salesforce";
+    if (isLegacyConnection) {
+      return {
+        isDisabled: true,
+        tooltip:
+          "This is a legacy connection and cannot be used to create a monitor. Create a new Salesforce integration to use this feature.",
+      };
+    }
+
+    return { isDisabled: false, tooltip: null };
+  };
+
+  const {
+    isDisabled: isAddMonitorButtonDisabled,
+    tooltip: addMonitorButtonTooltip,
+  } = getMonitorButtonState();
 
   return (
     <>
@@ -321,31 +342,21 @@ const MonitorConfigTab = ({
         {monitorCopy}
       </Text>
       <TableActionBar>
+        <SharedConfigModal />
         <Spacer />
-        {monitorExistsForSaas ? (
-          <Tooltip label="API integrations only use a single monitor">
-            <span>
-              <Button
-                onClick={modal.onOpen}
-                icon={<MonitorIcon />}
-                iconPosition="end"
-                data-testid="add-monitor-btn"
-                disabled
-              >
-                Add monitor
-              </Button>
-            </span>
-          </Tooltip>
-        ) : (
-          <Button
-            onClick={modal.onOpen}
-            icon={<MonitorIcon />}
-            iconPosition="end"
-            data-testid="add-monitor-btn"
-          >
-            Add monitor
-          </Button>
-        )}
+        <Tooltip label={addMonitorButtonTooltip}>
+          <span>
+            <Button
+              onClick={modal.onOpen}
+              icon={<MonitorIcon />}
+              iconPosition="end"
+              data-testid="add-monitor-btn"
+              disabled={isAddMonitorButtonDisabled}
+            >
+              Add monitor
+            </Button>
+          </span>
+        </Tooltip>
         <ConfigureMonitorModal
           isOpen={modal.isOpen}
           onClose={handleCloseModal}
@@ -361,7 +372,7 @@ const MonitorConfigTab = ({
       <FidesTableV2
         tableInstance={tableInstance}
         onRowClick={handleEditMonitor}
-        emptyTableNotice={<EmptyTableNotice onAddClick={modal.onOpen} />}
+        emptyTableNotice={<EmptyTableNotice />}
       />
       <PaginationBar
         totalRows={totalRows || 0}

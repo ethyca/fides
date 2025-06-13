@@ -40,14 +40,12 @@ const SharedConfigModal = () => {
   return (
     <>
       <Button
-        className="absolute right-10 top-6"
-        type="primary"
         icon={<Icons.Settings />}
         iconPosition="end"
         onClick={() => setModalIsOpen(true)}
         data-testid="configurations-btn"
       >
-        Shared monitor configurations
+        Shared configs
       </Button>
       <Modal
         open={modalIsOpen}

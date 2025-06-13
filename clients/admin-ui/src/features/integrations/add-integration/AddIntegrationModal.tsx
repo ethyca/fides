@@ -34,6 +34,7 @@ const AddIntegrationModal = ({
 
   const { description } = getIntegrationTypeInfo(
     integrationType?.placeholder.connection_type,
+    integrationType?.placeholder.saas_config?.type,
   );
 
   const handleCancel = () => {
@@ -47,33 +48,30 @@ const AddIntegrationModal = ({
     setIntegrationType(typeInfo);
   };
 
-  const handleConfigure = (typeInfo: IntegrationTypeInfo) => {
-    setStep(IntegrationModalStep.FORM);
-    setIntegrationType(typeInfo);
-  };
-
   const modalTitle = integrationType
     ? `${integrationType.placeholder.name} Integration`
     : "Add integration";
 
   return (
     <FormModal
-      size="2xl"
       isOpen={isOpen}
       onClose={handleCancel}
       title={modalTitle}
+      scrollBehavior="inside"
+      showCloseButton
+      modalContentProps={{ height: "700px", maxWidth: "1010px" }}
     >
       {step === IntegrationModalStep.LIST_VIEW && (
         <SelectIntegrationType
           onCancel={handleCancel}
           onDetailClick={handleDetailClick}
-          onConfigureClick={handleConfigure}
         />
       )}
       {step === IntegrationModalStep.DETAIL && (
         <IntegrationTypeDetail
           integrationType={integrationType}
           onConfigure={() => setStep(IntegrationModalStep.FORM)}
+          onBack={() => setStep(IntegrationModalStep.LIST_VIEW)}
           onCancel={handleCancel}
         />
       )}
