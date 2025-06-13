@@ -23,12 +23,16 @@ from fides.api.db.base_class import Base
 from fides.api.models.audit_log import AuditLog
 
 # Intentionally importing SystemManager here to build the FidesUser.systems relationship
-from fides.api.models.system_manager import SystemManager  # type: ignore[unused-import]
 from fides.api.schemas.user import DisabledReason
 from fides.config import CONFIG
 
 if TYPE_CHECKING:
+    from fides.api.models.fides_user_permissions import FidesUserPermissions
+    from fides.api.models.fides_user_respondent_email_verification import (
+        FidesUserRespondentEmailVerification,
+    )
     from fides.api.models.sql_models import System  # type: ignore[attr-defined]
+    from fides.api.models.system_manager import SystemManager
 
 
 class FidesUser(Base):
@@ -71,6 +75,20 @@ class FidesUser(Base):
     )
 
     systems = relationship("System", secondary="systemmanager", back_populates="data_stewards")  # type: ignore
+    # permissions relationship is defined via backref in FidesUserPermissions
+    email_verifications = relationship(
+        "FidesUserRespondentEmailVerification",
+        back_populates="user",
+        cascade="all,delete",
+        lazy="dynamic",
+        foreign_keys="[FidesUserRespondentEmailVerification.user_id]",
+    )
+    permissions = relationship(
+        "FidesUserPermissions",
+        back_populates="user",
+        cascade="all,delete",
+        uselist=False,
+    )
 
     @property
     def system_ids(self) -> List[str]:
@@ -92,12 +110,11 @@ class FidesUser(Base):
     ) -> FidesUser:
         """Create a FidesUser by hashing the password with a generated salt
         and storing the hashed password and the salt"""
+        hashed_password = None
+        salt = None
 
         if password := data.get("password"):
             hashed_password, salt = FidesUser.hash_password(password)
-        else:
-            hashed_password = None
-            salt = None
 
         user = super().create(
             db,
@@ -117,6 +134,18 @@ class FidesUser(Base):
 
         return user  # type: ignore
 
+    @classmethod
+    def create_respondent(cls, db: Session, data: dict[str, Any]) -> FidesUser:
+        """Create a respondent user. This user will not be able to login with a password and
+        requires an email address to be provided.
+        """
+        if not data.get("email_address"):
+            raise ValueError("Email address is required for external respondents")
+        if data.get("password"):
+            raise ValueError("Password login is not allowed for external respondents")
+        data["password_login_enabled"] = False
+        return cls.create(db, data)
+
     def credentials_valid(self, password: str, encoding: str = "UTF-8") -> bool:
         """Verifies that the provided password is correct."""
         if self.salt is None:
@@ -134,11 +163,25 @@ class FidesUser(Base):
 
         No validations are performed on the old/existing password within this function.
         """
+        if self.permissions is not None:
+            if self.permissions.is_respondent():
+                raise ValueError("Password changes are not allowed for respondents")
 
         hashed_password, salt = FidesUser.hash_password(new_password)
         self.hashed_password = hashed_password  # type: ignore
         self.salt = salt  # type: ignore
         self.password_reset_at = datetime.utcnow()  # type: ignore
+        self.save(db)
+
+    def update_email_address(self, db: Session, new_email_address: str) -> None:
+        """Updates the user's email address to the specified value."""
+        if self.permissions is not None:
+            if self.permissions.is_respondent():
+                raise ValueError(
+                    "Email address changes are not allowed for respondents"
+                )
+
+        self.email_address = new_email_address  # type: ignore
         self.save(db)
 
     def set_as_system_manager(self, db: Session, system: System) -> None:
@@ -156,6 +199,10 @@ class FidesUser(Base):
             raise SystemManagerException(
                 f"User '{self.username}' is already a system manager of '{system.name}'."
             )
+
+        if self.permissions is not None:
+            if self.permissions.is_respondent():
+                raise SystemManagerException("Respondents cannot be system managers.")
 
         self.systems.append(system)
         self.save(db=db)

@@ -1,4 +1,4 @@
-import { CheckIcon, HStack } from "fidesui";
+import { HStack } from "fidesui";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
@@ -80,21 +80,6 @@ const DetectionItemActionsCell = ({
     }
   };
 
-  const handleConfirm = async () => {
-    const result = await confirmResourceMutation({
-      staged_resource_urn: resource.urn,
-      monitor_config_id: resource.monitor_config_id!,
-    });
-    if (isErrorResult(result)) {
-      errorAlert(getErrorMessage(result.error), "Failed to confirm resource");
-    } else {
-      successAlert(
-        `These changes have been added to a Fides dataset. To view, navigate to "Manage datasets".`,
-        `Table changes confirmed`,
-      );
-    }
-  };
-
   const handleMute = async () => {
     const result = await muteResourceMutation({
       staged_resource_urn: resource.urn,
@@ -120,10 +105,15 @@ const DetectionItemActionsCell = ({
   // Field levels can mute/un-mute
   const isSchemaType = resourceType === StagedResourceTypeValue.SCHEMA;
   const isFieldType = resourceType === StagedResourceTypeValue.FIELD;
+  const hasClassificationChanges =
+    childDiffStatus &&
+    (childDiffStatus[DiffStatus.CLASSIFICATION_ADDITION] ||
+      childDiffStatus[DiffStatus.CLASSIFICATION_UPDATE]);
 
   const showStartMonitoringAction =
     (isSchemaType && diffStatus === undefined) ||
-    (!isFieldType && diffStatus === DiffStatus.ADDITION);
+    (!isFieldType && diffStatus === DiffStatus.ADDITION) ||
+    hasClassificationChanges;
   const showMuteAction = diffStatus !== DiffStatus.MUTED;
   const showStartMonitoringActionOnMutedParent =
     diffStatus === DiffStatus.MUTED && !isFieldType;
@@ -136,11 +126,12 @@ const DetectionItemActionsCell = ({
   const showConfirmAction =
     diffStatus === DiffStatus.MONITORED &&
     !ignoreChildActions &&
-    childDiffHasChanges;
+    childDiffHasChanges &&
+    !hasClassificationChanges;
 
   return (
     <HStack>
-      {showStartMonitoringAction && (
+      {(showStartMonitoringAction || showConfirmAction) && (
         <ActionButton
           title="Monitor"
           icon={<MonitorOnIcon />}
@@ -165,15 +156,6 @@ const DetectionItemActionsCell = ({
           icon={<MonitorOnIcon />}
           // This is a special case where we are monitoring a muted schema/table, we need to un-mute all children
           onClick={handleStartMonitoringOnMutedParent}
-          disabled={anyActionIsLoading}
-          loading={confirmIsLoading}
-        />
-      )}
-      {showConfirmAction && (
-        <ActionButton
-          title="Confirm"
-          icon={<CheckIcon />}
-          onClick={handleConfirm}
           disabled={anyActionIsLoading}
           loading={confirmIsLoading}
         />

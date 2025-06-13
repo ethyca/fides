@@ -24,6 +24,7 @@ export type ExperienceConfigCreate = {
   auto_detect_language?: boolean | null;
   auto_subdomain_cookie_deletion?: boolean | null;
   regions?: Array<PrivacyNoticeRegion>;
+  tcf_configuration_id?: string | null;
   component: ComponentType;
   /**
    * Determines the behavior of the reject all button
@@ -32,5 +33,4 @@ export type ExperienceConfigCreate = {
   privacy_notice_ids?: Array<string>;
   translations?: Array<ExperienceTranslationCreate>;
   properties?: Array<MinimalProperty>;
-  tcf_configuration_id?: string | null;
 };

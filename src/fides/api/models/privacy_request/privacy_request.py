@@ -48,6 +48,7 @@ from fides.api.models.audit_log import AuditLog
 from fides.api.models.client import ClientDetail
 from fides.api.models.comment import Comment, CommentReference, CommentReferenceType
 from fides.api.models.fides_user import FidesUser
+from fides.api.models.field_types import EncryptedLargeDataDescriptor
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.policy import (
     Policy,
@@ -72,13 +73,13 @@ from fides.api.models.privacy_request.webhook import (
     generate_request_callback_pre_approval_jwe,
     generate_request_callback_resume_jwe,
 )
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fides.api.schemas.external_https import SecondPartyResponseFormat
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import (
     CheckpointActionRequired,
-    ExecutionLogStatus,
     ManualAction,
     PrivacyRequestSource,
     PrivacyRequestStatus,
@@ -251,13 +252,19 @@ class PrivacyRequest(
     awaiting_email_send_at = Column(DateTime(timezone=True), nullable=True)
 
     # Encrypted filtered access results saved for later retrieval
-    filtered_final_upload = Column(  # An encrypted JSON String - Dict[Dict[str, List[Row]]] - rule keys mapped to the filtered access results
+    _filtered_final_upload = Column(  # An encrypted JSON String - Dict[Dict[str, List[Row]]] - rule keys mapped to the filtered access results
+        "filtered_final_upload",
         StringEncryptedType(
             type_in=JSONTypeOverride,
             key=CONFIG.security.app_encryption_key,
             engine=AesGcmEngine,
             padding="pkcs5",
         ),
+    )
+
+    # Use descriptor for automatic external storage handling
+    filtered_final_upload = EncryptedLargeDataDescriptor(
+        field_name="filtered_final_upload", empty_default={}
     )
 
     # Encrypted filtered access results saved for later retrieval
@@ -334,6 +341,7 @@ class PrivacyRequest(
         deleting this object from the database
         """
         self.clear_cached_values()
+        self.cleanup_external_storage()
         Attachment.delete_attachments_for_reference_and_type(
             db, self.id, AttachmentReferenceType.privacy_request
         )
@@ -1089,6 +1097,46 @@ class PrivacyRequest(
         if attachment:
             attachment.delete(db)
 
+    def _get_manual_webhook_attachments(
+        self, db: Session, manual_webhook_id: str, reference_type: str
+    ) -> List[Attachment]:
+        """Helper method to get attachments that have references to both this privacy request and the specified manual webhook"""
+        query = """
+            SELECT DISTINCT a.*
+            FROM attachment a
+            INNER JOIN attachment_reference ar1 ON a.id = ar1.attachment_id
+            INNER JOIN attachment_reference ar2 ON a.id = ar2.attachment_id
+            WHERE ar1.reference_id = :privacy_request_id
+            AND ar1.reference_type = 'privacy_request'
+            AND ar2.reference_id = :manual_webhook_id
+            AND ar2.reference_type = :reference_type
+        """
+        result = db.execute(
+            query,
+            {
+                "privacy_request_id": self.id,
+                "manual_webhook_id": manual_webhook_id,
+                "reference_type": reference_type,
+            },
+        )
+        return [Attachment(**row) for row in result]
+
+    def get_access_manual_webhook_attachments(
+        self, db: Session, manual_webhook_id: str
+    ) -> List[Attachment]:
+        """Get all attachments that have references to both this privacy request and the specified access manual webhook"""
+        return self._get_manual_webhook_attachments(
+            db, manual_webhook_id, "access_manual_webhook"
+        )
+
+    def get_erasure_manual_webhook_attachments(
+        self, db: Session, manual_webhook_id: str
+    ) -> List[Attachment]:
+        """Get all attachments that have references to both this privacy request and the specified erasure manual webhook"""
+        return self._get_manual_webhook_attachments(
+            db, manual_webhook_id, "erasure_manual_webhook"
+        )
+
     def get_existing_request_task(
         self,
         db: Session,
@@ -1217,6 +1265,11 @@ class PrivacyRequest(
         # DSR 2.0 does not cache the results so nothing to do here
         return {}
 
+    def cleanup_external_storage(self) -> None:
+        """Clean up all external storage files for this privacy request"""
+        # Access the descriptor from the class to call cleanup
+        PrivacyRequest.filtered_final_upload.cleanup(self)
+
     def save_filtered_access_results(
         self, db: Session, results: Dict[str, Dict[str, List[Row]]]
     ) -> None:
@@ -1228,7 +1281,6 @@ class PrivacyRequest(
         """
         if not self.policy.get_rules_for_action(action_type=ActionType.access):
             return None
-
         self.filtered_final_upload = results
         self.save(db)
 
@@ -1505,7 +1557,7 @@ def get_action_required_details(
 
 
 def _parse_cache_to_checkpoint_action_required(
-    cache: dict[str, Any]
+    cache: dict[str, Any],
 ) -> CheckpointActionRequired:
     collection = (
         CollectionAddress(

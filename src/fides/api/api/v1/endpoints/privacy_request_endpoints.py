@@ -75,6 +75,7 @@ from fides.api.models.privacy_request import (
     ProvidedIdentity,
     RequestTask,
 )
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.oauth.utils import (
     verify_callback_oauth_policy_pre_webhook,
     verify_callback_oauth_pre_approval_webhook,
@@ -91,7 +92,6 @@ from fides.api.schemas.privacy_request import (
     CheckpointActionRequired,
     DenyPrivacyRequests,
     ExecutionLogDetailResponse,
-    ExecutionLogStatus,
     FilteredPrivacyRequestResults,
     LogEntry,
     ManualWebhookData,
@@ -120,7 +120,7 @@ from fides.api.util.collection_util import Row
 from fides.api.util.endpoint_utils import validate_start_and_end_filters
 from fides.api.util.enums import ColumnSort
 from fides.api.util.fuzzy_search_utils import get_decrypted_identities_automaton
-from fides.api.util.storage_util import storage_json_encoder
+from fides.api.util.storage_util import StorageJSONEncoder
 from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_CALLBACK_RESUME,
     PRIVACY_REQUEST_CREATE,
@@ -1940,16 +1940,16 @@ def request_task_async_callback(
     ]:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Callback failed. Cannot queue {request_task.action_type.value} task '{request_task.id}' with privacy request status '{privacy_request.status.value}'",
+            detail=f"Callback failed. Cannot queue {request_task.action_type} task '{request_task.id}' with privacy request status '{privacy_request.status.value}'",
         )
     if request_task.status != ExecutionLogStatus.awaiting_processing:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Callback failed. Cannot queue {request_task.action_type.value} task '{request_task.id}' with request task status '{request_task.status.value}'",
+            detail=f"Callback failed. Cannot queue {request_task.action_type} task '{request_task.id}' with request task status '{request_task.status.value}'",
         )
     logger.info(
         "Callback received for {} task {} {}",
-        request_task.action_type.value,
+        request_task.action_type,
         request_task.collection_address,
         request_task.id,
     )
@@ -2129,7 +2129,7 @@ def get_test_privacy_request_results(
 
     # Escape datetime and ObjectId values
     raw_data = privacy_request.get_raw_access_results()
-    escaped_json = json.dumps(raw_data, indent=2, default=storage_json_encoder)
+    escaped_json = json.dumps(raw_data, indent=2, cls=StorageJSONEncoder)
     results = json.loads(escaped_json)
 
     filtered_results: Dict[str, Any] = filter_access_results(

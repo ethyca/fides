@@ -41,6 +41,7 @@ from fides.api.models.privacy_request import (
     PrivacyRequestNotifications,
     generate_request_task_callback_jwe,
 )
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.roles import APPROVER, VIEWER
 from fides.api.schemas.dataset import DryRunDatasetResponse
@@ -53,11 +54,7 @@ from fides.api.schemas.messaging.messaging import (
     SubjectIdentityVerificationBodyParams,
 )
 from fides.api.schemas.policy import ActionType, CurrentStep, PolicyResponse
-from fides.api.schemas.privacy_request import (
-    ExecutionLogStatus,
-    PrivacyRequestSource,
-    PrivacyRequestStatus,
-)
+from fides.api.schemas.privacy_request import PrivacyRequestSource, PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity, LabeledIdentity
 from fides.api.task.graph_runners import access_runner
 from fides.api.tasks import DSR_QUEUE_NAME, MESSAGING_QUEUE_NAME

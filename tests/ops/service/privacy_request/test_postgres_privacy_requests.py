@@ -7,7 +7,8 @@ from sqlalchemy import column, select, table
 from fides.api.graph.config import CollectionAddress, FieldPath
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.privacy_request import ExecutionLog
-from fides.api.schemas.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
+from fides.api.models.worker_task import ExecutionLogStatus
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.util.data_category import DataCategory
 from tests.ops.integration_tests.test_execution import get_sorted_execution_logs
 from tests.ops.service.privacy_request.test_request_runner_service import (
@@ -456,6 +457,7 @@ def test_create_and_process_access_request_postgres_with_disabled_integration(
 
     assert logs == {
         ("Dataset reference validation", "complete", None),
+        ("Access package upload", "complete", None),
         (
             "Dataset traversal",
             "skipped",
@@ -491,11 +493,13 @@ def test_create_and_process_access_request_postgres_with_disabled_integration(
             ("Dataset reference validation", "complete"),
             ("Dataset traversal", "complete"),
             ("Dataset reference validation", "complete"),
+            ("Access package upload", "complete"),
         ]
     else:
         assert logs == [
             ("Dataset reference validation", "complete"),
             ("Dataset traversal", "complete"),
+            ("Access package upload", "complete"),
         ]
 
 
