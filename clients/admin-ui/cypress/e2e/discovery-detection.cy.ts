@@ -152,9 +152,13 @@ describe("discovery and detection", () => {
         cy.getByTestId(
           "row-my_bigquery_monitor.prj-bigquery-000002.test_dataset_4-col-action",
         ).within(() => {
-          cy.getByTestId("action-Confirm").click({ force: true });
+          cy.getByTestId("action-Confirm").click();
           cy.wait("@promoteResource");
-          cy.getByTestId("action-Ignore").click({ force: true });
+        });
+        cy.getByTestId(
+          "row-my_bigquery_monitor.prj-bigquery-000002.test_dataset_4-col-action",
+        ).within(() => {
+          cy.getByTestId("action-Ignore").click();
           cy.wait("@ignoreResource");
         });
       });
