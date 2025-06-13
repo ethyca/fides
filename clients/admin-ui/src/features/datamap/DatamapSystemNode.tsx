@@ -59,7 +59,7 @@ const DatamapSystemNode = ({ data, selected }: NodeProps) => {
       <Button
         style={{
           height: "28px",
-          maxWidth: "240px",
+          maxWidth: "180px",
           transition:
             "background-color 300ms ease-in 0s, color 300ms ease 0s, border-color 300ms ease 0s, box-shadow 300ms ease 0s",
           color: buttonStyle.color,
