@@ -1,8 +1,8 @@
 """remove_replaceable_from_custom_connector_template
 
-Revision ID: 471c04263106
-Revises: c586a56c25e7
-Create Date: 2025-06-10 18:52:35.892660
+Revision ID: 5b8685afd90f
+Revises: 29e56fa1fdb3
+Create Date: 2025-06-13 13:46:14.417290
 
 """
 from alembic import op
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '471c04263106'
-down_revision = 'c586a56c25e7'
+revision = '5b8685afd90f'
+down_revision = '29e56fa1fdb3'
 branch_labels = None
 depends_on = None
 
