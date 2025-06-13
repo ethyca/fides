@@ -81,23 +81,17 @@ const IntegrationListView: NextPage = () => {
           onChange={onChangeTabs}
           items={tabItems}
           className="w-full"
+          tabBarExtraContent={
+            <Button
+              onClick={onOpen}
+              data-testid="add-integration-btn"
+              icon={<LinkIcon />}
+              iconPosition="end"
+            >
+              Add Integration
+            </Button>
+          }
         />
-        <Box
-          borderBottom="2px solid"
-          borderColor="gray.200"
-          height="fit-content"
-          pr="2"
-          pb="2"
-        >
-          <Button
-            onClick={onOpen}
-            data-testid="add-integration-btn"
-            icon={<LinkIcon />}
-            iconPosition="end"
-          >
-            Add Integration
-          </Button>
-        </Box>
       </Box>
       {isLoading || isUpdatingFilter ? (
         <FidesSpinner />

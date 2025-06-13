@@ -185,16 +185,14 @@ const PrivacyNoticeTranslationForm = ({
             activeKey={activeLanguage}
             onChange={handleTabSelected}
             type="editable-card"
-            tabPosition="left"
+            // tabPosition="left"
             tabBarExtraContent={
-              !!languageOptions.length && {
-                left: (
-                  <AddTranslationMenu
-                    languageOptions={languageOptions}
-                    handleCreateLanguage={handleCreateLanguage}
-                  />
-                ),
-              }
+              !!languageOptions.length && (
+                <AddTranslationMenu
+                  languageOptions={languageOptions}
+                  handleCreateLanguage={handleCreateLanguage}
+                />
+              )
             }
             hideAdd
             onEdit={(e, action) => {
