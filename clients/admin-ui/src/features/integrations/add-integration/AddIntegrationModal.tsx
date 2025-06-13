@@ -10,7 +10,6 @@ import IntegrationTypeDetail from "~/features/integrations/add-integration/Integ
 import SelectIntegrationType from "~/features/integrations/add-integration/SelectIntegrationType";
 import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
-import { ConnectionType } from "~/types/api";
 
 enum IntegrationModalStep {
   LIST_VIEW = "list-view",
@@ -29,9 +28,7 @@ const AddIntegrationModal = ({
   const [integrationType, setIntegrationType] = useState<IntegrationTypeInfo>();
 
   const connectionOption = useIntegrationOption(
-    integrationType?.placeholder.connection_type === ConnectionType.SAAS
-      ? ConnectionType.SAAS
-      : integrationType?.placeholder.connection_type,
+    integrationType?.placeholder.connection_type,
     integrationType?.placeholder?.saas_config?.type as SaasConnectionTypes,
   );
 
