@@ -146,6 +146,7 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
             and authentication.strategy
             == OAuth2AuthorizationCodeAuthenticationStrategy.name
         )
+        file_connector_template = FileConnectorTemplateLoader.get_connector_templates().get(template.key)
 
         connector_template = ConnectorTemplate(
             config=template.config,
@@ -156,6 +157,7 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
             user_guide=config.user_guide,
             supported_actions=config.supported_actions,
             is_custom=True,
+            file_connector_available=file_connector_template is not None,
         )
 
         # register the template in the loader's template dictionary
@@ -253,6 +255,14 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
         connector_template = ConnectorRegistry.get_connector_template(connector_type)
         if connector_template:
             update_existing_connection_configs_for_connector_type(db, connector_type, connector_template)
+
+    @classmethod
+    def delete_template(cls, db: Session, key: str) -> None:
+        """
+        Deletes a custom connector template from the database.
+        """
+        CustomConnectorTemplate.filter(db, conditions=(CustomConnectorTemplate.key == key)).delete()
+
 
 
 def update_existing_connection_configs_for_connector_type(
@@ -401,7 +411,6 @@ def update_saas_instance(
         secrets=connection_config.secrets,
         instance_key=saas_config_instance.fides_key,
     )
-
     config_from_template: Dict = replace_config_placeholders(
         template.config, "<instance_fides_key>", template_vals.instance_key
     )

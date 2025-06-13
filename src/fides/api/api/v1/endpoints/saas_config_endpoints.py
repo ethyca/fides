@@ -45,6 +45,7 @@ from fides.api.service.authentication.authentication_strategy_oauth2_authorizati
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
     CustomConnectorTemplateLoader,
+    FileConnectorTemplateLoader,
     create_connection_config_from_template_no_save,
     upsert_dataset_config_from_template,
     update_existing_connection_configs_for_connector_type,
@@ -402,17 +403,17 @@ def register_custom_connector_template(
     UPDATE_CUSTOM_CONNECTOR_TO_FIDES_TEMPLATE,
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTOR_TEMPLATE_REGISTER])],
 )
-def update_custom_connector_to_fides_template(instance_key: str, db: Session = Depends(deps.get_db)) -> JSONResponse:
+def update_custom_connector_to_fides_template(connection_key: str, db: Session = Depends(deps.get_db)) -> JSONResponse:
     """
     Updates a SaaS config to the corresponding template in the registry.
     """
     connection_config: Optional[ConnectionConfig] = (
-        ConnectionConfig.get_by(db, field="key", value=instance_key)
+        ConnectionConfig.get_by(db, field="key", value=connection_key)
     )
     if not connection_config:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
-            detail=f"Connection config with key '{instance_key}' not found.",
+            detail=f"Connection config with key '{connection_key}' not found.",
         )
     if connection_config.connection_type != ConnectionType.saas:
         raise HTTPException(
@@ -423,9 +424,9 @@ def update_custom_connector_to_fides_template(instance_key: str, db: Session = D
     if not saas_config:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
-            detail=f"SaaS config with key '{instance_key}' not found.",
+            detail=f"SaaS config with key '{connection_key}' not found.",
         )
-    saas_config_type = saas_config["type"].astext
+    saas_config_type = saas_config.type
     delete_custom_template(db, saas_config_type)
     return JSONResponse(
         content={"message": "Connection Config successfully updated."}
@@ -436,10 +437,19 @@ def delete_custom_template(db: Session, saas_config_type: str) -> None:
     Deletes a custom template from the database.
     """
     custom_template: Optional[CustomConnectorTemplate] = (
-        CustomConnectorTemplate.filter(db, field="type", value=saas_config_type)
+        CustomConnectorTemplate.filter(db, conditions=(CustomConnectorTemplate.key == saas_config_type)).first()
     )
     if not custom_template:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail=f"Custom template with type '{saas_config_type}' not found.")
+    # todo: we are not validating if there is an actual file connector available for the template
     custom_template.delete(db)
+    file_template = FileConnectorTemplateLoader.get_connector_templates().get(saas_config_type)
+    if file_template:
+        CustomConnectorTemplateLoader.get_connector_templates()[saas_config_type] = file_template
+
     fides_connector_template = ConnectorRegistry.get_connector_template(saas_config_type)
-    update_existing_connection_configs_for_connector_type(db, saas_config_type, fides_connector_template)
+    try:
+        update_existing_connection_configs_for_connector_type(db, saas_config_type, fides_connector_template)
+    except Exception:
+        logger.exception(f"Error updating connection configs for connector type '{saas_config_type}'.")
+        raise HTTPException(status_code=HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error updating connection configs for connector type '{saas_config_type}'.")

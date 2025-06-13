@@ -21,3 +21,4 @@ class ConnectionSystemTypeMap(BaseModel):
     supported_actions: List[ActionType]
     model_config = ConfigDict(use_enum_values=True, from_attributes=True)
     is_custom: bool = False
+    file_connector_available: bool = False
