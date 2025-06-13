@@ -1,4 +1,4 @@
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import Column, DateTime, ForeignKey, String
 from sqlalchemy.ext.declarative import declared_attr
@@ -13,6 +13,11 @@ from fides.api.schemas.manual_tasks.manual_task_schemas import (
     ManualTaskReferenceType,
     ManualTaskType,
 )
+
+if TYPE_CHECKING:  # pragma: no cover
+    from fides.api.models.manual_tasks.manual_task_config import (  # pragma: no cover
+        ManualTaskConfig,
+    )
 
 
 class ManualTask(Base):
@@ -58,6 +63,11 @@ class ManualTask(Base):
         primaryjoin="and_(ManualTask.id == ManualTaskLog.task_id)",
         viewonly=True,
         order_by="ManualTaskLog.created_at",
+    )
+    configs = relationship(
+        "ManualTaskConfig",
+        back_populates="task",
+        cascade="all, delete-orphan",
     )
 
     # Properties

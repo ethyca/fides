@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 
 from fides.api.models.manual_tasks.manual_task import ManualTask
+from fides.api.models.manual_tasks.manual_task_config import ManualTaskConfig
 from fides.api.models.manual_tasks.manual_task_log import ManualTaskLog
 from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskLogStatus
 
@@ -61,17 +62,19 @@ class TestManualTaskLog:
         assert log.details == error_details
         assert log.created_at is not None
 
-    def test_create_error_log_with_config(self, db: Session, manual_task: ManualTask):
+    def test_create_error_log_with_config(
+        self, db: Session, manual_task: ManualTask, manual_task_config: ManualTaskConfig
+    ):
         """Test creating an error log entry with config reference."""
         log = ManualTaskLog.create_error_log(
             db=db,
             task_id=manual_task.id,
             message="Config validation failed",
-            config_id="test_config",
+            config_id=manual_task_config.id,
         )
 
         # Verify error log was created with config
-        assert log.config_id == "test_config"
+        assert log.config_id == manual_task_config.id
         assert log.status == ManualTaskLogStatus.error
 
     def test_create_error_log_with_instance(self, db: Session, manual_task: ManualTask):
@@ -88,7 +91,7 @@ class TestManualTaskLog:
         assert log.status == ManualTaskLogStatus.error
 
     def test_create_error_log_with_all_fields(
-        self, db: Session, manual_task: ManualTask
+        self, db: Session, manual_task: ManualTask, manual_task_config: ManualTaskConfig
     ):
         """Test creating an error log entry with all fields populated."""
         error_message = "Complete error scenario"
@@ -102,7 +105,7 @@ class TestManualTaskLog:
             db=db,
             task_id=manual_task.id,
             message=error_message,
-            config_id="test_config",
+            config_id=manual_task_config.id,
             instance_id="test_instance",
             details=error_details,
         )
@@ -111,7 +114,7 @@ class TestManualTaskLog:
         assert log.task_id == manual_task.id
         assert log.status == ManualTaskLogStatus.error
         assert log.message == error_message
-        assert log.config_id == "test_config"
+        assert log.config_id == manual_task_config.id
         assert log.instance_id == "test_instance"
         assert log.details == error_details
         assert log.created_at is not None
