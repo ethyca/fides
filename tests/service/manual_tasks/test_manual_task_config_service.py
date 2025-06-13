@@ -1,18 +1,19 @@
+import threading
 from typing import Any, Union
+from unittest.mock import MagicMock, patch
 
 import pytest
-from sqlalchemy.orm import Session, scoped_session, sessionmaker
-from unittest.mock import MagicMock, patch
-import threading
 from pydantic import ValidationError
+from sqlalchemy.orm import Session, scoped_session, sessionmaker
 
+from fides.api.db.session import get_db_engine
 from fides.api.models.manual_tasks.manual_task import ManualTask
 from fides.api.models.manual_tasks.manual_task_config import ManualTaskConfig
+from fides.api.models.manual_tasks.manual_task_instance import ManualTaskInstance
 from fides.api.models.manual_tasks.manual_task_log import (
     ManualTaskLog,
     ManualTaskLogStatus,
 )
-from fides.api.models.manual_tasks.manual_task_instance import ManualTaskInstance
 from fides.api.schemas.manual_tasks.manual_task_config import ManualTaskFieldType
 from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskLogStatus
 from fides.api.schemas.manual_tasks.manual_task_status import (
@@ -32,7 +33,6 @@ from tests.service.manual_tasks.conftest import (
     FIELDS,
     TEXT_FIELD_KEY,
 )
-from fides.api.db.session import get_db_engine
 
 
 @pytest.fixture

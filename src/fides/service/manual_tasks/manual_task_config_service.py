@@ -2,8 +2,8 @@ from typing import Any, Optional
 
 from loguru import logger
 from pydantic import ValidationError
+from sqlalchemy import and_, func, select, update
 from sqlalchemy.orm import Session, selectinload
-from sqlalchemy import select, func, and_, update
 
 from fides.api.models.manual_tasks.manual_task import ManualTask
 from fides.api.models.manual_tasks.manual_task_config import (
