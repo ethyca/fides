@@ -1,25 +1,24 @@
-import DataTabsHeader from "~/features/common/DataTabsHeader";
+import { AntTabs } from "fidesui";
 
 interface DetectionResultFilterTabsProps {
-  filterTabIndex: number;
-  onChange: (index: number) => void;
+  activeTabKey: string;
+  onChange: (tab: string) => void;
   filterTabs: { label: string }[];
 }
 
 const DetectionResultFilterTabs = ({
   filterTabs,
   onChange,
-  filterTabIndex,
+  activeTabKey,
 }: DetectionResultFilterTabsProps) => {
   return (
-    <DataTabsHeader
-      border="full-width"
-      mb={5}
-      size="sm"
-      data={filterTabs}
-      borderWidth={1}
-      index={filterTabIndex}
-      onChange={onChange}
+    <AntTabs
+      items={filterTabs.map((tab) => ({
+        key: tab.label,
+        label: tab.label,
+      }))}
+      activeKey={activeTabKey}
+      onChange={(tab) => onChange(tab as string)}
     />
   );
 };

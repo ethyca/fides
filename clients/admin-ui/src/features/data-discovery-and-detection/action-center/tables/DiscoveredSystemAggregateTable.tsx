@@ -7,6 +7,7 @@ import {
   AntButton as Button,
   AntDropdown as Dropdown,
   AntEmpty as Empty,
+  AntTabs,
   AntTooltip as Tooltip,
   Box,
   Flex,
@@ -17,7 +18,6 @@ import {
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
-import DataTabsHeader from "~/features/common/DataTabsHeader";
 import { getErrorMessage } from "~/features/common/helpers";
 import {
   ACTION_CENTER_ROUTE,
@@ -38,7 +38,7 @@ import {
   useIgnoreMonitorResultSystemsMutation,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import useActionCenterTabs, {
-  getIndexFromHash,
+  ActionCenterTabHash,
 } from "~/features/data-discovery-and-detection/action-center/tables/useActionCenterTabs";
 import { successToastContent } from "~/features/data-discovery-and-detection/action-center/utils/successToastContent";
 import { DiffStatus, SystemStagedResourcesAggregateRecord } from "~/types/api";
@@ -88,13 +88,8 @@ export const DiscoveredSystemAggregateTable = ({
     resetPageIndexToDefault();
   }, [monitorId, searchQuery, resetPageIndexToDefault]);
 
-  const {
-    filterTabs,
-    filterTabIndex,
-    onTabChange,
-    activeParams,
-    actionsDisabled,
-  } = useActionCenterTabs({ initialHash: tabHash });
+  const { filterTabs, activeTab, onTabChange, activeParams, actionsDisabled } =
+    useActionCenterTabs({ initialHash: tabHash });
 
   const { data, isLoading, isFetching } = useGetDiscoveredSystemAggregateQuery({
     key: monitorId,
@@ -110,8 +105,8 @@ export const DiscoveredSystemAggregateTable = ({
     }
   }, [data, setTotalPages]);
 
-  const handleTabChange = (index: number) => {
-    onTabChange(index);
+  const handleTabChange = (tab: ActionCenterTabHash) => {
+    onTabChange(tab);
     setRowSelection({});
   };
 
@@ -197,7 +192,7 @@ export const DiscoveredSystemAggregateTable = ({
         successToastParams(
           successToastContent(
             `${totalUpdates} assets have been ignored and will not appear in future scans.`,
-            () => onTabChange(getIndexFromHash("#ignored")!),
+            () => onTabChange(ActionCenterTabHash.IGNORED),
           ),
         ),
       );
@@ -207,13 +202,13 @@ export const DiscoveredSystemAggregateTable = ({
 
   return (
     <>
-      <DataTabsHeader
-        data={filterTabs}
-        data-testid="filter-tabs"
-        index={filterTabIndex}
-        isLazy
-        isManual
-        onChange={handleTabChange}
+      <AntTabs
+        items={filterTabs.map((tab) => ({
+          key: tab.hash,
+          label: tab.label,
+        }))}
+        activeKey={activeTab}
+        onChange={(tab) => handleTabChange(tab as ActionCenterTabHash)}
       />
       <TableActionBar>
         <Flex

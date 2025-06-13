@@ -1,25 +1,42 @@
-import { useMemo, useState } from "react";
+import { useRouter } from "next/router";
+import { useCallback, useMemo, useState } from "react";
 
 import { DiffStatus } from "~/types/api";
 
 interface DiscoveryResultsFilterTabsProps {
-  initialFilterTabIndex?: number;
-}
-
-export enum DiscoveryResultsFilterTabsIndexEnum {
-  ACTION_REQUIRED = 0,
-  UNMONITORED = 1,
+  initialActiveTabKey?: string;
 }
 
 const useDiscoveryResultsFilterTabs = ({
-  initialFilterTabIndex = 0,
+  initialActiveTabKey = "action-required",
 }: DiscoveryResultsFilterTabsProps) => {
-  const [filterTabIndex, setFilterTabIndex] = useState(initialFilterTabIndex);
+  const [activeTabKey, setActiveTabKey] = useState(initialActiveTabKey);
+
+  const router = useRouter();
+
+  const onTabChange = useCallback(
+    async (tab: string) => {
+      setActiveTabKey(tab);
+
+      if (router.isReady) {
+        await router.replace(
+          {
+            pathname: router.pathname,
+            query: { ...router.query, filterTab: tab },
+          },
+          undefined,
+          { shallow: true },
+        );
+      }
+    },
+    [router],
+  );
 
   const filterTabs = useMemo(
     () => [
       {
         label: "Action Required",
+        key: "action-required",
         filters: [
           DiffStatus.CLASSIFICATION_ADDITION,
           DiffStatus.CLASSIFICATION_UPDATE,
@@ -31,6 +48,7 @@ const useDiscoveryResultsFilterTabs = ({
       },
       {
         label: "In progress",
+        key: "in-progress",
         filters: [DiffStatus.CLASSIFYING, DiffStatus.CLASSIFICATION_QUEUED],
         childFilters: [
           DiffStatus.CLASSIFYING,
@@ -39,6 +57,7 @@ const useDiscoveryResultsFilterTabs = ({
       },
       {
         label: "Unmonitored",
+        key: "unmonitored",
         filters: [DiffStatus.MUTED],
         childFilters: [],
       },
@@ -48,10 +67,12 @@ const useDiscoveryResultsFilterTabs = ({
 
   return {
     filterTabs,
-    filterTabIndex,
-    setFilterTabIndex,
-    activeDiffFilters: filterTabs[filterTabIndex].filters,
-    activeChildDiffFilters: filterTabs[filterTabIndex].childFilters,
+    activeTabKey,
+    onTabChange,
+    activeDiffFilters: filterTabs.find((tab) => tab.key === activeTabKey)
+      ?.filters,
+    activeChildDiffFilters: filterTabs.find((tab) => tab.key === activeTabKey)
+      ?.childFilters,
   };
 };
 export default useDiscoveryResultsFilterTabs;

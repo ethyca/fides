@@ -67,18 +67,21 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
 
+  const initialActiveTabKey = router.asPath.split("#")[1] as string;
+
   const {
     filterTabs,
-    setFilterTabIndex,
-    filterTabIndex,
+    activeTabKey,
+    onTabChange,
     activeDiffFilters,
     activeChildDiffFilters,
     activeChangeTypeOverride,
   } = useDetectionResultFilterTabs({
-    initialFilterTabIndex: router.query?.filterTabIndex
-      ? Number(router.query?.filterTabIndex)
-      : undefined,
+    initialActiveTabKey,
   });
+
+  console.log(filterTabs);
+  console.log(activeTabKey);
 
   const {
     PAGE_SIZES,
@@ -145,7 +148,7 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
   const handleRowClicked = (row: StagedResource) =>
     navigateToDetectionResults({
       resourceUrn: row.urn,
-      filterTabIndex,
+      filterTab: activeTabKey,
     });
 
   const getRowIsClickable = (row: StagedResource) =>
@@ -169,9 +172,12 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
   return (
     <>
       <DetectionResultFilterTabs
-        filterTabs={filterTabs}
-        filterTabIndex={filterTabIndex}
-        onChange={setFilterTabIndex}
+        filterTabs={filterTabs.map((tab) => ({
+          label: tab.label,
+          key: tab.key,
+        }))}
+        activeTabKey={activeTabKey}
+        onChange={onTabChange}
       />
       <TableActionBar>
         <Flex

@@ -3,36 +3,15 @@ import { useCallback, useState } from "react";
 
 import { DiffStatus } from "~/types/api";
 
-const ACTION_CENTER_TABLE_TABS = {
-  ATTENTION_REQUIRED: {
-    index: 0,
-    hash: "#attention-required",
-  },
-  RECENT_ACTIVITY: {
-    index: 1,
-    hash: "#recent-activity",
-  },
-  IGNORED: {
-    index: 2,
-    hash: "#ignored",
-  },
-};
+export enum ActionCenterTabHash {
+  ATTENTION_REQUIRED = "#attention-required",
+  RECENT_ACTIVITY = "#recent-activity",
+  IGNORED = "#ignored",
+}
 
-const getTabFromHash = (hash: string) => {
+const normalizeHash = (hash: string): ActionCenterTabHash => {
   const normalizedHash = hash.startsWith("#") ? hash : `#${hash}`;
-  return Object.values(ACTION_CENTER_TABLE_TABS).find(
-    (tab) => tab.hash === normalizedHash,
-  );
-};
-
-const getTabFromIndex = (index: number) => {
-  return Object.values(ACTION_CENTER_TABLE_TABS).find(
-    (tab) => tab.index === index,
-  );
-};
-
-export const getIndexFromHash = (hash: string) => {
-  return getTabFromHash(hash)?.index;
+  return normalizedHash as ActionCenterTabHash;
 };
 
 const useActionCenterTabs = ({
@@ -43,35 +22,34 @@ const useActionCenterTabs = ({
   initialHash?: string;
 }) => {
   const router = useRouter();
-  const getInitialTabIndex = () => {
+  const getInitialTab = () => {
     return initialHash
-      ? getTabFromHash(initialHash)?.index
-      : ACTION_CENTER_TABLE_TABS.ATTENTION_REQUIRED.index;
+      ? normalizeHash(initialHash)
+      : ActionCenterTabHash.ATTENTION_REQUIRED;
   };
 
-  const [filterTabIndex, setFilterTabIndex] = useState(getInitialTabIndex());
+  // const [filterTabIndex, setFilterTabIndex] = useState(getInitialTabIndex());
+  const [activeTab, setActiveTab] =
+    useState<ActionCenterTabHash>(getInitialTab());
 
   const onTabChange = useCallback(
-    async (index: number) => {
+    async (tab: ActionCenterTabHash) => {
       // Update local state first
-      setFilterTabIndex(index);
+      setActiveTab(tab);
 
       // Update URL if router is ready
       if (router.isReady) {
-        const tab = getTabFromIndex(index);
-        if (tab) {
-          const newQuery = { ...router.query };
+        const newQuery = { ...router.query };
 
-          await router.replace(
-            {
-              pathname: router.pathname,
-              query: newQuery,
-              hash: tab.hash,
-            },
-            undefined,
-            { shallow: true },
-          );
-        }
+        await router.replace(
+          {
+            pathname: router.pathname,
+            query: newQuery,
+            hash: tab,
+          },
+          undefined,
+          { shallow: true },
+        );
       }
     },
     [router],
@@ -84,12 +62,14 @@ const useActionCenterTabs = ({
         diff_status: [DiffStatus.ADDITION],
         system: systemId,
       },
+      hash: ActionCenterTabHash.ATTENTION_REQUIRED,
     },
     {
       label: "Recent activity",
       params: {
         diff_status: [DiffStatus.MONITORED],
       },
+      hash: ActionCenterTabHash.RECENT_ACTIVITY,
     },
     {
       label: "Ignored",
@@ -97,18 +77,21 @@ const useActionCenterTabs = ({
         diff_status: [DiffStatus.MUTED],
         system: systemId,
       },
+      hash: ActionCenterTabHash.IGNORED,
     },
   ];
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  const { diff_status, system } = filterTabs[filterTabIndex!].params;
+  const { diff_status, system } = filterTabs.find(
+    (tab) => tab.hash === activeTab,
+  )!.params;
   const actionsDisabled = diff_status.includes(DiffStatus.MONITORED);
 
   const activeParams = systemId ? { diff_status, system } : { diff_status };
 
   return {
     filterTabs,
-    filterTabIndex,
+    activeTab,
     onTabChange,
     activeParams,
     actionsDisabled,

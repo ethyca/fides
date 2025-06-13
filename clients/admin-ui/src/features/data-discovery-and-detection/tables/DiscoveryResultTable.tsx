@@ -22,9 +22,7 @@ import {
 import DetectionResultFilterTabs from "~/features/data-discovery-and-detection/DetectionResultFilterTabs";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import useDiscoveryResultColumns from "~/features/data-discovery-and-detection/hooks/useDiscoveryResultColumns";
-import useDiscoveryResultsFilterTabs, {
-  DiscoveryResultsFilterTabsIndexEnum,
-} from "~/features/data-discovery-and-detection/hooks/useDiscoveryResultsFilterTabs";
+import useDiscoveryResultsFilterTabs from "~/features/data-discovery-and-detection/hooks/useDiscoveryResultsFilterTabs";
 import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/useDiscoveryRoutes";
 import IconLegendTooltip from "~/features/data-discovery-and-detection/IndicatorLegend";
 import DiscoveryFieldBulkActions from "~/features/data-discovery-and-detection/tables/DiscoveryFieldBulkActions";
@@ -76,16 +74,16 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
 
+  const initialActiveTabKey = router.asPath.split("#")[1] as string;
+
   const {
     filterTabs,
-    setFilterTabIndex,
-    filterTabIndex,
+    activeTabKey,
+    onTabChange,
     activeDiffFilters,
     activeChildDiffFilters,
   } = useDiscoveryResultsFilterTabs({
-    initialFilterTabIndex: router.query?.filterTabIndex
-      ? Number(router.query?.filterTabIndex)
-      : undefined,
+    initialActiveTabKey,
   });
 
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
@@ -150,7 +148,10 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
   const { navigateToDiscoveryResults } = useDiscoveryRoutes();
 
   const handleRowClicked = (row: StagedResource) =>
-    navigateToDiscoveryResults({ resourceUrn: row.urn, filterTabIndex });
+    navigateToDiscoveryResults({
+      resourceUrn: row.urn,
+      filterTab: activeTabKey,
+    });
 
   const getRowIsClickable = (row: StagedResource) =>
     resourceType !== StagedResourceTypeValue.FIELD || isNestedField(row);
@@ -180,8 +181,8 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
     <>
       <DetectionResultFilterTabs
         filterTabs={filterTabs}
-        filterTabIndex={filterTabIndex}
-        onChange={setFilterTabIndex}
+        activeTabKey={activeTabKey}
+        onChange={onTabChange}
       />
       <TableActionBar>
         <Flex gap={6} align="center">
@@ -198,8 +199,7 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
             <DiscoveryTableBulkActions selectedUrns={selectedUrns} />
           )}
         {resourceType === StagedResourceTypeValue.FIELD &&
-          filterTabIndex !==
-            DiscoveryResultsFilterTabsIndexEnum.UNMONITORED && (
+          activeTabKey !== "unmonitored" && (
             <DiscoveryFieldBulkActions resourceUrn={resourceUrn!} />
           )}
       </TableActionBar>
