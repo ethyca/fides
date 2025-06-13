@@ -1078,6 +1078,40 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
+  - name: manual_task_config
+    fields:
+    - name: config_type
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: id
+      data_categories: [system.operations]
+    - name: is_current
+      data_categories: [system.operations]
+    - name: task_id
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: version
+      data_categories: [system.operations]
+  - name: manual_task_config_field
+    fields:
+    - name: config_id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: field_key
+      data_categories: [system.operations]
+    - name: field_metadata
+      data_categories: [system.operations]
+    - name: field_type
+      data_categories: [system.operations]
+    - name: id
+      data_categories: [system.operations]
+    - name: task_id
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
   - name: monitorexecution
     data_categories: []
     fields:
