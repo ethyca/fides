@@ -24,6 +24,66 @@ from fides.api.schemas.manual_tasks.manual_task_schemas import (
 from fides.service.manual_tasks.manual_task_service import ManualTaskService
 from tests.service.manual_tasks.conftest import FIELDS
 
+
+@pytest.fixture
+def manual_task(db: Session):
+    task = ManualTask.create(
+        db=db,
+        data={
+            "parent_entity_id": "test-parent-id",
+            "parent_entity_type": ManualTaskParentEntityType.connection_config,
+            "task_type": ManualTaskType.privacy_request,
+        },
+    )
+
+    ManualTaskReference.create(
+        db=db,
+        data={
+            "task_id": task.id,
+            "reference_id": task.parent_entity_id,
+            "reference_type": ManualTaskReferenceType.connection_config,
+        },
+    )
+
+    yield task
+    task.delete(db)
+
+
+@pytest.fixture
+def respondent_user(db: Session):
+    user = FidesUser.create(
+        db=db,
+        data={
+            "username": "test_respondent_user",
+            "email_address": "fides.user@ethyca.com",
+        },
+    )
+    FidesUserPermissions.create(db=db, data={"user_id": user.id, "roles": [RESPONDENT]})
+    yield user
+    user.delete(db)
+
+
+@pytest.fixture
+def external_user(db: Session):
+    user = FidesUser.create(
+        db=db,
+        data={
+            "username": "test_external_user",
+            "email_address": "user@not_ethyca.com",
+        },
+    )
+    FidesUserPermissions.create(
+        db=db, data={"user_id": user.id, "roles": [EXTERNAL_RESPONDENT]}
+    )
+    yield user
+    user.delete(db)
+
+
+@pytest.fixture
+def manual_task_service(db: Session):
+    return ManualTaskService(db)
+
+
 # Helper functions
 
 
@@ -134,7 +194,7 @@ class TestAssignUsersToTask:
     ):
         # Setup
         user_ids = ["user1", "user2"]
-        manual_task_service.assign_users_to_task(db, manual_task, user_ids)
+        manual_task_service.assign_users_to_task(manual_task, user_ids)
 
         # Verify
         assert len(manual_task.references) == 1  # The parent entity
@@ -165,7 +225,7 @@ class TestAssignUsersToTask:
     ):
         # Execute
         manual_task_service.assign_users_to_task(
-            db, manual_task, [respondent_user.id, external_user.id]
+            manual_task, [respondent_user.id, external_user.id]
         )
 
         # Verify
@@ -194,7 +254,7 @@ class TestAssignUsersToTask:
         manual_task_service: ManualTaskService,
     ):
         with pytest.raises(ValueError, match="User ID is required for assignment"):
-            manual_task_service.assign_users_to_task(db, manual_task, [])
+            manual_task_service.assign_users_to_task(manual_task, [])
 
     def test_assign_users_to_task_duplicate_users(
         self,
@@ -205,7 +265,7 @@ class TestAssignUsersToTask:
     ):
         # Execute
         manual_task_service.assign_users_to_task(
-            db, manual_task, [respondent_user.id, respondent_user.id]
+            manual_task, [respondent_user.id, respondent_user.id]
         )
 
         # Verify
@@ -229,12 +289,12 @@ class TestAssignUsersToTask:
         respondent_user: FidesUser,
     ):
         # Setup - assign user first time
-        manual_task_service.assign_users_to_task(db, manual_task, [respondent_user.id])
+        manual_task_service.assign_users_to_task(manual_task, [respondent_user.id])
         initial_reference_count = len(manual_task.references)
         initial_log_count = len(manual_task.logs)
 
         # Execute - assign same user again
-        manual_task_service.assign_users_to_task(db, manual_task, [respondent_user.id])
+        manual_task_service.assign_users_to_task(manual_task, [respondent_user.id])
 
         # Verify - no new references or logs should be created
         assert len(manual_task.references) == initial_reference_count
@@ -254,7 +314,7 @@ class TestUnassignUsersFromTask:
     ):
         # Setup
         manual_task_service.assign_users_to_task(
-            db, manual_task, [respondent_user.id, external_user.id]
+            manual_task, [respondent_user.id, external_user.id]
         )
 
         # Verify
@@ -273,7 +333,7 @@ class TestUnassignUsersFromTask:
 
         # Execute
         manual_task_service.unassign_users_from_task(
-            db, manual_task, [respondent_user.id, external_user.id]
+            manual_task, [respondent_user.id, external_user.id]
         )
 
         # Verify
@@ -313,9 +373,9 @@ class TestUnassignUsersFromTask:
         assign_user_ids = [respondent_user.id, external_user.id]
         unassign_user_ids = [respondent_user.id, "user3"]
 
-        manual_task_service.assign_users_to_task(db, manual_task, assign_user_ids)
+        manual_task_service.assign_users_to_task(manual_task, assign_user_ids)
         # Execute
-        manual_task_service.unassign_users_from_task(db, manual_task, unassign_user_ids)
+        manual_task_service.unassign_users_from_task(manual_task, unassign_user_ids)
 
         # Verify
         assert len(manual_task.references) == 2  # The parent entity and external user
@@ -355,7 +415,7 @@ class TestUnassignUsersFromTask:
     ):
         # Execute
         with pytest.raises(ValueError, match="User ID is required for unassignment"):
-            manual_task_service.unassign_users_from_task(db, manual_task, [])
+            manual_task_service.unassign_users_from_task(manual_task, [])
 
     def test_unassign_users_from_task_duplicate_users(
         self,
@@ -365,11 +425,11 @@ class TestUnassignUsersFromTask:
         respondent_user: FidesUser,
     ):
         # Setup
-        manual_task_service.assign_users_to_task(db, manual_task, [respondent_user.id])
+        manual_task_service.assign_users_to_task(manual_task, [respondent_user.id])
 
         # Execute
         manual_task_service.unassign_users_from_task(
-            db, manual_task, [respondent_user.id, respondent_user.id]
+            manual_task, [respondent_user.id, respondent_user.id]
         )
 
         # Verify
@@ -461,4 +521,6 @@ class TestManualTaskConfig:
         )
         assert log is not None
         assert log.status == ManualTaskLogStatus.complete
-        assert "Deleted manual task configuration" in log.message
+        assert (
+            f"Deleted manual task configuration for {config.config_type}" in log.message
+        )

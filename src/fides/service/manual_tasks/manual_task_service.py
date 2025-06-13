@@ -17,17 +17,15 @@ from fides.api.schemas.manual_tasks.manual_task_schemas import (
 from fides.service.manual_tasks.manual_task_config_service import (
     ManualTaskConfigService,
 )
-from fides.service.manual_tasks.manual_task_instance_service import (
-    ManualTaskInstanceService,
-)
+from fides.service.manual_tasks.utils import with_error_logging
 
 
 class ManualTaskService:
     def __init__(self, db: Session):
         self.db = db
         self.config_service = ManualTaskConfigService(db)
-        self.instance_service = ManualTaskInstanceService(db)
 
+    @with_error_logging("Get task")
     def get_task(
         self,
         task_id: Optional[str] = None,
@@ -72,6 +70,7 @@ class ManualTaskService:
         return self.db.execute(stmt).scalar_one_or_none()
 
     # User Management
+    @with_error_logging("Assign users to task")
     def assign_users_to_task(
         self, db: Session, task: ManualTask, user_ids: list[str]
     ) -> None:
@@ -112,37 +111,12 @@ class ManualTaskService:
             db.flush()
             db.refresh(task)
 
-        # Log successful assignments and errors in bulk
-        log_entries = []
+        # Log errors for non-existent users
         for user_id in user_ids:
             if user_id not in existing_users:
-                # Log error for non-existent users
-                log_entries.append(
-                    {
-                        "task_id": task.id,
-                        "status": ManualTaskLogStatus.error,
-                        "message": f"Failed to add user {user_id} to task {task.id}: user does not exist",
-                        "details": {"user_id": user_id},
-                    }
-                )
-            elif user_id in users_to_assign:
-                # Only log successful assignments for newly assigned users
-                log_entries.append(
-                    {
-                        "task_id": task.id,
-                        "status": ManualTaskLogStatus.updated,
-                        "message": f"User {user_id} assigned to task",
-                        "details": {"assigned_user_id": user_id},
-                    }
-                )
-            # No log entry for already assigned users
+                raise ValueError(f"User {user_id} does not exist")
 
-        # Create logs in bulk
-        if log_entries:
-            db.bulk_insert_mappings(ManualTaskLog, log_entries)
-            db.flush()
-            db.refresh(task)
-
+    @with_error_logging("Unassign users from task")
     def unassign_users_from_task(
         self, db: Session, task: ManualTask, user_ids: list[str]
     ) -> None:
@@ -172,7 +146,6 @@ class ManualTaskService:
         if references_to_unassign:
             # Capture reference IDs before deletion
             reference_ids = [ref.id for ref in references_to_unassign]
-            unassigned_user_ids = [ref.reference_id for ref in references_to_unassign]
 
             # Delete references in bulk
             db.query(ManualTaskReference).filter(
@@ -181,27 +154,9 @@ class ManualTaskService:
             db.flush()
             db.refresh(task)
 
-            # Prepare log entries for successful unassignments using captured user IDs
-            log_entries = [
-                {
-                    "task_id": task.id,
-                    "status": ManualTaskLogStatus.updated,
-                    "message": f"User {user_id} unassigned from task",
-                    "details": {"unassigned_user_id": user_id},
-                }
-                for user_id in unassigned_user_ids
-            ]
-
-            # Create logs in bulk
-            if log_entries:
-                db.bulk_insert_mappings(ManualTaskLog, log_entries)
-                db.flush()
-                db.refresh(task)
-
         # Check if any users weren't unassigned
-        unassigned_user_ids_set = (
-            set(unassigned_user_ids) if references_to_unassign else set()
-        )
+        unassigned_user_ids = [ref.reference_id for ref in references_to_unassign]
+        unassigned_user_ids_set = set(unassigned_user_ids)
         left_over_user_ids = [
             user_id for user_id in user_ids if user_id not in unassigned_user_ids_set
         ]
@@ -211,19 +166,20 @@ class ManualTaskService:
                 "users were not assigned to the task"
             )
 
+    @with_error_logging("Create task configuration")
     def create_config(
         self, task: ManualTask, config_type: str, fields: list[dict]
     ) -> None:
         """Create a new config for a task.
 
         Args:
-            db: Database session
-            task_id: The task ID
+            task: The task to create config for
             config_type: The config type
             fields: The fields for the config
         """
         self.config_service.create_new_version(task, config_type, fields)
 
+    @with_error_logging("Delete task configuration")
     def delete_config(self, task: ManualTask, config: ManualTaskConfig) -> None:
         """Delete this configuration.
         Args:
@@ -233,8 +189,7 @@ class ManualTaskService:
         Raises:
             ValueError: If there are active instances using this configuration
         """
-        # Delete the configuration
-        self.config_service.delete_config(task, config.id)
+        # TODO: when instances are implemented, we need to check for active instances
 
         # Log the deletion
         ManualTaskLog.create_log(
@@ -242,5 +197,8 @@ class ManualTaskService:
             task_id=task.id,
             config_id=None,
             status=ManualTaskLogStatus.complete,
-            message=f"Deleted manual task configuration {config.id} for task {task.id}",
+            message=f"Deleted manual task configuration for {config.config_type}",
         )
+
+        # Delete the configuration
+        self.config_service.delete_config(task, config.id)

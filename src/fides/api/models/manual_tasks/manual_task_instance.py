@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Optional, cast
 
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Column, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import relationship
@@ -15,9 +15,14 @@ from fides.api.schemas.manual_tasks.manual_task_status import (
 
 if TYPE_CHECKING:  # pragma: no cover
     from fides.api.models.attachment import Attachment  # pragma: no cover
+    from fides.api.models.fides_user import FidesUser  # pragma: no cover
     from fides.api.models.manual_tasks.manual_task import ManualTask  # pragma: no cover
-    from fides.api.models.manual_tasks.manual_task_config import ManualTaskConfig  # pragma: no cover
-    from fides.api.models.manual_tasks.manual_task_log import ManualTaskLog  # pragma: no cover
+    from fides.api.models.manual_tasks.manual_task_config import (
+        ManualTaskConfig,  # pragma: no cover
+    )
+    from fides.api.models.manual_tasks.manual_task_log import (
+        ManualTaskLog,  # pragma: no cover; pragma: no cover
+    )
 
 
 class ManualTaskInstance(Base, StatusTransitionMixin):
@@ -167,4 +172,8 @@ class ManualTaskSubmission(Base):
         uselist=True,
     )
 
-    user = relationship("FidesUser", primaryjoin="FidesUser.id == ManualTaskSubmission.submitted_by", viewonly=True)
+    user = relationship(
+        "FidesUser",
+        primaryjoin="FidesUser.id == ManualTaskSubmission.submitted_by",
+        viewonly=True,
+    )

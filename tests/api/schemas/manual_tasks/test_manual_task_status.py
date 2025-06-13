@@ -13,7 +13,11 @@ from fides.api.schemas.manual_tasks.manual_task_status import (
 class TestStatusType:
     def test_valid_transitions_from_pending(self):
         transitions = StatusType.get_valid_transitions(StatusType.pending)
-        assert set(transitions) == {StatusType.in_progress, StatusType.failed, StatusType.completed}
+        assert set(transitions) == {
+            StatusType.in_progress,
+            StatusType.failed,
+            StatusType.completed,
+        }
 
     def test_valid_transitions_from_in_progress(self):
         transitions = StatusType.get_valid_transitions(StatusType.in_progress)

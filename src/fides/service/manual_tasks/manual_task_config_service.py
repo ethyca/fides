@@ -1,6 +1,7 @@
 from typing import Any, Optional
 
 from loguru import logger
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from fides.api.models.manual_tasks.manual_task import ManualTask
@@ -8,7 +9,6 @@ from fides.api.models.manual_tasks.manual_task_config import (
     ManualTaskConfig,
     ManualTaskConfigField,
 )
-from fides.api.models.manual_tasks.manual_task_instance import ManualTaskInstance
 from fides.api.models.manual_tasks.manual_task_log import ManualTaskLog
 from fides.api.schemas.manual_tasks.manual_task_config import (
     ManualTaskConfigResponse,
@@ -16,8 +16,6 @@ from fides.api.schemas.manual_tasks.manual_task_config import (
     ManualTaskFieldBase,
 )
 from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskLogStatus
-from fides.api.schemas.manual_tasks.manual_task_status import StatusType
-from fides.service.manual_tasks.utils import validate_fields
 
 
 class ManualTaskConfigService:
@@ -130,7 +128,7 @@ class ManualTaskConfigService:
             new_config: The config to add fields to
             field_updates: The fields to add or update
         """
-        validate_fields(field_updates)
+        self._validate_fields(field_updates)
 
         # Prepare bulk insert data
         fields_to_create = [
@@ -306,7 +304,7 @@ class ManualTaskConfigService:
 
         # Handle field updates (additions and modifications)
         if field_updates:
-            validate_fields(field_updates)
+            self._validate_fields(field_updates)
             self._new_field_updates(new_config, field_updates)
             modified_field_keys.update(
                 str(update.get("field_key")) for update in field_updates
@@ -355,7 +353,7 @@ class ManualTaskConfigService:
             config_type: The type of config to add fields to
             fields: The fields to add
         """
-        validate_fields(fields)
+        self._validate_fields(fields)
         current_config = self.get_current_config(task, config_type)
         if not current_config:
             raise ValueError(
@@ -398,17 +396,6 @@ class ManualTaskConfigService:
             previous_config=config,
         )
 
-    def get_active_instances(self, config_id: str) -> list[ManualTaskInstance]:
-        """Get all active instances for a config."""
-        return (
-            self.db.query(ManualTaskInstance)
-            .filter(
-                ManualTaskInstance.config_id == config_id,
-                ManualTaskInstance.status != StatusType.completed,
-            )
-            .all()
-        )
-
     def delete_config(self, task: ManualTask, config_id: str) -> None:
         """Delete a config for a task.
 
@@ -419,6 +406,8 @@ class ManualTaskConfigService:
         Raises:
             ValueError: If there are active instances using this config
         """
+        # TODO: when instances are implemented, we need to check for active instances
+
         config = (
             self.db.query(ManualTaskConfig)
             .filter(ManualTaskConfig.id == config_id)
@@ -426,7 +415,5 @@ class ManualTaskConfigService:
         )
         if not config:
             raise ValueError(f"Config with ID {config_id} not found")
-        if self.get_active_instances(config_id):
-            raise ValueError("Cannot delete config with active instances")
 
         config.delete(self.db)

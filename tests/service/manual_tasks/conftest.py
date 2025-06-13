@@ -1,10 +1,12 @@
 import pytest
 from sqlalchemy.orm import Session
 
+from fides.api.models.attachment import Attachment
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.manual_tasks.manual_task import ManualTask, ManualTaskReference
 from fides.api.models.manual_tasks.manual_task_config import ManualTaskConfig, ManualTaskConfigField
+from fides.api.models.manual_tasks.manual_task_instance import ManualTaskInstance, ManualTaskSubmission
 from fides.api.oauth.roles import EXTERNAL_RESPONDENT, RESPONDENT
 from fides.api.schemas.manual_tasks.manual_task_config import ManualTaskFieldType
 from fides.api.schemas.manual_tasks.manual_task_schemas import (
@@ -24,25 +26,6 @@ CHECKBOX_FIELD_KEY = "test_checkbox_field"
 ATTACHMENT_FIELD_KEY = "test_attachment_field"
 FIELDS = [
     # Text fields
-    {
-        "field_key": "field1",
-        "field_type": ManualTaskFieldType.text,
-        "field_metadata": {
-            "label": "Field 1",
-            "required": True,
-            "help_text": "This is field 1",
-            "placeholder": "Enter text here",
-        },
-    },
-    {
-        "field_key": "field2",
-        "field_type": ManualTaskFieldType.text,
-        "field_metadata": {
-            "label": "Field 2",
-            "required": False,
-            "help_text": "This is field 2",
-        },
-    },
     {
         "field_key": TEXT_FIELD_KEY,
         "field_type": "text",
@@ -164,14 +147,60 @@ def manual_task_service(db: Session):
 
 
 @pytest.fixture
-def manual_task_config_field_1(db: Session, manual_task_config: ManualTaskConfig):
-    field = next(field for field in manual_task_config.field_definitions if field.field_key == "field1")
+def manual_task_config_field_text(db: Session, manual_task_config: ManualTaskConfig):
+    field = next(field for field in manual_task_config.field_definitions if field.field_key == TEXT_FIELD_KEY)
     yield field
     field.delete(db)
 
 
 @pytest.fixture
-def manual_task_config_field_2(db: Session, manual_task_config: ManualTaskConfig):
-    field = next(field for field in manual_task_config.field_definitions if field.field_key == "field2")
+def manual_task_config_field_checkbox(db: Session, manual_task_config: ManualTaskConfig):
+    field = next(field for field in manual_task_config.field_definitions if field.field_key == CHECKBOX_FIELD_KEY)
     yield field
     field.delete(db)
+
+
+@pytest.fixture
+def manual_task_config_field_attachment(db: Session, manual_task_config: ManualTaskConfig):
+    field = next(field for field in manual_task_config.field_definitions if field.field_key == ATTACHMENT_FIELD_KEY)
+    yield field
+    field.delete(db)
+
+@pytest.fixture
+def manual_task_submission_text(db: Session, manual_task_instance: ManualTaskInstance):
+    submission = ManualTaskSubmission.create(
+        db=db,
+        data={
+            "task_id": manual_task_instance.task_id,
+            "field_id": manual_task_config_field_text.id,
+            "value": "test_value",
+        },
+    )
+    yield submission
+    submission.delete(db)
+
+@pytest.fixture
+def manual_task_submission_checkbox(db: Session, manual_task_instance: ManualTaskInstance):
+    submission = ManualTaskSubmission.create(
+        db=db,
+        data={
+            "task_id": manual_task_instance.task_id,
+            "field_id": manual_task_config_field_checkbox.id,
+            "value": True,
+        },
+    )
+    yield submission
+    submission.delete(db)
+
+@pytest.fixture
+def manual_task_submission_attachment(db: Session, manual_task_instance: ManualTaskInstance, attachment: Attachment, manual_task_config_field_attachment: ManualTaskConfigField):
+    submission = ManualTaskSubmission.create(
+        db=db,
+        data={
+            "instance_id": manual_task_instance.id,
+            "field_id": manual_task_config_field_attachment.id,
+            "value": attachment.id,
+        },
+    )
+    yield submission
+    submission.delete(db)

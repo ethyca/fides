@@ -13,7 +13,9 @@ if TYPE_CHECKING:  # pragma: no cover
     from fides.api.models.manual_tasks.manual_task_config import (
         ManualTaskConfig,  # pragma: no cover
     )
-    from fides.api.models.manual_tasks.manual_task_instance import ManualTaskInstance  # pragma: no cover
+    from fides.api.models.manual_tasks.manual_task_instance import (  # pragma: no cover
+        ManualTaskInstance,
+    )
 
 
 class ManualTaskLog(Base):
@@ -27,8 +29,14 @@ class ManualTaskLog(Base):
     task_id = Column(
         String, ForeignKey("manual_task.id", ondelete="CASCADE"), nullable=False
     )
-    config_id = Column(String, ForeignKey("manual_task_config.id"), nullable=True)
-    instance_id = Column(String, ForeignKey("manual_task_instance.id"), nullable=True)
+    config_id = Column(
+        String, ForeignKey("manual_task_config.id", ondelete="SET NULL"), nullable=True
+    )
+    instance_id = Column(
+        String,
+        ForeignKey("manual_task_instance.id", ondelete="SET NULL"),
+        nullable=True,
+    )
     status = Column(String, nullable=False)
     message = Column(String, nullable=False)
     details = Column(JSONB, nullable=True)
