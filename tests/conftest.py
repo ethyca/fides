@@ -114,6 +114,19 @@ def s3_client(storage_config):
         yield s3
 
 
+@pytest.fixture
+def mock_s3_client(s3_client, monkeypatch):
+    """Fixture to mock the S3 client for attachment tests"""
+
+    def mock_get_s3_client(auth_method, storage_secrets):
+        return s3_client
+
+    monkeypatch.setattr(
+        "fides.api.service.storage.s3.get_s3_client", mock_get_s3_client
+    )
+    return s3_client
+
+
 @pytest.fixture(scope="session")
 def db(api_client, config):
     """Return a connection to the test DB"""

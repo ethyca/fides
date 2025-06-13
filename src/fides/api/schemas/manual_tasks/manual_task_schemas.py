@@ -38,7 +38,7 @@ class ManualTaskLogStatus(str, Enum):
 
     created = "created"
     updated = "updated"
-    in_processing = "in_processing"
+    in_progress = "in_progress"
     complete = "complete"
     error = "error"
     retrying = "retrying"

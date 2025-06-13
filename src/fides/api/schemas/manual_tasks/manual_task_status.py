@@ -32,7 +32,7 @@ class StatusType(str, EnumType):
             list[StatusType]: List of valid transitions
         """
         if current_status == cls.pending:
-            return [cls.in_progress, cls.failed]
+            return [cls.in_progress, cls.failed, cls.completed]
         if current_status == cls.in_progress:
             return [cls.completed, cls.failed]
         if current_status == cls.completed:

@@ -13,7 +13,11 @@ from fides.api.schemas.manual_tasks.manual_task_status import (
 class TestStatusType:
     def test_valid_transitions_from_pending(self):
         transitions = StatusType.get_valid_transitions(StatusType.pending)
-        assert set(transitions) == {StatusType.in_progress, StatusType.failed}
+        assert set(transitions) == {
+            StatusType.in_progress,
+            StatusType.failed,
+            StatusType.completed,
+        }
 
     def test_valid_transitions_from_in_progress(self):
         transitions = StatusType.get_valid_transitions(StatusType.in_progress)
@@ -84,10 +88,11 @@ class TestStatusTransitionMixin:
             model.update_status(mock_db, StatusType.pending)
 
     def test_invalid_transition_pending_to_completed(self, model, mock_db):
-        with pytest.raises(
-            StatusTransitionNotAllowed, match="Invalid status transition"
-        ):
-            model.update_status(mock_db, StatusType.completed)
+        model.status = StatusType.pending
+        model.update_status(mock_db, StatusType.completed)
+        assert model.status == StatusType.completed
+        assert isinstance(model.completed_at, datetime)
+        assert model.completed_by_id is None
 
     def test_mark_completed(self, model, mock_db):
         model.status = StatusType.in_progress

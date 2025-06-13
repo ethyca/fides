@@ -36,6 +36,10 @@ from fides.api.models.manual_tasks.manual_task_config import (
     ManualTaskConfig,
     ManualTaskConfigField,
 )
+from fides.api.models.manual_tasks.manual_task_instance import (
+    ManualTaskInstance,
+    ManualTaskSubmission,
+)
 from fides.api.models.manual_tasks.manual_task_log import ManualTaskLog
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.messaging import MessagingConfig

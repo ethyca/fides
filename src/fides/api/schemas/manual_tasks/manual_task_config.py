@@ -40,6 +40,13 @@ class ManualTaskFieldMetadata(FidesSchema):
         Optional[str],
         Field(default=None, description="Help text to display with the field"),
     ]
+    data_uses: Annotated[
+        Optional[list[str]],
+        Field(
+            default=None,
+            description="List of data uses associated with this field",
+        ),
+    ]
 
 
 class ManualTaskTextFieldMetadata(ManualTaskFieldMetadata):
