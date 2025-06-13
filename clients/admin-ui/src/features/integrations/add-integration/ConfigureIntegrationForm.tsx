@@ -12,6 +12,7 @@ import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-typ
 import type { ConnectionTypeSecretSchemaResponse } from "~/features/connection-type/types";
 import { useGetAllFilteredDatasetsQuery } from "~/features/dataset";
 import {
+  useCreateUnlinkedSassConnectionConfigMutation,
   usePatchDatastoreConnectionMutation,
   usePatchDatastoreConnectionSecretsMutation,
 } from "~/features/datastore-connections";
@@ -29,6 +30,7 @@ import {
   ConnectionType,
   DynamoDBDocsSchema,
   ScyllaDocsSchema,
+  SystemType,
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
@@ -63,6 +65,9 @@ const ConfigureIntegrationForm = ({
     usePatchDatastoreConnectionMutation();
   const [patchSystemConnectionsTrigger, { isLoading: systemPatchIsLoading }] =
     usePatchSystemConnectionConfigsMutation();
+
+  const [createUnlinkedSassConnectionConfigTrigger] =
+    useCreateUnlinkedSassConnectionConfigMutation();
 
   const hasSecrets =
     connectionOption.identifier !== ConnectionType.MANUAL_WEBHOOK;
@@ -114,6 +119,7 @@ const ConfigureIntegrationForm = ({
   const toast = useToast();
 
   const isEditing = !!connection;
+  const isSaas = connectionOption.type === SystemType.SAAS;
 
   // Exclude secrets fields that haven't changed
   // The api returns secrets masked as asterisks (*****)
@@ -157,6 +163,13 @@ const ConfigureIntegrationForm = ({
       patchResult = await patchSystemConnectionsTrigger({
         systemFidesKey: values.system_fides_key,
         connectionConfigs: [connectionPayload],
+      });
+    } else if (isSaas && !isEditing) {
+      patchResult = await createUnlinkedSassConnectionConfigTrigger({
+        ...connectionPayload,
+        instance_key: formatKey(values.name),
+        saas_connector_type: connectionOption.identifier,
+        secrets: values.secrets || {},
       });
     } else {
       patchResult = await patchDatastoreConnectionsTrigger(connectionPayload);
@@ -276,7 +289,7 @@ const ConfigureIntegrationForm = ({
                 variant="stacked"
               />
               {hasSecrets && secrets && generateFields(secrets)}
-              {!isEditing && (
+              {!isEditing && !isSaas && (
                 <ControlledSelect
                   id="system_fides_key"
                   name="system_fides_key"

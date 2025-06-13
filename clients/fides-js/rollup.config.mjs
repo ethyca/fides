@@ -27,7 +27,7 @@ const GZIP_SIZE_HEADLESS_WARN_KB = 20;
 
 // GPP
 const GZIP_SIZE_GPP_ERROR_KB = 40;
-const GZIP_SIZE_GPP_WARN_KB = 25;
+const GZIP_SIZE_GPP_WARN_KB = 35;
 
 const preactAliases = {
   entries: [

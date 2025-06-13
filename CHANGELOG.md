@@ -21,6 +21,12 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.63.2...main)
 
+### Added
+- Added support for Salesforce custom object monitoring using Helios [#6096](https://github.com/ethyca/fides/pull/6096)
+- Added ManualTaskConfig and ManualTaskConfigField models, foundational for for ManualDSRs [#6208](https://github.com/ethyca/fides/pull/6208) https://github.com/ethyca/fides/labels/db-migration
+
+### Changed
+- Integrations detail page now includes a setup guide component. [#6096](https://github.com/ethyca/fides/pull/6096)
 
 ### Fixed
 - Added missing "Awaiting email send" status to privacy request statuses [#6218](https://github.com/ethyca/fides/pull/6218)
@@ -36,6 +42,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Changed
 - TCF Banners will no longer resurface on reload after dismissal [#6200](https://github.com/ethyca/fides/pull/6200)
 - Earlier initialization strategy for Shopify integration [#6202](https://github.com/ethyca/fides/pull/6202)
+- Upgraded GPP library to `3.1.7` and added support for Oregon section [#6215](https://github.com/ethyca/fides/pull/6215)
 
 
 ## [2.63.1](https://github.com/ethyca/fides/compare/2.63.0...2.63.1)

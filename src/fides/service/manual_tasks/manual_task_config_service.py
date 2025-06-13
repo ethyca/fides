@@ -105,7 +105,7 @@ class ManualTaskConfigService:
         self, new_config: ManualTaskConfig, field_updates: list[dict[str, Any]]
     ) -> None:
         """Updates fields for a config.
-        Args:
+        Args:s
             new_config: The ManualTaskConfig to add fields to
             field_updates: The fields to add or update in the new ManualTaskConfig
         """
@@ -185,7 +185,7 @@ class ManualTaskConfigService:
         """
         config = (
             self.db.query(ManualTaskConfig)
-            .options(selectinload(ManualTaskConfig.field_definitions))
+            .options(selectinload(ManualTaskConfig.field_definitions))n
             .filter(
                 ManualTaskConfig.task_id == task.id,
                 ManualTaskConfig.config_type == config_type,

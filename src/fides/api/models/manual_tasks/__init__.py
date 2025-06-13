@@ -7,6 +7,7 @@ from fides.api.models.manual_tasks.manual_task_instance import (
     ManualTaskInstance,
     ManualTaskSubmission,
 )
+
 from fides.api.models.manual_tasks.manual_task_log import ManualTaskLog
 
 __all__ = [

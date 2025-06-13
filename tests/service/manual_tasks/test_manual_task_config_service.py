@@ -76,8 +76,8 @@ class TestManualTaskConfigCreation(TestManualTaskConfigServiceBase):
             task=manual_task,
             config_type=self.config_type,
             field_updates=self.fields,
-        )
-        config = db.query(ManualTaskConfig).filter_by(id=config["config_id"]).first()
+        )["config']
+
 
         # Verify
         assert config is not None
@@ -723,7 +723,7 @@ class TestManualTaskConfigFieldManagement(TestManualTaskConfigServiceBase):
             "field_key": TEXT_FIELD_KEY,
             "field_type": ManualTaskFieldType.text,
             "field_metadata": {
-                "label": "Text Field",
+                "label": "Text Field",n
                 "required": True,
             },
         }
