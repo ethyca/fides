@@ -9,6 +9,7 @@ import {
   MiniMap,
   Node,
   NodeTypes,
+  Position,
   ReactFlow,
   ReactFlowProvider,
   useReactFlow,
@@ -71,11 +72,75 @@ const useDatamapGraph = ({ data }: UseDatamapGraphProps) => {
     [data.links],
   );
 
-  // Apply layout to position nodes
-  const { nodes, edges } = useMemo(
-    () => getLayoutedElements(initialNodes, initialEdges, "LR"),
-    [initialNodes, initialEdges],
-  );
+  // Custom layout: place unlinked nodes in a grid at the top, with the
+  // interconnected portion of the graph (linked nodes + edges) rendered
+  // beneath that grid. This keeps visually isolated systems clearly
+  // separated while preserving dagre's automatic layout for the connected
+  // sub-graph.
+
+  const { nodes, edges } = useMemo(() => {
+    // Identify which nodes participate in at least one edge
+    const linkedNodeIds = new Set<string>();
+    initialEdges.forEach((e) => {
+      linkedNodeIds.add(e.source);
+      linkedNodeIds.add(e.target);
+    });
+
+    const gridNodes: Node[] = [];
+    const dagreNodes: Node[] = [];
+
+    initialNodes.forEach((n) => {
+      if (linkedNodeIds.has(n.id)) {
+        dagreNodes.push(n);
+      } else {
+        gridNodes.push(n);
+      }
+    });
+
+    // 1. Lay out the connected graph with Dagre
+    const { nodes: dagreLayoutNodes } = getLayoutedElements(
+      dagreNodes,
+      initialEdges,
+      "LR",
+    );
+
+    // 2. Lay out the unlinked nodes in a simple grid
+    const GRID_COLS = 4; // number of columns in top grid
+    const H_SPACING = 240; // horizontal distance between nodes (px)
+    const V_SPACING = 120; // vertical distance between nodes (px)
+
+    const gridLayoutNodes = gridNodes.map((node, idx) => {
+      const row = Math.floor(idx / GRID_COLS);
+      const col = idx % GRID_COLS;
+
+      return {
+        ...node,
+        position: {
+          x: col * H_SPACING,
+          y: row * V_SPACING,
+        },
+        sourcePosition: Position.Right,
+        targetPosition: Position.Left,
+      } as Node;
+    });
+
+    // 3. Offset the dagre layout so it appears beneath the grid
+    const gridRows = Math.ceil(gridLayoutNodes.length / GRID_COLS);
+    const offsetY = gridRows * V_SPACING + 80; // 80px extra buffer below grid
+
+    const shiftedDagreNodes = dagreLayoutNodes.map((node) => ({
+      ...node,
+      position: {
+        x: node.position.x,
+        y: node.position.y + offsetY,
+      },
+    }));
+
+    return {
+      nodes: [...gridLayoutNodes, ...shiftedDagreNodes],
+      edges: initialEdges,
+    };
+  }, [initialNodes, initialEdges]);
 
   return {
     nodes,
@@ -131,14 +196,19 @@ const DatamapGraph = ({
     };
   }, [reactFlowInstance, datamapGraphRef]);
 
-  // Center the graph and adjust view on initial load
+  // Center (or re-center) the graph only when the underlying layout
+  // changes – not when merely toggling the `selected` flag on nodes.
+  // Using `baseNodes` (which is unaffected by selection) prevents an
+  // unintentional zoom reset when a user clicks on a node.
   useEffect(() => {
-    if (nodes.length > 0) {
+    if (baseNodes.length > 0) {
+      // Slight delay so the graph has time to mount before fitting.
       setTimeout(() => {
         reactFlowInstance.fitView({ padding: 0.2 });
       }, 150);
     }
-  }, [nodes, reactFlowInstance]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [baseNodes, reactFlowInstance]);
 
   // Pan view to keep selected node visible when drawer opens/closes
   useEffect(() => {
