@@ -5,7 +5,6 @@ import { DirtyFormConfirmationModal } from "~/features/common/hooks/useIsAnyForm
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
 import Datamap from "~/features/datamap/Datamap";
-import DatamapGraphStore from "~/features/datamap/datamap-graph/DatamapGraphContext";
 import DatamapTableContext, {
   DatamapTableContextValue,
 } from "~/features/datamap/datamap-table/DatamapTableContext";
@@ -25,10 +24,8 @@ const Home: NextPage = () => {
     >
       <PageHeader style={{ paddingLeft: 0 }} heading="Data lineage" />
       <DatamapTableContext.Provider value={datamapTableContextValue}>
-        <DatamapGraphStore>
-          <Datamap />
-          <DirtyFormConfirmationModal />
-        </DatamapGraphStore>
+        <Datamap />
+        <DirtyFormConfirmationModal />
       </DatamapTableContext.Provider>
     </Layout>
   );

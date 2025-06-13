@@ -1,4 +1,3 @@
-import { DataFlowAccordion } from "common/system-data-flow/DataFlowAccordion";
 import { Box, Link, Text, useToast } from "fidesui";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
@@ -16,6 +15,7 @@ import {
   EDIT_SYSTEM_ROUTE,
   INTEGRATION_MANAGEMENT_ROUTE,
 } from "~/features/common/nav/routes";
+import { DataFlowAccordion } from "~/features/common/system-data-flow/DataFlowAccordion";
 import {
   DEFAULT_TOAST_PARAMS,
   errorToastParams,
