@@ -24,7 +24,7 @@ import {
   saveFidesCookie,
   updateCookieFromNoticePreferences,
 } from "./cookie";
-import { dispatchFidesEvent } from "./events";
+import { dispatchFidesEvent, FidesEventDetailsTrigger } from "./events";
 import { decodeFidesString } from "./fides-string";
 import { transformConsentToFidesUserPreference } from "./shared-consent-utils";
 import { TcfSavePreferences } from "./tcf/types";
@@ -91,6 +91,7 @@ export interface UpdateConsentPreferences {
   options: FidesInitOptions;
   userLocationString?: string;
   cookie: FidesCookie;
+  eventTrigger?: FidesEventDetailsTrigger;
   servedNoticeHistoryId?: string;
   tcf?: TcfSavePreferences;
   updateCookie?: (oldCookie: FidesCookie) => Promise<FidesCookie>;
@@ -104,6 +105,7 @@ export const updateConsentPreferences = async ({
   options,
   userLocationString,
   cookie,
+  eventTrigger,
   servedNoticeHistoryId,
   tcf,
   updateCookie,
@@ -117,13 +119,25 @@ export const updateConsentPreferences = async ({
   if (!updateCookie && !consentPreferencesToSave) {
     throw new Error("updateCookie is required");
   }
+  const trigger = {
+    ...eventTrigger,
+    origin:
+      eventTrigger?.origin ||
+      (consentMethod === ConsentMethod.SCRIPT ||
+      consentMethod === ConsentMethod.GPC ||
+      consentMethod === ConsentMethod.OT_MIGRATION
+        ? "external"
+        : "fides"),
+  };
   // 1. Update the cookie object based on new preferences & extra details
   const updatedCookie = await updateCookie!(cookie);
   Object.assign(cookie, updatedCookie);
   Object.assign(cookie.fides_meta, { consentMethod }); // save extra details to meta (i.e. consentMethod)
 
   // 2. Dispatch a "FidesUpdating" event with the new preferences
-  dispatchFidesEvent("FidesUpdating", cookie);
+  dispatchFidesEvent("FidesUpdating", cookie, {
+    trigger,
+  });
 
   // 3. Update the window.Fides object
   fidesDebugger("Updating window.Fides");
@@ -185,7 +199,9 @@ export const updateConsentPreferences = async ({
   }
 
   // 7. Dispatch a "FidesUpdated" event
-  dispatchFidesEvent("FidesUpdated", cookie);
+  dispatchFidesEvent("FidesUpdated", cookie, {
+    trigger,
+  });
 };
 
 const validateConsent = (fides: FidesGlobal, consent: NoticeConsent) => {
@@ -253,6 +269,9 @@ export const updateConsent = async (
     validation?: UpdateConsentValidation;
   },
   consentMethod: ConsentMethod = ConsentMethod.SCRIPT,
+  eventTrigger: FidesEventDetailsTrigger = {
+    origin: "external",
+  },
 ): Promise<void> => {
   // If neither consent nor fidesString is provided, raise an error
   if (!options?.consent && !options?.fidesString) {
@@ -375,5 +394,6 @@ export const updateConsent = async (
     userLocationString: fidesRegionString,
     cookie: fides.cookie,
     propertyId: fides.config?.propertyId,
+    eventTrigger,
   });
 };

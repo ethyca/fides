@@ -2,6 +2,7 @@ import { ComponentChildren, h, VNode } from "preact";
 import { HTMLAttributes } from "preact/compat";
 
 import { Attributes } from "../lib/a11y-dialog";
+import { useEvent } from "../lib/providers/event-context";
 import CloseButton from "./CloseButton";
 import ConsentContent from "./ConsentContent";
 
@@ -19,7 +20,7 @@ const ConsentModal = ({
   renderModalFooter: () => VNode | null;
 }) => {
   const { container, overlay, dialog, title, closeButton } = attributes;
-
+  const { setTrigger } = useEvent();
   return (
     <div
       data-testid="consent-modal"
@@ -36,7 +37,13 @@ const ConsentModal = ({
           <div />
           <CloseButton
             ariaLabel="Close modal"
-            onClick={closeButton.onClick}
+            onClick={() => {
+              setTrigger({
+                type: "button",
+                label: "Close modal",
+              });
+              closeButton.onClick();
+            }}
             hidden={window.Fides.options.preventDismissal || !dismissable}
           />
         </div>
