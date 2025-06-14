@@ -13,6 +13,13 @@ from fides.api.schemas.namespace_meta.bigquery_namespace_meta import (
     BigQueryNamespaceMeta,
 )
 from fides.api.service.connectors.bigquery_connector import BigQueryConnector
+from tests.fixtures.bigquery_fixtures import seed_bigquery_integration_db
+
+
+@pytest.fixture(scope="session", autouse=True)
+def update_bigquery_data(bigquery_test_engine):
+    """Refresh the BigQuery data at the start of the test session"""
+    seed_bigquery_integration_db(bigquery_test_engine)
 
 
 @pytest.mark.integration_external
@@ -127,10 +134,11 @@ class TestBigQueryConnector:
         )
 
         assert len(updates) == 2
-        assert (
-            str(updates[0])
-            == "UPDATE `silken-precinct-284918.fidesopstest.customer` SET `name`=%(name:STRING)s WHERE `silken-precinct-284918.fidesopstest.customer`.`email` = %(email_1:STRING)s AND `created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `created` <= CURRENT_TIMESTAMP()"
-        )
+        stmts = [str(stmt) for stmt in updates]
+        assert stmts == [
+            "UPDATE `silken-precinct-284918.fidesopstest.customer` SET `name`=%(name:STRING)s WHERE `silken-precinct-284918.fidesopstest.customer`.`email` = %(email_1:STRING)s AND `created` > CURRENT_TIMESTAMP - INTERVAL 1000 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 500 DAY",
+            "UPDATE `silken-precinct-284918.fidesopstest.customer` SET `name`=%(name:STRING)s WHERE `silken-precinct-284918.fidesopstest.customer`.`email` = %(email_1:STRING)s AND `created` > CURRENT_TIMESTAMP - INTERVAL 500 DAY AND `created` <= CURRENT_TIMESTAMP",
+        ]
 
     def test_generate_delete_partitioned_table(
         self,
@@ -156,10 +164,12 @@ class TestBigQueryConnector:
         deletes = query_config.generate_delete(row=row, client=connector.client())
 
         assert len(deletes) == 2
-        assert (
-            str(deletes[0])
-            == "DELETE FROM `silken-precinct-284918.fidesopstest.customer` WHERE `silken-precinct-284918.fidesopstest.customer`.`email` = %(email_1:STRING)s AND `created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `created` <= CURRENT_TIMESTAMP()"
-        )
+
+        stmts = [str(stmt) for stmt in deletes]
+        assert stmts == [
+            "DELETE FROM `silken-precinct-284918.fidesopstest.customer` WHERE `silken-precinct-284918.fidesopstest.customer`.`email` = %(email_1:STRING)s AND `created` > CURRENT_TIMESTAMP - INTERVAL 1000 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 500 DAY",
+            "DELETE FROM `silken-precinct-284918.fidesopstest.customer` WHERE `silken-precinct-284918.fidesopstest.customer`.`email` = %(email_1:STRING)s AND `created` > CURRENT_TIMESTAMP - INTERVAL 500 DAY AND `created` <= CURRENT_TIMESTAMP",
+        ]
 
     def test_retrieve_partitioned_data(
         self,
@@ -215,11 +225,11 @@ class TestBigQueryConnector:
             # without modifying the BigQueryConnector class to allow for a SQL queries generation
             # that's decoupled from the actual execution of the queries.
             assert (
-                "INFO     sqlalchemy.engine.Engine:log.py:117 SELECT address_id, created, custom_id, email, extra_address_data, id, name, purchase_history, tags FROM `silken-precinct-284918.fidesopstest.customer` WHERE (email = %(email)s OR custom_id = %(custom_id)s) AND (`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `created` <= CURRENT_TIMESTAMP())"
+                "INFO     sqlalchemy.engine.Engine:log.py:117 SELECT address_id, created, custom_id, email, extra_address_data, id, name, purchase_history, tags FROM `silken-precinct-284918.fidesopstest.customer` WHERE (email = %(email)s OR custom_id = %(custom_id)s) AND (`created` > CURRENT_TIMESTAMP - INTERVAL 1000 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 500 DAY)"
                 in loguru_caplog.text
             )
             assert (
-                "INFO     sqlalchemy.engine.Engine:log.py:117 SELECT address_id, created, custom_id, email, extra_address_data, id, name, purchase_history, tags FROM `silken-precinct-284918.fidesopstest.customer` WHERE (email = %(email)s OR custom_id = %(custom_id)s) AND (`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2000 DAY) AND `created` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY))"
+                "INFO     sqlalchemy.engine.Engine:log.py:117 SELECT address_id, created, custom_id, email, extra_address_data, id, name, purchase_history, tags FROM `silken-precinct-284918.fidesopstest.customer` WHERE (email = %(email)s OR custom_id = %(custom_id)s) AND (`created` > CURRENT_TIMESTAMP - INTERVAL 500 DAY AND `created` <= CURRENT_TIMESTAMP)"
                 in loguru_caplog.text
             )
 

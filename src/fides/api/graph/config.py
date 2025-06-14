@@ -95,6 +95,7 @@ from fides.api.graph.data_type import (
     DataTypeConverter,
     get_data_type_converter,
 )
+from fides.api.schemas.partitioning import TimeBasedPartitioning
 from fides.api.util.collection_util import merge_dicts
 from fides.api.util.querytoken import QueryToken
 
@@ -686,10 +687,23 @@ class Collection(BaseModel):
         if not partitioning:
             return partitioning
 
-        # NOTE: when we deprecate `where_clause` partitioning in favor of a more proper partitioning DSL,
-        # we should be sure to still support the existing `where_clause` partition definition on
-        # any in-progress DSRs so that they can run through to completion.
-        if where_clauses := partitioning.get("where_clauses"):
+        # Keeping the where_clauses support for now even though we have a DSL to allow time for migration
+        where_clauses = partitioning.get("where_clauses")
+        time_based_partitioning = all(
+            field in partitioning for field in ["field", "start", "end", "interval"]
+        )
+
+        if where_clauses and time_based_partitioning:
+            raise ValueError(
+                "Cannot specify both `where_clauses` and time based partitioning (`field`, `start`, `end`, `interval`)"
+            )
+
+        if not where_clauses and not time_based_partitioning:
+            raise ValueError(
+                "Must specify either `where_clauses` or time based partitioning (`field`, `start`, `end`, `interval`)"
+            )
+
+        if where_clauses:
             if not isinstance(where_clauses, List) or not all(
                 isinstance(where_clause, str) for where_clause in where_clauses
             ):
@@ -715,10 +729,15 @@ class Collection(BaseModel):
                             )
                 else:
                     raise ValueError("Unsupported partition clause format")
-            return partitioning
-        raise ValueError(
-            "`where_clauses` must be specified in `partitioning` specification!"
-        )
+        if time_based_partitioning:
+            # Try to parse time-based partitioning
+            TimeBasedPartitioning(
+                field=partitioning["field"],
+                start=partitioning["start"],
+                end=partitioning["end"],
+                interval=partitioning["interval"],
+            )
+        return partitioning
 
 
 class GraphDataset(BaseModel):
