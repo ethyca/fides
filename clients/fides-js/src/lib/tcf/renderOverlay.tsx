@@ -5,6 +5,7 @@ import { PrivacyExperienceMinimal } from "~/fides";
 import { TcfOverlay } from "../../components/tcf/TcfOverlay";
 import { OverlayProps } from "../../components/types";
 import { I18nProvider } from "../i18n/i18n-context";
+import { EventProvider } from "../providers/event-context";
 import { GVLProvider } from "./gvl-context";
 import { loadTcfMessagesFromFiles } from "./i18n/tcf-i18n-utils";
 import { VendorButtonProvider } from "./vendor-button-context";
@@ -24,10 +25,12 @@ export const renderOverlay = (props: OverlayProps, parent: ContainerNode) => {
     <I18nProvider i18nInstance={i18n}>
       <GVLProvider>
         <VendorButtonProvider>
-          <TcfOverlay
-            experienceMinimal={props.experience as PrivacyExperienceMinimal}
-            {...props}
-          />
+          <EventProvider>
+            <TcfOverlay
+              experienceMinimal={props.experience as PrivacyExperienceMinimal}
+              {...props}
+            />
+          </EventProvider>
         </VendorButtonProvider>
       </GVLProvider>
     </I18nProvider>,
