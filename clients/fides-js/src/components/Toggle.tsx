@@ -1,6 +1,6 @@
 import { h } from "preact";
 
-import { FidesEventDetailsTrigger } from "../lib/events";
+import { useEvent } from "../lib/providers/event-context";
 
 const Toggle = ({
   label,
@@ -16,14 +16,12 @@ const Toggle = ({
   name: string;
   id: string;
   checked: boolean;
-  onChange: (
-    noticeKey: string,
-    triggerDetails: FidesEventDetailsTrigger,
-  ) => void;
+  onChange: (noticeKey: string) => void;
   disabled?: boolean;
   onLabel?: string;
   offLabel?: string;
 }) => {
+  const { setTrigger } = useEvent();
   const labelText = checked ? onLabel : offLabel;
   return (
     <div className="fides-toggle" data-testid={`toggle-${label}`}>
@@ -33,11 +31,12 @@ const Toggle = ({
         aria-label={label}
         className="fides-toggle-input"
         onChange={() => {
-          onChange(id, {
+          setTrigger({
             type: "toggle",
             label,
             checked: !checked,
           });
+          onChange(id);
         }}
         checked={checked}
         role="switch"

@@ -527,20 +527,16 @@ export const TcfOverlay = ({
   }, [handleUpdateAllPreferences, draftIds, parsedCookie?.consent]);
 
   const handleToggleChange = useCallback(
-    (
-      updatedIds: EnabledIds,
-      triggerDetails: FidesEventDetailsTrigger,
-      preference: FidesEventDetailsPreference,
-    ) => {
+    (updatedIds: EnabledIds, preference: FidesEventDetailsPreference) => {
       const eventExtraDetails: FidesEvent["detail"]["extraDetails"] = {
         servingComponent: ServingComponent.TCF_OVERLAY,
-        trigger: triggerDetails,
+        trigger: triggerRef.current,
         preference,
       };
       setDraftIds(updatedIds);
       dispatchFidesEvent("FidesUIChanged", cookie, eventExtraDetails);
     },
-    [cookie, setDraftIds],
+    [cookie, setDraftIds, triggerRef],
   );
 
   const handleTabChange = useCallback(

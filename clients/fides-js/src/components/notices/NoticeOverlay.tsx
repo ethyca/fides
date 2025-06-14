@@ -314,20 +314,20 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   ]);
 
   const handleToggleChange = useCallback(
-    (
-      updatedKeys: Array<string>,
-      triggerDetails: FidesEventDetailsTrigger,
-      preference: FidesEventDetailsPreference,
-    ) => {
+    (updatedKeys: Array<string>, preference: FidesEventDetailsPreference) => {
       const eventExtraDetails: FidesEvent["detail"]["extraDetails"] = {
         servingComponent: ServingComponent.MODAL,
-        trigger: triggerDetails,
+        trigger: triggerRef.current,
         preference,
       };
       setDraftEnabledNoticeKeys(updatedKeys);
-      dispatchFidesEvent("FidesUIChanged", cookie, eventExtraDetails);
+      dispatchFidesEventAndClearTrigger(
+        "FidesUIChanged",
+        cookie,
+        eventExtraDetails,
+      );
     },
-    [cookie, setDraftEnabledNoticeKeys],
+    [triggerRef, dispatchFidesEventAndClearTrigger, cookie],
   );
 
   const experienceConfig = experience.experience_config;
