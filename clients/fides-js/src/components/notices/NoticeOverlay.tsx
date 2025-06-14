@@ -29,7 +29,6 @@ import {
 import {
   dispatchFidesEvent,
   FidesEventDetailsPreference,
-  FidesEventDetailsTrigger,
 } from "../../lib/events";
 import { useNoticesServed } from "../../lib/hooks";
 import {
@@ -38,6 +37,7 @@ import {
 } from "../../lib/i18n";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { updateConsentPreferences } from "../../lib/preferences";
+import { useEvent } from "../../lib/providers/event-context";
 import { processExternalConsentValue } from "../../lib/shared-consent-utils";
 import ConsentBanner from "../ConsentBanner";
 import { NoticeConsentButtons } from "../ConsentButtons";
@@ -53,6 +53,8 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   propertyId,
 }) => {
   const { i18n, currentLocale, setCurrentLocale } = useI18n();
+  const { triggerRef, setTrigger, dispatchFidesEventAndClearTrigger } =
+    useEvent();
   const parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
   const savedConsent = window.Fides.saved_consent;
 
@@ -204,7 +206,6 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         privacyNoticeItems,
         enabledPrivacyNoticeKeys,
       );
-
       updateConsentPreferences({
         consentPreferencesToSave,
         privacyExperienceConfigHistoryId,
@@ -213,6 +214,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         options,
         userLocationString: fidesRegionString,
         cookie,
+        eventTrigger: triggerRef.current,
         servedNoticeHistoryId,
         propertyId,
         updateCookie: (oldCookie) =>
@@ -220,6 +222,8 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
             oldCookie,
             consentPreferencesToSave,
           ),
+      }).finally(() => {
+        setTrigger(undefined);
       });
       // Make sure our draft state also updates
       setDraftEnabledNoticeKeys(enabledPrivacyNoticeKeys);
@@ -233,6 +237,8 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       privacyNoticeItems,
       servedNoticeHistoryId,
       propertyId,
+      triggerRef,
+      setTrigger,
     ],
   );
 
@@ -295,10 +301,10 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   }, [cookie]);
 
   const dispatchOpenOverlayEvent = useCallback(() => {
-    dispatchFidesEvent("FidesUIShown", cookie, {
+    dispatchFidesEventAndClearTrigger("FidesUIShown", cookie, {
       servingComponent: ServingComponent.MODAL,
     });
-  }, [cookie]);
+  }, [cookie, dispatchFidesEventAndClearTrigger]);
 
   const handleDismiss = useCallback(() => {
     if (!consentCookieObjHasSomeConsentSet(parsedCookie?.consent)) {

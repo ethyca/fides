@@ -27,7 +27,6 @@ import {
 import {
   dispatchFidesEvent,
   FidesEventDetailsPreference,
-  FidesEventDetailsTrigger,
 } from "../../lib/events";
 import { useNoticesServed } from "../../lib/hooks";
 import {
@@ -42,6 +41,7 @@ import {
 } from "../../lib/i18n";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { updateConsentPreferences } from "../../lib/preferences";
+import { useEvent } from "../../lib/providers/event-context";
 import { EMPTY_ENABLED_IDS } from "../../lib/tcf/constants";
 import { useGvl } from "../../lib/tcf/gvl-context";
 import {
@@ -99,6 +99,7 @@ export const TcfOverlay = ({
     setCurrentLocale,
     setIsLoading: setIsI18nLoading,
   } = useI18n();
+  const { triggerRef, setTrigger } = useEvent();
   const parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
   const minExperienceLocale =
     experienceMinimal?.experience_config?.translations?.[0]?.language;
@@ -363,6 +364,7 @@ export const TcfOverlay = ({
         options,
         userLocationString: fidesRegionString,
         cookie,
+        eventTrigger: triggerRef.current,
         tcf,
         servedNoticeHistoryId,
         updateCookie: (oldCookie) =>
@@ -373,6 +375,8 @@ export const TcfOverlay = ({
             experienceFull || experienceMinimal,
             consentPreferencesToSave,
           ),
+      }).finally(() => {
+        setTrigger(undefined);
       });
       setDraftIds(enabledIds);
     },
@@ -385,6 +389,8 @@ export const TcfOverlay = ({
       privacyExperienceConfigHistoryId,
       privacyNoticesWithBestTranslation,
       servedNoticeHistoryId,
+      triggerRef,
+      setTrigger,
     ],
   );
 
@@ -652,7 +658,13 @@ export const TcfOverlay = ({
                     <Button
                       buttonType={ButtonType.SECONDARY}
                       label={i18n.t("exp.save_button_label")}
-                      onClick={() => onSave(ConsentMethod.SAVE, draftIds)}
+                      onClick={() => {
+                        setTrigger({
+                          type: "button",
+                          label: i18n.t("exp.save_button_label"),
+                        });
+                        onSave(ConsentMethod.SAVE, draftIds);
+                      }}
                       className="fides-save-button"
                     />
                   )}

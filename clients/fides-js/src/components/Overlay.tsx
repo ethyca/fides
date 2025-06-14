@@ -14,9 +14,9 @@ import {
   PrivacyExperienceMinimal,
 } from "../lib/consent-types";
 import { defaultShowModal, shouldResurfaceBanner } from "../lib/consent-utils";
-import { dispatchFidesEvent } from "../lib/events";
 import { useElementById, useHasMounted } from "../lib/hooks";
 import { useI18n } from "../lib/i18n/i18n-context";
+import { useEvent } from "../lib/providers/event-context";
 import { blockPageScrolling, unblockPageScrolling } from "../lib/ui-utils";
 import ConsentContent from "./ConsentContent";
 import ConsentModal from "./ConsentModal";
@@ -61,6 +61,7 @@ const Overlay: FunctionComponent<Props> = ({
   isUiBlocking,
 }) => {
   const { i18n } = useI18n();
+  const { dispatchFidesEventAndClearTrigger } = useEvent();
   const delayBannerMilliseconds = 100;
   const hasMounted = useHasMounted();
   const modalLinkId = options.modalLinkId || "fides-modal-link";
@@ -103,12 +104,12 @@ const Overlay: FunctionComponent<Props> = ({
 
   const dispatchCloseEvent = useCallback(
     ({ saved = false }: { saved?: boolean }) => {
-      dispatchFidesEvent("FidesModalClosed", cookie, { saved });
       if (!saved) {
         onDismiss();
       }
+      dispatchFidesEventAndClearTrigger("FidesModalClosed", cookie, { saved });
     },
-    [cookie, onDismiss],
+    [dispatchFidesEventAndClearTrigger, cookie, onDismiss],
   );
 
   const { instance, attributes } = useA11yDialog({
