@@ -27,7 +27,11 @@ import {
   updateExperienceFromCookieConsentNotices,
 } from "./lib/cookie";
 import { initializeDebugger } from "./lib/debugger";
-import { dispatchFidesEvent } from "./lib/events";
+import {
+  dispatchConsentLoadedEvents,
+  dispatchFidesEvent,
+  dispatchReadyEvents,
+} from "./lib/events";
 import { DecodedFidesString, decodeFidesString } from "./lib/fides-string";
 import {
   getCoreFides,
@@ -61,17 +65,12 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
 
   this.config = config; // no matter how the config is set, we want to store it on the global object
 
-  dispatchFidesEvent(
-    "FidesInitializing",
-    undefined,
-    this.config.options.debug,
-    {
-      gppEnabled:
-        this.config.options.gppEnabled ||
-        this.config.experience?.gpp_settings?.enabled,
-      tcfEnabled: this.config.options.tcfEnabled,
-    },
-  );
+  dispatchFidesEvent("FidesInitializing", undefined, {
+    gppEnabled:
+      this.config.options.gppEnabled ||
+      this.config.experience?.gpp_settings?.enabled,
+    tcfEnabled: this.config.options.tcfEnabled,
+  });
 
   const optionsOverrides: Partial<FidesInitOptionsOverrides> =
     getOverridesByType<Partial<FidesInitOptionsOverrides>>(
@@ -167,7 +166,9 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     Object.assign(this, initialFides);
     updateWindowFides(this);
     this.experience = initialFides.experience; // pre-fetched experience, if available, with consent applied
-    dispatchFidesEvent("FidesInitialized", this.cookie, config.options.debug, {
+
+    // Vendors (GTM, etc.) can use this event to know when the consent is loaded.
+    dispatchConsentLoadedEvents(this.cookie, {
       shouldShowExperience: this.shouldShowExperience(),
     });
   }
@@ -184,8 +185,8 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   Object.assign(this, updatedFides);
   updateWindowFides(this);
 
-  // Dispatch the "FidesInitialized" event to update listeners with the initial state.
-  dispatchFidesEvent("FidesInitialized", this.cookie, config.options.debug, {
+  // The window.Fides object and the Overlay are now fully initialized and ready to be used.
+  dispatchReadyEvents(this.cookie, {
     shouldShowExperience: this.shouldShowExperience(),
   });
 }

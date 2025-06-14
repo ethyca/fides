@@ -8,6 +8,7 @@ from pydantic import ConfigDict, Field, field_serializer, field_validator
 from fides.api.custom_types import SafeStr
 from fides.api.graph.config import CollectionAddress
 from fides.api.models.audit_log import AuditLogAction
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.policy import ActionType, CurrentStep
@@ -139,18 +140,6 @@ class FieldsAffectedResponse(FidesSchema):
     field_name: Optional[str]
     data_categories: Optional[List[str]]
     model_config = ConfigDict(from_attributes=True, use_enum_values=True)
-
-
-class ExecutionLogStatus(EnumType):
-    """Enum for execution log statuses, reflecting where they are in their workflow"""
-
-    in_processing = "in_processing"
-    pending = "pending"
-    complete = "complete"
-    error = "error"
-    awaiting_processing = "paused"  # "paused" in the database to avoid a migration, but use "awaiting_processing" in the app
-    retrying = "retrying"
-    skipped = "skipped"
 
 
 class ExecutionLogStatusSerializeOverride(FidesSchema):

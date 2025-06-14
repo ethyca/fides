@@ -2,6 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { MySQLSSLMode } from "./MySQLSSLMode";
+
 /**
  * MySQL Secrets Schema for API Docs
  */
@@ -31,7 +33,7 @@ export type MySQLDocsSchema = {
    */
   ssh_required?: boolean;
   /**
-   * The SSL mode to use for the connection. Valid values are 'required', 'preferred', and 'disabled'.
+   * The SSL mode to use for the connection. Accepted values are: 'required', 'preferred', 'disabled', or an empty value.
    */
-  ssl_mode?: string;
+  ssl_mode?: MySQLSSLMode | null;
 };

@@ -14,20 +14,19 @@ from sqlalchemy_utils.types.encrypted.encrypted_type import (
     StringEncryptedType,
 )
 
-from fides.api.db.base_class import Base  # type: ignore[attr-defined]
-from fides.api.db.base_class import JSONTypeOverride
-from fides.api.db.util import EnumColumn
+from fides.api.db.base_class import Base, JSONTypeOverride  # type: ignore[attr-defined]
 from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     TERMINATOR_ADDRESS,
     CollectionAddress,
 )
+from fides.api.models.field_types import EncryptedLargeDataDescriptor
 from fides.api.models.privacy_request.execution_log import (
     COMPLETED_EXECUTION_LOG_STATUSES,
 )
+from fides.api.models.worker_task import ExecutionLogStatus, WorkerTask
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.policy import ActionType
-from fides.api.schemas.privacy_request import ExecutionLogStatus
 from fides.api.util.cache import (
     FidesopsRedis,
     celery_tasks_in_flight,
@@ -68,7 +67,8 @@ class TraversalDetails(FidesSchema):
         )
 
 
-class RequestTask(Base):
+# TODO: At some point we will refactor this model to store all task types in a common table that links to tables with specific task attributes.
+class RequestTask(WorkerTask, Base):
     """
     An individual Task for a Privacy Request.
 
@@ -91,21 +91,6 @@ class RequestTask(Base):
     )  # Of the format dataset_name:collection_name for convenience
     dataset_name = Column(String, nullable=False, index=True)
     collection_name = Column(String, nullable=False, index=True)
-    action_type = Column(EnumColumn(ActionType), nullable=False, index=True)
-
-    # Note that RequestTasks share statuses with ExecutionLogs.  When a RequestTask changes state, an ExecutionLog
-    # is also created with that state.  These are tied tightly together in GraphTask.
-    status = Column(
-        EnumColumn(
-            ExecutionLogStatus,
-            native_enum=False,
-            values_callable=lambda x: [
-                i.value for i in x
-            ],  # Using ExecutionLogStatus values in database, even though app is using the names.
-        ),  # character varying in database
-        index=True,
-        nullable=False,
-    )
 
     upstream_tasks = Column(
         MutableList.as_mutable(JSONB)
@@ -121,7 +106,8 @@ class RequestTask(Base):
     # Raw data retrieved from an access request is stored here.  This contains all of the
     # intermediate data we retrieved, needed for downstream tasks, but hasn't been filtered
     # by data category for the end user.
-    access_data = Column(  # An encrypted JSON String - saved as a list of Rows
+    _access_data = Column(  # An encrypted JSON String - saved as a list of Rows
+        "access_data",
         StringEncryptedType(
             type_in=JSONTypeOverride,
             key=CONFIG.security.app_encryption_key,
@@ -132,13 +118,23 @@ class RequestTask(Base):
 
     # This is the raw access data saved in erasure format (with placeholders preserved) to perform a masking request.
     # First saved on the access node, and then copied to the corresponding erasure node.
-    data_for_erasures = Column(  # An encrypted JSON String - saved as a list of rows
+    _data_for_erasures = Column(  # An encrypted JSON String - saved as a list of rows
+        "data_for_erasures",
         StringEncryptedType(
             type_in=JSONTypeOverride,
             key=CONFIG.security.app_encryption_key,
             engine=AesGcmEngine,
             padding="pkcs5",
         ),
+    )
+
+    # Use descriptors for automatic external storage handling
+    access_data = EncryptedLargeDataDescriptor(
+        field_name="access_data", empty_default=[]
+    )
+
+    data_for_erasures = EncryptedLargeDataDescriptor(
+        field_name="data_for_erasures", empty_default=[]
     )
 
     # Written after an erasure is completed
@@ -177,11 +173,21 @@ class RequestTask(Base):
         """Convenience helper for asserting whether the task is a terminator task"""
         return self.request_task_address == TERMINATOR_ADDRESS
 
+    @classmethod
+    def allowed_action_types(cls) -> List[str]:
+        return [e.value for e in ActionType]
+
     def get_cached_task_id(self) -> Optional[str]:
         """Gets the cached celery task ID for this request task."""
         cache: FidesopsRedis = get_cache()
         task_id = cache.get(get_async_task_tracking_cache_key(self.id))
         return task_id
+
+    def cleanup_external_storage(self) -> None:
+        """Clean up all external storage files for this request task"""
+        # Access the descriptor from the class to call cleanup
+        RequestTask.access_data.cleanup(self)
+        RequestTask.data_for_erasures.cleanup(self)
 
     def get_access_data(self) -> List[Row]:
         """Helper to retrieve access data or default to empty list"""
@@ -190,6 +196,11 @@ class RequestTask(Base):
     def get_data_for_erasures(self) -> List[Row]:
         """Helper to retrieve erasure data needed to build masking requests or default to empty list"""
         return self.data_for_erasures or []
+
+    def delete(self, db: Session) -> None:
+        """Override delete to cleanup external storage first"""
+        self.cleanup_external_storage()
+        super().delete(db)
 
     def update_status(self, db: Session, status: ExecutionLogStatus) -> None:
         """Helper method to update a task's status"""
@@ -236,7 +247,7 @@ class RequestTask(Base):
         if not tasks_complete and should_log:
             logger.debug(
                 "Upstream tasks incomplete for {} task {}.",
-                self.action_type.value,
+                self.action_type,
                 self.collection_address,
             )
 
@@ -267,7 +278,7 @@ class RequestTask(Base):
             logger.debug(
                 "Celery Task ID {} found for {} task {}.",
                 celery_task_id,
-                self.action_type.value,
+                self.action_type,
                 self.collection_address,
             )
 
@@ -277,7 +288,7 @@ class RequestTask(Base):
             logger.debug(
                 "Celery Task {} already processing for {} task {}.",
                 celery_task_id,
-                self.action_type.value,
+                self.action_type,
                 self.collection_address,
             )
 

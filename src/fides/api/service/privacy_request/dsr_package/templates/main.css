@@ -35,7 +35,7 @@ h1 {
     margin-bottom: 24px;
     width: 100%;
     display: flex;
-    justify-content: center; 
+    justify-content: center;
 }
 
 .header div {
@@ -176,4 +176,47 @@ h1 {
 
 a {
     text-decoration: none;
+}
+
+.attachment-link {
+    color: var(--text-color);
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.attachment-link:hover {
+    opacity: 0.8;
+}
+
+.dataset-list {
+    padding: 20px 0 100px;
+}
+
+.dataset-list h2 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+}
+
+.dataset-item {
+    margin-bottom: 8px;
+}
+
+.dataset-link {
+    display: block;
+    color: var(--text-color);
+    text-decoration: none;
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 600;
+    background-color: var(--header-color);
+    padding: 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    transition: opacity 0.2s ease;
+}
+
+.dataset-link:hover {
+    opacity: 0.8;
+    cursor: pointer;
 }
