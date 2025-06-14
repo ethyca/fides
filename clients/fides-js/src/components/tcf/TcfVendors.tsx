@@ -324,7 +324,6 @@ const TcfVendors = ({
   enabledVendorLegintIds: string[];
   onChange: (
     payload: UpdateEnabledIds,
-    triggerDetails: FidesEventDetailsTrigger,
     preferenceDetails: FidesEventDetailsPreference,
   ) => void;
 }) => {
@@ -365,7 +364,7 @@ const TcfVendors = ({
             ? enabledVendorConsentIds
             : enabledVendorLegintIds
         }
-        onChange={(newEnabledIds, vendor, triggerDetails) => {
+        onChange={(newEnabledIds, vendor) => {
           const modelType =
             activeLegalBasisOption.value === LegalBasisEnum.CONSENT.toString()
               ? "vendorsConsent"
@@ -398,7 +397,7 @@ const TcfVendors = ({
             vendor_name: vendor.name,
           };
 
-          onChange(payload, triggerDetails, preferenceDetails);
+          onChange(payload, preferenceDetails);
         }}
         // This key forces a rerender when legal basis changes, which allows paging to reset properly
         key={`vendor-data-${activeLegalBasisOption.value}`}
