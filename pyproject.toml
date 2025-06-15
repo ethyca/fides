@@ -67,6 +67,7 @@ module = [
   "sqlalchemy_utils.*",
   "sqlalchemy.ext.*",
   "sqlalchemy.future.*",
+  "sqlalchemy_bigquery.*",
   "twilio.*",
   "uvicorn.*",
 ]
