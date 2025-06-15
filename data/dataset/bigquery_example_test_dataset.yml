@@ -265,10 +265,12 @@ dataset:
       - name: visit_partitioned
         fides_meta:
           partitioning:
-            field: last_visit
-            start: NOW() - 1000 DAYS
-            end: NOW()
-            interval: 500 DAYS
+            - field: last_visit
+              end: NOW() - 1000 DAYS
+            - field: last_visit
+              start: NOW() - 1000 DAYS
+              end: NOW()
+              interval: 500 DAYS
         fields:
           - name: email
             data_categories: [user.contact.email]
