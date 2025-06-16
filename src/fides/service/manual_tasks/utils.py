@@ -126,7 +126,7 @@ class TaskLogger:
             "task_id": data.get("task_id"),
             "config_id": data.get("config_id"),
             "instance_id": data.get("instance_id"),
-            "details": data.get("details", {})
+            "details": data.get("details", {}),
         }
 
     def _log_success(self, service_self: Any, log_data: dict) -> None:
