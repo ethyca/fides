@@ -83,122 +83,125 @@ class TestRedisReadonlyFields:
     """Test the automatic fallback behavior for read-only Redis settings."""
 
     def test_read_only_user_fallback(self) -> None:
-        """Test that read_only_user_resolved falls back to user when not set."""
+        """Test that read_only_user falls back to user when not set."""
         redis_settings = RedisSettings(user="writer_user")
-        assert redis_settings.read_only_user_resolved == "writer_user"
+        assert redis_settings.read_only_user == "writer_user"
 
     def test_read_only_user_explicit_value(self) -> None:
-        """Test that read_only_user_resolved uses explicit value when provided."""
+        """Test that read_only_user uses explicit value when provided."""
         redis_settings = RedisSettings(
             user="writer_user", read_only_user="readonly_user"
         )
-        assert redis_settings.read_only_user_resolved == "readonly_user"
+        assert redis_settings.read_only_user == "readonly_user"
 
-    def test_read_only_user_explicit_empty_string(self) -> None:
-        """Test that read_only_user_resolved respects explicit empty string (no fallback)."""
+    def test_read_only_user_empty_string_explicit(self) -> None:
+        """Test that read_only_user respects explicit empty string."""
         redis_settings = RedisSettings(user="writer_user", read_only_user="")
-        assert redis_settings.read_only_user_resolved == ""
-
-    def test_read_only_password_fallback(self) -> None:
-        """Test that read_only_password_resolved falls back to password when not set."""
-        redis_settings = RedisSettings(password="writer_password")
-        assert redis_settings.read_only_password_resolved == "writer_password"
-
-    def test_read_only_password_explicit_value(self) -> None:
-        """Test that read_only_password_resolved uses explicit value when provided."""
-        redis_settings = RedisSettings(
-            password="writer_password", read_only_password="readonly_password"
-        )
-        assert redis_settings.read_only_password_resolved == "readonly_password"
+        assert redis_settings.read_only_user == ""
 
     def test_read_only_port_fallback(self) -> None:
-        """Test that read_only_port_resolved falls back to port when not set."""
-        redis_settings = RedisSettings(port=6379)
-        assert redis_settings.read_only_port_resolved == 6379
+        """Test that read_only_port falls back to port when not set."""
+        redis_settings = RedisSettings(port=9999)
+        assert redis_settings.read_only_port == 9999
+
+    def test_read_only_port_fallback_to_writer_default(self) -> None:
+        """Test that read_only_port uses port default when neither are set."""
+        redis_settings = RedisSettings()
+        assert redis_settings.read_only_port == 6379  # default port
 
     def test_read_only_port_explicit_value(self) -> None:
-        """Test that read_only_port_resolved uses explicit value when provided."""
-        redis_settings = RedisSettings(port=6379, read_only_port=6380)
-        assert redis_settings.read_only_port_resolved == 6380
+        """Test that read_only_port uses explicit value when provided."""
+        redis_settings = RedisSettings(port=6379, read_only_port=1234)
+        assert redis_settings.read_only_port == 1234
+
+    def test_read_only_password_fallback(self) -> None:
+        """Test that read_only_password falls back to password when not set."""
+        redis_settings = RedisSettings(password="writer_pass")
+        assert redis_settings.read_only_password == "writer_pass"
+
+    def test_read_only_password_explicit_value(self) -> None:
+        """Test that read_only_password uses explicit value when provided."""
+        redis_settings = RedisSettings(
+            password="writer_pass", read_only_password="readonly_pass"
+        )
+        assert redis_settings.read_only_password == "readonly_pass"
 
     def test_read_only_db_index_fallback(self) -> None:
-        """Test that read_only_db_index_resolved falls back to db_index when not set."""
-        redis_settings = RedisSettings(db_index=2)
-        assert redis_settings.read_only_db_index_resolved == 2
+        """Test that read_only_db_index falls back to db_index when not set."""
+        redis_settings = RedisSettings(db_index=5)
+        assert redis_settings.read_only_db_index == 5
 
     def test_read_only_db_index_explicit_value(self) -> None:
-        """Test that read_only_db_index_resolved uses explicit value when provided."""
-        redis_settings = RedisSettings(db_index=2, read_only_db_index=3)
-        assert redis_settings.read_only_db_index_resolved == 3
+        """Test that read_only_db_index uses explicit value when provided."""
+        redis_settings = RedisSettings(db_index=0, read_only_db_index=7)
+        assert redis_settings.read_only_db_index == 7
 
     def test_read_only_ssl_fallback(self) -> None:
-        """Test that read_only_ssl_resolved falls back to ssl when not set."""
+        """Test that read_only_ssl falls back to ssl when not set."""
         redis_settings = RedisSettings(ssl=True)
-        assert redis_settings.read_only_ssl_resolved is True
+        assert redis_settings.read_only_ssl is True
 
     def test_read_only_ssl_explicit_value(self) -> None:
-        """Test that read_only_ssl_resolved uses explicit value when provided."""
-        redis_settings = RedisSettings(ssl=True, read_only_ssl=False)
-        assert redis_settings.read_only_ssl_resolved is False
+        """Test that read_only_ssl uses explicit value when provided."""
+        redis_settings = RedisSettings(ssl=False, read_only_ssl=True)
+        assert redis_settings.read_only_ssl is True
 
     def test_read_only_ssl_cert_reqs_fallback(self) -> None:
-        """Test that read_only_ssl_cert_reqs_resolved falls back to ssl_cert_reqs when not set."""
+        """Test that read_only_ssl_cert_reqs falls back to ssl_cert_reqs when not set."""
         redis_settings = RedisSettings(ssl_cert_reqs="none")
-        assert redis_settings.read_only_ssl_cert_reqs_resolved == "none"
+        assert redis_settings.read_only_ssl_cert_reqs == "none"
 
     def test_read_only_ssl_cert_reqs_explicit_value(self) -> None:
-        """Test that read_only_ssl_cert_reqs_resolved uses explicit value when provided."""
+        """Test that read_only_ssl_cert_reqs uses explicit value when provided."""
         redis_settings = RedisSettings(
-            ssl_cert_reqs="none", read_only_ssl_cert_reqs="required"
+            ssl_cert_reqs="required", read_only_ssl_cert_reqs="optional"
         )
-        assert redis_settings.read_only_ssl_cert_reqs_resolved == "required"
+        assert redis_settings.read_only_ssl_cert_reqs == "optional"
 
     def test_read_only_ssl_ca_certs_fallback(self) -> None:
-        """Test that read_only_ssl_ca_certs_resolved falls back to ssl_ca_certs when not set."""
-        redis_settings = RedisSettings(ssl_ca_certs="/path/to/cert.crt")
-        assert redis_settings.read_only_ssl_ca_certs_resolved == "/path/to/cert.crt"
+        """Test that read_only_ssl_ca_certs falls back to ssl_ca_certs when not set."""
+        redis_settings = RedisSettings(ssl_ca_certs="/path/to/cert")
+        assert redis_settings.read_only_ssl_ca_certs == "/path/to/cert"
 
     def test_read_only_ssl_ca_certs_explicit_value(self) -> None:
-        """Test that read_only_ssl_ca_certs_resolved uses explicit value when provided."""
+        """Test that read_only_ssl_ca_certs uses explicit value when provided."""
         redis_settings = RedisSettings(
-            ssl_ca_certs="/path/to/cert.crt",
-            read_only_ssl_ca_certs="/path/to/readonly/cert.crt",
+            ssl_ca_certs="/path/to/writer", read_only_ssl_ca_certs="/path/to/readonly"
         )
-        assert (
-            redis_settings.read_only_ssl_ca_certs_resolved
-            == "/path/to/readonly/cert.crt"
-        )
+        assert redis_settings.read_only_ssl_ca_certs == "/path/to/readonly"
 
-    def test_fallback_behavior_with_connection_url(self) -> None:
-        """Test that fallback behavior works correctly in connection URL generation."""
-        # Test with only writer settings - read-only should fall back
+    def test_connection_url_uses_fallback_values(self) -> None:
+        """Test that read_only_connection_url uses fallback values for unset read-only fields."""
         redis_settings = RedisSettings(
             user="writer_user",
-            password="writer_password",
-            port=6379,
-            db_index=1,
+            password="writer_pass",
+            port=9999,
+            db_index=3,
             read_only_enabled=True,
-            read_only_host="readonly-host",  # Only host is different
+            read_only_host="readonly-host",
+            # read_only_user, read_only_password, read_only_port, read_only_db_index not set - should fallback
         )
 
-        expected_url = "redis://writer_user:writer_password@readonly-host:6379/1"
+        expected_url = "redis://writer_user:writer_pass@readonly-host:9999/3"
         assert redis_settings.read_only_connection_url == expected_url
 
-    def test_no_fallback_for_non_fallback_fields(self) -> None:
-        """Test that fields not in the computed fields don't have fallback behavior."""
-        redis_settings = RedisSettings()
+    def test_fields_are_type_safe(self) -> None:
+        """Test that the fallback fields maintain proper types after resolution."""
+        redis_settings = RedisSettings(
+            port=6379,
+            user="test_user",
+            password="test_pass",
+            db_index=1,
+            ssl=True,
+            ssl_cert_reqs="required",
+            ssl_ca_certs="/path/to/cert",
+        )
 
-        # These fields should not have fallback behavior
-        assert redis_settings.read_only_enabled is False  # Default value
-        assert redis_settings.read_only_host == ""  # Default value
-        assert redis_settings.read_only_connection_url is not None  # Computed field
-
-    def test_raw_fields_still_accessible(self) -> None:
-        """Test that the raw optional fields are still accessible for explicit None checking."""
-        redis_settings = RedisSettings(user="writer_user")
-
-        # Raw field should be None when not set
-        assert redis_settings.read_only_user is None
-
-        # Resolved field should fallback to writer value
-        assert redis_settings.read_only_user_resolved == "writer_user"
+        # These should all be resolved to the writer values with correct types
+        assert isinstance(redis_settings.read_only_port, int)
+        assert isinstance(redis_settings.read_only_user, str)
+        assert isinstance(redis_settings.read_only_password, str)
+        assert isinstance(redis_settings.read_only_db_index, int)
+        assert isinstance(redis_settings.read_only_ssl, bool)
+        assert isinstance(redis_settings.read_only_ssl_cert_reqs, (str, type(None)))
+        assert isinstance(redis_settings.read_only_ssl_ca_certs, str)

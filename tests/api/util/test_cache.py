@@ -50,51 +50,50 @@ class TestGetReadOnlyCache:
     def enable_read_only_cache_with_fallbacks(self, config):
         """Fixture to enable read-only cache but leave some settings as None to test fallbacks"""
         assert config.test_mode
-        original_values = {
-            "read_only_enabled": config.redis.read_only_enabled,
-            "read_only_host": config.redis.read_only_host,
-            "read_only_port": config.redis.read_only_port,
-            "read_only_user": config.redis.read_only_user,
-            "read_only_password": config.redis.read_only_password,
-            "read_only_db_index": config.redis.read_only_db_index,
-            "read_only_ssl": config.redis.read_only_ssl,
-            "read_only_ssl_cert_reqs": config.redis.read_only_ssl_cert_reqs,
-            "read_only_ssl_ca_certs": config.redis.read_only_ssl_ca_certs,
-            # Also store writer values we'll modify
-            "user": config.redis.user,
-            "password": config.redis.password,
-        }
+
+        # Store original redis settings
+        original_redis_settings = config.redis
 
         # Set specific writer values that we can verify are used as fallbacks
-        config.redis.user = "test-writer-user"
-        config.redis.password = "test-writer-password"
+        # Create a new RedisSettings object with the desired configuration
+        from fides.config.redis_settings import RedisSettings
 
-        # Enable read-only but set specific read-only settings to None to test fallbacks
-        config.redis.read_only_enabled = True
-        config.redis.read_only_host = (
-            "test-read-only-host"  # This one we set explicitly
+        new_redis_settings = RedisSettings(
+            # Copy existing settings
+            charset=original_redis_settings.charset,
+            db_index=original_redis_settings.db_index,
+            test_db_index=original_redis_settings.test_db_index,
+            decode_responses=original_redis_settings.decode_responses,
+            default_ttl_seconds=original_redis_settings.default_ttl_seconds,
+            enabled=original_redis_settings.enabled,
+            host=original_redis_settings.host,
+            identity_verification_code_ttl_seconds=original_redis_settings.identity_verification_code_ttl_seconds,
+            port=original_redis_settings.port,
+            ssl=original_redis_settings.ssl,
+            ssl_cert_reqs=original_redis_settings.ssl_cert_reqs,
+            ssl_ca_certs=original_redis_settings.ssl_ca_certs,
+            # Set specific writer values that we can verify are used as fallbacks
+            user="test-writer-user",
+            password="test-writer-password",
+            # Enable read-only but set specific read-only settings to None to test fallbacks
+            read_only_enabled=True,
+            read_only_host="test-read-only-host",  # This one we set explicitly
+            read_only_port=None,  # Should fallback to writer port
+            read_only_user=None,  # Should fallback to writer user (test-writer-user)
+            read_only_password=None,  # Should fallback to writer password (test-writer-password)
+            read_only_db_index=None,  # Should fallback to writer db_index
+            read_only_ssl=None,  # Should fallback to writer ssl
+            read_only_ssl_cert_reqs=None,  # Should fallback to writer ssl_cert_reqs
+            read_only_ssl_ca_certs=None,  # Should fallback to writer ssl_ca_certs
         )
-        config.redis.read_only_port = None  # Should fallback to writer port
-        config.redis.read_only_user = (
-            None  # Should fallback to writer user (test-writer-user)
-        )
-        config.redis.read_only_password = (
-            None  # Should fallback to writer password (test-writer-password)
-        )
-        config.redis.read_only_db_index = None  # Should fallback to writer db_index
-        config.redis.read_only_ssl = None  # Should fallback to writer ssl
-        config.redis.read_only_ssl_cert_reqs = (
-            None  # Should fallback to writer ssl_cert_reqs
-        )
-        config.redis.read_only_ssl_ca_certs = (
-            None  # Should fallback to writer ssl_ca_certs
-        )
+
+        # Replace the redis settings in config
+        config.redis = new_redis_settings
 
         yield config
 
-        # Restore original values
-        for key, value in original_values.items():
-            setattr(config.redis, key, value)
+        # Restore original redis settings
+        config.redis = original_redis_settings
 
     @pytest.fixture(scope="function", autouse=True)
     def clear_read_only_connection(self):
@@ -146,13 +145,13 @@ class TestGetReadOnlyCache:
                 charset=enable_read_only_cache_settings.redis.charset,
                 decode_responses=enable_read_only_cache_settings.redis.decode_responses,
                 host=enable_read_only_cache_settings.redis.read_only_host,
-                port=enable_read_only_cache_settings.redis.read_only_port_resolved,
+                port=enable_read_only_cache_settings.redis.read_only_port,
                 db=1,  # test_db_index in test mode
-                username=enable_read_only_cache_settings.redis.read_only_user_resolved,
-                password=enable_read_only_cache_settings.redis.read_only_password_resolved,
-                ssl=enable_read_only_cache_settings.redis.read_only_ssl_resolved,
-                ssl_ca_certs=enable_read_only_cache_settings.redis.read_only_ssl_ca_certs_resolved,
-                ssl_cert_reqs=enable_read_only_cache_settings.redis.read_only_ssl_cert_reqs_resolved,
+                username=enable_read_only_cache_settings.redis.read_only_user,
+                password=enable_read_only_cache_settings.redis.read_only_password,
+                ssl=enable_read_only_cache_settings.redis.read_only_ssl,
+                ssl_ca_certs=enable_read_only_cache_settings.redis.read_only_ssl_ca_certs,
+                ssl_cert_reqs=enable_read_only_cache_settings.redis.read_only_ssl_cert_reqs,
             )
 
             # Should ping to test connection

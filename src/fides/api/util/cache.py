@@ -186,9 +186,7 @@ def _determine_redis_db_index(
         return CONFIG.redis.test_db_index
 
     # 2. Non-test mode
-    return (
-        CONFIG.redis.read_only_db_index_resolved if read_only else CONFIG.redis.db_index
-    )
+    return CONFIG.redis.read_only_db_index if read_only else CONFIG.redis.db_index
 
 
 def get_cache(should_log: Optional[bool] = False) -> FidesopsRedis:
@@ -255,28 +253,29 @@ def get_read_only_cache() -> FidesopsRedis:
             charset=CONFIG.redis.charset,
             decode_responses=CONFIG.redis.decode_responses,
             host=CONFIG.redis.read_only_host,
-            port=CONFIG.redis.read_only_port_resolved,
-            db=_determine_redis_db_index(read_only=True),
-            username=CONFIG.redis.read_only_user_resolved,
-            password=CONFIG.redis.read_only_password_resolved,
-            ssl=CONFIG.redis.read_only_ssl_resolved,
-            ssl_ca_certs=CONFIG.redis.read_only_ssl_ca_certs_resolved,
-            ssl_cert_reqs=CONFIG.redis.read_only_ssl_cert_reqs_resolved,
+            port=CONFIG.redis.read_only_port,
+            db=(
+                CONFIG.redis.test_db_index
+                if CONFIG.test_mode
+                else CONFIG.redis.read_only_db_index
+            ),
+            username=CONFIG.redis.read_only_user,
+            password=CONFIG.redis.read_only_password,
+            ssl=CONFIG.redis.read_only_ssl,
+            ssl_ca_certs=CONFIG.redis.read_only_ssl_ca_certs,
+            ssl_cert_reqs=CONFIG.redis.read_only_ssl_cert_reqs,
         )
-        logger.debug("New read-only Redis connection created.")
 
-    try:
-        connected = _read_only_connection.ping()
-        logger.debug("Read-only Redis connection succeeded.")
-    except Exception as e:
-        logger.error(f"Error connecting to read-only Redis: {e}")
-        connected = False
-
-    if not connected:
-        logger.error(
-            "Unable to establish read-only Redis connection. Returning writeable cache connection instead."
-        )
-        return get_cache()
+        try:
+            # Test the connection by attempting to ping the Redis server
+            _read_only_connection.ping()
+            logger.debug("Read-only Redis connection established successfully.")
+        except Exception as e:
+            logger.warning(
+                f"Failed to connect to read-only Redis: {e}. Falling back to regular cache."
+            )
+            # If we can't connect to the read-only cache, fall back to the regular cache
+            return get_cache()
 
     return _read_only_connection
 

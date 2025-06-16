@@ -1,7 +1,7 @@
-from typing import Any, Optional
+from typing import Optional
 from urllib.parse import quote, quote_plus, urlencode
 
-from pydantic import Field, ValidationInfo, computed_field, field_validator
+from pydantic import Field, ValidationInfo, field_validator
 from pydantic_settings import SettingsConfigDict
 
 from .fides_settings import FidesSettings
@@ -68,7 +68,7 @@ class RedisSettings(FidesSettings):
         default="", description="The user with which to login to the Redis cache."
     )
 
-    # Read-only Redis settings (storage fields)
+    # Read-only Redis settings
     read_only_enabled: bool = Field(
         default=False,
         description="Whether a read-only Redis cache is enabled.",
@@ -77,94 +77,98 @@ class RedisSettings(FidesSettings):
         default="",
         description="The network address for the read-only Redis cache.",
     )
-    read_only_port: Optional[int] = Field(
+    # Read-only Redis settings with automatic fallback behavior
+    # Field validators will populate these fields with the corresponding writer settings if not provided
+    # The order here is important, these must be defined after the writer settings
+    read_only_port: int = Field(  # type: ignore[assignment]
         default=None,
-        description="The port at which the read-only Redis cache will be accessible.",
+        description="The port at which the read-only Redis cache will be accessible. If not provided, the port setting will be used.",
     )
-    read_only_user: Optional[str] = Field(
+    read_only_user: str = Field(  # type: ignore[assignment]
         default=None,
         description="The user with which to login to the read-only Redis cache. If not provided, the user setting will be used.",
     )
-    read_only_password: Optional[str] = Field(
+    read_only_password: str = Field(  # type: ignore[assignment]
         default=None,
         description="The password with which to login to the read-only Redis cache. If not provided, the password setting will be used.",
     )
-    read_only_db_index: Optional[int] = Field(
+    read_only_db_index: int = Field(  # type: ignore[assignment]
         default=None,
         description="The application will use this index in the read-only Redis cache to cache data. If not provided, the db_index setting will be used.",
     )
-    read_only_ssl: Optional[bool] = Field(
+    read_only_ssl: bool = Field(  # type: ignore[assignment]
         default=None,
         description="Whether the application's connections to the read-only cache should be encrypted using TLS. If not provided, the ssl setting will be used.",
     )
-    read_only_ssl_cert_reqs: Optional[str] = Field(
+    read_only_ssl_cert_reqs: Optional[str] = Field(  # type: ignore[assignment]
         default=None,
         description="If using TLS encryption, set this to 'required' if you wish to enforce the read-only Redis cache to provide a certificate. Note that not all cache providers support this without setting ssl_ca_certs (e.g. AWS Elasticache). If not provided, the ssl_cert_reqs setting will be used.",
     )
-    read_only_ssl_ca_certs: Optional[str] = Field(
+    read_only_ssl_ca_certs: str = Field(  # type: ignore[assignment]
         default=None,
         description="If using TLS encryption rooted with a custom Certificate Authority, set this to the path of the CA certificate. If not provided, the ssl_ca_certs setting will be used.",
     )
 
-    # Computed fields for read-only settings with automatic fallback behavior
-    # If the read-only setting is not provided, we will fall back to the corresponding writer setting.
-    @computed_field  # type: ignore[misc]
-    @property
-    def read_only_port_resolved(self) -> int:
-        """Port for read-only Redis, falls back to writer port if not set."""
-        return self.read_only_port if self.read_only_port is not None else self.port
+    # Field validators for automatic fallback behavior
+    @field_validator("read_only_port", mode="before")
+    @classmethod
+    def resolve_read_only_port(cls, v: Optional[int], info: ValidationInfo) -> int:
+        """Resolves the read-only port setting by falling back to the `port` value if no `read_only_port` is specified."""
+        if v is None:
+            return info.data["port"]
+        return v
 
-    @computed_field  # type: ignore[misc]
-    @property
-    def read_only_user_resolved(self) -> str:
-        """User for read-only Redis, falls back to writer user if not set."""
-        return self.read_only_user if self.read_only_user is not None else self.user
+    @field_validator("read_only_user", mode="before")
+    @classmethod
+    def resolve_read_only_user(cls, v: Optional[str], info: ValidationInfo) -> str:
+        """Resolves the read-only user setting by falling back to the `user` value if no `read_only_user` is specified."""
+        if v is None:
+            return info.data["user"]
+        return v
 
-    @computed_field  # type: ignore[misc]
-    @property
-    def read_only_password_resolved(self) -> str:
-        """Password for read-only Redis, falls back to writer password if not set."""
-        return (
-            self.read_only_password
-            if self.read_only_password is not None
-            else self.password
-        )
+    @field_validator("read_only_password", mode="before")
+    @classmethod
+    def resolve_read_only_password(cls, v: Optional[str], info: ValidationInfo) -> str:
+        """Resolves the read-only password setting by falling back to the `password` value if no `read_only_password` is specified."""
+        if v is None:
+            return info.data["password"]
+        return v
 
-    @computed_field  # type: ignore[misc]
-    @property
-    def read_only_db_index_resolved(self) -> int:
-        """DB index for read-only Redis, falls back to writer db_index if not set."""
-        return (
-            self.read_only_db_index
-            if self.read_only_db_index is not None
-            else self.db_index
-        )
+    @field_validator("read_only_db_index", mode="before")
+    @classmethod
+    def resolve_read_only_db_index(cls, v: Optional[int], info: ValidationInfo) -> int:
+        """Resolves the read-only db_index setting by falling back to the `db_index` value if no `read_only_db_index` is specified."""
+        if v is None:
+            return info.data["db_index"]
+        return v
 
-    @computed_field  # type: ignore[misc]
-    @property
-    def read_only_ssl_resolved(self) -> bool:
-        """SSL setting for read-only Redis, falls back to writer ssl if not set."""
-        return self.read_only_ssl if self.read_only_ssl is not None else self.ssl
+    @field_validator("read_only_ssl", mode="before")
+    @classmethod
+    def resolve_read_only_ssl(cls, v: Optional[bool], info: ValidationInfo) -> bool:
+        """Resolves the read-only ssl setting by falling back to the `ssl` value if no `read_only_ssl` is specified."""
+        if v is None:
+            return info.data["ssl"]
+        return v
 
-    @computed_field  # type: ignore[misc]
-    @property
-    def read_only_ssl_cert_reqs_resolved(self) -> Optional[str]:
-        """SSL cert requirements for read-only Redis, falls back to writer ssl_cert_reqs if not set."""
-        return (
-            self.read_only_ssl_cert_reqs
-            if self.read_only_ssl_cert_reqs is not None
-            else self.ssl_cert_reqs
-        )
+    @field_validator("read_only_ssl_cert_reqs", mode="before")
+    @classmethod
+    def resolve_read_only_ssl_cert_reqs(
+        cls, v: Optional[str], info: ValidationInfo
+    ) -> Optional[str]:
+        """Resolves the read-only ssl_cert_reqs setting by falling back to the `ssl_cert_reqs` value if no `read_only_ssl_cert_reqs` is specified."""
+        if v is None:
+            return info.data["ssl_cert_reqs"]
+        return v
 
-    @computed_field  # type: ignore[misc]
-    @property
-    def read_only_ssl_ca_certs_resolved(self) -> str:
-        """SSL CA certs for read-only Redis, falls back to writer ssl_ca_certs if not set."""
-        return (
-            self.read_only_ssl_ca_certs
-            if self.read_only_ssl_ca_certs is not None
-            else self.ssl_ca_certs
-        )
+    @field_validator("read_only_ssl_ca_certs", mode="before")
+    @classmethod
+    def resolve_read_only_ssl_ca_certs(
+        cls, v: Optional[str], info: ValidationInfo
+    ) -> str:
+        """Resolves the read-only ssl_ca_certs setting by falling back to the `ssl_ca_certs` value if no `read_only_ssl_ca_certs` is specified."""
+        if v is None:
+            return info.data["ssl_ca_certs"]
+        return v
 
     # This relies on other values to get built so must be last
     connection_url: Optional[str] = Field(
@@ -190,47 +194,48 @@ class RedisSettings(FidesSettings):
             # If the whole URL is provided via the config, preference that
             return v
 
-        # For the read-only connection settings, if a setting is not provided, we will
-        # fall back to the corresponding writable setting.
+        # Determine which set of settings to use based on field name
         is_read_only = info.field_name == "read_only_connection_url"
 
-        def get_setting_with_fallback(
-            read_only_key: str, writer_key: str, default_value: Any = ""
-        ) -> Any:
-            """Helper to get setting with fallback logic for read-only connections."""
-            # If we're returning the regular writer connection, just return the value from the writer key
-            writer_value = info.data.get(writer_key, default_value)
-            if not is_read_only:
-                return writer_value
+        # Extract settings - fallbacks already resolved by field validators for read-only fields
+        user = (
+            info.data["read_only_user"] if is_read_only else info.data.get("user", "")
+        )
+        password = (
+            info.data["read_only_password"]
+            if is_read_only
+            else info.data.get("password", "")
+        )
 
-            read_only_value = info.data.get(read_only_key)
-            # If we have a read-only value, return it
-            if read_only_value is not None:
-                return read_only_value
-
-            # If we don't have a read-only value, return the writer value as fallback
-            return writer_value
+        db_index = (
+            info.data["read_only_db_index"]
+            if is_read_only
+            else info.data.get("db_index", "")
+        )
+        use_tls = (
+            info.data["read_only_ssl"] if is_read_only else info.data.get("ssl", False)
+        )
 
         connection_protocol = "redis"
         params_str = ""
-
-        use_tls = get_setting_with_fallback("read_only_ssl", "ssl", False)
-        user = get_setting_with_fallback("read_only_user", "user", "")
-        password = get_setting_with_fallback("read_only_password", "password", "")
-        db_index = get_setting_with_fallback("read_only_db_index", "db_index", "")
 
         if use_tls:
             # If using TLS update the connection URL format
             connection_protocol = "rediss"
 
-            cert_reqs = get_setting_with_fallback(
-                "read_only_ssl_cert_reqs", "ssl_cert_reqs", "none"
+            ssl_cert_reqs = (
+                info.data.get("read_only_ssl_cert_reqs", "none")
+                if is_read_only
+                else info.data.get("ssl_cert_reqs", "none")
             )
-            params = {"ssl_cert_reqs": quote_plus(cert_reqs)}
+            ssl_ca_certs = (
+                info.data["read_only_ssl_ca_certs"]
+                if is_read_only
+                else info.data.get("ssl_ca_certs", "")
+            )
 
-            ssl_ca_certs = get_setting_with_fallback(
-                "read_only_ssl_ca_certs", "ssl_ca_certs", ""
-            )
+            # Build SSL parameters
+            params = {"ssl_cert_reqs": quote_plus(ssl_cert_reqs or "none")}
             if ssl_ca_certs:
                 params["ssl_ca_certs"] = quote(ssl_ca_certs, safe="/")
             params_str = "?" + urlencode(params, quote_via=quote, safe="/")
@@ -241,16 +246,15 @@ class RedisSettings(FidesSettings):
         if password or user:
             auth_prefix = f"{quote_plus(user)}:{quote_plus(password)}@"
 
-        # For host only, we don't want to fall back to the writer host, since the
-        # read replica should be a different host.
+        # For host, we don't have a fallback - read replica should be a different host
         host = (
             info.data.get("read_only_host", "")
             if is_read_only
             else info.data.get("host", "")
         )
-
-        port = get_setting_with_fallback("read_only_port", "port", "")
-
+        port = (
+            info.data["read_only_port"] if is_read_only else info.data.get("port", "")
+        )
         # Only include database index in URL if it's not the default (0)
         db_path = f"{db_index}" if db_index != 0 else ""
 
