@@ -263,7 +263,6 @@ class TestAttachmentOperations:
         assert not db.query(Attachment).filter_by(id=attachment2.id).first()
         assert not db.query(ManualTaskSubmission).get(attachment_field_submission.id)
 
-
     def test_delete_attachment_by_id_error_cases(
         self,
         manual_task_instance_service: ManualTaskInstanceService,

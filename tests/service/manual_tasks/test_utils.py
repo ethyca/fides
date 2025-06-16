@@ -12,6 +12,26 @@ from fides.api.schemas.manual_tasks.manual_task_status import (
 from fides.service.manual_tasks.utils import TaskLogger, validate_fields
 
 
+def verify_expected_reference_types(manual_task, expected_reference_types):
+    """Verify that all references in the manual task have expected types."""
+    assert all(
+        ref.reference_type in expected_reference_types for ref in manual_task.references
+    )
+
+
+def verify_expected_reference_ids(manual_task, expected_reference_ids):
+    """Verify that all references in the manual task have expected IDs."""
+    assert all(
+        ref.reference_id in expected_reference_ids for ref in manual_task.references
+    )
+
+
+def verify_expected_logs(logs, expected_messages):
+    """Verify that all logs have expected messages."""
+    assert len(logs) == len(expected_messages)
+    assert all(log.message in expected_messages for log in logs)
+
+
 class TestValidateFields:
     def test_validate_fields_success(self):
         """Test successful field validation."""

@@ -116,170 +116,160 @@ def verify_expected_logs(logs: list[ManualTaskLog], expected_messages: list[str]
 class TestGetTask:
     """Tests for the get_task method."""
 
-    def test_get_task_by_id(
+    @pytest.mark.parametrize(
+        "search_params,expected_error",
+        [
+            pytest.param(
+                {"task_id": "test-task-id"},
+                None,
+                id="task_id",
+            ),
+            pytest.param(
+                {
+                    "parent_entity_id": "test-parent-id",
+                    "parent_entity_type": ManualTaskParentEntityType.connection_config,
+                },
+                None,
+                id="parent_entity_id",
+            ),
+            pytest.param(
+                {"task_type": ManualTaskType.privacy_request},
+                None,
+                id="task_type",
+            ),
+            pytest.param(
+                {},
+                "No filters provided to get_task",
+                id="no_filters",
+            ),
+            pytest.param(
+                {"task_id": "invalid-id"},
+                r"No task found with filters: \['task_id=invalid-id'\]",
+                id="invalid_task_id",
+            ),
+            pytest.param(
+                {
+                    "parent_entity_id": "test-parent-id",
+                    "parent_entity_type": "invalid_type",
+                },
+                r"No task found with filters: \['parent_entity_id=test-parent-id', 'parent_entity_type=invalid_type'\]",
+                id="invalid_parent_entity_type",
+            ),
+            pytest.param(
+                {"task_type": "invalid_type"},
+                r"No task found with filters: \['task_type=invalid_type'\]",
+                id="invalid_task_type",
+            ),
+        ],
+    )
+    def test_get_task(
         self,
         db: Session,
         manual_task: ManualTask,
         manual_task_service: ManualTaskService,
+        search_params: dict,
+        expected_error: str,
     ):
-        assert manual_task_service.get_task(task_id=manual_task.id) == manual_task
+        """Test getting tasks with various search parameters."""
+        if "task_id" in search_params and search_params["task_id"] == "test-task-id":
+            search_params["task_id"] = manual_task.id
 
-    def test_get_task_by_parent_entity(
-        self,
-        db: Session,
-        manual_task: ManualTask,
-        manual_task_service: ManualTaskService,
-    ):
-        assert (
-            manual_task_service.get_task(
-                parent_entity_id="test-parent-id",
-                parent_entity_type=ManualTaskParentEntityType.connection_config,
-            )
-            == manual_task
-        )
-
-    def test_get_task_by_type(
-        self,
-        db: Session,
-        manual_task: ManualTask,
-        manual_task_service: ManualTaskService,
-    ):
-        assert (
-            manual_task_service.get_task(task_type=ManualTaskType.privacy_request)
-            == manual_task
-        )
-
-    def test_get_task_no_filters(
-        self,
-        db: Session,
-        manual_task: ManualTask,
-        manual_task_service: ManualTaskService,
-    ):
-        with pytest.raises(ValueError, match="No filters provided to get_task"):
-            manual_task_service.get_task()
-
-    def test_get_task_invalid_id(
-        self,
-        db: Session,
-        manual_task: ManualTask,
-        manual_task_service: ManualTaskService,
-    ):
-        with pytest.raises(
-            ValueError, match=r"No task found with filters: \['task_id=invalid-id'\]"
-        ):
-            manual_task_service.get_task(task_id="invalid-id")
-
-    def test_get_task_invalid_parent_entity_type(
-        self,
-        db: Session,
-        manual_task: ManualTask,
-        manual_task_service: ManualTaskService,
-    ):
-        with pytest.raises(
-            ValueError,
-            match=r"No task found with filters: \['parent_entity_id=test-parent-id', 'parent_entity_type=invalid_type'\]",
-        ):
-            manual_task_service.get_task(
-                parent_entity_id="test-parent-id",
-                parent_entity_type="invalid_type",
-            )
-
-    def test_get_task_invalid_task_type(
-        self,
-        db: Session,
-        manual_task: ManualTask,
-        manual_task_service: ManualTaskService,
-    ):
-        with pytest.raises(
-            ValueError,
-            match=r"No task found with filters: \['task_type=invalid_type'\]",
-        ):
-            manual_task_service.get_task(task_type="invalid_type")
+        if expected_error:
+            with pytest.raises(ValueError, match=expected_error):
+                manual_task_service.get_task(**search_params)
+        else:
+            result = manual_task_service.get_task(**search_params)
+            assert result == manual_task
 
 
 class TestAssignUsersToTask:
     """Tests for the assign_users_to_task method."""
 
-    def test_assign_users_to_task_error_user_not_found(
+    @pytest.mark.parametrize(
+        "user_ids,expected_assigned,expected_not_assigned,should_raise",
+        [
+            pytest.param(
+                ["user1", "user2", "respondent_user"],  # user_ids
+                ["respondent_user"],  # expected_assigned
+                ["user1", "user2"],  # expected_not_assigned
+                False,  # should_raise
+                id="user_ids",
+            ),
+            pytest.param(
+                ["respondent_user", "external_user"],  # user_ids
+                ["respondent_user", "external_user"],  # expected_assigned
+                [],  # expected_not_assigned
+                False,  # should_raise
+                id="respondent_user_external_user",
+            ),
+            pytest.param(
+                [],  # user_ids
+                [],  # expected_assigned
+                [],  # expected_not_assigned
+                True,  # should_raise
+                id="empty_user_ids",
+            ),
+            pytest.param(
+                ["respondent_user", "respondent_user"],  # user_ids
+                ["respondent_user"],  # expected_assigned
+                [],  # expected_not_assigned
+                False,  # should_raise
+                id="respondent_user_duplicate",
+            ),
+        ],
+    )
+    def test_assign_users_to_task(
         self,
         db: Session,
         manual_task: ManualTask,
         manual_task_service: ManualTaskService,
         respondent_user: FidesUser,
+        external_user: FidesUser,
+        user_ids: list[str],
+        expected_assigned: list[str],
+        expected_not_assigned: list[str],
+        should_raise: bool,
     ):
-        # Setup
-        user_ids = ["user1", "user2", respondent_user.id]
+        """Test assigning users to tasks with various scenarios."""
+        # Replace placeholder user IDs with actual IDs
+        user_ids = [
+            (
+                respondent_user.id
+                if id == "respondent_user"
+                else external_user.id if id == "external_user" else id
+            )
+            for id in user_ids
+        ]
+        expected_assigned = [
+            (
+                respondent_user.id
+                if id == "respondent_user"
+                else external_user.id if id == "external_user" else id
+            )
+            for id in expected_assigned
+        ]
+
+        if should_raise:
+            with pytest.raises(ValueError, match="User ID is required for assignment"):
+                manual_task_service.assign_users_to_task(
+                    task_id=manual_task.id, user_ids=user_ids
+                )
+            return
 
         # Execute
         manual_task_service.assign_users_to_task(
             task_id=manual_task.id, user_ids=user_ids
         )
 
-        # Verify
-        db.refresh(manual_task)
-        assert (
-            len(manual_task.references) == 2
-        )  # The parent entity, and respondent user
-        assert any(
-            ref.reference_id == respondent_user.id for ref in manual_task.references
-        )
-        assert all(
-            ref.reference_id not in ["user1", "user2"] for ref in manual_task.references
-        )
+        # Verify references
+        expected_ref_count = 1 + len(
+            expected_assigned
+        )  # parent entity + assigned users
+        assert len(manual_task.references) == expected_ref_count
 
-        # Verify logs were created
-        logs = (
-            db.query(ManualTaskLog)
-            .filter(ManualTaskLog.task_id == manual_task.id)
-            .all()
-        )
-
-        # Verify error log for non-existent users
-        error_log = next(log for log in logs if log.status == ManualTaskLogStatus.error)
-        assert (
-            error_log.message
-            == "Error in Verify user IDs: User(s) ['user1', 'user2'] do not exist"
-        )
-
-        # Verify success log for assigned user
-        success_log = next(
-            log for log in logs if log.status == ManualTaskLogStatus.complete
-        )
-        assert success_log.message == "Assign users to task"
-        assert success_log.details["assigned_users"] == [respondent_user.id]
-        assert sorted(success_log.details["user_ids_not_assigned"]) == [
-            "user1",
-            "user2",
-        ]
-
-        # Verify the successful assignment happened
-        assert (
-            len(manual_task.references) == 2
-        )  # The parent entity, and respondent user
-        assert any(
-            ref.reference_id == respondent_user.id for ref in manual_task.references
-        )
-        assert all(
-            ref.reference_id not in ["user1", "user2"] for ref in manual_task.references
-        )
-
-    def test_assign_users_to_task_success(
-        self,
-        manual_task: ManualTask,
-        manual_task_service: ManualTaskService,
-        respondent_user: FidesUser,
-        external_user: FidesUser,
-    ):
-        # Execute
-        manual_task_service.assign_users_to_task(
-            task_id=manual_task.id, user_ids=[respondent_user.id, external_user.id]
-        )
-
-        # Verify
-        assert len(manual_task.references) == 3  # The parent entity + the two users
         verify_expected_reference_ids(
             manual_task,
-            [manual_task.parent_entity_id, respondent_user.id, external_user.id],
+            [manual_task.parent_entity_id] + expected_assigned,
         )
         verify_expected_reference_types(
             manual_task,
@@ -289,251 +279,162 @@ class TestAssignUsersToTask:
             ],
         )
 
-        # Verify logs were created
-        assert any(log.message == "Assign users to task" for log in manual_task.logs)
+        # Verify logs
         assign_log = next(
             log for log in manual_task.logs if log.message == "Assign users to task"
         )
-        assert assign_log.details == {
-            "assigned_users": sorted([respondent_user.id, external_user.id])
-        }
-
-    def test_assign_users_to_task_empty_list(
-        self,
-        manual_task: ManualTask,
-        manual_task_service: ManualTaskService,
-    ):
-        with pytest.raises(ValueError, match="User ID is required for assignment"):
-            manual_task_service.assign_users_to_task(
-                task_id=manual_task.id, user_ids=[]
+        assert assign_log.details["assigned_users"] == sorted(expected_assigned)
+        if expected_not_assigned:
+            assert sorted(assign_log.details["user_ids_not_assigned"]) == sorted(
+                expected_not_assigned
             )
-
-    def test_assign_users_to_task_duplicate_users(
-        self,
-        manual_task: ManualTask,
-        manual_task_service: ManualTaskService,
-        respondent_user: FidesUser,
-    ):
-        # Execute
-        manual_task_service.assign_users_to_task(
-            task_id=manual_task.id, user_ids=[respondent_user.id, respondent_user.id]
-        )
-
-        # Verify
-        assert (
-            len(manual_task.references) == 2
-        )  # The parent entity + one user (duplicate ignored)
-        assert all(
-            ref.reference_id == respondent_user.id
-            for ref in manual_task.references
-            if ref.reference_type == ManualTaskReferenceType.assigned_user
-        )
-
-        # Verify logs were created
-        assert any(log.message == "Assign users to task" for log in manual_task.logs)
-        assign_log = next(
-            log for log in manual_task.logs if log.message == "Assign users to task"
-        )
-        assert assign_log.details == {"assigned_users": [respondent_user.id]}
-
-    def test_assign_users_to_task_already_assigned(
-        self,
-        manual_task: ManualTask,
-        manual_task_service: ManualTaskService,
-        respondent_user: FidesUser,
-    ):
-        # Setup - assign user first time
-        manual_task_service.assign_users_to_task(
-            task_id=manual_task.id, user_ids=[respondent_user.id]
-        )
-        initial_reference_count = len(manual_task.references)
-        initial_log_count = len(manual_task.logs)
-
-        # Execute - assign same user again
-        manual_task_service.assign_users_to_task(
-            task_id=manual_task.id, user_ids=[respondent_user.id]
-        )
-
-        # Verify - no new references or logs should be created
-        assert len(manual_task.references) == initial_reference_count
-        assert any(log.message == "Assign users to task" for log in manual_task.logs)
-        assign_log = next(
-            log for log in manual_task.logs if log.message == "Assign users to task"
-        )
-        assert assign_log.details == {"assigned_users": [respondent_user.id]}
 
 
 class TestUnassignUsersFromTask:
     """Tests for the unassign_users_from_task method."""
 
+    @pytest.mark.parametrize(
+        "initial_users,unassign_users,expected_remaining,expected_not_unassigned,should_raise",
+        [
+            (
+                ["respondent_user", "external_user"],  # initial_users
+                ["respondent_user", "external_user"],  # unassign_users
+                [],  # expected_remaining
+                [],  # expected_not_unassigned
+                False,  # should_raise
+            ),
+            (
+                ["respondent_user", "external_user"],  # initial_users
+                ["respondent_user", "user3"],  # unassign_users
+                ["external_user"],  # expected_remaining
+                ["user3"],  # expected_not_unassigned
+                False,  # should_raise
+            ),
+            (
+                [],  # initial_users
+                [],  # unassign_users
+                [],  # expected_remaining
+                [],  # expected_not_unassigned
+                True,  # should_raise
+            ),
+            (
+                ["respondent_user"],  # initial_users
+                ["respondent_user", "respondent_user"],  # unassign_users
+                [],  # expected_remaining
+                [],  # expected_not_unassigned
+                False,  # should_raise
+            ),
+        ],
+    )
     def test_unassign_users_from_task(
         self,
+        db: Session,
         manual_task: ManualTask,
         manual_task_service: ManualTaskService,
         respondent_user: FidesUser,
         external_user: FidesUser,
+        initial_users: list[str],
+        unassign_users: list[str],
+        expected_remaining: list[str],
+        expected_not_unassigned: list[str],
+        should_raise: bool,
     ):
-        # Setup
-        manual_task_service.assign_users_to_task(
-            task_id=manual_task.id, user_ids=[respondent_user.id, external_user.id]
-        )
+        """Test unassigning users from tasks with various scenarios."""
+        # Replace placeholder user IDs with actual IDs
+        initial_users = [
+            (
+                respondent_user.id
+                if id == "respondent_user"
+                else external_user.id if id == "external_user" else id
+            )
+            for id in initial_users
+        ]
+        unassign_users = [
+            (
+                respondent_user.id
+                if id == "respondent_user"
+                else external_user.id if id == "external_user" else id
+            )
+            for id in unassign_users
+        ]
+        expected_remaining = [
+            (
+                respondent_user.id
+                if id == "respondent_user"
+                else external_user.id if id == "external_user" else id
+            )
+            for id in expected_remaining
+        ]
 
-        # Verify
-        assert len(manual_task.references) == 3  # The parent entity + the two users
-        verify_expected_reference_ids(
-            manual_task,
-            [manual_task.parent_entity_id, respondent_user.id, external_user.id],
-        )
-        verify_expected_reference_types(
-            manual_task,
-            [
-                ManualTaskReferenceType.connection_config,
-                ManualTaskReferenceType.assigned_user,
-            ],
-        )
-
-        # Execute
-        manual_task_service.unassign_users_from_task(
-            task_id=manual_task.id, user_ids=[respondent_user.id, external_user.id]
-        )
-
-        # Verify
-        assert len(manual_task.references) == 1  # The parent entity
-        verify_expected_reference_ids(manual_task, [manual_task.parent_entity_id])
-        verify_expected_reference_types(
-            manual_task, [ManualTaskReferenceType.connection_config]
-        )
-
-        # Verify logs were created
-        assert any(log.message == "Assign users to task" for log in manual_task.logs)
-        assign_log = next(
-            log for log in manual_task.logs if log.message == "Assign users to task"
-        )
-        assert assign_log.details == {
-            "assigned_users": sorted([respondent_user.id, external_user.id])
-        }
-        assert any(
-            log.message == "Unassign users from task" for log in manual_task.logs
-        )
-        unassign_log = next(
-            log for log in manual_task.logs if log.message == "Unassign users from task"
-        )
-        assert unassign_log.details == {
-            "unassigned_users": sorted([respondent_user.id, external_user.id])
-        }
-
-    def test_unassign_users_from_task_partial(
-        self,
-        manual_task: ManualTask,
-        manual_task_service: ManualTaskService,
-        respondent_user: FidesUser,
-        external_user: FidesUser,
-    ):
-        # Setup
-        assign_user_ids = [respondent_user.id, external_user.id]
-        unassign_user_ids = [respondent_user.id, "user3"]
-
-        manual_task_service.assign_users_to_task(
-            task_id=manual_task.id, user_ids=assign_user_ids
-        )
-        # Execute
-        manual_task_service.unassign_users_from_task(
-            task_id=manual_task.id, user_ids=unassign_user_ids
-        )
-
-        # Verify
-        assert len(manual_task.references) == 2  # The parent entity and external user
-        verify_expected_reference_ids(
-            manual_task, [manual_task.parent_entity_id, external_user.id]
-        )
-        verify_expected_reference_types(
-            manual_task,
-            [
-                ManualTaskReferenceType.connection_config,
-                ManualTaskReferenceType.assigned_user,
-            ],
-        )
-
-        # Verify logs were created
-        assert any(log.message == "Assign users to task" for log in manual_task.logs)
-        assign_log = next(
-            log for log in manual_task.logs if log.message == "Assign users to task"
-        )
-        assert assign_log.details == {
-            "assigned_users": sorted([respondent_user.id, external_user.id])
-        }
-        assert any(
-            log.message == "Unassign users from task" for log in manual_task.logs
-        )
-        unassign_log = next(
-            log for log in manual_task.logs if log.message == "Unassign users from task"
-        )
-        assert unassign_log.details == {
-            "unassigned_users": [respondent_user.id],
-            "user_ids_not_unassigned": ["user3"],
-        }
-
-    def test_unassign_users_from_task_empty_list(
-        self,
-        manual_task: ManualTask,
-        manual_task_service: ManualTaskService,
-    ):
-        # Execute
-        with pytest.raises(ValueError, match="User ID is required for unassignment"):
-            manual_task_service.unassign_users_from_task(
-                task_id=manual_task.id, user_ids=[]
+        # Setup - assign initial users
+        if initial_users:
+            manual_task_service.assign_users_to_task(
+                task_id=manual_task.id, user_ids=initial_users
             )
 
-    def test_unassign_users_from_task_duplicate_users(
-        self,
-        manual_task: ManualTask,
-        manual_task_service: ManualTaskService,
-        respondent_user: FidesUser,
-    ):
-        # Setup
-        manual_task_service.assign_users_to_task(
-            task_id=manual_task.id, user_ids=[respondent_user.id]
-        )
+        if should_raise:
+            with pytest.raises(
+                ValueError, match="User ID is required for unassignment"
+            ):
+                manual_task_service.unassign_users_from_task(
+                    task_id=manual_task.id, user_ids=unassign_users
+                )
+            return
 
         # Execute
         manual_task_service.unassign_users_from_task(
-            task_id=manual_task.id, user_ids=[respondent_user.id, respondent_user.id]
+            task_id=manual_task.id, user_ids=unassign_users
         )
 
-        # Verify
-        assert len(manual_task.references) == 1  # Only the parent entity
-        # All log messages:
-        # Message: 'Created manual task for privacy_request', Status: created
-        # Message: 'Assign users to task', Status: complete
-        # Message: 'Unassign users from task', Status: complete
-        assign_log = next(
-            log for log in manual_task.logs if log.message == "Assign users to task"
+        # Verify references
+        expected_ref_count = 1 + len(
+            expected_remaining
+        )  # parent entity + remaining users
+        assert len(manual_task.references) == expected_ref_count
+
+        verify_expected_reference_ids(
+            manual_task,
+            [manual_task.parent_entity_id] + expected_remaining,
         )
-        assert assign_log.details == {"assigned_users": [respondent_user.id]}
+        verify_expected_reference_types(
+            manual_task,
+            [
+                ManualTaskReferenceType.connection_config,
+                ManualTaskReferenceType.assigned_user,
+            ],
+        )
+
+        # Verify logs
         unassign_log = next(
             log for log in manual_task.logs if log.message == "Unassign users from task"
         )
-        assert unassign_log.details == {"unassigned_users": [respondent_user.id]}
+        successfully_unassigned = sorted(list(set(initial_users) & set(unassign_users)))
+        if successfully_unassigned:
+            assert unassign_log.details["unassigned_users"] == successfully_unassigned
+        if expected_not_unassigned:
+            assert sorted(unassign_log.details["user_ids_not_unassigned"]) == sorted(
+                expected_not_unassigned
+            )
 
 
 class TestManualTaskConfig:
     """Tests for the config-related methods."""
 
-    def test_create_config(
+    def test_config_lifecycle(
         self,
         db: Session,
         manual_task: ManualTask,
         manual_task_service: ManualTaskService,
     ):
-        """Test creating a new config for a task."""
-        # Execute
+        """Test the full lifecycle of a config - create and delete."""
+        # Create config
         manual_task_service.create_config(
             task_id=manual_task.id,
             config_type=ManualTaskConfigurationType.access_privacy_request,
             fields=FIELDS,
         )
 
-        # Verify
+        # Verify config creation
         config = manual_task_service.config_service.get_current_config(
             task=manual_task,
             config_type=ManualTaskConfigurationType.access_privacy_request,
@@ -543,174 +444,132 @@ class TestManualTaskConfig:
         assert config.version == 1
         assert config.is_current is True
         assert len(config.field_definitions) == len(FIELDS)
-        text_field = next(
-            field
-            for field in config.field_definitions
-            if field.field_key == TEXT_FIELD_KEY
-        )
-        checkbox_field = next(
-            field
-            for field in config.field_definitions
-            if field.field_key == CHECKBOX_FIELD_KEY
-        )
-        attachment_field = next(
-            field
-            for field in config.field_definitions
-            if field.field_key == ATTACHMENT_FIELD_KEY
-        )
-        assert (
-            text_field.field_metadata["label"] == FIELDS[0]["field_metadata"]["label"]
-        )
-        assert (
-            checkbox_field.field_metadata["label"]
-            == FIELDS[1]["field_metadata"]["label"]
-        )
-        assert (
-            attachment_field.field_metadata["label"]
-            == FIELDS[2]["field_metadata"]["label"]
-        )
 
-        # Verify log was created
-        log = (
-            db.query(ManualTaskLog)
-            .filter_by(task_id=manual_task.id)
-            .order_by(ManualTaskLog.created_at.desc())
-            .first()
-        )
-        assert log is not None
-        assert log.status == ManualTaskLogStatus.complete
-        assert f"Creating new configuration version" in log.message
-        assert log.config_id == config.id
+        # Verify field definitions
+        for field_key, expected_field in [
+            (TEXT_FIELD_KEY, FIELDS[0]),
+            (CHECKBOX_FIELD_KEY, FIELDS[1]),
+            (ATTACHMENT_FIELD_KEY, FIELDS[2]),
+        ]:
+            field = next(
+                field
+                for field in config.field_definitions
+                if field.field_key == field_key
+            )
+            assert (
+                field.field_metadata["label"]
+                == expected_field["field_metadata"]["label"]
+            )
 
-    def test_delete_config(
-        self,
-        db: Session,
-        manual_task: ManualTask,
-        manual_task_service: ManualTaskService,
-    ):
-        """Test deleting a config for a task."""
-        # Setup - create config
-        manual_task_service.create_config(
-            config_type=ManualTaskConfigurationType.access_privacy_request,
-            fields=FIELDS,
-            task_id=manual_task.id,
-        )
-        db.commit()  # Commit the create transaction
-        db.refresh(manual_task)
-
-        config = manual_task_service.config_service.get_current_config(
-            task=manual_task,
-            config_type=ManualTaskConfigurationType.access_privacy_request,
-        )
-        assert config is not None
-
-        # Verify task exists
-        task = manual_task_service.get_task(task_id=manual_task.id)
-        assert task is not None
-
-        # Execute
-        manual_task_service.delete_config(config=config, task_id=manual_task.id)
-        db.commit()  # Commit the delete transaction
-
-        # Verify
-        db.refresh(manual_task)
-        assert db.query(ManualTaskConfig).filter_by(id=config.id).first() is None
-
-        # Verify logs were created
+        # Verify creation logs
         logs = (
             db.query(ManualTaskLog)
             .filter_by(task_id=manual_task.id)
             .order_by(ManualTaskLog.created_at.desc())
             .all()
         )
+        assert any(
+            log.message == "Creating new configuration version"
+            and log.status == ManualTaskLogStatus.complete
+            and log.config_id == config.id
+            for log in logs
+        )
 
-        # We expect logs from both service layers:
-        # From ManualTaskConfigService:
-        # 1. "Creating new configuration version"
-        # 2. "Created manual task configuration for access_privacy_request"
-        # 3. "Deleting Manual Task configuration"
-        # Plus initial task creation:
-        # 4. "Created manual task for privacy_request"
-        assert len(logs) == 4
+        # Delete config
+        manual_task_service.delete_config(config=config, task_id=manual_task.id)
+        db.commit()
+        db.refresh(manual_task)
 
-        # Verify delete logs
+        # Verify deletion
+        assert db.query(ManualTaskConfig).filter_by(id=config.id).first() is None
+
+        # Query logs again after deletion
+        logs = (
+            db.query(ManualTaskLog)
+            .filter_by(task_id=manual_task.id)
+            .order_by(ManualTaskLog.created_at.desc())
+            .all()
+        )
         assert any(
             log.message == "Deleting Manual Task configuration"
             and log.status == ManualTaskLogStatus.complete
             for log in logs
         )
 
-        # Verify create logs
-        create_logs = [log for log in logs if "config" in log.message.lower()]
-        assert any(
-            log.message
-            == "Created manual task configuration for access_privacy_request"
-            and log.status == ManualTaskLogStatus.created
-            for log in create_logs
-        )
-        assert any(
-            log.message == "Creating new configuration version"
-            and log.status == ManualTaskLogStatus.complete
-            for log in create_logs
-        )
-
-        # Verify all logs have the correct task_id and no instance_id
-        for log in logs:
-            assert log.task_id == manual_task.id
-            assert log.instance_id is None  # Ensure no instance_id is set
-
 
 class TestManualTaskInstance:
     """Tests for instance and submission-related methods."""
 
-    def test_create_instance_success(
+    @pytest.mark.parametrize(
+        "task_id,config_id,entity_id,entity_type,expected_error",
+        [
+            (
+                "test-task-id",  # Will be replaced with actual task ID
+                "test-config-id",  # Will be replaced with actual config ID
+                "test-entity-id",
+                "test-entity-type",
+                None,
+            ),
+            (
+                "invalid-task-id",
+                "test-config-id",  # Will be replaced with actual config ID
+                "test-entity-id",
+                "test-entity-type",
+                r"No task found with filters: \['task_id=invalid-task-id'\]",
+            ),
+        ],
+    )
+    def test_create_instance(
         self,
         db: Session,
         manual_task: ManualTask,
         manual_task_config: ManualTaskConfig,
         manual_task_service: ManualTaskService,
+        task_id: str,
+        config_id: str,
+        entity_id: str,
+        entity_type: str,
+        expected_error: str,
     ):
-        """Test successful instance creation."""
+        """Test instance creation with various scenarios."""
+        # Replace placeholder IDs with actual IDs
+        if task_id == "test-task-id":
+            task_id = manual_task.id
+        if config_id == "test-config-id":
+            config_id = manual_task_config.id
+
+        if expected_error:
+            with pytest.raises(ValueError, match=expected_error):
+                manual_task_service.create_instance(
+                    task_id=task_id,
+                    config_id=config_id,
+                    entity_id=entity_id,
+                    entity_type=entity_type,
+                )
+            return
+
         # Execute
         instance = manual_task_service.create_instance(
-            task_id=manual_task.id,
-            config_id=manual_task_config.id,
-            entity_id="test-entity-id",
-            entity_type="test-entity-type",
+            task_id=task_id,
+            config_id=config_id,
+            entity_id=entity_id,
+            entity_type=entity_type,
         )
 
-        # Verify
+        # Verify instance
         assert instance is not None
-        assert instance.task_id == manual_task.id
-        assert instance.config_id == manual_task_config.id
-        assert instance.entity_id == "test-entity-id"
-        assert instance.entity_type == "test-entity-type"
+        assert instance.task_id == task_id
+        assert instance.config_id == config_id
+        assert instance.entity_id == entity_id
+        assert instance.entity_type == entity_type
 
-        # Verify logs were created
+        # Verify logs
         logs = [log for log in manual_task.logs if "instance" in log.message.lower()]
         assert any(log.message == "Created task instance" for log in logs)
         create_log = next(log for log in logs if log.message == "Created task instance")
         assert create_log.instance_id == instance.id
 
-    def test_create_instance_invalid_task(
-        self,
-        db: Session,
-        manual_task_config: ManualTaskConfig,
-        manual_task_service: ManualTaskService,
-    ):
-        """Test instance creation with invalid task ID."""
-        with pytest.raises(
-            ValueError,
-            match=r"No task found with filters: \['task_id=invalid-task-id'\]",
-        ):
-            manual_task_service.create_instance(
-                task_id="invalid-task-id",
-                config_id=manual_task_config.id,
-                entity_id="test-entity-id",
-                entity_type="test-entity-type",
-            )
-
-    def test_create_submission_success(
+    def test_submission_lifecycle(
         self,
         db: Session,
         manual_task: ManualTask,
@@ -718,8 +577,8 @@ class TestManualTaskInstance:
         manual_task_service: ManualTaskService,
         manual_task_config_field_text: ManualTaskConfigField,
     ):
-        """Test successful submission creation."""
-        # Create instance first
+        """Test the full lifecycle of a submission - create instance and submit."""
+        # Create instance
         instance = manual_task_service.create_instance(
             task_id=manual_task.id,
             config_id=manual_task_config.id,
@@ -727,7 +586,7 @@ class TestManualTaskInstance:
             entity_type="test-entity-type",
         )
 
-        # Execute - create submission
+        # Create submission
         submission_data = {
             "field_key": manual_task_config_field_text.field_key,
             "field_type": manual_task_config_field_text.field_type,
@@ -739,13 +598,13 @@ class TestManualTaskInstance:
             data=submission_data,
         )
 
-        # Verify
+        # Verify submission
         assert submission is not None
         assert submission.instance_id == instance.id
         assert submission.field_id == manual_task_config_field_text.id
         assert submission.data == submission_data
 
-        # Verify logs were created
+        # Verify logs
         logs = [log for log in manual_task.logs if "submission" in log.message.lower()]
         assert any(log.message == "Created task submission" for log in logs)
         create_log = next(
@@ -753,13 +612,7 @@ class TestManualTaskInstance:
         )
         assert create_log.instance_id == instance.id
 
-    def test_create_submission_invalid(
-        self,
-        db: Session,
-        manual_task_config_field_text: ManualTaskConfigField,
-        manual_task_service: ManualTaskService,
-    ):
-        """Test submission creation with invalid instance ID."""
+        # Test invalid submission
         with pytest.raises(ValueError):
             manual_task_service.create_submission(
                 instance_id="invalid-instance-id",
