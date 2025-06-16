@@ -173,7 +173,18 @@ class ManualTaskConfigService:
         field_key: str,
         version: int,
     ) -> Optional[ManualTaskConfig]:
-        """Get config by various filters."""
+        """Get config by various filters. This is a flexible lookup method that can find configs based on various filters.
+
+        Args:
+            task: The task to get the config for
+            config_type: The type of config to get
+            field_id: The ID of a field in the config
+            config_id: The ID of the config
+            field_key: The key of a field in the config
+            version: The version number of the config
+        Returns:
+            The matching config if found, None otherwise
+            """
         if not any([task, config_id, field_id, config_type]):
             logger.debug("No filters provided to get_config")
             return None
