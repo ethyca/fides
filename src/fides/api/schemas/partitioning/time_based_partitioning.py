@@ -112,7 +112,7 @@ class TimeBasedPartitioning(FidesSchema):
         return value, unit
 
     def _timedelta_from_value_unit(self, value: int, unit: TimeUnit) -> timedelta:
-        """Translate value/unit pairs into a :class:`datetime.timedelta`."""
+        """Translate value/unit pairs into a `timedelta`."""
 
         if unit is TimeUnit.WEEK:
             return timedelta(weeks=value)
@@ -419,7 +419,7 @@ class TimeBasedPartitioning(FidesSchema):
         1. ``NOW()   - N <unit>s .. NOW()``   (timestamp based)
         2. ``TODAY() - N <unit>s .. TODAY()`` (date based)
 
-        The helper chooses *CURRENT_TIMESTAMP* or *CURRENT_DATE* automatically
+        The helper chooses `CURRENT_TIMESTAMP` or `CURRENT_DATE` automatically
         based on which pattern is matched.
         """
 
