@@ -6,6 +6,7 @@ import { IntegrationTypeInfo } from "~/features/integrations/add-integration/all
 
 enum IntegrationFilterTabHash {
   ALL = "all",
+  CRM = "crm",
   DATABASE = "database",
   DATA_CATALOG = "data-catalog",
   DATA_WAREHOUSE = "data-warehouse",
@@ -13,11 +14,22 @@ enum IntegrationFilterTabHash {
   WEBSITE = "website",
   MANUAL = "manual",
 }
+// export enum IntegrationFilterTabs {
+//   ALL = "All",
+//   CRM = "CRM",
+//   DATA_CATALOG = "Data Catalog",
+//   DATABASE = "Database",
+//   DATA_WAREHOUSE = "Data Warehouse",
+//   IDENTITY_PROVIDER = "Identity Provider",
+//   WEBSITE = "Website",
+//   MANUAL = "Manual",
+// }
 
 const TAB_HASHES = Object.values(IntegrationFilterTabHash);
 
 const TAB_HASH_LABEL_MAP: Record<IntegrationFilterTabHash, string> = {
   [IntegrationFilterTabHash.ALL]: "All",
+  [IntegrationFilterTabHash.CRM]: "CRM",
   [IntegrationFilterTabHash.DATABASE]: "Database",
   [IntegrationFilterTabHash.DATA_CATALOG]: "Data Catalog",
   [IntegrationFilterTabHash.DATA_WAREHOUSE]: "Data Warehouse",

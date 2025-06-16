@@ -527,7 +527,6 @@ describe("Fides-js TCF", () => {
                 extraDetails: {
                   consentMethod: undefined,
                   shouldShowExperience: true,
-                  firstInit: false,
                 },
                 fides_string: undefined,
               });
@@ -1254,7 +1253,6 @@ describe("Fides-js TCF", () => {
                   extraDetails: {
                     consentMethod: undefined,
                     shouldShowExperience: true,
-                    firstInit: false,
                   },
                   fides_string: undefined,
                 });

@@ -2,7 +2,7 @@ import pytest
 from sqlalchemy.orm import Session
 
 from fides.api.models.privacy_request import PrivacyRequest
-from fides.api.schemas.privacy_request import ExecutionLogStatus
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.service.connectors.scylla_connector import ScyllaConnectorMissingKeyspace
 from fides.api.task.graph_task import get_cached_data_for_erasures
 

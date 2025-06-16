@@ -92,6 +92,15 @@
       "encoded_icon": null
     },
     {
+      "identifier": "salesforce",
+      "type": "saas",
+      "human_readable": "Salesforce",
+      "encoded_icon": null,
+      "authorization_required": true,
+      "user_guide": "https://docs.ethyca.com/user-guides/integrations/saas-integrations/salesforce",
+      "supported_actions": ["access", "erasure"]
+    },
+    {
       "identifier": "shopify",
       "type": "saas",
       "human_readable": "Shopify",

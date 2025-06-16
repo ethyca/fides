@@ -29,8 +29,8 @@ from fides.api.models.privacy_request import (
     RequestTask,
     TraversalDetails,
 )
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
-from fides.api.schemas.privacy_request import ExecutionLogStatus
 from fides.api.task.deprecated_graph_task import format_data_use_map_for_caching
 from fides.api.task.execute_request_tasks import log_task_queued, queue_request_task
 from fides.api.util.logger_context_utils import log_context

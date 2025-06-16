@@ -248,7 +248,7 @@ class TestPutSaaSConfig:
         )
         saas_config = connection_config.saas_config
         assert saas_config is not None
-        assert len(saas_config["endpoints"]) == 17
+        assert len(saas_config["endpoints"]) == 18
 
 
 def get_saas_config_url(connection_config: Optional[ConnectionConfig] = None) -> str:
@@ -322,7 +322,7 @@ class TestGetSaaSConfig:
             response_body["fides_key"]
             == saas_example_connection_config.get_saas_config().fides_key
         )
-        assert len(response_body["endpoints"]) == 18
+        assert len(response_body["endpoints"]) == 19
         assert response_body["type"] == "custom"
         assert response_body["endpoints"][11]["skip_processing"] is False
         assert response_body["endpoints"][12]["skip_processing"] is False

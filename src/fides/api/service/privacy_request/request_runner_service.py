@@ -1,6 +1,7 @@
 import time
+from copy import deepcopy
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Optional, Tuple
 
 import requests
 from loguru import logger
@@ -21,6 +22,7 @@ from fides.api.common_exceptions import (
 from fides.api.db.session import get_db_session
 from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph import DatasetGraph
+from fides.api.models.attachment import Attachment, AttachmentReferenceType
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.connectionconfig import AccessLevel, ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
@@ -29,6 +31,7 @@ from fides.api.models.policy import (
     Policy,
     PolicyPostWebhook,
     PolicyPreWebhook,
+    Rule,
     WebhookTypes,
 )
 from fides.api.models.privacy_request import (
@@ -56,6 +59,10 @@ from fides.api.service.messaging.message_dispatch_service import (
     dispatch_message,
     message_send_enabled,
 )
+from fides.api.service.privacy_request.attachment_handling import (
+    get_attachments_content,
+    process_attachments_for_upload,
+)
 from fides.api.service.storage.storage_uploader_service import upload
 from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_runners import access_runner, consent_runner, erasure_runner
@@ -80,7 +87,8 @@ from fides.config.config_proxy import ConfigProxy
 class ManualWebhookResults(FidesSchema):
     """Represents manual webhook data retrieved from the cache and whether privacy request execution should continue"""
 
-    manual_data: Dict[str, List[Dict[str, Optional[Any]]]]
+    manual_data_for_upload: dict[str, list[dict[str, Optional[Any]]]]
+    manual_data_for_storage: dict[str, list[dict[str, Optional[Any]]]]
     proceed: bool
 
 
@@ -92,17 +100,52 @@ def get_manual_webhook_access_inputs(
 
     This data will be uploaded to the user as-is, without filtering.
     """
-    manual_inputs: Dict[str, List[Dict[str, Optional[Any]]]] = {}
+    manual_inputs_for_upload: dict[str, list[dict[str, Optional[Any]]]] = {}
+    manual_inputs_for_storage: dict[str, list[dict[str, Optional[Any]]]] = {}
 
     if not policy.get_rules_for_action(action_type=ActionType.access):
         # Don't fetch manual inputs unless this policy has an access rule
-        return ManualWebhookResults(manual_data=manual_inputs, proceed=True)
+        return ManualWebhookResults(
+            manual_data_for_upload=manual_inputs_for_upload,
+            manual_data_for_storage=manual_inputs_for_storage,
+            proceed=True,
+        )
 
     try:
         for manual_webhook in AccessManualWebhook.get_enabled(db, ActionType.access):
-            manual_inputs[manual_webhook.connection_config.key] = [
+            # Get the manual webhook input data
+            webhook_data_for_storage = (
                 privacy_request.get_manual_webhook_access_input_strict(manual_webhook)
+            )
+            # Add the system name to the webhook data for display purposes
+            webhook_data_for_storage["system_name"] = (
+                manual_webhook.connection_config.system.name
+            )
+            webhook_data_for_upload = deepcopy(webhook_data_for_storage)
+
+            # Get any attachments for this webhook, load from db to ensure they have their configs
+            webhook_attachments = privacy_request.get_access_manual_webhook_attachments(
+                db, manual_webhook.id
+            )
+            if webhook_attachments:
+                attachment_ids = [wa.id for wa in webhook_attachments]
+                loaded_attachments = (
+                    db.query(Attachment).filter(Attachment.id.in_(attachment_ids)).all()
+                )
+                (
+                    webhook_data_for_upload["attachments"],
+                    webhook_data_for_storage["attachments"],
+                ) = process_attachments_for_upload(
+                    get_attachments_content(loaded_attachments)
+                )
+
+            manual_inputs_for_upload[manual_webhook.connection_config.key] = [
+                webhook_data_for_upload
             ]
+            manual_inputs_for_storage[manual_webhook.connection_config.key] = [  # type: ignore[assignment]
+                webhook_data_for_storage
+            ]
+
     except (
         NoCachedManualWebhookEntry,
         ValidationError,
@@ -111,19 +154,31 @@ def get_manual_webhook_access_inputs(
         logger.info(exc)
         privacy_request.status = PrivacyRequestStatus.requires_input
         privacy_request.save(db)
-        return ManualWebhookResults(manual_data=manual_inputs, proceed=False)
+        return ManualWebhookResults(
+            manual_data_for_upload=manual_inputs_for_upload,
+            manual_data_for_storage=manual_inputs_for_storage,
+            proceed=False,
+        )
 
-    return ManualWebhookResults(manual_data=manual_inputs, proceed=True)
+    return ManualWebhookResults(
+        manual_data_for_upload=manual_inputs_for_upload,
+        manual_data_for_storage=manual_inputs_for_storage,
+        proceed=True,
+    )
 
 
 def get_manual_webhook_erasure_inputs(
     db: Session, privacy_request: PrivacyRequest, policy: Policy
 ) -> ManualWebhookResults:
-    manual_inputs: Dict[str, List[Dict[str, Optional[Any]]]] = {}
+    manual_inputs: dict[str, list[dict[str, Optional[Any]]]] = {}
 
     if not policy.get_rules_for_action(action_type=ActionType.erasure):
         # Don't fetch manual inputs unless this policy has an access rule
-        return ManualWebhookResults(manual_data=manual_inputs, proceed=True)
+        return ManualWebhookResults(
+            manual_data_for_upload=manual_inputs,
+            manual_data_for_storage=manual_inputs,
+            proceed=True,
+        )
     try:
         for manual_webhook in AccessManualWebhook().get_enabled(db, ActionType.erasure):
             manual_inputs[manual_webhook.connection_config.key] = [
@@ -137,69 +192,93 @@ def get_manual_webhook_erasure_inputs(
         logger.info(exc)
         privacy_request.status = PrivacyRequestStatus.requires_input
         privacy_request.save(db)
-        return ManualWebhookResults(manual_data=manual_inputs, proceed=False)
-
-    return ManualWebhookResults(manual_data=manual_inputs, proceed=True)
-
-
-def run_webhooks_and_report_status(
-    db: Session,
-    privacy_request: PrivacyRequest,
-    webhook_cls: WebhookTypes,
-    after_webhook_id: Optional[str] = None,
-) -> bool:
-    """
-    Runs a series of webhooks either pre- or post- privacy request execution, if any are configured.
-    Updates privacy request status if execution is paused/errored.
-    Returns True if execution should proceed.
-    """
-    webhooks = db.query(webhook_cls).filter_by(policy_id=privacy_request.policy.id)  # type: ignore
-
-    if after_webhook_id:
-        # Only run webhooks configured to run after this Pre-Execution webhook
-        pre_webhook = PolicyPreWebhook.get(db=db, object_id=after_webhook_id)
-        webhooks = webhooks.filter(  # type: ignore[call-arg]
-            webhook_cls.order > pre_webhook.order,  # type: ignore[union-attr]
+        return ManualWebhookResults(
+            manual_data_for_upload=manual_inputs,
+            manual_data_for_storage=manual_inputs,
+            proceed=False,
         )
 
-    current_step = CurrentStep[f"{webhook_cls.prefix}_webhooks"]
+    return ManualWebhookResults(
+        manual_data_for_upload=manual_inputs,
+        manual_data_for_storage=manual_inputs,
+        proceed=True,
+    )
 
-    for webhook in webhooks.order_by(webhook_cls.order):  # type: ignore[union-attr]
-        try:
-            privacy_request.trigger_policy_webhook(
-                webhook=webhook,
-                policy_action=privacy_request.policy.get_action_type(),
-            )
-        except PrivacyRequestPaused:
-            logger.info(
-                "Pausing execution of privacy request {}. Halt instruction received from webhook {}.",
-                privacy_request.id,
-                webhook.key,
-            )
-            privacy_request.pause_processing(db)
-            initiate_paused_privacy_request_followup(privacy_request)
-            return False
-        except ClientUnsuccessfulException as exc:
-            logger.error(
-                "Privacy Request '{}' exited after response from webhook '{}': {}.",
-                privacy_request.id,
-                webhook.key,
-                Pii(str(exc.args[0])),
-            )
-            privacy_request.error_processing(db)
-            privacy_request.cache_failed_checkpoint_details(current_step)
-            return False
-        except PydanticValidationError:
-            logger.error(
-                "Privacy Request '{}' errored due to response validation error from webhook '{}'.",
-                privacy_request.id,
-                webhook.key,
-            )
-            privacy_request.error_processing(db)
-            privacy_request.cache_failed_checkpoint_details(current_step)
-            return False
 
-    return True
+@log_context(capture_args={"privacy_request_id": LoggerContextKeys.privacy_request_id})
+def upload_access_results(
+    session: Session,
+    policy: Policy,
+    rule: Rule,
+    results_to_upload: dict[str, list[dict[str, Optional[Any]]]],
+    dataset_graph: DatasetGraph,
+    privacy_request: PrivacyRequest,
+    upload_attachments: list[dict[str, Any]],
+) -> list[str]:
+    """Upload results for a single rule and return download URLs and modified results."""
+    start_time = time.time()
+    download_urls: list[str] = []
+    storage_destination = rule.get_storage_destination(session)
+
+    if upload_attachments:
+        results_to_upload["attachments"] = upload_attachments
+
+    logger.info("Starting access request upload for rule {}", rule.key)
+    try:
+        download_url: Optional[str] = upload(
+            db=session,
+            privacy_request=privacy_request,
+            data=results_to_upload,
+            storage_key=storage_destination.key,  # type: ignore
+            data_category_field_mapping=dataset_graph.data_category_field_mapping,
+            data_use_map=privacy_request.get_cached_data_use_map(),
+        )
+        if download_url:
+            download_urls.append(download_url)
+            logger.bind(
+                time_taken=time.time() - start_time,
+            ).info("Access package upload successful for privacy request.")
+            privacy_request.add_success_execution_log(
+                session,
+                connection_key=None,
+                dataset_name="Access package upload",
+                collection_name=None,
+                message="Access package upload successful for privacy request.",
+                action_type=ActionType.access,
+            )
+    except common_exceptions.StorageUploadError as exc:
+        logger.error(
+            "Error uploading subject access data for rule {} on policy {}: {}",
+            rule.key,
+            policy.key,
+            Pii(str(exc)),
+        )
+        privacy_request.add_error_execution_log(
+            session,
+            connection_key=None,
+            dataset_name="Access package upload",
+            collection_name=None,
+            message="Access package upload failed for privacy request.",
+            action_type=ActionType.access,
+        )
+        privacy_request.status = PrivacyRequestStatus.error
+
+    return download_urls
+
+
+def save_access_results(
+    session: Session,
+    privacy_request: PrivacyRequest,
+    download_urls: list[str],
+    rule_filtered_results: dict[str, dict[str, list[dict[str, Optional[Any]]]]],
+) -> None:
+    """Save the results we uploaded to the user for later retrieval"""
+    # Save the results we uploaded to the user for later retrieval
+    privacy_request.save_filtered_access_results(session, rule_filtered_results)
+    # Saving access request URL's on the privacy request in case DSR 3.0
+    # exits processing before the email is sent
+    privacy_request.access_result_urls = {"access_result_urls": download_urls}
+    privacy_request.save(session)
 
 
 @log_context(
@@ -207,29 +286,40 @@ def run_webhooks_and_report_status(
         "privacy_request_id": LoggerContextKeys.privacy_request_id,
     }
 )
-def upload_access_results(  # pylint: disable=R0912
+def upload_and_save_access_results(  # pylint: disable=R0912
     session: Session,
     policy: Policy,
-    access_result: Dict[str, List[Row]],
+    access_result: dict[str, list[Row]],
     dataset_graph: DatasetGraph,
     privacy_request: PrivacyRequest,
-    manual_data: Dict[str, List[Dict[str, Optional[Any]]]],
-    fides_connector_datasets: Set[str],
-) -> List[str]:
+    manual_data_access_results: ManualWebhookResults,
+    fides_connector_datasets: set[str],
+) -> list[str]:
     """Process the data uploads after the access portion of the privacy request has completed"""
-    start_time = time.time()
-    download_urls: List[str] = []
+    download_urls: list[str] = []
+    # Remove manual webhook attachments from the list of attachments
+    # This is done because the manual webhook attachments are already included in the manual_data
+    loaded_attachments = [
+        attachment
+        for attachment in privacy_request.attachments
+        if AttachmentReferenceType.access_manual_webhook
+        not in [ref.reference_type for ref in attachment.references]
+    ]
+    attachments = get_attachments_content(loaded_attachments)
+    # Process attachments once for both upload and storage
+    upload_attachments, storage_attachments = process_attachments_for_upload(
+        attachments
+    )
+
     if not access_result:
         logger.info("No results returned for access request")
 
-    rule_filtered_results: Dict[str, Dict[str, List[Row]]] = {}
+    rule_filtered_results: dict[str, dict[str, list[dict[str, Optional[Any]]]]] = {}
     for rule in policy.get_rules_for_action(  # pylint: disable=R1702
         action_type=ActionType.access
     ):
-        storage_destination = rule.get_storage_destination(session)
-
-        target_categories: Set[str] = {target.data_category for target in rule.targets}  # type: ignore[attr-defined]
-        filtered_results: Dict[str, List[Dict[str, Optional[Any]]]] = (
+        target_categories: set[str] = {target.data_category for target in rule.targets}  # type: ignore[attr-defined]
+        filtered_results: dict[str, list[dict[str, Optional[Any]]]] = (
             filter_data_categories(
                 access_result,
                 target_categories,
@@ -238,59 +328,28 @@ def upload_access_results(  # pylint: disable=R0912
                 fides_connector_datasets,
             )
         )
+        # Create a copy of filtered results to modify for upload
+        results_to_upload = deepcopy(filtered_results)
+        results_to_upload.update(manual_data_access_results.manual_data_for_upload)
 
-        filtered_results.update(
-            manual_data
-        )  # Add manual data directly to each upload packet
+        rule_download_urls = upload_access_results(
+            session,
+            policy,
+            rule,
+            results_to_upload,
+            dataset_graph,
+            privacy_request,
+            upload_attachments,
+        )
+        download_urls.extend(rule_download_urls)
+
+        # Create results for storage
+        filtered_results.update(manual_data_access_results.manual_data_for_storage)
+        if storage_attachments:
+            filtered_results["attachments"] = storage_attachments
         rule_filtered_results[rule.key] = filtered_results
 
-        logger.info(
-            "Starting access request upload for rule {}",
-            rule.key,
-        )
-        try:
-            download_url: Optional[str] = upload(
-                db=session,
-                privacy_request=privacy_request,
-                data=filtered_results,
-                storage_key=storage_destination.key,  # type: ignore
-                data_category_field_mapping=dataset_graph.data_category_field_mapping,
-                data_use_map=privacy_request.get_cached_data_use_map(),
-            )
-            if download_url:
-                download_urls.append(download_url)
-                privacy_request.add_success_execution_log(
-                    session,
-                    connection_key=None,
-                    dataset_name="Access Package Upload",
-                    collection_name=None,
-                    message="Access Package Upload successful for privacy request.",
-                    action_type=ActionType.access,
-                )
-            logger.bind(
-                time_taken=time.time() - start_time,
-            ).info("Access Package Upload successful for privacy request.")
-        except common_exceptions.StorageUploadError as exc:
-            logger.bind(
-                policy_key=policy.key,
-                rule_key=rule.key,
-                error=Pii(str(exc)),
-            ).error("Error uploading subject access data for rule.")
-            privacy_request.add_error_execution_log(
-                session,
-                connection_key=None,
-                dataset_name="Access Package Upload",
-                collection_name=None,
-                message="Access Package Upload failed for privacy request.",
-                action_type=ActionType.access,
-            )
-            privacy_request.status = PrivacyRequestStatus.error
-    # Save the results we uploaded to the user for later retrieval
-    privacy_request.save_filtered_access_results(session, rule_filtered_results)
-    # Saving access request URL's on the privacy request in case DSR 3.0
-    # exits processing before the email is sent
-    privacy_request.access_result_urls = {"access_result_urls": download_urls}
-    privacy_request.save(session)
+    save_access_results(session, privacy_request, download_urls, rule_filtered_results)
     return download_urls
 
 
@@ -408,7 +467,7 @@ def run_privacy_request(
                     for key, value in privacy_request.get_cached_identity_data().items()
                 }
                 connection_configs = ConnectionConfig.all(db=session)
-                fides_connector_datasets: Set[str] = filter_fides_connector_datasets(
+                fides_connector_datasets: set[str] = filter_fides_connector_datasets(
                     connection_configs
                 )
 
@@ -431,8 +490,8 @@ def run_privacy_request(
                     )
 
                 # Upload Access Results CHECKPOINT
-                access_result_urls: List[str] = []
-                raw_access_results: Dict = privacy_request.get_raw_access_results()
+                access_result_urls: list[str] = []
+                raw_access_results: dict = privacy_request.get_raw_access_results()
                 if (
                     policy.get_rules_for_action(action_type=ActionType.access)
                     or policy.get_rules_for_action(
@@ -448,13 +507,13 @@ def run_privacy_request(
                     filtered_access_results = filter_by_enabled_actions(
                         raw_access_results, connection_configs
                     )
-                    access_result_urls = upload_access_results(
+                    access_result_urls = upload_and_save_access_results(
                         session,
                         policy,
                         filtered_access_results,
                         dataset_graph,
                         privacy_request,
-                        manual_webhook_access_results.manual_data,
+                        manual_webhook_access_results,
                         fides_connector_datasets,
                     )
 
@@ -643,8 +702,8 @@ def run_privacy_request(
 def initiate_privacy_request_completion_email(
     session: Session,
     policy: Policy,
-    access_result_urls: List[str],
-    identity_data: Dict[str, Any],
+    access_result_urls: list[str],
+    identity_data: dict[str, Any],
     property_id: Optional[str],
 ) -> None:
     """
@@ -727,8 +786,8 @@ def mark_paused_privacy_request_as_expired(privacy_request_id: str) -> None:
 def _retrieve_child_results(  # pylint: disable=R0911
     fides_connector: Tuple[str, ConnectionConfig],
     rule_key: str,
-    access_result: Dict[str, List[Row]],
-) -> Optional[List[Dict[str, Optional[List[Row]]]]]:
+    access_result: dict[str, list[Row]],
+) -> Optional[list[dict[str, Optional[list[Row]]]]]:
     """Get child access request results to add to upload."""
     try:
         connector = FidesConnector(fides_connector[1])
@@ -815,7 +874,7 @@ def get_erasure_email_connection_configs(db: Session) -> Query:
 
 
 def needs_batch_email_send(
-    db: Session, user_identities: Dict[str, Any], privacy_request: PrivacyRequest
+    db: Session, user_identities: dict[str, Any], privacy_request: PrivacyRequest
 ) -> bool:
     """
     Delegates the "needs email" check to each configured email or
@@ -825,8 +884,8 @@ def needs_batch_email_send(
     If we don't need to send any emails, add skipped logs for any
     relevant erasure and consent email connectors.
     """
-    can_skip_erasure_email: List[ConnectionConfig] = []
-    can_skip_consent_email: List[ConnectionConfig] = []
+    can_skip_erasure_email: list[ConnectionConfig] = []
+    can_skip_consent_email: list[ConnectionConfig] = []
 
     needs_email_send: bool = False
 
@@ -857,8 +916,8 @@ def needs_batch_email_send(
 def _create_execution_logs_for_skipped_email_send(
     db: Session,
     privacy_request: PrivacyRequest,
-    can_skip_erasure_email: List[ConnectionConfig],
-    can_skip_consent_email: List[ConnectionConfig],
+    can_skip_erasure_email: list[ConnectionConfig],
+    can_skip_consent_email: list[ConnectionConfig],
 ) -> None:
     """Create skipped execution logs for relevant connectors
     if this privacy request does not need an email send at all.  For consent requests,
@@ -874,3 +933,63 @@ def _create_execution_logs_for_skipped_email_send(
     for connection_config in can_skip_consent_email:
         connector = get_connector(connection_config)
         connector.add_skipped_log(db, privacy_request)  # type: ignore[attr-defined]
+
+
+def run_webhooks_and_report_status(
+    db: Session,
+    privacy_request: PrivacyRequest,
+    webhook_cls: WebhookTypes,
+    after_webhook_id: Optional[str] = None,
+) -> bool:
+    """
+    Runs a series of webhooks either pre- or post- privacy request execution, if any are configured.
+    Updates privacy request status if execution is paused/errored.
+    Returns True if execution should proceed.
+    """
+    webhooks = db.query(webhook_cls).filter_by(policy_id=privacy_request.policy.id)  # type: ignore
+
+    if after_webhook_id:
+        # Only run webhooks configured to run after this Pre-Execution webhook
+        pre_webhook = PolicyPreWebhook.get(db=db, object_id=after_webhook_id)
+        webhooks = webhooks.filter(  # type: ignore[call-arg]
+            webhook_cls.order > pre_webhook.order,  # type: ignore[union-attr]
+        )
+
+    current_step = CurrentStep[f"{webhook_cls.prefix}_webhooks"]
+
+    for webhook in webhooks.order_by(webhook_cls.order):  # type: ignore[union-attr]
+        try:
+            privacy_request.trigger_policy_webhook(
+                webhook=webhook,
+                policy_action=privacy_request.policy.get_action_type(),
+            )
+        except PrivacyRequestPaused:
+            logger.info(
+                "Pausing execution of privacy request {}. Halt instruction received from webhook {}.",
+                privacy_request.id,
+                webhook.key,
+            )
+            privacy_request.pause_processing(db)
+            initiate_paused_privacy_request_followup(privacy_request)
+            return False
+        except ClientUnsuccessfulException as exc:
+            logger.error(
+                "Privacy Request '{}' exited after response from webhook '{}': {}.",
+                privacy_request.id,
+                webhook.key,
+                Pii(str(exc.args[0])),
+            )
+            privacy_request.error_processing(db)
+            privacy_request.cache_failed_checkpoint_details(current_step)
+            return False
+        except PydanticValidationError:
+            logger.error(
+                "Privacy Request '{}' errored due to response validation error from webhook '{}'.",
+                privacy_request.id,
+                webhook.key,
+            )
+            privacy_request.error_processing(db)
+            privacy_request.cache_failed_checkpoint_details(current_step)
+            return False
+
+    return True
