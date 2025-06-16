@@ -1,7 +1,7 @@
 from typing import Any, Optional
 
 from loguru import logger
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import Query, Session, selectinload
 
 from fides.api.models.manual_tasks.manual_task import ManualTask
 from fides.api.models.manual_tasks.manual_task_config import (
@@ -25,7 +25,7 @@ class ManualTaskConfigService:
         """Create standard log data structure."""
         return {"task_id": task_id, "config_id": config_id, "details": details}
 
-    def _get_base_config_query(self):
+    def _get_base_config_query(self) -> Query:
         """Get base config query with field definitions loaded."""
         return self.db.query(ManualTaskConfig).options(
             selectinload(ManualTaskConfig.field_definitions)
