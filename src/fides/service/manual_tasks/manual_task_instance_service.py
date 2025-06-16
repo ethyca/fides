@@ -231,15 +231,10 @@ class ManualTaskInstanceService:
             len(submission.attachments) == 1
             and submission.field.field_type == "attachment"
         ):
-            logger.info(
-                f"Deleting submission {submission.id} for {submission.field.field_key}"
-            )
-            attachment.delete(self.db)
             submission.delete(self.db)
+
+            attachment.delete(self.db)
         else:
-            logger.info(
-                f"Deleting attachment {attachment.id} for submission {submission.id}"
-            )
             attachment.delete(self.db)
 
     @with_task_logging("Completed task instance")

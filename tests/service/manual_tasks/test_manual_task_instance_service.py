@@ -1,4 +1,3 @@
-from datetime import datetime, timezone
 from io import BytesIO
 from typing import Any, Generator
 
@@ -9,26 +8,17 @@ from sqlalchemy.orm import Session
 from fides.api.models.attachment import Attachment, AttachmentReference
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.manual_tasks.manual_task import ManualTask
-from fides.api.models.manual_tasks.manual_task_config import (
-    ManualTaskConfig,
-    ManualTaskConfigField,
-)
+from fides.api.models.manual_tasks.manual_task_config import ManualTaskConfig
 from fides.api.models.manual_tasks.manual_task_instance import (
     ManualTaskInstance,
     ManualTaskSubmission,
 )
-from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskLogStatus
 from fides.api.schemas.manual_tasks.manual_task_status import (
     StatusTransitionNotAllowed,
     StatusType,
 )
 from fides.service.manual_tasks.manual_task_instance_service import (
     ManualTaskInstanceService,
-)
-from tests.service.manual_tasks.conftest import (
-    ATTACHMENT_FIELD_KEY,
-    CHECKBOX_FIELD_KEY,
-    TEXT_FIELD_KEY,
 )
 
 
@@ -61,7 +51,8 @@ def submission_data(
 ) -> dict[str, Any]:
     """Base submission data fixture."""
     field = next(
-        f for f in manual_task_instance.config.field_definitions
+        f
+        for f in manual_task_instance.config.field_definitions
         if f.field_type == field_type
     )
     return {
@@ -109,7 +100,45 @@ def attachment(
         },
     )
     yield attachment
-    attachment.delete(db)
+    try:
+        attachment.delete(db)
+    except Exception as e:
+        pass
+
+
+@pytest.fixture
+def attachment_field_submission_data(
+    manual_task_instance: ManualTaskInstance,
+    respondent_user: FidesUser,
+) -> dict[str, Any]:
+    """Fixture for submission data with attachment field type."""
+    field = next(
+        f
+        for f in manual_task_instance.config.field_definitions
+        if f.field_type == "attachment"
+    )
+    return {
+        "task_id": manual_task_instance.task_id,
+        "config_id": manual_task_instance.config_id,
+        "instance_id": manual_task_instance.id,
+        "field_id": field.id,
+        "submitted_by": respondent_user.id,
+        "data": {
+            "field_key": field.field_key,
+            "field_type": "attachment",
+            "value": None,
+        },
+    }
+
+
+@pytest.fixture
+def attachment_field_submission(
+    db: Session, attachment_field_submission_data: dict[str, Any]
+) -> Generator[ManualTaskSubmission, None, None]:
+    """Fixture for a submission with attachment field type."""
+    submission = ManualTaskSubmission.create(db, data=attachment_field_submission_data)
+    yield submission
+    submission.delete(db)
 
 
 class TestInstanceOperations:
@@ -206,47 +235,121 @@ class TestSubmissionOperations:
 class TestAttachmentOperations:
     """Tests for attachment operations."""
 
-    def test_attachment_deletion(
+    def _create_attachment(
+        self,
+        db: Session,
+        submission_id: str,
+        attachment_data: dict[str, Any],
+        content: bytes = b"test contents",
+    ) -> Attachment:
+        """Helper to create and link an attachment."""
+        attachment = Attachment.create_and_upload(
+            db=db,
+            data=attachment_data,
+            attachment_file=BytesIO(content),
+        )
+        AttachmentReference.create(
+            db=db,
+            data={
+                "attachment_id": attachment.id,
+                "reference_id": submission_id,
+                "reference_type": "manual_task_submission",
+            },
+        )
+        return attachment
+
+    def test_delete_non_last_attachment(
         self,
         manual_task_instance_service: ManualTaskInstanceService,
-        manual_task_submission: ManualTaskSubmission,
-        attachment: Attachment,
+        attachment_field_submission: ManualTaskSubmission,
         attachment_data: dict[str, Any],
     ) -> None:
-        """Test attachment deletion scenarios."""
-        submission_id = manual_task_submission.id
+        """Test deleting a non-last attachment keeps the submission."""
+        # Create two attachments
+        attachment1 = self._create_attachment(
+            manual_task_instance_service.db,
+            attachment_field_submission.id,
+            attachment_data,
+        )
+        attachment2 = self._create_attachment(
+            manual_task_instance_service.db,
+            attachment_field_submission.id,
+            attachment_data,
+        )
 
-        # Test single attachment deletion
+        # Delete first attachment
         manual_task_instance_service.delete_attachment_by_id(
-            submission_id=submission_id,
+            submission_id=attachment_field_submission.id,
+            attachment_id=attachment1.id,
+        )
+
+        # Verify first attachment is deleted but submission remains
+        assert (
+            not manual_task_instance_service.db.query(Attachment)
+            .filter_by(id=attachment1.id)
+            .first()
+        )
+        assert (
+            manual_task_instance_service.db.query(ManualTaskSubmission)
+            .filter_by(id=attachment_field_submission.id)
+            .first()
+        )
+        attachment1.delete(manual_task_instance_service.db)
+        attachment2.delete(manual_task_instance_service.db)
+
+    def test_delete_last_attachment(
+        self,
+        manual_task_instance_service: ManualTaskInstanceService,
+        attachment_field_submission: ManualTaskSubmission,
+        attachment_data: dict[str, Any],
+    ) -> None:
+        """Test deleting the last attachment deletes the submission."""
+        # Create single attachment
+        attachment = self._create_attachment(
+            manual_task_instance_service.db,
+            attachment_field_submission.id,
+            attachment_data,
+        )
+
+        # Delete the attachment
+        manual_task_instance_service.delete_attachment_by_id(
+            submission_id=attachment_field_submission.id,
             attachment_id=attachment.id,
         )
 
-        # Verify attachment is deleted
-        assert not manual_task_instance_service.db.query(Attachment).filter_by(
-            id=attachment.id
-        ).first()
+        # Verify both attachment and submission are deleted
+        assert (
+            not manual_task_instance_service.db.query(Attachment)
+            .filter_by(id=attachment.id)
+            .first()
+        )
+        assert (
+            not manual_task_instance_service.db.query(ManualTaskSubmission)
+            .filter_by(id=attachment_field_submission.id)
+            .first()
+        )
+        attachment.delete(manual_task_instance_service.db)
 
-        # Verify submission is deleted (since it was the only attachment)
-        assert not manual_task_instance_service.db.query(ManualTaskSubmission).filter_by(
-            id=submission_id
-        ).first()
-
-        # Test error cases
+    def test_delete_attachment_error_cases(
+        self,
+        manual_task_instance_service: ManualTaskInstanceService,
+        attachment_field_submission: ManualTaskSubmission,
+    ) -> None:
+        """Test error cases for attachment deletion."""
+        # Test non-existent submission
         with pytest.raises(ValueError, match="Submission with ID None does not exist"):
             manual_task_instance_service.delete_attachment_by_id(
                 submission_id=None,
                 attachment_id="some-id",
             )
 
-        # Create a new submission for testing non-existent attachment
-        new_submission = ManualTaskSubmission.create(
-            manual_task_instance_service.db,
-            data=submission_data(manual_task_submission.instance, None, "attachment"),
-        )
-        with pytest.raises(ValueError, match=f"Attachment some-id not found in submission {new_submission.id}"):
+        # Test non-existent attachment
+        with pytest.raises(
+            ValueError,
+            match=f"Attachment some-id not found in submission {attachment_field_submission.id}",
+        ):
             manual_task_instance_service.delete_attachment_by_id(
-                submission_id=new_submission.id,
+                submission_id=attachment_field_submission.id,
                 attachment_id="some-id",
             )
 
