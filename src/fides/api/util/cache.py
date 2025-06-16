@@ -186,7 +186,9 @@ def _determine_redis_db_index(
         return CONFIG.redis.test_db_index
 
     # 2. Non-test mode
-    return CONFIG.redis.read_only_db_index if read_only else CONFIG.redis.db_index
+    return (
+        CONFIG.redis.read_only_db_index_resolved if read_only else CONFIG.redis.db_index
+    )
 
 
 def get_cache(should_log: Optional[bool] = False) -> FidesopsRedis:
@@ -253,20 +255,21 @@ def get_read_only_cache() -> FidesopsRedis:
             charset=CONFIG.redis.charset,
             decode_responses=CONFIG.redis.decode_responses,
             host=CONFIG.redis.read_only_host,
-            port=CONFIG.redis.read_only_port,
+            port=CONFIG.redis.read_only_port_resolved,
             db=_determine_redis_db_index(read_only=True),
-            username=CONFIG.redis.read_only_user,
-            password=CONFIG.redis.read_only_password,
-            ssl=CONFIG.redis.read_only_ssl,
-            ssl_ca_certs=CONFIG.redis.read_only_ssl_ca_certs,
-            ssl_cert_reqs=CONFIG.redis.read_only_ssl_cert_reqs,
+            username=CONFIG.redis.read_only_user_resolved,
+            password=CONFIG.redis.read_only_password_resolved,
+            ssl=CONFIG.redis.read_only_ssl_resolved,
+            ssl_ca_certs=CONFIG.redis.read_only_ssl_ca_certs_resolved,
+            ssl_cert_reqs=CONFIG.redis.read_only_ssl_cert_reqs_resolved,
         )
         logger.debug("New read-only Redis connection created.")
 
     try:
         connected = _read_only_connection.ping()
         logger.debug("Read-only Redis connection succeeded.")
-    except ConnectionErrorFromRedis:
+    except Exception as e:
+        logger.error(f"Error connecting to read-only Redis: {e}")
         connected = False
 
     if not connected:
