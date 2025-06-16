@@ -11,7 +11,10 @@ import { DatastoreConnectionStatus } from "src/features/datastore-connections/ty
 import { useFeatures } from "~/features/common/features";
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { FormFieldFromSchema } from "~/features/common/form/FormFieldFromSchema";
-import { useFormFieldsFromSchema } from "~/features/common/form/useFormFieldsFromSchema";
+import {
+  FIDES_DATASET_REFERENCE,
+  useFormFieldsFromSchema,
+} from "~/features/common/form/useFormFieldsFromSchema";
 import DisableConnectionModal from "~/features/datastore-connections/DisableConnectionModal";
 import {
   ConnectionConfigurationResponse,
@@ -23,8 +26,6 @@ import {
 import DeleteConnectionModal from "../DeleteConnectionModal";
 import { ConnectionConfigFormValues } from "../types";
 import { fillInDefaults } from "./helpers";
-
-const FIDES_DATASET_REFERENCE = "#/definitions/FidesDatasetReference";
 
 export interface TestConnectionResponse {
   data?: DatastoreConnectionStatus;
