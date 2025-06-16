@@ -38,7 +38,17 @@ class ManualTaskConfigService:
         version: int,
         is_current: bool = True,
     ) -> ManualTaskConfig:
-        """Create a new config version."""
+        """Create a new config version. This is a helper method that creates a new config
+        version and sets it as the current version.
+
+        Args:
+            task: The task to create the config for
+            config_type: The type of config to create
+            version: The version number of the config
+            is_current: Whether the config is the current version
+        Returns:
+            The new config
+        """
         try:
             ManualTaskConfigurationType(config_type)
         except ValueError:
@@ -69,7 +79,20 @@ class ManualTaskConfigService:
         fields_to_remove: Optional[list[str]] = None,
         previous_config: Optional[ManualTaskConfig] = None,
     ) -> set[str]:
-        """Handle field updates, removals, and recreation from previous version."""
+        """Handle field updates, removals, and recreation from previous version. This is a helper
+        function that:
+        - Creates new fields from field_updates
+        - Recreates unmodified fields from previous version so they will remain in the config
+        - Removes fields that are no longer in the config
+
+        Args:
+            config: The config to update
+            field_updates: The fields to update
+            fields_to_remove: The fields to remove
+            previous_config: The previous config
+        Returns:
+            The modified keys
+        """
         modified_keys = set(fields_to_remove or [])
 
         if field_updates:
@@ -103,7 +126,6 @@ class ManualTaskConfigService:
             ]
             if unmodified:
                 self.db.bulk_insert_mappings(ManualTaskConfigField, unmodified)
-                previous_config.is_current = False
 
         self.db.flush()
         return modified_keys
@@ -173,7 +195,18 @@ class ManualTaskConfigService:
         field_key: str,
         version: int,
     ) -> Optional[ManualTaskConfig]:
-        """Get config by various filters."""
+        """Get config by various filters. This is a flexible lookup method that can find configs based on various filters.
+
+        Args:
+            task: The task to get the config for
+            config_type: The type of config to get
+            field_id: The ID of a field in the config
+            config_id: The ID of the config
+            field_key: The key of a field in the config
+            version: The version number of the config
+        Returns:
+            The matching config if found, None otherwise
+        """
         if not any([task, config_id, field_id, config_type]):
             logger.debug("No filters provided to get_config")
             return None
@@ -206,7 +239,20 @@ class ManualTaskConfigService:
         fields_to_remove: Optional[list[str]] = None,
         previous_config: Optional[ManualTaskConfig] = None,
     ) -> tuple[ManualTaskConfig, dict[str, Any]]:
-        """Create new version of configuration."""
+        """Create new version of configuration.
+
+        Args:
+            task: The task to create the config for
+            config_type: The type of config to create
+            field_updates: The fields to update
+            fields_to_remove: The fields to remove
+            previous_config: The previous config
+
+        Returns:
+            Tuple containing the new config and log data, the log data is
+            captured by the with_task_logging decorator. and the new config is
+            returned to the caller.
+        """
         new_config = self._create_config_version(
             task, config_type, (previous_config.version + 1 if previous_config else 1)
         )
@@ -230,7 +276,18 @@ class ManualTaskConfigService:
     def add_fields(
         self, task: ManualTask, config_type: str, fields: list[dict[str, Any]]
     ) -> tuple[ManualTaskConfig, dict[str, Any]]:
-        """Add fields to configuration."""
+        """Add fields to configuration.
+
+        Args:
+            task: The task to add the fields to
+            config_type: The type of config to add the fields to
+            fields: The fields to add
+
+        Returns:
+            Tuple containing the new config and log data, the log data is
+            captured by the with_task_logging decorator. and the new config is
+            returned to the caller.
+        """
         current = self.get_current_config(task, config_type)
         self.create_new_version(task, config_type, fields, previous_config=current)
         new_config = self.get_current_config(task, config_type)
@@ -251,7 +308,18 @@ class ManualTaskConfigService:
     def remove_fields(
         self, task: ManualTask, config_type: str, field_keys: list[str]
     ) -> tuple[ManualTaskConfig, dict[str, Any]]:
-        """Remove fields from configuration."""
+        """Remove fields from configuration.
+
+        Args:
+            task: The task to remove the fields from
+            config_type: The type of config to remove the fields from
+            field_keys: The keys of the fields to remove
+
+        Returns:
+            Tuple containing the new config and log data, the log data is
+            captured by the with_task_logging decorator. and the new config is
+            returned to the caller.
+        """
         current = self.get_current_config(task, config_type)
         self.create_new_version(
             task, config_type, fields_to_remove=field_keys, previous_config=current
@@ -274,7 +342,17 @@ class ManualTaskConfigService:
     def delete_config(
         self, task: ManualTask, config_id: str
     ) -> tuple[ManualTaskConfig, dict[str, Any]]:
-        """Delete config for task."""
+        """Delete config for task.
+
+        Args:
+            task: The task to delete the config for
+            config_id: The ID of the config to delete
+
+        Returns:
+            Tuple containing the deleted config and log data, the log data is
+            captured by the with_task_logging decorator. and the deleted config is
+            returned to the caller.
+        """
         config = self.db.query(ManualTaskConfig).filter_by(id=config_id).first()
         if not config:
             raise ValueError(f"Config with ID {config_id} not found")

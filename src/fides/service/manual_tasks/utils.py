@@ -114,10 +114,15 @@ class TaskLogger:
     def _log_error(self, service_self: Any, error: Exception, kwargs: dict) -> None:
         """Log operation error."""
         logger.error(f"Error in {self.operation_name}: {str(error)}")
-        if hasattr(service_self, "db"):
+        if hasattr(service_self, "db") and (task_id := self._get_task_id({}, kwargs)):
             ManualTaskLog.create_log(
                 db=service_self.db,
-                **self._get_log_data({}, kwargs),
+                task_id=task_id,
+                **{
+                    k: v
+                    for k, v in self._get_log_data({}, kwargs).items()
+                    if k != "task_id"
+                },
                 status=ManualTaskLogStatus.error,
                 message=f"Error in {self.operation_name}: {str(error)}",
             )
