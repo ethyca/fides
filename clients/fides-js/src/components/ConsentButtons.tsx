@@ -47,6 +47,7 @@ export const ConsentButtons = ({
   const [isLoadingModal, setIsLoadingModal] = useState<boolean>(false);
   const { i18n } = useI18n();
   const isMobile = useMediaQuery("(max-width: 768px)");
+  const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
   const includeLanguageSelector = i18n.availableLanguages?.length > 1;
   const includePrivacyPolicyLink =
     messageExists(i18n, "exp.privacy_policy_link_label") &&
@@ -121,6 +122,8 @@ export const ConsentButtons = ({
             availableLocales={availableLocales}
             options={options}
             isTCF={!!isTCF}
+            isOpen={isLanguageMenuOpen}
+            onToggle={setIsLanguageMenuOpen}
           />
         )}
         {!isTCF && !!onManagePreferencesClick && (

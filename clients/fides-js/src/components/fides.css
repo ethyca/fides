@@ -1046,13 +1046,15 @@ div#fides-overlay-wrapper .fides-i18n-pseudo-button {
   position: absolute;
   left: 0;
   bottom: 100%;
-  height: 0px;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
   gap: 1px;
   max-height: calc(var(--fides-base-font-size) * 7);
-  transition: height 0.5s;
+  min-width: calc(var(--fides-base-font-size) * 9);
+  border: 1px solid var(--fides-overlay-primary-color);
+  background-color: var(--fides-overlay-background-dark-color);
+  border-radius: var(--fides-overlay-component-border-radius);
+  overflow: scroll;
 }
 
 .fides-i18n-menu:hover .fides-i18n-pseudo-button {
@@ -1061,16 +1063,6 @@ div#fides-overlay-wrapper .fides-i18n-pseudo-button {
 }
 .fides-i18n-menu:hover .fides-i18n-pseudo-button .fides-i18n-caret {
   transform: rotate(180deg);
-}
-
-.fides-i18n-menu:hover .fides-i18n-popover,
-.fides-i18n-menu:focus-within .fides-i18n-popover {
-  min-width: calc(var(--fides-base-font-size) * 9);
-  height: auto;
-  border: 1px solid var(--fides-overlay-primary-color);
-  background-color: var(--fides-overlay-background-dark-color);
-  border-radius: var(--fides-overlay-component-border-radius);
-  overflow: scroll;
 }
 
 button.fides-banner-button.fides-menu-item {
