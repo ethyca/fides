@@ -15,23 +15,14 @@ from fides.api.schemas.manual_tasks.manual_task_schemas import (
 from fides.service.manual_tasks.manual_task_config_service import (
     ManualTaskConfigService,
 )
-from fides.service.manual_tasks.manual_task_instance_service import (
-    ManualTaskInstanceService,
-)
 from fides.service.manual_tasks.utils import with_task_logging
 
-if TYPE_CHECKING:
-    from fides.api.models.manual_tasks.manual_task_instance import (
-        ManualTaskInstance,
-        ManualTaskSubmission,
-    )
 
 
 class ManualTaskService:
     def __init__(self, db: Session):
         self.db = db
         self.config_service = ManualTaskConfigService(db)
-        self.instance_service = ManualTaskInstanceService(db)
 
     def get_task(
         self,
@@ -289,41 +280,3 @@ class ManualTaskService:
         # Delete the configuration
         config_id = config.id
         self.config_service.delete_config(task, config_id)
-
-    def create_instance(
-        self, task_id: str, config_id: str, entity_id: str, entity_type: str
-    ) -> "ManualTaskInstance":
-        """Create a new instance for a task.
-
-        Args:
-            task_id: The task ID
-            config_id: The config ID
-            entity_id: The entity ID
-            entity_type: The entity type
-
-        Returns:
-            ManualTaskInstance: The new instance
-        """
-        self.get_task(task_id=task_id)
-        instance = self.instance_service.create_instance(
-            task_id, config_id, entity_id, entity_type
-        )
-        return cast("ManualTaskInstance", instance)
-
-    def create_submission(
-        self, instance_id: str, field_id: str, data: dict[str, Any]
-    ) -> "ManualTaskSubmission":
-        """Create a new submission for a task.
-
-        Args:
-            instance_id: The instance ID
-            field_id: The field ID
-            data: The data for the submission
-
-        Returns:
-            ManualTaskSubmission: The new submission
-        """
-        submission = self.instance_service.create_submission(
-            instance_id, field_id, data
-        )
-        return cast("ManualTaskSubmission", submission)
