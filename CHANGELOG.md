@@ -32,6 +32,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Fixed
 - Added missing "Awaiting email send" status to privacy request statuses [#6218](https://github.com/ethyca/fides/pull/6218)
 - Fixed FidesJS AMD module loading conflicts when RequireJS or other AMD loaders are present [#6210](https://github.com/ethyca/fides/pull/6210)
+- Fixed the system integration form formatting dataset references incorrectly [#6225](https://github.com/ethyca/fides/pull/6225)
 
 ## [2.63.2](https://github.com/ethyca/fides/compare/2.63.1...2.63.2)
 
