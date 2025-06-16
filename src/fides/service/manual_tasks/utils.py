@@ -7,10 +7,7 @@ from pydantic import ValidationError
 from fides.api.models.manual_tasks.manual_task_log import ManualTaskLog
 from fides.api.schemas.manual_tasks.manual_task_config import ManualTaskFieldBase
 from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskLogStatus
-from fides.api.schemas.manual_tasks.manual_task_status import (
-    StatusTransitionNotAllowed,
-    StatusType,
-)
+from fides.api.schemas.manual_tasks.manual_task_status import StatusType
 
 T = TypeVar("T")
 
@@ -112,64 +109,51 @@ class TaskLogger:
         """Create log data from result or kwargs."""
         log_data = {}
 
-        # Try to extract IDs from result object
-        if hasattr(result, "task_id"):
-            log_data["task_id"] = result.task_id
-        if hasattr(result, "config_id"):
-            log_data["config_id"] = result.config_id
-        if hasattr(result, "instance_id"):  # Only set instance_id if explicitly present
-            log_data["instance_id"] = result.instance_id
-
-        # Fallback to kwargs if needed
-        log_data["task_id"] = log_data.get("task_id") or kwargs.get("task_id")
-        log_data["config_id"] = log_data.get("config_id") or kwargs.get("config_id")
-        log_data["instance_id"] = log_data.get("instance_id") or kwargs.get(
-            "instance_id"
-        )
+        # Handle all ID fields uniformly
+        id_fields = ["task_id", "config_id", "instance_id"]
+        for field in id_fields:
+            # Get from result if available, otherwise from kwargs
+            log_data[field] = getattr(result, field, None) or kwargs.get(field)
 
         # Add any additional details
         log_data["details"] = kwargs.get("details", {})
 
         return log_data
 
+    def _create_base_log_data(self, data: dict) -> dict:
+        """Extract common log data from input dictionary."""
+        return {
+            "task_id": data.get("task_id"),
+            "config_id": data.get("config_id"),
+            "instance_id": data.get("instance_id"),
+            "details": data.get("details", {})
+        }
+
     def _log_success(self, service_self: Any, log_data: dict) -> None:
         """Log successful operation execution."""
-        if not hasattr(service_self, "db"):
-            return
-
-        task_id = log_data.get("task_id")
-        if not task_id:
+        if not hasattr(service_self, "db") or not log_data.get("task_id"):
             return
 
         ManualTaskLog.create_log(
             db=service_self.db,
-            task_id=task_id,
-            config_id=log_data.get("config_id"),
-            instance_id=log_data.get("instance_id"),
+            **self._create_base_log_data(log_data),
             status=self.success_status,
             message=self.operation_name,
-            details=log_data.get("details", {}),
         )
 
     def _log_error(self, service_self: Any, error: Exception, kwargs: dict) -> None:
         """Log operation error."""
         logger.error(f"Error in {self.operation_name}: {str(error)}")
         logger.error(f"Error details: {kwargs.get('details', {})}")
-        if not hasattr(service_self, "db"):
-            return
 
-        task_id = kwargs.get("task_id")
-        if not task_id:
+        if not hasattr(service_self, "db") or not kwargs.get("task_id"):
             return
 
         ManualTaskLog.create_log(
             db=service_self.db,
-            task_id=task_id,
-            config_id=kwargs.get("config_id"),
-            instance_id=kwargs.get("instance_id"),
+            **self._create_base_log_data(kwargs),
             status=ManualTaskLogStatus.error,
             message=f"Error in {self.operation_name}: {str(error)}",
-            details=kwargs.get("details", {}),
         )
 
     @staticmethod
@@ -229,23 +213,23 @@ class TaskLogger:
             status: Status to use for the log entry (defaults to created)
         """
         # Map entity type to the appropriate ID field
-        id_mapping = {
+        id_fields = {
             "task": {"task_id": task_id},
             "config": {"task_id": task_id, "config_id": entity_id},
             "instance": {"task_id": task_id, "instance_id": entity_id},
             "submission": {"task_id": task_id, "instance_id": entity_id},
         }
 
-        if entity_type not in id_mapping:
+        if entity_type not in id_fields:
             raise ValueError(f"Invalid entity type: {entity_type}")
 
         log_details = details or {}
-        if user_id:
+        if user_id is not None:
             log_details["user_id"] = user_id
 
         ManualTaskLog.create_log(
             db=db,
-            **id_mapping[entity_type],
+            **id_fields[entity_type],
             status=status,
             message=f"Created new {entity_type}",
             details=log_details,
