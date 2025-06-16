@@ -133,6 +133,4 @@ const LanguageSelector = ({
   );
 };
 
-LanguageSelector.displayName = "LanguageSelector";
-
 export default LanguageSelector;
