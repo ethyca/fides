@@ -92,7 +92,7 @@ describe("Consent FidesEvents", () => {
           detail: {
             extraDetails: {
               servingComponent: "banner",
-              trigger: { origin: "fides" },
+              trigger: { origin: "fides" }, // automatically opened by fides-js
             },
           },
         },
@@ -215,7 +215,12 @@ describe("Consent FidesEvents", () => {
       cy.get("#fides-modal-link").click();
       expectedEvents.push({
         type: "FidesUIShown",
-        detail: { extraDetails: { servingComponent: "modal" } },
+        detail: {
+          extraDetails: {
+            servingComponent: "modal",
+            trigger: { origin: "external" },
+          },
+        },
       });
 
       // Click opt-out button to reject all notices
@@ -293,6 +298,49 @@ describe("Consent FidesEvents", () => {
                 label: "Opt in to all",
                 origin: "fides",
               },
+            },
+          },
+        },
+      );
+
+      // Open modal from Fides.showModal()
+      cy.window().then((win) => {
+        win.Fides.showModal();
+      });
+      expectedEvents.push({
+        type: "FidesUIShown",
+        detail: {
+          extraDetails: {
+            servingComponent: "modal",
+            trigger: { origin: "external" },
+          },
+        },
+      });
+
+      // Update preferences from Fides.updateConsent()
+      cy.window().then(async (win) => {
+        await win.Fides.updateConsent({
+          consent: {
+            analytics_opt_out: false,
+          },
+        });
+      });
+      expectedEvents.push(
+        {
+          type: "FidesUpdating",
+          detail: {
+            extraDetails: {
+              consentMethod: "script",
+              trigger: { origin: "external" },
+            },
+          },
+        },
+        {
+          type: "FidesUpdated",
+          detail: {
+            extraDetails: {
+              consentMethod: "script",
+              trigger: { origin: "external" },
             },
           },
         },
