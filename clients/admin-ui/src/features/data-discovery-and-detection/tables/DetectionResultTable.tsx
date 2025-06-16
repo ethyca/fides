@@ -7,7 +7,7 @@ import {
   getGroupedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Box, Flex, Text, VStack } from "fidesui";
+import { AntTabs, Box, Flex, Text, VStack } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
@@ -18,10 +18,11 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
-import DetectionResultFilterTabs from "~/features/data-discovery-and-detection/DetectionResultFilterTabs";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import useDetectionResultColumns from "~/features/data-discovery-and-detection/hooks/useDetectionResultColumns";
-import useDetectionResultFilterTabs from "~/features/data-discovery-and-detection/hooks/useDetectionResultsFilterTabs";
+import useDetectionResultFilterTabs, {
+  DetectionResultFilterTabs,
+} from "~/features/data-discovery-and-detection/hooks/useDetectionResultsFilterTabs";
 import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/useDiscoveryRoutes";
 import IconLegendTooltip from "~/features/data-discovery-and-detection/IndicatorLegend";
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
@@ -67,7 +68,9 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
 
-  const initialActiveTabKey = router.asPath.split("#")[1] as string;
+  const initialActiveTabKey = router.asPath.split(
+    "#",
+  )[1] as DetectionResultFilterTabs;
 
   const {
     filterTabs,
@@ -79,9 +82,6 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
   } = useDetectionResultFilterTabs({
     initialActiveTabKey,
   });
-
-  console.log(filterTabs);
-  console.log(activeTabKey);
 
   const {
     PAGE_SIZES,
@@ -171,13 +171,13 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
 
   return (
     <>
-      <DetectionResultFilterTabs
-        filterTabs={filterTabs.map((tab) => ({
-          label: tab.label,
+      <AntTabs
+        items={filterTabs.map((tab) => ({
           key: tab.key,
+          label: tab.label,
         }))}
-        activeTabKey={activeTabKey}
-        onChange={onTabChange}
+        activeKey={activeTabKey}
+        onChange={(tab) => onTabChange(tab as DetectionResultFilterTabs)}
       />
       <TableActionBar>
         <Flex

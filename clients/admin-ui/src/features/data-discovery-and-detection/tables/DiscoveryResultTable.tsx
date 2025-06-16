@@ -8,7 +8,7 @@ import {
   RowSelectionState,
   useReactTable,
 } from "@tanstack/react-table";
-import { Box, Flex, Text, VStack } from "fidesui";
+import { AntTabs, Box, Flex, Text, VStack } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
@@ -19,10 +19,11 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
-import DetectionResultFilterTabs from "~/features/data-discovery-and-detection/DetectionResultFilterTabs";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import useDiscoveryResultColumns from "~/features/data-discovery-and-detection/hooks/useDiscoveryResultColumns";
-import useDiscoveryResultsFilterTabs from "~/features/data-discovery-and-detection/hooks/useDiscoveryResultsFilterTabs";
+import useDiscoveryResultsFilterTabs, {
+  DiscoveryResultFilterTabs,
+} from "~/features/data-discovery-and-detection/hooks/useDiscoveryResultsFilterTabs";
 import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/useDiscoveryRoutes";
 import IconLegendTooltip from "~/features/data-discovery-and-detection/IndicatorLegend";
 import DiscoveryFieldBulkActions from "~/features/data-discovery-and-detection/tables/DiscoveryFieldBulkActions";
@@ -74,7 +75,9 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
 
-  const initialActiveTabKey = router.asPath.split("#")[1] as string;
+  const initialActiveTabKey = router.asPath.split(
+    "#",
+  )[1] as DiscoveryResultFilterTabs;
 
   const {
     filterTabs,
@@ -179,10 +182,13 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
 
   return (
     <>
-      <DetectionResultFilterTabs
-        filterTabs={filterTabs}
-        activeTabKey={activeTabKey}
-        onChange={onTabChange}
+      <AntTabs
+        items={filterTabs.map((tab) => ({
+          key: tab.key,
+          label: tab.label,
+        }))}
+        activeKey={activeTabKey}
+        onChange={(tab) => onTabChange(tab as DiscoveryResultFilterTabs)}
       />
       <TableActionBar>
         <Flex gap={6} align="center">
