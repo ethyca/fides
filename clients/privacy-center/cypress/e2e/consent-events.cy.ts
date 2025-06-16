@@ -256,7 +256,12 @@ describe("Consent FidesEvents", () => {
       cy.get("#fides-modal-link").click();
       expectedEvents.push({
         type: "FidesUIShown",
-        detail: { extraDetails: { servingComponent: "modal" } },
+        detail: {
+          extraDetails: {
+            servingComponent: "modal",
+            trigger: { origin: "external" },
+          },
+        },
       });
 
       // Click opt-in button to accept all notices

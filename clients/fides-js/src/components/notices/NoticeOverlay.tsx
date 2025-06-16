@@ -305,10 +305,17 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     dispatchFidesEventAndClearTrigger("FidesUIShown", cookie);
   }, [cookie, dispatchFidesEventAndClearTrigger, setServingComponent]);
 
-  const dispatchOpenOverlayEvent = useCallback(() => {
-    setServingComponent(ServingComponent.MODAL);
-    dispatchFidesEventAndClearTrigger("FidesUIShown", cookie);
-  }, [cookie, dispatchFidesEventAndClearTrigger, setServingComponent]);
+  const dispatchOpenOverlayEvent = useCallback(
+    (origin?: string) => {
+      setServingComponent(ServingComponent.MODAL);
+      dispatchFidesEventAndClearTrigger("FidesUIShown", cookie, {
+        trigger: {
+          origin,
+        },
+      });
+    },
+    [cookie, dispatchFidesEventAndClearTrigger, setServingComponent],
+  );
 
   const handleDismiss = useCallback(() => {
     if (!consentCookieObjHasSomeConsentSet(parsedCookie?.consent)) {

@@ -38,7 +38,7 @@ interface Props {
   experience: PrivacyExperience | PrivacyExperienceMinimal;
   cookie: FidesCookie;
   savedConsent: NoticeConsent;
-  onOpen: () => void;
+  onOpen: (origin?: string) => void;
   onDismiss: () => void;
   renderBanner: (props: RenderBannerProps) => VNode | null;
   renderModalContent?: () => VNode | null;
@@ -122,15 +122,18 @@ const Overlay: FunctionComponent<Props> = ({
     },
   });
 
-  const handleOpenModal = useCallback(() => {
-    if (options.fidesEmbed) {
-      setBannerIsOpen(false);
-    } else if (instance) {
-      setBannerIsOpen(false);
-      instance.show();
-      onOpen();
-    }
-  }, [instance, onOpen, options]);
+  const handleOpenModal = useCallback(
+    (origin = "fides") => {
+      if (options.fidesEmbed) {
+        setBannerIsOpen(false);
+      } else if (instance) {
+        setBannerIsOpen(false);
+        instance.show();
+        onOpen(origin);
+      }
+    },
+    [instance, onOpen, options],
+  );
 
   const handleCloseModalAfterSave = useCallback(() => {
     if (instance && !options.fidesEmbed) {
@@ -157,7 +160,9 @@ const Overlay: FunctionComponent<Props> = ({
 
   useEffect(() => {
     if (!!experience && !options.fidesEmbed) {
-      window.Fides.showModal = handleOpenModal;
+      window.Fides.showModal = () => {
+        handleOpenModal("external");
+      };
     }
     return () => {
       window.Fides.showModal = defaultShowModal;
