@@ -3,10 +3,7 @@ import { Fragment, h } from "preact";
 import { useMemo, useState } from "preact/hooks";
 
 import { PrivacyExperience } from "../../lib/consent-types";
-import {
-  FidesEventDetailsPreference,
-  FidesEventDetailsTrigger,
-} from "../../lib/events";
+import { FidesEventDetailsPreference } from "../../lib/events";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { LEGAL_BASIS_OPTIONS } from "../../lib/tcf/constants";
 import {
@@ -254,11 +251,7 @@ const PagedVendorData = ({
   experience: PrivacyExperience;
   vendors: VendorRecord[];
   enabledIds: string[];
-  onChange: (
-    newIds: string[],
-    vendor: VendorRecord,
-    triggerDetails: FidesEventDetailsTrigger,
-  ) => void;
+  onChange: (newIds: string[], vendor: VendorRecord) => void;
 }) => {
   const { i18n } = useI18n();
   const { activeChunk, ...paging } = usePaging(vendors);

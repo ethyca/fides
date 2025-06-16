@@ -99,7 +99,8 @@ export const TcfOverlay = ({
     setCurrentLocale,
     setIsLoading: setIsI18nLoading,
   } = useI18n();
-  const { triggerRef, setTrigger } = useEvent();
+  const { triggerRef, setTrigger, dispatchFidesEventAndClearTrigger } =
+    useEvent();
   const parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
   const minExperienceLocale =
     experienceMinimal?.experience_config?.translations?.[0]?.language;
@@ -521,10 +522,10 @@ export const TcfOverlay = ({
   }, [cookie]);
 
   const dispatchOpenOverlayEvent = useCallback(() => {
-    dispatchFidesEvent("FidesUIShown", cookie, {
+    dispatchFidesEventAndClearTrigger("FidesUIShown", cookie, {
       servingComponent: ServingComponent.TCF_OVERLAY,
     });
-  }, [cookie]);
+  }, [cookie, dispatchFidesEventAndClearTrigger]);
 
   const handleDismiss = useCallback(() => {
     if (!consentCookieObjHasSomeConsentSet(parsedCookie?.consent)) {
