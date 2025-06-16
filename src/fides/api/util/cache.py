@@ -174,6 +174,7 @@ def _determine_redis_db_index(
        - If *not* running under xdist, always use DB 1.
 
     2. Non-test mode: return the value already present in `CONFIG.redis.db_index`
+    (or CONFIG.redis.read_only_db_index` if read_only is True)
     """
 
     # 1. Test mode logic
@@ -254,11 +255,7 @@ def get_read_only_cache() -> FidesopsRedis:
             decode_responses=CONFIG.redis.decode_responses,
             host=CONFIG.redis.read_only_host,
             port=CONFIG.redis.read_only_port,
-            db=(
-                CONFIG.redis.test_db_index
-                if CONFIG.test_mode
-                else CONFIG.redis.read_only_db_index
-            ),
+            db=_determine_redis_db_index(read_only=True),
             username=CONFIG.redis.read_only_user,
             password=CONFIG.redis.read_only_password,
             ssl=CONFIG.redis.read_only_ssl,
@@ -266,16 +263,20 @@ def get_read_only_cache() -> FidesopsRedis:
             ssl_cert_reqs=CONFIG.redis.read_only_ssl_cert_reqs,
         )
 
-        try:
-            # Test the connection by attempting to ping the Redis server
-            _read_only_connection.ping()
-            logger.debug("Read-only Redis connection established successfully.")
-        except Exception as e:
-            logger.warning(
-                f"Failed to connect to read-only Redis: {e}. Falling back to regular cache."
-            )
-            # If we can't connect to the read-only cache, fall back to the regular cache
-            return get_cache()
+    try:
+        # Test the connection by attempting to ping the Redis server
+        connected = _read_only_connection.ping()
+        logger.debug("Read-only Redis connection established successfully.")
+    except Exception as e:
+        logger.error(f"Failed to connect to read-only Redis: {e}")
+        connected = False
+
+    if not connected:
+        logger.error(
+            "Unable to establish read-only Redis connection. Returning writeable cache connection instead."
+        )
+        # If we can't connect to the read-only cache, fall back to the regular cache
+        return get_cache()
 
     return _read_only_connection
 
