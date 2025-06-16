@@ -45,9 +45,9 @@ export const ConsentButtons = ({
   isGVLLoading,
 }: ConsentButtonProps) => {
   const [isLoadingModal, setIsLoadingModal] = useState<boolean>(false);
+  const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
   const { i18n } = useI18n();
   const isMobile = useMediaQuery("(max-width: 768px)");
-  const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
   const includeLanguageSelector = i18n.availableLanguages?.length > 1;
   const includePrivacyPolicyLink =
     messageExists(i18n, "exp.privacy_policy_link_label") &&
@@ -119,6 +119,7 @@ export const ConsentButtons = ({
       >
         {includeLanguageSelector && (
           <LanguageSelector
+            id={isInModal ? "fides-i18n-menu-modal" : "fides-i18n-menu-banner"}
             availableLocales={availableLocales}
             options={options}
             isTCF={!!isTCF}

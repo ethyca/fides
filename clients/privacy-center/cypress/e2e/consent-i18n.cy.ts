@@ -695,6 +695,11 @@ describe("Consent i18n", () => {
           fixture: "experience_banner_modal.json",
           queryParams: { fides_locale: SPANISH_LOCALE },
         });
+        cy.get("#fides-banner").should("be.visible");
+        cy.get("#fides-i18n-menu-banner .fides-i18n-pseudo-button").click();
+        cy.get(
+          `#fides-i18n-menu-banner [data-testid="fides-i18n-option-${SPANISH_LOCALE}"]`,
+        ).click();
         testBannerLanguageMenu(SPANISH_LOCALE);
         testBannerLocalization(SPANISH_BANNER);
         openAndTestModalLocalization(SPANISH_MODAL);
@@ -711,10 +716,10 @@ describe("Consent i18n", () => {
           fixture: "experience_banner_modal.json",
         });
         cy.get("#fides-banner").should("be.visible");
+        cy.get("#fides-i18n-menu-banner .fides-i18n-pseudo-button").click();
         cy.get(
-          `#fides-banner [data-testid='fides-i18n-option-${SPANISH_LOCALE}']`,
-        ).focus();
-        cy.get(`.fides-i18n-menu`).focused().click();
+          `#fides-i18n-menu-banner [data-testid="fides-i18n-option-${SPANISH_LOCALE}"]`,
+        ).click();
         testBannerLanguageMenu(SPANISH_LOCALE);
         testBannerLocalization(SPANISH_BANNER);
         openAndTestModalLocalization(SPANISH_MODAL);
@@ -729,10 +734,10 @@ describe("Consent i18n", () => {
           queryParams: { fides_locale: SPANISH_LOCALE },
         });
         cy.get("#fides-banner").should("be.visible");
+        cy.get("#fides-i18n-menu-banner .fides-i18n-pseudo-button").click();
         cy.get(
-          `#fides-banner [data-testid='fides-i18n-option-${ENGLISH_LOCALE}']`,
-        ).focus();
-        cy.get(`.fides-i18n-menu`).focused().click();
+          `#fides-i18n-menu-banner [data-testid="fides-i18n-option-${ENGLISH_LOCALE}"]`,
+        ).click();
         testBannerLanguageMenu(ENGLISH_LOCALE);
         testBannerLocalization(ENGLISH_BANNER);
         openAndTestModalLocalization(ENGLISH_MODAL);
@@ -1513,10 +1518,10 @@ describe("Consent i18n", () => {
           options: { tcfEnabled: true },
         });
         cy.get("#fides-banner").should("be.visible");
+        cy.get("#fides-i18n-menu-banner .fides-i18n-pseudo-button").click();
         cy.get(
-          `#fides-banner [data-testid='fides-i18n-option-${SPANISH_LOCALE}']`,
-        ).focus();
-        cy.get(`.fides-i18n-menu`).focused().click();
+          `#fides-i18n-menu-banner [data-testid="fides-i18n-option-${SPANISH_LOCALE}"]`,
+        ).click();
         cy.wait("@getGvlTranslations").then((interception) => {
           const { url } = interception.request;
           expect(url.split("?")[1]).to.eq(`language=${SPANISH_LOCALE}`);

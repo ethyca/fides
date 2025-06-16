@@ -19,6 +19,7 @@ interface LanguageSelectorProps {
   isTCF?: boolean;
   isOpen: boolean;
   onToggle: (isOpen: boolean) => void;
+  id?: string;
 }
 
 const LanguageSelector = ({
@@ -27,6 +28,7 @@ const LanguageSelector = ({
   isTCF,
   isOpen,
   onToggle,
+  id,
 }: LanguageSelectorProps) => {
   const { i18n, currentLocale, setCurrentLocale, setIsLoading } = useI18n();
   const contextGvl = useContext(GVLContext);
@@ -76,6 +78,7 @@ const LanguageSelector = ({
 
   return (
     <div
+      id={id}
       className={`fides-i18n-menu ${isOpen ? "fides-i18n-menu-open" : ""}`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -129,5 +132,7 @@ const LanguageSelector = ({
     </div>
   );
 };
+
+LanguageSelector.displayName = "LanguageSelector";
 
 export default LanguageSelector;
