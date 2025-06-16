@@ -76,30 +76,26 @@ const LanguageSelector = ({
 
   return (
     <div
-      className="fides-i18n-menu"
+      className={`fides-i18n-menu ${isOpen ? "fides-i18n-menu-open" : ""}`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      {isOpen ? (
-        <div role="group" className="fides-i18n-popover">
-          {i18n.availableLanguages.map((lang) => (
-            <MenuItem
-              key={lang.locale}
-              data-testid={`fides-i18n-option-${lang.locale}`}
-              id={
-                currentLocale === lang.locale
-                  ? "fidesActiveMenuItem"
-                  : undefined
-              }
-              onClick={() => handleLocaleSelect(lang.locale)}
-              isActive={currentLocale === lang.locale}
-              title={lang.label_en}
-            >
-              {lang.label_original}
-            </MenuItem>
-          ))}
-        </div>
-      ) : null}
+      <div role="group" className="fides-i18n-popover">
+        {i18n.availableLanguages.map((lang) => (
+          <MenuItem
+            key={lang.locale}
+            data-testid={`fides-i18n-option-${lang.locale}`}
+            id={
+              currentLocale === lang.locale ? "fidesActiveMenuItem" : undefined
+            }
+            onClick={() => handleLocaleSelect(lang.locale)}
+            isActive={currentLocale === lang.locale}
+            title={lang.label_en}
+          >
+            {lang.label_original}
+          </MenuItem>
+        ))}
+      </div>
       <div
         className="fides-i18n-pseudo-button"
         onClick={handleToggle}

@@ -1046,6 +1046,7 @@ div#fides-overlay-wrapper .fides-i18n-pseudo-button {
   position: absolute;
   left: 0;
   bottom: 100%;
+  visibility: hidden;
   display: flex;
   flex-direction: column;
   gap: 1px;
@@ -1055,6 +1056,10 @@ div#fides-overlay-wrapper .fides-i18n-pseudo-button {
   background-color: var(--fides-overlay-background-dark-color);
   border-radius: var(--fides-overlay-component-border-radius);
   overflow: scroll;
+}
+
+.fides-i18n-menu-open .fides-i18n-popover {
+  visibility: visible;
 }
 
 .fides-i18n-menu:hover .fides-i18n-pseudo-button {
