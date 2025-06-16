@@ -239,14 +239,14 @@ class TestGetReadOnlyCache:
             MockRedis.assert_called_once_with(
                 charset=enable_read_only_cache_with_fallbacks.redis.charset,
                 decode_responses=enable_read_only_cache_with_fallbacks.redis.decode_responses,
-                host=enable_read_only_cache_with_fallbacks.redis.read_only_host,  # This was set explicitly
-                port=enable_read_only_cache_with_fallbacks.redis.read_only_port_resolved,  # Fallback to writer port
+                host=enable_read_only_cache_with_fallbacks.redis.read_only_host,  # This was set explicitly to "test-read-only-host"
+                port=enable_read_only_cache_with_fallbacks.redis.port,  # Fallback to writer port (default 6379)
                 db=1,  # test_db_index in test mode
-                username=enable_read_only_cache_with_fallbacks.redis.read_only_user_resolved,  # Fallback to writer user we set in fixture
-                password=enable_read_only_cache_with_fallbacks.redis.read_only_password_resolved,  # Fallback to writer password we set in fixture
-                ssl=enable_read_only_cache_with_fallbacks.redis.read_only_ssl_resolved,  # Fallback to writer ssl
-                ssl_ca_certs=enable_read_only_cache_with_fallbacks.redis.read_only_ssl_ca_certs_resolved,  # Fallback to writer ssl_ca_certs
-                ssl_cert_reqs=enable_read_only_cache_with_fallbacks.redis.read_only_ssl_cert_reqs_resolved,  # Fallback to writer ssl_cert_reqs
+                username="test-writer-user",  # Fallback to writer user we set in fixture
+                password="test-writer-password",  # Fallback to writer password we set in fixture
+                ssl=enable_read_only_cache_with_fallbacks.redis.ssl,  # Fallback to writer ssl (default False)
+                ssl_ca_certs=enable_read_only_cache_with_fallbacks.redis.ssl_ca_certs,  # Fallback to writer ssl_ca_certs (default "")
+                ssl_cert_reqs=enable_read_only_cache_with_fallbacks.redis.ssl_cert_reqs,  # Fallback to writer ssl_cert_reqs (default "required")
             )
 
             # Should ping to test connection
