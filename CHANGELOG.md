@@ -27,6 +27,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Changed
 - Integrations detail page now includes a setup guide component. [#6096](https://github.com/ethyca/fides/pull/6096)
+- Minor improvements to Redis read-only connections [#6227](https://github.com/ethyca/fides/pull/6227)
 
 ### Fixed
 - Added missing "Awaiting email send" status to privacy request statuses [#6218](https://github.com/ethyca/fides/pull/6218)
