@@ -1,3 +1,5 @@
+import { cloneDeep } from "lodash";
+
 import {
   ConnectionTypeSecretSchemaProperty,
   ConnectionTypeSecretSchemaResponse,
@@ -47,16 +49,16 @@ export const useFormFieldsFromSchema = (
   };
 
   const preprocessValues = (values: Record<string, any>) => {
-    const updatedValues = { ...values };
+    const updatedValues = cloneDeep(values);
     if (secretsSchema) {
       Object.keys(secretsSchema.properties).forEach((key) => {
         if (
           secretsSchema.properties[key].allOf?.[0].$ref ===
           FIDES_DATASET_REFERENCE
         ) {
-          const referencePath = updatedValues[key]?.split(".");
+          const referencePath = updatedValues.secrets[key]?.split(".");
           if (referencePath) {
-            updatedValues[key] = {
+            updatedValues.secrets[key] = {
               dataset: referencePath.shift(),
               field: referencePath.join("."),
               direction: "from",

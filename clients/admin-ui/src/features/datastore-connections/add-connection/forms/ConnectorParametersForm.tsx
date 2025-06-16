@@ -25,6 +25,7 @@ import { Field, FieldInputProps, Form, Formik, FormikProps } from "formik";
 import React, { useEffect, useRef } from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import { FIDES_DATASET_REFERENCE } from "~/features/common/form/useFormFieldsFromSchema";
 import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { ConnectionType } from "~/types/api";
 
@@ -33,8 +34,6 @@ import {
   SaasConnectorParametersFormFields,
 } from "../types";
 import { fillInDefaults } from "./helpers";
-
-const FIDES_DATASET_REFERENCE = "#/definitions/FidesDatasetReference";
 
 type ConnectorParametersFormProps = {
   data: ConnectionTypeSecretSchemaResponse;
