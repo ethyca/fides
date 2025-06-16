@@ -227,12 +227,14 @@ class ManualTaskInstanceService:
             )
 
         # Delete attachment and optionally submission
-        attachment.delete(self.db)
         if (
             len(submission.attachments) == 1
             and submission.field.field_type == "attachment"
         ):
+            attachment.delete(self.db)
             submission.delete(self.db)
+        else:
+            attachment.delete(self.db)
 
     @with_task_logging("Completed task instance")
     def complete_task_instance(

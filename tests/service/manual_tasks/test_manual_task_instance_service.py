@@ -80,33 +80,6 @@ def manual_task_submission(
 
 
 @pytest.fixture
-def attachment(
-    db: Session,
-    manual_task_submission: ManualTaskSubmission,
-    attachment_data: dict[str, Any],
-) -> Generator[Attachment, None, None]:
-    """Fixture for a file attachment."""
-    attachment = Attachment.create_and_upload(
-        db=db,
-        data=attachment_data,
-        attachment_file=BytesIO(b"test contents"),
-    )
-    AttachmentReference.create(
-        db=db,
-        data={
-            "attachment_id": attachment.id,
-            "reference_id": manual_task_submission.id,
-            "reference_type": "manual_task_submission",
-        },
-    )
-    yield attachment
-    try:
-        attachment.delete(db)
-    except Exception as e:
-        pass
-
-
-@pytest.fixture
 def attachment_field_submission_data(
     manual_task_instance: ManualTaskInstance,
     respondent_user: FidesUser,
@@ -270,19 +243,19 @@ class TestAttachmentOperations:
         attachment1 = self._add_attachment(
             db, attachment_field_submission, attachment_data
         )
-        attachment2 = self._add_attachment(db, attachment_field_submission, attachment_data)
+        attachment2 = self._add_attachment(
+            db, attachment_field_submission, attachment_data
+        )
+        assert len(attachment_field_submission.attachments) == 2
 
         manual_task_instance_service.delete_attachment_by_id(
             submission_id=attachment_field_submission.id,
             attachment_id=attachment1.id,
         )
         assert not db.query(Attachment).filter_by(id=attachment1.id).first()
-        assert db.query(ManualTaskSubmission).get(attachment_field_submission.id)
+        assert len(attachment_field_submission.attachments) == 1
 
         # Scenario 2: Delete last attachment
-        attachment3 = self._add_attachment(
-            db, attachment_field_submission, attachment_data
-        )
         manual_task_instance_service.delete_attachment_by_id(
             submission_id=attachment_field_submission.id,
             attachment_id=attachment2.id,
@@ -290,23 +263,24 @@ class TestAttachmentOperations:
         assert not db.query(Attachment).filter_by(id=attachment2.id).first()
         assert not db.query(ManualTaskSubmission).get(attachment_field_submission.id)
 
-        # Scenario 3: Error cases
+
+    def test_delete_attachment_by_id_error_cases(
+        self,
+        manual_task_instance_service: ManualTaskInstanceService,
+        attachment_field_submission: ManualTaskSubmission,
+        attachment_data: dict[str, Any],
+    ) -> None:
+        """Test error cases for delete_attachment_by_id."""
         with pytest.raises(ValueError, match="Submission with ID None does not exist"):
             manual_task_instance_service.delete_attachment_by_id(None, "some-id")
 
-        new_submission = ManualTaskSubmission.create(
-            db, data=attachment_field_submission_data
-        )
         with pytest.raises(
             ValueError,
-            match=f"Attachment some-id not found in submission {new_submission.id}",
+            match=f"Attachment some-id not found in submission {attachment_field_submission.id}",
         ):
             manual_task_instance_service.delete_attachment_by_id(
-                new_submission.id, "some-id"
+                attachment_field_submission.id, "some-id"
             )
-        attachment1.delete(db)
-        attachment2.delete(db)
-        attachment3.delete(db)
 
 
 class TestTaskCompletion:
