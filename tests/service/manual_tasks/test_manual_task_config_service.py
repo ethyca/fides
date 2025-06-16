@@ -76,8 +76,7 @@ class TestManualTaskConfigCreation(TestManualTaskConfigServiceBase):
             task=manual_task,
             config_type=self.config_type,
             field_updates=self.fields,
-        )["config']
-
+        )
 
         # Verify
         assert config is not None
@@ -139,7 +138,7 @@ class TestManualTaskConfigCreation(TestManualTaskConfigServiceBase):
             field_updates=self.fields,
         )
         previous_config = (
-            db.query(ManualTaskConfig).filter_by(id=initial_config["config_id"]).first()
+            db.query(ManualTaskConfig).filter_by(id=initial_config.id).first()
         )
 
         # Execute - create new version with modified fields
@@ -161,9 +160,7 @@ class TestManualTaskConfigCreation(TestManualTaskConfigServiceBase):
             previous_config=previous_config,
         )
 
-        new_config = (
-            db.query(ManualTaskConfig).filter_by(id=new_config["config_id"]).first()
-        )
+        new_config = db.query(ManualTaskConfig).filter_by(id=new_config.id).first()
         # Verify
         assert new_config is not None
         assert new_config.config_type == self.config_type
@@ -390,7 +387,7 @@ class TestManualTaskConfigRetrieval(TestManualTaskConfigServiceBase):
 
         # Verify
         assert current_config is not None
-        assert current_config.id == config["config_id"]
+        assert current_config.id == config.id
         assert current_config.version == 1
         assert current_config.is_current is True
 
@@ -413,14 +410,14 @@ class TestManualTaskConfigRetrieval(TestManualTaskConfigServiceBase):
             task=manual_task,
             config_type=self.config_type,
             field_id=None,
-            config_id=config["config_id"],
+            config_id=config.id,
             field_key=None,
             version=None,
         )
 
         # Verify
         assert found_config is not None
-        assert found_config.id == config["config_id"]
+        assert found_config.id == config.id
         assert found_config.version == 1
         assert found_config.is_current is True
 
@@ -450,7 +447,7 @@ class TestManualTaskConfigRetrieval(TestManualTaskConfigServiceBase):
 
         # Verify
         assert found_config is not None
-        assert found_config.id == config["config_id"]
+        assert found_config.id == config.id
         assert found_config.version == 1
         assert found_config.is_current is True
 
@@ -480,7 +477,7 @@ class TestManualTaskConfigRetrieval(TestManualTaskConfigServiceBase):
 
         # Verify
         assert found_config is not None
-        assert found_config.id == config["config_id"]
+        assert found_config.id == config.id
         assert any(
             field.field_key == TEXT_FIELD_KEY
             for field in found_config.field_definitions
@@ -527,7 +524,7 @@ class TestManualTaskConfigVersioning(TestManualTaskConfigServiceBase):
             config_type=self.config_type,
             field_updates=self.fields,
             previous_config=db.query(ManualTaskConfig)
-            .filter_by(id=version1["config_id"])
+            .filter_by(id=version1.id)
             .first(),
         )
 
@@ -537,7 +534,7 @@ class TestManualTaskConfigVersioning(TestManualTaskConfigServiceBase):
             config_type=self.config_type,
             field_updates=self.fields,
             previous_config=db.query(ManualTaskConfig)
-            .filter_by(id=version2["config_id"])
+            .filter_by(id=version2.id)
             .first(),
         )
 
@@ -572,9 +569,7 @@ class TestManualTaskConfigFieldUpdates(TestManualTaskConfigServiceBase):
             field_updates=self.fields,
         )
         initial_config = (
-            db.query(ManualTaskConfig)
-            .filter_by(id=initial_config_result["config_id"])
-            .first()
+            db.query(ManualTaskConfig).filter_by(id=initial_config_result.id).first()
         )
 
         # Update field type to checkbox
@@ -598,9 +593,7 @@ class TestManualTaskConfigFieldUpdates(TestManualTaskConfigServiceBase):
         )
 
         new_config = (
-            db.query(ManualTaskConfig)
-            .filter_by(id=new_config_result["config_id"])
-            .first()
+            db.query(ManualTaskConfig).filter_by(id=new_config_result.id).first()
         )
 
         # Verify field type was updated
@@ -625,9 +618,7 @@ class TestManualTaskConfigFieldUpdates(TestManualTaskConfigServiceBase):
             field_updates=self.fields,
         )
         initial_config = (
-            db.query(ManualTaskConfig)
-            .filter_by(id=initial_config_result["config_id"])
-            .first()
+            db.query(ManualTaskConfig).filter_by(id=initial_config_result.id).first()
         )
 
         # Try to update non-existent field
@@ -651,9 +642,7 @@ class TestManualTaskConfigFieldUpdates(TestManualTaskConfigServiceBase):
         )
 
         new_config = (
-            db.query(ManualTaskConfig)
-            .filter_by(id=new_config_result["config_id"])
-            .first()
+            db.query(ManualTaskConfig).filter_by(id=new_config_result.id).first()
         )
 
         # Verify original fields remain unchanged
@@ -723,7 +712,7 @@ class TestManualTaskConfigFieldManagement(TestManualTaskConfigServiceBase):
             "field_key": TEXT_FIELD_KEY,
             "field_type": ManualTaskFieldType.text,
             "field_metadata": {
-                "label": "Text Field",n
+                "label": "Text Field",
                 "required": True,
             },
         }
@@ -802,7 +791,7 @@ class TestManualTaskConfigFieldManagement(TestManualTaskConfigServiceBase):
             task=manual_task,
             config_type=self.config_type,
             field_updates=self.fields,
-        )["config"]
+        )
 
         # Execute - remove text_field using explicit removal
         new_config = manual_task_config_service.create_new_version(
@@ -810,7 +799,7 @@ class TestManualTaskConfigFieldManagement(TestManualTaskConfigServiceBase):
             config_type=self.config_type,
             fields_to_remove=[TEXT_FIELD_KEY],
             previous_config=initial_config,
-        )["config"]
+        )
 
         # Verify
         assert new_config is not None
@@ -861,16 +850,13 @@ class TestManualTaskConfigDeletion(TestManualTaskConfigServiceBase):
             config_type=self.config_type,
             field_updates=self.fields,
         )
-        assert response["config"] is not None
+        assert response is not None
 
         # Execute
-        manual_task_config_service.delete_config(manual_task, response["config_id"])
+        manual_task_config_service.delete_config(manual_task, response.id)
 
         # Verify
-        assert (
-            db.query(ManualTaskConfig).filter_by(id=response["config_id"]).first()
-            is None
-        )
+        assert db.query(ManualTaskConfig).filter_by(id=response.id).first() is None
 
     def test_delete_config_not_found(
         self,
@@ -898,7 +884,7 @@ class TestManualTaskConfigResponseConversion(TestManualTaskConfigServiceBase):
             task=manual_task,
             config_type=self.config_type,
             field_updates=self.fields,
-        )["config"]
+        )
 
         # Convert to response
         response = manual_task_config_service.to_response(config)

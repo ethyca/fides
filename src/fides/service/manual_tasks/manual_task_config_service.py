@@ -1,8 +1,7 @@
 from typing import Any, Optional
 
 from loguru import logger
-from pydantic import ValidationError
-from sqlalchemy import and_, func, select, update
+from sqlalchemy import and_, func, update
 from sqlalchemy.orm import Session, selectinload
 
 from fides.api.models.manual_tasks.manual_task import ManualTask
@@ -13,9 +12,8 @@ from fides.api.models.manual_tasks.manual_task_config import (
 from fides.api.schemas.manual_tasks.manual_task_config import (
     ManualTaskConfigResponse,
     ManualTaskConfigurationType,
-    ManualTaskFieldBase,
 )
-from fides.service.manual_tasks.utils import validate_fields, with_error_logging
+from fides.service.manual_tasks.utils import validate_fields, with_task_logging
 
 
 class ManualTaskConfigService:
@@ -32,14 +30,14 @@ class ManualTaskConfigService:
         Returns:
             A list of fields in the format expected by ManualTaskConfigResponse
         """
-        fields = []
-        for field in config.field_definitions:
-            field_data = {
+        fields = [
+            {
                 "field_key": field.field_key,
                 "field_type": field.field_type,
                 "field_metadata": field.field_metadata,
             }
-            fields.append(field_data)
+            for field in config.field_definitions
+        ]
         return fields
 
     def _get_response_data(self, config: ManualTaskConfig) -> dict[str, Any]:
@@ -185,7 +183,7 @@ class ManualTaskConfigService:
         """
         config = (
             self.db.query(ManualTaskConfig)
-            .options(selectinload(ManualTaskConfig.field_definitions))n
+            .options(selectinload(ManualTaskConfig.field_definitions))
             .filter(
                 ManualTaskConfig.task_id == task.id,
                 ManualTaskConfig.config_type == config_type,
@@ -288,7 +286,7 @@ class ManualTaskConfigService:
 
         return result
 
-    @with_error_logging("Creating new configuration version")
+    @with_task_logging("Creating new configuration version")
     def create_new_version(
         self,
         task: ManualTask,
@@ -296,7 +294,7 @@ class ManualTaskConfigService:
         field_updates: Optional[list[dict[str, Any]]] = None,
         fields_to_remove: Optional[list[str]] = None,
         previous_config: Optional[ManualTaskConfig] = None,
-    ) -> dict[str, Any]:
+    ) -> tuple[ManualTaskConfig, dict[str, Any]]:
         """Create a new version of the configuration.
 
         Args:
@@ -305,6 +303,10 @@ class ManualTaskConfigService:
             field_updates: Fields to add or update
             fields_to_remove: Field keys to remove
             previous_config: The previous config version, if any
+
+        Returns:
+            tuple(ManualTaskConfig, log_details) The log_details are intercepted by the
+            `with_task_logging` decorator. The config is returned to allow for chaining.
         """
         fields_to_remove = fields_to_remove or []
         field_updates = field_updates or []
@@ -320,7 +322,7 @@ class ManualTaskConfigService:
 
         # Update all existing configs to not be current
         self.db.execute(
-            update(ManualTaskConfig)
+            update(ManualTaskConfig)  # type: ignore[arg-type]
             .where(
                 and_(
                     ManualTaskConfig.task_id == task.id,
@@ -343,7 +345,7 @@ class ManualTaskConfigService:
         )
 
         # Track modified field keys
-        modified_field_keys = set()
+        modified_field_keys: set[str] = set()
 
         # Handle field updates
         if field_updates:
@@ -364,7 +366,7 @@ class ManualTaskConfigService:
 
         self.db.flush()
 
-        return {
+        return new_config, {
             "task_id": task.id,
             "config_id": new_config.id,
             "details": {
@@ -373,19 +375,22 @@ class ManualTaskConfigService:
                 "added_field_keys": [field.get("field_key") for field in field_updates],
                 "removed_field_keys": fields_to_remove,
             },
-            "config": new_config,
         }
 
-    @with_error_logging("Adding fields to configuration")
+    @with_task_logging("Adding fields to configuration")
     def add_fields(
         self, task: ManualTask, config_type: str, fields: list[dict[str, Any]]
-    ) -> dict[str, Any]:
+    ) -> tuple[ManualTaskConfig, dict[str, Any]]:
         """Add fields to a configuration.
 
         Args:
             task: The task to add fields to
             config_type: The type of config to add fields to
             fields: The fields to add
+
+        Returns:
+            tuple(ManualTaskConfig, log_details) The log_details are intercepted by the
+            `with_task_logging` decorator. The config is returned to allow for chaining.
         """
         validate_fields(fields, is_submission=False)
         current_config = self.get_current_config(task, config_type)
@@ -402,7 +407,7 @@ class ManualTaskConfigService:
         )
         new_config = self.get_current_config(task, config_type)
 
-        return {
+        return new_config, {
             "task_id": task.id,
             "config_id": current_config.id,
             "details": {
@@ -412,19 +417,22 @@ class ManualTaskConfigService:
                 "new_config_id": new_config.id,
                 "new_config_version": new_config.version,
             },
-            "config": new_config,
         }
 
-    @with_error_logging("Removing fields from configuration")
+    @with_task_logging("Removing fields from configuration")
     def remove_fields(
         self, task: ManualTask, config_type: str, field_keys: list[str]
-    ) -> dict[str, Any]:
+    ) -> tuple[ManualTaskConfig, dict[str, Any]]:
         """Remove fields from a configuration.
 
         Args:
             task: The task to remove fields from
             config_type: The type of config to remove fields from
             field_keys: The keys of the fields to remove
+
+        Returns:
+            tuple(ManualTaskConfig, log_details) The log_details are intercepted by the
+            `with_task_logging` decorator. The config is returned to allow for chaining.
         """
         current_config = self.get_current_config(task, config_type)
         if not current_config:
@@ -446,7 +454,7 @@ class ManualTaskConfigService:
         )
         new_config = self.get_current_config(task, config_type)
 
-        return {
+        return new_config, {
             "task_id": task.id,
             "config_id": config.id,
             "details": {
@@ -456,11 +464,12 @@ class ManualTaskConfigService:
                 "new_config_id": new_config.id,
                 "new_config_version": new_config.version,
             },
-            "config": new_config,
         }
 
-    @with_error_logging("Deleting Manual Task configuration")
-    def delete_config(self, task: ManualTask, config_id: str) -> None:
+    @with_task_logging("Deleting Manual Task configuration")
+    def delete_config(
+        self, task: ManualTask, config_id: str
+    ) -> tuple[ManualTaskConfig, dict[str, Any]]:
         """Delete a config for a task.
 
         Args:
@@ -469,6 +478,10 @@ class ManualTaskConfigService:
 
         Raises:
             ValueError: If there are active instances using this config
+
+        Returns:
+            tuple(ManualTaskConfig, log_details) The log_details are intercepted by the
+            `with_task_logging` decorator. The config is returned to allow for chaining.
         """
         config = (
             self.db.query(ManualTaskConfig)
@@ -479,7 +492,7 @@ class ManualTaskConfigService:
             raise ValueError(f"Config with ID {config_id} not found")
 
         # Prepare result before deleting the config
-        result = {
+        log_details = {
             "task_id": task.id,
             "config_id": None,
             "details": {
@@ -492,4 +505,4 @@ class ManualTaskConfigService:
         # Delete after preparing result
         config.delete(self.db)
 
-        return result
+        return config, log_details

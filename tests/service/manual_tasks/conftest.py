@@ -140,7 +140,7 @@ def manual_task_config(
         config_type=CONFIG_TYPE,
         field_updates=FIELDS,
     )
-    config = db.query(ManualTaskConfig).filter_by(id=config["config_id"]).first()
+    config = db.query(ManualTaskConfig).filter_by(id=config.id).first()
     yield config
     config.delete(db)
 

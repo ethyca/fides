@@ -1,5 +1,4 @@
 from typing import TYPE_CHECKING, Any, Optional, cast
-from typing import TYPE_CHECKING, Any, Optional
 
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB

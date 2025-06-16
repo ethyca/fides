@@ -4,7 +4,10 @@ from sqlalchemy.orm import Session
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.manual_tasks.manual_task import ManualTask, ManualTaskReference
-from fides.api.models.manual_tasks.manual_task_config import ManualTaskConfig
+from fides.api.models.manual_tasks.manual_task_config import (
+    ManualTaskConfig,
+    ManualTaskConfigField,
+)
 from fides.api.models.manual_tasks.manual_task_log import (
     ManualTaskLog,
     ManualTaskLogStatus,
@@ -152,7 +155,8 @@ class TestGetTask:
         manual_task: ManualTask,
         manual_task_service: ManualTaskService,
     ):
-        assert manual_task_service.get_task() is None
+        with pytest.raises(ValueError, match="No filters provided to get_task"):
+            manual_task_service.get_task()
 
     def test_get_task_invalid_id(
         self,
@@ -160,7 +164,10 @@ class TestGetTask:
         manual_task: ManualTask,
         manual_task_service: ManualTaskService,
     ):
-        assert manual_task_service.get_task(task_id="invalid-id") is None
+        with pytest.raises(
+            ValueError, match=r"No task found with filters: \['task_id=invalid-id'\]"
+        ):
+            manual_task_service.get_task(task_id="invalid-id")
 
     def test_get_task_invalid_parent_entity_type(
         self,
@@ -168,13 +175,14 @@ class TestGetTask:
         manual_task: ManualTask,
         manual_task_service: ManualTaskService,
     ):
-        assert (
+        with pytest.raises(
+            ValueError,
+            match=r"No task found with filters: \['parent_entity_id=test-parent-id', 'parent_entity_type=invalid_type'\]",
+        ):
             manual_task_service.get_task(
                 parent_entity_id="test-parent-id",
                 parent_entity_type="invalid_type",
             )
-            is None
-        )
 
     def test_get_task_invalid_task_type(
         self,
@@ -182,7 +190,11 @@ class TestGetTask:
         manual_task: ManualTask,
         manual_task_service: ManualTaskService,
     ):
-        assert manual_task_service.get_task(task_type="invalid_type") is None
+        with pytest.raises(
+            ValueError,
+            match=r"No task found with filters: \['task_type=invalid_type'\]",
+        ):
+            manual_task_service.get_task(task_type="invalid_type")
 
 
 class TestAssignUsersToTask:
@@ -234,7 +246,11 @@ class TestAssignUsersToTask:
             log for log in logs if log.status == ManualTaskLogStatus.complete
         )
         assert success_log.message == "Assign users to task"
-        assert success_log.details == {"assigned_users": [respondent_user.id]}
+        assert success_log.details["assigned_users"] == [respondent_user.id]
+        assert sorted(success_log.details["user_ids_not_assigned"]) == [
+            "user1",
+            "user2",
+        ]
 
         # Verify the successful assignment happened
         assert (
@@ -452,7 +468,10 @@ class TestUnassignUsersFromTask:
         unassign_log = next(
             log for log in manual_task.logs if log.message == "Unassign users from task"
         )
-        assert unassign_log.details == {"unassigned_users": [respondent_user.id]}
+        assert unassign_log.details == {
+            "unassigned_users": [respondent_user.id],
+            "user_ids_not_unassigned": ["user3"],
+        }
 
     def test_unassign_users_from_task_empty_list(
         self,
@@ -608,20 +627,17 @@ class TestManualTaskConfig:
         # We expect logs from both service layers:
         # From ManualTaskConfigService:
         # 1. "Creating new configuration version"
-        # 2. "Deleting Manual Task configuration"
+        # 2. "Created manual task configuration for access_privacy_request"
+        # 3. "Deleting Manual Task configuration"
         # Plus initial task creation:
-        # 3. "Created manual task configuration for access_privacy_request"
-        # 5. "Created manual task for privacy_request"
+        # 4. "Created manual task for privacy_request"
         assert len(logs) == 4
-
-        # Verify the most recent logs first (delete operations)
-        delete_logs = logs[:1]  # The two most recent logs
 
         # Verify delete logs
         assert any(
             log.message == "Deleting Manual Task configuration"
             and log.status == ManualTaskLogStatus.complete
-            for log in delete_logs
+            for log in logs
         )
 
         # Verify create logs
@@ -642,3 +658,107 @@ class TestManualTaskConfig:
         for log in logs:
             assert log.task_id == manual_task.id
             assert log.instance_id is None  # Ensure no instance_id is set
+
+
+class TestManualTaskInstance:
+    """Tests for instance and submission-related methods."""
+
+    def test_create_instance_success(
+        self,
+        db: Session,
+        manual_task: ManualTask,
+        manual_task_config: ManualTaskConfig,
+        manual_task_service: ManualTaskService,
+    ):
+        """Test successful instance creation."""
+        # Execute
+        instance = manual_task_service.create_instance(
+            task_id=manual_task.id,
+            config_id=manual_task_config.id,
+            entity_id="test-entity-id",
+            entity_type="test-entity-type",
+        )
+
+        # Verify
+        assert instance is not None
+        assert instance.task_id == manual_task.id
+        assert instance.config_id == manual_task_config.id
+        assert instance.entity_id == "test-entity-id"
+        assert instance.entity_type == "test-entity-type"
+
+        # Verify logs were created
+        logs = [log for log in manual_task.logs if "instance" in log.message.lower()]
+        assert any(log.message == "Created task instance" for log in logs)
+        create_log = next(log for log in logs if log.message == "Created task instance")
+        assert create_log.instance_id == instance.id
+
+    def test_create_instance_invalid_task(
+        self,
+        db: Session,
+        manual_task_config: ManualTaskConfig,
+        manual_task_service: ManualTaskService,
+    ):
+        """Test instance creation with invalid task ID."""
+        with pytest.raises(
+            ValueError,
+            match=r"No task found with filters: \['task_id=invalid-task-id'\]",
+        ):
+            manual_task_service.create_instance(
+                task_id="invalid-task-id",
+                config_id=manual_task_config.id,
+                entity_id="test-entity-id",
+                entity_type="test-entity-type",
+            )
+
+    def test_create_submission_success(
+        self,
+        db: Session,
+        manual_task: ManualTask,
+        manual_task_config: ManualTaskConfig,
+        manual_task_service: ManualTaskService,
+        manual_task_config_field_text: ManualTaskConfigField,
+    ):
+        """Test successful submission creation."""
+        # Create instance first
+        instance = manual_task_service.create_instance(
+            task_id=manual_task.id,
+            config_id=manual_task_config.id,
+            entity_id="test-entity-id",
+            entity_type="test-entity-type",
+        )
+
+        # Execute - create submission
+        submission_data = {"value": "test value"}
+        submission = manual_task_service.create_submission(
+            instance_id=instance.id,
+            field_id=manual_task_config_field_text.id,
+            data=submission_data,
+        )
+
+        # Verify
+        assert submission is not None
+        assert submission.instance_id == instance.id
+        assert submission.field_id == manual_task_config_field_text.id
+        assert submission.data == submission_data
+
+        # Verify logs were created
+        logs = [log for log in manual_task.logs if "submission" in log.message.lower()]
+        assert any(log.message == "Created new submission" for log in logs)
+        create_log = next(
+            log for log in logs if log.message == "Created new submission"
+        )
+        assert create_log.instance_id == instance.id
+
+    def test_create_submission_invalid(
+        self,
+        db: Session,
+        manual_task_config_field_text: ManualTaskConfigField,
+        manual_task_service: ManualTaskService,
+    ):
+        """Test submission creation with invalid instance ID."""
+        with pytest.raises(ValueError):
+            manual_task_service.create_submission(
+                instance_id="invalid-instance-id",
+                field_id=manual_task_config_field_text.id,
+                data={"value": "test value"},
+            )

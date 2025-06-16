@@ -156,7 +156,9 @@ class ManualTaskFieldBase(FidesSchema):
 
     model_config = ConfigDict(extra="allow")
 
-    field_key: Annotated[str, Field(description="Unique key for the field")]
+    field_key: Annotated[
+        str, Field(description="Unique key for the field", min_length=1)
+    ]
     field_type: Annotated[ManualTaskFieldType, Field(description="Type of the field")]
     field_metadata: Annotated[
         ManualTaskFieldMetadata, Field(description="Field metadata and configuration")

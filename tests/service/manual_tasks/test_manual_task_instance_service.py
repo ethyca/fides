@@ -231,8 +231,6 @@ class TestInstanceCreationAndStatus:
     ) -> None:
         """Test updating instance status."""
         manual_task_instance_service.update_status(
-            task_id=manual_task_instance.task_id,
-            config_id=manual_task_instance.config_id,
             instance_id=manual_task_instance.id,
             new_status=StatusType.in_progress,
             user_id="test_user",
@@ -267,8 +265,6 @@ class TestInstanceCreationAndStatus:
         # Try to move back to in_progress
         with pytest.raises(StatusTransitionNotAllowed):
             manual_task_instance_service.update_status(
-                task_id=manual_task_instance.task_id,
-                config_id=manual_task_instance.config_id,
                 instance_id=manual_task_instance.id,
                 new_status=StatusType.in_progress,
                 user_id="test_user",
@@ -285,15 +281,13 @@ class TestInstanceCreationAndStatus:
 
         with pytest.raises(StatusTransitionNotAllowed):
             manual_task_instance_service.update_status(
-                task_id=manual_task_instance.task_id,
-                config_id=manual_task_instance.config_id,
                 instance_id=manual_task_instance.id,
                 new_status=StatusType.pending,  # Already pending
                 user_id="test_user",
             )
 
         # Verify no new logs were created since status didn't change
-        assert len(manual_task_instance.logs) == initial_log_count + 1
+        assert len(manual_task_instance.logs) == initial_log_count
 
 
 class TestSubmissions:
@@ -314,10 +308,10 @@ class TestSubmissions:
         }
 
         submission = manual_task_instance_service.create_submission(
-            instance=manual_task_instance,
-            field=manual_task_config_field_text,
+            instance_id=manual_task_instance.id,
+            field_id=manual_task_config_field_text.id,
             data=data,
-        )["submission"]
+        )
 
         assert submission.instance_id == manual_task_instance.id
         assert submission.field_id == manual_task_config_field_text.id
@@ -356,10 +350,10 @@ class TestSubmissions:
             "value": "initial value",
         }
         submission = manual_task_instance_service.create_submission(
-            instance=manual_task_instance,
-            field=manual_task_config_field_text,
+            instance_id=manual_task_instance.id,
+            field_id=manual_task_config_field_text.id,
             data=initial_data,
-        )["submission"]
+        )
 
         # Then update it
         updated_data = {
@@ -373,8 +367,8 @@ class TestSubmissions:
         }
 
         updated_submission = manual_task_instance_service.update_submission(
-            instance=manual_task_instance,
-            submission=submission,
+            instance_id=manual_task_instance.id,
+            submission_id=submission.id,
             data=updated_data,
         )
 
@@ -383,93 +377,7 @@ class TestSubmissions:
         # Verify log was created
         log = manual_task_instance.logs[-1]
         assert log.status == ManualTaskLogStatus.complete
-        assert "Updated task instance status from submissions" in log.message
-
-    def test_create_or_update_submission_new(
-        self,
-        db: Session,
-        manual_task_instance_service: ManualTaskInstanceService,
-        manual_task_instance: ManualTaskInstance,
-        manual_task_config_field_text,
-    ) -> None:
-        """Test create_or_update_submission when submission doesn't exist."""
-        data = {
-            "field_key": manual_task_config_field_text.field_key,
-            "field_type": manual_task_config_field_text.field_type,
-            "value": "test value",
-        }
-
-        submission = manual_task_instance_service.create_or_update_submission(
-            instance_id=manual_task_instance.id,
-            field_id=manual_task_config_field_text.id,
-            data=data,
-        )["submission"]
-
-        assert submission.task_id == manual_task_instance.task_id
-        assert submission.config_id == manual_task_instance.config_id
-        assert submission.instance_id == manual_task_instance.id
-        assert submission.field_id == manual_task_config_field_text.id
-        assert submission.data == data
-
-    def test_create_or_update_submission_existing(
-        self,
-        db: Session,
-        manual_task_instance_service: ManualTaskInstanceService,
-        manual_task_instance: ManualTaskInstance,
-        manual_task_config_field_text: ManualTaskConfigField,
-    ) -> None:
-        """Test create_or_update_submission when submission exists."""
-        # First create a submission
-        initial_data = {
-            "field_key": manual_task_config_field_text.field_key,
-            "field_type": manual_task_config_field_text.field_type,
-            "value": "initial value",
-        }
-        manual_task_instance_service.create_submission(
-            instance=manual_task_instance,
-            field=manual_task_config_field_text,
-            data=initial_data,
-        )
-
-        # Then update it using create_or_update
-        updated_data = {
-            "field_key": manual_task_config_field_text.field_key,
-            "field_type": manual_task_config_field_text.field_type,
-            "value": "updated value",
-            "submitted_by": "test_user",
-            "task_id": manual_task_instance.task_id,
-            "config_id": manual_task_instance.config_id,
-            "instance_id": manual_task_instance.id,
-        }
-
-        submission = manual_task_instance_service.create_or_update_submission(
-            instance_id=manual_task_instance.id,
-            field_id=manual_task_config_field_text.id,
-            data=updated_data,
-        )
-
-        assert submission.data == updated_data
-
-    def test_create_or_update_submission_invalid_data(
-        self,
-        db: Session,
-        manual_task_instance_service: ManualTaskInstanceService,
-        manual_task_instance: ManualTaskInstance,
-        manual_task_config_field_text: ManualTaskConfigField,
-    ) -> None:
-        """Test create_or_update_submission with invalid data."""
-        invalid_data = {
-            "field_key": manual_task_config_field_text.field_key,
-            "field_type": manual_task_config_field_text.field_type,
-            # Missing required 'value' field
-        }
-
-        with pytest.raises(ValueError):
-            manual_task_instance_service.create_or_update_submission(
-                instance_id=manual_task_instance.id,
-                field_id=manual_task_config_field_text.id,
-                data=invalid_data,
-            )
+        assert "Updated task submission" in log.message
 
     def test_get_submission_for_field_not_found(
         self,
@@ -506,8 +414,6 @@ class TestAttachments:
 
         # Delete the attachment
         manual_task_instance_service.delete_attachment_by_id(
-            instance_id=manual_task_instance.id,
-            field_id=field.id,
             submission_id=manual_task_submission_attachment.id,
             attachment_id=attachment.id,
         )
@@ -555,9 +461,7 @@ class TestAttachments:
 
         # Delete one attachment
         manual_task_instance_service.delete_attachment_by_id(
-            instance_id=manual_task_instance.id,
-            field_id=field.id,
-            submission_id=None,
+            submission_id=manual_task_submission_attachment.id,
             attachment_id=attachment.id,
         )
 
@@ -575,7 +479,12 @@ class TestAttachments:
 
         attachment2.delete(db)
 
-    @pytest.mark.usefixtures("s3_client", "mock_s3_client")
+    @pytest.mark.usefixtures(
+        "s3_client",
+        "mock_s3_client",
+        "manual_task_submission_checkbox",
+        "manual_task_submission_text",
+    )
     def test_delete_attachment_by_id_completed_instance(
         self,
         db: Session,
@@ -592,38 +501,18 @@ class TestAttachments:
             if field.field_key == ATTACHMENT_FIELD_KEY
         )
 
-        # Submit all required fields
-        for field in manual_task_instance.config.field_definitions:
-            if field.field_metadata.get("required"):
-                data = {
-                    "field_key": field.field_key,
-                    "field_type": field.field_type,
-                    "value": "test value" if field.field_type != "checkbox" else True,
-                    "task_id": manual_task_instance.task_id,
-                    "config_id": manual_task_instance.config_id,
-                    "instance_id": manual_task_instance.id,
-                    "submitted_by": respondent_user.id,
-                }
-                manual_task_instance_service.create_or_update_submission(
-                    instance_id=manual_task_instance.id,
-                    field_id=field.id,
-                    data=data,
-                )
-
         # Complete the instance
         manual_task_instance_service.complete_task_instance(
             task_id=manual_task_instance.task_id,
             config_id=manual_task_instance.config_id,
             instance_id=manual_task_instance.id,
-            user_id="test_user",
+            user_id=respondent_user.id,
         )
 
         # Try to delete the attachment
         with pytest.raises(StatusTransitionNotAllowed, match="is already completed"):
             manual_task_instance_service.delete_attachment_by_id(
-                instance_id=manual_task_instance.id,
-                field_id=field.id,
-                submission_id=None,
+                submission_id=manual_task_submission_attachment.id,
                 attachment_id=attachment.id,
             )
 
@@ -631,26 +520,21 @@ class TestAttachments:
     def test_delete_attachment_missing_params(
         self,
         manual_task_instance_service: ManualTaskInstanceService,
-        manual_task_instance: ManualTaskInstance,
-        attachment: Attachment,
+        manual_task_submission_attachment: ManualTaskSubmission,
     ) -> None:
         """Test delete_attachment_by_id with missing parameters."""
-        with pytest.raises(
-            ValueError, match="Attachment with ID some-attachment-id not found"
-        ):
+        with pytest.raises(ValueError, match="Submission with ID None does not exist"):
             manual_task_instance_service.delete_attachment_by_id(
-                instance_id="some-id",
-                field_id=None,
                 submission_id=None,
                 attachment_id="some-attachment-id",
             )
 
-        with pytest.raises(ValueError, match="Instance with ID None not found"):
+        with pytest.raises(
+            ValueError, match="Attachment with ID some-attachment-id not found"
+        ):
             manual_task_instance_service.delete_attachment_by_id(
-                instance_id=None,
-                field_id=None,
-                submission_id=None,
-                attachment_id=attachment.id,
+                submission_id=manual_task_submission_attachment.id,
+                attachment_id="some-attachment-id",
             )
 
 
@@ -678,7 +562,7 @@ class TestTaskCompletion:
                     "instance_id": manual_task_instance.id,
                     "submitted_by": respondent_user.id,
                 }
-                manual_task_instance_service.create_or_update_submission(
+                manual_task_instance_service.create_submission(
                     instance_id=manual_task_instance.id,
                     field_id=field.id,
                     data=data,
@@ -725,7 +609,7 @@ class TestTaskCompletion:
                     "instance_id": manual_task_instance.id,
                     "submitted_by": respondent_user.id,
                 }
-                manual_task_instance_service.create_or_update_submission(
+                manual_task_instance_service.create_submission(
                     instance_id=manual_task_instance.id,
                     field_id=field.id,
                     data=data,
@@ -742,46 +626,3 @@ class TestTaskCompletion:
             manual_task_instance_service._validate_instance_for_submission(
                 manual_task_instance.id
             )
-
-    @pytest.mark.usefixtures("manual_task_submission_text")
-    def test_update_status_from_submissions_partial_submission(
-        self,
-        db: Session,
-        manual_task_instance_service: ManualTaskInstanceService,
-        manual_task_instance: ManualTaskInstance,
-        respondent_user: FidesUser,
-    ) -> None:
-        """Test update_status_from_submissions with various submission states."""
-        # Test with one submission
-        manual_task_instance_service.update_status_from_submissions(
-            manual_task_instance.task_id,
-            manual_task_instance.config_id,
-            manual_task_instance.id,
-        )
-        assert manual_task_instance.status == StatusType.in_progress
-
-    @pytest.mark.usefixtures(
-        "manual_task_submission_text",
-        "manual_task_submission_checkbox",
-        "manual_task_submission_attachment",
-    )
-    def test_update_status_from_submissions_completed_instance(
-        self,
-        manual_task_instance_service: ManualTaskInstanceService,
-        manual_task_instance: ManualTaskInstance,
-    ) -> None:
-        """Test update_status_from_submissions with completed instance."""
-        # Test with completed instance
-        manual_task_instance_service.complete_task_instance(
-            task_id=manual_task_instance.task_id,
-            config_id=manual_task_instance.config_id,
-            instance_id=manual_task_instance.id,
-            user_id="test_user",
-        )
-        with pytest.raises(StatusTransitionNotAllowed):
-            manual_task_instance_service.update_status_from_submissions(
-                manual_task_instance.task_id,
-                manual_task_instance.config_id,
-                manual_task_instance.id,
-            )
-        assert manual_task_instance.status == StatusType.completed  # Should not change
