@@ -1,5 +1,6 @@
 import { Field, FieldInputProps } from "formik";
 
+import { FIDES_DATASET_REFERENCE } from "~/features/common/form/useFormFieldsFromSchema";
 import {
   ConnectionTypeSecretSchemaProperty,
   ConnectionTypeSecretSchemaResponse,
@@ -25,18 +26,20 @@ export const FormFieldFromSchema = ({
   secretsSchema,
   validate,
 }: FormFieldProps) => {
-  const enumDefinition = fieldSchema.allOf?.[0]?.$ref
-    ? secretsSchema?.definitions[
-        fieldSchema.allOf[0].$ref.replace("#/definitions/", "")
-      ]
-    : undefined;
+  const enumDefinition =
+    fieldSchema.allOf?.[0]?.$ref &&
+    fieldSchema.allOf[0].$ref !== FIDES_DATASET_REFERENCE
+      ? secretsSchema?.definitions[
+          fieldSchema.allOf[0].$ref.replace("#/definitions/", "")
+        ]
+      : undefined;
 
   const isSelect = !!enumDefinition?.enum || fieldSchema.options;
   const isBoolean = fieldSchema.type === "boolean";
   const isInteger = fieldSchema.type === "integer";
 
   const getPlaceholder = () => {
-    if (fieldSchema.allOf?.[0].$ref === "#/definitions/FidesDatasetReference") {
+    if (fieldSchema.allOf?.[0].$ref === FIDES_DATASET_REFERENCE) {
       return "Enter dataset.collection.field";
     }
     return undefined;
