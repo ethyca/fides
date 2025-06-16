@@ -1,6 +1,7 @@
 import { Fragment, h } from "preact";
 import { useContext, useEffect, useState } from "preact/hooks";
 
+import { useEvent } from "../lib/providers/event-context";
 import { VendorButtonContext } from "../lib/tcf/vendor-button-context";
 import { stripHtml } from "../lib/ui-utils";
 
@@ -31,6 +32,7 @@ const ExperienceDescription = ({
 }) => {
   const [renderedDescription, setRenderedDescription] =
     useState<(string | h.JSX.Element)[]>();
+  const { setTrigger } = useEvent();
   let vendorCount = 0;
   const context = useContext(VendorButtonContext);
   if (context?.vendorCount) {
@@ -53,7 +55,13 @@ const ExperienceDescription = ({
               <button
                 type="button"
                 className="fides-link-button fides-vendor-count"
-                onClick={onVendorPageClick}
+                onClick={() => {
+                  setTrigger({
+                    type: "link",
+                    label: "__VENDOR_COUNT_LINK__",
+                  });
+                  onVendorPageClick?.();
+                }}
               >
                 {vendorCount}
               </button>{" "}
