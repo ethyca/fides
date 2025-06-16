@@ -728,7 +728,11 @@ class TestManualTaskInstance:
         )
 
         # Execute - create submission
-        submission_data = {"value": "test value"}
+        submission_data = {
+            "field_key": manual_task_config_field_text.field_key,
+            "field_type": manual_task_config_field_text.field_type,
+            "value": "test value",
+        }
         submission = manual_task_service.create_submission(
             instance_id=instance.id,
             field_id=manual_task_config_field_text.id,
@@ -743,9 +747,9 @@ class TestManualTaskInstance:
 
         # Verify logs were created
         logs = [log for log in manual_task.logs if "submission" in log.message.lower()]
-        assert any(log.message == "Created new submission" for log in logs)
+        assert any(log.message == "Created task submission" for log in logs)
         create_log = next(
-            log for log in logs if log.message == "Created new submission"
+            log for log in logs if log.message == "Created task submission"
         )
         assert create_log.instance_id == instance.id
 

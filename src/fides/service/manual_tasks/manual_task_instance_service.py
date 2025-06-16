@@ -13,11 +13,7 @@ from fides.api.schemas.manual_tasks.manual_task_status import (
     StatusTransitionNotAllowed,
     StatusType,
 )
-from fides.service.manual_tasks.utils import (
-    validate_fields,
-    validate_status_transition,
-    with_task_logging,
-)
+from fides.service.manual_tasks.utils import validate_fields, with_task_logging
 
 
 class ManualTaskInstanceService:
@@ -147,9 +143,6 @@ class ManualTaskInstanceService:
             new_status = (
                 StatusType.in_progress if has_submissions else StatusType.pending
             )
-
-        # Validate the status transition with submission context
-        validate_status_transition(instance.status, new_status, has_submissions)
 
         previous_status = instance.status
         instance.update_status(self.db, new_status, user_id)

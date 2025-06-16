@@ -9,11 +9,7 @@ from fides.api.schemas.manual_tasks.manual_task_status import (
     StatusTransitionNotAllowed,
     StatusType,
 )
-from fides.service.manual_tasks.utils import (
-    TaskLogger,
-    validate_fields,
-    validate_status_transition,
-)
+from fides.service.manual_tasks.utils import TaskLogger, validate_fields
 
 
 class TestValidateFields:
@@ -110,113 +106,6 @@ class TestValidateFields:
             }
         ]
         validate_fields(fields)  # Should not raise
-
-
-class TestValidateStatusTransition:
-    @pytest.mark.parametrize(
-        "current_status,new_status,has_submissions,should_raise",
-        [
-            # Basic transitions
-            (StatusType.pending, StatusType.in_progress, True, False),
-            (StatusType.pending, StatusType.completed, False, False),
-            (StatusType.pending, StatusType.failed, False, False),
-            (StatusType.in_progress, StatusType.completed, True, False),
-            (StatusType.in_progress, StatusType.failed, True, False),
-            (StatusType.completed, StatusType.pending, False, True),
-            (StatusType.completed, StatusType.in_progress, False, True),
-            (StatusType.completed, StatusType.failed, False, True),
-            (StatusType.failed, StatusType.pending, False, False),
-            (StatusType.failed, StatusType.in_progress, False, False),
-            # Submission-based transitions
-            (
-                StatusType.pending,
-                StatusType.completed,
-                True,
-                True,
-            ),  # Must go to in_progress first
-            (
-                StatusType.pending,
-                StatusType.failed,
-                True,
-                True,
-            ),  # Must go to in_progress first
-            (
-                StatusType.in_progress,
-                StatusType.pending,
-                False,
-                False,
-            ),  # Can go back to pending if no submissions
-            (
-                StatusType.in_progress,
-                StatusType.pending,
-                True,
-                True,
-            ),  # Can't go back to pending with submissions
-        ],
-    )
-    def test_status_transitions(
-        self, current_status, new_status, has_submissions, should_raise
-    ):
-        """Test all possible status transitions with submission context."""
-        if should_raise:
-            with pytest.raises(StatusTransitionNotAllowed):
-                validate_status_transition(current_status, new_status, has_submissions)
-        else:
-            validate_status_transition(
-                current_status, new_status, has_submissions
-            )  # Should not raise
-
-    def test_invalid_status_value(self):
-        """Test with invalid status value."""
-        with pytest.raises(ValueError, match="Invalid status value"):
-            validate_status_transition("invalid_status", StatusType.pending)
-
-        with pytest.raises(ValueError, match="Invalid status value"):
-            validate_status_transition(StatusType.pending, "invalid_status")
-
-    def test_same_status_transition(self):
-        """Test transition to same status is blocked."""
-        with pytest.raises(StatusTransitionNotAllowed, match="already in status"):
-            validate_status_transition(StatusType.pending, StatusType.pending)
-
-    def test_completed_status_transitions(self):
-        """Test that completed status blocks all transitions."""
-        for new_status in [
-            StatusType.pending,
-            StatusType.in_progress,
-            StatusType.failed,
-        ]:
-            with pytest.raises(
-                StatusTransitionNotAllowed,
-                match="Invalid status transition from completed to",
-            ):
-                validate_status_transition(StatusType.completed, new_status)
-
-    def test_submission_based_transitions(self):
-        """Test transitions based on submission state."""
-        # Must transition to in_progress when has submissions
-        with pytest.raises(
-            StatusTransitionNotAllowed, match="must transition to in_progress"
-        ):
-            validate_status_transition(
-                StatusType.pending, StatusType.completed, has_submissions=True
-            )
-
-        # Must transition to pending when no submissions
-        with pytest.raises(
-            StatusTransitionNotAllowed, match="must transition to pending"
-        ):
-            validate_status_transition(
-                StatusType.in_progress, StatusType.completed, has_submissions=False
-            )
-
-        # Valid submission-based transitions
-        validate_status_transition(
-            StatusType.pending, StatusType.in_progress, has_submissions=True
-        )
-        validate_status_transition(
-            StatusType.in_progress, StatusType.pending, has_submissions=False
-        )
 
 
 class TestTaskLogger:

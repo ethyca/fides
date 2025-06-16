@@ -1,7 +1,6 @@
 from typing import Any, Optional
 
 from loguru import logger
-from sqlalchemy import and_, func, update
 from sqlalchemy.orm import Session, selectinload
 
 from fides.api.models.manual_tasks.manual_task import ManualTask
@@ -129,28 +128,6 @@ class ManualTaskConfigService:
         except Exception as e:
             logger.error(f"Error adding fields to config: {e}")
             raise e
-
-    def _get_next_version(self, task_id: str, config_type: str) -> int:
-        """Get the next version number for a config.
-
-        Args:
-            task_id: The task ID
-            config_type: The config type
-
-        Returns:
-            The next version number
-        """
-        # Get the current max version
-        max_version = (
-            self.db.query(func.max(ManualTaskConfig.version))
-            .filter(
-                ManualTaskConfig.task_id == task_id,
-                ManualTaskConfig.config_type == config_type,
-            )
-            .scalar()
-            or 0
-        )
-        return max_version + 1
 
     # ------- Public Configuration Methods -------
 
@@ -318,20 +295,7 @@ class ManualTaskConfigService:
             raise ValueError(f"Invalid config type: {config_type}")
 
         # Get next version
-        new_version = self._get_next_version(task.id, config_type)
-
-        # Update all existing configs to not be current
-        self.db.execute(
-            update(ManualTaskConfig)  # type: ignore[arg-type]
-            .where(
-                and_(
-                    ManualTaskConfig.task_id == task.id,
-                    ManualTaskConfig.config_type == config_type,
-                    ManualTaskConfig.is_current.is_(True),
-                )
-            )
-            .values(is_current=False)
-        )
+        new_version = previous_config.version + 1 if previous_config else 1
 
         # Create new version
         new_config = ManualTaskConfig.create(
@@ -363,6 +327,7 @@ class ManualTaskConfigService:
             self._re_create_existing_fields(
                 previous_config, new_config, modified_field_keys
             )
+            previous_config.is_current = False
 
         self.db.flush()
 

@@ -64,64 +64,6 @@ def _validate_field(field: dict[str, Any], is_submission: bool = False) -> None:
         field_model.model_validate(field)
 
 
-def validate_status_transition(
-    current_status: Any, new_status: StatusType, has_submissions: bool = False
-) -> None:
-    """Validate that a status transition is allowed.
-
-    Args:
-        current_status: The current status
-        new_status: The new status to transition to
-        has_submissions: Whether the instance has any submissions (used for auto-transitions)
-
-    Raises:
-        ValueError: If either status is not a valid StatusType
-        StatusTransitionNotAllowed: If the transition is not allowed
-    """
-    # Validate status values
-    try:
-        current_status = StatusType(current_status)
-        new_status = StatusType(new_status)
-    except ValueError:
-        raise ValueError(
-            f"Invalid status value: {current_status if not isinstance(current_status, StatusType) else new_status}"
-        )
-
-    # Don't allow transitions to the same status
-    if new_status == current_status:
-        raise StatusTransitionNotAllowed(
-            f"Invalid status transition: already in status {new_status}"
-        )
-
-    # Get valid transitions for current status
-    valid_transitions = StatusType.get_valid_transitions(current_status)
-
-    # Handle submission-based rules before checking base transitions
-    if has_submissions is not None:
-        # When there are submissions, must go to in_progress from pending
-        if current_status == StatusType.pending and has_submissions:
-            if new_status != StatusType.in_progress:
-                raise StatusTransitionNotAllowed(
-                    "Instance with submissions must transition to in_progress from pending"
-                )
-            return
-
-        # When no submissions and in in_progress, must go to pending
-        if not has_submissions and current_status == StatusType.in_progress:
-            if new_status != StatusType.pending:
-                raise StatusTransitionNotAllowed(
-                    "Instance without submissions must transition to pending from in_progress"
-                )
-            return
-
-    # Check base transitions
-    if new_status not in valid_transitions:
-        raise StatusTransitionNotAllowed(
-            f"Invalid status transition from {current_status} to {new_status}. "
-            f"Valid transitions are: {valid_transitions}"
-        )
-
-
 class TaskLogger:
     """Class-based decorator for logging operation success/failure in service methods.
     Args:
