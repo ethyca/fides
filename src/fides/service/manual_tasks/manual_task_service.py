@@ -197,6 +197,17 @@ class ManualTaskService:
     def assign_users_to_task(
         self, task_id: str, user_ids: list[str]
     ) -> tuple[ManualTask, dict[str, Any]]:
+        """Assign users to a task.
+
+        Args:
+            task_id: The task ID
+            user_ids: List of user IDs to assign
+
+        Returns:
+            Tuple containing the task and log data, the log data is
+            captured by the with_task_logging decorator. and the task is
+            returned to the caller.
+        """
         task = self.get_task(task_id=task_id)
         users_to_assign, log_data = self._handle_user_operation(
             task_id, user_ids, "assign", set(task.assigned_users)
