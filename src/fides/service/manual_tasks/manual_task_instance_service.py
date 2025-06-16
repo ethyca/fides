@@ -226,16 +226,13 @@ class ManualTaskInstanceService:
                 f"Attachment {attachment_id} not found in submission {submission_id}"
             )
 
-        # Delete submission if it's the last attachment in an attachment field
+        # Delete attachment and optionally submission
+        attachment.delete(self.db)
         if (
             len(submission.attachments) == 1
             and submission.field.field_type == "attachment"
         ):
             submission.delete(self.db)
-
-            attachment.delete(self.db)
-        else:
-            attachment.delete(self.db)
 
     @with_task_logging("Completed task instance")
     def complete_task_instance(
