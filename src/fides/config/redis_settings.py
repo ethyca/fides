@@ -82,31 +82,31 @@ class RedisSettings(FidesSettings):
     # The order here is important, these must be defined after the writer settings
     read_only_port: int = Field(  # type: ignore[assignment]
         default=None,
-        description="The port at which the read-only Redis cache will be accessible. If not provided, the port setting will be used.",
+        description="The port at which the read-only Redis cache will be accessible. If not provided, the `port` setting will be used.",
     )
     read_only_user: str = Field(  # type: ignore[assignment]
         default=None,
-        description="The user with which to login to the read-only Redis cache. If not provided, the user setting will be used.",
+        description="The user with which to login to the read-only Redis cache. If not provided, the `user` setting will be used.",
     )
     read_only_password: str = Field(  # type: ignore[assignment]
         default=None,
-        description="The password with which to login to the read-only Redis cache. If not provided, the password setting will be used.",
+        description="The password with which to login to the read-only Redis cache. If not provided, the `password` setting will be used.",
     )
     read_only_db_index: int = Field(  # type: ignore[assignment]
         default=None,
-        description="The application will use this index in the read-only Redis cache to cache data. If not provided, the db_index setting will be used.",
+        description="The application will use this index in the read-only Redis cache to cache data. If not provided, the `db_index` setting will be used.",
     )
     read_only_ssl: bool = Field(  # type: ignore[assignment]
         default=None,
-        description="Whether the application's connections to the read-only cache should be encrypted using TLS. If not provided, the ssl setting will be used.",
+        description="Whether the application's connections to the read-only cache should be encrypted using TLS. If not provided, the `ssl` setting will be used.",
     )
-    read_only_ssl_cert_reqs: Optional[str] = Field(  # type: ignore[assignment]
+    read_only_ssl_cert_reqs: Optional[str] = Field(
         default=None,
-        description="If using TLS encryption, set this to 'required' if you wish to enforce the read-only Redis cache to provide a certificate. Note that not all cache providers support this without setting ssl_ca_certs (e.g. AWS Elasticache). If not provided, the ssl_cert_reqs setting will be used.",
+        description="If using TLS encryption, set this to 'required' if you wish to enforce the read-only Redis cache to provide a certificate. Note that not all cache providers support this without setting ssl_ca_certs (e.g. AWS Elasticache). If not provided, the `ssl_cert_reqs` setting will be used.",
     )
     read_only_ssl_ca_certs: str = Field(  # type: ignore[assignment]
         default=None,
-        description="If using TLS encryption rooted with a custom Certificate Authority, set this to the path of the CA certificate. If not provided, the ssl_ca_certs setting will be used.",
+        description="If using TLS encryption rooted with a custom Certificate Authority, set this to the path of the CA certificate. If not provided, the `ssl_ca_certs` setting will be used.",
     )
 
     # Field validators for automatic fallback behavior
