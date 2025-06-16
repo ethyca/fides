@@ -33,102 +33,108 @@ def verify_expected_logs(logs, expected_messages):
 
 
 class TestValidateFields:
-    def test_validate_fields_success(self):
-        """Test successful field validation."""
-        fields = [
-            {
-                "field_key": "test_field",
-                "field_type": "text",
-                "field_metadata": {
-                    "label": "Test Field",
-                    "description": "A test field",
-                    "required": True,
-                },
-            }
-        ]
-        validate_fields(fields)  # Should not raise
+    """Tests for the validate_fields function."""
 
-    def test_validate_fields_duplicate_keys(self):
-        """Test validation fails with duplicate field keys."""
-        fields = [
-            {"field_key": "same_key", "field_type": "text", "field_metadata": {}},
-            {"field_key": "same_key", "field_type": "text", "field_metadata": {}},
-        ]
-        with pytest.raises(ValueError, match="Duplicate field keys found"):
-            validate_fields(fields)
-
-    def test_validate_fields_missing_key(self):
-        """Test validation fails when field_key is missing."""
-        fields = [{"field_type": "text", "field_metadata": {}}]
-        with pytest.raises(ValueError, match="field_key is required"):
-            validate_fields(fields)
-
-    def test_validate_fields_missing_type(self):
-        """Test validation fails when field_type is missing."""
-        fields = [{"field_key": "test", "field_metadata": {}}]
-        with pytest.raises(ValueError, match="field_type is required"):
-            validate_fields(fields)
-
-    def test_validate_fields_submission_missing_value(self):
-        """Test validation fails for submission without value."""
-        fields = [{"field_key": "test", "field_type": "text"}]
-        with pytest.raises(ValueError, match="value is required for submissions"):
-            validate_fields(fields, is_submission=True)
-
-    def test_validate_fields_submission_success(self):
-        """Test successful submission field validation."""
-        fields = [{"field_key": "test", "field_type": "text", "value": "test value"}]
-        validate_fields(fields, is_submission=True)  # Should not raise
-
-    def test_validate_fields_invalid_type(self):
-        """Test validation fails with invalid field type."""
-        fields = [
-            {
-                "field_key": "test",
-                "field_type": "invalid_type",
-                "field_metadata": {"label": "Test"},
-            }
-        ]
-        with pytest.raises(ValueError, match="Invalid field type"):
-            validate_fields(fields)
-
-    def test_validate_fields_invalid_metadata(self):
-        """Test validation fails with invalid metadata structure."""
-        fields = [
-            {
-                "field_key": "test",
-                "field_type": "text",
-                "field_metadata": {"invalid_key": "value"},  # Missing required 'label'
-            }
-        ]
-        with pytest.raises(ValueError, match="Invalid field data"):
-            validate_fields(fields)
-
-    def test_validate_fields_empty_metadata(self):
-        """Test validation skips fields with empty metadata in non-submission case."""
-        fields = [
-            {
-                "field_key": "test",
-                "field_type": "text",
-                "field_metadata": {},
-            }
-        ]
-        with pytest.raises(ValueError, match="Invalid field data"):
-            validate_fields(fields, is_submission=False)
-
-    def test_validate_fields_minimum_required(self):
-        """Test validation with minimum required fields."""
-        fields = [
-            {
-                "field_key": "test",
-                "field_type": "text",
-                "field_metadata": {"label": "Test"},
-            }
-        ]
-        validate_fields(fields)  # Should not raise
+    @pytest.mark.parametrize(
+        "fields,is_submission,expected_error",
+        [
+            # Valid cases
+            pytest.param(
+                [
+                    {
+                        "field_key": "test_field",
+                        "field_type": "text",
+                        "field_metadata": {
+                            "label": "Test Field",
+                            "description": "A test field",
+                            "required": True,
+                        },
+                    }
+                ],
+                False,
+                None,
+                id="valid_fields",
+            ),
+            pytest.param(
+                [{"field_key": "test", "field_type": "text", "value": "test value"}],
+                True,
+                None,
+                id="valid_submission",
+            ),
+            # Error cases
+            pytest.param(
+                [
+                    {
+                        "field_key": "same_key",
+                        "field_type": "text",
+                        "field_metadata": {},
+                    },
+                    {
+                        "field_key": "same_key",
+                        "field_type": "text",
+                        "field_metadata": {},
+                    },
+                ],
+                False,
+                "Duplicate field keys found",
+                id="duplicate_field_keys",
+            ),
+            pytest.param(
+                [{"field_type": "text", "field_metadata": {}}],
+                False,
+                "field_key is required",
+                id="duplicate_field_keys",
+            ),
+            pytest.param(
+                [{"field_key": "test", "field_metadata": {}}],
+                False,
+                "field_type is required",
+                id="field_type_required",
+            ),
+            pytest.param(
+                [{"field_key": "test", "field_type": "text"}],
+                True,
+                "value is required for submissions",
+                id="value_required_for_submissions",
+            ),
+            pytest.param(
+                [
+                    {
+                        "field_key": "test",
+                        "field_type": "invalid_type",
+                        "field_metadata": {"label": "Test"},
+                    }
+                ],
+                False,
+                "Invalid field type",
+                id="invalid_field_type",
+            ),
+            pytest.param(
+                [
+                    {
+                        "field_key": "test",
+                        "field_type": "text",
+                        "field_metadata": {"invalid_key": "value"},
+                    }
+                ],
+                False,
+                "Invalid field data",
+                id="invalid_field_data",
+            ),
+        ],
+    )
+    def test_validate_fields(self, fields, is_submission, expected_error):
+        """Test field validation with various scenarios."""
+        if expected_error:
+            with pytest.raises(ValueError, match=expected_error):
+                validate_fields(fields, is_submission)
+        else:
+            validate_fields(fields, is_submission)  # Should not raise
 
 
 class TestTaskLogger:
+    """Tests for the TaskLogger decorator and utility methods."""
+
     @pytest.fixture
     def mock_db(self):
         return MagicMock()
@@ -139,75 +145,138 @@ class TestTaskLogger:
         service.db = mock_db
         return service
 
-    def test_successful_operation(self, mock_service):
-        """Test successful operation logging."""
+    @pytest.mark.parametrize(
+        "return_value,expected_details,expected_status",
+        [
+            # Simple object return
+            (
+                type("TestResult", (), {"task_id": "123"}),
+                {},
+                ManualTaskLogStatus.complete,
+            ),
+            # Object with config_id
+            (
+                type("TestResult", (), {"task_id": "123", "config_id": "456"}),
+                {},
+                ManualTaskLogStatus.complete,
+            ),
+            # Tuple return with details
+            (
+                (
+                    type("TestResult", (), {"task_id": "123"}),
+                    {"details": {"test": "data"}},
+                ),
+                {"test": "data"},
+                ManualTaskLogStatus.complete,
+            ),
+            # Custom status
+            (
+                type("TestResult", (), {"task_id": "123"}),
+                {},
+                ManualTaskLogStatus.in_progress,
+            ),
+        ],
+    )
+    def test_successful_operations(
+        self, mock_service, return_value, expected_details, expected_status
+    ):
+        """Test successful operation logging with various return types."""
 
-        @TaskLogger("test operation")
+        @TaskLogger("test operation", success_status=expected_status)
         def test_method(self):
-            class TestResult:
-                def __init__(self):
-                    self.task_id = "123"
-
-            return TestResult()  # Return just the object
+            return return_value
 
         with patch.object(ManualTaskLog, "create_log") as mock_create_log:
             result = test_method(mock_service)
-            assert result.task_id == "123"
-            mock_create_log.assert_called_once_with(
-                db=mock_service.db,
-                task_id="123",
-                config_id=None,
-                instance_id=None,
-                status=ManualTaskLogStatus.complete,
-                message="test operation",
-                details={},
-            )
 
-    def test_successful_operation_with_tuple(self, mock_service):
-        """Test successful operation logging with tuple return."""
+            # Verify result
+            if isinstance(return_value, tuple):
+                assert result.task_id == return_value[0].task_id
+            else:
+                assert result.task_id == return_value.task_id
 
-        @TaskLogger("test operation")
-        def test_method(self):
-            class TestResult:
-                def __init__(self):
-                    self.task_id = "123"
+            # Verify log
+            mock_create_log.assert_called_once()
+            call_args = mock_create_log.call_args[1]
+            assert call_args["task_id"] == "123"
+            assert call_args["status"] == expected_status
+            assert call_args["message"] == "test operation"
+            assert call_args["details"] == expected_details
 
-            return TestResult(), {"details": {"test": "data"}}
-
-        with patch.object(ManualTaskLog, "create_log") as mock_create_log:
-            result = test_method(mock_service)
-            assert result.task_id == "123"
-            mock_create_log.assert_called_once_with(
-                db=mock_service.db,
-                task_id="123",
-                config_id=None,
-                instance_id=None,
-                status=ManualTaskLogStatus.complete,
-                message="test operation",
-                details={"test": "data"},
-            )
-
-    def test_operation_with_error(self, mock_service):
-        """Test error logging."""
-        error_msg = "Test error"
+    @pytest.mark.parametrize(
+        "error_type,error_msg,task_id,expected_msg",
+        [
+            pytest.param(
+                ValueError,
+                "value error",
+                "123",
+                "Error in test operation: value error",
+            ),
+            pytest.param(
+                KeyError,
+                "key error",
+                "123",
+                "Error in test operation: 'key error'",
+            ),
+            pytest.param(
+                Exception,
+                "generic error",
+                None,
+                None,  # No message expected when task_id is None
+            ),
+        ],
+        ids=["value_error", "key_error", "no_task_id"],
+    )
+    def test_error_handling(
+        self, mock_service, error_type, error_msg, task_id, expected_msg
+    ):
+        """Test error logging with different error types."""
 
         @TaskLogger("test operation")
         def test_method(self, **kwargs):
-            raise ValueError(error_msg)
+            raise error_type(error_msg)
 
         with patch.object(ManualTaskLog, "create_log") as mock_create_log:
-            with pytest.raises(ValueError, match=error_msg):
-                test_method(mock_service, task_id="123")
+            with pytest.raises(error_type):
+                test_method(mock_service, task_id=task_id)
 
-            mock_create_log.assert_called_once_with(
-                db=mock_service.db,
+            if task_id:
+                mock_create_log.assert_called_once()
+                call_args = mock_create_log.call_args[1]
+                assert call_args["task_id"] == task_id
+                assert call_args["status"] == ManualTaskLogStatus.error
+                assert call_args["message"] == expected_msg
+            else:
+                mock_create_log.assert_not_called()
+
+    @pytest.mark.parametrize(
+        "entity_type,entity_id,expected_id_fields",
+        [
+            ("task", "123", {"task_id": "123"}),
+            ("config", "456", {"task_id": "123", "config_id": "456"}),
+            ("instance", "789", {"task_id": "123", "instance_id": "789"}),
+            ("submission", "789", {"task_id": "123", "instance_id": "789"}),
+        ],
+        ids=["task", "config", "instance", "submission"],
+    )
+    def test_log_create(self, mock_db, entity_type, entity_id, expected_id_fields):
+        """Test creation logging for different entity types."""
+        with patch.object(ManualTaskLog, "create_log") as mock_create_log:
+            TaskLogger.log_create(
+                db=mock_db,
                 task_id="123",
-                config_id=None,
-                instance_id=None,
-                status=ManualTaskLogStatus.error,
-                message=f"Error in test operation: {error_msg}",
-                details={},
+                entity_type=entity_type,
+                entity_id=entity_id,
+                details={"test": "data"},
+                user_id="user123",
             )
+
+            mock_create_log.assert_called_once()
+            call_args = mock_create_log.call_args[1]
+            assert all(call_args[k] == v for k, v in expected_id_fields.items())
+            assert call_args["status"] == ManualTaskLogStatus.created
+            assert call_args["message"] == f"Created new {entity_type}"
+            assert call_args["details"] == {"test": "data", "user_id": "user123"}
 
     def test_log_status_change(self, mock_db):
         """Test status change logging."""
@@ -222,224 +291,25 @@ class TestTaskLogger:
                 user_id="user123",
             )
 
-            mock_create_log.assert_called_once_with(
-                db=mock_db,
-                task_id="123",
-                config_id="456",
-                instance_id="789",
-                status=ManualTaskLogStatus.in_progress,
-                message="Task instance status transitioning from pending to in_progress",
-                details={
-                    "previous_status": StatusType.pending,
-                    "new_status": StatusType.in_progress,
-                    "user_id": "user123",
-                },
-            )
+            mock_create_log.assert_called_once()
+            call_args = mock_create_log.call_args[1]
+            assert call_args["task_id"] == "123"
+            assert call_args["config_id"] == "456"
+            assert call_args["instance_id"] == "789"
+            assert call_args["status"] == ManualTaskLogStatus.in_progress
+            assert "transitioning from pending to in_progress" in call_args["message"]
+            assert call_args["details"] == {
+                "previous_status": StatusType.pending,
+                "new_status": StatusType.in_progress,
+                "user_id": "user123",
+            }
 
-    def test_log_create(self, mock_db):
-        """Test creation logging."""
-        with patch.object(ManualTaskLog, "create_log") as mock_create_log:
-            # Test task creation
-            TaskLogger.log_create(
-                db=mock_db,
-                task_id="123",
-                entity_type="task",
-                entity_id="123",
-                user_id="user123",
-                details={"test": "data"},
-            )
-
-            mock_create_log.assert_called_once_with(
-                db=mock_db,
-                task_id="123",
-                status=ManualTaskLogStatus.created,
-                message="Created new task",
-                details={"test": "data", "user_id": "user123"},
-            )
-
-            # Reset mock for next test
-            mock_create_log.reset_mock()
-
-            # Test config creation
-            TaskLogger.log_create(
-                db=mock_db,
-                task_id="123",
-                entity_type="config",
-                entity_id="456",
-                details={"template": "standard"},
-            )
-
-            mock_create_log.assert_called_once_with(
-                db=mock_db,
-                task_id="123",
-                config_id="456",
-                status=ManualTaskLogStatus.created,
-                message="Created new config",
-                details={"template": "standard"},
-            )
-
-    def test_log_create_invalid_entity(self, mock_db):
-        """Test creation logging with invalid entity type."""
+    def test_invalid_entity_type(self, mock_db):
+        """Test log_create with invalid entity type."""
         with pytest.raises(ValueError, match="Invalid entity type"):
             TaskLogger.log_create(
-                db=mock_db, task_id="123", entity_type="invalid", entity_id="456"
-            )
-
-    def test_custom_success_status(self, mock_service):
-        """Test operation with custom success status."""
-
-        @TaskLogger("test operation", success_status=ManualTaskLogStatus.in_progress)
-        def test_method(self):
-            class TestResult:
-                def __init__(self):
-                    self.task_id = "123"
-
-            return TestResult()
-
-        with patch.object(ManualTaskLog, "create_log") as mock_create_log:
-            test_method(mock_service)
-            mock_create_log.assert_called_once_with(
-                db=mock_service.db,
+                db=mock_db,
                 task_id="123",
-                config_id=None,
-                instance_id=None,
-                status=ManualTaskLogStatus.in_progress,
-                message="test operation",
-                details={},
-            )
-
-    def test_no_db_attribute(self):
-        """Test operation when service has no db attribute."""
-        service = MagicMock()
-        delattr(service, "db")  # Remove db attribute
-
-        @TaskLogger("test operation")
-        def test_method(self):
-            class TestResult:
-                def __init__(self):
-                    self.task_id = "123"
-
-            return TestResult()
-
-        result = test_method(service)
-        assert result.task_id == "123"  # Operation should complete without logging
-
-    def test_log_success_missing_task_id(self, mock_service):
-        """Test successful operation logging without task_id."""
-
-        @TaskLogger("test operation")
-        def test_method(self):
-            return {"other_key": "value"}  # No task_id
-
-        with patch.object(ManualTaskLog, "create_log") as mock_create_log:
-            result = test_method(mock_service)
-            mock_create_log.assert_not_called()
-
-    def test_log_success_object_result(self, mock_service):
-        """Test successful operation logging with object result."""
-
-        class TestResult:
-            def __init__(self):
-                self.task_id = "123"
-                self.config_id = "456"
-
-        @TaskLogger("test operation")
-        def test_method(self):
-            return TestResult()
-
-        with patch.object(ManualTaskLog, "create_log") as mock_create_log:
-            result = test_method(mock_service)
-            mock_create_log.assert_called_once_with(
-                db=mock_service.db,
-                task_id="123",
-                config_id="456",
-                instance_id=None,
-                status=ManualTaskLogStatus.complete,
-                message="test operation",
-                details={},
-            )
-
-    def test_log_error_different_types(self, mock_service):
-        """Test error logging with different error types."""
-
-        @TaskLogger("test operation")
-        def test_method(self, error_type, **kwargs):
-            if error_type == "value":
-                raise ValueError("value error")
-            elif error_type == "key":
-                raise KeyError("key error")
-            else:
-                raise Exception("generic error")
-
-        with patch.object(ManualTaskLog, "create_log") as mock_create_log:
-            # Test ValueError
-            with pytest.raises(ValueError):
-                test_method(mock_service, "value", task_id="123")
-            mock_create_log.assert_called_with(
-                db=mock_service.db,
-                task_id="123",
-                config_id=None,
-                instance_id=None,
-                status=ManualTaskLogStatus.error,
-                message="Error in test operation: value error",
-                details={},
-            )
-
-            # Test KeyError
-            mock_create_log.reset_mock()
-            with pytest.raises(KeyError):
-                test_method(mock_service, "key", task_id="123")
-            mock_create_log.assert_called_with(
-                db=mock_service.db,
-                task_id="123",
-                config_id=None,
-                instance_id=None,
-                status=ManualTaskLogStatus.error,
-                message="Error in test operation: 'key error'",
-                details={},
-            )
-
-    def test_log_with_optional_params(self, mock_service):
-        """Test logging with various combinations of optional parameters."""
-
-        @TaskLogger("test operation")
-        def test_method(self, **kwargs):
-            class TestResult:
-                def __init__(self, **kwargs):
-                    self.task_id = kwargs.get("task_id")
-                    self.config_id = kwargs.get("config_id")
-                    self.instance_id = kwargs.get("instance_id")
-
-            return TestResult(**kwargs)
-
-        with patch.object(ManualTaskLog, "create_log") as mock_create_log:
-            # Test with all optional params
-            test_method(
-                mock_service,
-                task_id="123",
-                config_id="456",
-                instance_id="789",
-                details={"extra": "data"},
-            )
-            mock_create_log.assert_called_with(
-                db=mock_service.db,
-                task_id="123",
-                config_id="456",
-                instance_id="789",
-                status=ManualTaskLogStatus.complete,
-                message="test operation",
-                details={"extra": "data"},
-            )
-
-            # Test with minimal params
-            mock_create_log.reset_mock()
-            test_method(mock_service, task_id="123")
-            mock_create_log.assert_called_with(
-                db=mock_service.db,
-                task_id="123",
-                config_id=None,
-                instance_id=None,
-                status=ManualTaskLogStatus.complete,
-                message="test operation",
-                details={},
+                entity_type="invalid",
+                entity_id="456",
             )
