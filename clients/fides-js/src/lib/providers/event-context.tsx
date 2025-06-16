@@ -2,7 +2,7 @@ import { createContext, h } from "preact";
 import { MutableRefObject, ReactNode } from "preact/compat";
 import { useCallback, useContext, useMemo, useRef } from "preact/hooks";
 
-import { FidesCookie } from "../consent-types";
+import { FidesCookie, ServingComponent } from "../consent-types";
 import {
   dispatchFidesEvent,
   FidesEventDetailsTrigger,
@@ -13,6 +13,8 @@ import {
 interface UseEventProps {
   triggerRef: MutableRefObject<FidesEventDetailsTrigger>;
   setTrigger: (newValue: FidesEventDetailsTrigger) => void;
+  servingComponentRef: MutableRefObject<ServingComponent | undefined>;
+  setServingComponent: (newValue: ServingComponent | undefined) => void;
   dispatchFidesEventAndClearTrigger: (
     type: FidesEventType,
     fidesCookie: FidesCookie | undefined,
@@ -24,10 +26,18 @@ const EventContext = createContext<UseEventProps | Record<any, never>>({});
 
 export const EventProvider = ({ children }: { children: ReactNode }) => {
   const triggerRef = useRef<FidesEventDetailsTrigger>();
+  const servingComponentRef = useRef<ServingComponent | undefined>();
 
   const updateContextValue = useCallback(
     (newValue: FidesEventDetailsTrigger) => {
       triggerRef.current = newValue;
+    },
+    [],
+  );
+
+  const updateServingComponent = useCallback(
+    (newValue: ServingComponent | undefined) => {
+      servingComponentRef.current = newValue;
     },
     [],
   );
@@ -40,6 +50,8 @@ export const EventProvider = ({ children }: { children: ReactNode }) => {
     ) => {
       dispatchFidesEvent(type, fidesCookie, {
         ...extraDetails,
+        servingComponent:
+          extraDetails?.servingComponent ?? servingComponentRef.current,
         trigger: {
           ...(extraDetails?.trigger as FidesEventDetailsTrigger),
           ...triggerRef.current,
@@ -53,11 +65,19 @@ export const EventProvider = ({ children }: { children: ReactNode }) => {
 
   const value: UseEventProps = useMemo(
     () => ({
-      triggerRef,
+      triggerRef: triggerRef as MutableRefObject<FidesEventDetailsTrigger>,
       setTrigger: updateContextValue,
+      servingComponentRef: servingComponentRef as MutableRefObject<
+        ServingComponent | undefined
+      >,
+      setServingComponent: updateServingComponent,
       dispatchFidesEventAndClearTrigger,
     }),
-    [updateContextValue, dispatchFidesEventAndClearTrigger],
+    [
+      updateContextValue,
+      dispatchFidesEventAndClearTrigger,
+      updateServingComponent,
+    ],
   );
 
   return (

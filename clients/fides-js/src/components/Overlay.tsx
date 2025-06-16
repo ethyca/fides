@@ -61,7 +61,7 @@ const Overlay: FunctionComponent<Props> = ({
   isUiBlocking,
 }) => {
   const { i18n } = useI18n();
-  const { dispatchFidesEventAndClearTrigger } = useEvent();
+  const { setServingComponent, dispatchFidesEventAndClearTrigger } = useEvent();
   const delayBannerMilliseconds = 100;
   const hasMounted = useHasMounted();
   const modalLinkId = options.modalLinkId || "fides-modal-link";
@@ -108,8 +108,9 @@ const Overlay: FunctionComponent<Props> = ({
         onDismiss();
       }
       dispatchFidesEventAndClearTrigger("FidesModalClosed", cookie, { saved });
+      setServingComponent(undefined);
     },
-    [dispatchFidesEventAndClearTrigger, cookie, onDismiss],
+    [dispatchFidesEventAndClearTrigger, cookie, onDismiss, setServingComponent],
   );
 
   const { instance, attributes } = useA11yDialog({

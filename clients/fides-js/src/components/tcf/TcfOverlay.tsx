@@ -99,8 +99,13 @@ export const TcfOverlay = ({
     setCurrentLocale,
     setIsLoading: setIsI18nLoading,
   } = useI18n();
-  const { triggerRef, setTrigger, dispatchFidesEventAndClearTrigger } =
-    useEvent();
+  const {
+    triggerRef,
+    setTrigger,
+    servingComponentRef,
+    setServingComponent,
+    dispatchFidesEventAndClearTrigger,
+  } = useEvent();
   const parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
   const minExperienceLocale =
     experienceMinimal?.experience_config?.translations?.[0]?.language;
@@ -365,7 +370,10 @@ export const TcfOverlay = ({
         options,
         userLocationString: fidesRegionString,
         cookie,
-        eventTrigger: triggerRef.current,
+        eventExtraDetails: {
+          servingComponent: servingComponentRef.current,
+          trigger: triggerRef.current,
+        },
         tcf,
         servedNoticeHistoryId,
         updateCookie: (oldCookie) =>
@@ -392,6 +400,7 @@ export const TcfOverlay = ({
       servedNoticeHistoryId,
       triggerRef,
       setTrigger,
+      servingComponentRef,
     ],
   );
 
@@ -516,16 +525,14 @@ export const TcfOverlay = ({
   const [activeTabIndex, setActiveTabIndex] = useState(0);
 
   const dispatchOpenBannerEvent = useCallback(() => {
-    dispatchFidesEvent("FidesUIShown", cookie, {
-      servingComponent: ServingComponent.TCF_BANNER,
-    });
-  }, [cookie]);
+    setServingComponent(ServingComponent.TCF_BANNER);
+    dispatchFidesEventAndClearTrigger("FidesUIShown", cookie);
+  }, [cookie, dispatchFidesEventAndClearTrigger, setServingComponent]);
 
   const dispatchOpenOverlayEvent = useCallback(() => {
-    dispatchFidesEventAndClearTrigger("FidesUIShown", cookie, {
-      servingComponent: ServingComponent.TCF_OVERLAY,
-    });
-  }, [cookie, dispatchFidesEventAndClearTrigger]);
+    setServingComponent(ServingComponent.TCF_OVERLAY);
+    dispatchFidesEventAndClearTrigger("FidesUIShown", cookie);
+  }, [cookie, dispatchFidesEventAndClearTrigger, setServingComponent]);
 
   const handleDismiss = useCallback(() => {
     if (!consentCookieObjHasSomeConsentSet(parsedCookie?.consent)) {
@@ -536,14 +543,16 @@ export const TcfOverlay = ({
   const handleToggleChange = useCallback(
     (updatedIds: EnabledIds, preference: FidesEventDetailsPreference) => {
       const eventExtraDetails: FidesEvent["detail"]["extraDetails"] = {
-        servingComponent: ServingComponent.TCF_OVERLAY,
+        servingComponent: servingComponentRef.current as NonNullable<
+          FidesEvent["detail"]["extraDetails"]
+        >["servingComponent"],
         trigger: triggerRef.current,
         preference,
       };
       setDraftIds(updatedIds);
       dispatchFidesEvent("FidesUIChanged", cookie, eventExtraDetails);
     },
-    [cookie, setDraftIds, triggerRef],
+    [cookie, setDraftIds, triggerRef, servingComponentRef],
   );
 
   const handleTabChange = useCallback(
