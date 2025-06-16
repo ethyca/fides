@@ -1,5 +1,5 @@
 from functools import wraps
-from typing import Any, Callable, Optional, TypeVar, Union
+from typing import Any, Callable, Optional, TypeVar
 
 from loguru import logger
 from pydantic import ValidationError
@@ -24,7 +24,9 @@ def validate_fields(fields: list[dict[str, Any]], is_submission: bool = False) -
     """
     # Check for duplicate field keys
     if len({str(field.get("field_key")) for field in fields}) != len(fields):
-        raise ValueError("Duplicate field keys found in field updates, field keys must be unique.")
+        raise ValueError(
+            "Duplicate field keys found in field updates, field keys must be unique."
+        )
 
     for field in fields:
         if not field.get("field_key"):
@@ -35,7 +37,9 @@ def validate_fields(fields: list[dict[str, Any]], is_submission: bool = False) -
             raise ValueError("Invalid field data: value is required for submissions")
         if not is_submission:
             try:
-                field_model = ManualTaskFieldBase.get_field_model_for_type(field["field_type"])
+                field_model = ManualTaskFieldBase.get_field_model_for_type(
+                    field["field_type"]
+                )
                 field_model.model_validate(field)
             except ValidationError as e:
                 raise ValueError(f"Invalid field data: {str(e)}")
@@ -66,15 +70,21 @@ class TaskLogger:
             try:
                 result = func(service_self, *args, **kwargs)
                 return_value, log_data = (
-                    result if isinstance(result, tuple) and len(result) == 2
+                    result
+                    if isinstance(result, tuple) and len(result) == 2
                     else (result, {})
                 )
-                if hasattr(service_self, "db") and (task_id := self._get_task_id(return_value, kwargs)):
-                    self._log_success(service_self.db, task_id, return_value, log_data, kwargs)
+                if hasattr(service_self, "db") and (
+                    task_id := self._get_task_id(return_value, kwargs)
+                ):
+                    self._log_success(
+                        service_self.db, task_id, return_value, log_data, kwargs
+                    )
                 return return_value
             except Exception as e:
                 self._log_error(service_self, e, kwargs)
                 raise
+
         return wrapped
 
     def _get_task_id(self, result: Any, kwargs: dict) -> Optional[str]:
@@ -90,7 +100,9 @@ class TaskLogger:
         log_data["details"] = kwargs.get("details", {})
         return log_data
 
-    def _log_success(self, db: Any, task_id: str, result: Any, log_data: dict, kwargs: dict) -> None:
+    def _log_success(
+        self, db: Any, task_id: str, result: Any, log_data: dict, kwargs: dict
+    ) -> None:
         """Log successful operation."""
         ManualTaskLog.create_log(
             db=db,
@@ -102,7 +114,7 @@ class TaskLogger:
     def _log_error(self, service_self: Any, error: Exception, kwargs: dict) -> None:
         """Log operation error."""
         logger.error(f"Error in {self.operation_name}: {str(error)}")
-        if hasattr(service_self, "db") and (task_id := kwargs.get("task_id")):
+        if hasattr(service_self, "db"):
             ManualTaskLog.create_log(
                 db=service_self.db,
                 **self._get_log_data({}, kwargs),
@@ -160,7 +172,7 @@ class TaskLogger:
             **id_fields[entity_type],
             status=status,
             message=f"Created new {entity_type}",
-            details=details | {"user_id": user_id} if user_id else details or {},
+            details=(details or {}) | ({"user_id": user_id} if user_id else {}),
         )
 
 

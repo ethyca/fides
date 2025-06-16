@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Optional, cast
+from typing import Any, Optional, cast
 
 from loguru import logger
 from sqlalchemy import select
@@ -16,7 +16,6 @@ from fides.service.manual_tasks.manual_task_config_service import (
     ManualTaskConfigService,
 )
 from fides.service.manual_tasks.utils import with_task_logging
-
 
 
 class ManualTaskService:

@@ -14,7 +14,6 @@ from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskLogStat
 from fides.service.manual_tasks.manual_task_config_service import (
     ManualTaskConfigService,
 )
-
 from tests.service.manual_tasks.conftest import (
     ATTACHMENT_FIELD_KEY,
     CHECKBOX_FIELD_KEY,
