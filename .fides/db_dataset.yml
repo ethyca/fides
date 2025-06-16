@@ -1112,6 +1112,42 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
+  - name: manual_task_instance
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: task_id
+      data_categories: [system.operations]
+    - name: config_id
+      data_categories: [system.operations]
+    - name: entity_id
+      data_categories: [system.operations]
+    - name: entity_type
+      data_categories: [system.operations]
+    - name: status
+      data_categories: [system.operations]
+    - name: completed_at
+      data_categories: [system.operations]
+    - name: completed_by_id
+      data_categories: [system.operations]
+  - name: manual_task_submission
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: task_id
+      data_categories: [system.operations]
+    - name: config_id
+      data_categories: [system.operations]
+    - name: instance_id
+      data_categories: [system.operations]
+    - name: submitted_by
+      data_categories: [system.operations]
+    - name: submitted_at
+      data_categories: [system.operations]
+    - name: field_id
+      data_categories: [system.operations]
+    - name: data
+      data_categories: [system.operations]
   - name: monitorexecution
     data_categories: []
     fields:
