@@ -1,14 +1,10 @@
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
-from pydantic import ValidationError
 
 from fides.api.models.manual_tasks.manual_task_log import ManualTaskLog
 from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskLogStatus
-from fides.api.schemas.manual_tasks.manual_task_status import (
-    StatusTransitionNotAllowed,
-    StatusType,
-)
+from fides.api.schemas.manual_tasks.manual_task_status import StatusType
 from fides.service.manual_tasks.utils import TaskLogger, validate_fields
 
 

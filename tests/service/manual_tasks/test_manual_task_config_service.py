@@ -16,10 +16,6 @@ from fides.api.models.manual_tasks.manual_task_log import (
 )
 from fides.api.schemas.manual_tasks.manual_task_config import ManualTaskFieldType
 from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskLogStatus
-from fides.api.schemas.manual_tasks.manual_task_status import (
-    StatusTransitionNotAllowed,
-    StatusType,
-)
 from fides.service.manual_tasks.manual_task_config_service import (
     ManualTaskConfigService,
 )
