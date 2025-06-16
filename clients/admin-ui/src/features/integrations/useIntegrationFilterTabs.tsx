@@ -1,51 +1,92 @@
+import { useRouter } from "next/router";
 import { useState } from "react";
 
 import { useFlags } from "~/features/common/features/features.slice";
 import { IntegrationTypeInfo } from "~/features/integrations/add-integration/allIntegrationTypes";
 
-export enum IntegrationFilterTabLabel {
-  ALL = "All",
-  DATABASE = "Database",
-  DATA_CATALOG = "Data Catalog",
-  DATA_WAREHOUSE = "Data Warehouse",
-  IDENTITY_PROVIDER = "Identity Provider",
-  WEBSITE = "Website",
-  MANUAL = "Manual",
+enum IntegrationFilterTabHash {
+  ALL = "all",
+  DATABASE = "database",
+  DATA_CATALOG = "data-catalog",
+  DATA_WAREHOUSE = "data-warehouse",
+  IDENTITY_PROVIDER = "identity-provider",
+  WEBSITE = "website",
+  MANUAL = "manual",
 }
+
+const TAB_HASHES = Object.values(IntegrationFilterTabHash);
+
+const TAB_HASH_LABEL_MAP: Record<IntegrationFilterTabHash, string> = {
+  [IntegrationFilterTabHash.ALL]: "All",
+  [IntegrationFilterTabHash.DATABASE]: "Database",
+  [IntegrationFilterTabHash.DATA_CATALOG]: "Data Catalog",
+  [IntegrationFilterTabHash.DATA_WAREHOUSE]: "Data Warehouse",
+  [IntegrationFilterTabHash.IDENTITY_PROVIDER]: "Identity Provider",
+  [IntegrationFilterTabHash.WEBSITE]: "Website",
+  [IntegrationFilterTabHash.MANUAL]: "Manual",
+};
 
 const CHANGE_FILTER_DELAY = 300;
 
-const useIntegrationFilterTabs = (integrationTypes?: IntegrationTypeInfo[]) => {
-  const { flags } = useFlags();
-  const tabItems = Object.values(IntegrationFilterTabLabel)
-    .filter(
-      (tab) =>
-        (tab !== IntegrationFilterTabLabel.IDENTITY_PROVIDER ||
-          flags.oktaMonitor) &&
-        (tab !== IntegrationFilterTabLabel.MANUAL ||
-          flags.alphaNewManualIntegration), // DEFER (ENG-675): Remove this once the alpha feature is released
-    )
-    .map((t) => ({
-      key: t,
-      label: t,
-    }));
+interface UseIntegrationFilterTabsProps {
+  integrationTypes?: IntegrationTypeInfo[];
+  useHashing?: boolean;
+}
 
-  const [activeKey, setActiveKey] = useState(IntegrationFilterTabLabel.ALL);
+const useIntegrationFilterTabs = ({
+  integrationTypes,
+  useHashing,
+}: UseIntegrationFilterTabsProps) => {
+  const router = useRouter();
+  const initialHash = router.asPath.split("#")[1] as IntegrationFilterTabHash;
+  const initialTab = TAB_HASHES.includes(initialHash)
+    ? initialHash
+    : IntegrationFilterTabHash.ALL;
+
+  const { flags } = useFlags();
+  const tabItems = TAB_HASHES.filter(
+    (tab) =>
+      (tab !== IntegrationFilterTabHash.IDENTITY_PROVIDER ||
+        flags.oktaMonitor) &&
+      (tab !== IntegrationFilterTabHash.MANUAL ||
+        flags.alphaNewManualIntegration), // DEFER (ENG-675): Remove this once the alpha feature is released
+  ).map((t) => ({
+    key: t,
+    label: TAB_HASH_LABEL_MAP[t],
+  }));
+
+  const [activeKey, setActiveKey] = useState<IntegrationFilterTabHash>(
+    initialTab ?? IntegrationFilterTabHash.ALL,
+  );
 
   const [isUpdatingFilter, setIsUpdatingFilter] = useState(false);
 
-  const onChangeFilter = (newKey: string) => {
+  const onChangeFilter = async (newKey: string) => {
     setIsUpdatingFilter(true);
-    setActiveKey(newKey as IntegrationFilterTabLabel);
+
+    if (router.isReady && useHashing) {
+      await router.replace(
+        {
+          pathname: router.pathname,
+          query: { ...router.query },
+          hash: newKey,
+        },
+        undefined,
+        { shallow: true },
+      );
+    }
+
+    setActiveKey(newKey as IntegrationFilterTabHash);
     setTimeout(() => setIsUpdatingFilter(false), CHANGE_FILTER_DELAY);
   };
 
-  const anyFiltersApplied = activeKey !== IntegrationFilterTabLabel.ALL;
+  const anyFiltersApplied = activeKey !== IntegrationFilterTabHash.ALL;
 
   const filteredTypes =
     integrationTypes?.filter(
       (i) =>
-        !anyFiltersApplied || (i.category as string) === (activeKey as string),
+        !anyFiltersApplied ||
+        (i.category as string) === TAB_HASH_LABEL_MAP[activeKey],
     ) ?? [];
 
   return {

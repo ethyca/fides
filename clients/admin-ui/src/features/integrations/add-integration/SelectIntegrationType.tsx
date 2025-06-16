@@ -25,7 +25,9 @@ const SelectIntegrationType = ({
     isUpdatingFilter,
     filteredTypes,
     tabItems,
-  } = useIntegrationFilterTabs(INTEGRATION_TYPE_LIST);
+  } = useIntegrationFilterTabs({
+    integrationTypes: INTEGRATION_TYPE_LIST,
+  });
 
   const {
     flags: { oktaMonitor, alphaNewManualIntegration },

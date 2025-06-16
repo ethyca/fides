@@ -43,9 +43,12 @@ const IntegrationListView: NextPage = () => {
     isUpdatingFilter,
     filteredTypes,
     tabItems,
-  } = useIntegrationFilterTabs(
-    items?.map((i) => getIntegrationTypeInfo(i.connection_type)),
-  );
+  } = useIntegrationFilterTabs({
+    integrationTypes: items?.map((i) =>
+      getIntegrationTypeInfo(i.connection_type),
+    ),
+    useHashing: true,
+  });
 
   const onChangeTabs = (newKey: string) => {
     setPage(1);
