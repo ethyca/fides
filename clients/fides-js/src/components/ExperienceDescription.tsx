@@ -58,7 +58,7 @@ const ExperienceDescription = ({
                 onClick={() => {
                   setTrigger({
                     type: "link",
-                    label: "__VENDOR_COUNT_LINK__",
+                    label: VENDOR_COUNT_LINK, // The assumption is that consistency is more important than the actual number of vendors here, so we use the replacement string. Change if this becomes problematic.
                   });
                   onVendorPageClick?.();
                 }}
