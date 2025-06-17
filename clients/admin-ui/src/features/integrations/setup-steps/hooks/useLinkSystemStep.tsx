@@ -2,17 +2,10 @@ import { AntLink } from "fidesui";
 import Link from "next/link";
 
 import { EDIT_SYSTEM_ROUTE, SYSTEM_ROUTE } from "~/features/common/nav/routes";
-import { ConnectionConfigurationResponse } from "~/types/api/models/ConnectionConfigurationResponse";
 
 import { BaseStepHookParams, Step } from "./types";
 
-export interface LinkSystemStepParams extends BaseStepHookParams {
-  connection?: ConnectionConfigurationResponse;
-}
-
-export const useLinkSystemStep = ({
-  connection,
-}: LinkSystemStepParams): Step => {
+export const useLinkSystemStep = ({ connection }: BaseStepHookParams): Step => {
   // Check if the connection has a system_key property to determine if it's linked
   const isComplete = !!connection?.system_key;
 
