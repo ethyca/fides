@@ -5,13 +5,13 @@ Revises: ba414a58ba90
 Create Date: 2025-06-17 17:51:02.800113
 
 """
-from alembic import op
-import sqlalchemy as sa
 
+import sqlalchemy as sa
+from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = 'd26175dc39b9'
-down_revision = 'ba414a58ba90'
+revision = "d26175dc39b9"
+down_revision = "ba414a58ba90"
 branch_labels = None
 depends_on = None
 
