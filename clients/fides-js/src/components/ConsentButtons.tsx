@@ -45,7 +45,7 @@ export const ConsentButtons = ({
   isGVLLoading,
 }: ConsentButtonProps) => {
   const [isLoadingModal, setIsLoadingModal] = useState<boolean>(false);
-  const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
+  const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState<boolean>(false);
   const { i18n } = useI18n();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const includeLanguageSelector = i18n.availableLanguages?.length > 1;
