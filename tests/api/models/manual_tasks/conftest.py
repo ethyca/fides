@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.manual_tasks.manual_task import ManualTask
+from fides.api.models.manual_tasks.manual_task_config import ManualTaskConfig
 from fides.api.schemas.manual_tasks.manual_task_schemas import (
     ManualTaskParentEntityType,
     ManualTaskType,
@@ -29,3 +30,16 @@ def manual_task(
         task.delete(db)
     except Exception as e:
         pass
+
+
+@pytest.fixture
+def manual_task_config(db: Session, manual_task: ManualTask) -> ManualTaskConfig:
+    return ManualTaskConfig.create(
+        db,
+        data={
+            "task_id": manual_task.id,
+            "config_type": "access_privacy_request",
+            "version": 1,
+            "is_current": True,
+        },
+    )

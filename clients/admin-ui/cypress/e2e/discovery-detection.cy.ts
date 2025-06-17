@@ -53,6 +53,10 @@ describe("discovery and detection", () => {
         ).within(() => {
           cy.getByTestId("action-Monitor").click();
           cy.wait("@confirmResource");
+        });
+        cy.getByTestId(
+          "row-my_bigquery_monitor.prj-bigquery-000000.test_dataset_1-col-action",
+        ).within(() => {
           cy.getByTestId("action-Ignore").click();
           cy.wait("@ignoreResource");
         });
@@ -84,6 +88,10 @@ describe("discovery and detection", () => {
         ).within(() => {
           cy.getByTestId("action-Monitor").click();
           cy.wait("@confirmResource");
+        });
+        cy.getByTestId(
+          "row-my_bigquery_monitor.prj-bigquery-000001.test_dataset_2-col-action",
+        ).within(() => {
           cy.getByTestId("action-Ignore").click();
           cy.wait("@ignoreResource");
         });
@@ -146,6 +154,10 @@ describe("discovery and detection", () => {
         ).within(() => {
           cy.getByTestId("action-Confirm").click();
           cy.wait("@promoteResource");
+        });
+        cy.getByTestId(
+          "row-my_bigquery_monitor.prj-bigquery-000002.test_dataset_4-col-action",
+        ).within(() => {
           cy.getByTestId("action-Ignore").click();
           cy.wait("@ignoreResource");
         });
