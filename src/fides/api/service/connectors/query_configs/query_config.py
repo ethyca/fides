@@ -1,7 +1,7 @@
 # pylint: disable=too-many-lines
 import re
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Generic, List, Optional, Tuple, Type, TypeVar
+from typing import Any, Dict, Generic, List, Optional, Tuple, Type, TypeVar, Union
 
 import pydash
 from loguru import logger
@@ -46,7 +46,9 @@ class QueryConfig(Generic[T], ABC):
         self.node = node
 
     @property
-    def partitioning(self) -> Optional[Dict]:  # pylint: disable=R1711
+    def partitioning(
+        self,
+    ) -> Optional[Union[Dict, List[Dict]]]:  # pylint: disable=R1711
         # decided to de-scope partitioning support to only bigquery as this grew more complex,
         # but keeping more generic support stubbed out feels like a reasonable step.
         if self.node.collection.partitioning:

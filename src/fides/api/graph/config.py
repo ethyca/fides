@@ -460,7 +460,7 @@ class Collection(BaseModel):
     grouped_inputs: Set[str] = set()
     data_categories: Set[FidesKey] = set()
     masking_strategy_override: Optional[MaskingStrategyOverride] = None
-    partitioning: Optional[Dict] = None
+    partitioning: Optional[Union[Dict, List[Dict]]] = None
 
     @property
     def field_dict(self) -> Dict[FieldPath, Field]:

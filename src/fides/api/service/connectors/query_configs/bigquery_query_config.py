@@ -16,6 +16,10 @@ from fides.api.schemas.namespace_meta.bigquery_namespace_meta import (
     BigQueryNamespaceMeta,
 )
 from fides.api.schemas.partitioning import BigQueryTimeBasedPartitioning
+from fides.api.schemas.partitioning.time_based_partitioning import (
+    TIME_BASED_REQUIRED_KEYS,
+    validate_partitioning_list,
+)
 from fides.api.service.connectors.query_configs.query_config import (
     QueryStringWithoutTuplesOverrideQueryConfig,
 )
@@ -37,7 +41,7 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
     namespace_meta_schema = BigQueryNamespaceMeta
 
     @property
-    def partitioning(self) -> Optional[Dict]:
+    def partitioning(self) -> Optional[Union[Dict, List[Dict]]]:
         # Overridden from base implementation to allow for _only_ BQ partitioning, for now
         return self.node.collection.partitioning
 
@@ -45,41 +49,79 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         self,
     ) -> List[str]:
         """
-        Returns the WHERE clauses specified in the partitioning spec
+        Build a list of SQL `WHERE` clause strings for the collection's partitioning
+        configuration.
 
-        Currently, only where-clause based partitioning is supported.
+        Supported modes:
+        1. `Legacy static` - A list of `where_clauses`.
+        2. `Single time-based` - A single time-based partitioning spec
+        3. `Multiple time-based` - A list of time-based partitioning specs, for varying intervals
 
-        TODO: derive partitions from a start/end/interval specification
-
-
-        NOTE: when we deprecate `where_clause` partitioning in favor of a more proper partitioning DSL,
-        we should be sure to still support the existing `where_clause` partition definition on
-        any in-progress DSRs so that they can run through to completion.
+        Any other combination (e.g. mixing modes or missing keys) raises a
+        `ValueError` so that mis-configurations surface early.
         """
-        partition_spec = self.partitioning
+
+        partition_spec: Optional[Union[Dict, List[Dict]]] = self.partitioning
         if not partition_spec:
-            logger.error(
-                "Partitioning clauses cannot be retrieved, no partitioning specification found"
+            logger.warning(
+                f"No partitioning specification found for node '{self.node.address}', skipping partition clauses"
             )
             return []
 
-        if where_clauses := partition_spec.get("where_clauses"):
-            return where_clauses
-
-        if all(
-            field in partition_spec for field in ["field", "start", "end", "interval"]
-        ):
-            bigquery_time_based_partitioning = BigQueryTimeBasedPartitioning(
-                field=partition_spec["field"],
-                start=partition_spec["start"],
-                end=partition_spec["end"],
-                interval=partition_spec["interval"],
-            )
-            return bigquery_time_based_partitioning.generate_where_clauses()
-
-        raise ValueError(
-            "`where_clauses` must be specified in partitioning specification!"
+        # Normalize to list so the rest of the logic can treat everything the same way.
+        specs: List[Dict] = (
+            [partition_spec]
+            if isinstance(partition_spec, dict)
+            else list(partition_spec)
         )
+
+        # Legacy mode using `where_clauses`
+        if len(specs) == 1 and "where_clauses" in specs[0]:
+            if any(k in specs[0] for k in TIME_BASED_REQUIRED_KEYS):
+                # Mixed mode not allowed
+                raise ValueError(
+                    "Partitioning spec cannot define both `where_clauses` and time-based partitioning."
+                )
+            where = specs[0].get("where_clauses") or []
+            if not where:
+                raise ValueError("`where_clauses` must be a non-empty list.")
+            return where  # type: ignore[return-value]
+
+        # Time-based partitioning
+        for spec in specs:
+            if not isinstance(spec, dict):
+                raise ValueError(
+                    f"Each partitioning specification must be a dict, got {type(spec)}"
+                )
+            if not TIME_BASED_REQUIRED_KEYS.issubset(spec):
+                raise ValueError(
+                    "Each time-based partitioning spec must contain field, start, end, and interval."
+                )
+            if "where_clauses" in spec:
+                raise ValueError(
+                    "`where_clauses` cannot be combined with time-based partitioning."
+                )
+
+        # Detect overlapping time ranges when more than one supplied
+        if len(specs) > 1:
+            validate_partitioning_list(
+                [
+                    BigQueryTimeBasedPartitioning(**spec) for spec in specs  # type: ignore[arg-type]
+                ]
+            )
+
+        # Generate the clauses
+        where_clauses: List[str] = []
+        for spec in specs:
+            partition = BigQueryTimeBasedPartitioning(
+                field=spec["field"],
+                start=spec["start"],
+                end=spec["end"],
+                interval=spec["interval"],
+            )
+            where_clauses.extend(partition.generate_where_clauses())
+
+        return where_clauses
 
     def _generate_table_name(self) -> str:
         """

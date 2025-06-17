@@ -1,7 +1,7 @@
 import re
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import List, Optional, Tuple
+from typing import List, Optional, Set, Tuple
 
 from pydantic import Field, field_validator, model_validator
 from sqlalchemy import and_, column, func, text
@@ -130,7 +130,7 @@ class TimeBasedPartitioning(FidesSchema):
         Chooses `WEEK` when the timedelta is a clean multiple of seven days,
         otherwise falls back to `DAY`.
         """
-        total_days = int(time_delta.total_seconds() / 86400)
+        total_days = int(time_delta.total_seconds() / 86400)  # 86400 seconds in a day
 
         # Prefer weeks when divisible cleanly to keep expressions compact
         if total_days % 7 == 0 and total_days >= 7:
@@ -260,7 +260,6 @@ class TimeBasedPartitioning(FidesSchema):
         conditions: List[ColumnElement] = []
 
         # Dynamic (NOW()/TODAY()) vs static ranges
-
         start_str = str(self.start)
         end_str = str(self.end)
 
@@ -416,8 +415,8 @@ class TimeBasedPartitioning(FidesSchema):
 
         Supported patterns
         -----------------
-        1. ``NOW()   - N <unit>s .. NOW()``   (timestamp based)
-        2. ``TODAY() - N <unit>s .. TODAY()`` (date based)
+        1. `NOW()   - N <unit>s TO NOW()`   (timestamp based)
+        2. `TODAY() - N <unit>s TO TODAY()` (date based)
 
         The helper chooses `CURRENT_TIMESTAMP` or `CURRENT_DATE` automatically
         based on which pattern is matched.
@@ -662,7 +661,7 @@ class TimeBasedPartitioning(FidesSchema):
 
 def validate_partitioning_list(partitionings: List["TimeBasedPartitioning"]) -> None:
     """Validate that multiple TimeBasedPartitioning objects do not define overlapping
-    ranges (inclusive).  Only specs whose *provided* bounds are literal YYYY-MM-DD
+    ranges (inclusive).  Only specs whose provided bounds are literal YYYY-MM-DD
     strings participate in validation; any bound that is None is treated as
     open-ended (-infinity for `start` or +infinity for `end`).  Specs with dynamic
     expressions like `NOW()` are skipped because we cannot resolve them at
@@ -711,7 +710,10 @@ def _date_value(expr: str) -> datetime:
     return datetime.strptime(expr.strip(), "%Y-%m-%d")
 
 
+TIME_BASED_REQUIRED_KEYS: Set[str] = set(TimeBasedPartitioning.model_fields.keys())
+
 __all__ = [
     "TimeBasedPartitioning",
     "validate_partitioning_list",
+    "TIME_BASED_REQUIRED_KEYS",
 ]
