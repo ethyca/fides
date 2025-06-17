@@ -38,22 +38,28 @@ class ExtractForExecutionLogPostProcessorStrategy(PostProcessorStrategy):
 
         try:
             # Only process if response.contents is available
-            if response is None or not response.contents:
+            if response is None or not response.content:
                 return data
-
-            source_data = response.contents
 
             if config.path is None:
                 # No path specified - use entire response contents as string
-                message = str(source_data)
+                message = str(response.content)
             else:
-                # Extract from specified dot-delimited path using pydash
-                extracted_value = pydash.get(source_data, config.path)
-                if extracted_value is not None:
-                    message = str(extracted_value)
-                else:
+                # Attempt to parse the response content as JSON before extracting
+                try:
+                    json_data: Any = response.json()
+                except ValueError:
+                    logger.debug(
+                        "Unable to parse response content as JSON for path extraction"
+                    )
+                    return data
+
+                extracted_value = pydash.get(json_data, config.path)
+                if extracted_value is None:
                     logger.debug(f"No data found at path '{config.path}'")
                     return data
+
+                message = str(extracted_value)
 
             # Add message to execution context
             add_execution_log_message(message)

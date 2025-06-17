@@ -6,7 +6,7 @@ Uses Python's contextvars for thread-safe, execution-scoped message collection.
 
 import contextvars
 from contextlib import contextmanager
-from typing import List, Optional
+from typing import Generator, List, Optional
 
 from loguru import logger
 
@@ -17,7 +17,7 @@ _execution_messages: contextvars.ContextVar[Optional[List[str]]] = (
 
 
 @contextmanager
-def collect_execution_log_messages():
+def collect_execution_log_messages() -> Generator[List[str], None, None]:
     """
     Context manager for collecting execution log messages.
 
@@ -30,7 +30,7 @@ def collect_execution_log_messages():
     Returns:
         List[str]: Messages collected during execution
     """
-    messages = []
+    messages: List[str] = []
     token = _execution_messages.set(messages)
     try:
         yield messages

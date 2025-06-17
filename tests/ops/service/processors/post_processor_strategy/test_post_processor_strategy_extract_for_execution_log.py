@@ -1,4 +1,4 @@
-from unittest.mock import Mock, patch
+from unittest.mock import create_autospec, patch
 
 from requests import Response
 
@@ -20,8 +20,9 @@ class TestExtractForExecutionLogPostProcessorStrategy:
         config = ExtractForExecutionLogPostProcessorConfiguration(path="user.email")
         data = {"user": {"email": "test@example.com", "name": "Test User"}}
 
-        mock_response = Mock(spec=Response)
-        mock_response.contents = data
+        mock_response = create_autospec(Response)
+        mock_response.content = data
+        mock_response.json.return_value = data
 
         processor = ExtractForExecutionLogPostProcessorStrategy(configuration=config)
 
@@ -40,8 +41,9 @@ class TestExtractForExecutionLogPostProcessorStrategy:
             ]
         }
 
-        mock_response = Mock(spec=Response)
-        mock_response.contents = data
+        mock_response = create_autospec(Response)
+        mock_response.content = data
+        mock_response.json.return_value = data
 
         processor = ExtractForExecutionLogPostProcessorStrategy(configuration=config)
 
@@ -57,8 +59,9 @@ class TestExtractForExecutionLogPostProcessorStrategy:
         data = {"status": "success", "count": 42}
 
         # Create mock response with contents
-        mock_response = Mock(spec=Response)
-        mock_response.contents = {"status": "success", "count": 42}
+        mock_response = create_autospec(Response)
+        mock_response.content = {"status": "success", "count": 42}
+        mock_response.json.return_value = {"status": "success", "count": 42}
 
         processor = ExtractForExecutionLogPostProcessorStrategy(configuration=config)
 
@@ -67,7 +70,7 @@ class TestExtractForExecutionLogPostProcessorStrategy:
 
             assert result == data
             # Should capture entire contents as string
-            expected_string = str(mock_response.contents)
+            expected_string = str(mock_response.content)
             assert len(messages) == 1
             assert messages[0] == expected_string
 
@@ -79,8 +82,9 @@ class TestExtractForExecutionLogPostProcessorStrategy:
         data = {"existing": "data"}
 
         # Create mock response with contents
-        mock_response = Mock(spec=Response)
-        mock_response.contents = {"existing": "data"}
+        mock_response = create_autospec(Response)
+        mock_response.content = {"existing": "data"}
+        mock_response.json.return_value = {"existing": "data"}
 
         processor = ExtractForExecutionLogPostProcessorStrategy(configuration=config)
 
@@ -94,7 +98,7 @@ class TestExtractForExecutionLogPostProcessorStrategy:
             assert len(messages) == 0
 
     def test_no_response_contents_handling(self):
-        """Test handling when response.contents is not available"""
+        """Test handling when response.content is not available"""
         config = ExtractForExecutionLogPostProcessorConfiguration(path="any.path")
         data = {"some": "data"}
 
@@ -117,8 +121,9 @@ class TestExtractForExecutionLogPostProcessorStrategy:
         )
         data = {"api": {"result": {"user": {"settings": {"enabled": True}}}}}
 
-        mock_response = Mock(spec=Response)
-        mock_response.contents = data
+        mock_response = create_autospec(Response)
+        mock_response.content = data
+        mock_response.json.return_value = data
 
         processor = ExtractForExecutionLogPostProcessorStrategy(configuration=config)
 
@@ -134,8 +139,9 @@ class TestExtractForExecutionLogPostProcessorStrategy:
         data = {"test": "data"}
 
         # Create mock response with contents
-        mock_response = Mock(spec=Response)
-        mock_response.contents = {"test": "data"}
+        mock_response = create_autospec(Response)
+        mock_response.content = {"test": "data"}
+        mock_response.json.return_value = {"test": "data"}
 
         processor = ExtractForExecutionLogPostProcessorStrategy(configuration=config)
 
@@ -158,7 +164,7 @@ class TestExtractForExecutionLogPostProcessorStrategy:
                 )
 
     def test_data_handling_and_response_contents(self):
-        """Test that postprocessor is non-destructive and uses response.contents correctly"""
+        """Test that postprocessor is non-destructive and uses response.content correctly"""
 
         config = ExtractForExecutionLogPostProcessorConfiguration(path="user.id")
         original_data = {
@@ -166,8 +172,9 @@ class TestExtractForExecutionLogPostProcessorStrategy:
             "metadata": {"timestamp": "2023-01-01"},
         }
 
-        mock_response = Mock(spec=Response)
-        mock_response.contents = original_data
+        mock_response = create_autospec(Response)
+        mock_response.content = original_data
+        mock_response.json.return_value = original_data
 
         processor = ExtractForExecutionLogPostProcessorStrategy(configuration=config)
 
