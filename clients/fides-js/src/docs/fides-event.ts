@@ -162,7 +162,7 @@ export interface FidesEvent extends CustomEvent {
          * SDK script, for example, this will be "external", meaning the event
          * was triggered by something other than a FidesJS UI element.
          */
-        origin?: "fides" | "external" | string;
+        origin?: "fides" | "external";
 
         /**
          * The type of element that triggered the event. Additional types may be

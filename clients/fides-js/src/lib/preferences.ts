@@ -28,10 +28,18 @@ import {
   dispatchFidesEvent,
   FidesEventDetailsTrigger,
   FidesEventExtraDetails,
+  FidesEventOrigin,
 } from "./events";
 import { decodeFidesString } from "./fides-string";
 import { transformConsentToFidesUserPreference } from "./shared-consent-utils";
 import { TcfSavePreferences } from "./tcf/types";
+
+const EXTERNAL_CONSENT_METHODS = [
+  ConsentMethod.SCRIPT,
+  ConsentMethod.GPC,
+  ConsentMethod.OT_MIGRATION,
+];
+
 /**
  * Helper function to transform save prefs and call API
  */
@@ -123,15 +131,13 @@ export const updateConsentPreferences = async ({
   if (!updateCookie && !consentPreferencesToSave) {
     throw new Error("updateCookie is required");
   }
-  const trigger = {
+  const trigger: FidesEventDetailsTrigger = {
     ...(eventExtraDetails?.trigger as FidesEventDetailsTrigger),
     origin:
       (eventExtraDetails?.trigger as FidesEventDetailsTrigger)?.origin ||
-      (consentMethod === ConsentMethod.SCRIPT ||
-      consentMethod === ConsentMethod.GPC ||
-      consentMethod === ConsentMethod.OT_MIGRATION
-        ? "external"
-        : "fides"),
+      (EXTERNAL_CONSENT_METHODS.includes(consentMethod)
+        ? FidesEventOrigin.EXTERNAL
+        : FidesEventOrigin.FIDES),
   };
   // 1. Update the cookie object based on new preferences & extra details
   const updatedCookie = await updateCookie!(cookie);
@@ -277,7 +283,7 @@ export const updateConsent = async (
   consentMethod: ConsentMethod = ConsentMethod.SCRIPT,
   eventExtraDetails: FidesEventExtraDetails = {
     trigger: {
-      origin: "external",
+      origin: FidesEventOrigin.EXTERNAL,
     },
   },
 ): Promise<void> => {

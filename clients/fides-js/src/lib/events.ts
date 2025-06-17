@@ -7,6 +7,17 @@ declare global {
   interface WindowEventMap extends Record<FidesEventType, FidesEvent> {}
 }
 
+export enum FidesEventOrigin {
+  FIDES = "fides",
+  EXTERNAL = "external",
+}
+
+export enum FidesEventTargetType {
+  TOGGLE = "toggle",
+  BUTTON = "button",
+  LINK = "link",
+}
+
 /**
  * Defines the type of "extra" details that can be optionally added to certain
  * events. This is intentionally vague. See the /docs/fides-event.ts
@@ -28,6 +39,13 @@ export type FidesEventDetail = FidesCookie & {
   extraDetails?: FidesEventExtraDetails;
   timestamp?: number;
 };
+
+/**
+ * Defines the properties available on event.detail.extraDetails.servingComponent
+ */
+export type FidesEventDetailsServingComponent = NonNullable<
+  DocsFidesEvent["detail"]["extraDetails"]
+>["servingComponent"];
 
 /**
  * Defines the properties available on event.detail.extraDetails.trigger
@@ -87,7 +105,7 @@ export const dispatchFidesEvent = (
     if (!(extraDetails?.trigger as FidesEventDetailsTrigger)?.origin) {
       constructedExtraDetails.trigger = {
         ...(constructedExtraDetails.trigger as FidesEventDetailsTrigger),
-        ...({ origin: "fides" } as FidesEventDetailsTrigger),
+        ...({ origin: FidesEventOrigin.FIDES } as FidesEventDetailsTrigger),
       } as FidesEventDetailsTrigger;
     }
     const perfMark = performance?.mark?.(type);

@@ -27,6 +27,8 @@ import {
 import {
   dispatchFidesEvent,
   FidesEventDetailsPreference,
+  FidesEventDetailsServingComponent,
+  FidesEventTargetType,
 } from "../../lib/events";
 import { useNoticesServed } from "../../lib/hooks";
 import {
@@ -550,9 +552,8 @@ export const TcfOverlay = ({
   const handleToggleChange = useCallback(
     (updatedIds: EnabledIds, preference: FidesEventDetailsPreference) => {
       const eventExtraDetails: FidesEvent["detail"]["extraDetails"] = {
-        servingComponent: servingComponentRef.current as NonNullable<
-          FidesEvent["detail"]["extraDetails"]
-        >["servingComponent"],
+        servingComponent:
+          servingComponentRef.current as FidesEventDetailsServingComponent,
         trigger: triggerRef.current,
         preference,
       };
@@ -677,7 +678,7 @@ export const TcfOverlay = ({
                       label={i18n.t("exp.save_button_label")}
                       onClick={() => {
                         setTrigger({
-                          type: "button",
+                          type: FidesEventTargetType.BUTTON,
                           label: i18n.t("exp.save_button_label"),
                         });
                         onSave(ConsentMethod.SAVE, draftIds);

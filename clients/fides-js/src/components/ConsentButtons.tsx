@@ -8,6 +8,7 @@ import {
   PrivacyExperience,
   PrivacyNotice,
 } from "../lib/consent-types";
+import { FidesEventTargetType } from "../lib/events";
 import { useMediaQuery } from "../lib/hooks/useMediaQuery";
 import { DEFAULT_LOCALE, Locale, messageExists } from "../lib/i18n";
 import { useI18n } from "../lib/i18n/i18n-context";
@@ -87,7 +88,7 @@ export const ConsentButtons = ({
                 label={i18n.t("exp.privacy_preferences_link_label")}
                 onClick={() => {
                   setTrigger({
-                    type: "button",
+                    type: FidesEventTargetType.BUTTON,
                     label: i18n.t("exp.privacy_preferences_link_label"),
                   });
                   handleTCFManagePreferencesClick();
@@ -102,7 +103,7 @@ export const ConsentButtons = ({
                 label={i18n.t("exp.reject_button_label")}
                 onClick={() => {
                   setTrigger({
-                    type: "button",
+                    type: FidesEventTargetType.BUTTON,
                     label: i18n.t("exp.reject_button_label"),
                   });
                   onRejectAll();
@@ -116,7 +117,7 @@ export const ConsentButtons = ({
               label={i18n.t("exp.accept_button_label")}
               onClick={() => {
                 setTrigger({
-                  type: "button",
+                  type: FidesEventTargetType.BUTTON,
                   label: i18n.t("exp.accept_button_label"),
                 });
                 onAcceptAll();
@@ -149,7 +150,7 @@ export const ConsentButtons = ({
             label={i18n.t("exp.privacy_preferences_link_label")}
             onClick={() => {
               setTrigger({
-                type: "button",
+                type: FidesEventTargetType.BUTTON,
                 label: i18n.t("exp.privacy_preferences_link_label"),
               });
               onManagePreferencesClick();
@@ -217,7 +218,7 @@ export const NoticeConsentButtons = ({
           label={i18n.t("exp.acknowledge_button_label")}
           onClick={() => {
             setTrigger({
-              type: "button",
+              type: FidesEventTargetType.BUTTON,
               label: i18n.t("exp.acknowledge_button_label"),
             });
             handleAcknowledgeNotices();
@@ -233,7 +234,7 @@ export const NoticeConsentButtons = ({
           label={i18n.t("exp.save_button_label")}
           onClick={() => {
             setTrigger({
-              type: "button",
+              type: FidesEventTargetType.BUTTON,
               label: i18n.t("exp.save_button_label"),
             });
             handleSave();

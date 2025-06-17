@@ -1,5 +1,6 @@
 import { h } from "preact";
 
+import { FidesEventTargetType } from "../lib/events";
 import { useEvent } from "../lib/providers/event-context";
 
 const Toggle = ({
@@ -32,7 +33,7 @@ const Toggle = ({
         className="fides-toggle-input"
         onChange={() => {
           setTrigger({
-            type: "toggle",
+            type: FidesEventTargetType.TOGGLE,
             label,
             checked: !checked,
           });

@@ -14,6 +14,7 @@ import {
   PrivacyExperienceMinimal,
 } from "../lib/consent-types";
 import { defaultShowModal, shouldResurfaceBanner } from "../lib/consent-utils";
+import { FidesEventOrigin } from "../lib/events";
 import { useElementById, useHasMounted } from "../lib/hooks";
 import { useI18n } from "../lib/i18n/i18n-context";
 import { useEvent } from "../lib/providers/event-context";
@@ -123,7 +124,7 @@ const Overlay: FunctionComponent<Props> = ({
   });
 
   const handleOpenModal = useCallback(
-    (origin = "fides") => {
+    (origin = FidesEventOrigin.FIDES) => {
       if (options.fidesEmbed) {
         setBannerIsOpen(false);
       } else if (instance) {
@@ -161,7 +162,7 @@ const Overlay: FunctionComponent<Props> = ({
   useEffect(() => {
     if (!!experience && !options.fidesEmbed) {
       window.Fides.showModal = () => {
-        handleOpenModal("external");
+        handleOpenModal(FidesEventOrigin.EXTERNAL);
       };
     }
     return () => {

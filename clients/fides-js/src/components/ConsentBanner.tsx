@@ -1,6 +1,8 @@
 import { ComponentChildren, FunctionComponent, h, VNode } from "preact";
 import { useEffect } from "preact/hooks";
 
+import { FidesEventTargetType } from "~/lib/events";
+
 import { getConsentContext } from "../lib/consent-context";
 import {
   GpcStatus,
@@ -89,7 +91,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
             ariaLabel="Close banner"
             onClick={() => {
               setTrigger({
-                type: "button",
+                type: FidesEventTargetType.BUTTON,
                 label: "Close banner",
               });
               onClose();

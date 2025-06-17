@@ -26,7 +26,10 @@ import {
   getFidesConsentCookie,
   updateCookieFromNoticePreferences,
 } from "../../lib/cookie";
-import { FidesEventDetailsPreference } from "../../lib/events";
+import {
+  FidesEventDetailsPreference,
+  FidesEventDetailsServingComponent,
+} from "../../lib/events";
 import { useNoticesServed } from "../../lib/hooks";
 import {
   selectBestExperienceConfigTranslation,
@@ -333,9 +336,8 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   const handleToggleChange = useCallback(
     (updatedKeys: Array<string>, preference: FidesEventDetailsPreference) => {
       const eventExtraDetails: FidesEvent["detail"]["extraDetails"] = {
-        servingComponent: servingComponentRef.current as NonNullable<
-          FidesEvent["detail"]["extraDetails"]
-        >["servingComponent"],
+        servingComponent:
+          servingComponentRef.current as FidesEventDetailsServingComponent,
         trigger: triggerRef.current,
         preference,
       };
