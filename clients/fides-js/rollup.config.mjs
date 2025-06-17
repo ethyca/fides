@@ -135,6 +135,16 @@ const SCRIPTS = [
 const rollupOptions = [];
 
 /**
+ * Ignore circular dependency warnings from node_modules
+ * that we don't control.
+ */
+const onLog = (_, { code, message }) => {
+  if (code === "CIRCULAR_DEPENDENCY" && message.includes("node_modules")) {
+    return;
+  }
+};
+
+/**
  * For each of our entrypoint scripts, build .js, .mjs, and .d.ts outputs
  */
 SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
@@ -157,6 +167,7 @@ SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
         },
       },
     ],
+    onLog,
   };
   const mjs = {
     input: `src/${name}.ts`,
@@ -180,6 +191,7 @@ SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
         sourcemap: true,
       },
     ],
+    onLog,
   };
   const declaration = {
     input: `src/${name}.ts`,
