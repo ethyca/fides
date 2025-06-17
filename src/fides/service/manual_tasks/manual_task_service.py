@@ -27,6 +27,11 @@ if TYPE_CHECKING:
     )
 
 
+class ManualTaskNotFoundError(Exception):
+    """Exception raised when a manual task is not found."""
+    pass
+
+
 class ManualTaskService:
     def __init__(self, db: Session):
         self.db = db
@@ -82,7 +87,7 @@ class ManualTaskService:
         task = self.db.execute(stmt).scalar_one_or_none()
         if task is None:
             logger.debug(f"No task found with filters: {filter_desc}")
-            raise ValueError(f"No task found with filters: {filter_desc}")
+            raise ManualTaskNotFoundError(f"No task found with filters: {filter_desc}")
         return task
 
     @with_task_logging("Verify user IDs")

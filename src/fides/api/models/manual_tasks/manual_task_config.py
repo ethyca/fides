@@ -13,7 +13,10 @@ from fides.api.schemas.manual_tasks.manual_task_config import (
     ManualTaskFieldMetadata,
     ManualTaskFieldType,
 )
-from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskLogStatus
+from fides.api.schemas.manual_tasks.manual_task_schemas import (
+    ManualTaskExecutionTiming,
+    ManualTaskLogStatus,
+)
 
 if TYPE_CHECKING:  # pragma: no cover
     from fides.api.models.manual_tasks.manual_task import ManualTask  # pragma: no cover
@@ -38,6 +41,11 @@ class ManualTaskConfig(Base):
     config_type = Column(EnumColumn(ManualTaskConfigurationType), nullable=False)
     version = Column(Integer, nullable=False, default=1)
     is_current = Column(Boolean, nullable=False, default=True)
+    execution_timing = Column(
+        EnumColumn(ManualTaskExecutionTiming),
+        nullable=False,
+        default=ManualTaskExecutionTiming.post_execution,
+    )
 
     # Relationships
     task = relationship("ManualTask", back_populates="configs", viewonly=True)

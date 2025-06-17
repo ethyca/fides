@@ -18,7 +18,9 @@ class ActionType(str, EnumType):
     update = "update"
 
 
-class CurrentStep(EnumType):
+class CurrentStep(str, EnumType):
+    """The current step in privacy request execution."""
+
     pre_webhooks = "pre_webhooks"
     access = "access"
     upload_access = "upload_access"
@@ -28,6 +30,7 @@ class CurrentStep(EnumType):
     finalize_consent = "finalize_consent"
     email_post_send = "email_post_send"
     post_webhooks = "post_webhooks"
+    manual_tasks = "manual_tasks"
 
 
 # action types we actively support in policies/requests

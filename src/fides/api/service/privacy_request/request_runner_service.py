@@ -82,6 +82,9 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
+from fides.api.models.manual_tasks.manual_task import ManualTask
+from fides.api.models.manual_tasks.manual_task_instance import ManualTaskInstance
+from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskExecutionTiming
 
 
 class ManualWebhookResults(FidesSchema):
@@ -281,6 +284,72 @@ def save_access_results(
     privacy_request.save(session)
 
 
+def get_manual_task_results(
+    db: Session,
+    privacy_request: PrivacyRequest,
+) -> ManualWebhookResults:
+    """Get manual task submissions formatted for upload and storage.
+
+    Args:
+        db: Database session
+        privacy_request: The privacy request to get submissions for
+
+    Returns:
+        ManualWebhookResults containing the formatted data
+    """
+    upload_data: dict[str, list[dict[str, Optional[Any]]]] = {}
+    storage_data: dict[str, list[dict[str, Optional[Any]]]] = {}
+
+    # Get all manual task instances for this privacy request
+    instances = ManualTaskInstance.filter(
+        db=db,
+        conditions=(
+            (ManualTaskInstance.entity_id == privacy_request.id)
+            & (ManualTaskInstance.entity_type == "privacy_request")
+        ),
+    ).all()
+
+    for instance in instances:
+        task_data = {
+            "task_id": instance.task_id,
+            "config_id": instance.config_id,
+            "status": instance.status,
+            "completed_at": instance.completed_at.isoformat() if instance.completed_at else None,
+            "completed_by": instance.completed_by_id,
+            "submissions": []
+        }
+
+        # Add all submissions for this instance
+        for submission in instance.submissions:
+            submission_data = {
+                "field_key": submission.field.field_key,
+                "field_type": submission.field.field_type,
+                "submitted_at": submission.submitted_at.isoformat(),
+                "submitted_by": submission.submitted_by,
+                "data": submission.data
+            }
+            task_data["submissions"].append(submission_data)
+
+        # Add attachments if any
+        if instance.attachments:
+            task_data["attachments"] = []
+            for attachment in instance.attachments:
+                task_data["attachments"].append({
+                    "id": attachment.id,
+                    "name": attachment.name,
+                    "content_type": attachment.content_type,
+                })
+
+        upload_data.setdefault("manual_tasks", []).append(task_data)
+        storage_data.setdefault("manual_tasks", []).append(task_data)
+
+    return ManualWebhookResults(
+        manual_data_for_upload=upload_data,
+        manual_data_for_storage=storage_data,
+        proceed=True
+    )
+
+
 @log_context(
     capture_args={
         "privacy_request_id": LoggerContextKeys.privacy_request_id,
@@ -314,6 +383,9 @@ def upload_and_save_access_results(  # pylint: disable=R0912
     if not access_result:
         logger.info("No results returned for access request")
 
+    # Get manual task submissions
+    manual_task_results = get_manual_task_results(session, privacy_request)
+
     rule_filtered_results: dict[str, dict[str, list[dict[str, Optional[Any]]]]] = {}
     for rule in policy.get_rules_for_action(  # pylint: disable=R1702
         action_type=ActionType.access
@@ -331,6 +403,7 @@ def upload_and_save_access_results(  # pylint: disable=R0912
         # Create a copy of filtered results to modify for upload
         results_to_upload = deepcopy(filtered_results)
         results_to_upload.update(manual_data_access_results.manual_data_for_upload)
+        results_to_upload.update(manual_task_results.manual_data_for_upload)
 
         rule_download_urls = upload_access_results(
             session,
@@ -345,12 +418,51 @@ def upload_and_save_access_results(  # pylint: disable=R0912
 
         # Create results for storage
         filtered_results.update(manual_data_access_results.manual_data_for_storage)
+        filtered_results.update(manual_task_results.manual_data_for_storage)
         if storage_attachments:
             filtered_results["attachments"] = storage_attachments
         rule_filtered_results[rule.key] = filtered_results
 
     save_access_results(session, privacy_request, download_urls, rule_filtered_results)
     return download_urls
+
+
+def check_manual_tasks(
+    db: Session,
+    privacy_request: PrivacyRequest,
+    timing: ManualTaskExecutionTiming,
+) -> bool:
+    """Check if manual tasks with the specified timing are complete.
+
+    Args:
+        db: Database session
+        privacy_request: The privacy request to check
+        timing: The execution timing to check for
+
+    Returns:
+        bool: True if all tasks are complete or no tasks exist, False if tasks are pending
+    """
+    # Get all manual task instances for this privacy request
+    instances = ManualTaskInstance.filter(
+        db=db,
+        conditions=(
+            (ManualTaskInstance.entity_id == privacy_request.id)
+            & (ManualTaskInstance.entity_type == "privacy_request")
+        ),
+    ).all()
+
+    # No instances means no manual tasks to check
+    if not instances:
+        return True
+
+    # Check each instance's config timing
+    for instance in instances:
+        if instance.config.execution_timing == timing and not instance.is_complete():
+            privacy_request.status = PrivacyRequestStatus.requires_input
+            privacy_request.save(db)
+            return False
+
+    return True
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
@@ -405,6 +517,15 @@ def run_privacy_request(
             privacy_request.start_processing(session)
 
             policy = privacy_request.policy
+
+            # Check pre-execution manual tasks
+            if can_run_checkpoint(
+                request_checkpoint=CurrentStep.manual_tasks,
+                from_checkpoint=resume_step,
+            ):
+                privacy_request.cache_failed_checkpoint_details(CurrentStep.manual_tasks)
+                if not check_manual_tasks(session, privacy_request, ManualTaskExecutionTiming.pre_execution):
+                    return
 
             # check manual access results and pause if needed
             manual_webhook_access_results: ManualWebhookResults = (
@@ -643,6 +764,15 @@ def run_privacy_request(
                     webhook_cls=PolicyPostWebhook,  # type: ignore
                 )
                 if not proceed:
+                    return
+
+            # Check post-execution manual tasks
+            if can_run_checkpoint(
+                request_checkpoint=CurrentStep.manual_tasks,
+                from_checkpoint=resume_step,
+            ):
+                privacy_request.cache_failed_checkpoint_details(CurrentStep.manual_tasks)
+                if not check_manual_tasks(session, privacy_request, ManualTaskExecutionTiming.post_execution):
                     return
 
             legacy_request_completion_enabled = ConfigProxy(

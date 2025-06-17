@@ -23,6 +23,7 @@ from fides.api.models.property import Property
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.messaging.messaging import MessagingActionType
+from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskParentEntityType
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import (
     BulkPostPrivacyRequests,
@@ -49,6 +50,7 @@ from fides.service.messaging.messaging_service import (
     send_privacy_request_receipt_message_to_user,
     send_verification_code_to_user,
 )
+from fides.service.manual_tasks.manual_task_service import ManualTaskService
 
 
 class PrivacyRequestError(Exception):
@@ -190,6 +192,28 @@ class PrivacyRequestService:
                 for privacy_preference in privacy_preferences:
                     privacy_preference.privacy_request_id = privacy_request.id
                     privacy_preference.save(db=self.db)
+
+            # Create manual task instance for this privacy request
+            manual_task_service = ManualTaskService(self.db)
+            try:
+                manual_task = manual_task_service.get_task(
+                    parent_entity_id=privacy_request.connection_config_id,
+                    parent_entity_type=ManualTaskParentEntityType.connection_config
+                )
+                config = manual_task_service.manual_task_config_service.current_config(manual_task.id)
+            except ManualTaskNotFoundError:
+                logger.info(f"No manual task found for privacy request {privacy_request.id}")
+            except ManualTaskConfigNotFoundError:
+                logger.info(f"No manual task config found for privacy request type {privacy_request.policy.type}")
+                manual_task = None
+            if manual_task and config:
+                manual_task_service.create_instance(
+                    task_id=manual_task.id,
+                    config_id=config.id,
+                    entity_id=privacy_request.id,
+                    entity_type="privacy_request",
+                )
+                logger.info(f"Created manual task instance for privacy request {privacy_request.id}")
 
             cache_data(
                 privacy_request,

@@ -27,6 +27,13 @@ from fides.config.config_proxy import ConfigProxy
 from fides.service.messaging.messaging_service import MessagingService
 from fides.service.privacy_request.privacy_request_service import PrivacyRequestService
 from tests.conftest import wait_for_tasks_to_complete
+from fides.api.models.manual_tasks.manual_task import ManualTask
+from fides.api.models.manual_tasks.manual_task_config import ManualTaskConfig
+from fides.api.models.manual_tasks.manual_task_instance import ManualTaskInstance
+from fides.api.schemas.manual_tasks.manual_task_status import StatusType
+from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskParentEntityType
+from fides.api.schemas.manual_tasks.manual_task_config import ManualTaskConfigurationType
+from fides.api.models.manual_tasks.manual_task_submission import ManualTaskSubmission
 
 
 @pytest.mark.integration
@@ -425,3 +432,145 @@ class TestPrivacyRequestService:
             ExecutionLog.status == ExecutionLogStatus.error
         )
         assert error_logs.count() == 0
+
+    @pytest.mark.integration
+    @pytest.mark.integration_postgres
+    def test_create_privacy_request_creates_manual_task_instance(
+        self,
+        db: Session,
+        privacy_request_service: PrivacyRequestService,
+        policy: Policy,
+        connection_config: ConnectionConfig,
+    ) -> None:
+        """Test that creating a privacy request creates a manual task instance if a manual task exists."""
+        # Create a manual task and config
+        manual_task = ManualTask.create(
+            db=db,
+            data={
+                "task_type": "privacy_request",
+                "parent_entity_id": connection_config.id,
+                "parent_entity_type": ManualTaskParentEntityType.connection_config,
+            },
+        )
+        manual_task_config = ManualTaskConfig.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_type": ManualTaskConfigurationType.access_privacy_request,
+                "is_current": True,
+            },
+        )
+
+        # Create privacy request
+        privacy_request = privacy_request_service.create_privacy_request(
+            PrivacyRequestCreate(
+                policy_key=policy.key,
+                identity=Identity(email="test@example.com"),
+                connection_config_id=connection_config.id,
+            ),
+            authenticated=True,
+        )
+
+        # Verify manual task instance was created
+        manual_task_instance = ManualTaskInstance.filter(
+            db=db,
+            conditions=(
+                (ManualTaskInstance.task_id == manual_task.id)
+                & (ManualTaskInstance.config_id == manual_task_config.id)
+                & (ManualTaskInstance.entity_id == privacy_request.id)
+                & (ManualTaskInstance.entity_type == "privacy_request")
+            ),
+        ).first()
+
+        assert manual_task_instance is not None
+        assert manual_task_instance.status == StatusType.pending
+
+        # Cleanup
+        manual_task_instance.delete(db)
+        manual_task_config.delete(db)
+        manual_task.delete(db)
+        privacy_request.delete(db)
+
+    @pytest.mark.integration
+    @pytest.mark.integration_postgres
+    def test_privacy_request_includes_manual_task_submissions(
+        self,
+        db: Session,
+        privacy_request_service: PrivacyRequestService,
+        policy: Policy,
+        connection_config: ConnectionConfig,
+    ) -> None:
+        """Test that manual task submissions are included in the DSR package."""
+        # Create a manual task and config
+        manual_task = ManualTask.create(
+            db=db,
+            data={
+                "task_type": "privacy_request",
+                "parent_entity_id": connection_config.id,
+                "parent_entity_type": ManualTaskParentEntityType.connection_config,
+            },
+        )
+        manual_task_config = ManualTaskConfig.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_type": ManualTaskConfigurationType.access_privacy_request,
+                "is_current": True,
+            },
+        )
+
+        # Create privacy request
+        privacy_request = privacy_request_service.create_privacy_request(
+            PrivacyRequestCreate(
+                policy_key=policy.key,
+                identity=Identity(email="test@example.com"),
+                connection_config_id=connection_config.id,
+            ),
+            authenticated=True,
+        )
+
+        # Create a manual task instance
+        instance = ManualTaskInstance.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_id": manual_task_config.id,
+                "entity_id": privacy_request.id,
+                "entity_type": "privacy_request",
+            },
+        )
+
+        # Create a submission
+        submission = ManualTaskSubmission.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_id": manual_task_config.id,
+                "instance_id": instance.id,
+                "field_id": "test_field",
+                "data": {"test_key": "test_value"},
+            },
+        )
+
+        # Run the privacy request
+        privacy_request_service.approve_privacy_requests(
+            request_ids=[privacy_request.id],
+            suppress_notification=True,
+        )
+
+        # Verify that the manual task submissions are included in the filtered results
+        filtered_results = privacy_request.get_filtered_final_upload()
+        assert "manual_tasks" in filtered_results
+        assert len(filtered_results["manual_tasks"]) == 1
+        task_data = filtered_results["manual_tasks"][0]
+        assert task_data["task_id"] == manual_task.id
+        assert task_data["config_id"] == manual_task_config.id
+        assert len(task_data["submissions"]) == 1
+        assert task_data["submissions"][0]["data"] == {"test_key": "test_value"}
+
+        # Cleanup
+        submission.delete(db)
+        instance.delete(db)
+        manual_task_config.delete(db)
+        manual_task.delete(db)
+        privacy_request.delete(db)
