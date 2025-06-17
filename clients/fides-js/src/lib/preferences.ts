@@ -141,7 +141,7 @@ export const updateConsentPreferences = async ({
   // 2. Dispatch a "FidesUpdating" event with the new preferences
   dispatchFidesEvent("FidesUpdating", cookie, {
     ...eventExtraDetails,
-    ...trigger,
+    trigger,
   });
 
   // 3. Update the window.Fides object
@@ -206,7 +206,7 @@ export const updateConsentPreferences = async ({
   // 7. Dispatch a "FidesUpdated" event
   dispatchFidesEvent("FidesUpdated", cookie, {
     ...eventExtraDetails,
-    ...trigger,
+    trigger,
   });
 };
 
