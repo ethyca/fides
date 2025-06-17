@@ -55,7 +55,6 @@ class QueryConfig(Generic[T], ABC):
             logger.warning(
                 "Partitioning is only supported on BigQuery connectors at this time!"
             )
-        return None
 
     def field_map(self) -> Dict[FieldPath, Field]:
         """Flattened FieldPaths of interest from this traversal_node."""

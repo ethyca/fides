@@ -5,8 +5,9 @@ from fideslang.models import MaskingStrategies
 from loguru import logger
 from sqlalchemy import MetaData, Table, text
 from sqlalchemy.engine import Engine
-from sqlalchemy.sql import Delete, Update  # type: ignore
+from sqlalchemy.sql import Delete, Update
 from sqlalchemy.sql.elements import ColumnElement, TextClause
+from sqlalchemy_bigquery import BigQueryDialect
 
 from fides.api.graph.config import Field, FieldPath
 from fides.api.graph.execution import ExecutionNode
@@ -15,9 +16,10 @@ from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.namespace_meta.bigquery_namespace_meta import (
     BigQueryNamespaceMeta,
 )
-from fides.api.schemas.partitioning import BigQueryTimeBasedPartitioning
-from fides.api.schemas.partitioning.time_based_partitioning import (
+from fides.api.schemas.partitioning import (
     TIME_BASED_REQUIRED_KEYS,
+    BigQueryTimeBasedPartitioning,
+    combine_partitions,
     validate_partitioning_list,
 )
 from fides.api.service.connectors.query_configs.query_config import (
@@ -55,7 +57,7 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         Supported modes:
         1. `Legacy static` - A list of `where_clauses`.
         2. `Single time-based` - A single time-based partitioning spec
-        3. `Multiple time-based` - A list of time-based partitioning specs, for varying intervals
+        3. `Multiple time-based` - A list of time-based partitioning specs, with different intervals
 
         Any other combination (e.g. mixing modes or missing keys) raises a
         `ValueError` so that mis-configurations surface early.
@@ -85,7 +87,7 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
             where = specs[0].get("where_clauses") or []
             if not where:
                 raise ValueError("`where_clauses` must be a non-empty list.")
-            return where  # type: ignore[return-value]
+            return where
 
         # Time-based partitioning
         for spec in specs:
@@ -105,21 +107,27 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         # Detect overlapping time ranges when more than one supplied
         if len(specs) > 1:
             validate_partitioning_list(
-                [
-                    BigQueryTimeBasedPartitioning(**spec) for spec in specs  # type: ignore[arg-type]
-                ]
+                [BigQueryTimeBasedPartitioning(**spec) for spec in specs]
             )
 
-        # Generate the clauses
-        where_clauses: List[str] = []
-        for spec in specs:
-            partition = BigQueryTimeBasedPartitioning(
+        partitions = [
+            BigQueryTimeBasedPartitioning(
                 field=spec["field"],
-                start=spec["start"],
-                end=spec["end"],
-                interval=spec["interval"],
+                start=spec.get("start"),
+                end=spec.get("end"),
+                interval=spec.get("interval"),
             )
-            where_clauses.extend(partition.generate_where_clauses())
+            for spec in specs
+        ]
+
+        # Combine and de-duplicate boundary rows
+        combined_expressions = combine_partitions(partitions)
+
+        dialect = BigQueryDialect()
+        where_clauses = [
+            str(expr.compile(dialect=dialect, compile_kwargs={"literal_binds": True}))
+            for expr in combined_expressions
+        ]
 
         return where_clauses
 
@@ -199,7 +207,7 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         nested_result = unflatten_dict(merged_dict)
 
         # 5. Replace any arrays containing only None values with empty arrays
-        nested_result = replace_none_arrays(nested_result)  # type: ignore
+        nested_result = replace_none_arrays(nested_result)
 
         # 6. Only keep top-level keys that are in the update_value_map
         top_level_keys = {key.split(".")[0] for key in update_value_map}

@@ -735,7 +735,7 @@ class TestBigQueryQueryConfigPartitioning:
         query_config = BigQueryQueryConfig(partitioned_customer_node)
         partition_clauses = query_config.get_partition_clauses()
         assert partition_clauses == [
-            "`created` > CURRENT_TIMESTAMP - INTERVAL 1000 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 500 DAY",
+            "`created` >= CURRENT_TIMESTAMP - INTERVAL 1000 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 500 DAY",
             "`created` > CURRENT_TIMESTAMP - INTERVAL 500 DAY AND `created` <= CURRENT_TIMESTAMP",
         ]
 
@@ -798,7 +798,7 @@ class TestBigQueryQueryConfigPartitioning:
         partition_clauses = query_config.get_partition_clauses()
 
         assert partition_clauses == [
-            "`created` > CURRENT_TIMESTAMP - INTERVAL 1 WEEK AND `created` <= CURRENT_TIMESTAMP",
+            "`created` >= CURRENT_TIMESTAMP - INTERVAL 1 WEEK AND `created` <= CURRENT_TIMESTAMP",
         ]
 
     def test_get_partition_clauses_many_partitions(self, dataset_graph):
@@ -821,7 +821,7 @@ class TestBigQueryQueryConfigPartitioning:
         partition_clauses = query_config.get_partition_clauses()
 
         assert partition_clauses == [
-            "`created` > CURRENT_TIMESTAMP - INTERVAL 30 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 25 DAY",
+            "`created` >= CURRENT_TIMESTAMP - INTERVAL 30 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 25 DAY",
             "`created` > CURRENT_TIMESTAMP - INTERVAL 25 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 20 DAY",
             "`created` > CURRENT_TIMESTAMP - INTERVAL 20 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 15 DAY",
             "`created` > CURRENT_TIMESTAMP - INTERVAL 15 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 10 DAY",
@@ -849,7 +849,7 @@ class TestBigQueryQueryConfigPartitioning:
         partition_clauses = query_config.get_partition_clauses()
 
         assert partition_clauses == [
-            "`last_visit` > CURRENT_TIMESTAMP - INTERVAL 4 WEEK AND `last_visit` <= CURRENT_TIMESTAMP - INTERVAL 3 WEEK",
+            "`last_visit` >= CURRENT_TIMESTAMP - INTERVAL 4 WEEK AND `last_visit` <= CURRENT_TIMESTAMP - INTERVAL 3 WEEK",
             "`last_visit` > CURRENT_TIMESTAMP - INTERVAL 3 WEEK AND `last_visit` <= CURRENT_TIMESTAMP - INTERVAL 2 WEEK",
             "`last_visit` > CURRENT_TIMESTAMP - INTERVAL 2 WEEK AND `last_visit` <= CURRENT_TIMESTAMP - INTERVAL 1 WEEK",
             "`last_visit` > CURRENT_TIMESTAMP - INTERVAL 1 WEEK AND `last_visit` <= CURRENT_TIMESTAMP",
@@ -864,7 +864,7 @@ class TestBigQueryQueryConfigPartitioning:
         partition_clauses = query_config.get_partition_clauses()
 
         assert partition_clauses == [
-            "`created` > CURRENT_TIMESTAMP - INTERVAL 1000 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 500 DAY",
+            "`created` >= CURRENT_TIMESTAMP - INTERVAL 1000 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 500 DAY",
             "`created` > CURRENT_TIMESTAMP - INTERVAL 500 DAY AND `created` <= CURRENT_TIMESTAMP",
         ]
 
@@ -893,7 +893,7 @@ class TestBigQueryQueryConfigPartitioning:
 
         stmts = set(str(stmt) for stmt in update_stmts)
         expected_stmts = {
-            "UPDATE `customer` SET `id`=%(id:INT64)s, `name`=%(name:STRING)s WHERE `customer`.`email` = %(email_1:STRING)s AND `created` > CURRENT_TIMESTAMP - INTERVAL 1000 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 500 DAY",
+            "UPDATE `customer` SET `id`=%(id:INT64)s, `name`=%(name:STRING)s WHERE `customer`.`email` = %(email_1:STRING)s AND `created` >= CURRENT_TIMESTAMP - INTERVAL 1000 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 500 DAY",
             "UPDATE `customer` SET `id`=%(id:INT64)s, `name`=%(name:STRING)s WHERE `customer`.`email` = %(email_1:STRING)s AND `created` > CURRENT_TIMESTAMP - INTERVAL 500 DAY AND `created` <= CURRENT_TIMESTAMP",
         }
         assert stmts == expected_stmts
@@ -937,7 +937,7 @@ class TestBigQueryQueryConfigPartitioning:
 
         stmts = set(str(stmt) for stmt in delete_stmts)
         expected_stmts = {
-            "DELETE FROM `employee` WHERE `employee`.`address_id` = %(address_id_1:STRING)s AND `employee`.`email` = %(email_1:STRING)s AND `created` > CURRENT_TIMESTAMP - INTERVAL 1000 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 500 DAY",
+            "DELETE FROM `employee` WHERE `employee`.`address_id` = %(address_id_1:STRING)s AND `employee`.`email` = %(email_1:STRING)s AND `created` >= CURRENT_TIMESTAMP - INTERVAL 1000 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 500 DAY",
             "DELETE FROM `employee` WHERE `employee`.`address_id` = %(address_id_1:STRING)s AND `employee`.`email` = %(email_1:STRING)s AND `created` > CURRENT_TIMESTAMP - INTERVAL 500 DAY AND `created` <= CURRENT_TIMESTAMP",
         }
         assert stmts == expected_stmts
@@ -971,7 +971,119 @@ class TestBigQueryQueryConfigPartitioning:
 
         stmts = set(str(stmt) for stmt in update_stmts)
         expected_stmts = {
-            "UPDATE `silken-precinct-284918.fidesopstest.customer` SET `id`=%(id:INT64)s, `name`=%(name:STRING)s WHERE `silken-precinct-284918.fidesopstest.customer`.`email` = %(email_1:STRING)s AND `created` > CURRENT_TIMESTAMP - INTERVAL 1000 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 500 DAY",
+            "UPDATE `silken-precinct-284918.fidesopstest.customer` SET `id`=%(id:INT64)s, `name`=%(name:STRING)s WHERE `silken-precinct-284918.fidesopstest.customer`.`email` = %(email_1:STRING)s AND `created` >= CURRENT_TIMESTAMP - INTERVAL 1000 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 500 DAY",
             "UPDATE `silken-precinct-284918.fidesopstest.customer` SET `id`=%(id:INT64)s, `name`=%(name:STRING)s WHERE `silken-precinct-284918.fidesopstest.customer`.`email` = %(email_1:STRING)s AND `created` > CURRENT_TIMESTAMP - INTERVAL 500 DAY AND `created` <= CURRENT_TIMESTAMP",
         }
         assert stmts == expected_stmts
+
+    def test_get_partition_clauses_list_of_time_based_specs(self, dataset_graph):
+        """
+        Test get_partition_clauses accepts a list of multiple non-overlapping
+        specs with differing intervals.
+        """
+
+        identity = {"email": "customer-1@example.com"}
+        bigquery_traversal = Traversal(dataset_graph, identity)
+        node = bigquery_traversal.traversal_node_dict[
+            CollectionAddress("bigquery_example_test_dataset", "customer")
+        ].to_mock_execution_node()
+
+        # Provide partitioning as a list of two *non-overlapping* time-based specifications
+        node.collection.partitioning = [
+            {
+                "field": "created",
+                "start": "NOW() - 1000 DAYS",
+                "end": "NOW() - 500 DAYS",
+                "interval": "500 DAYS",
+            },
+            {
+                "field": "created",
+                "start": "NOW() - 250 DAYS",
+                "end": "NOW()",
+                "interval": "250 DAYS",
+            },
+        ]
+
+        query_config = BigQueryQueryConfig(node)
+        partition_clauses = query_config.get_partition_clauses()
+
+        expected_clauses = [
+            "`created` >= CURRENT_TIMESTAMP - INTERVAL 1000 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 500 DAY",
+            "`created` >= CURRENT_TIMESTAMP - INTERVAL 250 DAY AND `created` <= CURRENT_TIMESTAMP",
+        ]
+
+        assert partition_clauses == expected_clauses
+
+    def test_get_partition_clauses_list_of_adjacent_time_based_specs(
+        self, dataset_graph
+    ):
+        """
+        Test get_partition_clauses accepts a list of multiple non-overlapping
+        specs with differing intervals.
+        """
+
+        identity = {"email": "customer-1@example.com"}
+        bigquery_traversal = Traversal(dataset_graph, identity)
+        node = bigquery_traversal.traversal_node_dict[
+            CollectionAddress("bigquery_example_test_dataset", "customer")
+        ].to_mock_execution_node()
+
+        # Provide partitioning as a list of two adjacent time-based specifications
+        node.collection.partitioning = [
+            {
+                "field": "created",
+                "start": "NOW() - 1000 DAYS",
+                "end": "NOW() - 500 DAYS",
+                "interval": "500 DAYS",
+            },
+            {
+                "field": "created",
+                "start": "NOW() - 500 DAYS",
+                "end": "NOW()",
+                "interval": "250 DAYS",
+            },
+        ]
+
+        query_config = BigQueryQueryConfig(node)
+        partition_clauses = query_config.get_partition_clauses()
+
+        expected_clauses = [
+            "`created` >= CURRENT_TIMESTAMP - INTERVAL 1000 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 500 DAY",
+            "`created` > CURRENT_TIMESTAMP - INTERVAL 500 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 250 DAY",
+            "`created` > CURRENT_TIMESTAMP - INTERVAL 250 DAY AND `created` <= CURRENT_TIMESTAMP",
+        ]
+
+        assert partition_clauses == expected_clauses
+
+    def test_get_partition_clauses_overlapping_specs_error(self, dataset_graph):
+        """
+        Test get_partition_clauses raises ValueError when supplied
+        time-based specs overlap.
+        """
+
+        identity = {"email": "customer-1@example.com"}
+        bigquery_traversal = Traversal(dataset_graph, identity)
+        node = bigquery_traversal.traversal_node_dict[
+            CollectionAddress("bigquery_example_test_dataset", "customer")
+        ].to_mock_execution_node()
+
+        # Two specs with overlapping literal date ranges (June overlaps)
+        node.collection.partitioning = [
+            {
+                "field": "created",
+                "start": "2024-01-01",
+                "end": "2024-06-30",
+                "interval": "1 MONTH",
+            },
+            {
+                "field": "created",
+                "start": "2024-06-15",
+                "end": "2024-12-31",
+                "interval": "1 MONTH",
+            },
+        ]
+
+        query_config = BigQueryQueryConfig(node)
+
+        with pytest.raises(ValueError):
+            query_config.get_partition_clauses()

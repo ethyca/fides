@@ -146,6 +146,47 @@ class TestTimeBasedPartitioning:
             "created_at > CURRENT_TIMESTAMP - INTERVAL 1 DAY AND created_at <= CURRENT_TIMESTAMP",
         ]
 
+    def test_dynamic_offset_range_clauses(self):
+        """Offsets like NOW() - 1000 DAYS -> NOW() - 500 DAYS should yield a single correctly formatted clause."""
+
+        partitioning = TimeBasedPartitioning(
+            field="created_at",
+            start="NOW() - 1000 DAYS",
+            end="NOW() - 500 DAYS",
+            interval="500 DAYS",
+        )
+
+        expressions = partitioning.generate_expressions()
+
+        compiled_expressions = [
+            str(expr.compile(compile_kwargs={"literal_binds": True}))
+            for expr in expressions
+        ]
+        assert compiled_expressions == [
+            "created_at >= CURRENT_TIMESTAMP - INTERVAL 1000 DAY AND created_at <= CURRENT_TIMESTAMP - INTERVAL 500 DAY",
+        ]
+
+    def test_dynamic_offset_range_clauses_with_smaller_interval(self):
+        """Offsets like NOW() - 1000 DAYS -> NOW() - 500 DAYS with a smaller interval should yield multiple clauses."""
+
+        partitioning = TimeBasedPartitioning(
+            field="created_at",
+            start="NOW() - 1000 DAYS",
+            end="NOW() - 500 DAYS",
+            interval="250 DAYS",
+        )
+
+        expressions = partitioning.generate_expressions()
+
+        compiled_expressions = [
+            str(expr.compile(compile_kwargs={"literal_binds": True}))
+            for expr in expressions
+        ]
+        assert compiled_expressions == [
+            "created_at >= CURRENT_TIMESTAMP - INTERVAL 1000 DAY AND created_at <= CURRENT_TIMESTAMP - INTERVAL 750 DAY",
+            "created_at > CURRENT_TIMESTAMP - INTERVAL 750 DAY AND created_at <= CURRENT_TIMESTAMP - INTERVAL 500 DAY",
+        ]
+
 
 class TestPartitioningList:
     """Tests related to a list of TimeBasedPartitioning specs."""

@@ -1,7 +1,7 @@
 import re
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import List, Optional, Set, Tuple
+from typing import List, Optional, Sequence, Set, Tuple
 
 from pydantic import Field, field_validator, model_validator
 from sqlalchemy import and_, column, func, text
@@ -39,8 +39,15 @@ class TimeBasedPartitioning(FidesSchema):
     start: Optional[str] = Field(default=None, description="Start time expression")
     end: Optional[str] = Field(default=None, description="End time expression")
     interval: Optional[str] = Field(
-        default=None, description="Interval expression (e.g., '7 days', '2 weeks')"
+        description="Interval expression (e.g. '7 days', '2 weeks')",
+        default=None,
     )
+
+    # Determines whether the *first* slice produced by this partition spec
+    # includes the lower bound (>=) or is exclusive (>).  Default is inclusive
+    # and the value is *not* part of the public schema – it is manipulated by
+    # helper utilities when combining multiple adjacent partitions.
+    inclusive_start: bool = Field(default=True, exclude=True, repr=False)
 
     # ---------------------------------------------------------------------
     # Validators
@@ -198,21 +205,52 @@ class TimeBasedPartitioning(FidesSchema):
         end_str = str(self.end)
 
         # Dynamic offsets expressed relative to NOW() or TODAY()
-        offset_match = re.match(
-            r"^(NOW|TODAY)\(\)\s*-\s*(\d+)\s+(DAY|DAYS|WEEK|WEEKS)$",
-            start_str,
-        )
+        offset_pattern = r"^(NOW|TODAY)\(\)\s*-\s*(\d+)\s+(DAY|DAYS|WEEK|WEEKS)$"
 
-        if offset_match and end_str == f"{offset_match.group(1)}()":
-            value = int(offset_match.group(2))
-            unit = offset_match.group(3)
+        start_offset_match = re.match(offset_pattern, start_str)
+        end_offset_match = re.match(offset_pattern, end_str)
 
-            # Only day/week units are supported for timedelta math
+        # Case 1: start is offset, end is the base (NOW()/TODAY())
+        if start_offset_match and end_str == f"{start_offset_match.group(1)}()":
+            value = int(start_offset_match.group(2))
+            unit = start_offset_match.group(3)
+
             return (
                 timedelta(weeks=value)
                 if unit in ["WEEK", "WEEKS"]
                 else timedelta(days=value)
             )
+
+        # Case 2: both start and end are offsets from the same base (NOW()/TODAY())
+        # E.g. start = "NOW() - 1000 DAYS", end = "NOW() - 500 DAYS"
+        if start_offset_match and end_offset_match:
+            # Ensure both reference the same base function (NOW vs TODAY) and unit type
+            if start_offset_match.group(1) == end_offset_match.group(
+                1
+            ) and start_offset_match.group(3) == end_offset_match.group(3):
+                start_val = int(start_offset_match.group(2))
+                end_val = int(end_offset_match.group(2))
+
+                if start_val <= end_val:
+                    raise ValueError(
+                        "`start` offset must be greater (further in the past) than `end` offset"
+                    )
+
+                unit = start_offset_match.group(3)
+
+                # The starting offset (start_val) represents the full duration back
+                # from NOW()/TODAY(); we iterate from that point down toward the
+                # end offset, generating slices sized by `interval`.  Therefore the
+                # total duration for fixed-length slicing must be the *start* offset
+                # – not the difference between start & end.
+
+                total = start_val
+
+                return (
+                    timedelta(weeks=total)
+                    if unit in ["WEEK", "WEEKS"]
+                    else timedelta(days=total)
+                )
 
         # Static literal YYYY-MM-DD date ranges
         if _is_date_literal(start_str) and _is_date_literal(end_str):
@@ -271,15 +309,49 @@ class TimeBasedPartitioning(FidesSchema):
             base_expr = func.current_timestamp() if has_now else func.current_date()
             end_expr = self._parse_time_expression(end_str)
 
-            current_offset = total_duration
-            first_interval = True
+            # Determine the relative offset (timedelta) that represents the user
+            # supplied `end` bound so we do not generate slices beyond it.  If the
+            # end expression is simply NOW()/TODAY(), the offset is zero.  If it
+            # is an expression like "NOW() - 500 DAYS" we extract the numeric
+            # offset so we can stop the fixed-length iteration once we reach it.
 
-            while current_offset.total_seconds() > 0:
+            end_offset_bound: timedelta = timedelta(0)
+
+            dynamic_end_match = re.match(
+                r"^(NOW\(\)|TODAY\(\))\s*-\s*(\d+)\s+(DAY|DAYS|WEEK|WEEKS)$",
+                end_str or "",
+            )
+
+            if dynamic_end_match is not None:
+                numeric_val = int(dynamic_end_match.group(2))
+                unit_raw = dynamic_end_match.group(3)
+                end_offset_bound = (
+                    timedelta(weeks=numeric_val)
+                    if unit_raw in ["WEEK", "WEEKS"]
+                    else timedelta(days=numeric_val)
+                )
+
+            # Iterate from the starting offset (total_duration) backward toward
+            # the end offset, generating non-overlapping slices until just before
+            # we would cross the end bound.
+
+            current_offset = total_duration
+            first_interval = self.inclusive_start
+
+            while current_offset > end_offset_bound:
                 start_offset = current_offset
                 end_offset = current_offset - interval_time_delta
+
+                # If subtracting the interval would step past the end bound,
+                # clamp the end_offset to the bound so the final slice lands
+                # exactly on the user-provided end expression.
+                end_offset = max(end_offset, end_offset_bound)
+
+                # Clamp negative end offsets to zero (aligns with base_expr)
                 if end_offset.total_seconds() < 0:
                     end_offset = timedelta(0)
 
+                # Build expressions first – needed for equality check
                 interval_start = (
                     base_expr
                     if start_offset.total_seconds() == 0
@@ -292,6 +364,10 @@ class TimeBasedPartitioning(FidesSchema):
                     else base_expr - text(self._timedelta_to_interval(end_offset))
                 )
 
+                # Skip zero-length slice
+                if str(interval_start) == str(interval_end):
+                    break
+
                 conditions.append(
                     _range_condition(interval_start, interval_end, first_interval)
                 )
@@ -303,7 +379,7 @@ class TimeBasedPartitioning(FidesSchema):
             end_expr = self._parse_time_expression(end_str)
 
             current_offset = timedelta(0)
-            first_interval = True
+            first_interval = self.inclusive_start
 
             while current_offset < total_duration:
                 interval_start = (
@@ -379,7 +455,7 @@ class TimeBasedPartitioning(FidesSchema):
             return base_expr + text(self.format_interval(offset, unit))
 
         conditions: List[ColumnElement] = []
-        inclusive_start = True  # First slice always inclusive
+        inclusive_start = self.inclusive_start  # Respect spec setting
         for i in range(iterations):
             start_exp = offset_expr(i)
 
@@ -456,7 +532,7 @@ class TimeBasedPartitioning(FidesSchema):
 
         iterations = total_units // value
         conditions: List[ColumnElement] = []
-        inclusive_start = True  # First slice always inclusive
+        inclusive_start = self.inclusive_start  # First slice always inclusive
 
         for i in range(iterations):
             start_offset_units = total_units - (i * value)
@@ -533,7 +609,7 @@ class TimeBasedPartitioning(FidesSchema):
             return base_expr + text(self.format_interval(offset, unit))
 
         conditions: List[ColumnElement] = []
-        inclusive_start = True  # First slice always inclusive
+        inclusive_start = self.inclusive_start  # First slice always inclusive
 
         for i in range(iterations):
             start_exp = offset_expr(i)
@@ -710,10 +786,44 @@ def _date_value(expr: str) -> datetime:
     return datetime.strptime(expr.strip(), "%Y-%m-%d")
 
 
-TIME_BASED_REQUIRED_KEYS: Set[str] = set(TimeBasedPartitioning.model_fields.keys())
+# Required external keys for a time-based partitioning spec.  Internal helper
+# attributes like `inclusive_start` are intentionally excluded.
+TIME_BASED_REQUIRED_KEYS: Set[str] = {"field", "start", "end", "interval"}
+
+# ------------------------------------------------------------------
+# Utilities for working with lists of partition specs (module-level)
+# ------------------------------------------------------------------
+
+
+def combine_partitions(parts: Sequence["TimeBasedPartitioning"]) -> List[ColumnElement]:
+    """Return a combined list of SQLAlchemy expressions for an list
+    of `TimeBasedPartitioning` objects, ensuring adjacent specs do not
+    overlap at the boundary row.
+
+    If two consecutive specs share a boundary (`prev.end == curr.start`) the
+    current spec's first slice is made exclusive by toggling its internal
+    `inclusive_start` flag.
+    """
+
+    combined: List[ColumnElement] = []
+
+    parts_list = list(parts)
+
+    for idx, spec in enumerate(parts_list):
+        p = spec.model_copy(deep=True)  # avoid mutating caller's object
+
+        if idx > 0 and p.start is not None and parts_list[idx - 1].end is not None:
+            if p.start == parts_list[idx - 1].end:
+                p.inclusive_start = False
+
+        combined.extend(p.generate_expressions())
+
+    return combined
+
 
 __all__ = [
-    "TimeBasedPartitioning",
-    "validate_partitioning_list",
     "TIME_BASED_REQUIRED_KEYS",
+    "TimeBasedPartitioning",
+    "combine_partitions",
+    "validate_partitioning_list",
 ]
