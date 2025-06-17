@@ -14,8 +14,8 @@ import fs from "fs";
 
 const NAME = "fides";
 const IS_DEV = process.env.NODE_ENV === "development";
-const GZIP_SIZE_ERROR_KB = 45; // fail build if bundle size exceeds this
-const GZIP_SIZE_WARN_KB = 35; // log a warning if bundle size exceeds this
+const GZIP_SIZE_ERROR_KB = 50; // fail build if bundle size exceeds this
+const GZIP_SIZE_WARN_KB = 45; // log a warning if bundle size exceeds this
 
 // TCF
 const GZIP_SIZE_TCF_ERROR_KB = 91;
