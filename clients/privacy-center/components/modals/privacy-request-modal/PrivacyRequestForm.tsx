@@ -1,4 +1,5 @@
 import {
+  AntSelect,
   Button,
   chakra,
   FormControl,
@@ -91,7 +92,21 @@ const usePrivacyRequestForm = ({
               field.query_param_key &&
               (searchParams?.get(field.query_param_key) as string);
 
-            const value = valueFromQueryParam || field.default_value || "";
+            let value;
+            if (field.field_type === "multiselect") {
+              // For multiselect fields, default to empty array or convert string to array
+              if (valueFromQueryParam) {
+                value = [valueFromQueryParam];
+              } else if (Array.isArray(field.default_value)) {
+                value = field.default_value;
+              } else if (field.default_value) {
+                value = [field.default_value];
+              } else {
+                value = [];
+              }
+            } else {
+              value = valueFromQueryParam || field.default_value || "";
+            }
 
             return [key, value];
           }),
@@ -286,8 +301,16 @@ const usePrivacyRequestForm = ({
       ...Object.fromEntries(
         Object.entries(customPrivacyRequestFields)
           .filter(([, field]) => !field.hidden)
-          .map(([key, { label, required }]) => {
+          .map(([key, { label, required, field_type }]) => {
             const isRequired = required !== false;
+            if (field_type === "multiselect") {
+              return [
+                key,
+                isRequired
+                  ? Yup.array().min(1, `${label} is required`)
+                  : Yup.array().notRequired(),
+              ];
+            }
             return [
               key,
               isRequired
@@ -477,14 +500,72 @@ const PrivacyRequestForm = ({
                   isRequired={item.required !== false}
                 >
                   <FormLabel fontSize="sm">{item.label}</FormLabel>
-                  <Input
-                    id={key}
-                    name={key}
-                    focusBorderColor="primary.500"
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    value={values[key]}
-                  />
+                  {(() => {
+                    if (item.field_type === "multiselect" && item.options) {
+                      return (
+                        <AntSelect
+                          id={key}
+                          data-testid={`select-${key}`}
+                          mode="multiple"
+                          placeholder={`Select ${item.label.toLowerCase()}`}
+                          value={values[key] || []}
+                          onChange={(selectedValues) => {
+                            setFieldValue(key, selectedValues);
+                          }}
+                          onBlur={() => handleBlur({ target: { name: key } })}
+                          options={item.options.map((option: string) => ({
+                            label: option,
+                            value: option,
+                          }))}
+                          style={{ width: "100%" }}
+                          getPopupContainer={() => document.body}
+                          dropdownStyle={{
+                            maxHeight: 400,
+                            overflow: "auto",
+                            zIndex: 1500,
+                          }}
+                          dropdownClassName="privacy-form-dropdown"
+                        />
+                      );
+                    }
+                    if (item.field_type === "select" && item.options) {
+                      return (
+                        <AntSelect
+                          id={key}
+                          data-testid={`select-${key}`}
+                          placeholder={`Select ${item.label.toLowerCase()}`}
+                          value={values[key] || ""}
+                          onChange={(selectedValue) => {
+                            setFieldValue(key, selectedValue);
+                          }}
+                          onBlur={() => handleBlur({ target: { name: key } })}
+                          options={item.options.map((option: string) => ({
+                            label: option,
+                            value: option,
+                          }))}
+                          style={{ width: "100%" }}
+                          getPopupContainer={() => document.body}
+                          dropdownStyle={{
+                            maxHeight: 400,
+                            overflow: "auto",
+                            zIndex: 1500,
+                          }}
+                          dropdownClassName="privacy-form-dropdown"
+                          allowClear
+                        />
+                      );
+                    }
+                    return (
+                      <Input
+                        id={key}
+                        name={key}
+                        focusBorderColor="primary.500"
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        value={values[key]}
+                      />
+                    );
+                  })()}
                   <FormErrorMessage>
                     {JSON.stringify(errors[key])}
                   </FormErrorMessage>
