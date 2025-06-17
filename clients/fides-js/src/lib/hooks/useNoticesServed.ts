@@ -18,7 +18,7 @@ interface UseNoticesServedProps {
   privacyNoticeHistoryIds?: string[];
   userGeography?: string;
   acknowledgeMode?: boolean;
-  propertyId?: string;
+  propertyId: string | undefined;
   tcfNoticesServed?: Partial<RecordConsentServedRequest>;
 }
 

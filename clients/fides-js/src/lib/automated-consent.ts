@@ -41,6 +41,7 @@ export const automaticallyApplyPreferences = async ({
   fidesRegionString,
   fidesOptions,
   i18n,
+  propertyId,
 }: {
   savedConsent: NoticeConsent;
   effectiveExperience: PrivacyExperience;
@@ -48,6 +49,7 @@ export const automaticallyApplyPreferences = async ({
   fidesRegionString: string | null;
   fidesOptions: FidesInitOptions;
   i18n: I18n;
+  propertyId: string | undefined;
 }): Promise<boolean> => {
   // Early-exit if there is no experience or notices, since we've nothing to do
   if (
@@ -200,6 +202,7 @@ export const automaticallyApplyPreferences = async ({
       cookie,
       updateCookie: (oldCookie) =>
         updateCookieFromNoticePreferences(oldCookie, consentPreferencesToSave),
+      propertyId,
     });
     return true;
   }

@@ -328,6 +328,7 @@ export const TcfOverlay = ({
     acknowledgeMode: false,
     privacyExperience: experienceFull || experienceMinimal,
     tcfNoticesServed,
+    propertyId,
   });
 
   const handleUpdateAllPreferences = useCallback(
@@ -369,6 +370,7 @@ export const TcfOverlay = ({
             experienceFull || experienceMinimal,
             consentPreferencesToSave,
           ),
+        propertyId,
       });
       setDraftIds(enabledIds);
     },
@@ -381,6 +383,7 @@ export const TcfOverlay = ({
       privacyExperienceConfigHistoryId,
       privacyNoticesWithBestTranslation,
       servedNoticeHistoryId,
+      propertyId,
     ],
   );
 
