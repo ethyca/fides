@@ -136,7 +136,7 @@ the event.
 
 #### extraDetails.trigger.origin?
 
-> `optional` **origin**: `string`
+> `optional` **origin**: `"fides"` \| `"external"`
 
 Where the event originated from. If the event was triggered using an
 SDK script, for example, this will be "external", meaning the event

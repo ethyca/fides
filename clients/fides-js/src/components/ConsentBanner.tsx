@@ -1,14 +1,13 @@
 import { ComponentChildren, FunctionComponent, h, VNode } from "preact";
 import { useEffect } from "preact/hooks";
 
-import { FidesEventTargetType } from "~/lib/events";
-
 import { getConsentContext } from "../lib/consent-context";
 import {
   GpcStatus,
   PrivacyExperience,
   PrivacyNoticeWithPreference,
 } from "../lib/consent-types";
+import { FidesEventTargetType } from "../lib/events";
 import { messageExists } from "../lib/i18n";
 import { useI18n } from "../lib/i18n/i18n-context";
 import { useEvent } from "../lib/providers/event-context";
