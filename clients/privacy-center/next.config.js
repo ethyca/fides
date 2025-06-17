@@ -17,7 +17,7 @@ const nextConfig = {
   reactStrictMode: false,
   poweredByHeader: false,
   env: {
-    version: "1.2.3",
+    version: "__RELEASE_VERSION__",
   },
   transpilePackages: ["react-syntax-highlighter", "fidesui"],
 

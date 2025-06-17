@@ -186,6 +186,10 @@ describe("Smoke test", () => {
           .should("to.have.nested.property", "Fides.fides_meta.version")
           .should("eql", "0.9.0");
         cy.wrap(win)
+          .should("to.have.nested.property", "Fides.release_version")
+          .should("not.eql", "__RELEASE_VERSION__")
+          .should("not.eql", "unknown");
+        cy.wrap(win)
           .should("to.have.nested.property", "Fides.consent")
           .should("eql", {
             data_sales: false,

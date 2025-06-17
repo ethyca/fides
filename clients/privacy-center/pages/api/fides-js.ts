@@ -130,6 +130,7 @@ export default async function handler(
 ) {
   const log = createRequestLogger(req);
   const serverSettings = loadServerSettings();
+  const releaseVersion = process.env.version || "unknown"; // set in next.config.js
 
   // Load the configured consent options (data uses, defaults, etc.) from environment
   const environment = await getPrivacyCenterEnvironmentCached({
@@ -403,6 +404,7 @@ export default async function handler(
       : ""
   }
   window.Fides.config = ${fidesConfigJSON};
+  window.Fides.release_version = "${releaseVersion}";
   ${skipInitialization ? "" : `window.Fides.init();`}
   ${
     environment.settings.DEBUG && skipInitialization
