@@ -5,17 +5,24 @@ from sqlalchemy.orm import Session
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.manual_tasks.manual_task import ManualTask, ManualTaskReference
+from fides.api.models.manual_tasks.manual_task_config import ManualTaskConfig
 from fides.api.models.manual_tasks.manual_task_log import (
     ManualTaskLog,
     ManualTaskLogStatus,
 )
 from fides.api.oauth.roles import EXTERNAL_RESPONDENT, RESPONDENT
+from fides.api.schemas.manual_tasks.manual_task_config import (
+    ManualTaskConfigurationType,
+    ManualTaskFieldType,
+    ManualTaskTextField,
+)
 from fides.api.schemas.manual_tasks.manual_task_schemas import (
     ManualTaskParentEntityType,
     ManualTaskReferenceType,
     ManualTaskType,
 )
 from fides.service.manual_tasks.manual_task_service import ManualTaskService
+from tests.service.manual_tasks.conftest import FIELDS
 
 
 @pytest.fixture
@@ -430,3 +437,90 @@ class TestUnassignUsersFromTask:
         assert (
             len(manual_task.logs) == 3
         )  # Create task and two update tasks (assign and unassign)
+
+
+class TestManualTaskConfig:
+    """Tests for the config-related methods."""
+
+    def test_create_config(
+        self,
+        db: Session,
+        manual_task: ManualTask,
+        manual_task_service: ManualTaskService,
+    ):
+        """Test creating a new config for a task."""
+        # Execute
+        manual_task_service.create_config(
+            task=manual_task,
+            config_type=ManualTaskConfigurationType.access_privacy_request,
+            fields=FIELDS,
+        )
+
+        # Verify
+        config = manual_task_service.config_service.get_current_config(
+            task=manual_task,
+            config_type=ManualTaskConfigurationType.access_privacy_request,
+        )
+        assert config is not None
+        assert config.config_type == ManualTaskConfigurationType.access_privacy_request
+        assert config.version == 1
+        assert config.is_current is True
+        assert len(config.field_definitions) == len(FIELDS)
+        field1 = next(
+            field for field in config.field_definitions if field.field_key == "field1"
+        )
+        field2 = next(
+            field for field in config.field_definitions if field.field_key == "field2"
+        )
+        assert field1.field_metadata["label"] == FIELDS[0]["field_metadata"]["label"]
+        assert field2.field_metadata["label"] == FIELDS[1]["field_metadata"]["label"]
+
+        # Verify log was created
+        log = (
+            db.query(ManualTaskLog)
+            .filter_by(task_id=manual_task.id)
+            .order_by(ManualTaskLog.created_at.desc())
+            .first()
+        )
+        assert log is not None
+        assert log.status == ManualTaskLogStatus.created
+        assert "Created new version 1 of configuration" in log.message
+        assert log.config_id == config.id
+
+    def test_delete_config(
+        self,
+        db: Session,
+        manual_task: ManualTask,
+        manual_task_service: ManualTaskService,
+    ):
+        """Test deleting a config for a task."""
+        # Setup - create config
+        manual_task_service.create_config(
+            task=manual_task,
+            config_type=ManualTaskConfigurationType.access_privacy_request,
+            fields=FIELDS,
+        )
+        config = manual_task_service.config_service.get_current_config(
+            task=manual_task,
+            config_type=ManualTaskConfigurationType.access_privacy_request,
+        )
+        assert config is not None
+
+        # Execute
+        manual_task_service.delete_config(manual_task, config)
+
+        # Verify
+        assert db.query(ManualTaskConfig).filter_by(id=config.id).first() is None
+
+        # Verify log was created
+        log = (
+            db.query(ManualTaskLog)
+            .filter_by(task_id=manual_task.id)
+            .order_by(ManualTaskLog.created_at.desc())
+            .first()
+        )
+        assert log is not None
+        assert log.status == ManualTaskLogStatus.complete
+        assert (
+            f"Deleted manual task configuration for {config.config_type}" in log.message
+        )
