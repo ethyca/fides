@@ -18,9 +18,11 @@ export type CustomPrivacyRequestFields = Record<
   {
     label: string;
     required?: boolean;
-    default_value?: string;
+    default_value?: string | string[];
     query_param_key?: string;
     hidden?: boolean;
+    field_type?: "text" | "multiselect";
+    options?: string[];
   }
 >;
 

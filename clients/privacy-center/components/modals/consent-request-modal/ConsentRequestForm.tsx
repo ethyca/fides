@@ -1,5 +1,6 @@
 import { getOrMakeFidesCookie, saveFidesCookie } from "fides-js";
 import {
+  AntSelect,
   Button,
   chakra,
   FormControl,
@@ -69,7 +70,22 @@ const useConsentRequestForm = ({
       ...Object.fromEntries(
         Object.entries(customPrivacyRequestFields)
           .filter(([, field]) => !field.hidden)
-          .map(([key, field]) => [key, field.default_value || ""]),
+          .map(([key, field]) => {
+            let value;
+            if (field.field_type === "multiselect") {
+              // For multiselect fields, default to empty array or convert to array
+              if (Array.isArray(field.default_value)) {
+                value = field.default_value;
+              } else if (field.default_value) {
+                value = [field.default_value];
+              } else {
+                value = [];
+              }
+            } else {
+              value = field.default_value || "";
+            }
+            return [key, value];
+          }),
       ),
     },
     onSubmit: async (values) => {
@@ -185,8 +201,16 @@ const useConsentRequestForm = ({
       ...Object.fromEntries(
         Object.entries(customPrivacyRequestFields)
           .filter(([, field]) => !field.hidden)
-          .map(([key, { label, required }]) => {
+          .map(([key, { label, required, field_type }]) => {
             const isRequired = required !== false;
+            if (field_type === "multiselect") {
+              return [
+                key,
+                isRequired
+                  ? Yup.array().min(1, `${label} is required`)
+                  : Yup.array().notRequired(),
+              ];
+            }
             return [
               key,
               isRequired
@@ -324,14 +348,35 @@ const ConsentRequestForm = ({
                   isRequired={item.required !== false}
                 >
                   <FormLabel fontSize="sm">{item.label}</FormLabel>
-                  <Input
-                    id={key}
-                    name={key}
-                    focusBorderColor="primary.500"
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    value={values[key]}
-                  />
+                  {item.field_type === "multiselect" && item.options ? (
+                    <AntSelect
+                      id={key}
+                      mode="multiple"
+                      placeholder={`Select ${item.label.toLowerCase()}`}
+                      value={values[key] || []}
+                      onChange={(selectedValues) => {
+                        setFieldValue(key, selectedValues);
+                      }}
+                      onBlur={() => handleBlur({ target: { name: key } })}
+                      options={item.options.map((option: string) => ({
+                        label: option,
+                        value: option,
+                      }))}
+                      style={{ width: "100%" }}
+                      getPopupContainer={(trigger) =>
+                        trigger.parentElement || document.body
+                      }
+                    />
+                  ) : (
+                    <Input
+                      id={key}
+                      name={key}
+                      focusBorderColor="primary.500"
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      value={values[key]}
+                    />
+                  )}
                   <FormErrorMessage>
                     {errors[key] as ReactNode}
                   </FormErrorMessage>
