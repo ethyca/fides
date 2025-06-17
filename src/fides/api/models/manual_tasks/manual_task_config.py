@@ -21,10 +21,7 @@ from fides.api.schemas.manual_tasks.manual_task_schemas import (
 if TYPE_CHECKING:  # pragma: no cover
     from fides.api.models.manual_tasks.manual_task import ManualTask  # pragma: no cover
     from fides.api.models.manual_tasks.manual_task_instance import (
-        ManualTaskInstance,  # pragma: no cover
-    )
-    from fides.api.models.manual_tasks.manual_task_instance import (
-        ManualTaskSubmission,  # pragma: no cover
+        ManualTaskInstance, ManualTaskSubmission # pragma: no cover
     )
 
 
