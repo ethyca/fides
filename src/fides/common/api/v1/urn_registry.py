@@ -176,7 +176,7 @@ SAAS_CONFIG_VALIDATE = CONNECTION_BY_KEY + "/validate_saas_config"
 SAAS_CONFIG = CONNECTION_BY_KEY + "/saas_config"
 SAAS_CONNECTOR_FROM_TEMPLATE = "/connection/instantiate/{saas_connector_type}"
 REGISTER_CONNECTOR_TEMPLATE = "/connector_template/register"
-UPDATE_CUSTOM_CONNECTOR_TO_FIDES_TEMPLATE = "/connection/{connection_key}/update_to_fides_template"
+UPDATE_CUSTOM_TEMPLATE_TO_FILE_TEMPLATE = "/connector_template/{saas_connector_type}/update_to_file_template"
 
 # System Connections
 SYSTEM_CONNECTIONS = "/system/{fides_key}/connection"

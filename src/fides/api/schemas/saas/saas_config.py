@@ -417,6 +417,7 @@ class SaaSConfig(SaaSConfigBase):
     """
 
     description: str
+    version: str
     connector_params: List[ConnectorParam]
     external_references: Optional[List[ExternalDatasetReference]] = None
     client_config: ClientConfig

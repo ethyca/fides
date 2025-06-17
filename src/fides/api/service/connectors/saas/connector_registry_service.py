@@ -30,6 +30,7 @@ from fides.api.util.saas_util import (
     load_yaml_as_string,
     replace_config_placeholders,
     replace_dataset_placeholders,
+    replace_version
 )
 from fides.api.util.unsafe_file_util import verify_svg, verify_zip
 
@@ -225,6 +226,19 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
         # extract connector_type, human_readable, and replaceable values from the SaaS config
         connector_type = saas_config.type
         human_readable = saas_config.name
+
+        existing_connector = (
+                FileConnectorTemplateLoader.get_connector_templates().get(
+                    connector_type
+                )
+            )
+        if existing_connector:
+            existing_config = SaaSConfig(
+                **load_config_from_string(existing_connector.config)
+            )
+            config_contents = replace_version(
+                config_contents, existing_config.version
+            )
 
 
         template = CustomConnectorTemplate(
