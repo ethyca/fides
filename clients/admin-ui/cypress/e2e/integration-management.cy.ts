@@ -240,15 +240,14 @@ describe("Integration management for data detection & discovery", () => {
         cy.wait("@patchSystemConnection");
       });
 
-      it("should display an API integration under the CRM tab", () => {
+      it("should display an API integration under the CRM category", () => {
         cy.intercept("GET", "/api/v1/connection_type/*/secret", {
           fixture: "connectors/salesforce_secret.json",
         }).as("getSalesforceSecretsSchema");
 
         cy.getByTestId("add-integration-btn").click();
+        cy.getByTestId("category-filter-select").antSelect("CRM");
         cy.getByTestId("add-modal-content").within(() => {
-          // Click on the CRM tab
-          cy.contains("CRM").click();
           // Verify Salesforce appears
           cy.getByTestId("integration-info-salesforce_placeholder").should(
             "exist",
@@ -269,16 +268,15 @@ describe("Integration management for data detection & discovery", () => {
         }).as("getSalesforceSecretsSchema");
 
         cy.getByTestId("add-integration-btn").click();
+        cy.getByTestId("category-filter-select").antSelect("CRM");
         cy.getByTestId("add-modal-content").within(() => {
-          // Click on the CRM tab
-          cy.contains("CRM").click();
-          // Click on configure for Salesforce
           cy.getByTestId("integration-info-salesforce_placeholder").within(
             () => {
-              cy.getByTestId("configure-btn").click();
+              cy.contains("Details").click();
             },
           );
         });
+        cy.contains("Configure").click();
 
         // Fill out the form with fields from the salesforce_secret schema
         cy.getByTestId("input-name").type("My Salesforce Integration");
@@ -320,9 +318,10 @@ describe("Integration management for data detection & discovery", () => {
           cy.getByTestId("integration-info-bq_placeholder").should("exist");
 
           cy.get(".ant-input-clear-icon").click();
+        });
+        cy.getByTestId("category-filter-select").antSelect("Data Warehouse");
 
-          cy.get(".ant-select").click();
-          cy.contains("Database").click();
+        cy.getByTestId("add-modal-content").within(() => {
           cy.getByTestId("integration-info-bq_placeholder").should("exist");
         });
       });

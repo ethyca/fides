@@ -1,7 +1,6 @@
 import { useGetMonitorsByIntegrationQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import getIntegrationTypeInfo from "~/features/integrations/add-integration/allIntegrationTypes";
 import { IntegrationFeatureEnum } from "~/features/integrations/IntegrationFeatureEnum";
-import { ConnectionType } from "~/types/api";
 
 import { BaseStepHookParams, Step } from "./types";
 
@@ -10,10 +9,8 @@ export const useCreateMonitorStep = (
 ): Step | null => {
   // Get the integration type info to check enabled features
   const { enabledFeatures } = getIntegrationTypeInfo(
-    params.connectionOption?.identifier as ConnectionType | undefined,
-    params.connectionOption?.type === "saas"
-      ? params.connectionOption?.identifier
-      : undefined,
+    params.connection.connection_type,
+    params.connection.saas_config?.type,
   );
 
   const hasDataDiscoverySupport = enabledFeatures?.includes(

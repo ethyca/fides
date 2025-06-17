@@ -103,6 +103,7 @@ const SelectIntegrationType = ({ onCancel, onDetailClick }: Props) => {
           options={categoryOptions}
           className="w-48"
           placeholder="Select category"
+          data-testid="category-filter-select"
         />
       </div>
 

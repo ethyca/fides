@@ -208,12 +208,18 @@ const IntegrationDetailView: NextPage = () => {
             )}
           </div>
           <div className="w-[350px] shrink-0">
-            <IntegrationSetupSteps
-              testData={testData}
-              testIsLoading={testIsLoading}
-              connectionOption={integrationOption}
-              connection={connection}
-            />
+            {integrationIsLoading ? (
+              <Spinner />
+            ) : (
+              !!connection && (
+                <IntegrationSetupSteps
+                  testData={testData}
+                  testIsLoading={testIsLoading}
+                  connectionOption={integrationOption!}
+                  connection={connection}
+                />
+              )
+            )}
           </div>
         </AntFlex>
       </PageHeader>
