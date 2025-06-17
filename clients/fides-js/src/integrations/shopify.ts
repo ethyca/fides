@@ -54,7 +54,7 @@ type ShopifyConsent = {
 
 function createShopifyConsent(
   fidesConsent: NoticeConsent,
-  options?: ShopifyOptions
+  options?: ShopifyOptions,
 ): ShopifyConsent {
   const processedConsent = Object.fromEntries(
     Object.entries(fidesConsent).map(([k, v]) => [
@@ -83,11 +83,11 @@ function createShopifyConsent(
 // Helper function to push consent to Shopify from a Fides Consent object
 const pushConsentToShopify = (
   fidesConsent: NoticeConsent,
-  options?: ShopifyOptions
+  options?: ShopifyOptions,
 ) => {
   window.Shopify!.customerPrivacy!.setTrackingConsent(
     createShopifyConsent(fidesConsent, options),
-    () => {}
+    () => {},
   );
 };
 
@@ -98,13 +98,13 @@ const applyOptions = (options?: ShopifyOptions) => {
   }
   // Listen for Fides events and push them to Shopify
   window.addEventListener("FidesReady", (event) =>
-    pushConsentToShopify(event.detail.consent, options)
+    pushConsentToShopify(event.detail.consent, options),
   );
   window.addEventListener("FidesUpdating", (event) =>
-    pushConsentToShopify(event.detail.consent, options)
+    pushConsentToShopify(event.detail.consent, options),
   );
   window.addEventListener("FidesUpdated", (event) =>
-    pushConsentToShopify(event.detail.consent, options)
+    pushConsentToShopify(event.detail.consent, options),
   );
 
   // If Fides was already initialized, push consent to Shopify immediately
