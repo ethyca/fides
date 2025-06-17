@@ -38,6 +38,18 @@ from fides.api.schemas.messaging.messaging import MessagingActionType, Messaging
 from fides.service.manual_tasks.manual_task_service import ManualTaskService
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 
+@pytest.fixture
+def mock_messaging_service() -> MessagingService:
+    mock_service = create_autospec(MessagingService)
+    mock_service.dispatch_message = MagicMock()
+    return mock_service
+
+@pytest.fixture
+def privacy_request_service(
+    db: Session, mock_messaging_service
+) -> PrivacyRequestService:
+    return PrivacyRequestService(db, ConfigProxy(db), mock_messaging_service)
+
 
 @pytest.mark.integration
 @pytest.mark.integration_postgres
@@ -46,18 +58,6 @@ class TestPrivacyRequestService:
     Since these tests actually run the privacy request using the posgres database, we need to
     mark them all as integration tests.
     """
-
-    @pytest.fixture
-    def mock_messaging_service(self) -> MessagingService:
-        mock_service = create_autospec(MessagingService)
-        mock_service.dispatch_message = MagicMock()
-        return mock_service
-
-    @pytest.fixture
-    def privacy_request_service(
-        self, db: Session, mock_messaging_service
-    ) -> PrivacyRequestService:
-        return PrivacyRequestService(db, ConfigProxy(db), mock_messaging_service)
 
     @pytest.fixture
     def reviewing_user(self, db):
@@ -441,18 +441,6 @@ class TestPrivacyRequestService:
 @pytest.mark.integration
 @pytest.mark.integration_postgres
 class TestPrivacyRequestServiceManualTasks:
-    @pytest.fixture
-    def mock_messaging_service(self) -> MessagingService:
-        mock_service = create_autospec(MessagingService)
-        mock_service.dispatch_message = MagicMock()
-        return mock_service
-
-    @pytest.fixture
-    def privacy_request_service(
-        self, db: Session, mock_messaging_service
-    ) -> PrivacyRequestService:
-        return PrivacyRequestService(db, ConfigProxy(db), mock_messaging_service)
-
     @pytest.fixture
     def manual_task_service(self, db: Session) -> ManualTaskService:
         return ManualTaskService(db)
