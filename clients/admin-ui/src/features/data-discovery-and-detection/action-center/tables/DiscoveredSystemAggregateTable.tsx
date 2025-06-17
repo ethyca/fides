@@ -84,10 +84,6 @@ export const DiscoveredSystemAggregateTable = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
-  useEffect(() => {
-    resetPageIndexToDefault();
-  }, [monitorId, searchQuery, resetPageIndexToDefault]);
-
   const {
     filterTabs,
     filterTabIndex,
@@ -95,6 +91,10 @@ export const DiscoveredSystemAggregateTable = ({
     activeParams,
     actionsDisabled,
   } = useActionCenterTabs({ initialHash: tabHash });
+
+  useEffect(() => {
+    resetPageIndexToDefault();
+  }, [monitorId, searchQuery, resetPageIndexToDefault]);
 
   const { data, isLoading, isFetching } = useGetDiscoveredSystemAggregateQuery({
     key: monitorId,
@@ -106,7 +106,7 @@ export const DiscoveredSystemAggregateTable = ({
 
   useEffect(() => {
     if (data) {
-      setTotalPages(data.pages || 1);
+      setTotalPages(data.pages ?? 1);
     }
   }, [data, setTotalPages]);
 
