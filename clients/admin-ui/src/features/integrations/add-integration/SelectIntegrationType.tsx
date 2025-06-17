@@ -87,15 +87,13 @@ const SelectIntegrationType = ({ onCancel, onDetailClick }: Props) => {
 
   return (
     <>
-      <div className="mb-4 flex items-center justify-between gap-4">
-        <Input.Search
+      <div className="mb-4 mt-3 flex items-center justify-between gap-4">
+        <Input
           placeholder="Search by name..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          onSearch={setSearchTerm}
           className="w-64"
           allowClear
-          enterButton
         />
         <Select
           value={selectedCategory}
