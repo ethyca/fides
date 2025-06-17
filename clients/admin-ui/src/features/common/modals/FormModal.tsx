@@ -6,6 +6,7 @@ import {
   ModalCloseButton,
   ModalContent,
   ModalContentProps,
+  ModalFooter,
   ModalHeader,
   ModalOverlay,
   ModalProps,
@@ -17,6 +18,7 @@ interface FormModalProps extends ModalProps {
   children: ReactNode;
   modalContentProps?: ModalContentProps;
   showCloseButton?: boolean;
+  footer?: ReactNode;
 }
 
 const FormModal = ({
@@ -26,6 +28,7 @@ const FormModal = ({
   onClose,
   showCloseButton = false,
   modalContentProps,
+  footer,
   ...props
 }: FormModalProps) => (
   <Modal
@@ -65,6 +68,7 @@ const FormModal = ({
       <ModalBody pb={4} overflow="auto">
         {children}
       </ModalBody>
+      {footer && <ModalFooter>{footer}</ModalFooter>}
     </ModalContent>
   </Modal>
 );

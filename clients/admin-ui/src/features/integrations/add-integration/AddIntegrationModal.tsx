@@ -1,4 +1,4 @@
-import { UseDisclosureReturn } from "fidesui";
+import { AntButton as Button, UseDisclosureReturn } from "fidesui";
 import { useState } from "react";
 
 import FormModal from "~/features/common/modals/FormModal";
@@ -52,6 +52,8 @@ const AddIntegrationModal = ({
     ? `${integrationType.placeholder.name} Integration`
     : "Add integration";
 
+  const modalFooter = <Button onClick={handleCancel}>Cancel</Button>;
+
   return (
     <FormModal
       isOpen={isOpen}
@@ -60,6 +62,7 @@ const AddIntegrationModal = ({
       scrollBehavior="inside"
       showCloseButton
       modalContentProps={{ height: "700px", maxWidth: "1010px" }}
+      footer={modalFooter}
     >
       {step === IntegrationModalStep.LIST_VIEW && (
         <SelectIntegrationType
