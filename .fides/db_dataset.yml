@@ -1130,6 +1130,10 @@ dataset:
       data_categories: [system.operations]
     - name: completed_by_id
       data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
   - name: manual_task_submission
     fields:
     - name: id
@@ -1147,6 +1151,10 @@ dataset:
     - name: field_id
       data_categories: [system.operations]
     - name: data
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
       data_categories: [system.operations]
   - name: monitorexecution
     data_categories: []
