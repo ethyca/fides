@@ -87,7 +87,7 @@ class TestStatusTransitionMixin:
         with pytest.raises(StatusTransitionNotAllowed, match="already in status"):
             model.update_status(mock_db, StatusType.pending)
 
-    def test_invalid_transition_pending_to_completed(self, model, mock_db):
+    def test_transition_pending_to_completed(self, model, mock_db):
         model.status = StatusType.pending
         model.update_status(mock_db, StatusType.completed)
         assert model.status == StatusType.completed

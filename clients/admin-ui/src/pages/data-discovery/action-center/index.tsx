@@ -73,7 +73,7 @@ const ActionCenterPage = () => {
 
   useEffect(() => {
     if (data) {
-      setTotalPages(data.total || 1);
+      setTotalPages(data.total ?? 1);
     }
   }, [data, setTotalPages]);
 
