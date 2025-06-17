@@ -44,6 +44,7 @@ class ManualTaskService:
         parent_entity_id: Optional[str] = None,
         parent_entity_type: Optional[ManualTaskParentEntityType] = None,
         task_type: Optional[ManualTaskType] = None,
+
     ) -> ManualTask:
         """Get the manual task using provided filters.
 

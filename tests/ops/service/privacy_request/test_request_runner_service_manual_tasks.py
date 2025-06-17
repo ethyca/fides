@@ -8,25 +8,59 @@ from sqlalchemy.orm import Session
 
 from fides.api.models.attachment import Attachment, AttachmentType, AttachmentReference, AttachmentReferenceType
 from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.fides_user import FidesUser
 from fides.api.models.manual_tasks.manual_task import ManualTask
 from fides.api.models.manual_tasks.manual_task_config import ManualTaskConfig
-from fides.api.models.manual_tasks.manual_task_instance import  ManualTaskInstance, ManualTaskSubmission
 from fides.api.models.policy import Policy
 from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskParentEntityType
-from fides.api.schemas.manual_tasks.manual_task_config import ManualTaskConfigurationType, ManualTaskFieldType
+from fides.api.schemas.manual_tasks.manual_task_config import ManualTaskConfigurationType
 from fides.api.schemas.manual_tasks.manual_task_status import StatusType
-from fides.api.schemas.messaging.messaging import MessagingActionType, MessagingServiceType
 from fides.api.schemas.privacy_request import (
     PrivacyRequestCreate,
-    PrivacyRequestSource,
-    PrivacyRequestStatus,
 )
 from fides.config.config_proxy import ConfigProxy
+from fides.api.schemas.redis_cache import Identity
 from fides.service.privacy_request.privacy_request_service import PrivacyRequestService
 from fides.service.messaging.messaging_service import MessagingService
 from fides.service.manual_tasks.manual_task_service import ManualTaskService
 
-
+FIELDS = [
+        {
+            "field_key": "attachment_field",
+            "field_type": "attachment",
+            "field_metadata": {
+                "required": True,
+                "label": "Test Attachment Field",
+                "help_text": "This is a test attachment field",
+                "file_types": ["text/plain", "application/pdf"],
+                "max_file_size": 1000000,
+                "max_file_count": 1,
+            },
+        },
+        {
+            "field_key": "checkbox_field",
+            "field_type": "checkbox",
+            "field_metadata": {
+                "required": True,
+                "label": "Test Checkbox Field",
+                "help_text": "This is a test checkbox field",
+            },
+        },
+        {
+            "field_key": "text_field",
+            "field_type": "text",
+            "field_metadata": {
+                "required": True,
+                "label": "Test Field",
+                "help_text": "This is a test field",
+                "min_length": 1,
+                "max_length": 100,
+                "pattern": "^[a-zA-Z0-9]+$",
+                "placeholder": "Enter a value",
+                "default_value": "default_value",
+            },
+        },
+    ]
 
 @pytest.fixture
 def mock_messaging_service() -> MessagingService:
@@ -45,7 +79,7 @@ def manual_task_service(db: Session) -> ManualTaskService:
     return ManualTaskService(db)
 
 @pytest.fixture
-def manual_task(self, db: Session, connection_config: ConnectionConfig) -> Generator[ManualTask, None, None]:
+def manual_task(db: Session, connection_config: ConnectionConfig) -> Generator[ManualTask, None, None]:
     manual_task = ManualTask.create(
         db=db,
         data={
@@ -59,30 +93,22 @@ def manual_task(self, db: Session, connection_config: ConnectionConfig) -> Gener
 
 @pytest.fixture
 def manual_task_config(db: Session, manual_task: ManualTask, manual_task_service: ManualTaskService) -> Generator[ManualTaskConfig, None, None]:
-    fields = [
-        {
-            "field_key": "field1",
-            "field_type": ManualTaskFieldType.text,
-            "field_metadata": {
-                "label": "Field 1",
-                "required": True,
-                "help_text": "This is field 1",
-                "placeholder": "Enter text here",
-            },
-        },
-    ]
-    config = manual_task_service.create_config(ManualTaskConfigurationType.access_privacy_request, fields, manual_task.id)
+    config = manual_task_service.create_config(ManualTaskConfigurationType.access_privacy_request, FIELDS, manual_task.id)
     yield config
     config.delete(db)
+
 
 def test_privacy_request_includes_manual_task_submissions(
     db: Session,
     policy: Policy,
-    connection_config: ConnectionConfig,
-    run_privacy_request_task,
+    privacy_request_service: PrivacyRequestService,
     manual_task: ManualTask,
     manual_task_config: ManualTaskConfig,
+    manual_task_service: ManualTaskService,
     storage_config,
+    s3_client,
+    monkeypatch,
+    user: FidesUser,
 ) -> None:
     """Test that manual task submissions are included in the DSR package.
 
@@ -91,6 +117,10 @@ def test_privacy_request_includes_manual_task_submissions(
     2. Different types of manual task data (text, checkbox, attachments) are properly included
     3. Manual task data is correctly formatted in the DSR package after execution
     """
+    def mock_get_s3_client(auth_method, storage_secrets):
+        return s3_client
+    monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
+
     # Create privacy request
     privacy_request = privacy_request_service.create_privacy_request(
         PrivacyRequestCreate(
@@ -99,21 +129,17 @@ def test_privacy_request_includes_manual_task_submissions(
         ),
         authenticated=True,
     )
-    # Create a manual task instance
-    instance = ManualTaskInstance.create(
-        db=db,
-        data={
-            "task_id": manual_task.id,
-            "config_id": manual_task_config.id,
-            "entity_id": pr.id,
-            "entity_type": "privacy_request",
-            "status": StatusType.pending,
-        },
-    )
 
-    # Verify instance is in pending state before execution
-    db.refresh(instance)
-    assert instance.status == StatusType.pending
+    instance = manual_task.instances[0]
+    attachment_field = next(f for f in manual_task_config.field_definitions if f.field_key == "attachment_field")
+    text_field = next(f for f in manual_task_config.field_definitions if f.field_key == "text_field")
+    checkbox_field = next(f for f in manual_task_config.field_definitions if f.field_key == "checkbox_field")
+
+    attachment_submission = manual_task_service.create_submission(
+        instance_id=instance.id,
+        field_id=attachment_field.id,
+        data={"file_name": "test.txt"},
+    )
 
     # Create an attachment
     attachment = Attachment.create_and_upload(
@@ -137,34 +163,26 @@ def test_privacy_request_includes_manual_task_submissions(
     )
 
     # Create submissions with different types of data
-    text_submission = ManualTaskSubmission.create(
-        db=db,
-        data={
-            "task_id": manual_task.id,
-            "config_id": manual_task_config.id,
-            "instance_id": instance.id,
-            "field_id": "text_field",
-            "data": {"value": "Sample text input"},
-        },
+    text_submission = manual_task_service.create_submission(
+        instance_id=instance.id,
+        field_id=text_field.id,
+        data={"value": "Sample text input"},
     )
 
-    checkbox_submission = ManualTaskSubmission.create(
-        db=db,
-        data={
-            "task_id": manual_task.id,
-            "config_id": manual_task_config.id,
-            "instance_id": instance.id,
-            "field_id": "checkbox_field",
-            "data": {"value": True},
-        },
+    checkbox_submission = manual_task_service.create_submission(
+        instance_id=instance.id,
+        field_id=checkbox_field.id,
+        data={"value": True},
     )
 
     # Mark instance as complete
-    instance.status = StatusType.complete
-    instance.save(db)
+    manual_task_service.instance_service.mark_instance_complete(
+        instance_id=instance.id,
+        user_id=user.id,
+    )
 
     # Verify that the manual task submissions are included in the filtered results
-    filtered_results = pr.get_filtered_final_upload()
+    filtered_results = privacy_request.get_filtered_final_upload()
     assert "manual_tasks" in filtered_results
     assert len(filtered_results["manual_tasks"]) == 1
     task_data = filtered_results["manual_tasks"][0]
@@ -191,10 +209,9 @@ def test_privacy_request_includes_manual_task_submissions(
     assert attachment_data["file_name"] == "test.txt"
 
     # Cleanup
+    attachment_submission.delete(db)
     text_submission.delete(db)
     checkbox_submission.delete(db)
     attachment.delete(db)
     instance.delete(db)
-    manual_task_config.delete(db)
-    manual_task.delete(db)
-    pr.delete(db)
+    privacy_request.delete(db)
