@@ -18,6 +18,17 @@ depends_on = None
 
 
 def upgrade():
+    # Add execution_timing column to manual_task_config
+    op.add_column(
+        "manual_task_config",
+        sa.Column(
+            "execution_timing",
+            sa.String(),
+            nullable=False,
+            server_default="post_execution"
+        )
+    )
+
     # Create manual_task_instance table
     op.create_table(
         "manual_task_instance",
@@ -157,6 +168,9 @@ def upgrade():
 
 
 def downgrade():
+    # Drop execution_timing column from manual_task_config
+    op.drop_column("manual_task_config", "execution_timing")
+
     # Drop foreign key constraint from manual_task_log.instance_id
     op.drop_constraint(
         "fk_manual_task_log_instance_id", "manual_task_log", type_="foreignkey"

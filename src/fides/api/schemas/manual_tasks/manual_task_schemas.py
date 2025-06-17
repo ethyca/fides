@@ -7,6 +7,14 @@ from pydantic import ConfigDict, Field
 from fides.api.schemas.base_class import FidesSchema
 
 
+class ManualTaskExecutionTiming(str, Enum):
+    """Enum for when a manual task should be executed in the privacy request DAG."""
+
+    pre_execution = "pre_execution"  # Execute before the main DAG
+    post_execution = "post_execution"  # Execute after the main DAG
+    parallel = "parallel"  # Execute in parallel with the main DAG
+
+
 class ManualTaskType(str, Enum):
     """Enum for manual task types."""
 
