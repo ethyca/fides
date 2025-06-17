@@ -10,6 +10,7 @@ from fides.api.common_exceptions import (
     RedisNotConfigured,
 )
 from fides.api.models.audit_log import AuditLog, AuditLogAction
+from fides.api.models.manual_tasks.manual_task import ManualTask
 from fides.api.models.policy import Policy
 from fides.api.models.pre_approval_webhook import PreApprovalWebhook
 from fides.api.models.privacy_preference import PrivacyPreferenceHistory
@@ -24,6 +25,7 @@ from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.messaging.messaging import MessagingActionType
 from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskParentEntityType
+from fides.api.schemas.manual_tasks.manual_task_config import ManualTaskConfigurationType
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import (
     BulkPostPrivacyRequests,
@@ -35,7 +37,11 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestSource,
     PrivacyRequestStatus,
 )
-from fides.api.service.messaging.message_dispatch_service import message_send_enabled
+from fides.api.schemas.redis_cache import Identity
+from fides.api.service.messaging.message_dispatch_service import (
+    dispatch_message,
+    get_email_messaging_config_service_type,
+)
 from fides.api.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
@@ -51,6 +57,7 @@ from fides.service.messaging.messaging_service import (
     send_verification_code_to_user,
 )
 from fides.service.manual_tasks.manual_task_service import ManualTaskService
+from fides.service.manual_tasks.manual_task_config_service import ManualTaskConfigNotFoundError
 
 
 class PrivacyRequestError(Exception):
@@ -80,6 +87,73 @@ class PrivacyRequestService:
         if not privacy_request:
             logger.info(f"Privacy request with ID {privacy_request_id} was not found.")
         return privacy_request
+
+    def send_manual_task_notifications(self, privacy_request: PrivacyRequest, manual_task: ManualTask, policy_action: ActionType) -> None:
+        """Send email notifications to assigned users for a manual task."""
+        if len(manual_task.assigned_users) == 0:
+            logger.info(f"No users assigned to manual task {manual_task.id}")
+            return
+
+        assigned_users = manual_task.assigned_users
+        service_type = get_email_messaging_config_service_type(self.db)
+        if not service_type:
+            logger.warning("No email service configured - skipping task notification emails")
+            return
+
+        for user in assigned_users:
+            try:
+                dispatch_message(
+                    db=self.db,
+                    action_type=MessagingActionType.TEST_MESSAGE,  # Using TEST_MESSAGE as placeholder
+                    to_identity=Identity(email=user.email_address),
+                    service_type=service_type,
+                    message_body_params=None,
+                    subject_override=f"New {policy_action.value} manual task assigned - Privacy Request {privacy_request.id}"
+                )
+                logger.info(f"Sent task notification email to {user.email_address}")
+            except Exception as e:
+                logger.error(f"Failed to send task notification email to {user.email_address}: {str(e)}")
+
+    def create_manual_task_instances(self, privacy_request: PrivacyRequest) -> None:
+        """Create manual task instances for this privacy request."""
+        manual_task_service = ManualTaskService(self.db)
+
+        # Get all connection configs which have Manual Tasks associated with them
+        connection_config_tasks = self.db.query(ManualTask).filter(
+            ManualTask.parent_entity_type == ManualTaskParentEntityType.connection_config
+        ).all()
+        if len(connection_config_tasks) == 0:
+            logger.info(f"No manual tasks found for privacy request {privacy_request.id}")
+            return
+
+        policy_action = privacy_request.policy.get_action_type()
+        config_type = None
+
+        if policy_action == ActionType.access:
+            config_type = ManualTaskConfigurationType.access_privacy_request
+        elif policy_action == ActionType.erasure:
+            config_type = ManualTaskConfigurationType.erasure_privacy_request
+        else:
+            logger.info(f"Unsupported policy action type {policy_action} for manual tasks")
+            return
+
+        for manual_task in connection_config_tasks:
+            try:
+                config = manual_task_service.config_service.get_current_config(manual_task, config_type)
+            except ManualTaskConfigNotFoundError:
+                logger.info(f"No manual task config found for {policy_action.value} privacy request type")
+                continue
+
+            manual_task_service.create_instance(
+                task_id=manual_task.id,
+                config_id=config.id,
+                entity_id=privacy_request.id,
+                entity_type="privacy_request",
+            )
+            logger.info(f"Created {policy_action.value} manual task instance for privacy request {privacy_request.id}")
+
+            # Send email notifications to assigned users
+            self.send_manual_task_notifications(privacy_request, manual_task, policy_action)
 
     # pylint: disable=too-many-branches
     def create_privacy_request(
@@ -193,27 +267,7 @@ class PrivacyRequestService:
                     privacy_preference.privacy_request_id = privacy_request.id
                     privacy_preference.save(db=self.db)
 
-            # Create manual task instance for this privacy request
-            manual_task_service = ManualTaskService(self.db)
-            try:
-                manual_task = manual_task_service.get_task(
-                    parent_entity_id=privacy_request.connection_config_id,
-                    parent_entity_type=ManualTaskParentEntityType.connection_config
-                )
-                config = manual_task_service.manual_task_config_service.current_config(manual_task.id)
-            except ManualTaskNotFoundError:
-                logger.info(f"No manual task found for privacy request {privacy_request.id}")
-            except ManualTaskConfigNotFoundError:
-                logger.info(f"No manual task config found for privacy request type {privacy_request.policy.type}")
-                manual_task = None
-            if manual_task and config:
-                manual_task_service.create_instance(
-                    task_id=manual_task.id,
-                    config_id=config.id,
-                    entity_id=privacy_request.id,
-                    entity_type="privacy_request",
-                )
-                logger.info(f"Created manual task instance for privacy request {privacy_request.id}")
+            self.create_manual_task_instances(privacy_request)
 
             cache_data(
                 privacy_request,

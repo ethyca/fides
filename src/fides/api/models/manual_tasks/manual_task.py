@@ -15,6 +15,7 @@ from fides.api.schemas.manual_tasks.manual_task_schemas import (
 )
 
 if TYPE_CHECKING:  # pragma: no cover
+    from fides.api.models.fides_user import FidesUser  # pragma: no cover
     from fides.api.models.manual_tasks.manual_task_config import (  # pragma: no cover
         ManualTaskConfig,
     )
@@ -87,17 +88,13 @@ class ManualTask(Base):
         viewonly=True,
     )
 
-    # Properties
-    @property
-    def assigned_users(self) -> list[str]:
-        """Get all users assigned to this task."""
-        if not self.references:
-            return []
-        return [
-            ref.reference_id
-            for ref in self.references
-            if ref.reference_type == ManualTaskReferenceType.assigned_user
-        ]
+    assigned_users = relationship(
+        "FidesUser",
+        secondary="manual_task_reference",
+        primaryjoin="and_(foreign(ManualTaskReference.reference_type) == 'assigned_user', foreign(ManualTaskReference.reference_id) == FidesUser.id)",
+        secondaryjoin="and_(foreign(ManualTaskReference.task_id) == ManualTask.id, foreign(ManualTaskReference.reference_type) == 'assigned_user')",
+        viewonly=True,
+    )
 
     # CRUD Operations
     @classmethod

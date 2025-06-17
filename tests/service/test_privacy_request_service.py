@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
-from unittest.mock import create_autospec
+from unittest.mock import create_autospec, patch, MagicMock
+from typing import Generator
 
 import pytest
 from sqlalchemy.orm import Session
@@ -32,8 +33,10 @@ from fides.api.models.manual_tasks.manual_task_config import ManualTaskConfig
 from fides.api.models.manual_tasks.manual_task_instance import ManualTaskInstance
 from fides.api.schemas.manual_tasks.manual_task_status import StatusType
 from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskParentEntityType
-from fides.api.schemas.manual_tasks.manual_task_config import ManualTaskConfigurationType
-from fides.api.models.manual_tasks.manual_task_instance import ManualTaskSubmission
+from fides.api.schemas.manual_tasks.manual_task_config import ManualTaskConfigurationType, ManualTaskFieldType
+from fides.api.schemas.messaging.messaging import MessagingActionType, MessagingServiceType
+from fides.service.manual_tasks.manual_task_service import ManualTaskService
+from fides.api.models.audit_log import AuditLog, AuditLogAction
 
 
 @pytest.mark.integration
@@ -46,7 +49,9 @@ class TestPrivacyRequestService:
 
     @pytest.fixture
     def mock_messaging_service(self) -> MessagingService:
-        return create_autospec(MessagingService)
+        mock_service = create_autospec(MessagingService)
+        mock_service.dispatch_message = MagicMock()
+        return mock_service
 
     @pytest.fixture
     def privacy_request_service(
@@ -433,17 +438,27 @@ class TestPrivacyRequestService:
         )
         assert error_logs.count() == 0
 
-    @pytest.mark.integration
-    @pytest.mark.integration_postgres
-    def test_create_privacy_request_creates_manual_task_instance(
-        self,
-        db: Session,
-        privacy_request_service: PrivacyRequestService,
-        policy: Policy,
-        connection_config: ConnectionConfig,
-    ) -> None:
-        """Test that creating a privacy request creates a manual task instance if a manual task exists."""
-        # Create a manual task and config
+@pytest.mark.integration
+@pytest.mark.integration_postgres
+class TestPrivacyRequestServiceManualTasks:
+    @pytest.fixture
+    def mock_messaging_service(self) -> MessagingService:
+        mock_service = create_autospec(MessagingService)
+        mock_service.dispatch_message = MagicMock()
+        return mock_service
+
+    @pytest.fixture
+    def privacy_request_service(
+        self, db: Session, mock_messaging_service
+    ) -> PrivacyRequestService:
+        return PrivacyRequestService(db, ConfigProxy(db), mock_messaging_service)
+
+    @pytest.fixture
+    def manual_task_service(self, db: Session) -> ManualTaskService:
+        return ManualTaskService(db)
+
+    @pytest.fixture
+    def manual_task(self, db: Session, connection_config: ConnectionConfig) -> Generator[ManualTask, None, None]:
         manual_task = ManualTask.create(
             db=db,
             data={
@@ -452,14 +467,39 @@ class TestPrivacyRequestService:
                 "parent_entity_type": ManualTaskParentEntityType.connection_config,
             },
         )
-        manual_task_config = ManualTaskConfig.create(
-            db=db,
-            data={
-                "task_id": manual_task.id,
-                "config_type": ManualTaskConfigurationType.access_privacy_request,
-                "is_current": True,
+        yield manual_task
+        manual_task.delete(db)
+
+    @pytest.fixture
+    def manual_task_config(self, db: Session, manual_task: ManualTask, manual_task_service: ManualTaskService) -> Generator[ManualTaskConfig, None, None]:
+        fields = [
+            {
+                "field_key": "field1",
+                "field_type": ManualTaskFieldType.text,
+                "field_metadata": {
+                    "label": "Field 1",
+                    "required": True,
+                    "help_text": "This is field 1",
+                    "placeholder": "Enter text here",
+                },
             },
-        )
+        ]
+        config = manual_task_service.create_config(ManualTaskConfigurationType.access_privacy_request, fields, manual_task.id)
+        yield config
+        config.delete(db)
+
+    @pytest.mark.integration
+    @pytest.mark.integration_postgres
+    def test_create_privacy_request_creates_manual_task_instance(
+        self,
+        db: Session,
+        privacy_request_service: PrivacyRequestService,
+        policy: Policy,
+        connection_config: ConnectionConfig,
+        manual_task: ManualTask,
+        manual_task_config: ManualTaskConfig,
+    ) -> None:
+        """Test that creating a privacy request creates a manual task instance if a manual task exists."""
 
         # Create privacy request
         privacy_request = privacy_request_service.create_privacy_request(
@@ -487,6 +527,130 @@ class TestPrivacyRequestService:
 
         # Cleanup
         manual_task_instance.delete(db)
-        manual_task_config.delete(db)
-        manual_task.delete(db)
+        privacy_request.delete(db)
+
+    def test_create_manual_task_instances_no_tasks(
+        self,
+        db: Session,
+        privacy_request_service: PrivacyRequestService,
+        policy: Policy,
+    ) -> None:
+        """Test creating manual task instances when no manual tasks exist."""
+        privacy_request = privacy_request_service.create_privacy_request(
+            PrivacyRequestCreate(
+                policy_key=policy.key,
+                identity=Identity(email="test@example.com"),
+            ),
+            authenticated=True,
+        )
+
+        # Verify no manual task instances were created
+        manual_task_instances = ManualTaskInstance.filter(
+            db=db,
+            conditions=(ManualTaskInstance.entity_id == privacy_request.id),
+        ).all()
+        assert len(manual_task_instances) == 0
+
+    @pytest.mark.integration
+    @pytest.mark.integration_postgres
+    @pytest.mark.usefixtures(
+        "connection_config",
+        "manual_task_config",
+        "use_dsr_3_0",
+    )
+    def test_send_manual_task_notifications_with_assigned_users(
+        self,
+        db: Session,
+        privacy_request_service: PrivacyRequestService,
+        policy: Policy,
+        user: FidesUser,
+        manual_task: ManualTask,
+        manual_task_service: ManualTaskService,
+    ) -> None:
+        """Test sending notifications when users are assigned to the task."""
+        manual_task_service.assign_users_to_task(manual_task.id, [user.id])
+
+        with patch(
+            "fides.service.privacy_request.privacy_request_service.get_email_messaging_config_service_type",
+            return_value=MessagingServiceType.mailgun.value,
+        ), patch(
+            "fides.service.privacy_request.privacy_request_service.dispatch_message"
+        ) as mock_dispatch:
+            privacy_request = privacy_request_service.create_privacy_request(
+                PrivacyRequestCreate(
+                    policy_key=policy.key,
+                    identity=Identity(email="test@example.com"),
+                ),
+                authenticated=True,
+            )
+
+            # Verify that dispatch_message was called with correct parameters
+            mock_dispatch.assert_called_once_with(
+                db=db,
+                action_type=MessagingActionType.TEST_MESSAGE,
+                to_identity=Identity(email=user.email_address),
+                service_type=MessagingServiceType.mailgun.value,
+                message_body_params=None,
+                subject_override=f"New access manual task assigned - Privacy Request {privacy_request.id}"
+            )
+            privacy_request.delete(db)
+
+    @pytest.mark.integration
+    @pytest.mark.integration_postgres
+    @pytest.mark.usefixtures("connection_config", "manual_task_config")
+    def test_send_manual_task_notifications_no_assigned_users(
+        self,
+        db: Session,
+        privacy_request_service: PrivacyRequestService,
+        policy: Policy,
+    ) -> None:
+        """Test sending notifications when no users are assigned to the task."""
+        with patch(
+            "fides.service.privacy_request.privacy_request_service.get_email_messaging_config_service_type",
+            return_value=MessagingServiceType.mailgun.value,
+        ), patch(
+            "fides.service.privacy_request.privacy_request_service.dispatch_message"
+        ) as mock_dispatch:
+            privacy_request = privacy_request_service.create_privacy_request(
+                PrivacyRequestCreate(
+                    policy_key=policy.key,
+                    identity=Identity(email="requester@example.com"),
+                ),
+                authenticated=True,
+            )
+
+        # Verify that no messages were sent
+        mock_dispatch.assert_not_called()
+
+        privacy_request.delete(db)
+
+
+    @pytest.mark.usefixtures("use_dsr_3_0", "manual_task_config")
+    def test_send_manual_task_notifications_no_email_service(
+        self,
+        db: Session,
+        privacy_request_service: PrivacyRequestService,
+        policy: Policy,
+        manual_task: ManualTask,
+        user: FidesUser,
+        manual_task_service: ManualTaskService,
+    ) -> None:
+        """Test sending notifications when no email service is configured."""
+        # Create a user and assign to manual task
+        manual_task_service.assign_users_to_task(manual_task.id, [user.id])
+        with patch(
+            "fides.service.privacy_request.privacy_request_service.dispatch_message"
+        ) as mock_dispatch:
+            privacy_request = privacy_request_service.create_privacy_request(
+                PrivacyRequestCreate(
+                    policy_key=policy.key,
+                    identity=Identity(email="requester@example.com"),
+                ),
+                authenticated=True,
+            )
+
+            # Verify that no messages were sent
+            mock_dispatch.assert_not_called()
+
+        # Cleanup
         privacy_request.delete(db)
