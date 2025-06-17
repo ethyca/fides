@@ -56,11 +56,13 @@ const ExperienceDescription = ({
                 type="button"
                 className="fides-link-button fides-vendor-count"
                 onClick={() => {
-                  setTrigger({
-                    type: "link",
-                    label: VENDOR_COUNT_LINK, // The assumption is that consistency is more important than the actual number of vendors here, so we use the replacement string. Change if this becomes problematic.
-                  });
-                  onVendorPageClick?.();
+                  if (onVendorPageClick) {
+                    setTrigger({
+                      type: "link",
+                      label: VENDOR_COUNT_LINK, // The assumption is that consistency is more important than the actual number of vendors here, so we use the replacement string. Change if this becomes problematic.
+                    });
+                    onVendorPageClick();
+                  }
                 }}
               >
                 {vendorCount}

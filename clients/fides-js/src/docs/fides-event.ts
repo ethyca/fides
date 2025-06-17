@@ -153,9 +153,8 @@ export interface FidesEvent extends CustomEvent {
         | "ot_migration";
 
       /**
-       * What UI element (if any) triggered this event. Some scripts accept a
-       * trigger object as an optional parameter which can be used to customize
-       * the event details.
+       * What UI element (if any) triggered this event, as well as the origin of
+       * the event.
        */
       trigger?: {
         /**
