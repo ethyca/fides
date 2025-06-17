@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, String
+from sqlalchemy import Column, String
 from sqlalchemy.ext.declarative import declared_attr
 
 from fides.api.db.base_class import Base

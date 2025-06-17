@@ -30,7 +30,7 @@ from fides.api.util.saas_util import (
     load_yaml_as_string,
     replace_config_placeholders,
     replace_dataset_placeholders,
-    replace_version
+    replace_version,
 )
 from fides.api.util.unsafe_file_util import verify_svg, verify_zip
 
@@ -147,7 +147,9 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
             and authentication.strategy
             == OAuth2AuthorizationCodeAuthenticationStrategy.name
         )
-        file_connector_template = FileConnectorTemplateLoader.get_connector_templates().get(template.key)
+        file_connector_template = (
+            FileConnectorTemplateLoader.get_connector_templates().get(template.key)
+        )
 
         connector_template = ConnectorTemplate(
             config=template.config,
@@ -227,19 +229,14 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
         connector_type = saas_config.type
         human_readable = saas_config.name
 
-        existing_connector = (
-                FileConnectorTemplateLoader.get_connector_templates().get(
-                    connector_type
-                )
-            )
+        existing_connector = FileConnectorTemplateLoader.get_connector_templates().get(
+            connector_type
+        )
         if existing_connector:
             existing_config = SaaSConfig(
                 **load_config_from_string(existing_connector.config)
             )
-            config_contents = replace_version(
-                config_contents, existing_config.version
-            )
-
+            config_contents = replace_version(config_contents, existing_config.version)
 
         template = CustomConnectorTemplate(
             key=connector_type,
@@ -268,15 +265,18 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
         # update any existing connection configs that use this connector type
         connector_template = ConnectorRegistry.get_connector_template(connector_type)
         if connector_template:
-            update_existing_connection_configs_for_connector_type(db, connector_type, connector_template)
+            update_existing_connection_configs_for_connector_type(
+                db, connector_type, connector_template
+            )
 
     @classmethod
     def delete_template(cls, db: Session, key: str) -> None:
         """
         Deletes a custom connector template from the database.
         """
-        CustomConnectorTemplate.filter(db, conditions=(CustomConnectorTemplate.key == key)).delete()
-
+        CustomConnectorTemplate.filter(
+            db, conditions=(CustomConnectorTemplate.key == key)
+        ).delete()
 
 
 def update_existing_connection_configs_for_connector_type(
@@ -292,9 +292,7 @@ def update_existing_connection_configs_for_connector_type(
     ).all()
 
     for connection_config in connection_configs:
-        saas_config_instance = SaaSConfig.model_validate(
-            connection_config.saas_config
-        )
+        saas_config_instance = SaaSConfig.model_validate(connection_config.saas_config)
         try:
             update_saas_instance(
                 db,
@@ -404,7 +402,9 @@ def update_saas_configs(db: Session) -> None:
             connector_type
         )
 
-        update_existing_connection_configs_for_connector_type(db, connector_type, template)
+        update_existing_connection_configs_for_connector_type(
+            db, connector_type, template
+        )
 
 
 def update_saas_instance(
