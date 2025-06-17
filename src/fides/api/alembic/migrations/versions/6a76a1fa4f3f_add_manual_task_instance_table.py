@@ -25,7 +25,7 @@ def upgrade():
             "execution_timing",
             sa.String(),
             nullable=False,
-            server_default="post_execution"
+            server_default="pre_execution"
         )
     )
 
