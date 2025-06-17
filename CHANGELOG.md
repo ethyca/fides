@@ -27,11 +27,13 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Changed
 - Integrations detail page now includes a setup guide component. [#6096](https://github.com/ethyca/fides/pull/6096)
+- Minor improvements to Redis read-only connections [#6227](https://github.com/ethyca/fides/pull/6227)
 - Updates language-selector popover to automatically close after language selection [#6226](https://github.com/ethyca/fides/pull/6226)
 
 ### Fixed
 - Added missing "Awaiting email send" status to privacy request statuses [#6218](https://github.com/ethyca/fides/pull/6218)
 - Fixed FidesJS AMD module loading conflicts when RequireJS or other AMD loaders are present [#6210](https://github.com/ethyca/fides/pull/6210)
+- Fixed the system integration form formatting dataset references incorrectly [#6225](https://github.com/ethyca/fides/pull/6225)
 
 ## [2.63.2](https://github.com/ethyca/fides/compare/2.63.1...2.63.2)
 
