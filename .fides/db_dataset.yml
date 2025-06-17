@@ -1094,6 +1094,8 @@ dataset:
       data_categories: [system.operations]
     - name: version
       data_categories: [system.operations]
+    - name: execution_timing
+      data_categories: [system.operations]
   - name: manual_task_config_field
     fields:
     - name: config_id
