@@ -25,8 +25,8 @@ def upgrade():
             "execution_timing",
             sa.String(),
             nullable=False,
-            server_default="pre_execution"
-        )
+            server_default="pre_execution",
+        ),
     )
 
     # Create manual_task_instance table
