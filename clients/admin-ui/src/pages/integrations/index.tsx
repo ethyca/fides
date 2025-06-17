@@ -4,6 +4,7 @@ import {
   AntTable as Table,
   AntTableProps as TableProps,
   AntTag as Tag,
+  AntTooltip as Tooltip,
   AntTypography as Typography,
   useDisclosure,
 } from "fidesui";
@@ -17,13 +18,13 @@ import FidesSpinner from "~/features/common/FidesSpinner";
 import Layout from "~/features/common/Layout";
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
+import { formatDate } from "~/features/common/utils";
 import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
 import { useGetAllDatastoreConnectionsQuery } from "~/features/datastore-connections/datastore-connection.slice";
 import AddIntegrationModal from "~/features/integrations/add-integration/AddIntegrationModal";
 import getIntegrationTypeInfo, {
   SUPPORTED_INTEGRATIONS,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
-import { ConnectionCategory } from "~/features/integrations/ConnectionCategory";
 import SharedConfigModal from "~/features/integrations/SharedConfigModal";
 import { ConnectionConfigurationResponse, ConnectionType } from "~/types/api";
 
@@ -122,15 +123,8 @@ const IntegrationListView: NextPage = () => {
           items?.find((item) => item.connection_type === connectionType)
             ?.saas_config?.type,
         );
-        return <Tag>{typeInfo.placeholder.name || connectionType}</Tag>;
+        return typeInfo.placeholder.name || connectionType;
       },
-    },
-    {
-      title: "Category",
-      dataIndex: ["integrationTypeInfo", "category"],
-      key: "category",
-      width: 150,
-      render: (category: ConnectionCategory) => category,
     },
     {
       title: "Capabilities",
@@ -144,6 +138,39 @@ const IntegrationListView: NextPage = () => {
           ))}
         </div>
       ),
+    },
+    {
+      title: "Connection Status",
+      key: "connection_status",
+      width: 150,
+      render: (_, record) => {
+        const getConnectionStatus = () => {
+          if (
+            record.last_test_timestamp === null ||
+            record.last_test_timestamp === undefined
+          ) {
+            return { status: "Untested", color: "default" };
+          }
+          if (record.last_test_succeeded === true) {
+            return { status: "Healthy", color: "success" };
+          }
+          if (record.last_test_succeeded === false) {
+            return { status: "Failed", color: "error" };
+          }
+          return { status: "Untested", color: "default" };
+        };
+
+        const { status, color } = getConnectionStatus();
+        const tooltipText = record.last_test_timestamp
+          ? `Last connection: ${formatDate(record.last_test_timestamp)}`
+          : "The connection has not been tested";
+
+        return (
+          <Tooltip title={tooltipText}>
+            <Tag color={color}>{status}</Tag>
+          </Tooltip>
+        );
+      },
     },
     {
       title: "Actions",
