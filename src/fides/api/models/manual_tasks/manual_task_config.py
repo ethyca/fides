@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, Optional, cast
 
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB
@@ -17,6 +17,12 @@ from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskLogStat
 
 if TYPE_CHECKING:  # pragma: no cover
     from fides.api.models.manual_tasks.manual_task import ManualTask  # pragma: no cover
+    from fides.api.models.manual_tasks.manual_task_instance import (
+        ManualTaskInstance,  # pragma: no cover
+    )
+    from fides.api.models.manual_tasks.manual_task_instance import (
+        ManualTaskSubmission,  # pragma: no cover
+    )
 
 
 class ManualTaskConfig(Base):
@@ -34,7 +40,13 @@ class ManualTaskConfig(Base):
     is_current = Column(Boolean, nullable=False, default=True)
 
     # Relationships
-    task = relationship("ManualTask", back_populates="configs")
+    task = relationship("ManualTask", back_populates="configs", viewonly=True)
+    instances = relationship(
+        "ManualTaskInstance", back_populates="config", uselist=True, viewonly=True
+    )
+    submissions = relationship(
+        "ManualTaskSubmission", back_populates="config", uselist=True, viewonly=True
+    )
     field_definitions = relationship(
         "ManualTaskConfigField",
         back_populates="config",
@@ -95,14 +107,27 @@ class ManualTaskConfigField(Base):
     field_type = Column(
         EnumColumn(ManualTaskFieldType), nullable=False
     )  # Using ManualTaskFieldType
-    field_metadata = Column(JSONB, nullable=False, default={})
+    field_metadata: dict[str, Any] = cast(
+        dict[str, Any], Column(JSONB, nullable=False, default={})
+    )
 
     # Relationships
-    config = relationship("ManualTaskConfig", back_populates="field_definitions")
+    config = relationship(
+        "ManualTaskConfig", back_populates="field_definitions", viewonly=True
+    )
+    submissions = relationship(
+        "ManualTaskSubmission",
+        back_populates="field",
+        uselist=True,
+        cascade="all, delete-orphan",
+    )
 
     @property
     def field_metadata_model(self) -> ManualTaskFieldMetadata:
         """Get the field metadata as a Pydantic model."""
+        assert isinstance(
+            self.field_metadata, dict
+        ), "field_metadata must be a dictionary"
         return ManualTaskFieldMetadata.model_validate(self.field_metadata)
 
     @classmethod

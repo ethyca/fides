@@ -18,6 +18,10 @@ if TYPE_CHECKING:  # pragma: no cover
     from fides.api.models.manual_tasks.manual_task_config import (  # pragma: no cover
         ManualTaskConfig,
     )
+    from fides.api.models.manual_tasks.manual_task_instance import (
+        ManualTaskInstance,
+        ManualTaskSubmission,
+    )
 
 
 class ManualTask(Base):
@@ -68,6 +72,19 @@ class ManualTask(Base):
         "ManualTaskConfig",
         back_populates="task",
         cascade="all, delete-orphan",
+        uselist=True,
+    )
+    instances = relationship(
+        "ManualTaskInstance",
+        back_populates="task",
+        viewonly=True,
+        uselist=True,
+    )
+    submissions = relationship(
+        "ManualTaskSubmission",
+        back_populates="task",
+        uselist=True,
+        viewonly=True,
     )
 
     # Properties
@@ -117,4 +134,4 @@ class ManualTaskReference(Base):
     reference_type = Column(EnumColumn(ManualTaskReferenceType), nullable=False)
 
     # Relationships
-    task = relationship("ManualTask", back_populates="references")
+    task = relationship("ManualTask", back_populates="references", viewonly=True)

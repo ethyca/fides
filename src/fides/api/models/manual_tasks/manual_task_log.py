@@ -13,6 +13,9 @@ if TYPE_CHECKING:  # pragma: no cover
     from fides.api.models.manual_tasks.manual_task_config import (
         ManualTaskConfig,  # pragma: no cover
     )
+    from fides.api.models.manual_tasks.manual_task_instance import (  # pragma: no cover
+        ManualTaskInstance,
+    )
 
 
 class ManualTaskLog(Base):
@@ -26,19 +29,29 @@ class ManualTaskLog(Base):
     task_id = Column(
         String, ForeignKey("manual_task.id", ondelete="CASCADE"), nullable=False
     )
-    config_id = Column(String, ForeignKey("manual_task_config.id"), nullable=True)
-    instance_id = Column(String, nullable=True)
+    config_id = Column(
+        String, ForeignKey("manual_task_config.id", ondelete="SET NULL"), nullable=True
+    )
+    instance_id = Column(
+        String,
+        ForeignKey("manual_task_instance.id", ondelete="SET NULL"),
+        nullable=True,
+    )
     status = Column(String, nullable=False)
     message = Column(String, nullable=False)
     details = Column(JSONB, nullable=True)
 
-    # Relationships - using string references to avoid circular imports
-    task = relationship("ManualTask", back_populates="logs", foreign_keys=[task_id])
-    config = relationship(
-        "ManualTaskConfig", back_populates="logs", foreign_keys=[config_id]
+    # Relationships
+    task = relationship(
+        "ManualTask", back_populates="logs", foreign_keys=[task_id], viewonly=True
     )
-    # TODO: Add instance relationship when it is implemented
-    # instance = relationship("ManualTaskInstance", back_populates="logs")
+    config = relationship(
+        "ManualTaskConfig",
+        back_populates="logs",
+        foreign_keys=[config_id],
+        viewonly=True,
+    )
+    instance = relationship("ManualTaskInstance", back_populates="logs", viewonly=True)
 
     @classmethod
     def create_log(
