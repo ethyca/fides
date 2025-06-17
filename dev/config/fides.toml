@@ -39,7 +39,7 @@ task_always_eager = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "e08f15f43532ae1ab7d589ef24a30ebe" # string
+analytics_id = "346135c15690e511076babd030b620d6" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -315,33 +315,6 @@ read_only_enabled = false # boolean
 
 # The network address for the read-only Redis cache.
 read_only_host = "" # string
-
-# The port at which the read-only Redis cache will be accessible.
-read_only_port = 6379 # integer
-
-# The user with which to login to the read-only Redis cache.
-read_only_user = "" # string
-
-# The password with which to login to the read-only Redis cache.
-read_only_password = "" # string
-
-# The application will use this index in the read-only Redis cache to
-# cache data.
-read_only_db_index = 0 # integer
-
-# Whether the application's connections to the read-only cache should
-# be encrypted using TLS.
-read_only_ssl = false # boolean
-
-# If using TLS encryption, set this to 'required' if you wish to
-# enforce the read-only Redis cache to provide a certificate. Note that
-# not all cache providers support this without setting ssl_ca_certs
-# (e.g. AWS Elasticache).
-read_only_ssl_cert_reqs = "required" # string
-
-# If using TLS encryption rooted with a custom Certificate Authority,
-# set this to the path of the CA certificate.
-read_only_ssl_ca_certs = "" # string
 
 #--------------#
 #-- SECURITY --#
