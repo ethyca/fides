@@ -28,6 +28,7 @@ from fides.common.api.v1.urn_registry import (
 from tests.ops.api.v1.endpoints.test_dataset_config_endpoints import _reject_key
 from tests.ops.test_helpers.saas_test_utils import create_zip_file
 
+
 @pytest.mark.unit_saas
 class TestValidateSaaSConfig:
     @pytest.fixture
@@ -49,7 +50,6 @@ class TestValidateSaaSConfig:
                 "icon.svg": hubspot_yaml_icon,
             }
         )
-
 
     def test_put_validate_saas_config_not_authenticated(
         self, saas_example_config, validate_saas_config_url: str, api_client

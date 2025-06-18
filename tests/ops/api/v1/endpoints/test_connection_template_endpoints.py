@@ -1,4 +1,5 @@
 from unittest import mock
+from unittest.mock import MagicMock
 
 import pytest
 from starlette.testclient import TestClient
@@ -16,22 +17,21 @@ from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
 )
 from fides.common.api.scope_registry import (
+    CLIENT_READ,
     CONNECTION_READ,
     CONNECTION_TYPE_READ,
-    SAAS_CONNECTION_INSTANTIATE,
     CONNECTOR_TEMPLATE_REGISTER,
-    CLIENT_READ,
+    SAAS_CONNECTION_INSTANTIATE,
 )
 from fides.common.api.v1.urn_registry import (
     CONNECTION_TYPE_SECRETS,
     CONNECTION_TYPES,
-    SAAS_CONNECTOR_FROM_TEMPLATE,
-    V1_URL_PREFIX,
     REGISTER_CONNECTOR_TEMPLATE,
+    SAAS_CONNECTOR_FROM_TEMPLATE,
     UPDATE_CUSTOM_TEMPLATE_TO_FILE_TEMPLATE,
+    V1_URL_PREFIX,
 )
 from tests.ops.test_helpers.saas_test_utils import create_zip_file
-from unittest.mock import MagicMock
 
 
 class TestGetConnections:
@@ -2043,6 +2043,7 @@ class TestInstantiateConnectionFromTemplate:
         connection_config.delete(db)
         dataset_config.ctl_dataset.delete(db=db)
 
+
 class TestRegisterConnectorTemplate:
     @pytest.fixture
     def register_connector_template_url(self) -> str:
@@ -2325,7 +2326,6 @@ class TestRegisterConnectorTemplate:
         )
         assert response.status_code == status_code
         assert response.json() == details
-
 
 
 @pytest.mark.unit_saas
@@ -2695,15 +2695,19 @@ class TestUpdateCustomConnectorToFileTemplate:
         register_connector_template_url,
         update_custom_connector_url,
         complete_connector_template,
+        db,
     ):
         """
         Integration test:
         1. Register a custom connector template.
         2. Verify the custom template is active.
-        3. Call the update endpoint.
-        4. Verify the file template is now active.
+        3. Instantiate a connection using the custom template.
+        4. Call the update endpoint.
+        5. Verify the file template is now active.
+        6. Verify the connection was updated to use the file template.
         """
         connector_type = "hubspot"
+
         # 1. Register the custom template
         auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_REGISTER])
         response = api_client.post(
@@ -2732,7 +2736,39 @@ class TestUpdateCustomConnectorToFileTemplate:
         assert template.is_custom is True
         assert template.file_connector_available is True
 
-        # 3. Call the update endpoint
+        # 3. Instantiate a connection using the custom template
+        instance_key = "test_hubspot_instance"
+        auth_header = generate_auth_header(scopes=[SAAS_CONNECTION_INSTANTIATE])
+        request_body = {
+            "instance_key": instance_key,
+            "secrets": {
+                "domain": "test_hubspot_domain",
+                "private_app_token": "test_hubspot_token",
+            },
+            "name": "Test HubSpot Connector",
+            "description": "Test HubSpot ConnectionConfig description",
+            "key": "test_hubspot_connection_config",
+        }
+
+        # Get the base URL for instantiation
+        base_url = V1_URL_PREFIX + SAAS_CONNECTOR_FROM_TEMPLATE
+        resp = api_client.post(
+            base_url.format(saas_connector_type=connector_type),
+            headers=auth_header,
+            json=request_body,
+        )
+        assert resp.status_code == 200
+
+        # Verify the connection was created with the custom template
+        connection_config = ConnectionConfig.filter(
+            db=db, conditions=(ConnectionConfig.key == "test_hubspot_connection_config")
+        ).first()
+        assert connection_config is not None
+
+        # Store the original SaaS config to compare later
+        original_saas_config = connection_config.saas_config.copy()
+
+        # 4. Call the update endpoint
         update_url = update_custom_connector_url.format(
             saas_connector_type=connector_type
         )
@@ -2744,8 +2780,36 @@ class TestUpdateCustomConnectorToFileTemplate:
             == "Custom connector template successfully updated."
         )
 
-        # 4. Verify the file template is now active
+        # 5. Verify the file template is now active
         template = ConnectorRegistry.get_connector_template(connector_type)
         assert template is not None
         assert template.is_custom is False
         assert template.file_connector_available is False
+
+        # 6. Verify the connection was updated to use the file template
+        # Refresh the connection config from the database
+        db.refresh(connection_config)
+
+        # The SaaS config should have been updated to use the file template
+        # We can verify this by checking that the SaaS config has changed
+        print(connection_config.saas_config)
+        print(original_saas_config)
+        assert connection_config.saas_config != original_saas_config
+
+        # Verify the connection still has the same basic properties
+        assert connection_config.key == "test_hubspot_connection_config"
+        assert connection_config.name == "Test HubSpot Connector"
+        assert (
+            connection_config.description == "Test HubSpot ConnectionConfig description"
+        )
+        assert connection_config.secrets["private_app_token"] == "test_hubspot_token"
+
+        # Clean up
+        dataset_config = DatasetConfig.filter(
+            db=db, conditions=(DatasetConfig.fides_key == instance_key)
+        ).first()
+        if dataset_config:
+            dataset_config.delete(db)
+            if dataset_config.ctl_dataset:
+                dataset_config.ctl_dataset.delete(db=db)
+        connection_config.delete(db)
