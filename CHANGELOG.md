@@ -27,6 +27,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Adds config for sale_of_data default in Fides Shopify integration [#6233](https://github.com/ethyca/fides/pull/6233)
 - Added detailed trigger tracking to all FidesJS events including element type, label, and interaction origin [#6229](https://github.com/ethyca/fides/pull/6229)
 - Added validation for URLs in website integration forms [#6230](https://github.com/ethyca/fides/pull/6230)
+- Adds Janus SDK enum to PrivacyRequestSource [#6243](https://github.com/ethyca/fides/pull/6243)
 
 ### Changed
 - Integrations detail page now includes a setup guide component. [#6096](https://github.com/ethyca/fides/pull/6096)
