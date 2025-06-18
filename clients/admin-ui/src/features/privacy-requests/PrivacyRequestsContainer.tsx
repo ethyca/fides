@@ -1,4 +1,8 @@
-import { AntSpace as Space } from "fidesui";
+import {
+  AntSpace as Space,
+  AntTabs as Tabs,
+  AntTabsProps as TabsProps,
+} from "fidesui";
 import dynamic from "next/dynamic";
 import * as React from "react";
 import { useEffect } from "react";
@@ -11,6 +15,11 @@ import { ScopeRegistryEnum } from "~/types/api";
 
 import PageHeader from "../common/PageHeader";
 import { useDSRErrorAlert } from "./hooks/useDSRErrorAlert";
+import {
+  PRIVACY_REQUEST_TABS,
+  usePrivacyRequestTabs,
+} from "./hooks/usePrivacyRequestTabs";
+import ManualTaskTab from "./ManualTaskTab";
 
 const ActionButtons = dynamic(
   () => import("~/features/privacy-requests/buttons/ActionButtons"),
@@ -19,12 +28,33 @@ const ActionButtons = dynamic(
 
 const PrivacyRequestsContainer = () => {
   const { processing } = useDSRErrorAlert();
-
   const { plus: hasPlus } = useFeatures();
+  const { activeTab, handleTabChange, availableTabs } = usePrivacyRequestTabs();
 
   useEffect(() => {
     processing();
   }, [processing]);
+
+  const tabItems: TabsProps["items"] = [
+    {
+      key: PRIVACY_REQUEST_TABS.REQUEST,
+      label: "Request",
+      children: <RequestTable />,
+    },
+    ...(availableTabs.manualTask
+      ? [
+          {
+            key: PRIVACY_REQUEST_TABS.MANUAL_TASK,
+            label: "Manual task",
+            children: <ManualTaskTab />,
+          },
+        ]
+      : []),
+  ];
+
+  const handleTabChangeWrapper = (activeKey: string) => {
+    handleTabChange(activeKey as any); // Cast to PrivacyRequestTabKey since we control the tabs
+  };
 
   return (
     <>
@@ -44,7 +74,11 @@ const PrivacyRequestsContainer = () => {
         data-testid="privacy-requests"
       />
 
-      <RequestTable />
+      <Tabs
+        activeKey={activeTab}
+        onChange={handleTabChangeWrapper}
+        items={tabItems}
+      />
     </>
   );
 };
