@@ -200,9 +200,14 @@ const IntegrationListView: NextPage = () => {
   };
 
   const tableLocale = {
-    emptyText: searchTerm.trim()
-      ? "No integrations match your search"
-      : 'You have not configured any integrations. Click "Add Integration" to connect and configure systems now.',
+    emptyText: searchTerm.trim() ? (
+      "No integrations match your search"
+    ) : (
+      <div data-testid="empty-state">
+        You have not configured any integrations. Click &quot;Add
+        Integration&quot; to connect and configure systems now.
+      </div>
+    ),
   };
 
   return (
@@ -249,6 +254,7 @@ const IntegrationListView: NextPage = () => {
           bordered
           onRow={(record) => ({
             onClick: () => handleManageClick(record),
+            "data-testid": `integration-info-${record.key}`,
           })}
           rowClassName="cursor-pointer"
           onChange={handleTableChange}

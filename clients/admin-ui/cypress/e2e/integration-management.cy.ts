@@ -60,9 +60,7 @@ describe("Integration management for data detection & discovery", () => {
       }).as("getConnections");
       cy.visit(INTEGRATION_MANAGEMENT_ROUTE);
       cy.wait("@getConnections");
-      cy.contains(
-        'You have not configured any integrations. Click "Add Integration" to connect and configure systems now.',
-      ).should("be.visible");
+      cy.getByTestId("empty-state").should("exist");
     });
 
     describe("table view", () => {
@@ -79,6 +77,7 @@ describe("Integration management for data detection & discovery", () => {
         cy.getByTestId("integrations-table")
           .find("tbody tr")
           .should("have.length.greaterThan", 0);
+        cy.getByTestId("integration-info-bq_integration").should("exist");
         cy.getByTestId("manage-btn-bq_integration").should("exist");
       });
 
@@ -86,7 +85,7 @@ describe("Integration management for data detection & discovery", () => {
         cy.intercept("GET", "/api/v1/connection/bq_integration", {
           fixture: "connectors/bigquery_connection.json",
         }).as("getConnection");
-        cy.getByTestId("integrations-table").find("tbody tr").first().click();
+        cy.getByTestId("integration-info-bq_integration").click();
         cy.url().should("contain", "/bq_integration");
       });
 
@@ -118,7 +117,6 @@ describe("Integration management for data detection & discovery", () => {
           "ant-pagination-item-active",
         );
         cy.get(".ant-pagination-item-2").should("exist");
-
         cy.get(".ant-pagination-item-2").click();
         cy.wait("@getConnectionsPage2");
 
@@ -191,7 +189,7 @@ describe("Integration management for data detection & discovery", () => {
             cy.contains("Details").click();
           });
         });
-        cy.contains("Configure").click();
+        cy.getByTestId("configure-modal-btn").click();
         cy.getByTestId("input-name").type("test name");
         cy.getByTestId("input-secrets.keyfile_creds").type(
           `{"credentials": "test"}`,
@@ -225,7 +223,7 @@ describe("Integration management for data detection & discovery", () => {
             cy.contains("Details").click();
           });
         });
-        cy.contains("Configure").click();
+        cy.getByTestId("configure-modal-btn").click();
         cy.getByTestId("input-name").type("test name");
         cy.getByTestId("input-secrets.keyfile_creds").type(
           `{"credentials": "test"}`,
@@ -276,7 +274,7 @@ describe("Integration management for data detection & discovery", () => {
             },
           );
         });
-        cy.contains("Configure").click();
+        cy.getByTestId("configure-modal-btn").click();
 
         // Fill out the form with fields from the salesforce_secret schema
         cy.getByTestId("input-name").type("My Salesforce Integration");
@@ -305,7 +303,7 @@ describe("Integration management for data detection & discovery", () => {
             cy.contains("Details").click();
           });
         });
-        cy.contains("Configure").click();
+        cy.getByTestId("configure-modal-btn").click();
         cy.getByTestId("input-name").type("Manual Integration Test");
         cy.getByTestId("save-btn").click();
         cy.wait("@patchConnection");

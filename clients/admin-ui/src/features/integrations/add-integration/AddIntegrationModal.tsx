@@ -117,7 +117,11 @@ const AddIntegrationModal = ({
           <Button onClick={() => setStep(IntegrationModalStep.LIST_VIEW)}>
             Back
           </Button>
-          <Button onClick={handleConfigure} type="primary">
+          <Button
+            onClick={handleConfigure}
+            type="primary"
+            data-testid="configure-modal-btn"
+          >
             Next
           </Button>
         </div>
