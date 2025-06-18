@@ -1038,8 +1038,6 @@ dataset:
       data_categories: [system.operations]
     - name: parent_entity_type
       data_categories: [system.operations]
-    - name: due_date
-      data_categories: [system.operations]
     - name: created_at
       data_categories: [system.operations]
     - name: updated_at
@@ -1127,6 +1125,8 @@ dataset:
     - name: entity_type
       data_categories: [system.operations]
     - name: status
+      data_categories: [system.operations]
+    - name: due_date
       data_categories: [system.operations]
     - name: completed_at
       data_categories: [system.operations]
