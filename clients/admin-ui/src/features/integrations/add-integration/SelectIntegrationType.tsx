@@ -122,6 +122,7 @@ const SelectIntegrationType = ({
                   onSelectIntegration(isAlreadySelected ? undefined : i);
                 }}
                 onDetailsClick={() => onDetailClick(i)}
+                onUnfocus={() => onSelectIntegration(undefined)}
               />
             </div>
           ))}

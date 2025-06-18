@@ -7,6 +7,7 @@ import {
   Wrap,
 } from "fidesui";
 
+import useClickOutside from "~/features/common/hooks/useClickOutside";
 import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
 import getIntegrationTypeInfo from "~/features/integrations/add-integration/allIntegrationTypes";
 import { ConnectionConfigurationResponse } from "~/types/api";
@@ -16,19 +17,29 @@ const SelectableIntegrationBox = ({
   selected = false,
   onClick,
   onDetailsClick,
+  onUnfocus,
 }: {
   integration?: ConnectionConfigurationResponse;
   selected?: boolean;
   onClick?: () => void;
   onDetailsClick?: () => void;
+  onUnfocus?: () => void;
 }) => {
   const integrationTypeInfo = getIntegrationTypeInfo(
     integration?.connection_type,
     integration?.saas_config?.type,
   );
 
+  // Handle click outside to unfocus when selected
+  const boxRef = useClickOutside<HTMLDivElement>(() => {
+    if (selected && onUnfocus) {
+      onUnfocus();
+    }
+  });
+
   return (
     <Box
+      ref={boxRef}
       borderWidth={1}
       borderColor={selected ? "black" : "gray.200"}
       backgroundColor={selected ? "gray.50" : "transparent"}
