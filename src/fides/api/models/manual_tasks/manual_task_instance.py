@@ -48,10 +48,6 @@ class ManualTaskInstance(Base, StatusTransitionMixin):
     due_date: Optional[datetime] = cast(
         Optional[datetime], Column(DateTime, nullable=True)
     )
-    completed_at: Optional[datetime] = cast(
-        Optional[datetime], Column(DateTime, nullable=True)
-    )
-    completed_by_id: Optional[str] = cast(Optional[str], Column(String, nullable=True))
 
     # Relationships
     task = relationship("ManualTask", back_populates="instances")
