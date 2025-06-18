@@ -27,6 +27,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Adds config for sale_of_data default in Fides Shopify integration [#6233](https://github.com/ethyca/fides/pull/6233)
 - Added detailed trigger tracking to all FidesJS events including element type, label, and interaction origin [#6229](https://github.com/ethyca/fides/pull/6229)
 - Added validation for URLs in website integration forms [#6230](https://github.com/ethyca/fides/pull/6230)
+- Adds Janus SDK enum to PrivacyRequestSource [#6243](https://github.com/ethyca/fides/pull/6243)
 
 ### Changed
 - Integrations detail page now includes a setup guide component. [#6096](https://github.com/ethyca/fides/pull/6096)
@@ -37,6 +38,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed FidesJS AMD module loading conflicts when RequireJS or other AMD loaders are present [#6210](https://github.com/ethyca/fides/pull/6210)
 - Fixed the system integration form formatting dataset references incorrectly [#6225](https://github.com/ethyca/fides/pull/6225)
 - Fixed a bug with pagination on the action center tables [#6231](https://github.com/ethyca/fides/pull/6231)
+- Ensured that property ID is always included when saving consent in fides.js [#6238](https://github.com/ethyca/fides/pull/6238)
 
 
 ## [2.63.3](https://github.com/ethyca/fides/compare/2.63.2...2.63.3)

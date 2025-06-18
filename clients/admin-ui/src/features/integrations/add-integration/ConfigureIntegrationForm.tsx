@@ -1,6 +1,7 @@
-import { AntButton as Button, Box, useToast, VStack } from "fidesui";
+import { Box, useToast, VStack } from "fidesui";
 import { Form, Formik } from "formik";
 import { isEmpty, isUndefined, mapValues, omitBy } from "lodash";
+import { useEffect } from "react";
 
 import FidesSpinner from "~/features/common/FidesSpinner";
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
@@ -46,16 +47,51 @@ type FormValues = {
   dataset?: string[];
 };
 
+// Helper component to handle form state communication
+const FormStateHandler = ({
+  dirty,
+  isValid,
+  submitForm,
+  loading,
+  onFormStateChange,
+}: {
+  dirty: boolean;
+  isValid: boolean;
+  submitForm: () => void;
+  loading: boolean;
+  onFormStateChange?: (formState: {
+    dirty: boolean;
+    isValid: boolean;
+    submitForm: () => void;
+    loading: boolean;
+  }) => void;
+}) => {
+  useEffect(() => {
+    if (onFormStateChange) {
+      onFormStateChange({ dirty, isValid, submitForm, loading });
+    }
+  }, [dirty, isValid, submitForm, loading, onFormStateChange]);
+
+  return null;
+};
+
 const ConfigureIntegrationForm = ({
   connection,
   connectionOption,
   onCancel,
   description,
+  onFormStateChange,
 }: {
   connection?: ConnectionConfigurationResponse;
   connectionOption: ConnectionSystemTypeMap;
   onCancel: () => void;
   description: React.ReactNode;
+  onFormStateChange?: (formState: {
+    dirty: boolean;
+    isValid: boolean;
+    submitForm: () => void;
+    loading: boolean;
+  }) => void;
 }) => {
   const [
     patchConnectionSecretsMutationTrigger,
@@ -101,16 +137,13 @@ const ConfigureIntegrationForm = ({
   const { getFieldValidation, preprocessValues } =
     useFormFieldsFromSchema(secrets);
 
-  const submitPending =
-    secretsIsLoading || patchIsLoading || systemPatchIsLoading;
-
   const initialValues: FormValues = {
     name: connection?.name ?? "",
     description: connection?.description ?? "",
     ...(hasSecrets && {
       secrets: mapValues(
         secrets?.properties,
-        (s, key) => connection?.secrets?.[key] ?? "",
+        (s, key) => connection?.secrets?.[key] ?? s.default ?? "",
       ),
     }),
     dataset: initialDatasets,
@@ -234,6 +267,8 @@ const ConfigureIntegrationForm = ({
     }
   };
 
+  const loading = secretsIsLoading || patchIsLoading || systemPatchIsLoading;
+
   if (secretsSchemaIsLoading) {
     return <FidesSpinner />;
   }
@@ -273,66 +308,56 @@ const ConfigureIntegrationForm = ({
         enableReinitialize
         onSubmit={handleSubmit}
       >
-        {({ dirty, isValid, resetForm }) => (
-          <Form>
-            <VStack alignItems="start" spacing={6} mt={4}>
-              <CustomTextInput
-                id="name"
-                name="name"
-                label="Name"
-                variant="stacked"
-                isRequired
-              />
-              <CustomTextInput
-                id="description"
-                name="description"
-                label="Description"
-                variant="stacked"
-              />
-              {hasSecrets && secrets && generateFields(secrets)}
-              {!isEditing && !isSaas && (
-                <ControlledSelect
-                  id="system_fides_key"
-                  name="system_fides_key"
-                  options={systemOptions ?? []}
-                  label="System"
-                  tooltip="The system to associate with the integration"
-                  layout="stacked"
+        {({ dirty, isValid, submitForm }) => {
+          return (
+            <Form>
+              <VStack alignItems="start" spacing={6} mt={4}>
+                <CustomTextInput
+                  id="name"
+                  name="name"
+                  label="Name"
+                  variant="stacked"
+                  isRequired
                 />
-              )}
-              {connectionOption.identifier === ConnectionType.DATAHUB && (
-                <ControlledSelect
-                  id="dataset"
-                  name="dataset"
-                  options={datasetOptions ?? []}
-                  label="Datasets"
-                  tooltip="Only BigQuery datasets are supported. Selected datasets will sync with matching DataHub datasets. If none are selected, all datasets will be included by default."
-                  layout="stacked"
-                  mode="multiple"
+                <CustomTextInput
+                  id="description"
+                  name="description"
+                  label="Description"
+                  variant="stacked"
                 />
-              )}
-              <div className="flex w-full justify-between">
-                <Button
-                  onClick={() => {
-                    onCancel();
-                    resetForm();
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  htmlType="submit"
-                  type="primary"
-                  disabled={!dirty || !isValid}
-                  loading={submitPending}
-                  data-testid="save-btn"
-                >
-                  Save
-                </Button>
-              </div>
-            </VStack>
-          </Form>
-        )}
+                {hasSecrets && secrets && generateFields(secrets)}
+                {!isEditing && !isSaas && (
+                  <ControlledSelect
+                    id="system_fides_key"
+                    name="system_fides_key"
+                    options={systemOptions ?? []}
+                    label="System"
+                    tooltip="The system to associate with the integration"
+                    layout="stacked"
+                  />
+                )}
+                {connectionOption.identifier === ConnectionType.DATAHUB && (
+                  <ControlledSelect
+                    id="dataset"
+                    name="dataset"
+                    options={datasetOptions ?? []}
+                    label="Datasets"
+                    tooltip="Only BigQuery datasets are supported. Selected datasets will sync with matching DataHub datasets. If none are selected, all datasets will be included by default."
+                    layout="stacked"
+                    mode="multiple"
+                  />
+                )}
+              </VStack>
+              <FormStateHandler
+                dirty={dirty}
+                isValid={isValid}
+                submitForm={submitForm}
+                loading={loading}
+                onFormStateChange={onFormStateChange}
+              />
+            </Form>
+          );
+        }}
       </Formik>
     </>
   );
