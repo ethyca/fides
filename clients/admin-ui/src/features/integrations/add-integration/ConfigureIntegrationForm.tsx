@@ -133,10 +133,11 @@ const ConfigureIntegrationForm = ({
     );
 
   const handleSubmit = async (values: FormValues) => {
-    const newSecretsValues = hasSecrets
-      ? excludeUnchangedSecrets(values.secrets!)
-      : {};
     const processedValues = preprocessValues(values);
+
+    const newSecretsValues = hasSecrets
+      ? excludeUnchangedSecrets(processedValues.secrets!)
+      : {};
 
     const connectionPayload = isEditing
       ? {
