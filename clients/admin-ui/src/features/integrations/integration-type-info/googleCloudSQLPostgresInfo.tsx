@@ -11,7 +11,7 @@ import { IntegrationFeatureEnum } from "~/features/integrations/IntegrationFeatu
 import { AccessLevel, ConnectionType } from "~/types/api";
 
 export const GOOGLE_CLOUD_SQL_POSTGRES_PLACEHOLDER = {
-  name: "Google Cloud SQL for Postgres",
+  name: "Cloud SQL - Postgres",
   key: "google_cloud_sql_for_postgres_placeholder",
   connection_type: ConnectionType.GOOGLE_CLOUD_SQL_POSTGRES,
   access: AccessLevel.READ,

@@ -138,6 +138,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         unmute_children?: boolean;
         start_classification?: boolean;
         classify_monitored_resources?: boolean;
+        diff_statuses_to_classify?: DiffStatus[];
       }
     >({
       query: (params) => ({
@@ -146,6 +147,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
           {
             unmute_children: params.unmute_children,
             classify_monitored_resources: params.classify_monitored_resources,
+            diff_statuses_to_classify: params.diff_statuses_to_classify,
           },
           { arrayFormat: "none" },
         )}`,

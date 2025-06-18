@@ -51,6 +51,7 @@ class AttachmentReferenceType(str, EnumType):
     erasure_manual_webhook = "erasure_manual_webhook"
     privacy_request = "privacy_request"
     comment = "comment"
+    manual_task_submission = "manual_task_submission"
 
 
 class AttachmentReference(Base):

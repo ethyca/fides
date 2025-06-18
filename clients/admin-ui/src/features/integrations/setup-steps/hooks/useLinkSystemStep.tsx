@@ -2,17 +2,10 @@ import { AntLink } from "fidesui";
 import Link from "next/link";
 
 import { EDIT_SYSTEM_ROUTE, SYSTEM_ROUTE } from "~/features/common/nav/routes";
-import { ConnectionConfigurationResponse } from "~/types/api/models/ConnectionConfigurationResponse";
 
 import { BaseStepHookParams, Step } from "./types";
 
-export interface LinkSystemStepParams extends BaseStepHookParams {
-  connection?: ConnectionConfigurationResponse;
-}
-
-export const useLinkSystemStep = ({
-  connection,
-}: LinkSystemStepParams): Step => {
+export const useLinkSystemStep = ({ connection }: BaseStepHookParams): Step => {
   // Check if the connection has a system_key property to determine if it's linked
   const isComplete = !!connection?.system_key;
 
@@ -32,11 +25,12 @@ export const useLinkSystemStep = ({
       </>
     ) : (
       <>
-        Link this integration to{" "}
+        Link this integration in the{" "}
         <Link href={linkUrl} passHref>
-          <AntLink>one of your systems</AntLink>
+          <AntLink>system inventory</AntLink>
         </Link>
-        . Use the &apos;Link integration&apos; button in the Integrations tab.
+        . Navigate to the appropriate system and within the integration tab
+        select &quot;Link integration&quot;.
       </>
     ),
     state: isComplete ? "finish" : "process",

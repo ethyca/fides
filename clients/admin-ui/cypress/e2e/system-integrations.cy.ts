@@ -87,10 +87,23 @@ describe("System integrations", () => {
       cy.getByTestId("tab-Integrations").click();
     });
 
-    it("when saving the form it shouldn't re-enable the integration", () => {
-      cy.get("form").within(() => {
-        cy.get("button[type=submit]").click();
+    it("should format dataset references as objects", () => {
+      cy.wait("@getPostgresConnectorSecret");
+      cy.getByTestId("input-secrets.dataset_reference").type(
+        "test_dataset.test_collection.test_field",
+      );
+      cy.getByTestId("save-btn").click();
+      cy.wait("@patchConnectionSecret").then(({ request }) => {
+        expect(request.body.dataset_reference).to.deep.equal({
+          dataset: "test_dataset",
+          field: "test_collection.test_field",
+          direction: "from",
+        });
       });
+    });
+
+    it("when saving the form it shouldn't re-enable the integration", () => {
+      cy.getByTestId("save-btn").click();
       cy.wait("@patchConnection").then(({ request }) => {
         expect(request.body[0]).to.deep.equal({
           access: "write",
