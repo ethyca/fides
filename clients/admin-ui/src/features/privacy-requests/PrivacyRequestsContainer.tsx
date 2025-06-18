@@ -5,7 +5,7 @@ import {
 } from "fidesui";
 import dynamic from "next/dynamic";
 import * as React from "react";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
 import { useFeatures } from "~/features/common/features";
 import Restrict from "~/features/common/Restrict";
@@ -35,26 +35,25 @@ const PrivacyRequestsContainer = () => {
     processing();
   }, [processing]);
 
-  const tabItems: TabsProps["items"] = [
-    {
-      key: PRIVACY_REQUEST_TABS.REQUEST,
-      label: "Request",
-      children: <RequestTable />,
-    },
-    ...(availableTabs.manualTask
-      ? [
-          {
-            key: PRIVACY_REQUEST_TABS.MANUAL_TASK,
-            label: "Manual task",
-            children: <ManualTaskTab />,
-          },
-        ]
-      : []),
-  ];
+  const tabItems: TabsProps["items"] = useMemo(() => {
+    const items: NonNullable<TabsProps["items"]> = [
+      {
+        key: PRIVACY_REQUEST_TABS.REQUEST,
+        label: "Request",
+        children: <RequestTable />,
+      },
+    ];
 
-  const handleTabChangeWrapper = (activeKey: string) => {
-    handleTabChange(activeKey as any); // Cast to PrivacyRequestTabKey since we control the tabs
-  };
+    if (availableTabs.manualTask) {
+      items.push({
+        key: PRIVACY_REQUEST_TABS.MANUAL_TASK,
+        label: "Manual task",
+        children: <ManualTaskTab />,
+      });
+    }
+
+    return items;
+  }, [availableTabs.manualTask]);
 
   return (
     <>
@@ -74,11 +73,7 @@ const PrivacyRequestsContainer = () => {
         data-testid="privacy-requests"
       />
 
-      <Tabs
-        activeKey={activeTab}
-        onChange={handleTabChangeWrapper}
-        items={tabItems}
-      />
+      <Tabs activeKey={activeTab} onChange={handleTabChange} items={tabItems} />
     </>
   );
 };
