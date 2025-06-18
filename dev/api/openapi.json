@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.63.3b0.post0.dev11"
+    "version": "2.63.3b0.post0.dev12"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -23489,10 +23489,11 @@
           "Request Manager",
           "Consent Webhook",
           "Fides.js",
-          "Dataset Test"
+          "Dataset Test",
+          "Janus SDK"
         ],
         "title": "PrivacyRequestSource",
-        "description": "The source where the privacy request originated from\n\n- Privacy Center: Request created from the Privacy Center\n- Request Manager: Request submitted from the Admin UI's Request manager page\n- Consent Webhook: Request created as a side-effect of a consent webhook request (bidirectional consent)\n- Fides.js: Request created as a side-effect of a privacy preference update from Fides.js\n- Dataset Test: Standalone dataset test"
+        "description": "The source where the privacy request originated from\n\n- Privacy Center: Request created from the Privacy Center\n- Request Manager: Request submitted from the Admin UI's Request manager page\n- Consent Webhook: Request created as a side-effect of a consent webhook request (bidirectional consent)\n- Fides.js: Request created as a side-effect of a privacy preference update from Fides.js\n- Dataset Test: Standalone dataset test\n- Janus SDK: Request created from the Mobile SDK"
       },
       "PrivacyRequestStatus": {
         "type": "string",
