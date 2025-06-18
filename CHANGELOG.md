@@ -19,7 +19,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.63.2...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.63.3...main)
 
 ### Added
 - Added support for Salesforce custom object monitoring using Helios [#6096](https://github.com/ethyca/fides/pull/6096)
@@ -34,6 +34,14 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added missing "Awaiting email send" status to privacy request statuses [#6218](https://github.com/ethyca/fides/pull/6218)
 - Fixed FidesJS AMD module loading conflicts when RequireJS or other AMD loaders are present [#6210](https://github.com/ethyca/fides/pull/6210)
 - Fixed the system integration form formatting dataset references incorrectly [#6225](https://github.com/ethyca/fides/pull/6225)
+- Fixed a bug with pagination on the action center tables [#6231](https://github.com/ethyca/fides/pull/6231)
+
+
+## [2.63.3](https://github.com/ethyca/fides/compare/2.63.2...2.63.3)
+
+### Changed
+- Updated the `re-classify` button to avoid sending `monitored` fields back to classification [#6236](https://github.com/ethyca/fides/pull/6236)
+
 
 ## [2.63.2](https://github.com/ethyca/fides/compare/2.63.1...2.63.2)
 
