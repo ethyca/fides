@@ -12,7 +12,7 @@ import { IntegrationFilterTabs } from "~/features/integrations/useIntegrationFil
 
 type Props = {
   selectedIntegration?: IntegrationTypeInfo;
-  onSelectIntegration: (type: IntegrationTypeInfo) => void;
+  onSelectIntegration: (type: IntegrationTypeInfo | undefined) => void;
   onDetailClick: (type: IntegrationTypeInfo) => void;
 };
 
@@ -115,7 +115,12 @@ const SelectIntegrationType = ({
                 selected={
                   selectedIntegration?.placeholder.key === i.placeholder.key
                 }
-                onClick={() => onSelectIntegration(i)}
+                onClick={() => {
+                  // Toggle selection: if already selected, deselect; otherwise select
+                  const isAlreadySelected =
+                    selectedIntegration?.placeholder.key === i.placeholder.key;
+                  onSelectIntegration(isAlreadySelected ? undefined : i);
+                }}
                 onDetailsClick={() => onDetailClick(i)}
               />
             </div>

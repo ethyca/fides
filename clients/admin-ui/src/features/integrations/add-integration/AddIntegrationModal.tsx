@@ -54,7 +54,9 @@ const AddIntegrationModal = ({
     onClose();
   };
 
-  const handleSelectIntegration = (typeInfo: IntegrationTypeInfo) => {
+  const handleSelectIntegration = (
+    typeInfo: IntegrationTypeInfo | undefined,
+  ) => {
     setIntegrationType(typeInfo);
   };
 
