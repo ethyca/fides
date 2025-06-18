@@ -351,9 +351,10 @@ describe("Integration management for data detection & discovery", () => {
 
         cy.getByTestId("add-integration-btn").click();
         cy.getByTestId("add-modal-content").within(() => {
-          cy.getByTestId("integration-info-website_placeholder").within(() => {
-            cy.getByTestId("configure-btn").click();
-          });
+          cy.getByTestId(
+            "details-btn-microsoft_sql_server_placeholder",
+          ).click();
+          cy.getByTestId("configure-btn").click();
         });
         cy.getByTestId("input-name").type("test name");
         cy.getByTestId("input-secrets.url").type("https://example.com");
@@ -372,9 +373,10 @@ describe("Integration management for data detection & discovery", () => {
 
         cy.getByTestId("add-integration-btn").click();
         cy.getByTestId("add-modal-content").within(() => {
-          cy.getByTestId("integration-info-website_placeholder").within(() => {
-            cy.getByTestId("configure-btn").click();
-          });
+          cy.getByTestId(
+            "details-btn-microsoft_sql_server_placeholder",
+          ).click();
+          cy.getByTestId("configure-modal-btn").click();
         });
         cy.getByTestId("input-name").type("test name");
         cy.getByTestId("input-secrets.url").type("http://example.com");
@@ -395,9 +397,10 @@ describe("Integration management for data detection & discovery", () => {
 
         cy.getByTestId("add-integration-btn").click();
         cy.getByTestId("add-modal-content").within(() => {
-          cy.getByTestId("integration-info-website_placeholder").within(() => {
-            cy.getByTestId("configure-btn").click();
-          });
+          cy.getByTestId(
+            "details-btn-microsoft_sql_server_placeholder",
+          ).click();
+          cy.getByTestId("configure-modal-btn").click();
         });
         cy.getByTestId("input-name").type("test name");
         cy.getByTestId("input-secrets.url").type("example.com");
