@@ -109,6 +109,7 @@ export interface UpdateConsentPreferences {
   updateCookie?: (oldCookie: FidesCookie) => Promise<FidesCookie>;
   propertyId?: string;
 }
+// TODO (ENG-772): Refactor to combine updateConsentPreferences and updateConsent an only ask for the global fides object instead of the individual parameters and let the burden of extracting the parameters from the fides object be handled by the method and not the caller.
 export const updateConsentPreferences = async ({
   consentPreferencesToSave,
   privacyExperienceConfigHistoryId,
