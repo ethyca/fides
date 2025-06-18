@@ -15,7 +15,10 @@ PRIVACY_REQUEST_TASK_TIMEOUT = 5
 PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 150
 
 
-pytest.skip("Skipping entire test file as BQ project has been disabled for now due to costs. Follow-up with enabling these tests on only merges to main.", allow_module_level=True)
+pytest.skip(
+    "Skipping entire test file as BQ project has been disabled for now due to costs. Follow-up with enabling these tests on only merges to main.",
+    allow_module_level=True,
+)
 
 
 def validate_privacy_request(
