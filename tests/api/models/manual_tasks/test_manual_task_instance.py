@@ -19,7 +19,11 @@ from fides.api.models.manual_tasks.manual_task_instance import (
 )
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.storage import StorageConfig
-from fides.api.schemas.manual_tasks.manual_task_status import StatusType
+from fides.api.schemas.manual_tasks.manual_task_status import (
+    StatusTransitionProtocol,
+    StatusType,
+    validate_status_transition_object,
+)
 
 
 @pytest.fixture
@@ -36,6 +40,43 @@ def mock_s3_client(s3_client, monkeypatch):
 
 
 class TestManualTaskInstance:
+    def test_implements_status_transition_protocol(
+        self, manual_task_instance: ManualTaskInstance
+    ):
+        """Test that ManualTaskInstance properly implements StatusTransitionProtocol."""
+        # This test verifies that the instance can be used as a StatusTransitionProtocol
+        protocol_instance: StatusTransitionProtocol = manual_task_instance
+
+        # Verify all required attributes exist
+        assert hasattr(protocol_instance, "status")
+        assert hasattr(protocol_instance, "completed_at")
+        assert hasattr(protocol_instance, "completed_by_id")
+
+        # Verify all required methods exist
+        assert hasattr(protocol_instance, "update_status")
+        assert hasattr(protocol_instance, "mark_completed")
+        assert hasattr(protocol_instance, "mark_failed")
+        assert hasattr(protocol_instance, "start_progress")
+        assert hasattr(protocol_instance, "reset_to_pending")
+        assert hasattr(protocol_instance, "is_completed")
+        assert hasattr(protocol_instance, "is_failed")
+        assert hasattr(protocol_instance, "is_in_progress")
+        assert hasattr(protocol_instance, "is_pending")
+
+    def test_validate_status_transition_object(
+        self, manual_task_instance: ManualTaskInstance
+    ):
+        """Test the validate_status_transition_object function."""
+        # Test with a valid object
+        assert validate_status_transition_object(manual_task_instance) is True
+
+        # Test with an invalid object (missing required attributes/methods)
+        class InvalidObject:
+            pass
+
+        invalid_obj = InvalidObject()
+        assert validate_status_transition_object(invalid_obj) is False
+
     def test_create_manual_task_instance(
         self,
         db: Session,

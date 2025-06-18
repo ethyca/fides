@@ -37,7 +37,7 @@ def manual_task_instance(
         task_id=manual_task.id,
         config_id=manual_task_config.id,
         entity_id="test_entity",
-        entity_type="test_type",
+        entity_type="privacy_request",
     )
     yield instance
     instance.delete(db)
@@ -128,7 +128,7 @@ class TestInstanceOperations:
             task_id=manual_task.id,
             config_id=manual_task_config.id,
             entity_id="test_entity",
-            entity_type="test_type",
+            entity_type="privacy_request",
         )
 
         assert instance.task_id == manual_task.id

@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import TYPE_CHECKING, Optional, cast
+from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import Column, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
@@ -28,7 +28,10 @@ if TYPE_CHECKING:  # pragma: no cover
 
 
 class ManualTaskInstance(Base, StatusTransitionMixin):
-    """Model for tracking task status per entity instance."""
+    """Model for tracking task status per entity instance.
+
+    This model implements StatusTransitionProtocol through the StatusTransitionMixin.
+    """
 
     @declared_attr
     def __tablename__(cls) -> str:
@@ -36,22 +39,22 @@ class ManualTaskInstance(Base, StatusTransitionMixin):
         return "manual_task_instance"
 
     # Database columns
-    task_id = Column(String, ForeignKey("manual_task.id"), nullable=False)
-    config_id = Column(String, ForeignKey("manual_task_config.id"), nullable=False)
+    task_id: Column[str] = Column(String, ForeignKey("manual_task.id"), nullable=False)
+    config_id: Column[str] = Column(
+        String, ForeignKey("manual_task_config.id"), nullable=False
+    )
     # entity id is the entity that the instance relates to
     # (e.g. a privacy request is an entity that has its own manual task instance)
-    entity_id = Column(String, nullable=False)
-    entity_type = Column(EnumColumn(ManualTaskEntityType), nullable=False)
-    status: StatusType = cast(
-        StatusType, Column(String, nullable=False, default=StatusType.pending)
+    entity_id: Column[str] = Column(String, nullable=False)
+    entity_type: Column[ManualTaskEntityType] = Column(
+        EnumColumn(ManualTaskEntityType), nullable=False
     )
-    completed_at: Optional[datetime] = cast(
-        Optional[datetime], Column(DateTime, nullable=True)
-    )
-    completed_by_id: Optional[str] = cast(Optional[str], Column(String, nullable=True))
-    due_date: Optional[datetime] = cast(
-        Optional[datetime], Column(DateTime, nullable=True)
-    )
+    # ingnore[assignment] because the mypy and sqlalchemy types mismatch
+    # upgrading to 2.0 allows mapping which provides better type safety visibility.
+    status: Column[StatusType] = Column(EnumColumn(StatusType), nullable=False, default=StatusType.pending)  # type: ignore[assignment]
+    completed_at: Column[Optional[datetime]] = Column(DateTime, nullable=True)  # type: ignore[assignment]
+    completed_by_id: Column[Optional[str]] = Column(String, nullable=True)  # type: ignore[assignment]
+    due_date: Column[Optional[datetime]] = Column(DateTime, nullable=True)
 
     # Relationships
     task = relationship("ManualTask", back_populates="instances")

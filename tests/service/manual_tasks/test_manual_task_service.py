@@ -507,14 +507,14 @@ class TestManualTaskInstance:
                 "test-task-id",  # Will be replaced with actual task ID
                 "test-config-id",  # Will be replaced with actual config ID
                 "test-entity-id",
-                "test-entity-type",
+                "privacy_request",
                 None,
             ),
             (
                 "invalid-task-id",
                 "test-config-id",  # Will be replaced with actual config ID
                 "test-entity-id",
-                "test-entity-type",
+                "privacy_request",
                 r"No task found with filters: \['task_id=invalid-task-id'\]",
             ),
         ],
@@ -583,7 +583,7 @@ class TestManualTaskInstance:
             task_id=manual_task.id,
             config_id=manual_task_config.id,
             entity_id="test-entity-id",
-            entity_type="test-entity-type",
+            entity_type="privacy_request",
         )
 
         # Create submission
