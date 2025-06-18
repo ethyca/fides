@@ -1,8 +1,4 @@
-import {
-  AntButton as Button,
-  AntInput as Input,
-  AntSelect as Select,
-} from "fidesui";
+import { AntInput as Input, AntSelect as Select } from "fidesui";
 import { useMemo, useState } from "react";
 
 import { useFlags } from "~/features/common/features";
@@ -113,27 +109,15 @@ const SelectIntegrationType = ({
       ) : (
         <div className="grid grid-cols-3 gap-6">
           {filteredTypes.map((i) => (
-            <div key={i.placeholder.key} className="relative">
+            <div key={i.placeholder.key}>
               <SelectableIntegrationBox
                 integration={i.placeholder}
                 selected={
                   selectedIntegration?.placeholder.key === i.placeholder.key
                 }
                 onClick={() => onSelectIntegration(i)}
+                onDetailsClick={() => onDetailClick(i)}
               />
-              <div className="absolute right-2 top-2">
-                <Button
-                  size="small"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDetailClick(i);
-                  }}
-                  type="default"
-                  className="px-2 py-1 text-xs"
-                >
-                  Details
-                </Button>
-              </div>
             </div>
           ))}
         </div>
