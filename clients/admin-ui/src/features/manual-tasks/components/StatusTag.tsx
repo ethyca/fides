@@ -1,23 +1,30 @@
-import { Tag as AntTag } from "fidesui";
-
+import { BadgeCell } from "~/features/common/table/v2";
 import { TaskStatus } from "~/types/api/models/ManualTask";
 
 interface Props {
   status: TaskStatus;
 }
 
-const statusColors: Record<TaskStatus, string> = {
-  new: "blue",
-  completed: "green",
-  skipped: "orange",
-};
-
-const statusLabels: Record<TaskStatus, string> = {
-  new: "New",
-  completed: "Completed",
-  skipped: "Skipped",
-};
+const statusProps: Record<TaskStatus, { colorScheme: string; label: string }> =
+  {
+    new: {
+      colorScheme: "info",
+      label: "New",
+    },
+    completed: {
+      colorScheme: "success",
+      label: "Completed",
+    },
+    skipped: {
+      colorScheme: "warning",
+      label: "Skipped",
+    },
+  };
 
 export const StatusTag = ({ status }: Props) => (
-  <AntTag color={statusColors[status]}>{statusLabels[status]}</AntTag>
+  <BadgeCell
+    color={statusProps[status].colorScheme}
+    value={statusProps[status].label}
+    data-testid="manual-task-status-badge"
+  />
 );
