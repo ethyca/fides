@@ -77,6 +77,7 @@ class PrivacyRequestSource(str, EnumType):
     - Consent Webhook: Request created as a side-effect of a consent webhook request (bidirectional consent)
     - Fides.js: Request created as a side-effect of a privacy preference update from Fides.js
     - Dataset Test: Standalone dataset test
+    - Janus SDK: Request created from the Mobile SDK
     """
 
     privacy_center = "Privacy Center"
@@ -84,6 +85,7 @@ class PrivacyRequestSource(str, EnumType):
     consent_webhook = "Consent Webhook"
     fides_js = "Fides.js"
     dataset_test = "Dataset Test"
+    janus_sdk = "Janus SDK"
 
 
 class PrivacyRequestCreate(FidesSchema):
