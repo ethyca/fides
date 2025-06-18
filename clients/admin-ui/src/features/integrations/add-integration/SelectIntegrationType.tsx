@@ -2,8 +2,6 @@ import {
   AntButton as Button,
   AntInput as Input,
   AntSelect as Select,
-  Flex,
-  Spacer,
 } from "fidesui";
 import { useMemo, useState } from "react";
 
@@ -17,11 +15,16 @@ import IntegrationBox from "~/features/integrations/IntegrationBox";
 import { IntegrationFilterTabs } from "~/features/integrations/useIntegrationFilterTabs";
 
 type Props = {
-  onCancel: () => void;
+  selectedIntegration?: IntegrationTypeInfo;
+  onSelectIntegration: (type: IntegrationTypeInfo) => void;
   onDetailClick: (type: IntegrationTypeInfo) => void;
 };
 
-const SelectIntegrationType = ({ onCancel, onDetailClick }: Props) => {
+const SelectIntegrationType = ({
+  selectedIntegration,
+  onSelectIntegration,
+  onDetailClick,
+}: Props) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>(
     IntegrationFilterTabs.ALL,
@@ -110,20 +113,44 @@ const SelectIntegrationType = ({ onCancel, onDetailClick }: Props) => {
       ) : (
         <div className="grid grid-cols-3 gap-6">
           {filteredTypes.map((i) => (
-            <IntegrationBox
-              integration={i.placeholder}
+            <div
               key={i.placeholder.key}
-              otherButtons={
-                <Button onClick={() => onDetailClick(i)}>Details</Button>
-              }
-            />
+              className="cursor-pointer"
+              onClick={() => onSelectIntegration(i)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onSelectIntegration(i);
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              aria-label={`Select ${i.placeholder.name} integration`}
+            >
+              <IntegrationBox
+                integration={i.placeholder}
+                selected={
+                  selectedIntegration?.placeholder.key === i.placeholder.key
+                }
+                buttonSize="small"
+                logoSize="30px"
+                otherButtons={
+                  <Button
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent selection when clicking Details
+                      onDetailClick(i);
+                    }}
+                    className="ml-1"
+                  >
+                    Details
+                  </Button>
+                }
+              />
+            </div>
           ))}
         </div>
       )}
-      <Flex>
-        <Spacer />
-        <Button onClick={onCancel}>Cancel</Button>
-      </Flex>
     </>
   );
 };

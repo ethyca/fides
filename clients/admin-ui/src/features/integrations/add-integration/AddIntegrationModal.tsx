@@ -24,8 +24,17 @@ const AddIntegrationModal = ({
   const [step, setStep] = useState<IntegrationModalStep>(
     IntegrationModalStep.LIST_VIEW,
   );
+  const [previousStep, setPreviousStep] = useState<IntegrationModalStep | null>(
+    null,
+  );
 
   const [integrationType, setIntegrationType] = useState<IntegrationTypeInfo>();
+  const [formState, setFormState] = useState<{
+    dirty: boolean;
+    isValid: boolean;
+    submitForm: () => void;
+    loading: boolean;
+  } | null>(null);
 
   const connectionOption = useIntegrationOption(
     integrationType?.placeholder.connection_type,
@@ -39,8 +48,21 @@ const AddIntegrationModal = ({
 
   const handleCancel = () => {
     setStep(IntegrationModalStep.LIST_VIEW);
+    setPreviousStep(null);
     setIntegrationType(undefined);
+    setFormState(null);
     onClose();
+  };
+
+  const handleSelectIntegration = (typeInfo: IntegrationTypeInfo) => {
+    setIntegrationType(typeInfo);
+  };
+
+  const handleNext = () => {
+    if (step === IntegrationModalStep.LIST_VIEW && integrationType) {
+      setPreviousStep(IntegrationModalStep.LIST_VIEW);
+      setStep(IntegrationModalStep.FORM);
+    }
   };
 
   const handleDetailClick = (typeInfo: IntegrationTypeInfo) => {
@@ -48,11 +70,77 @@ const AddIntegrationModal = ({
     setIntegrationType(typeInfo);
   };
 
+  const handleConfigure = () => {
+    setPreviousStep(IntegrationModalStep.DETAIL);
+    setStep(IntegrationModalStep.FORM);
+  };
+
+  const handleBack = () => {
+    if (previousStep) {
+      setStep(previousStep);
+      setPreviousStep(null);
+    }
+  };
+
+  const handleSave = () => {
+    if (formState && formState.submitForm) {
+      formState.submitForm();
+    }
+  };
+
   const modalTitle = integrationType
     ? `${integrationType.placeholder.name} Integration`
     : "Add integration";
 
-  const modalFooter = <Button onClick={handleCancel}>Cancel</Button>;
+  const renderFooterButtons = () => {
+    if (step === IntegrationModalStep.LIST_VIEW) {
+      return (
+        <div className="flex w-full justify-between">
+          <Button onClick={handleCancel}>Cancel</Button>
+          <Button
+            type="primary"
+            onClick={handleNext}
+            disabled={!integrationType}
+          >
+            Next
+          </Button>
+        </div>
+      );
+    }
+
+    if (step === IntegrationModalStep.DETAIL) {
+      return (
+        <div className="flex w-full justify-between">
+          <Button onClick={() => setStep(IntegrationModalStep.LIST_VIEW)}>
+            Back
+          </Button>
+          <Button onClick={handleConfigure} type="primary">
+            Next
+          </Button>
+        </div>
+      );
+    }
+
+    if (step === IntegrationModalStep.FORM) {
+      return (
+        <div className="flex w-full justify-between">
+          <Button onClick={handleBack}>Back</Button>
+          <Button
+            type="primary"
+            onClick={handleSave}
+            disabled={!formState || !formState.isValid || !formState.dirty}
+            loading={formState?.loading}
+          >
+            Save
+          </Button>
+        </div>
+      );
+    }
+
+    return null;
+  };
+
+  const modalFooter = renderFooterButtons();
 
   return (
     <FormModal
@@ -66,16 +154,15 @@ const AddIntegrationModal = ({
     >
       {step === IntegrationModalStep.LIST_VIEW && (
         <SelectIntegrationType
-          onCancel={handleCancel}
+          selectedIntegration={integrationType}
+          onSelectIntegration={handleSelectIntegration}
           onDetailClick={handleDetailClick}
         />
       )}
       {step === IntegrationModalStep.DETAIL && (
         <IntegrationTypeDetail
           integrationType={integrationType}
-          onConfigure={() => setStep(IntegrationModalStep.FORM)}
-          onBack={() => setStep(IntegrationModalStep.LIST_VIEW)}
-          onCancel={handleCancel}
+          onConfigure={handleConfigure}
         />
       )}
       {step === IntegrationModalStep.FORM && (
@@ -83,6 +170,7 @@ const AddIntegrationModal = ({
           connectionOption={connectionOption!}
           onCancel={handleCancel}
           description={description}
+          onFormStateChange={setFormState}
         />
       )}
     </FormModal>

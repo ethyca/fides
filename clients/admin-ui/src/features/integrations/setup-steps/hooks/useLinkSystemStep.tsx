@@ -25,11 +25,12 @@ export const useLinkSystemStep = ({ connection }: BaseStepHookParams): Step => {
       </>
     ) : (
       <>
-        Link this integration to{" "}
+        Link this integration in the{" "}
         <Link href={linkUrl} passHref>
-          <AntLink>one of your systems</AntLink>
+          <AntLink>system inventory</AntLink>
         </Link>
-        . Use the &apos;Link integration&apos; button in the Integrations tab.
+        . Navigate to the appropriate system and within the integration tab
+        select &quot;Link integration&quot;.
       </>
     ),
     state: isComplete ? "finish" : "process",
