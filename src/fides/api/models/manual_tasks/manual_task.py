@@ -52,7 +52,6 @@ class ManualTask(Base):
         nullable=False,
         default=ManualTaskParentEntityType.connection_config,
     )
-    due_date = Column(DateTime, nullable=True)
 
     # Relationships
     references = relationship(

@@ -29,6 +29,9 @@ def upgrade():
         ),
     )
 
+    # Remove due_date column from manual_task
+    op.drop_column("manual_task", "due_date")
+
     # Create manual_task_instance table
     op.create_table(
         "manual_task_instance",
@@ -50,6 +53,7 @@ def upgrade():
         sa.Column("entity_id", sa.String(), nullable=False),
         sa.Column("entity_type", sa.String(), nullable=False),
         sa.Column("status", sa.String(), nullable=False, server_default="pending"),
+        sa.Column("due_date", sa.DateTime(timezone=True), nullable=True),
         sa.Column("completed_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("completed_by_id", sa.String(), nullable=True),
         sa.ForeignKeyConstraint(
@@ -169,7 +173,13 @@ def upgrade():
 
 def downgrade():
     # Drop execution_timing column from manual_task_config
-    op.drop_column("manual_task_config", "execution_timing")
+    # op.drop_column("manual_task_config", "execution_timing")
+
+    # # Add due_date column to manual_task
+    # op.add_column(
+    #     "manual_task",
+    #     sa.Column("due_date", sa.DateTime(timezone=True), nullable=True),
+    # )
 
     # Drop foreign key constraint from manual_task_log.instance_id
     op.drop_constraint(
