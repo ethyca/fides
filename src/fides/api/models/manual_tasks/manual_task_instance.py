@@ -7,7 +7,9 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import relationship
 
 from fides.api.db.base_class import Base
+from fides.api.db.util import EnumColumn
 from fides.api.models.manual_tasks.manual_task_config import ManualTaskConfigField
+from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskEntityType
 from fides.api.schemas.manual_tasks.manual_task_status import (
     StatusTransitionMixin,
     StatusType,
@@ -36,10 +38,10 @@ class ManualTaskInstance(Base, StatusTransitionMixin):
     # Database columns
     task_id = Column(String, ForeignKey("manual_task.id"), nullable=False)
     config_id = Column(String, ForeignKey("manual_task_config.id"), nullable=False)
-    # entity id is the entity that the instance is for (e.g. privacy request)
-    # TODO: Add to schemas
+    # entity id is the entity that the instance relates to
+    # (e.g. a privacy request is an entity that has its own manual task instance)
     entity_id = Column(String, nullable=False)
-    entity_type = Column(String, nullable=False)
+    entity_type = Column(EnumColumn(ManualTaskEntityType), nullable=False)
     status: StatusType = cast(
         StatusType, Column(String, nullable=False, default=StatusType.pending)
     )

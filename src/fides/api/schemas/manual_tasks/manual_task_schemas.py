@@ -31,6 +31,13 @@ class ManualTaskParentEntityType(str, Enum):
     # Add more parent entity types as needed
 
 
+class ManualTaskEntityType(str, Enum):
+    """Enum for manual task entity types."""
+
+    privacy_request = "privacy_request"
+    # Add more entity types as needed
+
+
 class ManualTaskReferenceType(str, Enum):
     """Enum for manual task reference types."""
 

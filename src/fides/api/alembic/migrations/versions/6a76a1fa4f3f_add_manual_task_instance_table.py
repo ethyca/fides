@@ -173,13 +173,13 @@ def upgrade():
 
 def downgrade():
     # Drop execution_timing column from manual_task_config
-    # op.drop_column("manual_task_config", "execution_timing")
+    op.drop_column("manual_task_config", "execution_timing")
 
-    # # Add due_date column to manual_task
-    # op.add_column(
-    #     "manual_task",
-    #     sa.Column("due_date", sa.DateTime(timezone=True), nullable=True),
-    # )
+    # Add due_date column to manual_task
+    op.add_column(
+        "manual_task",
+        sa.Column("due_date", sa.DateTime(timezone=True), nullable=True),
+    )
 
     # Drop foreign key constraint from manual_task_log.instance_id
     op.drop_constraint(
