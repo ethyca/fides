@@ -56,9 +56,15 @@ def artificial_traversal_node(address: CollectionAddress) -> TraversalNode:
     generate artificial root and termination nodes that correspond to just an address, but
     have no actual corresponding collection dataset"""
     ds: Collection = Collection(name=address.collection, fields=[])
+
+    # Use special connection key for manual tasks, otherwise use __IGNORE__
+    connection_key = (
+        "manual_task_connector" if address.dataset == "manual_tasks" else "__IGNORE__"
+    )
+
     node = Node(
         GraphDataset(
-            name=address.dataset, collections=[ds], connection_key="__IGNORE__"
+            name=address.dataset, collections=[ds], connection_key=connection_key
         ),
         ds,
     )
@@ -181,7 +187,6 @@ class BaseTraversal:
 
         We also raise a TraversalError if the queue is empty but some nodes have not been visited. In
         that case they are unreachable.
-
         """
         if environment:
             logger.info(
@@ -193,6 +198,15 @@ class BaseTraversal:
         finished_nodes: dict[CollectionAddress, TraversalNode] = {}
         running_node_queue: MatchingQueue[TraversalNode] = MatchingQueue(self.root_node)
         remaining_edges: Set[Edge] = self.edges.copy()
+
+        # Add manual task nodes to remaining nodes if they exist
+        pre_manual = CollectionAddress("manual_tasks", "pre_execution")
+        post_manual = CollectionAddress("manual_tasks", "post_execution")
+        if pre_manual in self.traversal_node_dict:
+            remaining_node_keys.add(pre_manual)
+        if post_manual in self.traversal_node_dict:
+            remaining_node_keys.add(post_manual)
+
         while not running_node_queue.is_empty():
             # this is to support the "run traversal_node A AFTER traversal_node B functionality:"
             n = running_node_queue.pop_first_match(
@@ -200,6 +214,7 @@ class BaseTraversal:
             )
 
             if n:
+                logger.info("Processing node: {}", n.address)
                 node_run_fn(n, environment)
                 # delete all edges between the traversal_node that's just run and any completed nodes
                 for finished_node_address, finished_node in finished_nodes.items():
@@ -242,6 +257,7 @@ class BaseTraversal:
                     )
                 finished_nodes[n.address] = n
                 remaining_node_keys.difference_update({n.address})
+                logger.info("Completed node: {}", n.address)
             else:
                 # traversal traversal_node dict diff finished nodes
                 logger.error(
@@ -324,6 +340,73 @@ class Traversal(BaseTraversal):
         filters.append(OptionalIdentityFilter(graph, data))
         if policy:
             filters.append(PolicyDataCategoryFilter(policy))
+
+        # Add manual task nodes to the graph
+        pre_manual = CollectionAddress("manual_tasks", "pre_execution")
+        post_manual = CollectionAddress("manual_tasks", "post_execution")
+
+        # Create artificial nodes for manual tasks
+        pre_manual_node = artificial_traversal_node(pre_manual)
+        post_manual_node = artificial_traversal_node(post_manual)
+
+        # Add manual task nodes to traversal nodes
+        graph.nodes[pre_manual] = pre_manual_node.node
+        graph.nodes[post_manual] = post_manual_node.node
+
+        # Add edges for manual task nodes
+        # Connect root to pre-execution manual tasks
+        graph.edges.add(
+            Edge(
+                FieldAddress(
+                    ROOT_COLLECTION_ADDRESS.dataset,
+                    ROOT_COLLECTION_ADDRESS.collection,
+                    "id",
+                ),
+                FieldAddress(pre_manual.dataset, pre_manual.collection, "id"),
+            )
+        )
+
+        # Connect pre-execution manual tasks to first non-manual nodes
+        for node_addr in graph.nodes.keys():
+            if node_addr not in [
+                ROOT_COLLECTION_ADDRESS,
+                TERMINATOR_ADDRESS,
+                pre_manual,
+                post_manual,
+            ]:
+                graph.edges.add(
+                    Edge(
+                        FieldAddress(pre_manual.dataset, pre_manual.collection, "id"),
+                        FieldAddress(node_addr.dataset, node_addr.collection, "id"),
+                    )
+                )
+
+        # Connect last non-manual nodes to post-execution manual tasks
+        for node_addr in graph.nodes.keys():
+            if node_addr not in [
+                ROOT_COLLECTION_ADDRESS,
+                TERMINATOR_ADDRESS,
+                pre_manual,
+                post_manual,
+            ]:
+                graph.edges.add(
+                    Edge(
+                        FieldAddress(node_addr.dataset, node_addr.collection, "id"),
+                        FieldAddress(post_manual.dataset, post_manual.collection, "id"),
+                    )
+                )
+
+        # Connect post-execution manual tasks to terminator
+        graph.edges.add(
+            Edge(
+                FieldAddress(post_manual.dataset, post_manual.collection, "id"),
+                FieldAddress(
+                    TERMINATOR_ADDRESS.dataset, TERMINATOR_ADDRESS.collection, "id"
+                ),
+            )
+        )
+
+        logger.info("Added manual task nodes and edges to graph")
 
         super().__init__(graph, data, policy=policy, node_filters=filters)
 
@@ -439,6 +522,7 @@ class TraversalNode(Contextualizable):
     def incoming_edges_by_collection(self) -> Dict[CollectionAddress, List[Edge]]:
         return partition(self.incoming_edges(), lambda e: e.f1.collection_address())
 
+    @property
     def input_keys(self) -> List[CollectionAddress]:
         """Returns the inputs to the current node that are data dependencies
         This is copied and saved to the RequestTask and used to maintain a consistent order
@@ -509,7 +593,7 @@ class TraversalNode(Contextualizable):
             outgoing_edges=[
                 [edge.f1.value, edge.f2.value] for edge in self.outgoing_edges()
             ],
-            input_keys=[tn.value for tn in self.input_keys()],
+            input_keys=[tn.value for tn in self.input_keys],
         ).model_dump(mode="json")
 
     def to_mock_request_task(self) -> RequestTask:

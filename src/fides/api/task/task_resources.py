@@ -4,10 +4,16 @@ from fideslang.validation import FidesKey
 from loguru import logger
 from sqlalchemy.orm import Session
 
-from fides.api.common_exceptions import ConnectorNotFoundException
+from fides.api.common_exceptions import (
+    ConnectorNotFoundException,
+    UpstreamTasksNotReady,
+)
+from fides.api.graph.execution import ExecutionNode
+from fides.api.models.attachment import AttachmentReferenceType
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
+from fides.api.schemas.policy import ActionType
 from fides.api.service.connectors import (
     BaseConnector,
     BigQueryConnector,
@@ -33,28 +39,108 @@ from fides.api.util.cache import get_cache
 from fides.api.util.collection_util import Row, extract_key_for_address
 
 
+class ManualTaskConnector(BaseConnector):
+    """Special connector for manual task nodes that doesn't require actual connection."""
+
+    def __init__(self, configuration: ConnectionConfig, session: Session):
+        """Initialize with both config and session."""
+        super().__init__(configuration)
+        self.session = session
+
+    def close(self) -> None:
+        """No-op since there's no actual connection."""
+        pass
+
+    def test_connection(self) -> None:
+        """No-op since there's no actual connection."""
+        pass
+
+    def create_client(self) -> None:
+        """No-op since we don't need a client for manual tasks."""
+        pass
+
+    def query_config(self) -> None:
+        """No-op since we don't need config for manual tasks."""
+        pass
+
+    def retrieve_data(
+        self,
+        request: ExecutionNode,
+        policy: Policy,
+        privacy_request: PrivacyRequest,
+        *input_data: List[Row],
+    ) -> List[Row]:
+        """Return manual task submission data if available.
+
+        Returns data for each manual task instance as a separate dataset, keyed by the
+        connection config key that owns the manual task.
+
+        If there are manual tasks configured but no instances created yet, returns empty data.
+        If there are instances but not all have completed submissions, raises UpstreamTasksNotReady.
+        """
+        logger.info(
+            "Retrieving manual task data for privacy request {}", privacy_request.id
+        )
+
+        # Get the request task for this node
+        request_task = privacy_request.get_request_task_by_collection_address(
+            request.address, policy.get_action_type()
+        )
+        if not request_task:
+            logger.warning(
+                "No request task found for manual task node {}", request.address
+            )
+            return []
+
+        # Return the data already saved by run_manual_task_node
+        if request_task.action_type == ActionType.access:
+            return [request_task.access_data] if request_task.access_data else []
+        else:
+            return (
+                [{"manual_tasks": request_task.data_for_erasures}]
+                if request_task.data_for_erasures
+                else []
+            )
+
+    def mask_data(
+        self,
+        request: PrivacyRequest,
+        policy: Policy,
+        privacy_request_task: RequestTask,
+        data: List[Row],
+    ) -> int:
+        """For manual task nodes, we don't need to mask any data."""
+        return 0
+
+
 class Connections:
     """Temporary container for connections. This will be replaced."""
 
     def __init__(self) -> None:
         self.connections: Dict[str, Union[BaseConnector, BaseEmailConnector]] = {}
+        self.session: Optional[Session] = None
 
     def get_connector(
-        self, connection_config: ConnectionConfig
+        self, connection_config: ConnectionConfig, session: Optional[Session] = None
     ) -> Union[BaseConnector, BaseEmailConnector]:
         """Return the connector corresponding to this config. Will return the existing
         connector or create one if it does not yet exist."""
         key = connection_config.key
         if key not in self.connections:
-            connector = Connections.build_connector(connection_config)
+            connector = Connections.build_connector(connection_config, session)
             self.connections[key] = connector
         return self.connections[key]
 
     @staticmethod
     def build_connector(  # pylint: disable=R0911,R0912
         connection_config: ConnectionConfig,
+        session: Optional[Session] = None,
     ) -> Union[BaseConnector, BaseEmailConnector]:
         """Factory method to build the appropriately typed connector from the config."""
+        if connection_config.key == "manual_task_connector":
+            if not session:
+                raise ValueError("Session required for manual task connector")
+            return ManualTaskConnector(connection_config, session)
         if connection_config.connection_type == ConnectionType.postgres:
             return PostgreSQLConnector(connection_config)
         if connection_config.connection_type == ConnectionType.mongodb:
@@ -129,10 +215,23 @@ class TaskResources:
         # TODO Remove when we stop support for DSR 2.0
         self.cache = get_cache()
         self.privacy_request_task = privacy_request_task
+
+        # Add special connection config for manual tasks
+        manual_task_config = ConnectionConfig(
+            key="manual_task_connector",
+            name="Manual Task Connector",
+            connection_type=ConnectionType.saas,  # Using saas as a generic type
+            access="write",
+        )
+
+        # Add manual task config to connection configs
+        connection_configs.append(manual_task_config)
+
         self.connection_configs: Dict[str, ConnectionConfig] = {
             c.key: c for c in connection_configs
         }
         self.connections = Connections()
+        self.connections.session = session
         self.session = session
 
     def __enter__(self) -> "TaskResources":
@@ -192,7 +291,9 @@ class TaskResources:
     def get_connector(self, key: FidesKey) -> Any:
         """Create or return the client corresponding to the given ConnectionConfig key"""
         if key in self.connection_configs:
-            return self.connections.get_connector(self.connection_configs[key])
+            return self.connections.get_connector(
+                self.connection_configs[key], self.session
+            )
         raise ConnectorNotFoundException(f"No available connector for {key}")
 
     def close(self) -> None:

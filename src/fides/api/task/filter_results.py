@@ -37,6 +37,27 @@ def filter_data_categories(
         if not results:
             continue
 
+        # Manual task data is a special case - pass through without filtering
+        # since it doesn't have corresponding nodes in the dataset graph
+        if node_address.startswith("manual_tasks:"):
+            logger.info(
+                "Passing through manual task data for {} without filtering",
+                node_address,
+            )
+            # Manual task data is a dictionary, not a list, so we need to handle it differently
+            if isinstance(results, dict):
+                # The data structure is like {'manual_tasks:post_execution': [{'data': [...], 'attachments': [...]}]}
+                # We want to extract the actual data list
+                if node_address in results:
+                    filtered_access_results[node_address] = results[node_address]
+                else:
+                    # If the key doesn't match, just pass through the results as-is
+                    filtered_access_results[node_address] = results
+            else:
+                # Fallback for any other data type
+                filtered_access_results[node_address] = results
+            continue
+
         # Results from fides connectors are a special case:
         # they've already been filtered and stored in a dict keyed by rule key.
         # So here, we simply find the results corresponding to our current rule

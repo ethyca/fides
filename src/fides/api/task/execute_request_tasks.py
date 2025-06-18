@@ -15,14 +15,23 @@ from tenacity import (
 from fides.api.common_exceptions import (
     PrivacyRequestCanceled,
     PrivacyRequestNotFound,
+    PrivacyRequestPaused,
     RequestTaskNotFound,
     ResumeTaskException,
     UpstreamTasksNotReady,
 )
 from fides.api.graph.config import TERMINATOR_ADDRESS, CollectionAddress
-from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.attachment import AttachmentReferenceType
+from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.models.manual_tasks.manual_task import ManualTask
+from fides.api.models.manual_tasks.manual_task_instance import ManualTaskInstance
 from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest, RequestTask
 from fides.api.models.worker_task import ExecutionLogStatus
+from fides.api.schemas.manual_tasks.manual_task_schemas import (
+    ManualTaskExecutionTiming,
+    ManualTaskParentEntityType,
+)
+from fides.api.schemas.manual_tasks.manual_task_status import StatusType
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.graph_task import (
@@ -34,6 +43,7 @@ from fides.api.tasks import DSR_QUEUE_NAME, DatabaseTask, celery_app
 from fides.api.util.cache import cache_task_tracking_key
 from fides.api.util.collection_util import Row
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
+from fides.config import CONFIG
 
 # DSR 3.0 task functions
 
@@ -151,7 +161,23 @@ def can_run_task_body(
         return False
     if request_task.is_root_task:
         # Shouldn't be possible but adding as a catch-all
+        logger.info("Root task encountered, skipping execution")
         return False
+
+    # For manual task nodes, we want to check their status
+    if request_task.dataset_name == "manual_tasks":
+        if request_task.status == ExecutionLogStatus.complete:
+            logger.info(
+                "Manual task node {} is already complete, skipping execution",
+                request_task.collection_address,
+            )
+            return False
+        logger.info(
+            "Identified manual task node {} for processing",
+            request_task.collection_address,
+        )
+        return True
+
     if request_task.status != ExecutionLogStatus.pending:
         logger_method(request_task)(
             "Skipping {} task {} with status {}.",
@@ -230,6 +256,12 @@ def queue_downstream_tasks(
         # Only queue privacy request from the next step if we haven't reached the terminator before.
         # Multiple pathways could mark the same node as complete, so we may have already reached the
         # terminator node through a quicker path.
+        logger.info(
+            "Terminator task reached. Task status: {}, privacy_request_proceed: {}, next_step: {}",
+            request_task.status,
+            privacy_request_proceed,
+            next_step.value,
+        )
         from fides.service.privacy_request.privacy_request_service import (  # pylint: disable=cyclic-import
             queue_privacy_request,
         )
@@ -238,11 +270,24 @@ def queue_downstream_tasks(
             privacy_request_proceed
         ):  # For Testing, this could be set to False, so we could just
             # run one of the graphs and not the entire privacy request
+            logger.info("Queueing privacy request from step: {}", next_step.value)
             queue_privacy_request(
                 privacy_request_id=privacy_request.id,
                 from_step=next_step.value,
             )
         request_task.update_status(session, ExecutionLogStatus.complete)
+    elif request_task.request_task_address == TERMINATOR_ADDRESS:
+        logger.info(
+            "Terminator task reached but status is already complete: {}",
+            request_task.status,
+        )
+    else:
+        logger.info(
+            "Not a terminator task. request_task_address: {}, TERMINATOR_ADDRESS: {}, status: {}",
+            request_task.request_task_address,
+            TERMINATOR_ADDRESS,
+            request_task.status,
+        )
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
@@ -260,7 +305,6 @@ def run_access_node(
 ) -> None:
     """Run an individual task in the access graph for DSR 3.0 and queue downstream nodes
     upon completion if applicable"""
-
     try:
         with self.get_new_session() as session:
             privacy_request, request_task, upstream_results = (
@@ -274,9 +318,67 @@ def run_access_node(
                 )
             ):
                 log_task_starting(request_task)
+                logger.info(
+                    "Task {} starting with status {}",
+                    request_task.collection_address,
+                    request_task.status,
+                )
 
                 if can_run_task_body(request_task):
-                    # Build GraphTask resource to facilitate execution
+                    # Check if this is a manual task node
+                    if request_task.dataset_name == "manual_tasks":
+                        try:
+                            logger.info(
+                                "Running manual task node {} with status {}",
+                                request_task.collection_address,
+                                request_task.status,
+                            )
+                            task_completed = run_manual_task_node(session, request_task)
+                            logger.info(
+                                "Manual task node {} completed with result {} and status {}",
+                                request_task.collection_address,
+                                task_completed,
+                                request_task.status,
+                            )
+                            # If task_completed is True, queue downstream tasks
+                            if task_completed:
+                                logger.info(
+                                    "Queueing downstream tasks for completed manual task {}",
+                                    request_task.collection_address,
+                                )
+                                queue_downstream_tasks_with_retries(
+                                    self,
+                                    privacy_request_id,
+                                    privacy_request_task_id,
+                                    CurrentStep.upload_access,
+                                    privacy_request_proceed,
+                                )
+                            return
+                        except PrivacyRequestPaused as exc:
+                            # Request is paused waiting for manual input - no retry needed
+                            logger.info(str(exc))
+                            return
+                        except UpstreamTasksNotReady as exc:
+                            # Other upstream tasks not ready - retry
+                            logger.info(
+                                "Upstream tasks not ready, will retry in {} seconds: {}",
+                                CONFIG.execution.task_retry_delay,
+                                str(exc),
+                            )
+                            raise self.retry(
+                                exc=exc,
+                                countdown=CONFIG.execution.task_retry_delay,
+                                max_retries=CONFIG.execution.task_retry_count,
+                            )
+                        except Exception as e:
+                            logger.error(
+                                "Error running manual task node {}: {}",
+                                request_task.collection_address,
+                                str(e),
+                            )
+                            raise
+
+                    # Regular access task
                     with TaskResources(
                         privacy_request,
                         privacy_request.policy,
@@ -287,31 +389,56 @@ def run_access_node(
                         graph_task: GraphTask = create_graph_task(
                             session, request_task, resources
                         )
-                        # Currently, upstream tasks and "input keys" (which are built by data dependencies)
-                        # are the same, but they may not be the same in the future.
                         ordered_upstream_tasks: List[Optional[RequestTask]] = (
                             _order_tasks_by_input_key(
                                 graph_task.execution_node.input_keys, upstream_results
                             )
                         )
-                        # Pass in access data dependencies in the same order as the input keys.
-                        # If we don't have access data for an upstream node, pass in an empty list
                         upstream_access_data: List[List[Row]] = [
                             upstream.get_access_data() if upstream else []
                             for upstream in ordered_upstream_tasks
                         ]
-                        # Run the main access function
                         graph_task.access_request(*upstream_access_data)
+                        # Mark task as complete since it executed without error
+                        request_task.update_status(session, ExecutionLogStatus.complete)
+                elif request_task.is_terminator_task:
+                    # Special handling for terminator tasks - queue downstream even if not complete
+                    logger.info(
+                        "Terminator task {} reached, queueing downstream tasks",
+                        request_task.collection_address,
+                    )
+                    queue_downstream_tasks_with_retries(
+                        self,
+                        privacy_request_id,
+                        privacy_request_task_id,
+                        CurrentStep.upload_access,
+                        privacy_request_proceed,
+                    )
 
-        queue_downstream_tasks_with_retries(
-            self,
-            privacy_request_id,
-            privacy_request_task_id,
-            CurrentStep.upload_access,
-            privacy_request_proceed,
-        )
+                # Only queue downstream tasks if this task completed successfully
+                if request_task.status == ExecutionLogStatus.complete:
+                    logger.info(
+                        "Task {} is complete, queueing downstream tasks",
+                        request_task.collection_address,
+                    )
+                    queue_downstream_tasks_with_retries(
+                        self,
+                        privacy_request_id,
+                        privacy_request_task_id,
+                        CurrentStep.upload_access,
+                        privacy_request_proceed,
+                    )
+
     except Exception as e:
-        logger.error(f"Error in run_access_node: {e}")
+        logger.error(
+            "Error in run_access_node for task {}: {}",
+            (
+                request_task.collection_address
+                if "request_task" in locals()
+                else "unknown"
+            ),
+            str(e),
+        )
         raise
 
 
@@ -330,45 +457,92 @@ def run_erasure_node(
 ) -> None:
     """Run an individual task in the erasure graph for DSR 3.0 and queue downstream nodes
     upon completion if applicable"""
-    with self.get_new_session() as session:
-        privacy_request, request_task, _ = run_prerequisite_task_checks(
-            session, privacy_request_id, privacy_request_task_id
-        )
-        with logger.contextualize(
-            privacy_request_source=(
-                privacy_request.source.value if privacy_request.source else None
+    try:
+        with self.get_new_session() as session:
+            privacy_request, request_task, _ = run_prerequisite_task_checks(
+                session, privacy_request_id, privacy_request_task_id
             )
-        ):
-            log_task_starting(request_task)
+            with logger.contextualize(
+                privacy_request_source=(
+                    privacy_request.source.value if privacy_request.source else None
+                )
+            ):
+                log_task_starting(request_task)
 
-            if can_run_task_body(request_task):
-                with TaskResources(
-                    privacy_request,
-                    privacy_request.policy,
-                    session.query(ConnectionConfig).all(),
-                    request_task,
-                    session,
-                ) as resources:
-                    # Build GraphTask resource to facilitate execution
-                    graph_task: GraphTask = create_graph_task(
-                        session, request_task, resources
+                if can_run_task_body(request_task):
+                    # Check if this is a manual task node
+                    if request_task.dataset_name == "manual_tasks":
+                        timing = ManualTaskExecutionTiming(request_task.collection_name)
+                        try:
+                            task_completed = run_manual_task_node(
+                                session, request_task, timing
+                            )
+                            # If task_completed is True, queue downstream tasks
+                            if task_completed:
+                                queue_downstream_tasks_with_retries(
+                                    self,
+                                    privacy_request_id,
+                                    privacy_request_task_id,
+                                    CurrentStep.finalize_erasure,
+                                    privacy_request_proceed,
+                                )
+                            return
+                        except PrivacyRequestPaused as exc:
+                            # Request is paused waiting for manual input - no retry needed
+                            logger.info(str(exc))
+                            return
+                        except UpstreamTasksNotReady as exc:
+                            # Other upstream tasks not ready - retry
+                            logger.info(
+                                "Upstream tasks not ready, will retry in {} seconds: {}",
+                                CONFIG.execution.task_retry_delay,
+                                str(exc),
+                            )
+                            raise self.retry(
+                                exc=exc,
+                                countdown=CONFIG.execution.task_retry_delay,
+                                max_retries=CONFIG.execution.task_retry_count,
+                            )
+
+                    # Regular erasure task
+                    with TaskResources(
+                        privacy_request,
+                        privacy_request.policy,
+                        session.query(ConnectionConfig).all(),
+                        request_task,
+                        session,
+                    ) as resources:
+                        graph_task: GraphTask = create_graph_task(
+                            session, request_task, resources
+                        )
+                        retrieved_data: List[Row] = (
+                            request_task.get_data_for_erasures() or []
+                        )
+                        graph_task.erasure_request(retrieved_data)
+                        # Mark task as complete since it executed without error
+                        request_task.update_status(session, ExecutionLogStatus.complete)
+
+                # Only queue downstream tasks if this task completed successfully
+                if request_task.status == ExecutionLogStatus.complete:
+                    queue_downstream_tasks_with_retries(
+                        self,
+                        privacy_request_id,
+                        privacy_request_task_id,
+                        CurrentStep.finalize_erasure,
+                        privacy_request_proceed,
                     )
-                    # Get access data that was saved in the erasure format that was collected from the
-                    # access task for the same collection.  This data is used to build the masking request
-                    retrieved_data: List[Row] = (
-                        request_task.get_data_for_erasures() or []
-                    )
 
-                    # Run the main erasure function!
-                    graph_task.erasure_request(retrieved_data)
-
-    queue_downstream_tasks_with_retries(
-        self,
-        privacy_request_id,
-        privacy_request_task_id,
-        CurrentStep.finalize_erasure,
-        privacy_request_proceed,
-    )
+    except Exception as e:
+        logger.error(
+            "Error in run_erasure_node for task {}: {}",
+            (
+                request_task.collection_address
+                if "request_task" in locals()
+                else "unknown"
+            ),
+            str(e),
+        )
+        raise
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
@@ -398,25 +572,46 @@ def run_consent_node(
             log_task_starting(request_task)
 
             if can_run_task_body(request_task):
-                # Build GraphTask resource to facilitate execution
-                with TaskResources(
-                    privacy_request,
-                    privacy_request.policy,
-                    session.query(ConnectionConfig).all(),
-                    request_task,
-                    session,
-                ) as resources:
-                    graph_task: GraphTask = create_graph_task(
-                        session, request_task, resources
-                    )
-                    access_data: List = []
-                    if upstream_results:
-                        # For consent, expected that there is only one upstream node, the root node,
-                        # and it holds the identity data (stored in a list for consistency with other
-                        # data stored in access_data)
-                        access_data = upstream_results[0].get_access_data() or []
+                # Check if this is a manual task node
+                if request_task.dataset_name == "manual_tasks":
+                    timing = ManualTaskExecutionTiming(request_task.collection_name)
+                    try:
+                        run_manual_task_node(session, request_task, timing)
+                    except PrivacyRequestPaused as exc:
+                        # Request is paused waiting for manual input - no retry needed
+                        logger.info(str(exc))
+                        return
+                    except UpstreamTasksNotReady as exc:
+                        # Other upstream tasks not ready - retry
+                        logger.info(
+                            "Upstream tasks not ready, will retry in {} seconds: {}",
+                            CONFIG.execution.task_retry_delay,
+                            str(exc),
+                        )
+                        raise self.retry(
+                            exc=exc,
+                            countdown=CONFIG.execution.task_retry_delay,
+                            max_retries=CONFIG.execution.task_retry_count,
+                        )
+                else:
+                    # Regular consent task
+                    with TaskResources(
+                        privacy_request,
+                        privacy_request.policy,
+                        session.query(ConnectionConfig).all(),
+                        request_task,
+                        session,
+                    ) as resources:
+                        graph_task: GraphTask = create_graph_task(
+                            session, request_task, resources
+                        )
+                        access_data: List = []
+                        if upstream_results:
+                            access_data = upstream_results[0].get_access_data() or []
 
-                    graph_task.consent_request(access_data[0] if access_data else {})
+                        graph_task.consent_request(
+                            access_data[0] if access_data else {}
+                        )
 
     queue_downstream_tasks_with_retries(
         self,
@@ -489,6 +684,14 @@ def queue_request_task(
     request_task: RequestTask, privacy_request_proceed: bool = True
 ) -> None:
     """Queues the RequestTask in Celery and caches the Celery Task ID"""
+    # Don't queue if task is already complete
+    if request_task.status == ExecutionLogStatus.complete:
+        logger.info(
+            "Task {} is already complete, skipping queueing",
+            request_task.collection_address,
+        )
+        return
+
     celery_task_fn: Task = mapping[request_task.action_type]
     celery_task = celery_task_fn.apply_async(
         queue=DSR_QUEUE_NAME,
@@ -509,3 +712,291 @@ def log_task_queued(request_task: RequestTask, location: str) -> None:
         request_task.collection_address,
         location,
     )
+
+
+def run_manual_task_node(
+    session: Session,
+    request_task: RequestTask,
+    timing: Optional[ManualTaskExecutionTiming] = None,
+) -> bool:
+    """Check if all manual tasks for the given timing are complete.
+
+    Args:
+        session: Database session
+        request_task: The request task representing the manual task node
+        timing: Optional timing override. If not provided, will be derived from request_task.collection_name
+
+    Returns:
+        bool: True if the task was completed (either already complete or completed now), False if waiting for input
+    """
+    logger.info(
+        "Starting run_manual_task_node for task {} with status {}",
+        request_task.collection_address,
+        request_task.status,
+    )
+
+    if request_task.status == ExecutionLogStatus.complete:
+        logger.info(
+            "Manual task node {} is already complete, skipping processing",
+            request_task.collection_address,
+        )
+        return True
+
+    if timing is None:
+        timing = ManualTaskExecutionTiming(request_task.collection_name)
+
+    logger.info(
+        "Processing manual task node {} with timing {}",
+        request_task.collection_address,
+        timing.value,
+    )
+
+    # Get the privacy request to update its status
+    privacy_request = PrivacyRequest.get(
+        db=session, object_id=request_task.privacy_request_id
+    )
+    if not privacy_request:
+        raise PrivacyRequestNotFound(
+            f"Privacy request {request_task.privacy_request_id} not found"
+        )
+
+    tasks = ManualTask.filter(
+        db=session,
+        conditions=(
+            (
+                ManualTask.parent_entity_type
+                == ManualTaskParentEntityType.connection_config
+            )
+        ),
+    ).all()
+
+    logger.info(
+        "Found {} manual tasks for task {}", len(tasks), request_task.collection_address
+    )
+
+    if not tasks:
+        # No tasks found - mark node as complete since there's nothing to wait for
+        logger.info(
+            "No manual tasks configured. Marking node as complete.",
+        )
+        request_task.update_status(session, ExecutionLogStatus.complete)
+        return True
+
+    # Get all configs for the given timing across all tasks
+    configs = []
+    for task in tasks:
+        configs.extend(
+            [config for config in task.configs if config.execution_timing == timing]
+        )
+
+    logger.info(
+        "Found {} configs with timing {} for task {}",
+        len(configs),
+        timing.value,
+        request_task.collection_address,
+    )
+
+    if not configs:
+        # No configs found for timing - mark node as complete since there's nothing to wait for
+        logger.info(
+            "No manual task configs found for timing {}. Marking node as complete.",
+            timing.value,
+        )
+        request_task.update_status(session, ExecutionLogStatus.complete)
+        return True
+
+    instances = ManualTaskInstance.filter(
+        db=session,
+        conditions=(
+            (ManualTaskInstance.entity_id == request_task.privacy_request_id)
+            & (ManualTaskInstance.entity_type == "privacy_request")
+            & (ManualTaskInstance.config.has(execution_timing=timing))
+        ),
+    ).all()
+
+    logger.info(
+        "Found {} instances for task {} with timing {}",
+        len(instances),
+        request_task.collection_address,
+        timing.value,
+    )
+
+    if not instances:
+        # No instances yet - set request to requires_input and keep node pending
+        logger.info(
+            "No manual task instances found yet for privacy request {} with timing {}. Setting status to requires_input.",
+            request_task.privacy_request_id,
+            timing.value,
+        )
+        request_task.update_status(session, ExecutionLogStatus.pending)
+        privacy_request.status = PrivacyRequestStatus.requires_input
+        privacy_request.save(session)
+
+        # Add execution log
+        ExecutionLog.create(
+            db=session,
+            data={
+                "connection_key": None,
+                "dataset_name": request_task.dataset_name,
+                "collection_name": request_task.collection_name,
+                "fields_affected": [],
+                "action_type": request_task.action_type,
+                "status": ExecutionLogStatus.pending,
+                "privacy_request_id": request_task.privacy_request_id,
+                "message": f"Waiting for manual tasks with timing {timing.value} to be created",
+            },
+        )
+        raise PrivacyRequestPaused(
+            f"Privacy request paused waiting for manual tasks with timing {timing.value}"
+        )
+
+    # Check if all manual tasks are complete
+    all_complete = all(
+        instance.status == StatusType.completed for instance in instances
+    )
+    incomplete_count = sum(
+        1 for instance in instances if instance.status != StatusType.completed
+    )
+
+    logger.info(
+        "Task {} has {} complete instances and {} incomplete instances",
+        request_task.collection_address,
+        len(instances) - incomplete_count,
+        incomplete_count,
+    )
+
+    if all_complete:
+        logger.info(
+            "All manual tasks complete for timing {}. Marking node as complete.",
+            timing.value,
+        )
+        # Group submission data by connection config name
+        submission_data_by_config = {}
+        for instance in instances:
+            # Get the manual task to find its connection config
+            manual_task = ManualTask.get_by_key_or_id(
+                db=session, data={"id": instance.task_id}
+            )
+            if not manual_task:
+                logger.warning(
+                    "Manual task {} not found for instance {}",
+                    instance.task_id,
+                    instance.id,
+                )
+                continue
+
+            # Get the connection config to get its name
+            connection_config = ConnectionConfig.get_by_key_or_id(
+                db=session, data={"id": manual_task.parent_entity_id}
+            )
+            if not connection_config:
+                logger.warning(
+                    "Connection config {} not found for manual task {}",
+                    manual_task.parent_entity_id,
+                    manual_task.id,
+                )
+                continue
+
+            # Initialize list for this config if not exists
+            collection_key = request_task.collection_address
+            if collection_key not in submission_data_by_config:
+                submission_data_by_config[collection_key] = []
+
+            task_data = {"data": []}
+
+            # Add submission data
+            for submission in instance.submissions:
+                submission_data_entry = {
+                    "field_id": submission.field_id,
+                    "data": submission.data,
+                }
+                task_data["data"].append(submission_data_entry)
+
+            # Add attachment data if any
+            attachments = []
+            for submission in instance.submissions:
+                for attachment in submission.attachments:
+                    attachments.append(
+                        {
+                            "file_name": attachment.file_name,
+                            "storage_key": attachment.storage_key,
+                        }
+                    )
+            if attachments:
+                task_data["attachments"] = attachments
+
+            submission_data_by_config[collection_key].append(task_data)
+        logger.info("Submission data by config: {}", submission_data_by_config)
+
+        # Save submission data based on task type
+        if request_task.action_type == ActionType.access:
+            # For access tasks:
+            # 1. Save raw data to access_data and data_for_erasures
+            request_task.access_data = submission_data_by_config
+            request_task.data_for_erasures = submission_data_by_config  # Same data for both since no filtering needed
+
+            # Note: Filtered results will be saved by the request runner during the upload_access step
+            # This ensures consistency with how other access tasks are processed
+        else:
+            # For erasure tasks, save raw data
+            request_task.data_for_erasures = submission_data_by_config
+
+        request_task.update_status(session, ExecutionLogStatus.complete)
+
+        # Add execution log
+        ExecutionLog.create(
+            db=session,
+            data={
+                "connection_key": None,
+                "dataset_name": request_task.dataset_name,
+                "collection_name": request_task.collection_name,
+                "fields_affected": [],
+                "action_type": request_task.action_type,
+                "status": ExecutionLogStatus.complete,
+                "privacy_request_id": request_task.privacy_request_id,
+                "message": f"All manual tasks with timing {timing.value} completed successfully",
+            },
+        )
+        logger.info(
+            "Task {} marked as complete with status {}",
+            request_task.collection_address,
+            request_task.status,
+        )
+        session.commit()  # Ensure all changes are committed
+        return True
+    else:
+        # Tasks not complete - set request to requires_input and keep node pending
+        logger.info(
+            "{} manual tasks still pending for timing {}. Setting status to requires_input.",
+            incomplete_count,
+            timing.value,
+        )
+        request_task.update_status(session, ExecutionLogStatus.pending)
+        privacy_request.status = PrivacyRequestStatus.requires_input
+        privacy_request.save(session)
+
+        # Add execution log
+        ExecutionLog.create(
+            db=session,
+            data={
+                "connection_key": None,
+                "dataset_name": request_task.dataset_name,
+                "collection_name": request_task.collection_name,
+                "fields_affected": [],
+                "action_type": request_task.action_type,
+                "status": ExecutionLogStatus.pending,
+                "privacy_request_id": request_task.privacy_request_id,
+                "message": f"Waiting for {incomplete_count} manual tasks with timing {timing.value} to complete",
+            },
+        )
+        raise PrivacyRequestPaused(
+            f"Privacy request paused waiting for {incomplete_count} manual tasks with timing {timing.value} to complete"
+        )
+
+
+manual_task_config = ConnectionConfig(
+    key="manual_task_connector",
+    name="Manual Task Connector",
+    connection_type=ConnectionType.saas,
+    access="write",
+)

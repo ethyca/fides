@@ -65,27 +65,38 @@ def build_access_networkx_digraph(
     networkx_graph.add_nodes_from(traversal_nodes.keys())
     networkx_graph.add_nodes_from(ARTIFICIAL_NODES)
 
+    # Add manual task nodes
+    pre_manual = CollectionAddress("manual_tasks", "pre_execution")
+    post_manual = CollectionAddress("manual_tasks", "post_execution")
+    networkx_graph.add_nodes_from([pre_manual, post_manual])
+
     # The first nodes visited are the nodes that only need identity data.
     # Therefore, they are all immediately downstream of the root.
     first_nodes: Dict[FieldAddress, str] = traversal.extract_seed_field_addresses()
 
+    # Connect root -> pre_manual -> first nodes -> post_manual -> terminator
+    networkx_graph.add_edge(ROOT_COLLECTION_ADDRESS, pre_manual)
+
+    # Connect pre_manual to first nodes
     for node in [
         CollectionAddress(initial_node.dataset, initial_node.collection)
         for initial_node in first_nodes
     ]:
-        networkx_graph.add_edge(ROOT_COLLECTION_ADDRESS, node)
+        networkx_graph.add_edge(pre_manual, node)
 
-    for collection_address, traversal_node in traversal_nodes.items():
-        for child in traversal_node.children:
-            # For every node, add a downstream edge to its children
-            # that were calculated in traversal.traverse
-            networkx_graph.add_edge(collection_address, child)
+    # Connect all non-first nodes to their dependencies
+    for node_name, traversal_node in traversal_nodes.items():
+        if node_name not in [n.value for n in first_nodes]:
+            for input_key in traversal_node.input_keys:
+                networkx_graph.add_edge(input_key, node_name)
 
+    # Connect all end nodes to post_manual
     for node in end_nodes:
-        # Connect the end nodes, those that have no downstream dependencies, to the terminator node
-        networkx_graph.add_edge(node, TERMINATOR_ADDRESS)
+        networkx_graph.add_edge(node, post_manual)
 
-    _add_edge_if_no_nodes(traversal_nodes, networkx_graph)
+    # Connect post_manual to terminator
+    networkx_graph.add_edge(post_manual, TERMINATOR_ADDRESS)
+
     return networkx_graph
 
 
@@ -124,36 +135,41 @@ def build_erasure_networkx_digraph(
     graphs, so that all nodes can in theory run entirely in parallel, except for the "erase_after" dependencies.
 
     We tack on the "erase_after" dependencies here that aren't captured in traversal.traverse.
-
     """
     networkx_graph = networkx.DiGraph()
     networkx_graph.add_nodes_from(traversal_nodes.keys())
     networkx_graph.add_nodes_from(ARTIFICIAL_NODES)
 
+    # Add manual task nodes
+    pre_manual = CollectionAddress("manual_tasks", "pre_execution")
+    post_manual = CollectionAddress("manual_tasks", "post_execution")
+    networkx_graph.add_nodes_from([pre_manual, post_manual])
+
+    # Connect root -> pre_manual
+    networkx_graph.add_edge(ROOT_COLLECTION_ADDRESS, pre_manual)
+
+    # Connect pre_manual to all nodes without other dependencies
     for node_name, traversal_node in traversal_nodes.items():
-        # Add an edge from the root node to the current node, unless explicit erasure
-        # dependencies are defined. Modifies end_nodes in place
+        # Add an edge from pre_manual to the current node, unless explicit erasure
+        # dependencies are defined
         erasure_dependencies: Set[CollectionAddress] = _evaluate_erasure_dependencies(
             traversal_node, end_nodes
         )
-        for dep in erasure_dependencies:
-            networkx_graph.add_edge(dep, node_name)
+        if not erasure_dependencies or ROOT_COLLECTION_ADDRESS in erasure_dependencies:
+            # If node has no dependencies or depends on root, make it depend on pre_manual instead
+            networkx_graph.add_edge(pre_manual, node_name)
+        else:
+            # Add edges for explicit dependencies
+            for dep in erasure_dependencies:
+                networkx_graph.add_edge(dep, node_name)
 
+    # Connect all end nodes to post_manual
     for node in end_nodes:
-        # Connect each end node without downstream dependencies to the terminator node
-        networkx_graph.add_edge(node, TERMINATOR_ADDRESS)
+        networkx_graph.add_edge(node, post_manual)
 
-    try:
-        # Run extra checks on the graph since we potentially modified traversal_nodes
-        networkx.find_cycle(networkx_graph, ROOT_COLLECTION_ADDRESS)
-    except NetworkXNoCycle:
-        logger.info("No cycles found as expected")
-    else:
-        raise TraversalError(
-            "The values for the `erase_after` fields created a cycle in the DAG."
-        )
+    # Connect post_manual to terminator
+    networkx_graph.add_edge(post_manual, TERMINATOR_ADDRESS)
 
-    _add_edge_if_no_nodes(traversal_nodes, networkx_graph)
     return networkx_graph
 
 
@@ -168,11 +184,21 @@ def build_consent_networkx_digraph(
     networkx_graph.add_nodes_from(traversal_nodes.keys())
     networkx_graph.add_nodes_from([TERMINATOR_ADDRESS, ROOT_COLLECTION_ADDRESS])
 
+    # Add manual task nodes
+    pre_manual = CollectionAddress("manual_tasks", "pre_execution")
+    post_manual = CollectionAddress("manual_tasks", "post_execution")
+    networkx_graph.add_nodes_from([pre_manual, post_manual])
+
+    # Connect root -> pre_manual
+    networkx_graph.add_edge(ROOT_COLLECTION_ADDRESS, pre_manual)
+
     for collection_address, _ in traversal_nodes.items():
         # Consent graphs are simple. One node for every dataset (which has a mocked collection)
         # and no dependencies between nodes.
-        networkx_graph.add_edge(ROOT_COLLECTION_ADDRESS, collection_address)
-        networkx_graph.add_edge(collection_address, TERMINATOR_ADDRESS)
+        networkx_graph.add_edge(pre_manual, collection_address)
+        networkx_graph.add_edge(collection_address, post_manual)
+
+    networkx_graph.add_edge(post_manual, TERMINATOR_ADDRESS)
 
     _add_edge_if_no_nodes(traversal_nodes, networkx_graph)
     return networkx_graph
@@ -258,13 +284,16 @@ def persist_new_access_request_tasks(
         traversal_nodes, end_nodes, traversal
     )
 
+    tasks_created = []
     for node in list(networkx.topological_sort(graph)):
         if privacy_request.get_existing_request_task(
             session, action_type=ActionType.access, collection_address=node
         ):
+            logger.info("Skipping existing task for node {}", node)
             continue
 
-        RequestTask.create(
+        logger.info("Creating new task for node {}", node)
+        task = RequestTask.create(
             session,
             data={
                 **base_task_data(
@@ -277,8 +306,21 @@ def persist_new_access_request_tasks(
                 "action_type": ActionType.access,
             },
         )
+        tasks_created.append(task)
+        logger.info(
+            "Created task {} for node {} with upstream tasks {} and downstream tasks {}",
+            task.id,
+            node,
+            sorted([upstream.value for upstream in graph.predecessors(node)]),
+            sorted([downstream.value for downstream in graph.successors(node)]),
+        )
 
     root_task: RequestTask = privacy_request.get_root_task_by_action(ActionType.access)
+    logger.info(
+        "Completed task creation. Created {} tasks. Root task: {}",
+        len(tasks_created),
+        root_task.id if root_task else None,
+    )
 
     return [root_task]
 
@@ -492,7 +534,7 @@ def run_access_request(
                     "Some nodes were skipped, the identities provided were not sufficient to reach them"
                 )
                 for node_address, skip_message in traversal.skipped_nodes.items():
-                    logger.debug(skip_message)
+                    logger.info(skip_message)
                     privacy_request.add_skipped_execution_log(
                         session,
                         connection_key=None,

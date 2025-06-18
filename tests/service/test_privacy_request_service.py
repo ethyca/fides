@@ -1,22 +1,38 @@
 from datetime import datetime, timezone
-from unittest.mock import create_autospec, patch, MagicMock
 from typing import Generator
+from unittest.mock import MagicMock, create_autospec, patch
 
 import pytest
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 
 from fides.api.common_exceptions import FidesopsException
+from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
+from fides.api.models.manual_tasks.manual_task import ManualTask
+from fides.api.models.manual_tasks.manual_task_config import ManualTaskConfig
+from fides.api.models.manual_tasks.manual_task_instance import ManualTaskInstance
 from fides.api.models.policy import Policy
 from fides.api.models.pre_approval_webhook import PreApprovalWebhook
 from fides.api.models.privacy_request import ExecutionLog
 from fides.api.models.property import Property
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.oauth.roles import APPROVER
+from fides.api.schemas.manual_tasks.manual_task_config import (
+    ManualTaskConfigurationType,
+    ManualTaskFieldType,
+)
+from fides.api.schemas.manual_tasks.manual_task_schemas import (
+    ManualTaskParentEntityType,
+)
+from fides.api.schemas.manual_tasks.manual_task_status import StatusType
+from fides.api.schemas.messaging.messaging import (
+    MessagingActionType,
+    MessagingServiceType,
+)
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import (
     PrivacyRequestCreate,
@@ -25,24 +41,18 @@ from fides.api.schemas.privacy_request import (
 )
 from fides.api.schemas.redis_cache import Identity
 from fides.config.config_proxy import ConfigProxy
+from fides.service.manual_tasks.manual_task_service import ManualTaskService
 from fides.service.messaging.messaging_service import MessagingService
 from fides.service.privacy_request.privacy_request_service import PrivacyRequestService
 from tests.conftest import wait_for_tasks_to_complete
-from fides.api.models.manual_tasks.manual_task import ManualTask
-from fides.api.models.manual_tasks.manual_task_config import ManualTaskConfig
-from fides.api.models.manual_tasks.manual_task_instance import ManualTaskInstance
-from fides.api.schemas.manual_tasks.manual_task_status import StatusType
-from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskParentEntityType
-from fides.api.schemas.manual_tasks.manual_task_config import ManualTaskConfigurationType, ManualTaskFieldType
-from fides.api.schemas.messaging.messaging import MessagingActionType, MessagingServiceType
-from fides.service.manual_tasks.manual_task_service import ManualTaskService
-from fides.api.models.audit_log import AuditLog, AuditLogAction
+
 
 @pytest.fixture
 def mock_messaging_service() -> MessagingService:
     mock_service = create_autospec(MessagingService)
     mock_service.dispatch_message = MagicMock()
     return mock_service
+
 
 @pytest.fixture
 def privacy_request_service(
@@ -438,6 +448,7 @@ class TestPrivacyRequestService:
         )
         assert error_logs.count() == 0
 
+
 @pytest.mark.integration
 @pytest.mark.integration_postgres
 class TestPrivacyRequestServiceManualTasks:
@@ -446,7 +457,9 @@ class TestPrivacyRequestServiceManualTasks:
         return ManualTaskService(db)
 
     @pytest.fixture
-    def manual_task(self, db: Session, connection_config: ConnectionConfig) -> Generator[ManualTask, None, None]:
+    def manual_task(
+        self, db: Session, connection_config: ConnectionConfig
+    ) -> Generator[ManualTask, None, None]:
         manual_task = ManualTask.create(
             db=db,
             data={
@@ -459,7 +472,12 @@ class TestPrivacyRequestServiceManualTasks:
         manual_task.delete(db)
 
     @pytest.fixture
-    def manual_task_config(self, db: Session, manual_task: ManualTask, manual_task_service: ManualTaskService) -> Generator[ManualTaskConfig, None, None]:
+    def manual_task_config(
+        self,
+        db: Session,
+        manual_task: ManualTask,
+        manual_task_service: ManualTaskService,
+    ) -> Generator[ManualTaskConfig, None, None]:
         fields = [
             {
                 "field_key": "field1",
@@ -472,7 +490,9 @@ class TestPrivacyRequestServiceManualTasks:
                 },
             },
         ]
-        config = manual_task_service.create_config(ManualTaskConfigurationType.access_privacy_request, fields, manual_task.id)
+        config = manual_task_service.create_config(
+            ManualTaskConfigurationType.access_privacy_request, fields, manual_task.id
+        )
         yield config
         config.delete(db)
 
@@ -558,12 +578,15 @@ class TestPrivacyRequestServiceManualTasks:
         """Test sending notifications when users are assigned to the task."""
         manual_task_service.assign_users_to_task(manual_task.id, [user.id])
 
-        with patch(
-            "fides.service.privacy_request.privacy_request_service.get_email_messaging_config_service_type",
-            return_value=MessagingServiceType.mailgun.value,
-        ), patch(
-            "fides.service.privacy_request.privacy_request_service.dispatch_message"
-        ) as mock_dispatch:
+        with (
+            patch(
+                "fides.service.privacy_request.privacy_request_service.get_email_messaging_config_service_type",
+                return_value=MessagingServiceType.mailgun.value,
+            ),
+            patch(
+                "fides.service.privacy_request.privacy_request_service.dispatch_message"
+            ) as mock_dispatch,
+        ):
             privacy_request = privacy_request_service.create_privacy_request(
                 PrivacyRequestCreate(
                     policy_key=policy.key,
@@ -579,7 +602,7 @@ class TestPrivacyRequestServiceManualTasks:
                 to_identity=Identity(email=user.email_address),
                 service_type=MessagingServiceType.mailgun.value,
                 message_body_params=None,
-                subject_override=f"New access manual task assigned - Privacy Request {privacy_request.id}"
+                subject_override=f"New access manual task assigned - Privacy Request {privacy_request.id}",
             )
             privacy_request.delete(db)
 
@@ -593,12 +616,15 @@ class TestPrivacyRequestServiceManualTasks:
         policy: Policy,
     ) -> None:
         """Test sending notifications when no users are assigned to the task."""
-        with patch(
-            "fides.service.privacy_request.privacy_request_service.get_email_messaging_config_service_type",
-            return_value=MessagingServiceType.mailgun.value,
-        ), patch(
-            "fides.service.privacy_request.privacy_request_service.dispatch_message"
-        ) as mock_dispatch:
+        with (
+            patch(
+                "fides.service.privacy_request.privacy_request_service.get_email_messaging_config_service_type",
+                return_value=MessagingServiceType.mailgun.value,
+            ),
+            patch(
+                "fides.service.privacy_request.privacy_request_service.dispatch_message"
+            ) as mock_dispatch,
+        ):
             privacy_request = privacy_request_service.create_privacy_request(
                 PrivacyRequestCreate(
                     policy_key=policy.key,
@@ -611,7 +637,6 @@ class TestPrivacyRequestServiceManualTasks:
         mock_dispatch.assert_not_called()
 
         privacy_request.delete(db)
-
 
     @pytest.mark.usefixtures("use_dsr_3_0", "manual_task_config")
     def test_send_manual_task_notifications_no_email_service(

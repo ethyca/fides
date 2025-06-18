@@ -1,6 +1,7 @@
 import pytest
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+from unittest.mock import patch
 
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
@@ -299,6 +300,32 @@ class TestAssignUsersToTask:
         # Verify - no new references or logs should be created
         assert len(manual_task.references) == initial_reference_count
         assert len(manual_task.logs) == initial_log_count
+
+    @patch("fides.service.manual_tasks.manual_task_service.dispatch_message")
+    @patch("fides.service.manual_tasks.manual_task_service.get_email_messaging_config_service_type")
+    def test_send_task_assignment_notifications(
+        self,
+        mock_get_service_type,
+        mock_dispatch_message,
+        db: Session,
+        manual_task: ManualTask,
+        manual_task_service: ManualTaskService,
+        respondent_user: FidesUser,
+    ):
+        """Test that email notifications are sent when users are assigned to tasks."""
+        mock_get_service_type.return_value = "mailgun"
+
+        # Execute
+        manual_task_service.assign_users_to_task(db, manual_task, [respondent_user.id])
+
+        # Verify that dispatch_message was called with correct parameters
+        mock_dispatch_message.assert_called_once()
+        call_args = mock_dispatch_message.call_args
+        assert call_args.kwargs["action_type"].value == "manual_task_assignment"
+        assert call_args.kwargs["to_identity"].email == respondent_user.email_address
+        assert call_args.kwargs["service_type"] == "mailgun"
+        assert call_args.kwargs["message_body_params"].task_name == manual_task.name
+        assert call_args.kwargs["message_body_params"].task_type == manual_task.task_type.value
 
 
 class TestUnassignUsersFromTask:

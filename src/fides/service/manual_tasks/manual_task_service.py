@@ -12,6 +12,16 @@ from fides.api.schemas.manual_tasks.manual_task_schemas import (
     ManualTaskReferenceType,
     ManualTaskType,
 )
+from fides.api.schemas.messaging.messaging import (
+    ManualTaskAssignmentBodyParams,
+    MessagingActionType,
+)
+from fides.api.schemas.redis_cache import Identity
+from fides.api.service.messaging.message_dispatch_service import (
+    dispatch_message,
+    get_email_messaging_config_service_type,
+)
+from fides.config.config_proxy import ConfigProxy
 from fides.service.manual_tasks.manual_task_config_service import (
     ManualTaskConfigService,
 )
@@ -29,6 +39,7 @@ if TYPE_CHECKING:
 
 class ManualTaskNotFoundError(Exception):
     """Exception raised when a manual task is not found."""
+
     pass
 
 
@@ -44,7 +55,6 @@ class ManualTaskService:
         parent_entity_id: Optional[str] = None,
         parent_entity_type: Optional[ManualTaskParentEntityType] = None,
         task_type: Optional[ManualTaskType] = None,
-
     ) -> ManualTask:
         """Get the manual task using provided filters.
 
@@ -209,6 +219,59 @@ class ManualTaskService:
 
         return processed_users, {"task_id": task_id, "details": details}
 
+    def _send_task_assignment_notifications(
+        self, task: ManualTask, newly_assigned_users: set[str]
+    ) -> None:
+        """Send email notifications to newly assigned users.
+
+        Args:
+            task: The manual task
+            newly_assigned_users: Set of user IDs that were newly assigned
+        """
+        if not newly_assigned_users:
+            return
+
+        service_type = get_email_messaging_config_service_type(self.db)
+        if not service_type:
+            logger.warning(
+                "No email service configured - skipping task assignment notifications"
+            )
+            return
+
+        config_proxy = ConfigProxy(self.db)
+        admin_ui_url = config_proxy.admin_ui.url
+
+        # Get the actual user objects for the newly assigned users
+        users = (
+            self.db.query(FidesUser)
+            .filter(FidesUser.id.in_(newly_assigned_users))
+            .all()
+        )
+
+        for user in users:
+            try:
+                # Create the task assignment link
+                task_list_url = f"{admin_ui_url}/tasks" if admin_ui_url else None
+
+                dispatch_message(
+                    db=self.db,
+                    action_type=MessagingActionType.MANUAL_TASK_ASSIGNMENT,
+                    to_identity=Identity(email=user.email_address),
+                    service_type=service_type,
+                    message_body_params=ManualTaskAssignmentBodyParams(
+                        task_name=task.name,
+                        task_type=task.task_type.value,
+                        privacy_request_id=task.parent_entity_id if task.parent_entity_type == ManualTaskParentEntityType.privacy_request else None,
+                        admin_ui_url=task_list_url,
+                    ),
+                    subject_override=f"New manual task assigned: {task.name}",
+                )
+                logger.info(f"Sent task assignment notification email to {user.email_address}")
+            except Exception as e:
+                logger.error(
+                    f"Failed to send task assignment notification email to {user.email_address}: {str(e)}"
+                )
+
     @with_task_logging("Assign users to task")
     def assign_users_to_task(
         self, task_id: str, user_ids: list[str]
@@ -243,6 +306,9 @@ class ManualTaskService:
             )
             self.db.flush()
             self.db.refresh(task)
+
+            # Send email notifications to newly assigned users
+            self._send_task_assignment_notifications(task, users_to_assign)
 
         return task, log_data
 

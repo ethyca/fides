@@ -30,7 +30,6 @@ def use_dsr_3_0_scheduler(
 
     Override if we have a partially processed Privacy Request that was already run on
     DSR 2.0 so we can finish processing it on 2.0.
-
     """
     use_dsr_3_0 = CONFIG.execution.use_dsr_3_0
 

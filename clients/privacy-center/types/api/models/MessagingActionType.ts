@@ -18,4 +18,5 @@ export enum MessagingActionType {
   PRIVACY_REQUEST_REVIEW_APPROVE = "privacy_request_review_approve",
   USER_INVITE = "user_invite",
   TEST_MESSAGE = "test_message",
+  MANUAL_TASK_ASSIGNMENT = "manual_task_assignment",
 }

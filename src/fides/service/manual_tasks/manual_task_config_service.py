@@ -17,7 +17,9 @@ from fides.service.manual_tasks.utils import validate_fields, with_task_logging
 
 class ManualTaskConfigNotFoundError(Exception):
     """Exception raised when a manual task config is not found."""
+
     pass
+
 
 class ManualTaskConfigService:
     def __init__(self, db: Session):
