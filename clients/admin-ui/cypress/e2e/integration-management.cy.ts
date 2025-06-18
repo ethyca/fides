@@ -865,7 +865,7 @@ describe("Integration management for data detection & discovery", () => {
 
         checkStepStatus("Link system", false);
         cy.getByTestId("integration-setup-card").within(() => {
-          cy.contains("Link this integration to").should("exist");
+          cy.contains("Link this integration in the").should("exist");
         });
       });
 

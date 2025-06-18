@@ -130,6 +130,7 @@ const AddIntegrationModal = ({
             onClick={handleSave}
             disabled={!formState || !formState.isValid || !formState.dirty}
             loading={formState?.loading}
+            data-testid="save-btn"
           >
             Save
           </Button>
