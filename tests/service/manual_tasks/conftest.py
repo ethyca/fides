@@ -4,12 +4,8 @@ from sqlalchemy.orm import Session
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.manual_tasks.manual_task import ManualTask, ManualTaskReference
-from fides.api.models.manual_tasks.manual_task_config import (
-    ManualTaskConfig,
-    ManualTaskConfigField,
-)
+from fides.api.models.manual_tasks.manual_task_config import ManualTaskConfig
 from fides.api.oauth.roles import EXTERNAL_RESPONDENT, RESPONDENT
-from fides.api.schemas.manual_tasks.manual_task_config import ManualTaskFieldType
 from fides.api.schemas.manual_tasks.manual_task_schemas import (
     ManualTaskParentEntityType,
     ManualTaskReferenceType,
