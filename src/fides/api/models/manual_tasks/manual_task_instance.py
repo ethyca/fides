@@ -62,7 +62,7 @@ class ManualTaskInstance(Base, StatusTransitionMixin):
         "ManualTaskLog",
         back_populates="instance",
         primaryjoin="ManualTaskInstance.id == ManualTaskLog.instance_id",
-        viewonly=True,
+        cascade="all, delete-orphan",
         order_by="ManualTaskLog.created_at",
         uselist=True,
     )

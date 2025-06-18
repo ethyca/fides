@@ -65,7 +65,7 @@ class ManualTaskConfig(Base):
         "ManualTaskLog",
         back_populates="config",
         primaryjoin="ManualTaskConfig.id == ManualTaskLog.config_id",
-        viewonly=True,
+        cascade="all, delete-orphan",
     )
 
     @classmethod
