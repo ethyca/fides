@@ -13,7 +13,15 @@ const useClickOutside = <T extends HTMLElement = HTMLElement>(
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (ref.current && !ref.current.contains(event.target as Node)) {
-        callback();
+        // Don't trigger callback if clicking on interactive elements
+        const target = event.target as HTMLElement;
+        const isInteractiveElement = target.closest(
+          'button, [role="button"], a, input, select, textarea',
+        );
+
+        if (!isInteractiveElement) {
+          callback();
+        }
       }
     };
 
