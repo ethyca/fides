@@ -1541,34 +1541,7 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">426</span>
 <span class="normal">427</span>
 <span class="normal">428</span>
-<span class="normal">429</span>
-<span class="normal">430</span>
-<span class="normal">431</span>
-<span class="normal">432</span>
-<span class="normal">433</span>
-<span class="normal">434</span>
-<span class="normal">435</span>
-<span class="normal">436</span>
-<span class="normal">437</span>
-<span class="normal">438</span>
-<span class="normal">439</span>
-<span class="normal">440</span>
-<span class="normal">441</span>
-<span class="normal">442</span>
-<span class="normal">443</span>
-<span class="normal">444</span>
-<span class="normal">445</span>
-<span class="normal">446</span>
-<span class="normal">447</span>
-<span class="normal">448</span>
-<span class="normal">449</span>
-<span class="normal">450</span>
-<span class="normal">451</span>
-<span class="normal">452</span>
-<span class="normal">453</span>
-<span class="normal">454</span>
-<span class="normal">455</span>
-<span class="normal">456</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">429</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -1609,7 +1582,7 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># A fully anonymized unique identifier that is automatically generated</span>
 <span class="c1"># by the application. Used for anonymous analytics when opted-in.</span>
-<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;fcc5153066ec65b36778c1a078e9b52c&quot;</span><span class="w"> </span><span class="c1"># string</span>
+<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;844e63e3fcbf422acc46ed97703acd7d&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># When set to True, disables functionality that requires making calls</span>
 <span class="c1"># to a Fides webserver.</span>
@@ -1885,33 +1858,6 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># The network address for the read-only Redis cache.</span>
 <span class="n">read_only_host</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w"> </span><span class="c1"># string</span>
-
-<span class="c1"># The port at which the read-only Redis cache will be accessible.</span>
-<span class="n">read_only_port</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">6379</span><span class="w"> </span><span class="c1"># integer</span>
-
-<span class="c1"># The user with which to login to the read-only Redis cache.</span>
-<span class="n">read_only_user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w"> </span><span class="c1"># string</span>
-
-<span class="c1"># The password with which to login to the read-only Redis cache.</span>
-<span class="n">read_only_password</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w"> </span><span class="c1"># string</span>
-
-<span class="c1"># The application will use this index in the read-only Redis cache to</span>
-<span class="c1"># cache data.</span>
-<span class="n">read_only_db_index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="c1"># integer</span>
-
-<span class="c1"># Whether the application&#39;s connections to the read-only cache should</span>
-<span class="c1"># be encrypted using TLS.</span>
-<span class="n">read_only_ssl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="c1"># boolean</span>
-
-<span class="c1"># If using TLS encryption, set this to &#39;required&#39; if you wish to</span>
-<span class="c1"># enforce the read-only Redis cache to provide a certificate. Note that</span>
-<span class="c1"># not all cache providers support this without setting ssl_ca_certs</span>
-<span class="c1"># (e.g. AWS Elasticache).</span>
-<span class="n">read_only_ssl_cert_reqs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;required&quot;</span><span class="w"> </span><span class="c1"># string</span>
-
-<span class="c1"># If using TLS encryption rooted with a custom Certificate Authority,</span>
-<span class="c1"># set this to the path of the CA certificate.</span>
-<span class="n">read_only_ssl_ca_certs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1">#--------------#</span>
 <span class="c1">#-- SECURITY --#</span>

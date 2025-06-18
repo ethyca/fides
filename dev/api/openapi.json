@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.63.3"
+    "version": "2.63.3b0.post0.dev10"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -3719,7 +3719,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ConnectionConfigurationResponse"
+                  "$ref": "#/components/schemas/ConnectionConfigurationResponseWithSystemKey"
                 }
               }
             }
@@ -15319,7 +15319,162 @@
           "created_at"
         ],
         "title": "ConnectionConfigurationResponse",
-        "description": "Describes the returned schema for a ConnectionConfiguration.\n\nThe mixin base class ensures that `secrets` sensitive values are masked."
+        "description": "Describes the returned schema for a ConnectionConfiguration."
+      },
+      "ConnectionConfigurationResponseWithSystemKey": {
+        "properties": {
+          "connection_type": {
+            "$ref": "#/components/schemas/ConnectionType"
+          },
+          "secrets": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Secrets"
+          },
+          "saas_config": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SaaSConfigBase"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "access": {
+            "$ref": "#/components/schemas/AccessLevel"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "disabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Disabled",
+            "default": false
+          },
+          "last_test_timestamp": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Test Timestamp"
+          },
+          "last_test_succeeded": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Test Succeeded"
+          },
+          "authorized": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Authorized",
+            "default": false
+          },
+          "enabled_actions": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ActionType"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enabled Actions"
+          },
+          "system_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System Key"
+          }
+        },
+        "type": "object",
+        "required": [
+          "connection_type",
+          "key",
+          "access",
+          "created_at"
+        ],
+        "title": "ConnectionConfigurationResponseWithSystemKey",
+        "description": "Describes the full returned schema for a ConnectionConfiguration."
       },
       "ConnectionSystemTypeMap": {
         "properties": {
@@ -26819,7 +26974,7 @@
                 "type": "null"
               }
             ],
-            "description": "\n    Describes the returned schema for a ConnectionConfiguration.\n\n    The mixin base class ensures that `secrets` sensitive values are masked.\n    "
+            "description": "\n    Describes the returned schema for a ConnectionConfiguration.\n    "
           },
           "data_stewards": {
             "anyOf": [
