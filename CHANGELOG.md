@@ -24,6 +24,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [2.63.3](https://github.com/ethyca/fides/compare/2.63.2...2.63.3)
 
+### Changed
+- Updated the `re-classify` button to avoid sending `monitored` fields back to classification [#6236](https://github.com/ethyca/fides/pull/6236)
 
 ## [2.63.2](https://github.com/ethyca/fides/compare/2.63.1...2.63.2)
 
