@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Optional, cast
 
 from loguru import logger
 from sqlalchemy import select
@@ -7,9 +7,7 @@ from sqlalchemy.orm import Session
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.manual_tasks.manual_task import ManualTask, ManualTaskReference
 from fides.api.models.manual_tasks.manual_task_config import ManualTaskConfig
-from fides.api.models.manual_tasks.manual_task_log import ManualTaskLog
 from fides.api.schemas.manual_tasks.manual_task_schemas import (
-    ManualTaskLogStatus,
     ManualTaskParentEntityType,
     ManualTaskReferenceType,
     ManualTaskType,
@@ -17,6 +15,7 @@ from fides.api.schemas.manual_tasks.manual_task_schemas import (
 from fides.service.manual_tasks.manual_task_config_service import (
     ManualTaskConfigService,
 )
+from fides.service.manual_tasks.utils import with_task_logging
 
 
 class ManualTaskService:
@@ -30,7 +29,7 @@ class ManualTaskService:
         parent_entity_id: Optional[str] = None,
         parent_entity_type: Optional[ManualTaskParentEntityType] = None,
         task_type: Optional[ManualTaskType] = None,
-    ) -> Optional[ManualTask]:
+    ) -> ManualTask:
         """Get the manual task using provided filters.
 
         This is a flexible lookup method that can find tasks based on various filters.
@@ -43,119 +42,203 @@ class ManualTaskService:
             task_type: The task type
 
         Returns:
-            Optional[ManualTask]: The matching task if found, None otherwise
+            ManualTask: The matching task
         """
         if not any([task_id, parent_entity_id, parent_entity_type, task_type]):
-            logger.debug("No filters provided to get_task. Returning None.")
-            return None
+            logger.debug("No filters provided to get_task")
+            raise ValueError("No filters provided to get_task")
 
-        # Build filter conditions
+        # Build filter conditions and a human-readable description
         filters = []
+        filter_desc = []
         if task_id:
             filters.append(ManualTask.id == task_id)
+            filter_desc.append(f"task_id={task_id}")
         if parent_entity_id:
             filters.append(ManualTask.parent_entity_id == parent_entity_id)
+            filter_desc.append(f"parent_entity_id={parent_entity_id}")
         if parent_entity_type:
             filters.append(ManualTask.parent_entity_type == parent_entity_type)
+            filter_desc.append(f"parent_entity_type={parent_entity_type}")
         if task_type:
             filters.append(ManualTask.task_type == task_type)
+            filter_desc.append(f"task_type={task_type}")
 
         # Apply all filters at once
         stmt = select(ManualTask)  # type: ignore[arg-type]
         if filters:
             stmt = stmt.where(*filters)
 
-        return self.db.execute(stmt).scalar_one_or_none()
+        task = self.db.execute(stmt).scalar_one_or_none()
+        if task is None:
+            logger.debug(f"No task found with filters: {filter_desc}")
+            raise ValueError(f"No task found with filters: {filter_desc}")
+        return task
 
-    # User Management
-    def assign_users_to_task(
-        self, db: Session, task: ManualTask, user_ids: list[str]
+    @with_task_logging("Provided user IDs verified")
+    def _non_existent_users(
+        self, non_existent_user_ids: list[str], *, task_id: str
     ) -> None:
-        """Assigns users to this task. We can assign one or more users to a task.
+        """This is a helper function to raise an error if users do not exist.
+        If non_existent_user_ids is empty, this function will instead create
+        a success log entry.
 
         Args:
-            db: Database session
-            task: The task to assign users to
-            user_ids: List of user IDs to assign
+            non_existent_user_ids: List of non-existent user IDs
+            task_id: The task ID
+
+        Returns:
+            None
         """
-        user_ids = list(set(user_ids))  # Remove duplicates
-        if not user_ids:
-            raise ValueError("User ID is required for assignment")
+        if len(non_existent_user_ids) > 0:
+            raise ValueError(
+                f"User(s) {sorted(list(non_existent_user_ids))} do not exist"
+            )
 
-        # Get current assigned users
-        current_assigned_users = set(task.assigned_users)
+    def _create_log_data(self, task_id: str, details: dict[str, Any]) -> dict[str, Any]:
+        """Create standard log data structure.
 
-        # Get all existing users to assign
-        existing_users = set(
+        Args:
+            task_id: The task ID
+            details: The log details
+
+        Returns:
+            dict: The log data structure
+        """
+        return {
+            "task_id": task_id,
+            "details": details,
+        }
+
+    def _handle_user_errors(
+        self,
+        non_existent_users: list[str],
+        task_id: str,
+        details: dict[str, Any],
+        success_count: int,
+        error_key: str,
+    ) -> None:
+        """Handle errors for non-existent users.
+
+        Args:
+            non_existent_users: List of non-existent user IDs
+            task_id: The task ID
+            details: The log details to update
+            success_count: Number of successful operations
+            error_key: Key to use for error details
+
+        Raises:
+            ValueError: If no successful operations and users don't exist
+        """
+        try:
+            self._non_existent_users(non_existent_users, task_id=task_id)
+        except ValueError as e:
+            details[error_key] = sorted(non_existent_users)
+            if success_count == 0:
+                raise e
+
+    def _get_existing_users(self, user_ids: list[str]) -> set[str]:
+        """Get set of existing user IDs from the provided list.
+
+        Args:
+            user_ids: List of user IDs to check
+
+        Returns:
+            set: Set of existing user IDs
+        """
+        return set(
             user.id
-            for user in db.query(FidesUser).filter(FidesUser.id.in_(user_ids)).all()
+            for user in self.db.query(FidesUser)
+            .filter(FidesUser.id.in_(user_ids))
+            .all()
         )
-        users_to_assign = existing_users - current_assigned_users
 
-        # Prepare bulk insert data for valid assignments
-        assignments_to_create = [
-            {
-                "task_id": task.id,
-                "reference_id": user_id,
-                "reference_type": ManualTaskReferenceType.assigned_user,
-            }
-            for user_id in users_to_assign
-        ]
-
-        # Create assignments in bulk
-        if assignments_to_create:
-            db.bulk_insert_mappings(ManualTaskReference, assignments_to_create)
-            db.flush()
-            db.refresh(task)
-
-        # Log successful assignments and errors in bulk
-        log_entries = []
-        for user_id in user_ids:
-            if user_id not in existing_users:
-                # Log error for non-existent users
-                log_entries.append(
-                    {
-                        "task_id": task.id,
-                        "status": ManualTaskLogStatus.error,
-                        "message": f"Failed to add user {user_id} to task {task.id}: user does not exist",
-                        "details": {"user_id": user_id},
-                    }
-                )
-            elif user_id in users_to_assign:
-                # Only log successful assignments for newly assigned users
-                log_entries.append(
-                    {
-                        "task_id": task.id,
-                        "status": ManualTaskLogStatus.updated,
-                        "message": f"User {user_id} assigned to task",
-                        "details": {"assigned_user_id": user_id},
-                    }
-                )
-            # No log entry for already assigned users
-
-        # Create logs in bulk
-        if log_entries:
-            db.bulk_insert_mappings(ManualTaskLog, log_entries)
-            db.flush()
-            db.refresh(task)
-
-    def unassign_users_from_task(
-        self, db: Session, task: ManualTask, user_ids: list[str]
-    ) -> None:
-        """Remove the user assignment from this task.
+    def _handle_user_operation(
+        self,
+        task_id: str,
+        user_ids: list[str],
+        operation_type: str,
+        current_users: Optional[set[str]] = None,
+    ) -> tuple[set[str], dict[str, Any]]:
+        """Handle user assignment/unassignment operations.
 
         Args:
-            db: Database session
-            task: The task to unassign users from
-            user_ids: List of user IDs to unassign
-        """
-        user_ids = list(set(user_ids))  # Remove duplicates
-        if not user_ids:
-            raise ValueError("User ID is required for unassignment")
+            task_id: The task ID
+            user_ids: List of user IDs to process
+            operation_type: Type of operation ('assign' or 'unassign')
+            current_users: Optional set of current users
 
-        # Get references to unassign in a single query
-        references_to_unassign = (
-            db.query(ManualTaskReference)
+        Returns:
+            tuple: (processed_users, log_data)
+        """
+        if not (user_ids := list(set(user_ids))):
+            raise ValueError(f"User ID is required for {operation_type}ment")
+
+        existing_users = set(
+            u.id
+            for u in self.db.query(FidesUser).filter(FidesUser.id.in_(user_ids)).all()
+        )
+        processed_users = (
+            existing_users - (current_users or set())
+            if operation_type == "assign"
+            else existing_users
+        )
+        details = {f"{operation_type}ed_users": sorted(list(processed_users))}
+
+        if non_existing := list(set(user_ids) - existing_users):
+            try:
+                self._non_existent_users(non_existing, task_id=task_id)
+            except ValueError as e:
+                details[f"user_ids_not_{operation_type}ed"] = sorted(non_existing)
+                if not processed_users:
+                    raise e
+
+        return processed_users, {"task_id": task_id, "details": details}
+
+    @with_task_logging("Assign users to task")
+    def assign_users_to_task(
+        self, task_id: str, user_ids: list[str]
+    ) -> tuple[ManualTask, dict[str, Any]]:
+        """Assign users to a task.
+
+        Args:
+            task_id: The task ID
+            user_ids: List of user IDs to assign
+
+        Returns:
+            Tuple containing the task and log data, the log data is
+            captured by the with_task_logging decorator. and the task is
+            returned to the caller.
+        """
+        task = self.get_task(task_id=task_id)
+        users_to_assign, log_data = self._handle_user_operation(
+            task_id, user_ids, "assign", set(task.assigned_users)
+        )
+
+        if users_to_assign:
+            self.db.bulk_insert_mappings(
+                ManualTaskReference,
+                [
+                    {
+                        "task_id": task.id,
+                        "reference_id": user_id,
+                        "reference_type": ManualTaskReferenceType.assigned_user,
+                    }
+                    for user_id in users_to_assign
+                ],
+            )
+            self.db.flush()
+            self.db.refresh(task)
+
+        return task, log_data
+
+    @with_task_logging("Unassign users from task")
+    def unassign_users_from_task(
+        self, task_id: str, user_ids: list[str]
+    ) -> tuple[ManualTask, dict[str, Any]]:
+        task = self.get_task(task_id=task_id)
+        refs_to_unassign = (
+            self.db.query(ManualTaskReference)
             .filter(
                 ManualTaskReference.task_id == task.id,
                 ManualTaskReference.reference_type
@@ -165,80 +248,47 @@ class ManualTaskService:
             .all()
         )
 
-        if references_to_unassign:
-            # Capture reference IDs before deletion
-            reference_ids = [ref.id for ref in references_to_unassign]
-            unassigned_user_ids = [ref.reference_id for ref in references_to_unassign]
-
-            # Delete references in bulk
-            db.query(ManualTaskReference).filter(
-                ManualTaskReference.id.in_(reference_ids)
+        if refs_to_unassign:
+            self.db.query(ManualTaskReference).filter(
+                ManualTaskReference.id.in_([ref.id for ref in refs_to_unassign])
             ).delete(synchronize_session=False)
-            db.flush()
-            db.refresh(task)
+            self.db.flush()
+            self.db.refresh(task)
 
-            # Prepare log entries for successful unassignments using captured user IDs
-            log_entries = [
-                {
-                    "task_id": task.id,
-                    "status": ManualTaskLogStatus.updated,
-                    "message": f"User {user_id} unassigned from task",
-                    "details": {"unassigned_user_id": user_id},
-                }
-                for user_id in unassigned_user_ids
-            ]
-
-            # Create logs in bulk
-            if log_entries:
-                db.bulk_insert_mappings(ManualTaskLog, log_entries)
-                db.flush()
-                db.refresh(task)
-
-        # Check if any users weren't unassigned
-        unassigned_user_ids_set = (
-            set(unassigned_user_ids) if references_to_unassign else set()
-        )
-        left_over_user_ids = [
-            user_id for user_id in user_ids if user_id not in unassigned_user_ids_set
-        ]
-        if left_over_user_ids:
-            logger.debug(
-                f"Users {left_over_user_ids} were not unassigned from task {task.id}: "
-                "users were not assigned to the task"
-            )
+        _, log_data = self._handle_user_operation(task_id, user_ids, "unassign")
+        return task, log_data
 
     def create_config(
-        self, task: ManualTask, config_type: str, fields: list[dict]
-    ) -> None:
+        self, config_type: str, fields: list[dict], task_id: str
+    ) -> ManualTaskConfig:
         """Create a new config for a task.
 
         Args:
-            db: Database session
-            task_id: The task ID
             config_type: The config type
             fields: The fields for the config
-        """
-        self.config_service.create_new_version(task, config_type, fields)
+            task_id: The task ID
 
-    def delete_config(self, task: ManualTask, config: ManualTaskConfig) -> None:
+        Returns:
+            ManualTaskConfig: The new config
+        """
+        task = self.get_task(task_id=task_id)
+        config = self.config_service.create_new_version(task, config_type, fields)
+        return cast(ManualTaskConfig, config)
+
+    def delete_config(self, config: ManualTaskConfig, task_id: str) -> None:
         """Delete this configuration.
         Args:
-            db: Database session
-            task: The task to delete the config from
             config: The config to delete
+            task_id: The task ID
         Raises:
             ValueError: If there are active instances using this configuration
-        """
-        # TODO: when instances are implemented, we need to check for active instances
+            ValueError: If the task does not exist
 
-        # Log the deletion
-        ManualTaskLog.create_log(
-            db=self.db,
-            task_id=task.id,
-            config_id=None,
-            status=ManualTaskLogStatus.complete,
-            message=f"Deleted manual task configuration for {config.config_type}",
-        )
+        Returns:
+            dict[str, Any]: The log details - intercepted by the `with_task_logging` decorator.
+        """
+        task = self.get_task(task_id=task_id)
 
         # Delete the configuration
-        self.config_service.delete_config(task, config.id)
+        config_id = config.id
+        self.config_service.delete_config(task, config_id)

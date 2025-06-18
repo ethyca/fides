@@ -115,10 +115,6 @@ export const DiscoveredAssetsTable = ({
 
   const toast = useToast();
 
-  useEffect(() => {
-    resetPageIndexToDefault();
-  }, [monitorId, searchQuery, resetPageIndexToDefault]);
-
   const {
     filterTabs,
     filterTabIndex,
@@ -126,6 +122,10 @@ export const DiscoveredAssetsTable = ({
     activeParams,
     actionsDisabled,
   } = useActionCenterTabs({ systemId, initialHash: tabHash });
+
+  useEffect(() => {
+    resetPageIndexToDefault();
+  }, [monitorId, searchQuery, filterTabIndex, resetPageIndexToDefault]);
 
   const { data, isLoading, isFetching } = useGetDiscoveredAssetsQuery({
     key: monitorId,
@@ -139,7 +139,7 @@ export const DiscoveredAssetsTable = ({
     if (data) {
       const firstSystemName =
         data.items[0]?.system || systemName || systemId || "";
-      setTotalPages(data.pages || 1);
+      setTotalPages(data.pages ?? 1);
       setSystemName(firstSystemName);
       onSystemName?.(firstSystemName);
     }
