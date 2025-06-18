@@ -400,6 +400,7 @@ export const initialize = async ({
           fidesRegionString,
           fidesOptions: options,
           i18n,
+          propertyId,
         }),
       );
     } else {

@@ -859,7 +859,7 @@ export type PrivacyPreferencesRequest = {
   system_consent_preferences?: Array<TCFVendorSave>;
   system_legitimate_interests_preferences?: Array<TCFVendorSave>;
   policy_key?: string;
-  property_id?: string;
+  property_id: string | undefined;
 
   /**
    * @deprecated has no effect; use privacy_experience_config_history_id instead!
@@ -935,7 +935,7 @@ export type RecordConsentServedRequest = {
   user_geography?: string;
   acknowledge_mode?: boolean;
   serving_component: string; // NOTE: uses a generic string instead of an enum
-  property_id?: string;
+  property_id: string | undefined;
 };
 
 /**

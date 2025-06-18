@@ -156,6 +156,7 @@ describe("automaticallyApplyPreferences", () => {
         fidesRegionString: "us",
         fidesOptions: mockOptions,
         i18n: mockI18n,
+        propertyId: undefined,
       });
 
       expect(result).toBe(true);
@@ -192,6 +193,7 @@ describe("automaticallyApplyPreferences", () => {
         fidesRegionString: "us",
         fidesOptions: mockOptions,
         i18n: mockI18n,
+        propertyId: undefined,
       });
 
       expect(result).toBe(false);
@@ -212,6 +214,7 @@ describe("automaticallyApplyPreferences", () => {
         fidesRegionString: "us",
         fidesOptions: mockOptions,
         i18n: mockI18n,
+        propertyId: undefined,
       });
 
       expect(result).toBe(true);
@@ -262,6 +265,7 @@ describe("automaticallyApplyPreferences", () => {
         fidesRegionString: "us",
         fidesOptions: mockOptions,
         i18n: mockI18n,
+        propertyId: undefined,
       });
 
       expect(result).toBe(true);
@@ -308,6 +312,7 @@ describe("automaticallyApplyPreferences", () => {
         fidesRegionString: "us",
         fidesOptions: mockOptions,
         i18n: mockI18n,
+        propertyId: undefined,
       });
 
       expect(result).toBe(false);
@@ -379,6 +384,7 @@ describe("automaticallyApplyPreferences", () => {
         fidesRegionString: "eea",
         fidesOptions: mockOptions,
         i18n: mockI18n,
+        propertyId: undefined,
       });
 
       expect(result).toBe(true);
