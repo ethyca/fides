@@ -178,7 +178,9 @@ export const updateConsentPreferences = async ({
         cookie,
         experience,
         consentMethod,
-        propertyId || window.Fides.config!.propertyId,
+        (propertyId?.length ?? 0) > 0
+          ? propertyId
+          : window.Fides.config!.propertyId,
         privacyExperienceConfigHistoryId,
         consentPreferencesToSave,
         tcf,
