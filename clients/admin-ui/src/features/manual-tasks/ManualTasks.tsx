@@ -12,15 +12,13 @@ export const ManualTasks = () => {
   };
 
   return (
-    <div className="p-4">
-      <div className="mb-4">
-        <DebouncedSearchInput
-          placeholder="Search by name or description..."
-          value={searchTerm}
-          onChange={handleSearchChange}
-          className="max-w-sm"
-        />
-      </div>
+    <div className="space-y-4 p-4">
+      <DebouncedSearchInput
+        placeholder="Search by name or description..."
+        value={searchTerm}
+        onChange={handleSearchChange}
+        className="max-w-sm"
+      />
 
       <ManualTasksTable searchTerm={searchTerm} />
     </div>

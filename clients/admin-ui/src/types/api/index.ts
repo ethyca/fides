@@ -588,3 +588,5 @@ export type { ManualTaskFilters } from "./models/ManualTask";
 export type { ManualTasksResponse } from "./models/ManualTask";
 export type { SkipTaskPayload } from "./models/ManualTask";
 export type { TaskActionResponse } from "./models/ManualTask";
+export * from "./models/ManualTask";
+export * from "./models/Page_ManualTask_";
