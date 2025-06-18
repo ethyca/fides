@@ -46,15 +46,16 @@ class QueryConfig(Generic[T], ABC):
         self.node = node
 
     @property
-    def partitioning(
+    def partitioning(  # pylint: disable=useless-return
         self,
-    ) -> Optional[Union[Dict, List[Dict]]]:  # pylint: disable=R1711
+    ) -> Optional[Union[Dict, List[Dict]]]:
         # decided to de-scope partitioning support to only bigquery as this grew more complex,
         # but keeping more generic support stubbed out feels like a reasonable step.
         if self.node.collection.partitioning:
             logger.warning(
                 "Partitioning is only supported on BigQuery connectors at this time!"
             )
+        return None
 
     def field_map(self) -> Dict[FieldPath, Field]:
         """Flattened FieldPaths of interest from this traversal_node."""
