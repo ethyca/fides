@@ -25,6 +25,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added support for Salesforce custom object monitoring using Helios [#6096](https://github.com/ethyca/fides/pull/6096)
 - Added ManualTaskConfig and ManualTaskConfigField models, foundational for for ManualDSRs [#6208](https://github.com/ethyca/fides/pull/6208) https://github.com/ethyca/fides/labels/db-migration
 - Adds config for sale_of_data default in Fides Shopify integration [#6233](https://github.com/ethyca/fides/pull/6233)
+- Added detailed trigger tracking to all FidesJS events including element type, label, and interaction origin [#6229](https://github.com/ethyca/fides/pull/6229)
 - Added validation for URLs in website integration forms [#6230](https://github.com/ethyca/fides/pull/6230)
 
 ### Changed
