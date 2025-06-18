@@ -486,7 +486,7 @@ class TimeBasedPartitioning(FidesSchema):
         field_column: ColumnElement,
         value: int,
         unit: TimeUnit,
-    ) -> List[ColumnElement] | None:
+    ) -> Optional[List[ColumnElement]]:
         """Generate slices for dynamic ranges expressed in months or years.
 
         Supported patterns
