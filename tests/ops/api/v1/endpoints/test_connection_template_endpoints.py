@@ -67,6 +67,8 @@ class TestGetConnections:
             "authorization_required": False,
             "user_guide": None,
             "supported_actions": [ActionType.access.value, ActionType.erasure.value],
+            "file_connector_available": False,
+            "is_custom": False,
         } in data
         first_saas_type = ConnectorRegistry.connector_types().pop()
         first_saas_template = ConnectorRegistry.get_connector_template(first_saas_type)
@@ -80,6 +82,8 @@ class TestGetConnections:
             "supported_actions": [
                 action.value for action in first_saas_template.supported_actions
             ],
+            "file_connector_available": False,
+            "is_custom": False,
         } in data
         assert "saas" not in [item["identifier"] for item in data]
         assert "https" not in [item["identifier"] for item in data]
@@ -162,6 +166,8 @@ class TestGetConnections:
                 "supported_actions": [
                     action.value for action in saas_template[1].supported_actions
                 ],
+                "file_connector_available": saas_template[1].file_connector_available,
+                "is_custom": saas_template[1].is_custom,
             }
             for saas_template in expected_saas_templates
         ]
@@ -211,6 +217,8 @@ class TestGetConnections:
             "authorization_required": False,
             "user_guide": None,
             "supported_actions": [ActionType.access.value, ActionType.erasure.value],
+            "file_connector_available": False,
+            "is_custom": False,
         } in data
         assert {
             "identifier": ConnectionType.redshift.value,
@@ -220,6 +228,8 @@ class TestGetConnections:
             "authorization_required": False,
             "user_guide": None,
             "supported_actions": [ActionType.access.value, ActionType.erasure.value],
+            "file_connector_available": False,
+            "is_custom": False,
         } in data
         assert {
             "identifier": ConnectionType.dynamic_erasure_email.value,
@@ -229,6 +239,8 @@ class TestGetConnections:
             "authorization_required": False,
             "user_guide": None,
             "supported_actions": [ActionType.erasure.value],
+            "file_connector_available": False,
+            "is_custom": False,
         } in data
         for expected_data in expected_saas_data:
             assert expected_data in data, f"{expected_data} not in"
@@ -258,6 +270,8 @@ class TestGetConnections:
                 "supported_actions": [
                     action.value for action in saas_template[1].supported_actions
                 ],
+                "file_connector_available": saas_template[1].file_connector_available,
+                "is_custom": saas_template[1].is_custom,
             }
             for saas_template in expected_saas_types
         ]
@@ -276,6 +290,8 @@ class TestGetConnections:
             "authorization_required": False,
             "user_guide": None,
             "supported_actions": [ActionType.access.value, ActionType.erasure.value],
+            "file_connector_available": False,
+            "is_custom": False,
         } in data
 
         for expected_data in expected_saas_data:
@@ -318,6 +334,8 @@ class TestGetConnections:
             "authorization_required": False,
             "user_guide": None,
             "supported_actions": [ActionType.access, ActionType.erasure],
+            "file_connector_available": False,
+            "is_custom": False,
         } in data
         assert {
             "identifier": ConnectionType.redshift.value,
@@ -327,6 +345,8 @@ class TestGetConnections:
             "authorization_required": False,
             "user_guide": None,
             "supported_actions": [ActionType.access, ActionType.erasure],
+            "file_connector_available": False,
+            "is_custom": False,
         } in data
         assert {
             "identifier": ConnectionType.dynamic_erasure_email.value,
@@ -336,6 +356,8 @@ class TestGetConnections:
             "authorization_required": False,
             "user_guide": None,
             "supported_actions": [ActionType.erasure.value],
+            "file_connector_available": False,
+            "is_custom": False,
         } in data
 
         for expected_data in expected_saas_data:
@@ -404,6 +426,8 @@ class TestGetConnections:
                     ActionType.access.value,
                     ActionType.erasure.value,
                 ],
+                "file_connector_available": False,
+                "is_custom": False,
             }
         ]
 
@@ -423,6 +447,8 @@ class TestGetConnections:
                 "authorization_required": False,
                 "user_guide": None,
                 "supported_actions": [ActionType.erasure.value],
+                "file_connector_available": False,
+                "is_custom": False,
             },
             {
                 "encoded_icon": None,
@@ -432,6 +458,8 @@ class TestGetConnections:
                 "authorization_required": False,
                 "user_guide": None,
                 "supported_actions": [ActionType.erasure.value],
+                "file_connector_available": False,
+                "is_custom": False,
             },
             {
                 "encoded_icon": None,
@@ -441,6 +469,8 @@ class TestGetConnections:
                 "authorization_required": False,
                 "user_guide": None,
                 "supported_actions": [ActionType.consent.value],
+                "file_connector_available": False,
+                "is_custom": False,
             },
             {
                 "encoded_icon": None,
@@ -450,6 +480,8 @@ class TestGetConnections:
                 "authorization_required": False,
                 "user_guide": None,
                 "supported_actions": [ActionType.erasure.value],
+                "file_connector_available": False,
+                "is_custom": False,
             },
             {
                 "encoded_icon": None,
@@ -459,6 +491,8 @@ class TestGetConnections:
                 "authorization_required": False,
                 "user_guide": None,
                 "supported_actions": [ActionType.consent.value],
+                "file_connector_available": False,
+                "is_custom": False,
             },
         ]
 
@@ -510,6 +544,8 @@ class TestGetConnectionsActionTypeParams:
                     ActionType.access.value,
                     ActionType.erasure.value,
                 ],
+                "file_connector_available": False,
+                "is_custom": False,
             },
             ConnectionType.manual_webhook.value: {
                 "identifier": ConnectionType.manual_webhook.value,
@@ -522,6 +558,8 @@ class TestGetConnectionsActionTypeParams:
                     ActionType.access.value,
                     ActionType.erasure.value,
                 ],
+                "file_connector_available": False,
+                "is_custom": False,
             },
             HUBSPOT: {
                 "identifier": HUBSPOT,
@@ -533,6 +571,8 @@ class TestGetConnectionsActionTypeParams:
                 "supported_actions": [
                     action.value for action in hubspot_template.supported_actions
                 ],
+                "file_connector_available": False,
+                "is_custom": False,
             },
             MAILCHIMP: {
                 "identifier": MAILCHIMP,
@@ -544,6 +584,8 @@ class TestGetConnectionsActionTypeParams:
                 "supported_actions": [
                     action.value for action in mailchimp_template.supported_actions
                 ],
+                "file_connector_available": False,
+                "is_custom": False,
             },
             STRIPE: {
                 "identifier": STRIPE,
@@ -555,6 +597,8 @@ class TestGetConnectionsActionTypeParams:
                 "supported_actions": [
                     action.value for action in stripe_template.supported_actions
                 ],
+                "file_connector_available": False,
+                "is_custom": False,
             },
             ConnectionType.sovrn.value: {
                 "identifier": ConnectionType.sovrn.value,
@@ -564,6 +608,8 @@ class TestGetConnectionsActionTypeParams:
                 "authorization_required": False,
                 "user_guide": None,
                 "supported_actions": [ActionType.consent.value],
+                "file_connector_available": False,
+                "is_custom": False,
             },
             ConnectionType.attentive_email.value: {
                 "identifier": ConnectionType.attentive_email.value,
@@ -573,6 +619,8 @@ class TestGetConnectionsActionTypeParams:
                 "authorization_required": False,
                 "user_guide": None,
                 "supported_actions": [ActionType.erasure.value],
+                "file_connector_available": False,
+                "is_custom": False,
             },
         }
 
