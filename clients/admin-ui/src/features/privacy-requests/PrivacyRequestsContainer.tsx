@@ -47,7 +47,7 @@ const PrivacyRequestsContainer = () => {
     if (availableTabs.manualTask) {
       items.push({
         key: PRIVACY_REQUEST_TABS.MANUAL_TASK,
-        label: "Manual task",
+        label: "Manual tasks",
         children: <ManualTaskTab />,
       });
     }
