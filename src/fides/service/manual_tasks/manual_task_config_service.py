@@ -18,6 +18,7 @@ from fides.service.manual_tasks.utils import validate_fields, with_task_logging
 class ManualTaskConfigNotFoundError(Exception):
     """Exception raised when a manual task config is not found."""
 
+<<<<<<< ENG-762-add-manual-task-to-privacy-req
     pass
 
 
@@ -31,6 +32,14 @@ class ManualTaskConfigService:
         """Create standard log data structure."""
         return {"task_id": task_id, "config_id": config_id, "details": details}
 
+=======
+    def _create_log_data(
+        self, task_id: str, config_id: Optional[str], details: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Create standard log data structure."""
+        return {"task_id": task_id, "config_id": config_id, "details": details}
+
+>>>>>>> main
     def _get_base_config_query(self) -> Query:
         """Get base config query with field definitions loaded."""
         return self.db.query(ManualTaskConfig).options(
@@ -173,7 +182,11 @@ class ManualTaskConfigService:
         )
 
         if not config:
+<<<<<<< ENG-762-add-manual-task-to-privacy-req
             raise ManualTaskConfigNotFoundError(
+=======
+            raise ValueError(
+>>>>>>> main
                 f"No current config found for task {task.id} and type {config_type}"
             )
         return config

@@ -101,11 +101,13 @@ class ManualTaskService:
             raise ManualTaskNotFoundError(f"No task found with filters: {filter_desc}")
         return task
 
-    @with_task_logging("Verify user IDs")
+    @with_task_logging("Provided user IDs verified")
     def _non_existent_users(
         self, non_existent_user_ids: list[str], *, task_id: str
     ) -> None:
-        """Get users by their IDs.
+        """This is a helper function to raise an error if users do not exist.
+        If non_existent_user_ids is empty, this function will instead create
+        a success log entry.
 
         Args:
             non_existent_user_ids: List of non-existent user IDs
