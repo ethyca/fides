@@ -67,6 +67,8 @@ const IntegrationBox = ({
     <Box
       borderWidth={1}
       borderColor={selected ? "black" : "gray.200"}
+      backgroundColor={selected ? "gray.50" : "transparent"}
+      boxShadow={selected ? "md" : "none"}
       borderRadius="lg"
       overflow="hidden"
       padding="12px"

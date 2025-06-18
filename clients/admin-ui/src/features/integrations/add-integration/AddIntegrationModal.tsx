@@ -88,9 +88,10 @@ const AddIntegrationModal = ({
     }
   };
 
-  const modalTitle = integrationType
-    ? `${integrationType.placeholder.name} Integration`
-    : "Add integration";
+  const modalTitle =
+    integrationType && step !== IntegrationModalStep.LIST_VIEW
+      ? `${integrationType.placeholder.name} Integration`
+      : "Add integration";
 
   const renderFooterButtons = () => {
     if (step === IntegrationModalStep.LIST_VIEW) {
