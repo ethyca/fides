@@ -407,6 +407,9 @@ describe("Consent settings", () => {
                 extraDetails: {
                   consentMethod: undefined,
                   shouldShowExperience: false,
+                  trigger: {
+                    origin: "fides",
+                  },
                 },
                 fides_string: undefined,
                 timestamp,

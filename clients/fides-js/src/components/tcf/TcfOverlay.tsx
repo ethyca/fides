@@ -24,7 +24,12 @@ import {
   consentCookieObjHasSomeConsentSet,
   getFidesConsentCookie,
 } from "../../lib/cookie";
-import { dispatchFidesEvent } from "../../lib/events";
+import {
+  dispatchFidesEvent,
+  FidesEventDetailsPreference,
+  FidesEventDetailsServingComponent,
+  FidesEventTargetType,
+} from "../../lib/events";
 import { useNoticesServed } from "../../lib/hooks";
 import {
   DEFAULT_LOCALE,
@@ -38,6 +43,7 @@ import {
 } from "../../lib/i18n";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { updateConsentPreferences } from "../../lib/preferences";
+import { useEvent } from "../../lib/providers/event-context";
 import { EMPTY_ENABLED_IDS } from "../../lib/tcf/constants";
 import { useGvl } from "../../lib/tcf/gvl-context";
 import {
@@ -95,6 +101,13 @@ export const TcfOverlay = ({
     setCurrentLocale,
     setIsLoading: setIsI18nLoading,
   } = useI18n();
+  const {
+    triggerRef,
+    setTrigger,
+    servingComponentRef,
+    setServingComponent,
+    dispatchFidesEventAndClearTrigger,
+  } = useEvent();
   const parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
   const minExperienceLocale =
     experienceMinimal?.experience_config?.translations?.[0]?.language;
@@ -359,6 +372,10 @@ export const TcfOverlay = ({
         options,
         userLocationString: fidesRegionString,
         cookie,
+        eventExtraDetails: {
+          servingComponent: servingComponentRef.current,
+          trigger: triggerRef.current,
+        },
         tcf,
         servedNoticeHistoryId,
         updateCookie: (oldCookie) =>
@@ -369,6 +386,8 @@ export const TcfOverlay = ({
             experienceFull || experienceMinimal,
             consentPreferencesToSave,
           ),
+      }).finally(() => {
+        setTrigger(undefined);
       });
       setDraftIds(enabledIds);
     },
@@ -381,6 +400,9 @@ export const TcfOverlay = ({
       privacyExperienceConfigHistoryId,
       privacyNoticesWithBestTranslation,
       servedNoticeHistoryId,
+      triggerRef,
+      setTrigger,
+      servingComponentRef,
     ],
   );
 
@@ -505,22 +527,48 @@ export const TcfOverlay = ({
   const [activeTabIndex, setActiveTabIndex] = useState(0);
 
   const dispatchOpenBannerEvent = useCallback(() => {
-    dispatchFidesEvent("FidesUIShown", cookie, {
-      servingComponent: ServingComponent.TCF_BANNER,
-    });
-  }, [cookie]);
+    setServingComponent(ServingComponent.TCF_BANNER);
+    dispatchFidesEventAndClearTrigger("FidesUIShown", cookie);
+  }, [cookie, dispatchFidesEventAndClearTrigger, setServingComponent]);
 
-  const dispatchOpenOverlayEvent = useCallback(() => {
-    dispatchFidesEvent("FidesUIShown", cookie, {
-      servingComponent: ServingComponent.TCF_OVERLAY,
-    });
-  }, [cookie]);
+  const dispatchOpenOverlayEvent = useCallback(
+    (origin?: string) => {
+      setServingComponent(ServingComponent.TCF_OVERLAY);
+      dispatchFidesEventAndClearTrigger("FidesUIShown", cookie, {
+        trigger: {
+          origin,
+        },
+      });
+    },
+    [cookie, dispatchFidesEventAndClearTrigger, setServingComponent],
+  );
 
   const handleDismiss = useCallback(() => {
     if (!consentCookieObjHasSomeConsentSet(parsedCookie?.consent)) {
       handleUpdateAllPreferences(ConsentMethod.DISMISS, draftIds);
     }
   }, [handleUpdateAllPreferences, draftIds, parsedCookie?.consent]);
+
+  const handleToggleChange = useCallback(
+    (updatedIds: EnabledIds, preference: FidesEventDetailsPreference) => {
+      const eventExtraDetails: FidesEvent["detail"]["extraDetails"] = {
+        servingComponent:
+          servingComponentRef.current as FidesEventDetailsServingComponent,
+        trigger: triggerRef.current,
+        preference,
+      };
+      setDraftIds(updatedIds);
+      dispatchFidesEvent("FidesUIChanged", cookie, eventExtraDetails);
+    },
+    [cookie, setDraftIds, triggerRef, servingComponentRef],
+  );
+
+  const handleTabChange = useCallback(
+    (tabIndex: number) => {
+      setActiveTabIndex(tabIndex);
+    },
+    [setActiveTabIndex],
+  );
 
   const experienceConfig =
     experienceFull?.experience_config || experienceMinimal.experience_config;
@@ -596,22 +644,9 @@ export const TcfOverlay = ({
                 experience={experienceFull}
                 customNotices={privacyNoticesWithBestTranslation}
                 enabledIds={draftIds}
-                onChange={(updatedIds, triggerDetails, preference) => {
-                  const eventExtraDetails: FidesEvent["detail"]["extraDetails"] =
-                    {
-                      servingComponent: "modal",
-                      trigger: triggerDetails,
-                      preference,
-                    };
-                  setDraftIds(updatedIds);
-                  dispatchFidesEvent(
-                    "FidesUIChanged",
-                    cookie,
-                    eventExtraDetails,
-                  );
-                }}
+                onChange={handleToggleChange}
                 activeTabIndex={activeTabIndex}
-                onTabChange={setActiveTabIndex}
+                onTabChange={handleTabChange}
               />
             )
       }
@@ -641,7 +676,13 @@ export const TcfOverlay = ({
                     <Button
                       buttonType={ButtonType.SECONDARY}
                       label={i18n.t("exp.save_button_label")}
-                      onClick={() => onSave(ConsentMethod.SAVE, draftIds)}
+                      onClick={() => {
+                        setTrigger({
+                          type: FidesEventTargetType.BUTTON,
+                          label: i18n.t("exp.save_button_label"),
+                        });
+                        onSave(ConsentMethod.SAVE, draftIds);
+                      }}
                       className="fides-save-button"
                     />
                   )}
