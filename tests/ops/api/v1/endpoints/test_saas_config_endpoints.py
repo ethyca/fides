@@ -25,11 +25,26 @@ from fides.common.api.v1.urn_registry import (
     REGISTER_CONNECTOR_TEMPLATE,
     SAAS_CONFIG,
     SAAS_CONFIG_VALIDATE,
+    UPDATE_CUSTOM_TEMPLATE_TO_FILE_TEMPLATE,
     V1_URL_PREFIX,
 )
-from fides.config import CONFIG
 from tests.ops.api.v1.endpoints.test_dataset_config_endpoints import _reject_key
 from tests.ops.test_helpers.saas_test_utils import create_zip_file
+
+
+@pytest.fixture(scope="function")
+def complete_connector_template(
+    hubspot_yaml_config,
+    hubspot_yaml_dataset,
+    hubspot_yaml_icon,
+):
+    return create_zip_file(
+        {
+            "config.yml": hubspot_yaml_config,
+            "dataset.yml": hubspot_yaml_dataset,
+            "icon.svg": hubspot_yaml_icon,
+        }
+    )
 
 
 @pytest.mark.unit_saas
@@ -467,21 +482,6 @@ class TestRegisterConnectorTemplate:
         return V1_URL_PREFIX + REGISTER_CONNECTOR_TEMPLATE
 
     @pytest.fixture
-    def complete_connector_template(
-        self,
-        planet_express_config,
-        planet_express_dataset,
-        planet_express_icon,
-    ):
-        return create_zip_file(
-            {
-                "config.yml": planet_express_config,
-                "dataset.yml": planet_express_dataset,
-                "icon.svg": planet_express_icon,
-            }
-        )
-
-    @pytest.fixture
     def connector_template_missing_config(
         self,
         planet_express_dataset,
@@ -743,3 +743,411 @@ class TestRegisterConnectorTemplate:
         )
         assert response.status_code == status_code
         assert response.json() == details
+
+
+@pytest.mark.unit_saas
+class TestUpdateCustomConnectorToFileTemplate:
+    @pytest.fixture(scope="function", autouse=True)
+    def reset_connector_template_loaders(self):
+        """
+        Resets the loader singleton instances before each test
+        """
+        from fides.api.service.connectors.saas.connector_registry_service import (
+            CustomConnectorTemplateLoader,
+            FileConnectorTemplateLoader,
+        )
+
+        FileConnectorTemplateLoader._instance = None
+        CustomConnectorTemplateLoader._instance = None
+
+    @pytest.fixture
+    def update_custom_connector_url(self) -> str:
+        return V1_URL_PREFIX + UPDATE_CUSTOM_TEMPLATE_TO_FILE_TEMPLATE
+
+    @pytest.fixture
+    def register_connector_template_url(self) -> str:
+        return V1_URL_PREFIX + REGISTER_CONNECTOR_TEMPLATE
+
+    def test_update_custom_connector_not_authenticated(
+        self, api_client: TestClient, update_custom_connector_url
+    ) -> None:
+        """Test that unauthenticated requests are rejected."""
+        response = api_client.post(
+            update_custom_connector_url.format(saas_connector_type="test_connector")
+        )
+        assert response.status_code == 401
+
+    def test_update_custom_connector_wrong_scope(
+        self,
+        api_client: TestClient,
+        update_custom_connector_url,
+        generate_auth_header,
+    ) -> None:
+        """Test that requests with wrong scope are rejected."""
+        auth_header = generate_auth_header(scopes=[CLIENT_READ])
+        response = api_client.post(
+            update_custom_connector_url.format(saas_connector_type="test_connector"),
+            headers=auth_header,
+        )
+        assert response.status_code == 403
+
+    @mock.patch(
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
+    )
+    def test_update_custom_connector_not_found(
+        self,
+        mock_all: MagicMock,
+        api_client: TestClient,
+        update_custom_connector_url,
+        generate_auth_header,
+    ) -> None:
+        """Test that non-existent connector types return 404."""
+        # Mock no custom templates exist
+        mock_all.return_value = []
+
+        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_REGISTER])
+        response = api_client.post(
+            update_custom_connector_url.format(
+                saas_connector_type="nonexistent_connector"
+            ),
+            headers=auth_header,
+        )
+        assert response.status_code == 404
+        assert "not yet available in Fidesops" in response.json()["detail"]
+
+    @mock.patch(
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
+    )
+    def test_update_custom_connector_not_custom_template(
+        self,
+        mock_all: MagicMock,
+        api_client: TestClient,
+        update_custom_connector_url,
+        generate_auth_header,
+    ) -> None:
+        """Test that non-custom templates return 400."""
+        # Mock no custom templates exist (so it will use file template)
+        mock_all.return_value = []
+
+        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_REGISTER])
+        response = api_client.post(
+            update_custom_connector_url.format(saas_connector_type="hubspot"),
+            headers=auth_header,
+        )
+        assert response.status_code == 400
+        assert "is not a custom template" in response.json()["detail"]
+
+    @mock.patch(
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
+    )
+    def test_update_custom_connector_no_file_connector_available(
+        self,
+        mock_all: MagicMock,
+        api_client: TestClient,
+        update_custom_connector_url,
+        generate_auth_header,
+        planet_express_config,
+        planet_express_dataset,
+        planet_express_icon,
+    ) -> None:
+        """Test that custom templates without file connector fallback return 400."""
+        # Mock a custom template that doesn't have a file connector fallback
+        from fides.api.models.custom_connector_template import CustomConnectorTemplate
+
+        mock_all.return_value = [
+            CustomConnectorTemplate(
+                key="custom_only_connector",
+                name="Custom Only Connector",
+                config=planet_express_config,
+                dataset=planet_express_dataset,
+                icon=planet_express_icon,
+            )
+        ]
+
+        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_REGISTER])
+        response = api_client.post(
+            update_custom_connector_url.format(
+                saas_connector_type="custom_only_connector"
+            ),
+            headers=auth_header,
+        )
+        assert response.status_code == 400
+        assert (
+            "does not have a file connector to fall back to"
+            in response.json()["detail"]
+        )
+
+    @mock.patch(
+        "fides.api.api.v1.endpoints.saas_config_endpoints.delete_custom_template"
+    )
+    @mock.patch(
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
+    )
+    def test_update_custom_connector_success(
+        self,
+        mock_all: MagicMock,
+        mock_delete_custom_template: MagicMock,
+        api_client: TestClient,
+        update_custom_connector_url,
+        generate_auth_header,
+        hubspot_yaml_config,
+        hubspot_yaml_dataset,
+    ) -> None:
+        """Test successful update of custom connector to file template."""
+        # Mock a custom template for hubspot (which has a file connector fallback)
+        from fides.api.models.custom_connector_template import CustomConnectorTemplate
+
+        mock_all.return_value = [
+            CustomConnectorTemplate(
+                key="hubspot",
+                name="HubSpot",
+                config=hubspot_yaml_config,
+                dataset=hubspot_yaml_dataset,
+            )
+        ]
+
+        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_REGISTER])
+        response = api_client.post(
+            update_custom_connector_url.format(saas_connector_type="hubspot"),
+            headers=auth_header,
+        )
+
+        assert response.status_code == 200
+        assert response.json() == {
+            "message": "Custom connector template successfully updated."
+        }
+
+        # Verify the delete_custom_template function was called
+        mock_delete_custom_template.assert_called_once()
+
+    @mock.patch(
+        "fides.api.api.v1.endpoints.saas_config_endpoints.delete_custom_template"
+    )
+    @mock.patch(
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
+    )
+    def test_update_custom_connector_file_template_not_found_after_deletion(
+        self,
+        mock_all: MagicMock,
+        mock_delete_custom_template: MagicMock,
+        api_client: TestClient,
+        update_custom_connector_url,
+        generate_auth_header,
+        hubspot_yaml_config,
+        hubspot_yaml_dataset,
+    ) -> None:
+        """Test that 404 is returned if file template is not found after deletion."""
+        # Mock a custom template for hubspot
+        from fides.api.models.custom_connector_template import CustomConnectorTemplate
+
+        mock_all.return_value = [
+            CustomConnectorTemplate(
+                key="hubspot",
+                name="HubSpot",
+                config=hubspot_yaml_config,
+                dataset=hubspot_yaml_dataset,
+            )
+        ]
+
+        # Mock delete_custom_template to raise HTTPException
+        from fastapi import HTTPException
+        from starlette.status import HTTP_404_NOT_FOUND
+
+        mock_delete_custom_template.side_effect = HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail="File template with type 'hubspot' not found.",
+        )
+
+        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_REGISTER])
+        response = api_client.post(
+            update_custom_connector_url.format(saas_connector_type="hubspot"),
+            headers=auth_header,
+        )
+
+        assert response.status_code == 404
+        assert (
+            "File template with type 'hubspot' not found" in response.json()["detail"]
+        )
+
+    @mock.patch(
+        "fides.api.api.v1.endpoints.saas_config_endpoints.delete_custom_template"
+    )
+    @mock.patch(
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
+    )
+    def test_update_custom_connector_update_connection_configs_failure(
+        self,
+        mock_all: MagicMock,
+        mock_delete_custom_template: MagicMock,
+        api_client: TestClient,
+        update_custom_connector_url,
+        generate_auth_header,
+        hubspot_yaml_config,
+        hubspot_yaml_dataset,
+    ) -> None:
+        """Test that 500 is returned if updating connection configs fails."""
+        # Mock a custom template for hubspot
+        from fides.api.models.custom_connector_template import CustomConnectorTemplate
+
+        mock_all.return_value = [
+            CustomConnectorTemplate(
+                key="hubspot",
+                name="HubSpot",
+                config=hubspot_yaml_config,
+                dataset=hubspot_yaml_dataset,
+            )
+        ]
+
+        # Mock delete_custom_template to raise HTTPException for 500 error
+        from fastapi import HTTPException
+        from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
+
+        mock_delete_custom_template.side_effect = HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error updating connection configs for connector type 'hubspot'.",
+        )
+
+        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_REGISTER])
+        response = api_client.post(
+            update_custom_connector_url.format(saas_connector_type="hubspot"),
+            headers=auth_header,
+        )
+
+        assert response.status_code == 500
+        assert (
+            "Error updating connection configs for connector type 'hubspot'"
+            in response.json()["detail"]
+        )
+
+    @mock.patch(
+        "fides.api.api.v1.endpoints.saas_config_endpoints.delete_custom_template"
+    )
+    @mock.patch(
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
+    )
+    def test_update_custom_connector_file_template_not_found_before_deletion(
+        self,
+        mock_all: MagicMock,
+        mock_delete_custom_template: MagicMock,
+        api_client: TestClient,
+        update_custom_connector_url,
+        generate_auth_header,
+        hubspot_yaml_config,
+        hubspot_yaml_dataset,
+    ) -> None:
+        """Test that 404 is returned if file template is not found before deletion."""
+        # Mock a custom template for hubspot
+        from fides.api.models.custom_connector_template import CustomConnectorTemplate
+
+        mock_all.return_value = [
+            CustomConnectorTemplate(
+                key="hubspot",
+                name="HubSpot",
+                config=hubspot_yaml_config,
+                dataset=hubspot_yaml_dataset,
+            )
+        ]
+
+        # Mock delete_custom_template to raise HTTPException for 404 error
+        from fastapi import HTTPException
+        from starlette.status import HTTP_404_NOT_FOUND
+
+        mock_delete_custom_template.side_effect = HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail="File template with type 'hubspot' not found.",
+        )
+
+        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_REGISTER])
+        response = api_client.post(
+            update_custom_connector_url.format(saas_connector_type="hubspot"),
+            headers=auth_header,
+        )
+
+        assert response.status_code == 404
+        assert (
+            "File template with type 'hubspot' not found" in response.json()["detail"]
+        )
+
+    def test_update_custom_connector_invalid_connector_type(
+        self,
+        api_client: TestClient,
+        update_custom_connector_url,
+        generate_auth_header,
+    ) -> None:
+        """Test that invalid connector type characters are handled properly."""
+        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_REGISTER])
+        # Use URL encoding for special characters to avoid routing issues
+        encoded_connector_type = (
+            "invalid_connector_type"  # Use a valid connector type that doesn't exist
+        )
+        response = api_client.post(
+            update_custom_connector_url.format(
+                saas_connector_type=encoded_connector_type
+            ),
+            headers=auth_header,
+        )
+        # Should return 404 since the connector type doesn't exist
+        assert response.status_code == 404
+
+    @pytest.mark.integration
+    def test_update_custom_connector_to_file_template_integration(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        register_connector_template_url,
+        update_custom_connector_url,
+        complete_connector_template,
+    ):
+        """
+        Integration test:
+        1. Register a custom connector template.
+        2. Verify the custom template is active.
+        3. Call the update endpoint.
+        4. Verify the file template is now active.
+        """
+        connector_type = "hubspot"
+        # 1. Register the custom template
+        auth_header = generate_auth_header(scopes=["connector_template:register"])
+        response = api_client.post(
+            register_connector_template_url,
+            headers=auth_header,
+            files={
+                "file": (
+                    "template.zip",
+                    complete_connector_template.read(),
+                    "application/zip",
+                )
+            },
+        )
+        assert response.status_code == 200
+        assert (
+            response.json()["message"] == "Connector template successfully registered."
+        )
+
+        # 2. Verify the custom template is active
+        from fides.api.service.connectors.saas.connector_registry_service import (
+            ConnectorRegistry,
+        )
+
+        template = ConnectorRegistry.get_connector_template(connector_type)
+        assert template is not None
+        assert template.is_custom is True
+        assert template.file_connector_available is True
+
+        # 3. Call the update endpoint
+        update_url = update_custom_connector_url.format(
+            saas_connector_type=connector_type
+        )
+        auth_header = generate_auth_header(scopes=["connector_template:register"])
+        response = api_client.post(update_url, headers=auth_header)
+        assert response.status_code == 200
+        assert (
+            response.json()["message"]
+            == "Custom connector template successfully updated."
+        )
+
+        # 4. Verify the file template is now active
+        template = ConnectorRegistry.get_connector_template(connector_type)
+        assert template is not None
+        assert template.is_custom is False
+        assert template.file_connector_available is False
