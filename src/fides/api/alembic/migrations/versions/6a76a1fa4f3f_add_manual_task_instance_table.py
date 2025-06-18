@@ -167,7 +167,20 @@ def upgrade():
         "manual_task_instance",
         ["instance_id"],
         ["id"],
-        ondelete="SET NULL",
+        ondelete="CASCADE",
+    )
+
+    # Update foreign key constraint for manual_task_log.config_id to use CASCADE
+    op.drop_constraint(
+        "fk_manual_task_log_config_id", "manual_task_log", type_="foreignkey"
+    )
+    op.create_foreign_key(
+        "fk_manual_task_log_config_id",
+        "manual_task_log",
+        "manual_task_config",
+        ["config_id"],
+        ["id"],
+        ondelete="CASCADE",
     )
 
 
@@ -184,6 +197,19 @@ def downgrade():
     # Drop foreign key constraint from manual_task_log.instance_id
     op.drop_constraint(
         "fk_manual_task_log_instance_id", "manual_task_log", type_="foreignkey"
+    )
+
+    # Revert foreign key constraint for manual_task_log.config_id back to SET NULL
+    op.drop_constraint(
+        "fk_manual_task_log_config_id", "manual_task_log", type_="foreignkey"
+    )
+    op.create_foreign_key(
+        "fk_manual_task_log_config_id",
+        "manual_task_log",
+        "manual_task_config",
+        ["config_id"],
+        ["id"],
+        ondelete="SET NULL",
     )
 
     # Drop indexes first
