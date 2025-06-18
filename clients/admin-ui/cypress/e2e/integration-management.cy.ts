@@ -305,6 +305,90 @@ describe("Integration management for data detection & discovery", () => {
         cy.wait("@patchConnection");
       });
     });
+
+    describe("adding a website integration", () => {
+      beforeEach(() => {
+        stubIntegrationManagement({
+          secretSchemaFixture: "integration/website_integration_secret.json",
+        });
+
+        cy.intercept("GET", "/api/v1/connection?*", {
+          fixture: "connectors/bigquery_connection_list.json",
+        }).as("getConnections");
+        cy.intercept("GET", "/api/v1/connection_type?*", {
+          fixture: "connectors/connection_types.json",
+        }).as("getConnectionTypes");
+        cy.visit(INTEGRATION_MANAGEMENT_ROUTE);
+        cy.wait("@getConnections");
+      });
+
+      it("should be able to add a new website integration", () => {
+        cy.intercept("PATCH", "/api/v1/connection", { statusCode: 200 }).as(
+          "patchConnection",
+        );
+        cy.intercept("PATCH", "/api/v1/connection/*/secret*", {
+          response: 200,
+        }).as("patchConnectionSecrets");
+
+        cy.getByTestId("add-integration-btn").click();
+        cy.getByTestId("add-modal-content").within(() => {
+          cy.getByTestId("integration-info-website_placeholder").within(() => {
+            cy.getByTestId("configure-btn").click();
+          });
+        });
+        cy.getByTestId("input-name").type("test name");
+        cy.getByTestId("input-secrets.url").type("https://example.com");
+        cy.getByTestId("save-btn").click();
+        cy.wait("@patchConnection");
+        cy.wait("@patchConnectionSecrets");
+      });
+
+      it("accepts HTTP URLs", () => {
+        cy.intercept("PATCH", "/api/v1/connection", { statusCode: 200 }).as(
+          "patchConnection",
+        );
+        cy.intercept("PATCH", "/api/v1/connection/*/secret*", {
+          response: 200,
+        }).as("patchConnectionSecrets");
+
+        cy.getByTestId("add-integration-btn").click();
+        cy.getByTestId("add-modal-content").within(() => {
+          cy.getByTestId("integration-info-website_placeholder").within(() => {
+            cy.getByTestId("configure-btn").click();
+          });
+        });
+        cy.getByTestId("input-name").type("test name");
+        cy.getByTestId("input-secrets.url").type("http://example.com");
+        cy.getByTestId("save-btn").click();
+        cy.wait("@patchConnection");
+        cy.wait("@patchConnectionSecrets").then((interception) => {
+          expect(interception.request.body.url).to.equal("http://example.com");
+        });
+      });
+
+      it("defaults to HTTPS if a protocol isn't provided", () => {
+        cy.intercept("PATCH", "/api/v1/connection", { statusCode: 200 }).as(
+          "patchConnection",
+        );
+        cy.intercept("PATCH", "/api/v1/connection/*/secret*", {
+          response: 200,
+        }).as("patchConnectionSecrets");
+
+        cy.getByTestId("add-integration-btn").click();
+        cy.getByTestId("add-modal-content").within(() => {
+          cy.getByTestId("integration-info-website_placeholder").within(() => {
+            cy.getByTestId("configure-btn").click();
+          });
+        });
+        cy.getByTestId("input-name").type("test name");
+        cy.getByTestId("input-secrets.url").type("example.com");
+        cy.getByTestId("save-btn").click();
+        cy.wait("@patchConnection");
+        cy.wait("@patchConnectionSecrets").then((interception) => {
+          expect(interception.request.body.url).to.equal("https://example.com");
+        });
+      });
+    });
   });
 
   describe("detail view", () => {

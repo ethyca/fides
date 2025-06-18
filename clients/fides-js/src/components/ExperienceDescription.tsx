@@ -1,6 +1,8 @@
 import { Fragment, h } from "preact";
 import { useContext, useEffect, useState } from "preact/hooks";
 
+import { FidesEventTargetType } from "../lib/events";
+import { useEvent } from "../lib/providers/event-context";
 import { VendorButtonContext } from "../lib/tcf/vendor-button-context";
 import { stripHtml } from "../lib/ui-utils";
 
@@ -31,6 +33,7 @@ const ExperienceDescription = ({
 }) => {
   const [renderedDescription, setRenderedDescription] =
     useState<(string | h.JSX.Element)[]>();
+  const { setTrigger } = useEvent();
   let vendorCount = 0;
   const context = useContext(VendorButtonContext);
   if (context?.vendorCount) {
@@ -53,7 +56,15 @@ const ExperienceDescription = ({
               <button
                 type="button"
                 className="fides-link-button fides-vendor-count"
-                onClick={onVendorPageClick}
+                onClick={() => {
+                  if (onVendorPageClick) {
+                    setTrigger({
+                      type: FidesEventTargetType.LINK,
+                      label: VENDOR_COUNT_LINK, // The assumption is that consistency is more important than the actual number of vendors here, so we use the replacement string. Change if this becomes problematic.
+                    });
+                    onVendorPageClick();
+                  }
+                }}
               >
                 {vendorCount}
               </button>{" "}
