@@ -45,6 +45,10 @@ class ManualTaskInstance(Base, StatusTransitionMixin):
     status: StatusType = cast(
         StatusType, Column(String, nullable=False, default=StatusType.pending)
     )
+    completed_at: Optional[datetime] = cast(
+        Optional[datetime], Column(DateTime, nullable=True)
+    )
+    completed_by_id: Optional[str] = cast(Optional[str], Column(String, nullable=True))
     due_date: Optional[datetime] = cast(
         Optional[datetime], Column(DateTime, nullable=True)
     )

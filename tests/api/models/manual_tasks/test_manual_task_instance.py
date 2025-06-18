@@ -37,6 +37,7 @@ def mock_s3_client(s3_client, monkeypatch):
 
 class TestManualTaskInstance:
     def test_create_manual_task_instance(
+        self,
         db: Session,
         manual_task: ManualTask,
         manual_task_config: ManualTaskConfig,
@@ -67,6 +68,7 @@ class TestManualTaskInstance:
         assert instance.attachments == []
 
     def test_required_fields(
+        self,
         db: Session,
         manual_task_instance: ManualTaskInstance,
         manual_task_config_field_1: ManualTaskConfigField,
@@ -82,6 +84,7 @@ class TestManualTaskInstance:
         assert required_fields[0].field_metadata["required"] is True
 
     def test_incomplete_fields(
+        self,
         db: Session,
         manual_task_instance: ManualTaskInstance,
         manual_task_config_field_1: ManualTaskConfigField,
@@ -96,6 +99,7 @@ class TestManualTaskInstance:
         assert incomplete_fields[0].id == manual_task_config_field_1.id
 
     def test_completed_fields(
+        self,
         db: Session,
         manual_task_instance: ManualTaskInstance,
         manual_task_config_field_1: ManualTaskConfigField,
@@ -125,6 +129,7 @@ class TestManualTaskInstance:
 
     @pytest.mark.usefixtures("mock_s3_client", "s3_client")
     def test_attachments(
+        self,
         db: Session,
         manual_task_instance: ManualTaskInstance,
         manual_task_config_field_1: ManualTaskConfigField,
@@ -170,7 +175,9 @@ class TestManualTaskInstance:
 
         attachment.delete(db)
 
-    def test_status_transitions(db: Session, manual_task_instance: ManualTaskInstance):
+    def test_status_transitions(
+        self, db: Session, manual_task_instance: ManualTaskInstance
+    ):
         """Test status transitions."""
         # Initial status is pending
         assert manual_task_instance.status == StatusType.pending
@@ -188,6 +195,7 @@ class TestManualTaskInstance:
 
 class TestManualTaskSubmission:
     def test_create_manual_task_submission(
+        self,
         db: Session,
         manual_task_instance: ManualTaskInstance,
         manual_task_config_field_1: ManualTaskConfigField,
@@ -215,7 +223,7 @@ class TestManualTaskSubmission:
         assert submission.submitted_at is not None
 
     def test_update_manual_task_submission(
-        db: Session, manual_task_submission: ManualTaskSubmission
+        self, db: Session, manual_task_submission: ManualTaskSubmission
     ):
         """Test updating a manual task submission."""
         updated_data = {"value": "updated test"}
@@ -232,7 +240,7 @@ class TestManualTaskSubmission:
         assert updated_submission.updated_at > manual_task_submission.submitted_at
 
     def test_submission_relationships(
-        db: Session, manual_task_submission: ManualTaskSubmission
+        self, db: Session, manual_task_submission: ManualTaskSubmission
     ):
         """Test submission relationships."""
         # Test task relationship
@@ -253,6 +261,7 @@ class TestManualTaskSubmission:
 
     @pytest.mark.usefixtures("mock_s3_client", "s3_client")
     def test_submission_attachments(
+        self,
         db: Session,
         manual_task_submission: ManualTaskSubmission,
         attachment_data: dict[str, Any],
@@ -282,6 +291,7 @@ class TestManualTaskSubmission:
         attachment.delete(db)
 
     def test_submission_data_validation(
+        self,
         db: Session,
         manual_task_instance: ManualTaskInstance,
         manual_task_config_field_1: ManualTaskConfigField,
@@ -317,6 +327,7 @@ class TestManualTaskSubmission:
         )
 
     def test_submission_cascade_delete(
+        self,
         db: Session,
         manual_task_instance: ManualTaskInstance,
         manual_task_config_field_1: ManualTaskConfigField,
@@ -347,6 +358,7 @@ class TestManualTaskSubmission:
         assert deleted_submission is None
 
     def test_submission_timestamps(
+        self,
         db: Session,
         manual_task_instance: ManualTaskInstance,
         manual_task_config_field_1: ManualTaskConfigField,
