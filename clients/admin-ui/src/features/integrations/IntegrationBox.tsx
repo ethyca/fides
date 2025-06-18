@@ -25,9 +25,6 @@ const IntegrationBox = ({
   showDeleteButton,
   configureButtonLabel = "Configure",
   onConfigureClick,
-  selected = false,
-  buttonSize = "middle",
-  logoSize = "50px",
 }: {
   integration?: ConnectionConfigurationResponse;
   showTestNotice?: boolean;
@@ -35,9 +32,6 @@ const IntegrationBox = ({
   showDeleteButton?: boolean;
   configureButtonLabel?: string;
   onConfigureClick?: () => void;
-  selected?: boolean;
-  buttonSize?: "small" | "middle" | "large";
-  logoSize?: string;
 }) => {
   const { testConnection, isLoading, testData } =
     useTestConnection(integration);
@@ -66,16 +60,15 @@ const IntegrationBox = ({
   return (
     <Box
       borderWidth={1}
-      borderColor={selected ? "black" : "gray.200"}
-      backgroundColor={selected ? "gray.50" : "transparent"}
-      boxShadow={selected ? "md" : "none"}
+      borderColor="gray.200"
       borderRadius="lg"
       overflow="hidden"
       padding="12px"
+      marginBottom="24px"
       data-testid={`integration-info-${integration?.key}`}
     >
       <Flex>
-        <ConnectionTypeLogo data={integration ?? ""} boxSize={logoSize} />
+        <ConnectionTypeLogo data={integration ?? ""} boxSize="50px" />
         <Flex direction="column" flexGrow={1} marginLeft="16px">
           <Text color="gray.700" fontWeight="semibold">
             {integration?.name || "(No name)"}
@@ -102,7 +95,6 @@ const IntegrationBox = ({
             <Button
               onClick={handleAuthorize}
               data-testid="authorize-integration-btn"
-              size={buttonSize}
             >
               Authorize integration
             </Button>
@@ -112,18 +104,13 @@ const IntegrationBox = ({
               onClick={testConnection}
               loading={isLoading}
               data-testid="test-connection-btn"
-              size={buttonSize}
             >
               Test connection
             </Button>
           )}
           {otherButtons}
           {onConfigureClick && (
-            <Button
-              onClick={onConfigureClick}
-              data-testid="configure-btn"
-              size={buttonSize}
-            >
+            <Button onClick={onConfigureClick} data-testid="configure-btn">
               {configureButtonLabel}
             </Button>
           )}

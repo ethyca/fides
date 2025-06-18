@@ -11,7 +11,7 @@ import {
   INTEGRATION_TYPE_LIST,
   IntegrationTypeInfo,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
-import IntegrationBox from "~/features/integrations/IntegrationBox";
+import SelectableIntegrationBox from "~/features/integrations/SelectableIntegrationBox";
 import { IntegrationFilterTabs } from "~/features/integrations/useIntegrationFilterTabs";
 
 type Props = {
@@ -113,40 +113,27 @@ const SelectIntegrationType = ({
       ) : (
         <div className="grid grid-cols-3 gap-6">
           {filteredTypes.map((i) => (
-            <div
-              key={i.placeholder.key}
-              className="cursor-pointer"
-              onClick={() => onSelectIntegration(i)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  onSelectIntegration(i);
-                }
-              }}
-              role="button"
-              tabIndex={0}
-              aria-label={`Select ${i.placeholder.name} integration`}
-            >
-              <IntegrationBox
+            <div key={i.placeholder.key} className="relative">
+              <SelectableIntegrationBox
                 integration={i.placeholder}
                 selected={
                   selectedIntegration?.placeholder.key === i.placeholder.key
                 }
-                buttonSize="small"
-                logoSize="30px"
-                otherButtons={
-                  <Button
-                    size="small"
-                    onClick={(e) => {
-                      e.stopPropagation(); // Prevent selection when clicking Details
-                      onDetailClick(i);
-                    }}
-                    className="ml-1"
-                  >
-                    Details
-                  </Button>
-                }
+                onClick={() => onSelectIntegration(i)}
               />
+              <div className="absolute right-2 top-2">
+                <Button
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDetailClick(i);
+                  }}
+                  type="default"
+                  className="px-2 py-1 text-xs"
+                >
+                  Details
+                </Button>
+              </div>
             </div>
           ))}
         </div>
