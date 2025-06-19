@@ -72,10 +72,10 @@ const getColumns = (
     onFilter: (value, record) => record.system.name === value,
   },
   {
-    title: "Request type",
+    title: "Type",
     dataIndex: ["privacy_request", "request_type"],
     key: "request_type",
-    width: 140,
+    width: 150,
     render: (type: RequestType) => {
       // Map the lowercase string to the ActionType enum value
       const actionType =
@@ -100,7 +100,7 @@ const getColumns = (
     title: "Days left",
     dataIndex: ["privacy_request", "days_left"],
     key: "days_left",
-    width: 100,
+    width: 140,
     render: (daysLeft: number) => (
       <DaysLeftTag
         daysLeft={daysLeft}
