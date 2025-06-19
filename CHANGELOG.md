@@ -21,7 +21,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.64.0...main)
 
-
+### Fixed
+- Fixed Postgres Monitor's usage of SSL Mode [#6247](https://github.com/ethyca/fides/pull/6247)
 
 
 
