@@ -68,7 +68,7 @@ const getColumns = (
     title: "System",
     dataIndex: "system_name",
     key: "system_name",
-    width: 150,
+    width: 250,
     filters: systemFilters,
     onFilter: (value, record) => record.system_name === value,
   },

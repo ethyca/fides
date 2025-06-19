@@ -17,7 +17,7 @@ import {
 import { PaginationQueryParams } from "~/types/common/PaginationQueryParams";
 
 // Import mock data
-import mockTasksData from "./mocks/manual-tasks.json";
+import mockTasksData from "./mocked/manual-tasks.json";
 
 // Ensure mock data has correct types
 const typedMockData: ManualTasksResponse = {

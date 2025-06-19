@@ -1,4 +1,10 @@
-import { AntButton as Button, AntSpace as Space } from "fidesui";
+import type { MenuProps } from "antd";
+import {
+  AntButton as Button,
+  AntDropdown as Dropdown,
+  AntSpace as Space,
+  Icons,
+} from "fidesui";
 
 import { ManualTask } from "~/types/api/models/ManualTask";
 
@@ -29,6 +35,14 @@ export const ActionButtons = ({ task }: Props) => {
     console.log("Skip button clicked for task:", task.task_id);
   };
 
+  const menuItems: MenuProps["items"] = [
+    {
+      key: "skip",
+      label: "Skip",
+      onClick: handleSkip,
+    },
+  ];
+
   return (
     <Space size="small">
       <Button
@@ -40,9 +54,17 @@ export const ActionButtons = ({ task }: Props) => {
         Complete
       </Button>
 
-      <Button onClick={handleSkip} size="small">
-        Skip
-      </Button>
+      <Dropdown
+        menu={{ items: menuItems }}
+        trigger={["hover"]}
+        placement="bottomRight"
+      >
+        <Button
+          size="small"
+          icon={<Icons.OverflowMenuVertical />}
+          aria-label="More actions"
+        />
+      </Dropdown>
     </Space>
   );
 };
