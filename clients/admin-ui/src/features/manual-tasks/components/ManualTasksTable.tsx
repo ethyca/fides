@@ -51,7 +51,6 @@ const getColumns = (
     render: (name) => (
       <Typography.Text ellipsis={{ tooltip: name }}>{name}</Typography.Text>
     ),
-    sorter: (a, b) => a.name.localeCompare(b.name),
   },
   {
     title: "Status",
@@ -82,7 +81,6 @@ const getColumns = (
         </span>
       </Tooltip>
     ),
-    sorter: (a, b) => a.days_left - b.days_left,
   },
   {
     title: "Source",
@@ -117,8 +115,6 @@ const getColumns = (
     key: "created_at",
     width: 120,
     render: (date) => format(new Date(date), "MMM d, yyyy"),
-    sorter: (a, b) =>
-      new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
   },
   {
     title: "Actions",
@@ -196,7 +192,7 @@ export const ManualTasksTable = ({ searchTerm }: Props) => {
         loading={showSpinner}
       />
 
-      <div className="mt-4">
+      <div className="mt-4 flex justify-end">
         <PaginationBar
           pageSizes={PAGE_SIZES}
           totalRows={totalRows || 0}

@@ -8,9 +8,8 @@ src/
         ├── manual-tasks.slice.ts       # Redux slice with API endpoints
         ├── ManualTasks.tsx             # Main component with search
         └── components/
-            ├── ManualTasksTable.tsx    # Table component
-            ├── ActionButtons.tsx       # Action buttons for tasks
-            └── StatusTag.tsx           # Status tag component
+            ├── ManualTasksTable.tsx    # Table component with status and request type tags
+            └── ActionButtons.tsx       # Action buttons for tasks
 ```
 
 ## Implementation Status
@@ -21,14 +20,16 @@ src/
 - [x] Add type exports to types/api/index.ts
 - [x] Create manual-tasks.slice.ts with RTK Query endpoints
 - [x] Add the slice to the store configuration
-- [x] Create StatusTag component
 - [x] Create ActionButtons component
-- [x] Create ManualTasksTable component with filtering and sorting
+- [x] Create ManualTasksTable component with filtering and server-side pagination
 - [x] Create ManualTasks component with search
 - [x] Integrate with ManualTaskTab in privacy requests
 - [x] Style all components with Tailwind
+- [x] Implement server-side pagination
+- [x] Create Page_ManualTask_ type for pagination
 
 ### 🔄 In Progress
+- [ ] Implement skip task functionality with comment modal
 - [ ] Connect to real API endpoints
 - [ ] Add error handling and notifications
 - [ ] Add tests
@@ -76,11 +77,27 @@ interface ManualTask {
   system_name: string;
   system_id: string;
 }
+
+// Pagination response type
+interface Page_ManualTask_ {
+  items: Array<ManualTask>;
+  total: number | null;
+  page: number | null;
+  size: number | null;
+  pages?: number | null;
+}
 ```
 
 ### Endpoints
 GET `/api/v1/plus/manual-tasks/`
-- Returns a list of manual tasks
+- Returns a paginated list of manual tasks
+- Supports query parameters:
+  - page: Page number (default: 1)
+  - size: Page size (default: 10)
+  - search: Search term for name or description
+  - status: Filter by status
+  - requestType: Filter by request type
+  - systemName: Filter by system name
 
 GET `/api/v1/plus/manual-tasks/{task_id}`
 - Returns a specific manual task by ID
@@ -109,24 +126,25 @@ POST `/api/v1/plus/manual-tasks/{task_id}/skip`
   - Request type
   - Created date
   - Actions
-- Built-in filtering and sorting
-- Pagination
-
-### ActionButtons Component
-- Complete button for new tasks
-- Skip button with comment modal
-- Loading states for API calls
-
-### StatusTag Component
+- Built-in filtering
+- Server-side pagination using PaginationBar
 - Color-coded tags for task status:
   - New: Blue
   - Completed: Green
-  - Skipped: Orange
+  - Skipped: Gray
+- Color-coded tags for request type:
+  - Access: Blue
+  - Erasure: Red
+
+### ActionButtons Component
+- Complete button for new tasks
+- Loading states for API calls
+- Skip functionality to be implemented later
 
 ## Notes
 - Uses Ant Design components imported from "fidesui"
 - Layout uses Tailwind classes
 - Uses RTK Query for API calls
 - Uses TypeScript for type safety
-- Table uses built-in filtering and sorting
+- Table uses server-side pagination and filtering
 - Currently visible when the `alphaNewManualDSR` feature flag is enabled
