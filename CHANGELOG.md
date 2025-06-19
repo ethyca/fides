@@ -22,8 +22,10 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.64.0...main)
 
 ### Added
-- - Added ManualTaskInstance and ManualTaskSubmission models, foundational for for ManualDSRs [#6212](https://github.com/ethyca/fides/pull/6212) https://github.com/ethyca/fides/labels/db-migration
+- Added ManualTaskInstance and ManualTaskSubmission models, foundational for for ManualDSRs [#6212](https://github.com/ethyca/fides/pull/6212) https://github.com/ethyca/fides/labels/db-migration
 
+### Changed
+- Update FastAPI to 0.115.2 for starlette 0.40.0 [#6244](https://github.com/ethyca/fides/pull/6244)
 
 
 ## [2.64.0](https://github.com/ethyca/fides/compare/2.63.3...2.64.0)
