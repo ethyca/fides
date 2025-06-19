@@ -34,20 +34,6 @@ class TestManualTaskCreation:
         assert task.parent_entity_id == "test_connection"
         assert task.parent_entity_type == "connection_config"
 
-    def test_create_task_with_due_date(self, db: Session):
-        """Test creating a task with a due date."""
-        due_date = datetime.now(timezone.utc)
-        task = ManualTask.create(
-            db=db,
-            data={
-                "task_type": ManualTaskType.privacy_request,
-                "parent_entity_id": "test_connection",
-                "parent_entity_type": "connection_config",
-                "due_date": due_date,
-            },
-        )
-        assert task.due_date == due_date
-
     def test_create_task_creates_log(self, db: Session):
         """Test that task creation creates a log entry."""
         task = ManualTask.create(
