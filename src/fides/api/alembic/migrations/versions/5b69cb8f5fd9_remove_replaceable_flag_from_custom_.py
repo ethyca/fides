@@ -1,17 +1,17 @@
 """remove_replaceable_flag_from_custom_connector_template
 
-Revision ID: d26175dc39b9
-Revises: ba414a58ba90
-Create Date: 2025-06-17 17:51:02.800113
+Revision ID: 5b69cb8f5fd9
+Revises: 6a76a1fa4f3f
+Create Date: 2025-06-19 16:01:30.238333
 
 """
-
-import sqlalchemy as sa
 from alembic import op
+import sqlalchemy as sa
+
 
 # revision identifiers, used by Alembic.
-revision = "d26175dc39b9"
-down_revision = "ba414a58ba90"
+revision = '5b69cb8f5fd9'
+down_revision = '6a76a1fa4f3f'
 branch_labels = None
 depends_on = None
 
