@@ -12,7 +12,6 @@ import {
   PaginationBar,
   useServerSidePagination,
 } from "~/features/common/table/v2";
-import { formatDate } from "~/features/common/utils";
 import { SubjectRequestActionTypeMap } from "~/features/privacy-requests/constants";
 import { ActionType, PrivacyRequestStatus } from "~/types/api";
 import {
@@ -66,20 +65,7 @@ const getColumns = (
     onFilter: (value, record) => record.status === value,
   },
   {
-    title: "Days left",
-    dataIndex: "days_left",
-    key: "days_left",
-    width: 100,
-    render: (daysLeft: number) => (
-      <DaysLeftTag
-        daysLeft={daysLeft}
-        includeText={false}
-        status={PrivacyRequestStatus.PENDING}
-      />
-    ),
-  },
-  {
-    title: "Source",
+    title: "System",
     dataIndex: "system_name",
     key: "system_name",
     width: 150,
@@ -105,11 +91,44 @@ const getColumns = (
     onFilter: (value, record) => record.request_type === value,
   },
   {
-    title: "Created",
-    dataIndex: "created_at",
-    key: "created_at",
-    width: 250,
-    render: (date) => formatDate(date),
+    title: "Assigned to",
+    dataIndex: "assignedTo",
+    key: "assignedTo",
+    width: 350,
+    render: (assignedTo: string) => (
+      <Typography.Text>{assignedTo}</Typography.Text>
+    ),
+  },
+  {
+    title: "Days left",
+    dataIndex: "days_left",
+    key: "days_left",
+    width: 100,
+    render: (daysLeft: number) => (
+      <DaysLeftTag
+        daysLeft={daysLeft}
+        includeText={false}
+        status={PrivacyRequestStatus.PENDING}
+      />
+    ),
+  },
+  {
+    title: "Identity",
+    dataIndex: "privacy_request_id", // Using this as placeholder for now
+    key: "identity",
+    width: 200,
+    render: () => <Typography.Text>-</Typography.Text>,
+  },
+  {
+    title: "Request ID",
+    dataIndex: "privacy_request_id",
+    key: "privacy_request_id",
+    width: 200,
+    render: (requestId: string) => (
+      <Typography.Text ellipsis={{ tooltip: requestId }}>
+        {requestId}
+      </Typography.Text>
+    ),
   },
   {
     title: "Actions",

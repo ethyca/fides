@@ -26,7 +26,7 @@ export const createMockTask = (
   request_type: "access",
   status: "new",
   assignedTo: mockUsers[0].id,
-  privacy_request_id: `pr_${Math.random().toString(36).substr(2, 9)}`,
+  privacy_request_id: "pri_5005c923-474c-4168-8c9e-2670fd40dc19",
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
   days_left: 25,
