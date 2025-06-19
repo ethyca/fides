@@ -11,17 +11,89 @@ import {
   PageManualTask,
   RequestType,
   SkipTaskPayload,
+  SubjectIdentity,
   TaskActionResponse,
-  TaskInputType,
   TaskStatus,
 } from "./mocked/types";
 
-// Ensure mock data has correct types - mock data is now a direct array
-const typedMockData: ManualTask[] = mockTasksData.map((task) => ({
-  ...task,
-  input_type: task.input_type as TaskInputType,
-  request_type: task.request_type as RequestType,
+// Sample subject identities for mock data
+const sampleSubjectIdentities: SubjectIdentity[] = [
+  {
+    email: { label: "Email", value: "customer@email.com" },
+  },
+  {
+    phone_number: { label: "Phone Number", value: "+1-555-0123" },
+  },
+  {
+    email: { label: "Email", value: "user.stripe@example.com" },
+    phone_number: { label: "Phone Number", value: "+1-555-0456" },
+  },
+  {
+    email: { label: "Email", value: "analytics.user@gmail.com" },
+  },
+  {
+    phone_number: { label: "Phone Number", value: "+1-555-0789" },
+  },
+  {
+    email: { label: "Email", value: "marketing@example.org" },
+  },
+  {
+    email: { label: "Email", value: "support.customer@domain.com" },
+    phone_number: { label: "Phone Number", value: "+1-555-0321" },
+  },
+  {
+    email: { label: "Email", value: "logs.user@company.net" },
+  },
+  {
+    phone_number: { label: "Phone Number", value: "+1-555-0654" },
+  },
+  {
+    email: { label: "Email", value: "ecommerce@shop.com" },
+  },
+  {
+    email: { label: "Email", value: "backup.user@service.io" },
+    phone_number: { label: "Phone Number", value: "+1-555-0987" },
+  },
+  {
+    email: { label: "Email", value: "chat.customer@help.com" },
+  },
+  {
+    phone_number: { label: "Phone Number", value: "+1-555-0147" },
+  },
+  {
+    email: { label: "Email", value: "notification@alerts.com" },
+  },
+  {
+    email: { label: "Email", value: "warehouse@logistics.net" },
+    phone_number: { label: "Phone Number", value: "+1-555-0258" },
+  },
+];
+
+// Ensure mock data has correct types and add subject identity
+const typedMockData: ManualTask[] = mockTasksData.map((task, index) => ({
+  task_id: task.task_id,
+  name: task.name,
+  description: task.description,
   status: task.status as TaskStatus,
+  assigned_users: task.assigned_users,
+  // Map file input type to string for now, since ManualTask interface only supports string|checkbox
+  input_type:
+    task.input_type === "file"
+      ? "string"
+      : (task.input_type as "string" | "checkbox"),
+  privacy_request: {
+    id: task.privacy_request_id,
+    days_left: task.days_left,
+    request_type: task.request_type as RequestType,
+    // Add subject identity using the sample data, cycling through if needed, or use existing if available
+    subject_identity:
+      task.subject_identity ||
+      sampleSubjectIdentities[index % sampleSubjectIdentities.length],
+  },
+  system: {
+    id: task.system_id,
+    name: task.system_name,
+  },
 }));
 
 // Helper function to paginate results
@@ -95,13 +167,13 @@ export const manualTasksApi = baseApi.injectEndpoints({
 
         if (requestType) {
           filteredTasks = filteredTasks.filter(
-            (task) => task.request_type === requestType,
+            (task) => task.privacy_request.request_type === requestType,
           );
         }
 
         if (systemName) {
           filteredTasks = filteredTasks.filter(
-            (task) => task.system_name === systemName,
+            (task) => task.system.name === systemName,
           );
         }
 

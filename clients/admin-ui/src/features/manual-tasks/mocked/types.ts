@@ -1,4 +1,4 @@
-export type TaskStatus = "new" | "skipped" | "completed";
+export type TaskStatus = "new" | "completed" | "skipped";
 export type TaskInputType = "string" | "file" | "checkbox";
 export type RequestType = "access" | "erasure";
 
@@ -9,23 +9,38 @@ export interface AssignedUser {
   last_name: string;
 }
 
+export interface SubjectIdentity {
+  email?: {
+    label: string;
+    value: string;
+  };
+  phone_number?: {
+    label: string;
+    value: string;
+  };
+}
+
+export interface PrivacyRequest {
+  id: string;
+  days_left: number;
+  subject_identity: SubjectIdentity;
+  request_type: RequestType;
+}
+
+export interface System {
+  id: string;
+  name: string;
+}
+
 export interface ManualTask {
   task_id: string;
   name: string;
   description: string;
-  input_type: TaskInputType;
-  request_type: RequestType;
   status: TaskStatus;
   assigned_users: AssignedUser[];
-  privacy_request_id: string;
-  created_at: string;
-  updated_at: string;
-  // Additional fields from linked privacy request
-  days_left: number;
-  due_date: string;
-  // System information
-  system_name: string;
-  system_id: string;
+  input_type?: "string" | "checkbox";
+  privacy_request: PrivacyRequest;
+  system: System;
 }
 
 export interface ManualTaskFilters {
@@ -61,9 +76,19 @@ export interface TaskActionResponse {
 
 // Pagination type for manual tasks
 export interface PageManualTask {
-  items: Array<ManualTask>;
+  items: ManualTask[];
   total: number | null;
   page: number | null;
   size: number | null;
   pages?: number | null;
+}
+
+export interface TaskQueryParams {
+  page?: number;
+  size?: number;
+  status?: TaskStatus;
+  request_type?: RequestType;
+  system_name?: string;
+  search?: string;
+  assigned_user_id?: string;
 }

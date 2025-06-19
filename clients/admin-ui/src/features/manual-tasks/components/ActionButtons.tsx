@@ -40,27 +40,27 @@ export const ActionButtons = ({ task }: Props) => {
   const handleGoToRequest = () => {
     router.push({
       pathname: PRIVACY_REQUEST_DETAIL_ROUTE,
-      query: { id: task.privacy_request_id },
+      query: { id: task.privacy_request.id },
     });
   };
 
   const menuItems: MenuProps["items"] = [
     {
+      key: "skip",
+      label: "Skip task",
+      onClick: handleSkip,
+    },
+    {
       key: "go-to-request",
       label: "Go to request",
       onClick: handleGoToRequest,
-    },
-    {
-      key: "skip",
-      label: "Skip",
-      onClick: handleSkip,
     },
   ];
 
   return (
     <Space size="small">
       <Button
-        type="primary"
+        type="default"
         onClick={handleComplete}
         size="small"
         loading={isCompleting}

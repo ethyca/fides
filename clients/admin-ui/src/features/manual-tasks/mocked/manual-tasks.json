@@ -20,7 +20,13 @@
     "days_left": 15,
     "due_date": "2024-03-30T10:00:00Z",
     "system_name": "Salesforce",
-    "system_id": "sys_001"
+    "system_id": "sys_001",
+    "subject_identity": {
+      "email": {
+        "label": "Email",
+        "value": "customer@email.com"
+      }
+    }
   },
   {
     "task_id": "task_002",
@@ -43,7 +49,13 @@
     "days_left": 8,
     "due_date": "2024-03-22T14:30:00Z",
     "system_name": "MongoDB",
-    "system_id": "sys_002"
+    "system_id": "sys_002",
+    "subject_identity": {
+      "phone_number": {
+        "label": "Phone Number",
+        "value": "+1-555-0123"
+      }
+    }
   },
   {
     "task_id": "task_003",
@@ -66,7 +78,17 @@
     "days_left": 22,
     "due_date": "2024-04-05T09:15:00Z",
     "system_name": "Stripe",
-    "system_id": "sys_003"
+    "system_id": "sys_003",
+    "subject_identity": {
+      "email": {
+        "label": "Email",
+        "value": "user.stripe@example.com"
+      },
+      "phone_number": {
+        "label": "Phone Number",
+        "value": "+1-555-0456"
+      }
+    }
   },
   {
     "task_id": "task_004",

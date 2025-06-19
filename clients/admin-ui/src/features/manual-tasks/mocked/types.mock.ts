@@ -37,16 +37,23 @@ export const createMockTask = (
   task_id: `task_${Math.random().toString(36).substr(2, 9)}`,
   name: "Export Customer Data",
   description: "Export all customer data from the system",
-  input_type: "file",
-  request_type: "access",
+  input_type: "string",
   status: "new",
   assigned_users: [mockUsers[0]],
-  privacy_request_id: "pri_5005c923-474c-4168-8c9e-2670fd40dc19",
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
-  days_left: 25,
-  due_date: new Date(Date.now() + 25 * 24 * 60 * 60 * 1000).toISOString(),
-  system_name: mockSystems[0].name,
-  system_id: mockSystems[0].id,
+  privacy_request: {
+    id: "pri_5005c923-474c-4168-8c9e-2670fd40dc19",
+    days_left: 25,
+    request_type: "access",
+    subject_identity: {
+      email: {
+        label: "Email",
+        value: "customer@email.com",
+      },
+    },
+  },
+  system: {
+    id: mockSystems[0].id,
+    name: mockSystems[0].name,
+  },
   ...overrides,
 });

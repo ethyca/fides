@@ -20,11 +20,11 @@ import { ManualTask, RequestType, TaskStatus } from "../mocked/types";
 import { ActionButtons } from "./ActionButtons";
 import { UserTag } from "./UserTag";
 
-// Map task status to tag colors and labels
+// Map task status to tag colors and labels - aligned with RequestStatusBadge colors
 const statusMap: Record<TaskStatus, { color: string; label: string }> = {
-  new: { color: "blue", label: "New" },
-  completed: { color: "green", label: "Completed" },
-  skipped: { color: "gray", label: "Skipped" },
+  new: { color: "info", label: "New" },
+  completed: { color: "success", label: "Completed" },
+  skipped: { color: "marble", label: "Skipped" },
 };
 
 interface Props {
@@ -65,15 +65,15 @@ const getColumns = (
   },
   {
     title: "System",
-    dataIndex: "system_name",
+    dataIndex: ["system", "name"],
     key: "system_name",
     width: 250,
     filters: systemFilters,
-    onFilter: (value, record) => record.system_name === value,
+    onFilter: (value, record) => record.system.name === value,
   },
   {
     title: "Request type",
-    dataIndex: "request_type",
+    dataIndex: ["privacy_request", "request_type"],
     key: "request_type",
     width: 140,
     render: (type: RequestType) => {
@@ -87,7 +87,7 @@ const getColumns = (
       { text: "Access", value: "access" },
       { text: "Erasure", value: "erasure" },
     ],
-    onFilter: (value, record) => record.request_type === value,
+    onFilter: (value, record) => record.privacy_request.request_type === value,
   },
   {
     title: "Assigned to",
@@ -98,7 +98,7 @@ const getColumns = (
   },
   {
     title: "Days left",
-    dataIndex: "days_left",
+    dataIndex: ["privacy_request", "days_left"],
     key: "days_left",
     width: 100,
     render: (daysLeft: number) => (
@@ -110,11 +110,26 @@ const getColumns = (
     ),
   },
   {
-    title: "Identity",
-    dataIndex: "privacy_request_id", // Using this as placeholder for now
-    key: "identity",
+    title: "Subject identity",
+    dataIndex: ["privacy_request", "subject_identity"],
+    key: "subject_identity",
     width: 200,
-    render: () => <Typography.Text>-</Typography.Text>,
+    render: (subjectIdentity) => {
+      if (!subjectIdentity) {
+        return <Typography.Text>-</Typography.Text>;
+      }
+
+      // Display email or phone number, similar to privacy requests
+      const identity =
+        subjectIdentity.email?.value ||
+        subjectIdentity.phone_number?.value ||
+        "";
+      return (
+        <Typography.Text ellipsis={{ tooltip: identity }}>
+          {identity}
+        </Typography.Text>
+      );
+    },
   },
   {
     title: "Actions",
@@ -159,7 +174,7 @@ export const ManualTasksTable = ({ searchTerm }: Props) => {
   const systemFilters = useMemo(
     () =>
       tasks
-        ? Array.from(new Set(tasks.map((task) => task.system_name))).map(
+        ? Array.from(new Set(tasks.map((task) => task.system.name))).map(
             (name) => ({ text: name, value: name }),
           )
         : [],
