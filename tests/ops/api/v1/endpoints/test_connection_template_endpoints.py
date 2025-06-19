@@ -2,6 +2,8 @@ from unittest import mock
 from unittest.mock import MagicMock
 
 import pytest
+from fastapi import HTTPException
+from starlette.status import HTTP_404_NOT_FOUND, HTTP_500_INTERNAL_SERVER_ERROR
 from starlette.testclient import TestClient
 
 from fides.api.models.client import ClientDetail
@@ -10,11 +12,13 @@ from fides.api.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
+from fides.api.models.custom_connector_template import CustomConnectorTemplate
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import ActionType
 from fides.api.schemas.connection_configuration.enums.system_type import SystemType
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
+    FileConnectorTemplateLoader,
 )
 from fides.common.api.scope_registry import (
     CLIENT_READ,
@@ -2450,7 +2454,6 @@ class TestUpdateCustomConnectorToFileTemplate:
     ) -> None:
         """Test that custom templates without file connector fallback return 400."""
         # Mock a custom template that doesn't have a file connector fallback
-        from fides.api.models.custom_connector_template import CustomConnectorTemplate
 
         mock_all.return_value = [
             CustomConnectorTemplate(
@@ -2476,24 +2479,19 @@ class TestUpdateCustomConnectorToFileTemplate:
         )
 
     @mock.patch(
-        "fides.api.api.v1.endpoints.saas_config_endpoints.delete_custom_template"
-    )
-    @mock.patch(
         "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
     )
     def test_update_custom_connector_file_template_not_found_after_deletion(
         self,
         mock_all: MagicMock,
-        mock_delete_custom_template: MagicMock,
         api_client: TestClient,
         update_custom_connector_url,
         generate_auth_header,
         hubspot_yaml_config,
         hubspot_yaml_dataset,
     ) -> None:
-        """Test that 404 is returned if file template is not found after deletion."""
-        # Mock a custom template for hubspot
-        from fides.api.models.custom_connector_template import CustomConnectorTemplate
+        """Test that 404 is returned if file template is not found"""
+        FileConnectorTemplateLoader.get_connector_templates().pop("hubspot")
 
         mock_all.return_value = [
             CustomConnectorTemplate(
@@ -2503,14 +2501,9 @@ class TestUpdateCustomConnectorToFileTemplate:
                 dataset=hubspot_yaml_dataset,
             )
         ]
-
-        # Mock delete_custom_template to raise HTTPException
-        from fastapi import HTTPException
-        from starlette.status import HTTP_404_NOT_FOUND
-
-        mock_delete_custom_template.side_effect = HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail="File template with type 'hubspot' not found.",
+        # Mock the file connector template to be available
+        ConnectorRegistry.get_connector_template("hubspot").file_connector_available = (
+            True
         )
 
         auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_REGISTER])
@@ -2518,7 +2511,6 @@ class TestUpdateCustomConnectorToFileTemplate:
             update_custom_connector_url.format(saas_connector_type="hubspot"),
             headers=auth_header,
         )
-
         assert response.status_code == 404
         assert (
             "File template with type 'hubspot' not found" in response.json()["detail"]
@@ -2542,7 +2534,6 @@ class TestUpdateCustomConnectorToFileTemplate:
     ) -> None:
         """Test that 500 is returned if updating connection configs fails."""
         # Mock a custom template for hubspot
-        from fides.api.models.custom_connector_template import CustomConnectorTemplate
 
         mock_all.return_value = [
             CustomConnectorTemplate(
@@ -2552,10 +2543,6 @@ class TestUpdateCustomConnectorToFileTemplate:
                 dataset=hubspot_yaml_dataset,
             )
         ]
-
-        # Mock delete_custom_template to raise HTTPException for 500 error
-        from fastapi import HTTPException
-        from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
         mock_delete_custom_template.side_effect = HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,
@@ -2592,7 +2579,6 @@ class TestUpdateCustomConnectorToFileTemplate:
     ) -> None:
         """Test that 404 is returned if file template is not found before deletion."""
         # Mock a custom template for hubspot
-        from fides.api.models.custom_connector_template import CustomConnectorTemplate
 
         mock_all.return_value = [
             CustomConnectorTemplate(
@@ -2604,8 +2590,6 @@ class TestUpdateCustomConnectorToFileTemplate:
         ]
 
         # Mock delete_custom_template to raise HTTPException for 404 error
-        from fastapi import HTTPException
-        from starlette.status import HTTP_404_NOT_FOUND
 
         mock_delete_custom_template.side_effect = HTTPException(
             status_code=HTTP_404_NOT_FOUND,
@@ -2684,10 +2668,6 @@ class TestUpdateCustomConnectorToFileTemplate:
         )
 
         # 2. Verify the custom template is active
-        from fides.api.service.connectors.saas.connector_registry_service import (
-            ConnectorRegistry,
-        )
-
         template = ConnectorRegistry.get_connector_template(connector_type)
         assert template is not None
         assert template.is_custom is True
