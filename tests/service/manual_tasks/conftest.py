@@ -14,6 +14,9 @@ from fides.api.schemas.manual_tasks.manual_task_schemas import (
 from fides.service.manual_tasks.manual_task_config_service import (
     ManualTaskConfigService,
 )
+from fides.service.manual_tasks.manual_task_instance_service import (
+    ManualTaskInstanceService,
+)
 from fides.service.manual_tasks.manual_task_service import ManualTaskService
 
 # Shared test data
@@ -178,3 +181,9 @@ def manual_task_config_field_attachment(
     )
     yield field
     field.delete(db)
+
+
+@pytest.fixture
+def manual_task_instance_service(db: Session) -> ManualTaskInstanceService:
+    """Fixture for ManualTaskInstanceService."""
+    return ManualTaskInstanceService(db)
