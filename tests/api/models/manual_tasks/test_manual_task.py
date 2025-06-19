@@ -223,7 +223,7 @@ class TestManualTaskRelationships:
     def test_task_parent_entity_relationship(
         self, db: Session, manual_task: ManualTask
     ):
-        "test task parent entity relationship"
+        """Test task parent entity relationship"""
 
         connection_config = ConnectionConfig.create(
             db=db,
