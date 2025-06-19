@@ -2,17 +2,19 @@ import type { ColumnsType } from "antd/es/table";
 import {
   AntTable as Table,
   AntTag as Tag,
-  AntTooltip as Tooltip,
   AntTypography as Typography,
 } from "fidesui";
 import { useEffect, useMemo } from "react";
 
+import DaysLeftTag from "~/features/common/DaysLeftTag";
 import FidesSpinner from "~/features/common/FidesSpinner";
 import {
   PaginationBar,
   useServerSidePagination,
 } from "~/features/common/table/v2";
 import { formatDate } from "~/features/common/utils";
+import { SubjectRequestActionTypeMap } from "~/features/privacy-requests/constants";
+import { ActionType, PrivacyRequestStatus } from "~/types/api";
 import {
   ManualTask,
   RequestType,
@@ -27,12 +29,6 @@ const statusMap: Record<TaskStatus, { color: string; label: string }> = {
   new: { color: "blue", label: "New" },
   completed: { color: "green", label: "Completed" },
   skipped: { color: "gray", label: "Skipped" },
-};
-
-// Map request types to tag colors and labels
-const requestTypeMap: Record<RequestType, { color: string; label: string }> = {
-  access: { color: "blue", label: "Access" },
-  erasure: { color: "red", label: "Erasure" },
 };
 
 interface Props {
@@ -74,12 +70,12 @@ const getColumns = (
     dataIndex: "days_left",
     key: "days_left",
     width: 100,
-    render: (daysLeft) => (
-      <Tooltip title={`Due in ${daysLeft} days`}>
-        <span className={daysLeft < 3 ? "font-medium text-red-500" : ""}>
-          {daysLeft}
-        </span>
-      </Tooltip>
+    render: (daysLeft: number) => (
+      <DaysLeftTag
+        daysLeft={daysLeft}
+        includeText={false}
+        status={PrivacyRequestStatus.PENDING}
+      />
     ),
   },
   {
@@ -95,14 +91,13 @@ const getColumns = (
     dataIndex: "request_type",
     key: "request_type",
     width: 140,
-    render: (type: RequestType) => (
-      <Tag
-        color={requestTypeMap[type].color}
-        data-testid="manual-task-request-type-tag"
-      >
-        {requestTypeMap[type].label}
-      </Tag>
-    ),
+    render: (type: RequestType) => {
+      // Map the lowercase string to the ActionType enum value
+      const actionType =
+        type === "access" ? ActionType.ACCESS : ActionType.ERASURE;
+      const displayName = SubjectRequestActionTypeMap.get(actionType) || type;
+      return <Typography.Text>{displayName}</Typography.Text>;
+    },
     filters: [
       { text: "Access", value: "access" },
       { text: "Erasure", value: "erasure" },
