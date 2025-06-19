@@ -212,7 +212,6 @@ def downgrade():
         ondelete="SET NULL",
     )
 
-
     # Drop indexes first
     op.drop_index(
         "ix_manual_task_submission_instance_field", table_name="manual_task_submission"
