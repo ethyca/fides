@@ -2490,7 +2490,7 @@ class TestUpdateCustomConnectorToFileTemplate:
         hubspot_yaml_config,
         hubspot_yaml_dataset,
     ) -> None:
-        """Test that 404 is returned if file template is not found"""
+        """Test that 404 is returned if file template is not found after delete_custom_template is called"""
         FileConnectorTemplateLoader.get_connector_templates().pop("hubspot")
 
         mock_all.return_value = [
