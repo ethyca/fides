@@ -1,5 +1,4 @@
 import type { ColumnsType } from "antd/es/table";
-import { format } from "date-fns";
 import {
   AntTable as Table,
   AntTag as Tag,
@@ -13,6 +12,7 @@ import {
   PaginationBar,
   useServerSidePagination,
 } from "~/features/common/table/v2";
+import { formatDate } from "~/features/common/utils";
 import {
   ManualTask,
   RequestType,
@@ -94,7 +94,7 @@ const getColumns = (
     title: "Request type",
     dataIndex: "request_type",
     key: "request_type",
-    width: 120,
+    width: 140,
     render: (type: RequestType) => (
       <Tag
         color={requestTypeMap[type].color}
@@ -110,11 +110,11 @@ const getColumns = (
     onFilter: (value, record) => record.request_type === value,
   },
   {
-    title: "Created date",
+    title: "Created",
     dataIndex: "created_at",
     key: "created_at",
-    width: 120,
-    render: (date) => format(new Date(date), "MMM d, yyyy"),
+    width: 250,
+    render: (date) => formatDate(date),
   },
   {
     title: "Actions",
