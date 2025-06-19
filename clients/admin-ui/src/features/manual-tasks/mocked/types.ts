@@ -2,6 +2,13 @@ export type TaskStatus = "new" | "skipped" | "completed";
 export type TaskInputType = "string" | "file" | "checkbox";
 export type RequestType = "access" | "erasure";
 
+export interface AssignedUser {
+  id: string;
+  email_address: string;
+  first_name: string;
+  last_name: string;
+}
+
 export interface ManualTask {
   task_id: string;
   name: string;
@@ -9,7 +16,7 @@ export interface ManualTask {
   input_type: TaskInputType;
   request_type: RequestType;
   status: TaskStatus;
-  assignedTo: string;
+  assigned_users: AssignedUser[];
   privacy_request_id: string;
   created_at: string;
   updated_at: string;
@@ -50,4 +57,13 @@ export interface ManualTasksResponse {
 export interface TaskActionResponse {
   task_id: string;
   status: TaskStatus;
+}
+
+// Pagination type for manual tasks
+export interface PageManualTask {
+  items: Array<ManualTask>;
+  total: number | null;
+  page: number | null;
+  size: number | null;
+  pages?: number | null;
 }

@@ -1,33 +1,28 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 import { baseApi } from "~/features/common/api.slice";
+import { PaginationQueryParams } from "~/types/common/PaginationQueryParams";
+
+// Import mock data and types
+import mockTasksData from "./mocked/manual-tasks.json";
 import {
   CompleteTaskPayload,
   ManualTask,
-  ManualTasksResponse,
-  Page_ManualTask_,
+  PageManualTask,
+  RequestType,
   SkipTaskPayload,
   TaskActionResponse,
-} from "~/types/api";
-import {
-  RequestType,
   TaskInputType,
   TaskStatus,
-} from "~/types/api/models/ManualTask";
-import { PaginationQueryParams } from "~/types/common/PaginationQueryParams";
+} from "./mocked/types";
 
-// Import mock data
-import mockTasksData from "./mocked/manual-tasks.json";
-
-// Ensure mock data has correct types
-const typedMockData: ManualTasksResponse = {
-  tasks: mockTasksData.tasks.map((task) => ({
-    ...task,
-    input_type: task.input_type as TaskInputType,
-    request_type: task.request_type as RequestType,
-    status: task.status as TaskStatus,
-  })),
-};
+// Ensure mock data has correct types - mock data is now a direct array
+const typedMockData: ManualTask[] = mockTasksData.map((task) => ({
+  ...task,
+  input_type: task.input_type as TaskInputType,
+  request_type: task.request_type as RequestType,
+  status: task.status as TaskStatus,
+}));
 
 // Helper function to paginate results
 const paginateResults = (
@@ -35,7 +30,7 @@ const paginateResults = (
   page: number = 1,
   size: number = 10,
   searchTerm?: string,
-): Page_ManualTask_ => {
+): PageManualTask => {
   // Filter by search term if provided
   let filteredTasks = tasks;
   if (searchTerm) {
@@ -74,7 +69,7 @@ interface TaskQueryParams extends PaginationQueryParams {
 // API endpoints
 export const manualTasksApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    getTasks: build.query<Page_ManualTask_, TaskQueryParams | void>({
+    getTasks: build.query<PageManualTask, TaskQueryParams | void>({
       queryFn: (params) => {
         // Set default values if params is undefined
         const queryParams = params || { page: 1, size: 10 };
@@ -90,7 +85,7 @@ export const manualTasksApi = baseApi.injectEndpoints({
         } = queryParams;
 
         // Filter tasks based on query parameters
-        let filteredTasks = typedMockData.tasks;
+        let filteredTasks = typedMockData;
 
         if (status) {
           filteredTasks = filteredTasks.filter(
@@ -138,7 +133,7 @@ export const manualTasksApi = baseApi.injectEndpoints({
 
     getTaskById: build.query<ManualTask, string>({
       queryFn: (taskId) => {
-        const task = typedMockData.tasks.find((t) => t.task_id === taskId);
+        const task = typedMockData.find((t) => t.task_id === taskId);
         return task
           ? { data: task }
           : {

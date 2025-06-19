@@ -14,14 +14,11 @@ import {
 } from "~/features/common/table/v2";
 import { SubjectRequestActionTypeMap } from "~/features/privacy-requests/constants";
 import { ActionType, PrivacyRequestStatus } from "~/types/api";
-import {
-  ManualTask,
-  RequestType,
-  TaskStatus,
-} from "~/types/api/models/ManualTask";
 
 import { useGetTasksQuery } from "../manual-tasks.slice";
+import { ManualTask, RequestType, TaskStatus } from "../mocked/types";
 import { ActionButtons } from "./ActionButtons";
+import { UserTag } from "./UserTag";
 
 // Map task status to tag colors and labels
 const statusMap: Record<TaskStatus, { color: string; label: string }> = {
@@ -44,7 +41,9 @@ const getColumns = (
     key: "name",
     width: 300,
     render: (name) => (
-      <Typography.Text ellipsis={{ tooltip: name }}>{name}</Typography.Text>
+      <Typography.Text className="font-semibold" ellipsis={{ tooltip: name }}>
+        {name}
+      </Typography.Text>
     ),
   },
   {
@@ -92,12 +91,10 @@ const getColumns = (
   },
   {
     title: "Assigned to",
-    dataIndex: "assignedTo",
-    key: "assignedTo",
+    dataIndex: "assigned_users",
+    key: "assigned_users",
     width: 350,
-    render: (assignedTo: string) => (
-      <Typography.Text>{assignedTo}</Typography.Text>
-    ),
+    render: (assignedUsers) => <UserTag users={assignedUsers} />,
   },
   {
     title: "Days left",
@@ -195,6 +192,7 @@ export const ManualTasksTable = ({ searchTerm }: Props) => {
         dataSource={tasks}
         rowKey="task_id"
         size="small"
+        bordered
         pagination={false}
         locale={{
           emptyText: searchTerm ? (

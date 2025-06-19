@@ -6,9 +6,8 @@ import {
   Icons,
 } from "fidesui";
 
-import { ManualTask } from "~/types/api/models/ManualTask";
-
 import { useCompleteTaskMutation } from "../manual-tasks.slice";
+import { ManualTask } from "../mocked/types";
 
 interface Props {
   task: ManualTask;
@@ -56,7 +55,7 @@ export const ActionButtons = ({ task }: Props) => {
 
       <Dropdown
         menu={{ items: menuItems }}
-        trigger={["hover"]}
+        trigger={["click"]}
         placement="bottomRight"
         overlayStyle={{ minWidth: 120 }}
       >

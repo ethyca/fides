@@ -1,244 +1,353 @@
-{
-  "tasks": [
-    {
-      "task_id": "task-001",
-      "name": "Verify user identity documents",
-      "description": "Review and verify the submitted identity documents for the access request",
-      "input_type": "checkbox",
-      "request_type": "access",
-      "status": "new",
-      "assignedTo": "john.doe@example.com",
-      "privacy_request_id": "pri_5005c923-474c-4168-8c9e-2670fd40dc19",
-      "created_at": "2023-06-15T10:30:00Z",
-      "updated_at": "2023-06-15T10:30:00Z",
-      "days_left": 5,
-      "due_date": "2023-06-20T10:30:00Z",
-      "system_name": "Customer Database",
-      "system_id": "sys-001"
-    },
-    {
-      "task_id": "task-002",
-      "name": "Export user transaction history",
-      "description": "Export all transaction history for the user from the payment system",
-      "input_type": "file",
-      "request_type": "access",
-      "status": "completed",
-      "assignedTo": "jane.smith@example.com",
-      "privacy_request_id": "pri_5005c923-474c-4168-8c9e-2670fd40dc19",
-      "created_at": "2023-06-14T09:15:00Z",
-      "updated_at": "2023-06-16T14:20:00Z",
-      "days_left": 3,
-      "due_date": "2023-06-19T09:15:00Z",
-      "system_name": "Payment System",
-      "system_id": "sys-002"
-    },
-    {
-      "task_id": "task-003",
-      "name": "Delete user profile data",
-      "description": "Remove all profile data for the user from the CRM system",
-      "input_type": "string",
-      "request_type": "erasure",
-      "status": "new",
-      "assignedTo": "john.doe@example.com",
-      "privacy_request_id": "pri_7a8b9c2d-3e4f-5a6b-7c8d-9e0f1a2b3c4d",
-      "created_at": "2023-06-16T11:45:00Z",
-      "updated_at": "2023-06-16T11:45:00Z",
-      "days_left": 7,
-      "due_date": "2023-06-23T11:45:00Z",
-      "system_name": "CRM System",
-      "system_id": "sys-003"
-    },
-    {
-      "task_id": "task-004",
-      "name": "Remove user from marketing lists",
-      "description": "Remove the user from all marketing email and SMS lists",
-      "input_type": "checkbox",
-      "request_type": "erasure",
-      "status": "skipped",
-      "assignedTo": "jane.smith@example.com",
-      "privacy_request_id": "pri_7a8b9c2d-3e4f-5a6b-7c8d-9e0f1a2b3c4d",
-      "created_at": "2023-06-15T13:20:00Z",
-      "updated_at": "2023-06-17T09:10:00Z",
-      "days_left": 6,
-      "due_date": "2023-06-21T13:20:00Z",
-      "system_name": "Marketing Platform",
-      "system_id": "sys-004"
-    },
-    {
-      "task_id": "task-005",
-      "name": "Verify data deletion in legacy system",
-      "description": "Manually check that all user data has been removed from the legacy system",
-      "input_type": "checkbox",
-      "request_type": "erasure",
-      "status": "new",
-      "assignedTo": "john.doe@example.com",
-      "privacy_request_id": "pri_3f8e2a1b-9c5d-4e7f-8a9b-1c2d3e4f5a6b",
-      "created_at": "2023-06-17T15:30:00Z",
-      "updated_at": "2023-06-17T15:30:00Z",
-      "days_left": 2,
-      "due_date": "2023-06-19T15:30:00Z",
-      "system_name": "Legacy System",
-      "system_id": "sys-005"
-    },
-    {
-      "task_id": "task-006",
-      "name": "Export user communication history",
-      "description": "Export all communication history for the user from the support system",
-      "input_type": "file",
-      "request_type": "access",
-      "status": "new",
-      "assignedTo": "jane.smith@example.com",
-      "privacy_request_id": "pri_5005c923-474c-4168-8c9e-2670fd40dc19",
-      "created_at": "2023-06-16T10:00:00Z",
-      "updated_at": "2023-06-16T10:00:00Z",
-      "days_left": 4,
-      "due_date": "2023-06-20T10:00:00Z",
-      "system_name": "Support System",
-      "system_id": "sys-006"
-    },
-    {
-      "task_id": "task-007",
-      "name": "Export Salesforce customer records",
-      "description": "Extract all customer data from Salesforce CRM including contacts, opportunities, and cases",
-      "input_type": "file",
-      "request_type": "access",
-      "status": "new",
-      "assignedTo": "mike.wilson@example.com",
-      "privacy_request_id": "pri_8d1e4f2a-5b6c-7d8e-9f0a-1b2c3d4e5f6a",
-      "created_at": "2023-06-18T14:15:00Z",
-      "updated_at": "2023-06-18T14:15:00Z",
-      "days_left": 15,
-      "due_date": "2023-07-03T14:15:00Z",
-      "system_name": "Salesforce",
-      "system_id": "sys-007"
-    },
-    {
-      "task_id": "task-008",
-      "name": "Delete user analytics data",
-      "description": "Remove all user tracking and analytics data from Google Analytics and internal systems",
-      "input_type": "checkbox",
-      "request_type": "erasure",
-      "status": "completed",
-      "assignedTo": "sarah.davis@example.com",
-      "privacy_request_id": "pri_8d1e4f2a-5b6c-7d8e-9f0a-1b2c3d4e5f6a",
-      "created_at": "2023-06-17T11:30:00Z",
-      "updated_at": "2023-06-19T16:45:00Z",
-      "days_left": 15,
-      "due_date": "2023-07-03T11:30:00Z",
-      "system_name": "Analytics Platform",
-      "system_id": "sys-008"
-    },
-    {
-      "task_id": "task-009",
-      "name": "Export HubSpot contact data",
-      "description": "Download all contact information, email history, and engagement data from HubSpot",
-      "input_type": "file",
-      "request_type": "access",
-      "status": "new",
-      "assignedTo": "alex.johnson@example.com",
-      "privacy_request_id": "pri_2c5f8a1d-4e7b-9c0f-2a5d-8b1e4f7a0c3d",
-      "created_at": "2023-06-19T09:45:00Z",
-      "updated_at": "2023-06-19T09:45:00Z",
-      "days_left": 12,
-      "due_date": "2023-07-01T09:45:00Z",
-      "system_name": "HubSpot",
-      "system_id": "sys-009"
-    },
-    {
-      "task_id": "task-010",
-      "name": "Remove user from Slack workspace",
-      "description": "Delete user account and all associated messages from company Slack workspace",
-      "input_type": "checkbox",
-      "request_type": "erasure",
-      "status": "new",
-      "assignedTo": "chris.brown@example.com",
-      "privacy_request_id": "pri_2c5f8a1d-4e7b-9c0f-2a5d-8b1e4f7a0c3d",
-      "created_at": "2023-06-19T13:20:00Z",
-      "updated_at": "2023-06-19T13:20:00Z",
-      "days_left": 12,
-      "due_date": "2023-07-01T13:20:00Z",
-      "system_name": "Slack",
-      "system_id": "sys-010"
-    },
-    {
-      "task_id": "task-011",
-      "name": "Export MongoDB user collection",
-      "description": "Extract all user documents from the main user collection in MongoDB",
-      "input_type": "file",
-      "request_type": "access",
-      "status": "completed",
-      "assignedTo": "emma.taylor@example.com",
-      "privacy_request_id": "pri_9f2d5a8b-1e4c-7f0a-3d6b-9c2f5a8b1e4c",
-      "created_at": "2023-06-16T08:30:00Z",
-      "updated_at": "2023-06-18T12:15:00Z",
-      "days_left": 8,
-      "due_date": "2023-06-24T08:30:00Z",
-      "system_name": "MongoDB",
-      "system_id": "sys-011"
-    },
-    {
-      "task_id": "task-012",
-      "name": "Verify Stripe payment data deletion",
-      "description": "Confirm that all payment records and customer data have been properly removed from Stripe",
-      "input_type": "string",
-      "request_type": "erasure",
-      "status": "new",
-      "assignedTo": "david.lee@example.com",
-      "privacy_request_id": "pri_9f2d5a8b-1e4c-7f0a-3d6b-9c2f5a8b1e4c",
-      "created_at": "2023-06-18T16:45:00Z",
-      "updated_at": "2023-06-18T16:45:00Z",
-      "days_left": 8,
-      "due_date": "2023-06-26T16:45:00Z",
-      "system_name": "Stripe",
-      "system_id": "sys-012"
-    },
-    {
-      "task_id": "task-013",
-      "name": "Export Zendesk ticket history",
-      "description": "Download all support tickets, comments, and attachments for the user from Zendesk",
-      "input_type": "file",
-      "request_type": "access",
-      "status": "skipped",
-      "assignedTo": "lisa.garcia@example.com",
-      "privacy_request_id": "pri_6a9c2f5d-8b1e-4a7d-0c3f-6a9c2f5d8b1e",
-      "created_at": "2023-06-17T12:00:00Z",
-      "updated_at": "2023-06-19T10:30:00Z",
-      "days_left": 18,
-      "due_date": "2023-07-05T12:00:00Z",
-      "system_name": "Zendesk",
-      "system_id": "sys-013"
-    },
-    {
-      "task_id": "task-014",
-      "name": "Delete user session logs",
-      "description": "Remove all user session logs and activity tracking data from internal logging systems",
-      "input_type": "checkbox",
-      "request_type": "erasure",
-      "status": "new",
-      "assignedTo": "ryan.martinez@example.com",
-      "privacy_request_id": "pri_6a9c2f5d-8b1e-4a7d-0c3f-6a9c2f5d8b1e",
-      "created_at": "2023-06-19T15:15:00Z",
-      "updated_at": "2023-06-19T15:15:00Z",
-      "days_left": 18,
-      "due_date": "2023-07-07T15:15:00Z",
-      "system_name": "Logging System",
-      "system_id": "sys-014"
-    },
-    {
-      "task_id": "task-015",
-      "name": "Export AWS CloudWatch user metrics",
-      "description": "Extract all user-specific metrics and logs from AWS CloudWatch",
-      "input_type": "file",
-      "request_type": "access",
-      "status": "new",
-      "assignedTo": "nicole.anderson@example.com",
-      "privacy_request_id": "pri_4d7a0c3f-6b9e-2d5a-8c1f-4d7a0c3f6b9e",
-      "created_at": "2023-06-20T11:20:00Z",
-      "updated_at": "2023-06-20T11:20:00Z",
-      "days_left": 22,
-      "due_date": "2023-07-12T11:20:00Z",
-      "system_name": "AWS CloudWatch",
-      "system_id": "sys-015"
-    }
-  ]
-}
+[
+  {
+    "task_id": "task_001",
+    "name": "Export Customer Data from Salesforce",
+    "description": "Export all customer data from Salesforce for privacy request",
+    "input_type": "file",
+    "request_type": "access",
+    "status": "new",
+    "assigned_users": [
+      {
+        "id": "usr_001",
+        "email_address": "john.doe@company.com",
+        "first_name": "John",
+        "last_name": "Doe"
+      }
+    ],
+    "privacy_request_id": "pri_5005c923-474c-4168-8c9e-2670fd40dc19",
+    "created_at": "2024-03-15T10:00:00Z",
+    "updated_at": "2024-03-15T10:00:00Z",
+    "days_left": 15,
+    "due_date": "2024-03-30T10:00:00Z",
+    "system_name": "Salesforce",
+    "system_id": "sys_001"
+  },
+  {
+    "task_id": "task_002",
+    "name": "Delete User Profile from MongoDB",
+    "description": "Remove user profile and associated data from MongoDB",
+    "input_type": "checkbox",
+    "request_type": "erasure",
+    "status": "new",
+    "assigned_users": [
+      {
+        "id": "usr_002",
+        "email_address": "sarah.wilson@company.com",
+        "first_name": "Sarah",
+        "last_name": "Wilson"
+      }
+    ],
+    "privacy_request_id": "pri_7a2b4c8d-3e5f-4a9b-8c7d-1e2f3a4b5c6d",
+    "created_at": "2024-03-14T14:30:00Z",
+    "updated_at": "2024-03-14T14:30:00Z",
+    "days_left": 8,
+    "due_date": "2024-03-22T14:30:00Z",
+    "system_name": "MongoDB",
+    "system_id": "sys_002"
+  },
+  {
+    "task_id": "task_003",
+    "name": "Confirm Payment Data Deletion",
+    "description": "Verify that payment data has been deleted from Stripe",
+    "input_type": "string",
+    "request_type": "erasure",
+    "status": "completed",
+    "assigned_users": [
+      {
+        "id": "usr_003",
+        "email_address": "mike.johnson@company.com",
+        "first_name": "Mike",
+        "last_name": "Johnson"
+      }
+    ],
+    "privacy_request_id": "pri_9f8e7d6c-5b4a-3928-1706-f5e4d3c2b1a0",
+    "created_at": "2024-03-10T09:15:00Z",
+    "updated_at": "2024-03-12T16:45:00Z",
+    "days_left": 22,
+    "due_date": "2024-04-05T09:15:00Z",
+    "system_name": "Stripe",
+    "system_id": "sys_003"
+  },
+  {
+    "task_id": "task_004",
+    "name": "Export Analytics Data",
+    "description": "Extract user analytics data from Google Analytics",
+    "input_type": "file",
+    "request_type": "access",
+    "status": "new",
+    "assigned_users": [
+      {
+        "id": "usr_004",
+        "email_address": "emma.davis@company.com",
+        "first_name": "Emma",
+        "last_name": "Davis"
+      }
+    ],
+    "privacy_request_id": "pri_1a2b3c4d-5e6f-7890-abcd-ef1234567890",
+    "created_at": "2024-03-16T11:20:00Z",
+    "updated_at": "2024-03-16T11:20:00Z",
+    "days_left": 4,
+    "due_date": "2024-03-20T11:20:00Z",
+    "system_name": "Google Analytics",
+    "system_id": "sys_004"
+  },
+  {
+    "task_id": "task_005",
+    "name": "Remove User from CRM",
+    "description": "Delete user record from HubSpot CRM system",
+    "input_type": "checkbox",
+    "request_type": "erasure",
+    "status": "skipped",
+    "assigned_users": [
+      {
+        "id": "usr_005",
+        "email_address": "alex.brown@company.com",
+        "first_name": "Alex",
+        "last_name": "Brown"
+      }
+    ],
+    "privacy_request_id": "pri_fedcba98-7654-3210-9876-543210fedcba",
+    "created_at": "2024-03-13T13:45:00Z",
+    "updated_at": "2024-03-14T10:30:00Z",
+    "days_left": 12,
+    "due_date": "2024-03-28T13:45:00Z",
+    "system_name": "HubSpot",
+    "system_id": "sys_005"
+  },
+  {
+    "task_id": "task_006",
+    "name": "Export Email Campaign Data",
+    "description": "Extract user data from Mailchimp campaigns",
+    "input_type": "file",
+    "request_type": "access",
+    "status": "new",
+    "assigned_users": [
+      {
+        "id": "usr_006",
+        "email_address": "lisa.martinez@company.com",
+        "first_name": "Lisa",
+        "last_name": "Martinez"
+      }
+    ],
+    "privacy_request_id": "pri_abcd1234-ef56-7890-abcd-1234567890ab",
+    "created_at": "2024-03-17T08:30:00Z",
+    "updated_at": "2024-03-17T08:30:00Z",
+    "days_left": 18,
+    "due_date": "2024-04-04T08:30:00Z",
+    "system_name": "Mailchimp",
+    "system_id": "sys_006"
+  },
+  {
+    "task_id": "task_007",
+    "name": "Delete Support Tickets",
+    "description": "Remove user support tickets from Zendesk",
+    "input_type": "string",
+    "request_type": "erasure",
+    "status": "new",
+    "assigned_users": [
+      {
+        "id": "usr_007",
+        "email_address": "david.kim@company.com",
+        "first_name": "David",
+        "last_name": "Kim"
+      }
+    ],
+    "privacy_request_id": "pri_5678abcd-90ef-1234-5678-90abcdef1234",
+    "created_at": "2024-03-15T15:10:00Z",
+    "updated_at": "2024-03-15T15:10:00Z",
+    "days_left": 7,
+    "due_date": "2024-03-22T15:10:00Z",
+    "system_name": "Zendesk",
+    "system_id": "sys_007"
+  },
+  {
+    "task_id": "task_008",
+    "name": "Export User Activity Logs",
+    "description": "Extract user activity logs from internal logging system",
+    "input_type": "file",
+    "request_type": "access",
+    "status": "completed",
+    "assigned_users": [
+      {
+        "id": "usr_008",
+        "email_address": "rachel.taylor@company.com",
+        "first_name": "Rachel",
+        "last_name": "Taylor"
+      }
+    ],
+    "privacy_request_id": "pri_9876fedc-ba54-3210-9876-fedcba543210",
+    "created_at": "2024-03-11T12:00:00Z",
+    "updated_at": "2024-03-13T09:30:00Z",
+    "days_left": 20,
+    "due_date": "2024-04-02T12:00:00Z",
+    "system_name": "Internal Logs",
+    "system_id": "sys_008"
+  },
+  {
+    "task_id": "task_009",
+    "name": "Remove Social Media Data",
+    "description": "Delete user data from social media integrations",
+    "input_type": "checkbox",
+    "request_type": "erasure",
+    "status": "new",
+    "assigned_users": [
+      {
+        "id": "usr_009",
+        "email_address": "tom.anderson@company.com",
+        "first_name": "Tom",
+        "last_name": "Anderson"
+      }
+    ],
+    "privacy_request_id": "pri_1357bdf0-2468-ace1-3579-bdf02468ace1",
+    "created_at": "2024-03-16T16:45:00Z",
+    "updated_at": "2024-03-16T16:45:00Z",
+    "days_left": 3,
+    "due_date": "2024-03-19T16:45:00Z",
+    "system_name": "Social Media API",
+    "system_id": "sys_009"
+  },
+  {
+    "task_id": "task_010",
+    "name": "Export Purchase History",
+    "description": "Extract complete purchase history from e-commerce platform",
+    "input_type": "file",
+    "request_type": "access",
+    "status": "new",
+    "assigned_users": [
+      {
+        "id": "usr_010",
+        "email_address": "jennifer.white@company.com",
+        "first_name": "Jennifer",
+        "last_name": "White"
+      }
+    ],
+    "privacy_request_id": "pri_2468ace1-3579-bdf0-2468-ace13579bdf0",
+    "created_at": "2024-03-14T10:15:00Z",
+    "updated_at": "2024-03-14T10:15:00Z",
+    "days_left": 11,
+    "due_date": "2024-03-25T10:15:00Z",
+    "system_name": "Shopify",
+    "system_id": "sys_010"
+  },
+  {
+    "task_id": "task_011",
+    "name": "Delete Backup Files",
+    "description": "Remove user data from backup storage systems",
+    "input_type": "string",
+    "request_type": "erasure",
+    "status": "skipped",
+    "assigned_users": [
+      {
+        "id": "usr_001",
+        "email_address": "john.doe@company.com",
+        "first_name": "John",
+        "last_name": "Doe"
+      }
+    ],
+    "privacy_request_id": "pri_ace13579-bdf0-2468-ace1-3579bdf02468",
+    "created_at": "2024-03-12T14:20:00Z",
+    "updated_at": "2024-03-13T11:15:00Z",
+    "days_left": 16,
+    "due_date": "2024-03-31T14:20:00Z",
+    "system_name": "AWS S3",
+    "system_id": "sys_011"
+  },
+  {
+    "task_id": "task_012",
+    "name": "Export Chat History",
+    "description": "Extract user chat history from customer support system",
+    "input_type": "file",
+    "request_type": "access",
+    "status": "new",
+    "assigned_users": [
+      {
+        "id": "usr_002",
+        "email_address": "sarah.wilson@company.com",
+        "first_name": "Sarah",
+        "last_name": "Wilson"
+      },
+      {
+        "id": "usr_003",
+        "email_address": "mike.johnson@company.com",
+        "first_name": "Mike",
+        "last_name": "Johnson"
+      }
+    ],
+    "privacy_request_id": "pri_bdf02468-ace1-3579-bdf0-2468ace13579",
+    "created_at": "2024-03-17T09:40:00Z",
+    "updated_at": "2024-03-17T09:40:00Z",
+    "days_left": 2,
+    "due_date": "2024-03-19T09:40:00Z",
+    "system_name": "Intercom",
+    "system_id": "sys_012"
+  },
+  {
+    "task_id": "task_013",
+    "name": "Remove User Preferences",
+    "description": "Delete user preference settings from configuration database",
+    "input_type": "checkbox",
+    "request_type": "erasure",
+    "status": "completed",
+    "assigned_users": [
+      {
+        "id": "usr_004",
+        "email_address": "emma.davis@company.com",
+        "first_name": "Emma",
+        "last_name": "Davis"
+      }
+    ],
+    "privacy_request_id": "pri_13579bdf-0246-8ace-1357-9bdf02468ace",
+    "created_at": "2024-03-09T11:30:00Z",
+    "updated_at": "2024-03-11T14:20:00Z",
+    "days_left": 19,
+    "due_date": "2024-04-01T11:30:00Z",
+    "system_name": "PostgreSQL",
+    "system_id": "sys_013"
+  },
+  {
+    "task_id": "task_014",
+    "name": "Export API Usage Data",
+    "description": "Extract user API usage statistics and logs",
+    "input_type": "file",
+    "request_type": "access",
+    "status": "new",
+    "assigned_users": [
+      {
+        "id": "usr_005",
+        "email_address": "alex.brown@company.com",
+        "first_name": "Alex",
+        "last_name": "Brown"
+      }
+    ],
+    "privacy_request_id": "pri_02468ace-1357-9bdf-0246-8ace13579bdf",
+    "created_at": "2024-03-18T07:15:00Z",
+    "updated_at": "2024-03-18T07:15:00Z",
+    "days_left": 14,
+    "due_date": "2024-04-01T07:15:00Z",
+    "system_name": "API Gateway",
+    "system_id": "sys_014"
+  },
+  {
+    "task_id": "task_015",
+    "name": "Delete Training Data",
+    "description": "Remove user data from machine learning training datasets",
+    "input_type": "string",
+    "request_type": "erasure",
+    "status": "skipped",
+    "assigned_users": [
+      {
+        "id": "usr_006",
+        "email_address": "lisa.martinez@company.com",
+        "first_name": "Lisa",
+        "last_name": "Martinez"
+      }
+    ],
+    "privacy_request_id": "pri_468ace13-579b-df02-468a-ce13579bdf02",
+    "created_at": "2024-03-13T16:50:00Z",
+    "updated_at": "2024-03-14T13:25:00Z",
+    "days_left": 9,
+    "due_date": "2024-03-25T16:50:00Z",
+    "system_name": "ML Pipeline",
+    "system_id": "sys_015"
+  }
+]
