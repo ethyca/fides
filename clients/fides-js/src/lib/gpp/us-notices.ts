@@ -1,5 +1,8 @@
 /**
  * Helper functions to set the GPP CMP API based on Fides values
+ *
+ * NOTE: Changes to this file should likely also be made in the
+ * GPP encoder API implementation in `fidesplus`.
  */
 
 import { CmpApi, UsNatField } from "@iabgpp/cmpapi";
