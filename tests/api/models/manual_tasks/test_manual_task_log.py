@@ -2,7 +2,9 @@ from sqlalchemy.orm import Session
 
 from fides.api.models.manual_tasks.manual_task import ManualTask
 from fides.api.models.manual_tasks.manual_task_config import ManualTaskConfig
+from fides.api.models.manual_tasks.manual_task_instance import ManualTaskInstance
 from fides.api.models.manual_tasks.manual_task_log import ManualTaskLog
+from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskLogStatus
 
 
@@ -77,23 +79,55 @@ class TestManualTaskLog:
         assert log.config_id == manual_task_config.id
         assert log.status == ManualTaskLogStatus.error
 
-    def test_create_error_log_with_instance(self, db: Session, manual_task: ManualTask):
+    def test_create_error_log_with_instance(
+        self,
+        db: Session,
+        manual_task: ManualTask,
+        manual_task_config: ManualTaskConfig,
+        privacy_request: PrivacyRequest,
+    ):
         """Test creating an error log entry with instance reference."""
+        # Create a real instance first
+        instance = ManualTaskInstance.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_id": manual_task_config.id,
+                "entity_id": privacy_request.id,
+                "entity_type": "privacy_request",
+            },
+        )
+
         log = ManualTaskLog.create_error_log(
             db=db,
             task_id=manual_task.id,
             message="Instance execution failed",
-            instance_id="test_instance",
+            instance_id=instance.id,
         )
 
         # Verify error log was created with instance
-        assert log.instance_id == "test_instance"
+        assert log.instance_id == instance.id
         assert log.status == ManualTaskLogStatus.error
 
     def test_create_error_log_with_all_fields(
-        self, db: Session, manual_task: ManualTask, manual_task_config: ManualTaskConfig
+        self,
+        db: Session,
+        manual_task: ManualTask,
+        manual_task_config: ManualTaskConfig,
+        privacy_request: PrivacyRequest,
     ):
         """Test creating an error log entry with all fields populated."""
+        # Create a real instance first
+        instance = ManualTaskInstance.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_id": manual_task_config.id,
+                "entity_id": privacy_request.id,
+                "entity_type": "privacy_request",
+            },
+        )
+
         error_message = "Complete error scenario"
         error_details = {
             "error_code": "SYSTEM_ERROR",
@@ -106,7 +140,7 @@ class TestManualTaskLog:
             task_id=manual_task.id,
             message=error_message,
             config_id=manual_task_config.id,
-            instance_id="test_instance",
+            instance_id=instance.id,
             details=error_details,
         )
 
@@ -115,7 +149,7 @@ class TestManualTaskLog:
         assert log.status == ManualTaskLogStatus.error
         assert log.message == error_message
         assert log.config_id == manual_task_config.id
-        assert log.instance_id == "test_instance"
+        assert log.instance_id == instance.id
         assert log.details == error_details
         assert log.created_at is not None
 

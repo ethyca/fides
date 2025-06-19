@@ -123,7 +123,7 @@ Whether the user should be shown the consent experience. Only available on Fides
 
 #### extraDetails.consentMethod?
 
-> `optional` **consentMethod**: `"accept"` \| `"reject"` \| `"save"` \| `"dismiss"` \| `"gpc"`
+> `optional` **consentMethod**: `"accept"` \| `"reject"` \| `"save"` \| `"dismiss"` \| `"acknowledge"` \| `"gpc"` \| `"script"` \| `"ot_migration"`
 
 What consent method (if any) caused this event.
 
@@ -131,14 +131,24 @@ What consent method (if any) caused this event.
 
 > `optional` **trigger**: `object`
 
-What UI element (if any) triggered this event.
+What UI element (if any) triggered this event, as well as the origin of
+the event.
 
-#### extraDetails.trigger.type
+#### extraDetails.trigger.origin?
 
-> **type**: `"toggle"`
+> `optional` **origin**: `"fides"` \| `"external"`
+
+Where the event originated from. If the event was triggered using an
+SDK script, for example, this will be "external", meaning the event
+was triggered by something other than a FidesJS UI element.
+
+#### extraDetails.trigger.type?
+
+> `optional` **type**: `"toggle"` \| `"button"` \| `"link"`
 
 The type of element that triggered the event. Additional types may be
-added over time (e.g. "button", "link"), so expect this type to grow.
+added over time, so expect this type to grow.
+Only present when origin is "fides".
 
 #### extraDetails.trigger.label?
 

@@ -7,8 +7,10 @@ import {
   PrivacyExperience,
   PrivacyNoticeWithPreference,
 } from "../lib/consent-types";
+import { FidesEventTargetType } from "../lib/events";
 import { messageExists } from "../lib/i18n";
 import { useI18n } from "../lib/i18n/i18n-context";
+import { useEvent } from "../lib/providers/event-context";
 import CloseButton from "./CloseButton";
 import ExperienceDescription from "./ExperienceDescription";
 import { GpcBadge } from "./GpcBadge";
@@ -42,7 +44,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
 }) => {
   const { i18n } = useI18n();
   const showGpcBadge = getConsentContext().globalPrivacyControl;
-
+  const { setTrigger } = useEvent();
   useEffect(() => {
     if (bannerIsOpen) {
       onOpen();
@@ -86,7 +88,13 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
         <div id="fides-banner-inner">
           <CloseButton
             ariaLabel="Close banner"
-            onClick={onClose}
+            onClick={() => {
+              setTrigger({
+                type: FidesEventTargetType.BUTTON,
+                label: "Close banner",
+              });
+              onClose();
+            }}
             hidden={window.Fides?.options?.preventDismissal || !dismissable}
           />
           <div id="fides-banner-inner-container">
