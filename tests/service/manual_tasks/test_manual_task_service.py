@@ -21,7 +21,15 @@ from fides.api.schemas.manual_tasks.manual_task_schemas import (
     ManualTaskReferenceType,
     ManualTaskType,
 )
-from fides.service.manual_tasks.manual_task_service import ManualTaskService
+from fides.service.manual_tasks.manual_task_config_service import ManualTaskConfigError
+from fides.service.manual_tasks.manual_task_instance_service import (
+    ManualTaskInstanceError,
+    ManualTaskSubmissionError,
+)
+from fides.service.manual_tasks.manual_task_service import (
+    ManualTaskError,
+    ManualTaskService,
+)
 from tests.service.manual_tasks.conftest import (
     ATTACHMENT_FIELD_KEY,
     CHECKBOX_FIELD_KEY,
@@ -175,7 +183,7 @@ class TestGetTask:
             search_params["task_id"] = manual_task.id
 
         if expected_error:
-            with pytest.raises(ValueError, match=expected_error):
+            with pytest.raises(ManualTaskError, match=expected_error):
                 manual_task_service.get_task(**search_params)
         else:
             result = manual_task_service.get_task(**search_params)
@@ -250,7 +258,9 @@ class TestAssignUsersToTask:
         ]
 
         if should_raise:
-            with pytest.raises(ValueError, match="User ID is required for assignment"):
+            with pytest.raises(
+                ManualTaskError, match="User ID is required for assignment"
+            ):
                 manual_task_service.assign_users_to_task(
                     task_id=manual_task.id, user_ids=user_ids
                 )
@@ -374,7 +384,7 @@ class TestUnassignUsersFromTask:
 
         if should_raise:
             with pytest.raises(
-                ValueError, match="User ID is required for unassignment"
+                ManualTaskError, match="User ID is required for unassignment"
             ):
                 manual_task_service.unassign_users_from_task(
                     task_id=manual_task.id, user_ids=unassign_users
@@ -539,7 +549,7 @@ class TestManualTaskInstance:
             config_id = manual_task_config.id
 
         if expected_error:
-            with pytest.raises(ValueError, match=expected_error):
+            with pytest.raises(ManualTaskError, match=expected_error):
                 manual_task_service.create_instance(
                     task_id=task_id,
                     config_id=config_id,
@@ -613,7 +623,7 @@ class TestManualTaskInstance:
         assert create_log.instance_id == instance.id
 
         # Test invalid submission
-        with pytest.raises(ValueError):
+        with pytest.raises(ManualTaskInstanceError):
             manual_task_service.create_submission(
                 instance_id="invalid-instance-id",
                 field_id=manual_task_config_field_text.id,

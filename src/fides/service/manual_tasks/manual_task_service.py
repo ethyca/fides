@@ -27,6 +27,14 @@ if TYPE_CHECKING:
     )
 
 
+class ManualTaskError(Exception):
+    """Exception raised when a manual task error occurs."""
+
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(self.message)
+
+
 class ManualTaskService:
     def __init__(self, db: Session):
         self.db = db
@@ -56,7 +64,7 @@ class ManualTaskService:
         """
         if not any([task_id, parent_entity_id, parent_entity_type, task_type]):
             logger.debug("No filters provided to get_task")
-            raise ValueError("No filters provided to get_task")
+            raise ManualTaskError("No filters provided to get_task")
 
         # Build filter conditions and a human-readable description
         filters = []
@@ -82,7 +90,7 @@ class ManualTaskService:
         task = self.db.execute(stmt).scalar_one_or_none()
         if task is None:
             logger.debug(f"No task found with filters: {filter_desc}")
-            raise ValueError(f"No task found with filters: {filter_desc}")
+            raise ManualTaskError(f"No task found with filters: {filter_desc}")
         return task
 
     @with_task_logging("Provided user IDs verified")
@@ -101,7 +109,7 @@ class ManualTaskService:
             None
         """
         if len(non_existent_user_ids) > 0:
-            raise ValueError(
+            raise ManualTaskError(
                 f"User(s) {sorted(list(non_existent_user_ids))} do not exist"
             )
 
@@ -138,11 +146,11 @@ class ManualTaskService:
             error_key: Key to use for error details
 
         Raises:
-            ValueError: If no successful operations and users don't exist
+            ManualTaskError: If no successful operations and users don't exist
         """
         try:
             self._non_existent_users(non_existent_users, task_id=task_id)
-        except ValueError as e:
+        except ManualTaskError as e:
             details[error_key] = sorted(non_existent_users)
             if success_count == 0:
                 raise e
@@ -182,7 +190,7 @@ class ManualTaskService:
             tuple: (processed_users, log_data)
         """
         if not (user_ids := list(set(user_ids))):
-            raise ValueError(f"User ID is required for {operation_type}ment")
+            raise ManualTaskError(f"User ID is required for {operation_type}ment")
 
         existing_users = set(
             u.id
@@ -198,7 +206,7 @@ class ManualTaskService:
         if non_existing := list(set(user_ids) - existing_users):
             try:
                 self._non_existent_users(non_existing, task_id=task_id)
-            except ValueError as e:
+            except ManualTaskError as e:
                 details[f"user_ids_not_{operation_type}ed"] = sorted(non_existing)
                 if not processed_users:
                     raise e
@@ -291,8 +299,8 @@ class ManualTaskService:
             config: The config to delete
             task_id: The task ID
         Raises:
-            ValueError: If there are active instances using this configuration
-            ValueError: If the task does not exist
+            ManualTaskConfigError: If there are active instances using this configuration
+            ManualTaskError: If the task does not exist
 
         Returns:
             dict[str, Any]: The log details - intercepted by the `with_task_logging` decorator.

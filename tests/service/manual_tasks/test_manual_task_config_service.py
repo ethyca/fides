@@ -12,6 +12,7 @@ from fides.api.models.manual_tasks.manual_task_log import (
 from fides.api.schemas.manual_tasks.manual_task_config import ManualTaskFieldType
 from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskLogStatus
 from fides.service.manual_tasks.manual_task_config_service import (
+    ManualTaskConfigError,
     ManualTaskConfigService,
 )
 from tests.service.manual_tasks.conftest import (
@@ -129,13 +130,15 @@ def test_create_new_version_with_previous_config(
 
 
 @pytest.mark.parametrize(
-    "invalid_input,expected_error",
+    "invalid_input,expected_error, error_message",
     [
-        (
+        pytest.param(
             {"config_type": "invalid_type", "fields": FIELDS},
-            "Invalid config type: invalid_type",
+            ValueError,
+            "'invalid_type' is not a valid ManualTaskConfigurationType",
+            id="invalid_config_type",
         ),
-        (
+        pytest.param(
             {
                 "config_type": CONFIG_TYPE,
                 "fields": [
@@ -146,9 +149,11 @@ def test_create_new_version_with_previous_config(
                     }
                 ],
             },
+            ManualTaskConfigError,
             "Invalid field type: 'invalid_type' is not a valid ManualTaskFieldType",
+            id="invalid_field_type",
         ),
-        (
+        pytest.param(
             {
                 "config_type": CONFIG_TYPE,
                 "fields": [
@@ -159,9 +164,11 @@ def test_create_new_version_with_previous_config(
                     }
                 ],
             },
+            ManualTaskConfigError,
             "Invalid field data: field_type is required",
+            id="invalid_field_data",
         ),
-        (
+        pytest.param(
             {
                 "config_type": CONFIG_TYPE,
                 "fields": [
@@ -172,9 +179,11 @@ def test_create_new_version_with_previous_config(
                     }
                 ],
             },
-            "Invalid field data",
+            ManualTaskConfigError,
+            "Invalid field data: field_key is required",
+            id="invalid_field_data",
         ),
-        (
+        pytest.param(
             {
                 "config_type": CONFIG_TYPE,
                 "fields": [
@@ -185,7 +194,9 @@ def test_create_new_version_with_previous_config(
                     }
                 ],
             },
-            "Invalid field data",
+            ManualTaskConfigError,
+            "Invalid field updates: Invalid field data: 1 validation error for ManualTaskTextField",
+            id="invalid_field_data2",
         ),
     ],
 )
@@ -193,10 +204,11 @@ def test_config_validation(
     manual_task: ManualTask,
     manual_task_config_service: ManualTaskConfigService,
     invalid_input: dict[str, Any],
-    expected_error: str,
+    expected_error: type,
+    error_message: str,
 ):
     """Test various config validation scenarios."""
-    with pytest.raises(ValueError, match=expected_error):
+    with pytest.raises(expected_error, match=error_message):
         manual_task_config_service.create_new_version(
             task=manual_task,
             config_type=invalid_input["config_type"],
@@ -222,7 +234,7 @@ def test_duplicate_field_keys(
         },
     ]
     with pytest.raises(
-        ValueError,
+        ManualTaskConfigError,
         match="Duplicate field keys found in field updates, field keys must be unique.",
     ):
         manual_task_config_service.create_new_version(
@@ -332,7 +344,9 @@ def test_config_deletion(
     manual_task_config_service.delete_config(manual_task, config_id)
     assert db.query(ManualTaskConfig).filter_by(id=config_id).first() is None
 
-    with pytest.raises(ValueError, match="Config with ID invalid-id not found"):
+    with pytest.raises(
+        ManualTaskConfigError, match="Config with ID invalid-id not found"
+    ):
         manual_task_config_service.delete_config(manual_task, "invalid-id")
 
 

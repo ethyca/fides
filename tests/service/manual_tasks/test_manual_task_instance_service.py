@@ -19,6 +19,7 @@ from fides.api.schemas.manual_tasks.manual_task_status import (
 )
 from fides.service.manual_tasks.manual_task_instance_service import (
     ManualTaskInstanceService,
+    ManualTaskSubmissionError,
 )
 
 
@@ -270,11 +271,13 @@ class TestAttachmentOperations:
         attachment_data: dict[str, Any],
     ) -> None:
         """Test error cases for delete_attachment_by_id."""
-        with pytest.raises(ValueError, match="Submission with ID None does not exist"):
+        with pytest.raises(
+            ManualTaskSubmissionError, match="Submission with ID None does not exist"
+        ):
             manual_task_instance_service.delete_attachment_by_id(None, "some-id")
 
         with pytest.raises(
-            ValueError,
+            ManualTaskSubmissionError,
             match=f"Attachment some-id not found in submission {attachment_field_submission.id}",
         ):
             manual_task_instance_service.delete_attachment_by_id(
