@@ -30,6 +30,12 @@ class FilterPostProcessorConfiguration(StrategyConfiguration):
     case_sensitive: bool = True
 
 
+class ExtractForExecutionLogPostProcessorConfiguration(StrategyConfiguration):
+    """Configuration for extracting data from response body and adding to execution log messages"""
+
+    path: Optional[str] = None
+
+
 class OffsetPaginationConfiguration(StrategyConfiguration):
     """
     Increases the value of the query param `incremental_param` by the `increment_by` until the `limit` is hit

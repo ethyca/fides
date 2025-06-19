@@ -42,6 +42,7 @@ from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest, Reque
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.service.connectors.base_connector import BaseConnector
+from fides.api.service.execution_context import collect_execution_log_messages
 from fides.api.task.consolidate_query_matches import consolidate_query_matches
 from fides.api.task.filter_element_match import filter_element_match
 from fides.api.task.refine_target_path import FieldPathNodeInput
@@ -418,7 +419,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         self,
         action_type: ActionType,
         ex: Optional[BaseException] = None,
-        success_override_msg: Optional[BaseException] = None,
+        success_override_msg: Optional[str] = None,
     ) -> None:
         """On completion activities"""
         if ex:
@@ -614,19 +615,29 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             formatted_input_data: NodeInput = self.pre_process_input_data(
                 *inputs, group_dependent_fields=True
             )
-            output: List[Row] = self.connector.retrieve_data(
-                self.execution_node,
-                self.resources.policy,
-                self.resources.request,
-                self.resources.privacy_request_task,
-                formatted_input_data,
-            )
+
+            # Use execution context to capture postprocessor messages
+            with collect_execution_log_messages() as messages:
+                output: List[Row] = self.connector.retrieve_data(
+                    self.execution_node,
+                    self.resources.policy,
+                    self.resources.request,
+                    self.resources.privacy_request_task,
+                    formatted_input_data,
+                )
+
             filtered_output: List[Row] = self.access_results_post_processing(
                 self.pre_process_input_data(*inputs, group_dependent_fields=False),
                 output,
             )
-            self.log_end(ActionType.access)
-            return filtered_output
+
+        # Include postprocessor messages in success message if available
+        success_message = None
+        if messages:
+            success_message = "\n".join(messages)
+
+        self.log_end(ActionType.access, success_override_msg=success_message)
+        return filtered_output
 
     @retry(action_type=ActionType.erasure, default_return=0)
     def erasure_request(
@@ -682,13 +693,16 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             )
             return 0
 
-        output = self.connector.mask_data(
-            self.execution_node,
-            self.resources.policy,
-            self.resources.request,
-            self.resources.privacy_request_task,
-            retrieved_data,
-        )
+        # Use execution context to capture postprocessor messages
+        with collect_execution_log_messages() as messages:
+            output = self.connector.mask_data(
+                self.execution_node,
+                self.resources.policy,
+                self.resources.request,
+                self.resources.privacy_request_task,
+                retrieved_data,
+            )
+
         if self.request_task.id:
             # For DSR 3.0, largely for testing. DSR 3.0 uses Request Task status
             # instead of presence of cached erasure data to know if we should rerun a node
@@ -699,7 +713,13 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         self.resources.cache_erasure(
             self.key.value, output
         )  # Cache that the erasure was performed in case we need to restart
-        self.log_end(ActionType.erasure)
+
+        # Include postprocessor messages in success message if available
+        success_message = None
+        if messages:
+            success_message = "\n".join(messages)
+
+        self.log_end(ActionType.erasure, success_override_msg=success_message)
         return output
 
     @retry(action_type=ActionType.consent, default_return=False)
