@@ -19,7 +19,13 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.63.3...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.64.0...main)
+
+
+
+
+
+## [2.64.0](https://github.com/ethyca/fides/compare/2.63.3...2.64.0)
 
 ### Added
 - Added support for Salesforce custom object monitoring using Helios [#6096](https://github.com/ethyca/fides/pull/6096)
@@ -38,6 +44,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed FidesJS AMD module loading conflicts when RequireJS or other AMD loaders are present [#6210](https://github.com/ethyca/fides/pull/6210)
 - Fixed the system integration form formatting dataset references incorrectly [#6225](https://github.com/ethyca/fides/pull/6225)
 - Fixed a bug with pagination on the action center tables [#6231](https://github.com/ethyca/fides/pull/6231)
+- Ensured that property ID is always included when saving consent in fides.js [#6238](https://github.com/ethyca/fides/pull/6238)
 
 
 ## [2.63.3](https://github.com/ethyca/fides/compare/2.63.2...2.63.3)
