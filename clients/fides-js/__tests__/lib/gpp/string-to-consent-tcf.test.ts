@@ -12,8 +12,8 @@ import {
 import { fidesStringToConsent } from "../../../src/lib/gpp/string-to-consent";
 import { makeStub } from "../../../src/lib/gpp/stub";
 import {
-  UpdateConsentPreferences,
   updateConsentPreferences,
+  UpdateConsentPreferencesProps,
 } from "../../../src/lib/preferences";
 
 // Mock fidesDebugger
@@ -112,9 +112,9 @@ const mockWindowFides = (override?: Partial<Window["Fides"]>) => {
 };
 
 const expectUpdateConsentPreferences = (
-  override?: Partial<UpdateConsentPreferences>,
+  override?: Partial<UpdateConsentPreferencesProps>,
 ) => {
-  const base: Partial<UpdateConsentPreferences> = {
+  const base: Partial<UpdateConsentPreferencesProps> = {
     consentMethod: ConsentMethod.SCRIPT,
     options: {
       tcfEnabled: true,

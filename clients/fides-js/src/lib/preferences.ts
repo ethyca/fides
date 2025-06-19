@@ -95,7 +95,7 @@ async function savePreferencesApi(
  * 6. Remove any cookies from notices that were opted-out from the browser
  * 7. Dispatch a "FidesUpdated" event
  */
-export interface UpdateConsentPreferences {
+export interface UpdateConsentPreferencesProps {
   consentPreferencesToSave?: Array<SaveConsentPreference>;
   privacyExperienceConfigHistoryId?: string;
   experience: PrivacyExperience | PrivacyExperienceMinimal;
@@ -123,7 +123,7 @@ export const updateConsentPreferences = async ({
   tcf,
   updateCookie,
   propertyId,
-}: UpdateConsentPreferences) => {
+}: UpdateConsentPreferencesProps) => {
   if (!updateCookie && consentPreferencesToSave) {
     // eslint-disable-next-line no-param-reassign
     updateCookie = (oldCookie) =>
