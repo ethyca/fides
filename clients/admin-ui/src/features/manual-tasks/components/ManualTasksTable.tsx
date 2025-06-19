@@ -117,17 +117,6 @@ const getColumns = (
     render: () => <Typography.Text>-</Typography.Text>,
   },
   {
-    title: "Request ID",
-    dataIndex: "privacy_request_id",
-    key: "privacy_request_id",
-    width: 200,
-    render: (requestId: string) => (
-      <Typography.Text ellipsis={{ tooltip: requestId }}>
-        {requestId}
-      </Typography.Text>
-    ),
-  },
-  {
     title: "Actions",
     key: "actions",
     width: 120,

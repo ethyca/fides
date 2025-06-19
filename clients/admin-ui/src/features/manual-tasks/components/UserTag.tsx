@@ -1,6 +1,8 @@
 import { AntTag as Tag, AntTooltip as Tooltip } from "fidesui";
 import { useRouter } from "next/router";
 
+import { USER_PROFILE_ROUTE } from "~/features/common/nav/routes";
+
 import { AssignedUser } from "../mocked/types";
 
 interface Props {
@@ -15,7 +17,10 @@ export const UserTag = ({ users }: Props) => {
   }
 
   const handleUserClick = (userId: string) => {
-    router.push(`/user-management/profile/${userId}`);
+    router.push({
+      pathname: USER_PROFILE_ROUTE,
+      query: { id: userId },
+    });
   };
 
   return (

@@ -12,7 +12,7 @@ export const ManualTasks = () => {
   };
 
   return (
-    <div className="space-y-4 p-4">
+    <div className="mt-2 space-y-4">
       <DebouncedSearchInput
         placeholder="Search by name or description..."
         value={searchTerm}

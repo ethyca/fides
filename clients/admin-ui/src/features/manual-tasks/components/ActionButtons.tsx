@@ -5,6 +5,9 @@ import {
   AntSpace as Space,
   Icons,
 } from "fidesui";
+import { useRouter } from "next/router";
+
+import { PRIVACY_REQUEST_DETAIL_ROUTE } from "~/features/common/nav/routes";
 
 import { useCompleteTaskMutation } from "../manual-tasks.slice";
 import { ManualTask } from "../mocked/types";
@@ -14,6 +17,7 @@ interface Props {
 }
 
 export const ActionButtons = ({ task }: Props) => {
+  const router = useRouter();
   const [completeTask, { isLoading: isCompleting }] = useCompleteTaskMutation();
 
   // Don't render anything for non-new tasks
@@ -31,10 +35,21 @@ export const ActionButtons = ({ task }: Props) => {
 
   const handleSkip = () => {
     // TODO: Implement skip functionality
-    console.log("Skip button clicked for task:", task.task_id);
+  };
+
+  const handleGoToRequest = () => {
+    router.push({
+      pathname: PRIVACY_REQUEST_DETAIL_ROUTE,
+      query: { id: task.privacy_request_id },
+    });
   };
 
   const menuItems: MenuProps["items"] = [
+    {
+      key: "go-to-request",
+      label: "Go to request",
+      onClick: handleGoToRequest,
+    },
     {
       key: "skip",
       label: "Skip",
