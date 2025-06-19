@@ -58,6 +58,7 @@ export const ActionButtons = ({ task }: Props) => {
         menu={{ items: menuItems }}
         trigger={["hover"]}
         placement="bottomRight"
+        overlayStyle={{ minWidth: 120 }}
       >
         <Button
           size="small"
