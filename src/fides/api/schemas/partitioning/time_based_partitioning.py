@@ -9,6 +9,34 @@ from sqlalchemy.sql import ColumnElement
 
 from fides.api.schemas.base_class import FidesSchema
 
+# ------------------------------------------------------------------
+# Regular expression patterns reused across validation helpers.
+# ------------------------------------------------------------------
+
+NOW_LITERAL_REGEX = r"^NOW\(\)$"
+TODAY_LITERAL_REGEX = r"^TODAY\(\)$"
+
+# Arithmetic offset pattern, e.g. "NOW() - 30 DAYS" or "TODAY() + 2 WEEKS"
+ARITHMETIC_OFFSET_REGEX = (
+    r"^(NOW|TODAY)\(\)\s*([+-])\s*(\d+)\s+"
+    r"(DAY|DAYS|WEEK|WEEKS|MONTH|MONTHS|YEAR|YEARS)$"
+)
+
+# Simple date & datetime literals
+DATE_LITERAL_REGEX = r"^\d{4}-\d{2}-\d{2}$"
+DATETIME_LITERAL_REGEX = r"^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}$"
+
+# Interval pattern (non-capturing) e.g. "7 DAYS", "2 WEEKS"
+INTERVAL_REGEX = r"^\d+\s+(DAY|DAYS|WEEK|WEEKS|MONTH|MONTHS|YEAR|YEARS)$"
+# Same pattern but with capturing groups for value & unit so we can parse quickly
+INTERVAL_CAPTURE_REGEX = r"^(\d+)\s+(DAY|DAYS|WEEK|WEEKS|MONTH|MONTHS|YEAR|YEARS)$"
+
+# Offset pattern for day/week units, captures NOW() or TODAY(), numeric value, and unit
+DAY_WEEK_OFFSET_REGEX = r"^(NOW\(\)|TODAY\(\))\s*-\s*(\d+)\s+(DAY|DAYS|WEEK|WEEKS)$"
+
+# Offset pattern for month/year units used in generate_expressions() dynamic path
+MONTH_YEAR_OFFSET_REGEX = r"^(NOW\(\)|TODAY\(\))\s*-\s*\d+\s+(MONTH|MONTHS|YEAR|YEARS)$"
+
 
 class TimeUnit(str, Enum):
     """Standardized time units for partitioning."""
@@ -25,7 +53,7 @@ class TimeUnit(str, Enum):
         cleaned = raw.strip().upper().rstrip("S")
         try:
             return cls[cleaned]
-        except KeyError as exc:  # pragma: no cover – validated upstream
+        except KeyError as exc:
             raise ValueError(f"Unsupported time unit: {raw}") from exc
 
 
@@ -61,12 +89,11 @@ class TimeBasedPartitioning(FidesSchema):
             return value
         v = value.strip().upper()
         patterns = [
-            r"^NOW\(\)$",  # NOW()
-            r"^TODAY\(\)$",  # TODAY()
-            r"^NOW\(\)\s*[+-]\s*\d+\s+(DAY|DAYS|WEEK|WEEKS|MONTH|MONTHS|YEAR|YEARS)$",  # NOW() +/- N unit
-            r"^TODAY\(\)\s*[+-]\s*\d+\s+(DAY|DAYS|WEEK|WEEKS|MONTH|MONTHS|YEAR|YEARS)$",  # TODAY() +/- N unit
-            r"^\d{4}-\d{2}-\d{2}$",  # 2024-01-01
-            r"^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}$",  # 2024-01-01 12:00:00
+            NOW_LITERAL_REGEX,
+            TODAY_LITERAL_REGEX,
+            ARITHMETIC_OFFSET_REGEX,
+            DATE_LITERAL_REGEX,
+            DATETIME_LITERAL_REGEX,
         ]
 
         if not any(re.match(pattern, v) for pattern in patterns):
@@ -81,7 +108,7 @@ class TimeBasedPartitioning(FidesSchema):
         if value is None:
             return value
         v = value.strip().upper()
-        if not re.match(r"^\d+\s+(DAY|DAYS|WEEK|WEEKS|MONTH|MONTHS|YEAR|YEARS)$", v):
+        if not re.match(INTERVAL_REGEX, v):
             raise ValueError(f"Invalid interval format: {v}")
 
         # Store normalized uppercase interval
@@ -90,6 +117,11 @@ class TimeBasedPartitioning(FidesSchema):
     @model_validator(mode="after")
     def validate_bounds_and_interval(self) -> "TimeBasedPartitioning":
         """Ensure an interval is supplied when both start and end are provided."""
+        # At least one bound must be supplied.
+        if self.start is None and self.end is None:
+            raise ValueError("At least one of 'start' or 'end' must be provided.")
+
+        # If both bounds are supplied, an interval is mandatory.
         if self.start is not None and self.end is not None and self.interval is None:
             raise ValueError(
                 "An interval must be provided when both start and end are specified."
@@ -106,16 +138,13 @@ class TimeBasedPartitioning(FidesSchema):
         if self.interval is None:
             raise ValueError("Interval must be specified before it can be parsed.")
 
-        # Normalize once to uppercase, then split
         normalized = str(self.interval).strip().upper()
-        parts = normalized.split()
-
-        if len(parts) != 2 or not parts[0].isdigit():
+        match = re.match(INTERVAL_CAPTURE_REGEX, normalized)
+        if not match:
             raise ValueError(f"Invalid interval format: {self.interval}")
 
-        value = int(parts[0])
-        # Return singular, uppercase unit (DAY, WEEK, MONTH, YEAR)
-        unit = TimeUnit.parse(parts[1])
+        value = int(match.group(1))
+        unit = TimeUnit.parse(match.group(2))
         return value, unit
 
     def _timedelta_from_value_unit(self, value: int, unit: TimeUnit) -> timedelta:
@@ -157,10 +186,7 @@ class TimeBasedPartitioning(FidesSchema):
             return func.current_date()
 
         # Handle arithmetic on NOW() and TODAY() via a single pattern
-        arithmetic_match = re.match(
-            r"^(NOW|TODAY)\(\)\s*([+-])\s*(\d+)\s+(DAY|DAYS|WEEK|WEEKS|MONTH|MONTHS|YEAR|YEARS)$",
-            expr,
-        )
+        arithmetic_match = re.match(ARITHMETIC_OFFSET_REGEX, expr)
 
         if arithmetic_match:
             func_name, operator, value_str, unit_raw = arithmetic_match.groups()
@@ -174,9 +200,9 @@ class TimeBasedPartitioning(FidesSchema):
             )
 
             # Build INTERVAL text
-            if unit_raw in ["WEEK", "WEEKS"]:
+            if TimeUnit.parse(unit_raw) == TimeUnit.WEEK:
                 interval_text = self._timedelta_to_interval(timedelta(weeks=value))
-            elif unit_raw in ["DAY", "DAYS"]:
+            elif TimeUnit.parse(unit_raw) == TimeUnit.DAY:
                 interval_text = self._timedelta_to_interval(timedelta(days=value))
             else:  # MONTH / YEAR
                 interval_text = self.format_interval(value, TimeUnit.parse(unit_raw))
@@ -186,7 +212,7 @@ class TimeBasedPartitioning(FidesSchema):
             return base_expr - delta_expr if operator == "-" else base_expr + delta_expr
 
         # Handle date literals
-        if re.match(r"^\d{4}-\d{2}-\d{2}", expr):
+        if re.match(DATE_LITERAL_REGEX, expr):
             date_str = expr.split()[0]  # Remove time part if present
             return func.DATE(date_str)
 
@@ -201,17 +227,15 @@ class TimeBasedPartitioning(FidesSchema):
         2. `TODAY() - N DAY|DAYS|WEEK|WEEKS to TODAY()`
         3. Both `start` and `end` are literal `YYYY-MM-DD` strings.
         """
-        start_str = str(self.start)
-        end_str = str(self.end)
+        start_str = self.start or ""
+        end_str = self.end or ""
 
         # Dynamic offsets expressed relative to NOW() or TODAY()
-        offset_pattern = r"^(NOW|TODAY)\(\)\s*-\s*(\d+)\s+(DAY|DAYS|WEEK|WEEKS)$"
-
-        start_offset_match = re.match(offset_pattern, start_str)
-        end_offset_match = re.match(offset_pattern, end_str)
+        start_offset_match = re.match(DAY_WEEK_OFFSET_REGEX, start_str)
+        end_offset_match = re.match(DAY_WEEK_OFFSET_REGEX, end_str)
 
         # Case 1: start is offset, end is the base (NOW()/TODAY())
-        if start_offset_match and end_str == f"{start_offset_match.group(1)}()":
+        if start_offset_match and end_str == start_offset_match.group(1):
             value = int(start_offset_match.group(2))
             unit = start_offset_match.group(3)
 
@@ -298,8 +322,8 @@ class TimeBasedPartitioning(FidesSchema):
         conditions: List[ColumnElement] = []
 
         # Dynamic (NOW()/TODAY()) vs static ranges
-        start_str = str(self.start)
-        end_str = str(self.end)
+        start_str = self.start or ""
+        end_str = self.end or ""
 
         has_now = "NOW()" in start_str or "NOW()" in end_str
         has_today = "TODAY()" in start_str or "TODAY()" in end_str
@@ -317,17 +341,14 @@ class TimeBasedPartitioning(FidesSchema):
 
             end_offset_bound: timedelta = timedelta(0)
 
-            dynamic_end_match = re.match(
-                r"^(NOW\(\)|TODAY\(\))\s*-\s*(\d+)\s+(DAY|DAYS|WEEK|WEEKS)$",
-                end_str or "",
-            )
+            dynamic_end_match = re.match(DAY_WEEK_OFFSET_REGEX, end_str)
 
             if dynamic_end_match is not None:
                 numeric_val = int(dynamic_end_match.group(2))
                 unit_raw = dynamic_end_match.group(3)
                 end_offset_bound = (
                     timedelta(weeks=numeric_val)
-                    if unit_raw in ["WEEK", "WEEKS"]
+                    if TimeUnit.parse(unit_raw) == TimeUnit.WEEK
                     else timedelta(days=numeric_val)
                 )
 
@@ -411,8 +432,8 @@ class TimeBasedPartitioning(FidesSchema):
     ) -> List[ColumnElement]:
         """Generate interval conditions for month/year units where start & end are literals."""
 
-        start_str = str(self.start)
-        end_str = str(self.end)
+        start_str = self.start or ""
+        end_str = self.end or ""
 
         if not (_is_date_literal(start_str) and _is_date_literal(end_str)):
             # Fallback to single clause; complex dynamic expressions not supported yet.
@@ -635,7 +656,7 @@ class TimeBasedPartitioning(FidesSchema):
     # Public methods
     # ---------------------------------------------------------------------
 
-    def format_interval(self, value: int, unit: TimeUnit) -> str:  # pragma: no cover
+    def format_interval(self, value: int, unit: TimeUnit) -> str:
         """Return a SQL snippet representing time interval.
 
         Default implementation emits the ANSI-ish style used by BigQuery and
@@ -678,40 +699,29 @@ class TimeBasedPartitioning(FidesSchema):
         # Determine interval value and unit (Enum)
         interval_value, interval_unit = self._split_interval()
 
-        if interval_unit in [TimeUnit.MONTH, TimeUnit.YEAR]:
-            start_str = str(self.start) if self.start else ""
-            end_str = str(self.end) if self.end else ""
+        if interval_unit in (TimeUnit.MONTH, TimeUnit.YEAR):
+            start_str = self.start or ""
+            end_str = self.end or ""
 
             # Dynamic NOW()/TODAY() -> NOW()/TODAY() path
-            if (
-                re.match(r"^NOW\(\)\s*-\s*\d+\s+(MONTH|MONTHS|YEAR|YEARS)$", start_str)
-                and end_str == "NOW()"
-            ) or (
-                re.match(
-                    r"^TODAY\(\)\s*-\s*\d+\s+(MONTH|MONTHS|YEAR|YEARS)$", start_str
-                )
-                and end_str == "TODAY()"
+            if re.match(MONTH_YEAR_OFFSET_REGEX, start_str) and end_str in (
+                "NOW()",
+                "TODAY()",
             ):
-                dyn_exprs = self._generate_dynamic_month_year_slices(
-                    field_column,
-                    interval_value,
-                    interval_unit,
+                dynamic_expressions = self._generate_dynamic_month_year_slices(
+                    field_column, interval_value, interval_unit
                 )
-                if dyn_exprs is not None:
-                    return dyn_exprs
+                if dynamic_expressions is not None:
+                    return dynamic_expressions
 
             # Literal start -> NOW()/TODAY() end
-            if _is_date_literal(self.start) and end_str in ["NOW()", "TODAY()"]:
+            if _is_date_literal(self.start) and end_str in ("NOW()", "TODAY()"):
                 return self._generate_literal_to_now_month_year_slices(
-                    field_column,
-                    interval_value,
-                    interval_unit,
+                    field_column, interval_value, interval_unit
                 )
 
             return self._generate_calendar_slices(
-                field_column,
-                interval_value,
-                interval_unit,
+                field_column, interval_value, interval_unit
             )
 
         # day/week (fixed length) path
@@ -778,7 +788,7 @@ def _is_date_literal(expr: Optional[str]) -> bool:
     """Return True if the expression is a simple YYYY-MM-DD literal."""
     if expr is None:
         return False
-    return bool(re.match(r"^\d{4}-\d{2}-\d{2}$", expr.strip()))
+    return bool(re.match(DATE_LITERAL_REGEX, expr.strip()))
 
 
 def _date_value(expr: str) -> datetime:
@@ -791,7 +801,7 @@ def _date_value(expr: str) -> datetime:
 TIME_BASED_REQUIRED_KEYS: Set[str] = {"field", "start", "end", "interval"}
 
 # ------------------------------------------------------------------
-# Utilities for working with lists of partition specs (module-level)
+# Utilities for working with lists of partition specs
 # ------------------------------------------------------------------
 
 
