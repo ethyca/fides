@@ -24,6 +24,11 @@ export const ActionButtons = ({ task }: Props) => {
     });
   };
 
+  const handleSkip = () => {
+    // TODO: Implement skip functionality
+    console.log("Skip button clicked for task:", task.task_id);
+  };
+
   return (
     <Space size="small">
       <Button
@@ -33,6 +38,10 @@ export const ActionButtons = ({ task }: Props) => {
         loading={isCompleting}
       >
         Complete
+      </Button>
+
+      <Button onClick={handleSkip} size="small">
+        Skip
       </Button>
     </Space>
   );
