@@ -348,35 +348,70 @@ const ConsentRequestForm = ({
                   isRequired={item.required !== false}
                 >
                   <FormLabel fontSize="sm">{item.label}</FormLabel>
-                  {item.field_type === "multiselect" && item.options ? (
-                    <AntSelect
-                      id={key}
-                      mode="multiple"
-                      placeholder={`Select ${item.label.toLowerCase()}`}
-                      value={values[key] || []}
-                      onChange={(selectedValues) => {
-                        setFieldValue(key, selectedValues);
-                      }}
-                      onBlur={() => handleBlur({ target: { name: key } })}
-                      options={item.options.map((option: string) => ({
-                        label: option,
-                        value: option,
-                      }))}
-                      style={{ width: "100%" }}
-                      getPopupContainer={(trigger) =>
-                        trigger.parentElement || document.body
-                      }
-                    />
-                  ) : (
-                    <Input
-                      id={key}
-                      name={key}
-                      focusBorderColor="primary.500"
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      value={values[key]}
-                    />
-                  )}
+                  {(() => {
+                    if (item.field_type === "multiselect" && item.options) {
+                      return (
+                        <AntSelect
+                          id={key}
+                          mode="multiple"
+                          placeholder={`Select ${item.label.toLowerCase()}`}
+                          value={values[key] || []}
+                          onChange={(selectedValues) => {
+                            setFieldValue(key, selectedValues);
+                          }}
+                          onBlur={() => handleBlur({ target: { name: key } })}
+                          options={item.options.map((option: string) => ({
+                            label: option,
+                            value: option,
+                          }))}
+                          style={{ width: "100%" }}
+                          getPopupContainer={() => document.body}
+                          dropdownStyle={{
+                            maxHeight: 400,
+                            overflow: "auto",
+                            zIndex: 1500,
+                          }}
+                          dropdownClassName="privacy-form-dropdown"
+                        />
+                      );
+                    }
+                    if (item.field_type === "select" && item.options) {
+                      return (
+                        <AntSelect
+                          id={key}
+                          placeholder={`Select ${item.label.toLowerCase()}`}
+                          value={values[key] || ""}
+                          onChange={(selectedValue) => {
+                            setFieldValue(key, selectedValue);
+                          }}
+                          onBlur={() => handleBlur({ target: { name: key } })}
+                          options={item.options.map((option: string) => ({
+                            label: option,
+                            value: option,
+                          }))}
+                          style={{ width: "100%" }}
+                          getPopupContainer={() => document.body}
+                          dropdownStyle={{
+                            maxHeight: 400,
+                            overflow: "auto",
+                            zIndex: 1500,
+                          }}
+                          dropdownClassName="privacy-form-dropdown"
+                          allowClear
+                        />
+                      );
+                    }
+                    return (
+                      <Input
+                        id={key}
+                        name={key}
+                        focusBorderColor="primary.500"
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        value={values[key]}
+                      />
+                    );
+                  })()}
                   <FormErrorMessage>
                     {errors[key] as ReactNode}
                   </FormErrorMessage>
