@@ -363,49 +363,6 @@ def upload_and_save_access_results(  # pylint: disable=R0912
             filtered_results["attachments"] = storage_attachments
         rule_filtered_results[rule.key] = filtered_results
 
-    # --- PATCH: Always include manual task data in filtered results ---
-    # Find all manual task keys in access_result
-    manual_task_keys = [
-        k for k in access_result.keys() if str(k).startswith("manual_tasks:")
-    ]
-    logger.info(
-        "Manual task patch: Found {} manual task keys in access_result: {}",
-        len(manual_task_keys),
-        manual_task_keys,
-    )
-    logger.info("Manual task patch: access_result keys: {}", list(access_result.keys()))
-    logger.info(
-        "Manual task patch: rule_filtered_results keys: {}",
-        list(rule_filtered_results.keys()),
-    )
-
-    if rule_filtered_results:
-        first_rule_key = next(iter(rule_filtered_results))
-        logger.info("Manual task patch: Using first rule key: {}", first_rule_key)
-        for k in manual_task_keys:
-            # If not already present in any rule's filtered results, add to the first rule
-            already_present = any(k in d for d in rule_filtered_results.values())
-            logger.info(
-                "Manual task patch: Key {} already present: {}", k, already_present
-            )
-            if not already_present:
-                logger.info(
-                    "Manual task patch: Adding key {} to rule {}", k, first_rule_key
-                )
-                # Handle the nested manual task data structure
-                manual_data = access_result[k]
-                if isinstance(manual_data, dict) and k in manual_data:
-                    # The data is nested like {'manual_tasks:post_execution': {'manual_tasks:post_execution': [...]}}
-                    rule_filtered_results[first_rule_key][k] = manual_data[k]
-                else:
-                    # The data is already in the correct format
-                    rule_filtered_results[first_rule_key][k] = manual_data
-    else:
-        logger.warning(
-            "Manual task patch: No rule_filtered_results found, cannot add manual task data"
-        )
-    # --- END PATCH ---
-
     save_access_results(session, privacy_request, download_urls, rule_filtered_results)
 
     return download_urls

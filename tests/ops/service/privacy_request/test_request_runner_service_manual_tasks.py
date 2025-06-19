@@ -132,6 +132,7 @@ def test_privacy_request_includes_manual_task_submissions(
     s3_client,
     monkeypatch,
     user: FidesUser,
+    connection_config: ConnectionConfig,
 ) -> None:
     """Test that manual task submissions are included in the DSR package.
 
@@ -237,10 +238,10 @@ def test_privacy_request_includes_manual_task_submissions(
     filtered_results = privacy_request.get_filtered_final_upload()
 
     assert len(filtered_results) > 0
-    assert "manual_tasks:post_execution" in filtered_results["access_request_rule"]
-    manual_task_data = filtered_results["access_request_rule"][
-        "manual_tasks:post_execution"
-    ]
+    # Manual task nodes now use connection config keys as dataset names
+    manual_task_key = f"{connection_config.key}:post_execution"
+    assert manual_task_key in filtered_results["access_request_rule"]
+    manual_task_data = filtered_results["access_request_rule"][manual_task_key]
     assert len(manual_task_data) == 1
     assert len(manual_task_data[0]["data"]) == 3
     assert manual_task_data[0]["data"][0]["field_key"] == "text_field"

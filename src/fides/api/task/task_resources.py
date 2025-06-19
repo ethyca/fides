@@ -79,7 +79,9 @@ class ManualTaskConnector(BaseConnector):
         If there are instances but not all have completed submissions, raises UpstreamTasksNotReady.
         """
         logger.info(
-            "Retrieving manual task data for privacy request {}", privacy_request.id
+            "Retrieving manual task data for privacy request {} with connection config {}",
+            privacy_request.id,
+            self.configuration.key,
         )
 
         # Get the request task for this node
@@ -96,11 +98,7 @@ class ManualTaskConnector(BaseConnector):
         if request_task.action_type == ActionType.access:
             return [request_task.access_data] if request_task.access_data else []
         else:
-            return (
-                [{"manual_tasks": request_task.data_for_erasures}]
-                if request_task.data_for_erasures
-                else []
-            )
+            return [request_task.data_for_erasures] if request_task.data_for_erasures else []
 
     def mask_data(
         self,
@@ -137,10 +135,24 @@ class Connections:
         session: Optional[Session] = None,
     ) -> Union[BaseConnector, BaseEmailConnector]:
         """Factory method to build the appropriately typed connector from the config."""
-        if connection_config.key == "manual_task_connector":
-            if not session:
-                raise ValueError("Session required for manual task connector")
-            return ManualTaskConnector(connection_config, session)
+        # Check if this connection config has an associated manual task
+        if session:
+            from fides.api.models.manual_tasks.manual_task import ManualTask
+            from fides.api.schemas.manual_tasks.manual_task_schemas import (
+                ManualTaskParentEntityType,
+            )
+
+            manual_task = ManualTask.filter(
+                db=session,
+                conditions=(
+                    (ManualTask.parent_entity_id == connection_config.id)
+                    & (ManualTask.parent_entity_type == ManualTaskParentEntityType.connection_config)
+                ),
+            ).first()
+
+            if manual_task:
+                return ManualTaskConnector(connection_config, session)
+
         if connection_config.connection_type == ConnectionType.postgres:
             return PostgreSQLConnector(connection_config)
         if connection_config.connection_type == ConnectionType.mongodb:
@@ -216,16 +228,32 @@ class TaskResources:
         self.cache = get_cache()
         self.privacy_request_task = privacy_request_task
 
-        # Add special connection config for manual tasks
-        manual_task_config = ConnectionConfig(
-            key="manual_task_connector",
-            name="Manual Task Connector",
-            connection_type=ConnectionType.saas,  # Using saas as a generic type
-            access="write",
-        )
+        # Check if any of the connection configs are for manual tasks
+        # and add them to the list if they're not already there
+        manual_task_configs = []
+        for config in connection_configs:
+            # Check if this connection config has an associated manual task
+            from fides.api.models.manual_tasks.manual_task import ManualTask
+            from fides.api.schemas.manual_tasks.manual_task_schemas import (
+                ManualTaskParentEntityType,
+            )
 
-        # Add manual task config to connection configs
-        connection_configs.append(manual_task_config)
+            manual_task = ManualTask.filter(
+                db=session,
+                conditions=(
+                    (ManualTask.parent_entity_id == config.id)
+                    & (ManualTask.parent_entity_type == ManualTaskParentEntityType.connection_config)
+                ),
+            ).first()
+
+            if manual_task:
+                # This connection config has a manual task, so we need to ensure it's included
+                manual_task_configs.append(config)
+
+        # Add any manual task configs that aren't already in the list
+        for config in manual_task_configs:
+            if config not in connection_configs:
+                connection_configs.append(config)
 
         self.connection_configs: Dict[str, ConnectionConfig] = {
             c.key: c for c in connection_configs

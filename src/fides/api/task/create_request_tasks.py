@@ -55,34 +55,28 @@ def build_access_networkx_digraph(
     traversal: Traversal,
 ) -> networkx.DiGraph:
     """
-    DSR 3.0: Builds an access networkx graph to get consistent formatting of nodes to build the Request Tasks,
+    DSR 3.0: Builds a networkx graph of access nodes to get consistent formatting of nodes to build the Request Tasks,
     regardless of whether node is real or artificial.
 
-    Primarily though, this lets us use networkx.descendants to calculate every node that can be reached from the current
-    node to more easily mark downstream nodes as failed if the current node fails.
+    Access graphs are different from erasure graphs, in that we need to query data in the correct order
+    based on data dependencies. We use the traversal to determine the correct order.
+
+    We tack on the "after" dependencies here that aren't captured in traversal.traverse.
     """
     networkx_graph = networkx.DiGraph()
     networkx_graph.add_nodes_from(traversal_nodes.keys())
     networkx_graph.add_nodes_from(ARTIFICIAL_NODES)
 
-    # Add manual task nodes
-    pre_manual = CollectionAddress("manual_tasks", "pre_execution")
-    post_manual = CollectionAddress("manual_tasks", "post_execution")
-    networkx_graph.add_nodes_from([pre_manual, post_manual])
-
     # The first nodes visited are the nodes that only need identity data.
     # Therefore, they are all immediately downstream of the root.
     first_nodes: Dict[FieldAddress, str] = traversal.extract_seed_field_addresses()
 
-    # Connect root -> pre_manual -> first nodes -> post_manual -> terminator
-    networkx_graph.add_edge(ROOT_COLLECTION_ADDRESS, pre_manual)
-
-    # Connect pre_manual to first nodes
+    # Connect root to first nodes
     for node in [
         CollectionAddress(initial_node.dataset, initial_node.collection)
         for initial_node in first_nodes
     ]:
-        networkx_graph.add_edge(pre_manual, node)
+        networkx_graph.add_edge(ROOT_COLLECTION_ADDRESS, node)
 
     # Connect all non-first nodes to their dependencies
     for node_name, traversal_node in traversal_nodes.items():
@@ -90,12 +84,9 @@ def build_access_networkx_digraph(
             for input_key in traversal_node.input_keys:
                 networkx_graph.add_edge(input_key, node_name)
 
-    # Connect all end nodes to post_manual
+    # Connect all end nodes to terminator
     for node in end_nodes:
-        networkx_graph.add_edge(node, post_manual)
-
-    # Connect post_manual to terminator
-    networkx_graph.add_edge(post_manual, TERMINATOR_ADDRESS)
+        networkx_graph.add_edge(node, TERMINATOR_ADDRESS)
 
     return networkx_graph
 
@@ -140,35 +131,24 @@ def build_erasure_networkx_digraph(
     networkx_graph.add_nodes_from(traversal_nodes.keys())
     networkx_graph.add_nodes_from(ARTIFICIAL_NODES)
 
-    # Add manual task nodes
-    pre_manual = CollectionAddress("manual_tasks", "pre_execution")
-    post_manual = CollectionAddress("manual_tasks", "post_execution")
-    networkx_graph.add_nodes_from([pre_manual, post_manual])
-
-    # Connect root -> pre_manual
-    networkx_graph.add_edge(ROOT_COLLECTION_ADDRESS, pre_manual)
-
-    # Connect pre_manual to all nodes without other dependencies
+    # Connect root to all nodes without other dependencies
     for node_name, traversal_node in traversal_nodes.items():
-        # Add an edge from pre_manual to the current node, unless explicit erasure
+        # Add an edge from root to the current node, unless explicit erasure
         # dependencies are defined
         erasure_dependencies: Set[CollectionAddress] = _evaluate_erasure_dependencies(
             traversal_node, end_nodes
         )
         if not erasure_dependencies or ROOT_COLLECTION_ADDRESS in erasure_dependencies:
-            # If node has no dependencies or depends on root, make it depend on pre_manual instead
-            networkx_graph.add_edge(pre_manual, node_name)
+            # If node has no dependencies or depends on root, make it depend on root
+            networkx_graph.add_edge(ROOT_COLLECTION_ADDRESS, node_name)
         else:
             # Add edges for explicit dependencies
             for dep in erasure_dependencies:
                 networkx_graph.add_edge(dep, node_name)
 
-    # Connect all end nodes to post_manual
+    # Connect all end nodes to terminator
     for node in end_nodes:
-        networkx_graph.add_edge(node, post_manual)
-
-    # Connect post_manual to terminator
-    networkx_graph.add_edge(post_manual, TERMINATOR_ADDRESS)
+        networkx_graph.add_edge(node, TERMINATOR_ADDRESS)
 
     return networkx_graph
 
@@ -184,21 +164,12 @@ def build_consent_networkx_digraph(
     networkx_graph.add_nodes_from(traversal_nodes.keys())
     networkx_graph.add_nodes_from([TERMINATOR_ADDRESS, ROOT_COLLECTION_ADDRESS])
 
-    # Add manual task nodes
-    pre_manual = CollectionAddress("manual_tasks", "pre_execution")
-    post_manual = CollectionAddress("manual_tasks", "post_execution")
-    networkx_graph.add_nodes_from([pre_manual, post_manual])
-
-    # Connect root -> pre_manual
-    networkx_graph.add_edge(ROOT_COLLECTION_ADDRESS, pre_manual)
-
+    # Connect root to all nodes
     for collection_address, _ in traversal_nodes.items():
         # Consent graphs are simple. One node for every dataset (which has a mocked collection)
         # and no dependencies between nodes.
-        networkx_graph.add_edge(pre_manual, collection_address)
-        networkx_graph.add_edge(collection_address, post_manual)
-
-    networkx_graph.add_edge(post_manual, TERMINATOR_ADDRESS)
+        networkx_graph.add_edge(ROOT_COLLECTION_ADDRESS, collection_address)
+        networkx_graph.add_edge(collection_address, TERMINATOR_ADDRESS)
 
     _add_edge_if_no_nodes(traversal_nodes, networkx_graph)
     return networkx_graph
@@ -493,7 +464,7 @@ def run_access_request(
         )
     else:
         try:
-            traversal: Traversal = Traversal(graph, identity, policy=policy)
+            traversal: Traversal = Traversal(graph, identity, policy=policy, session=session)
 
             # Traversal.traverse populates traversal_nodes in place, adding parents and children to each traversal_node.
             traversal_nodes: Dict[CollectionAddress, TraversalNode] = {}

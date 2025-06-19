@@ -165,7 +165,8 @@ def can_run_task_body(
         return False
 
     # For manual task nodes, we want to check their status
-    if request_task.dataset_name == "manual_tasks":
+    # Manual task nodes have collection names of "pre_execution" or "post_execution"
+    if request_task.collection_name in ["pre_execution", "post_execution"]:
         if request_task.status == ExecutionLogStatus.complete:
             logger.info(
                 "Manual task node {} is already complete, skipping execution",
@@ -326,7 +327,7 @@ def run_access_node(
 
                 if can_run_task_body(request_task):
                     # Check if this is a manual task node
-                    if request_task.dataset_name == "manual_tasks":
+                    if request_task.collection_name in ["pre_execution", "post_execution"]:
                         try:
                             logger.info(
                                 "Running manual task node {} with status {}",
@@ -471,7 +472,7 @@ def run_erasure_node(
 
                 if can_run_task_body(request_task):
                     # Check if this is a manual task node
-                    if request_task.dataset_name == "manual_tasks":
+                    if request_task.collection_name in ["pre_execution", "post_execution"]:
                         timing = ManualTaskExecutionTiming(request_task.collection_name)
                         try:
                             task_completed = run_manual_task_node(
@@ -573,7 +574,7 @@ def run_consent_node(
 
             if can_run_task_body(request_task):
                 # Check if this is a manual task node
-                if request_task.dataset_name == "manual_tasks":
+                if request_task.collection_name in ["pre_execution", "post_execution"]:
                     timing = ManualTaskExecutionTiming(request_task.collection_name)
                     try:
                         run_manual_task_node(session, request_task, timing)
@@ -719,7 +720,7 @@ def run_manual_task_node(
     request_task: RequestTask,
     timing: Optional[ManualTaskExecutionTiming] = None,
 ) -> bool:
-    """Check if all manual tasks for the given timing are complete.
+    """Check if all manual tasks for the given timing and connection config are complete.
 
     Args:
         session: Database session
@@ -760,34 +761,43 @@ def run_manual_task_node(
             f"Privacy request {request_task.privacy_request_id} not found"
         )
 
-    tasks = ManualTask.filter(
+    # Find the connection config that matches the dataset name
+    connection_config = ConnectionConfig.filter(
         db=session,
-        conditions=(
-            (
-                ManualTask.parent_entity_type
-                == ManualTaskParentEntityType.connection_config
-            )
-        ),
-    ).all()
+        conditions=(ConnectionConfig.key == request_task.dataset_name),
+    ).first()
 
-    logger.info(
-        "Found {} manual tasks for task {}", len(tasks), request_task.collection_address
-    )
-
-    if not tasks:
-        # No tasks found - mark node as complete since there's nothing to wait for
-        logger.info(
-            "No manual tasks configured. Marking node as complete.",
+    if not connection_config:
+        logger.warning(
+            "Connection config with key {} not found for manual task node {}. Marking node as complete.",
+            request_task.dataset_name,
+            request_task.collection_address,
         )
         request_task.update_status(session, ExecutionLogStatus.complete)
         return True
 
-    # Get all configs for the given timing across all tasks
-    configs = []
-    for task in tasks:
-        configs.extend(
-            [config for config in task.configs if config.execution_timing == timing]
+    # Find the manual task associated with this connection config
+    manual_task = ManualTask.filter(
+        db=session,
+        conditions=(
+            (ManualTask.parent_entity_id == connection_config.id)
+            & (ManualTask.parent_entity_type == ManualTaskParentEntityType.connection_config)
+        ),
+    ).first()
+
+    if not manual_task:
+        logger.info(
+            "No manual task found for connection config {}. Marking node as complete.",
+            connection_config.key,
         )
+        request_task.update_status(session, ExecutionLogStatus.complete)
+        return True
+
+    # Get configs for the given timing
+    configs = [
+        config for config in manual_task.configs
+        if config.execution_timing == timing
+    ]
 
     logger.info(
         "Found {} configs with timing {} for task {}",
@@ -805,11 +815,13 @@ def run_manual_task_node(
         request_task.update_status(session, ExecutionLogStatus.complete)
         return True
 
+    # Get instances for this specific manual task and timing
     instances = ManualTaskInstance.filter(
         db=session,
         conditions=(
             (ManualTaskInstance.entity_id == request_task.privacy_request_id)
             & (ManualTaskInstance.entity_type == "privacy_request")
+            & (ManualTaskInstance.task_id == manual_task.id)
             & (ManualTaskInstance.config.has(execution_timing=timing))
         ),
     ).all()
@@ -836,7 +848,7 @@ def run_manual_task_node(
         ExecutionLog.create(
             db=session,
             data={
-                "connection_key": None,
+                "connection_key": connection_config.key,
                 "dataset_name": request_task.dataset_name,
                 "collection_name": request_task.collection_name,
                 "fields_affected": [],
@@ -872,36 +884,13 @@ def run_manual_task_node(
         )
         # Group submission data by connection config name
         submission_data_by_config = {}
+
+        # Initialize list for this config if not exists
+        collection_key = request_task.collection_address
+        if collection_key not in submission_data_by_config:
+            submission_data_by_config[collection_key] = []
+
         for instance in instances:
-            # Get the manual task to find its connection config
-            manual_task = ManualTask.get_by_key_or_id(
-                db=session, data={"id": instance.task_id}
-            )
-            if not manual_task:
-                logger.warning(
-                    "Manual task {} not found for instance {}",
-                    instance.task_id,
-                    instance.id,
-                )
-                continue
-
-            # Get the connection config to get its name
-            connection_config = ConnectionConfig.get_by_key_or_id(
-                db=session, data={"id": manual_task.parent_entity_id}
-            )
-            if not connection_config:
-                logger.warning(
-                    "Connection config {} not found for manual task {}",
-                    manual_task.parent_entity_id,
-                    manual_task.id,
-                )
-                continue
-
-            # Initialize list for this config if not exists
-            collection_key = request_task.collection_address
-            if collection_key not in submission_data_by_config:
-                submission_data_by_config[collection_key] = []
-
             task_data = {"data": []}
 
             # Add submission data
@@ -947,7 +936,7 @@ def run_manual_task_node(
         ExecutionLog.create(
             db=session,
             data={
-                "connection_key": None,
+                "connection_key": connection_config.key,
                 "dataset_name": request_task.dataset_name,
                 "collection_name": request_task.collection_name,
                 "fields_affected": [],
@@ -979,7 +968,7 @@ def run_manual_task_node(
         ExecutionLog.create(
             db=session,
             data={
-                "connection_key": None,
+                "connection_key": connection_config.key,
                 "dataset_name": request_task.dataset_name,
                 "collection_name": request_task.collection_name,
                 "fields_affected": [],

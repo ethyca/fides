@@ -41,6 +41,14 @@ from fides.api.schemas.policy import ActionType
 from fides.api.util.collection_util import Row, append, partition
 from fides.api.util.logger_context_utils import Contextualizable, LoggerContextKeys
 from fides.api.util.matching_queue import MatchingQueue
+from fides.api.models.manual_tasks.manual_task import ManualTask
+from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.schemas.manual_tasks.manual_task_schemas import (
+    ManualTaskParentEntityType,
+)
+from fides.api.schemas.manual_tasks.manual_task_schemas import (
+    ManualTaskExecutionTiming,
+)
 
 ARTIFICIAL_NODES: List[CollectionAddress] = [
     ROOT_COLLECTION_ADDRESS,
@@ -57,10 +65,9 @@ def artificial_traversal_node(address: CollectionAddress) -> TraversalNode:
     have no actual corresponding collection dataset"""
     ds: Collection = Collection(name=address.collection, fields=[])
 
-    # Use special connection key for manual tasks, otherwise use __IGNORE__
-    connection_key = (
-        "manual_task_connector" if address.dataset == "manual_tasks" else "__IGNORE__"
-    )
+    # Use the dataset name as the connection key for manual task nodes
+    # This allows individual manual task nodes to use their connection config key
+    connection_key = address.dataset
 
     node = Node(
         GraphDataset(
@@ -199,14 +206,6 @@ class BaseTraversal:
         running_node_queue: MatchingQueue[TraversalNode] = MatchingQueue(self.root_node)
         remaining_edges: Set[Edge] = self.edges.copy()
 
-        # Add manual task nodes to remaining nodes if they exist
-        pre_manual = CollectionAddress("manual_tasks", "pre_execution")
-        post_manual = CollectionAddress("manual_tasks", "post_execution")
-        if pre_manual in self.traversal_node_dict:
-            remaining_node_keys.add(pre_manual)
-        if post_manual in self.traversal_node_dict:
-            remaining_node_keys.add(post_manual)
-
         while not running_node_queue.is_empty():
             # this is to support the "run traversal_node A AFTER traversal_node B functionality:"
             n = running_node_queue.pop_first_match(
@@ -333,6 +332,7 @@ class Traversal(BaseTraversal):
         *,
         policy: Optional[Policy] = None,
         node_filters: Optional[List[NodeFilter]] = None,
+        session: Optional[Session] = None,
     ):
         filters = node_filters or []
 
@@ -341,72 +341,68 @@ class Traversal(BaseTraversal):
         if policy:
             filters.append(PolicyDataCategoryFilter(policy))
 
-        # Add manual task nodes to the graph
-        pre_manual = CollectionAddress("manual_tasks", "pre_execution")
-        post_manual = CollectionAddress("manual_tasks", "post_execution")
-
-        # Create artificial nodes for manual tasks
-        pre_manual_node = artificial_traversal_node(pre_manual)
-        post_manual_node = artificial_traversal_node(post_manual)
-
-        # Add manual task nodes to traversal nodes
-        graph.nodes[pre_manual] = pre_manual_node.node
-        graph.nodes[post_manual] = post_manual_node.node
-
-        # Add edges for manual task nodes
-        # Connect root to pre-execution manual tasks
-        graph.edges.add(
-            Edge(
-                FieldAddress(
-                    ROOT_COLLECTION_ADDRESS.dataset,
-                    ROOT_COLLECTION_ADDRESS.collection,
-                    "id",
+        # Get all manual tasks and create individual nodes for each
+        if session:
+            # Get all manual tasks that are associated with connection configs
+            manual_tasks = ManualTask.filter(
+                db=session,
+                conditions=(
+                    (ManualTask.parent_entity_type == ManualTaskParentEntityType.connection_config)
                 ),
-                FieldAddress(pre_manual.dataset, pre_manual.collection, "id"),
-            )
-        )
+            ).all()
 
-        # Connect pre-execution manual tasks to first non-manual nodes
-        for node_addr in graph.nodes.keys():
-            if node_addr not in [
-                ROOT_COLLECTION_ADDRESS,
-                TERMINATOR_ADDRESS,
-                pre_manual,
-                post_manual,
-            ]:
-                graph.edges.add(
-                    Edge(
-                        FieldAddress(pre_manual.dataset, pre_manual.collection, "id"),
-                        FieldAddress(node_addr.dataset, node_addr.collection, "id"),
-                    )
+            # Create individual nodes for each manual task
+            for task in manual_tasks:
+                # Get the connection config to use its key as the dataset name
+                connection_config = ConnectionConfig.get_by_key_or_id(
+                    db=session,
+                    data={"id": task.parent_entity_id}
                 )
-
-        # Connect last non-manual nodes to post-execution manual tasks
-        for node_addr in graph.nodes.keys():
-            if node_addr not in [
-                ROOT_COLLECTION_ADDRESS,
-                TERMINATOR_ADDRESS,
-                pre_manual,
-                post_manual,
-            ]:
-                graph.edges.add(
-                    Edge(
-                        FieldAddress(node_addr.dataset, node_addr.collection, "id"),
-                        FieldAddress(post_manual.dataset, post_manual.collection, "id"),
+                if not connection_config:
+                    logger.warning(
+                        "Connection config {} not found for manual task {}, skipping",
+                        task.parent_entity_id,
+                        task.id,
                     )
-                )
+                    continue
 
-        # Connect post-execution manual tasks to terminator
-        graph.edges.add(
-            Edge(
-                FieldAddress(post_manual.dataset, post_manual.collection, "id"),
-                FieldAddress(
-                    TERMINATOR_ADDRESS.dataset, TERMINATOR_ADDRESS.collection, "id"
-                ),
-            )
-        )
+                # Get all configs for this task
+                for config in task.configs:
+                    # Create a node for each config with the appropriate timing
+                    collection_name = config.execution_timing.value
+                    dataset_name = connection_config.key
 
-        logger.info("Added manual task nodes and edges to graph")
+                    manual_address = CollectionAddress(dataset_name, collection_name)
+                    manual_node = artificial_traversal_node(manual_address)
+
+                    # Add the node to the graph
+                    graph.nodes[manual_address] = manual_node.node
+
+                    # Add edges based on execution timing
+                    if config.execution_timing == ManualTaskExecutionTiming.pre_execution:
+                        # Pre-execution tasks: connect root to the task
+                        graph.edges.add(
+                            Edge(
+                                FieldAddress(
+                                    ROOT_COLLECTION_ADDRESS.dataset,
+                                    ROOT_COLLECTION_ADDRESS.collection,
+                                    "id",
+                                ),
+                                FieldAddress(manual_address.dataset, manual_address.collection, "id"),
+                            )
+                        )
+                    else:  # post_execution
+                        # Post-execution tasks: connect the task to terminator
+                        graph.edges.add(
+                            Edge(
+                                FieldAddress(manual_address.dataset, manual_address.collection, "id"),
+                                FieldAddress(
+                                    TERMINATOR_ADDRESS.dataset, TERMINATOR_ADDRESS.collection, "id"
+                                ),
+                            )
+                        )
+
+            logger.info("Created individual manual task nodes and edges")
 
         super().__init__(graph, data, policy=policy, node_filters=filters)
 
