@@ -236,8 +236,8 @@ class ConnectionConfig(Base):
         "ManualTask",
         primaryjoin="and_(ConnectionConfig.id == foreign(ManualTask.parent_entity_id), "
         "ManualTask.parent_entity_type == 'connection_config')",
+        cascade="delete",
         uselist=False,
-        viewonly=True,
     )
 
     pre_approval_webhooks = relationship(  # type: ignore[misc]
