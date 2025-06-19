@@ -128,7 +128,7 @@ COPY clients/ .
 FROM frontend AS built_frontend
 
 # Replace the placeholder version in next.config.js with the actual version
-RUN RELEASE_VERSION=$(cat /fides/clients/version.json) && \
+RUN RELEASE_VERSION=$(node -p "JSON.parse(require('fs').readFileSync('/fides/clients/version.json', 'utf8')).version") && \
     sed -i "s/__RELEASE_VERSION__/$RELEASE_VERSION/g" /fides/clients/privacy-center/next.config.js
 
 # Builds and exports admin-ui
