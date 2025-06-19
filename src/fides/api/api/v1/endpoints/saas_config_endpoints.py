@@ -459,7 +459,7 @@ def delete_custom_template(db: Session, saas_connector_type: str) -> None:
     if not file_connector_template:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
-            detail=f"File template with type '{saas_connector_type}' not found.",
+            detail=f"File template with type '{saas_connector_type}' not found in the registry.",
         )
 
     try:

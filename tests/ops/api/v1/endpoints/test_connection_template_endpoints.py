@@ -2517,15 +2517,15 @@ class TestUpdateCustomConnectorToFileTemplate:
         )
 
     @mock.patch(
-        "fides.api.api.v1.endpoints.saas_config_endpoints.delete_custom_template"
+        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
     )
     @mock.patch(
-        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
+        "fides.api.api.v1.endpoints.saas_config_endpoints.update_existing_connection_configs_for_connector_type"
     )
     def test_update_custom_connector_update_connection_configs_failure(
         self,
+        mock_update_existing_connection_configs: MagicMock,
         mock_all: MagicMock,
-        mock_delete_custom_template: MagicMock,
         api_client: TestClient,
         update_custom_connector_url,
         generate_auth_header,
@@ -2544,9 +2544,8 @@ class TestUpdateCustomConnectorToFileTemplate:
             )
         ]
 
-        mock_delete_custom_template.side_effect = HTTPException(
-            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Error updating connection configs for connector type 'hubspot'.",
+        mock_update_existing_connection_configs.side_effect = Exception(
+            "Error updating connection configs for connector type 'hubspot'."
         )
 
         auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_REGISTER])
@@ -2559,52 +2558,6 @@ class TestUpdateCustomConnectorToFileTemplate:
         assert (
             "Error updating connection configs for connector type 'hubspot'"
             in response.json()["detail"]
-        )
-
-    @mock.patch(
-        "fides.api.api.v1.endpoints.saas_config_endpoints.delete_custom_template"
-    )
-    @mock.patch(
-        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
-    )
-    def test_update_custom_connector_file_template_not_found_before_deletion(
-        self,
-        mock_all: MagicMock,
-        mock_delete_custom_template: MagicMock,
-        api_client: TestClient,
-        update_custom_connector_url,
-        generate_auth_header,
-        hubspot_yaml_config,
-        hubspot_yaml_dataset,
-    ) -> None:
-        """Test that 404 is returned if file template is not found before deletion."""
-        # Mock a custom template for hubspot
-
-        mock_all.return_value = [
-            CustomConnectorTemplate(
-                key="hubspot",
-                name="HubSpot",
-                config=hubspot_yaml_config,
-                dataset=hubspot_yaml_dataset,
-            )
-        ]
-
-        # Mock delete_custom_template to raise HTTPException for 404 error
-
-        mock_delete_custom_template.side_effect = HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail="File template with type 'hubspot' not found.",
-        )
-
-        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_REGISTER])
-        response = api_client.post(
-            update_custom_connector_url.format(saas_connector_type="hubspot"),
-            headers=auth_header,
-        )
-
-        assert response.status_code == 404
-        assert (
-            "File template with type 'hubspot' not found" in response.json()["detail"]
         )
 
     def test_update_custom_connector_invalid_connector_type(
