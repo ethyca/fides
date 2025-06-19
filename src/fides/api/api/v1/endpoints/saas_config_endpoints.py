@@ -427,16 +427,14 @@ def update_custom_connector_to_file_template(
             status_code=HTTP_400_BAD_REQUEST,
             detail=f"SaaS connector type '{saas_connector_type}' does not have a file connector to fall back to.",
         )
-    delete_custom_template(db, connector_template, saas_connector_type)
+    delete_custom_template(db, saas_connector_type)
 
     return JSONResponse(
         content={"message": "Custom connector template successfully updated."}
     )
 
 
-def delete_custom_template(
-    db: Session, custom_connector_template: ConnectorTemplate, saas_connector_type: str
-) -> None:
+def delete_custom_template(db: Session, saas_connector_type: str) -> None:
     """
     Deletes a custom template from the database and falls back to the file template.
     """

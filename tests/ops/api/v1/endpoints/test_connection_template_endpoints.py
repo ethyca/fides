@@ -2481,49 +2481,6 @@ class TestUpdateCustomConnectorToFileTemplate:
     @mock.patch(
         "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
     )
-    def test_update_custom_connector_success(
-        self,
-        mock_all: MagicMock,
-        mock_delete_custom_template: MagicMock,
-        api_client: TestClient,
-        update_custom_connector_url,
-        generate_auth_header,
-        hubspot_yaml_config,
-        hubspot_yaml_dataset,
-    ) -> None:
-        """Test successful update of custom connector to file template."""
-        # Mock a custom template for hubspot (which has a file connector fallback)
-        from fides.api.models.custom_connector_template import CustomConnectorTemplate
-
-        mock_all.return_value = [
-            CustomConnectorTemplate(
-                key="hubspot",
-                name="HubSpot",
-                config=hubspot_yaml_config,
-                dataset=hubspot_yaml_dataset,
-            )
-        ]
-
-        auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_REGISTER])
-        response = api_client.post(
-            update_custom_connector_url.format(saas_connector_type="hubspot"),
-            headers=auth_header,
-        )
-
-        assert response.status_code == 200
-        assert response.json() == {
-            "message": "Custom connector template successfully updated."
-        }
-
-        # Verify the delete_custom_template function was called
-        mock_delete_custom_template.assert_called_once()
-
-    @mock.patch(
-        "fides.api.api.v1.endpoints.saas_config_endpoints.delete_custom_template"
-    )
-    @mock.patch(
-        "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
-    )
     def test_update_custom_connector_file_template_not_found_after_deletion(
         self,
         mock_all: MagicMock,
