@@ -93,7 +93,7 @@ const getColumns = (
     title: "Assigned to",
     dataIndex: "assigned_users",
     key: "assigned_users",
-    width: 350,
+    width: 380,
     render: (assignedUsers) => <UserTag users={assignedUsers} />,
   },
   {
