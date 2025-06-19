@@ -1,4 +1,4 @@
-import { ManualTask, RequestType, TaskInputType, TaskStatus } from "../types";
+import { ManualTask, RequestType, TaskInputType, TaskStatus } from "./types";
 
 export const mockTaskStatus: TaskStatus[] = ["new", "skipped", "completed"];
 export const mockRequestTypes: RequestType[] = ["access", "erasure"];
@@ -11,9 +11,24 @@ export const mockSystems = [
 ];
 
 export const mockUsers = [
-  { id: "usr_1", name: "John Doe" },
-  { id: "usr_2", name: "Jane Smith" },
-  { id: "usr_3", name: "Bob Wilson" },
+  {
+    id: "usr_1",
+    email_address: "john.doe@company.com",
+    first_name: "John",
+    last_name: "Doe",
+  },
+  {
+    id: "usr_2",
+    email_address: "jane.smith@company.com",
+    first_name: "Jane",
+    last_name: "Smith",
+  },
+  {
+    id: "usr_3",
+    email_address: "bob.wilson@company.com",
+    first_name: "Bob",
+    last_name: "Wilson",
+  },
 ];
 
 export const createMockTask = (
@@ -25,7 +40,7 @@ export const createMockTask = (
   input_type: "file",
   request_type: "access",
   status: "new",
-  assignedTo: mockUsers[0].id,
+  assigned_users: [mockUsers[0]],
   privacy_request_id: "pri_5005c923-474c-4168-8c9e-2670fd40dc19",
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
