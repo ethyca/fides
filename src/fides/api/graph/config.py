@@ -96,6 +96,9 @@ from fides.api.graph.data_type import (
     get_data_type_converter,
 )
 from fides.api.schemas.partitioning import TimeBasedPartitioning
+from fides.api.schemas.partitioning.time_based_partitioning import (
+    validate_partitioning_list,
+)
 from fides.api.util.collection_util import merge_dicts
 from fides.api.util.querytoken import QueryToken
 
@@ -460,7 +463,7 @@ class Collection(BaseModel):
     grouped_inputs: Set[str] = set()
     data_categories: Set[FidesKey] = set()
     masking_strategy_override: Optional[MaskingStrategyOverride] = None
-    partitioning: Optional[Union[Dict, List[Dict]]] = None
+    partitioning: Optional[Union[List[TimeBasedPartitioning], Dict[str, Any]]] = None
 
     @property
     def field_dict(self) -> Dict[FieldPath, Field]:
@@ -656,8 +659,8 @@ class Collection(BaseModel):
     @field_validator("partitioning")
     @classmethod
     def validate_partitioning(  # pylint: disable=too-many-branches,too-many-nested-blocks
-        cls, partitioning: Optional[Union[Dict[str, Any], List[Dict[str, Any]]]]
-    ) -> Optional[Union[Dict[str, Any], List[Dict[str, Any]]]]:
+        cls, partitioning: Optional[Union[List[TimeBasedPartitioning], Dict[str, Any]]]
+    ) -> Optional[Union[List[TimeBasedPartitioning], Dict[str, Any]]]:
         """
         Validates the `partitioning` field, which may be either a single dict
         or a list of dicts.  Each dict must describe either legacy
@@ -686,73 +689,43 @@ class Collection(BaseModel):
         if partitioning is None:
             return partitioning
 
-        # Normalize to a list so the existing validation logic can be reused for
-        # both single-dict and multi-dict inputs.
-        specs: List[Dict[str, Any]]
-        if isinstance(partitioning, dict):
-            specs = [partitioning]
-        elif isinstance(partitioning, list):
-            specs = partitioning
+        if isinstance(partitioning, list):
+            validate_partitioning_list(partitioning)
+            return partitioning
 
-        for spec in specs:
-            if not isinstance(spec, dict):
-                raise ValueError("Each partitioning specification must be a dict")
-
-            # Keeping the where_clauses support for now even though we have a DSL to allow time for migration
-            where_clauses = spec.get("where_clauses")
-            # Identify time-based specs when they include a `field` and at least one
-            # bound (`start` or `end`).  `interval` may be omitted for open-ended
-            # partitions and will be validated later by the TimeBasedPartitioning
-            # constructor.
-            time_based_partitioning = "field" in spec and (
-                "start" in spec or "end" in spec
-            )
-
-            if where_clauses and time_based_partitioning:
-                raise ValueError(
-                    "Cannot specify both `where_clauses` and time based partitioning (`field`, `start`, `end`, `interval`)"
-                )
-
-            if not where_clauses and not time_based_partitioning:
-                raise ValueError(
-                    "Must specify either `where_clauses` or time based partitioning (`field`, `start`, `end`, `interval`)"
-                )
-
-            if where_clauses:
-                if not isinstance(where_clauses, List) or not all(
-                    isinstance(where_clause, str) for where_clause in where_clauses
+        # NOTE: when we deprecate `where_clause` partitioning in favor of a more proper partitioning DSL,
+        # we should be sure to still support the existing `where_clause` partition definition on
+        # any in-progress DSRs so that they can run through to completion.
+        if where_clauses := partitioning.get("where_clauses"):
+            if not isinstance(where_clauses, List) or not all(
+                isinstance(where_clause, str) for where_clause in where_clauses
+            ):
+                raise ValueError("`where_clauses` must be a list of strings!")
+            for partition_clause in where_clauses:
+                if matching := match(
+                    BIGQUERY_PARTITION_CLAUSE_PATTERN, partition_clause
                 ):
-                    raise ValueError("`where_clauses` must be a list of strings!")
-                for partition_clause in where_clauses:
-                    if matching := match(
-                        BIGQUERY_PARTITION_CLAUSE_PATTERN, partition_clause
+                    # check that if there are two field comparison sub-clauses, they reference the same field, e.g.:
+                    # "`my_field_1` > 5 AND `my_field_1` <= 10", not "`my_field_1` > 5 AND `my_field_1` <= 10"
+                    if matching["field_2"] is not None and (
+                        matching["field_1"] != matching["field_2"]
                     ):
-                        # check that if there are two field comparison sub-clauses, they reference the same field
-                        if matching["field_2"] is not None and (
-                            matching["field_1"] != matching["field_2"]
-                        ):
+                        raise ValueError(
+                            f"Partition clause must have matching fields. Identified non-matching field references '{matching['field_1']}' and '{matching['field_2']}"
+                        )
+
+                    for prohibited_keyword in PROHIBITED_KEYWORDS:
+                        search_str = prohibited_keyword.lower() + r"\s"
+                        if search(search_str, partition_clause.lower()):
                             raise ValueError(
-                                f"Partition clause must have matching fields. Identified non-matching field references '{matching['field_1']}' and '{matching['field_2']}"
+                                "Prohibited keyword referenced in partition clause"
                             )
-
-                        for prohibited_keyword in PROHIBITED_KEYWORDS:
-                            search_str = prohibited_keyword.lower() + r"\s"
-                            if search(search_str, partition_clause.lower()):
-                                raise ValueError(
-                                    "Prohibited keyword referenced in partition clause"
-                                )
-                    else:
-                        raise ValueError("Unsupported partition clause format")
-            if time_based_partitioning:
-                # Try to parse time-based partitioning
-                TimeBasedPartitioning(
-                    field=spec["field"],
-                    start=spec.get("start"),
-                    end=spec.get("end"),
-                    interval=spec.get("interval"),
-                )
-
-        return partitioning
+                else:
+                    raise ValueError("Unsupported partition clause format")
+            return partitioning
+        raise ValueError(
+            "`where_clauses` must be specified in `partitioning` specification!"
+        )
 
 
 class GraphDataset(BaseModel):

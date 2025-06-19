@@ -22,6 +22,7 @@ from fides.api.graph.execution import ExecutionNode
 from fides.api.models.policy import Policy, Rule
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.namespace_meta.namespace_meta import NamespaceMeta
+from fides.api.schemas.partitioning.time_based_partitioning import TimeBasedPartitioning
 from fides.api.schemas.policy import ActionType
 from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.service.masking.strategy.masking_strategy_nullify import (
@@ -48,7 +49,7 @@ class QueryConfig(Generic[T], ABC):
     @property
     def partitioning(  # pylint: disable=useless-return
         self,
-    ) -> Optional[Union[Dict, List[Dict]]]:
+    ) -> Optional[Union[List[TimeBasedPartitioning], Dict[str, Any]]]:
         # decided to de-scope partitioning support to only bigquery as this grew more complex,
         # but keeping more generic support stubbed out feels like a reasonable step.
         if self.node.collection.partitioning:

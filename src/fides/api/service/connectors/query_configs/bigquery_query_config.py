@@ -16,12 +16,8 @@ from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.namespace_meta.bigquery_namespace_meta import (
     BigQueryNamespaceMeta,
 )
-from fides.api.schemas.partitioning import (
-    TIME_BASED_REQUIRED_KEYS,
-    BigQueryTimeBasedPartitioning,
-    combine_partitions,
-    validate_partitioning_list,
-)
+from fides.api.schemas.partitioning import TIME_BASED_REQUIRED_KEYS, combine_partitions
+from fides.api.schemas.partitioning.time_based_partitioning import TimeBasedPartitioning
 from fides.api.service.connectors.query_configs.query_config import (
     QueryStringWithoutTuplesOverrideQueryConfig,
 )
@@ -43,7 +39,9 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
     namespace_meta_schema = BigQueryNamespaceMeta
 
     @property
-    def partitioning(self) -> Optional[Union[Dict, List[Dict]]]:
+    def partitioning(
+        self,
+    ) -> Optional[Union[List[TimeBasedPartitioning], Dict[str, Any]]]:
         # Overridden from base implementation to allow for _only_ BQ partitioning, for now
         return self.node.collection.partitioning
 
@@ -63,65 +61,29 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         `ValueError` so that mis-configurations surface early.
         """
 
-        partition_spec: Optional[Union[Dict, List[Dict]]] = self.partitioning
+        partition_spec: Optional[Union[List[TimeBasedPartitioning], Dict[str, Any]]] = (
+            self.partitioning
+        )
         if not partition_spec:
             logger.warning(
                 f"No partitioning specification found for node '{self.node.address}', skipping partition clauses"
             )
             return []
 
-        # Normalize to list so the rest of the logic can treat everything the same way.
-        specs: List[Dict] = (
-            [partition_spec]
-            if isinstance(partition_spec, dict)
-            else list(partition_spec)
-        )
-
         # Legacy mode using `where_clauses`
-        if len(specs) == 1 and "where_clauses" in specs[0]:
-            if any(k in specs[0] for k in TIME_BASED_REQUIRED_KEYS):
+        if isinstance(partition_spec, dict) and "where_clauses" in partition_spec:
+            if any(k in partition_spec for k in TIME_BASED_REQUIRED_KEYS):
                 # Mixed mode not allowed
                 raise ValueError(
                     "Partitioning spec cannot define both `where_clauses` and time-based partitioning."
                 )
-            where = specs[0].get("where_clauses") or []
+            where = partition_spec.get("where_clauses") or []
             if not where:
                 raise ValueError("`where_clauses` must be a non-empty list.")
             return where
 
-        # Time-based partitioning
-        for spec in specs:
-            if not isinstance(spec, dict):
-                raise ValueError(
-                    f"Each partitioning specification must be a dict, got {type(spec)}"
-                )
-            if not TIME_BASED_REQUIRED_KEYS.issubset(spec):
-                raise ValueError(
-                    "Each time-based partitioning spec must contain field, start, end, and interval."
-                )
-            if "where_clauses" in spec:
-                raise ValueError(
-                    "`where_clauses` cannot be combined with time-based partitioning."
-                )
-
-        # Detect overlapping time ranges when more than one supplied
-        if len(specs) > 1:
-            validate_partitioning_list(
-                [BigQueryTimeBasedPartitioning(**spec) for spec in specs]
-            )
-
-        partitions = [
-            BigQueryTimeBasedPartitioning(
-                field=spec["field"],
-                start=spec.get("start"),
-                end=spec.get("end"),
-                interval=spec.get("interval"),
-            )
-            for spec in specs
-        ]
-
         # Combine and de-duplicate boundary rows
-        combined_expressions = combine_partitions(partitions)
+        combined_expressions = combine_partitions(partition_spec)  # type: ignore
 
         dialect = BigQueryDialect()
         where_clauses = [

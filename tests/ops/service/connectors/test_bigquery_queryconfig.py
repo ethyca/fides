@@ -12,6 +12,7 @@ from fides.api.models.datasetconfig import DatasetConfig, convert_dataset_to_gra
 from fides.api.schemas.namespace_meta.bigquery_namespace_meta import (
     BigQueryNamespaceMeta,
 )
+from fides.api.schemas.partitioning.time_based_partitioning import TimeBasedPartitioning
 from fides.api.service.connectors import BigQueryConnector
 from fides.api.service.connectors.query_configs.bigquery_query_config import (
     BigQueryQueryConfig,
@@ -693,12 +694,14 @@ class TestBigQueryQueryConfigPartitioning:
         ].to_mock_execution_node()
 
         # Add partitioning configuration
-        node.collection.partitioning = {
-            "field": "created",
-            "start": "NOW() - 1000 DAYS",
-            "end": "NOW()",
-            "interval": "500 DAYS",
-        }
+        node.collection.partitioning = [
+            TimeBasedPartitioning(
+                field="created",
+                start="NOW() - 1000 DAYS",
+                end="NOW()",
+                interval="500 DAYS",
+            )
+        ]
         return node
 
     @pytest.fixture(scope="function")
@@ -761,22 +764,19 @@ class TestBigQueryQueryConfigPartitioning:
         # Should return empty list
         assert partition_clauses == []
 
-    def test_get_partition_clauses_invalid_partitioning_spec(
-        self, non_partitioned_node
-    ):
-        """Test get_partition_clauses with invalid partitioning specification"""
-        # Set invalid partitioning spec (missing required fields)
-        non_partitioned_node.collection.partitioning = {
-            "field": "created",
-            "start": "NOW() - 1000 DAYS",
-            # Missing 'end' and 'interval'
-        }
+    def test_get_partition_clauses_without_end_or_interval(self, non_partitioned_node):
+        non_partitioned_node.collection.partitioning = [
+            TimeBasedPartitioning(
+                field="created",
+                start="NOW() - 1000 DAYS",
+            )
+        ]
 
         query_config = BigQueryQueryConfig(non_partitioned_node)
-
-        # Should raise ValueError for invalid specification
-        with pytest.raises(ValueError):
-            query_config.get_partition_clauses()
+        partition_clauses = query_config.get_partition_clauses()
+        assert partition_clauses == [
+            "`created` >= CURRENT_TIMESTAMP - INTERVAL 1000 DAY",
+        ]
 
     def test_get_partition_clauses_single_partition(self, dataset_graph):
         """Test get_partition_clauses when interval equals total duration (single partition)"""
@@ -787,12 +787,14 @@ class TestBigQueryQueryConfigPartitioning:
         ].to_mock_execution_node()
 
         # Set partitioning where interval equals total duration
-        node.collection.partitioning = {
-            "field": "created",
-            "start": "NOW() - 7 DAYS",
-            "end": "NOW()",
-            "interval": "7 DAYS",
-        }
+        node.collection.partitioning = [
+            TimeBasedPartitioning(
+                field="created",
+                start="NOW() - 7 DAYS",
+                end="NOW()",
+                interval="7 DAYS",
+            )
+        ]
 
         query_config = BigQueryQueryConfig(node)
         partition_clauses = query_config.get_partition_clauses()
@@ -810,12 +812,14 @@ class TestBigQueryQueryConfigPartitioning:
         ].to_mock_execution_node()
 
         # Set partitioning with small intervals
-        node.collection.partitioning = {
-            "field": "created",
-            "start": "NOW() - 30 DAYS",
-            "end": "NOW()",
-            "interval": "5 DAYS",
-        }
+        node.collection.partitioning = [
+            TimeBasedPartitioning(
+                field="created",
+                start="NOW() - 30 DAYS",
+                end="NOW()",
+                interval="5 DAYS",
+            )
+        ]
 
         query_config = BigQueryQueryConfig(node)
         partition_clauses = query_config.get_partition_clauses()
@@ -838,12 +842,14 @@ class TestBigQueryQueryConfigPartitioning:
         ].to_mock_execution_node()
 
         # Set partitioning with week intervals
-        node.collection.partitioning = {
-            "field": "last_visit",
-            "start": "NOW() - 4 WEEKS",
-            "end": "NOW()",
-            "interval": "1 WEEK",
-        }
+        node.collection.partitioning = [
+            TimeBasedPartitioning(
+                field="last_visit",
+                start="NOW() - 4 WEEKS",
+                end="NOW()",
+                interval="1 WEEK",
+            )
+        ]
 
         query_config = BigQueryQueryConfig(node)
         partition_clauses = query_config.get_partition_clauses()
@@ -915,12 +921,14 @@ class TestBigQueryQueryConfigPartitioning:
         ].to_mock_execution_node()
 
         # Add partitioning configuration
-        employee_node.collection.partitioning = {
-            "field": "created",
-            "start": "NOW() - 1000 DAYS",
-            "end": "NOW()",
-            "interval": "500 DAYS",
-        }
+        employee_node.collection.partitioning = [
+            TimeBasedPartitioning(
+                field="created",
+                start="NOW() - 1000 DAYS",
+                end="NOW()",
+                interval="500 DAYS",
+            )
+        ]
 
         erasure_policy.rules[0].targets[0].data_category = "user"
         erasure_policy.rules[0].targets[0].save(db)
@@ -990,18 +998,18 @@ class TestBigQueryQueryConfigPartitioning:
 
         # Provide partitioning as a list of two *non-overlapping* time-based specifications
         node.collection.partitioning = [
-            {
-                "field": "created",
-                "start": "NOW() - 1000 DAYS",
-                "end": "NOW() - 500 DAYS",
-                "interval": "500 DAYS",
-            },
-            {
-                "field": "created",
-                "start": "NOW() - 250 DAYS",
-                "end": "NOW()",
-                "interval": "250 DAYS",
-            },
+            TimeBasedPartitioning(
+                field="created",
+                start="NOW() - 1000 DAYS",
+                end="NOW() - 500 DAYS",
+                interval="500 DAYS",
+            ),
+            TimeBasedPartitioning(
+                field="created",
+                start="NOW() - 250 DAYS",
+                end="NOW()",
+                interval="250 DAYS",
+            ),
         ]
 
         query_config = BigQueryQueryConfig(node)
@@ -1030,18 +1038,18 @@ class TestBigQueryQueryConfigPartitioning:
 
         # Provide partitioning as a list of two adjacent time-based specifications
         node.collection.partitioning = [
-            {
-                "field": "created",
-                "start": "NOW() - 1000 DAYS",
-                "end": "NOW() - 500 DAYS",
-                "interval": "500 DAYS",
-            },
-            {
-                "field": "created",
-                "start": "NOW() - 500 DAYS",
-                "end": "NOW()",
-                "interval": "250 DAYS",
-            },
+            TimeBasedPartitioning(
+                field="created",
+                start="NOW() - 1000 DAYS",
+                end="NOW() - 500 DAYS",
+                interval="500 DAYS",
+            ),
+            TimeBasedPartitioning(
+                field="created",
+                start="NOW() - 500 DAYS",
+                end="NOW()",
+                interval="250 DAYS",
+            ),
         ]
 
         query_config = BigQueryQueryConfig(node)
@@ -1069,18 +1077,18 @@ class TestBigQueryQueryConfigPartitioning:
 
         # Two specs with overlapping literal date ranges (June overlaps)
         node.collection.partitioning = [
-            {
-                "field": "created",
-                "start": "2024-01-01",
-                "end": "2024-06-30",
-                "interval": "1 MONTH",
-            },
-            {
-                "field": "created",
-                "start": "2024-06-15",
-                "end": "2024-12-31",
-                "interval": "1 MONTH",
-            },
+            TimeBasedPartitioning(
+                field="created",
+                start="2024-01-01",
+                end="2024-06-30",
+                interval="1 MONTH",
+            ),
+            TimeBasedPartitioning(
+                field="created",
+                start="2024-06-15",
+                end="2024-12-31",
+                interval="1 MONTH",
+            ),
         ]
 
         query_config = BigQueryQueryConfig(node)

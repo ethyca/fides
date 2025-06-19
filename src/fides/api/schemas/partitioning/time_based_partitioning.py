@@ -1,7 +1,7 @@
 import re
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import List, Optional, Sequence, Set, Tuple
+from typing import List, Optional, Set, Tuple
 
 from pydantic import Field, field_validator, model_validator
 from sqlalchemy import and_, column, func, text
@@ -805,7 +805,7 @@ TIME_BASED_REQUIRED_KEYS: Set[str] = {"field", "start", "end", "interval"}
 # ------------------------------------------------------------------
 
 
-def combine_partitions(parts: Sequence["TimeBasedPartitioning"]) -> List[ColumnElement]:
+def combine_partitions(parts: List["TimeBasedPartitioning"]) -> List[ColumnElement]:
     """Return a combined list of SQLAlchemy expressions for an list
     of `TimeBasedPartitioning` objects, ensuring adjacent specs do not
     overlap at the boundary row.
@@ -817,13 +817,13 @@ def combine_partitions(parts: Sequence["TimeBasedPartitioning"]) -> List[ColumnE
 
     combined: List[ColumnElement] = []
 
-    parts_list = list(parts)
+    validate_partitioning_list(parts)
 
-    for idx, spec in enumerate(parts_list):
+    for idx, spec in enumerate(parts):
         p = spec.model_copy(deep=True)  # avoid mutating caller's object
 
-        if idx > 0 and p.start is not None and parts_list[idx - 1].end is not None:
-            if p.start == parts_list[idx - 1].end:
+        if idx > 0 and p.start is not None and parts[idx - 1].end is not None:
+            if p.start == parts[idx - 1].end:
                 p.inclusive_start = False
 
         combined.extend(p.generate_expressions())
