@@ -56,6 +56,21 @@ const fidesScriptPlugins = ({ name, gzipWarnSizeKb, gzipErrorSizeKb }) => [
       functions: ["fidesDebugger"],
     }),
   !IS_DEV && minify(),
+  replace({
+    // version.json is created by the docker build process and contains the versioneer version
+    __RELEASE_VERSION__: () => {
+      try {
+        const versionData = JSON.parse(
+          fs.readFileSync("../version.json", "utf-8"),
+        );
+        return versionData.version;
+      } catch (error) {
+        return "unknown";
+      }
+    },
+    preventAssignment: true,
+    include: ["src/lib/init-utils.ts"],
+  }),
   copy({
     // Automatically add the built script to the privacy center's and admin ui's static files for bundling:
     targets: [

@@ -46,27 +46,6 @@ RUN pip install --no-cache-dir -r optional-requirements.txt
 COPY dev-requirements.txt .
 RUN pip install --no-cache-dir -r dev-requirements.txt
 
-#########################
-## Version Extraction  ##
-#########################
-FROM python:${PYTHON_VERSION}-slim-bookworm AS version_extractor
-
-# Install git for versioneer
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    git \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy the source code needed for version extraction
-COPY setup.py setup.cfg versioneer.py ./
-COPY src/ ./src/
-COPY .git/ ./.git/
-
-# Fix git permissions and extract version
-RUN git config --global --add safe.directory /
-RUN python -c "import versioneer; print(versioneer.get_version())" > /version.txt
-
 ##################
 ## Backend Base ##
 ##################
@@ -105,6 +84,9 @@ RUN git rm --cached -r .
 # This is a required workaround due to: https://github.com/ethyca/fides/issues/2440
 RUN git config --global --add safe.directory /fides
 
+# Export the version to a file for frontend use
+RUN python -c "import versioneer, json; print(json.dumps({'version': versioneer.get_version()}))" > /fides/version.json
+
 # Enable detection of running within Docker
 ENV RUNNING_IN_DOCKER=true
 
@@ -134,6 +116,7 @@ COPY clients/package.json clients/package-lock.json ./
 COPY clients/fides-js/package.json ./fides-js/package.json
 COPY clients/admin-ui/package.json ./admin-ui/package.json
 COPY clients/privacy-center/package.json ./privacy-center/package.json
+COPY --from=backend /fides/version.json ./version.json
 
 RUN npm install
 
@@ -144,11 +127,8 @@ COPY clients/ .
 ####################
 FROM frontend AS built_frontend
 
-# Copy the extracted version from the version_extractor stage
-COPY --from=version_extractor /version.txt /tmp/version.txt
-
 # Replace the placeholder version in next.config.js with the actual version
-RUN RELEASE_VERSION=$(cat /tmp/version.txt) && \
+RUN RELEASE_VERSION=$(cat /fides/clients/version.json) && \
     sed -i "s/__RELEASE_VERSION__/$RELEASE_VERSION/g" /fides/clients/privacy-center/next.config.js
 
 # Builds and exports admin-ui
@@ -163,8 +143,8 @@ FROM node:20-alpine AS prod_pc
 
 WORKDIR /fides/clients
 
-ENV NODE_ENV production
-ENV NEXT_TELEMETRY_DISABLED 1
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
