@@ -1,13 +1,13 @@
+import { SettingsAdjust } from "@carbon/icons-react";
 import { TableProps } from "antd/es/table";
 import { Table } from "antd/lib";
 import React from "react";
 
-import { Icons } from "..";
 import palette from "../palette/palette.module.scss";
 
 // Filter icon component for consistent styling
 const FilterIcon = () => (
-  <Icons.SettingsAdjust
+  <SettingsAdjust
     style={{
       color: palette.FIDESUI_NEUTRAL_500,
     }}
