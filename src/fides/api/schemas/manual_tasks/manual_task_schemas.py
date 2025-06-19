@@ -32,6 +32,13 @@ class ManualTaskParentEntityType(str, Enum):
     # Add more parent entity types as needed
 
 
+class ManualTaskEntityType(str, Enum):
+    """Enum for manual task entity types."""
+
+    privacy_request = "privacy_request"
+    # Add more entity types as needed
+
+
 class ManualTaskReferenceType(str, Enum):
     """Enum for manual task reference types."""
 
@@ -53,6 +60,32 @@ class ManualTaskLogStatus(str, Enum):
     retrying = "retrying"
     paused = "paused"
     awaiting_input = "awaiting_input"
+
+
+class ManualTaskResponse(FidesSchema):
+    """Schema for manual task response."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: Annotated[str, Field(..., description="Task ID")]
+    parent_entity_id: Annotated[str, Field(..., description="Parent entity ID")]
+    parent_entity_type: Annotated[
+        ManualTaskParentEntityType, Field(..., description="Parent entity type")
+    ]
+    status: Annotated[StatusType, Field(..., description="Task status")]
+    created_at: Annotated[datetime, Field(..., description="Creation timestamp")]
+    updated_at: Annotated[datetime, Field(..., description="Last update timestamp")]
+
+
+class ManualTaskCreate(FidesSchema):
+    """Schema for creating a manual task."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    parent_entity_id: Annotated[str, Field(..., description="Parent entity ID")]
+    parent_entity_type: Annotated[
+        ManualTaskParentEntityType, Field(..., description="Parent entity type")
+    ]
 
 
 class ManualTaskLogCreate(FidesSchema):

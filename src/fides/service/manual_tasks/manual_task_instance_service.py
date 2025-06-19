@@ -16,6 +16,22 @@ from fides.api.schemas.manual_tasks.manual_task_status import (
 from fides.service.manual_tasks.utils import validate_fields, with_task_logging
 
 
+class ManualTaskInstanceError(Exception):
+    """Exception raised when a manual task instance error occurs."""
+
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(self.message)
+
+
+class ManualTaskSubmissionError(Exception):
+    """Exception raised when a manual task submission error occurs."""
+
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(self.message)
+
+
 class ManualTaskInstanceService:
     def __init__(self, db: Session):
         self.db = db
@@ -41,7 +57,7 @@ class ManualTaskInstanceService:
         """Get and validate instance."""
         instance = self.db.query(ManualTaskInstance).filter_by(id=instance_id).first()
         if not instance:
-            raise ValueError(f"Instance with ID {instance_id} not found")
+            raise ManualTaskInstanceError(f"Instance with ID {instance_id} not found")
 
         if not allow_completed and instance.status == StatusType.completed:
             raise StatusTransitionNotAllowed(
@@ -58,10 +74,13 @@ class ManualTaskInstanceService:
             db=self.db, data={"id": field_id}
         )
         if not field:
-            raise ValueError(f"Field with ID {field_id} not found")
+            raise ManualTaskInstanceError(f"Field with ID {field_id} not found")
 
         if validate_data:
-            validate_fields([validate_data], is_submission=True)
+            try:
+                validate_fields([validate_data], is_submission=True)
+            except ValueError as e:
+                raise ManualTaskInstanceError(f"Invalid field data: {e}") from e
 
         return field
 
@@ -145,7 +164,7 @@ class ManualTaskInstanceService:
         field = self._get_field(field_id, data)
 
         if instance.get_submission_for_field(field_id):
-            raise ValueError(
+            raise ManualTaskInstanceError(
                 f"Submission for field {field.field_key} already exists for instance {instance.id}"
             )
 
@@ -187,7 +206,9 @@ class ManualTaskInstanceService:
             None,
         )
         if not submission or not submission.field_id:
-            raise ValueError(f"Valid submission with ID {submission_id} not found")
+            raise ManualTaskSubmissionError(
+                f"Valid submission with ID {submission_id} not found"
+            )
 
         field = self._get_field(submission.field_id, data)
         submission.update(self.db, data={"data": data})
@@ -214,7 +235,9 @@ class ManualTaskInstanceService:
             self.db.query(ManualTaskSubmission).filter_by(id=submission_id).first()
         )
         if not submission:
-            raise ValueError(f"Submission with ID {submission_id} does not exist")
+            raise ManualTaskSubmissionError(
+                f"Submission with ID {submission_id} does not exist"
+            )
 
         self._get_instance(
             submission.instance_id
@@ -222,7 +245,7 @@ class ManualTaskInstanceService:
 
         attachment = self.db.query(Attachment).filter_by(id=attachment_id).first()
         if not attachment or attachment not in submission.attachments:
-            raise ValueError(
+            raise ManualTaskSubmissionError(
                 f"Attachment {attachment_id} not found in submission {submission_id}"
             )
 

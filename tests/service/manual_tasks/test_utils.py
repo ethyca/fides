@@ -214,8 +214,14 @@ class TestTaskLogger:
                 "123",
                 "Error in test operation: 'key error'",
             ),
+            pytest.param(
+                Exception,
+                "generic error",
+                None,
+                None,  # No message expected when task_id is None
+            ),
         ],
-        ids=["value_error", "key_error"],
+        ids=["value_error", "key_error", "no_task_id"],
     )
     def test_error_handling(
         self, mock_service, error_type, error_msg, task_id, expected_msg
@@ -244,8 +250,10 @@ class TestTaskLogger:
         [
             ("task", "123", {"task_id": "123"}),
             ("config", "456", {"task_id": "123", "config_id": "456"}),
+            ("instance", "789", {"task_id": "123", "instance_id": "789"}),
+            ("submission", "789", {"task_id": "123", "instance_id": "789"}),
         ],
-        ids=["task", "config"],
+        ids=["task", "config", "instance", "submission"],
     )
     def test_log_create(self, mock_db, entity_type, entity_id, expected_id_fields):
         """Test creation logging for different entity types."""
@@ -265,6 +273,32 @@ class TestTaskLogger:
             assert call_args["status"] == ManualTaskLogStatus.created
             assert call_args["message"] == f"Created new {entity_type}"
             assert call_args["details"] == {"test": "data", "user_id": "user123"}
+
+    def test_log_status_change(self, mock_db):
+        """Test status change logging."""
+        with patch.object(ManualTaskLog, "create_log") as mock_create_log:
+            TaskLogger.log_status_change(
+                db=mock_db,
+                task_id="123",
+                config_id="456",
+                instance_id="789",
+                previous_status=StatusType.pending,
+                new_status=StatusType.in_progress,
+                user_id="user123",
+            )
+
+            mock_create_log.assert_called_once()
+            call_args = mock_create_log.call_args[1]
+            assert call_args["task_id"] == "123"
+            assert call_args["config_id"] == "456"
+            assert call_args["instance_id"] == "789"
+            assert call_args["status"] == ManualTaskLogStatus.in_progress
+            assert "transitioning from pending to in_progress" in call_args["message"]
+            assert call_args["details"] == {
+                "previous_status": StatusType.pending,
+                "new_status": StatusType.in_progress,
+                "user_id": "user123",
+            }
 
     def test_invalid_entity_type(self, mock_db):
         """Test log_create with invalid entity type."""

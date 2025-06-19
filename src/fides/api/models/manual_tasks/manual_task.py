@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Any
 
-from sqlalchemy import Column, DateTime, ForeignKey, String
+from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
 
@@ -53,7 +53,6 @@ class ManualTask(Base):
         nullable=False,
         default=ManualTaskParentEntityType.connection_config,
     )
-    due_date = Column(DateTime, nullable=True)
 
     # Relationships
     references = relationship(

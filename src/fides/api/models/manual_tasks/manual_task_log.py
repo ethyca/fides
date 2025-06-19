@@ -30,11 +30,11 @@ class ManualTaskLog(Base):
         String, ForeignKey("manual_task.id", ondelete="CASCADE"), nullable=False
     )
     config_id = Column(
-        String, ForeignKey("manual_task_config.id", ondelete="SET NULL"), nullable=True
+        String, ForeignKey("manual_task_config.id", ondelete="CASCADE"), nullable=True
     )
     instance_id = Column(
         String,
-        ForeignKey("manual_task_instance.id", ondelete="SET NULL"),
+        ForeignKey("manual_task_instance.id", ondelete="CASCADE"),
         nullable=True,
     )
     status = Column(String, nullable=False)

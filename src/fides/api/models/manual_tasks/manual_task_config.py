@@ -21,9 +21,11 @@ from fides.api.schemas.manual_tasks.manual_task_schemas import (
 if TYPE_CHECKING:  # pragma: no cover
     from fides.api.models.manual_tasks.manual_task import ManualTask  # pragma: no cover
     from fides.api.models.manual_tasks.manual_task_instance import (
+        ManualTaskInstance,  # pragma: no cover
+    )
+    from fides.api.models.manual_tasks.manual_task_instance import (
         ManualTaskSubmission,  # pragma: no cover
     )
-    from fides.api.models.manual_tasks.manual_task_instance import ManualTaskInstance
 
 
 class ManualTaskConfig(Base):
@@ -42,7 +44,7 @@ class ManualTaskConfig(Base):
     execution_timing = Column(
         EnumColumn(ManualTaskExecutionTiming),
         nullable=False,
-        default=ManualTaskExecutionTiming.post_execution,
+        default=ManualTaskExecutionTiming.pre_execution,
     )
 
     # Relationships
@@ -63,7 +65,7 @@ class ManualTaskConfig(Base):
         "ManualTaskLog",
         back_populates="config",
         primaryjoin="ManualTaskConfig.id == ManualTaskLog.config_id",
-        viewonly=True,
+        cascade="all, delete-orphan",
     )
 
     @classmethod

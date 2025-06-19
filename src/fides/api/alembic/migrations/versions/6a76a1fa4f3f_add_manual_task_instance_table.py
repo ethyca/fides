@@ -29,6 +29,9 @@ def upgrade():
         ),
     )
 
+    # Remove due_date column from manual_task
+    op.drop_column("manual_task", "due_date")
+
     # Create manual_task_instance table
     op.create_table(
         "manual_task_instance",
@@ -50,6 +53,7 @@ def upgrade():
         sa.Column("entity_id", sa.String(), nullable=False),
         sa.Column("entity_type", sa.String(), nullable=False),
         sa.Column("status", sa.String(), nullable=False, server_default="pending"),
+        sa.Column("due_date", sa.DateTime(timezone=True), nullable=True),
         sa.Column("completed_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("completed_by_id", sa.String(), nullable=True),
         sa.ForeignKeyConstraint(
@@ -163,7 +167,20 @@ def upgrade():
         "manual_task_instance",
         ["instance_id"],
         ["id"],
-        ondelete="SET NULL",
+        ondelete="CASCADE",
+    )
+
+    # Update foreign key constraint for manual_task_log.config_id to use CASCADE
+    op.drop_constraint(
+        "fk_manual_task_log_config_id", "manual_task_log", type_="foreignkey"
+    )
+    op.create_foreign_key(
+        "fk_manual_task_log_config_id",
+        "manual_task_log",
+        "manual_task_config",
+        ["config_id"],
+        ["id"],
+        ondelete="CASCADE",
     )
 
 
@@ -171,10 +188,30 @@ def downgrade():
     # Drop execution_timing column from manual_task_config
     op.drop_column("manual_task_config", "execution_timing")
 
+    # Add due_date column to manual_task
+    op.add_column(
+        "manual_task",
+        sa.Column("due_date", sa.DateTime(timezone=True), nullable=True),
+    )
+
     # Drop foreign key constraint from manual_task_log.instance_id
     op.drop_constraint(
         "fk_manual_task_log_instance_id", "manual_task_log", type_="foreignkey"
     )
+
+    # Revert foreign key constraint for manual_task_log.config_id back to SET NULL
+    op.drop_constraint(
+        "fk_manual_task_log_config_id", "manual_task_log", type_="foreignkey"
+    )
+    op.create_foreign_key(
+        "fk_manual_task_log_config_id",
+        "manual_task_log",
+        "manual_task_config",
+        ["config_id"],
+        ["id"],
+        ondelete="SET NULL",
+    )
+
 
     # Drop indexes first
     op.drop_index(
