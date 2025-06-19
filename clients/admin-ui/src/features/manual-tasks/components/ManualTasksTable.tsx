@@ -195,8 +195,6 @@ export const ManualTasksTable = ({ searchTerm }: Props) => {
         columns={columns}
         dataSource={tasks}
         rowKey="task_id"
-        size="small"
-        bordered
         pagination={false}
         locale={{
           emptyText: searchTerm ? (

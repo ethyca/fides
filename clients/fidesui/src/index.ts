@@ -61,7 +61,6 @@ export {
   Spin as AntSpin,
   Steps as AntSteps,
   Switch as AntSwitch,
-  Table as AntTable,
   Tabs as AntTabs,
   Tooltip as AntTooltip,
   Upload as AntUpload,
@@ -81,6 +80,7 @@ export type { UploadChangeParam as AntUploadChangeParam } from "antd/lib/upload"
 export {
   CustomDateRangePicker as AntDateRangePicker,
   CustomSelect as AntSelect,
+  CustomTable as AntTable,
   CustomTag as AntTag,
   CustomTypography as AntTypography,
 } from "./hoc";
