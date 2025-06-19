@@ -98,7 +98,11 @@ class ManualTaskConnector(BaseConnector):
         if request_task.action_type == ActionType.access:
             return [request_task.access_data] if request_task.access_data else []
         else:
-            return [request_task.data_for_erasures] if request_task.data_for_erasures else []
+            return (
+                [request_task.data_for_erasures]
+                if request_task.data_for_erasures
+                else []
+            )
 
     def mask_data(
         self,
@@ -146,7 +150,10 @@ class Connections:
                 db=session,
                 conditions=(
                     (ManualTask.parent_entity_id == connection_config.id)
-                    & (ManualTask.parent_entity_type == ManualTaskParentEntityType.connection_config)
+                    & (
+                        ManualTask.parent_entity_type
+                        == ManualTaskParentEntityType.connection_config
+                    )
                 ),
             ).first()
 
@@ -242,7 +249,10 @@ class TaskResources:
                 db=session,
                 conditions=(
                     (ManualTask.parent_entity_id == config.id)
-                    & (ManualTask.parent_entity_type == ManualTaskParentEntityType.connection_config)
+                    & (
+                        ManualTask.parent_entity_type
+                        == ManualTaskParentEntityType.connection_config
+                    )
                 ),
             ).first()
 

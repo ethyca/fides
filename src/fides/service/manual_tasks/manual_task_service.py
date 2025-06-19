@@ -265,12 +265,19 @@ class ManualTaskService:
                     message_body_params=ManualTaskAssignmentBodyParams(
                         task_name=task.name,
                         task_type=task.task_type.value,
-                        privacy_request_id=task.parent_entity_id if task.parent_entity_type == ManualTaskParentEntityType.privacy_request else None,
+                        privacy_request_id=(
+                            task.parent_entity_id
+                            if task.parent_entity_type
+                            == ManualTaskParentEntityType.privacy_request
+                            else None
+                        ),
                         admin_ui_url=task_list_url,
                     ),
                     subject_override=f"New manual task assigned: {task.name}",
                 )
-                logger.info(f"Sent task assignment notification email to {user.email_address}")
+                logger.info(
+                    f"Sent task assignment notification email to {user.email_address}"
+                )
             except Exception as e:
                 logger.error(
                     f"Failed to send task assignment notification email to {user.email_address}: {str(e)}"

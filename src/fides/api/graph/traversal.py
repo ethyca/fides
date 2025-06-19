@@ -31,24 +31,22 @@ from fides.api.graph.node_filters import (
     OptionalIdentityFilter,
     PolicyDataCategoryFilter,
 )
+from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.manual_tasks.manual_task import ManualTask
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import (
     PrivacyRequest,
     RequestTask,
     TraversalDetails,
 )
+from fides.api.schemas.manual_tasks.manual_task_schemas import (
+    ManualTaskExecutionTiming,
+    ManualTaskParentEntityType,
+)
 from fides.api.schemas.policy import ActionType
 from fides.api.util.collection_util import Row, append, partition
 from fides.api.util.logger_context_utils import Contextualizable, LoggerContextKeys
 from fides.api.util.matching_queue import MatchingQueue
-from fides.api.models.manual_tasks.manual_task import ManualTask
-from fides.api.models.connectionconfig import ConnectionConfig
-from fides.api.schemas.manual_tasks.manual_task_schemas import (
-    ManualTaskParentEntityType,
-)
-from fides.api.schemas.manual_tasks.manual_task_schemas import (
-    ManualTaskExecutionTiming,
-)
 
 ARTIFICIAL_NODES: List[CollectionAddress] = [
     ROOT_COLLECTION_ADDRESS,
@@ -347,7 +345,10 @@ class Traversal(BaseTraversal):
             manual_tasks = ManualTask.filter(
                 db=session,
                 conditions=(
-                    (ManualTask.parent_entity_type == ManualTaskParentEntityType.connection_config)
+                    (
+                        ManualTask.parent_entity_type
+                        == ManualTaskParentEntityType.connection_config
+                    )
                 ),
             ).all()
 
@@ -355,8 +356,7 @@ class Traversal(BaseTraversal):
             for task in manual_tasks:
                 # Get the connection config to use its key as the dataset name
                 connection_config = ConnectionConfig.get_by_key_or_id(
-                    db=session,
-                    data={"id": task.parent_entity_id}
+                    db=session, data={"id": task.parent_entity_id}
                 )
                 if not connection_config:
                     logger.warning(
@@ -379,7 +379,10 @@ class Traversal(BaseTraversal):
                     graph.nodes[manual_address] = manual_node.node
 
                     # Add edges based on execution timing
-                    if config.execution_timing == ManualTaskExecutionTiming.pre_execution:
+                    if (
+                        config.execution_timing
+                        == ManualTaskExecutionTiming.pre_execution
+                    ):
                         # Pre-execution tasks: connect root to the task
                         graph.edges.add(
                             Edge(
@@ -388,16 +391,26 @@ class Traversal(BaseTraversal):
                                     ROOT_COLLECTION_ADDRESS.collection,
                                     "id",
                                 ),
-                                FieldAddress(manual_address.dataset, manual_address.collection, "id"),
+                                FieldAddress(
+                                    manual_address.dataset,
+                                    manual_address.collection,
+                                    "id",
+                                ),
                             )
                         )
                     else:  # post_execution
                         # Post-execution tasks: connect the task to terminator
                         graph.edges.add(
                             Edge(
-                                FieldAddress(manual_address.dataset, manual_address.collection, "id"),
                                 FieldAddress(
-                                    TERMINATOR_ADDRESS.dataset, TERMINATOR_ADDRESS.collection, "id"
+                                    manual_address.dataset,
+                                    manual_address.collection,
+                                    "id",
+                                ),
+                                FieldAddress(
+                                    TERMINATOR_ADDRESS.dataset,
+                                    TERMINATOR_ADDRESS.collection,
+                                    "id",
                                 ),
                             )
                         )

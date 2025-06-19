@@ -1,6 +1,7 @@
+from unittest.mock import patch
+
 import pytest
 from sqlalchemy.orm import Session
-from unittest.mock import patch
 
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
@@ -301,7 +302,9 @@ class TestAssignUsersToTask:
             )
 
     @patch("fides.service.manual_tasks.manual_task_service.dispatch_message")
-    @patch("fides.service.manual_tasks.manual_task_service.get_email_messaging_config_service_type")
+    @patch(
+        "fides.service.manual_tasks.manual_task_service.get_email_messaging_config_service_type"
+    )
     def test_send_task_assignment_notifications(
         self,
         mock_get_service_type,
@@ -324,7 +327,10 @@ class TestAssignUsersToTask:
         assert call_args.kwargs["to_identity"].email == respondent_user.email_address
         assert call_args.kwargs["service_type"] == "mailgun"
         assert call_args.kwargs["message_body_params"].task_name == manual_task.name
-        assert call_args.kwargs["message_body_params"].task_type == manual_task.task_type.value
+        assert (
+            call_args.kwargs["message_body_params"].task_type
+            == manual_task.task_type.value
+        )
 
 
 class TestUnassignUsersFromTask:

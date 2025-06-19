@@ -128,7 +128,9 @@ class ManualTaskResponse(FidesSchema):
 
     id: Annotated[str, Field(..., description="Task ID")]
     parent_entity_id: Annotated[str, Field(..., description="Parent entity ID")]
-    parent_entity_type: Annotated[ManualTaskParentEntityType, Field(..., description="Parent entity type")]
+    parent_entity_type: Annotated[
+        ManualTaskParentEntityType, Field(..., description="Parent entity type")
+    ]
     status: Annotated[StatusType, Field(..., description="Task status")]
     created_at: Annotated[datetime, Field(..., description="Creation timestamp")]
     updated_at: Annotated[datetime, Field(..., description="Last update timestamp")]
@@ -140,4 +142,6 @@ class ManualTaskCreate(FidesSchema):
     model_config = ConfigDict(extra="forbid")
 
     parent_entity_id: Annotated[str, Field(..., description="Parent entity ID")]
-    parent_entity_type: Annotated[ManualTaskParentEntityType, Field(..., description="Parent entity type")]
+    parent_entity_type: Annotated[
+        ManualTaskParentEntityType, Field(..., description="Parent entity type")
+    ]

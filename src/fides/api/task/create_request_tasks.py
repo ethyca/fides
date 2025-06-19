@@ -464,7 +464,9 @@ def run_access_request(
         )
     else:
         try:
-            traversal: Traversal = Traversal(graph, identity, policy=policy, session=session)
+            traversal: Traversal = Traversal(
+                graph, identity, policy=policy, session=session
+            )
 
             # Traversal.traverse populates traversal_nodes in place, adding parents and children to each traversal_node.
             traversal_nodes: Dict[CollectionAddress, TraversalNode] = {}

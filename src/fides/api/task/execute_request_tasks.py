@@ -327,7 +327,10 @@ def run_access_node(
 
                 if can_run_task_body(request_task):
                     # Check if this is a manual task node
-                    if request_task.collection_name in ["pre_execution", "post_execution"]:
+                    if request_task.collection_name in [
+                        "pre_execution",
+                        "post_execution",
+                    ]:
                         try:
                             logger.info(
                                 "Running manual task node {} with status {}",
@@ -472,7 +475,10 @@ def run_erasure_node(
 
                 if can_run_task_body(request_task):
                     # Check if this is a manual task node
-                    if request_task.collection_name in ["pre_execution", "post_execution"]:
+                    if request_task.collection_name in [
+                        "pre_execution",
+                        "post_execution",
+                    ]:
                         timing = ManualTaskExecutionTiming(request_task.collection_name)
                         try:
                             task_completed = run_manual_task_node(
@@ -781,7 +787,10 @@ def run_manual_task_node(
         db=session,
         conditions=(
             (ManualTask.parent_entity_id == connection_config.id)
-            & (ManualTask.parent_entity_type == ManualTaskParentEntityType.connection_config)
+            & (
+                ManualTask.parent_entity_type
+                == ManualTaskParentEntityType.connection_config
+            )
         ),
     ).first()
 
@@ -795,8 +804,7 @@ def run_manual_task_node(
 
     # Get configs for the given timing
     configs = [
-        config for config in manual_task.configs
-        if config.execution_timing == timing
+        config for config in manual_task.configs if config.execution_timing == timing
     ]
 
     logger.info(
