@@ -117,22 +117,34 @@ def _evaluate_erasure_dependencies(
     Return a set of collection addresses corresponding to collections that need
     to be erased before the given task.
 
-    Remove the dependent collection addresses
-    from `end_nodes` so they can be executed in the correct order. If a task does
-    not have any dependencies it is linked directly to the root node
+    If a task does not have any dependencies it is linked directly to the root node
     """
     erase_after = (
         traversal_node.node.collection.erase_after.copy()
     )  # Create a copy to avoid modifying original
-    for collection in erase_after:
-        if collection in end_nodes:
-            # end_node list is modified in place
-            end_nodes.remove(collection)
+
+    # Debug logging
+    logger.info(
+        f"Processing erase_after for node {traversal_node.address}: {erase_after}"
+    )
+    logger.info(f"Available end_nodes: {end_nodes}")
+
+    # The erase_after values are already CollectionAddress objects
+    erase_after_addresses = set(erase_after)
+
     # this task will execute after the collections in `erase_after` or
     # execute at the beginning by linking it to the root node
-    if len(erase_after):
-        erase_after.add(ROOT_COLLECTION_ADDRESS)
-    return erase_after if len(erase_after) else {ROOT_COLLECTION_ADDRESS}
+    if erase_after_addresses:
+        # Include both root and erase_after dependencies
+        erase_after_addresses.add(ROOT_COLLECTION_ADDRESS)
+        logger.info(
+            f"Final dependencies for {traversal_node.address}: {erase_after_addresses}"
+        )
+        return erase_after_addresses
+    logger.info(
+        f"No erase_after dependencies for {traversal_node.address}, returning root only"
+    )
+    return {ROOT_COLLECTION_ADDRESS}
 
 
 def build_erasure_networkx_digraph(
@@ -175,21 +187,19 @@ def build_erasure_networkx_digraph(
             traversal_node, filtered_end_nodes
         )
 
-        if not erasure_dependencies or ROOT_COLLECTION_ADDRESS in erasure_dependencies:
-            # If node has no dependencies or depends on root, make it depend on root
-            networkx_graph.add_edge(ROOT_COLLECTION_ADDRESS, node_name)
-        else:
-            # Add edges for explicit dependencies
-            for dep in erasure_dependencies:
-                networkx_graph.add_edge(dep, node_name)
+        # Add edges for all dependencies, including root and explicit dependencies
+        for dep in erasure_dependencies:
+            networkx_graph.add_edge(dep, node_name)
 
     for node in filtered_end_nodes:
         # Connect each end node without downstream dependencies to the terminator node
-        networkx_graph.add_edge(node, TERMINATOR_ADDRESS)
+        # Only connect to terminator if the node has no outgoing edges (no downstream dependencies)
+        if networkx_graph.out_degree(node) == 0:
+            networkx_graph.add_edge(node, TERMINATOR_ADDRESS)
 
     try:
-        # Run extra checks on the graph since we potentially modified traversal_nodes
-        networkx.find_cycle(networkx_graph, ROOT_COLLECTION_ADDRESS)
+        # Check for cycles in the entire graph, not just from root
+        networkx.find_cycle(networkx_graph)
     except NetworkXNoCycle:
         pass
     else:
@@ -230,6 +240,7 @@ def base_task_data(
     privacy_request: PrivacyRequest,
     node: CollectionAddress,
     traversal_nodes: Dict[CollectionAddress, TraversalNode],
+    erasure_dependencies: Optional[Set[CollectionAddress]] = None,
 ) -> Dict:
     """Build a dictionary of common RequestTask attributes that are shared for building
     access, consent, and erasure tasks"""
@@ -245,6 +256,12 @@ def base_task_data(
             # Serialize with duck typing so we get the nested sub fields as well
             dataset_graph.nodes[node].collection.model_dump_json(serialize_as_any=True)
         )
+
+        # For erasure tasks, update the erase_after field with the evaluated dependencies
+        if erasure_dependencies is not None:
+            collection_representation["erase_after"] = [
+                dep.value for dep in erasure_dependencies
+            ]
 
         # Saves traversal details based on data dependencies like incoming edges
         # and input keys, also useful for building the Execution Node
@@ -370,11 +387,23 @@ def persist_initial_erasure_request_tasks(
         ):
             continue
 
+        # Evaluate erasure dependencies for this node
+        erasure_dependencies = None
+        if node in traversal_nodes:
+            erasure_dependencies = _evaluate_erasure_dependencies(
+                traversal_nodes[node], end_nodes.copy()
+            )
+
         RequestTask.create(
             session,
             data={
                 **base_task_data(
-                    graph, dataset_graph, privacy_request, node, traversal_nodes
+                    graph,
+                    dataset_graph,
+                    privacy_request,
+                    node,
+                    traversal_nodes,
+                    erasure_dependencies,
                 ),
                 "action_type": ActionType.erasure,
             },
