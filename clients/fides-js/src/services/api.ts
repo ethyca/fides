@@ -12,6 +12,7 @@ import {
   RecordsServedResponse,
 } from "../lib/consent-types";
 import { Locale } from "../lib/i18n";
+import sizeOf from "../lib/size-of";
 import { GVLTranslations } from "../lib/tcf/types";
 
 export enum FidesEndpointPaths {
@@ -166,7 +167,7 @@ export const fetchGvlTranslations = async (
   try {
     response = await fetch(
       `${fidesApiUrl}${FidesEndpointPaths.GVL_TRANSLATIONS}${
-        params.size > 0 ? "?" : ""
+        sizeOf(params) > 0 ? "?" : ""
       }${params.toString()}`,
       fetchOptions,
     );

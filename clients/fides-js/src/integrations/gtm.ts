@@ -95,18 +95,8 @@ export const gtm = (options?: GtmOptions) => {
     FidesModalClosed: true,
   };
 
-  const events = Object.entries(fidesEvents)
-    .filter(([, dispatchToGtm]) => dispatchToGtm)
-    .map(([key]) => key) as FidesEventType[];
-
-  // Listen for Fides events and cross-publish them to GTM
-  events.forEach((eventName) => {
-    window.addEventListener(eventName, (event) =>
-      pushFidesVariableToGTM(event, options),
-    );
-  });
-
   // If Fides was already initialized, publish a synthetic event immediately
+  // Initialize this before setting up event listeners to ensure we check before FidesInitialized event potentially runs.
   if (window.Fides?.initialized) {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const { consent, fides_meta, identity, tcf_consent } = window.Fides;
@@ -130,4 +120,15 @@ export const gtm = (options?: GtmOptions) => {
       options,
     );
   }
+
+  const events = Object.entries(fidesEvents)
+    .filter(([, dispatchToGtm]) => dispatchToGtm)
+    .map(([key]) => key) as FidesEventType[];
+
+  // Listen for Fides events and cross-publish them to GTM
+  events.forEach((eventName) => {
+    window.addEventListener(eventName, (event) =>
+      pushFidesVariableToGTM(event, options),
+    );
+  });
 };
