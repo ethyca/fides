@@ -688,6 +688,407 @@ class TestTodayExpressions:
         assert compiled == "event_date <= CURRENT_DATE"
 
 
+class TestTimestampTodayExpressions:
+    """Test TIMESTAMP(TODAY()) functionality."""
+
+    def test_timestamp_today_validation(self):
+        """Test that TIMESTAMP(TODAY()) expressions validate correctly."""
+        # Basic TIMESTAMP(TODAY())
+        partitioning = TimeBasedPartitioning(
+            field="created_at", start="TIMESTAMP(TODAY())", end="NOW()"
+        )
+        assert partitioning.start == "TIMESTAMP(TODAY())"
+        assert partitioning.end == "NOW()"
+
+    def test_timestamp_today_offset_validation(self):
+        """Test that TIMESTAMP(TODAY() - N UNIT) expressions validate correctly."""
+        # TIMESTAMP with offset
+        partitioning = TimeBasedPartitioning(
+            field="created_at",
+            start="TIMESTAMP(TODAY() - 7 DAYS)",
+            end="TIMESTAMP(TODAY())",
+            interval="1 DAY",
+        )
+        assert partitioning.start == "TIMESTAMP(TODAY() - 7 DAYS)"
+        assert partitioning.end == "TIMESTAMP(TODAY())"
+
+    def test_invalid_timestamp_today_expression(self):
+        """Test that invalid TIMESTAMP expressions raise validation errors."""
+        with pytest.raises(ValueError, match="Unsupported time expression"):
+            TimeBasedPartitioning(
+                field="created_at",
+                start="TIMESTAMP(YESTERDAY())",  # Invalid - not TODAY()
+                end="NOW()",
+            )
+
+    def test_timestamp_today_basic_expression(self):
+        """Test basic TIMESTAMP(TODAY()) generates correct SQL."""
+        partitioning = TimeBasedPartitioning(
+            field="created_at", start="TIMESTAMP(TODAY())", end="NOW()"
+        )
+
+        expressions = partitioning.generate_expressions()
+        assert len(expressions) == 1
+
+        compiled = str(expressions[0].compile(compile_kwargs={"literal_binds": True}))
+        assert (
+            compiled
+            == "created_at >= timestamp(CURRENT_DATE) AND created_at <= CURRENT_TIMESTAMP"
+        )
+
+    def test_timestamp_today_with_daily_intervals(self):
+        """Test TIMESTAMP(TODAY() - N DAYS) with daily intervals."""
+        partitioning = TimeBasedPartitioning(
+            field="created_at",
+            start="TIMESTAMP(TODAY() - 7 DAYS)",
+            end="TIMESTAMP(TODAY())",
+            interval="1 DAY",
+        )
+
+        expressions = partitioning.generate_expressions()
+
+        # Should generate 7 daily partitions
+        assert len(expressions) == 7
+
+        compiled_expressions = [
+            str(expr.compile(compile_kwargs={"literal_binds": True}))
+            for expr in expressions
+        ]
+
+        # All expressions should be consistently wrapped with timestamp()
+        assert compiled_expressions[0] == (
+            "created_at >= timestamp(CURRENT_DATE - INTERVAL 7 DAY) AND created_at <= timestamp(CURRENT_DATE - INTERVAL 6 DAY)"
+        )
+        assert compiled_expressions[-1] == (
+            "created_at > timestamp(CURRENT_DATE - INTERVAL 1 DAY) AND created_at <= timestamp(CURRENT_DATE)"
+        )
+
+    def test_timestamp_today_with_weekly_intervals(self):
+        """Test TIMESTAMP(TODAY() - N WEEKS) with weekly intervals."""
+        partitioning = TimeBasedPartitioning(
+            field="event_time",
+            start="TIMESTAMP(TODAY() - 4 WEEKS)",
+            end="TIMESTAMP(TODAY())",
+            interval="1 WEEK",
+        )
+
+        expressions = partitioning.generate_expressions()
+
+        # Should generate 4 weekly partitions
+        assert len(expressions) == 4
+
+        compiled_expressions = [
+            str(expr.compile(compile_kwargs={"literal_binds": True}))
+            for expr in expressions
+        ]
+
+        # All expressions should be consistently wrapped with timestamp()
+        assert compiled_expressions[0] == (
+            "event_time >= timestamp(CURRENT_DATE - INTERVAL 4 WEEK) AND event_time <= timestamp(CURRENT_DATE - INTERVAL 3 WEEK)"
+        )
+        assert compiled_expressions[-1] == (
+            "event_time > timestamp(CURRENT_DATE - INTERVAL 1 WEEK) AND event_time <= timestamp(CURRENT_DATE)"
+        )
+
+    def test_timestamp_today_with_month_intervals(self):
+        """Test TIMESTAMP(TODAY() - N MONTHS) with monthly intervals."""
+        partitioning = TimeBasedPartitioning(
+            field="created_at",
+            start="TIMESTAMP(TODAY() - 6 MONTHS)",
+            end="TIMESTAMP(TODAY())",
+            interval="1 MONTH",
+        )
+
+        expressions = partitioning.generate_expressions()
+
+        # Should generate 6 monthly partitions
+        assert len(expressions) == 6
+
+        compiled_expressions = [
+            str(expr.compile(compile_kwargs={"literal_binds": True}))
+            for expr in expressions
+        ]
+
+        assert compiled_expressions[0] == (
+            "created_at >= CURRENT_DATE - INTERVAL 6 MONTH AND created_at <= CURRENT_DATE - INTERVAL 5 MONTH"
+        )
+        assert compiled_expressions[-1] == (
+            "created_at > CURRENT_DATE - INTERVAL 1 MONTH AND created_at <= timestamp(CURRENT_DATE)"
+        )
+
+    def test_timestamp_today_range_between_offsets(self):
+        """Test TIMESTAMP between two offsets like TIMESTAMP(TODAY() - 14 DAYS) to TIMESTAMP(TODAY() - 7 DAYS)."""
+        partitioning = TimeBasedPartitioning(
+            field="event_time",
+            start="TIMESTAMP(TODAY() - 14 DAYS)",
+            end="TIMESTAMP(TODAY() - 7 DAYS)",
+            interval="1 DAY",
+        )
+
+        expressions = partitioning.generate_expressions()
+
+        # Should generate 7 partitions (difference between 14 and 7 days)
+        assert len(expressions) == 7
+
+        compiled_expressions = [
+            str(expr.compile(compile_kwargs={"literal_binds": True}))
+            for expr in expressions
+        ]
+
+        # All expressions should be consistently wrapped with timestamp()
+        # Should start from 14 days ago and work toward 7 days ago
+        assert compiled_expressions[0] == (
+            "event_time >= timestamp(CURRENT_DATE - INTERVAL 14 DAY) AND event_time <= timestamp(CURRENT_DATE - INTERVAL 13 DAY)"
+        )
+        # Last partition should end at 7 days offset (wrapped in timestamp)
+        assert compiled_expressions[-1] == (
+            "event_time > timestamp(CURRENT_DATE - INTERVAL 8 DAY) AND event_time <= timestamp(CURRENT_DATE - INTERVAL 7 DAY)"
+        )
+
+    def test_timestamp_today_single_partition(self):
+        """Test TIMESTAMP(TODAY()) without interval creates single partition."""
+        partitioning = TimeBasedPartitioning(
+            field="created_at",
+            start="TIMESTAMP(TODAY() - 1 DAY)",
+            end="TIMESTAMP(TODAY())",
+        )
+
+        expressions = partitioning.generate_expressions()
+
+        # Should generate only 1 partition covering the entire range
+        assert len(expressions) == 1
+
+        compiled = str(expressions[0].compile(compile_kwargs={"literal_binds": True}))
+        assert compiled == (
+            "created_at >= timestamp(CURRENT_DATE - INTERVAL 1 DAY) AND created_at <= timestamp(CURRENT_DATE)"
+        )
+
+    def test_timestamp_today_open_start(self):
+        """Test open start with TIMESTAMP(TODAY()) end."""
+        partitioning = TimeBasedPartitioning(
+            field="event_date", end="TIMESTAMP(TODAY())"
+        )
+
+        expressions = partitioning.generate_expressions()
+        assert len(expressions) == 1
+
+        compiled = str(expressions[0].compile(compile_kwargs={"literal_binds": True}))
+        assert compiled == "event_date <= timestamp(CURRENT_DATE)"
+
+    def test_timestamp_today_open_end(self):
+        """Test open end with TIMESTAMP(TODAY()) start."""
+        partitioning = TimeBasedPartitioning(
+            field="event_date", start="TIMESTAMP(TODAY() - 30 DAYS)"
+        )
+
+        expressions = partitioning.generate_expressions()
+        assert len(expressions) == 1
+
+        compiled = str(expressions[0].compile(compile_kwargs={"literal_binds": True}))
+        assert compiled == "event_date >= timestamp(CURRENT_DATE - INTERVAL 30 DAY)"
+
+    def test_timestamp_today_error_cases(self):
+        """Test error conditions for TIMESTAMP(TODAY()) expressions."""
+        # Invalid: start offset must be greater than end offset
+        with pytest.raises(ValueError, match="`start` offset must be greater"):
+            TimeBasedPartitioning(
+                field="created_at",
+                start="TIMESTAMP(TODAY() - 5 DAYS)",
+                end="TIMESTAMP(TODAY() - 10 DAYS)",
+                interval="1 DAY",
+            ).generate_expressions()  # Need to call generate_expressions to trigger validation
+
+    def test_timestamp_today_with_year_intervals(self):
+        """Test TIMESTAMP(TODAY() - N YEARS) with yearly intervals."""
+        partitioning = TimeBasedPartitioning(
+            field="created_at",
+            start="TIMESTAMP(TODAY() - 2 YEARS)",
+            end="TIMESTAMP(TODAY())",
+            interval="1 YEAR",
+        )
+
+        expressions = partitioning.generate_expressions()
+
+        # Should generate 2 yearly partitions
+        assert len(expressions) == 2
+
+        compiled_expressions = [
+            str(expr.compile(compile_kwargs={"literal_binds": True}))
+            for expr in expressions
+        ]
+
+        assert compiled_expressions[0] == (
+            "created_at >= CURRENT_DATE - INTERVAL 2 YEAR AND created_at <= CURRENT_DATE - INTERVAL 1 YEAR"
+        )
+        assert compiled_expressions[-1] == (
+            "created_at > CURRENT_DATE - INTERVAL 1 YEAR AND created_at <= timestamp(CURRENT_DATE)"
+        )
+
+    def test_timestamp_today_bigquery_compatibility(self):
+        """Test TIMESTAMP(TODAY()) with BigQuery partitioning to ensure cross-compatibility."""
+        from fides.api.schemas.partitioning import BigQueryTimeBasedPartitioning
+
+        partitioning = BigQueryTimeBasedPartitioning(
+            field="created_at",
+            start="TIMESTAMP(TODAY() - 7 DAYS)",
+            end="TIMESTAMP(TODAY())",
+            interval="1 DAY",
+        )
+
+        clauses = partitioning.generate_where_clauses()
+
+        # Should generate 7 daily partitions for BigQuery
+        assert len(clauses) == 7
+
+        # All clauses should be consistently wrapped with timestamp() for BigQuery
+        assert clauses[0] == (
+            "`created_at` >= timestamp(CURRENT_DATE - INTERVAL 7 DAY) AND `created_at` <= timestamp(CURRENT_DATE - INTERVAL 6 DAY)"
+        )
+        assert clauses[-1] == (
+            "`created_at` > timestamp(CURRENT_DATE - INTERVAL 1 DAY) AND `created_at` <= timestamp(CURRENT_DATE)"
+        )
+
+
+class TestDatetimeLiteralSupport:
+    """Test datetime literal support functionality."""
+
+    def test_datetime_literal_validation(self):
+        """Test that datetime literals validate correctly."""
+        partitioning = TimeBasedPartitioning(
+            field="_pt", start="2020-01-01 00:00:00", end="NOW()"
+        )
+        assert partitioning.start == "2020-01-01 00:00:00"
+        assert partitioning.end == "NOW()"
+
+    def test_datetime_start_now_end(self):
+        """Test datetime start with NOW() end."""
+        partitioning = TimeBasedPartitioning(
+            field="_pt", start="2020-01-01 00:00:00", end="NOW()"
+        )
+
+        expressions = partitioning.generate_expressions()
+        assert len(expressions) == 1
+
+        compiled = str(expressions[0].compile(compile_kwargs={"literal_binds": True}))
+        assert compiled == (
+            "_pt >= timestamp('2020-01-01 00:00:00') AND _pt <= CURRENT_TIMESTAMP"
+        )
+
+    def test_datetime_start_today_end(self):
+        """Test datetime start with TODAY() end."""
+        partitioning = TimeBasedPartitioning(
+            field="created_at", start="2023-01-01 12:30:45", end="TODAY()"
+        )
+
+        expressions = partitioning.generate_expressions()
+        assert len(expressions) == 1
+
+        compiled = str(expressions[0].compile(compile_kwargs={"literal_binds": True}))
+        assert compiled == (
+            "created_at >= timestamp('2023-01-01 12:30:45') AND created_at <= CURRENT_DATE"
+        )
+
+    def test_mixed_date_datetime_literals(self):
+        """Test mixing date and datetime literals."""
+        partitioning = TimeBasedPartitioning(
+            field="event_time", start="2023-01-01", end="2023-12-31 23:59:59"
+        )
+
+        expressions = partitioning.generate_expressions()
+        assert len(expressions) == 1
+
+        compiled = str(expressions[0].compile(compile_kwargs={"literal_binds": True}))
+        assert compiled == (
+            "event_time >= DATE('2023-01-01') AND event_time <= timestamp('2023-12-31 23:59:59')"
+        )
+
+    def test_datetime_literals_with_intervals(self):
+        """Test datetime literals with interval partitioning."""
+        partitioning = TimeBasedPartitioning(
+            field="timestamp_field",
+            start="2024-01-01 00:00:00",
+            end="2024-01-08 00:00:00",
+            interval="1 DAY",
+        )
+
+        expressions = partitioning.generate_expressions()
+
+        # Should generate 7 daily partitions (7 days between start and end)
+        assert len(expressions) == 7
+
+        compiled_expressions = [
+            str(expr.compile(compile_kwargs={"literal_binds": True}))
+            for expr in expressions
+        ]
+
+        # First partition
+        assert compiled_expressions[0] == (
+            "timestamp_field >= timestamp('2024-01-01 00:00:00') AND timestamp_field <= timestamp('2024-01-01 00:00:00') + INTERVAL 1 DAY"
+        )
+
+        # Last partition
+        assert compiled_expressions[-1] == (
+            "timestamp_field > timestamp('2024-01-01 00:00:00') + INTERVAL 6 DAY AND timestamp_field <= timestamp('2024-01-08 00:00:00')"
+        )
+
+    def test_timestamp_date_literal_format(self):
+        """Test TIMESTAMP('date') literal format."""
+        partitioning = TimeBasedPartitioning(
+            field="_pt", start="TIMESTAMP('2020-01-01')", end="NOW()"
+        )
+
+        expressions = partitioning.generate_expressions()
+        assert len(expressions) == 1
+
+        compiled = str(expressions[0].compile(compile_kwargs={"literal_binds": True}))
+        assert compiled == (
+            "_pt >= timestamp(date('2020-01-01')) AND _pt <= CURRENT_TIMESTAMP"
+        )
+
+    def test_timestamp_datetime_literal_format(self):
+        """Test TIMESTAMP('datetime') literal format."""
+        partitioning = TimeBasedPartitioning(
+            field="created_at", start="TIMESTAMP('2023-01-01 12:30:45')", end="TODAY()"
+        )
+
+        expressions = partitioning.generate_expressions()
+        assert len(expressions) == 1
+
+        compiled = str(expressions[0].compile(compile_kwargs={"literal_binds": True}))
+        assert compiled == (
+            "created_at >= timestamp('2023-01-01 12:30:45') AND created_at <= CURRENT_DATE"
+        )
+
+    def test_timestamp_literal_with_intervals(self):
+        """Test TIMESTAMP('date') literals with interval partitioning."""
+        partitioning = TimeBasedPartitioning(
+            field="event_time",
+            start="TIMESTAMP('2024-01-01')",
+            end="TIMESTAMP('2024-01-04')",
+            interval="1 DAY",
+        )
+
+        expressions = partitioning.generate_expressions()
+
+        # Should generate 3 daily partitions (3 days between start and end)
+        assert len(expressions) == 3
+
+        compiled_expressions = [
+            str(expr.compile(compile_kwargs={"literal_binds": True}))
+            for expr in expressions
+        ]
+
+        # First partition
+        assert compiled_expressions[0] == (
+            "event_time >= timestamp(date('2024-01-01')) AND event_time <= timestamp(date('2024-01-01')) + INTERVAL 1 DAY"
+        )
+
+        # Last partition
+        assert compiled_expressions[-1] == (
+            "event_time > timestamp(date('2024-01-01')) + INTERVAL 2 DAY AND event_time <= timestamp(date('2024-01-04'))"
+        )
+
+
 class TestBigQueryTimeBasedPartitioning:
     """Test the BigQuery-specific partitioning class."""
 
