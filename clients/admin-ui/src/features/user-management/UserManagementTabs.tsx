@@ -63,7 +63,7 @@ const UserManagementTabs = ({
           </Box>
         </Flex>
       ),
-      isDisabled: permissionsTabDisabled,
+      disabled: permissionsTabDisabled,
     },
   ];
 

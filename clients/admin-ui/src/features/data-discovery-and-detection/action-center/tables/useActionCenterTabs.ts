@@ -1,6 +1,4 @@
-import { useRouter } from "next/router";
-import { useCallback, useState } from "react";
-
+import useURLHashedTabs from "~/features/common/tabs/useURLHashedTabs";
 import { DiffStatus } from "~/types/api";
 
 export enum ActionCenterTabHash {
@@ -9,50 +7,10 @@ export enum ActionCenterTabHash {
   IGNORED = "#ignored",
 }
 
-const normalizeHash = (hash: string): ActionCenterTabHash => {
-  const normalizedHash = hash.startsWith("#") ? hash : `#${hash}`;
-  return normalizedHash as ActionCenterTabHash;
-};
-
-const useActionCenterTabs = ({
-  systemId,
-  initialHash,
-}: {
-  systemId?: string;
-  initialHash?: string;
-}) => {
-  const router = useRouter();
-  const getInitialTab = () => {
-    return initialHash
-      ? normalizeHash(initialHash)
-      : ActionCenterTabHash.ATTENTION_REQUIRED;
-  };
-
-  const [activeTab, setActiveTab] =
-    useState<ActionCenterTabHash>(getInitialTab());
-
-  const onTabChange = useCallback(
-    async (tab: ActionCenterTabHash) => {
-      // Update local state first
-      setActiveTab(tab);
-
-      // Update URL if router is ready
-      if (router.isReady) {
-        const newQuery = { ...router.query };
-
-        await router.replace(
-          {
-            pathname: router.pathname,
-            query: newQuery,
-            hash: tab,
-          },
-          undefined,
-          { shallow: true },
-        );
-      }
-    },
-    [router],
-  );
+const useActionCenterTabs = ({ systemId }: { systemId?: string }) => {
+  const { activeTab, onTabChange } = useURLHashedTabs({
+    tabKeys: Object.values(ActionCenterTabHash),
+  });
 
   const filterTabs = [
     {

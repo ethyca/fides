@@ -9,7 +9,6 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { AntTabs, Box, Flex, Text, VStack } from "fidesui";
-import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
 import {
@@ -72,22 +71,15 @@ interface MonitorResultTableProps {
 }
 
 const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
-  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
-
-  const initialActiveTabKey = router.asPath.split(
-    "#",
-  )[1] as DiscoveryResultFilterTabs;
 
   const {
     filterTabs,
-    activeTabKey,
+    activeTab,
     onTabChange,
     activeDiffFilters,
     activeChildDiffFilters,
-  } = useDiscoveryResultsFilterTabs({
-    initialActiveTabKey,
-  });
+  } = useDiscoveryResultsFilterTabs();
 
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
@@ -153,7 +145,7 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
   const handleRowClicked = (row: StagedResource) =>
     navigateToDiscoveryResults({
       resourceUrn: row.urn,
-      filterTab: activeTabKey,
+      filterTab: activeTab,
     });
 
   const getRowIsClickable = (row: StagedResource) =>
@@ -187,7 +179,7 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
           key: tab.key,
           label: tab.label,
         }))}
-        activeKey={activeTabKey}
+        activeKey={activeTab}
         onChange={(tab) => onTabChange(tab as DiscoveryResultFilterTabs)}
       />
       <TableActionBar>
@@ -205,7 +197,7 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
             <DiscoveryTableBulkActions selectedUrns={selectedUrns} />
           )}
         {resourceType === StagedResourceTypeValue.FIELD &&
-          activeTabKey !== "unmonitored" && (
+          activeTab !== "unmonitored" && (
             <DiscoveryFieldBulkActions resourceUrn={resourceUrn!} />
           )}
       </TableActionBar>

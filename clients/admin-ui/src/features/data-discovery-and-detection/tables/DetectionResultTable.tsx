@@ -8,7 +8,6 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { AntTabs, Box, Flex, Text, VStack } from "fidesui";
-import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
 import {
@@ -65,12 +64,7 @@ interface MonitorResultTableProps {
 }
 
 const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
-  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
-
-  const initialActiveTabKey = router.asPath.split(
-    "#",
-  )[1] as DetectionResultFilterTabs;
 
   const {
     filterTabs,
@@ -79,9 +73,7 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
     activeDiffFilters,
     activeChildDiffFilters,
     activeChangeTypeOverride,
-  } = useDetectionResultFilterTabs({
-    initialActiveTabKey,
-  });
+  } = useDetectionResultFilterTabs();
 
   const {
     PAGE_SIZES,

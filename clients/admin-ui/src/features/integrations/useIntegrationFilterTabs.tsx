@@ -14,16 +14,6 @@ enum IntegrationFilterTabHash {
   WEBSITE = "website",
   MANUAL = "manual",
 }
-// export enum IntegrationFilterTabs {
-//   ALL = "All",
-//   CRM = "CRM",
-//   DATA_CATALOG = "Data Catalog",
-//   DATABASE = "Database",
-//   DATA_WAREHOUSE = "Data Warehouse",
-//   IDENTITY_PROVIDER = "Identity Provider",
-//   WEBSITE = "Website",
-//   MANUAL = "Manual",
-// }
 
 const TAB_HASHES = Object.values(IntegrationFilterTabHash);
 

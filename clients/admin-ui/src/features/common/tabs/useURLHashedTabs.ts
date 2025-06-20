@@ -6,11 +6,15 @@ interface UseURLHashedTabsProps {
   initialTab?: string;
 }
 
+const normalizeHash = (hash: string): string => {
+  const normalizedHash = hash.startsWith("#") ? hash.slice(1) : hash;
+  return normalizedHash;
+};
+
 const useURLHashedTabs = ({ tabKeys, initialTab }: UseURLHashedTabsProps) => {
   const router = useRouter();
 
-  const initialKey =
-    initialTab && tabKeys.includes(initialTab) ? initialTab : tabKeys[0];
+  const initialKey = router.asPath.split("#")[1];
 
   const [activeTab, setActiveTab] = useState<string>(initialKey);
 
@@ -40,7 +44,7 @@ const useURLHashedTabs = ({ tabKeys, initialTab }: UseURLHashedTabsProps) => {
           {
             pathname: router.pathname,
             query: router.query,
-            hash: tab,
+            hash: normalizeHash(tab),
           },
           undefined,
           { shallow: true },

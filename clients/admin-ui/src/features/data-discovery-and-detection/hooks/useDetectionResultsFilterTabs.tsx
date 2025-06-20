@@ -1,12 +1,6 @@
-import { useRouter } from "next/router";
-import { useCallback, useState } from "react";
-
+import useURLHashedTabs from "~/features/common/tabs/useURLHashedTabs";
 import { ResourceChangeType } from "~/features/data-discovery-and-detection/types/ResourceChangeType";
 import { DiffStatus } from "~/types/api";
-
-interface DetectionResultFiltersTabsProps {
-  initialActiveTabKey?: DetectionResultFilterTabs;
-}
 
 export enum DetectionResultFilterTabs {
   ACTION_REQUIRED = "action-required",
@@ -45,39 +39,20 @@ const tabMap: Record<DetectionResultFilterTabs, FilterTab> = {
   },
 };
 
-const useDetectionResultsFilterTabs = ({
-  initialActiveTabKey = DetectionResultFilterTabs.ACTION_REQUIRED,
-}: DetectionResultFiltersTabsProps) => {
-  const router = useRouter();
-  const [activeTabKey, setActiveTabKey] =
-    useState<DetectionResultFilterTabs>(initialActiveTabKey);
-
-  const onTabChange = useCallback(
-    async (tab: DetectionResultFilterTabs) => {
-      setActiveTabKey(tab);
-
-      if (router.isReady) {
-        await router.replace(
-          {
-            pathname: router.pathname,
-            query: { ...router.query },
-            hash: tab,
-          },
-          undefined,
-          { shallow: true },
-        );
-      }
-    },
-    [router],
-  );
+const useDetectionResultsFilterTabs = () => {
+  const { activeTab, onTabChange } = useURLHashedTabs({
+    tabKeys: Object.values(DetectionResultFilterTabs),
+  });
 
   return {
     filterTabs: Object.values(tabMap),
-    activeTabKey,
+    activeTabKey: activeTab,
     onTabChange,
-    activeDiffFilters: tabMap[activeTabKey]?.filters,
-    activeChildDiffFilters: tabMap[activeTabKey]?.childFilters,
-    activeChangeTypeOverride: tabMap[activeTabKey]?.changeTypeOverride,
+    activeDiffFilters: tabMap[activeTab as DetectionResultFilterTabs]?.filters,
+    activeChildDiffFilters:
+      tabMap[activeTab as DetectionResultFilterTabs]?.childFilters,
+    activeChangeTypeOverride:
+      tabMap[activeTab as DetectionResultFilterTabs]?.changeTypeOverride,
   };
 };
 export default useDetectionResultsFilterTabs;

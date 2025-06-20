@@ -1,7 +1,7 @@
 import {
   AntButton as Button,
   AntSelect as Select,
-  AntTabs as Tabs,
+  AntTabs,
   Flex,
   Heading,
   Icons,
@@ -181,11 +181,10 @@ const PrivacyNoticeTranslationForm = ({
       <FieldArray
         name="translations"
         render={() => (
-          <Tabs
+          <AntTabs
             activeKey={activeLanguage}
             onChange={handleTabSelected}
             type="editable-card"
-            // tabPosition="left"
             tabBarExtraContent={
               !!languageOptions.length && (
                 <AddTranslationMenu

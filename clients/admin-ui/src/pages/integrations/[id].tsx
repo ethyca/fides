@@ -44,8 +44,6 @@ const IntegrationDetailView: NextPage = () => {
   const { data: connection, isLoading: integrationIsLoading } =
     useGetDatastoreConnectionByKeyQuery(id ?? "");
 
-  const initialTab = router.asPath.split("#")[1] as string;
-
   // Only pass the saas type if it's a valid SaasConnectionTypes value
   const saasType = connection?.saas_config?.type;
   const isSaasType = (type: string): type is SaasConnectionTypes =>
@@ -216,7 +214,6 @@ const IntegrationDetailView: NextPage = () => {
 
   const { activeTab, onTabChange } = useURLHashedTabs({
     tabKeys: tabs.map((tab) => tab.key),
-    initialTab,
   });
 
   return (
