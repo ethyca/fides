@@ -34,6 +34,7 @@ import { datamapSlice } from "~/features/datamap";
 import { datasetSlice } from "~/features/dataset";
 import { datastoreConnectionSlice } from "~/features/datastore-connections";
 import { locationsSlice } from "~/features/locations/locations.slice";
+import { manualTasksSlice } from "~/features/manual-tasks/manual-tasks.slice";
 import { organizationSlice } from "~/features/organization";
 import { languageSlice } from "~/features/privacy-experience/language.slice";
 import { privacyExperienceConfigSlice } from "~/features/privacy-experience/privacy-experience.slice";
@@ -89,6 +90,7 @@ const reducer = {
   [featuresSlice.name]: featuresSlice.reducer,
   [languageSlice.name]: languageSlice.reducer,
   [locationsSlice.name]: locationsSlice.reducer,
+  [manualTasksSlice.name]: manualTasksSlice.reducer,
   [organizationSlice.name]: organizationSlice.reducer,
   [privacyNoticesSlice.name]: privacyNoticesSlice.reducer,
   [privacyExperienceConfigSlice.name]: privacyExperienceConfigSlice.reducer,

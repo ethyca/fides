@@ -1,0 +1,68 @@
+{
+  "tasks": [
+    {
+      "task_id": "task_1",
+      "name": "Export Customer Data from Salesforce",
+      "description": "Export all customer data from Salesforce CRM",
+      "input_type": "file",
+      "request_type": "access",
+      "status": "new",
+      "assignedTo": "usr_1",
+      "privacy_request_id": "pr_1",
+      "created_at": "2024-03-15T10:00:00Z",
+      "updated_at": "2024-03-15T10:00:00Z",
+      "days_left": 25,
+      "due_date": "2024-04-09T10:00:00Z",
+      "system_name": "Salesforce",
+      "system_id": "sys_1"
+    },
+    {
+      "task_id": "task_2",
+      "name": "Delete User Records from MySQL",
+      "description": "Remove all user data from MySQL database",
+      "input_type": "checkbox",
+      "request_type": "erasure",
+      "status": "new",
+      "assignedTo": "usr_2",
+      "privacy_request_id": "pr_2",
+      "created_at": "2024-03-14T15:30:00Z",
+      "updated_at": "2024-03-14T15:30:00Z",
+      "days_left": 20,
+      "due_date": "2024-04-03T15:30:00Z",
+      "system_name": "MySQL Database",
+      "system_id": "sys_2"
+    },
+    {
+      "task_id": "task_3",
+      "name": "Verify MongoDB Data Deletion",
+      "description": "Confirm all user data has been removed from MongoDB",
+      "input_type": "checkbox",
+      "request_type": "erasure",
+      "status": "completed",
+      "assignedTo": "usr_3",
+      "privacy_request_id": "pr_2",
+      "created_at": "2024-03-13T09:15:00Z",
+      "updated_at": "2024-03-15T14:20:00Z",
+      "days_left": 20,
+      "due_date": "2024-04-03T09:15:00Z",
+      "system_name": "MongoDB Atlas",
+      "system_id": "sys_3"
+    },
+    {
+      "task_id": "task_4",
+      "name": "Export Analytics Data",
+      "description": "Export user analytics data from Salesforce",
+      "input_type": "file",
+      "request_type": "access",
+      "status": "skipped",
+      "assignedTo": "usr_1",
+      "privacy_request_id": "pr_1",
+      "created_at": "2024-03-12T11:45:00Z",
+      "updated_at": "2024-03-14T16:30:00Z",
+      "days_left": 25,
+      "due_date": "2024-04-06T11:45:00Z",
+      "system_name": "Salesforce",
+      "system_id": "sys_1"
+    }
+  ]
+}

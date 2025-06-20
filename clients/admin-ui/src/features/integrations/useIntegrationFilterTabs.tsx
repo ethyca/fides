@@ -19,7 +19,7 @@ const useIntegrationFilterTabs = (integrationTypes?: IntegrationTypeInfo[]) => {
   const tabs = Object.values(IntegrationFilterTabs).filter(
     (tab) =>
       (tab !== IntegrationFilterTabs.IDENTITY_PROVIDER || flags.oktaMonitor) &&
-      (tab !== IntegrationFilterTabs.MANUAL || flags.alphaNewManualIntegration), // DEFER (ENG-675): Remove this once the alpha feature is released
+      (tab !== IntegrationFilterTabs.MANUAL || flags.alphaNewManualDSR), // DEFER (ENG-675): Remove this once the alpha feature is released
   );
 
   const [tabIndex, setTabIndex] = useState(0);

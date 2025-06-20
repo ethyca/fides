@@ -580,3 +580,13 @@ export type { WebsiteSchema } from "./models/WebsiteSchema";
 export type { WorkerHealthCheck } from "./models/WorkerHealthCheck";
 export type { WorkerInfo } from "./models/WorkerInfo";
 export type { WorkerStats } from "./models/WorkerStats";
+
+// Manual Tasks
+export type { CompleteTaskPayload } from "./models/ManualTask";
+export type { ManualTask } from "./models/ManualTask";
+export type { ManualTaskFilters } from "./models/ManualTask";
+export type { ManualTasksResponse } from "./models/ManualTask";
+export type { SkipTaskPayload } from "./models/ManualTask";
+export type { TaskActionResponse } from "./models/ManualTask";
+export * from "./models/ManualTask";
+export * from "./models/Page_ManualTask_";

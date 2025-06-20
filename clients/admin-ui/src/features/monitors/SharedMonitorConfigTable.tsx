@@ -69,7 +69,6 @@ const SharedMonitorConfigTable = ({
       <Table
         columns={columns}
         dataSource={data?.items}
-        size="small"
         pagination={false}
         // @ts-ignore -- TS doesn't like the data-testid prop on rows
         onRow={(row) => ({
