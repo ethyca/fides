@@ -16,7 +16,7 @@ import ConnectionStatusNotice from "~/features/integrations/ConnectionStatusNoti
 import { useIntegrationAuthorization } from "~/features/integrations/hooks/useIntegrationAuthorization";
 import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
-import { ConnectionConfigurationResponse, ConnectionType } from "~/types/api";
+import { ConnectionConfigurationResponse } from "~/types/api";
 
 const IntegrationBox = ({
   integration,
@@ -38,6 +38,7 @@ const IntegrationBox = ({
 
   const integrationTypeInfo = getIntegrationTypeInfo(
     integration?.connection_type,
+    integration?.saas_config?.type,
   );
 
   // Only pass the saas type if it's a valid SaasConnectionTypes value
@@ -46,7 +47,7 @@ const IntegrationBox = ({
     Object.values(SaasConnectionTypes).includes(type as SaasConnectionTypes);
 
   const connectionOption = useIntegrationOption(
-    integration?.connection_type as ConnectionType | undefined,
+    integration?.connection_type,
     saasType && isSaasType(saasType) ? saasType : undefined,
   );
 
@@ -59,6 +60,7 @@ const IntegrationBox = ({
   return (
     <Box
       borderWidth={1}
+      borderColor="gray.200"
       borderRadius="lg"
       overflow="hidden"
       padding="12px"

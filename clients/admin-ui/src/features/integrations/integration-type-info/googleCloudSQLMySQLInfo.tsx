@@ -11,7 +11,7 @@ import { IntegrationFeatureEnum } from "~/features/integrations/IntegrationFeatu
 import { AccessLevel, ConnectionType } from "~/types/api";
 
 export const GOOGLE_CLOUD_SQL_MYSQL_PLACEHOLDER = {
-  name: "Google Cloud SQL for MySQL",
+  name: "Cloud SQL - MySQL",
   key: "google_cloud_sql_for_mysql_placeholder",
   connection_type: ConnectionType.GOOGLE_CLOUD_SQL_MYSQL,
   access: AccessLevel.READ,

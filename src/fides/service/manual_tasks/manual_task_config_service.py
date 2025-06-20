@@ -1,171 +1,175 @@
 from typing import Any, Optional
 
 from loguru import logger
-from pydantic import ValidationError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Query, Session, selectinload
 
 from fides.api.models.manual_tasks.manual_task import ManualTask
 from fides.api.models.manual_tasks.manual_task_config import (
     ManualTaskConfig,
     ManualTaskConfigField,
 )
-from fides.api.models.manual_tasks.manual_task_log import ManualTaskLog
 from fides.api.schemas.manual_tasks.manual_task_config import (
     ManualTaskConfigResponse,
     ManualTaskConfigurationType,
-    ManualTaskFieldBase,
 )
-from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskLogStatus
+from fides.service.manual_tasks.utils import validate_fields, with_task_logging
+
+
+class ManualTaskConfigError(Exception):
+    """Exception raised when a manual task config error occurs."""
+
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(self.message)
 
 
 class ManualTaskConfigService:
     def __init__(self, db: Session):
         self.db = db
 
-    # ------- Private Helper Methods -------
+    def _create_log_data(
+        self, task_id: str, config_id: Optional[str], details: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Create standard log data structure."""
+        return {"task_id": task_id, "config_id": config_id, "details": details}
 
-    def _get_fields(self, config: ManualTaskConfig) -> list[dict[str, Any]]:
-        """Get the fields for a config and returns them in the format expected by ManualTaskConfigResponse"""
-        fields = []
-        for field in config.field_definitions:
-            field_data = {
-                "field_key": field.field_key,
-                "field_type": field.field_type,
-                "field_metadata": field.field_metadata,
-            }
-            fields.append(field_data)
-        return fields
+    def _get_base_config_query(self) -> Query:
+        """Get base config query with field definitions loaded."""
+        return self.db.query(ManualTaskConfig).options(
+            selectinload(ManualTaskConfig.field_definitions)
+        )
 
-    def _get_response_data(self, config: ManualTaskConfig) -> dict[str, Any]:
-        """Get the data for a config and returns it in the format expected by ManualTaskConfigResponse"""
-        fields = self._get_fields(config)
-        return {
-            "id": config.id,
-            "task_id": config.task_id,
-            "config_type": config.config_type,
-            "version": config.version,
-            "is_current": config.is_current,
-            "fields": fields,
-            "created_at": config.created_at,
-            "updated_at": config.updated_at,
-        }
-
-    def _validate_fields(self, fields: list[dict[str, Any]]) -> None:
-        """Validate field data against the appropriate Pydantic model.
-        Raises a ValueError if the field data is invalid.
-        """
-        # Check for duplicate field keys
-        field_keys_set: set[str] = {str(field.get("field_key")) for field in fields}
-        if len(field_keys_set) != len(fields):
-            raise ValueError(
-                "Duplicate field keys found in field updates, field keys must be unique."
-            )
-        # Check that field_key is present for each field
-        for field in fields:
-            field_key = field.get("field_key")
-            if not field_key:
-                raise ValueError("Invalid field data: field_key is required")
-            # Skip validation for fields with empty metadata (used for removal)
-            if field.get("field_metadata") == {}:
-                continue
-
-            try:
-                field_type = field.get("field_type")
-                if not field_type:
-                    raise ValueError("Invalid field data: field_type is required")
-
-                field_model = ManualTaskFieldBase.get_field_model_for_type(field_type)
-                field_model.model_validate(field)
-            except ValidationError as e:
-                raise ValueError(f"Invalid field data: {str(e)}")
-            except ValueError as e:
-                raise ValueError(str(e))
-
-    def _re_create_existing_fields(
+    def _create_config_version(
         self,
-        previous_config: ManualTaskConfig,
-        new_config: ManualTaskConfig,
-        modified_field_keys: set[str],
-    ) -> None:
-        """Re-create fields from the previous config version that aren't being modified in the new version.
-
-        When creating a new config version, we need to carry over any fields that aren't being
-        modified or removed. This method handles that by:
-        1. Looking at all fields in the previous config
-        2. For each field not in modified_field_keys (not being updated or removed):
-           - Creates a new field record with the same data but linked to the new config
-
-        This ensures that fields maintain continuity across versions unless explicitly changed.
+        task: ManualTask,
+        config_type: str,
+        version: int,
+        is_current: bool = True,
+    ) -> ManualTaskConfig:
+        """Create a new config version. This is a helper method that creates a new config
+        version and sets it as the current version.
 
         Args:
-            previous_config: The previous version of the configuration
-            new_config: The new version being created
-            modified_field_keys: Set of field keys that are being updated or removed in the new version
+            task: The task to create the config for
+            config_type: The type of config to create
+            version: The version number of the config
+            is_current: Whether the config is the current version
+        Returns:
+            The new config
         """
-        # Prepare bulk insert data for unmodified fields
-        fields_to_create = [
-            {
-                "task_id": new_config.task_id,
-                "config_id": new_config.id,
-                "field_key": field.field_key,
-                "field_type": field.field_type,
-                "field_metadata": field.field_metadata,
-            }
-            for field in previous_config.field_definitions
-            if field.field_key not in modified_field_keys
-        ]
+        try:
+            ManualTaskConfigurationType(config_type)
+        except ManualTaskConfigError:
+            raise ManualTaskConfigError(f"Invalid config type: {config_type}")
 
-        # Perform bulk insert if there are fields to create
-        if fields_to_create:
-            self.db.bulk_insert_mappings(ManualTaskConfigField, fields_to_create)
+        # Set all existing versions to non-current
+        if is_current:
+            self.db.query(ManualTaskConfig).filter(
+                ManualTaskConfig.task_id == task.id,
+                ManualTaskConfig.config_type == config_type,
+            ).update({"is_current": False})
             self.db.flush()
 
-    def _new_field_updates(
-        self, new_config: ManualTaskConfig, field_updates: list[dict[str, Any]]
-    ) -> None:
-        """Updates fields for a config.
+        return ManualTaskConfig.create(
+            db=self.db,
+            data={
+                "task_id": task.id,
+                "config_type": config_type,
+                "version": version,
+                "is_current": is_current,
+            },
+        )
+
+    def _handle_field_updates(
+        self,
+        config: ManualTaskConfig,
+        field_updates: Optional[list[dict[str, Any]]] = None,
+        fields_to_remove: Optional[list[str]] = None,
+        previous_config: Optional[ManualTaskConfig] = None,
+    ) -> set[str]:
+        """Handle field updates, removals, and recreation from previous version. This is a helper
+        function that:
+        - Creates new fields from field_updates
+        - Recreates unmodified fields from previous version so they will remain in the config
+        - Removes fields that are no longer in the config
+
         Args:
-            new_config: The config to add fields to
-            field_updates: The fields to add or update
+            config: The config to update
+            field_updates: The fields to update
+            fields_to_remove: The fields to remove
+            previous_config: The previous config
+        Returns:
+            The modified keys
         """
-        self._validate_fields(field_updates)
+        modified_keys = set(fields_to_remove or [])
 
-        # Prepare bulk insert data
-        fields_to_create = [
-            {
-                "task_id": new_config.task_id,
-                "config_id": new_config.id,
-                "field_key": update["field_key"],
-                "field_type": update.get("field_type"),
-                "field_metadata": update.get("field_metadata", {}),
-            }
-            for update in field_updates
-        ]
+        if field_updates:
+            try:
+                validate_fields(field_updates, is_submission=False)
+            except ValueError as e:
+                raise ManualTaskConfigError(f"Invalid field updates: {e}") from e
 
-        # Perform bulk insert
-        if fields_to_create:
-            self.db.bulk_insert_mappings(ManualTaskConfigField, fields_to_create)
-            self.db.flush()
+            fields_to_create = [
+                {
+                    "task_id": config.task_id,
+                    "config_id": config.id,
+                    "field_key": f["field_key"],
+                    "field_type": f.get("field_type"),
+                    "field_metadata": f.get("field_metadata", {}),
+                }
+                for f in field_updates
+            ]
+            if fields_to_create:
+                self.db.bulk_insert_mappings(ManualTaskConfigField, fields_to_create)
+                modified_keys.update(f["field_key"] for f in field_updates)
 
-    # ------- Public Configuration Methods -------
+        if previous_config:
+            # Recreate unmodified fields from previous version
+            unmodified = [
+                {
+                    "task_id": config.task_id,
+                    "config_id": config.id,
+                    "field_key": f.field_key,
+                    "field_type": f.field_type,
+                    "field_metadata": f.field_metadata,
+                }
+                for f in previous_config.field_definitions
+                if f.field_key not in modified_keys
+            ]
+            if unmodified:
+                self.db.bulk_insert_mappings(ManualTaskConfigField, unmodified)
+
+        self.db.flush()
+        return modified_keys
 
     def to_response(self, config: ManualTaskConfig) -> ManualTaskConfigResponse:
-        """Convert a ManualTaskConfig model to a ManualTaskConfigResponse.
-
-        Args:
-            config: The config model to convert
-
-        Returns:
-            Optional[ManualTaskConfigResponse]: The response object, or None if config is None
-        """
-        return ManualTaskConfigResponse.model_validate(self._get_response_data(config))
+        """Convert config model to response object."""
+        return ManualTaskConfigResponse.model_validate(
+            {
+                "id": config.id,
+                "task_id": config.task_id,
+                "config_type": config.config_type,
+                "version": config.version,
+                "is_current": config.is_current,
+                "fields": [
+                    {
+                        "field_key": f.field_key,
+                        "field_type": f.field_type,
+                        "field_metadata": f.field_metadata,
+                    }
+                    for f in config.field_definitions
+                ],
+                "created_at": config.created_at,
+                "updated_at": config.updated_at,
+            }
+        )
 
     def get_current_config(
         self, task: ManualTask, config_type: str
-    ) -> Optional[ManualTaskConfig]:
-        """Get the current config for a task by config type."""
+    ) -> ManualTaskConfig:
+        """Get current config for task by type."""
         config = (
-            self.db.query(ManualTaskConfig)
+            self._get_base_config_query()
             .filter(
                 ManualTaskConfig.task_id == task.id,
                 ManualTaskConfig.config_type == config_type,
@@ -174,19 +178,18 @@ class ManualTaskConfigService:
             .first()
         )
 
-        if config:
-            self.db.refresh(config)
-            return config
-        raise ValueError(
-            f"No current config found for task {task.id} and type {config_type}"
-        )
+        if not config:
+            raise ManualTaskConfigError(
+                f"No current config found for task {task.id} and type {config_type}"
+            )
+        return config
 
     def list_config_type_versions(
         self, task: ManualTask, config_type: str
     ) -> list[ManualTaskConfig]:
         """List all versions of a config type for a task."""
         return (
-            self.db.query(ManualTaskConfig)
+            self._get_base_config_query()
             .filter(
                 ManualTaskConfig.task_id == task.id,
                 ManualTaskConfig.config_type == config_type,
@@ -204,10 +207,7 @@ class ManualTaskConfigService:
         field_key: str,
         version: int,
     ) -> Optional[ManualTaskConfig]:
-        """Get a task config by its id, field id, or config type.
-
-        This is a flexible lookup method that can find configs based on various filters.
-        It's normal for this method to return None if no config matches the given filters.
+        """Get config by various filters. This is a flexible lookup method that can find configs based on various filters.
 
         Args:
             task: The task to get the config for
@@ -216,56 +216,33 @@ class ManualTaskConfigService:
             config_id: The ID of the config
             field_key: The key of a field in the config
             version: The version number of the config
-
         Returns:
             The matching config if found, None otherwise
         """
         if not any([task, config_id, field_id, config_type]):
-            logger.debug("No filters provided to get_config. Returning None.")
+            logger.debug("No filters provided to get_config")
             return None
 
-        # Start with base query and add joins only if needed
-        query = self.db.query(ManualTaskConfig)
-
-        # Add join only once if either field_id or field_key is provided
+        query = self._get_base_config_query()
         if field_id or field_key:
-            query = query.join(ManualTaskConfigField)
+            query = query.join(ManualTaskConfig.field_definitions)
 
-        # Build filter conditions
-        filters = []
-        if task:
-            filters.append(ManualTaskConfig.task_id == task.id)
-        if config_id:
-            filters.append(ManualTaskConfig.id == config_id)
-        if field_id:
-            filters.append(ManualTaskConfigField.id == field_id)
-        if field_key:
-            filters.append(ManualTaskConfigField.field_key == field_key)
-        if version:
-            filters.append(ManualTaskConfig.version == version)
-        if config_type:
-            filters.append(ManualTaskConfig.config_type == config_type)
+        filters = [
+            f
+            for f in [
+                task and ManualTaskConfig.task_id == task.id,
+                config_id and ManualTaskConfig.id == config_id,
+                field_id and ManualTaskConfigField.id == field_id,
+                field_key and ManualTaskConfigField.field_key == field_key,
+                version and ManualTaskConfig.version == version,
+                config_type and ManualTaskConfig.config_type == config_type,
+            ]
+            if f
+        ]
 
-        # Apply all filters at once
-        if filters:
-            query = query.filter(*filters)
+        return query.filter(*filters).first()
 
-        result = query.first()
-        if not result:
-            logger.debug(
-                "No config found that matches filters: "
-                f"task {task.id if task else None}, "
-                f"config_id {config_id}, "
-                f"field_id {field_id}, "
-                f"field_key {field_key}, "
-                f"version {version}, "
-                f"config_type {config_type}"
-            )
-            return None
-
-        self.db.refresh(result)
-        return result
-
+    @with_task_logging("Creating new configuration version")
     def create_new_version(
         self,
         task: ManualTask,
@@ -273,147 +250,133 @@ class ManualTaskConfigService:
         field_updates: Optional[list[dict[str, Any]]] = None,
         fields_to_remove: Optional[list[str]] = None,
         previous_config: Optional[ManualTaskConfig] = None,
-    ) -> ManualTaskConfig:
-        """Create a new version of the configuration.
+    ) -> tuple[ManualTaskConfig, dict[str, Any]]:
+        """Create new version of configuration.
 
         Args:
-            task: The task to create a config for
+            task: The task to create the config for
             config_type: The type of config to create
-            field_updates: Fields to add or update
-            fields_to_remove: Field keys to remove
-            previous_config: The previous config version, if any
+            field_updates: The fields to update
+            fields_to_remove: The fields to remove
+            previous_config: The previous config
+
+        Returns:
+            Tuple containing the new config and log data, the log data is
+            captured by the with_task_logging decorator. and the new config is
+            returned to the caller.
         """
-        new_version = previous_config.version + 1 if previous_config else 1
-        # Validate config_type
-        try:
-            ManualTaskConfigurationType(config_type)
-        except ValueError:
-            raise ValueError(f"Invalid config type: {config_type}")
+        new_config = self._create_config_version(
+            task, config_type, (previous_config.version + 1 if previous_config else 1)
+        )
 
-        # Create new version
-        new_config = ManualTaskConfig.create(
-            db=self.db,
-            data={
-                "task_id": task.id,
+        self._handle_field_updates(
+            new_config, field_updates, fields_to_remove, previous_config
+        )
+
+        return new_config, self._create_log_data(
+            task.id,
+            new_config.id,
+            {
                 "config_type": config_type,
-                "version": new_version,
-                "is_current": True,
-            },
-        )
-        modified_field_keys: set[str] = set()
-
-        # Handle field updates (additions and modifications)
-        if field_updates:
-            self._validate_fields(field_updates)
-            self._new_field_updates(new_config, field_updates)
-            modified_field_keys.update(
-                str(update.get("field_key")) for update in field_updates
-            )
-
-        # Handle field removals
-        if fields_to_remove:
-            modified_field_keys.update(fields_to_remove)
-
-        # Handle field updates (fields with no changes)
-        if previous_config is not None:
-            previous_config.is_current = False
-            self._re_create_existing_fields(
-                previous_config,
-                new_config,
-                modified_field_keys,
-            )
-
-        self.db.commit()
-
-        # Log the version creation
-        ManualTaskLog.create_log(
-            db=self.db,
-            task_id=task.id,
-            config_id=new_config.id,
-            status=ManualTaskLogStatus.created,
-            message=f"Created new version {new_config.version} of configuration",
-            details={
-                "previous_version": (
-                    previous_config.version if previous_config else None
-                ),
-                "field_updates": field_updates,
-                "fields_removed": fields_to_remove,
+                "version": new_config.version,
+                "added_field_keys": [f.get("field_key") for f in (field_updates or [])],
+                "removed_field_keys": fields_to_remove or [],
             },
         )
 
-        return new_config
-
+    @with_task_logging("Adding fields to configuration")
     def add_fields(
         self, task: ManualTask, config_type: str, fields: list[dict[str, Any]]
-    ) -> None:
-        """Add fields to a configuration.
+    ) -> tuple[ManualTaskConfig, dict[str, Any]]:
+        """Add fields to configuration.
 
         Args:
-            task: The task to add fields to
-            config_type: The type of config to add fields to
+            task: The task to add the fields to
+            config_type: The type of config to add the fields to
             fields: The fields to add
-        """
-        self._validate_fields(fields)
-        current_config = self.get_current_config(task, config_type)
-        if not current_config:
-            raise ValueError(
-                f"No current config found for task {task.id} and type {config_type}"
-            )
 
-        self.create_new_version(
-            task=task,
-            config_type=config_type,
-            field_updates=fields,
-            previous_config=current_config,
+        Returns:
+            Tuple containing the new config and log data, the log data is
+            captured by the with_task_logging decorator. and the new config is
+            returned to the caller.
+        """
+        current = self.get_current_config(task, config_type)
+        self.create_new_version(task, config_type, fields, previous_config=current)
+        new_config = self.get_current_config(task, config_type)
+
+        return new_config, self._create_log_data(
+            task.id,
+            current.id,
+            {
+                "config_type": config_type,
+                "previous_version": current.version,
+                "added_field_keys": [f.get("field_key") for f in fields],
+                "new_config_id": new_config.id,
+                "new_config_version": new_config.version,
+            },
         )
 
+    @with_task_logging("Removing fields from configuration")
     def remove_fields(
         self, task: ManualTask, config_type: str, field_keys: list[str]
-    ) -> None:
-        """Remove fields from a configuration.
+    ) -> tuple[ManualTaskConfig, dict[str, Any]]:
+        """Remove fields from configuration.
 
         Args:
-            task: The task to remove fields from
-            config_type: The type of config to remove fields from
+            task: The task to remove the fields from
+            config_type: The type of config to remove the fields from
             field_keys: The keys of the fields to remove
+
+        Returns:
+            Tuple containing the new config and log data, the log data is
+            captured by the with_task_logging decorator. and the new config is
+            returned to the caller.
         """
-        current_config = self.get_current_config(task, config_type)
-        if not current_config:
-            raise ValueError(
-                f"No current config found for task {task.id} and type {config_type}"
-            )
-
-        # Get the actual ManualTaskConfig object with field definitions
-        config = self.db.query(ManualTaskConfig).filter_by(id=current_config.id).first()
-        if not config:
-            raise ValueError(f"Config with ID {current_config.id} not found")
-
-        # Create new version with removed fields
+        current = self.get_current_config(task, config_type)
         self.create_new_version(
-            task=task,
-            config_type=config_type,
-            fields_to_remove=field_keys,
-            previous_config=config,
+            task, config_type, fields_to_remove=field_keys, previous_config=current
+        )
+        new_config = self.get_current_config(task, config_type)
+
+        return new_config, self._create_log_data(
+            task.id,
+            current.id,
+            {
+                "config_type": config_type,
+                "version": current.version,
+                "deleted_field_keys": field_keys,
+                "new_config_id": new_config.id,
+                "new_config_version": new_config.version,
+            },
         )
 
-    def delete_config(self, task: ManualTask, config_id: str) -> None:
-        """Delete a config for a task.
+    @with_task_logging("Deleting Manual Task configuration")
+    def delete_config(
+        self, task: ManualTask, config_id: str
+    ) -> tuple[ManualTaskConfig, dict[str, Any]]:
+        """Delete config for task.
 
         Args:
             task: The task to delete the config for
             config_id: The ID of the config to delete
 
-        Raises:
-            ValueError: If there are active instances using this config
+        Returns:
+            Tuple containing the deleted config and log data, the log data is
+            captured by the with_task_logging decorator. and the deleted config is
+            returned to the caller.
         """
-        # TODO: when instances are implemented, we need to check for active instances
-
-        config = (
-            self.db.query(ManualTaskConfig)
-            .filter(ManualTaskConfig.id == config_id)
-            .first()
-        )
+        config = self.db.query(ManualTaskConfig).filter_by(id=config_id).first()
         if not config:
-            raise ValueError(f"Config with ID {config_id} not found")
+            raise ManualTaskConfigError(f"Config with ID {config_id} not found")
 
+        log_data = self._create_log_data(
+            task.id,
+            None,
+            {
+                "config_type": config.config_type,
+                "version": config.version,
+                "deleted_config_id": config_id,
+            },
+        )
         config.delete(self.db)
+        return config, log_data

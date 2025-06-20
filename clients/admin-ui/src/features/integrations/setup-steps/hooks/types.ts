@@ -1,4 +1,7 @@
-import { ConnectionSystemTypeMap } from "~/types/api";
+import {
+  ConnectionConfigurationResponse,
+  ConnectionSystemTypeMap,
+} from "~/types/api";
 
 import type { ConnectionStatusData } from "../../ConnectionStatusNotice";
 
@@ -13,5 +16,6 @@ export interface Step {
 export interface BaseStepHookParams {
   testData?: ConnectionStatusData;
   testIsLoading?: boolean;
-  connectionOption?: ConnectionSystemTypeMap;
+  connectionOption: ConnectionSystemTypeMap;
+  connection: ConnectionConfigurationResponse;
 }
