@@ -50,7 +50,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd clients/cypress-e2e
-          npm install
+          npm ci
 
       - name: Cypress E2E tests
         uses: cypress-io/github-action@v6
