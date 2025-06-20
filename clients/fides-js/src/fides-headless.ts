@@ -90,6 +90,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     ...config,
     options: { ...config.options, ...overrides.optionsOverrides },
   };
+  this.config = config;
   this.cookie = {
     ...getInitialCookie(config),
   };
@@ -145,11 +146,9 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   }
 
   const updatedFides = await initialize({
-    ...config,
     fides: this,
     updateExperience,
     overrides,
-    propertyId: config.propertyId,
   });
   Object.assign(this, updatedFides);
   updateWindowFides(this);
