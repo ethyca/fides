@@ -1005,7 +1005,9 @@ def _process_manual_task_instances(
     )
 
     if all_complete:
-        return _handle_completed_instances(session, request_task, validated_instances, timing)
+        return _handle_completed_instances(
+            session, request_task, validated_instances, timing
+        )
     return _handle_incomplete_instances(
         session, request_task, validated_instances, incomplete_count, timing
     )

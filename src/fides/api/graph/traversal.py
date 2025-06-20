@@ -79,7 +79,7 @@ def artificial_traversal_node(address: CollectionAddress) -> TraversalNode:
     ds: Collection = Collection(
         name=address.collection,
         fields=[],
-        erase_after=set()  # Initialize erase_after to empty set to prevent cycles
+        erase_after=set(),  # Initialize erase_after to empty set to prevent cycles
     )
 
     # Use the dataset name as the connection key for manual task nodes

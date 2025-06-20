@@ -466,28 +466,23 @@ def assert_manual_task_erasure_behavior(
     # Create a manual task connector to test its behavior
     connector = ManualTaskConnector(connection_config, db)
 
-    # Mock the necessary parameters for mask_data
-    from fides.api.graph.execution import ExecutionNode
-    from fides.api.models.policy import Policy
+    # Create a mock request task for the ExecutionNode
     from fides.api.models.privacy_request import RequestTask
-    from fides.api.util.collection_util import Row
+    from fides.api.graph.execution import ExecutionNode
 
-    # Create a mock execution node
-    node = ExecutionNode(
-        address=f"{connection_config.key}:{execution_timing}",
-        collection=None,  # This would be set in real usage
-        incoming_edges=[],
-        outgoing_edges=[],
-    )
-
-    # Create a mock request task
+    # Create a minimal request task for testing
     request_task = RequestTask(
         id="test-task-id",
         privacy_request_id=privacy_request.id,
         action_type=ActionType.erasure,
-        collection_address=node.address.value,
+        collection_address=f"{connection_config.key}:{execution_timing}",
         status="pending",
+        collection={},  # Empty collection for manual tasks
+        traversal_details={},  # Empty traversal details for manual tasks
     )
+
+    # Create the execution node from the request task
+    node = ExecutionNode(request_task)
 
     # Test the mask_data method
     rows_masked = connector.mask_data(
@@ -1712,7 +1707,7 @@ def test_manual_task_connector_no_data_handling(
     db.refresh(privacy_request)
     assert privacy_request.status == PrivacyRequestStatus.requires_input
 
-    # Create manual task instance but don't create any submissions
+    # Create manual task instance
     instance = create_manual_task_instance(
         manual_task_service,
         manual_task,
@@ -1720,7 +1715,37 @@ def test_manual_task_connector_no_data_handling(
         privacy_request.id,
     )
 
-    # Complete the task instance without any submissions
+    # Get field definitions for required fields
+    erasure_confirmation_field = next(
+        f
+        for f in erasure_manual_task_config.field_definitions
+        if f.field_key == "erasure_confirmation"
+    )
+    erasure_notes_field = next(
+        f
+        for f in erasure_manual_task_config.field_definitions
+        if f.field_key == "erasure_notes"
+    )
+
+    # Create minimal required submissions (empty/null values to test "no data" handling)
+    confirmation_submission = create_submission(
+        manual_task_service,
+        instance.id,
+        erasure_confirmation_field.id,
+        "erasure_confirmation",
+        "checkbox",
+        False,  # No confirmation
+    )
+    notes_submission = create_submission(
+        manual_task_service,
+        instance.id,
+        erasure_notes_field.id,
+        "erasure_notes",
+        "text",
+        "",  # Empty notes
+    )
+
+    # Complete the task instance with minimal data
     complete_manual_task_instance(
         manual_task_service,
         manual_task,
@@ -1733,12 +1758,14 @@ def test_manual_task_connector_no_data_handling(
     resume_privacy_request(privacy_request, db)
     db.refresh(privacy_request)
 
-    # Test the manual task erasure behavior with no data
-    # The mask_data method should return 0 since no records were processed
+    # Test the manual task erasure behavior with minimal data
+    # The mask_data method should return 0 since no meaningful data was processed
     assert_manual_task_erasure_behavior(
         privacy_request, connection_config, "post_execution", 0, db
     )
 
     # Cleanup
+    confirmation_submission.delete(db)
+    notes_submission.delete(db)
     instance.delete(db)
     privacy_request.delete(db)

@@ -121,7 +121,9 @@ def _evaluate_erasure_dependencies(
     from `end_nodes` so they can be executed in the correct order. If a task does
     not have any dependencies it is linked directly to the root node
     """
-    erase_after = traversal_node.node.collection.erase_after
+    erase_after = (
+        traversal_node.node.collection.erase_after.copy()
+    )  # Create a copy to avoid modifying original
     for collection in erase_after:
         if collection in end_nodes:
             # end_node list is modified in place
@@ -146,17 +148,33 @@ def build_erasure_networkx_digraph(
 
     We tack on the "erase_after" dependencies here that aren't captured in traversal.traverse.
     """
+    # Filter out manual task nodes from traversal_nodes to prevent cycles
+    filtered_traversal_nodes = {
+        node_name: traversal_node
+        for node_name, traversal_node in traversal_nodes.items()
+        if node_name.collection not in MANUAL_TASK_COLLECTIONS.values()
+    }
+
+    # Filter out TERMINATOR_ADDRESS from end_nodes to prevent self-loops
+    filtered_end_nodes = [
+        node
+        for node in end_nodes
+        if node != TERMINATOR_ADDRESS
+        and node.collection not in MANUAL_TASK_COLLECTIONS.values()
+    ]
+
     networkx_graph = networkx.DiGraph()
-    networkx_graph.add_nodes_from(traversal_nodes.keys())
+    networkx_graph.add_nodes_from(filtered_traversal_nodes.keys())
     networkx_graph.add_nodes_from(ARTIFICIAL_NODES)
 
     # Connect root to all nodes without other dependencies
-    for node_name, traversal_node in traversal_nodes.items():
+    for node_name, traversal_node in filtered_traversal_nodes.items():
         # Add an edge from root to the current node, unless explicit erasure
         # dependencies are defined
         erasure_dependencies: Set[CollectionAddress] = _evaluate_erasure_dependencies(
-            traversal_node, end_nodes
+            traversal_node, filtered_end_nodes
         )
+
         if not erasure_dependencies or ROOT_COLLECTION_ADDRESS in erasure_dependencies:
             # If node has no dependencies or depends on root, make it depend on root
             networkx_graph.add_edge(ROOT_COLLECTION_ADDRESS, node_name)
@@ -165,7 +183,7 @@ def build_erasure_networkx_digraph(
             for dep in erasure_dependencies:
                 networkx_graph.add_edge(dep, node_name)
 
-    for node in end_nodes:
+    for node in filtered_end_nodes:
         # Connect each end node without downstream dependencies to the terminator node
         networkx_graph.add_edge(node, TERMINATOR_ADDRESS)
 
@@ -173,13 +191,13 @@ def build_erasure_networkx_digraph(
         # Run extra checks on the graph since we potentially modified traversal_nodes
         networkx.find_cycle(networkx_graph, ROOT_COLLECTION_ADDRESS)
     except NetworkXNoCycle:
-        logger.info("No cycles found as expected")
+        pass
     else:
         raise TraversalError(
             "The values for the `erase_after` fields created a cycle in the DAG."
         )
 
-    _add_edge_if_no_nodes(traversal_nodes, networkx_graph)
+    _add_edge_if_no_nodes(filtered_traversal_nodes, networkx_graph)
 
     return networkx_graph
 
@@ -516,7 +534,12 @@ def run_access_request(
                 # If applicable, go ahead and save Erasure Request Tasks to the Database.
                 # These erasure tasks aren't ready to run until the access graph is completed
                 # in full, but this makes sure the nodes in the graphs match.
-                erasure_end_nodes: List[CollectionAddress] = list(graph.nodes.keys())
+                # Filter out manual task nodes from end_nodes to prevent cycles
+                erasure_end_nodes: List[CollectionAddress] = [
+                    node
+                    for node in graph.nodes.keys()
+                    if node.collection not in MANUAL_TASK_COLLECTIONS.values()
+                ]
                 persist_initial_erasure_request_tasks(
                     session, privacy_request, traversal_nodes, erasure_end_nodes, graph
                 )
