@@ -50,7 +50,6 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   experience,
   fidesRegionString,
   cookie,
-  propertyId,
 }) => {
   const { i18n, currentLocale, setCurrentLocale } = useI18n();
   const {
@@ -199,7 +198,6 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     userGeography: fidesRegionString,
     acknowledgeMode: isAllNoticeOnly,
     privacyExperience: experience,
-    propertyId,
   });
 
   const handleUpdatePreferences = useCallback(
@@ -224,7 +222,6 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
           trigger: triggerRef.current,
         },
         servedNoticeHistoryId,
-        propertyId,
         updateCookie: (oldCookie) =>
           updateCookieFromNoticePreferences(
             oldCookie,
@@ -244,7 +241,6 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       privacyExperienceConfigHistoryId,
       privacyNoticeItems,
       servedNoticeHistoryId,
-      propertyId,
       triggerRef,
       setTrigger,
       servingComponentRef,

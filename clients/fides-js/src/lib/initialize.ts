@@ -294,7 +294,15 @@ export const initialize = async ({
       }
 
       /**
-       * Finally, update the "cookie" state to track the user's *current*
+       * If the config has a property_id, we add it to the experience to indicate
+       */
+      if (propertyId) {
+        // eslint-disable-next-line no-param-reassign
+        fides.experience.property_id = propertyId;
+      }
+
+      /**
+       * Update the "cookie" state to track the user's *current*
        * consent preferences as determined by the updatedExperience above. This
        * "cookie" state is then published to external listeners via the
        * Fides.consent object and Fides events like FidesReady below, so
@@ -377,7 +385,6 @@ export const initialize = async ({
           cookie: fides.cookie,
           savedConsent: fides.saved_consent,
           renderOverlay,
-          propertyId,
           translationOverrides: overrides?.experienceTranslationOverrides,
         }).catch((e) => {
           fidesDebugger(e);

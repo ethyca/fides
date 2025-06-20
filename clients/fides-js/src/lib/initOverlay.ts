@@ -27,7 +27,6 @@ export const initOverlay = async ({
   cookie,
   savedConsent,
   renderOverlay,
-  propertyId,
   translationOverrides,
 }: OverlayProps & {
   renderOverlay?: (props: OverlayProps, parent: ContainerNode) => void;
@@ -147,7 +146,6 @@ export const initOverlay = async ({
             fidesRegionString,
             cookie,
             savedConsent,
-            propertyId,
             translationOverrides,
           },
           parentElem,
