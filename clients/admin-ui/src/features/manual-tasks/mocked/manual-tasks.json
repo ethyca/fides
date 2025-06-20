@@ -9,10 +9,22 @@
       "status": "new",
       "assigned_users": [
         {
-          "id": "usr_001",
-          "email_address": "john.doe@company.com",
+          "id": "fid_dcf26c27-b992-43e0-9178-2b577720e0c6",
+          "email_address": "jgognasdas@wasda.com",
           "first_name": "John",
           "last_name": "Doe"
+        },
+        {
+          "id": "fid_833b42df-ed8b-456b-a2f3-8f19322ec5a2",
+          "email_address": "asdas@asdasd.com",
+          "first_name": "Jane",
+          "last_name": "Doe"
+        },
+        {
+          "id": "fid_970eee07-f621-48ac-aeea-8ac4ac7d4d3b",
+          "email_address": "masdasd@asdasd.com",
+          "first_name": "Michael",
+          "last_name": "Brown"
         }
       ],
       "privacy_request": {
@@ -40,14 +52,7 @@
       "input_type": "checkbox",
       "request_type": "erasure",
       "status": "new",
-      "assigned_users": [
-        {
-          "id": "usr_002",
-          "email_address": "sarah.wilson@company.com",
-          "first_name": "Sarah",
-          "last_name": "Wilson"
-        }
-      ],
+      "assigned_users": [],
       "privacy_request": {
         "id": "pri_7a2b4c8d-3e5f-4a9b-8c7d-1e2f3a4b5c6d",
         "days_left": 8,
@@ -75,10 +80,34 @@
       "status": "completed",
       "assigned_users": [
         {
-          "id": "usr_003",
-          "email_address": "mike.johnson@company.com",
-          "first_name": "Mike",
-          "last_name": "Johnson"
+          "id": "fid_970eee07-f621-48ac-aeea-8ac4ac7d4d3b",
+          "email_address": "masdasd@asdasd.com",
+          "first_name": "Michael",
+          "last_name": "Brown"
+        },
+        {
+          "id": "fid_73d47c3d-e94b-4497-8b51-e50f728283ea",
+          "email_address": "lucano+approver@ethyca.com",
+          "first_name": "Approver",
+          "last_name": "Vera"
+        },
+        {
+          "id": "fid_6eaa3315-49ac-4c61-a8f8-1743cbf32251",
+          "email_address": "lucano@ethyca.com",
+          "first_name": "Lucano ",
+          "last_name": "Vera"
+        },
+        {
+          "id": "fid_833b42df-ed8b-456b-a2f3-8f19322ec5a2",
+          "email_address": "asdas@asdasd.com",
+          "first_name": "Jane",
+          "last_name": "Doe"
+        },
+        {
+          "id": "fid_dcf26c27-b992-43e0-9178-2b577720e0c6",
+          "email_address": "jgognasdas@wasda.com",
+          "first_name": "John",
+          "last_name": "Doe"
         }
       ],
       "privacy_request": {
@@ -112,10 +141,10 @@
       "status": "new",
       "assigned_users": [
         {
-          "id": "usr_004",
-          "email_address": "emma.davis@company.com",
-          "first_name": "Emma",
-          "last_name": "Davis"
+          "id": "fid_73d47c3d-e94b-4497-8b51-e50f728283ea",
+          "email_address": "lucano+approver@ethyca.com",
+          "first_name": "Approver",
+          "last_name": "Vera"
         }
       ],
       "privacy_request": {
@@ -145,9 +174,15 @@
       "status": "skipped",
       "assigned_users": [
         {
-          "id": "usr_005",
-          "email_address": "alex.brown@company.com",
-          "first_name": "Alex",
+          "id": "fid_6eaa3315-49ac-4c61-a8f8-1743cbf32251",
+          "email_address": "lucano@ethyca.com",
+          "first_name": "Lucano ",
+          "last_name": "Vera"
+        },
+        {
+          "id": "fid_970eee07-f621-48ac-aeea-8ac4ac7d4d3b",
+          "email_address": "masdasd@asdasd.com",
+          "first_name": "Michael",
           "last_name": "Brown"
         }
       ],
@@ -176,14 +211,7 @@
       "input_type": "file",
       "request_type": "access",
       "status": "new",
-      "assigned_users": [
-        {
-          "id": "usr_006",
-          "email_address": "lisa.martinez@company.com",
-          "first_name": "Lisa",
-          "last_name": "Martinez"
-        }
-      ],
+      "assigned_users": [],
       "privacy_request": {
         "id": "pri_abcd1234-ef56-7890-abcd-1234567890ab",
         "days_left": 18,
@@ -211,10 +239,28 @@
       "status": "new",
       "assigned_users": [
         {
-          "id": "usr_007",
-          "email_address": "david.kim@company.com",
-          "first_name": "David",
-          "last_name": "Kim"
+          "id": "fid_dcf26c27-b992-43e0-9178-2b577720e0c6",
+          "email_address": "jgognasdas@wasda.com",
+          "first_name": "John",
+          "last_name": "Doe"
+        },
+        {
+          "id": "fid_833b42df-ed8b-456b-a2f3-8f19322ec5a2",
+          "email_address": "asdas@asdasd.com",
+          "first_name": "Jane",
+          "last_name": "Doe"
+        },
+        {
+          "id": "fid_970eee07-f621-48ac-aeea-8ac4ac7d4d3b",
+          "email_address": "masdasd@asdasd.com",
+          "first_name": "Michael",
+          "last_name": "Brown"
+        },
+        {
+          "id": "fid_73d47c3d-e94b-4497-8b51-e50f728283ea",
+          "email_address": "lucano+approver@ethyca.com",
+          "first_name": "Approver",
+          "last_name": "Vera"
         }
       ],
       "privacy_request": {
@@ -244,10 +290,10 @@
       "status": "completed",
       "assigned_users": [
         {
-          "id": "usr_008",
-          "email_address": "rachel.taylor@company.com",
-          "first_name": "Rachel",
-          "last_name": "Taylor"
+          "id": "fid_6eaa3315-49ac-4c61-a8f8-1743cbf32251",
+          "email_address": "lucano@ethyca.com",
+          "first_name": "Lucano ",
+          "last_name": "Vera"
         }
       ],
       "privacy_request": {
@@ -277,10 +323,16 @@
       "status": "new",
       "assigned_users": [
         {
-          "id": "usr_009",
-          "email_address": "tom.anderson@company.com",
-          "first_name": "Tom",
-          "last_name": "Anderson"
+          "id": "fid_833b42df-ed8b-456b-a2f3-8f19322ec5a2",
+          "email_address": "asdas@asdasd.com",
+          "first_name": "Jane",
+          "last_name": "Doe"
+        },
+        {
+          "id": "fid_73d47c3d-e94b-4497-8b51-e50f728283ea",
+          "email_address": "lucano+approver@ethyca.com",
+          "first_name": "Approver",
+          "last_name": "Vera"
         }
       ],
       "privacy_request": {
@@ -310,10 +362,22 @@
       "status": "new",
       "assigned_users": [
         {
-          "id": "usr_010",
-          "email_address": "jennifer.white@company.com",
-          "first_name": "Jennifer",
-          "last_name": "White"
+          "id": "fid_970eee07-f621-48ac-aeea-8ac4ac7d4d3b",
+          "email_address": "masdasd@asdasd.com",
+          "first_name": "Michael",
+          "last_name": "Brown"
+        },
+        {
+          "id": "fid_dcf26c27-b992-43e0-9178-2b577720e0c6",
+          "email_address": "jgognasdas@wasda.com",
+          "first_name": "John",
+          "last_name": "Doe"
+        },
+        {
+          "id": "fid_6eaa3315-49ac-4c61-a8f8-1743cbf32251",
+          "email_address": "lucano@ethyca.com",
+          "first_name": "Lucano ",
+          "last_name": "Vera"
         }
       ],
       "privacy_request": {
@@ -341,14 +405,7 @@
       "input_type": "string",
       "request_type": "erasure",
       "status": "skipped",
-      "assigned_users": [
-        {
-          "id": "usr_001",
-          "email_address": "john.doe@company.com",
-          "first_name": "John",
-          "last_name": "Doe"
-        }
-      ],
+      "assigned_users": [],
       "privacy_request": {
         "id": "pri_ace13579-bdf0-2468-ace1-3579bdf02468",
         "days_left": 16,
@@ -376,16 +433,28 @@
       "status": "new",
       "assigned_users": [
         {
-          "id": "usr_002",
-          "email_address": "sarah.wilson@company.com",
-          "first_name": "Sarah",
-          "last_name": "Wilson"
+          "id": "fid_833b42df-ed8b-456b-a2f3-8f19322ec5a2",
+          "email_address": "asdas@asdasd.com",
+          "first_name": "Jane",
+          "last_name": "Doe"
         },
         {
-          "id": "usr_003",
-          "email_address": "mike.johnson@company.com",
-          "first_name": "Mike",
-          "last_name": "Johnson"
+          "id": "fid_970eee07-f621-48ac-aeea-8ac4ac7d4d3b",
+          "email_address": "masdasd@asdasd.com",
+          "first_name": "Michael",
+          "last_name": "Brown"
+        },
+        {
+          "id": "fid_73d47c3d-e94b-4497-8b51-e50f728283ea",
+          "email_address": "lucano+approver@ethyca.com",
+          "first_name": "Approver",
+          "last_name": "Vera"
+        },
+        {
+          "id": "fid_6eaa3315-49ac-4c61-a8f8-1743cbf32251",
+          "email_address": "lucano@ethyca.com",
+          "first_name": "Lucano ",
+          "last_name": "Vera"
         }
       ],
       "privacy_request": {
@@ -415,10 +484,16 @@
       "status": "completed",
       "assigned_users": [
         {
-          "id": "usr_004",
-          "email_address": "emma.davis@company.com",
-          "first_name": "Emma",
-          "last_name": "Davis"
+          "id": "fid_73d47c3d-e94b-4497-8b51-e50f728283ea",
+          "email_address": "lucano+approver@ethyca.com",
+          "first_name": "Approver",
+          "last_name": "Vera"
+        },
+        {
+          "id": "fid_dcf26c27-b992-43e0-9178-2b577720e0c6",
+          "email_address": "jgognasdas@wasda.com",
+          "first_name": "John",
+          "last_name": "Doe"
         }
       ],
       "privacy_request": {
@@ -448,10 +523,10 @@
       "status": "new",
       "assigned_users": [
         {
-          "id": "usr_005",
-          "email_address": "alex.brown@company.com",
-          "first_name": "Alex",
-          "last_name": "Brown"
+          "id": "fid_6eaa3315-49ac-4c61-a8f8-1743cbf32251",
+          "email_address": "lucano@ethyca.com",
+          "first_name": "Lucano ",
+          "last_name": "Vera"
         }
       ],
       "privacy_request": {
@@ -481,10 +556,22 @@
       "status": "skipped",
       "assigned_users": [
         {
-          "id": "usr_006",
-          "email_address": "lisa.martinez@company.com",
-          "first_name": "Lisa",
-          "last_name": "Martinez"
+          "id": "fid_833b42df-ed8b-456b-a2f3-8f19322ec5a2",
+          "email_address": "asdas@asdasd.com",
+          "first_name": "Jane",
+          "last_name": "Doe"
+        },
+        {
+          "id": "fid_970eee07-f621-48ac-aeea-8ac4ac7d4d3b",
+          "email_address": "masdasd@asdasd.com",
+          "first_name": "Michael",
+          "last_name": "Brown"
+        },
+        {
+          "id": "fid_6eaa3315-49ac-4c61-a8f8-1743cbf32251",
+          "email_address": "lucano@ethyca.com",
+          "first_name": "Lucano ",
+          "last_name": "Vera"
         }
       ],
       "privacy_request": {
@@ -513,64 +600,34 @@
   "filterOptions": {
     "assigned_users": [
       {
-        "id": "usr_001",
+        "id": "fid_dcf26c27-b992-43e0-9178-2b577720e0c6",
         "first_name": "John",
         "last_name": "Doe",
-        "email_address": "john.doe@company.com"
+        "email_address": "jgognasdas@wasda.com"
       },
       {
-        "id": "usr_002",
-        "first_name": "Sarah",
-        "last_name": "Wilson",
-        "email_address": "sarah.wilson@company.com"
+        "id": "fid_833b42df-ed8b-456b-a2f3-8f19322ec5a2",
+        "first_name": "Jane",
+        "last_name": "Doe",
+        "email_address": "asdas@asdasd.com"
       },
       {
-        "id": "usr_003",
-        "first_name": "Mike",
-        "last_name": "Johnson",
-        "email_address": "mike.johnson@company.com"
-      },
-      {
-        "id": "usr_004",
-        "first_name": "Emma",
-        "last_name": "Davis",
-        "email_address": "emma.davis@company.com"
-      },
-      {
-        "id": "usr_005",
-        "first_name": "Alex",
+        "id": "fid_970eee07-f621-48ac-aeea-8ac4ac7d4d3b",
+        "first_name": "Michael",
         "last_name": "Brown",
-        "email_address": "alex.brown@company.com"
+        "email_address": "masdasd@asdasd.com"
       },
       {
-        "id": "usr_006",
-        "first_name": "Lisa",
-        "last_name": "Martinez",
-        "email_address": "lisa.martinez@company.com"
+        "id": "fid_73d47c3d-e94b-4497-8b51-e50f728283ea",
+        "first_name": "Approver",
+        "last_name": "Vera",
+        "email_address": "lucano+approver@ethyca.com"
       },
       {
-        "id": "usr_007",
-        "first_name": "David",
-        "last_name": "Kim",
-        "email_address": "david.kim@company.com"
-      },
-      {
-        "id": "usr_008",
-        "first_name": "Rachel",
-        "last_name": "Taylor",
-        "email_address": "rachel.taylor@company.com"
-      },
-      {
-        "id": "usr_009",
-        "first_name": "Tom",
-        "last_name": "Anderson",
-        "email_address": "tom.anderson@company.com"
-      },
-      {
-        "id": "usr_010",
-        "first_name": "Jennifer",
-        "last_name": "White",
-        "email_address": "jennifer.white@company.com"
+        "id": "fid_6eaa3315-49ac-4c61-a8f8-1743cbf32251",
+        "first_name": "Lucano ",
+        "last_name": "Vera",
+        "email_address": "lucano@ethyca.com"
       }
     ],
     "systems": [
