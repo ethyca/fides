@@ -2,4 +2,9 @@
   --ant-padding-sm: 0;
   --ant-padding-xxs: 0;
   --ant-select-multiple-selector-bg-disabled: transparent !important;
+
+  // Target the selector inside this component using :global() for CSS Modules
+  :global(.ant-select-selector) {
+    cursor: default !important;
+  }
 }
