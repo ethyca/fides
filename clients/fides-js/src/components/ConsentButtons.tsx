@@ -47,6 +47,7 @@ export const ConsentButtons = ({
   isGVLLoading,
 }: ConsentButtonsProps) => {
   const [isLoadingModal, setIsLoadingModal] = useState<boolean>(false);
+  const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState<boolean>(false);
   const { i18n } = useI18n();
   const { setTrigger } = useEvent();
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -139,9 +140,12 @@ export const ConsentButtons = ({
       >
         {includeLanguageSelector && (
           <LanguageSelector
+            id={isInModal ? "fides-i18n-menu-modal" : "fides-i18n-menu-banner"}
             availableLocales={availableLocales}
             options={options}
             isTCF={!!isTCF}
+            isOpen={isLanguageMenuOpen}
+            onToggle={setIsLanguageMenuOpen}
           />
         )}
         {!isTCF && !!onManagePreferencesClick && (
