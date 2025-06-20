@@ -84,133 +84,111 @@ const IntegrationDetailView: NextPage = () => {
   const supportsConnectionTest =
     connection?.connection_type !== ConnectionType.MANUAL_WEBHOOK;
 
-  const tabs = useMemo(() => {
-    const tabList: AntTabsProps["items"] = [];
+  const tabs: AntTabsProps["items"] = [];
 
-    // Show Details tab for integrations without connection, Connection tab for others
-    if (enabledFeatures?.includes(IntegrationFeatureEnum.WITHOUT_CONNECTION)) {
-      tabList.push({
-        label: "Details",
-        key: "details",
-        children: (
-          <Box maxW="720px">
-            <Flex>
-              <Button onClick={onOpen} data-testid="manage-btn">
-                Edit integration
-              </Button>
-            </Flex>
+  // Show Details tab for integrations without connection, Connection tab for others
+  if (enabledFeatures?.includes(IntegrationFeatureEnum.WITHOUT_CONNECTION)) {
+    tabs.push({
+      label: "Details",
+      key: "details",
+      children: (
+        <Box maxW="720px">
+          <Flex>
+            <Button onClick={onOpen} data-testid="manage-btn">
+              Edit integration
+            </Button>
+          </Flex>
 
-            <ConfigureIntegrationModal
-              isOpen={isOpen}
-              onClose={onClose}
-              connection={connection!}
-              description={description}
-            />
-            {overview}
-            {instructions}
-          </Box>
-        ),
-      });
-    } else {
-      tabList.push({
-        label: "Connection",
-        key: "connection",
-        children: (
-          <Box maxW="720px">
-            {supportsConnectionTest && (
-              <Flex
-                borderRadius="md"
-                outline="1px solid"
-                outlineColor="gray.100"
-                align="center"
-                p={3}
-              >
-                <Flex flexDirection="column">
-                  <ConnectionStatusNotice
-                    testData={testData}
-                    connectionOption={integrationOption}
-                  />
-                </Flex>
-                <Spacer />
-                <div className="flex gap-4">
-                  {needsAuthorization && (
-                    <Button
-                      onClick={handleAuthorize}
-                      data-testid="authorize-integration-btn"
-                    >
-                      Authorize integration
-                    </Button>
-                  )}
-                  {!needsAuthorization && (
-                    <Button
-                      onClick={testConnection}
-                      loading={testIsLoading}
-                      data-testid="test-connection-btn"
-                    >
-                      Test connection
-                    </Button>
-                  )}
-                  <Button onClick={onOpen} data-testid="manage-btn">
-                    Manage
-                  </Button>
-                </div>
-              </Flex>
-            )}
-            <ConfigureIntegrationModal
-              isOpen={isOpen}
-              onClose={onClose}
-              connection={connection!}
-              description={description}
-            />
-            {overview}
-            {instructions}
-          </Box>
-        ),
-      });
-    }
-
-    // Add conditional tabs based on enabled features
-    if (enabledFeatures?.includes(IntegrationFeatureEnum.DATA_SYNC)) {
-      tabList.push({
-        label: "Data sync",
-        key: "data-sync",
-        children: <DatahubDataSyncTab integration={connection!} />,
-      });
-    }
-
-    if (enabledFeatures?.includes(IntegrationFeatureEnum.DATA_DISCOVERY)) {
-      tabList.push({
-        label: "Data discovery",
-        key: "data-discovery",
-        children: (
-          <MonitorConfigTab
-            integration={connection!}
-            integrationOption={integrationOption}
+          <ConfigureIntegrationModal
+            isOpen={isOpen}
+            onClose={onClose}
+            connection={connection!}
+            description={description}
           />
-        ),
-      });
-    }
+          {overview}
+          {instructions}
+        </Box>
+      ),
+    });
+  } else {
+    tabs.push({
+      label: "Connection",
+      key: "connection",
+      children: (
+        <Box maxW="720px">
+          {supportsConnectionTest && (
+            <Flex
+              borderRadius="md"
+              outline="1px solid"
+              outlineColor="gray.100"
+              align="center"
+              p={3}
+            >
+              <Flex flexDirection="column">
+                <ConnectionStatusNotice
+                  testData={testData}
+                  connectionOption={integrationOption}
+                />
+              </Flex>
+              <Spacer />
+              <div className="flex gap-4">
+                {needsAuthorization && (
+                  <Button
+                    onClick={handleAuthorize}
+                    data-testid="authorize-integration-btn"
+                  >
+                    Authorize integration
+                  </Button>
+                )}
+                {!needsAuthorization && (
+                  <Button
+                    onClick={testConnection}
+                    loading={testIsLoading}
+                    data-testid="test-connection-btn"
+                  >
+                    Test connection
+                  </Button>
+                )}
+                <Button onClick={onOpen} data-testid="manage-btn">
+                  Manage
+                </Button>
+              </div>
+            </Flex>
+          )}
+          <ConfigureIntegrationModal
+            isOpen={isOpen}
+            onClose={onClose}
+            connection={connection!}
+            description={description}
+          />
+          {overview}
+          {instructions}
+        </Box>
+      ),
+    });
+  }
 
-    return tabList;
-  }, [
-    connection,
-    description,
-    enabledFeatures,
-    handleAuthorize,
-    instructions,
-    integrationOption,
-    isOpen,
-    needsAuthorization,
-    onClose,
-    onOpen,
-    overview,
-    supportsConnectionTest,
-    testConnection,
-    testData,
-    testIsLoading,
-  ]);
+  // Add conditional tabs based on enabled features
+  if (enabledFeatures?.includes(IntegrationFeatureEnum.DATA_SYNC)) {
+    tabs.push({
+      label: "Data sync",
+      key: "data-sync",
+      children: <DatahubDataSyncTab integration={connection!} />,
+    });
+  }
 
-  // TODO: *why* does this not work
+  if (enabledFeatures?.includes(IntegrationFeatureEnum.DATA_DISCOVERY)) {
+    tabs.push({
+      label: "Data discovery",
+      key: "data-discovery",
+      children: (
+        <MonitorConfigTab
+          integration={connection!}
+          integrationOption={integrationOption}
+        />
+      ),
+    });
+  }
 
   const { activeTab, onTabChange } = useURLHashedTabs({
     tabKeys: tabs.map((tab) => tab.key),

@@ -66,7 +66,6 @@ export const DiscoveredAssetsTable = ({
   onSystemName,
 }: DiscoveredAssetsTableProps) => {
   const router = useRouter();
-  const tabHash = router.asPath.split("#")[1];
 
   const [systemName, setSystemName] = useState(systemId);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
@@ -122,7 +121,7 @@ export const DiscoveredAssetsTable = ({
   }, [monitorId, searchQuery, resetPageIndexToDefault]);
 
   const { filterTabs, activeTab, onTabChange, activeParams, actionsDisabled } =
-    useActionCenterTabs({ systemId, initialHash: tabHash });
+    useActionCenterTabs({ systemId });
 
   const { data, isLoading, isFetching } = useGetDiscoveredAssetsQuery({
     key: monitorId,
