@@ -21,7 +21,7 @@ export type CustomPrivacyRequestFields = Record<
     default_value?: string | string[];
     query_param_key?: string;
     hidden?: boolean;
-    field_type?: "text" | "multiselect";
+    field_type?: "text" | "multiselect" | "select";
     options?: string[];
   }
 >;

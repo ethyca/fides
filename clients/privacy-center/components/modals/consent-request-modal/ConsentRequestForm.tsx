@@ -356,7 +356,7 @@ const ConsentRequestForm = ({
                           mode="multiple"
                           placeholder={`Select ${item.label.toLowerCase()}`}
                           value={values[key] || []}
-                          onChange={(selectedValues) => {
+                          onChange={(selectedValues: any) => {
                             setFieldValue(key, selectedValues);
                           }}
                           onBlur={() => handleBlur({ target: { name: key } })}
