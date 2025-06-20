@@ -74,6 +74,11 @@ export interface TaskActionResponse {
   status: TaskStatus;
 }
 
+export interface FilterOptions {
+  assigned_users: AssignedUser[];
+  systems: System[];
+}
+
 // Pagination type for manual tasks
 export interface PageManualTask {
   items: ManualTask[];
@@ -81,6 +86,7 @@ export interface PageManualTask {
   page: number | null;
   size: number | null;
   pages?: number | null;
+  filterOptions?: FilterOptions;
 }
 
 export interface TaskQueryParams {

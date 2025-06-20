@@ -16,7 +16,13 @@ import { SubjectRequestActionTypeMap } from "~/features/privacy-requests/constan
 import { ActionType, PrivacyRequestStatus } from "~/types/api";
 
 import { useGetTasksQuery } from "../manual-tasks.slice";
-import { ManualTask, RequestType, TaskStatus } from "../mocked/types";
+import {
+  AssignedUser,
+  ManualTask,
+  RequestType,
+  System,
+  TaskStatus,
+} from "../mocked/types";
 import { ActionButtons } from "./ActionButtons";
 import { UserTag } from "./UserTag";
 
@@ -34,6 +40,7 @@ interface Props {
 // Extract column definitions to a separate function for better readability
 const getColumns = (
   systemFilters: { text: string; value: string }[],
+  userFilters: { text: string; value: string }[],
 ): ColumnsType<ManualTask> => [
   {
     title: "Task name",
@@ -95,6 +102,9 @@ const getColumns = (
     key: "assigned_users",
     width: 380,
     render: (assignedUsers) => <UserTag users={assignedUsers} />,
+    filters: userFilters,
+    onFilter: (value, record) =>
+      record.assigned_users.some((user) => user.id === value),
   },
   {
     title: "Days left",
@@ -164,24 +174,45 @@ export const ManualTasksTable = ({ searchTerm }: Props) => {
     items: tasks,
     total: totalRows,
     pages: totalPages,
-  } = useMemo(() => data || { items: [], total: 0, pages: 0 }, [data]);
+    filterOptions,
+  } = useMemo(
+    () =>
+      data || {
+        items: [],
+        total: 0,
+        pages: 0,
+        filterOptions: { assigned_users: [], systems: [] },
+      },
+    [data],
+  );
 
   useEffect(() => {
     setTotalPages(totalPages);
   }, [totalPages, setTotalPages]);
 
-  // Create unique filters for system names
+  // Create filter options from API response
   const systemFilters = useMemo(
     () =>
-      tasks
-        ? Array.from(new Set(tasks.map((task) => task.system.name))).map(
-            (name) => ({ text: name, value: name }),
-          )
-        : [],
-    [tasks],
+      filterOptions?.systems?.map((system: System) => ({
+        text: system.name,
+        value: system.name,
+      })) || [],
+    [filterOptions?.systems],
   );
 
-  const columns = useMemo(() => getColumns(systemFilters), [systemFilters]);
+  const userFilters = useMemo(
+    () =>
+      filterOptions?.assigned_users?.map((user: AssignedUser) => ({
+        text: `${user.first_name} ${user.last_name}`,
+        value: user.id,
+      })) || [],
+    [filterOptions?.assigned_users],
+  );
+
+  const columns = useMemo(
+    () => getColumns(systemFilters, userFilters),
+    [systemFilters, userFilters],
+  );
 
   if (isLoading) {
     return <FidesSpinner />;

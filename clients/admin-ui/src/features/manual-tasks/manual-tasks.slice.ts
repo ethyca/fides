@@ -11,106 +11,48 @@ import {
   PageManualTask,
   RequestType,
   SkipTaskPayload,
-  SubjectIdentity,
   TaskActionResponse,
   TaskStatus,
 } from "./mocked/types";
 
-// Sample subject identities for mock data
-const sampleSubjectIdentities: SubjectIdentity[] = [
-  {
-    email: { label: "Email", value: "customer@email.com" },
-  },
-  {
-    phone_number: { label: "Phone Number", value: "+1-555-0123" },
-  },
-  {
-    email: { label: "Email", value: "user.stripe@example.com" },
-    phone_number: { label: "Phone Number", value: "+1-555-0456" },
-  },
-  {
-    email: { label: "Email", value: "analytics.user@gmail.com" },
-  },
-  {
-    phone_number: { label: "Phone Number", value: "+1-555-0789" },
-  },
-  {
-    email: { label: "Email", value: "marketing@example.org" },
-  },
-  {
-    email: { label: "Email", value: "support.customer@domain.com" },
-    phone_number: { label: "Phone Number", value: "+1-555-0321" },
-  },
-  {
-    email: { label: "Email", value: "logs.user@company.net" },
-  },
-  {
-    phone_number: { label: "Phone Number", value: "+1-555-0654" },
-  },
-  {
-    email: { label: "Email", value: "ecommerce@shop.com" },
-  },
-  {
-    email: { label: "Email", value: "backup.user@service.io" },
-    phone_number: { label: "Phone Number", value: "+1-555-0987" },
-  },
-  {
-    email: { label: "Email", value: "chat.customer@help.com" },
-  },
-  {
-    phone_number: { label: "Phone Number", value: "+1-555-0147" },
-  },
-  {
-    email: { label: "Email", value: "notification@alerts.com" },
-  },
-  {
-    email: { label: "Email", value: "warehouse@logistics.net" },
-    phone_number: { label: "Phone Number", value: "+1-555-0258" },
-  },
-];
+// Use the mock data directly since it's already in the correct format
+const mockApiResponse: PageManualTask = mockTasksData as PageManualTask;
 
-// Ensure mock data has correct types and add subject identity
-const typedMockData: ManualTask[] = mockTasksData.map((task, index) => ({
-  task_id: task.task_id,
-  name: task.name,
-  description: task.description,
-  status: task.status as TaskStatus,
-  assigned_users: task.assigned_users,
-  // Map file input type to string for now, since ManualTask interface only supports string|checkbox
-  input_type:
-    task.input_type === "file"
-      ? "string"
-      : (task.input_type as "string" | "checkbox"),
-  privacy_request: {
-    id: task.privacy_request_id,
-    days_left: task.days_left,
-    request_type: task.request_type as RequestType,
-    // Add subject identity using the sample data, cycling through if needed, or use existing if available
-    subject_identity:
-      task.subject_identity ||
-      sampleSubjectIdentities[index % sampleSubjectIdentities.length],
-  },
-  system: {
-    id: task.system_id,
-    name: task.system_name,
-  },
-}));
-
-// Helper function to paginate results
-const paginateResults = (
-  tasks: ManualTask[],
+// Helper function to paginate and filter results
+const paginateAndFilterResults = (
   page: number = 1,
   size: number = 10,
   searchTerm?: string,
+  status?: TaskStatus,
+  requestType?: RequestType,
+  systemName?: string,
 ): PageManualTask => {
-  // Filter by search term if provided
-  let filteredTasks = tasks;
+  // Start with all tasks from the mock data
+  let filteredTasks = mockApiResponse.items;
+
+  // Apply filters
   if (searchTerm) {
     const lowerSearchTerm = searchTerm.toLowerCase();
-    filteredTasks = tasks.filter(
+    filteredTasks = filteredTasks.filter(
       (task) =>
         task.name.toLowerCase().includes(lowerSearchTerm) ||
         task.description.toLowerCase().includes(lowerSearchTerm),
+    );
+  }
+
+  if (status) {
+    filteredTasks = filteredTasks.filter((task) => task.status === status);
+  }
+
+  if (requestType) {
+    filteredTasks = filteredTasks.filter(
+      (task) => task.privacy_request.request_type === requestType,
+    );
+  }
+
+  if (systemName) {
+    filteredTasks = filteredTasks.filter(
+      (task) => task.system.name === systemName,
     );
   }
 
@@ -127,6 +69,7 @@ const paginateResults = (
     page,
     size,
     pages,
+    filterOptions: mockApiResponse.filterOptions, // Always include filter options
   };
 };
 
@@ -156,29 +99,17 @@ export const manualTasksApi = baseApi.injectEndpoints({
           systemName,
         } = queryParams;
 
-        // Filter tasks based on query parameters
-        let filteredTasks = typedMockData;
-
-        if (status) {
-          filteredTasks = filteredTasks.filter(
-            (task) => task.status === status,
-          );
-        }
-
-        if (requestType) {
-          filteredTasks = filteredTasks.filter(
-            (task) => task.privacy_request.request_type === requestType,
-          );
-        }
-
-        if (systemName) {
-          filteredTasks = filteredTasks.filter(
-            (task) => task.system.name === systemName,
-          );
-        }
-
-        // Return paginated results
-        return { data: paginateResults(filteredTasks, page, size, search) };
+        // Return paginated and filtered results
+        return {
+          data: paginateAndFilterResults(
+            page,
+            size,
+            search,
+            status,
+            requestType,
+            systemName,
+          ),
+        };
       },
       providesTags: () => [{ type: "Manual Tasks" }],
     }),
@@ -205,7 +136,7 @@ export const manualTasksApi = baseApi.injectEndpoints({
 
     getTaskById: build.query<ManualTask, string>({
       queryFn: (taskId) => {
-        const task = typedMockData.find((t) => t.task_id === taskId);
+        const task = mockApiResponse.items.find((t) => t.task_id === taskId);
         return task
           ? { data: task }
           : {
