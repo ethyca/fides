@@ -3,7 +3,6 @@ import {
   AntTable as Table,
   AntTag as Tag,
   AntTypography as Typography,
-  SelectInline,
 } from "fidesui";
 import { useEffect, useMemo } from "react";
 
@@ -14,13 +13,9 @@ import {
   useServerSidePagination,
 } from "~/features/common/table/v2";
 import { SubjectRequestActionTypeMap } from "~/features/privacy-requests/constants";
-import { useGetAllUsersQuery } from "~/features/user-management/user-management.slice";
 import { ActionType, PrivacyRequestStatus } from "~/types/api";
 
-import {
-  useGetTasksQuery,
-  useUpdateTaskAssignmentMutation,
-} from "../manual-tasks.slice";
+import { useGetTasksQuery } from "../manual-tasks.slice";
 import {
   AssignedUser,
   ManualTask,
@@ -45,8 +40,6 @@ interface Props {
 const getColumns = (
   systemFilters: { text: string; value: string }[],
   userFilters: { text: string; value: string }[],
-  allUsers: any[],
-  updateTaskAssignment: any,
 ): ColumnsType<ManualTask> => [
   {
     title: "Task name",
@@ -105,36 +98,21 @@ const getColumns = (
     dataIndex: "assigned_users",
     key: "assigned_users",
     width: 380,
-    render: (assignedUsers: AssignedUser[], record: ManualTask) => {
-      const userOptions = allUsers.map((user) => ({
-        label:
-          `${user.first_name || ""} ${user.last_name || ""}`.trim() ||
-          user.username ||
-          user.email_address ||
-          "Unknown User",
-        value: user.id,
-      }));
-
-      const currentAssignedUserIds = assignedUsers.map((user) => user.id);
-
-      const handleChange = async (selectedUserIds: unknown) => {
-        try {
-          await updateTaskAssignment({
-            taskId: record.task_id,
-            assigned_user_ids: selectedUserIds as string[],
-          }).unwrap();
-        } catch (error) {
-          console.error("Failed to update task assignment:", error);
-        }
-      };
+    render: (assignedUsers: AssignedUser[]) => {
+      if (!assignedUsers || assignedUsers.length === 0) {
+        return <Typography.Text>-</Typography.Text>;
+      }
 
       return (
-        <SelectInline
-          value={currentAssignedUserIds}
-          onChange={handleChange}
-          options={userOptions}
-          readonly
-        />
+        <div className="flex flex-wrap gap-1">
+          {assignedUsers.map((user) => (
+            <Tag key={user.id} color="default">
+              {`${user.first_name || ""} ${user.last_name || ""}`.trim() ||
+                user.email_address ||
+                "Unknown User"}
+            </Tag>
+          ))}
+        </div>
       );
     },
     filters: userFilters,
@@ -225,15 +203,6 @@ export const ManualTasksTable = ({ searchTerm }: Props) => {
     setTotalPages(totalPages);
   }, [totalPages, setTotalPages]);
 
-  // Get all users for the select dropdown
-  const { data: allUsersData } = useGetAllUsersQuery({
-    page: 1,
-    size: 100, // Use max page size of 100
-    username: "",
-  });
-
-  const [updateTaskAssignment] = useUpdateTaskAssignmentMutation();
-
   // Create filter options from API response
   const systemFilters = useMemo(
     () =>
@@ -253,12 +222,9 @@ export const ManualTasksTable = ({ searchTerm }: Props) => {
     [filterOptions?.assigned_users],
   );
 
-  const allUsers = allUsersData?.items || [];
-
   const columns = useMemo(
-    () =>
-      getColumns(systemFilters, userFilters, allUsers, updateTaskAssignment),
-    [systemFilters, userFilters, allUsers, updateTaskAssignment],
+    () => getColumns(systemFilters, userFilters),
+    [systemFilters, userFilters],
   );
 
   if (isLoading) {
