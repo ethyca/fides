@@ -162,7 +162,6 @@ export const onFidesEvent = (
 
 /**
  * Helper function to dispatch the deprecated FidesInitialized event with standard parameters
- * @deprecated - FidesInitialized is used for backwards compatibility only
  */
 export const dispatchFidesInitialized = (
   fidesCookie: FidesCookie,
@@ -180,7 +179,6 @@ export const dispatchConsentLoadedEvents = (
   extraDetails?: FidesEventExtraDetails,
 ) => {
   dispatchFidesEvent("FidesConsentLoaded", fidesCookie, extraDetails);
-  dispatchFidesInitialized(fidesCookie, extraDetails);
 };
 
 /**
