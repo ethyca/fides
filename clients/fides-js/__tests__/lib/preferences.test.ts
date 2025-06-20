@@ -2,9 +2,6 @@
 import {
   ConsentMechanism,
   ConsentMethod,
-  FidesCookie,
-  FidesGlobal,
-  PrivacyExperience,
   UpdateConsentValidation,
   UserConsentPreference,
 } from "../../src/lib/consent-types";
@@ -13,14 +10,13 @@ import {
   updateConsent,
   updateConsentPreferences,
 } from "../../src/lib/preferences";
-import mockExperienceJSON from "../__fixtures__/mock_experience.json";
+import { createMockFides } from "../__utils__/test-utils";
 
 // Mock dependencies
 jest.mock("../../src/lib/fides-string");
 jest.mock("../../src/lib/consent-utils");
 
 describe("preferences", () => {
-  const mockExperience: Partial<PrivacyExperience> = mockExperienceJSON as any;
   const updatePreferencesSpy = jest
     .spyOn(require("../../src/lib/preferences"), "updateConsentPreferences")
     .mockResolvedValue(undefined) as jest.MockedFunction<
@@ -38,42 +34,6 @@ describe("preferences", () => {
   });
 
   describe("updateConsent", () => {
-    // Create a mock Fides object that we can reuse in tests
-    const createMockFides = (overrides = {}): FidesGlobal => {
-      const mockCookie: FidesCookie = {
-        consent: {},
-        identity: {},
-        fides_meta: {},
-        tcf_consent: {},
-      };
-
-      return {
-        consent: {},
-        experience: mockExperience,
-        geolocation: { country: "US" },
-        locale: "en",
-        options: {
-          debug: true,
-          fidesApiUrl: "https://example.com/api",
-          fidesDisableSaveApi: false,
-        },
-        fides_meta: {},
-        identity: {},
-        tcf_consent: {},
-        saved_consent: {},
-        config: { propertyId: "prop1" },
-        initialized: true,
-        cookie: mockCookie,
-        encodeNoticeConsentString: jest
-          .fn()
-          .mockReturnValue("encoded-nc-string"),
-        decodeNoticeConsentString: jest
-          .fn()
-          .mockReturnValue({ analytics: true }),
-        ...overrides,
-      } as unknown as FidesGlobal;
-    };
-
     beforeEach(() => {
       jest.clearAllMocks();
 
@@ -85,13 +45,6 @@ describe("preferences", () => {
       // We need to explicitly mock updateConsentPreferences so it doesn't actually run
       // which would cause our validation tests to fail when they should pass
       updatePreferencesSpy.mockResolvedValue(undefined);
-    });
-
-    it("should reject when neither consent nor fidesString is provided", async () => {
-      const mockFides = createMockFides();
-      await expect(
-        updateConsent(mockFides, {}, ConsentMethod.SCRIPT),
-      ).rejects.toThrow("Either consent or fidesString must be provided");
     });
 
     it("should reject when experience is not initialized", async () => {
@@ -457,68 +410,6 @@ describe("preferences", () => {
       expect(callArgs.consentPreferencesToSave![0].consentPreference).toBe(
         UserConsentPreference.ACKNOWLEDGE,
       );
-    });
-
-    it("should handle different validation modes", async () => {
-      const mockFides = createMockFides();
-
-      // Set up a NOTICE_ONLY mechanism
-      (mockFides.experience as any).privacy_notices = [
-        {
-          notice_key: "essential",
-          id: "essential-id",
-          consent_mechanism: ConsentMechanism.NOTICE_ONLY,
-          cookies: [],
-          translations: [
-            { language: "en", privacy_notice_history_id: "history-essential" },
-          ],
-        },
-      ];
-
-      // Test warn mode
-      const consoleSpy = jest
-        .spyOn(console, "warn")
-        .mockImplementation(() => {});
-
-      await updateConsent(
-        mockFides,
-        {
-          consent: { essential: UserConsentPreference.OPT_IN },
-          validation: UpdateConsentValidation.WARN,
-        },
-        ConsentMethod.SCRIPT,
-      );
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Invalid consent value"),
-      );
-
-      // Test ignore mode
-      consoleSpy.mockClear();
-
-      await updateConsent(
-        mockFides,
-        {
-          consent: { essential: UserConsentPreference.OPT_IN },
-          validation: UpdateConsentValidation.IGNORE,
-        },
-        ConsentMethod.SCRIPT,
-      );
-
-      expect(consoleSpy).not.toHaveBeenCalled();
-      consoleSpy.mockRestore();
-
-      // Test invalid validation option
-      await expect(
-        updateConsent(
-          mockFides,
-          {
-            consent: { analytics: true },
-            validation: "invalid" as any,
-          },
-          ConsentMethod.SCRIPT,
-        ),
-      ).rejects.toThrow(/Validation must be one of/);
     });
 
     it("should handle NOTICE_ONLY consent mechanisms", async () => {

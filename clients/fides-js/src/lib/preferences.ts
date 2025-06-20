@@ -295,30 +295,23 @@ export const updateConsent = async (
     },
   },
 ): Promise<void> => {
-  // If neither consent nor fidesString is provided, raise an error
-  if (!options?.consent && !options?.fidesString) {
-    throw new Error("Either consent or fidesString must be provided");
-  }
   if (!fides.experience) {
     throw new Error("Experience must be initialized before updating consent");
   }
   if (!fides.cookie) {
     throw new Error("Cookie is not initialized");
   }
+
   const {
     consent,
     fidesString,
     validation = UpdateConsentValidation.THROW,
   } = options;
 
-  if (!Object.values(UpdateConsentValidation).includes(validation)) {
-    throw new Error(
-      `Validation must be one of: ${Object.values(UpdateConsentValidation).join(
-        ", ",
-      )} (default is ${UpdateConsentValidation.THROW})`,
-    );
-  }
-
+  /**
+   * This mostly exists to support the Fides.updateConsent API which
+   * allows end users to pass in a preference for validation behavior.
+   */
   const handleValidationError = (errorMessage: string) => {
     if (validation === UpdateConsentValidation.THROW) {
       throw new Error(errorMessage);

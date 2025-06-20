@@ -42,6 +42,40 @@ export const updateWindowFides = (fidesGlobal: FidesGlobal) => {
   }
 };
 
+interface UpdateConsentApiOptions {
+  consent?: NoticeConsent;
+  fidesString?: string;
+  validation?: UpdateConsentValidation;
+}
+
+/**
+ * Since this method is called from the FidesGlobal object, we need to
+ * validate the options, especially since the end user won't have the
+ * benefit of the type system.
+ */
+const updateConsentApi = (
+  fides: FidesGlobal,
+  options: UpdateConsentApiOptions,
+) => {
+  // If neither consent nor fidesString is provided, raise an error
+  if (!options?.consent && !options?.fidesString) {
+    throw new Error("Either consent or fidesString must be provided");
+  }
+
+  // If `validation` is provided, validate it
+  if (
+    options.validation &&
+    !Object.values(UpdateConsentValidation).includes(options.validation)
+  ) {
+    throw new Error(
+      `Validation must be one of: ${Object.values(UpdateConsentValidation).join(
+        ", ",
+      )} (default is ${UpdateConsentValidation.THROW})`,
+    );
+  }
+  return updateConsent(fides, options);
+};
+
 export interface UpdateExperienceProps {
   cookie: FidesCookie;
   experience: PrivacyExperience;
@@ -151,13 +185,9 @@ export const getCoreFides = ({
     },
     updateConsent(
       this: FidesGlobal,
-      options: {
-        consent?: NoticeConsent;
-        fidesString?: string;
-        validation?: UpdateConsentValidation;
-      },
+      options: UpdateConsentApiOptions,
     ): Promise<void> {
-      return updateConsent(this, options);
+      return updateConsentApi(this, options);
     },
   };
 };
