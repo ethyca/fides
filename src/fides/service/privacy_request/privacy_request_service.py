@@ -10,6 +10,7 @@ from fides.api.common_exceptions import (
     RedisNotConfigured,
 )
 from fides.api.models.audit_log import AuditLog, AuditLogAction
+from fides.api.models.manual_tasks.manual_task import ManualTask
 from fides.api.models.policy import Policy
 from fides.api.models.pre_approval_webhook import PreApprovalWebhook
 from fides.api.models.privacy_preference import PrivacyPreferenceHistory
@@ -22,6 +23,12 @@ from fides.api.models.privacy_request import (
 from fides.api.models.property import Property
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.api import BulkUpdateFailed
+from fides.api.schemas.manual_tasks.manual_task_config import (
+    ManualTaskConfigurationType,
+)
+from fides.api.schemas.manual_tasks.manual_task_schemas import (
+    ManualTaskParentEntityType,
+)
 from fides.api.schemas.messaging.messaging import MessagingActionType
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import (
@@ -43,6 +50,8 @@ from fides.api.tasks import DSR_QUEUE_NAME
 from fides.api.util.cache import cache_task_tracking_key
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
 from fides.config.config_proxy import ConfigProxy
+from fides.service.manual_tasks.manual_task_config_service import ManualTaskConfigError
+from fides.service.manual_tasks.manual_task_service import ManualTaskService
 from fides.service.messaging.messaging_service import (
     MessagingService,
     check_and_dispatch_error_notifications,
@@ -78,6 +87,52 @@ class PrivacyRequestService:
         if not privacy_request:
             logger.info(f"Privacy request with ID {privacy_request_id} was not found.")
         return privacy_request
+
+    def create_manual_task_instances(self, privacy_request: PrivacyRequest) -> None:
+        """Create manual task instances for this privacy request."""
+        manual_task_service = ManualTaskService(self.db)
+
+        # Get all connection configs which have Manual Tasks associated with them
+        connection_config_tasks = (
+            self.db.query(ManualTask)
+            .filter(
+                ManualTask.parent_entity_type
+                == ManualTaskParentEntityType.connection_config
+            )
+            .all()
+        )
+        if len(connection_config_tasks) == 0:
+            return
+
+        policy_action = privacy_request.policy.get_action_type()
+        config_type = None
+
+        if policy_action == ActionType.access:
+            config_type = ManualTaskConfigurationType.access_privacy_request
+        elif policy_action == ActionType.erasure:
+            config_type = ManualTaskConfigurationType.erasure_privacy_request
+        else:
+            # Unsupported policy action type
+            return
+
+        for manual_task in connection_config_tasks:
+            try:
+                config = manual_task_service.config_service.get_current_config(
+                    manual_task, config_type
+                )
+            except ManualTaskConfigError:
+                # no config found for this manual task
+                continue
+
+            manual_task_service.create_instance(
+                task_id=manual_task.id,
+                config_id=config.id,
+                entity_id=privacy_request.id,
+                entity_type="privacy_request",
+            )
+            logger.info(
+                f"Created {policy_action.value} manual task instance for privacy request {privacy_request.id}"
+            )
 
     # pylint: disable=too-many-branches
     def create_privacy_request(
@@ -190,6 +245,8 @@ class PrivacyRequestService:
                 for privacy_preference in privacy_preferences:
                     privacy_preference.privacy_request_id = privacy_request.id
                     privacy_preference.save(db=self.db)
+
+            self.create_manual_task_instances(privacy_request)
 
             cache_data(
                 privacy_request,
