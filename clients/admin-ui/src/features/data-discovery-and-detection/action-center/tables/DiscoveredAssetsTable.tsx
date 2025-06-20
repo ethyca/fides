@@ -335,14 +335,6 @@ export const DiscoveredAssetsTable = ({
 
   return (
     <>
-      {/* <DataTabsHeader
-        data={filterTabs}
-        data-testid="filter-tabs"
-        index={filterTabIndex}
-        isLazy
-        isManual
-        onChange={handleTabChange}
-      /> */}
       <AntTabs
         items={filterTabs.map((tab) => ({
           key: tab.hash,

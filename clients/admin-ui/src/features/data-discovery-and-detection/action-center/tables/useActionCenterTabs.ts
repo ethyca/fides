@@ -28,7 +28,6 @@ const useActionCenterTabs = ({
       : ActionCenterTabHash.ATTENTION_REQUIRED;
   };
 
-  // const [filterTabIndex, setFilterTabIndex] = useState(getInitialTabIndex());
   const [activeTab, setActiveTab] =
     useState<ActionCenterTabHash>(getInitialTab());
 
