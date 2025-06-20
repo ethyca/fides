@@ -54,9 +54,7 @@ const getColumns = (
     key: "name",
     width: 300,
     render: (name) => (
-      <Typography.Text className="font-semibold" ellipsis={{ tooltip: name }}>
-        {name}
-      </Typography.Text>
+      <Typography.Text ellipsis={{ tooltip: name }}>{name}</Typography.Text>
     ),
   },
   {
