@@ -3,6 +3,7 @@ import {
   AntTable as Table,
   AntTag as Tag,
   AntTypography as Typography,
+  SelectInline,
 } from "fidesui";
 import { useEffect, useMemo } from "react";
 
@@ -99,20 +100,22 @@ const getColumns = (
     key: "assigned_users",
     width: 380,
     render: (assignedUsers: AssignedUser[]) => {
-      if (!assignedUsers || assignedUsers.length === 0) {
-        return <Typography.Text>-</Typography.Text>;
-      }
+      const userOptions = assignedUsers.map((user) => ({
+        label:
+          `${user.first_name || ""} ${user.last_name || ""}`.trim() ||
+          user.email_address ||
+          "Unknown User",
+        value: user.id,
+      }));
+
+      const currentAssignedUserIds = assignedUsers.map((user) => user.id);
 
       return (
-        <div className="flex flex-wrap gap-1">
-          {assignedUsers.map((user) => (
-            <Tag key={user.id} color="default">
-              {`${user.first_name || ""} ${user.last_name || ""}`.trim() ||
-                user.email_address ||
-                "Unknown User"}
-            </Tag>
-          ))}
-        </div>
+        <SelectInline
+          value={currentAssignedUserIds}
+          options={userOptions}
+          readonly
+        />
       );
     },
     filters: userFilters,

@@ -77,10 +77,10 @@ export const SelectInline = ({
       size={size}
       prefix={readonly ? null : prefix}
       suffixIcon={suffixIcon}
-      className={`${styles.selectInline} ${className}`}
+      rootClassName={`${styles.selectInlineRoot} ${className}`}
       tagRender={tagRender}
       onClick={() => readonly && setExpanded(!expanded)}
-      open={readonly ? false : undefined}
+      disabled={readonly}
       {...props}
     />
   );
