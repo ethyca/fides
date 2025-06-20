@@ -18,7 +18,7 @@ def _is_manual_task_node(node_address: str) -> bool:
     if ":" not in node_address:
         return False
 
-    dataset, collection = node_address.split(":", 1)
+    _, collection = node_address.split(":", 1)
     return collection in MANUAL_TASK_COLLECTIONS.values()
 
 

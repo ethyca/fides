@@ -21,7 +21,6 @@ from fides.api.common_exceptions import (
     UpstreamTasksNotReady,
 )
 from fides.api.graph.config import TERMINATOR_ADDRESS, CollectionAddress
-from fides.api.models.attachment import AttachmentReferenceType
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.manual_tasks.manual_task import ManualTask
 from fides.api.models.manual_tasks.manual_task_instance import ManualTaskInstance
@@ -406,6 +405,8 @@ def run_access_node(
                         graph_task.access_request(*upstream_access_data)
                         # Mark task as complete since it executed without error
                         request_task.update_status(session, ExecutionLogStatus.complete)
+                        # Commit the status change to ensure downstream tasks can see it
+                        session.commit()
                 elif request_task.is_terminator_task:
                     # Special handling for terminator tasks - queue downstream even if not complete
                     logger.info(
@@ -785,6 +786,15 @@ def run_manual_task_node(
     instances = _get_manual_task_instances(session, request_task, manual_task, timing)
 
     if not instances:
+        # At this point, connection_config should not be None because we've already checked for that case above
+        # But we need to satisfy the type checker
+        if connection_config is None:
+            logger.error(
+                "Connection config is None but we've reached the instances check. This should not happen."
+            )
+            request_task.update_status(session, ExecutionLogStatus.complete)
+            return True
+
         return _handle_no_instances(
             session, request_task, privacy_request, connection_config, timing
         )
@@ -955,26 +965,50 @@ def _process_manual_task_instances(
     timing: ManualTaskExecutionTiming,
 ) -> bool:
     """Process manual task instances and determine if they're complete."""
+    # Validate that instances marked as completed actually have all required fields
+    validated_instances = []
+    for instance in instances:
+        if instance.status == StatusType.completed:
+            # Check if the instance actually has all required fields
+            missing_fields = [
+                field.field_key
+                for field in instance.required_fields
+                if not instance.get_submission_for_field(field.id)
+            ]
+            if missing_fields:
+                logger.warning(
+                    "Instance {} marked as completed but missing required fields: {}. Resetting to pending.",
+                    instance.id,
+                    ", ".join(missing_fields),
+                )
+                # Reset the instance to pending status since it's not actually complete
+                instance.update_status(session, StatusType.pending)
+                validated_instances.append(instance)
+            else:
+                validated_instances.append(instance)
+        else:
+            validated_instances.append(instance)
+
+    # Use the validated instances for processing
     all_complete = all(
-        instance.status == StatusType.completed for instance in instances
+        instance.status == StatusType.completed for instance in validated_instances
     )
     incomplete_count = sum(
-        1 for instance in instances if instance.status != StatusType.completed
+        1 for instance in validated_instances if instance.status != StatusType.completed
     )
 
     logger.info(
         "Task {} has {} complete instances and {} incomplete instances",
         request_task.collection_address,
-        len(instances) - incomplete_count,
+        len(validated_instances) - incomplete_count,
         incomplete_count,
     )
 
     if all_complete:
-        return _handle_completed_instances(session, request_task, instances, timing)
-    else:
-        return _handle_incomplete_instances(
-            session, request_task, instances, incomplete_count, timing
-        )
+        return _handle_completed_instances(session, request_task, validated_instances, timing)
+    return _handle_incomplete_instances(
+        session, request_task, validated_instances, incomplete_count, timing
+    )
 
 
 def _handle_completed_instances(
@@ -1017,6 +1051,15 @@ def _handle_incomplete_instances(
     privacy_request = PrivacyRequest.get(
         db=session, object_id=request_task.privacy_request_id
     )
+
+    if not privacy_request:
+        logger.error(
+            "Privacy request {} not found when handling incomplete instances. This should not happen.",
+            request_task.privacy_request_id,
+        )
+        request_task.update_status(session, ExecutionLogStatus.complete)
+        return True
+
     privacy_request.status = PrivacyRequestStatus.requires_input
     privacy_request.save(session)
 
@@ -1031,7 +1074,7 @@ def _build_submission_data(
     request_task: RequestTask, instances: List[ManualTaskInstance]
 ) -> Dict[str, List[Dict[str, Any]]]:
     """Build submission data from manual task instances."""
-    submission_data_by_config = {}
+    submission_data_by_config: Dict[str, List[Dict[str, Any]]] = {}
     collection_key = request_task.collection_address
 
     if collection_key not in submission_data_by_config:
@@ -1046,26 +1089,30 @@ def _build_submission_data(
 
 def _build_task_data(instance: ManualTaskInstance) -> Dict[str, Any]:
     """Build task data from a manual task instance."""
-    task_data = {"data": []}
+    task_data: Dict[str, Any] = {"data": []}
 
-    # Add submission data
+    # Add submission data - only include submissions for this specific config
     for submission in instance.submissions:
-        submission_data_entry = {
-            "field_id": submission.field_id,
-            "data": submission.data,
-        }
-        task_data["data"].append(submission_data_entry)
+        # Only include submissions that belong to this instance's config
+        if submission.config_id == instance.config_id:
+            submission_data_entry = {
+                "field_id": submission.field_id,
+                "data": submission.data,
+            }
+            task_data["data"].append(submission_data_entry)
 
-    # Add attachment data if any
+    # Add attachment data if any - only for submissions from this config
     attachments = []
     for submission in instance.submissions:
-        for attachment in submission.attachments:
-            attachments.append(
-                {
-                    "file_name": attachment.file_name,
-                    "storage_key": attachment.storage_key,
-                }
-            )
+        # Only include attachments from submissions that belong to this instance's config
+        if submission.config_id == instance.config_id:
+            for attachment in submission.attachments:
+                attachments.append(
+                    {
+                        "file_name": attachment.file_name,
+                        "storage_key": attachment.storage_key,
+                    }
+                )
     if attachments:
         task_data["attachments"] = attachments
 
@@ -1112,6 +1159,6 @@ def _create_complete_execution_log(
 manual_task_config = ConnectionConfig(
     key="manual_task_connector",
     name="Manual Task Connector",
-    connection_type=ConnectionType.saas,
+    connection_type=ConnectionType.saas.value,
     access="write",
 )

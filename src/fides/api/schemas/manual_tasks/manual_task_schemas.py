@@ -5,7 +5,6 @@ from typing import Annotated, Any, Optional
 from pydantic import ConfigDict, Field
 
 from fides.api.schemas.base_class import FidesSchema
-from fides.api.schemas.manual_tasks.manual_task_status import StatusType
 
 
 class ManualTaskExecutionTiming(str, Enum):
@@ -69,33 +68,6 @@ class ManualTaskLogStatus(str, Enum):
     awaiting_input = "awaiting_input"
 
 
-class ManualTaskResponse(FidesSchema):
-    """Schema for manual task response."""
-
-    model_config = ConfigDict(extra="forbid")
-
-    id: Annotated[str, Field(..., description="Task ID")]
-    parent_entity_id: Annotated[str, Field(..., description="Parent entity ID")]
-    parent_entity_type: Annotated[
-        ManualTaskParentEntityType, Field(..., description="Parent entity type")
-    ]
-    task_type: Annotated[ManualTaskType, Field(..., description="Task type")]
-    created_at: Annotated[datetime, Field(..., description="Creation timestamp")]
-    updated_at: Annotated[datetime, Field(..., description="Last update timestamp")]
-
-
-class ManualTaskCreate(FidesSchema):
-    """Schema for creating a manual task."""
-
-    model_config = ConfigDict(extra="forbid")
-
-    task_type: Annotated[ManualTaskType, Field(..., description="Task type")]
-    parent_entity_id: Annotated[str, Field(..., description="Parent entity ID")]
-    parent_entity_type: Annotated[
-        ManualTaskParentEntityType, Field(..., description="Parent entity type")
-    ]
-
-
 class ManualTaskLogCreate(FidesSchema):
     """Schema for creating a manual task log entry."""
 
@@ -146,7 +118,7 @@ class ManualTaskBase(FidesSchema):
 class ManualTaskCreate(ManualTaskBase):
     """Schema for creating a manual task."""
 
-    pass
+    pass  # pylint: disable=unnecessary-pass
 
 
 class ManualTaskUpdate(FidesSchema):

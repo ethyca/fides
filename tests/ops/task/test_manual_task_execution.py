@@ -605,6 +605,53 @@ class TestManualTaskInstanceHandling:
         db.refresh(request_task)
         assert request_task.status == ExecutionLogStatus.pending
 
+    def test_process_manual_task_instances_with_invalid_completed_instance(
+        self,
+        db: Session,
+        request_task: RequestTask,
+        manual_task: ManualTask,
+        manual_task_config: ManualTaskConfig,
+        privacy_request: PrivacyRequest,
+    ):
+        """Test processing when an instance is marked as completed but missing required fields."""
+        # Create an instance marked as completed but without required field submissions
+        invalid_completed_instance = ManualTaskInstance.create(
+            db=db,
+            data={
+                "entity_id": request_task.privacy_request_id,
+                "entity_type": "privacy_request",
+                "task_id": manual_task.id,
+                "config_id": manual_task_config.id,
+                "status": StatusType.completed,  # Marked as completed but no submissions
+            },
+        )
+
+        # Add a required field to the config
+        field_definitions = manual_task_config.field_definitions
+        if field_definitions:
+            field = field_definitions[0]
+            field.field_metadata = {"required": True}
+            db.commit()
+
+        instances = [invalid_completed_instance]
+
+        # Process the instances - should reset the invalid completed instance to pending
+        with pytest.raises(PrivacyRequestPaused):
+            _process_manual_task_instances(
+                db, request_task, instances, ManualTaskExecutionTiming.post_execution
+            )
+
+        # Check that the instance was reset to pending
+        db.refresh(invalid_completed_instance)
+        assert invalid_completed_instance.status == StatusType.pending
+
+        # Check that privacy request status was updated
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.requires_input
+
+        # Cleanup
+        invalid_completed_instance.delete(db)
+
 
 class TestManualTaskDataBuilding:
     """Test manual task data building functionality."""
@@ -1117,7 +1164,7 @@ class TestTaskResourcesManualTaskDetection:
         self, db: Session, connection_config: ConnectionConfig, manual_task: ManualTask
     ):
         """Test that has_manual_task returns True when manual task exists."""
-        assert Connections._has_manual_task(db, connection_config) is True
+        assert Connections.has_manual_task(db, connection_config) is True
 
     def test_has_manual_task_false(
         self, db: Session, connection_config: ConnectionConfig
@@ -1130,7 +1177,7 @@ class TestTaskResourcesManualTaskDetection:
         for task in manual_tasks:
             task.delete(db)
 
-        assert Connections._has_manual_task(db, connection_config) is False
+        assert Connections.has_manual_task(db, connection_config) is False
 
     def test_add_manual_task_configs(
         self,

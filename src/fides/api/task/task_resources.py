@@ -4,13 +4,13 @@ from fideslang.validation import FidesKey
 from loguru import logger
 from sqlalchemy.orm import Session
 
-from fides.api.common_exceptions import (
-    ConnectorNotFoundException,
-    UpstreamTasksNotReady,
-)
+from fides.api.common_exceptions import ConnectorNotFoundException
 from fides.api.graph.execution import ExecutionNode
-from fides.api.models.attachment import AttachmentReferenceType
-from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.models.connectionconfig import (
+    ConnectionConfig,
+    ConnectionTestStatus,
+    ConnectionType,
+)
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.policy import ActionType
@@ -34,6 +34,7 @@ from fides.api.service.connectors import (
     TimescaleConnector,
 )
 from fides.api.service.connectors.base_email_connector import BaseEmailConnector
+from fides.api.service.connectors.query_configs.query_config import QueryConfig
 from fides.api.service.connectors.s3_connector import S3Connector
 from fides.api.util.cache import get_cache
 from fides.api.util.collection_util import Row, extract_key_for_address
@@ -47,28 +48,25 @@ class ManualTaskConnector(BaseConnector):
         super().__init__(configuration)
         self.session = session
 
-    def close(self) -> None:
+    def test_connection(self) -> Optional[ConnectionTestStatus]:
         """No-op since there's no actual connection."""
-        pass
-
-    def test_connection(self) -> None:
-        """No-op since there's no actual connection."""
-        pass
+        return ConnectionTestStatus.succeeded
 
     def create_client(self) -> None:
         """No-op since we don't need a client for manual tasks."""
-        pass
+        return None
 
-    def query_config(self) -> None:
+    def query_config(self, node: ExecutionNode) -> QueryConfig[Any]:
         """No-op since we don't need config for manual tasks."""
-        pass
+        raise NotImplementedError("Query config not implemented for manual tasks")
 
     def retrieve_data(
         self,
-        request: ExecutionNode,
+        node: ExecutionNode,
         policy: Policy,
         privacy_request: PrivacyRequest,
-        *input_data: List[Row],
+        request_task: RequestTask,
+        input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """Return manual task submission data if available.
 
@@ -84,35 +82,88 @@ class ManualTaskConnector(BaseConnector):
             self.configuration.key,
         )
 
+        # Get the action type from the policy
+        action_type = policy.get_action_type()
+        if action_type is None:
+            logger.warning("No action type found for policy")
+            return []
+
         # Get the request task for this node
-        request_task = privacy_request.get_request_task_by_collection_address(
-            request.address, policy.get_action_type()
+        existing_request_task = privacy_request.get_existing_request_task(
+            self.session, action_type, node.address
         )
-        if not request_task:
+        if not existing_request_task:
             logger.warning(
-                "No request task found for manual task node {}", request.address
+                "No request task found for manual task node {}", node.address
             )
             return []
 
         # Return the data already saved by run_manual_task_node
-        if request_task.action_type == ActionType.access:
-            return [request_task.access_data] if request_task.access_data else []
-        else:
+        if existing_request_task.action_type == ActionType.access:
             return (
-                [request_task.data_for_erasures]
-                if request_task.data_for_erasures
+                [existing_request_task.access_data]
+                if existing_request_task.access_data
                 else []
             )
+        return (
+            [existing_request_task.data_for_erasures]
+            if existing_request_task.data_for_erasures
+            else []
+        )
 
     def mask_data(
         self,
-        request: PrivacyRequest,
+        node: ExecutionNode,
         policy: Policy,
-        privacy_request_task: RequestTask,
-        data: List[Row],
+        privacy_request: PrivacyRequest,
+        request_task: RequestTask,
+        rows: List[Row],
     ) -> int:
-        """For manual task nodes, we don't need to mask any data."""
+        """For manual task nodes, return the count of records processed by the manual task.
+
+        This method is called during erasure processing. For manual tasks, the actual
+        erasure is done by humans, so we return the count of records that were
+        confirmed to be processed based on the manual task submissions.
+        """
+        logger.info(
+            "Processing manual task erasure for privacy request {} with connection config {}",
+            privacy_request.id,
+            self.configuration.key,
+        )
+
+        # Get the action type from the policy
+        action_type = policy.get_action_type()
+        if action_type is None:
+            logger.warning("No action type found for policy")
+            return 0
+
+        # Get the request task for this node
+        existing_request_task = privacy_request.get_existing_request_task(
+            self.session, action_type, node.address
+        )
+        if not existing_request_task:
+            logger.warning(
+                "No request task found for manual task node {}", node.address
+            )
+            return 0
+
+        # For erasure tasks, return the count of records that were processed
+        # This is based on the data_for_erasures field
+        if existing_request_task.action_type == ActionType.erasure:
+            data_for_erasures = existing_request_task.data_for_erasures
+            if data_for_erasures and isinstance(data_for_erasures, list):
+                # Return the count of records that were processed
+                # Each item in the list represents a record that was processed
+                return len(data_for_erasures)
+            return 0
+
+        # For non-erasure tasks, return 0 since no masking is done
         return 0
+
+    def close(self) -> None:
+        """Close any held resources. For manual tasks, there are no external connections to close."""
+        # No external connections to close for manual tasks
+        pass
 
 
 class Connections:
@@ -140,7 +191,7 @@ class Connections:
     ) -> Union[BaseConnector, BaseEmailConnector]:
         """Factory method to build the appropriately typed connector from the config."""
         # Check if this connection config has an associated manual task
-        if session and Connections._has_manual_task(session, connection_config):
+        if session and Connections.has_manual_task(session, connection_config):
             return ManualTaskConnector(connection_config, session)
 
         if connection_config.connection_type == ConnectionType.postgres:
@@ -185,7 +236,7 @@ class Connections:
         )
 
     @staticmethod
-    def _has_manual_task(session: Session, connection_config: ConnectionConfig) -> bool:
+    def has_manual_task(session: Session, connection_config: ConnectionConfig) -> bool:
         """Check if a connection config has an associated manual task."""
         from fides.api.models.manual_tasks.manual_task import ManualTask
         from fides.api.schemas.manual_tasks.manual_task_schemas import (
@@ -256,7 +307,7 @@ class TaskResources:
         manual_task_configs = [
             config
             for config in connection_configs
-            if Connections._has_manual_task(session, config)
+            if Connections.has_manual_task(session, config)
         ]
 
         # Add any manual task configs that aren't already in the list

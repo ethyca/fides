@@ -45,6 +45,7 @@ from fides.api.schemas.manual_tasks.manual_task_schemas import (
     ManualTaskParentEntityType,
 )
 from fides.api.schemas.policy import ActionType
+from fides.api.task.filter_results import _is_manual_task_node
 from fides.api.util.collection_util import Row, append, partition
 from fides.api.util.logger_context_utils import Contextualizable, LoggerContextKeys
 from fides.api.util.matching_queue import MatchingQueue
@@ -75,7 +76,11 @@ def artificial_traversal_node(address: CollectionAddress) -> TraversalNode:
     """generate an 'artificial' traversal_node pointing to the given address. This is used to
     generate artificial root and termination nodes that correspond to just an address, but
     have no actual corresponding collection dataset"""
-    ds: Collection = Collection(name=address.collection, fields=[])
+    ds: Collection = Collection(
+        name=address.collection,
+        fields=[],
+        erase_after=set()  # Initialize erase_after to empty set to prevent cycles
+    )
 
     # Use the dataset name as the connection key for manual task nodes
     # This allows individual manual task nodes to use their connection config key
@@ -255,7 +260,9 @@ class BaseTraversal:
                     ]
                 )
                 if not edges_to_children:
-                    n.is_terminal_node = True
+                    # Don't mark manual task nodes as terminal since they have edges to the terminator
+                    if not _is_manual_task_node(str(n.address)):
+                        n.is_terminal_node = True
 
                 # child traversal_node addresses are the address portion of the above
                 child_node_addresses = {
@@ -346,8 +353,8 @@ class Traversal(BaseTraversal):
         node_filters: Optional[List[NodeFilter]] = None,
         session: Optional[Session] = None,
     ):
+        # Set up node filters
         filters = node_filters or []
-
         filters.append(CustomRequestFieldFilter())
         filters.append(OptionalIdentityFilter(graph, data))
         if policy:
@@ -357,7 +364,12 @@ class Traversal(BaseTraversal):
         if session:
             self._add_manual_task_nodes(graph, data, session)
 
+        # Call parent constructor first to initialize traversal_node_dict
         super().__init__(graph, data, policy=policy, node_filters=filters)
+
+        # Now add the manual task nodes to traversal_node_dict
+        if session:
+            self._add_manual_nodes_to_traversal_dict()
 
     def _add_manual_task_nodes(
         self, graph: DatasetGraph, data: Dict[str, Any], session: Session
@@ -423,7 +435,7 @@ class Traversal(BaseTraversal):
         manual_address = CollectionAddress(dataset_name, collection_name)
         manual_node = artificial_traversal_node(manual_address)
 
-        # Add the node to the graph
+        # Add the node to the graph (traversal_node_dict will be updated later)
         graph.nodes[manual_address] = manual_node.node
 
         return manual_address
@@ -476,6 +488,11 @@ class Traversal(BaseTraversal):
         self, graph: DatasetGraph, manual_address: CollectionAddress
     ) -> None:
         """Add edges for post-execution manual tasks."""
+        # Ensure terminator node exists in graph.nodes
+        if TERMINATOR_ADDRESS not in graph.nodes:
+            terminator_node = artificial_traversal_node(TERMINATOR_ADDRESS)
+            graph.nodes[TERMINATOR_ADDRESS] = terminator_node.node
+
         # Connect post-execution task to terminator
         graph.edges.add(
             Edge(
@@ -489,6 +506,7 @@ class Traversal(BaseTraversal):
         )
 
         # Connect data processing nodes to post-execution task
+        # This ensures manual tasks have access to the data they need
         data_nodes = self._get_data_nodes(graph, manual_address)
         for data_node in data_nodes:
             graph.edges.add(
@@ -527,6 +545,14 @@ class Traversal(BaseTraversal):
                 and node_addr.collection in MANUAL_TASK_COLLECTIONS.values()
             )
         ]
+
+    def _add_manual_nodes_to_traversal_dict(self) -> None:
+        """Add manual task nodes to traversal_node_dict"""
+        for address, node in self.graph.nodes.items():
+            if address not in self.traversal_node_dict:
+                # This is a manual task node that was added after the initial traversal_node_dict creation
+                traversal_node = TraversalNode(node)
+                self.traversal_node_dict[address] = traversal_node
 
 
 def log_traversal_error_and_update_privacy_request(

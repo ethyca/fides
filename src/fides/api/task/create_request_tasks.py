@@ -30,6 +30,7 @@ from fides.api.models.privacy_request import (
     TraversalDetails,
 )
 from fides.api.models.worker_task import ExecutionLogStatus
+from fides.api.schemas.manual_tasks.manual_task_schemas import MANUAL_TASK_COLLECTIONS
 from fides.api.schemas.policy import ActionType
 from fides.api.task.deprecated_graph_task import format_data_use_map_for_caching
 from fides.api.task.execute_request_tasks import log_task_queued, queue_request_task
@@ -84,9 +85,27 @@ def build_access_networkx_digraph(
             for input_key in traversal_node.input_keys:
                 networkx_graph.add_edge(input_key, node_name)
 
-    # Connect all end nodes to terminator
+    # Add debugging to see what edges are being created
+    logger.info("NetworkX graph edges before terminator connections:")
+    for edge in networkx_graph.edges():
+        logger.info(f"  {edge[0]} -> {edge[1]}")
+
+    # Connect all end nodes to terminator, but exclude manual task nodes
+    # Manual task nodes handle their own connections to the terminator
     for node in end_nodes:
-        networkx_graph.add_edge(node, TERMINATOR_ADDRESS)
+        # Skip manual task nodes - they handle their own terminator connections
+        # Skip the terminator node itself - it should never connect to itself
+        if (
+            node.collection not in MANUAL_TASK_COLLECTIONS.values()
+            and node != TERMINATOR_ADDRESS
+        ):
+            logger.info(f"Connecting end node {node} to terminator")
+            networkx_graph.add_edge(node, TERMINATOR_ADDRESS)
+
+    # Add debugging to see final edges
+    logger.info("NetworkX graph edges after terminator connections:")
+    for edge in networkx_graph.edges():
+        logger.info(f"  {edge[0]} -> {edge[1]}")
 
     return networkx_graph
 
@@ -146,9 +165,21 @@ def build_erasure_networkx_digraph(
             for dep in erasure_dependencies:
                 networkx_graph.add_edge(dep, node_name)
 
-    # Connect all end nodes to terminator
     for node in end_nodes:
+        # Connect each end node without downstream dependencies to the terminator node
         networkx_graph.add_edge(node, TERMINATOR_ADDRESS)
+
+    try:
+        # Run extra checks on the graph since we potentially modified traversal_nodes
+        networkx.find_cycle(networkx_graph, ROOT_COLLECTION_ADDRESS)
+    except NetworkXNoCycle:
+        logger.info("No cycles found as expected")
+    else:
+        raise TraversalError(
+            "The values for the `erase_after` fields created a cycle in the DAG."
+        )
+
+    _add_edge_if_no_nodes(traversal_nodes, networkx_graph)
 
     return networkx_graph
 

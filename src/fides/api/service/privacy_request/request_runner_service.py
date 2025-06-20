@@ -17,7 +17,6 @@ from fides.api.common_exceptions import (
     NoCachedManualWebhookEntry,
     PrivacyRequestExit,
     PrivacyRequestPaused,
-    UpstreamTasksNotReady,
     ValidationError,
 )
 from fides.api.db.session import get_db_session
