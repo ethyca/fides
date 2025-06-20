@@ -10,6 +10,8 @@ import {
   NoticeValues,
   PrivacyExperience,
   PrivacyExperienceMinimal,
+  PrivacyNotice,
+  PrivacyNoticeWithPreference,
   PrivacyPreferencesRequest,
   SaveConsentPreference,
   UpdateConsentValidation,
@@ -219,15 +221,20 @@ export const updateConsentPreferences = async ({
   });
 };
 
-const validateConsent = (fides: FidesGlobal, consent: NoticeConsent) => {
+const validateConsent = (
+  privacyNotices: PrivacyNoticeWithPreference[],
+  nonApplicablePrivacyNotices: PrivacyNotice["notice_key"][],
+  consent: NoticeConsent,
+) => {
   return Object.entries(consent).reduce<Error | null>((error, [key, value]) => {
     // If we already found an error, don't continue validating
     if (error) {
       return error;
     }
 
-    const nonApplicableNotice =
-      fides.experience!.non_applicable_privacy_notices?.find((n) => n === key);
+    const nonApplicableNotice = nonApplicablePrivacyNotices.find(
+      (n) => n === key,
+    );
 
     if (nonApplicableNotice) {
       return new Error(
@@ -235,9 +242,7 @@ const validateConsent = (fides: FidesGlobal, consent: NoticeConsent) => {
       );
     }
 
-    const notice = fides.experience!.privacy_notices?.find(
-      (n) => n.notice_key === key,
-    );
+    const notice = privacyNotices.find((n) => n.notice_key === key);
 
     if (!nonApplicableNotice && !notice) {
       return new Error(`'${key}' is not a valid notice key`);
@@ -329,7 +334,11 @@ export const updateConsent = async (
   // validate consent object
   if (consent) {
     // Validate consent values and collect any validation errors
-    const validationError = validateConsent(fides, consent);
+    const validationError = validateConsent(
+      fides.experience.privacy_notices || [],
+      fides.experience.non_applicable_privacy_notices || [],
+      consent,
+    );
 
     if (validationError) {
       handleValidationError(validationError.message);
@@ -345,7 +354,11 @@ export const updateConsent = async (
           ...fides.consent,
           ...fides.decodeNoticeConsentString(decodedString.nc),
         };
-        const validationError = validateConsent(fides, finalConsent);
+        const validationError = validateConsent(
+          fides.experience.privacy_notices || [],
+          fides.experience.non_applicable_privacy_notices || [],
+          finalConsent,
+        );
 
         if (validationError) {
           handleValidationError(validationError.message);
