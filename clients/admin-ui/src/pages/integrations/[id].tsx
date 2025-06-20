@@ -11,7 +11,6 @@ import {
 } from "fidesui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
-import { useMemo } from "react";
 
 import Layout from "~/features/common/Layout";
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
@@ -229,8 +228,8 @@ const IntegrationDetailView: NextPage = () => {
               <IntegrationSetupSteps
                 testData={testData}
                 testIsLoading={testIsLoading}
-                connectionOption={integrationOption}
-                connection={connection}
+                connectionOption={integrationOption!}
+                connection={connection!}
               />
             </div>
           )}
