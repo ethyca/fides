@@ -26,12 +26,6 @@ export const usePrivacyRequestTabs = () => {
     [flags.alphaNewManualDSR],
   );
 
-  const defaultTab = useMemo((): PrivacyRequestTabKey => {
-    return flags.alphaNewManualDSR
-      ? PRIVACY_REQUEST_TABS.MANUAL_TASK
-      : PRIVACY_REQUEST_TABS.REQUEST;
-  }, [flags.alphaNewManualDSR]);
-
   const parseHashFromUrl = useCallback(
     (url: string): PrivacyRequestTabKey | null => {
       const hashParts = url.split("#");
@@ -74,13 +68,12 @@ export const usePrivacyRequestTabs = () => {
       }
     }
 
-    setActiveTab(defaultTab);
-    updateUrlHash(defaultTab);
+    setActiveTab(PRIVACY_REQUEST_TABS.REQUEST);
+    updateUrlHash(PRIVACY_REQUEST_TABS.REQUEST);
   }, [
     router.isReady,
     router.asPath,
     router.pathname,
-    defaultTab,
     availableTabs,
     parseHashFromUrl,
     updateUrlHash,
@@ -105,6 +98,5 @@ export const usePrivacyRequestTabs = () => {
     activeTab,
     handleTabChange,
     availableTabs,
-    defaultTab,
   };
 };
