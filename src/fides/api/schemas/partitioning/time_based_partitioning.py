@@ -1,4 +1,4 @@
-# pylint: disable=too-many-branches, too-many-statements, too-many-return-statements
+# pylint: disable=too-many-branches, too-many-statements, too-many-return-statements, too-many-lines
 import re
 from datetime import datetime, timedelta
 from enum import Enum
@@ -904,12 +904,22 @@ class TimeBasedPartitioning(FidesSchema):
 
 def validate_partitioning_list(partitionings: List["TimeBasedPartitioning"]) -> None:
     """Validate that multiple TimeBasedPartitioning objects do not define overlapping
-    ranges (inclusive).  Only specs whose provided bounds are literal YYYY-MM-DD
-    strings participate in validation; any bound that is None is treated as
-    open-ended (-infinity for `start` or +infinity for `end`).  Specs with dynamic
-    expressions like `NOW()` are skipped because we cannot resolve them at
-    validation time.
+    ranges (inclusive) and that all partitioning objects use the same field name.
+    Only specs whose provided bounds are literal YYYY-MM-DD strings participate in
+    overlap validation; any bound that is None is treated as open-ended (-infinity
+    for `start` or +infinity for `end`).  Specs with dynamic expressions like `NOW()`
+    are skipped because we cannot resolve them at validation time.
     """
+
+    # Validate that all partitions use the same field
+    if len(partitionings) > 1:
+        first_field = partitionings[0].field
+        for i, partition in enumerate(partitionings[1:], 1):
+            if partition.field != first_field:
+                raise ValueError(
+                    f"All partitioning specifications must use the same field. "
+                    f"Expected '{first_field}' but found '{partition.field}' at index {i}."
+                )
 
     def _materialize(
         p: "TimeBasedPartitioning",

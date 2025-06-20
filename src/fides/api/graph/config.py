@@ -658,7 +658,7 @@ class Collection(BaseModel):
 
     @field_validator("partitioning")
     @classmethod
-    def validate_partitioning(  # pylint: disable=too-many-branches,too-many-nested-blocks
+    def validate_partitioning(
         cls, partitioning: Optional[Union[List[TimeBasedPartitioning], Dict[str, Any]]]
     ) -> Optional[Union[List[TimeBasedPartitioning], Dict[str, Any]]]:
         """

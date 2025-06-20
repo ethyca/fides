@@ -7,6 +7,7 @@ import pytest
 from fides.api.schemas.partitioning import (
     BigQueryTimeBasedPartitioning,
     TimeBasedPartitioning,
+    validate_partitioning_list,
 )
 
 
@@ -193,7 +194,6 @@ class TestPartitioningList:
 
     def test_validate_partitioning_list_no_overlap(self):
         """A list of non-overlapping specs should pass validation."""
-        from fides.api.schemas.partitioning import validate_partitioning_list
 
         p1 = TimeBasedPartitioning(
             field="created_at",
@@ -213,7 +213,6 @@ class TestPartitioningList:
 
     def test_validate_partitioning_list_with_overlap(self):
         """Validation should fail if the date ranges overlap."""
-        from fides.api.schemas.partitioning import validate_partitioning_list
 
         p1 = TimeBasedPartitioning(
             field="created_at",
@@ -236,7 +235,6 @@ class TestPartitioningList:
 
     def test_validate_partitioning_list_open_start_non_overlap(self):
         """Open-start that ends the day before the next spec begins is valid."""
-        from fides.api.schemas.partitioning import validate_partitioning_list
 
         p_open_start = TimeBasedPartitioning(field="created_at", end="2023-12-31")
         p_closed = TimeBasedPartitioning(
@@ -250,7 +248,6 @@ class TestPartitioningList:
 
     def test_adjacent_partition_boundary_no_overlap(self):
         """Two specs where next.start == prev.end should now raise due to inclusive first boundaries."""
-        from fides.api.schemas.partitioning import validate_partitioning_list
 
         prev = TimeBasedPartitioning(
             field="created_at",
@@ -271,7 +268,6 @@ class TestPartitioningList:
 
     def test_open_start_adjacent_boundary(self):
         """Open-start plus closed spec sharing boundary should now fail due to inclusive first boundaries."""
-        from fides.api.schemas.partitioning import validate_partitioning_list
 
         p_open_start = TimeBasedPartitioning(field="created_at", end="2024-01-01")
         p_closed = TimeBasedPartitioning(
@@ -283,6 +279,59 @@ class TestPartitioningList:
 
         with pytest.raises(ValueError):
             validate_partitioning_list([p_open_start, p_closed])
+
+    def test_validate_partitioning_list_different_fields_error(self):
+        """Test that partitions with different field names raise validation error."""
+
+        p1 = TimeBasedPartitioning(
+            field="created_at",
+            start="2024-01-01",
+            end="2024-01-15",
+            interval="7 days",
+        )
+        p2 = TimeBasedPartitioning(
+            field="updated_at",  # Different field
+            start="2024-01-16",
+            end="2024-01-31",
+            interval="7 days",
+        )
+
+        with pytest.raises(
+            ValueError, match="All partitioning specifications must use the same field"
+        ):
+            validate_partitioning_list([p1, p2])
+
+    def test_validate_partitioning_list_same_fields_success(self):
+        """Test that partitions with the same field names pass validation."""
+
+        p1 = TimeBasedPartitioning(
+            field="created_at",
+            start="2024-01-01",
+            end="2024-01-15",
+            interval="7 days",
+        )
+        p2 = TimeBasedPartitioning(
+            field="created_at",  # Same field
+            start="2024-01-16",
+            end="2024-01-31",
+            interval="7 days",
+        )
+
+        # Should not raise any exception
+        validate_partitioning_list([p1, p2])
+
+    def test_validate_partitioning_list_single_partition_no_validation(self):
+        """Test that single partition doesn't trigger field validation."""
+
+        p1 = TimeBasedPartitioning(
+            field="created_at",
+            start="2024-01-01",
+            end="2024-01-15",
+            interval="7 days",
+        )
+
+        # Should not raise any exception for single partition
+        validate_partitioning_list([p1])
 
 
 class TestOpenEndedPartitioning:
