@@ -140,7 +140,7 @@ const getColumns = (
         />
       );
     },
-
+    filters: userFilters,
     onFilter: (value, record) =>
       record.assigned_users.some((user) => user.id === value),
   },
