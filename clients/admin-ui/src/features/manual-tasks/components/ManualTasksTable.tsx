@@ -1,8 +1,11 @@
 import type { ColumnsType } from "antd/es/table";
 import {
+  AntButton as Button,
+  AntSpace as Space,
   AntTable as Table,
   AntTag as Tag,
   AntTypography as Typography,
+  SelectInline,
 } from "fidesui";
 import { useEffect, useMemo } from "react";
 
@@ -13,9 +16,13 @@ import {
   useServerSidePagination,
 } from "~/features/common/table/v2";
 import { SubjectRequestActionTypeMap } from "~/features/privacy-requests/constants";
+import { useGetAllUsersQuery } from "~/features/user-management/user-management.slice";
 import { ActionType, PrivacyRequestStatus } from "~/types/api";
 
-import { useGetTasksQuery } from "../manual-tasks.slice";
+import {
+  useGetTasksQuery,
+  useUpdateTaskAssignmentMutation,
+} from "../manual-tasks.slice";
 import {
   AssignedUser,
   ManualTask,
@@ -24,7 +31,6 @@ import {
   TaskStatus,
 } from "../mocked/types";
 import { ActionButtons } from "./ActionButtons";
-import { UserTag } from "./UserTag";
 
 // Map task status to tag colors and labels - aligned with RequestStatusBadge colors
 const statusMap: Record<TaskStatus, { color: string; label: string }> = {
@@ -41,6 +47,8 @@ interface Props {
 const getColumns = (
   systemFilters: { text: string; value: string }[],
   userFilters: { text: string; value: string }[],
+  allUsers: any[],
+  updateTaskAssignment: any,
 ): ColumnsType<ManualTask> => [
   {
     title: "Task name",
@@ -101,8 +109,86 @@ const getColumns = (
     dataIndex: "assigned_users",
     key: "assigned_users",
     width: 380,
-    render: (assignedUsers) => <UserTag users={assignedUsers} />,
-    filters: userFilters,
+    render: (assignedUsers: AssignedUser[], record: ManualTask) => {
+      const userOptions = allUsers.map((user) => ({
+        label:
+          `${user.first_name || ""} ${user.last_name || ""}`.trim() ||
+          user.username ||
+          user.email_address ||
+          "Unknown User",
+        value: user.id,
+      }));
+
+      const currentAssignedUserIds = assignedUsers.map((user) => user.id);
+
+      const handleChange = async (selectedUserIds: unknown) => {
+        try {
+          await updateTaskAssignment({
+            taskId: record.task_id,
+            assigned_user_ids: selectedUserIds as string[],
+          }).unwrap();
+        } catch (error) {
+          console.error("Failed to update task assignment:", error);
+        }
+      };
+
+      return (
+        <SelectInline
+          placeholder="Select users..."
+          value={currentAssignedUserIds}
+          onChange={handleChange}
+          options={userOptions}
+        />
+      );
+    },
+    filterDropdown: ({
+      setSelectedKeys,
+      selectedKeys,
+      confirm,
+      clearFilters,
+    }) => {
+      const userOptions = allUsers.map((user) => ({
+        label:
+          `${user.first_name || ""} ${user.last_name || ""}`.trim() ||
+          user.username ||
+          user.email_address ||
+          "Unknown User",
+        value: user.id,
+      }));
+
+      return (
+        <div style={{ padding: 8, width: 300 }}>
+          <SelectInline
+            placeholder="Filter by users..."
+            value={selectedKeys as string[]}
+            onChange={(values) => setSelectedKeys(values as React.Key[])}
+            options={userOptions}
+            style={{ marginBottom: 8, display: "block" }}
+          />
+          <Space>
+            <Button
+              type="primary"
+              onClick={() => confirm()}
+              size="small"
+              style={{ width: 90 }}
+            >
+              Filter
+            </Button>
+            <Button
+              onClick={() => {
+                clearFilters?.();
+                setSelectedKeys([]);
+                confirm();
+              }}
+              size="small"
+              style={{ width: 90 }}
+            >
+              Reset
+            </Button>
+          </Space>
+        </div>
+      );
+    },
     onFilter: (value, record) =>
       record.assigned_users.some((user) => user.id === value),
   },
@@ -190,6 +276,15 @@ export const ManualTasksTable = ({ searchTerm }: Props) => {
     setTotalPages(totalPages);
   }, [totalPages, setTotalPages]);
 
+  // Get all users for the select dropdown
+  const { data: allUsersData } = useGetAllUsersQuery({
+    page: 1,
+    size: 100, // Use max page size of 100
+    username: "",
+  });
+
+  const [updateTaskAssignment] = useUpdateTaskAssignmentMutation();
+
   // Create filter options from API response
   const systemFilters = useMemo(
     () =>
@@ -209,9 +304,12 @@ export const ManualTasksTable = ({ searchTerm }: Props) => {
     [filterOptions?.assigned_users],
   );
 
+  const allUsers = allUsersData?.items || [];
+
   const columns = useMemo(
-    () => getColumns(systemFilters, userFilters),
-    [systemFilters, userFilters],
+    () =>
+      getColumns(systemFilters, userFilters, allUsers, updateTaskAssignment),
+    [systemFilters, userFilters, allUsers, updateTaskAssignment],
   );
 
   if (isLoading) {

@@ -124,4 +124,5 @@ export { DataCategoryDropdown } from "./components/data-category-dropdown";
 export { ExampleComponent } from "./components/example-component";
 export { FloatingMenu } from "./components/floating-menu";
 export { PrimaryLink, SecondaryLink } from "./components/links";
+export { SelectInline } from "./components/select-inline";
 export { SystemsCheckboxTable } from "./components/systems-checkbox-table";

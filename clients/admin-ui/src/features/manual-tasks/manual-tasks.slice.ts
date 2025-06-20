@@ -134,6 +134,18 @@ export const manualTasksApi = baseApi.injectEndpoints({
       invalidatesTags: [{ type: "Manual Tasks" }],
     }),
 
+    updateTaskAssignment: build.mutation<
+      { task_id: string; assigned_users: any[]; updated_at: string },
+      { taskId: string; assigned_user_ids: string[] }
+    >({
+      query: (payload) => ({
+        url: `/manual-tasks/${payload.taskId}/assignment`,
+        method: "PATCH",
+        body: { assigned_user_ids: payload.assigned_user_ids },
+      }),
+      invalidatesTags: [{ type: "Manual Tasks" }],
+    }),
+
     getTaskById: build.query<ManualTask, string>({
       queryFn: (taskId) => {
         const task = mockApiResponse.items.find((t) => t.task_id === taskId);
@@ -158,6 +170,7 @@ export const {
   useGetTasksQuery,
   useCompleteTaskMutation,
   useSkipTaskMutation,
+  useUpdateTaskAssignmentMutation,
   useGetTaskByIdQuery,
   useLazyGetTaskByIdQuery,
 } = manualTasksApi;
@@ -167,7 +180,7 @@ export const manualTasksSlice = createSlice({
   name: "manualTasks",
   initialState: {
     page: 1,
-    pageSize: 10,
+    pageSize: 25, // Default to 25 instead of 10 to match PAGE_SIZES
   },
   reducers: {
     setPage: (state, action) => {
