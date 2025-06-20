@@ -216,7 +216,7 @@ export const initialize = async ({
   overrides?: Partial<FidesOverrides>;
 } & FidesConfig): Promise<Partial<FidesGlobal>> => {
   let shouldContinueInitOverlay: boolean = true;
-  let fidesRegionString: string | null = null;
+  let fidesRegionString: string | undefined;
   let getModalLinkLabel: FidesGlobal["getModalLinkLabel"] = () =>
     DEFAULT_MODAL_LINK_LABEL;
 
