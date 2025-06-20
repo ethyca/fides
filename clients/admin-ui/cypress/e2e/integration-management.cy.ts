@@ -817,7 +817,8 @@ describe("Integration management for data detection & discovery", () => {
       });
     });
 
-    describe("data discovery tab for API integration", () => {
+    // DEFER(ENG-801) Add back once we're ready to show all SAAS integrations
+    describe.skip("data discovery tab for API integration", () => {
       beforeEach(() => {
         cy.intercept("GET", "/api/v1/connection/*", {
           fixture: "connectors/salesforce_connection.json",
