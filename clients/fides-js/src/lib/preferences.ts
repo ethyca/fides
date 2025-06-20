@@ -20,6 +20,7 @@ import {
 import {
   applyOverridesToConsent,
   constructFidesRegionString,
+  decodeNoticeConsentString,
 } from "./consent-utils";
 import {
   removeCookiesFromBrowser,
@@ -338,14 +339,17 @@ export const updateConsent = async (
     }
   }
 
+  console.warn("fidesString", fidesString);
   // If fidesString is provided, it takes priority
   if (fidesString) {
     try {
       const decodedString = decodeFidesString(fidesString);
       if (decodedString.nc) {
+        const decodedConsent = decodeNoticeConsentString(decodedString.nc);
+        console.warn("decodedConsent", decodedConsent);
         finalConsent = {
           ...fides.consent,
-          ...fides.decodeNoticeConsentString(decodedString.nc),
+          ...decodedConsent,
         };
         const validationError = validateConsent(
           fides.experience.privacy_notices || [],

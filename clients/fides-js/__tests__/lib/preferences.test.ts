@@ -5,6 +5,7 @@ import {
   UpdateConsentValidation,
   UserConsentPreference,
 } from "../../src/lib/consent-types";
+import { decodeNoticeConsentString } from "../../src/lib/consent-utils";
 import { decodeFidesString } from "../../src/lib/fides-string";
 import {
   updateConsent,
@@ -198,9 +199,7 @@ describe("preferences", () => {
         mockDecodeFidesString,
       );
 
-      (mockFides.decodeNoticeConsentString as jest.Mock).mockReturnValue(
-        decodedConsent,
-      );
+      (decodeNoticeConsentString as jest.Mock).mockReturnValue(decodedConsent);
 
       // Setup privacy notices in the experience to match the consent keys
       (mockFides.experience as any).privacy_notices = [
@@ -225,9 +224,7 @@ describe("preferences", () => {
       expect(mockDecodeFidesString).toHaveBeenCalledWith("some-encoded-string");
 
       // Verify decodeNoticeConsentString was called
-      expect(mockFides.decodeNoticeConsentString).toHaveBeenCalledWith(
-        "encoded-consent",
-      );
+      expect(decodeNoticeConsentString).toHaveBeenCalledWith("encoded-consent");
 
       // Verify updateConsentPreferences was called with the right args
       expect(updatePreferencesSpy).toHaveBeenCalledTimes(1);
