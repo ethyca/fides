@@ -5,17 +5,19 @@ from sqlalchemy.orm import Session
 
 from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph import DatasetGraph
+from fides.api.graph.traversal import Traversal
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.manual_tasks.manual_task import ManualTask
 from fides.api.models.manual_tasks.manual_task_config import ManualTaskConfig
 from fides.api.models.policy import Policy
-from fides.api.schemas.manual_tasks.manual_task_config import ManualTaskConfigurationType
+from fides.api.schemas.manual_tasks.manual_task_config import (
+    ManualTaskConfigurationType,
+)
 from fides.api.schemas.manual_tasks.manual_task_schemas import (
     MANUAL_TASK_COLLECTIONS,
     ManualTaskExecutionTiming,
     ManualTaskParentEntityType,
 )
-from fides.api.graph.traversal import Traversal
 
 
 @pytest.fixture
@@ -100,7 +102,9 @@ class TestManualTaskTraversalHelpers:
         tasks = traversal._get_manual_tasks(db)
         assert len(tasks) == 0
 
-    def test_get_connection_config_success(self, db: Session, manual_task: ManualTask, connection_config: ConnectionConfig):
+    def test_get_connection_config_success(
+        self, db: Session, manual_task: ManualTask, connection_config: ConnectionConfig
+    ):
         """Test successful connection config retrieval."""
         traversal = Traversal(DatasetGraph(), {}, session=db)
         result = traversal._get_connection_config(db, manual_task)
@@ -125,10 +129,17 @@ class TestManualTaskTraversalHelpers:
         result = traversal._get_connection_config(db, manual_task)
         assert result is None
 
-    def test_create_manual_node(self, simple_dataset_graph: DatasetGraph, connection_config: ConnectionConfig, post_execution_config: ManualTaskConfig):
+    def test_create_manual_node(
+        self,
+        simple_dataset_graph: DatasetGraph,
+        connection_config: ConnectionConfig,
+        post_execution_config: ManualTaskConfig,
+    ):
         """Test creating a manual task node."""
         traversal = Traversal(simple_dataset_graph, {}, session=None)
-        manual_address = traversal._create_manual_node(simple_dataset_graph, connection_config, post_execution_config)
+        manual_address = traversal._create_manual_node(
+            simple_dataset_graph, connection_config, post_execution_config
+        )
 
         assert manual_address.dataset == connection_config.key
         assert manual_address.collection == "post_execution"
@@ -148,7 +159,9 @@ class TestManualTaskTraversalHelpers:
         assert len(first_nodes) == 1
         assert first_nodes[0] == CollectionAddress("test_dataset", "users")
 
-    def test_get_first_data_nodes_no_identity_data(self, simple_dataset_graph: DatasetGraph):
+    def test_get_first_data_nodes_no_identity_data(
+        self, simple_dataset_graph: DatasetGraph
+    ):
         """Test getting first data nodes when no identity data is provided."""
         # Add identity key mapping
         simple_dataset_graph.identity_keys = {
@@ -161,7 +174,9 @@ class TestManualTaskTraversalHelpers:
 
         assert len(first_nodes) == 0
 
-    def test_get_data_nodes(self, simple_dataset_graph: DatasetGraph, connection_config: ConnectionConfig):
+    def test_get_data_nodes(
+        self, simple_dataset_graph: DatasetGraph, connection_config: ConnectionConfig
+    ):
         """Test getting data nodes excluding manual task nodes."""
         traversal = Traversal(simple_dataset_graph, {}, session=None)
         manual_address = CollectionAddress(connection_config.key, "post_execution")
@@ -172,11 +187,14 @@ class TestManualTaskTraversalHelpers:
         expected_nodes = [CollectionAddress("test_dataset", "users")]
         assert data_nodes == expected_nodes
 
-    def test_get_data_nodes_excludes_manual_nodes(self, simple_dataset_graph: DatasetGraph, connection_config: ConnectionConfig):
+    def test_get_data_nodes_excludes_manual_nodes(
+        self, simple_dataset_graph: DatasetGraph, connection_config: ConnectionConfig
+    ):
         """Test that get_data_nodes excludes manual task nodes."""
         # Add a manual task node to the graph
         manual_address = CollectionAddress(connection_config.key, "post_execution")
         from fides.api.graph.config import Collection
+
         manual_collection = Collection(name="post_execution", fields=[])
         simple_dataset_graph.nodes[manual_address] = manual_collection
 
@@ -190,7 +208,9 @@ class TestManualTaskTraversalHelpers:
 class TestManualTaskEdgeCreation:
     """Test manual task edge creation functionality."""
 
-    def test_add_pre_execution_edges(self, simple_dataset_graph: DatasetGraph, connection_config: ConnectionConfig):
+    def test_add_pre_execution_edges(
+        self, simple_dataset_graph: DatasetGraph, connection_config: ConnectionConfig
+    ):
         """Test adding pre-execution edges."""
         # Add identity key mapping
         simple_dataset_graph.identity_keys = {
@@ -202,6 +222,7 @@ class TestManualTaskEdgeCreation:
 
         # Add the manual node to the graph first
         from fides.api.graph.config import Collection
+
         manual_collection = Collection(name="pre_execution", fields=[])
         simple_dataset_graph.nodes[manual_address] = manual_collection
 
@@ -212,13 +233,16 @@ class TestManualTaskEdgeCreation:
         edges = list(simple_dataset_graph.edges)
         assert len(edges) >= 2  # Root to manual, manual to data nodes
 
-    def test_add_post_execution_edges(self, simple_dataset_graph: DatasetGraph, connection_config: ConnectionConfig):
+    def test_add_post_execution_edges(
+        self, simple_dataset_graph: DatasetGraph, connection_config: ConnectionConfig
+    ):
         """Test adding post-execution edges."""
         traversal = Traversal(simple_dataset_graph, {}, session=None)
         manual_address = CollectionAddress(connection_config.key, "post_execution")
 
         # Add the manual node to the graph first
         from fides.api.graph.config import Collection
+
         manual_collection = Collection(name="post_execution", fields=[])
         simple_dataset_graph.nodes[manual_address] = manual_collection
 
@@ -232,7 +256,14 @@ class TestManualTaskEdgeCreation:
 class TestManualTaskTraversalIntegration:
     """Test the complete manual task traversal integration."""
 
-    def test_traversal_with_manual_tasks(self, db: Session, simple_dataset_graph: DatasetGraph, manual_task: ManualTask, pre_execution_config: ManualTaskConfig, post_execution_config: ManualTaskConfig):
+    def test_traversal_with_manual_tasks(
+        self,
+        db: Session,
+        simple_dataset_graph: DatasetGraph,
+        manual_task: ManualTask,
+        pre_execution_config: ManualTaskConfig,
+        post_execution_config: ManualTaskConfig,
+    ):
         """Test that traversal includes manual task nodes when session is provided."""
         # Add identity key mapping
         simple_dataset_graph.identity_keys = {
@@ -244,7 +275,8 @@ class TestManualTaskTraversalIntegration:
 
         # Check that manual task nodes were added
         manual_nodes = [
-            addr for addr in traversal.graph.nodes.keys()
+            addr
+            for addr in traversal.graph.nodes.keys()
             if addr.collection in MANUAL_TASK_COLLECTIONS.values()
         ]
         assert len(manual_nodes) == 2  # pre_execution and post_execution
@@ -260,12 +292,15 @@ class TestManualTaskTraversalIntegration:
 
         # Check that no manual task nodes were added
         manual_nodes = [
-            addr for addr in traversal.graph.nodes.keys()
+            addr
+            for addr in traversal.graph.nodes.keys()
             if addr.collection in MANUAL_TASK_COLLECTIONS.values()
         ]
         assert len(manual_nodes) == 0
 
-    def test_traversal_with_multiple_manual_tasks(self, db: Session, simple_dataset_graph: DatasetGraph):
+    def test_traversal_with_multiple_manual_tasks(
+        self, db: Session, simple_dataset_graph: DatasetGraph
+    ):
         """Test traversal with multiple manual tasks."""
         # Create multiple connection configs with manual tasks
         configs = []
@@ -291,7 +326,10 @@ class TestManualTaskTraversalIntegration:
             )
 
             # Create configs for each task
-            for timing in [ManualTaskExecutionTiming.pre_execution, ManualTaskExecutionTiming.post_execution]:
+            for timing in [
+                ManualTaskExecutionTiming.pre_execution,
+                ManualTaskExecutionTiming.post_execution,
+            ]:
                 ManualTaskConfig.create(
                     db=db,
                     data={
@@ -312,12 +350,20 @@ class TestManualTaskTraversalIntegration:
 
         # Check that manual task nodes were added for each connection
         manual_nodes = [
-            addr for addr in traversal.graph.nodes.keys()
+            addr
+            for addr in traversal.graph.nodes.keys()
             if addr.collection in MANUAL_TASK_COLLECTIONS.values()
         ]
         assert len(manual_nodes) == 4  # 2 connections * 2 timings
 
-    def test_traversal_manual_task_node_creation(self, db: Session, simple_dataset_graph: DatasetGraph, manual_task: ManualTask, pre_execution_config: ManualTaskConfig, post_execution_config: ManualTaskConfig):
+    def test_traversal_manual_task_node_creation(
+        self,
+        db: Session,
+        simple_dataset_graph: DatasetGraph,
+        manual_task: ManualTask,
+        pre_execution_config: ManualTaskConfig,
+        post_execution_config: ManualTaskConfig,
+    ):
         """Test that manual task nodes are created correctly."""
         # Add identity key mapping
         simple_dataset_graph.identity_keys = {
@@ -340,7 +386,9 @@ class TestManualTaskTraversalIntegration:
 class TestManualTaskTraversalEdgeCases:
     """Test edge cases in manual task traversal."""
 
-    def test_traversal_with_invalid_connection_config(self, db: Session, simple_dataset_graph: DatasetGraph):
+    def test_traversal_with_invalid_connection_config(
+        self, db: Session, simple_dataset_graph: DatasetGraph
+    ):
         """Test traversal when manual task has invalid connection config."""
         # Create manual task with non-existent connection config
         manual_task = ManualTask.create(
@@ -369,19 +417,23 @@ class TestManualTaskTraversalEdgeCases:
 
         # Check that no manual task nodes were added for the invalid task
         manual_nodes = [
-            addr for addr in traversal.graph.nodes.keys()
+            addr
+            for addr in traversal.graph.nodes.keys()
             if addr.collection in MANUAL_TASK_COLLECTIONS.values()
         ]
         assert len(manual_nodes) == 0
 
-    def test_traversal_with_no_manual_task_configs(self, db: Session, simple_dataset_graph: DatasetGraph, manual_task: ManualTask):
+    def test_traversal_with_no_manual_task_configs(
+        self, db: Session, simple_dataset_graph: DatasetGraph, manual_task: ManualTask
+    ):
         """Test traversal when manual task has no configs."""
         data = {"email": "test@example.com"}
         traversal = Traversal(simple_dataset_graph, data, session=db)
 
         # Check that no manual task nodes were added
         manual_nodes = [
-            addr for addr in traversal.graph.nodes.keys()
+            addr
+            for addr in traversal.graph.nodes.keys()
             if addr.collection in MANUAL_TASK_COLLECTIONS.values()
         ]
         assert len(manual_nodes) == 0

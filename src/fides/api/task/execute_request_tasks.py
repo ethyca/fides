@@ -761,13 +761,25 @@ def run_manual_task_node(
 
     privacy_request = _get_privacy_request(session, request_task)
     connection_config = _get_connection_config(session, request_task)
-    manual_task = _get_manual_task(session, connection_config)
+    manual_task = (
+        _get_manual_task(session, connection_config) if connection_config else None
+    )
 
     if not manual_task:
+        logger.info(
+            "No manual task found for connection config {}. Marking node as complete.",
+            connection_config.key if connection_config else "None",
+        )
+        request_task.update_status(session, ExecutionLogStatus.complete)
         return True
 
     configs = _get_configs_for_timing(manual_task, timing)
     if not configs:
+        logger.info(
+            "No manual task configs found for timing {}. Marking node as complete.",
+            timing.value,
+        )
+        request_task.update_status(session, ExecutionLogStatus.complete)
         return True
 
     instances = _get_manual_task_instances(session, request_task, manual_task, timing)
@@ -917,14 +929,14 @@ def _handle_no_instances(
 def _create_pending_execution_log(
     session: Session,
     request_task: RequestTask,
-    connection_config: ConnectionConfig,
+    connection_config: Optional[ConnectionConfig],
     timing: ManualTaskExecutionTiming,
 ) -> None:
     """Create an execution log for pending manual tasks."""
     ExecutionLog.create(
         db=session,
         data={
-            "connection_key": connection_config.key,
+            "connection_key": connection_config.key if connection_config else None,
             "dataset_name": request_task.dataset_name,
             "collection_name": request_task.collection_name,
             "fields_affected": [],

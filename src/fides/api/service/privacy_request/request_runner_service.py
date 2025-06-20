@@ -1,7 +1,7 @@
 import time
 from copy import deepcopy
 from datetime import datetime, timedelta
-from typing import Any, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 import requests
 from loguru import logger
@@ -83,6 +83,26 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
+
+
+def _get_manual_task_configs_for_filtering(
+    session: Session,
+) -> Dict[str, Dict[str, Any]]:
+    """Get manual task field configurations for filtering by data uses.
+
+    Returns a dictionary mapping field IDs to their data uses for filtering
+    manual task data in the same way regular tasks filter by data categories.
+    """
+    from fides.api.models.manual_tasks.manual_task_config import ManualTaskConfigField
+
+    configs = {}
+    field_definitions = ManualTaskConfigField.all(db=session)
+
+    for field in field_definitions:
+        if field.field_metadata and "data_uses" in field.field_metadata:
+            configs[field.id] = {"data_uses": field.field_metadata["data_uses"]}
+
+    return configs
 
 
 class ManualWebhookResults(FidesSchema):
@@ -333,6 +353,10 @@ def upload_and_save_access_results(  # pylint: disable=R0912
         action_type=ActionType.access
     ):
         target_categories: set[str] = {target.data_category for target in rule.targets}  # type: ignore[attr-defined]
+
+        # Get manual task configs for filtering
+        manual_task_configs = _get_manual_task_configs_for_filtering(session)
+
         filtered_results: dict[str, list[dict[str, Optional[Any]]]] = (
             filter_data_categories(
                 access_result,
@@ -340,6 +364,7 @@ def upload_and_save_access_results(  # pylint: disable=R0912
                 dataset_graph,
                 rule.key,
                 fides_connector_datasets,
+                manual_task_configs,
             )
         )
         # Create a copy of filtered results to modify for upload
