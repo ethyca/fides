@@ -40,6 +40,7 @@ from fides.api.models.privacy_request import (
     TraversalDetails,
 )
 from fides.api.schemas.manual_tasks.manual_task_schemas import (
+    MANUAL_TASK_COLLECTIONS,
     ManualTaskExecutionTiming,
     ManualTaskParentEntityType,
 )
@@ -47,6 +48,19 @@ from fides.api.schemas.policy import ActionType
 from fides.api.util.collection_util import Row, append, partition
 from fides.api.util.logger_context_utils import Contextualizable, LoggerContextKeys
 from fides.api.util.matching_queue import MatchingQueue
+
+# High-level flow:
+# __init__()
+#   └── _add_manual_task_nodes()
+#       ├── _get_manual_tasks()
+#       ├── _get_connection_config()
+#       └── _create_manual_task_nodes()
+#           ├── _create_manual_node()
+#           └── _add_manual_task_edges()
+#               ├── _add_pre_execution_edges()
+#               │   └── _get_first_data_nodes()
+#               └── _add_post_execution_edges()
+#                   └── _get_data_nodes()
 
 ARTIFICIAL_NODES: List[CollectionAddress] = [
     ROOT_COLLECTION_ADDRESS,
@@ -339,85 +353,180 @@ class Traversal(BaseTraversal):
         if policy:
             filters.append(PolicyDataCategoryFilter(policy))
 
-        # Get all manual tasks and create individual nodes for each
+        # Add manual task nodes if session is provided
         if session:
-            # Get all manual tasks that are associated with connection configs
-            manual_tasks = ManualTask.filter(
-                db=session,
-                conditions=(
-                    (
-                        ManualTask.parent_entity_type
-                        == ManualTaskParentEntityType.connection_config
-                    )
-                ),
-            ).all()
-
-            # Create individual nodes for each manual task
-            for task in manual_tasks:
-                # Get the connection config to use its key as the dataset name
-                connection_config = ConnectionConfig.get_by_key_or_id(
-                    db=session, data={"id": task.parent_entity_id}
-                )
-                if not connection_config:
-                    logger.warning(
-                        "Connection config {} not found for manual task {}, skipping",
-                        task.parent_entity_id,
-                        task.id,
-                    )
-                    continue
-
-                # Get all configs for this task
-                for config in task.configs:
-                    # Create a node for each config with the appropriate timing
-                    collection_name = config.execution_timing.value
-                    dataset_name = connection_config.key
-
-                    manual_address = CollectionAddress(dataset_name, collection_name)
-                    manual_node = artificial_traversal_node(manual_address)
-
-                    # Add the node to the graph
-                    graph.nodes[manual_address] = manual_node.node
-
-                    # Add edges based on execution timing
-                    if (
-                        config.execution_timing
-                        == ManualTaskExecutionTiming.pre_execution
-                    ):
-                        # Pre-execution tasks: connect root to the task
-                        graph.edges.add(
-                            Edge(
-                                FieldAddress(
-                                    ROOT_COLLECTION_ADDRESS.dataset,
-                                    ROOT_COLLECTION_ADDRESS.collection,
-                                    "id",
-                                ),
-                                FieldAddress(
-                                    manual_address.dataset,
-                                    manual_address.collection,
-                                    "id",
-                                ),
-                            )
-                        )
-                    else:  # post_execution
-                        # Post-execution tasks: connect the task to terminator
-                        graph.edges.add(
-                            Edge(
-                                FieldAddress(
-                                    manual_address.dataset,
-                                    manual_address.collection,
-                                    "id",
-                                ),
-                                FieldAddress(
-                                    TERMINATOR_ADDRESS.dataset,
-                                    TERMINATOR_ADDRESS.collection,
-                                    "id",
-                                ),
-                            )
-                        )
-
-            logger.info("Created individual manual task nodes and edges")
+            self._add_manual_task_nodes(graph, data, session)
 
         super().__init__(graph, data, policy=policy, node_filters=filters)
+
+    def _add_manual_task_nodes(
+        self, graph: DatasetGraph, data: Dict[str, Any], session: Session
+    ) -> None:
+        """Add individual manual task nodes to the graph."""
+        manual_tasks = self._get_manual_tasks(session)
+
+        for task in manual_tasks:
+            connection_config = self._get_connection_config(session, task)
+            if not connection_config:
+                continue
+
+            self._create_manual_task_nodes(graph, data, task, connection_config)
+
+        logger.info("Created individual manual task nodes and edges")
+
+    def _get_manual_tasks(self, session: Session) -> List[ManualTask]:
+        """Get all manual tasks associated with connection configs."""
+        return ManualTask.filter(
+            db=session,
+            conditions=(
+                (
+                    ManualTask.parent_entity_type
+                    == ManualTaskParentEntityType.connection_config
+                )
+            ),
+        ).all()
+
+    def _get_connection_config(
+        self, session: Session, task: ManualTask
+    ) -> Optional[ConnectionConfig]:
+        """Get the connection config for a manual task."""
+        connection_config = ConnectionConfig.get_by_key_or_id(
+            db=session, data={"id": task.parent_entity_id}
+        )
+        if not connection_config:
+            logger.warning(
+                "Connection config {} not found for manual task {}, skipping",
+                task.parent_entity_id,
+                task.id,
+            )
+        return connection_config
+
+    def _create_manual_task_nodes(
+        self,
+        graph: DatasetGraph,
+        data: Dict[str, Any],
+        task: ManualTask,
+        connection_config: ConnectionConfig,
+    ) -> None:
+        """Create nodes for each config of a manual task."""
+        for config in task.configs:
+            manual_address = self._create_manual_node(graph, connection_config, config)
+            self._add_manual_task_edges(graph, data, manual_address, config)
+
+    def _create_manual_node(
+        self, graph: DatasetGraph, connection_config: ConnectionConfig, config: Any
+    ) -> CollectionAddress:
+        """Create a single manual task node."""
+        collection_name = config.execution_timing.value
+        dataset_name = connection_config.key
+
+        manual_address = CollectionAddress(dataset_name, collection_name)
+        manual_node = artificial_traversal_node(manual_address)
+
+        # Add the node to the graph
+        graph.nodes[manual_address] = manual_node.node
+
+        return manual_address
+
+    def _add_manual_task_edges(
+        self,
+        graph: DatasetGraph,
+        data: Dict[str, Any],
+        manual_address: CollectionAddress,
+        config: Any,
+    ) -> None:
+        """Add edges for a manual task node based on its execution timing."""
+        if config.execution_timing == ManualTaskExecutionTiming.pre_execution:
+            self._add_pre_execution_edges(graph, data, manual_address)
+        else:  # post_execution
+            self._add_post_execution_edges(graph, manual_address)
+
+    def _add_pre_execution_edges(
+        self,
+        graph: DatasetGraph,
+        data: Dict[str, Any],
+        manual_address: CollectionAddress,
+    ) -> None:
+        """Add edges for pre-execution manual tasks."""
+        # Connect root to the pre-execution task
+        graph.edges.add(
+            Edge(
+                FieldAddress(
+                    ROOT_COLLECTION_ADDRESS.dataset,
+                    ROOT_COLLECTION_ADDRESS.collection,
+                    "id",
+                ),
+                FieldAddress(manual_address.dataset, manual_address.collection, "id"),
+            )
+        )
+
+        # Connect pre-execution task to first data nodes
+        first_nodes = self._get_first_data_nodes(graph, data)
+        for first_node in first_nodes:
+            graph.edges.add(
+                Edge(
+                    FieldAddress(
+                        manual_address.dataset, manual_address.collection, "id"
+                    ),
+                    FieldAddress(first_node.dataset, first_node.collection, "id"),
+                )
+            )
+
+    def _add_post_execution_edges(
+        self, graph: DatasetGraph, manual_address: CollectionAddress
+    ) -> None:
+        """Add edges for post-execution manual tasks."""
+        # Connect post-execution task to terminator
+        graph.edges.add(
+            Edge(
+                FieldAddress(manual_address.dataset, manual_address.collection, "id"),
+                FieldAddress(
+                    TERMINATOR_ADDRESS.dataset,
+                    TERMINATOR_ADDRESS.collection,
+                    "id",
+                ),
+            )
+        )
+
+        # Connect data processing nodes to post-execution task
+        data_nodes = self._get_data_nodes(graph, manual_address)
+        for data_node in data_nodes:
+            graph.edges.add(
+                Edge(
+                    FieldAddress(data_node.dataset, data_node.collection, "id"),
+                    FieldAddress(
+                        manual_address.dataset, manual_address.collection, "id"
+                    ),
+                )
+            )
+
+    def _get_first_data_nodes(
+        self, graph: DatasetGraph, data: Dict[str, Any]
+    ) -> List[CollectionAddress]:
+        """Get nodes that have identity data."""
+        first_nodes = []
+        for identity_address, seed_key in graph.identity_keys.items():
+            if seed_key in data:
+                first_nodes.append(identity_address.collection_address())
+        return first_nodes
+
+    def _get_data_nodes(
+        self, graph: DatasetGraph, manual_address: CollectionAddress
+    ) -> List[CollectionAddress]:
+        """Get all non-manual nodes that could be end nodes."""
+        return [
+            node_addr
+            for node_addr in graph.nodes.keys()
+            if node_addr
+            not in [
+                ROOT_COLLECTION_ADDRESS,
+                TERMINATOR_ADDRESS,
+            ]
+            and not (
+                node_addr.dataset == manual_address.dataset
+                and node_addr.collection in MANUAL_TASK_COLLECTIONS.values()
+            )
+        ]
 
 
 def log_traversal_error_and_update_privacy_request(

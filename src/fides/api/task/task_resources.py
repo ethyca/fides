@@ -140,25 +140,8 @@ class Connections:
     ) -> Union[BaseConnector, BaseEmailConnector]:
         """Factory method to build the appropriately typed connector from the config."""
         # Check if this connection config has an associated manual task
-        if session:
-            from fides.api.models.manual_tasks.manual_task import ManualTask
-            from fides.api.schemas.manual_tasks.manual_task_schemas import (
-                ManualTaskParentEntityType,
-            )
-
-            manual_task = ManualTask.filter(
-                db=session,
-                conditions=(
-                    (ManualTask.parent_entity_id == connection_config.id)
-                    & (
-                        ManualTask.parent_entity_type
-                        == ManualTaskParentEntityType.connection_config
-                    )
-                ),
-            ).first()
-
-            if manual_task:
-                return ManualTaskConnector(connection_config, session)
+        if session and Connections._has_manual_task(session, connection_config):
+            return ManualTaskConnector(connection_config, session)
 
         if connection_config.connection_type == ConnectionType.postgres:
             return PostgreSQLConnector(connection_config)
@@ -201,6 +184,27 @@ class Connections:
             f"No connector available for {connection_config.connection_type}"
         )
 
+    @staticmethod
+    def _has_manual_task(session: Session, connection_config: ConnectionConfig) -> bool:
+        """Check if a connection config has an associated manual task."""
+        from fides.api.models.manual_tasks.manual_task import ManualTask
+        from fides.api.schemas.manual_tasks.manual_task_schemas import (
+            ManualTaskParentEntityType,
+        )
+
+        manual_task = ManualTask.filter(
+            db=session,
+            conditions=(
+                (ManualTask.parent_entity_id == connection_config.id)
+                & (
+                    ManualTask.parent_entity_type
+                    == ManualTaskParentEntityType.connection_config
+                )
+            ),
+        ).first()
+
+        return manual_task is not None
+
     def close(self) -> None:
         """Close all held connection resources."""
         for connector in self.connections.values():
@@ -235,35 +239,8 @@ class TaskResources:
         self.cache = get_cache()
         self.privacy_request_task = privacy_request_task
 
-        # Check if any of the connection configs are for manual tasks
-        # and add them to the list if they're not already there
-        manual_task_configs = []
-        for config in connection_configs:
-            # Check if this connection config has an associated manual task
-            from fides.api.models.manual_tasks.manual_task import ManualTask
-            from fides.api.schemas.manual_tasks.manual_task_schemas import (
-                ManualTaskParentEntityType,
-            )
-
-            manual_task = ManualTask.filter(
-                db=session,
-                conditions=(
-                    (ManualTask.parent_entity_id == config.id)
-                    & (
-                        ManualTask.parent_entity_type
-                        == ManualTaskParentEntityType.connection_config
-                    )
-                ),
-            ).first()
-
-            if manual_task:
-                # This connection config has a manual task, so we need to ensure it's included
-                manual_task_configs.append(config)
-
-        # Add any manual task configs that aren't already in the list
-        for config in manual_task_configs:
-            if config not in connection_configs:
-                connection_configs.append(config)
+        # Add manual task configs to the connection configs list
+        connection_configs = self._add_manual_task_configs(connection_configs, session)
 
         self.connection_configs: Dict[str, ConnectionConfig] = {
             c.key: c for c in connection_configs
@@ -271,6 +248,23 @@ class TaskResources:
         self.connections = Connections()
         self.connections.session = session
         self.session = session
+
+    def _add_manual_task_configs(
+        self, connection_configs: List[ConnectionConfig], session: Session
+    ) -> List[ConnectionConfig]:
+        """Add any manual task configs that aren't already in the list."""
+        manual_task_configs = [
+            config
+            for config in connection_configs
+            if Connections._has_manual_task(session, config)
+        ]
+
+        # Add any manual task configs that aren't already in the list
+        for config in manual_task_configs:
+            if config not in connection_configs:
+                connection_configs.append(config)
+
+        return connection_configs
 
     def __enter__(self) -> "TaskResources":
         """Support 'with' usage for closing resources"""

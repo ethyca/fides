@@ -1,4 +1,4 @@
-from typing import Callable, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from celery.app.task import Task
 from loguru import logger
@@ -28,6 +28,7 @@ from fides.api.models.manual_tasks.manual_task_instance import ManualTaskInstanc
 from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest, RequestTask
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.manual_tasks.manual_task_schemas import (
+    MANUAL_TASK_COLLECTIONS,
     ManualTaskExecutionTiming,
     ManualTaskParentEntityType,
 )
@@ -166,7 +167,7 @@ def can_run_task_body(
 
     # For manual task nodes, we want to check their status
     # Manual task nodes have collection names of "pre_execution" or "post_execution"
-    if request_task.collection_name in ["pre_execution", "post_execution"]:
+    if request_task.collection_name in MANUAL_TASK_COLLECTIONS.values():
         if request_task.status == ExecutionLogStatus.complete:
             logger.info(
                 "Manual task node {} is already complete, skipping execution",
@@ -580,7 +581,7 @@ def run_consent_node(
 
             if can_run_task_body(request_task):
                 # Check if this is a manual task node
-                if request_task.collection_name in ["pre_execution", "post_execution"]:
+                if request_task.collection_name in MANUAL_TASK_COLLECTIONS.values():
                     timing = ManualTaskExecutionTiming(request_task.collection_name)
                     try:
                         run_manual_task_node(session, request_task, timing)
@@ -758,7 +759,29 @@ def run_manual_task_node(
         timing.value,
     )
 
-    # Get the privacy request to update its status
+    privacy_request = _get_privacy_request(session, request_task)
+    connection_config = _get_connection_config(session, request_task)
+    manual_task = _get_manual_task(session, connection_config)
+
+    if not manual_task:
+        return True
+
+    configs = _get_configs_for_timing(manual_task, timing)
+    if not configs:
+        return True
+
+    instances = _get_manual_task_instances(session, request_task, manual_task, timing)
+
+    if not instances:
+        return _handle_no_instances(
+            session, request_task, privacy_request, connection_config, timing
+        )
+
+    return _process_manual_task_instances(session, request_task, instances, timing)
+
+
+def _get_privacy_request(session: Session, request_task: RequestTask) -> PrivacyRequest:
+    """Get the privacy request for the task."""
     privacy_request = PrivacyRequest.get(
         db=session, object_id=request_task.privacy_request_id
     )
@@ -766,8 +789,13 @@ def run_manual_task_node(
         raise PrivacyRequestNotFound(
             f"Privacy request {request_task.privacy_request_id} not found"
         )
+    return privacy_request
 
-    # Find the connection config that matches the dataset name
+
+def _get_connection_config(
+    session: Session, request_task: RequestTask
+) -> Optional[ConnectionConfig]:
+    """Get the connection config for the manual task node."""
     connection_config = ConnectionConfig.filter(
         db=session,
         conditions=(ConnectionConfig.key == request_task.dataset_name),
@@ -780,9 +808,15 @@ def run_manual_task_node(
             request_task.collection_address,
         )
         request_task.update_status(session, ExecutionLogStatus.complete)
-        return True
+        return None
 
-    # Find the manual task associated with this connection config
+    return connection_config
+
+
+def _get_manual_task(
+    session: Session, connection_config: ConnectionConfig
+) -> Optional[ManualTask]:
+    """Get the manual task associated with the connection config."""
     manual_task = ManualTask.filter(
         db=session,
         conditions=(
@@ -799,10 +833,15 @@ def run_manual_task_node(
             "No manual task found for connection config {}. Marking node as complete.",
             connection_config.key,
         )
-        request_task.update_status(session, ExecutionLogStatus.complete)
-        return True
+        return None
 
-    # Get configs for the given timing
+    return manual_task
+
+
+def _get_configs_for_timing(
+    manual_task: ManualTask, timing: ManualTaskExecutionTiming
+) -> List[Any]:
+    """Get configs for the given timing."""
     configs = [
         config for config in manual_task.configs if config.execution_timing == timing
     ]
@@ -811,19 +850,26 @@ def run_manual_task_node(
         "Found {} configs with timing {} for task {}",
         len(configs),
         timing.value,
-        request_task.collection_address,
+        manual_task.id,
     )
 
     if not configs:
-        # No configs found for timing - mark node as complete since there's nothing to wait for
         logger.info(
             "No manual task configs found for timing {}. Marking node as complete.",
             timing.value,
         )
-        request_task.update_status(session, ExecutionLogStatus.complete)
-        return True
+        return []
 
-    # Get instances for this specific manual task and timing
+    return configs
+
+
+def _get_manual_task_instances(
+    session: Session,
+    request_task: RequestTask,
+    manual_task: ManualTask,
+    timing: ManualTaskExecutionTiming,
+) -> List[ManualTaskInstance]:
+    """Get instances for the specific manual task and timing."""
     instances = ManualTaskInstance.filter(
         db=session,
         conditions=(
@@ -841,36 +887,62 @@ def run_manual_task_node(
         timing.value,
     )
 
-    if not instances:
-        # No instances yet - set request to requires_input and keep node pending
-        logger.info(
-            "No manual task instances found yet for privacy request {} with timing {}. Setting status to requires_input.",
-            request_task.privacy_request_id,
-            timing.value,
-        )
-        request_task.update_status(session, ExecutionLogStatus.pending)
-        privacy_request.status = PrivacyRequestStatus.requires_input
-        privacy_request.save(session)
+    return instances
 
-        # Add execution log
-        ExecutionLog.create(
-            db=session,
-            data={
-                "connection_key": connection_config.key,
-                "dataset_name": request_task.dataset_name,
-                "collection_name": request_task.collection_name,
-                "fields_affected": [],
-                "action_type": request_task.action_type,
-                "status": ExecutionLogStatus.pending,
-                "privacy_request_id": request_task.privacy_request_id,
-                "message": f"Waiting for manual tasks with timing {timing.value} to be created",
-            },
-        )
-        raise PrivacyRequestPaused(
-            f"Privacy request paused waiting for manual tasks with timing {timing.value}"
-        )
 
-    # Check if all manual tasks are complete
+def _handle_no_instances(
+    session: Session,
+    request_task: RequestTask,
+    privacy_request: PrivacyRequest,
+    connection_config: ConnectionConfig,
+    timing: ManualTaskExecutionTiming,
+) -> bool:
+    """Handle the case where no manual task instances exist yet."""
+    logger.info(
+        "No manual task instances found yet for privacy request {} with timing {}. Setting status to requires_input.",
+        request_task.privacy_request_id,
+        timing.value,
+    )
+    request_task.update_status(session, ExecutionLogStatus.pending)
+    privacy_request.status = PrivacyRequestStatus.requires_input
+    privacy_request.save(session)
+
+    _create_pending_execution_log(session, request_task, connection_config, timing)
+
+    raise PrivacyRequestPaused(
+        f"Privacy request paused waiting for manual tasks with timing {timing.value}"
+    )
+
+
+def _create_pending_execution_log(
+    session: Session,
+    request_task: RequestTask,
+    connection_config: ConnectionConfig,
+    timing: ManualTaskExecutionTiming,
+) -> None:
+    """Create an execution log for pending manual tasks."""
+    ExecutionLog.create(
+        db=session,
+        data={
+            "connection_key": connection_config.key,
+            "dataset_name": request_task.dataset_name,
+            "collection_name": request_task.collection_name,
+            "fields_affected": [],
+            "action_type": request_task.action_type,
+            "status": ExecutionLogStatus.pending,
+            "privacy_request_id": request_task.privacy_request_id,
+            "message": f"Waiting for manual tasks with timing {timing.value} to be created",
+        },
+    )
+
+
+def _process_manual_task_instances(
+    session: Session,
+    request_task: RequestTask,
+    instances: List[ManualTaskInstance],
+    timing: ManualTaskExecutionTiming,
+) -> bool:
+    """Process manual task instances and determine if they're complete."""
     all_complete = all(
         instance.status == StatusType.completed for instance in instances
     )
@@ -886,109 +958,143 @@ def run_manual_task_node(
     )
 
     if all_complete:
-        logger.info(
-            "All manual tasks complete for timing {}. Marking node as complete.",
-            timing.value,
-        )
-        # Group submission data by connection config name
-        submission_data_by_config = {}
-
-        # Initialize list for this config if not exists
-        collection_key = request_task.collection_address
-        if collection_key not in submission_data_by_config:
-            submission_data_by_config[collection_key] = []
-
-        for instance in instances:
-            task_data = {"data": []}
-
-            # Add submission data
-            for submission in instance.submissions:
-                submission_data_entry = {
-                    "field_id": submission.field_id,
-                    "data": submission.data,
-                }
-                task_data["data"].append(submission_data_entry)
-
-            # Add attachment data if any
-            attachments = []
-            for submission in instance.submissions:
-                for attachment in submission.attachments:
-                    attachments.append(
-                        {
-                            "file_name": attachment.file_name,
-                            "storage_key": attachment.storage_key,
-                        }
-                    )
-            if attachments:
-                task_data["attachments"] = attachments
-
-            submission_data_by_config[collection_key].append(task_data)
-        logger.info("Submission data by config: {}", submission_data_by_config)
-
-        # Save submission data based on task type
-        if request_task.action_type == ActionType.access:
-            # For access tasks:
-            # 1. Save raw data to access_data and data_for_erasures
-            request_task.access_data = submission_data_by_config
-            request_task.data_for_erasures = submission_data_by_config  # Same data for both since no filtering needed
-
-            # Note: Filtered results will be saved by the request runner during the upload_access step
-            # This ensures consistency with how other access tasks are processed
-        else:
-            # For erasure tasks, save raw data
-            request_task.data_for_erasures = submission_data_by_config
-
-        request_task.update_status(session, ExecutionLogStatus.complete)
-
-        # Add execution log
-        ExecutionLog.create(
-            db=session,
-            data={
-                "connection_key": connection_config.key,
-                "dataset_name": request_task.dataset_name,
-                "collection_name": request_task.collection_name,
-                "fields_affected": [],
-                "action_type": request_task.action_type,
-                "status": ExecutionLogStatus.complete,
-                "privacy_request_id": request_task.privacy_request_id,
-                "message": f"All manual tasks with timing {timing.value} completed successfully",
-            },
-        )
-        logger.info(
-            "Task {} marked as complete with status {}",
-            request_task.collection_address,
-            request_task.status,
-        )
-        session.commit()  # Ensure all changes are committed
-        return True
+        return _handle_completed_instances(session, request_task, instances, timing)
     else:
-        # Tasks not complete - set request to requires_input and keep node pending
-        logger.info(
-            "{} manual tasks still pending for timing {}. Setting status to requires_input.",
-            incomplete_count,
-            timing.value,
+        return _handle_incomplete_instances(
+            session, request_task, instances, incomplete_count, timing
         )
-        request_task.update_status(session, ExecutionLogStatus.pending)
-        privacy_request.status = PrivacyRequestStatus.requires_input
-        privacy_request.save(session)
 
-        # Add execution log
-        ExecutionLog.create(
-            db=session,
-            data={
-                "connection_key": connection_config.key,
-                "dataset_name": request_task.dataset_name,
-                "collection_name": request_task.collection_name,
-                "fields_affected": [],
-                "action_type": request_task.action_type,
-                "status": ExecutionLogStatus.pending,
-                "privacy_request_id": request_task.privacy_request_id,
-                "message": f"Waiting for {incomplete_count} manual tasks with timing {timing.value} to complete",
-            },
+
+def _handle_completed_instances(
+    session: Session,
+    request_task: RequestTask,
+    instances: List[ManualTaskInstance],
+    timing: ManualTaskExecutionTiming,
+) -> bool:
+    """Handle the case where all manual task instances are complete."""
+    logger.info(
+        "All manual tasks complete for timing {}. Marking node as complete.",
+        timing.value,
+    )
+
+    submission_data = _build_submission_data(request_task, instances)
+    _save_task_data(request_task, submission_data)
+    request_task.update_status(session, ExecutionLogStatus.complete)
+
+    _create_complete_execution_log(session, request_task, timing)
+    session.commit()
+
+    return True
+
+
+def _handle_incomplete_instances(
+    session: Session,
+    request_task: RequestTask,
+    instances: List[ManualTaskInstance],
+    incomplete_count: int,
+    timing: ManualTaskExecutionTiming,
+) -> bool:
+    """Handle the case where some manual task instances are incomplete."""
+    logger.info(
+        "{} manual tasks still pending for timing {}. Setting status to requires_input.",
+        incomplete_count,
+        timing.value,
+    )
+    request_task.update_status(session, ExecutionLogStatus.pending)
+
+    privacy_request = PrivacyRequest.get(
+        db=session, object_id=request_task.privacy_request_id
+    )
+    privacy_request.status = PrivacyRequestStatus.requires_input
+    privacy_request.save(session)
+
+    _create_pending_execution_log(session, request_task, None, timing)
+
+    raise PrivacyRequestPaused(
+        f"Privacy request paused waiting for {incomplete_count} manual tasks with timing {timing.value} to complete"
+    )
+
+
+def _build_submission_data(
+    request_task: RequestTask, instances: List[ManualTaskInstance]
+) -> Dict[str, List[Dict[str, Any]]]:
+    """Build submission data from manual task instances."""
+    submission_data_by_config = {}
+    collection_key = request_task.collection_address
+
+    if collection_key not in submission_data_by_config:
+        submission_data_by_config[collection_key] = []
+
+    for instance in instances:
+        task_data = _build_task_data(instance)
+        submission_data_by_config[collection_key].append(task_data)
+
+    return submission_data_by_config
+
+
+def _build_task_data(instance: ManualTaskInstance) -> Dict[str, Any]:
+    """Build task data from a manual task instance."""
+    task_data = {"data": []}
+
+    # Add submission data
+    for submission in instance.submissions:
+        submission_data_entry = {
+            "field_id": submission.field_id,
+            "data": submission.data,
+        }
+        task_data["data"].append(submission_data_entry)
+
+    # Add attachment data if any
+    attachments = []
+    for submission in instance.submissions:
+        for attachment in submission.attachments:
+            attachments.append(
+                {
+                    "file_name": attachment.file_name,
+                    "storage_key": attachment.storage_key,
+                }
+            )
+    if attachments:
+        task_data["attachments"] = attachments
+
+    return task_data
+
+
+def _save_task_data(
+    request_task: RequestTask, submission_data: Dict[str, List[Dict[str, Any]]]
+) -> None:
+    """Save submission data to the request task."""
+    if request_task.action_type == ActionType.access:
+        # For access tasks:
+        # 1. Save raw data to access_data and data_for_erasures
+        request_task.access_data = submission_data
+        request_task.data_for_erasures = (
+            submission_data  # Same data for both since no filtering needed
         )
-        raise PrivacyRequestPaused(
-            f"Privacy request paused waiting for {incomplete_count} manual tasks with timing {timing.value} to complete"
-        )
+    else:
+        # For erasure tasks, save raw data
+        request_task.data_for_erasures = submission_data
+
+
+def _create_complete_execution_log(
+    session: Session,
+    request_task: RequestTask,
+    timing: ManualTaskExecutionTiming,
+) -> None:
+    """Create an execution log for completed manual tasks."""
+    ExecutionLog.create(
+        db=session,
+        data={
+            "connection_key": None,  # Will be set by the task execution
+            "dataset_name": request_task.dataset_name,
+            "collection_name": request_task.collection_name,
+            "fields_affected": [],
+            "action_type": request_task.action_type,
+            "status": ExecutionLogStatus.complete,
+            "privacy_request_id": request_task.privacy_request_id,
+            "message": f"All manual tasks with timing {timing.value} completed successfully",
+        },
+    )
 
 
 manual_task_config = ConnectionConfig(

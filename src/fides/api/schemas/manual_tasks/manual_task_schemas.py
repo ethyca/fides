@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import Annotated, Any, Optional
+from typing import Annotated, Any, Dict, List, Optional
 
 from pydantic import ConfigDict, Field
 
@@ -14,6 +14,13 @@ class ManualTaskExecutionTiming(str, Enum):
     pre_execution = "pre_execution"  # Execute before the main DAG
     post_execution = "post_execution"  # Execute after the main DAG
     parallel = "parallel"  # Execute in parallel with the main DAG
+
+
+# Constants for manual task collection names
+MANUAL_TASK_COLLECTIONS = {
+    ManualTaskExecutionTiming.pre_execution: "pre_execution",
+    ManualTaskExecutionTiming.post_execution: "post_execution",
+}
 
 
 class ManualTaskType(str, Enum):
@@ -72,7 +79,7 @@ class ManualTaskResponse(FidesSchema):
     parent_entity_type: Annotated[
         ManualTaskParentEntityType, Field(..., description="Parent entity type")
     ]
-    status: Annotated[StatusType, Field(..., description="Task status")]
+    task_type: Annotated[ManualTaskType, Field(..., description="Task type")]
     created_at: Annotated[datetime, Field(..., description="Creation timestamp")]
     updated_at: Annotated[datetime, Field(..., description="Last update timestamp")]
 
@@ -82,6 +89,7 @@ class ManualTaskCreate(FidesSchema):
 
     model_config = ConfigDict(extra="forbid")
 
+    task_type: Annotated[ManualTaskType, Field(..., description="Task type")]
     parent_entity_id: Annotated[str, Field(..., description="Parent entity ID")]
     parent_entity_type: Annotated[
         ManualTaskParentEntityType, Field(..., description="Parent entity type")
@@ -121,27 +129,61 @@ class ManualTaskLogResponse(FidesSchema):
     updated_at: Annotated[datetime, Field(..., description="Last update timestamp")]
 
 
-class ManualTaskResponse(FidesSchema):
-    """Schema for manual task response."""
+class ManualTaskBase(FidesSchema):
+    """Base schema for manual task models."""
 
-    model_config = ConfigDict(extra="forbid")
+    name: str = Field(..., description="The name of the manual task")
+    description: Optional[str] = Field(
+        None, description="The description of the manual task"
+    )
+    task_type: ManualTaskType = Field(..., description="The type of manual task")
+    parent_entity_id: str = Field(..., description="The ID of the parent entity")
+    parent_entity_type: ManualTaskParentEntityType = Field(
+        ..., description="The type of parent entity"
+    )
 
-    id: Annotated[str, Field(..., description="Task ID")]
-    parent_entity_id: Annotated[str, Field(..., description="Parent entity ID")]
-    parent_entity_type: Annotated[
-        ManualTaskParentEntityType, Field(..., description="Parent entity type")
-    ]
-    status: Annotated[StatusType, Field(..., description="Task status")]
-    created_at: Annotated[datetime, Field(..., description="Creation timestamp")]
-    updated_at: Annotated[datetime, Field(..., description="Last update timestamp")]
 
-
-class ManualTaskCreate(FidesSchema):
+class ManualTaskCreate(ManualTaskBase):
     """Schema for creating a manual task."""
 
-    model_config = ConfigDict(extra="forbid")
+    pass
 
-    parent_entity_id: Annotated[str, Field(..., description="Parent entity ID")]
-    parent_entity_type: Annotated[
-        ManualTaskParentEntityType, Field(..., description="Parent entity type")
-    ]
+
+class ManualTaskUpdate(FidesSchema):
+    """Schema for updating a manual task."""
+
+    name: Optional[str] = Field(None, description="The name of the manual task")
+    description: Optional[str] = Field(
+        None, description="The description of the manual task"
+    )
+    task_type: Optional[ManualTaskType] = Field(
+        None, description="The type of manual task"
+    )
+
+
+class ManualTaskResponse(ManualTaskBase):
+    """Schema for manual task responses."""
+
+    id: str = Field(..., description="The ID of the manual task")
+    created_at: str = Field(..., description="When the manual task was created")
+    updated_at: str = Field(..., description="When the manual task was last updated")
+
+
+class ManualTaskReference(FidesSchema):
+    """Schema for manual task references."""
+
+    id: str = Field(..., description="The ID of the manual task")
+    name: str = Field(..., description="The name of the manual task")
+    reference_type: ManualTaskReferenceType = Field(
+        ..., description="The type of reference"
+    )
+
+
+class ManualTaskListResponse(FidesSchema):
+    """Schema for manual task list responses."""
+
+    items: List[ManualTaskResponse] = Field(..., description="The list of manual tasks")
+    total: int = Field(..., description="The total number of manual tasks")
+    page: int = Field(..., description="The current page number")
+    size: int = Field(..., description="The page size")
+    pages: int = Field(..., description="The total number of pages")

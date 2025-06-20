@@ -6,7 +6,20 @@ from loguru import logger
 
 from fides.api.graph.config import CollectionAddress, FieldPath
 from fides.api.graph.graph import DatasetGraph
+from fides.api.schemas.manual_tasks.manual_task_schemas import MANUAL_TASK_COLLECTIONS
 from fides.api.util.collection_util import Row
+
+
+def _is_manual_task_node(node_address: str) -> bool:
+    """Check if a node address represents a manual task node.
+
+    Manual task nodes use connection config keys as dataset names with pre_execution/post_execution collections.
+    """
+    if ":" not in node_address:
+        return False
+
+    dataset, collection = node_address.split(":", 1)
+    return collection in MANUAL_TASK_COLLECTIONS.values()
 
 
 def filter_data_categories(
@@ -16,17 +29,14 @@ def filter_data_categories(
     rule_key: str = "",
     fides_connector_datasets: Optional[Set[str]] = None,
 ) -> Dict[str, List[Dict[str, Optional[Any]]]]:
-    """Filter access request results to only return fields associated with the target data categories
-    and subcategories.
+    """
+    Filter access request results to only include fields associated with the desired data categories.
 
-    Regarding subcategories, if data category "user.contact" is specified on one of the rule
-    targets, for example, all fields on subcategories also apply, so ["user.contact.address.city",
-    "user.contact.address.street", ...], etc.
-
-    :param access_request_results: Dictionary of access request results for each of your collections
-    :param target_categories: A set of data categories that we'd like to extract from access_request_results
-    :param dataset_graph: The dataset graph where the data category mappings are accessed from
-
+    :param access_request_results: Raw access request results from the graph traversal
+    :param target_categories: Set of data categories to filter for
+    :param dataset_graph: The dataset graph used for the traversal
+    :param rule_key: The rule key for filtering fides connector results
+    :param fides_connector_datasets: Set of dataset names that are fides connectors
     :return: Filtered access request results that only contain fields matching the desired data categories.
     """
     logger.info(
@@ -39,17 +49,14 @@ def filter_data_categories(
 
         # Manual task data is a special case - pass through without filtering
         # since it doesn't have corresponding nodes in the dataset graph
-        # Manual task nodes now use connection config keys as dataset names with pre_execution/post_execution collections
-        if isinstance(node_address, str) and ":" in node_address:
-            dataset, collection = node_address.split(":", 1)
-            if collection in ["pre_execution", "post_execution"]:
-                logger.info(
-                    "Passing through manual task data for {} without filtering",
-                    node_address,
-                )
-                # Manual task data is a list of rows, so we can pass it through directly
-                filtered_access_results[node_address] = results
-                continue
+        if _is_manual_task_node(node_address):
+            logger.info(
+                "Passing through manual task data for {} without filtering",
+                node_address,
+            )
+            # Manual task data is a list of rows, so we can pass it through directly
+            filtered_access_results[node_address] = results
+            continue
 
         # Results from fides connectors are a special case:
         # they've already been filtered and stored in a dict keyed by rule key.
