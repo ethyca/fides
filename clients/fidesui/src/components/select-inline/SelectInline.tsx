@@ -1,7 +1,8 @@
 import { Select } from "antd/lib";
-import { ComponentProps } from "react";
+import React, { ComponentProps } from "react";
 
 import { CustomTag as AntTag } from "../../hoc";
+import styles from "./SelectInline.module.scss";
 
 type SelectProps = ComponentProps<typeof Select>;
 
@@ -17,8 +18,16 @@ type SelectProps = ComponentProps<typeof Select>;
  * - Responsive tag display
  * - Case-insensitive filtering
  * - No tag creation allowed (only predefined options)
- * - Custom tag rendering with small CustomTag components
+ * - Custom tag rendering with CustomTag components
+ * - Add button positioned as prefix
  */
+
+const SelectInlinePrefix = () => (
+  <div style={{ paddingTop: "1px" }}>
+    <AntTag addable color="white" className="cursor-pointer m-0 " />
+  </div>
+);
+
 export const SelectInline = ({
   mode = "multiple",
   variant = "borderless",
@@ -29,6 +38,9 @@ export const SelectInline = ({
   placeholder = "Select options...",
   style = { width: "100%" },
   size = "small",
+  prefix = <SelectInlinePrefix />,
+  suffixIcon = null,
+  className = "",
   tagRender = (props) => {
     const { label, closable, onClose } = props;
     return (
@@ -50,6 +62,9 @@ export const SelectInline = ({
     placeholder={placeholder}
     style={style}
     size={size}
+    prefix={prefix}
+    suffixIcon={suffixIcon}
+    className={`${styles.selectInline} ${className}`}
     tagRender={tagRender}
     {...props}
   />
