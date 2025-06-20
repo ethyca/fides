@@ -800,7 +800,7 @@ class TestBigQueryQueryConfigPartitioning:
         partition_clauses = query_config.get_partition_clauses()
 
         assert partition_clauses == [
-            "`created` >= CURRENT_TIMESTAMP - INTERVAL 1 WEEK AND `created` <= CURRENT_TIMESTAMP",
+            "`created` >= CURRENT_TIMESTAMP - INTERVAL 7 DAY AND `created` <= CURRENT_TIMESTAMP",
         ]
 
     def test_get_partition_clauses_many_partitions(self, dataset_graph):

@@ -57,9 +57,9 @@ class TestTimeBasedPartitioning:
             for expr in expressions
         ]
         assert compiled_expressions == [
-            "created_at >= CURRENT_TIMESTAMP - INTERVAL 3 WEEK AND created_at <= CURRENT_TIMESTAMP - INTERVAL 2 WEEK",
-            "created_at > CURRENT_TIMESTAMP - INTERVAL 2 WEEK AND created_at <= CURRENT_TIMESTAMP - INTERVAL 1 WEEK",
-            "created_at > CURRENT_TIMESTAMP - INTERVAL 1 WEEK AND created_at <= CURRENT_TIMESTAMP",
+            "created_at >= CURRENT_TIMESTAMP - INTERVAL 21 DAY AND created_at <= CURRENT_TIMESTAMP - INTERVAL 14 DAY",
+            "created_at > CURRENT_TIMESTAMP - INTERVAL 14 DAY AND created_at <= CURRENT_TIMESTAMP - INTERVAL 7 DAY",
+            "created_at > CURRENT_TIMESTAMP - INTERVAL 7 DAY AND created_at <= CURRENT_TIMESTAMP",
         ]
 
     def test_generate_expressions_with_expected_conditions(self):
@@ -79,8 +79,8 @@ class TestTimeBasedPartitioning:
         ]
 
         assert compiled_expressions == [
-            "created_at >= CURRENT_TIMESTAMP - INTERVAL 2 WEEK AND created_at <= CURRENT_TIMESTAMP - INTERVAL 1 WEEK",
-            "created_at > CURRENT_TIMESTAMP - INTERVAL 1 WEEK AND created_at <= CURRENT_TIMESTAMP",
+            "created_at >= CURRENT_TIMESTAMP - INTERVAL 14 DAY AND created_at <= CURRENT_TIMESTAMP - INTERVAL 7 DAY",
+            "created_at > CURRENT_TIMESTAMP - INTERVAL 7 DAY AND created_at <= CURRENT_TIMESTAMP",
         ]
 
     def test_generate_expressions_with_date_literals(self):
@@ -100,8 +100,8 @@ class TestTimeBasedPartitioning:
         ]
 
         assert compiled_expressions == [
-            "created_at >= DATE('2024-01-01') AND created_at <= DATE('2024-01-01') + INTERVAL 1 WEEK",
-            "created_at > DATE('2024-01-01') + INTERVAL 1 WEEK AND created_at <= DATE('2024-01-15')",
+            "created_at >= DATE('2024-01-01') AND created_at <= DATE('2024-01-01') + INTERVAL 7 DAY",
+            "created_at > DATE('2024-01-01') + INTERVAL 7 DAY AND created_at <= DATE('2024-01-15')",
         ]
 
     def test_single_partition_scenario(self):
@@ -120,7 +120,7 @@ class TestTimeBasedPartitioning:
             for expr in expressions
         ]
         assert compiled_expressions == [
-            "created_at >= CURRENT_TIMESTAMP - INTERVAL 1 WEEK AND created_at <= CURRENT_TIMESTAMP",
+            "created_at >= CURRENT_TIMESTAMP - INTERVAL 7 DAY AND created_at <= CURRENT_TIMESTAMP",
         ]
 
     def test_generate_expressions_with_non_week_intervals(self):
@@ -140,8 +140,8 @@ class TestTimeBasedPartitioning:
         ]
         # The implementation converts 7 days to 1 week
         assert compiled_expressions == [
-            "created_at >= CURRENT_TIMESTAMP - INTERVAL 10 DAY AND created_at <= CURRENT_TIMESTAMP - INTERVAL 1 WEEK",
-            "created_at > CURRENT_TIMESTAMP - INTERVAL 1 WEEK AND created_at <= CURRENT_TIMESTAMP - INTERVAL 4 DAY",
+            "created_at >= CURRENT_TIMESTAMP - INTERVAL 10 DAY AND created_at <= CURRENT_TIMESTAMP - INTERVAL 7 DAY",
+            "created_at > CURRENT_TIMESTAMP - INTERVAL 7 DAY AND created_at <= CURRENT_TIMESTAMP - INTERVAL 4 DAY",
             "created_at > CURRENT_TIMESTAMP - INTERVAL 4 DAY AND created_at <= CURRENT_TIMESTAMP - INTERVAL 1 DAY",
             "created_at > CURRENT_TIMESTAMP - INTERVAL 1 DAY AND created_at <= CURRENT_TIMESTAMP",
         ]
@@ -312,12 +312,65 @@ class TestOpenEndedPartitioning:
         compiled = str(expressions[0].compile(compile_kwargs={"literal_binds": True}))
         assert compiled == "created_at >= CURRENT_TIMESTAMP - INTERVAL 30 DAY"
 
-    def test_missing_interval_error(self):
-        """Providing both start and end without interval should raise."""
-        with pytest.raises(ValueError, match="interval must be provided"):
-            TimeBasedPartitioning(
-                field="created_at", start="2024-01-01", end="2024-01-15"
-            )
+    def test_no_interval_single_partition(self):
+        """Providing both start and end without interval should create a single partition."""
+        partitioning = TimeBasedPartitioning(
+            field="created_at", start="2024-01-01", end="2024-01-15"
+        )
+
+        expressions = partitioning.generate_expressions()
+
+        # Should generate only 1 partition covering the entire range
+        assert len(expressions) == 1
+
+        compiled_expressions = [
+            str(expr.compile(compile_kwargs={"literal_binds": True}))
+            for expr in expressions
+        ]
+
+        assert compiled_expressions == [
+            "created_at >= DATE('2024-01-01') AND created_at <= DATE('2024-01-15')"
+        ]
+
+    def test_no_interval_with_dynamic_expressions(self):
+        """Test no interval with dynamic start/end expressions."""
+        partitioning = TimeBasedPartitioning(
+            field="created_at", start="NOW() - 30 DAYS", end="TODAY()"
+        )
+
+        expressions = partitioning.generate_expressions()
+
+        # Should generate only 1 partition covering the entire range
+        assert len(expressions) == 1
+
+        compiled_expressions = [
+            str(expr.compile(compile_kwargs={"literal_binds": True}))
+            for expr in expressions
+        ]
+
+        assert compiled_expressions == [
+            "created_at >= CURRENT_TIMESTAMP - INTERVAL 30 DAY AND created_at <= CURRENT_DATE"
+        ]
+
+    def test_no_interval_mixed_expressions(self):
+        """Test no interval with literal start and dynamic end."""
+        partitioning = TimeBasedPartitioning(
+            field="_pt", start="2020-01-01", end="TODAY()"
+        )
+
+        expressions = partitioning.generate_expressions()
+
+        # Should generate only 1 partition covering the entire range
+        assert len(expressions) == 1
+
+        compiled_expressions = [
+            str(expr.compile(compile_kwargs={"literal_binds": True}))
+            for expr in expressions
+        ]
+
+        assert compiled_expressions == [
+            "_pt >= DATE('2020-01-01') AND _pt <= CURRENT_DATE"
+        ]
 
 
 class TestMonthYearIntervals:
@@ -506,6 +559,55 @@ class TestMonthYearIntervals:
         assert exprs[0].startswith("event_date >= CURRENT_DATE - INTERVAL 12 MONTH")
         assert exprs[-1].endswith("<= CURRENT_DATE")
 
+    def test_today_two_year_offsets_month_interval(self):
+        """TODAY() - 3 YEARS to TODAY() - 2 YEARS sliced monthly should emit 12 partitions."""
+
+        part = TimeBasedPartitioning(
+            field="created_at",
+            start="TODAY() - 3 YEARS",
+            end="TODAY() - 2 YEARS",
+            interval="1 month",
+        )
+
+        exprs = [
+            str(e.compile(compile_kwargs={"literal_binds": True}))
+            for e in part.generate_expressions()
+        ]
+
+        # Expect 12 partitions for the 12-month span
+        assert len(exprs) == 12
+
+        # First and last clause sanity-check
+        assert exprs[0] == (
+            "created_at >= CURRENT_DATE - INTERVAL 36 MONTH "
+            "AND created_at <= CURRENT_DATE - INTERVAL 35 MONTH"
+        )
+        assert exprs[-1] == (
+            "created_at > CURRENT_DATE - INTERVAL 25 MONTH "
+            "AND created_at <= CURRENT_DATE - INTERVAL 24 MONTH"
+        )
+
+    def test_today_month_offsets_week_interval(self):
+        """TODAY() - 3 MONTHS to TODAY() - 2 MONTHS sliced weekly should emit 4 partitions (approx)."""
+
+        part = TimeBasedPartitioning(
+            field="created_at",
+            start="TODAY() - 3 MONTHS",
+            end="TODAY() - 2 MONTHS",
+            interval="1 week",
+        )
+
+        exprs = [
+            str(e.compile(compile_kwargs={"literal_binds": True}))
+            for e in part.generate_expressions()
+        ]
+
+        assert len(exprs) == 4
+
+        # Check first and last slice boundaries (using 12 and 9 weeks offsets)
+        assert exprs[0].startswith("created_at >= CURRENT_DATE - INTERVAL 12 WEEK")
+        assert exprs[-1].endswith("<= CURRENT_DATE - INTERVAL 8 WEEK")
+
 
 class TestTodayExpressions:
     def test_today_range_slicing(self):
@@ -565,7 +667,7 @@ class TestBigQueryTimeBasedPartitioning:
         clauses = partitioning.generate_where_clauses()
         assert len(clauses) == 1
         assert clauses == [
-            "`created_at` >= CURRENT_TIMESTAMP - INTERVAL 1 WEEK AND `created_at` <= CURRENT_TIMESTAMP",
+            "`created_at` >= CURRENT_TIMESTAMP - INTERVAL 7 DAY AND `created_at` <= CURRENT_TIMESTAMP",
         ]
 
     def test_generate_where_clauses_many_partitions(self):
@@ -599,8 +701,8 @@ class TestBigQueryTimeBasedPartitioning:
         assert len(clauses) == 2
         # Now uses proper DATE() + INTERVAL syntax
         assert clauses == [
-            "`created_at` >= DATE('2024-01-01') AND `created_at` <= DATE('2024-01-01') + INTERVAL 1 WEEK",
-            "`created_at` > DATE('2024-01-01') + INTERVAL 1 WEEK AND `created_at` <= DATE('2024-01-15')",
+            "`created_at` >= DATE('2024-01-01') AND `created_at` <= DATE('2024-01-01') + INTERVAL 7 DAY",
+            "`created_at` > DATE('2024-01-01') + INTERVAL 7 DAY AND `created_at` <= DATE('2024-01-15')",
         ]
 
     def test_generate_where_clauses_open_end(self):
@@ -624,3 +726,16 @@ class TestBigQueryTimeBasedPartitioning:
         assert clauses == [
             "`created_at` <= DATE('2024-01-01')",
         ]
+
+    def test_generate_where_clauses_no_interval(self):
+        """Test BigQuery partitioning with no interval creates single partition."""
+        partitioning = BigQueryTimeBasedPartitioning(
+            field="_pt", start="2020-01-01", end="TODAY()"
+        )
+
+        clauses = partitioning.generate_where_clauses()
+
+        # Should generate only 1 partition covering the entire range
+        assert len(clauses) == 1
+
+        assert clauses == ["`_pt` >= DATE('2020-01-01') AND `_pt` <= CURRENT_DATE"]

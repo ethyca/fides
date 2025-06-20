@@ -1,9 +1,11 @@
+# pylint: disable=too-many-branches, too-many-statements, too-many-return-statements
 import re
 from datetime import datetime, timedelta
 from enum import Enum
 from typing import List, Optional, Set, Tuple
 
 from pydantic import Field, field_validator, model_validator
+from pydantic.json_schema import SkipJsonSchema
 from sqlalchemy import and_, column, func, text
 from sqlalchemy.sql import ColumnElement
 
@@ -34,8 +36,10 @@ INTERVAL_CAPTURE_REGEX = r"^(\d+)\s+(DAY|DAYS|WEEK|WEEKS|MONTH|MONTHS|YEAR|YEARS
 # Offset pattern for day/week units, captures NOW() or TODAY(), numeric value, and unit
 DAY_WEEK_OFFSET_REGEX = r"^(NOW\(\)|TODAY\(\))\s*-\s*(\d+)\s+(DAY|DAYS|WEEK|WEEKS)$"
 
-# Offset pattern for month/year units used in generate_expressions() dynamic path
-MONTH_YEAR_OFFSET_REGEX = r"^(NOW\(\)|TODAY\(\))\s*-\s*\d+\s+(MONTH|MONTHS|YEAR|YEARS)$"
+# Offset pattern for month/year units (captures base, numeric value, and unit)
+MONTH_YEAR_OFFSET_REGEX = (
+    r"^(NOW\(\)|TODAY\(\))\s*-\s*(\d+)\s+(MONTH|MONTHS|YEAR|YEARS)$"
+)
 
 
 class TimeUnit(str, Enum):
@@ -59,15 +63,29 @@ class TimeUnit(str, Enum):
 
 class TimeBasedPartitioning(FidesSchema):
     """
-    Generic time-based partitioning using pure SQLAlchemy constructs.
-    Uses datetime.timedelta for all time calculations and SQLAlchemy expressions.
+    Allows you to partition data based on time ranges using various
+    time expressions and intervals.
     """
 
-    field: str = Field(description="Column name to partition on")
-    start: Optional[str] = Field(default=None, description="Start time expression")
-    end: Optional[str] = Field(default=None, description="End time expression")
+    # Generic time-based partitioning using pure SQLAlchemy constructs.
+    # Uses datetime.timedelta for all time calculations and SQLAlchemy expressions.
+
+    field: str = Field(
+        description="Column name to partition on (e.g., `created_at`, `updated_at`)",
+    )
+
+    start: Optional[str] = Field(
+        default=None,
+        description="Start time expression. Supported formats: `NOW()`, `TODAY()`, `YYYY-MM-DD`, `YYYY-MM-DD HH:MM:SS`, or arithmetic expressions like `NOW() - 30 DAYS`.",
+    )
+
+    end: Optional[str] = Field(
+        default=None,
+        description="End time expression. Same formats as start field.",
+    )
+
     interval: Optional[str] = Field(
-        description="Interval expression (e.g. '7 days', '2 weeks')",
+        description="Interval expression defining the size of each partition in `DAY(S)`, `WEEK(S)`, `MONTH(S)`, or `YEAR(S)`.",
         default=None,
     )
 
@@ -75,7 +93,32 @@ class TimeBasedPartitioning(FidesSchema):
     # includes the lower bound (>=) or is exclusive (>).  Default is inclusive
     # and the value is *not* part of the public schema – it is manipulated by
     # helper utilities when combining multiple adjacent partitions.
-    inclusive_start: bool = Field(default=True, exclude=True, repr=False)
+    inclusive_start: SkipJsonSchema[bool] = Field(default=True, repr=False)
+
+    # Example of using model_config with json_schema_extra for schema-level examples
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "field": "created_at",
+                    "start": "NOW() - 30 DAYS",
+                    "end": "NOW()",
+                    "interval": "7 DAYS",
+                },
+                {
+                    "field": "order_date",
+                    "start": "2024-01-01",
+                    "end": "2024-12-31",
+                    "interval": "1 MONTH",
+                },
+                {
+                    "field": "event_timestamp",
+                    "start": "TODAY() - 1 YEAR",
+                    "interval": "1 WEEK",
+                },
+            ]
+        }
+    }
 
     # ---------------------------------------------------------------------
     # Validators
@@ -116,16 +159,11 @@ class TimeBasedPartitioning(FidesSchema):
 
     @model_validator(mode="after")
     def validate_bounds_and_interval(self) -> "TimeBasedPartitioning":
-        """Ensure an interval is supplied when both start and end are provided."""
+        """Ensure at least one bound is provided."""
         # At least one bound must be supplied.
         if self.start is None and self.end is None:
             raise ValueError("At least one of 'start' or 'end' must be provided.")
 
-        # If both bounds are supplied, an interval is mandatory.
-        if self.start is not None and self.end is not None and self.interval is None:
-            raise ValueError(
-                "An interval must be provided when both start and end are specified."
-            )
         return self
 
     # ---------------------------------------------------------------------
@@ -161,16 +199,13 @@ class TimeBasedPartitioning(FidesSchema):
         )
 
     def _timedelta_to_interval(self, time_delta: timedelta) -> str:
-        """Return a SQL `INTERVAL` clause for the supplied `timedelta`.
-
-        Chooses `WEEK` when the timedelta is a clean multiple of seven days,
-        otherwise falls back to `DAY`.
-        """
+        """Return a SQL `INTERVAL` clause for the supplied `timedelta`."""
         total_days = int(time_delta.total_seconds() / 86400)  # 86400 seconds in a day
 
-        # Prefer weeks when divisible cleanly to keep expressions compact
-        if total_days % 7 == 0 and total_days >= 7:
-            return self.format_interval(total_days // 7, TimeUnit.WEEK)
+        # Keep it in weeks if the interval is in weeks
+        if self.interval and "WEEK" in self.interval:
+            if total_days % 7 == 0 and total_days >= 7:
+                return self.format_interval(total_days // 7, TimeUnit.WEEK)
 
         return self.format_interval(total_days, TimeUnit.DAY)
 
@@ -234,6 +269,10 @@ class TimeBasedPartitioning(FidesSchema):
         start_offset_match = re.match(DAY_WEEK_OFFSET_REGEX, start_str)
         end_offset_match = re.match(DAY_WEEK_OFFSET_REGEX, end_str)
 
+        # Additional pattern for MONTH/YEAR offsets so day/week interval slices can still be generated
+        start_monthyear_match = re.match(MONTH_YEAR_OFFSET_REGEX, start_str)
+        end_monthyear_match = re.match(MONTH_YEAR_OFFSET_REGEX, end_str)
+
         # Case 1: start is offset, end is the base (NOW()/TODAY())
         if start_offset_match and end_str == start_offset_match.group(1):
             value = int(start_offset_match.group(2))
@@ -275,6 +314,39 @@ class TimeBasedPartitioning(FidesSchema):
                     if unit in ["WEEK", "WEEKS"]
                     else timedelta(days=total)
                 )
+
+        # Case 3: MONTH/YEAR offsets with DAY/WEEK interval requirements
+        if start_monthyear_match:
+            base_func = start_monthyear_match.group(1)
+            start_val_raw = int(start_monthyear_match.group(2))
+            start_unit_raw = start_monthyear_match.group(3)
+
+            # Helper: convert raw month/year units into calendar months
+            def _units_to_months(value: int, unit_raw: str) -> int:
+                return value * (12 if unit_raw.startswith("YEAR") else 1)
+
+            # If end is just the base (TODAY()/NOW())
+            if end_str == base_func:
+                total_months = _units_to_months(start_val_raw, start_unit_raw)
+            # If end is another offset with same base
+            elif end_monthyear_match and end_monthyear_match.group(1) == base_func:
+                end_val_raw = int(end_monthyear_match.group(2))
+                end_unit_raw = end_monthyear_match.group(3)
+
+                start_months = _units_to_months(start_val_raw, start_unit_raw)
+                end_months = _units_to_months(end_val_raw, end_unit_raw)
+
+                if start_months <= end_months:
+                    raise ValueError("`start` offset must be greater than `end` offset")
+
+                # Use *start* offset as total duration so generator walks down toward end bound
+                total_months = start_months
+            else:
+                total_months = None
+
+            if total_months is not None:
+                # Approximate months as 4 weeks each for timedelta purposes
+                return timedelta(weeks=total_months * 4)
 
         # Static literal YYYY-MM-DD date ranges
         if _is_date_literal(start_str) and _is_date_literal(end_str):
@@ -351,6 +423,39 @@ class TimeBasedPartitioning(FidesSchema):
                     if TimeUnit.parse(unit_raw) == TimeUnit.WEEK
                     else timedelta(days=numeric_val)
                 )
+
+            # Extend dynamic_end_match for month/year offsets as weeks approximation
+            if dynamic_end_match is None:
+                dynamic_end_match = re.match(MONTH_YEAR_OFFSET_REGEX, end_str)
+
+            def _offset_to_timedelta(match_obj: Optional[re.Match]) -> timedelta:
+                """Convert an offset regex match into a timedelta (weeks/days).
+
+                For month/year units we approximate: month≈4 weeks, year≈52 weeks.
+                """
+
+                if match_obj is None:
+                    return timedelta(0)
+
+                numeric_val = int(match_obj.group(2))
+                unit_raw = match_obj.group(3)
+
+                unit_enum = TimeUnit.parse(unit_raw)
+
+                if unit_enum is TimeUnit.WEEK:
+                    return timedelta(weeks=numeric_val)
+                if unit_enum is TimeUnit.DAY:
+                    return timedelta(days=numeric_val)
+
+                # Approximate month/year for slicing purposes
+                if unit_enum is TimeUnit.MONTH:
+                    return timedelta(weeks=numeric_val * 4)
+                if unit_enum is TimeUnit.YEAR:
+                    return timedelta(weeks=numeric_val * 52)
+
+                return timedelta(0)
+
+            end_offset_bound = _offset_to_timedelta(dynamic_end_match)
 
             # Iterate from the starting offset (total_duration) backward toward
             # the end offset, generating non-overlapping slices until just before
@@ -520,67 +625,117 @@ class TimeBasedPartitioning(FidesSchema):
         """
 
         start_str = self.start or ""
+        end_str = self.end or ""
 
-        now_match = re.match(
-            r"^NOW\(\)\s*-\s*(\d+)\s+(MONTH|MONTHS|YEAR|YEARS)$", start_str
-        )
-        today_match = re.match(
-            r"^TODAY\(\)\s*-\s*(\d+)\s+(MONTH|MONTHS|YEAR|YEARS)$", start_str
-        )
+        # --- START PATTERN MATCHES -------------------------------------------------
+        # - Scenario A: start is offset, end is TODAY()/NOW()
+        # - Scenario B: start and end are both offsets from the same base (NOW/TODAY)
 
-        if now_match is None and today_match is None:
+        start_match = re.match(MONTH_YEAR_OFFSET_REGEX, start_str)
+        if start_match is None:
             return None
 
-        match = now_match or today_match
-        assert match is not None  # mypy: proven by earlier guard
+        end_match = re.match(MONTH_YEAR_OFFSET_REGEX, end_str)
 
-        raw_units = int(match.group(1))
-        offset_unit_enum = TimeUnit.parse(match.group(2))
+        base_func_name = start_match.group(1)  # NOW or TODAY
+        start_units_raw = int(start_match.group(2))
+        start_unit_enum = TimeUnit.parse(start_match.group(3))
 
-        # Convert the offset into the *interval* unit (month vs year)
-        if offset_unit_enum is unit:  # same unit (month→month or year→year)
-            total_units = raw_units
-        elif offset_unit_enum is TimeUnit.YEAR and unit is TimeUnit.MONTH:
-            total_units = raw_units * 12
-        else:
-            # Unsupported mismatch (e.g., offset in months but interval in years)
-            return None
+        use_current_date = base_func_name == "TODAY()"
 
-        if total_units % value != 0:
-            return None  # not evenly divisible
+        # Helper to convert raw units (possibly years) into desired interval unit count
+        def _convert_units(raw_units: int, raw_unit_enum: TimeUnit) -> Optional[int]:
+            if raw_unit_enum is unit:
+                return raw_units
+            if raw_unit_enum is TimeUnit.YEAR and unit is TimeUnit.MONTH:
+                return raw_units * 12
+            return None  # unsupported mismatch
 
-        use_current_date = today_match is not None
-
-        iterations = total_units // value
         conditions: List[ColumnElement] = []
-        inclusive_start = self.inclusive_start  # First slice always inclusive
 
-        for i in range(iterations):
-            start_offset_units = total_units - (i * value)
-            end_offset_units = start_offset_units - value
+        # Scenario A: `... TO NOW()/TODAY()`
+        if (
+            end_match is None
+            or end_match.group(1) == base_func_name
+            and int(end_match.group(2)) == 0
+        ):
+            total_units = _convert_units(start_units_raw, start_unit_enum)
+            if total_units is None or total_units % value != 0:
+                return None
 
+            iterations = total_units // value
+            inclusive_start = self.inclusive_start
             base_expr = (
                 func.current_date() if use_current_date else func.current_timestamp()
             )
 
-            start_expr = base_expr - text(
-                self.format_interval(start_offset_units, unit)
-            )
-            end_expr = (
-                base_expr
-                if end_offset_units == 0
-                else base_expr - text(self.format_interval(end_offset_units, unit))
+            for i in range(iterations):
+                start_offset_units = total_units - (i * value)
+                end_offset_units = start_offset_units - value
+
+                start_expr = base_expr - text(
+                    self.format_interval(start_offset_units, unit)
+                )
+                end_expr = (
+                    base_expr
+                    if end_offset_units == 0
+                    else base_expr - text(self.format_interval(end_offset_units, unit))
+                )
+
+                start_op = (
+                    field_column >= start_expr
+                    if inclusive_start
+                    else field_column > start_expr
+                )
+                conditions.append(and_(start_op, field_column <= end_expr))
+                inclusive_start = False
+
+            return conditions
+
+        # Scenario B: both start and end are offsets
+        if end_match is not None and end_match.group(1) == base_func_name:
+            end_units_raw = int(end_match.group(2))
+            end_unit_enum = TimeUnit.parse(end_match.group(3))
+
+            start_units_converted = _convert_units(start_units_raw, start_unit_enum)
+            end_units_converted = _convert_units(end_units_raw, end_unit_enum)
+            if (
+                start_units_converted is None
+                or end_units_converted is None
+                or start_units_converted <= end_units_converted
+            ):
+                return None
+
+            total_units = start_units_converted - end_units_converted
+            if total_units % value != 0:
+                return None
+
+            iterations = total_units // value
+            inclusive_start = self.inclusive_start
+            base_expr = (
+                func.current_date() if use_current_date else func.current_timestamp()
             )
 
-            start_op = (
-                field_column >= start_expr
-                if inclusive_start
-                else field_column > start_expr
-            )
-            conditions.append(and_(start_op, field_column <= end_expr))
-            inclusive_start = False
+            for i in range(iterations):
+                slice_start_units = start_units_converted - (i * value)
+                slice_end_units = slice_start_units - value
 
-        return conditions
+                start_expr = base_expr - text(
+                    self.format_interval(slice_start_units, unit)
+                )
+                end_expr = base_expr - text(self.format_interval(slice_end_units, unit))
+
+                start_op = (
+                    field_column >= start_expr
+                    if inclusive_start
+                    else field_column > start_expr
+                )
+                conditions.append(and_(start_op, field_column <= end_expr))
+                inclusive_start = False
+
+            return conditions
+
+        return None  # Fallback to other generation paths
 
     def _generate_literal_to_now_month_year_slices(
         self,
@@ -692,27 +847,28 @@ class TimeBasedPartitioning(FidesSchema):
             )
 
         if self.interval is None:
-            raise ValueError(
-                "An interval must be provided when both start and end are specified."
+            # No interval specified - return a single condition covering the entire range
+            start_expr = self._parse_time_expression(self.start)
+            end_expr = self._parse_time_expression(self.end)
+            start_op = (
+                field_column >= start_expr
+                if self.inclusive_start
+                else field_column > start_expr
             )
+            return [and_(start_op, field_column <= end_expr)]
 
         # Determine interval value and unit (Enum)
         interval_value, interval_unit = self._split_interval()
 
         if interval_unit in (TimeUnit.MONTH, TimeUnit.YEAR):
-            start_str = self.start or ""
             end_str = self.end or ""
 
-            # Dynamic NOW()/TODAY() -> NOW()/TODAY() path
-            if re.match(MONTH_YEAR_OFFSET_REGEX, start_str) and end_str in (
-                "NOW()",
-                "TODAY()",
-            ):
-                dynamic_expressions = self._generate_dynamic_month_year_slices(
-                    field_column, interval_value, interval_unit
-                )
-                if dynamic_expressions is not None:
-                    return dynamic_expressions
+            # Try dynamic slice generation for various NOW()/TODAY() offset scenarios.
+            dynamic_expressions = self._generate_dynamic_month_year_slices(
+                field_column, interval_value, interval_unit
+            )
+            if dynamic_expressions is not None:
+                return dynamic_expressions
 
             # Literal start -> NOW()/TODAY() end
             if _is_date_literal(self.start) and end_str in ("NOW()", "TODAY()"):
@@ -720,6 +876,7 @@ class TimeBasedPartitioning(FidesSchema):
                     field_column, interval_value, interval_unit
                 )
 
+            # Fallback to calendar slicing when both bounds are literals
             return self._generate_calendar_slices(
                 field_column, interval_value, interval_unit
             )
