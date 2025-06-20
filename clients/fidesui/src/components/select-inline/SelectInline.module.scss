@@ -1,3 +1,8 @@
 .selectInline {
   --ant-padding-sm: 0 !important;
+  --ant-select-multiple-selector-bg-disabled: transparent !important;
+
+  .ant-select-selector {
+    cursor: default !important;
+  }
 }

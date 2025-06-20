@@ -1,5 +1,5 @@
 import { Select } from "antd/lib";
-import React, { ComponentProps } from "react";
+import React, { ComponentProps, useState } from "react";
 
 import { CustomTag as AntTag } from "../../hoc";
 import styles from "./SelectInline.module.scss";
@@ -15,7 +15,7 @@ type SelectProps = ComponentProps<typeof Select>;
  * - Multiple selection mode enabled
  * - Borderless variant for inline appearance
  * - Search functionality enabled
- * - Responsive tag display
+ * - Responsive tag display with expandable "Show more" functionality
  * - Case-insensitive filtering
  * - No tag creation allowed (only predefined options)
  * - Custom tag rendering with CustomTag components
@@ -35,7 +35,7 @@ export const SelectInline = ({
   variant = "borderless",
   showSearch = true,
   maxTagCount = "responsive",
-  maxTagPlaceholder = (omittedValues) => `+ ${omittedValues.length} more`,
+  maxTagPlaceholder,
   filterOption = (input, option) =>
     option?.label?.toLowerCase().includes(input.toLowerCase()) ?? false,
   placeholder = "Select options...",
@@ -60,21 +60,30 @@ export const SelectInline = ({
     );
   },
   ...props
-}: SelectProps & { readonly?: boolean }) => (
-  <Select
-    mode={mode}
-    variant={variant}
-    showSearch={showSearch}
-    maxTagCount={maxTagCount}
-    maxTagPlaceholder={maxTagPlaceholder}
-    filterOption={filterOption}
-    placeholder={placeholder}
-    style={style}
-    size={size}
-    prefix={readonly ? null : prefix}
-    suffixIcon={suffixIcon}
-    className={`${styles.selectInline} ${className}`}
-    tagRender={tagRender}
-    {...props}
-  />
-);
+}: SelectProps & { readonly?: boolean }) => {
+  const [expanded, setExpanded] = useState(false);
+
+  const customMaxTagPlaceholder =
+    maxTagPlaceholder || ((omittedValues) => `+ ${omittedValues.length} more`);
+
+  return (
+    <Select
+      mode={mode}
+      variant={variant}
+      showSearch={readonly ? false : showSearch}
+      maxTagCount={expanded ? undefined : maxTagCount}
+      maxTagPlaceholder={customMaxTagPlaceholder}
+      filterOption={filterOption}
+      placeholder={placeholder}
+      style={style}
+      size={size}
+      prefix={readonly ? null : prefix}
+      suffixIcon={suffixIcon}
+      className={`${styles.selectInline} ${className}`}
+      tagRender={tagRender}
+      onClick={() => readonly && setExpanded(true)}
+      disabled={readonly}
+      {...props}
+    />
+  );
+};

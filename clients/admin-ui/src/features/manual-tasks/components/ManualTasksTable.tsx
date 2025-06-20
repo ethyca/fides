@@ -136,6 +136,7 @@ const getColumns = (
           value={currentAssignedUserIds}
           onChange={handleChange}
           options={userOptions}
+          // readonly
         />
       );
     },
