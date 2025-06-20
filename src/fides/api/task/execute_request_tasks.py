@@ -530,6 +530,19 @@ def run_erasure_node(
                         graph_task.erasure_request(retrieved_data)
                         # Mark task as complete since it executed without error
                         request_task.update_status(session, ExecutionLogStatus.complete)
+                elif request_task.is_terminator_task:
+                    # Special handling for terminator tasks - queue downstream even if not complete
+                    logger.info(
+                        "Terminator task {} reached, queueing downstream tasks",
+                        request_task.collection_address,
+                    )
+                    queue_downstream_tasks_with_retries(
+                        self,
+                        privacy_request_id,
+                        privacy_request_task_id,
+                        CurrentStep.finalize_erasure,
+                        privacy_request_proceed,
+                    )
 
                 # Only queue downstream tasks if this task completed successfully
                 if request_task.status == ExecutionLogStatus.complete:

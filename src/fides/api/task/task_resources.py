@@ -151,10 +151,19 @@ class ManualTaskConnector(BaseConnector):
         # This is based on the data_for_erasures field
         if existing_request_task.action_type == ActionType.erasure:
             data_for_erasures = existing_request_task.data_for_erasures
-            if data_for_erasures and isinstance(data_for_erasures, list):
-                # Return the count of records that were processed
-                # Each item in the list represents a record that was processed
-                return len(data_for_erasures)
+            if data_for_erasures:
+                # For manual tasks, data_for_erasures is a dictionary with the collection address as key
+                # and a list of task data objects as value
+                if isinstance(data_for_erasures, dict):
+                    # Get the list of task data for this collection address
+                    task_data_list = data_for_erasures.get(node.address, [])
+                    if isinstance(task_data_list, list):
+                        # Return the count of records that were processed
+                        # Each item in the list represents a record that was processed
+                        return len(task_data_list)
+                elif isinstance(data_for_erasures, list):
+                    # Fallback for backward compatibility
+                    return len(data_for_erasures)
             return 0
 
         # For non-erasure tasks, return 0 since no masking is done
