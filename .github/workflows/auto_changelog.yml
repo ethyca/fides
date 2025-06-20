@@ -1,0 +1,207 @@
+name: Auto Changelog Update
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+jobs:
+  update-changelog:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Parse PR title and update changelog
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_LABELS: ${{ toJson(github.event.pull_request.labels) }}
+        run: |
+          python3 << 'EOF'
+          import os
+          import re
+          import json
+          from datetime import datetime
+
+          # Get environment variables
+          pr_title = os.environ['PR_TITLE']
+          pr_number = os.environ['PR_NUMBER']
+          pr_url = os.environ['PR_URL']
+          pr_labels_json = os.environ['PR_LABELS']
+
+          # Parse labels
+          try:
+              pr_labels = json.loads(pr_labels_json)
+              label_names = [label['name'] for label in pr_labels]
+          except:
+              label_names = []
+
+          # Define category mapping based on PR title prefixes
+          category_mapping = {
+              'feat': 'Added',
+              'add': 'Added',
+              'feature': 'Added',
+              'fix': 'Fixed',
+              'bug': 'Fixed',
+              'change': 'Changed',
+              'update': 'Changed',
+              'modify': 'Changed',
+              'refactor': 'Changed',
+              'deprecate': 'Deprecated',
+              'remove': 'Removed',
+              'delete': 'Removed',
+              'doc': 'Docs',
+              'docs': 'Docs',
+              'security': 'Security',
+              'dev': 'Developer Experience',
+              'devexp': 'Developer Experience',
+              'dx': 'Developer Experience'
+          }
+
+          # Function to determine category from PR title
+          def determine_category(title):
+              title_lower = title.lower()
+
+              # Check for explicit category prefixes (e.g., "feat:", "fix:", etc.)
+              for prefix, category in category_mapping.items():
+                  if title_lower.startswith(f"{prefix}:") or title_lower.startswith(f"{prefix}("):
+                      return category
+
+              # Check for keywords anywhere in the title
+              if any(word in title_lower for word in ['add', 'implement', 'introduce', 'create']):
+                  return 'Added'
+              elif any(word in title_lower for word in ['fix', 'resolve', 'correct', 'repair']):
+                  return 'Fixed'
+              elif any(word in title_lower for word in ['update', 'change', 'modify', 'refactor', 'improve']):
+                  return 'Changed'
+              elif any(word in title_lower for word in ['remove', 'delete']):
+                  return 'Removed'
+              elif any(word in title_lower for word in ['doc', 'documentation']):
+                  return 'Docs'
+              elif any(word in title_lower for word in ['deprecate']):
+                  return 'Deprecated'
+              elif any(word in title_lower for word in ['security', 'vulnerability']):
+                  return 'Security'
+              else:
+                  return 'Changed'  # Default category
+
+          # Clean up PR title for changelog entry
+          def clean_title(title):
+              # Remove common prefixes
+              title = re.sub(r'^(feat|fix|add|feature|bug|change|update|modify|refactor|remove|delete|doc|docs|security|dev|devexp|dx)[\(\:]?\s*', '', title, flags=re.IGNORECASE)
+              # Remove scope in parentheses at the beginning
+              title = re.sub(r'^\([^)]+\):\s*', '', title)
+              # Ensure title starts with capital letter
+              if title:
+                  title = title[0].upper() + title[1:] if len(title) > 1 else title.upper()
+              return title
+
+          # Determine category and clean title
+          category = determine_category(pr_title)
+          clean_title_text = clean_title(pr_title)
+
+          # Build the changelog entry
+          changelog_entry = f"- {clean_title_text} [#{pr_number}]({pr_url})"
+
+          # Add special labels if present
+          special_labels = []
+          for label in label_names:
+              if label in ['high-risk', 'db-migration']:
+                  special_labels.append(f"https://github.com/ethyca/fides/labels/{label}")
+
+          if special_labels:
+              changelog_entry += " " + " ".join(special_labels)
+
+          print(f"Category: {category}")
+          print(f"Entry: {changelog_entry}")
+
+          # Read current changelog
+          with open('CHANGELOG.md', 'r') as f:
+              content = f.read()
+
+          # Find the Unreleased section
+          unreleased_pattern = r'(## \[Unreleased\].*?\n)(.*?)(\n## \[)'
+          match = re.search(unreleased_pattern, content, re.DOTALL)
+
+          if not match:
+              print("Could not find Unreleased section in CHANGELOG.md")
+              exit(1)
+
+          unreleased_header = match.group(1)
+          unreleased_content = match.group(2)
+          next_section = match.group(3)
+
+          # Parse existing unreleased content
+          sections = {}
+          current_section = None
+          lines = unreleased_content.strip().split('\n')
+
+          for line in lines:
+              if line.startswith('### '):
+                  current_section = line[4:].strip()
+                  sections[current_section] = []
+              elif line.strip() and current_section:
+                  sections[current_section].append(line)
+
+          # Add new entry to appropriate section
+          if category not in sections:
+              sections[category] = []
+          sections[category].append(changelog_entry)
+
+          # Rebuild unreleased section
+          section_order = ['Added', 'Changed', 'Developer Experience', 'Deprecated', 'Docs', 'Removed', 'Fixed', 'Security']
+          new_unreleased_content = []
+
+          for section_name in section_order:
+              if section_name in sections and sections[section_name]:
+                  new_unreleased_content.append(f"### {section_name}")
+                  new_unreleased_content.extend(sections[section_name])
+                  new_unreleased_content.append("")  # Empty line after section
+
+          # Remove trailing empty line
+          if new_unreleased_content and new_unreleased_content[-1] == "":
+              new_unreleased_content.pop()
+
+          # Reconstruct the changelog
+          new_unreleased_section = "\n".join(new_unreleased_content)
+          new_content = content.replace(
+              unreleased_header + unreleased_content + next_section,
+              unreleased_header + new_unreleased_section + "\n" + next_section
+          )
+
+          # Write updated changelog
+          with open('CHANGELOG.md', 'w') as f:
+              f.write(new_content)
+
+          print("Successfully updated CHANGELOG.md")
+          EOF
+
+      - name: Commit changelog update
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add CHANGELOG.md
+
+          # Check if there are changes to commit
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Auto-update changelog for PR #${{ github.event.pull_request.number }}"
+            git push
+          fi

@@ -117,19 +117,6 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
             except Exception:
                 logger.exception("Unable to load {} connector", template.key)
 
-    @staticmethod
-    def _replacement_available(template: CustomConnectorTemplate) -> bool:
-        """
-        Check the connector templates in the FileConnectorTemplateLoader and return if a newer version is available.
-        """
-        replacement_connector = (
-            FileConnectorTemplateLoader.get_connector_templates().get(template.key)
-        )
-        if not replacement_connector:
-            return False
-
-        return True
-
     @classmethod
     def _register_template(
         cls,
