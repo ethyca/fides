@@ -191,13 +191,10 @@ export const getInitialFidesFromConsentCookie = ({
  */
 export const initialize = async ({
   fides,
-  options,
-  geolocation,
   initOverlay,
   renderOverlay,
   updateExperience,
   overrides,
-  propertyId,
 }: {
   fides: FidesGlobal;
   initOverlay?: (
@@ -214,7 +211,12 @@ export const initialize = async ({
     props: UpdateExperienceProps,
   ) => Partial<PrivacyExperience>;
   overrides?: Partial<FidesOverrides>;
-} & FidesConfig): Promise<Partial<FidesGlobal>> => {
+}): Promise<Partial<FidesGlobal>> => {
+  const { config } = fides;
+  if (!config) {
+    throw new Error("Fides config should be initialized");
+  }
+  const { options, geolocation } = config;
   let shouldContinueInitOverlay: boolean = true;
   let fidesRegionString: string | undefined;
   let getModalLinkLabel: FidesGlobal["getModalLinkLabel"] = () =>
@@ -264,7 +266,7 @@ export const initialize = async ({
         fidesApiUrl: options.fidesApiUrl,
         apiOptions: options.apiOptions,
         requestMinimalTCF: false,
-        propertyId,
+        propertyId: fides.config?.propertyId,
       });
     }
 
@@ -296,9 +298,9 @@ export const initialize = async ({
       /**
        * If the config has a property_id, we add it to the experience to indicate
        */
-      if (propertyId) {
+      if (fides.config?.propertyId) {
         // eslint-disable-next-line no-param-reassign
-        fides.experience.property_id = propertyId;
+        fides.experience.property_id = fides.config.propertyId;
       }
 
       /**
