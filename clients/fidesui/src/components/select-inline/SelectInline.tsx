@@ -19,7 +19,9 @@ type SelectProps = ComponentProps<typeof Select>;
  * - Case-insensitive filtering
  * - No tag creation allowed (only predefined options)
  * - Custom tag rendering with CustomTag components
- * - Add button positioned as prefix
+ * - Add button positioned as prefix (hidden in readonly mode)
+ * - Custom "+ X more" placeholder for overflow tags
+ * - Readonly mode that disables editing and hides interactive elements
  */
 
 const SelectInlinePrefix = () => (
@@ -33,6 +35,7 @@ export const SelectInline = ({
   variant = "borderless",
   showSearch = true,
   maxTagCount = "responsive",
+  maxTagPlaceholder = (omittedValues) => `+ ${omittedValues.length} more`,
   filterOption = (input, option) =>
     option?.label?.toLowerCase().includes(input.toLowerCase()) ?? false,
   placeholder = "Select options...",
@@ -41,28 +44,34 @@ export const SelectInline = ({
   prefix = <SelectInlinePrefix />,
   suffixIcon = null,
   className = "",
+  readonly = false,
   tagRender = (props) => {
     const { label, closable, onClose } = props;
     return (
       <div className="mr-1">
-        <AntTag color="white" closable={closable} onClose={onClose}>
+        <AntTag
+          color="white"
+          closable={readonly ? false : closable}
+          onClose={onClose}
+        >
           {label}
         </AntTag>
       </div>
     );
   },
   ...props
-}: SelectProps) => (
+}: SelectProps & { readonly?: boolean }) => (
   <Select
     mode={mode}
     variant={variant}
     showSearch={showSearch}
     maxTagCount={maxTagCount}
+    maxTagPlaceholder={maxTagPlaceholder}
     filterOption={filterOption}
     placeholder={placeholder}
     style={style}
     size={size}
-    prefix={prefix}
+    prefix={readonly ? null : prefix}
     suffixIcon={suffixIcon}
     className={`${styles.selectInline} ${className}`}
     tagRender={tagRender}

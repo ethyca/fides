@@ -1,7 +1,5 @@
 import type { ColumnsType } from "antd/es/table";
 import {
-  AntButton as Button,
-  AntSpace as Space,
   AntTable as Table,
   AntTag as Tag,
   AntTypography as Typography,
@@ -141,54 +139,7 @@ const getColumns = (
         />
       );
     },
-    filterDropdown: ({
-      setSelectedKeys,
-      selectedKeys,
-      confirm,
-      clearFilters,
-    }) => {
-      const userOptions = allUsers.map((user) => ({
-        label:
-          `${user.first_name || ""} ${user.last_name || ""}`.trim() ||
-          user.username ||
-          user.email_address ||
-          "Unknown User",
-        value: user.id,
-      }));
 
-      return (
-        <div style={{ padding: 8, width: 300 }}>
-          <SelectInline
-            placeholder="Filter by users..."
-            value={selectedKeys as string[]}
-            onChange={(values) => setSelectedKeys(values as React.Key[])}
-            options={userOptions}
-            style={{ marginBottom: 8, display: "block" }}
-          />
-          <Space>
-            <Button
-              type="primary"
-              onClick={() => confirm()}
-              size="small"
-              style={{ width: 90 }}
-            >
-              Filter
-            </Button>
-            <Button
-              onClick={() => {
-                clearFilters?.();
-                setSelectedKeys([]);
-                confirm();
-              }}
-              size="small"
-              style={{ width: 90 }}
-            >
-              Reset
-            </Button>
-          </Space>
-        </div>
-      );
-    },
     onFilter: (value, record) =>
       record.assigned_users.some((user) => user.id === value),
   },
