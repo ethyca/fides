@@ -30,6 +30,7 @@ from fides.api.models.privacy_request import (
     TraversalDetails,
 )
 from fides.api.models.worker_task import ExecutionLogStatus
+from fides.api.schemas.manual_tasks.manual_task_schemas import MANUAL_TASK_COLLECTIONS
 from fides.api.schemas.policy import ActionType
 from fides.api.task.deprecated_graph_task import format_data_use_map_for_caching
 from fides.api.task.execute_request_tasks import log_task_queued, queue_request_task
@@ -55,11 +56,13 @@ def build_access_networkx_digraph(
     traversal: Traversal,
 ) -> networkx.DiGraph:
     """
-    DSR 3.0: Builds an access networkx graph to get consistent formatting of nodes to build the Request Tasks,
+    DSR 3.0: Builds a networkx graph of access nodes to get consistent formatting of nodes to build the Request Tasks,
     regardless of whether node is real or artificial.
 
-    Primarily though, this lets us use networkx.descendants to calculate every node that can be reached from the current
-    node to more easily mark downstream nodes as failed if the current node fails.
+    Access graphs are different from erasure graphs, in that we need to query data in the correct order
+    based on data dependencies. We use the traversal to determine the correct order.
+
+    We tack on the "after" dependencies here that aren't captured in traversal.traverse.
     """
     networkx_graph = networkx.DiGraph()
     networkx_graph.add_nodes_from(traversal_nodes.keys())
@@ -69,23 +72,41 @@ def build_access_networkx_digraph(
     # Therefore, they are all immediately downstream of the root.
     first_nodes: Dict[FieldAddress, str] = traversal.extract_seed_field_addresses()
 
+    # Connect root to first nodes
     for node in [
         CollectionAddress(initial_node.dataset, initial_node.collection)
         for initial_node in first_nodes
     ]:
         networkx_graph.add_edge(ROOT_COLLECTION_ADDRESS, node)
 
-    for collection_address, traversal_node in traversal_nodes.items():
-        for child in traversal_node.children:
-            # For every node, add a downstream edge to its children
-            # that were calculated in traversal.traverse
-            networkx_graph.add_edge(collection_address, child)
+    # Connect all non-first nodes to their dependencies
+    for node_name, traversal_node in traversal_nodes.items():
+        if node_name not in [n.value for n in first_nodes]:
+            for input_key in traversal_node.input_keys:
+                networkx_graph.add_edge(input_key, node_name)
 
+    # Add debugging to see what edges are being created
+    logger.info("NetworkX graph edges before terminator connections:")
+    for edge in networkx_graph.edges():
+        logger.info(f"  {edge[0]} -> {edge[1]}")
+
+    # Connect all end nodes to terminator, but exclude manual task nodes
+    # Manual task nodes handle their own connections to the terminator
     for node in end_nodes:
-        # Connect the end nodes, those that have no downstream dependencies, to the terminator node
-        networkx_graph.add_edge(node, TERMINATOR_ADDRESS)
+        # Skip manual task nodes - they handle their own terminator connections
+        # Skip the terminator node itself - it should never connect to itself
+        if (
+            node.collection not in MANUAL_TASK_COLLECTIONS.values()
+            and node != TERMINATOR_ADDRESS
+        ):
+            logger.info(f"Connecting end node {node} to terminator")
+            networkx_graph.add_edge(node, TERMINATOR_ADDRESS)
 
-    _add_edge_if_no_nodes(traversal_nodes, networkx_graph)
+    # Add debugging to see final edges
+    logger.info("NetworkX graph edges after terminator connections:")
+    for edge in networkx_graph.edges():
+        logger.info(f"  {edge[0]} -> {edge[1]}")
+
     return networkx_graph
 
 
@@ -96,20 +117,34 @@ def _evaluate_erasure_dependencies(
     Return a set of collection addresses corresponding to collections that need
     to be erased before the given task.
 
-    Remove the dependent collection addresses
-    from `end_nodes` so they can be executed in the correct order. If a task does
-    not have any dependencies it is linked directly to the root node
+    If a task does not have any dependencies it is linked directly to the root node
     """
-    erase_after = traversal_node.node.collection.erase_after
-    for collection in erase_after:
-        if collection in end_nodes:
-            # end_node list is modified in place
-            end_nodes.remove(collection)
+    erase_after = (
+        traversal_node.node.collection.erase_after.copy()
+    )  # Create a copy to avoid modifying original
+
+    # Debug logging
+    logger.info(
+        f"Processing erase_after for node {traversal_node.address}: {erase_after}"
+    )
+    logger.info(f"Available end_nodes: {end_nodes}")
+
+    # The erase_after values are already CollectionAddress objects
+    erase_after_addresses = set(erase_after)
+
     # this task will execute after the collections in `erase_after` or
     # execute at the beginning by linking it to the root node
-    if len(erase_after):
-        erase_after.add(ROOT_COLLECTION_ADDRESS)
-    return erase_after if len(erase_after) else {ROOT_COLLECTION_ADDRESS}
+    if erase_after_addresses:
+        # Include both root and erase_after dependencies
+        erase_after_addresses.add(ROOT_COLLECTION_ADDRESS)
+        logger.info(
+            f"Final dependencies for {traversal_node.address}: {erase_after_addresses}"
+        )
+        return erase_after_addresses
+    logger.info(
+        f"No erase_after dependencies for {traversal_node.address}, returning root only"
+    )
+    return {ROOT_COLLECTION_ADDRESS}
 
 
 def build_erasure_networkx_digraph(
@@ -124,36 +159,56 @@ def build_erasure_networkx_digraph(
     graphs, so that all nodes can in theory run entirely in parallel, except for the "erase_after" dependencies.
 
     We tack on the "erase_after" dependencies here that aren't captured in traversal.traverse.
-
     """
+    # Filter out manual task nodes from traversal_nodes to prevent cycles
+    filtered_traversal_nodes = {
+        node_name: traversal_node
+        for node_name, traversal_node in traversal_nodes.items()
+        if node_name.collection not in MANUAL_TASK_COLLECTIONS.values()
+    }
+
+    # Filter out TERMINATOR_ADDRESS from end_nodes to prevent self-loops
+    filtered_end_nodes = [
+        node
+        for node in end_nodes
+        if node != TERMINATOR_ADDRESS
+        and node.collection not in MANUAL_TASK_COLLECTIONS.values()
+    ]
+
     networkx_graph = networkx.DiGraph()
-    networkx_graph.add_nodes_from(traversal_nodes.keys())
+    networkx_graph.add_nodes_from(filtered_traversal_nodes.keys())
     networkx_graph.add_nodes_from(ARTIFICIAL_NODES)
 
-    for node_name, traversal_node in traversal_nodes.items():
-        # Add an edge from the root node to the current node, unless explicit erasure
-        # dependencies are defined. Modifies end_nodes in place
+    # Connect root to all nodes without other dependencies
+    for node_name, traversal_node in filtered_traversal_nodes.items():
+        # Add an edge from root to the current node, unless explicit erasure
+        # dependencies are defined
         erasure_dependencies: Set[CollectionAddress] = _evaluate_erasure_dependencies(
-            traversal_node, end_nodes
+            traversal_node, filtered_end_nodes
         )
+
+        # Add edges for all dependencies, including root and explicit dependencies
         for dep in erasure_dependencies:
             networkx_graph.add_edge(dep, node_name)
 
-    for node in end_nodes:
+    for node in filtered_end_nodes:
         # Connect each end node without downstream dependencies to the terminator node
-        networkx_graph.add_edge(node, TERMINATOR_ADDRESS)
+        # Only connect to terminator if the node has no outgoing edges (no downstream dependencies)
+        if networkx_graph.out_degree(node) == 0:
+            networkx_graph.add_edge(node, TERMINATOR_ADDRESS)
 
     try:
-        # Run extra checks on the graph since we potentially modified traversal_nodes
-        networkx.find_cycle(networkx_graph, ROOT_COLLECTION_ADDRESS)
+        # Check for cycles in the entire graph, not just from root
+        networkx.find_cycle(networkx_graph)
     except NetworkXNoCycle:
-        logger.info("No cycles found as expected")
+        pass
     else:
         raise TraversalError(
             "The values for the `erase_after` fields created a cycle in the DAG."
         )
 
-    _add_edge_if_no_nodes(traversal_nodes, networkx_graph)
+    _add_edge_if_no_nodes(filtered_traversal_nodes, networkx_graph)
+
     return networkx_graph
 
 
@@ -168,6 +223,7 @@ def build_consent_networkx_digraph(
     networkx_graph.add_nodes_from(traversal_nodes.keys())
     networkx_graph.add_nodes_from([TERMINATOR_ADDRESS, ROOT_COLLECTION_ADDRESS])
 
+    # Connect root to all nodes
     for collection_address, _ in traversal_nodes.items():
         # Consent graphs are simple. One node for every dataset (which has a mocked collection)
         # and no dependencies between nodes.
@@ -184,6 +240,7 @@ def base_task_data(
     privacy_request: PrivacyRequest,
     node: CollectionAddress,
     traversal_nodes: Dict[CollectionAddress, TraversalNode],
+    erasure_dependencies: Optional[Set[CollectionAddress]] = None,
 ) -> Dict:
     """Build a dictionary of common RequestTask attributes that are shared for building
     access, consent, and erasure tasks"""
@@ -199,6 +256,12 @@ def base_task_data(
             # Serialize with duck typing so we get the nested sub fields as well
             dataset_graph.nodes[node].collection.model_dump_json(serialize_as_any=True)
         )
+
+        # For erasure tasks, update the erase_after field with the evaluated dependencies
+        if erasure_dependencies is not None and collection_representation is not None:
+            collection_representation["erase_after"] = [
+                dep.value for dep in erasure_dependencies
+            ]
 
         # Saves traversal details based on data dependencies like incoming edges
         # and input keys, also useful for building the Execution Node
@@ -258,13 +321,16 @@ def persist_new_access_request_tasks(
         traversal_nodes, end_nodes, traversal
     )
 
+    tasks_created = []
     for node in list(networkx.topological_sort(graph)):
         if privacy_request.get_existing_request_task(
             session, action_type=ActionType.access, collection_address=node
         ):
+            logger.info("Skipping existing task for node {}", node)
             continue
 
-        RequestTask.create(
+        logger.info("Creating new task for node {}", node)
+        task = RequestTask.create(
             session,
             data={
                 **base_task_data(
@@ -277,8 +343,21 @@ def persist_new_access_request_tasks(
                 "action_type": ActionType.access,
             },
         )
+        tasks_created.append(task)
+        logger.info(
+            "Created task {} for node {} with upstream tasks {} and downstream tasks {}",
+            task.id,
+            node,
+            sorted([upstream.value for upstream in graph.predecessors(node)]),
+            sorted([downstream.value for downstream in graph.successors(node)]),
+        )
 
     root_task: RequestTask = privacy_request.get_root_task_by_action(ActionType.access)
+    logger.info(
+        "Completed task creation. Created {} tasks. Root task: {}",
+        len(tasks_created),
+        root_task.id if root_task else None,
+    )
 
     return [root_task]
 
@@ -308,11 +387,23 @@ def persist_initial_erasure_request_tasks(
         ):
             continue
 
+        # Evaluate erasure dependencies for this node
+        erasure_dependencies = None
+        if node in traversal_nodes:
+            erasure_dependencies = _evaluate_erasure_dependencies(
+                traversal_nodes[node], end_nodes.copy()
+            )
+
         RequestTask.create(
             session,
             data={
                 **base_task_data(
-                    graph, dataset_graph, privacy_request, node, traversal_nodes
+                    graph,
+                    dataset_graph,
+                    privacy_request,
+                    node,
+                    traversal_nodes,
+                    erasure_dependencies,
                 ),
                 "action_type": ActionType.erasure,
             },
@@ -451,7 +542,9 @@ def run_access_request(
         )
     else:
         try:
-            traversal: Traversal = Traversal(graph, identity, policy=policy)
+            traversal: Traversal = Traversal(
+                graph, identity, policy=policy, session=session
+            )
 
             # Traversal.traverse populates traversal_nodes in place, adding parents and children to each traversal_node.
             traversal_nodes: Dict[CollectionAddress, TraversalNode] = {}
@@ -470,7 +563,12 @@ def run_access_request(
                 # If applicable, go ahead and save Erasure Request Tasks to the Database.
                 # These erasure tasks aren't ready to run until the access graph is completed
                 # in full, but this makes sure the nodes in the graphs match.
-                erasure_end_nodes: List[CollectionAddress] = list(graph.nodes.keys())
+                # Filter out manual task nodes from end_nodes to prevent cycles
+                erasure_end_nodes: List[CollectionAddress] = [
+                    node
+                    for node in graph.nodes.keys()
+                    if node.collection not in MANUAL_TASK_COLLECTIONS.values()
+                ]
                 persist_initial_erasure_request_tasks(
                     session, privacy_request, traversal_nodes, erasure_end_nodes, graph
                 )
@@ -492,7 +590,7 @@ def run_access_request(
                     "Some nodes were skipped, the identities provided were not sufficient to reach them"
                 )
                 for node_address, skip_message in traversal.skipped_nodes.items():
-                    logger.debug(skip_message)
+                    logger.info(skip_message)
                     privacy_request.add_skipped_execution_log(
                         session,
                         connection_key=None,

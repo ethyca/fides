@@ -31,16 +31,37 @@ from fides.api.graph.node_filters import (
     OptionalIdentityFilter,
     PolicyDataCategoryFilter,
 )
+from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.manual_tasks.manual_task import ManualTask
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import (
     PrivacyRequest,
     RequestTask,
     TraversalDetails,
 )
+from fides.api.schemas.manual_tasks.manual_task_schemas import (
+    MANUAL_TASK_COLLECTIONS,
+    ManualTaskExecutionTiming,
+    ManualTaskParentEntityType,
+)
 from fides.api.schemas.policy import ActionType
+from fides.api.task.filter_results import _is_manual_task_node
 from fides.api.util.collection_util import Row, append, partition
 from fides.api.util.logger_context_utils import Contextualizable, LoggerContextKeys
 from fides.api.util.matching_queue import MatchingQueue
+
+# High-level flow:
+# __init__()
+#   └── _add_manual_task_nodes()
+#       ├── _get_manual_tasks()
+#       ├── _get_connection_config()
+#       └── _create_manual_task_nodes()
+#           ├── _create_manual_node()
+#           └── _add_manual_task_edges()
+#               ├── _add_pre_execution_edges()
+#               │   └── _get_first_data_nodes()
+#               └── _add_post_execution_edges()
+#                   └── _get_data_nodes()
 
 ARTIFICIAL_NODES: List[CollectionAddress] = [
     ROOT_COLLECTION_ADDRESS,
@@ -55,10 +76,19 @@ def artificial_traversal_node(address: CollectionAddress) -> TraversalNode:
     """generate an 'artificial' traversal_node pointing to the given address. This is used to
     generate artificial root and termination nodes that correspond to just an address, but
     have no actual corresponding collection dataset"""
-    ds: Collection = Collection(name=address.collection, fields=[])
+    ds: Collection = Collection(
+        name=address.collection,
+        fields=[],
+        erase_after=set(),  # Initialize erase_after to empty set to prevent cycles
+    )
+
+    # Use the dataset name as the connection key for manual task nodes
+    # This allows individual manual task nodes to use their connection config key
+    connection_key = address.dataset
+
     node = Node(
         GraphDataset(
-            name=address.dataset, collections=[ds], connection_key="__IGNORE__"
+            name=address.dataset, collections=[ds], connection_key=connection_key
         ),
         ds,
     )
@@ -181,7 +211,6 @@ class BaseTraversal:
 
         We also raise a TraversalError if the queue is empty but some nodes have not been visited. In
         that case they are unreachable.
-
         """
         if environment:
             logger.info(
@@ -200,6 +229,7 @@ class BaseTraversal:
             )
 
             if n:
+                logger.info("Processing node: {}", n.address)
                 node_run_fn(n, environment)
                 # delete all edges between the traversal_node that's just run and any completed nodes
                 for finished_node_address, finished_node in finished_nodes.items():
@@ -229,7 +259,9 @@ class BaseTraversal:
                     ]
                 )
                 if not edges_to_children:
-                    n.is_terminal_node = True
+                    # Don't mark manual task nodes as terminal since they have edges to the terminator
+                    if not _is_manual_task_node(str(n.address)):
+                        n.is_terminal_node = True
 
                 # child traversal_node addresses are the address portion of the above
                 child_node_addresses = {
@@ -242,6 +274,7 @@ class BaseTraversal:
                     )
                 finished_nodes[n.address] = n
                 remaining_node_keys.difference_update({n.address})
+                logger.info("Completed node: {}", n.address)
             else:
                 # traversal traversal_node dict diff finished nodes
                 logger.error(
@@ -317,15 +350,208 @@ class Traversal(BaseTraversal):
         *,
         policy: Optional[Policy] = None,
         node_filters: Optional[List[NodeFilter]] = None,
+        session: Optional[Session] = None,
     ):
+        # Set up node filters
         filters = node_filters or []
-
         filters.append(CustomRequestFieldFilter())
         filters.append(OptionalIdentityFilter(graph, data))
         if policy:
             filters.append(PolicyDataCategoryFilter(policy))
 
+        # Add manual task nodes if session is provided
+        if session:
+            self._add_manual_task_nodes(graph, data, session)
+
+        # Call parent constructor first to initialize traversal_node_dict
         super().__init__(graph, data, policy=policy, node_filters=filters)
+
+        # Now add the manual task nodes to traversal_node_dict
+        if session:
+            self._add_manual_nodes_to_traversal_dict()
+
+    def _add_manual_task_nodes(
+        self, graph: DatasetGraph, data: Dict[str, Any], session: Session
+    ) -> None:
+        """Add individual manual task nodes to the graph."""
+        manual_tasks = self._get_manual_tasks(session)
+
+        for task in manual_tasks:
+            connection_config = self._get_connection_config(session, task)
+            if not connection_config:
+                continue
+
+            self._create_manual_task_nodes(graph, data, task, connection_config)
+
+        logger.info("Created individual manual task nodes and edges")
+
+    def _get_manual_tasks(self, session: Session) -> List[ManualTask]:
+        """Get all manual tasks associated with connection configs."""
+        return ManualTask.filter(
+            db=session,
+            conditions=(
+                (
+                    ManualTask.parent_entity_type
+                    == ManualTaskParentEntityType.connection_config
+                )
+            ),
+        ).all()
+
+    def _get_connection_config(
+        self, session: Session, task: ManualTask
+    ) -> Optional[ConnectionConfig]:
+        """Get the connection config for a manual task."""
+        connection_config = ConnectionConfig.get_by_key_or_id(
+            db=session, data={"id": task.parent_entity_id}
+        )
+        if not connection_config:
+            logger.warning(
+                "Connection config {} not found for manual task {}, skipping",
+                task.parent_entity_id,
+                task.id,
+            )
+        return connection_config
+
+    def _create_manual_task_nodes(
+        self,
+        graph: DatasetGraph,
+        data: Dict[str, Any],
+        task: ManualTask,
+        connection_config: ConnectionConfig,
+    ) -> None:
+        """Create nodes for each config of a manual task."""
+        for config in task.configs:
+            manual_address = self._create_manual_node(graph, connection_config, config)
+            self._add_manual_task_edges(graph, data, manual_address, config)
+
+    def _create_manual_node(
+        self, graph: DatasetGraph, connection_config: ConnectionConfig, config: Any
+    ) -> CollectionAddress:
+        """Create a single manual task node."""
+        collection_name = config.execution_timing.value
+        dataset_name = connection_config.key
+
+        manual_address = CollectionAddress(dataset_name, collection_name)
+        manual_node = artificial_traversal_node(manual_address)
+
+        # Add the node to the graph (traversal_node_dict will be updated later)
+        graph.nodes[manual_address] = manual_node.node
+
+        return manual_address
+
+    def _add_manual_task_edges(
+        self,
+        graph: DatasetGraph,
+        data: Dict[str, Any],
+        manual_address: CollectionAddress,
+        config: Any,
+    ) -> None:
+        """Add edges for a manual task node based on its execution timing."""
+        if config.execution_timing == ManualTaskExecutionTiming.pre_execution:
+            self._add_pre_execution_edges(graph, data, manual_address)
+        else:  # post_execution
+            self._add_post_execution_edges(graph, manual_address)
+
+    def _add_pre_execution_edges(
+        self,
+        graph: DatasetGraph,
+        data: Dict[str, Any],
+        manual_address: CollectionAddress,
+    ) -> None:
+        """Add edges for pre-execution manual tasks."""
+        # Connect root to the pre-execution task
+        graph.edges.add(
+            Edge(
+                FieldAddress(
+                    ROOT_COLLECTION_ADDRESS.dataset,
+                    ROOT_COLLECTION_ADDRESS.collection,
+                    "id",
+                ),
+                FieldAddress(manual_address.dataset, manual_address.collection, "id"),
+            )
+        )
+
+        # Connect pre-execution task to first data nodes
+        first_nodes = self._get_first_data_nodes(graph, data)
+        for first_node in first_nodes:
+            graph.edges.add(
+                Edge(
+                    FieldAddress(
+                        manual_address.dataset, manual_address.collection, "id"
+                    ),
+                    FieldAddress(first_node.dataset, first_node.collection, "id"),
+                )
+            )
+
+    def _add_post_execution_edges(
+        self, graph: DatasetGraph, manual_address: CollectionAddress
+    ) -> None:
+        """Add edges for post-execution manual tasks."""
+        # Ensure terminator node exists in graph.nodes
+        if TERMINATOR_ADDRESS not in graph.nodes:
+            terminator_node = artificial_traversal_node(TERMINATOR_ADDRESS)
+            graph.nodes[TERMINATOR_ADDRESS] = terminator_node.node
+
+        # Connect post-execution task to terminator
+        graph.edges.add(
+            Edge(
+                FieldAddress(manual_address.dataset, manual_address.collection, "id"),
+                FieldAddress(
+                    TERMINATOR_ADDRESS.dataset,
+                    TERMINATOR_ADDRESS.collection,
+                    "id",
+                ),
+            )
+        )
+
+        # Connect data processing nodes to post-execution task
+        # This ensures manual tasks have access to the data they need
+        data_nodes = self._get_data_nodes(graph, manual_address)
+        for data_node in data_nodes:
+            graph.edges.add(
+                Edge(
+                    FieldAddress(data_node.dataset, data_node.collection, "id"),
+                    FieldAddress(
+                        manual_address.dataset, manual_address.collection, "id"
+                    ),
+                )
+            )
+
+    def _get_first_data_nodes(
+        self, graph: DatasetGraph, data: Dict[str, Any]
+    ) -> List[CollectionAddress]:
+        """Get nodes that have identity data."""
+        first_nodes = []
+        for identity_address, seed_key in graph.identity_keys.items():
+            if seed_key in data:
+                first_nodes.append(identity_address.collection_address())
+        return first_nodes
+
+    def _get_data_nodes(
+        self, graph: DatasetGraph, manual_address: CollectionAddress
+    ) -> List[CollectionAddress]:
+        """Get all non-manual nodes that could be end nodes."""
+        return [
+            node_addr
+            for node_addr in graph.nodes.keys()
+            if node_addr
+            not in [
+                ROOT_COLLECTION_ADDRESS,
+                TERMINATOR_ADDRESS,
+            ]
+            and not (
+                node_addr.dataset == manual_address.dataset
+                and node_addr.collection in MANUAL_TASK_COLLECTIONS.values()
+            )
+        ]
+
+    def _add_manual_nodes_to_traversal_dict(self) -> None:
+        """Add manual task nodes to traversal_node_dict"""
+        for address, node in self.graph.nodes.items():
+            if address not in self.traversal_node_dict:
+                # This is a manual task node that was added after the initial traversal_node_dict creation
+                traversal_node = TraversalNode(node)
+                self.traversal_node_dict[address] = traversal_node
 
 
 def log_traversal_error_and_update_privacy_request(
@@ -439,6 +665,7 @@ class TraversalNode(Contextualizable):
     def incoming_edges_by_collection(self) -> Dict[CollectionAddress, List[Edge]]:
         return partition(self.incoming_edges(), lambda e: e.f1.collection_address())
 
+    @property
     def input_keys(self) -> List[CollectionAddress]:
         """Returns the inputs to the current node that are data dependencies
         This is copied and saved to the RequestTask and used to maintain a consistent order
@@ -509,7 +736,7 @@ class TraversalNode(Contextualizable):
             outgoing_edges=[
                 [edge.f1.value, edge.f2.value] for edge in self.outgoing_edges()
             ],
-            input_keys=[tn.value for tn in self.input_keys()],
+            input_keys=[tn.value for tn in self.input_keys],
         ).model_dump(mode="json")
 
     def to_mock_request_task(self) -> RequestTask:

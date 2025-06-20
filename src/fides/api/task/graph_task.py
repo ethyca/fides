@@ -18,6 +18,7 @@ from fides.api.common_exceptions import (
     NotSupportedForCollection,
     PrivacyRequestErasureEmailSendRequired,
     SkippingConsentPropagation,
+    UpstreamTasksNotReady,
 )
 from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
@@ -101,6 +102,16 @@ def retry(
                         self.log_start(action_type)
                     # Run access or erasure request
                     return func(*args, **kwargs)
+                except UpstreamTasksNotReady as exc:
+                    logger.warning(
+                        "Task {} not ready - {}", self.execution_node.address, str(exc)
+                    )
+                    # Keep the task in pending state
+                    self.update_status(
+                        str(exc), [], action_type, ExecutionLogStatus.pending
+                    )
+                    # Re-raise to signal the request runner to retry later
+                    raise
                 except AwaitingAsyncTaskCallback as ex:
                     traceback.print_exc()
                     logger.warning(

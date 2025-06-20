@@ -229,8 +229,21 @@ class ManualTaskService:
             returned to the caller.
         """
         task = self.get_task(task_id=task_id)
+
+        # Get current assigned user IDs by querying the references directly
+        current_user_ids = set(
+            ref.reference_id
+            for ref in self.db.query(ManualTaskReference)
+            .filter(
+                ManualTaskReference.task_id == task.id,
+                ManualTaskReference.reference_type
+                == ManualTaskReferenceType.assigned_user,
+            )
+            .all()
+        )
+
         users_to_assign, log_data = self._handle_user_operation(
-            task_id, user_ids, "assign", set(task.assigned_users)
+            task_id, user_ids, "assign", current_user_ids
         )
 
         if users_to_assign:

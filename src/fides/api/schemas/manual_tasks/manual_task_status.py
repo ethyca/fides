@@ -27,7 +27,7 @@ class StatusType(str, EnumType):
         transitions = {
             cls.pending: [cls.in_progress, cls.failed, cls.completed],
             cls.in_progress: [cls.completed, cls.failed],
-            cls.completed: [],
+            cls.completed: [cls.failed],
             cls.failed: [cls.pending, cls.in_progress],
         }
         return transitions.get(current_status, [])

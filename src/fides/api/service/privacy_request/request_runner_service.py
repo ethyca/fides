@@ -1,7 +1,8 @@
+# pylint: disable=too-many-lines
 import time
 from copy import deepcopy
 from datetime import datetime, timedelta
-from typing import Any, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 import requests
 from loguru import logger
@@ -82,6 +83,26 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
+
+
+def _get_manual_task_configs_for_filtering(
+    session: Session,
+) -> Dict[str, Dict[str, Any]]:
+    """Get manual task field configurations for filtering by data uses.
+
+    Returns a dictionary mapping field IDs to their data uses for filtering
+    manual task data in the same way regular tasks filter by data categories.
+    """
+    from fides.api.models.manual_tasks.manual_task_config import ManualTaskConfigField
+
+    configs = {}
+    field_definitions = ManualTaskConfigField.all(db=session)
+
+    for field in field_definitions:
+        if field.field_metadata and "data_uses" in field.field_metadata:
+            configs[field.id] = {"data_uses": field.field_metadata["data_uses"]}
+
+    return configs
 
 
 class ManualWebhookResults(FidesSchema):
@@ -296,6 +317,19 @@ def upload_and_save_access_results(  # pylint: disable=R0912
     fides_connector_datasets: set[str],
 ) -> list[str]:
     """Process the data uploads after the access portion of the privacy request has completed"""
+    logger.info(
+        "upload_and_save_access_results called for privacy request: {}",
+        privacy_request.id,
+    )
+    logger.info(
+        "upload_and_save_access_results: access_result keys: {}",
+        list(access_result.keys()),
+    )
+    logger.info(
+        "upload_and_save_access_results: access_result values: {}",
+        {k: len(v) if isinstance(v, list) else v for k, v in access_result.items()},
+    )
+
     download_urls: list[str] = []
     # Remove manual webhook attachments from the list of attachments
     # This is done because the manual webhook attachments are already included in the manual_data
@@ -319,6 +353,10 @@ def upload_and_save_access_results(  # pylint: disable=R0912
         action_type=ActionType.access
     ):
         target_categories: set[str] = {target.data_category for target in rule.targets}  # type: ignore[attr-defined]
+
+        # Get manual task configs for filtering
+        manual_task_configs = _get_manual_task_configs_for_filtering(session)
+
         filtered_results: dict[str, list[dict[str, Optional[Any]]]] = (
             filter_data_categories(
                 access_result,
@@ -326,6 +364,7 @@ def upload_and_save_access_results(  # pylint: disable=R0912
                 dataset_graph,
                 rule.key,
                 fides_connector_datasets,
+                manual_task_configs,
             )
         )
         # Create a copy of filtered results to modify for upload
@@ -350,6 +389,7 @@ def upload_and_save_access_results(  # pylint: disable=R0912
         rule_filtered_results[rule.key] = filtered_results
 
     save_access_results(session, privacy_request, download_urls, rule_filtered_results)
+
     return download_urls
 
 
@@ -492,6 +532,10 @@ def run_privacy_request(
                 # Upload Access Results CHECKPOINT
                 access_result_urls: list[str] = []
                 raw_access_results: dict = privacy_request.get_raw_access_results()
+                logger.info(
+                    "run_privacy_request: About to check upload_access checkpoint. Raw access results keys: {}",
+                    list(raw_access_results.keys()),
+                )
                 if (
                     policy.get_rules_for_action(action_type=ActionType.access)
                     or policy.get_rules_for_action(
@@ -501,11 +545,18 @@ def run_privacy_request(
                     request_checkpoint=CurrentStep.upload_access,
                     from_checkpoint=resume_step,
                 ):
+                    logger.info(
+                        "run_privacy_request: Executing upload_access checkpoint"
+                    )
                     privacy_request.cache_failed_checkpoint_details(
                         CurrentStep.upload_access
                     )
                     filtered_access_results = filter_by_enabled_actions(
                         raw_access_results, connection_configs
+                    )
+                    logger.info(
+                        "run_privacy_request: Calling upload_and_save_access_results with filtered results keys: {}",
+                        list(filtered_access_results.keys()),
                     )
                     access_result_urls = upload_and_save_access_results(
                         session,
@@ -515,6 +566,17 @@ def run_privacy_request(
                         privacy_request,
                         manual_webhook_access_results,
                         fides_connector_datasets,
+                    )
+                else:
+                    logger.info(
+                        "run_privacy_request: Skipping upload_access checkpoint. Policy has access rules: {}, can_run_checkpoint: {}",
+                        bool(
+                            policy.get_rules_for_action(action_type=ActionType.access)
+                        ),
+                        can_run_checkpoint(
+                            request_checkpoint=CurrentStep.upload_access,
+                            from_checkpoint=resume_step,
+                        ),
                     )
 
                 # Erasure CHECKPOINT
@@ -684,6 +746,7 @@ def run_privacy_request(
 
             # Only mark as complete if not in error state
             if privacy_request.status != PrivacyRequestStatus.error:
+
                 privacy_request.finished_processing_at = datetime.utcnow()
                 AuditLog.create(
                     db=session,
