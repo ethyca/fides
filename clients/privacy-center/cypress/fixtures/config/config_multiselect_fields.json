@@ -27,13 +27,26 @@
         "interests": {
           "label": "Areas of Interest",
           "field_type": "multiselect",
-          "options": ["Privacy", "Security", "Data Analytics", "Compliance", "Technology"],
+          "options": [
+            "Privacy",
+            "Security",
+            "Data Analytics",
+            "Compliance",
+            "Technology"
+          ],
           "required": true
         },
         "regions": {
           "label": "Geographic Regions",
           "field_type": "multiselect",
-          "options": ["North America", "Europe", "Asia", "South America", "Africa", "Oceania"],
+          "options": [
+            "North America",
+            "Europe",
+            "Asia",
+            "South America",
+            "Africa",
+            "Oceania"
+          ],
           "required": false,
           "default_value": ["North America", "Europe"]
         },

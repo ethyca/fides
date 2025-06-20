@@ -47,7 +47,7 @@
             "RTF",
             "EPUB",
             "PSD"
-           ]
+          ]
         }
       },
       "confirmButtonText": "Continue",
@@ -67,7 +67,12 @@
           "label": "Select data categories to erase",
           "field_type": "multiselect",
           "required": false,
-          "options": ["Profile Information", "User Preferences", "Activity History", "Analytics Data"]
+          "options": [
+            "Profile Information",
+            "User Preferences",
+            "Activity History",
+            "Analytics Data"
+          ]
         }
       },
       "confirmButtonText": "Continue",
