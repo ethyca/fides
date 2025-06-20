@@ -258,7 +258,7 @@ def base_task_data(
         )
 
         # For erasure tasks, update the erase_after field with the evaluated dependencies
-        if erasure_dependencies is not None:
+        if erasure_dependencies is not None and collection_representation is not None:
             collection_representation["erase_after"] = [
                 dep.value for dep in erasure_dependencies
             ]
