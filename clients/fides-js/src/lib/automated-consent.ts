@@ -45,7 +45,7 @@ export const automaticallyApplyPreferences = async ({
   savedConsent: NoticeConsent;
   effectiveExperience: PrivacyExperience;
   cookie: FidesCookie;
-  fidesRegionString: string | null;
+  fidesRegionString: string | undefined;
   fidesOptions: FidesInitOptions;
   i18n: I18n;
 }): Promise<boolean> => {

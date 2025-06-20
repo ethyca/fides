@@ -409,8 +409,7 @@ export const updateConsent = async (
         .privacy_experience_config_history_id;
   }
 
-  const fidesRegionString =
-    constructFidesRegionString(fides.geolocation) || undefined;
+  const fidesRegionString = constructFidesRegionString(fides.geolocation);
 
   // Call updateConsentPreferences with necessary parameters
   return updateConsentPreferences({

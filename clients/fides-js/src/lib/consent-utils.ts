@@ -78,17 +78,17 @@ export const allNoticesAreDefaultOptIn = (
 
 /**
  * Construct user location str to be ingested by Fides API
- * Returns null if geolocation cannot be constructed by provided params, e.g. us_ca
+ * Returns undefined if geolocation cannot be constructed by provided params, e.g. us_ca
  */
 export const constructFidesRegionString = (
-  geoLocation?: UserGeolocation | null,
-): string | null => {
+  geoLocation: UserGeolocation | undefined | null,
+): string | undefined => {
   fidesDebugger("constructing geolocation...");
   if (!geoLocation) {
     fidesDebugger(
       "cannot construct user location since geoLocation is undefined or null",
     );
-    return null;
+    return undefined;
   }
   if (
     geoLocation.location &&
@@ -107,7 +107,7 @@ export const constructFidesRegionString = (
   fidesDebugger(
     "cannot construct user location from provided geoLocation params...",
   );
-  return null;
+  return undefined;
 };
 
 /**
