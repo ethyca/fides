@@ -635,15 +635,15 @@ class TestManualTaskInstanceHandling:
 
         instances = [invalid_completed_instance]
 
-        # Process the instances - should reset the invalid completed instance to pending
+        # Process the instances - should mark the invalid completed instance as failed
         with pytest.raises(PrivacyRequestPaused):
             _process_manual_task_instances(
                 db, request_task, instances, ManualTaskExecutionTiming.post_execution
             )
 
-        # Check that the instance was reset to pending
+        # Check that the instance was marked as failed
         db.refresh(invalid_completed_instance)
-        assert invalid_completed_instance.status == StatusType.pending
+        assert invalid_completed_instance.status == StatusType.failed
 
         # Check that privacy request status was updated
         db.refresh(privacy_request)

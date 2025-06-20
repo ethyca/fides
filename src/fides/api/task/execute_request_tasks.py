@@ -1028,13 +1028,13 @@ def _process_manual_task_instances(
                 if not instance.get_submission_for_field(field.id)
             ]
             if missing_fields:
-                logger.warning(
-                    "Instance {} marked as completed but missing required fields: {}. Resetting to pending.",
+                logger.error(
+                    "Instance {} marked as completed but missing required fields: {}. Marking as failed.",
                     instance.id,
                     ", ".join(missing_fields),
                 )
-                # Reset the instance to pending status since it's not actually complete
-                instance.update_status(session, StatusType.pending)
+                # Mark the instance as failed since it's in an invalid state
+                instance.update_status(session, StatusType.failed)
                 validated_instances.append(instance)
             else:
                 validated_instances.append(instance)
