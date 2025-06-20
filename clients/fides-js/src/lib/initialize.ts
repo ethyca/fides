@@ -191,13 +191,10 @@ export const getInitialFidesFromConsentCookie = ({
  */
 export const initialize = async ({
   fides,
-  options,
-  geolocation,
   initOverlay,
   renderOverlay,
   updateExperience,
   overrides,
-  propertyId,
 }: {
   fides: FidesGlobal;
   initOverlay?: (
@@ -214,9 +211,14 @@ export const initialize = async ({
     props: UpdateExperienceProps,
   ) => Partial<PrivacyExperience>;
   overrides?: Partial<FidesOverrides>;
-} & FidesConfig): Promise<Partial<FidesGlobal>> => {
+}): Promise<Partial<FidesGlobal>> => {
+  const { config } = fides;
+  if (!config) {
+    throw new Error("Fides config should be initialized");
+  }
+  const { options, geolocation } = config;
   let shouldContinueInitOverlay: boolean = true;
-  let fidesRegionString: string | null = null;
+  let fidesRegionString: string | undefined;
   let getModalLinkLabel: FidesGlobal["getModalLinkLabel"] = () =>
     DEFAULT_MODAL_LINK_LABEL;
 
@@ -264,7 +266,7 @@ export const initialize = async ({
         fidesApiUrl: options.fidesApiUrl,
         apiOptions: options.apiOptions,
         requestMinimalTCF: false,
-        propertyId,
+        propertyId: fides.config?.propertyId,
       });
     }
 
@@ -294,7 +296,15 @@ export const initialize = async ({
       }
 
       /**
-       * Finally, update the "cookie" state to track the user's *current*
+       * If the config has a property_id, we add it to the experience to indicate
+       */
+      if (fides.config?.propertyId) {
+        // eslint-disable-next-line no-param-reassign
+        fides.experience.property_id = fides.config.propertyId;
+      }
+
+      /**
+       * Update the "cookie" state to track the user's *current*
        * consent preferences as determined by the updatedExperience above. This
        * "cookie" state is then published to external listeners via the
        * Fides.consent object and Fides events like FidesReady below, so
@@ -377,7 +387,6 @@ export const initialize = async ({
           cookie: fides.cookie,
           savedConsent: fides.saved_consent,
           renderOverlay,
-          propertyId,
           translationOverrides: overrides?.experienceTranslationOverrides,
         }).catch((e) => {
           fidesDebugger(e);

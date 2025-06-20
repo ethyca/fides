@@ -9,4 +9,6 @@ module.exports = {
   moduleNameMapper: {
     ...pathsToModuleNameMapper(compilerOptions.paths),
   },
+  testPathIgnorePatterns: ["/dist/", "__utils__"],
+  watchPathIgnorePatterns: ["/dist/"],
 };

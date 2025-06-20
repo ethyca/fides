@@ -506,6 +506,11 @@ export type PrivacyExperience = {
   vendor_count?: number;
   minimal_tcf?: boolean;
   non_applicable_privacy_notices?: Array<PrivacyNotice["notice_key"]>;
+  /**
+   * If valid experience and property_id is provided, the experience will be
+   * associated with the property
+   */
+  property_id?: string;
 };
 
 interface ExperienceConfigTranslationMinimal
@@ -532,6 +537,7 @@ export interface PrivacyExperienceMinimal
   extends Pick<
     PrivacyExperience,
     | "id"
+    | "property_id"
     | "privacy_notices"
     | "available_locales"
     | "gpp_settings"

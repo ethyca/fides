@@ -214,7 +214,7 @@ export const fidesStringToConsent = ({
     return;
   }
 
-  const { options, cookie, geolocation, locale, config } = window.Fides;
+  const { options, cookie, geolocation, locale } = window.Fides;
   const experience = window.Fides.experience as
     | PrivacyExperience
     | PrivacyExperienceMinimal;
@@ -321,7 +321,6 @@ export const fidesStringToConsent = ({
     options,
     userLocationString: fidesRegionString || undefined,
     cookie: cookie as FidesCookie,
-    propertyId: config?.propertyId,
     tcf,
     updateCookie,
   });

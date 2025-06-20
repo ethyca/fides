@@ -92,7 +92,6 @@ export const TcfOverlay = ({
   fidesRegionString,
   cookie,
   savedConsent,
-  propertyId,
   translationOverrides,
 }: TcfOverlayProps) => {
   const {
@@ -201,7 +200,7 @@ export const TcfOverlay = ({
       userLocationString: fidesRegionString,
       fidesApiUrl: options.fidesApiUrl,
       apiOptions: options.apiOptions,
-      propertyId,
+      propertyId: experienceMinimal.property_id,
       requestMinimalTCF: false,
     }).then((result) => {
       if (isPrivacyExperience(result)) {

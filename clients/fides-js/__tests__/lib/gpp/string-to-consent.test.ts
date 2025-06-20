@@ -21,8 +21,8 @@ import {
   GPPUSApproach,
 } from "../../../src/lib/gpp/types";
 import {
-  UpdateConsentPreferences,
   updateConsentPreferences,
+  UpdateConsentPreferencesProps,
 } from "../../../src/lib/preferences";
 
 // Mock fidesDebugger
@@ -209,9 +209,9 @@ const mockWindowFides = (override?: Partial<Window["Fides"]>) => {
 };
 
 const expectUpdateConsentPreferences = (
-  override?: Partial<UpdateConsentPreferences>,
+  override?: Partial<UpdateConsentPreferencesProps>,
 ) => {
-  const base: Partial<UpdateConsentPreferences> = {
+  const base: Partial<UpdateConsentPreferencesProps> = {
     consentMethod: ConsentMethod.SCRIPT,
     options: {
       tcfEnabled: false,
