@@ -132,11 +132,10 @@ const getColumns = (
 
       return (
         <SelectInline
-          placeholder="Select users..."
           value={currentAssignedUserIds}
           onChange={handleChange}
           options={userOptions}
-          // readonly
+          readonly
         />
       );
     },

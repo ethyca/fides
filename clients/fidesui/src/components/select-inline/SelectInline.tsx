@@ -38,7 +38,6 @@ export const SelectInline = ({
   maxTagPlaceholder,
   filterOption = (input, option) =>
     option?.label?.toLowerCase().includes(input.toLowerCase()) ?? false,
-  placeholder = "Select options...",
   style = { width: "100%" },
   size = "small",
   prefix = <SelectInlinePrefix />,
@@ -74,15 +73,14 @@ export const SelectInline = ({
       maxTagCount={expanded ? undefined : maxTagCount}
       maxTagPlaceholder={customMaxTagPlaceholder}
       filterOption={filterOption}
-      placeholder={placeholder}
       style={style}
       size={size}
       prefix={readonly ? null : prefix}
       suffixIcon={suffixIcon}
       className={`${styles.selectInline} ${className}`}
       tagRender={tagRender}
-      onClick={() => readonly && setExpanded(true)}
-      disabled={readonly}
+      onClick={() => readonly && setExpanded(!expanded)}
+      open={readonly ? false : undefined}
       {...props}
     />
   );
