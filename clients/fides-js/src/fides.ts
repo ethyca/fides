@@ -167,10 +167,6 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     dispatchFidesEvent("FidesConsentLoaded", this.cookie, {
       shouldShowExperience: this.shouldShowExperience(),
     });
-    /** @deprecated - FidesInitialized is used for backwards compatibility only */
-    dispatchFidesEvent("FidesInitialized", this.cookie, {
-      shouldShowExperience: this.shouldShowExperience(),
-    });
   }
 
   const updatedFides = await initialize({
@@ -189,7 +185,6 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   dispatchFidesEvent("FidesReady", this.cookie, {
     shouldShowExperience: this.shouldShowExperience(),
   });
-  /** @deprecated - FidesInitialized is used for backwards compatibility only */
   dispatchFidesEvent("FidesInitialized", this.cookie, {
     shouldShowExperience: this.shouldShowExperience(),
   });
