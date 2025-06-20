@@ -51,7 +51,7 @@ class ConnectionType(enum.Enum):
     google_cloud_sql_mysql = "google_cloud_sql_mysql"
     google_cloud_sql_postgres = "google_cloud_sql_postgres"
     https = "https"
-    manual = "manual"
+    manual = "manual"  # Deprecated - use manual_webhook instead
     manual_webhook = "manual_webhook"  # Runs upfront before the traversal
     mariadb = "mariadb"
     mongodb = "mongodb"
