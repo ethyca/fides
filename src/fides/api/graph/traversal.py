@@ -222,7 +222,6 @@ class BaseTraversal:
         finished_nodes: dict[CollectionAddress, TraversalNode] = {}
         running_node_queue: MatchingQueue[TraversalNode] = MatchingQueue(self.root_node)
         remaining_edges: Set[Edge] = self.edges.copy()
-
         while not running_node_queue.is_empty():
             # this is to support the "run traversal_node A AFTER traversal_node B functionality:"
             n = running_node_queue.pop_first_match(
