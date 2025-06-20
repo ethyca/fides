@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import Annotated, Any, Dict, List, Optional
+from typing import Annotated, Any, Optional
 
 from pydantic import ConfigDict, Field
 
@@ -182,7 +182,7 @@ class ManualTaskReference(FidesSchema):
 class ManualTaskListResponse(FidesSchema):
     """Schema for manual task list responses."""
 
-    items: List[ManualTaskResponse] = Field(..., description="The list of manual tasks")
+    items: list[ManualTaskResponse] = Field(..., description="The list of manual tasks")
     total: int = Field(..., description="The total number of manual tasks")
     page: int = Field(..., description="The current page number")
     size: int = Field(..., description="The page size")
