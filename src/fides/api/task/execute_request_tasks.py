@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from celery.app.task import Task
@@ -403,8 +404,11 @@ def run_access_node(
                             for upstream in ordered_upstream_tasks
                         ]
                         graph_task.access_request(*upstream_access_data)
-                        # Mark task as complete since it executed without error
-                        request_task.update_status(session, ExecutionLogStatus.complete)
+                        # Only mark task as complete if it is still in_processing (not awaiting_processing)
+                        if request_task.status == ExecutionLogStatus.in_processing:
+                            request_task.update_status(
+                                session, ExecutionLogStatus.complete
+                            )
                         # Commit the status change to ensure downstream tasks can see it
                         session.commit()
                 elif request_task.is_terminator_task:
@@ -541,8 +545,13 @@ def run_erasure_node(
                             request_task.get_data_for_erasures() or []
                         )
                         graph_task.erasure_request(retrieved_data)
-                        # Mark task as complete since it executed without error
-                        request_task.update_status(session, ExecutionLogStatus.complete)
+                        # Only mark task as complete if it is still in_processing (not awaiting_processing)
+                        if request_task.status == ExecutionLogStatus.in_processing:
+                            request_task.update_status(
+                                session, ExecutionLogStatus.complete
+                            )
+                        # Commit the status change to ensure downstream tasks can see it
+                        session.commit()
                 elif request_task.is_terminator_task:
                     # Special handling for terminator tasks - queue downstream even if not complete
                     logger.info(

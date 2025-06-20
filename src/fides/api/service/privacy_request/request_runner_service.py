@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines
 import time
 from copy import deepcopy
 from datetime import datetime, timedelta
@@ -745,6 +746,7 @@ def run_privacy_request(
 
             # Only mark as complete if not in error state
             if privacy_request.status != PrivacyRequestStatus.error:
+
                 privacy_request.finished_processing_at = datetime.utcnow()
                 AuditLog.create(
                     db=session,

@@ -4,6 +4,7 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from fides.api.models.fides_user import FidesUser
 from fides.api.models.manual_tasks.manual_task import ManualTask, ManualTaskReference
 from fides.api.models.manual_tasks.manual_task_log import (
     ManualTaskLog,
@@ -145,24 +146,37 @@ class TestManualTaskReferences:
         assert len(manual_task.references) == 0
         assert db.query(ManualTaskReference).filter_by(id=ref.id).first() is None
 
-    def test_assigned_users_property(self, db: Session, manual_task: ManualTask):
+    def test_assigned_users_property(
+        self, db: Session, manual_task: ManualTask, user: "FidesUser"
+    ):
         """Test the assigned_users property."""
-        # Create user references
-        user_refs = [
-            ManualTaskReference.create(
+        # Create additional users for testing
+        users = []
+        for i in range(3):
+            test_user = FidesUser.create(
                 db=db,
                 data={
-                    "task_id": manual_task.id,
-                    "reference_id": f"user_{i}",
-                    "reference_type": ManualTaskReferenceType.assigned_user,
+                    "username": f"test_user_{i}",
+                    "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+                    "email_address": f"test.user.{i}@ethyca.com",
                 },
             )
-            for i in range(3)
-        ]
+            users.append(test_user)
+
+        # Create user references with actual user IDs
+        ManualTaskReference.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "reference_id": user.id,
+                "reference_type": ManualTaskReferenceType.assigned_user,
+            },
+        )
 
         # Verify assigned_users property
-        assert len(manual_task.assigned_users) == 3
-        assert all(f"user_{i}" in manual_task.assigned_users for i in range(3))
+        assert len(manual_task.assigned_users) == 4  # user fixture + 3 additional users
+        assert user in manual_task.assigned_users
+        assert all(test_user in manual_task.assigned_users for test_user in users)
 
     def test_reference_type_validation(self, db: Session, manual_task: ManualTask):
         """Test that reference types are properly validated."""

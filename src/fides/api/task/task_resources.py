@@ -172,7 +172,7 @@ class ManualTaskConnector(BaseConnector):
     def close(self) -> None:
         """Close any held resources. For manual tasks, there are no external connections to close."""
         # No external connections to close for manual tasks
-        pass
+        pass  # pylint: disable=unnecessary-pass
 
 
 class Connections:
