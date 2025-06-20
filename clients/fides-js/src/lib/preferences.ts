@@ -296,10 +296,19 @@ export const updateConsent = async (
     },
   },
 ): Promise<void> => {
-  if (!fides.experience) {
+  const {
+    experience,
+    cookie,
+    consent: initialConsent,
+    geolocation,
+    options: fidesOptions,
+    config,
+  } = fides;
+
+  if (!experience) {
     throw new Error("Experience must be initialized before updating consent");
   }
-  if (!fides.cookie) {
+  if (!cookie) {
     throw new Error("Cookie is not initialized");
   }
 
@@ -308,6 +317,12 @@ export const updateConsent = async (
     fidesString,
     validation = UpdateConsentValidation.THROW,
   } = options;
+
+  const {
+    experience_config: experienceConfig,
+    privacy_notices: privacyNotices,
+    non_applicable_privacy_notices: nonApplicablePrivacyNotices,
+  } = experience;
 
   /**
    * This mostly exists to support the Fides.updateConsent API which
@@ -323,14 +338,14 @@ export const updateConsent = async (
     }
   };
 
-  let finalConsent = fides.consent || {};
+  let finalConsent = initialConsent || {};
 
   // validate consent object
   if (consent) {
     // Validate consent values and collect any validation errors
     const validationError = validateConsent(
-      fides.experience.privacy_notices || [],
-      fides.experience.non_applicable_privacy_notices || [],
+      privacyNotices || [],
+      nonApplicablePrivacyNotices || [],
       consent,
     );
 
@@ -339,21 +354,19 @@ export const updateConsent = async (
     }
   }
 
-  console.warn("fidesString", fidesString);
   // If fidesString is provided, it takes priority
   if (fidesString) {
     try {
       const decodedString = decodeFidesString(fidesString);
       if (decodedString.nc) {
         const decodedConsent = decodeNoticeConsentString(decodedString.nc);
-        console.warn("decodedConsent", decodedConsent);
         finalConsent = {
-          ...fides.consent,
+          ...initialConsent,
           ...decodedConsent,
         };
         const validationError = validateConsent(
-          fides.experience.privacy_notices || [],
-          fides.experience.non_applicable_privacy_notices || [],
+          privacyNotices || [],
+          nonApplicablePrivacyNotices || [],
           finalConsent,
         );
 
@@ -367,16 +380,14 @@ export const updateConsent = async (
       handleValidationError(`Invalid fidesString provided: ${errorMessage}`);
     }
   } else {
-    finalConsent = { ...fides.consent, ...consent };
+    finalConsent = { ...initialConsent, ...consent };
   }
 
   // Prepare consentPreferencesToSave by mapping from finalConsent
   const consentPreferencesToSave: SaveConsentPreference[] = [];
 
   Object.entries(finalConsent).forEach(([key, value]) => {
-    const notice = fides.experience?.privacy_notices?.find(
-      (n) => n.notice_key === key,
-    );
+    const notice = privacyNotices?.find((n) => n.notice_key === key);
     // non-applicable privacy notices are ignored
     if (notice) {
       const historyId = notice.translations?.[0]?.privacy_notice_history_id;
@@ -391,35 +402,35 @@ export const updateConsent = async (
       }
 
       if (historyId) {
-        consentPreferencesToSave.push(
-          new SaveConsentPreference(notice, consentPreference, historyId),
+        const savedConsentPreference = new SaveConsentPreference(
+          notice,
+          consentPreference,
+          historyId,
         );
+        consentPreferencesToSave.push(savedConsentPreference);
       }
     }
   });
 
   // Get privacy_experience_config_history_id from experience config translations
   let configHistoryId: string | undefined;
-  if (fides.experience.experience_config?.translations?.length) {
+  if (experienceConfig?.translations?.length) {
     configHistoryId =
-      fides.experience.experience_config.translations[0]
-        .privacy_experience_config_history_id;
+      experienceConfig.translations[0].privacy_experience_config_history_id;
   }
 
-  const fidesRegionString = constructFidesRegionString(fides.geolocation);
+  const fidesRegionString = constructFidesRegionString(geolocation);
 
   // Call updateConsentPreferences with necessary parameters
   return updateConsentPreferences({
     consentPreferencesToSave,
     privacyExperienceConfigHistoryId: configHistoryId,
-    experience: fides.experience as
-      | PrivacyExperience
-      | PrivacyExperienceMinimal,
+    experience: experience as PrivacyExperience | PrivacyExperienceMinimal,
     consentMethod,
-    options: fides.options,
+    options: fidesOptions,
     userLocationString: fidesRegionString,
-    cookie: fides.cookie,
-    propertyId: fides.config?.propertyId,
+    cookie,
+    propertyId: config?.propertyId,
     eventExtraDetails,
   });
 };
