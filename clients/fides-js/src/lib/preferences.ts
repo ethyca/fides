@@ -51,7 +51,6 @@ async function savePreferencesApi(
   cookie: FidesCookie,
   experience: PrivacyExperience | PrivacyExperienceMinimal,
   consentMethod: ConsentMethod,
-  propertyId: string | undefined,
   privacyExperienceConfigHistoryId?: string,
   consentPreferencesToSave?: Array<
     Pick<SaveConsentPreference, "noticeHistoryId" | "consentPreference">
@@ -76,7 +75,7 @@ async function savePreferencesApi(
     user_geography: userLocationString,
     method: consentMethod,
     served_notice_history_id: servedNoticeHistoryId,
-    property_id: propertyId,
+    property_id: experience.property_id,
     ...(tcf ?? []),
   };
   await patchUserPreference(
@@ -110,9 +109,7 @@ export interface UpdateConsentPreferencesProps {
   servedNoticeHistoryId?: string;
   tcf?: TcfSavePreferences;
   updateCookie?: (oldCookie: FidesCookie) => Promise<FidesCookie>;
-  propertyId?: string;
 }
-// TODO (ENG-772): Refactor to combine updateConsentPreferences and updateConsent an only ask for the global fides object instead of the individual parameters and let the burden of extracting the parameters from the fides object be handled by the method and not the caller.
 export const updateConsentPreferences = async ({
   consentPreferencesToSave,
   privacyExperienceConfigHistoryId,
@@ -125,7 +122,6 @@ export const updateConsentPreferences = async ({
   servedNoticeHistoryId,
   tcf,
   updateCookie,
-  propertyId,
 }: UpdateConsentPreferencesProps) => {
   if (!updateCookie && consentPreferencesToSave) {
     // eslint-disable-next-line no-param-reassign
@@ -181,9 +177,6 @@ export const updateConsentPreferences = async ({
         cookie,
         experience,
         consentMethod,
-        (propertyId?.length ?? 0) > 0
-          ? propertyId
-          : window.Fides.config!.propertyId,
         privacyExperienceConfigHistoryId,
         consentPreferencesToSave,
         tcf,
@@ -302,7 +295,6 @@ export const updateConsent = async (
     consent: initialConsent,
     geolocation,
     options: fidesOptions,
-    config,
   } = fides;
 
   if (!experience) {
@@ -430,7 +422,6 @@ export const updateConsent = async (
     options: fidesOptions,
     userLocationString: fidesRegionString,
     cookie,
-    propertyId: config?.propertyId,
     eventExtraDetails,
   });
 };

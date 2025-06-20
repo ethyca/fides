@@ -120,7 +120,6 @@ const expectUpdateConsentPreferences = (
       tcfEnabled: true,
       gppEnabled: true,
     } as FidesInitOptions,
-    propertyId: undefined,
     cookie: mockFidesCookie(),
     experience: mockPrivacyExperience(),
     privacyExperienceConfigHistoryId: "321",
