@@ -48,6 +48,7 @@ async function savePreferencesApi(
   cookie: FidesCookie,
   experience: PrivacyExperience | PrivacyExperienceMinimal,
   consentMethod: ConsentMethod,
+  propertyId: string | undefined,
   privacyExperienceConfigHistoryId?: string,
   consentPreferencesToSave?: Array<
     Pick<SaveConsentPreference, "noticeHistoryId" | "consentPreference">
@@ -55,7 +56,6 @@ async function savePreferencesApi(
   tcf?: TcfSavePreferences,
   userLocationString?: string,
   servedNoticeHistoryId?: string,
-  propertyId?: string,
 ) {
   fidesDebugger("Saving preferences to Fides API");
   // Derive the Fides user preferences array from consent preferences
@@ -109,6 +109,7 @@ export interface UpdateConsentPreferences {
   updateCookie?: (oldCookie: FidesCookie) => Promise<FidesCookie>;
   propertyId?: string;
 }
+// TODO (ENG-772): Refactor to combine updateConsentPreferences and updateConsent an only ask for the global fides object instead of the individual parameters and let the burden of extracting the parameters from the fides object be handled by the method and not the caller.
 export const updateConsentPreferences = async ({
   consentPreferencesToSave,
   privacyExperienceConfigHistoryId,
@@ -177,12 +178,14 @@ export const updateConsentPreferences = async ({
         cookie,
         experience,
         consentMethod,
+        (propertyId?.length ?? 0) > 0
+          ? propertyId
+          : window.Fides.config!.propertyId,
         privacyExperienceConfigHistoryId,
         consentPreferencesToSave,
         tcf,
         userLocationString,
         servedNoticeHistoryId,
-        propertyId,
       );
     } catch (e) {
       fidesDebugger(

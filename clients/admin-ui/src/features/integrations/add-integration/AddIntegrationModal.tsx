@@ -1,4 +1,4 @@
-import { UseDisclosureReturn } from "fidesui";
+import { AntButton as Button, UseDisclosureReturn } from "fidesui";
 import { useState } from "react";
 
 import FormModal from "~/features/common/modals/FormModal";
@@ -24,8 +24,17 @@ const AddIntegrationModal = ({
   const [step, setStep] = useState<IntegrationModalStep>(
     IntegrationModalStep.LIST_VIEW,
   );
+  const [previousStep, setPreviousStep] = useState<IntegrationModalStep | null>(
+    null,
+  );
 
   const [integrationType, setIntegrationType] = useState<IntegrationTypeInfo>();
+  const [formState, setFormState] = useState<{
+    dirty: boolean;
+    isValid: boolean;
+    submitForm: () => void;
+    loading: boolean;
+  } | null>(null);
 
   const connectionOption = useIntegrationOption(
     integrationType?.placeholder.connection_type,
@@ -34,12 +43,28 @@ const AddIntegrationModal = ({
 
   const { description } = getIntegrationTypeInfo(
     integrationType?.placeholder.connection_type,
+    integrationType?.placeholder.saas_config?.type,
   );
 
   const handleCancel = () => {
     setStep(IntegrationModalStep.LIST_VIEW);
+    setPreviousStep(null);
     setIntegrationType(undefined);
+    setFormState(null);
     onClose();
+  };
+
+  const handleSelectIntegration = (
+    typeInfo: IntegrationTypeInfo | undefined,
+  ) => {
+    setIntegrationType(typeInfo);
+  };
+
+  const handleNext = () => {
+    if (step === IntegrationModalStep.LIST_VIEW && integrationType) {
+      setPreviousStep(IntegrationModalStep.LIST_VIEW);
+      setStep(IntegrationModalStep.FORM);
+    }
   };
 
   const handleDetailClick = (typeInfo: IntegrationTypeInfo) => {
@@ -47,34 +72,105 @@ const AddIntegrationModal = ({
     setIntegrationType(typeInfo);
   };
 
-  const handleConfigure = (typeInfo: IntegrationTypeInfo) => {
+  const handleConfigure = () => {
+    setPreviousStep(IntegrationModalStep.DETAIL);
     setStep(IntegrationModalStep.FORM);
-    setIntegrationType(typeInfo);
   };
 
-  const modalTitle = integrationType
-    ? `${integrationType.placeholder.name} Integration`
-    : "Add integration";
+  const handleBack = () => {
+    if (previousStep) {
+      setStep(previousStep);
+      setPreviousStep(null);
+    }
+  };
+
+  const handleSave = () => {
+    if (formState && formState.submitForm) {
+      formState.submitForm();
+    }
+  };
+
+  const modalTitle =
+    integrationType && step !== IntegrationModalStep.LIST_VIEW
+      ? `${integrationType.placeholder.name} Integration`
+      : "Add integration";
+
+  const renderFooterButtons = () => {
+    if (step === IntegrationModalStep.LIST_VIEW) {
+      return (
+        <div className="flex w-full justify-between">
+          <Button onClick={handleCancel}>Cancel</Button>
+          <Button
+            type="primary"
+            onClick={handleNext}
+            disabled={!integrationType}
+          >
+            Next
+          </Button>
+        </div>
+      );
+    }
+
+    if (step === IntegrationModalStep.DETAIL) {
+      return (
+        <div className="flex w-full justify-between">
+          <Button onClick={() => setStep(IntegrationModalStep.LIST_VIEW)}>
+            Back
+          </Button>
+          <Button
+            onClick={handleConfigure}
+            type="primary"
+            data-testid="configure-modal-btn"
+          >
+            Next
+          </Button>
+        </div>
+      );
+    }
+
+    if (step === IntegrationModalStep.FORM) {
+      return (
+        <div className="flex w-full justify-between">
+          <Button onClick={handleBack}>Back</Button>
+          <Button
+            type="primary"
+            onClick={handleSave}
+            disabled={!formState || !formState.isValid || !formState.dirty}
+            loading={formState?.loading}
+            data-testid="save-btn"
+          >
+            Save
+          </Button>
+        </div>
+      );
+    }
+
+    return null;
+  };
+
+  const modalFooter = renderFooterButtons();
 
   return (
     <FormModal
-      size="2xl"
       isOpen={isOpen}
       onClose={handleCancel}
       title={modalTitle}
+      scrollBehavior="inside"
+      showCloseButton
+      modalContentProps={{ height: "700px", maxWidth: "1010px" }}
+      footer={modalFooter}
     >
       {step === IntegrationModalStep.LIST_VIEW && (
         <SelectIntegrationType
-          onCancel={handleCancel}
+          selectedIntegration={integrationType}
+          onSelectIntegration={handleSelectIntegration}
           onDetailClick={handleDetailClick}
-          onConfigureClick={handleConfigure}
         />
       )}
       {step === IntegrationModalStep.DETAIL && (
         <IntegrationTypeDetail
           integrationType={integrationType}
-          onConfigure={() => setStep(IntegrationModalStep.FORM)}
-          onCancel={handleCancel}
+          onConfigure={handleConfigure}
         />
       )}
       {step === IntegrationModalStep.FORM && (
@@ -82,6 +178,7 @@ const AddIntegrationModal = ({
           connectionOption={connectionOption!}
           onCancel={handleCancel}
           description={description}
+          onFormStateChange={setFormState}
         />
       )}
     </FormModal>
