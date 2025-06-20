@@ -163,19 +163,17 @@ class TestManualTaskReferences:
             )
             users.append(test_user)
 
-        # Create user references with actual user IDs
-        ManualTaskReference.create(
-            db=db,
-            data={
-                "task_id": manual_task.id,
-                "reference_id": user.id,
-                "reference_type": ManualTaskReferenceType.assigned_user,
-            },
-        )
+            ManualTaskReference.create(
+                db=db,
+                data={
+                    "task_id": manual_task.id,
+                    "reference_id": test_user.id,
+                    "reference_type": ManualTaskReferenceType.assigned_user,
+                },
+            )
 
         # Verify assigned_users property
-        assert len(manual_task.assigned_users) == 4  # user fixture + 3 additional users
-        assert user in manual_task.assigned_users
+        assert len(manual_task.assigned_users) == 3
         assert all(test_user in manual_task.assigned_users for test_user in users)
 
     def test_reference_type_validation(self, db: Session, manual_task: ManualTask):
