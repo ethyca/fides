@@ -15,6 +15,14 @@ from fides.api.schemas.manual_tasks.manual_task_config import (
 from fides.service.manual_tasks.utils import validate_fields, with_task_logging
 
 
+class ManualTaskConfigError(Exception):
+    """Exception raised when a manual task config error occurs."""
+
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(self.message)
+
+
 class ManualTaskConfigService:
     def __init__(self, db: Session):
         self.db = db
@@ -51,8 +59,8 @@ class ManualTaskConfigService:
         """
         try:
             ManualTaskConfigurationType(config_type)
-        except ValueError:
-            raise ValueError(f"Invalid config type: {config_type}")
+        except ManualTaskConfigError:
+            raise ManualTaskConfigError(f"Invalid config type: {config_type}")
 
         # Set all existing versions to non-current
         if is_current:
@@ -96,7 +104,11 @@ class ManualTaskConfigService:
         modified_keys = set(fields_to_remove or [])
 
         if field_updates:
-            validate_fields(field_updates, is_submission=False)
+            try:
+                validate_fields(field_updates, is_submission=False)
+            except ValueError as e:
+                raise ManualTaskConfigError(f"Invalid field updates: {e}") from e
+
             fields_to_create = [
                 {
                     "task_id": config.task_id,
@@ -167,7 +179,7 @@ class ManualTaskConfigService:
         )
 
         if not config:
-            raise ValueError(
+            raise ManualTaskConfigError(
                 f"No current config found for task {task.id} and type {config_type}"
             )
         return config
@@ -355,7 +367,7 @@ class ManualTaskConfigService:
         """
         config = self.db.query(ManualTaskConfig).filter_by(id=config_id).first()
         if not config:
-            raise ValueError(f"Config with ID {config_id} not found")
+            raise ManualTaskConfigError(f"Config with ID {config_id} not found")
 
         log_data = self._create_log_data(
             task.id,

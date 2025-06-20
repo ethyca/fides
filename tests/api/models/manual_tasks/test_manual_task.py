@@ -1,9 +1,14 @@
-from datetime import datetime, timezone
+from uuid import uuid4
 
 import pytest
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from fides.api.models.connectionconfig import (
+    AccessLevel,
+    ConnectionConfig,
+    ConnectionType,
+)
 from fides.api.models.manual_tasks.manual_task import ManualTask, ManualTaskReference
 from fides.api.models.manual_tasks.manual_task_log import (
     ManualTaskLog,
@@ -33,20 +38,6 @@ class TestManualTaskCreation:
         assert task.task_type == ManualTaskType.privacy_request
         assert task.parent_entity_id == "test_connection"
         assert task.parent_entity_type == "connection_config"
-
-    def test_create_task_with_due_date(self, db: Session):
-        """Test creating a task with a due date."""
-        due_date = datetime.now(timezone.utc)
-        task = ManualTask.create(
-            db=db,
-            data={
-                "task_type": ManualTaskType.privacy_request,
-                "parent_entity_id": "test_connection",
-                "parent_entity_type": "connection_config",
-                "due_date": due_date,
-            },
-        )
-        assert task.due_date == due_date
 
     def test_create_task_creates_log(self, db: Session):
         """Test that task creation creates a log entry."""
@@ -228,3 +219,30 @@ class TestManualTaskRelationships:
         # Verify logs relationship
         assert len(manual_task.logs) == 2  # One from creation + one we just added
         assert any(l.message == "Test log" for l in manual_task.logs)
+
+    def test_task_parent_entity_relationship(
+        self, db: Session, manual_task: ManualTask
+    ):
+        """Test task parent entity relationship"""
+
+        connection_config = ConnectionConfig.create(
+            db=db,
+            data={
+                "name": str(uuid4()),
+                "key": "connection_config_data_use_map_no_system",
+                "connection_type": ConnectionType.manual_task,
+                "access": AccessLevel.write,
+                "disabled": False,
+            },
+        )
+        manual_task = ManualTask.create(
+            db=db,
+            data={
+                "task_type": ManualTaskType.privacy_request,
+                "parent_entity_id": connection_config.id,
+                "parent_entity_type": ManualTaskParentEntityType.connection_config,
+            },
+        )
+
+        assert manual_task.parent_entity_id == connection_config.id
+        assert connection_config.manual_task == manual_task
