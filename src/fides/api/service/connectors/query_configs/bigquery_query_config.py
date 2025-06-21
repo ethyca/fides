@@ -5,8 +5,9 @@ from fideslang.models import MaskingStrategies
 from loguru import logger
 from sqlalchemy import MetaData, Table, text
 from sqlalchemy.engine import Engine
-from sqlalchemy.sql import Delete, Update  # type: ignore
+from sqlalchemy.sql import Delete, Update
 from sqlalchemy.sql.elements import ColumnElement, TextClause
+from sqlalchemy_bigquery import BigQueryDialect
 
 from fides.api.graph.config import Field, FieldPath
 from fides.api.graph.execution import ExecutionNode
@@ -15,6 +16,8 @@ from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.namespace_meta.bigquery_namespace_meta import (
     BigQueryNamespaceMeta,
 )
+from fides.api.schemas.partitioning import TIME_BASED_REQUIRED_KEYS, combine_partitions
+from fides.api.schemas.partitioning.time_based_partitioning import TimeBasedPartitioning
 from fides.api.service.connectors.query_configs.query_config import (
     QueryStringWithoutTuplesOverrideQueryConfig,
 )
@@ -36,40 +39,59 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
     namespace_meta_schema = BigQueryNamespaceMeta
 
     @property
-    def partitioning(self) -> Optional[Dict]:
-        # Overriden from base implementation to allow for _only_ BQ partitioning, for now
+    def partitioning(
+        self,
+    ) -> Optional[Union[List[TimeBasedPartitioning], Dict[str, Any]]]:
+        # Overridden from base implementation to allow for _only_ BQ partitioning, for now
         return self.node.collection.partitioning
 
     def get_partition_clauses(
         self,
     ) -> List[str]:
         """
-        Returns the WHERE clauses specified in the partitioning spec
+        Build a list of SQL `WHERE` clause strings for the collection's partitioning
+        configuration.
 
-        Currently, only where-clause based partitioning is supported.
+        Supported modes:
+        1. `Legacy static` - A list of `where_clauses`.
+        2. `Single time-based` - A single time-based partitioning spec
+        3. `Multiple time-based` - A list of time-based partitioning specs, with different intervals
 
-        TODO: derive partitions from a start/end/interval specification
-
-
-        NOTE: when we deprecate `where_clause` partitioning in favor of a more proper partitioning DSL,
-        we should be sure to still support the existing `where_clause` partition definition on
-        any in-progress DSRs so that they can run through to completion.
+        Any other combination (e.g. mixing modes or missing keys) raises a
+        `ValueError` so that mis-configurations surface early.
         """
-        partition_spec = self.partitioning
+
+        partition_spec: Optional[Union[List[TimeBasedPartitioning], Dict[str, Any]]] = (
+            self.partitioning
+        )
         if not partition_spec:
-            logger.error(
-                "Partitioning clauses cannot be retrieved, no partitioning specification found"
+            logger.warning(
+                f"No partitioning specification found for node '{self.node.address}', skipping partition clauses"
             )
             return []
 
-        if where_clauses := partition_spec.get("where_clauses"):
-            return where_clauses
+        # Legacy mode using `where_clauses`
+        if isinstance(partition_spec, dict) and "where_clauses" in partition_spec:
+            if any(k in partition_spec for k in TIME_BASED_REQUIRED_KEYS):
+                # Mixed mode not allowed
+                raise ValueError(
+                    "Partitioning spec cannot define both `where_clauses` and time-based partitioning."
+                )
+            where = partition_spec.get("where_clauses") or []
+            if not where:
+                raise ValueError("`where_clauses` must be a non-empty list.")
+            return where
 
-        # TODO: implement more advanced partitioning support!
+        # Combine and de-duplicate boundary rows
+        combined_expressions = combine_partitions(partition_spec)  # type: ignore
 
-        raise ValueError(
-            "`where_clauses` must be specified in partitioning specification!"
-        )
+        dialect = BigQueryDialect()
+        where_clauses = [
+            str(expr.compile(dialect=dialect, compile_kwargs={"literal_binds": True}))
+            for expr in combined_expressions
+        ]
+
+        return where_clauses
 
     def _generate_table_name(self) -> str:
         """
@@ -147,7 +169,7 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         nested_result = unflatten_dict(merged_dict)
 
         # 5. Replace any arrays containing only None values with empty arrays
-        nested_result = replace_none_arrays(nested_result)  # type: ignore
+        nested_result = replace_none_arrays(nested_result)
 
         # 6. Only keep top-level keys that are in the update_value_map
         top_level_keys = {key.split(".")[0] for key in update_value_map}
