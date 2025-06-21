@@ -237,10 +237,10 @@ def bigquery_enterprise_test_dataset_config_with_partitioning_meta(
     )
     stackoverflow_posts_partitioned_collection["fides_meta"] = {
         "partitioning": {
-            "field": "creation_date",
-            "start": "NOW() - 2000 DAYS",
-            "end": "NOW()",
-            "interval": "1000 DAYS",
+            "where_clauses": [
+                "`creation_date` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `creation_date` <= CURRENT_TIMESTAMP()",
+                "`creation_date` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2000 DAY) AND `creation_date` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)",
+            ]
         }
     }
     bigquery_enterprise_dataset["collections"].append(
@@ -321,11 +321,64 @@ def bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta(
     bigquery_dataset["collections"].remove(customer_collection)
     customer_collection["fides_meta"] = {
         "partitioning": {
-            "field": "created",
-            "start": "NOW() - 2000 DAYS",
-            "end": "NOW()",
-            "interval": "1000 DAYS",
+            "where_clauses": [
+                "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `created` <= CURRENT_TIMESTAMP()",
+                "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2000 DAY) AND `created` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)",
+            ]
         }
+    }
+    bigquery_dataset["collections"].append(customer_collection)
+
+    fides_key = bigquery_dataset["fides_key"]
+    bigquery_connection_config_without_default_dataset.name = fides_key
+    bigquery_connection_config_without_default_dataset.key = fides_key
+    bigquery_connection_config_without_default_dataset.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, bigquery_dataset)
+
+    dataset = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": bigquery_connection_config_without_default_dataset.id,
+            "fides_key": fides_key,
+            "ctl_dataset_id": ctl_dataset.id,
+        },
+    )
+    yield dataset
+    dataset.delete(db=db)
+    ctl_dataset.delete(db=db)
+
+
+@pytest.fixture
+def bigquery_example_test_dataset_config_with_namespace_and_time_based_partitioning_meta(
+    bigquery_connection_config_without_default_dataset: ConnectionConfig,
+    db: Session,
+    example_datasets: List[Dict],
+) -> Generator[DatasetConfig, None, None]:
+    bigquery_dataset = example_datasets[7]
+    bigquery_dataset["fides_meta"] = {
+        "namespace": {
+            "project_id": "silken-precinct-284918",
+            "dataset_id": "fidesopstest",
+            "connection_type": "bigquery",
+        },
+    }
+    # update customer collection to have TimeBasedPartitioning
+    customer_collection = next(
+        collection
+        for collection in bigquery_dataset["collections"]
+        if collection["name"] == "customer"
+    )
+    bigquery_dataset["collections"].remove(customer_collection)
+    customer_collection["fides_meta"] = {
+        "partitioning": [
+            {
+                "field": "created",
+                "start": "NOW() - 2000 DAYS",
+                "end": "NOW()",
+                "interval": "1000 DAYS",
+            }
+        ]
     }
     bigquery_dataset["collections"].append(customer_collection)
 
