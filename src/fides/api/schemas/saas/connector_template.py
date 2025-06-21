@@ -22,6 +22,8 @@ class ConnectorTemplate(BaseModel):
     authorization_required: bool
     user_guide: Optional[str] = None
     supported_actions: List[ActionType]
+    is_custom: bool = False
+    file_connector_available: bool = False
 
     @field_validator("config")
     @classmethod
