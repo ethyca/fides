@@ -4,15 +4,13 @@ import pytest
 from sqlalchemy.exc import DataError, IntegrityError, StatementError
 from sqlalchemy.orm import Session
 
-from fides.api.models.manual_tasks.manual_task import ManualTask
-from fides.api.models.manual_tasks.manual_task_config import (
+from fides.api.models.manual_task import (
+    ManualTask,
     ManualTaskConfig,
     ManualTaskConfigField,
-)
-from fides.api.models.manual_tasks.manual_task_log import ManualTaskLogStatus
-from fides.api.schemas.manual_tasks.manual_task_config import (
     ManualTaskFieldMetadata,
     ManualTaskFieldType,
+    ManualTaskLogStatus,
 )
 
 TEXT_FIELD_DATA = {

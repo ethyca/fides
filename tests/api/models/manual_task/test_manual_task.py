@@ -9,13 +9,12 @@ from fides.api.models.connectionconfig import (
     ConnectionConfig,
     ConnectionType,
 )
-from fides.api.models.manual_tasks.manual_task import ManualTask, ManualTaskReference
-from fides.api.models.manual_tasks.manual_task_log import (
+from fides.api.models.manual_task import (
+    ManualTask,
     ManualTaskLog,
     ManualTaskLogStatus,
-)
-from fides.api.schemas.manual_tasks.manual_task_schemas import (
     ManualTaskParentEntityType,
+    ManualTaskReference,
     ManualTaskReferenceType,
     ManualTaskType,
 )
