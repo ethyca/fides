@@ -5,20 +5,16 @@ from sqlalchemy.orm import Session
 
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.fides_user import FidesUser
-from fides.api.models.manual_tasks.manual_task import ManualTask
-from fides.api.models.manual_tasks.manual_task_config import (
+from fides.api.models.manual_task import (
+    ManualTask,
     ManualTaskConfig,
     ManualTaskConfigField,
-)
-from fides.api.models.manual_tasks.manual_task_instance import (
     ManualTaskInstance,
-    ManualTaskSubmission,
-)
-from fides.api.models.privacy_request.privacy_request import PrivacyRequest
-from fides.api.schemas.manual_tasks.manual_task_schemas import (
     ManualTaskParentEntityType,
+    ManualTaskSubmission,
     ManualTaskType,
 )
+from fides.api.models.privacy_request.privacy_request import PrivacyRequest
 
 
 @pytest.fixture
