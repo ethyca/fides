@@ -30,17 +30,62 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set Up Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-          cache: "pip"
+          # Don't use built-in caching since we're managing our own
 
-      - name: Install Nox
-        run: pip install nox>=2022
+      # Cache the entire Python virtual environment
+      - name: Cache virtual environment
+        uses: actions/cache@v4
+        id: venv-cache
+        with:
+          path: |
+            .venv
+            ~/.cache/pip
+          key: ${{ runner.os }}-venv-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('requirements.txt', 'dev-requirements.txt', 'optional-requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-venv-${{ env.DEFAULT_PYTHON_VERSION }}-
 
-      - name: Run Static Check
-        run: nox -s collect_tests
+      # Create and activate virtual environment if not cached
+      - name: Create virtual environment
+        if: steps.venv-cache.outputs.cache-hit != 'true'
+        run: |
+          python -m venv .venv
+          echo "VIRTUAL_ENV=$(pwd)/.venv" >> $GITHUB_ENV
+          echo "$(pwd)/.venv/bin" >> $GITHUB_PATH
+
+      # Make sure the cached venv is in the path
+      - name: Activate virtual environment
+        if: steps.venv-cache.outputs.cache-hit == 'true'
+        run: |
+          echo "VIRTUAL_ENV=$(pwd)/.venv" >> $GITHUB_ENV
+          echo "$(pwd)/.venv/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        if: steps.venv-cache.outputs.cache-hit != 'true'
+        run: |
+          python -m pip install --upgrade pip
+          # Install all dependencies from requirement files
+          pip install -r requirements.txt
+          pip install -r dev-requirements.txt
+          pip install -r optional-requirements.txt
+          # Verify installation
+          pip freeze > installed-packages.txt
+
+      - name: Install package
+        run: |
+          # Install the package in development mode
+          pip install -e .
+
+      # Don't need nox for test collection anymore
+      - name: Install pytest
+        run: pip install pytest
+
+      - name: Collect tests
+        run: |
+          python -m pytest tests/ --collect-only
 
   Build:
     needs: Collect-Tests
@@ -57,6 +102,16 @@ jobs:
         id: buildx
         uses: docker/setup-buildx-action@v3
 
+      # Add Docker layer caching
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache${{ matrix.python_version == '3.9.18' && '-py39' || '' }}
+          key: ${{ runner.os }}-buildx-${{ matrix.python_version }}-${{ hashFiles('requirements.txt', 'optional-requirements.txt', 'dev-requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-${{ matrix.python_version }}-
+            ${{ runner.os }}-buildx-
+
       - name: Build container
         uses: docker/build-push-action@v6
         with:
@@ -67,6 +122,14 @@ jobs:
           outputs: type=docker,dest=/tmp/python-${{ matrix.python_version }}.tar
           push: false
           tags: ${{ env.IMAGE }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+
+      # Move cache to prevent cache growth
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache || true
 
       - name: Upload container
         uses: actions/upload-artifact@v4
@@ -95,7 +158,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set Up Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
@@ -139,7 +202,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set Up Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
@@ -186,7 +249,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set Up Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
@@ -236,7 +299,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set Up Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
@@ -288,7 +351,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set Up Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
@@ -350,7 +413,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set Up Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
@@ -447,7 +510,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set Up Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
@@ -456,7 +519,7 @@ jobs:
       - name: Install Nox
         run: pip install nox>=2022
 
-      - name: Get Vault Token
+      - name: Get Vault token
         uses: hashicorp/vault-action@v2.5.0
         with:
           url: ${{ secrets.VAULT_ADDR }}
@@ -471,7 +534,7 @@ jobs:
           username: ${{ env.DOCKER_USER }}
           password: ${{ env.DOCKER_RO_TOKEN }}
 
-      - name: SaaS Connector Tests
+      - name: SaaS connector tests
         env:
           VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
           VAULT_NAMESPACE: ${{ secrets.VAULT_NAMESPACE }}

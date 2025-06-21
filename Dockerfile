@@ -5,7 +5,6 @@ ARG PYTHON_VERSION="3.10.16"
 #########################
 FROM python:${PYTHON_VERSION}-slim-bookworm AS compile_image
 
-
 # Install auxiliary software
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -15,7 +14,6 @@ RUN apt-get update && \
     gcc \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
-
 
 # Install FreeTDS (used for PyMSSQL)
 RUN apt-get update && \
@@ -38,13 +36,18 @@ ENV PATH="/opt/fides/bin:${PATH}"
 # Install Python Dependencies
 RUN pip --no-cache-dir --disable-pip-version-check install --upgrade pip setuptools wheel
 
+# Use BuildKit cache for pip
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install -r requirements.txt
+
 COPY optional-requirements.txt .
-RUN pip install --no-cache-dir -r optional-requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install -r optional-requirements.txt
 
 COPY dev-requirements.txt .
-RUN pip install --no-cache-dir -r dev-requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install -r dev-requirements.txt
 
 ##################
 ## Backend Base ##
@@ -54,7 +57,6 @@ FROM python:${PYTHON_VERSION}-slim-bookworm AS backend
 # Add the fidesuser user but don't switch to it yet
 RUN addgroup --system --gid 1001 fidesgroup
 RUN adduser --system --uid 1001 --home /home/fidesuser fidesuser
-
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -70,7 +72,7 @@ RUN apt-get update && \
 COPY --from=compile_image /opt/fides /opt/fides
 ENV PATH=/opt/fides/bin:$PATH
 
-# General Application Setup ##
+# General Application Setup
 USER fidesuser
 COPY --chown=fidesuser:fidesgroup . /fides
 WORKDIR /fides

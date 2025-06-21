@@ -263,6 +263,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Unified frontend formatKey method, so its behavior is closer to the backend behavior [#6010](https://github.com/ethyca/fides/pull/6010)
 - Action center table's checkboxes were improved, also improved change indications [#6021](https://github.com/ethyca/fides/pull/6021)
 
+### Developer experience
+- Improved CI build times for backed checks by adding Docker layer caching to GHA workflow [5882](https://github.com/ethyca/fides/pull/5882)
+
 ### Fixed
 - Updated relationships for Comments, Attachments and PrivacyRequests to remove overlap sqlalchemy error. [#5929](https://github.com/ethyca/fides/pull/5929)
 - Hide "Reclassify" option on fields in D&D tables [#5956](https://github.com/ethyca/fides/pull/5956)
