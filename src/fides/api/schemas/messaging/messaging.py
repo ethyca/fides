@@ -70,6 +70,7 @@ class MessagingActionType(str, Enum):
     PRIVACY_REQUEST_REVIEW_APPROVE = "privacy_request_review_approve"
     USER_INVITE = "user_invite"
     TEST_MESSAGE = "test_message"
+    MANUAL_TASK_ASSIGNMENT = "manual_task_assignment"
 
 
 CONFIGURABLE_MESSAGING_ACTION_TYPES: Tuple[str, ...] = (
@@ -176,10 +177,19 @@ class ErasureRequestBodyParams(BaseModel):
 
 
 class UserInviteBodyParams(BaseModel):
-    """Body params required to send a user invite email"""
+    """Body params required for user invite notifications."""
 
     username: str
     invite_code: str
+
+
+class ManualTaskAssignmentBodyParams(BaseModel):
+    """Body params required for manual task assignment notifications."""
+
+    task_name: str
+    task_type: str
+    parent_entity_id: Optional[str] = None
+    admin_ui_url: Optional[str] = None
 
 
 class FidesopsMessage(
@@ -198,6 +208,7 @@ class FidesopsMessage(
             ErasureRequestBodyParams,
             ErrorNotificationBodyParams,
             UserInviteBodyParams,
+            ManualTaskAssignmentBodyParams,
         ]
     ] = None
 
@@ -217,6 +228,7 @@ class FidesopsMessage(
             MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT: ErasureRequestBodyParams,
             MessagingActionType.PRIVACY_REQUEST_ERROR_NOTIFICATION: ErrorNotificationBodyParams,
             MessagingActionType.USER_INVITE: UserInviteBodyParams,
+            MessagingActionType.MANUAL_TASK_ASSIGNMENT: ManualTaskAssignmentBodyParams,
         }
 
         valid_body_params = valid_body_params_for_action_type.get(

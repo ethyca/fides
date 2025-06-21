@@ -27,6 +27,7 @@ from fides.api.schemas.messaging.messaging import (
     ErasureRequestBodyParams,
     ErrorNotificationBodyParams,
     FidesopsMessage,
+    ManualTaskAssignmentBodyParams,
     MessagingActionType,
     MessagingMethod,
     MessagingServiceDetails,
@@ -176,6 +177,7 @@ def dispatch_message(
             ErasureRequestBodyParams,
             UserInviteBodyParams,
             ErrorNotificationBodyParams,
+            ManualTaskAssignmentBodyParams,
         ]
     ] = None,
     subject_override: Optional[str] = None,
