@@ -899,12 +899,15 @@ class TimeBasedPartitioning(FidesSchema):
             start_unit_enum = TimeUnit.parse(start_match.group(3))
             use_current_date = base_func_name == "TODAY()"
             is_timestamp_pattern = False
-        else:
+        elif start_timestamp_match is not None:
             # TIMESTAMP pattern
             start_units_raw = int(start_timestamp_match.group(1))
             start_unit_enum = TimeUnit.parse(start_timestamp_match.group(2))
             use_current_date = True  # TIMESTAMP(TODAY()) uses CURRENT_DATE as base
             is_timestamp_pattern = True
+        else:
+            # This shouldn't happen due to the earlier check, but makes mypy happy
+            return None
 
         # Helper to convert raw units (possibly years) into desired interval unit count
         def _convert_units(raw_units: int, raw_unit_enum: TimeUnit) -> Optional[int]:
@@ -917,16 +920,17 @@ class TimeBasedPartitioning(FidesSchema):
         conditions: List[ColumnElement] = []
 
         # Scenario A: `... TO NOW()/TODAY()` or `... TO TIMESTAMP(TODAY())`
-        if (
+        # Break down complex condition for pylint
+        traditional_to_base = not is_timestamp_pattern and end_match is None
+        traditional_to_zero_offset = (
             not is_timestamp_pattern
-            and (
-                end_match is None
-                or (
-                    end_match.group(1) == base_func_name
-                    and int(end_match.group(2)) == 0
-                )
-            )
-        ) or (is_timestamp_pattern and end_str == "TIMESTAMP(TODAY())"):
+            and end_match is not None
+            and end_match.group(1) == base_func_name
+            and int(end_match.group(2)) == 0
+        )
+        timestamp_to_today = is_timestamp_pattern and end_str == "TIMESTAMP(TODAY())"
+
+        if traditional_to_base or traditional_to_zero_offset or timestamp_to_today:
             total_units = _convert_units(start_units_raw, start_unit_enum)
             if total_units is None or total_units % value != 0:
                 return None
@@ -971,12 +975,15 @@ class TimeBasedPartitioning(FidesSchema):
             and end_match.group(1) == base_func_name
         ) or (is_timestamp_pattern and end_timestamp_match is not None):
 
-            if is_timestamp_pattern:
+            if is_timestamp_pattern and end_timestamp_match is not None:
                 end_units_raw = int(end_timestamp_match.group(1))
                 end_unit_enum = TimeUnit.parse(end_timestamp_match.group(2))
-            else:
+            elif end_match is not None:
                 end_units_raw = int(end_match.group(2))
                 end_unit_enum = TimeUnit.parse(end_match.group(3))
+            else:
+                # This shouldn't happen due to the earlier check, but makes mypy happy
+                return None
 
             start_units_converted = _convert_units(start_units_raw, start_unit_enum)
             end_units_converted = _convert_units(end_units_raw, end_unit_enum)
@@ -1319,12 +1326,11 @@ def _date_or_datetime_value(expr: str) -> datetime:
     """Convert a date or datetime literal into a datetime object."""
     if _is_date_literal(expr):
         return _date_value(expr)
-    elif _is_datetime_literal(expr):
+    if _is_datetime_literal(expr):
         return _datetime_value(expr)
-    elif _is_timestamp_date_literal(expr) or _is_timestamp_datetime_literal(expr):
+    if _is_timestamp_date_literal(expr) or _is_timestamp_datetime_literal(expr):
         return _timestamp_literal_value(expr)
-    else:
-        raise ValueError(f"Expression is not a date or datetime literal: {expr}")
+    raise ValueError(f"Expression is not a date or datetime literal: {expr}")
 
 
 # Required external keys for a time-based partitioning spec.  Internal helper
