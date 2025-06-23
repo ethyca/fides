@@ -200,14 +200,16 @@ describe("Manual Tasks", () => {
     });
 
     it("should handle pagination controls and assigned users display", () => {
-      // Test pagination controls
-      cy.getByTestId("pagination-btn").should("be.visible");
-      cy.get("button[aria-label='previous page']").should("exist");
-      cy.get("button[aria-label='next page']").should("exist");
+      // Test pagination controls - now using Ant Design's standard pagination
+      cy.get(".ant-pagination").should("be.visible");
+      cy.get(".ant-pagination-prev").should("exist");
+      cy.get(".ant-pagination-next").should("exist");
 
-      // Test page size change - target the first pagination button if multiple exist
-      cy.getByTestId("pagination-btn").first().click();
-      cy.getByTestId("pageSize-50").click();
+      // Test page size change using Ant Design's page size selector
+      cy.get(".ant-select-selector").contains("25").click();
+      cy.get(".ant-select-dropdown").within(() => {
+        cy.get(".ant-select-item").contains("50").click();
+      });
       cy.wait("@getManualTasks");
 
       // Test assigned users display

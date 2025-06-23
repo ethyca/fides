@@ -5,14 +5,11 @@ import {
   AntTypography as Typography,
   SelectInline,
 } from "fidesui";
-import { useEffect, useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import DaysLeftTag from "~/features/common/DaysLeftTag";
 import FidesSpinner from "~/features/common/FidesSpinner";
-import {
-  PaginationBar,
-  useServerSidePagination,
-} from "~/features/common/table/v2";
+import { PAGE_SIZES } from "~/features/common/table/v2/PaginationBar";
 import { SubjectRequestActionTypeMap } from "~/features/privacy-requests/constants";
 import { ActionType, PrivacyRequestStatus } from "~/types/api";
 
@@ -166,19 +163,8 @@ const getColumns = (
 ];
 
 export const ManualTasksTable = ({ searchTerm }: Props) => {
-  const {
-    PAGE_SIZES,
-    pageSize,
-    setPageSize,
-    onPreviousPageClick,
-    isPreviousPageDisabled,
-    onNextPageClick,
-    isNextPageDisabled,
-    startRange,
-    endRange,
-    pageIndex,
-    setTotalPages,
-  } = useServerSidePagination();
+  const [pageIndex, setPageIndex] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
   const { data, isLoading, isFetching } = useGetTasksQuery({
     page: pageIndex,
@@ -189,7 +175,6 @@ export const ManualTasksTable = ({ searchTerm }: Props) => {
   const {
     items: tasks,
     total: totalRows,
-    pages: totalPages,
     filterOptions,
   } = useMemo(
     () =>
@@ -201,10 +186,6 @@ export const ManualTasksTable = ({ searchTerm }: Props) => {
       },
     [data],
   );
-
-  useEffect(() => {
-    setTotalPages(totalPages);
-  }, [totalPages, setTotalPages]);
 
   // Create filter options from API response
   const systemFilters = useMemo(
@@ -237,35 +218,34 @@ export const ManualTasksTable = ({ searchTerm }: Props) => {
   const showSpinner = isLoading || isFetching;
 
   return (
-    <div>
-      <Table
-        columns={columns}
-        dataSource={tasks}
-        rowKey="task_id"
-        pagination={false}
-        locale={{
-          emptyText: searchTerm ? (
-            "No tasks match your search"
-          ) : (
-            <div data-testid="empty-state">No manual tasks available.</div>
-          ),
-        }}
-        loading={showSpinner}
-      />
-
-      <div className="mt-4 flex justify-end">
-        <PaginationBar
-          pageSizes={PAGE_SIZES}
-          totalRows={totalRows || 0}
-          onPreviousPageClick={onPreviousPageClick}
-          isPreviousPageDisabled={isPreviousPageDisabled}
-          onNextPageClick={onNextPageClick}
-          isNextPageDisabled={isNextPageDisabled}
-          setPageSize={setPageSize}
-          startRange={startRange}
-          endRange={endRange}
-        />
-      </div>
-    </div>
+    <Table
+      columns={columns}
+      dataSource={tasks}
+      rowKey="task_id"
+      pagination={{
+        current: pageIndex,
+        pageSize,
+        total: totalRows || 0,
+        showSizeChanger: true,
+        pageSizeOptions: PAGE_SIZES,
+        showTotal: (total, range) =>
+          `${range[0]}-${range[1]} of ${total} items`,
+        onChange: (page, size) => {
+          setPageIndex(page);
+          if (size !== pageSize) {
+            setPageSize(size);
+            setPageIndex(1); // Reset to first page when changing page size
+          }
+        },
+      }}
+      locale={{
+        emptyText: searchTerm ? (
+          "No tasks match your search"
+        ) : (
+          <div data-testid="empty-state">No manual tasks available.</div>
+        ),
+      }}
+      loading={showSpinner}
+    />
   );
 };
