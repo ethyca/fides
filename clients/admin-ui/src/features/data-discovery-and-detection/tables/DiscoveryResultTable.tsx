@@ -8,7 +8,7 @@ import {
   RowSelectionState,
   useReactTable,
 } from "@tanstack/react-table";
-import { AntTabs, Box, Flex, Text, VStack } from "fidesui";
+import { AntTabs as Tabs, Box, Flex, Text, VStack } from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 
 import {
@@ -174,7 +174,7 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
 
   return (
     <>
-      <AntTabs
+      <Tabs
         items={filterTabs.map((tab) => ({
           key: tab.key,
           label: tab.label,

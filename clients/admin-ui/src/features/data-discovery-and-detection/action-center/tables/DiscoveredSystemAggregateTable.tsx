@@ -7,7 +7,7 @@ import {
   AntButton as Button,
   AntDropdown as Dropdown,
   AntEmpty as Empty,
-  AntTabs,
+  AntTabs as Tabs,
   AntTooltip as Tooltip,
   Box,
   Flex,
@@ -205,7 +205,7 @@ export const DiscoveredSystemAggregateTable = ({
 
   return (
     <>
-      <AntTabs
+      <Tabs
         items={filterTabs.map((tab) => ({
           key: tab.hash,
           label: tab.label,

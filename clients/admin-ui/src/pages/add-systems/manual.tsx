@@ -1,4 +1,4 @@
-import { AntTabs, Box, Heading, Text } from "fidesui";
+import { AntTabs as Tabs, Box, Heading, Text } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import React, { useMemo } from "react";
@@ -65,7 +65,7 @@ const NewManualSystem: NextPage = () => {
         <Text fontSize="sm" mb={8}>
           {DESCRIBE_SYSTEM_COPY}
         </Text>
-        <AntTabs items={tabData} activeKey={activeKey} onChange={onTabChange} />
+        <Tabs items={tabData} activeKey={activeKey} onChange={onTabChange} />
       </Box>
     </Layout>
   );

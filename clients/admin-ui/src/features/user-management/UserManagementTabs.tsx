@@ -1,4 +1,4 @@
-import { AntTabs, Box, Flex } from "fidesui";
+import { AntTabs as Tabs, Box, Flex } from "fidesui";
 import RoleDescriptionDrawer from "user-management/RoleDescriptionDrawer";
 
 import { useAppSelector } from "~/app/hooks";
@@ -67,7 +67,7 @@ const UserManagementTabs = ({
     },
   ];
 
-  return <AntTabs items={tabs} />;
+  return <Tabs items={tabs} />;
 };
 
 export default UserManagementTabs;

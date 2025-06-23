@@ -3,7 +3,7 @@ import {
   selectConnectionTypeState,
   setStep,
 } from "connection-type/connection-type.slice";
-import { AntTabs, AntTabsProps, VStack } from "fidesui";
+import { AntTabs as Tabs, AntTabsProps as TabsProps, VStack } from "fidesui";
 import React, {
   useCallback,
   useEffect,
@@ -42,10 +42,10 @@ const ConfigureConnector = () => {
   };
 
   const tabData = useMemo(() => {
-    const result: AntTabsProps["items"] = [];
+    const result: TabsProps["items"] = [];
     if (connector?.options) {
       connector.options.forEach((option) => {
-        let data: NonNullable<AntTabsProps["items"]>[number] | undefined;
+        let data: NonNullable<TabsProps["items"]>[number] | undefined;
         switch (option) {
           case ConfigurationSettings.CONNECTOR_PARAMETERS:
             data = {
@@ -135,7 +135,7 @@ const ConfigureConnector = () => {
 
   return (
     <VStack alignItems="stretch" gap="18px">
-      <AntTabs
+      <Tabs
         items={tabData}
         activeKey={selectedItem}
         onChange={handleNavChange}

@@ -1,4 +1,11 @@
-import { AntTabs, AntTabsProps, Box, Heading, Text, VStack } from "fidesui";
+import {
+  AntTabs as Tabs,
+  AntTabsProps as TabsProps,
+  Box,
+  Heading,
+  Text,
+  VStack,
+} from "fidesui";
 import React, { useEffect, useMemo, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
@@ -31,10 +38,10 @@ const EditConnection = () => {
   );
 
   const tabData = useMemo(() => {
-    const result: AntTabsProps["items"] = [];
+    const result: TabsProps["items"] = [];
     if (connector?.options) {
       connector.options.forEach((option) => {
-        let data: NonNullable<AntTabsProps["items"]>[number] | undefined;
+        let data: NonNullable<TabsProps["items"]>[number] | undefined;
         switch (option) {
           case ConfigurationSettings.CONNECTOR_PARAMETERS:
             data = {
@@ -110,7 +117,7 @@ const EditConnection = () => {
         </Box>
       </Heading>
       <VStack alignItems="stretch" flex="1" gap="18px">
-        <AntTabs items={tabData} />
+        <Tabs items={tabData} />
       </VStack>
     </>
   ) : null;

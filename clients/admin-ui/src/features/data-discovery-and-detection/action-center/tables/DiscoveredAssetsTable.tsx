@@ -8,7 +8,7 @@ import {
   AntDefaultOptionType as DefaultOptionType,
   AntDropdown as Dropdown,
   AntEmpty as Empty,
-  AntTabs,
+  AntTabs as Tabs,
   AntTooltip as Tooltip,
   Flex,
   HStack,
@@ -338,7 +338,7 @@ export const DiscoveredAssetsTable = ({
 
   return (
     <>
-      <AntTabs
+      <Tabs
         items={filterTabs.map((tab) => ({
           key: tab.hash,
           label: tab.label,

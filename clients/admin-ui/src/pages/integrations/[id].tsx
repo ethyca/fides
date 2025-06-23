@@ -1,8 +1,8 @@
 import {
   AntButton as Button,
   AntFlex,
-  AntTabs,
-  AntTabsProps,
+  AntTabs as Tabs,
+  AntTabsProps as TabsProps,
   Box,
   Flex,
   Spacer,
@@ -82,7 +82,7 @@ const IntegrationDetailView: NextPage = () => {
   const supportsConnectionTest =
     connection?.connection_type !== ConnectionType.MANUAL_WEBHOOK;
 
-  const tabs: AntTabsProps["items"] = [];
+  const tabs: TabsProps["items"] = [];
 
   // Show Details tab for integrations without connection, Connection tab for others
   if (enabledFeatures?.includes(IntegrationFeatureEnum.WITHOUT_CONNECTION)) {
@@ -215,7 +215,7 @@ const IntegrationDetailView: NextPage = () => {
               <Spinner />
             ) : (
               !!connection && (
-                <AntTabs
+                <Tabs
                   items={tabs}
                   activeKey={activeTab}
                   onChange={onTabChange}

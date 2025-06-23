@@ -1,7 +1,7 @@
 import {
   AntButton as Button,
   AntSelect as Select,
-  AntTabs,
+  AntTabs as Tabs,
   Flex,
   Heading,
   Icons,
@@ -181,7 +181,7 @@ const PrivacyNoticeTranslationForm = ({
       <FieldArray
         name="translations"
         render={() => (
-          <AntTabs
+          <Tabs
             activeKey={activeLanguage}
             onChange={handleTabSelected}
             type="editable-card"

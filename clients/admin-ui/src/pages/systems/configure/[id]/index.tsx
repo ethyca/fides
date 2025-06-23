@@ -1,4 +1,4 @@
-import { AntButton as Button, AntTabs, Text } from "fidesui";
+import { AntButton as Button, AntTabs as Tabs, Text } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
@@ -90,7 +90,7 @@ const ConfigureSystem: NextPage = () => {
           { title: system?.name || "" },
         ]}
       />
-      <AntTabs
+      <Tabs
         activeKey={activeKey}
         onChange={onTabChange}
         items={tabData}

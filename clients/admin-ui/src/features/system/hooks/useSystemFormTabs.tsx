@@ -1,5 +1,5 @@
 import { DataFlowAccordion } from "common/system-data-flow/DataFlowAccordion";
-import { AntTabsProps, Box, Link, Text, useToast } from "fidesui";
+import { AntTabsProps as TabsProps, Box, Link, Text, useToast } from "fidesui";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
@@ -213,7 +213,7 @@ const useSystemFormTabs = ({
 
   const showNewIntegrationNotice = hasPlus;
 
-  const tabData: NonNullable<AntTabsProps["items"]> = [
+  const tabData: NonNullable<TabsProps["items"]> = [
     {
       label: "Information",
       key: "information",
