@@ -242,16 +242,16 @@ class ManualTaskInstance(Base):
         return "manual_task_instance"
 
     # Database columns
-    task_id = Column(String, ForeignKey("manual_task.id", ondelete="SET NULL"), nullable=True)
+    task_id = Column(
+        String, ForeignKey("manual_task.id", ondelete="SET NULL"), nullable=True
+    )
     config_id = Column(
         String, ForeignKey("manual_task_config.id", ondelete="RESTRICT"), nullable=False
     )
     # entity id is the entity that the instance relates to
     # (e.g. a privacy request is an entity that has its own manual task instance)
     entity_id = Column(String, nullable=False)
-    entity_type = Column(
-        EnumColumn(ManualTaskEntityType), nullable=False
-    )
+    entity_type = Column(EnumColumn(ManualTaskEntityType), nullable=False)
     # ignore[assignment] because the mypy and sqlalchemy types mismatch
     # upgrading to 2.0 allows mapping which provides better type safety visibility.
     status = Column(EnumColumn(StatusType), nullable=False, default=StatusType.pending)  # type: ignore[assignment]
@@ -369,11 +369,6 @@ class ManualTaskInstance(Base):
         # Delete the instance itself
         db.delete(self)
 
-    @property
-    def is_orphaned(self) -> bool:
-        """Check if this instance is orphaned (no parent task)."""
-        return self.task_id is None
-
 
 class ManualTaskReference(Base):
     """Join table to associate manual tasks with multiple references.
@@ -406,7 +401,9 @@ class ManualTaskConfig(Base):
     def __tablename__(cls) -> str:
         return "manual_task_config"
 
-    task_id = Column(String, ForeignKey("manual_task.id", ondelete="SET NULL"), nullable=True)
+    task_id = Column(
+        String, ForeignKey("manual_task.id", ondelete="SET NULL"), nullable=True
+    )
     config_type = Column(EnumColumn(ManualTaskConfigurationType), nullable=False)
     version = Column(Integer, nullable=False, default=1)
     is_current = Column(Boolean, nullable=False, default=True)
@@ -476,23 +473,6 @@ class ManualTaskConfig(Base):
                 return field
         return None
 
-    # Properties
-    @property
-    def is_orphaned(self) -> bool:
-        """Check if this config is orphaned (no parent task)."""
-        return self.task_id is None
-
-    # Class methods for filtering
-    @classmethod
-    def get_active_configs(cls, db: Session):
-        """Get configs that are not orphaned (have a task_id)."""
-        return db.query(cls).filter(cls.task_id.isnot(None))
-
-    @classmethod
-    def get_orphaned_configs(cls, db: Session):
-        """Get configs that are orphaned (task_id is None)."""
-        return db.query(cls).filter(cls.task_id.is_(None))
-
 
 class ManualTaskConfigField(Base):
     """Model for storing fields associated with each config."""
@@ -501,7 +481,9 @@ class ManualTaskConfigField(Base):
     def __tablename__(cls) -> str:
         return "manual_task_config_field"
 
-    task_id = Column(String, ForeignKey("manual_task.id", ondelete="SET NULL"), nullable=True)
+    task_id = Column(
+        String, ForeignKey("manual_task.id", ondelete="SET NULL"), nullable=True
+    )
     config_id = Column(String, ForeignKey("manual_task_config.id"), nullable=False)
     field_key = Column(String, nullable=False)
     field_type = Column(
@@ -512,9 +494,7 @@ class ManualTaskConfigField(Base):
     )
 
     # Relationships
-    config = relationship(
-        "ManualTaskConfig", back_populates="field_definitions"
-    )
+    config = relationship("ManualTaskConfig", back_populates="field_definitions")
     submissions = relationship(
         "ManualTaskSubmission",
         back_populates="field",
@@ -547,13 +527,14 @@ class ManualTaskConfigField(Base):
         field = super().create(db=db, data=data, check_name=check_name)
 
         # Create a log entry
-        ManualTaskLog.create_log(
-            db=db,
-            task_id=config.task_id,
-            config_id=data["config_id"],
-            status=ManualTaskLogStatus.created,
-            message=f"Created manual task config field for {data['field_key']}",
-        )
+        if config.task_id:
+            ManualTaskLog.create_log(
+                db=db,
+                task_id=config.task_id,
+                config_id=data["config_id"],
+                status=ManualTaskLogStatus.created,
+                message=f"Created manual task config field for {data['field_key']}",
+            )
         return field
 
 
@@ -568,22 +549,30 @@ class ManualTaskSubmission(Base):
         return "manual_task_submission"
 
     # Database columns
-    task_id = Column(String, ForeignKey("manual_task.id", ondelete="SET NULL"), nullable=True)
-    config_id = Column(String, ForeignKey("manual_task_config.id", ondelete="RESTRICT"), nullable=True)
-    field_id = Column(String, ForeignKey("manual_task_config_field.id", ondelete="RESTRICT"), nullable=True)
-    instance_id = Column(String, ForeignKey("manual_task_instance.id", ondelete="CASCADE"), nullable=False)
+    task_id = Column(
+        String, ForeignKey("manual_task.id", ondelete="SET NULL"), nullable=True
+    )
+    config_id = Column(
+        String, ForeignKey("manual_task_config.id", ondelete="RESTRICT"), nullable=True
+    )
+    field_id = Column(
+        String,
+        ForeignKey("manual_task_config_field.id", ondelete="RESTRICT"),
+        nullable=True,
+    )
+    instance_id = Column(
+        String,
+        ForeignKey("manual_task_instance.id", ondelete="CASCADE"),
+        nullable=False,
+    )
     submitted_by = Column(String, ForeignKey("fidesuser.id"), nullable=True)
     submitted_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
     data = Column(JSONB, nullable=False)
 
     # Relationships
     task = relationship("ManualTask", back_populates="submissions")
-    config = relationship(
-        "ManualTaskConfig", back_populates="submissions"
-    )
-    field = relationship(
-        "ManualTaskConfigField", back_populates="submissions"
-    )
+    config = relationship("ManualTaskConfig", back_populates="submissions")
+    field = relationship("ManualTaskConfigField", back_populates="submissions")
     instance = relationship(
         "ManualTaskInstance",
         back_populates="submissions",
@@ -617,9 +606,7 @@ class ManualTaskSubmission(Base):
         db.delete(self)
 
     @staticmethod
-    def delete_submissions_for_instance(
-        db: Session, instance_id: str
-    ) -> None:
+    def delete_submissions_for_instance(db: Session, instance_id: str) -> None:
         """
         Deletes submissions associated with a given instance_id.
         Properly handles attachment cleanup for each submission.
@@ -669,9 +656,7 @@ class ManualTaskLog(Base):
     details = Column(JSONB, nullable=True)
 
     # Relationships
-    task = relationship(
-        "ManualTask", back_populates="logs", foreign_keys=[task_id]
-    )
+    task = relationship("ManualTask", back_populates="logs", foreign_keys=[task_id])
     config = relationship(
         "ManualTaskConfig",
         back_populates="logs",

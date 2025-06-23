@@ -298,8 +298,13 @@ class TestManualTaskConfigDeletion:
             db.commit()
 
         # Verify config and instance still exist
-        assert db.query(ManualTaskConfig).filter_by(id=manual_task_config.id).first() is not None
-        assert db.query(ManualTaskInstance).filter_by(id=instance.id).first() is not None
+        assert (
+            db.query(ManualTaskConfig).filter_by(id=manual_task_config.id).first()
+            is not None
+        )
+        assert (
+            db.query(ManualTaskInstance).filter_by(id=instance.id).first() is not None
+        )
 
         # Clean up
         instance.delete(db)
@@ -387,7 +392,11 @@ class TestManualTaskConfigFieldDeletion:
         assert deleted_field is None
 
     def test_field_deletion_prevents_with_submissions(
-        self, db: Session, manual_task: ManualTask, manual_task_config: ManualTaskConfig, user: FidesUser
+        self,
+        db: Session,
+        manual_task: ManualTask,
+        manual_task_config: ManualTaskConfig,
+        user: FidesUser,
     ):
         """Test that field deletion is prevented when submissions exist due to RESTRICT constraint."""
         from fides.api.models.manual_task import (
@@ -431,8 +440,13 @@ class TestManualTaskConfigFieldDeletion:
             db.commit()
 
         # Verify field and submission still exist
-        assert db.query(ManualTaskConfigField).filter_by(id=field.id).first() is not None
-        assert db.query(ManualTaskSubmission).filter_by(id=submission.id).first() is not None
+        assert (
+            db.query(ManualTaskConfigField).filter_by(id=field.id).first() is not None
+        )
+        assert (
+            db.query(ManualTaskSubmission).filter_by(id=submission.id).first()
+            is not None
+        )
 
         # Clean up by deleting from bottom up
         submission.delete(db)
