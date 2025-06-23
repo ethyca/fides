@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from "uuid";
+
 import { patchUserPreference } from "../services/api";
 import {
   ConsentMechanism,
@@ -34,6 +36,11 @@ import {
   FidesEventOrigin,
 } from "./events";
 import { decodeFidesString } from "./fides-string";
+import {
+  I18n,
+  selectBestExperienceConfigTranslation,
+  selectBestNoticeTranslation,
+} from "./i18n";
 import { transformConsentToFidesUserPreference } from "./shared-consent-utils";
 import { TcfSavePreferences } from "./tcf/types";
 
@@ -87,16 +94,6 @@ async function savePreferencesApi(
   );
 }
 
-/**
- * Updates the user's consent preferences, going through the following steps:
- * 1. Update the cookie object based on new preferences
- * 2. Dispatch a "FidesUpdating" event with the new preferences
- * 3. Update the window.Fides object
- * 4. Save preferences to the `fides_consent` cookie in the browser
- * 5. Save preferences to Fides API or a custom function (`savePreferencesFn`)
- * 6. Remove any cookies from notices that were opted-out from the browser
- * 7. Dispatch a "FidesUpdated" event
- */
 export interface UpdateConsentPreferencesProps {
   consentPreferencesToSave?: Array<SaveConsentPreference>;
   privacyExperienceConfigHistoryId?: string;
@@ -110,6 +107,16 @@ export interface UpdateConsentPreferencesProps {
   tcf?: TcfSavePreferences;
   updateCookie?: (oldCookie: FidesCookie) => Promise<FidesCookie>;
 }
+/**
+ * Updates the user's consent preferences, going through the following steps:
+ * 1. Update the cookie object based on new preferences
+ * 2. Dispatch a "FidesUpdating" event with the new preferences
+ * 3. Update the window.Fides object
+ * 4. Save preferences to the `fides_consent` cookie in the browser
+ * 5. Save preferences to Fides API or a custom function (`savePreferencesFn`)
+ * 6. Remove any cookies from notices that were opted-out from the browser
+ * 7. Dispatch a "FidesUpdated" event
+ */
 export const updateConsentPreferences = async ({
   consentPreferencesToSave,
   privacyExperienceConfigHistoryId,
@@ -219,6 +226,7 @@ const validateConsent = (
   privacyNotices: PrivacyNoticeWithPreference[],
   nonApplicablePrivacyNotices: PrivacyNotice["notice_key"][],
   consent: NoticeConsent,
+  consentMethod: ConsentMethod,
 ) => {
   return Object.entries(consent).reduce<Error | null>((error, [key, value]) => {
     // If we already found an error, don't continue validating
@@ -248,7 +256,8 @@ const validateConsent = (
     if (
       isNoticeOnly &&
       value !== true &&
-      value !== UserConsentPreference.ACKNOWLEDGE
+      value !== UserConsentPreference.ACKNOWLEDGE &&
+      consentMethod !== ConsentMethod.OT_MIGRATION
     ) {
       return new Error(
         `Invalid consent value for notice-only notice key: '${key}'. Must be \`true\` or "acknowledge"`,
@@ -275,35 +284,55 @@ const validateConsent = (
  * If both are provided, fidesString takes priority.
  * Can be used as a convenience method to update consent preferences using the FidesGlobal object.
  */
+export interface UpdateConsentOptions {
+  noticeConsent?: NoticeConsent;
+  fidesString?: string;
+  validation?: UpdateConsentValidation;
+  consentMethod?: ConsentMethod;
+  eventExtraDetails?: FidesEventExtraDetails;
+}
 export const updateConsent = async (
-  experience: FidesGlobal["experience"],
-  cookie: FidesGlobal["cookie"],
-  geolocation: FidesGlobal["geolocation"],
-  fidesOptions: FidesGlobal["options"],
-  options: {
-    consent?: NoticeConsent;
-    fidesString?: string;
-    validation?: UpdateConsentValidation;
-  },
-  consentMethod: ConsentMethod = ConsentMethod.SCRIPT,
-  eventExtraDetails: FidesEventExtraDetails = {
-    trigger: {
-      origin: FidesEventOrigin.EXTERNAL,
-    },
-  },
+  context: Pick<
+    FidesGlobal,
+    "experience" | "cookie" | "geolocation" | "options"
+  >,
+  consentOptions: UpdateConsentOptions,
+  i18n?: I18n,
+  servedNoticeHistoryId?: string,
 ): Promise<void> => {
+  const { experience, cookie, geolocation, options: fidesOptions } = context;
   if (!experience) {
     throw new Error("Experience must be initialized before updating consent");
   }
   if (!cookie) {
     throw new Error("Cookie is not initialized");
   }
+  // If neither consent nor fidesString is provided, raise an error
+  if (!consentOptions?.noticeConsent && !consentOptions?.fidesString) {
+    throw new Error("Either consent object or fidesString must be provided");
+  }
+  if (
+    consentOptions?.validation &&
+    !Object.values(UpdateConsentValidation).includes(consentOptions.validation)
+  ) {
+    throw new Error(
+      `Validation must be one of: ${Object.values(UpdateConsentValidation).join(
+        ", ",
+      )} (default is ${UpdateConsentValidation.THROW})`,
+    );
+  }
 
   const {
-    consent,
+    noticeConsent,
     fidesString,
     validation = UpdateConsentValidation.THROW,
-  } = options;
+    consentMethod = ConsentMethod.SCRIPT,
+    eventExtraDetails = {
+      trigger: {
+        origin: FidesEventOrigin.EXTERNAL,
+      },
+    },
+  } = consentOptions;
 
   const {
     experience_config: experienceConfig,
@@ -341,6 +370,7 @@ export const updateConsent = async (
           privacyNotices || [],
           nonApplicablePrivacyNotices || [],
           finalConsent,
+          consentMethod,
         );
 
         if (validationError) {
@@ -352,18 +382,19 @@ export const updateConsent = async (
         error instanceof Error ? error.message : String(error);
       handleValidationError(`Invalid fidesString provided: ${errorMessage}`);
     }
-  } else if (consent) {
+  } else if (noticeConsent) {
     // Validate consent values and collect any validation errors
     const validationError = validateConsent(
       privacyNotices || [],
       nonApplicablePrivacyNotices || [],
-      consent,
+      noticeConsent,
+      consentMethod,
     );
 
     if (validationError) {
       handleValidationError(validationError.message);
     }
-    finalConsent = { ...cookie.consent, ...consent };
+    finalConsent = { ...cookie.consent, ...noticeConsent };
   }
 
   // Prepare consentPreferencesToSave by mapping from finalConsent
@@ -373,7 +404,13 @@ export const updateConsent = async (
     const notice = privacyNotices?.find((n) => n.notice_key === key);
     // non-applicable privacy notices are ignored
     if (notice) {
-      const historyId = notice.translations?.[0]?.privacy_notice_history_id;
+      let historyId: string | undefined;
+      if (i18n) {
+        const bestNoticeTranslation = selectBestNoticeTranslation(i18n, notice);
+        historyId = bestNoticeTranslation?.privacy_notice_history_id;
+      } else {
+        historyId = notice.translations?.[0]?.privacy_notice_history_id;
+      }
       let consentPreference: UserConsentPreference;
       if (typeof value === "boolean") {
         consentPreference = transformConsentToFidesUserPreference(
@@ -398,11 +435,25 @@ export const updateConsent = async (
   // Get privacy_experience_config_history_id from experience config translations
   let configHistoryId: string | undefined;
   if (experienceConfig?.translations?.length) {
-    configHistoryId =
-      experienceConfig.translations[0].privacy_experience_config_history_id;
+    if (i18n) {
+      const bestExperienceConfigTranslation =
+        selectBestExperienceConfigTranslation(i18n, experienceConfig);
+      configHistoryId =
+        bestExperienceConfigTranslation?.privacy_experience_config_history_id;
+    } else {
+      configHistoryId =
+        experienceConfig.translations[0].privacy_experience_config_history_id;
+    }
   }
 
   const fidesRegionString = constructFidesRegionString(geolocation);
+
+  // Generate a new served notice history ID for the served notice
+  // DEFER: This should match with the id used in the notices-served endpoint
+  if (!servedNoticeHistoryId) {
+    // eslint-disable-next-line no-param-reassign
+    servedNoticeHistoryId = uuidv4();
+  }
 
   // Call updateConsentPreferences with necessary parameters
   return updateConsentPreferences({
@@ -414,5 +465,6 @@ export const updateConsent = async (
     userLocationString: fidesRegionString,
     cookie,
     eventExtraDetails,
+    servedNoticeHistoryId,
   });
 };

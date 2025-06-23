@@ -51,14 +51,10 @@ describe("preferences", () => {
     it("should reject when experience is not initialized", async () => {
       const mockFides = createMockFides({ experience: undefined });
       await expect(
-        updateConsent(
-          mockFides.experience,
-          mockFides.cookie,
-          mockFides.geolocation,
-          mockFides.options,
-          { consent: { analytics: true } },
-          ConsentMethod.SCRIPT,
-        ),
+        updateConsent(mockFides, {
+          noticeConsent: { analytics: true },
+          consentMethod: ConsentMethod.SCRIPT,
+        }),
       ).rejects.toThrow(
         "Experience must be initialized before updating consent",
       );
@@ -67,14 +63,10 @@ describe("preferences", () => {
     it("should reject when cookie is not initialized", async () => {
       const mockFides = createMockFides({ cookie: undefined });
       await expect(
-        updateConsent(
-          mockFides.experience,
-          mockFides.cookie,
-          mockFides.geolocation,
-          mockFides.options,
-          { consent: { analytics: true } },
-          ConsentMethod.SCRIPT,
-        ),
+        updateConsent(mockFides, {
+          noticeConsent: { analytics: true },
+          consentMethod: ConsentMethod.SCRIPT,
+        }),
       ).rejects.toThrow("Cookie is not initialized");
     });
 
@@ -88,17 +80,10 @@ describe("preferences", () => {
 
       // Try to use a non-applicable notice key
       await expect(
-        updateConsent(
-          mockFides.experience,
-          mockFides.cookie,
-          mockFides.geolocation,
-          mockFides.options,
-          {
-            consent: { marketing: true },
-            validation: UpdateConsentValidation.THROW,
-          },
-          ConsentMethod.SCRIPT,
-        ),
+        updateConsent(mockFides, {
+          noticeConsent: { marketing: true },
+          consentMethod: ConsentMethod.SCRIPT,
+        }),
       ).rejects.toThrow(/is not applicable/);
     });
 
@@ -123,17 +108,10 @@ describe("preferences", () => {
 
       // Try to use a key that doesn't exist in either privacy_notices or non_applicable_privacy_notices
       await expect(
-        updateConsent(
-          mockFides.experience,
-          mockFides.cookie,
-          mockFides.geolocation,
-          mockFides.options,
-          {
-            consent: { nonexistent: true },
-            validation: UpdateConsentValidation.THROW,
-          },
-          ConsentMethod.SCRIPT,
-        ),
+        updateConsent(mockFides, {
+          noticeConsent: { nonexistent: true },
+          consentMethod: ConsentMethod.SCRIPT,
+        }),
       ).rejects.toThrow(/not a valid notice key/);
     });
 
@@ -163,14 +141,10 @@ describe("preferences", () => {
         },
       ] as any[];
 
-      await updateConsent(
-        mockFides.experience,
-        mockFides.cookie,
-        mockFides.geolocation,
-        mockFides.options,
-        { consent: mockConsent },
-        ConsentMethod.SCRIPT,
-      );
+      await updateConsent(mockFides, {
+        noticeConsent: mockConsent,
+        consentMethod: ConsentMethod.SCRIPT,
+      });
 
       // Verify updateConsentPreferences was called with the right args
       expect(updatePreferencesSpy).toHaveBeenCalledTimes(1);
@@ -229,14 +203,10 @@ describe("preferences", () => {
         },
       ] as any[];
 
-      await updateConsent(
-        mockFides.experience,
-        mockFides.cookie,
-        mockFides.geolocation,
-        mockFides.options,
-        { fidesString: "some-encoded-string" },
-        ConsentMethod.SCRIPT,
-      );
+      await updateConsent(mockFides, {
+        fidesString: "some-encoded-string",
+        consentMethod: ConsentMethod.SCRIPT,
+      });
 
       // Verify decodeFidesString was called
       expect(mockDecodeFidesString).toHaveBeenCalledWith("some-encoded-string");
@@ -284,19 +254,13 @@ describe("preferences", () => {
       ];
 
       // Use string values for consent
-      await updateConsent(
-        mockFides.experience,
-        mockFides.cookie,
-        mockFides.geolocation,
-        mockFides.options,
-        {
-          consent: {
-            analytics: UserConsentPreference.OPT_IN,
-            marketing: UserConsentPreference.OPT_OUT,
-          },
+      await updateConsent(mockFides, {
+        noticeConsent: {
+          analytics: UserConsentPreference.OPT_IN,
+          marketing: UserConsentPreference.OPT_OUT,
         },
-        ConsentMethod.SCRIPT,
-      );
+        consentMethod: ConsentMethod.SCRIPT,
+      });
 
       // Verify updateConsentPreferences was called with the right args
       expect(updatePreferencesSpy).toHaveBeenCalledTimes(1);
@@ -349,19 +313,13 @@ describe("preferences", () => {
       ];
 
       // Use mixed boolean and string values for consent
-      await updateConsent(
-        mockFides.experience,
-        mockFides.cookie,
-        mockFides.geolocation,
-        mockFides.options,
-        {
-          consent: {
-            analytics: true, // boolean
-            marketing: UserConsentPreference.OPT_OUT, // string
-          },
+      await updateConsent(mockFides, {
+        noticeConsent: {
+          analytics: true, // boolean
+          marketing: UserConsentPreference.OPT_OUT, // string
         },
-        ConsentMethod.SCRIPT,
-      );
+        consentMethod: ConsentMethod.SCRIPT,
+      });
 
       // Verify updateConsentPreferences was called with the right args
       expect(updatePreferencesSpy).toHaveBeenCalledTimes(1);
@@ -406,31 +364,19 @@ describe("preferences", () => {
 
       // Try to use opt_in for a NOTICE_ONLY type with validation='throw'
       await expect(
-        updateConsent(
-          mockFides.experience,
-          mockFides.cookie,
-          mockFides.geolocation,
-          mockFides.options,
-          {
-            consent: { essential: UserConsentPreference.OPT_IN },
-            validation: UpdateConsentValidation.THROW,
-          },
-          ConsentMethod.SCRIPT,
-        ),
+        updateConsent(mockFides, {
+          noticeConsent: { essential: UserConsentPreference.OPT_IN },
+          validation: UpdateConsentValidation.THROW,
+          consentMethod: ConsentMethod.SCRIPT,
+        }),
       ).rejects.toThrow(/Invalid consent value/);
 
       // Expect notice-only true to be converted to ACKNOWLEDGE
-      await updateConsent(
-        mockFides.experience,
-        mockFides.cookie,
-        mockFides.geolocation,
-        mockFides.options,
-        {
-          consent: { essential: true },
-          validation: UpdateConsentValidation.THROW,
-        },
-        ConsentMethod.SCRIPT,
-      );
+      await updateConsent(mockFides, {
+        noticeConsent: { essential: true },
+        validation: UpdateConsentValidation.THROW,
+        consentMethod: ConsentMethod.SCRIPT,
+      });
       expect(updatePreferencesSpy).toHaveBeenCalledTimes(1);
       const callArgs = updatePreferencesSpy.mock.calls[0][0];
       expect(callArgs.consentPreferencesToSave).toHaveLength(1);
@@ -456,18 +402,12 @@ describe("preferences", () => {
       ];
 
       // Test with explicit ACKNOWLEDGE value
-      await updateConsent(
-        mockFides.experience,
-        mockFides.cookie,
-        mockFides.geolocation,
-        mockFides.options,
-        {
-          consent: {
-            essential: UserConsentPreference.ACKNOWLEDGE,
-          },
+      await updateConsent(mockFides, {
+        noticeConsent: {
+          essential: UserConsentPreference.ACKNOWLEDGE,
         },
-        ConsentMethod.SCRIPT,
-      );
+        consentMethod: ConsentMethod.SCRIPT,
+      });
 
       // Verify updateConsentPreferences was called with the right args
       expect(updatePreferencesSpy).toHaveBeenCalledTimes(1);
@@ -483,20 +423,14 @@ describe("preferences", () => {
       updatePreferencesSpy.mockClear();
 
       // Test that NOTICE_ONLY forces ACKNOWLEDGE when using validation="ignore"
-      await updateConsent(
-        mockFides.experience,
-        mockFides.cookie,
-        mockFides.geolocation,
-        mockFides.options,
-        {
-          consent: {
-            // This would be invalid with validation="throw", but we're using "ignore"
-            essential: true,
-          },
-          validation: UpdateConsentValidation.IGNORE,
+      await updateConsent(mockFides, {
+        noticeConsent: {
+          // This would be invalid with validation="throw", but we're using "ignore"
+          essential: true,
         },
-        ConsentMethod.SCRIPT,
-      );
+        validation: UpdateConsentValidation.IGNORE,
+        consentMethod: ConsentMethod.SCRIPT,
+      });
 
       // Verify updateConsentPreferences was called with the right args
       expect(updatePreferencesSpy).toHaveBeenCalledTimes(1);
