@@ -142,7 +142,7 @@ export const DiscoveredAssetsTable = ({
   }, [data, systemId, onSystemName, setTotalPages, systemName]);
 
   const { columns } = useDiscoveredAssetsColumns({
-    readonly: actionsDisabled,
+    readonly: actionsDisabled ?? false,
     onTabChange,
   });
 
@@ -377,7 +377,7 @@ export const DiscoveredAssetsTable = ({
                     label: "Assign system",
                     onClick: () => setIsAssignSystemModalOpen(true),
                   },
-                  ...(activeParams.diff_status.includes(DiffStatus.MUTED)
+                  ...(activeParams?.diff_status?.includes(DiffStatus.MUTED)
                     ? [
                         {
                           key: "restore",

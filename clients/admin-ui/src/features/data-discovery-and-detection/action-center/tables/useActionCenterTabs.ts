@@ -38,10 +38,12 @@ const useActionCenterTabs = (systemId?: string) => {
     },
   ];
 
+  const activeTabData =
+    filterTabs.find((tab) => tab.hash === activeTab) ?? filterTabs[0];
+
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  const { diff_status, system } = filterTabs.find(
-    (tab) => tab.hash === activeTab,
-  )!.params;
+  const { diff_status, system } = activeTabData.params;
+
   const actionsDisabled = diff_status.includes(DiffStatus.MONITORED);
 
   const activeParams = systemId ? { diff_status, system } : { diff_status };

@@ -389,7 +389,7 @@ describe("Integration management for data detection & discovery", () => {
       cy.intercept("/api/v1/plus/discovery-monitor/databases", {
         fixture: "empty-pagination.json",
       }).as("getEmptyDatabases");
-      cy.getByTestId("tab-Data discovery").click();
+      cy.getAntTab("Data discovery").click({ force: true });
       cy.wait("@getEmptyMonitors");
       cy.getByTestId("no-results-notice").should("exist");
     });
@@ -408,7 +408,7 @@ describe("Integration management for data detection & discovery", () => {
         cy.intercept("DELETE", "/api/v1/plus/discovery-monitor/*", {
           response: 200,
         }).as("deleteMonitor");
-        cy.getByTestId("tab-Data discovery").click();
+        cy.getAntTab("Data discovery").click({ force: true });
         cy.wait("@getMonitors");
         stubSharedMonitorConfig();
       });
@@ -628,7 +628,7 @@ describe("Integration management for data detection & discovery", () => {
         cy.intercept("POST", "/api/v1/plus/discovery-monitor/databases", {
           fixture: "empty-pagination.json",
         }).as("getEmptyDatabases");
-        cy.getByTestId("tab-Data discovery").click();
+        cy.getAntTab("Data discovery").click({ force: true });
         cy.wait("@getMonitors");
       });
 
@@ -659,7 +659,7 @@ describe("Integration management for data detection & discovery", () => {
         cy.intercept("GET", "/api/v1/connection_type?*", {
           fixture: "connectors/connection_types.json",
         }).as("getConnectionTypes");
-        cy.getByTestId("tab-Data discovery").click();
+        cy.getAntTab("Data discovery").click({ force: true });
         cy.wait("@getMonitors");
       });
 
@@ -728,7 +728,7 @@ describe("Integration management for data detection & discovery", () => {
           body: { items: [], total: 0, page: 1, size: 50, pages: 0 },
         }).as("getEmptyDatabases");
         cy.visit("/integrations/salesforce_integration");
-        cy.getByTestId("tab-Data discovery").click();
+        cy.getAntTab("Data discovery").click({ force: true });
         cy.wait("@getSalesforceMonitors");
       });
 

@@ -34,6 +34,14 @@ declare global {
         optionLabel: string | number,
         clickOptions?: { force?: boolean },
       ) => void;
+
+      /**
+       * Get an option from an Ant Design Tabs component by label
+       * @param tab The label of the tab to get
+       * @example cy.getAntTab("Some tab").click();
+       * @example cy.getAntTab("Some tab").should("have.attr", "aria-disabled", "true");
+       */
+      getAntTab: (tab: string) => Chainable;
     }
   }
 }
@@ -119,6 +127,10 @@ Cypress.Commands.add(
   },
   (subject, option) =>
     cy.get(subject.selector).getAntMenuOption(option).click(),
+);
+
+Cypress.Commands.add("getAntTab", (tab: string) =>
+  cy.get(`.ant-tabs-tab-btn`).filter(`:contains("${tab}")`),
 );
 
 export {};
