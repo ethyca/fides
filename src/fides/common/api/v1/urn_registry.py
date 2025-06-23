@@ -155,6 +155,10 @@ AUTHORIZE = "/connection/{connection_key}/authorize"
 ACCESS_MANUAL_WEBHOOKS = "/access_manual_webhook"
 ACCESS_MANUAL_WEBHOOK = CONNECTION_BY_KEY + "/access_manual_webhook"
 
+# Manual Tasks
+MANUAL_TASKS = "/manual-tasks"
+MANUAL_TASK = CONNECTION_BY_KEY + "/manual-task"
+
 # Collection URLs
 DATASETS = "/dataset"
 DATASET_CONFIG = "/datasetconfig"

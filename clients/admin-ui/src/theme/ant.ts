@@ -69,6 +69,10 @@ export const antTheme: AntThemeConfig = {
       darkSubMenuItemBg: palette.FIDESUI_MINOS,
       darkItemSelectedBg: palette.FIDESUI_SANDSTONE,
     },
+    Table: {
+      cellPaddingBlockSM: 8,
+      cellPaddingInlineSM: 16,
+    },
     Tooltip: {
       colorBgSpotlight: palette.FIDESUI_MINOS,
       colorText: palette.FIDESUI_NEUTRAL_50,

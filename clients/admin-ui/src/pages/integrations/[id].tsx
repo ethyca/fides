@@ -29,7 +29,6 @@ import { useIntegrationAuthorization } from "~/features/integrations/hooks/useIn
 import IntegrationBox from "~/features/integrations/IntegrationBox";
 import { IntegrationFeatureEnum } from "~/features/integrations/IntegrationFeatureEnum";
 import { IntegrationSetupSteps } from "~/features/integrations/setup-steps/IntegrationSetupSteps";
-import SharedConfigModal from "~/features/integrations/SharedConfigModal";
 import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
 import { ConnectionType } from "~/types/api";
@@ -67,8 +66,11 @@ const IntegrationDetailView: NextPage = () => {
 
   const { onOpen, isOpen, onClose } = useDisclosure();
 
-  const { overview, instructions, description, tags, enabledFeatures } =
-    getIntegrationTypeInfo(connection?.connection_type);
+  const { overview, instructions, description, enabledFeatures } =
+    getIntegrationTypeInfo(
+      connection?.connection_type,
+      connection?.saas_config?.type,
+    );
 
   if (
     !!connection &&
@@ -76,9 +78,6 @@ const IntegrationDetailView: NextPage = () => {
   ) {
     router.push(INTEGRATION_MANAGEMENT_ROUTE);
   }
-
-  // Check if the integration has detection support capability
-  const hasDetectionSupport = tags?.includes("Detection");
 
   const supportsConnectionTest =
     connection?.connection_type !== ConnectionType.MANUAL_WEBHOOK;
@@ -91,7 +90,7 @@ const IntegrationDetailView: NextPage = () => {
       label: "Details",
       key: "details",
       children: (
-        <Box maxW="720px">
+        <Box>
           <Flex>
             <Button onClick={onOpen} data-testid="manage-btn">
               Edit integration
@@ -114,7 +113,7 @@ const IntegrationDetailView: NextPage = () => {
       label: "Connection",
       key: "connection",
       children: (
-        <Box maxW="720px">
+        <Box>
           {supportsConnectionTest && (
             <Flex
               borderRadius="md"
@@ -209,8 +208,9 @@ const IntegrationDetailView: NextPage = () => {
       >
         <AntFlex gap={24}>
           <div className="grow">
-            <SharedConfigModal />
-            <IntegrationBox integration={connection} showDeleteButton />
+            <div className="mb-6">
+              <IntegrationBox integration={connection} showDeleteButton />
+            </div>
             {integrationIsLoading ? (
               <Spinner />
             ) : (
@@ -223,16 +223,20 @@ const IntegrationDetailView: NextPage = () => {
               )
             )}
           </div>
-          {hasDetectionSupport && (
-            <div className="w-[350px] shrink-0">
-              <IntegrationSetupSteps
-                testData={testData}
-                testIsLoading={testIsLoading}
-                connectionOption={integrationOption!}
-                connection={connection!}
-              />
-            </div>
-          )}
+          <div className="w-[350px] shrink-0">
+            {integrationIsLoading ? (
+              <Spinner />
+            ) : (
+              !!connection && (
+                <IntegrationSetupSteps
+                  testData={testData}
+                  testIsLoading={testIsLoading}
+                  connectionOption={integrationOption!}
+                  connection={connection}
+                />
+              )
+            )}
+          </div>
         </AntFlex>
       </PageHeader>
     </Layout>

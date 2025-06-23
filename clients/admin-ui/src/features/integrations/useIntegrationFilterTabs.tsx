@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useFlags } from "~/features/common/features/features.slice";
 import { IntegrationTypeInfo } from "~/features/integrations/add-integration/allIntegrationTypes";
 
-enum IntegrationFilterTabHash {
+export enum IntegrationFilterTabHash {
   ALL = "all",
   CRM = "crm",
   DATABASE = "database",

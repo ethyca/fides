@@ -43,7 +43,7 @@ class TestManualTaskEnums:
     def test_manual_task_log_status(self):
         """Test ManualTaskLogStatus enum values."""
         assert ManualTaskLogStatus.created == "created"
-        assert ManualTaskLogStatus.in_processing == "in_processing"
+        assert ManualTaskLogStatus.in_progress == "in_progress"
         assert ManualTaskLogStatus.complete == "complete"
         assert ManualTaskLogStatus.error == "error"
         assert ManualTaskLogStatus.retrying == "retrying"

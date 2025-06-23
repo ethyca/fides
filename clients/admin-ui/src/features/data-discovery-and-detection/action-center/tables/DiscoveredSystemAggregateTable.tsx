@@ -90,6 +90,10 @@ export const DiscoveredSystemAggregateTable = ({
   const { filterTabs, activeTab, onTabChange, activeParams, actionsDisabled } =
     useActionCenterTabs();
 
+  useEffect(() => {
+    resetPageIndexToDefault();
+  }, [monitorId, searchQuery, resetPageIndexToDefault]);
+
   const { data, isLoading, isFetching } = useGetDiscoveredSystemAggregateQuery({
     key: monitorId,
     page: pageIndex,
@@ -100,7 +104,7 @@ export const DiscoveredSystemAggregateTable = ({
 
   useEffect(() => {
     if (data) {
-      setTotalPages(data.pages || 1);
+      setTotalPages(data.pages ?? 1);
     }
   }, [data, setTotalPages]);
 

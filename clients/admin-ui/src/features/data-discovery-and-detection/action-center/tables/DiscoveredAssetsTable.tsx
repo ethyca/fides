@@ -123,6 +123,10 @@ export const DiscoveredAssetsTable = ({
   const { filterTabs, activeTab, onTabChange, activeParams, actionsDisabled } =
     useActionCenterTabs(systemId);
 
+  useEffect(() => {
+    resetPageIndexToDefault();
+  }, [monitorId, searchQuery, activeTab, resetPageIndexToDefault]);
+
   const { data, isLoading, isFetching } = useGetDiscoveredAssetsQuery({
     key: monitorId,
     page: pageIndex,
@@ -135,7 +139,7 @@ export const DiscoveredAssetsTable = ({
     if (data) {
       const firstSystemName =
         data.items[0]?.system || systemName || systemId || "";
-      setTotalPages(data.pages || 1);
+      setTotalPages(data.pages ?? 1);
       setSystemName(firstSystemName);
       onSystemName?.(firstSystemName);
     }

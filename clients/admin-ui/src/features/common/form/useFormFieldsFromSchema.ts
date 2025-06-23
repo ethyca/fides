@@ -65,6 +65,18 @@ export const useFormFieldsFromSchema = (
             };
           }
         }
+        if (
+          secretsSchema.title === "WebsiteSchema" &&
+          secretsSchema.properties[key].title === "URL"
+        ) {
+          if (
+            !updatedValues.secrets[key].startsWith("http://") &&
+            !updatedValues.secrets[key].startsWith("https://")
+          ) {
+            updatedValues.secrets[key] =
+              `https://${updatedValues.secrets[key]}`;
+          }
+        }
       });
     }
     return updatedValues;
