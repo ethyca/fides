@@ -9,6 +9,7 @@ import { useEffect, useMemo } from "react";
 
 import { useFeatures } from "~/features/common/features";
 import Restrict from "~/features/common/Restrict";
+import { ManualTasks } from "~/features/manual-tasks/ManualTasks";
 import { RequestTable } from "~/features/privacy-requests/RequestTable";
 import SubmitPrivacyRequest from "~/features/privacy-requests/SubmitPrivacyRequest";
 import { ScopeRegistryEnum } from "~/types/api";
@@ -19,7 +20,6 @@ import {
   PRIVACY_REQUEST_TABS,
   usePrivacyRequestTabs,
 } from "./hooks/usePrivacyRequestTabs";
-import ManualTaskTab from "./ManualTaskTab";
 
 const ActionButtons = dynamic(
   () => import("~/features/privacy-requests/buttons/ActionButtons"),
@@ -48,7 +48,7 @@ const PrivacyRequestsContainer = () => {
       items.push({
         key: PRIVACY_REQUEST_TABS.MANUAL_TASK,
         label: "Manual tasks",
-        children: <ManualTaskTab />,
+        children: <ManualTasks />,
       });
     }
 

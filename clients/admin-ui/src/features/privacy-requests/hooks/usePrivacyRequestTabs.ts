@@ -83,7 +83,6 @@ export const usePrivacyRequestTabs = () => {
     (tabKey: string) => {
       const validTabs = Object.values(PRIVACY_REQUEST_TABS) as string[];
       if (!validTabs.includes(tabKey)) {
-        console.warn(`Invalid tab key: ${tabKey}`);
         return;
       }
 

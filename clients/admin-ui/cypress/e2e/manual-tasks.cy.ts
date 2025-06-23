@@ -157,45 +157,32 @@ describe("Manual Tasks", () => {
       cy.wait("@getManualTasks");
     });
 
-    it("should handle table filtering by status, system, and request type", () => {
+    it("should apply table filters and send correct API parameters", () => {
       // Wait for initial data to load
       cy.get("table").should("exist");
       cy.get("tbody tr").should("have.length.at.least", 1);
 
-      // Test status filtering using the custom command
+      // Apply status filter
       cy.applyTableFilter("Status", "New");
-      cy.get("tbody tr").each(($row) => {
-        cy.wrap($row).within(() => {
-          cy.getByTestId("manual-task-status-tag").should("contain", "New");
-        });
+      cy.wait("@getManualTasks").then((interception) => {
+        expect(interception.request.url).to.include("status=new");
       });
 
-      // Reset filters and test system filtering
-      cy.intercept("GET", "/api/v1/manual-tasks*", {
-        fixture: "manual-tasks/manual-tasks-response.json",
-      }).as("getManualTasksSystem");
-      cy.visit("/privacy-requests#manual-tasks");
-      cy.wait("@getManualTasksSystem");
-      cy.get("table").should("exist");
-      cy.get("tbody tr").should("have.length.at.least", 1);
+      // Apply system filter (first available system)
+      cy.applyTableFilter("System", "Salesforce");
+      cy.wait("@getManualTasks").then((interception) => {
+        const url = interception.request.url;
+        expect(url).to.include("status=new"); // Previous filter should still be there
+        expect(url).to.include("systemName=Salesforce"); // Should have systemName parameter (camelCase)
+      });
 
-      cy.applyTableFilter("System", 0); // Use index for first system option
-      cy.get("tbody tr").should("have.length.at.least", 1);
-
-      // Reset filters and test request type filtering
-      cy.intercept("GET", "/api/v1/manual-tasks*", {
-        fixture: "manual-tasks/manual-tasks-response.json",
-      }).as("getManualTasksType");
-      cy.visit("/privacy-requests#manual-tasks");
-      cy.wait("@getManualTasksType");
-      cy.get("table").should("exist");
-      cy.get("tbody tr").should("have.length.at.least", 1);
-
+      // Apply request type filter
       cy.applyTableFilter("Type", "Access");
-      cy.get("tbody tr").each(($row) => {
-        cy.wrap($row).within(() => {
-          cy.get("td").should("contain", "Access");
-        });
+      cy.wait("@getManualTasks").then((interception) => {
+        const url = interception.request.url;
+        expect(url).to.include("status=new"); // Previous filters should still be there
+        expect(url).to.include("systemName=Salesforce");
+        expect(url).to.include("requestType=access"); // requestType parameter (camelCase)
       });
     });
 
@@ -210,7 +197,9 @@ describe("Manual Tasks", () => {
       cy.get(".ant-select-dropdown").within(() => {
         cy.get(".ant-select-item").contains("50").click();
       });
-      cy.wait("@getManualTasks");
+      cy.wait("@getManualTasks").then((interception) => {
+        expect(interception.request.url).to.include("size=50");
+      });
 
       // Test assigned users display
       cy.get("tbody tr")

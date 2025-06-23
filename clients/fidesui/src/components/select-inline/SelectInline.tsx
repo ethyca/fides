@@ -44,14 +44,25 @@ export const SelectInline = ({
   suffixIcon = null,
   className = "",
   readonly = false,
+  onTagClick,
   tagRender = (props) => {
-    const { label, closable, onClose } = props;
+    const { label, closable, onClose, value } = props;
+
+    const handleTagClick = (e: React.MouseEvent) => {
+      if (onTagClick) {
+        e.stopPropagation();
+        onTagClick(value, label);
+      }
+    };
+
     return (
       <div className="mr-1">
         <AntTag
           color="white"
           closable={readonly ? false : closable}
           onClose={onClose}
+          onClick={onTagClick ? handleTagClick : undefined}
+          className={onTagClick ? "cursor-pointer" : undefined}
         >
           {label}
         </AntTag>
@@ -59,11 +70,45 @@ export const SelectInline = ({
     );
   },
   ...props
-}: SelectProps & { readonly?: boolean }) => {
+}: SelectProps & {
+  readonly?: boolean;
+  onTagClick?: (value: any, label: React.ReactNode) => void;
+}) => {
   const [expanded, setExpanded] = useState(false);
 
-  const customMaxTagPlaceholder =
-    maxTagPlaceholder || ((omittedValues) => `+ ${omittedValues.length} more`);
+  const handleExpandClick = (e: React.MouseEvent | React.KeyboardEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setExpanded(!expanded);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") {
+      handleExpandClick(e);
+    }
+  };
+
+  const renderMaxTagPlaceholder = (omittedValues: any[]) => {
+    const count = omittedValues.length;
+
+    if (readonly) {
+      return (
+        <span
+          className="cursor-pointer text-blue-600 hover:text-blue-800"
+          role="button"
+          tabIndex={0}
+          onClick={handleExpandClick}
+          onKeyDown={handleKeyDown}
+        >
+          + {count} more
+        </span>
+      );
+    }
+
+    return `+ ${count} more`;
+  };
+
+  const customMaxTagPlaceholder = maxTagPlaceholder || renderMaxTagPlaceholder;
 
   return (
     <Select
@@ -79,7 +124,6 @@ export const SelectInline = ({
       suffixIcon={suffixIcon}
       rootClassName={`${styles.selectInlineRoot} ${className}`}
       tagRender={tagRender}
-      onClick={() => readonly && setExpanded(!expanded)}
       disabled={readonly}
       {...props}
     />
