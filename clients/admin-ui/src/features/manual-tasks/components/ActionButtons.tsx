@@ -4,13 +4,14 @@ import {
   AntDropdown as Dropdown,
   AntSpace as Space,
   Icons,
+  useDisclosure,
 } from "fidesui";
 import { useRouter } from "next/router";
 
 import { PRIVACY_REQUEST_DETAIL_ROUTE } from "~/features/common/nav/routes";
 
-import { useCompleteTaskMutation } from "../manual-tasks.slice";
 import { ManualTask } from "../mocked/types";
+import { CompleteTaskModal } from "./CompleteTaskModal";
 
 interface Props {
   task: ManualTask;
@@ -18,7 +19,7 @@ interface Props {
 
 export const ActionButtons = ({ task }: Props) => {
   const router = useRouter();
-  const [completeTask, { isLoading: isCompleting }] = useCompleteTaskMutation();
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   // Don't render anything for non-new tasks
   if (task.status !== "new") {
@@ -26,11 +27,7 @@ export const ActionButtons = ({ task }: Props) => {
   }
 
   const handleComplete = () => {
-    completeTask({
-      task_id: task.task_id,
-      text_value: task.input_type === "string" ? "" : undefined,
-      checkbox_value: task.input_type === "checkbox" ? false : undefined,
-    });
+    onOpen();
   };
 
   const handleSkip = () => {
@@ -58,28 +55,27 @@ export const ActionButtons = ({ task }: Props) => {
   ];
 
   return (
-    <Space size="small">
-      <Button
-        type="default"
-        onClick={handleComplete}
-        size="small"
-        loading={isCompleting}
-      >
-        Complete
-      </Button>
+    <>
+      <Space size="small">
+        <Button type="default" onClick={handleComplete} size="small">
+          Complete
+        </Button>
 
-      <Dropdown
-        menu={{ items: menuItems }}
-        trigger={["click"]}
-        placement="bottomRight"
-        overlayStyle={{ minWidth: 120 }}
-      >
-        <Button
-          size="small"
-          icon={<Icons.OverflowMenuVertical />}
-          aria-label="More actions"
-        />
-      </Dropdown>
-    </Space>
+        <Dropdown
+          menu={{ items: menuItems }}
+          trigger={["click"]}
+          placement="bottomRight"
+          overlayStyle={{ minWidth: 120 }}
+        >
+          <Button
+            size="small"
+            icon={<Icons.OverflowMenuVertical />}
+            aria-label="More actions"
+          />
+        </Dropdown>
+      </Space>
+
+      <CompleteTaskModal isOpen={isOpen} onClose={onClose} task={task} />
+    </>
   );
 };
