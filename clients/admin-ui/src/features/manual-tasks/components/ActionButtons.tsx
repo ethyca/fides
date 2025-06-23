@@ -12,6 +12,7 @@ import { PRIVACY_REQUEST_DETAIL_ROUTE } from "~/features/common/nav/routes";
 
 import { ManualTask } from "../mocked/types";
 import { CompleteTaskModal } from "./CompleteTaskModal";
+import { SkipTaskModal } from "./SkipTaskModal";
 
 interface Props {
   task: ManualTask;
@@ -19,7 +20,16 @@ interface Props {
 
 export const ActionButtons = ({ task }: Props) => {
   const router = useRouter();
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const {
+    isOpen: isCompleteModalOpen,
+    onOpen: onCompleteModalOpen,
+    onClose: onCompleteModalClose,
+  } = useDisclosure();
+  const {
+    isOpen: isSkipModalOpen,
+    onOpen: onSkipModalOpen,
+    onClose: onSkipModalClose,
+  } = useDisclosure();
 
   // Don't render anything for non-new tasks
   if (task.status !== "new") {
@@ -27,11 +37,11 @@ export const ActionButtons = ({ task }: Props) => {
   }
 
   const handleComplete = () => {
-    onOpen();
+    onCompleteModalOpen();
   };
 
   const handleSkip = () => {
-    // TODO: Implement skip functionality
+    onSkipModalOpen();
   };
 
   const handleGoToRequest = () => {
@@ -75,7 +85,16 @@ export const ActionButtons = ({ task }: Props) => {
         </Dropdown>
       </Space>
 
-      <CompleteTaskModal isOpen={isOpen} onClose={onClose} task={task} />
+      <CompleteTaskModal
+        isOpen={isCompleteModalOpen}
+        onClose={onCompleteModalClose}
+        task={task}
+      />
+      <SkipTaskModal
+        isOpen={isSkipModalOpen}
+        onClose={onSkipModalClose}
+        task={task}
+      />
     </>
   );
 };

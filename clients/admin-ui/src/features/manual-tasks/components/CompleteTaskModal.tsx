@@ -12,33 +12,20 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  useDisclosure,
 } from "fidesui";
 import { useState } from "react";
 
 import { useCompleteTaskMutation } from "../manual-tasks.slice";
 import { ManualTask } from "../mocked/types";
+import { SkipTaskModal } from "./SkipTaskModal";
+import { TaskDetails } from "./TaskDetails";
 
 interface CompleteTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
   task: ManualTask;
 }
-
-// Helper component for displaying task information rows
-const TaskInfoRow = ({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) => (
-  <div className="flex items-center">
-    <div className="shrink-0 grow-0 basis-1/3 pr-2">
-      <Typography.Text className="text-gray-700">{label}:</Typography.Text>
-    </div>
-    <div className="min-w-0 shrink grow text-gray-600">{children}</div>
-  </div>
-);
 
 export const CompleteTaskModal = ({
   isOpen,
@@ -50,6 +37,11 @@ export const CompleteTaskModal = ({
   const [checkboxValue, setCheckboxValue] = useState(false);
   const [comment, setComment] = useState("");
   const [fileList, setFileList] = useState<any[]>([]);
+  const {
+    isOpen: isSkipModalOpen,
+    onOpen: onSkipModalOpen,
+    onClose: onSkipModalClose,
+  } = useDisclosure();
 
   const handleSave = async () => {
     try {
@@ -82,14 +74,30 @@ export const CompleteTaskModal = ({
     onClose();
   };
 
+  const handleSkipTask = () => {
+    onClose();
+    onSkipModalOpen();
+  };
+
+  // Check if the required field is filled based on input type
+  const isRequiredFieldFilled = () => {
+    switch (task.input_type) {
+      case "string":
+        return textValue.trim().length > 0;
+      case "checkbox":
+        return checkboxValue;
+      default:
+        // For file uploads, require at least one file
+        return fileList.length > 0;
+    }
+  };
+
   const renderTaskInput = () => {
     switch (task.input_type) {
       case "string":
         return (
           <div className="space-y-2">
-            <div className="text-sm font-medium text-gray-700">
-              Task Response
-            </div>
+            <div className="text-sm font-medium text-gray-700">Text Input</div>
             <Input.TextArea
               value={textValue}
               onChange={(e) => setTextValue(e.target.value)}
@@ -105,7 +113,7 @@ export const CompleteTaskModal = ({
               checked={checkboxValue}
               onChange={(e) => setCheckboxValue(e.target.checked)}
             >
-              Mark as completed
+              The task has been completed
             </Checkbox>
           </div>
         );
@@ -131,93 +139,72 @@ export const CompleteTaskModal = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="700px" isCentered>
-      <ModalOverlay />
-      <ModalContent maxWidth="700px">
-        <ModalHeader>
-          <Typography.Title level={4}>Complete Task</Typography.Title>
-        </ModalHeader>
-        <ModalBody>
-          <div className="flex flex-col space-y-6">
-            {/* Details */}
-            <div>
-              <div className="flex flex-col space-y-3">
-                <TaskInfoRow label="Name">
-                  <Typography.Text>{task.name}</Typography.Text>
-                </TaskInfoRow>
-
-                <TaskInfoRow label="Description">
-                  <Typography.Text>{task.description}</Typography.Text>
-                </TaskInfoRow>
-
-                <TaskInfoRow label="Request Type">
-                  <Typography.Text>
-                    {task.privacy_request.request_type.charAt(0).toUpperCase() +
-                      task.privacy_request.request_type.slice(1)}
-                  </Typography.Text>
-                </TaskInfoRow>
-
-                <TaskInfoRow label="Assigned To">
-                  {task.assigned_users.length > 0 ? (
-                    <div className="flex flex-wrap gap-1">
-                      {task.assigned_users.map((user) => (
-                        <span
-                          key={user.id}
-                          className="inline-flex items-center rounded bg-gray-100 px-2 py-1 text-xs text-gray-800"
-                        >
-                          {`${user.first_name || ""} ${user.last_name || ""}`.trim() ||
-                            user.email_address ||
-                            "Unknown User"}
-                        </span>
-                      ))}
-                    </div>
-                  ) : (
-                    <Typography.Text>No one assigned</Typography.Text>
-                  )}
-                </TaskInfoRow>
+    <>
+      <Modal isOpen={isOpen} onClose={onClose} size="700px" isCentered>
+        <ModalOverlay />
+        <ModalContent maxWidth="700px">
+          <ModalHeader>
+            <Typography.Title level={4}>Complete Task</Typography.Title>
+          </ModalHeader>
+          <ModalBody>
+            <div className="flex flex-col space-y-6">
+              {/* Details */}
+              <div>
+                <TaskDetails task={task} />
               </div>
-            </div>
 
-            {/* Divider for separation */}
-            <Divider />
+              {/* Divider for separation */}
+              <Divider />
 
-            {/* Task Input Section */}
-            <div>
-              <div className="flex flex-col space-y-4">
-                {renderTaskInput()}
+              {/* Task Input Section */}
+              <div>
+                <div className="flex flex-col space-y-4">
+                  {renderTaskInput()}
 
-                <div className="space-y-2">
-                  <div className="text-sm font-medium text-gray-700">
-                    Comment (Optional)
+                  <div className="space-y-2">
+                    <div className="text-sm font-medium text-gray-700">
+                      Internal comment
+                    </div>
+                    <Input.TextArea
+                      value={comment}
+                      onChange={(e) => setComment(e.target.value)}
+                      placeholder="Add any additional comments..."
+                      rows={3}
+                    />
                   </div>
-                  <Input.TextArea
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                    placeholder="Add any additional comments..."
-                    rows={3}
-                  />
                 </div>
               </div>
             </div>
-          </div>
-        </ModalBody>
+          </ModalBody>
 
-        <ModalFooter>
-          <Space>
-            <Button onClick={handleCancel} disabled={isLoading}>
-              Cancel
-            </Button>
-            <Button
-              type="primary"
-              onClick={handleSave}
-              loading={isLoading}
-              disabled={task.input_type === "string" && !textValue.trim()}
-            >
-              Save
-            </Button>
-          </Space>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+          <ModalFooter>
+            <div className="flex w-full justify-between">
+              <Button onClick={handleSkipTask} disabled={isLoading}>
+                Skip task
+              </Button>
+              <Space>
+                <Button onClick={handleCancel} disabled={isLoading}>
+                  Cancel
+                </Button>
+                <Button
+                  type="primary"
+                  onClick={handleSave}
+                  loading={isLoading}
+                  disabled={!isRequiredFieldFilled()}
+                >
+                  Save
+                </Button>
+              </Space>
+            </div>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      <SkipTaskModal
+        isOpen={isSkipModalOpen}
+        onClose={onSkipModalClose}
+        task={task}
+      />
+    </>
   );
 };
