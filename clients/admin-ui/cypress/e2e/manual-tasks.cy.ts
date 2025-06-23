@@ -95,21 +95,34 @@ describe("Manual Tasks", () => {
     });
 
     it("should show appropriate action buttons based on task status", () => {
-      // Check action buttons for new tasks
+      // Check action buttons for new tasks - specifically in the Actions column (last column)
       cy.get("tbody tr")
         .first()
         .within(() => {
-          cy.get("button").contains("Complete").should("exist");
-          cy.get("button[aria-label='More actions']").should("exist");
+          // Check the Actions column specifically (last td)
+          cy.get("td")
+            .last()
+            .within(() => {
+              cy.get("button").contains("Complete").should("exist");
+              cy.get("button[aria-label='More actions']").should("exist");
+            });
         });
 
-      // Check that completed tasks don't show action buttons
+      // Check that completed/skipped tasks don't show action buttons in the Actions column
       cy.get("tbody tr").each(($row) => {
         cy.wrap($row).within(() => {
           cy.get("td").then(($cells) => {
             const statusCell = $cells.eq(1);
-            if (statusCell.text().includes("Completed")) {
-              cy.get("button").should("not.exist");
+            if (
+              statusCell.text().includes("Completed") ||
+              statusCell.text().includes("Skipped")
+            ) {
+              // Check the Actions column (last td) for no buttons
+              cy.get("td")
+                .last()
+                .within(() => {
+                  cy.get("button").should("not.exist");
+                });
             }
           });
         });
