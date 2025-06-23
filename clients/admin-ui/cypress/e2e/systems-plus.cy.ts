@@ -530,7 +530,7 @@ describe("System management with Plus features", () => {
       cy.getByTestId("row-0-col-data_uses").should("contain", "Essential");
     });
 
-    describe.only("asset operations", () => {
+    describe("asset operations", () => {
       beforeEach(() => {
         cy.getAntTab("Assets").click({ force: true });
         cy.wait("@getSystemAssets");
