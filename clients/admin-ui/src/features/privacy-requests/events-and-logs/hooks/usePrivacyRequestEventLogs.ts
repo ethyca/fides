@@ -22,16 +22,20 @@ export const usePrivacyRequestEventLogs = (results?: PrivacyRequestResults) => {
         const hasSkippedEntry = logs.some(
           (log) => log.status === ExecutionLogStatus.SKIPPED,
         );
+        const hasAwaitingProcessing = logs.some(
+          (log) => log.status === ExecutionLogStatus.AWAITING_PROCESSING,
+        );
 
         return {
           author: "Fides",
           title: key,
           date: new Date(logs[0].updated_at),
           type: ActivityTimelineItemTypeEnum.REQUEST_UPDATE,
-          showViewLog: hasUnresolvedError || hasSkippedEntry,
+          showViewLog: hasUnresolvedError || hasSkippedEntry || hasAwaitingProcessing,
           onClick: () => {}, // This will be overridden in the component
           isError: hasUnresolvedError,
           isSkipped: hasSkippedEntry,
+          isAwaitingInput: hasAwaitingProcessing,
           id: `request-${key}`,
         };
       });

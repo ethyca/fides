@@ -42,6 +42,7 @@ from fides.api.service.connectors.http_connector import HTTPSConnector as HTTPSC
 from fides.api.service.connectors.manual_webhook_connector import (
     ManualWebhookConnector as ManualWebhookConnector,
 )
+from fides.api.service.connectors.manual_task_connector import ManualTaskConnector
 from fides.api.service.connectors.mariadb_connector import (
     MariaDBConnector as MariaDBConnector,
 )
@@ -93,6 +94,7 @@ supported_connectors: Dict[str, Any] = {
     ConnectionType.google_cloud_sql_postgres.value: GoogleCloudSQLPostgresConnector,
     ConnectionType.https.value: HTTPSConnector,
     ConnectionType.manual_webhook.value: ManualWebhookConnector,
+    ConnectionType.manual_task.value: ManualTaskConnector,
     ConnectionType.mariadb.value: MariaDBConnector,
     ConnectionType.mongodb.value: MongoDBConnector,
     ConnectionType.mssql.value: MicrosoftSQLServerConnector,

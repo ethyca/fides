@@ -71,6 +71,7 @@ from fides.api.task.graph_task import (
     filter_by_enabled_actions,
     get_cached_data_for_erasures,
 )
+from fides.api.task.manual.manual_task_utils import create_manual_task_artificial_graphs
 from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.api.util.collection_util import Row
@@ -450,6 +451,11 @@ def run_privacy_request(
                     for dataset_config in datasets
                     if not dataset_config.connection_config.disabled
                 ]
+
+                # Add manual task artificial graphs to dataset graphs
+                manual_task_graphs = create_manual_task_artificial_graphs(session)
+                dataset_graphs.extend(manual_task_graphs)
+
                 dataset_graph = DatasetGraph(*dataset_graphs)
 
                 # Add success log for dataset configuration

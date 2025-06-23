@@ -25,6 +25,7 @@ $horizontal-padding: 20px;
 
   &--error,
   &--comment,
+  &--awaiting-input,
   &:hover {
     border-color: var(--fidesui-neutral-100);
   }
@@ -37,6 +38,12 @@ $horizontal-padding: 20px;
   &--error:hover,
   &--error:focus {
     border-left: 8px solid var(--fidesui-error);
+  }
+
+  &--awaiting-input,
+  &--awaiting-input:hover,
+  &--awaiting-input:focus {
+    border-left: 8px solid var(--fidesui-alert);
   }
 }
 
@@ -56,6 +63,10 @@ $horizontal-padding: 20px;
 
   &--error {
     color: var(--fidesui-error);
+  }
+
+  &--awaiting-input {
+    color: var(--fidesui-alert);
   }
 }
 

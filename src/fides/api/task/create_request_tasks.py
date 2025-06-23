@@ -6,7 +6,7 @@ import networkx
 from loguru import logger
 from networkx import NetworkXNoCycle
 from sqlalchemy.orm import Query, Session
-
+from fides.api.task.manual.manual_task_utils import create_manual_task_instances_for_privacy_request, include_manual_tasks_in_graph
 from fides.api.common_exceptions import TraversalError
 from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
@@ -458,6 +458,17 @@ def run_access_request(
             end_nodes: List[CollectionAddress] = traversal.traverse(
                 traversal_nodes, collect_tasks_fn
             )
+
+            # Add manual tasks to traversal_nodes so they can be included in the NetworkX graph
+            # This ensures manual tasks get proper ROOT dependencies and execution logs
+            traversal_nodes, end_nodes = include_manual_tasks_in_graph(
+                session, privacy_request, policy, traversal_nodes, end_nodes
+            )
+
+            # Create manual task instances for this privacy request.
+            # This is a snapshot of the manual task fields required at time of request creation
+            create_manual_task_instances_for_privacy_request(session, privacy_request)
+
             # Save Access Request Tasks to the database
             ready_tasks = persist_new_access_request_tasks(
                 session, privacy_request, traversal, traversal_nodes, end_nodes, graph

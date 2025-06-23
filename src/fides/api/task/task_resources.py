@@ -26,6 +26,7 @@ from fides.api.service.connectors import (
     ScyllaConnector,
     SnowflakeConnector,
     TimescaleConnector,
+    ManualTaskConnector,
 )
 from fides.api.service.connectors.base_email_connector import BaseEmailConnector
 from fides.api.service.connectors.s3_connector import S3Connector
@@ -92,6 +93,8 @@ class Connections:
             return S3Connector(connection_config)
         if connection_config.connection_type == ConnectionType.scylla:
             return ScyllaConnector(connection_config)
+        if connection_config.connection_type == ConnectionType.manual_task:
+            return ManualTaskConnector(connection_config)
         raise NotImplementedError(
             f"No connector available for {connection_config.connection_type}"
         )

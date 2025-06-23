@@ -29,6 +29,8 @@ from fides.api.task.graph_task import (
     GraphTask,
     mark_current_and_downstream_nodes_as_failed,
 )
+from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
+from fides.api.task.manual.manual_task_utils import ManualTaskAddress
 from fides.api.task.task_resources import TaskResources
 from fides.api.tasks import DSR_QUEUE_NAME, DatabaseTask, celery_app
 from fides.api.util.cache import cache_task_tracking_key
@@ -108,7 +110,13 @@ def create_graph_task(
     to begin with - this may be unrecoverable and a new Privacy Request should be created.
     """
     try:
-        graph_task: GraphTask = GraphTask(resources)
+        collection_address = request_task.request_task_address
+
+        # Check if this is a manual task address
+        if ManualTaskAddress.is_manual_task_address(collection_address):
+            graph_task: GraphTask = ManualTaskGraphTask(resources)
+        else:
+            graph_task: GraphTask = GraphTask(resources)
 
     except Exception as exc:
         logger.debug(
