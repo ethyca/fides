@@ -276,7 +276,10 @@ const validateConsent = (
  * Can be used as a convenience method to update consent preferences using the FidesGlobal object.
  */
 export const updateConsent = async (
-  fides: FidesGlobal,
+  experience: FidesGlobal["experience"],
+  cookie: FidesGlobal["cookie"],
+  geolocation: FidesGlobal["geolocation"],
+  fidesOptions: FidesGlobal["options"],
   options: {
     consent?: NoticeConsent;
     fidesString?: string;
@@ -289,14 +292,6 @@ export const updateConsent = async (
     },
   },
 ): Promise<void> => {
-  const {
-    experience,
-    cookie,
-    consent: initialConsent,
-    geolocation,
-    options: fidesOptions,
-  } = fides;
-
   if (!experience) {
     throw new Error("Experience must be initialized before updating consent");
   }
@@ -330,21 +325,7 @@ export const updateConsent = async (
     }
   };
 
-  let finalConsent = initialConsent || {};
-
-  // validate consent object
-  if (consent) {
-    // Validate consent values and collect any validation errors
-    const validationError = validateConsent(
-      privacyNotices || [],
-      nonApplicablePrivacyNotices || [],
-      consent,
-    );
-
-    if (validationError) {
-      handleValidationError(validationError.message);
-    }
-  }
+  let finalConsent = cookie.consent || {};
 
   // If fidesString is provided, it takes priority
   if (fidesString) {
@@ -353,7 +334,7 @@ export const updateConsent = async (
       if (decodedString.nc) {
         const decodedConsent = decodeNoticeConsentString(decodedString.nc);
         finalConsent = {
-          ...initialConsent,
+          ...cookie.consent,
           ...decodedConsent,
         };
         const validationError = validateConsent(
@@ -371,8 +352,18 @@ export const updateConsent = async (
         error instanceof Error ? error.message : String(error);
       handleValidationError(`Invalid fidesString provided: ${errorMessage}`);
     }
-  } else {
-    finalConsent = { ...initialConsent, ...consent };
+  } else if (consent) {
+    // Validate consent values and collect any validation errors
+    const validationError = validateConsent(
+      privacyNotices || [],
+      nonApplicablePrivacyNotices || [],
+      consent,
+    );
+
+    if (validationError) {
+      handleValidationError(validationError.message);
+    }
+    finalConsent = { ...cookie.consent, ...consent };
   }
 
   // Prepare consentPreferencesToSave by mapping from finalConsent

@@ -52,7 +52,10 @@ describe("preferences", () => {
       const mockFides = createMockFides({ experience: undefined });
       await expect(
         updateConsent(
-          mockFides,
+          mockFides.experience,
+          mockFides.cookie,
+          mockFides.geolocation,
+          mockFides.options,
           { consent: { analytics: true } },
           ConsentMethod.SCRIPT,
         ),
@@ -65,7 +68,10 @@ describe("preferences", () => {
       const mockFides = createMockFides({ cookie: undefined });
       await expect(
         updateConsent(
-          mockFides,
+          mockFides.experience,
+          mockFides.cookie,
+          mockFides.geolocation,
+          mockFides.options,
           { consent: { analytics: true } },
           ConsentMethod.SCRIPT,
         ),
@@ -83,7 +89,10 @@ describe("preferences", () => {
       // Try to use a non-applicable notice key
       await expect(
         updateConsent(
-          mockFides,
+          mockFides.experience,
+          mockFides.cookie,
+          mockFides.geolocation,
+          mockFides.options,
           {
             consent: { marketing: true },
             validation: UpdateConsentValidation.THROW,
@@ -115,7 +124,10 @@ describe("preferences", () => {
       // Try to use a key that doesn't exist in either privacy_notices or non_applicable_privacy_notices
       await expect(
         updateConsent(
-          mockFides,
+          mockFides.experience,
+          mockFides.cookie,
+          mockFides.geolocation,
+          mockFides.options,
           {
             consent: { nonexistent: true },
             validation: UpdateConsentValidation.THROW,
@@ -152,7 +164,10 @@ describe("preferences", () => {
       ] as any[];
 
       await updateConsent(
-        mockFides,
+        mockFides.experience,
+        mockFides.cookie,
+        mockFides.geolocation,
+        mockFides.options,
         { consent: mockConsent },
         ConsentMethod.SCRIPT,
       );
@@ -215,7 +230,10 @@ describe("preferences", () => {
       ] as any[];
 
       await updateConsent(
-        mockFides,
+        mockFides.experience,
+        mockFides.cookie,
+        mockFides.geolocation,
+        mockFides.options,
         { fidesString: "some-encoded-string" },
         ConsentMethod.SCRIPT,
       );
@@ -267,7 +285,10 @@ describe("preferences", () => {
 
       // Use string values for consent
       await updateConsent(
-        mockFides,
+        mockFides.experience,
+        mockFides.cookie,
+        mockFides.geolocation,
+        mockFides.options,
         {
           consent: {
             analytics: UserConsentPreference.OPT_IN,
@@ -329,7 +350,10 @@ describe("preferences", () => {
 
       // Use mixed boolean and string values for consent
       await updateConsent(
-        mockFides,
+        mockFides.experience,
+        mockFides.cookie,
+        mockFides.geolocation,
+        mockFides.options,
         {
           consent: {
             analytics: true, // boolean
@@ -383,7 +407,10 @@ describe("preferences", () => {
       // Try to use opt_in for a NOTICE_ONLY type with validation='throw'
       await expect(
         updateConsent(
-          mockFides,
+          mockFides.experience,
+          mockFides.cookie,
+          mockFides.geolocation,
+          mockFides.options,
           {
             consent: { essential: UserConsentPreference.OPT_IN },
             validation: UpdateConsentValidation.THROW,
@@ -394,7 +421,10 @@ describe("preferences", () => {
 
       // Expect notice-only true to be converted to ACKNOWLEDGE
       await updateConsent(
-        mockFides,
+        mockFides.experience,
+        mockFides.cookie,
+        mockFides.geolocation,
+        mockFides.options,
         {
           consent: { essential: true },
           validation: UpdateConsentValidation.THROW,
@@ -427,7 +457,10 @@ describe("preferences", () => {
 
       // Test with explicit ACKNOWLEDGE value
       await updateConsent(
-        mockFides,
+        mockFides.experience,
+        mockFides.cookie,
+        mockFides.geolocation,
+        mockFides.options,
         {
           consent: {
             essential: UserConsentPreference.ACKNOWLEDGE,
@@ -451,7 +484,10 @@ describe("preferences", () => {
 
       // Test that NOTICE_ONLY forces ACKNOWLEDGE when using validation="ignore"
       await updateConsent(
-        mockFides,
+        mockFides.experience,
+        mockFides.cookie,
+        mockFides.geolocation,
+        mockFides.options,
         {
           consent: {
             // This would be invalid with validation="throw", but we're using "ignore"
