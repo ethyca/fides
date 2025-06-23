@@ -406,9 +406,9 @@ export const initialize = async ({
           savedConsent: fides.saved_consent,
           effectiveExperience: fides.experience as PrivacyExperience,
           cookie: fides.cookie,
-          fidesRegionString,
           fidesOptions: options,
           i18n,
+          geolocation,
         }),
       );
     } else {
