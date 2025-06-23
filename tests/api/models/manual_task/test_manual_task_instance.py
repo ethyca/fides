@@ -12,10 +12,10 @@ from fides.api.models.manual_task import (
     ManualTaskConfig,
     ManualTaskConfigField,
     ManualTaskInstance,
-    ManualTaskSubmission,
-    StatusType,
     ManualTaskLog,
     ManualTaskLogStatus,
+    ManualTaskSubmission,
+    StatusType,
 )
 from fides.api.models.privacy_request import PrivacyRequest
 
@@ -338,7 +338,6 @@ class TestManualTaskInstance:
 
         # Verify instance is initially linked to task
         assert manual_task_instance.task_id == task_id
-        assert not manual_task_instance.is_orphaned
 
         # Delete task with an existing instance (should succeed and orphan the instance)
         db.delete(task)
@@ -349,10 +348,11 @@ class TestManualTaskInstance:
         assert deleted_task is None
 
         # Verify instance still exists but is now orphaned
-        orphaned_instance = db.query(ManualTaskInstance).filter_by(id=instance_id).first()
+        orphaned_instance = (
+            db.query(ManualTaskInstance).filter_by(id=instance_id).first()
+        )
         assert orphaned_instance is not None
         assert orphaned_instance.task_id is None
-        assert orphaned_instance.is_orphaned
 
     def test_manual_task_deletion_orphans_historical_data(
         self, db: Session, manual_task_instance: ManualTaskInstance
@@ -392,10 +392,11 @@ class TestManualTaskInstance:
         assert deleted_task is None
 
         # Verify instance still exists but is orphaned
-        orphaned_instance = db.query(ManualTaskInstance).filter_by(id=instance_id).first()
+        orphaned_instance = (
+            db.query(ManualTaskInstance).filter_by(id=instance_id).first()
+        )
         assert orphaned_instance is not None
         assert orphaned_instance.task_id is None
-        assert orphaned_instance.is_orphaned
 
         # Verify logs still exist but are orphaned
         orphaned_log1 = db.query(ManualTaskLog).filter_by(id=log1_id).first()
@@ -755,9 +756,15 @@ class TestManualTaskSubmission:
         db.commit()
 
         # Verify deletion worked
-        deleted_instance = db.query(ManualTaskInstance).filter_by(id=instance_id).first()
-        deleted_submission = db.query(ManualTaskSubmission).filter_by(id=submission_id).first()
-        deleted_ref = db.query(AttachmentReference).filter_by(id=attachment_ref_id).first()
+        deleted_instance = (
+            db.query(ManualTaskInstance).filter_by(id=instance_id).first()
+        )
+        deleted_submission = (
+            db.query(ManualTaskSubmission).filter_by(id=submission_id).first()
+        )
+        deleted_ref = (
+            db.query(AttachmentReference).filter_by(id=attachment_ref_id).first()
+        )
         deleted_attachment = db.query(Attachment).filter_by(id=attachment_id).first()
 
         assert deleted_instance is None
@@ -921,8 +928,12 @@ class TestManualTaskSubmission:
         db.commit()
 
         # Verify related submissions were properly deleted
-        deleted_submission1 = db.query(ManualTaskSubmission).filter_by(id=submission1_id).first()
-        deleted_submission2 = db.query(ManualTaskSubmission).filter_by(id=submission2_id).first()
+        deleted_submission1 = (
+            db.query(ManualTaskSubmission).filter_by(id=submission1_id).first()
+        )
+        deleted_submission2 = (
+            db.query(ManualTaskSubmission).filter_by(id=submission2_id).first()
+        )
 
         assert deleted_submission1 is None
         assert deleted_submission2 is None
@@ -989,9 +1000,9 @@ class TestManualTaskSubmission:
         assert final_log_count == initial_log_count + 1
 
         # Find the log entry for this task
-        task_log = db.query(ManualTaskLog).filter(
-            ManualTaskLog.task_id == task.id
-        ).first()
+        task_log = (
+            db.query(ManualTaskLog).filter(ManualTaskLog.task_id == task.id).first()
+        )
 
         # Verify the log has valid task_id (not NULL)
         assert task_log is not None

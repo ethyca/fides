@@ -72,6 +72,7 @@ def manual_task_config_field_1(
     try:
         if db.query(ManualTaskConfigField).filter_by(id=field.id).first():
             from fides.api.models.manual_task import ManualTaskSubmission
+
             for submission in field.submissions:
                 if db.query(ManualTaskSubmission).filter_by(id=submission.id).first():
                     submission.delete(db)
