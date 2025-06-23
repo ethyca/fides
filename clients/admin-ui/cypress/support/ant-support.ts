@@ -34,6 +34,16 @@ declare global {
         optionLabel: string | number,
         clickOptions?: { force?: boolean },
       ) => void;
+
+      /**
+       * Apply a filter to an Ant Design table column
+       * @param columnTitle The title of the column to filter
+       * @param filterOption The filter option to select (string for specific option, number for index)
+       */
+      applyTableFilter: (
+        columnTitle: string,
+        filterOption: string | number,
+      ) => void;
     }
   }
 }
@@ -120,5 +130,26 @@ Cypress.Commands.add(
   (subject, option) =>
     cy.get(subject.selector).getAntMenuOption(option).click(),
 );
+
+Cypress.Commands.add("applyTableFilter", (columnTitle, filterOption) => {
+  // Click the filter trigger for the specified column
+  cy.get(".ant-table-column-title")
+    .contains(columnTitle)
+    .siblings(".ant-dropdown-trigger")
+    .click();
+
+  // Wait for the filter dropdown to appear
+  cy.get(".ant-table-filter-dropdown").should("be.visible");
+
+  // Select the filter option
+  if (typeof filterOption === "string") {
+    cy.get(".ant-dropdown-menu-item").contains(filterOption).click();
+  } else {
+    cy.get(".ant-dropdown-menu-item").eq(filterOption).click();
+  }
+
+  // Click OK to apply the filter
+  cy.get(".ant-btn-primary").contains("OK").click();
+});
 
 export {};

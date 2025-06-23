@@ -5,7 +5,7 @@ import { useFlags } from "~/features/common/features";
 
 export const PRIVACY_REQUEST_TABS = {
   REQUEST: "request",
-  MANUAL_TASK: "manual-task",
+  MANUAL_TASK: "manual-tasks",
 } as const;
 
 export type PrivacyRequestTabKey =

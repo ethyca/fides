@@ -1,0 +1,228 @@
+{
+  "items": [
+    {
+      "task_id": "task_001",
+      "name": "Export Customer Data from Salesforce",
+      "description": "Export all customer data from Salesforce for privacy request",
+      "input_type": "file",
+      "request_type": "access",
+      "status": "new",
+      "assigned_users": [
+        {
+          "id": "fid_dcf26c27-b992-43e0-9178-2b577720e0c6",
+          "email_address": "john.doe@example.com",
+          "first_name": "John",
+          "last_name": "Doe"
+        },
+        {
+          "id": "fid_833b42df-ed8b-456b-a2f3-8f19322ec5a2",
+          "email_address": "jane.doe@example.com",
+          "first_name": "Jane",
+          "last_name": "Doe"
+        }
+      ],
+      "privacy_request": {
+        "id": "pri_5005c923-474c-4168-8c9e-2670fd40dc19",
+        "days_left": 15,
+        "request_type": "access",
+        "subject_identity": {
+          "email": {
+            "label": "Email",
+            "value": "customer@email.com"
+          }
+        }
+      },
+      "system": {
+        "id": "sys_001",
+        "name": "Salesforce"
+      },
+      "created_at": "2024-03-15T10:00:00Z",
+      "updated_at": "2024-03-15T10:00:00Z"
+    },
+    {
+      "task_id": "task_002",
+      "name": "Delete User Profile from MongoDB",
+      "description": "Remove user profile and associated data from MongoDB",
+      "input_type": "checkbox",
+      "request_type": "erasure",
+      "status": "new",
+      "assigned_users": [],
+      "privacy_request": {
+        "id": "pri_7a2b4c8d-3e5f-4a9b-8c7d-1e2f3a4b5c6d",
+        "days_left": 8,
+        "request_type": "erasure",
+        "subject_identity": {
+          "phone_number": {
+            "label": "Phone Number",
+            "value": "+1-555-0123"
+          }
+        }
+      },
+      "system": {
+        "id": "sys_002",
+        "name": "MongoDB"
+      },
+      "created_at": "2024-03-14T14:30:00Z",
+      "updated_at": "2024-03-14T14:30:00Z"
+    },
+    {
+      "task_id": "task_003",
+      "name": "Confirm Payment Data Deletion",
+      "description": "Verify that payment data has been deleted from Stripe",
+      "input_type": "string",
+      "request_type": "erasure",
+      "status": "completed",
+      "assigned_users": [
+        {
+          "id": "fid_970eee07-f621-48ac-aeea-8ac4ac7d4d3b",
+          "email_address": "michael.brown@example.com",
+          "first_name": "Michael",
+          "last_name": "Brown"
+        }
+      ],
+      "privacy_request": {
+        "id": "pri_9f8e7d6c-5b4a-3928-1706-f5e4d3c2b1a0",
+        "days_left": 22,
+        "request_type": "erasure",
+        "subject_identity": {
+          "email": {
+            "label": "Email",
+            "value": "user.stripe@example.com"
+          }
+        }
+      },
+      "system": {
+        "id": "sys_003",
+        "name": "Stripe"
+      },
+      "created_at": "2024-03-10T09:15:00Z",
+      "updated_at": "2024-03-12T16:45:00Z"
+    },
+    {
+      "task_id": "task_004",
+      "name": "Export Analytics Data",
+      "description": "Extract user analytics data from Google Analytics",
+      "input_type": "file",
+      "request_type": "access",
+      "status": "new",
+      "assigned_users": [
+        {
+          "id": "fid_73d47c3d-e94b-4497-8b51-e50f728283ea",
+          "email_address": "analytics@example.com",
+          "first_name": "Analytics",
+          "last_name": "User"
+        }
+      ],
+      "privacy_request": {
+        "id": "pri_1a2b3c4d-5e6f-7890-abcd-ef1234567890",
+        "days_left": 4,
+        "request_type": "access",
+        "subject_identity": {
+          "email": {
+            "label": "Email",
+            "value": "analytics@example.com"
+          }
+        }
+      },
+      "system": {
+        "id": "sys_004",
+        "name": "Google Analytics"
+      },
+      "created_at": "2024-03-16T11:20:00Z",
+      "updated_at": "2024-03-16T11:20:00Z"
+    },
+    {
+      "task_id": "task_005",
+      "name": "Remove User from CRM",
+      "description": "Delete user record from HubSpot CRM system",
+      "input_type": "checkbox",
+      "request_type": "erasure",
+      "status": "skipped",
+      "assigned_users": [
+        {
+          "id": "fid_6eaa3315-49ac-4c61-a8f8-1743cbf32251",
+          "email_address": "crm@example.com",
+          "first_name": "CRM",
+          "last_name": "Admin"
+        }
+      ],
+      "privacy_request": {
+        "id": "pri_fedcba98-7654-3210-9876-543210fedcba",
+        "days_left": 12,
+        "request_type": "erasure",
+        "subject_identity": {
+          "phone_number": {
+            "label": "Phone Number",
+            "value": "+1-555-0789"
+          }
+        }
+      },
+      "system": {
+        "id": "sys_005",
+        "name": "HubSpot CRM"
+      },
+      "created_at": "2024-03-13T08:45:00Z",
+      "updated_at": "2024-03-14T10:20:00Z"
+    }
+  ],
+  "total": 5,
+  "page": 1,
+  "size": 25,
+  "pages": 1,
+  "filterOptions": {
+    "assigned_users": [
+      {
+        "id": "fid_dcf26c27-b992-43e0-9178-2b577720e0c6",
+        "email_address": "john.doe@example.com",
+        "first_name": "John",
+        "last_name": "Doe"
+      },
+      {
+        "id": "fid_833b42df-ed8b-456b-a2f3-8f19322ec5a2",
+        "email_address": "jane.doe@example.com",
+        "first_name": "Jane",
+        "last_name": "Doe"
+      },
+      {
+        "id": "fid_970eee07-f621-48ac-aeea-8ac4ac7d4d3b",
+        "email_address": "michael.brown@example.com",
+        "first_name": "Michael",
+        "last_name": "Brown"
+      },
+      {
+        "id": "fid_73d47c3d-e94b-4497-8b51-e50f728283ea",
+        "email_address": "analytics@example.com",
+        "first_name": "Analytics",
+        "last_name": "User"
+      },
+      {
+        "id": "fid_6eaa3315-49ac-4c61-a8f8-1743cbf32251",
+        "email_address": "crm@example.com",
+        "first_name": "CRM",
+        "last_name": "Admin"
+      }
+    ],
+    "systems": [
+      {
+        "id": "sys_001",
+        "name": "Salesforce"
+      },
+      {
+        "id": "sys_002",
+        "name": "MongoDB"
+      },
+      {
+        "id": "sys_003",
+        "name": "Stripe"
+      },
+      {
+        "id": "sys_004",
+        "name": "Google Analytics"
+      },
+      {
+        "id": "sys_005",
+        "name": "HubSpot CRM"
+      }
+    ]
+  }
+}

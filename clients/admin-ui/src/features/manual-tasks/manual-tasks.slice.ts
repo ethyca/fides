@@ -18,6 +18,14 @@ import {
 // Use the mock data directly since it's already in the correct format
 const mockApiResponse: PageManualTask = mockTasksData as PageManualTask;
 
+// Check if we're in a test environment (Cypress)
+const isTestEnvironment = () => {
+  return (
+    typeof window !== "undefined" &&
+    (window.Cypress || process.env.NODE_ENV === "test")
+  );
+};
+
 // Helper function to paginate and filter results
 const paginateAndFilterResults = (
   page: number = 1,
@@ -85,67 +93,119 @@ interface TaskQueryParams extends PaginationQueryParams {
 export const manualTasksApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getTasks: build.query<PageManualTask, TaskQueryParams | void>({
-      queryFn: (params) => {
-        // Set default values if params is undefined
-        const queryParams = params || { page: 1, size: 10 };
+      // Use real API call in test environment, mock otherwise
+      ...(isTestEnvironment()
+        ? {
+            query: (params) => {
+              const queryParams = params || { page: 1, size: 10 };
+              const searchParams = new URLSearchParams();
 
-        // Extract pagination parameters
-        const {
-          page = 1,
-          size = 10,
-          search,
-          status,
-          requestType,
-          systemName,
-        } = queryParams;
+              Object.entries(queryParams).forEach(([key, value]) => {
+                if (value !== undefined && value !== null) {
+                  searchParams.append(key, String(value));
+                }
+              });
 
-        // Return paginated and filtered results
-        return {
-          data: paginateAndFilterResults(
-            page,
-            size,
-            search,
-            status,
-            requestType,
-            systemName,
-          ),
-        };
-      },
+              return {
+                url: "manual-tasks",
+                params: searchParams,
+              };
+            },
+          }
+        : {
+            queryFn: (params) => {
+              // Set default values if params is undefined
+              const queryParams = params || { page: 1, size: 10 };
+
+              // Extract pagination parameters
+              const {
+                page = 1,
+                size = 10,
+                search,
+                status,
+                requestType,
+                systemName,
+              } = queryParams;
+
+              // Return paginated and filtered results
+              return {
+                data: paginateAndFilterResults(
+                  page,
+                  size,
+                  search,
+                  status,
+                  requestType,
+                  systemName,
+                ),
+              };
+            },
+          }),
       providesTags: () => [{ type: "Manual Tasks" }],
     }),
 
     completeTask: build.mutation<TaskActionResponse, CompleteTaskPayload>({
-      queryFn: (payload) => ({
-        data: {
-          task_id: payload.task_id,
-          status: "completed" as TaskStatus,
-        },
-      }),
+      // Use real API call in test environment, mock otherwise
+      ...(isTestEnvironment()
+        ? {
+            query: (payload) => ({
+              url: `manual-tasks/${payload.task_id}/complete`,
+              method: "POST",
+              body: payload,
+            }),
+          }
+        : {
+            queryFn: (payload) => ({
+              data: {
+                task_id: payload.task_id,
+                status: "completed" as TaskStatus,
+              },
+            }),
+          }),
       invalidatesTags: [{ type: "Manual Tasks" }],
     }),
 
     skipTask: build.mutation<TaskActionResponse, SkipTaskPayload>({
-      queryFn: (payload) => ({
-        data: {
-          task_id: payload.task_id,
-          status: "skipped" as TaskStatus,
-        },
-      }),
+      // Use real API call in test environment, mock otherwise
+      ...(isTestEnvironment()
+        ? {
+            query: (payload) => ({
+              url: `manual-tasks/${payload.task_id}/skip`,
+              method: "POST",
+              body: payload,
+            }),
+          }
+        : {
+            queryFn: (payload) => ({
+              data: {
+                task_id: payload.task_id,
+                status: "skipped" as TaskStatus,
+              },
+            }),
+          }),
       invalidatesTags: [{ type: "Manual Tasks" }],
     }),
 
     getTaskById: build.query<ManualTask, string>({
-      queryFn: (taskId) => {
-        const task = mockApiResponse.items.find((t) => t.task_id === taskId);
-        return task
-          ? { data: task }
-          : {
-              error: {
-                status: 404,
-                data: { message: "Task not found" },
-              },
-            };
-      },
+      // Use real API call in test environment, mock otherwise
+      ...(isTestEnvironment()
+        ? {
+            query: (taskId) => `manual-tasks/${taskId}`,
+          }
+        : {
+            queryFn: (taskId) => {
+              const task = mockApiResponse.items.find(
+                (t) => t.task_id === taskId,
+              );
+              return task
+                ? { data: task }
+                : {
+                    error: {
+                      status: 404,
+                      data: { message: "Task not found" },
+                    },
+                  };
+            },
+          }),
       providesTags: (_result, _error, taskId) => [
         { type: "Manual Tasks", id: taskId },
       ],
