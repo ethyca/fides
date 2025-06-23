@@ -103,6 +103,7 @@ export const CompleteTaskModal = ({
               onChange={(e) => setTextValue(e.target.value)}
               placeholder="Enter your response..."
               rows={4}
+              data-testid="complete-modal-text-input"
             />
           </div>
         );
@@ -112,6 +113,7 @@ export const CompleteTaskModal = ({
             <Checkbox
               checked={checkboxValue}
               onChange={(e) => setCheckboxValue(e.target.checked)}
+              data-testid="complete-modal-checkbox"
             >
               The task has been completed
             </Checkbox>
@@ -129,8 +131,11 @@ export const CompleteTaskModal = ({
                   setFileList(newFileList)
                 }
                 beforeUpload={() => false} // Prevent auto upload
+                data-testid="complete-modal-file-upload"
               >
-                <Button>Click to Upload</Button>
+                <Button data-testid="complete-modal-upload-button">
+                  Click to Upload
+                </Button>
               </Upload>
             </div>
           </div>
@@ -142,7 +147,7 @@ export const CompleteTaskModal = ({
     <>
       <Modal isOpen={isOpen} onClose={onClose} size="700px" isCentered>
         <ModalOverlay />
-        <ModalContent maxWidth="700px">
+        <ModalContent maxWidth="700px" data-testid="complete-task-modal">
           <ModalHeader>
             <Typography.Title level={4}>Complete Task</Typography.Title>
           </ModalHeader>
@@ -167,6 +172,7 @@ export const CompleteTaskModal = ({
                       onChange={(e) => setComment(e.target.value)}
                       placeholder="Add any additional comments..."
                       rows={3}
+                      data-testid="complete-modal-comment-input"
                     />
                   </div>
                 </div>
@@ -176,11 +182,19 @@ export const CompleteTaskModal = ({
 
           <ModalFooter>
             <div className="flex w-full justify-between">
-              <Button onClick={handleSkipTask} disabled={isLoading}>
+              <Button
+                onClick={handleSkipTask}
+                disabled={isLoading}
+                data-testid="complete-modal-skip-button"
+              >
                 Skip task
               </Button>
               <Space>
-                <Button onClick={handleCancel} disabled={isLoading}>
+                <Button
+                  onClick={handleCancel}
+                  disabled={isLoading}
+                  data-testid="complete-modal-cancel-button"
+                >
                   Cancel
                 </Button>
                 <Button
@@ -188,6 +202,7 @@ export const CompleteTaskModal = ({
                   onClick={handleSave}
                   loading={isLoading}
                   disabled={!isRequiredFieldFilled()}
+                  data-testid="complete-modal-save-button"
                 >
                   Save
                 </Button>

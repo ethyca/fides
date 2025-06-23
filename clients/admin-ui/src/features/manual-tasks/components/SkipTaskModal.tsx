@@ -55,7 +55,7 @@ export const SkipTaskModal = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="700px" isCentered>
       <ModalOverlay />
-      <ModalContent maxWidth="700px">
+      <ModalContent maxWidth="700px" data-testid="skip-task-modal">
         <ModalHeader>
           <Typography.Title level={4}>Skip Task</Typography.Title>
         </ModalHeader>
@@ -81,6 +81,7 @@ export const SkipTaskModal = ({
                     onChange={(e) => setComment(e.target.value)}
                     placeholder="Please provide a reason for skipping this task..."
                     rows={4}
+                    data-testid="skip-modal-comment-input"
                   />
                 </div>
               </div>
@@ -90,7 +91,11 @@ export const SkipTaskModal = ({
 
         <ModalFooter>
           <Space>
-            <Button onClick={handleCancel} disabled={isLoading}>
+            <Button
+              onClick={handleCancel}
+              disabled={isLoading}
+              data-testid="skip-modal-cancel-button"
+            >
               Cancel
             </Button>
             <Button
@@ -99,6 +104,7 @@ export const SkipTaskModal = ({
               loading={isLoading}
               disabled={!comment.trim()}
               danger
+              data-testid="skip-modal-skip-button"
             >
               Skip Task
             </Button>
