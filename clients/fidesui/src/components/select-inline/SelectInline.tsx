@@ -94,7 +94,7 @@ export const SelectInline = ({
     if (readonly) {
       return (
         <span
-          className="cursor-pointer text-blue-600 hover:text-blue-800"
+          className="cursor-pointer"
           role="button"
           tabIndex={0}
           onClick={handleExpandClick}
