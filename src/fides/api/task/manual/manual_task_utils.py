@@ -1,25 +1,30 @@
-from typing import Dict, List, Tuple, TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, List, Tuple
+
 from sqlalchemy.orm import Session
 
 from fides.api.graph.config import (
-    CollectionAddress,
     ROOT_COLLECTION_ADDRESS,
     Collection,
-    GraphDataset,
-    ScalarField,
+    CollectionAddress,
     Field,
     FieldPath,
+    GraphDataset,
+    ScalarField,
 )
-from fides.api.graph.config import ROOT_COLLECTION_ADDRESS, FieldPath
+from fides.api.graph.graph import Node
 from fides.api.graph.traversal import TraversalNode
+from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.manual_task import (
+    ManualTask,
+    ManualTaskConfig,
+    ManualTaskConfigurationType,
+    ManualTaskEntityType,
+    ManualTaskInstance,
+)
+from fides.api.models.privacy_request import PrivacyRequest
 
 if TYPE_CHECKING:
     from fides.api.graph.graph import DatasetGraph
-from fides.api.graph.graph import Node
-from fides.api.models.manual_task import ManualTask, ManualTaskConfig, ManualTaskConfigField, ManualTaskConfigurationType, ManualTaskInstance
-from fides.api.models.policy import Policy
-from fides.api.models.connectionconfig import ConnectionConfig
-from fides.api.models.privacy_request import PrivacyRequest
 
 
 class ManualTaskAddress:
@@ -32,21 +37,21 @@ class ManualTaskAddress:
         """Create a CollectionAddress for manual data: {connection_key}:manual_data"""
         return CollectionAddress(
             dataset=connection_config_key,
-            collection=ManualTaskAddress.MANUAL_DATA_COLLECTION
+            collection=ManualTaskAddress.MANUAL_DATA_COLLECTION,
         )
 
     @staticmethod
-    def is_manual_task_address(address) -> bool:
+    def is_manual_task_address(address: CollectionAddress) -> bool:
         """Check if address represents manual task data"""
         if isinstance(address, str):
             # Handle string format "connection_key:collection_name"
             return address.endswith(f":{ManualTaskAddress.MANUAL_DATA_COLLECTION}")
-        else:
-            # Handle CollectionAddress object
-            return address.collection == ManualTaskAddress.MANUAL_DATA_COLLECTION
+
+        # Handle CollectionAddress object
+        return address.collection == ManualTaskAddress.MANUAL_DATA_COLLECTION
 
     @staticmethod
-    def get_connection_key(address) -> str:
+    def get_connection_key(address: CollectionAddress) -> str:
         """Extract connection config key from manual task address"""
         if not ManualTaskAddress.is_manual_task_address(address):
             raise ValueError(f"Not a manual task address: {address}")
@@ -54,9 +59,9 @@ class ManualTaskAddress:
         if isinstance(address, str):
             # Handle string format "connection_key:collection_name"
             return address.split(":")[0]
-        else:
-            # Handle CollectionAddress object
-            return address.dataset
+
+        # Handle CollectionAddress object
+        return address.dataset
 
 
 def get_manual_task_addresses(db: Session) -> List[CollectionAddress]:
@@ -78,31 +83,36 @@ def get_manual_task_addresses(db: Session) -> List[CollectionAddress]:
     # Create addresses for all connections that have manual tasks
     manual_task_addresses = []
     for config in connection_configs_with_manual_tasks:
-        manual_task_addresses.append(
-            ManualTaskAddress.create(config.key)
-        )
+        manual_task_addresses.append(ManualTaskAddress.create(config.key))
 
     return manual_task_addresses
 
 
-def get_manual_tasks_for_connection_config(db: Session, connection_config_key: str) -> List[ManualTask]:
+def get_manual_tasks_for_connection_config(
+    db: Session, connection_config_key: str
+) -> List[ManualTask]:
     """Get all ManualTasks for a specific connection config"""
-    connection_config = db.query(ConnectionConfig).filter(
-        ConnectionConfig.key == connection_config_key
-    ).first()
+    connection_config = (
+        db.query(ConnectionConfig)
+        .filter(ConnectionConfig.key == connection_config_key)
+        .first()
+    )
 
     if not connection_config:
         return []
 
-    return db.query(ManualTask).filter(
-        ManualTask.parent_entity_id == connection_config.id,
-        ManualTask.parent_entity_type == "connection_config"
-    ).all()
+    return (
+        db.query(ManualTask)
+        .filter(
+            ManualTask.parent_entity_id == connection_config.id,
+            ManualTask.parent_entity_type == "connection_config",
+        )
+        .all()
+    )
 
 
 def create_manual_data_traversal_node(
-    db: Session,
-    address: CollectionAddress
+    db: Session, address: CollectionAddress
 ) -> TraversalNode:
     """
     Create a TraversalNode for a manual_data collection
@@ -120,7 +130,7 @@ def create_manual_data_traversal_node(
                 # Create a scalar field for each manual task field
                 # Extract data categories from field metadata if available
                 field_metadata = field.field_metadata or {}
-                data_categories = field_metadata.get('data_categories', [])
+                data_categories = field_metadata.get("data_categories", [])
 
                 scalar_field = ScalarField(
                     name=field.field_key,
@@ -155,7 +165,7 @@ def create_manual_data_traversal_node(
 def include_manual_tasks_in_graph(
     db: Session,
     traversal_nodes: Dict[CollectionAddress, TraversalNode],
-    end_nodes: List[CollectionAddress]
+    end_nodes: List[CollectionAddress],
 ) -> Tuple[Dict[CollectionAddress, TraversalNode], List[CollectionAddress]]:
     """
     Add ManualTask collections to the traversal graph so they can be included
@@ -196,8 +206,7 @@ def include_manual_tasks_in_graph(
 
 
 def create_manual_task_instances_for_privacy_request(
-    db: Session,
-    privacy_request: PrivacyRequest
+    db: Session, privacy_request: PrivacyRequest
 ) -> List[ManualTaskInstance]:
     """Create ManualTaskInstance entries for all active manual tasks relevant to a privacy request."""
     instances = []
@@ -211,35 +220,47 @@ def create_manual_task_instances_for_privacy_request(
     )
 
     for connection_config in connection_configs_with_manual_tasks:
-        manual_tasks = db.query(ManualTask).filter(
-            ManualTask.parent_entity_id == connection_config.id,
-            ManualTask.parent_entity_type == "connection_config"
-        ).all()
+        manual_tasks = (
+            db.query(ManualTask)
+            .filter(
+                ManualTask.parent_entity_id == connection_config.id,
+                ManualTask.parent_entity_type == "connection_config",
+            )
+            .all()
+        )
 
         for manual_task in manual_tasks:
             # Get the active config for this manual task
-            active_config = db.query(ManualTaskConfig).filter(
-                ManualTaskConfig.task_id == manual_task.id,
-                ManualTaskConfig.is_current == True
-            ).first()
+            active_config = (
+                db.query(ManualTaskConfig)
+                .filter(
+                    ManualTaskConfig.task_id == manual_task.id,
+                    ManualTaskConfig.is_current.is_(True),
+                )
+                .first()
+            )
 
             if not active_config:
                 continue  # Skip if no active config
 
             # Check if instance already exists
-            existing_instance = db.query(ManualTaskInstance).filter(
-                ManualTaskInstance.entity_id == privacy_request.id,
-                ManualTaskInstance.entity_type == "privacy_request",
-                ManualTaskInstance.task_id == manual_task.id,
-                ManualTaskInstance.config_id == active_config.id
-            ).first()
+            existing_instance = (
+                db.query(ManualTaskInstance)
+                .filter(
+                    ManualTaskInstance.entity_id == privacy_request.id,
+                    ManualTaskInstance.entity_type == "privacy_request",
+                    ManualTaskInstance.task_id == manual_task.id,
+                    ManualTaskInstance.config_id == active_config.id,
+                )
+                .first()
+            )
 
             if not existing_instance:
                 instance = ManualTaskInstance(
                     entity_id=privacy_request.id,
-                    entity_type="privacy_request",
+                    entity_type=ManualTaskEntityType.privacy_request,
                     task_id=manual_task.id,
-                    config_id=active_config.id
+                    config_id=active_config.id,
                 )
                 db.add(instance)
                 instances.append(instance)
@@ -251,14 +272,17 @@ def create_manual_task_instances_for_privacy_request(
 
 
 def get_manual_task_instances_for_privacy_request(
-    db: Session,
-    privacy_request: PrivacyRequest
+    db: Session, privacy_request: PrivacyRequest
 ) -> List[ManualTaskInstance]:
     """Get all manual task instances for a privacy request."""
-    return db.query(ManualTaskInstance).filter(
-        ManualTaskInstance.entity_id == privacy_request.id,
-        ManualTaskInstance.entity_type == "privacy_request"
-    ).all()
+    return (
+        db.query(ManualTaskInstance)
+        .filter(
+            ManualTaskInstance.entity_id == privacy_request.id,
+            ManualTaskInstance.entity_type == "privacy_request",
+        )
+        .all()
+    )
 
 
 def create_manual_task_artificial_graphs(
@@ -282,7 +306,6 @@ def create_manual_task_artificial_graphs(
     Returns:
         List of GraphDataset objects representing manual tasks as root nodes
     """
-    from fides.api.graph.config import Collection, GraphDataset, ScalarField
 
     manual_task_graphs = []
     manual_addresses = get_manual_task_addresses(db)
@@ -300,14 +323,17 @@ def create_manual_task_artificial_graphs(
         # since they provide manually-entered data rather than consuming identity data.
         for manual_task in manual_tasks:
             for config in manual_task.configs:
-                if config.config_type not in [ManualTaskConfigurationType.access_privacy_request, ManualTaskConfigurationType.erasure_privacy_request]:
+                if config.config_type not in [
+                    ManualTaskConfigurationType.access_privacy_request,
+                    ManualTaskConfigurationType.erasure_privacy_request,
+                ]:
                     continue
                 if not config.is_current:
                     continue
                 for field in config.field_definitions:
                     # Create a scalar field for each manual task field
                     field_metadata = field.field_metadata or {}
-                    data_categories = field_metadata.get('data_categories', [])
+                    data_categories = field_metadata.get("data_categories", [])
 
                     scalar_field = ScalarField(
                         name=field.field_key,

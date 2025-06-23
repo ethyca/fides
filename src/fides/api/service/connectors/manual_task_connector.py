@@ -4,10 +4,11 @@ Manual Task Connector - A minimal connector for manual task operations.
 Since manual tasks don't actually connect to external systems, this connector
 provides no-op implementations of the BaseConnector interface.
 """
+
 from typing import Any, Dict, List, Optional
 
 from fides.api.graph.execution import ExecutionNode
-from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
+from fides.api.models.connectionconfig import ConnectionTestStatus
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.service.connectors.base_connector import BaseConnector
@@ -18,17 +19,21 @@ from fides.api.util.collection_util import Row
 class ManualTaskQueryConfig(QueryConfig):
     """Minimal query config for manual tasks - not actually used"""
 
-    def generate_query(self, input_data: Dict[str, List[Any]], policy: Policy) -> str:
+    def generate_query(
+        self, input_data: Dict[str, List[Any]], policy: Optional[Policy]
+    ) -> str:
         return "Manual task: no query needed"
 
     def dry_run_query(self) -> str:
         return "Manual task: no query needed"
 
-    def query_to_str(self, query: Any, input_data: Dict[str, List[Any]]) -> str:
+    def query_to_str(self, t: Any, input_data: Dict[str, List[Any]]) -> str:
         """Convert query to string - not used for manual tasks"""
         return "Manual task: no query needed"
 
-    def generate_update_stmt(self, row: Row, policy: Policy) -> Any:
+    def generate_update_stmt(
+        self, row: Row, policy: Policy, request: PrivacyRequest
+    ) -> Any:
         """Generate update statement - not used for manual tasks"""
         return None
 
@@ -41,9 +46,6 @@ class ManualTaskConnector(BaseConnector):
     actually connect to external systems. The actual manual task logic
     is handled by ManualTaskGraphTask.access_request()
     """
-
-    def __init__(self, configuration: ConnectionConfig):
-        super().__init__(configuration)
 
     def query_config(self, node: ExecutionNode) -> QueryConfig[Any]:
         """Return a minimal query config - not actually used for manual tasks"""
@@ -87,7 +89,6 @@ class ManualTaskConnector(BaseConnector):
 
     def close(self) -> None:
         """No resources to close for manual tasks"""
-        pass
 
     @property
     def requires_primary_keys(self) -> bool:

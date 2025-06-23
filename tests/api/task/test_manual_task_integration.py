@@ -1,32 +1,40 @@
-import pytest
 from unittest.mock import Mock
 
-from fides.api.task.manual.manual_task_utils import (
-    ManualTaskAddress,
-    get_manual_tasks_for_connection_config,
-    create_manual_data_traversal_node,
-    include_manual_tasks_in_graph,
-    create_manual_task_instances_for_privacy_request,
-    get_manual_task_instances_for_privacy_request,
+import pytest
+
+from fides.api.graph.config import CollectionAddress
+from fides.api.models.connectionconfig import (
+    AccessLevel,
+    ConnectionConfig,
+    ConnectionType,
 )
-from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
 from fides.api.models.manual_task import (
     ManualTask,
     ManualTaskConfig,
     ManualTaskConfigField,
+    ManualTaskConfigurationType,
+    ManualTaskFieldType,
+    ManualTaskParentEntityType,
     ManualTaskSubmission,
     ManualTaskType,
-    ManualTaskParentEntityType,
-    ManualTaskFieldType,
-    ManualTaskConfigurationType,
 )
-from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType, AccessLevel
-from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.policy import Policy
-from fides.api.graph.config import CollectionAddress
-from fides.api.task.task_resources import TaskResources
+from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from tests.ops.service.privacy_request.test_request_runner_service import get_privacy_request_results, PRIVACY_REQUEST_TASK_TIMEOUT
+from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
+from fides.api.task.manual.manual_task_utils import (
+    ManualTaskAddress,
+    create_manual_data_traversal_node,
+    create_manual_task_instances_for_privacy_request,
+    get_manual_task_instances_for_privacy_request,
+    get_manual_tasks_for_connection_config,
+    include_manual_tasks_in_graph,
+)
+from fides.api.task.task_resources import TaskResources
+from tests.ops.service.privacy_request.test_request_runner_service import (
+    PRIVACY_REQUEST_TASK_TIMEOUT,
+    get_privacy_request_results,
+)
 
 
 class TestManualTaskAddress:
@@ -65,7 +73,7 @@ class TestManualTaskTraversalNode:
             data={
                 "name": "Test Policy",
                 "key": "test_policy",
-            }
+            },
         )
 
     @pytest.fixture
@@ -78,8 +86,8 @@ class TestManualTaskTraversalNode:
                 "key": "test_connection",
                 "connection_type": ConnectionType.postgres,
                 "name": "Test Connection",
-                "access": AccessLevel.write
-            }
+                "access": AccessLevel.write,
+            },
         )
 
         # Create manual task
@@ -88,8 +96,8 @@ class TestManualTaskTraversalNode:
             data={
                 "task_type": ManualTaskType.privacy_request,
                 "parent_entity_id": connection_config.id,
-                "parent_entity_type": ManualTaskParentEntityType.connection_config
-            }
+                "parent_entity_type": ManualTaskParentEntityType.connection_config,
+            },
         )
 
         # Create manual task config
@@ -99,8 +107,8 @@ class TestManualTaskTraversalNode:
                 "task_id": manual_task.id,
                 "config_type": "access_privacy_request",
                 "version": 1,
-                "is_current": True
-            }
+                "is_current": True,
+            },
         )
 
         # Create manual task field
@@ -114,9 +122,9 @@ class TestManualTaskTraversalNode:
                 "field_metadata": {
                     "label": "User Email",
                     "required": True,
-                    "data_categories": ["user.contact.email"]
-                }
-            }
+                    "data_categories": ["user.contact.email"],
+                },
+            },
         )
 
         return manual_task, connection_config
@@ -162,7 +170,7 @@ class TestManualTaskGraphTask:
             data={
                 "name": "Test Policy",
                 "key": "test_policy",
-            }
+            },
         )
 
     @pytest.fixture
@@ -174,8 +182,8 @@ class TestManualTaskGraphTask:
                 "external_id": "test_request_123",
                 "started_processing_at": None,
                 "status": "pending",
-                "policy_id": sample_policy.id
-            }
+                "policy_id": sample_policy.id,
+            },
         )
 
     @pytest.fixture
@@ -192,9 +200,9 @@ class TestManualTaskGraphTask:
         # which needs a proper ExecutionNode, but we can verify the class structure
 
         # For now, just verify the class can be imported and has the right methods
-        assert hasattr(ManualTaskGraphTask, 'access_request')
-        assert hasattr(ManualTaskGraphTask, '_ensure_manual_task_instances')
-        assert hasattr(ManualTaskGraphTask, '_get_submitted_data')
+        assert hasattr(ManualTaskGraphTask, "access_request")
+        assert hasattr(ManualTaskGraphTask, "_ensure_manual_task_instances")
+        assert hasattr(ManualTaskGraphTask, "_get_submitted_data")
 
     def test_manual_task_address_detection_in_access_request(self):
         """Test that access_request method can detect manual task addresses"""
@@ -237,11 +245,7 @@ class TestManualTaskSimulatedEndToEnd:
     def simple_policy(self, db):
         """Create a simple access policy"""
         return Policy.create(
-            db=db,
-            data={
-                "name": "Simple Access Policy",
-                "key": "simple_access_policy"
-            }
+            db=db, data={"name": "Simple Access Policy", "key": "simple_access_policy"}
         )
 
     @pytest.fixture
@@ -255,8 +259,14 @@ class TestManualTaskSimulatedEndToEnd:
                 "connection_type": ConnectionType.postgres,
                 "name": "Simple Test Connection",
                 "access": AccessLevel.write,
-                "secrets": {"host": "localhost", "port": 5432, "user": "test", "password": "test", "dbname": "test"}
-            }
+                "secrets": {
+                    "host": "localhost",
+                    "port": 5432,
+                    "user": "test",
+                    "password": "test",
+                    "dbname": "test",
+                },
+            },
         )
 
         # Create manual task
@@ -265,8 +275,8 @@ class TestManualTaskSimulatedEndToEnd:
             data={
                 "task_type": ManualTaskType.privacy_request,
                 "parent_entity_id": connection_config.id,
-                "parent_entity_type": ManualTaskParentEntityType.connection_config
-            }
+                "parent_entity_type": ManualTaskParentEntityType.connection_config,
+            },
         )
 
         # Create manual task config
@@ -276,8 +286,8 @@ class TestManualTaskSimulatedEndToEnd:
                 "task_id": manual_task.id,
                 "config_type": ManualTaskConfigurationType.access_privacy_request,
                 "version": 1,
-                "is_current": True
-            }
+                "is_current": True,
+            },
         )
 
         # Create manual task field - a simple text field
@@ -291,9 +301,9 @@ class TestManualTaskSimulatedEndToEnd:
                 "field_metadata": {
                     "label": "User Email Address",
                     "required": True,
-                    "data_categories": ["user.contact.email"]
-                }
-            }
+                    "data_categories": ["user.contact.email"],
+                },
+            },
         )
 
         yield connection_config, manual_task, manual_config, email_field
@@ -305,13 +315,12 @@ class TestManualTaskSimulatedEndToEnd:
         connection_config.delete(db)
 
     def test_manual_task_workflow_simulation(
-        self,
-        db,
-        simple_policy,
-        simple_connection_with_manual_task
+        self, db, simple_policy, simple_connection_with_manual_task
     ):
         """Test the manual task workflow: create privacy request -> requires_input -> submit -> complete"""
-        connection_config, manual_task, manual_config, email_field = simple_connection_with_manual_task
+        connection_config, manual_task, manual_config, email_field = (
+            simple_connection_with_manual_task
+        )
 
         # 1. Create privacy request
         privacy_request = PrivacyRequest.create(
@@ -320,22 +329,28 @@ class TestManualTaskSimulatedEndToEnd:
                 "external_id": "test_manual_workflow_123",
                 "started_processing_at": None,
                 "status": PrivacyRequestStatus.pending,
-                "policy_id": simple_policy.id
-            }
+                "policy_id": simple_policy.id,
+            },
         )
 
-                        # 2. Instead of testing the full graph task execution, let's test the core logic directly
+        # 2. Instead of testing the full graph task execution, let's test the core logic directly
         from fides.api.common_exceptions import AwaitingAsyncTaskCallback
 
         # Create a mock request task
         request_task = Mock()
-        request_task.request_task_address = ManualTaskAddress.create(connection_config.key)
+        request_task.request_task_address = ManualTaskAddress.create(
+            connection_config.key
+        )
 
         # Test the ManualTaskGraphTask logic by calling its methods directly
         # This avoids complex constructor issues while still testing the core functionality
 
         # Create manual task instances (simulating what the graph task would do)
-        from fides.api.models.manual_task import ManualTaskInstance, ManualTaskEntityType, StatusType
+        from fides.api.models.manual_task import (
+            ManualTaskEntityType,
+            ManualTaskInstance,
+            StatusType,
+        )
 
         manual_instance = ManualTaskInstance.create(
             db=db,
@@ -344,8 +359,8 @@ class TestManualTaskSimulatedEndToEnd:
                 "config_id": manual_config.id,
                 "entity_id": privacy_request.id,
                 "entity_type": ManualTaskEntityType.privacy_request.value,
-                "status": StatusType.pending.value
-            }
+                "status": StatusType.pending.value,
+            },
         )
 
         # 3. Set privacy request to requires_input (simulating what the task would do)
@@ -356,7 +371,7 @@ class TestManualTaskSimulatedEndToEnd:
         db.refresh(privacy_request)
         assert privacy_request.status == PrivacyRequestStatus.requires_input
 
-                # 4. Verify manual task instance was created
+        # 4. Verify manual task instance was created
         assert manual_instance is not None
         assert manual_instance.status == StatusType.pending
 
@@ -368,8 +383,8 @@ class TestManualTaskSimulatedEndToEnd:
                 "config_id": manual_config.id,
                 "field_id": email_field.id,
                 "instance_id": manual_instance.id,
-                "data": {"value": "manually-entered@example.com"}
-            }
+                "data": {"value": "manually-entered@example.com"},
+            },
         )
 
         # 6. Update manual task instance to completed
@@ -377,7 +392,9 @@ class TestManualTaskSimulatedEndToEnd:
         manual_instance.save(db)
 
         # 7. Test that we can now get the submitted data using the utility functions
-        from fides.api.task.manual.manual_task_utils import get_manual_tasks_for_connection_config
+        from fides.api.task.manual.manual_task_utils import (
+            get_manual_tasks_for_connection_config,
+        )
 
         manual_tasks = get_manual_tasks_for_connection_config(db, connection_config.key)
         assert len(manual_tasks) == 1
@@ -404,13 +421,12 @@ class TestManualTaskSimulatedEndToEnd:
         privacy_request.delete(db)
 
     def test_manual_task_with_missing_required_field(
-        self,
-        db,
-        simple_policy,
-        simple_connection_with_manual_task
+        self, db, simple_policy, simple_connection_with_manual_task
     ):
         """Test that manual task stays in requires_input when required fields are missing"""
-        connection_config, manual_task, manual_config, email_field = simple_connection_with_manual_task
+        connection_config, manual_task, manual_config, email_field = (
+            simple_connection_with_manual_task
+        )
 
         # Create privacy request
         privacy_request = PrivacyRequest.create(
@@ -419,12 +435,16 @@ class TestManualTaskSimulatedEndToEnd:
                 "external_id": "test_missing_field_123",
                 "started_processing_at": None,
                 "status": PrivacyRequestStatus.pending,
-                "policy_id": simple_policy.id
-            }
+                "policy_id": simple_policy.id,
+            },
         )
 
-                # Simulate manual task setup - create instance without submissions
-        from fides.api.models.manual_task import ManualTaskInstance, ManualTaskEntityType, StatusType
+        # Simulate manual task setup - create instance without submissions
+        from fides.api.models.manual_task import (
+            ManualTaskEntityType,
+            ManualTaskInstance,
+            StatusType,
+        )
 
         manual_instance = ManualTaskInstance.create(
             db=db,
@@ -433,8 +453,8 @@ class TestManualTaskSimulatedEndToEnd:
                 "config_id": manual_config.id,
                 "entity_id": privacy_request.id,
                 "entity_type": ManualTaskEntityType.privacy_request.value,
-                "status": StatusType.pending.value
-            }
+                "status": StatusType.pending.value,
+            },
         )
 
         # Set privacy request to requires_input (simulating what the task would do)
@@ -466,7 +486,7 @@ class TestManualTaskInstanceCreation:
             data={
                 "name": "Test Policy",
                 "key": "test_policy",
-            }
+            },
         )
 
     @pytest.fixture
@@ -480,7 +500,7 @@ class TestManualTaskInstanceCreation:
                 "connection_type": "postgres",
                 "access": "read",
                 "disabled": False,
-            }
+            },
         )
 
     @pytest.fixture
@@ -493,7 +513,7 @@ class TestManualTaskInstanceCreation:
                 "description": "A test manual task",
                 "parent_entity_id": sample_connection_config.id,
                 "parent_entity_type": "connection_config",
-            }
+            },
         )
 
     @pytest.fixture
@@ -505,8 +525,8 @@ class TestManualTaskInstanceCreation:
                 "external_id": "test_request_123",
                 "started_processing_at": None,
                 "status": "pending",
-                "policy_id": sample_policy.id
-            }
+                "policy_id": sample_policy.id,
+            },
         )
 
     def test_manual_task_instances_created_on_privacy_request_processing(
@@ -515,11 +535,15 @@ class TestManualTaskInstanceCreation:
         """Test that manual task instances are created when a privacy request starts processing"""
 
         # Verify no instances exist initially
-        initial_instances = get_manual_task_instances_for_privacy_request(db, sample_privacy_request)
+        initial_instances = get_manual_task_instances_for_privacy_request(
+            db, sample_privacy_request
+        )
         assert len(initial_instances) == 0
 
         # Create manual task instances (this should happen during privacy request processing)
-        created_instances = create_manual_task_instances_for_privacy_request(db, sample_privacy_request)
+        created_instances = create_manual_task_instances_for_privacy_request(
+            db, sample_privacy_request
+        )
 
         # Verify instances were created
         assert len(created_instances) == 1
@@ -527,7 +551,9 @@ class TestManualTaskInstanceCreation:
         assert created_instances[0].manual_task_id == sample_manual_task.id
 
         # Verify we can retrieve the instances
-        retrieved_instances = get_manual_task_instances_for_privacy_request(db, sample_privacy_request)
+        retrieved_instances = get_manual_task_instances_for_privacy_request(
+            db, sample_privacy_request
+        )
         assert len(retrieved_instances) == 1
         assert retrieved_instances[0].id == created_instances[0].id
 
@@ -541,15 +567,21 @@ class TestManualTaskInstanceCreation:
         """Test that duplicate manual task instances are not created"""
 
         # Create instances first time
-        first_instances = create_manual_task_instances_for_privacy_request(db, sample_privacy_request)
+        first_instances = create_manual_task_instances_for_privacy_request(
+            db, sample_privacy_request
+        )
         assert len(first_instances) == 1
 
         # Try to create instances again
-        second_instances = create_manual_task_instances_for_privacy_request(db, sample_privacy_request)
+        second_instances = create_manual_task_instances_for_privacy_request(
+            db, sample_privacy_request
+        )
         assert len(second_instances) == 0  # No new instances should be created
 
         # Verify total count is still 1
-        all_instances = get_manual_task_instances_for_privacy_request(db, sample_privacy_request)
+        all_instances = get_manual_task_instances_for_privacy_request(
+            db, sample_privacy_request
+        )
         assert len(all_instances) == 1
 
         # Cleanup

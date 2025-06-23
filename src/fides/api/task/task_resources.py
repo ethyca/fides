@@ -15,6 +15,7 @@ from fides.api.service.connectors import (
     FidesConnector,
     GoogleCloudSQLMySQLConnector,
     GoogleCloudSQLPostgresConnector,
+    ManualTaskConnector,
     MariaDBConnector,
     MicrosoftSQLServerConnector,
     MongoDBConnector,
@@ -26,7 +27,6 @@ from fides.api.service.connectors import (
     ScyllaConnector,
     SnowflakeConnector,
     TimescaleConnector,
-    ManualTaskConnector,
 )
 from fides.api.service.connectors.base_email_connector import BaseEmailConnector
 from fides.api.service.connectors.s3_connector import S3Connector

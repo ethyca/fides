@@ -113,10 +113,11 @@ def create_graph_task(
         collection_address = request_task.request_task_address
 
         # Check if this is a manual task address
+        graph_task: GraphTask
         if ManualTaskAddress.is_manual_task_address(collection_address):
-            graph_task: GraphTask = ManualTaskGraphTask(resources)
+            graph_task = ManualTaskGraphTask(resources)
         else:
-            graph_task: GraphTask = GraphTask(resources)
+            graph_task = GraphTask(resources)
 
     except Exception as exc:
         logger.debug(

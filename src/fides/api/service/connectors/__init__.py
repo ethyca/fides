@@ -39,10 +39,12 @@ from fides.api.service.connectors.google_cloud_postgres_connector import (
     GoogleCloudSQLPostgresConnector as GoogleCloudSQLPostgresConnector,
 )
 from fides.api.service.connectors.http_connector import HTTPSConnector as HTTPSConnector
+from fides.api.service.connectors.manual_task_connector import (
+    ManualTaskConnector as ManualTaskConnector,
+)
 from fides.api.service.connectors.manual_webhook_connector import (
     ManualWebhookConnector as ManualWebhookConnector,
 )
-from fides.api.service.connectors.manual_task_connector import ManualTaskConnector
 from fides.api.service.connectors.mariadb_connector import (
     MariaDBConnector as MariaDBConnector,
 )
