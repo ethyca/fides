@@ -159,11 +159,15 @@ export const TcfOverlay = ({
             (options.fidesDisabledNotices?.includes(notice.notice_key) ??
               false) ||
             notice.disabled;
-          const bestTranslation = selectBestNoticeTranslation(i18n, notice);
+          const bestTranslation = selectBestNoticeTranslation(
+            currentLocale,
+            i18n.getDefaultLocale(),
+            notice,
+          );
           return { ...notice, bestTranslation, disabled };
         }),
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      [experienceMinimal.privacy_notices, i18n, currentLocale],
+      [experienceMinimal.privacy_notices, currentLocale],
     );
 
   /**
@@ -293,13 +297,14 @@ export const TcfOverlay = ({
       experienceFull?.experience_config || experienceMinimal.experience_config;
     if (experienceConfig) {
       const bestTranslation = selectBestExperienceConfigTranslation(
-        i18n,
+        currentLocale,
+        i18n.getDefaultLocale(),
         experienceConfig,
       );
       return bestTranslation?.privacy_experience_config_history_id;
     }
     return undefined;
-  }, [experienceMinimal, experienceFull, i18n]);
+  }, [experienceMinimal, experienceFull, currentLocale, i18n]);
 
   const customPurposes: (string | undefined)[] = useMemo(() => {
     const notices = privacyNoticesWithBestTranslation.map(

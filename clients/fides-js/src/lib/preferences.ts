@@ -37,7 +37,8 @@ import {
 } from "./events";
 import { decodeFidesString } from "./fides-string";
 import {
-  I18n,
+  DEFAULT_LOCALE,
+  extractDefaultLocaleFromExperience,
   selectBestExperienceConfigTranslation,
   selectBestNoticeTranslation,
 } from "./i18n";
@@ -294,13 +295,18 @@ export interface UpdateConsentOptions {
 export const updateConsent = async (
   context: Pick<
     FidesGlobal,
-    "experience" | "cookie" | "geolocation" | "options"
+    "experience" | "cookie" | "geolocation" | "options" | "locale"
   >,
   consentOptions: UpdateConsentOptions,
-  i18n?: I18n,
   servedNoticeHistoryId?: string,
 ): Promise<void> => {
-  const { experience, cookie, geolocation, options: fidesOptions } = context;
+  const {
+    experience,
+    cookie,
+    geolocation,
+    options: fidesOptions,
+    locale,
+  } = context;
   if (!experience) {
     throw new Error("Experience must be initialized before updating consent");
   }
@@ -339,6 +345,10 @@ export const updateConsent = async (
     privacy_notices: privacyNotices,
     non_applicable_privacy_notices: nonApplicablePrivacyNotices,
   } = experience;
+
+  const defaultLocale =
+    extractDefaultLocaleFromExperience(experience as PrivacyExperience) ||
+    DEFAULT_LOCALE;
 
   /**
    * This mostly exists to support the Fides.updateConsent API which
@@ -404,13 +414,12 @@ export const updateConsent = async (
     const notice = privacyNotices?.find((n) => n.notice_key === key);
     // non-applicable privacy notices are ignored
     if (notice) {
-      let historyId: string | undefined;
-      if (i18n) {
-        const bestNoticeTranslation = selectBestNoticeTranslation(i18n, notice);
-        historyId = bestNoticeTranslation?.privacy_notice_history_id;
-      } else {
-        historyId = notice.translations?.[0]?.privacy_notice_history_id;
-      }
+      const bestNoticeTranslation = selectBestNoticeTranslation(
+        locale,
+        defaultLocale,
+        notice,
+      );
+      const historyId = bestNoticeTranslation?.privacy_notice_history_id;
       let consentPreference: UserConsentPreference;
       if (typeof value === "boolean") {
         consentPreference = transformConsentToFidesUserPreference(
@@ -435,15 +444,14 @@ export const updateConsent = async (
   // Get privacy_experience_config_history_id from experience config translations
   let configHistoryId: string | undefined;
   if (experienceConfig?.translations?.length) {
-    if (i18n) {
-      const bestExperienceConfigTranslation =
-        selectBestExperienceConfigTranslation(i18n, experienceConfig);
-      configHistoryId =
-        bestExperienceConfigTranslation?.privacy_experience_config_history_id;
-    } else {
-      configHistoryId =
-        experienceConfig.translations[0].privacy_experience_config_history_id;
-    }
+    const bestExperienceConfigTranslation =
+      selectBestExperienceConfigTranslation(
+        locale,
+        defaultLocale,
+        experienceConfig,
+      );
+    configHistoryId =
+      bestExperienceConfigTranslation?.privacy_experience_config_history_id;
   }
 
   const fidesRegionString = constructFidesRegionString(geolocation);

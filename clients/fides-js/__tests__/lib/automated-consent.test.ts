@@ -82,11 +82,6 @@ describe("automaticallyApplyPreferences", () => {
     fidesConsentFlagType: null,
   };
 
-  const mockI18n = {
-    locale: "en",
-    t: jest.fn((key: string) => key),
-  } as any;
-
   const expectedConsentContext: Partial<FidesGlobal> = {
     experience: undefined,
     cookie: mockCookie,
@@ -94,6 +89,7 @@ describe("automaticallyApplyPreferences", () => {
       country: "US",
     },
     options: mockOptions,
+    locale: "en",
   };
 
   beforeEach(() => {
@@ -164,7 +160,7 @@ describe("automaticallyApplyPreferences", () => {
         effectiveExperience: mockRegularExperience,
         cookie: mockCookie,
         fidesOptions: mockOptions,
-        i18n: mockI18n,
+        locale: "en",
         geolocation: {
           country: "US",
         },
@@ -177,7 +173,6 @@ describe("automaticallyApplyPreferences", () => {
           consentMethod: ConsentMethod.GPC,
           noticeConsent: { analytics: false, marketing: false },
         }),
-        mockI18n,
       );
     });
 
@@ -191,7 +186,7 @@ describe("automaticallyApplyPreferences", () => {
         effectiveExperience: mockRegularExperience,
         cookie: mockCookie,
         fidesOptions: mockOptions,
-        i18n: mockI18n,
+        locale: "en",
         geolocation: {
           country: "US",
         },
@@ -213,7 +208,7 @@ describe("automaticallyApplyPreferences", () => {
         effectiveExperience: mockRegularExperience,
         cookie: mockCookie,
         fidesOptions: mockOptions,
-        i18n: mockI18n,
+        locale: "en",
         geolocation: {
           country: "US",
         },
@@ -226,7 +221,6 @@ describe("automaticallyApplyPreferences", () => {
           consentMethod: ConsentMethod.GPC,
           noticeConsent: { analytics: true, marketing: false },
         }),
-        mockI18n,
       );
     });
 
@@ -256,7 +250,7 @@ describe("automaticallyApplyPreferences", () => {
         effectiveExperience: experienceWithMixedGpcSupport,
         cookie: mockCookie,
         fidesOptions: mockOptions,
-        i18n: mockI18n,
+        locale: "en",
         geolocation: {
           country: "US",
         },
@@ -269,7 +263,6 @@ describe("automaticallyApplyPreferences", () => {
           consentMethod: ConsentMethod.GPC,
           noticeConsent: { analytics: false, marketing: true },
         }),
-        mockI18n,
       );
     });
 
@@ -293,7 +286,7 @@ describe("automaticallyApplyPreferences", () => {
         effectiveExperience: experienceWithNoticeOnly,
         cookie: mockCookie,
         fidesOptions: mockOptions,
-        i18n: mockI18n,
+        locale: "en",
         geolocation: {
           country: "US",
         },
@@ -370,7 +363,7 @@ describe("automaticallyApplyPreferences", () => {
         effectiveExperience: mockTCFExperienceWithCustomNotices,
         cookie: mockCookie,
         fidesOptions: mockOptions,
-        i18n: mockI18n,
+        locale: "en",
         geolocation: {
           country: "EEA",
         },
@@ -383,7 +376,6 @@ describe("automaticallyApplyPreferences", () => {
           consentMethod: ConsentMethod.GPC,
           noticeConsent: { custom_notice_1: false, custom_notice_2: false },
         }),
-        mockI18n,
       );
     });
   });

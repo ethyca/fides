@@ -91,14 +91,15 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   const privacyExperienceConfigHistoryId: string | undefined = useMemo(() => {
     if (experience.experience_config) {
       const bestTranslation = selectBestExperienceConfigTranslation(
-        i18n,
+        currentLocale,
+        i18n.getDefaultLocale(),
         experience.experience_config,
       );
       return bestTranslation?.privacy_experience_config_history_id;
     }
     return undefined;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [experience, i18n, currentLocale]);
+  }, [experience, currentLocale]);
 
   /**
    * Collect the given PrivacyNotices into a list of "items" for rendering.
@@ -123,7 +124,11 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
           (options.fidesDisabledNotices?.includes(notice.notice_key) ??
             false) ||
           notice.disabled;
-        const bestTranslation = selectBestNoticeTranslation(i18n, notice);
+        const bestTranslation = selectBestNoticeTranslation(
+          currentLocale,
+          i18n.getDefaultLocale(),
+          notice,
+        );
         return { notice: { ...notice, disabled }, bestTranslation };
       });
 
@@ -138,12 +143,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       return [...noticeOnly, ...others];
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [
-      experience.privacy_notices,
-      i18n,
-      currentLocale,
-      options.fidesDisabledNotices,
-    ],
+    [experience.privacy_notices, currentLocale, options.fidesDisabledNotices],
   );
 
   const [draftEnabledNoticeKeys, setDraftEnabledNoticeKeys] = useState<

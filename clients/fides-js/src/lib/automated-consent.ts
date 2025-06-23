@@ -12,7 +12,7 @@ import {
 import { decodeNoticeConsentString } from "./consent-utils";
 import { getFidesConsentCookie } from "./cookie";
 import { decodeFidesString } from "./fides-string";
-import { I18n } from "./i18n";
+import { Locale } from "./i18n";
 import { updateConsent } from "./preferences";
 import {
   noticeHasConsentInCookie,
@@ -29,14 +29,14 @@ export const automaticallyApplyPreferences = async ({
   effectiveExperience,
   cookie,
   fidesOptions,
-  i18n,
+  locale,
   geolocation,
 }: {
   savedConsent: NoticeConsent;
   effectiveExperience: PrivacyExperience;
   cookie: FidesCookie;
   fidesOptions: FidesInitOptions;
-  i18n?: I18n;
+  locale: Locale;
   geolocation: UserGeolocation | undefined;
 }): Promise<boolean> => {
   // Early-exit if there is no experience or notices, since we've nothing to do
@@ -154,12 +154,12 @@ export const automaticallyApplyPreferences = async ({
         cookie,
         geolocation,
         options: fidesOptions,
+        locale,
       },
       {
         noticeConsent: noticeConsentToSave,
         consentMethod,
       },
-      i18n,
     );
     return true;
   }

@@ -407,8 +407,8 @@ export const initialize = async ({
           effectiveExperience: fides.experience as PrivacyExperience,
           cookie: fides.cookie,
           fidesOptions: options,
-          i18n,
           geolocation,
+          locale: fides.locale,
         }),
       );
     } else {
