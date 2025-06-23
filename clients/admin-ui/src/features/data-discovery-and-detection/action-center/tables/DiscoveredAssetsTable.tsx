@@ -121,7 +121,7 @@ export const DiscoveredAssetsTable = ({
   }, [monitorId, searchQuery, resetPageIndexToDefault]);
 
   const { filterTabs, activeTab, onTabChange, activeParams, actionsDisabled } =
-    useActionCenterTabs({ systemId });
+    useActionCenterTabs(systemId);
 
   const { data, isLoading, isFetching } = useGetDiscoveredAssetsQuery({
     key: monitorId,

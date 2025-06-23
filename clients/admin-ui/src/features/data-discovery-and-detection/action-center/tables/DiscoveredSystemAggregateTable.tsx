@@ -55,7 +55,6 @@ export const DiscoveredSystemAggregateTable = ({
   monitorId,
 }: DiscoveredSystemAggregateTableProps) => {
   const router = useRouter();
-  const tabHash = router.asPath.split("#")[1];
 
   const {
     PAGE_SIZES,
@@ -89,7 +88,7 @@ export const DiscoveredSystemAggregateTable = ({
   }, [monitorId, searchQuery, resetPageIndexToDefault]);
 
   const { filterTabs, activeTab, onTabChange, activeParams, actionsDisabled } =
-    useActionCenterTabs({ initialHash: tabHash });
+    useActionCenterTabs();
 
   const { data, isLoading, isFetching } = useGetDiscoveredSystemAggregateQuery({
     key: monitorId,
@@ -142,7 +141,7 @@ export const DiscoveredSystemAggregateTable = ({
   }
 
   const handleRowClick = (row: SystemStagedResourcesAggregateRecord) => {
-    const newUrl = `${ACTION_CENTER_ROUTE}/${monitorId}/${row.id ?? UNCATEGORIZED_SEGMENT}${tabHash ? `#${tabHash}` : ""}`;
+    const newUrl = `${ACTION_CENTER_ROUTE}/${monitorId}/${row.id ?? UNCATEGORIZED_SEGMENT}${activeTab ? `#${activeTab}` : ""}`;
     router.push(newUrl);
   };
 

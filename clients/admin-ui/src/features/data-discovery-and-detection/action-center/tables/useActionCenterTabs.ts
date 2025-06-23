@@ -7,7 +7,7 @@ export enum ActionCenterTabHash {
   IGNORED = "#ignored",
 }
 
-const useActionCenterTabs = ({ systemId }: { systemId?: string }) => {
+const useActionCenterTabs = (systemId?: string) => {
   const { activeTab, onTabChange } = useURLHashedTabs({
     tabKeys: Object.values(ActionCenterTabHash),
   });
