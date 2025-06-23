@@ -148,15 +148,12 @@ export const CompleteTaskModal = ({
           </ModalHeader>
           <ModalBody>
             <div className="flex flex-col space-y-6">
-              {/* Details */}
               <div>
                 <TaskDetails task={task} />
               </div>
 
-              {/* Divider for separation */}
               <Divider />
 
-              {/* Task Input Section */}
               <div>
                 <div className="flex flex-col space-y-4">
                   {renderTaskInput()}
