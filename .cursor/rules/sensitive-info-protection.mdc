@@ -1,7 +1,7 @@
 ---
 description:
 globs:
-alwaysApply: false
+alwaysApply: true
 ---
 ---
 description: Protection against customer and internal sensitive information disclosure in public OSS repository
