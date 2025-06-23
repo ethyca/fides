@@ -197,10 +197,10 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
       shouldShowExperience: this.shouldShowExperience(),
     });
     /** @deprecated - FidesInitialized is used for backwards compatibility only */
-    dispatchFidesEvent("FidesInitialized", this.cookie, {
-      shouldShowExperience: this.shouldShowExperience(),
-      firstInit: true,
-    });
+    // dispatchFidesEvent("FidesInitialized", this.cookie, {
+    //   shouldShowExperience: this.shouldShowExperience(),
+    //   firstInit: true,
+    // });
   }
 
   const updatedFides = await initialize({
