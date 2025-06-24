@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.64.0"
+    "version": "2.64.1b2.post0.dev3"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -15574,6 +15574,7 @@
           "https",
           "manual",
           "manual_webhook",
+          "manual_task",
           "mariadb",
           "mongodb",
           "mssql",
