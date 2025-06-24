@@ -1,12 +1,13 @@
 import { ContainerNode, render } from "preact";
 
-import { InitializedFidesGlobal, RenderOverlayType } from "../components/types";
+import { RenderOverlayType } from "../components/types";
 import {
   ComponentType,
   FidesExperienceTranslationOverrides,
   FidesInitOptions,
 } from "./consent-types";
 import type { I18n } from "./i18n";
+import { InitializedFidesGlobal } from "./providers/fides-global-context";
 import { ColorFormat, generateLighterColor } from "./style-utils";
 
 const FIDES_EMBED_CONTAINER_ID = "fides-embed-container";
@@ -37,13 +38,7 @@ export const initOverlay = async ({
   renderOverlay,
   translationOverrides,
 }: InitOverlayProps): Promise<void> => {
-  const {
-    config,
-    cookie,
-    experience,
-    saved_consent: savedConsent,
-    fidesRegionString,
-  } = initializedFides;
+  const { config, experience } = initializedFides;
   const options = config?.options as FidesInitOptions;
   fidesDebugger("Initializing Fides consent overlays...");
 
@@ -155,12 +150,7 @@ export const initOverlay = async ({
         renderOverlay(
           {
             initializedFides,
-            options,
-            experience,
             i18n,
-            fidesRegionString,
-            cookie,
-            savedConsent,
             translationOverrides,
           },
           parentElem,

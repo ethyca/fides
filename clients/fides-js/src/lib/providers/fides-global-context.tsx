@@ -2,7 +2,27 @@ import { createContext, h } from "preact";
 import { ReactNode } from "preact/compat";
 import { useContext, useMemo, useState } from "preact/hooks";
 
-import { InitializedFidesGlobal } from "../../components/types";
+import {
+  FidesConfig,
+  FidesCookie,
+  FidesGlobal,
+  PrivacyExperience,
+  PrivacyExperienceMinimal,
+} from "../consent-types";
+
+/**
+ * This is the same as the FidesGlobal type, but with the
+ * cookie, config, experience, and fidesRegionString properties
+ * populated and not undefined or empty since those have all been
+ * populated and validated by the initialize function. This can
+ * confidently be used by the Preact app.
+ */
+export interface InitializedFidesGlobal extends FidesGlobal {
+  cookie: FidesCookie;
+  config: FidesConfig;
+  experience: PrivacyExperience | PrivacyExperienceMinimal;
+  fidesRegionString: string;
+}
 
 interface UseFidesGlobalProps {
   fidesGlobal: InitializedFidesGlobal;

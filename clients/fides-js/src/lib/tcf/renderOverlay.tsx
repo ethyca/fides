@@ -1,7 +1,5 @@
 import { h, render } from "preact";
 
-import { PrivacyExperienceMinimal } from "~/fides";
-
 import { TcfOverlay } from "../../components/tcf/TcfOverlay";
 import { RenderOverlayType } from "../../components/types";
 import { I18nProvider } from "../i18n/i18n-context";
@@ -19,7 +17,7 @@ export const renderOverlay: RenderOverlayType = (props, parent) => {
    * load the TCF-specific ones when needed, which reduces the default fides.js
    * bundle size by over 20kb!
    */
-  const { i18n, initializedFides, ...overlayProps } = props;
+  const { i18n, initializedFides, translationOverrides } = props;
   loadTcfMessagesFromFiles(i18n);
 
   render(
@@ -28,12 +26,7 @@ export const renderOverlay: RenderOverlayType = (props, parent) => {
         <GVLProvider>
           <VendorButtonProvider>
             <EventProvider>
-              <TcfOverlay
-                experienceMinimal={
-                  overlayProps.experience as PrivacyExperienceMinimal
-                }
-                {...overlayProps}
-              />
+              <TcfOverlay translationOverrides={translationOverrides} />
             </EventProvider>
           </VendorButtonProvider>
         </GVLProvider>

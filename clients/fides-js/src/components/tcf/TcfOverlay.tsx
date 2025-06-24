@@ -10,6 +10,7 @@ import {
   ConsentMechanism,
   ConsentMethod,
   FidesCookie,
+  FidesExperienceTranslationOverrides,
   PrivacyExperience,
   PrivacyExperienceMinimal,
   PrivacyNoticeWithPreference,
@@ -44,6 +45,7 @@ import {
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { updateConsentPreferences } from "../../lib/preferences";
 import { useEvent } from "../../lib/providers/event-context";
+import { useFidesGlobal } from "../../lib/providers/fides-global-context";
 import { EMPTY_ENABLED_IDS } from "../../lib/tcf/constants";
 import { useGvl } from "../../lib/tcf/gvl-context";
 import {
@@ -68,7 +70,6 @@ import { fetchExperience, fetchGvlTranslations } from "../../services/api";
 import Button from "../Button";
 import ConsentBanner from "../ConsentBanner";
 import Overlay from "../Overlay";
-import { OverlayProps } from "../types";
 import { TCFBannerSupplemental } from "./TCFBannerSupplemental";
 import { TcfConsentButtons } from "./TcfConsentButtons";
 import TcfTabs from "./TcfTabs";
@@ -82,18 +83,20 @@ const getAllIds = (
   return modelList.map((m) => `${m.id}`);
 };
 
-interface TcfOverlayProps extends Omit<OverlayProps, "experience"> {
-  experienceMinimal: PrivacyExperienceMinimal;
+interface TcfOverlayProps {
+  translationOverrides?: Partial<FidesExperienceTranslationOverrides>;
 }
 
-export const TcfOverlay = ({
-  options,
-  experienceMinimal,
-  fidesRegionString,
-  cookie,
-  savedConsent,
-  translationOverrides,
-}: TcfOverlayProps) => {
+export const TcfOverlay = ({ translationOverrides }: TcfOverlayProps) => {
+  const { fidesGlobal } = useFidesGlobal();
+  const {
+    fidesRegionString,
+    cookie,
+    config,
+    saved_consent: savedConsent,
+  } = fidesGlobal;
+  const experienceMinimal = fidesGlobal.experience as PrivacyExperienceMinimal;
+  const options = config?.options;
   const {
     i18n,
     currentLocale,

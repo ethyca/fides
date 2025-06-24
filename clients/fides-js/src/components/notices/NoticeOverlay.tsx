@@ -9,6 +9,7 @@ import {
   ConsentMechanism,
   ConsentMethod,
   FidesCookie,
+  FidesInitOptions,
   Layer1ButtonOption,
   NoticeConsent,
   PrivacyExperience,
@@ -39,23 +40,23 @@ import {
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { updateConsentPreferences } from "../../lib/preferences";
 import { useEvent } from "../../lib/providers/event-context";
+import { useFidesGlobal } from "../../lib/providers/fides-global-context";
 import { processExternalConsentValue } from "../../lib/shared-consent-utils";
 import ConsentBanner from "../ConsentBanner";
 import { NoticeConsentButtons } from "../ConsentButtons";
 import Overlay from "../Overlay";
-import { OverlayProps } from "../types";
 import { NoticeToggleProps, NoticeToggles } from "./NoticeToggles";
 
-export interface NoticeOverlayProps extends OverlayProps {
-  experience: PrivacyExperience;
-}
-
-const NoticeOverlay = ({
-  options,
-  experience,
-  fidesRegionString,
-  cookie,
-}: NoticeOverlayProps) => {
+const NoticeOverlay = () => {
+  const { fidesGlobal } = useFidesGlobal();
+  const {
+    fidesRegionString,
+    cookie,
+    config,
+    saved_consent: savedConsent,
+  } = fidesGlobal;
+  const experience = fidesGlobal.experience as PrivacyExperience;
+  const options = config?.options as FidesInitOptions;
   const { i18n, currentLocale, setCurrentLocale } = useI18n();
   const {
     triggerRef,
@@ -65,7 +66,6 @@ const NoticeOverlay = ({
     dispatchFidesEventAndClearTrigger,
   } = useEvent();
   const parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
-  const savedConsent = window.Fides.saved_consent;
 
   // TODO (PROD-1792): restore useMemo here but ensure that saved changes are respected
   // eslint-disable-next-line react-hooks/exhaustive-deps

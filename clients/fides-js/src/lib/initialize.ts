@@ -1,4 +1,4 @@
-import { InitializedFidesGlobal, RenderOverlayType } from "../components/types";
+import { RenderOverlayType } from "../components/types";
 import { fetchExperience } from "../services/api";
 import { getGeolocation } from "../services/external/geolocation";
 import { automaticallyApplyPreferences } from "./automated-consent";
@@ -40,6 +40,7 @@ import {
 } from "./i18n";
 import { UpdateExperienceProps } from "./init-utils";
 import { InitOverlayProps } from "./initOverlay";
+import { InitializedFidesGlobal } from "./providers/fides-global-context";
 import { searchForElement } from "./ui-utils";
 
 const retrieveEffectiveRegionString = async (
