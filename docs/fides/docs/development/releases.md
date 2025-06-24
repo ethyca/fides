@@ -165,3 +165,7 @@ It may be necessary for a patch release to contain only select commits to the `m
         ```
 
     1. Handle any merge conflicts, and push to the remote `main` branch
+
+## Release Checklist
+
+Please use the [checklist defined in `.github/PULL_REQUEST_TEMPLATE/release_pull_request.md`](https://github.com/ethyca/fides/blob/HEAD/.github/PULL_REQUEST_TEMPLATE/release_pull_request_template.md) as a release checklist. This should be put in the description for PRs of release branches.
