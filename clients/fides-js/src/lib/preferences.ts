@@ -295,6 +295,8 @@ export interface UpdateConsentOptions {
   validation?: UpdateConsentValidation;
   consentMethod?: ConsentMethod;
   eventExtraDetails?: FidesEventExtraDetails;
+  tcf?: TcfSavePreferences;
+  updateCookie?: (oldCookie: FidesCookie) => Promise<FidesCookie>;
 }
 export const updateConsent = async (
   context: Pick<FidesGlobal, "experience" | "cookie" | "config" | "locale">,
@@ -336,6 +338,8 @@ export const updateConsent = async (
         origin: FidesEventOrigin.EXTERNAL,
       },
     },
+    tcf,
+    updateCookie,
   } = consentOptions;
 
   const {
@@ -472,5 +476,7 @@ export const updateConsent = async (
     cookie,
     eventExtraDetails,
     servedNoticeHistoryId,
+    tcf,
+    updateCookie,
   });
 };

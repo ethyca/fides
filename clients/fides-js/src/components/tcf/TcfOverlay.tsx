@@ -11,6 +11,7 @@ import {
   ConsentMethod,
   FidesCookie,
   FidesExperienceTranslationOverrides,
+  NoticeConsent,
   OverrideType,
   PrivacyExperience,
   PrivacyExperienceMinimal,
@@ -45,7 +46,7 @@ import {
 } from "../../lib/i18n";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { getOverridesByType } from "../../lib/initialize";
-import { updateConsentPreferences } from "../../lib/preferences";
+import { updateConsent } from "../../lib/preferences";
 import { useEvent } from "../../lib/providers/event-context";
 import { useFidesGlobal } from "../../lib/providers/fides-global-context";
 import { EMPTY_ENABLED_IDS } from "../../lib/tcf/constants";
@@ -59,7 +60,6 @@ import {
 import {
   buildTcfEntitiesFromCookieAndFidesString as buildUserPrefs,
   constructTCFNoticesServedProps,
-  createTCFConsentPreferencesToSave,
   createTcfSavePayload,
   createTcfSavePayloadFromMinExp,
   getEnabledIds,
@@ -370,49 +370,52 @@ export const TcfOverlay = () => {
           enabledIds,
         });
       }
-      const consentPreferencesToSave = createTCFConsentPreferencesToSave(
-        privacyNoticesWithBestTranslation,
-        enabledIds.customPurposesConsent,
-      );
-      updateConsentPreferences({
-        consentPreferencesToSave,
-        privacyExperienceConfigHistoryId,
-        experience: experienceFull || experienceMinimal,
-        consentMethod,
-        options,
-        userLocationString: fidesRegionString,
-        cookie,
-        eventExtraDetails: {
-          servingComponent: servingComponentRef.current,
-          trigger: triggerRef.current,
+
+      const customPurposesConsent: NoticeConsent = {};
+      privacyNoticesWithBestTranslation.forEach((notice) => {
+        if (notice.consent_mechanism !== ConsentMechanism.NOTICE_ONLY) {
+          customPurposesConsent[notice.notice_key] =
+            enabledIds.customPurposesConsent.includes(notice.id);
+        } else {
+          // always set notice-only notices to true
+          customPurposesConsent[notice.notice_key] = true;
+        }
+      });
+      updateConsent(
+        fidesGlobal,
+        {
+          noticeConsent: customPurposesConsent,
+          consentMethod,
+          eventExtraDetails: {
+            servingComponent: servingComponentRef.current,
+            trigger: triggerRef.current,
+          },
+          tcf,
+          updateCookie: (oldCookie) => {
+            return updateTCFCookie(
+              oldCookie,
+              tcf,
+              enabledIds,
+              experienceFull || experienceMinimal,
+              customPurposesConsent,
+            );
+          },
         },
-        tcf,
         servedNoticeHistoryId,
-        updateCookie: (oldCookie) =>
-          updateTCFCookie(
-            oldCookie,
-            tcf,
-            enabledIds,
-            experienceFull || experienceMinimal,
-            consentPreferencesToSave,
-          ),
-      }).finally(() => {
+      ).finally(() => {
         setTrigger(undefined);
       });
       setDraftIds(enabledIds);
     },
     [
-      cookie,
       experienceFull,
       experienceMinimal,
-      fidesRegionString,
-      options,
-      privacyExperienceConfigHistoryId,
       privacyNoticesWithBestTranslation,
-      servedNoticeHistoryId,
-      triggerRef,
-      setTrigger,
+      fidesGlobal,
       servingComponentRef,
+      triggerRef,
+      servedNoticeHistoryId,
+      setTrigger,
     ],
   );
 
