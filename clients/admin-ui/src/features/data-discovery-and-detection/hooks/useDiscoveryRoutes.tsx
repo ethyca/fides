@@ -12,33 +12,33 @@ const useDiscoveryRoutes = () => {
 
   const navigateToDetectionResults = ({
     resourceUrn,
-    filterTabIndex,
+    filterTab,
   }: {
     resourceUrn: string;
-    filterTabIndex?: number;
+    filterTab?: string;
   }) => {
     router.push({
       pathname: DATA_DETECTION_ROUTE_DETAIL,
       query: {
         resourceUrn,
-        filterTabIndex,
       },
+      hash: filterTab,
     });
   };
 
   const navigateToDiscoveryResults = ({
     resourceUrn,
-    filterTabIndex,
+    filterTab,
   }: {
     resourceUrn: string;
-    filterTabIndex?: number;
+    filterTab?: string;
   }) => {
     router.push({
       pathname: DATA_DISCOVERY_ROUTE_DETAIL,
       query: {
         resourceUrn,
-        filterTabIndex,
       },
+      hash: filterTab,
     });
   };
 

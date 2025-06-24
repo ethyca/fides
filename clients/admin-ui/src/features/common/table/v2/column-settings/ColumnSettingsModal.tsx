@@ -1,6 +1,7 @@
 import { Table as TableInstance } from "@tanstack/react-table";
 import {
   AntButton as Button,
+  AntFlex,
   Box,
   Modal,
   ModalBody,
@@ -9,11 +10,6 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  Tab,
-  TabList,
-  TabPanel,
-  TabPanels,
-  Tabs,
   Text,
 } from "fidesui";
 import { useCallback, useMemo } from "react";
@@ -117,23 +113,16 @@ export const ColumnSettingsModal = <T,>({
         <ModalHeader pb={0}>{headerText}</ModalHeader>
         <ModalCloseButton data-testid="column-settings-close-button" />
         <ModalBody>
-          <Text fontSize="sm" color="gray.500" mb={2}>
+          <Text fontSize="sm" color="gray.500" mb={4}>
             You can toggle columns on and off to hide or show them in the table.
             Additionally, you can drag columns up or down to change the order
           </Text>
-          <Tabs colorScheme="complimentary">
-            <TabList>
-              <Tab color="complimentary.500">Columns</Tab>
-            </TabList>
-            <TabPanels>
-              <TabPanel p={0} pt={4} maxHeight="270px" overflowY="scroll">
-                <DraggableColumnList
-                  columns={columnEditor.columns}
-                  columnEditor={columnEditor}
-                />
-              </TabPanel>
-            </TabPanels>
-          </Tabs>
+          <AntFlex className="max-h-96 overflow-y-auto">
+            <DraggableColumnList
+              columns={columnEditor.columns}
+              columnEditor={columnEditor}
+            />
+          </AntFlex>
         </ModalBody>
         <ModalFooter>
           <Box display="flex" justifyContent="space-between" width="100%">

@@ -285,7 +285,7 @@ describe("Action center", () => {
 
         // eslint-disable-next-line cypress/no-unnecessary-waiting
         cy.wait(500);
-        cy.getByTestId("tab-Recent activity").click({ force: true });
+        cy.getAntTab("Recent activity").click({ force: true });
         cy.location("hash").should("eq", "#recent-activity");
 
         // "recent activity" tab should be read-only
@@ -295,7 +295,7 @@ describe("Action center", () => {
 
         // eslint-disable-next-line cypress/no-unnecessary-waiting
         cy.wait(500);
-        cy.getByTestId("tab-Ignored").click({ force: true });
+        cy.getAntTab("Ignored").click({ force: true });
         cy.location("hash").should("eq", "#ignored");
         // "ignore" option should not show in bulk actions menu
         cy.getByTestId(`row-${rowIds[0]}-col-select`).find("label").click();
@@ -557,7 +557,7 @@ describe("Action center", () => {
     });
 
     it("should bulk restore ignored assets", () => {
-      cy.getByTestId("tab-Ignored").click({ force: true });
+      cy.getAntTab("Ignored").click({ force: true });
       cy.getByTestId("bulk-actions-menu").should("be.disabled");
       cy.getByTestId(`row-${rowUrns[0]}-col-select`).find("label").click();
       cy.getByTestId(`row-${rowUrns[2]}-col-select`).find("label").click();
@@ -651,7 +651,7 @@ describe("Action center", () => {
 
         // eslint-disable-next-line cypress/no-unnecessary-waiting
         cy.wait(500);
-        cy.getByTestId("tab-Recent activity").click({ force: true });
+        cy.getAntTab("Recent activity").click({ force: true });
         cy.location("hash").should("eq", "#recent-activity");
 
         // "recent activity" tab should be read-only
@@ -670,7 +670,7 @@ describe("Action center", () => {
 
         // eslint-disable-next-line cypress/no-unnecessary-waiting
         cy.wait(500);
-        cy.getByTestId("tab-Ignored").click({ force: true });
+        cy.getAntTab("Ignored").click({ force: true });
         cy.location("hash").should("eq", "#ignored");
         // "ignore" option should not show in bulk actions menu
         cy.getByTestId(`row-${rowUrns[0]}-col-select`).find("label").click();

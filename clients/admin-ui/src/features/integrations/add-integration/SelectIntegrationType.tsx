@@ -8,7 +8,7 @@ import {
   IntegrationTypeInfo,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
 import SelectableIntegrationBox from "~/features/integrations/SelectableIntegrationBox";
-import { IntegrationFilterTabs } from "~/features/integrations/useIntegrationFilterTabs";
+import { IntegrationFilterTabHash } from "~/features/integrations/useIntegrationFilterTabs";
 
 type Props = {
   selectedIntegration?: IntegrationTypeInfo;
@@ -23,7 +23,7 @@ const SelectIntegrationType = ({
 }: Props) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>(
-    IntegrationFilterTabs.ALL,
+    IntegrationFilterTabHash.ALL,
   );
   const [isFiltering, setIsFiltering] = useState(false);
 
@@ -33,10 +33,10 @@ const SelectIntegrationType = ({
 
   // Get available categories based on flags
   const availableCategories = useMemo(() => {
-    return Object.values(IntegrationFilterTabs).filter(
+    return Object.values(IntegrationFilterTabHash).filter(
       (tab) =>
-        (tab !== IntegrationFilterTabs.IDENTITY_PROVIDER || oktaMonitor) &&
-        (tab !== IntegrationFilterTabs.MANUAL || alphaNewManualIntegration),
+        (tab !== IntegrationFilterTabHash.IDENTITY_PROVIDER || oktaMonitor) &&
+        (tab !== IntegrationFilterTabHash.MANUAL || alphaNewManualIntegration),
     );
   }, [oktaMonitor, alphaNewManualIntegration]);
 
@@ -45,7 +45,7 @@ const SelectIntegrationType = ({
     let filtered = INTEGRATION_TYPE_LIST;
 
     // Filter by category
-    if (selectedCategory !== IntegrationFilterTabs.ALL) {
+    if (selectedCategory !== IntegrationFilterTabHash.ALL) {
       filtered = filtered.filter((i) => i.category === selectedCategory);
     }
 

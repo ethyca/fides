@@ -1,8 +1,14 @@
-import { Box, Heading, Text, VStack } from "fidesui";
+import {
+  AntTabs as Tabs,
+  AntTabsProps as TabsProps,
+  Box,
+  Heading,
+  Text,
+  VStack,
+} from "fidesui";
 import React, { useEffect, useMemo, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import DataTabs, { TabData } from "~/features/common/DataTabs";
 import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
@@ -31,47 +37,47 @@ const EditConnection = () => {
     undefined as unknown as ConnectorParameterOption,
   );
 
-  const getTabs = useMemo(
-    () => () => {
-      const result: TabData[] = [];
-      if (connector?.options) {
-        connector.options.forEach((option) => {
-          let data: TabData | undefined;
-          switch (option) {
-            case ConfigurationSettings.CONNECTOR_PARAMETERS:
-              data = {
-                label: option,
-                content: <ConnectorParameters />,
-              };
-              break;
-            case ConfigurationSettings.DATASET_CONFIGURATION:
-              data = connection?.key
-                ? {
-                    label: option,
-                    content: <DatasetConfiguration />,
-                  }
-                : undefined;
-              break;
-            case ConfigurationSettings.DSR_CUSTOMIZATION:
-              data = connection?.key
-                ? {
-                    label: option,
-                    content: <DSRCustomization />,
-                  }
-                : undefined;
-              break;
-            default:
-              break;
-          }
-          if (data) {
-            result.push(data);
-          }
-        });
-      }
-      return result;
-    },
-    [connection?.key, connector?.options],
-  );
+  const tabData = useMemo(() => {
+    const result: TabsProps["items"] = [];
+    if (connector?.options) {
+      connector.options.forEach((option) => {
+        let data: NonNullable<TabsProps["items"]>[number] | undefined;
+        switch (option) {
+          case ConfigurationSettings.CONNECTOR_PARAMETERS:
+            data = {
+              label: option,
+              key: option,
+              children: <ConnectorParameters />,
+            };
+            break;
+          case ConfigurationSettings.DATASET_CONFIGURATION:
+            data = connection?.key
+              ? {
+                  label: option,
+                  key: option,
+                  children: <DatasetConfiguration />,
+                }
+              : undefined;
+            break;
+          case ConfigurationSettings.DSR_CUSTOMIZATION:
+            data = connection?.key
+              ? {
+                  label: option,
+                  key: option,
+                  children: <DSRCustomization />,
+                }
+              : undefined;
+            break;
+          default:
+            break;
+        }
+        if (data) {
+          result.push(data);
+        }
+      });
+    }
+    return result;
+  }, [connection?.key, connector?.options]);
 
   useEffect(() => {
     if (connectionOption) {
@@ -111,7 +117,7 @@ const EditConnection = () => {
         </Box>
       </Heading>
       <VStack alignItems="stretch" flex="1" gap="18px">
-        <DataTabs data={getTabs()} flexGrow={1} isLazy />
+        <Tabs items={tabData} />
       </VStack>
     </>
   ) : null;

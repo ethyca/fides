@@ -304,7 +304,7 @@ export const ConnectorParametersForm = ({
                   disabled={deleteResult.isLoading || isSubmitting}
                   loading={isSubmitting}
                   htmlType="submit"
-                  data-testid="save-btn"
+                  data-testid="save-integration-btn"
                 >
                   Save
                 </Button>

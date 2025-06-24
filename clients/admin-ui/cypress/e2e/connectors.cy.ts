@@ -57,7 +57,7 @@ describe("Connectors", () => {
       cy.getByTestId("connection-menu-postgres_connector").within(() => {
         cy.getByTestId("configure-btn").click();
       });
-      cy.getByTestId("tab-Dataset configuration").click();
+      cy.getAntTab("Dataset configuration").click({ force: true });
       cy.wait("@getPostgresConnectorDatasetconfig");
 
       // The yaml editor will start off disabled
@@ -92,7 +92,7 @@ describe("Connectors", () => {
       cy.getByTestId("connection-menu-postgres_connector").within(() => {
         cy.getByTestId("configure-btn").click();
       });
-      cy.getByTestId("tab-Dataset configuration").click();
+      cy.getAntTab("Dataset configuration").click({ force: true });
       cy.wait("@getPostgresConnectorDatasetconfig");
 
       // Unset the linked dataset, which should switch the save button enable-ness
@@ -142,7 +142,7 @@ describe("Connectors", () => {
       cy.getByTestId("connection-menu-postgres_connector").within(() => {
         cy.getByTestId("configure-btn").click();
       });
-      cy.getByTestId("tab-Dataset configuration").click();
+      cy.getAntTab("Dataset configuration").click({ force: true });
       cy.wait("@getEmptyPostgresConnectorDatasetconfig");
       cy.getByTestId("dataset-selector-section").should("not.exist");
     });
