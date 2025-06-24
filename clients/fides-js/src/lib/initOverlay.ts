@@ -20,7 +20,7 @@ const FIDES_OVERLAY_DEFAULT_ID = "fides-overlay";
 let renderedParentElem: ContainerNode | undefined;
 
 export interface InitOverlayProps {
-  fides: InitializedFidesGlobal;
+  initializedFides: InitializedFidesGlobal;
   i18n: I18n;
   translationOverrides?: Partial<FidesExperienceTranslationOverrides>;
   renderOverlay?: RenderOverlayType;
@@ -32,7 +32,7 @@ export interface InitOverlayProps {
  * (see the type definition of FidesOptions for what options are available)
  */
 export const initOverlay = async ({
-  fides,
+  initializedFides,
   i18n,
   renderOverlay,
   translationOverrides,
@@ -43,7 +43,7 @@ export const initOverlay = async ({
     experience,
     saved_consent: savedConsent,
     fidesRegionString,
-  } = fides;
+  } = initializedFides;
   const options = config?.options as FidesInitOptions;
   fidesDebugger("Initializing Fides consent overlays...");
 
@@ -154,6 +154,7 @@ export const initOverlay = async ({
         // Render the Overlay to the DOM!
         renderOverlay(
           {
+            initializedFides,
             options,
             experience,
             i18n,

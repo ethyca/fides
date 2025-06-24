@@ -29,7 +29,10 @@ export interface OverlayProps {
 }
 
 export type RenderOverlayType = (
-  props: OverlayProps & { i18n: I18n },
+  props: OverlayProps & {
+    i18n: I18n;
+    initializedFides: InitializedFidesGlobal;
+  },
   parent: ContainerNode,
 ) => void;
 

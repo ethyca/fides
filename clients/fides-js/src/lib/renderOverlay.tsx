@@ -6,14 +6,17 @@ import NoticeOverlay, {
 import { RenderOverlayType } from "../components/types";
 import { I18nProvider } from "./i18n/i18n-context";
 import { EventProvider } from "./providers/event-context";
+import { FidesGlobalProvider } from "./providers/fides-global-context";
 
 export const renderOverlay: RenderOverlayType = (props, parent) => {
-  const { i18n, ...overlayProps } = props;
+  const { i18n, initializedFides, ...overlayProps } = props;
   render(
     <I18nProvider i18nInstance={i18n}>
-      <EventProvider>
-        <NoticeOverlay {...(overlayProps as NoticeOverlayProps)} />
-      </EventProvider>
+      <FidesGlobalProvider initializedFides={initializedFides}>
+        <EventProvider>
+          <NoticeOverlay {...(overlayProps as NoticeOverlayProps)} />
+        </EventProvider>
+      </FidesGlobalProvider>
     </I18nProvider>,
     parent,
   );

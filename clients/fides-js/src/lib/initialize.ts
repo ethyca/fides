@@ -380,7 +380,7 @@ export const initialize = async ({
         };
         // OK, we're (finally) ready to initialize & render the overlay!
         initOverlay({
-          fides: initializedFides,
+          initializedFides,
           i18n,
           renderOverlay,
           translationOverrides: overrides?.experienceTranslationOverrides,
