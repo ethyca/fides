@@ -1,5 +1,8 @@
 "use client";
 
+// Import React 19 compatibility for Ant Design - must be first
+import "@ant-design/v5-patch-for-react-19";
+
 import { ErrorBoundary } from "react-error-boundary";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
