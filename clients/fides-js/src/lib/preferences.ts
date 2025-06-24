@@ -239,7 +239,11 @@ const validateConsent = (
       (n) => n === key,
     );
 
-    if (nonApplicableNotice) {
+    if (
+      nonApplicableNotice &&
+      !value &&
+      consentMethod !== ConsentMethod.OT_MIGRATION
+    ) {
       return new Error(
         `Provided notice key '${key}' is not applicable to the current experience.`,
       );
@@ -293,14 +297,11 @@ export interface UpdateConsentOptions {
   eventExtraDetails?: FidesEventExtraDetails;
 }
 export const updateConsent = async (
-  context: Pick<
-    FidesGlobal,
-    "experience" | "cookie" | "geolocation" | "config" | "locale"
-  >,
+  context: Pick<FidesGlobal, "experience" | "cookie" | "config" | "locale">,
   consentOptions: UpdateConsentOptions,
   servedNoticeHistoryId?: string,
 ): Promise<void> => {
-  const { experience, cookie, geolocation, config, locale } = context;
+  const { experience, cookie, config, locale } = context;
   if (!experience) {
     throw new Error("Experience must be initialized before updating consent");
   }
@@ -451,7 +452,7 @@ export const updateConsent = async (
       bestExperienceConfigTranslation?.privacy_experience_config_history_id;
   }
 
-  const fidesRegionString = constructFidesRegionString(geolocation);
+  const fidesRegionString = constructFidesRegionString(config.geolocation);
 
   // Generate a new served notice history ID for the served notice
   // DEFER: This should match with the id used in the notices-served endpoint

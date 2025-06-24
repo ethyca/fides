@@ -78,10 +78,10 @@ describe("preferences", () => {
         "marketing",
       ];
 
-      // Try to use a non-applicable notice key
+      // Try to set a non-applicable notice key to false
       await expect(
         updateConsent(mockFides, {
-          noticeConsent: { marketing: true },
+          noticeConsent: { marketing: false },
           consentMethod: ConsentMethod.SCRIPT,
         }),
       ).rejects.toThrow(/is not applicable/);
