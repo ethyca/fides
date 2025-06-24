@@ -37,7 +37,10 @@ import {
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { updateConsent } from "../../lib/preferences";
 import { useEvent } from "../../lib/providers/event-context";
-import { useFidesGlobal } from "../../lib/providers/fides-global-context";
+import {
+  InitializedFidesGlobal,
+  useFidesGlobal,
+} from "../../lib/providers/fides-global-context";
 import { processExternalConsentValue } from "../../lib/shared-consent-utils";
 import ConsentBanner from "../ConsentBanner";
 import { NoticeConsentButtons } from "../ConsentButtons";
@@ -45,7 +48,7 @@ import Overlay from "../Overlay";
 import { NoticeToggleProps, NoticeToggles } from "./NoticeToggles";
 
 const NoticeOverlay = () => {
-  const { fidesGlobal } = useFidesGlobal();
+  const { fidesGlobal, setFidesGlobal } = useFidesGlobal();
   const {
     fidesRegionString,
     cookie,
@@ -228,6 +231,10 @@ const NoticeOverlay = () => {
         },
         servedNoticeHistoryId,
       ).finally(() => {
+        if (window.Fides) {
+          // apply any updates to the fidesGlobal
+          setFidesGlobal(window.Fides as InitializedFidesGlobal);
+        }
         setTrigger(undefined);
       });
       // Make sure our draft state also updates
@@ -240,6 +247,7 @@ const NoticeOverlay = () => {
       triggerRef,
       servedNoticeHistoryId,
       setTrigger,
+      setFidesGlobal,
     ],
   );
 

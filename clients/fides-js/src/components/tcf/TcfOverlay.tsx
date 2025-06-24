@@ -48,7 +48,10 @@ import { useI18n } from "../../lib/i18n/i18n-context";
 import { getOverridesByType } from "../../lib/initialize";
 import { updateConsent } from "../../lib/preferences";
 import { useEvent } from "../../lib/providers/event-context";
-import { useFidesGlobal } from "../../lib/providers/fides-global-context";
+import {
+  InitializedFidesGlobal,
+  useFidesGlobal,
+} from "../../lib/providers/fides-global-context";
 import { EMPTY_ENABLED_IDS } from "../../lib/tcf/constants";
 import { useGvl } from "../../lib/tcf/gvl-context";
 import {
@@ -86,7 +89,7 @@ const getAllIds = (
 };
 
 export const TcfOverlay = () => {
-  const { fidesGlobal } = useFidesGlobal();
+  const { fidesGlobal, setFidesGlobal } = useFidesGlobal();
   const {
     fidesRegionString,
     cookie,
@@ -403,6 +406,10 @@ export const TcfOverlay = () => {
         },
         servedNoticeHistoryId,
       ).finally(() => {
+        if (window.Fides) {
+          // apply any updates to the fidesGlobal
+          setFidesGlobal(window.Fides as InitializedFidesGlobal);
+        }
         setTrigger(undefined);
       });
       setDraftIds(enabledIds);
@@ -416,6 +423,7 @@ export const TcfOverlay = () => {
       triggerRef,
       servedNoticeHistoryId,
       setTrigger,
+      setFidesGlobal,
     ],
   );
 

@@ -95,7 +95,7 @@ async function savePreferencesApi(
   );
 }
 
-export interface UpdateConsentPreferencesProps {
+interface UpdateConsentPreferencesProps {
   consentPreferencesToSave?: Array<SaveConsentPreference>;
   privacyExperienceConfigHistoryId?: string;
   experience: PrivacyExperience | PrivacyExperienceMinimal;
