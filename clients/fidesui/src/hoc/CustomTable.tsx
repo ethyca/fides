@@ -10,6 +10,7 @@ const FilterIcon = () => (
   <SettingsAdjust
     style={{
       color: palette.FIDESUI_NEUTRAL_500,
+      width: "14px",
     }}
   />
 );

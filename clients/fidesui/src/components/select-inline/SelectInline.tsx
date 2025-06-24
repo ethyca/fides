@@ -1,3 +1,4 @@
+import { Typography } from "antd";
 import { Select } from "antd/lib";
 import React, { ComponentProps, useState } from "react";
 
@@ -26,7 +27,7 @@ type SelectProps = ComponentProps<typeof Select>;
 
 const SelectInlinePrefix = () => (
   <div style={{ paddingTop: "1px" }}>
-    <AntTag addable color="white" className="cursor-pointer m-0 " />
+    <AntTag addable className="cursor-pointer m-0 border-none" />
   </div>
 );
 
@@ -46,7 +47,15 @@ export const SelectInline = ({
   readonly = false,
   onTagClick,
   tagRender = (props) => {
-    const { label, closable, onClose, value } = props;
+    const { label, closable, onClose, value, isMaxTag } = props;
+
+    if (isMaxTag) {
+      return (
+        <Typography.Text className="block ml-1 text-xs">
+          {label}
+        </Typography.Text>
+      );
+    }
 
     const handleTagClick = (e: React.MouseEvent) => {
       if (onTagClick) {
