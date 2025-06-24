@@ -130,24 +130,37 @@ describe("Manual Tasks", () => {
     });
 
     it("should handle task completion and dropdown actions", () => {
-      // Test task completion
+      // Test task completion - Complete button now opens a modal
       cy.get("tbody tr")
         .first()
         .within(() => {
-          cy.get("button").contains("Complete").click();
+          cy.get("td")
+            .last()
+            .within(() => {
+              cy.get("button").contains("Complete").click();
+            });
         });
-      cy.wait("@completeTask").then((interception) => {
-        expect(interception.request.body).to.have.property("task_id");
+
+      // Verify modal opens
+      cy.getByTestId("complete-task-modal").should("be.visible");
+      cy.getByTestId("complete-task-modal").within(() => {
+        cy.get("h4").contains("Complete Task").should("be.visible");
+
+        // Close modal for next test
+        cy.getByTestId("complete-modal-cancel-button").click();
       });
 
-      // Reset and test dropdown menu
-      cy.visit("/privacy-requests#manual-tasks");
-      cy.wait("@getManualTasks");
+      cy.getByTestId("complete-task-modal").should("not.exist");
 
+      // Test dropdown menu
       cy.get("tbody tr")
         .first()
         .within(() => {
-          cy.get("button[aria-label='More actions']").click();
+          cy.get("td")
+            .last()
+            .within(() => {
+              cy.get("button[aria-label='More actions']").click();
+            });
         });
 
       // Check dropdown menu items
@@ -236,6 +249,293 @@ describe("Manual Tasks", () => {
               }
             });
         });
+      });
+    });
+  });
+
+  describe("Complete Task Modal", () => {
+    beforeEach(() => {
+      cy.visit("/privacy-requests#manual-tasks");
+      cy.wait("@getManualTasks");
+    });
+
+    it("should display file upload input for file type tasks and validate correctly", () => {
+      cy.get("tbody tr")
+        .contains("Export Customer Data from Salesforce")
+        .parents("tr")
+        .within(() => {
+          cy.get("td")
+            .last()
+            .within(() => {
+              cy.get("button").contains("Complete").click();
+            });
+        });
+
+      cy.getByTestId("complete-task-modal").should("be.visible");
+      cy.getByTestId("complete-task-modal").within(() => {
+        cy.contains("Upload File").should("be.visible");
+        cy.getByTestId("complete-modal-upload-button").should("be.visible");
+        cy.getByTestId("complete-modal-save-button").should("be.disabled");
+
+        // Verify improved TaskDetails: proper request type mapping and ant tags
+        cy.contains("Request Type").should("be.visible");
+        cy.getByTestId("assigned-users-tags").should("exist"); // Ant tags for assigned users
+        cy.getByTestId("assigned-users-tags").within(() => {
+          cy.get("[data-testid^='assigned-user-tag-']").should(
+            "have.length.at.least",
+            1,
+          );
+        });
+        cy.contains("Identity -").should("exist"); // Multiple identity fields
+
+        cy.getByTestId("complete-modal-comment-input").type(
+          "Test comment for file upload",
+        );
+        cy.getByTestId("complete-modal-save-button").should("be.disabled");
+
+        cy.getByTestId("complete-modal-cancel-button").click();
+      });
+
+      cy.getByTestId("complete-task-modal").should("not.exist");
+    });
+
+    it("should display checkbox input for checkbox type tasks and validate correctly", () => {
+      cy.get("tbody tr")
+        .contains("Delete User Profile from MongoDB")
+        .parents("tr")
+        .within(() => {
+          cy.get("td")
+            .last()
+            .within(() => {
+              cy.get("button").contains("Complete").click();
+            });
+        });
+
+      cy.getByTestId("complete-task-modal").should("be.visible");
+      cy.getByTestId("complete-task-modal").within(() => {
+        cy.getByTestId("complete-modal-checkbox").should("exist");
+        cy.contains("The task has been completed").should("be.visible");
+        cy.getByTestId("complete-modal-save-button").should("be.disabled");
+
+        cy.getByTestId("complete-modal-checkbox").click();
+        cy.getByTestId("complete-modal-save-button").should("not.be.disabled");
+
+        cy.getByTestId("complete-modal-checkbox").click();
+        cy.getByTestId("complete-modal-save-button").should("be.disabled");
+
+        cy.getByTestId("complete-modal-checkbox").click();
+        cy.getByTestId("complete-modal-comment-input").type(
+          "Task completed successfully",
+        );
+        cy.getByTestId("complete-modal-save-button").should("not.be.disabled");
+
+        cy.getByTestId("complete-modal-save-button").click();
+      });
+
+      cy.wait("@completeTask").then((interception) => {
+        expect(interception.request.body).to.deep.include({
+          task_id: "task_002",
+          checkbox_value: true,
+          comment: "Task completed successfully",
+        });
+        expect(interception.request.body).to.not.have.property("text_value");
+        expect(interception.request.body).to.not.have.property(
+          "attachment_type",
+        );
+      });
+
+      cy.getByTestId("complete-task-modal").should("not.exist");
+    });
+
+    it("should display text input for string type tasks and validate correctly", () => {
+      cy.get("tbody tr")
+        .contains("Export Analytics Data")
+        .parents("tr")
+        .within(() => {
+          cy.get("td")
+            .last()
+            .within(() => {
+              cy.get("button").contains("Complete").click();
+            });
+        });
+
+      cy.getByTestId("complete-task-modal").should("be.visible");
+      cy.getByTestId("complete-task-modal").within(() => {
+        cy.contains("Text Input").should("be.visible");
+        cy.getByTestId("complete-modal-text-input").should("be.visible");
+        cy.getByTestId("complete-modal-save-button").should("be.disabled");
+
+        cy.getByTestId("complete-modal-text-input").type(
+          "Analytics data exported successfully",
+        );
+        cy.getByTestId("complete-modal-save-button").should("not.be.disabled");
+
+        cy.getByTestId("complete-modal-text-input").clear();
+        cy.getByTestId("complete-modal-save-button").should("be.disabled");
+
+        cy.getByTestId("complete-modal-text-input").type("   ");
+        cy.getByTestId("complete-modal-save-button").should("be.disabled");
+
+        cy.getByTestId("complete-modal-text-input")
+          .clear()
+          .type("Data exported to secure location");
+        cy.getByTestId("complete-modal-comment-input").type(
+          "Export completed without issues",
+        );
+        cy.getByTestId("complete-modal-save-button").should("not.be.disabled");
+
+        cy.getByTestId("complete-modal-save-button").click();
+      });
+
+      cy.wait("@completeTask").then((interception) => {
+        expect(interception.request.body).to.deep.include({
+          task_id: "task_004",
+          text_value: "Data exported to secure location",
+          comment: "Export completed without issues",
+        });
+        expect(interception.request.body).to.not.have.property(
+          "checkbox_value",
+        );
+        expect(interception.request.body).to.not.have.property(
+          "attachment_type",
+        );
+      });
+
+      cy.getByTestId("complete-task-modal").should("not.exist");
+    });
+
+    it("should allow skipping task from complete modal", () => {
+      cy.get("tbody tr")
+        .first()
+        .within(() => {
+          cy.get("td")
+            .last()
+            .within(() => {
+              cy.get("button").contains("Complete").click();
+            });
+        });
+
+      cy.getByTestId("complete-task-modal").should("be.visible");
+      cy.getByTestId("complete-task-modal").within(() => {
+        cy.getByTestId("complete-modal-skip-button").click();
+      });
+
+      cy.getByTestId("skip-task-modal").should("be.visible");
+    });
+  });
+
+  describe("Skip Task Modal", () => {
+    beforeEach(() => {
+      cy.visit("/privacy-requests#manual-tasks");
+      cy.wait("@getManualTasks");
+    });
+
+    it("should display skip modal with required comment field and validate correctly", () => {
+      cy.get("tbody tr")
+        .first()
+        .within(() => {
+          cy.get("td")
+            .last()
+            .within(() => {
+              cy.get("button[aria-label='More actions']").click();
+            });
+        });
+
+      cy.get(".ant-dropdown-menu-item").contains("Skip task").click();
+
+      cy.getByTestId("skip-task-modal").should("be.visible");
+      cy.getByTestId("skip-task-modal").within(() => {
+        cy.contains("Reason for skipping (Required)").should("be.visible");
+        cy.getByTestId("skip-modal-comment-input").should("be.visible");
+        cy.getByTestId("skip-modal-skip-button").should("be.disabled");
+
+        cy.getByTestId("skip-modal-comment-input").type(
+          "Task no longer required due to policy change",
+        );
+        cy.getByTestId("skip-modal-skip-button").should("not.be.disabled");
+
+        cy.getByTestId("skip-modal-comment-input").clear();
+        cy.getByTestId("skip-modal-skip-button").should("be.disabled");
+
+        cy.getByTestId("skip-modal-comment-input").type("   ");
+        cy.getByTestId("skip-modal-skip-button").should("be.disabled");
+
+        cy.getByTestId("skip-modal-comment-input")
+          .clear()
+          .type("Customer withdrew request");
+        cy.getByTestId("skip-modal-skip-button").should("not.be.disabled");
+
+        cy.getByTestId("skip-modal-skip-button").click();
+      });
+
+      cy.wait("@skipTask").then((interception) => {
+        expect(interception.request.body).to.deep.include({
+          task_id: "task_001",
+          comment: "Customer withdrew request",
+        });
+      });
+
+      cy.getByTestId("skip-task-modal").should("not.exist");
+    });
+
+    it("should handle cancel button correctly", () => {
+      cy.get("tbody tr")
+        .first()
+        .within(() => {
+          cy.get("td")
+            .last()
+            .within(() => {
+              cy.get("button[aria-label='More actions']").click();
+            });
+        });
+
+      cy.get(".ant-dropdown-menu-item").contains("Skip task").click();
+
+      cy.getByTestId("skip-task-modal").should("be.visible");
+      cy.getByTestId("skip-task-modal").within(() => {
+        cy.getByTestId("skip-modal-comment-input").type("Test comment");
+        cy.getByTestId("skip-modal-cancel-button").click();
+      });
+
+      cy.getByTestId("skip-task-modal").should("not.exist");
+
+      cy.get("tbody tr")
+        .first()
+        .within(() => {
+          cy.get("td")
+            .last()
+            .within(() => {
+              cy.get("button[aria-label='More actions']").click();
+            });
+        });
+
+      cy.get(".ant-dropdown-menu-item").contains("Skip task").click();
+
+      cy.getByTestId("skip-task-modal").within(() => {
+        cy.getByTestId("skip-modal-comment-input").should("have.value", "");
+        cy.getByTestId("skip-modal-skip-button").should("be.disabled");
+      });
+    });
+
+    it("should show danger styling on Skip Task button", () => {
+      cy.get("tbody tr")
+        .first()
+        .within(() => {
+          cy.get("td")
+            .last()
+            .within(() => {
+              cy.get("button[aria-label='More actions']").click();
+            });
+        });
+
+      cy.get(".ant-dropdown-menu-item").contains("Skip task").click();
+
+      cy.getByTestId("skip-task-modal").within(() => {
+        cy.getByTestId("skip-modal-comment-input").type("Test reason");
+        cy.getByTestId("skip-modal-skip-button").should(
+          "have.class",
+          "ant-btn-dangerous",
+        );
       });
     });
   });
