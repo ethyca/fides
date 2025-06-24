@@ -9,13 +9,10 @@ import {
   PrivacyExperienceMinimal,
   SaveConsentPreference,
 } from "../consent-types";
-import {
-  constructFidesRegionString,
-  createConsentPreferencesToSave,
-} from "../consent-utils";
+import { constructFidesRegionString } from "../consent-utils";
 import { DecodedFidesString, decodeFidesString } from "../fides-string";
 import { areLocalesEqual } from "../i18n/i18n-utils";
-import { updateConsentPreferences } from "../preferences";
+import { updateConsent, updateConsentPreferences } from "../preferences";
 import { EMPTY_ENABLED_IDS } from "../tcf/constants";
 import { EnabledIds, TcfSavePreferences } from "../tcf/types";
 import {
@@ -261,22 +258,7 @@ export const fidesStringToConsent = ({
       cmpApi,
       experience: experience as PrivacyExperience,
     });
-
-    const enabledPrivacyNoticeKeys: string[] = Object.entries(consent)
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      .filter(([_, value]) => value)
-      .map(([key]) => key);
-
-    consentPreferencesToSave = createConsentPreferencesToSave(
-      privacyNoticeItems,
-      enabledPrivacyNoticeKeys,
-    );
-
-    fidesDebugger(
-      "GPP: updating consent preferences based on fides_string override",
-      consent,
-    );
-    updateCookie = (oldCookie) => Promise.resolve({ ...oldCookie, consent });
+    updateConsent(window.Fides, { noticeConsent: consent });
   } else {
     // Handle TCF case
     const enabledIds = getTcfPreferencesFromCmpApi({
@@ -309,19 +291,19 @@ export const fidesStringToConsent = ({
         enabledIds,
         experience,
       );
-  }
 
-  // Update preferences with common parameters
-  updateConsentPreferences({
-    consentPreferencesToSave,
-    privacyExperienceConfigHistoryId:
-      matchTranslation.privacy_experience_config_history_id,
-    experience,
-    consentMethod: ConsentMethod.SCRIPT,
-    options,
-    userLocationString: fidesRegionString || undefined,
-    cookie: cookie as FidesCookie,
-    tcf,
-    updateCookie,
-  });
+    // Update preferences with common parameters
+    updateConsentPreferences({
+      consentPreferencesToSave,
+      privacyExperienceConfigHistoryId:
+        matchTranslation.privacy_experience_config_history_id,
+      experience,
+      consentMethod: ConsentMethod.SCRIPT,
+      options,
+      userLocationString: fidesRegionString || undefined,
+      cookie: cookie as FidesCookie,
+      tcf,
+      updateCookie,
+    });
+  }
 };

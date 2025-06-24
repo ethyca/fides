@@ -5,10 +5,8 @@ import { fidesStringToConsent } from "~/lib/gpp/string-to-consent";
 import {
   ComponentType,
   ConsentMechanism,
-  ConsentMethod,
   ExperienceConfig,
   FidesCookie,
-  FidesInitOptions,
   PrivacyExperience,
   PrivacyNotice,
   PrivacyNoticeFramework,
@@ -21,8 +19,8 @@ import {
   GPPUSApproach,
 } from "../../../src/lib/gpp/types";
 import {
+  updateConsent,
   updateConsentPreferences,
-  UpdateConsentPreferencesProps,
 } from "../../../src/lib/preferences";
 
 // Mock fidesDebugger
@@ -30,6 +28,7 @@ import {
 
 jest.mock("~/lib/preferences", () => ({
   updateConsentPreferences: jest.fn(),
+  updateConsent: jest.fn(),
 }));
 
 const mockGppMechanism = (override?: Partial<GPPMechanismMapping[]>) => {
@@ -191,7 +190,7 @@ const mockFidesCookie = (override?: Partial<FidesCookie>) => {
 };
 
 const mockWindowFides = (override?: Partial<Window["Fides"]>) => {
-  (window as any).Fides = {
+  const fidesGlobal = {
     options: {
       tcfEnabled: false,
       gppEnabled: true,
@@ -206,27 +205,8 @@ const mockWindowFides = (override?: Partial<Window["Fides"]>) => {
     experience: mockPrivacyExperience(),
     ...override,
   };
-};
-
-const expectUpdateConsentPreferences = (
-  override?: Partial<UpdateConsentPreferencesProps>,
-) => {
-  const base: Partial<UpdateConsentPreferencesProps> = {
-    consentMethod: ConsentMethod.SCRIPT,
-    options: {
-      tcfEnabled: false,
-      gppEnabled: true,
-    } as FidesInitOptions,
-    cookie: mockFidesCookie(),
-    experience: mockPrivacyExperience(),
-    privacyExperienceConfigHistoryId: "321",
-    userLocationString: "us_ca",
-    consentPreferencesToSave: [],
-  };
-  if (!override) {
-    return base;
-  }
-  return { ...base, ...override };
+  (window as any).Fides = fidesGlobal;
+  return fidesGlobal;
 };
 
 describe("fidesStringToConsent", () => {
@@ -291,55 +271,35 @@ describe("fidesStringToConsent", () => {
   });
 
   it("should map usnat gpp string to consent preferences when opt out of all", () => {
-    mockWindowFides();
+    const fidesGlobal = mockWindowFides();
     const cmpApi = new CmpApi(1, 1);
     fidesStringToConsent({ fidesString: ",,DBABLA~BVAUAAAAAABo.QA", cmpApi });
-    expect(updateConsentPreferences).toHaveBeenCalledWith(
-      expect.objectContaining(
-        expectUpdateConsentPreferences({
-          consentPreferencesToSave: [
-            {
-              consentPreference: UserConsentPreference.OPT_OUT,
-              notice: mockUSNatPrivacyNotices()[0] as PrivacyNotice,
-              noticeHistoryId: "456",
-            },
-            {
-              consentPreference: UserConsentPreference.OPT_OUT,
-              notice: mockUSNatPrivacyNotices()[1] as PrivacyNotice,
-              noticeHistoryId: "321",
-            },
-          ],
-        }),
-      ),
+    expect(updateConsent).toHaveBeenCalledWith(
+      fidesGlobal,
+      expect.objectContaining({
+        noticeConsent: {
+          sales_sharing_targeted_advertising_gpp_us_national: false,
+        },
+      }),
     );
   });
 
   it("should map usnat gpp string to consent preferences when opt in to all", () => {
-    mockWindowFides();
+    const fidesGlobal = mockWindowFides();
     const cmpApi = new CmpApi(1, 1);
     fidesStringToConsent({ fidesString: ",,DBABLA~BVAoAAAAAABo.QA", cmpApi });
-    expect(updateConsentPreferences).toHaveBeenCalledWith(
-      expect.objectContaining(
-        expectUpdateConsentPreferences({
-          consentPreferencesToSave: [
-            {
-              // correctly opt out (default) because this notice has no GPP field mapping
-              consentPreference: UserConsentPreference.OPT_OUT,
-              notice: mockUSNatPrivacyNotices()[0] as PrivacyNotice,
-              noticeHistoryId: "456",
-            },
-            {
-              consentPreference: UserConsentPreference.OPT_IN,
-              notice: mockUSNatPrivacyNotices()[1] as PrivacyNotice,
-              noticeHistoryId: "321",
-            },
-          ],
-        }),
-      ),
+    expect(updateConsent).toHaveBeenCalledWith(
+      fidesGlobal,
+      expect.objectContaining({
+        noticeConsent: {
+          sales_sharing_targeted_advertising_gpp_us_national: true,
+        },
+      }),
     );
   });
+
   it("should map us state gpp string to consent preferences when opt out of all", () => {
-    mockWindowFides({
+    const fidesGlobal = mockWindowFides({
       experience: {
         ...mockPrivacyExperience({
           region: "us_ca",
@@ -353,32 +313,17 @@ describe("fidesStringToConsent", () => {
     });
     const cmpApi = new CmpApi(1, 1);
     fidesStringToConsent({ fidesString: ",,DBABBg~BUUAAABY.QA", cmpApi });
-    expect(updateConsentPreferences).toHaveBeenCalledWith(
-      expect.objectContaining(
-        expectUpdateConsentPreferences({
-          experience: {
-            ...mockPrivacyExperience({
-              region: "us_ca",
-              gpp_settings: {
-                ...mockPrivacyExperience().gpp_settings,
-                us_approach: GPPUSApproach.STATE,
-              },
-            }),
-            privacy_notices: mockUSStatePrivacyNotices() as PrivacyNotice[],
-          },
-          consentPreferencesToSave: [
-            {
-              consentPreference: UserConsentPreference.OPT_OUT,
-              notice: mockUSStatePrivacyNotices()[0] as PrivacyNotice,
-              noticeHistoryId: "4567",
-            },
-          ],
-        }),
-      ),
+    expect(updateConsent).toHaveBeenCalledWith(
+      fidesGlobal,
+      expect.objectContaining({
+        noticeConsent: {
+          targeted_advertising_gpp_us_state: false,
+        },
+      }),
     );
   });
   it("should map us state gpp string to consent preferences when opt in to all", () => {
-    mockWindowFides({
+    const fidesGlobal = mockWindowFides({
       experience: {
         ...mockPrivacyExperience({
           region: "us_ca",
@@ -392,28 +337,13 @@ describe("fidesStringToConsent", () => {
     });
     const cmpApi = new CmpApi(1, 1);
     fidesStringToConsent({ fidesString: ",,DBABBg~BUoAAABY.QA", cmpApi });
-    expect(updateConsentPreferences).toHaveBeenCalledWith(
-      expect.objectContaining(
-        expectUpdateConsentPreferences({
-          experience: {
-            ...mockPrivacyExperience({
-              region: "us_ca",
-              gpp_settings: {
-                ...mockPrivacyExperience().gpp_settings,
-                us_approach: GPPUSApproach.STATE,
-              },
-            }),
-            privacy_notices: mockUSStatePrivacyNotices() as PrivacyNotice[],
-          },
-          consentPreferencesToSave: [
-            {
-              consentPreference: UserConsentPreference.OPT_IN,
-              notice: mockUSStatePrivacyNotices()[0] as PrivacyNotice,
-              noticeHistoryId: "4567",
-            },
-          ],
-        }),
-      ),
+    expect(updateConsent).toHaveBeenCalledWith(
+      fidesGlobal,
+      expect.objectContaining({
+        noticeConsent: {
+          targeted_advertising_gpp_us_state: true,
+        },
+      }),
     );
   });
   it("should map gpp string to array based (sensitive) consent preferences", () => {
@@ -480,7 +410,7 @@ describe("fidesStringToConsent", () => {
       },
     ];
 
-    mockWindowFides({
+    const fidesGlobal = mockWindowFides({
       experience: {
         ...mockPrivacyExperience(),
         privacy_notices: mockSensitivePrivacyNotices as PrivacyNotice[],
@@ -489,52 +419,26 @@ describe("fidesStringToConsent", () => {
     const cmpApi = new CmpApi(1, 1);
     // opt in to all
     fidesStringToConsent({ fidesString: ",,DBABLA~BAFAqqqqqqho.QA", cmpApi });
-    expect(updateConsentPreferences).toHaveBeenCalledWith(
-      expect.objectContaining(
-        expectUpdateConsentPreferences({
-          experience: {
-            ...mockPrivacyExperience(),
-            privacy_notices: mockSensitivePrivacyNotices as PrivacyNotice[],
-          },
-          consentPreferencesToSave: [
-            {
-              consentPreference: UserConsentPreference.OPT_IN,
-              notice: mockSensitivePrivacyNotices[0] as PrivacyNotice,
-              noticeHistoryId: "567567",
-            },
-            {
-              consentPreference: UserConsentPreference.OPT_IN,
-              notice: mockSensitivePrivacyNotices[1] as PrivacyNotice,
-              noticeHistoryId: "678678",
-            },
-          ],
-        }),
-      ),
+    expect(updateConsent).toHaveBeenCalledWith(
+      fidesGlobal,
+      expect.objectContaining({
+        noticeConsent: {
+          known_child_sensitive_data_consents_gpp_us_national: true,
+          sensitive_personal_data_sharing_gpp_us_national: true,
+        },
+      }),
     );
 
     // opt out of one
     fidesStringToConsent({ fidesString: ",,DBABLA~BAFAqqqqqlRo.QA", cmpApi });
-    expect(updateConsentPreferences).toHaveBeenCalledWith(
-      expect.objectContaining(
-        expectUpdateConsentPreferences({
-          experience: {
-            ...mockPrivacyExperience(),
-            privacy_notices: mockSensitivePrivacyNotices as PrivacyNotice[],
-          },
-          consentPreferencesToSave: [
-            {
-              consentPreference: UserConsentPreference.OPT_OUT,
-              notice: mockSensitivePrivacyNotices[0] as PrivacyNotice,
-              noticeHistoryId: "567567",
-            },
-            {
-              consentPreference: UserConsentPreference.OPT_IN,
-              notice: mockSensitivePrivacyNotices[1] as PrivacyNotice,
-              noticeHistoryId: "678678",
-            },
-          ],
-        }),
-      ),
+    expect(updateConsent).toHaveBeenCalledWith(
+      fidesGlobal,
+      expect.objectContaining({
+        noticeConsent: {
+          known_child_sensitive_data_consents_gpp_us_national: false,
+          sensitive_personal_data_sharing_gpp_us_national: true,
+        },
+      }),
     );
   });
 });
