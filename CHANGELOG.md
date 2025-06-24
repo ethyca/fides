@@ -42,6 +42,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Fixed
 - Fixed Postgres Monitor's usage of SSL Mode [#6247](https://github.com/ethyca/fides/pull/6247)
 
+
+## [2.64.1](https://github.com/ethyca/fides/compare/2.64.0...2.64.1)
+
 ### Fixed
 - Fixed Postgres Monitor's usage of SSL Mode [#6247](https://github.com/ethyca/fides/pull/6247)
 
