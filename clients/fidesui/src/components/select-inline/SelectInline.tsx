@@ -1,8 +1,7 @@
-import { Typography } from "antd";
 import { Select } from "antd/lib";
 import React, { ComponentProps, useState } from "react";
 
-import { CustomTag as AntTag } from "../../hoc";
+import { CustomTag as AntTag, CustomTypography } from "../../hoc";
 import styles from "./SelectInline.module.scss";
 
 type SelectProps = ComponentProps<typeof Select>;
@@ -51,9 +50,9 @@ export const SelectInline = ({
 
     if (isMaxTag) {
       return (
-        <Typography.Text className="block ml-1 text-xs">
+        <CustomTypography.Text className="block ml-1 text-xs">
           {label}
-        </Typography.Text>
+        </CustomTypography.Text>
       );
     }
 
