@@ -108,6 +108,7 @@ const getColumns = (
         <SelectInline
           value={currentAssignedUserIds}
           options={userOptions}
+          readonly
           onTagClick={(userId) => onUserClick(userId)}
         />
       );
