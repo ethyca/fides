@@ -1,7 +1,7 @@
 import { ContainerNode, render } from "preact";
 
 import { RenderOverlayType } from "../components/types";
-import { ComponentType, FidesInitOptions } from "./consent-types";
+import { ComponentType } from "./consent-types";
 import type { I18n } from "./i18n";
 import { InitializedFidesGlobal } from "./providers/fides-global-context";
 import { ColorFormat, generateLighterColor } from "./style-utils";
@@ -32,8 +32,7 @@ export const initOverlay = async ({
   i18n,
   renderOverlay,
 }: InitOverlayProps): Promise<void> => {
-  const { config, experience } = initializedFides;
-  const options = config?.options as FidesInitOptions;
+  const { options, experience } = initializedFides;
   fidesDebugger("Initializing Fides consent overlays...");
 
   const renderFidesOverlay = async (): Promise<void> => {

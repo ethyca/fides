@@ -91,10 +91,10 @@ export const TcfOverlay = () => {
     fidesRegionString,
     cookie,
     config,
+    options,
     saved_consent: savedConsent,
   } = fidesGlobal;
   const experienceMinimal = fidesGlobal.experience as PrivacyExperienceMinimal;
-  const options = config?.options;
   const translationOverrides: Partial<FidesExperienceTranslationOverrides> =
     getOverridesByType<Partial<FidesExperienceTranslationOverrides>>(
       OverrideType.EXPERIENCE_TRANSLATION,

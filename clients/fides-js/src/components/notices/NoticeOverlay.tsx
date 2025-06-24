@@ -9,7 +9,6 @@ import {
   ConsentMechanism,
   ConsentMethod,
   FidesCookie,
-  FidesInitOptions,
   Layer1ButtonOption,
   NoticeConsent,
   PrivacyExperience,
@@ -52,11 +51,10 @@ const NoticeOverlay = () => {
   const {
     fidesRegionString,
     cookie,
-    config,
+    options,
     saved_consent: savedConsent,
   } = fidesGlobal;
   const experience = fidesGlobal.experience as PrivacyExperience;
-  const options = config?.options as FidesInitOptions;
   const { i18n, currentLocale, setCurrentLocale } = useI18n();
   const {
     triggerRef,

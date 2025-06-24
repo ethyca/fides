@@ -376,6 +376,7 @@ export const initialize = async ({
           ...fides,
           cookie: fides.cookie,
           config,
+          options,
           experience: fides.experience,
           fidesRegionString: fidesRegionString as string,
         };

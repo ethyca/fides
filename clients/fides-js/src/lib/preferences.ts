@@ -295,20 +295,17 @@ export interface UpdateConsentOptions {
 export const updateConsent = async (
   context: Pick<
     FidesGlobal,
-    "experience" | "cookie" | "geolocation" | "options" | "locale"
+    "experience" | "cookie" | "geolocation" | "config" | "locale"
   >,
   consentOptions: UpdateConsentOptions,
   servedNoticeHistoryId?: string,
 ): Promise<void> => {
-  const {
-    experience,
-    cookie,
-    geolocation,
-    options: fidesOptions,
-    locale,
-  } = context;
+  const { experience, cookie, geolocation, config, locale } = context;
   if (!experience) {
     throw new Error("Experience must be initialized before updating consent");
+  }
+  if (!config) {
+    throw new Error("Config is not initialized");
   }
   if (!cookie) {
     throw new Error("Cookie is not initialized");
@@ -469,7 +466,7 @@ export const updateConsent = async (
     privacyExperienceConfigHistoryId: configHistoryId,
     experience: experience as PrivacyExperience | PrivacyExperienceMinimal,
     consentMethod,
-    options: fidesOptions,
+    options: config.options,
     userLocationString: fidesRegionString,
     cookie,
     eventExtraDetails,
