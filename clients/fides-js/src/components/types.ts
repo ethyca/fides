@@ -1,6 +1,5 @@
 import { ContainerNode } from "preact";
 
-import { FidesExperienceTranslationOverrides } from "../lib/consent-types";
 import type { I18n } from "../lib/i18n";
 import { InitializedFidesGlobal } from "../lib/providers/fides-global-context";
 
@@ -15,7 +14,6 @@ export type RenderOverlayType = (
   props: {
     i18n: I18n;
     initializedFides: InitializedFidesGlobal;
-    translationOverrides?: Partial<FidesExperienceTranslationOverrides>;
   },
   parent: ContainerNode,
 ) => void;

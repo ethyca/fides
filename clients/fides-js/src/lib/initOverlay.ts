@@ -1,11 +1,7 @@
 import { ContainerNode, render } from "preact";
 
 import { RenderOverlayType } from "../components/types";
-import {
-  ComponentType,
-  FidesExperienceTranslationOverrides,
-  FidesInitOptions,
-} from "./consent-types";
+import { ComponentType, FidesInitOptions } from "./consent-types";
 import type { I18n } from "./i18n";
 import { InitializedFidesGlobal } from "./providers/fides-global-context";
 import { ColorFormat, generateLighterColor } from "./style-utils";
@@ -23,7 +19,6 @@ let renderedParentElem: ContainerNode | undefined;
 export interface InitOverlayProps {
   initializedFides: InitializedFidesGlobal;
   i18n: I18n;
-  translationOverrides?: Partial<FidesExperienceTranslationOverrides>;
   renderOverlay?: RenderOverlayType;
 }
 
@@ -36,7 +31,6 @@ export const initOverlay = async ({
   initializedFides,
   i18n,
   renderOverlay,
-  translationOverrides,
 }: InitOverlayProps): Promise<void> => {
   const { config, experience } = initializedFides;
   const options = config?.options as FidesInitOptions;
@@ -151,7 +145,6 @@ export const initOverlay = async ({
           {
             initializedFides,
             i18n,
-            translationOverrides,
           },
           parentElem,
         );

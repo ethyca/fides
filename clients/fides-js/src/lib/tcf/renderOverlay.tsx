@@ -17,7 +17,7 @@ export const renderOverlay: RenderOverlayType = (props, parent) => {
    * load the TCF-specific ones when needed, which reduces the default fides.js
    * bundle size by over 20kb!
    */
-  const { i18n, initializedFides, translationOverrides } = props;
+  const { i18n, initializedFides } = props;
   loadTcfMessagesFromFiles(i18n);
 
   render(
@@ -26,7 +26,7 @@ export const renderOverlay: RenderOverlayType = (props, parent) => {
         <GVLProvider>
           <VendorButtonProvider>
             <EventProvider>
-              <TcfOverlay translationOverrides={translationOverrides} />
+              <TcfOverlay />
             </EventProvider>
           </VendorButtonProvider>
         </GVLProvider>

@@ -384,7 +384,6 @@ export const initialize = async ({
           initializedFides,
           i18n,
           renderOverlay,
-          translationOverrides: overrides?.experienceTranslationOverrides,
         }).catch((e) => {
           fidesDebugger(e);
         });

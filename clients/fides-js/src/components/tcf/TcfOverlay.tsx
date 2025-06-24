@@ -11,6 +11,7 @@ import {
   ConsentMethod,
   FidesCookie,
   FidesExperienceTranslationOverrides,
+  OverrideType,
   PrivacyExperience,
   PrivacyExperienceMinimal,
   PrivacyNoticeWithPreference,
@@ -43,6 +44,7 @@ import {
   selectBestNoticeTranslation,
 } from "../../lib/i18n";
 import { useI18n } from "../../lib/i18n/i18n-context";
+import { getOverridesByType } from "../../lib/initialize";
 import { updateConsentPreferences } from "../../lib/preferences";
 import { useEvent } from "../../lib/providers/event-context";
 import { useFidesGlobal } from "../../lib/providers/fides-global-context";
@@ -83,11 +85,7 @@ const getAllIds = (
   return modelList.map((m) => `${m.id}`);
 };
 
-interface TcfOverlayProps {
-  translationOverrides?: Partial<FidesExperienceTranslationOverrides>;
-}
-
-export const TcfOverlay = ({ translationOverrides }: TcfOverlayProps) => {
+export const TcfOverlay = () => {
   const { fidesGlobal } = useFidesGlobal();
   const {
     fidesRegionString,
@@ -97,6 +95,11 @@ export const TcfOverlay = ({ translationOverrides }: TcfOverlayProps) => {
   } = fidesGlobal;
   const experienceMinimal = fidesGlobal.experience as PrivacyExperienceMinimal;
   const options = config?.options;
+  const translationOverrides: Partial<FidesExperienceTranslationOverrides> =
+    getOverridesByType<Partial<FidesExperienceTranslationOverrides>>(
+      OverrideType.EXPERIENCE_TRANSLATION,
+      config,
+    );
   const {
     i18n,
     currentLocale,
