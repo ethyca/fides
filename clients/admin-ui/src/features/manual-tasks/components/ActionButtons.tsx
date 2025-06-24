@@ -1,7 +1,7 @@
-import type { MenuProps } from "antd";
 import {
   AntButton as Button,
   AntDropdown as Dropdown,
+  AntMenuProps as MenuProps,
   AntSpace as Space,
   Icons,
   useDisclosure,

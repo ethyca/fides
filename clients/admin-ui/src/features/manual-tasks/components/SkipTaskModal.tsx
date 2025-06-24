@@ -31,7 +31,7 @@ export const SkipTaskModal = ({
   const [skipTask, { isLoading }] = useSkipTaskMutation();
   const [comment, setComment] = useState("");
 
-  const handleSkip = async () => {
+  const handleSave = async () => {
     try {
       await skipTask({
         task_id: task.task_id,
@@ -100,7 +100,7 @@ export const SkipTaskModal = ({
             </Button>
             <Button
               type="primary"
-              onClick={handleSkip}
+              onClick={handleSave}
               loading={isLoading}
               disabled={!comment.trim()}
               danger

@@ -12,13 +12,11 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  useDisclosure,
 } from "fidesui";
 import { useState } from "react";
 
 import { useCompleteTaskMutation } from "../manual-tasks.slice";
 import { ManualTask } from "../mocked/types";
-import { SkipTaskModal } from "./SkipTaskModal";
 import { TaskDetails } from "./TaskDetails";
 
 interface CompleteTaskModalProps {
@@ -37,11 +35,6 @@ export const CompleteTaskModal = ({
   const [checkboxValue, setCheckboxValue] = useState(false);
   const [comment, setComment] = useState("");
   const [fileList, setFileList] = useState<any[]>([]);
-  const {
-    isOpen: isSkipModalOpen,
-    onOpen: onSkipModalOpen,
-    onClose: onSkipModalClose,
-  } = useDisclosure();
 
   const handleSave = async () => {
     try {
@@ -72,11 +65,6 @@ export const CompleteTaskModal = ({
     setComment("");
     setFileList([]);
     onClose();
-  };
-
-  const handleSkipTask = () => {
-    onClose();
-    onSkipModalOpen();
   };
 
   // Check if the required field is filled based on input type
@@ -144,79 +132,62 @@ export const CompleteTaskModal = ({
   };
 
   return (
-    <>
-      <Modal isOpen={isOpen} onClose={onClose} size="700px" isCentered>
-        <ModalOverlay />
-        <ModalContent maxWidth="700px" data-testid="complete-task-modal">
-          <ModalHeader>
-            <Typography.Title level={4}>Complete Task</Typography.Title>
-          </ModalHeader>
-          <ModalBody>
-            <div className="flex flex-col space-y-6">
-              <div>
-                <TaskDetails task={task} />
-              </div>
+    <Modal isOpen={isOpen} onClose={onClose} size="700px" isCentered>
+      <ModalOverlay />
+      <ModalContent maxWidth="700px" data-testid="complete-task-modal">
+        <ModalHeader>
+          <Typography.Title level={4}>Complete Task</Typography.Title>
+        </ModalHeader>
+        <ModalBody>
+          <div className="flex flex-col space-y-6">
+            <div>
+              <TaskDetails task={task} />
+            </div>
 
-              <Divider />
+            <Divider />
 
-              <div>
-                <div className="flex flex-col space-y-4">
-                  {renderTaskInput()}
+            <div>
+              <div className="flex flex-col space-y-4">
+                {renderTaskInput()}
 
-                  <div className="space-y-2">
-                    <div className="text-sm font-medium text-gray-700">
-                      Internal comment
-                    </div>
-                    <Input.TextArea
-                      value={comment}
-                      onChange={(e) => setComment(e.target.value)}
-                      placeholder="Add any additional comments..."
-                      rows={3}
-                      data-testid="complete-modal-comment-input"
-                    />
+                <div className="space-y-2">
+                  <div className="text-sm font-medium text-gray-700">
+                    Internal comment
                   </div>
+                  <Input.TextArea
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    placeholder="Add any additional comments..."
+                    rows={3}
+                    data-testid="complete-modal-comment-input"
+                  />
                 </div>
               </div>
             </div>
-          </ModalBody>
+          </div>
+        </ModalBody>
 
-          <ModalFooter>
-            <div className="flex w-full justify-between">
-              <Button
-                onClick={handleSkipTask}
-                disabled={isLoading}
-                data-testid="complete-modal-skip-button"
-              >
-                Skip task
-              </Button>
-              <Space>
-                <Button
-                  onClick={handleCancel}
-                  disabled={isLoading}
-                  data-testid="complete-modal-cancel-button"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="primary"
-                  onClick={handleSave}
-                  loading={isLoading}
-                  disabled={!isRequiredFieldFilled()}
-                  data-testid="complete-modal-save-button"
-                >
-                  Save
-                </Button>
-              </Space>
-            </div>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-
-      <SkipTaskModal
-        isOpen={isSkipModalOpen}
-        onClose={onSkipModalClose}
-        task={task}
-      />
-    </>
+        <ModalFooter>
+          <Space>
+            <Button
+              onClick={handleCancel}
+              disabled={isLoading}
+              data-testid="complete-modal-cancel-button"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="primary"
+              onClick={handleSave}
+              loading={isLoading}
+              disabled={!isRequiredFieldFilled()}
+              data-testid="complete-modal-save-button"
+            >
+              Save
+            </Button>
+          </Space>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
   );
 };
