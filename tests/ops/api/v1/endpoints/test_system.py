@@ -747,7 +747,7 @@ class TestInstantiateSystemConnectionFromTemplate:
         assert resp.status_code == 404
         assert (
             resp.json()["detail"]
-            == f"SaaS connector type 'does_not_exist' is not yet available in Fidesops. For a list of available SaaS connectors, refer to /connection_type."
+            == f"SaaS connector type 'does_not_exist' is not yet available in Fides. For a list of available SaaS connectors, refer to /connection_type."
         )
 
     def test_instance_key_already_exists(

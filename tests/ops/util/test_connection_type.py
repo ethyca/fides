@@ -27,7 +27,7 @@ def test_get_connection_types():
         "authorization_required": False,
         "user_guide": None,
         "supported_actions": [ActionType.access.value, ActionType.erasure.value],
-        "file_connector_available": False,
+        "default_connector_available": False,
         "is_custom": False,
     } in data
     first_saas_type = ConnectorRegistry.connector_types().pop()
@@ -42,7 +42,7 @@ def test_get_connection_types():
         "supported_actions": [
             action.value for action in first_saas_template.supported_actions
         ],
-        "file_connector_available": first_saas_template.file_connector_available,
+        "default_connector_available": first_saas_template.default_connector_available,
         "is_custom": first_saas_template.is_custom,
     } in data
 
@@ -59,7 +59,7 @@ def test_get_connection_types():
         "authorization_required": False,
         "user_guide": None,
         "supported_actions": [ActionType.consent.value],
-        "file_connector_available": False,
+        "default_connector_available": False,
         "is_custom": False,
     } in data
 
@@ -84,7 +84,7 @@ def connection_type_objects():
             "authorization_required": False,
             "user_guide": None,
             "supported_actions": [ActionType.access.value, ActionType.erasure.value],
-            "file_connector_available": False,
+            "default_connector_available": False,
             "is_custom": False,
         },
         ConnectionType.manual_webhook.value: {
@@ -95,7 +95,7 @@ def connection_type_objects():
             "authorization_required": False,
             "user_guide": None,
             "supported_actions": [ActionType.access.value, ActionType.erasure.value],
-            "file_connector_available": False,
+            "default_connector_available": False,
             "is_custom": False,
         },
         HUBSPOT: {
@@ -108,7 +108,7 @@ def connection_type_objects():
             "supported_actions": [
                 action.value for action in hubspot_template.supported_actions
             ],
-            "file_connector_available": False,
+            "default_connector_available": False,
             "is_custom": False,
         },
         MAILCHIMP: {
@@ -121,7 +121,7 @@ def connection_type_objects():
             "supported_actions": [
                 action.value for action in mailchimp_template.supported_actions
             ],
-            "file_connector_available": False,
+            "default_connector_available": False,
             "is_custom": False,
         },
         STRIPE: {
@@ -134,7 +134,7 @@ def connection_type_objects():
             "supported_actions": [
                 action.value for action in stripe_template.supported_actions
             ],
-            "file_connector_available": False,
+            "default_connector_available": False,
             "is_custom": False,
         },
         ConnectionType.sovrn.value: {
@@ -145,7 +145,7 @@ def connection_type_objects():
             "authorization_required": False,
             "user_guide": None,
             "supported_actions": [ActionType.consent.value],
-            "file_connector_available": False,
+            "default_connector_available": False,
             "is_custom": False,
         },
         ConnectionType.attentive_email.value: {
@@ -156,7 +156,7 @@ def connection_type_objects():
             "authorization_required": False,
             "user_guide": None,
             "supported_actions": [ActionType.erasure.value],
-            "file_connector_available": False,
+            "default_connector_available": False,
             "is_custom": False,
         },
     }

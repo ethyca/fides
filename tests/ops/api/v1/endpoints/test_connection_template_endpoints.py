@@ -30,9 +30,9 @@ from fides.common.api.scope_registry import (
 from fides.common.api.v1.urn_registry import (
     CONNECTION_TYPE_SECRETS,
     CONNECTION_TYPES,
+    DELETE_CUSTOM_TEMPLATE,
     REGISTER_CONNECTOR_TEMPLATE,
     SAAS_CONNECTOR_FROM_TEMPLATE,
-    UPDATE_CUSTOM_TEMPLATE_TO_FILE_TEMPLATE,
     V1_URL_PREFIX,
 )
 from tests.ops.test_helpers.saas_test_utils import create_zip_file
@@ -77,7 +77,7 @@ class TestGetConnections:
             "authorization_required": False,
             "user_guide": None,
             "supported_actions": [ActionType.access.value, ActionType.erasure.value],
-            "file_connector_available": False,
+            "default_connector_available": False,
             "is_custom": False,
         } in data
         first_saas_type = ConnectorRegistry.connector_types().pop()
@@ -92,7 +92,7 @@ class TestGetConnections:
             "supported_actions": [
                 action.value for action in first_saas_template.supported_actions
             ],
-            "file_connector_available": False,
+            "default_connector_available": False,
             "is_custom": False,
         } in data
         assert "saas" not in [item["identifier"] for item in data]
@@ -176,7 +176,9 @@ class TestGetConnections:
                 "supported_actions": [
                     action.value for action in saas_template[1].supported_actions
                 ],
-                "file_connector_available": saas_template[1].file_connector_available,
+                "default_connector_available": saas_template[
+                    1
+                ].default_connector_available,
                 "is_custom": saas_template[1].is_custom,
             }
             for saas_template in expected_saas_templates
@@ -227,7 +229,7 @@ class TestGetConnections:
             "authorization_required": False,
             "user_guide": None,
             "supported_actions": [ActionType.access.value, ActionType.erasure.value],
-            "file_connector_available": False,
+            "default_connector_available": False,
             "is_custom": False,
         } in data
         assert {
@@ -238,7 +240,7 @@ class TestGetConnections:
             "authorization_required": False,
             "user_guide": None,
             "supported_actions": [ActionType.access.value, ActionType.erasure.value],
-            "file_connector_available": False,
+            "default_connector_available": False,
             "is_custom": False,
         } in data
         assert {
@@ -249,7 +251,7 @@ class TestGetConnections:
             "authorization_required": False,
             "user_guide": None,
             "supported_actions": [ActionType.erasure.value],
-            "file_connector_available": False,
+            "default_connector_available": False,
             "is_custom": False,
         } in data
         for expected_data in expected_saas_data:
@@ -280,7 +282,9 @@ class TestGetConnections:
                 "supported_actions": [
                     action.value for action in saas_template[1].supported_actions
                 ],
-                "file_connector_available": saas_template[1].file_connector_available,
+                "default_connector_available": saas_template[
+                    1
+                ].default_connector_available,
                 "is_custom": saas_template[1].is_custom,
             }
             for saas_template in expected_saas_types
@@ -300,7 +304,7 @@ class TestGetConnections:
             "authorization_required": False,
             "user_guide": None,
             "supported_actions": [ActionType.access.value, ActionType.erasure.value],
-            "file_connector_available": False,
+            "default_connector_available": False,
             "is_custom": False,
         } in data
 
@@ -344,7 +348,7 @@ class TestGetConnections:
             "authorization_required": False,
             "user_guide": None,
             "supported_actions": [ActionType.access, ActionType.erasure],
-            "file_connector_available": False,
+            "default_connector_available": False,
             "is_custom": False,
         } in data
         assert {
@@ -355,7 +359,7 @@ class TestGetConnections:
             "authorization_required": False,
             "user_guide": None,
             "supported_actions": [ActionType.access, ActionType.erasure],
-            "file_connector_available": False,
+            "default_connector_available": False,
             "is_custom": False,
         } in data
         assert {
@@ -366,7 +370,7 @@ class TestGetConnections:
             "authorization_required": False,
             "user_guide": None,
             "supported_actions": [ActionType.erasure.value],
-            "file_connector_available": False,
+            "default_connector_available": False,
             "is_custom": False,
         } in data
 
@@ -436,7 +440,7 @@ class TestGetConnections:
                     ActionType.access.value,
                     ActionType.erasure.value,
                 ],
-                "file_connector_available": False,
+                "default_connector_available": False,
                 "is_custom": False,
             }
         ]
@@ -457,7 +461,7 @@ class TestGetConnections:
                 "authorization_required": False,
                 "user_guide": None,
                 "supported_actions": [ActionType.erasure.value],
-                "file_connector_available": False,
+                "default_connector_available": False,
                 "is_custom": False,
             },
             {
@@ -468,7 +472,7 @@ class TestGetConnections:
                 "authorization_required": False,
                 "user_guide": None,
                 "supported_actions": [ActionType.erasure.value],
-                "file_connector_available": False,
+                "default_connector_available": False,
                 "is_custom": False,
             },
             {
@@ -479,7 +483,7 @@ class TestGetConnections:
                 "authorization_required": False,
                 "user_guide": None,
                 "supported_actions": [ActionType.consent.value],
-                "file_connector_available": False,
+                "default_connector_available": False,
                 "is_custom": False,
             },
             {
@@ -490,7 +494,7 @@ class TestGetConnections:
                 "authorization_required": False,
                 "user_guide": None,
                 "supported_actions": [ActionType.erasure.value],
-                "file_connector_available": False,
+                "default_connector_available": False,
                 "is_custom": False,
             },
             {
@@ -501,7 +505,7 @@ class TestGetConnections:
                 "authorization_required": False,
                 "user_guide": None,
                 "supported_actions": [ActionType.consent.value],
-                "file_connector_available": False,
+                "default_connector_available": False,
                 "is_custom": False,
             },
         ]
@@ -554,7 +558,7 @@ class TestGetConnectionsActionTypeParams:
                     ActionType.access.value,
                     ActionType.erasure.value,
                 ],
-                "file_connector_available": False,
+                "default_connector_available": False,
                 "is_custom": False,
             },
             ConnectionType.manual_webhook.value: {
@@ -568,7 +572,7 @@ class TestGetConnectionsActionTypeParams:
                     ActionType.access.value,
                     ActionType.erasure.value,
                 ],
-                "file_connector_available": False,
+                "default_connector_available": False,
                 "is_custom": False,
             },
             HUBSPOT: {
@@ -581,7 +585,7 @@ class TestGetConnectionsActionTypeParams:
                 "supported_actions": [
                     action.value for action in hubspot_template.supported_actions
                 ],
-                "file_connector_available": False,
+                "default_connector_available": False,
                 "is_custom": False,
             },
             MAILCHIMP: {
@@ -594,7 +598,7 @@ class TestGetConnectionsActionTypeParams:
                 "supported_actions": [
                     action.value for action in mailchimp_template.supported_actions
                 ],
-                "file_connector_available": False,
+                "default_connector_available": False,
                 "is_custom": False,
             },
             STRIPE: {
@@ -607,7 +611,7 @@ class TestGetConnectionsActionTypeParams:
                 "supported_actions": [
                     action.value for action in stripe_template.supported_actions
                 ],
-                "file_connector_available": False,
+                "default_connector_available": False,
                 "is_custom": False,
             },
             ConnectionType.sovrn.value: {
@@ -618,7 +622,7 @@ class TestGetConnectionsActionTypeParams:
                 "authorization_required": False,
                 "user_guide": None,
                 "supported_actions": [ActionType.consent.value],
-                "file_connector_available": False,
+                "default_connector_available": False,
                 "is_custom": False,
             },
             ConnectionType.attentive_email.value: {
@@ -629,7 +633,7 @@ class TestGetConnectionsActionTypeParams:
                 "authorization_required": False,
                 "user_guide": None,
                 "supported_actions": [ActionType.erasure.value],
-                "file_connector_available": False,
+                "default_connector_available": False,
                 "is_custom": False,
             },
         }
@@ -1760,7 +1764,7 @@ class TestInstantiateConnectionFromTemplate:
         assert resp.status_code == 404
         assert (
             resp.json()["detail"]
-            == f"SaaS connector type 'does_not_exist' is not yet available in Fidesops. For a list of available SaaS connectors, refer to /connection_type."
+            == f"SaaS connector type 'does_not_exist' is not yet available in Fides. For a list of available SaaS connectors, refer to /connection_type."
         )
 
     def test_instance_key_already_exists(
@@ -2333,7 +2337,7 @@ class TestRegisterConnectorTemplate:
 
 
 @pytest.mark.unit_saas
-class TestUpdateCustomConnectorToFileTemplate:
+class TestDeleteCustomConnectorTemplate:
     @pytest.fixture(scope="function", autouse=True)
     def reset_connector_template_loaders(self):
         """
@@ -2364,7 +2368,7 @@ class TestUpdateCustomConnectorToFileTemplate:
 
     @pytest.fixture
     def update_custom_connector_url(self) -> str:
-        return V1_URL_PREFIX + UPDATE_CUSTOM_TEMPLATE_TO_FILE_TEMPLATE
+        return V1_URL_PREFIX + DELETE_CUSTOM_TEMPLATE
 
     @pytest.fixture
     def register_connector_template_url(self) -> str:
@@ -2374,7 +2378,7 @@ class TestUpdateCustomConnectorToFileTemplate:
         self, api_client: TestClient, update_custom_connector_url
     ) -> None:
         """Test that unauthenticated requests are rejected."""
-        response = api_client.post(
+        response = api_client.delete(
             update_custom_connector_url.format(saas_connector_type="test_connector")
         )
         assert response.status_code == 401
@@ -2387,7 +2391,7 @@ class TestUpdateCustomConnectorToFileTemplate:
     ) -> None:
         """Test that requests with wrong scope are rejected."""
         auth_header = generate_auth_header(scopes=[CLIENT_READ])
-        response = api_client.post(
+        response = api_client.delete(
             update_custom_connector_url.format(saas_connector_type="test_connector"),
             headers=auth_header,
         )
@@ -2408,14 +2412,14 @@ class TestUpdateCustomConnectorToFileTemplate:
         mock_all.return_value = []
 
         auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_REGISTER])
-        response = api_client.post(
+        response = api_client.delete(
             update_custom_connector_url.format(
                 saas_connector_type="nonexistent_connector"
             ),
             headers=auth_header,
         )
         assert response.status_code == 404
-        assert "not yet available in Fidesops" in response.json()["detail"]
+        assert "not yet available in Fides" in response.json()["detail"]
 
     @mock.patch(
         "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
@@ -2432,7 +2436,7 @@ class TestUpdateCustomConnectorToFileTemplate:
         mock_all.return_value = []
 
         auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_REGISTER])
-        response = api_client.post(
+        response = api_client.delete(
             update_custom_connector_url.format(saas_connector_type="hubspot"),
             headers=auth_header,
         )
@@ -2442,7 +2446,7 @@ class TestUpdateCustomConnectorToFileTemplate:
     @mock.patch(
         "fides.api.models.custom_connector_template.CustomConnectorTemplate.all"
     )
-    def test_update_custom_connector_no_file_connector_available(
+    def test_update_custom_connector_no_default_connector_available(
         self,
         mock_all: MagicMock,
         api_client: TestClient,
@@ -2466,7 +2470,7 @@ class TestUpdateCustomConnectorToFileTemplate:
         ]
 
         auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_REGISTER])
-        response = api_client.post(
+        response = api_client.delete(
             update_custom_connector_url.format(
                 saas_connector_type="custom_only_connector"
             ),
@@ -2474,7 +2478,7 @@ class TestUpdateCustomConnectorToFileTemplate:
         )
         assert response.status_code == 400
         assert (
-            "does not have a file connector to fall back to"
+            "does not have a Fides-provided template to fall back to"
             in response.json()["detail"]
         )
 
@@ -2502,18 +2506,19 @@ class TestUpdateCustomConnectorToFileTemplate:
             )
         ]
         # Mock the file connector template to be available
-        ConnectorRegistry.get_connector_template("hubspot").file_connector_available = (
-            True
-        )
+        ConnectorRegistry.get_connector_template(
+            "hubspot"
+        ).default_connector_available = True
 
         auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_REGISTER])
-        response = api_client.post(
+        response = api_client.delete(
             update_custom_connector_url.format(saas_connector_type="hubspot"),
             headers=auth_header,
         )
         assert response.status_code == 404
         assert (
-            "File template with type 'hubspot' not found" in response.json()["detail"]
+            "Fides-provided template with type 'hubspot' not found"
+            in response.json()["detail"]
         )
 
     @mock.patch(
@@ -2549,7 +2554,7 @@ class TestUpdateCustomConnectorToFileTemplate:
         )
 
         auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_REGISTER])
-        response = api_client.post(
+        response = api_client.delete(
             update_custom_connector_url.format(saas_connector_type="hubspot"),
             headers=auth_header,
         )
@@ -2572,7 +2577,7 @@ class TestUpdateCustomConnectorToFileTemplate:
         encoded_connector_type = (
             "invalid_connector_type"  # Use a valid connector type that doesn't exist
         )
-        response = api_client.post(
+        response = api_client.delete(
             update_custom_connector_url.format(
                 saas_connector_type=encoded_connector_type
             ),
@@ -2624,7 +2629,7 @@ class TestUpdateCustomConnectorToFileTemplate:
         template = ConnectorRegistry.get_connector_template(connector_type)
         assert template is not None
         assert template.is_custom is True
-        assert template.file_connector_available is True
+        assert template.default_connector_available is True
 
         # 3. Instantiate a connection using the custom template
         instance_key = "test_hubspot_instance"
@@ -2663,18 +2668,18 @@ class TestUpdateCustomConnectorToFileTemplate:
             saas_connector_type=connector_type
         )
         auth_header = generate_auth_header(scopes=[CONNECTOR_TEMPLATE_REGISTER])
-        response = api_client.post(update_url, headers=auth_header)
+        response = api_client.delete(update_url, headers=auth_header)
         assert response.status_code == 200
         assert (
             response.json()["message"]
-            == "Custom connector template successfully updated."
+            == "Custom connector template successfully deleted."
         )
 
         # 5. Verify the file template is now active
         template = ConnectorRegistry.get_connector_template(connector_type)
         assert template is not None
         assert template.is_custom is False
-        assert template.file_connector_available is False
+        assert template.default_connector_available is False
 
         # 6. Verify the connection was updated to use the file template
         # Refresh the connection config from the database

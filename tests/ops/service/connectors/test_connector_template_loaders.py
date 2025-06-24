@@ -189,7 +189,7 @@ class TestCustomConnectorTemplateLoader:
                 authorization_required=False,
                 user_guide=None,
                 supported_actions=[ActionType.access],
-                file_connector_available=False,
+                default_connector_available=False,
                 is_custom=True,
             )
         }

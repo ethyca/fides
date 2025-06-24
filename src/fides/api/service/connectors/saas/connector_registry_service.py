@@ -147,7 +147,7 @@ class CustomConnectorTemplateLoader(ConnectorTemplateLoader):
             user_guide=config.user_guide,
             supported_actions=config.supported_actions,
             is_custom=True,
-            file_connector_available=file_connector_template is not None,
+            default_connector_available=file_connector_template is not None,
         )
 
         # register the template in the loader's template dictionary

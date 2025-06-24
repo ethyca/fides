@@ -274,7 +274,7 @@ def get_connection_types(
                         user_guide=connector_template.user_guide,
                         supported_actions=connector_template.supported_actions,
                         is_custom=connector_template.is_custom,
-                        file_connector_available=connector_template.file_connector_available,
+                        default_connector_available=connector_template.default_connector_available,
                     )
                 )
 

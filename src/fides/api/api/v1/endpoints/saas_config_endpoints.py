@@ -62,11 +62,11 @@ from fides.common.api.scope_registry import (
 from fides.common.api.v1.urn_registry import (
     AUTHORIZE,
     CONNECTION_TYPES,
+    DELETE_CUSTOM_TEMPLATE,
     REGISTER_CONNECTOR_TEMPLATE,
     SAAS_CONFIG,
     SAAS_CONFIG_VALIDATE,
     SAAS_CONNECTOR_FROM_TEMPLATE,
-    UPDATE_CUSTOM_TEMPLATE_TO_FILE_TEMPLATE,
     V1_URL_PREFIX,
 )
 
@@ -314,7 +314,7 @@ def instantiate_connection(
     if not connector_template:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
-            detail=f"SaaS connector type '{saas_connector_type}' is not yet available in Fidesops. For a list of available SaaS connectors, refer to {CONNECTION_TYPES}.",
+            detail=f"SaaS connector type '{saas_connector_type}' is not yet available in Fides. For a list of available SaaS connectors, refer to {CONNECTION_TYPES}.",
         )
 
     if DatasetConfig.filter(
@@ -399,15 +399,16 @@ def register_custom_connector_template(
     )
 
 
-@router.post(
-    UPDATE_CUSTOM_TEMPLATE_TO_FILE_TEMPLATE,
+@router.delete(
+    DELETE_CUSTOM_TEMPLATE,
     dependencies=[Security(verify_oauth_client, scopes=[CONNECTOR_TEMPLATE_REGISTER])],
 )
-def update_custom_connector_to_file_template(
+def delete_custom_connector_template(
     saas_connector_type: str, db: Session = Depends(deps.get_db)
 ) -> JSONResponse:
     """
-    Deletes a custom connector template and updates the connection configs for the connector type to use the file template if available.
+    Deletes a custom connector template and updates the connection configs for the connector type to use the Fides-provided template if available.
+    If a Fides-provided template is not available, the custom template is not deleted and the connection configs for the connector type are not updated.
     """
     connector_template: Optional[ConnectorTemplate] = (
         ConnectorRegistry.get_connector_template(saas_connector_type)
@@ -415,28 +416,28 @@ def update_custom_connector_to_file_template(
     if not connector_template:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
-            detail=f"SaaS connector type '{saas_connector_type}' is not yet available in Fidesops. For a list of available SaaS connectors, refer to {CONNECTION_TYPES}.",
+            detail=f"SaaS connector type '{saas_connector_type}' is not yet available in Fides. For a list of available SaaS connectors, refer to {CONNECTION_TYPES}.",
         )
     if not connector_template.is_custom:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
             detail=f"SaaS connector type '{saas_connector_type}' is not a custom template.",
         )
-    if not connector_template.file_connector_available:
+    if not connector_template.default_connector_available:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"SaaS connector type '{saas_connector_type}' does not have a file connector to fall back to.",
+            detail=f"SaaS connector type '{saas_connector_type}' does not have a Fides-provided template to fall back to.",
         )
     delete_custom_template(db, saas_connector_type)
 
     return JSONResponse(
-        content={"message": "Custom connector template successfully updated."}
+        content={"message": "Custom connector template successfully deleted."}
     )
 
 
 def delete_custom_template(db: Session, saas_connector_type: str) -> None:
     """
-    Deletes a custom template from the database and falls back to the file template.
+    Deletes a custom template from the database and falls back to the Fides-provided template.
     """
 
     if not FileConnectorTemplateLoader.get_connector_templates().get(
@@ -444,7 +445,7 @@ def delete_custom_template(db: Session, saas_connector_type: str) -> None:
     ):
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
-            detail=f"File template with type '{saas_connector_type}' not found.",
+            detail=f"Fides-provided template with type '{saas_connector_type}' not found.",
         )
 
     # delete the template from the database
@@ -459,7 +460,7 @@ def delete_custom_template(db: Session, saas_connector_type: str) -> None:
     if not file_connector_template:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
-            detail=f"File template with type '{saas_connector_type}' not found in the registry.",
+            detail=f"Fides-provided template with type '{saas_connector_type}' not found in the registry.",
         )
 
     try:

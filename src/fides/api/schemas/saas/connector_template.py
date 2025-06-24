@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from fideslang.models import Dataset
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
 
 from fides.api.models.datasetconfig import validate_masking_strategy_override
 from fides.api.schemas.policy import ActionType
@@ -23,7 +23,10 @@ class ConnectorTemplate(BaseModel):
     user_guide: Optional[str] = None
     supported_actions: List[ActionType]
     is_custom: bool = False
-    file_connector_available: bool = False
+    default_connector_available: bool = Field(
+        default=False,
+        description="Indicates whether a Fides-provided default connector template is available",
+    )
 
     @field_validator("config")
     @classmethod
