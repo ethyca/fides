@@ -1,3 +1,5 @@
+import { ContainerNode } from "preact";
+
 import type {
   FidesCookie,
   FidesExperienceTranslationOverrides,
@@ -17,9 +19,13 @@ import type { I18n } from "../lib/i18n";
 export interface OverlayProps {
   options: FidesInitOptions;
   experience: PrivacyExperience;
-  i18n: I18n;
   cookie: FidesCookie;
   fidesRegionString: string;
   savedConsent: NoticeConsent;
   translationOverrides?: Partial<FidesExperienceTranslationOverrides>;
 }
+
+export type RenderOverlayType = (
+  props: OverlayProps & { i18n: I18n },
+  parent: ContainerNode,
+) => void;

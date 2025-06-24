@@ -1,6 +1,4 @@
-import { ContainerNode } from "preact";
-
-import { OverlayProps } from "../components/types";
+import { RenderOverlayType } from "../components/types";
 import { fetchExperience } from "../services/api";
 import { getGeolocation } from "../services/external/geolocation";
 import { automaticallyApplyPreferences } from "./automated-consent";
@@ -41,6 +39,7 @@ import {
   setupI18n,
 } from "./i18n";
 import { UpdateExperienceProps } from "./init-utils";
+import { InitOverlayProps } from "./initOverlay";
 import { searchForElement } from "./ui-utils";
 
 const retrieveEffectiveRegionString = async (
@@ -180,6 +179,16 @@ export const getInitialFidesFromConsentCookie = ({
   };
 };
 
+export interface InitializeProps {
+  fides: FidesGlobal;
+  initOverlay?: (props: InitOverlayProps) => Promise<void>;
+  renderOverlay?: RenderOverlayType;
+  updateExperience: (
+    props: UpdateExperienceProps,
+  ) => Partial<PrivacyExperience>;
+  overrides?: Partial<FidesOverrides>;
+}
+
 /**
  * The bulk of the initialization logic
  * 1. Validates options
@@ -195,23 +204,7 @@ export const initialize = async ({
   renderOverlay,
   updateExperience,
   overrides,
-}: {
-  fides: FidesGlobal;
-  initOverlay?: (
-    props: OverlayProps & {
-      renderOverlay?: (props: OverlayProps, parent: ContainerNode) => void;
-    },
-  ) => Promise<void>;
-  renderOverlay?: (props: OverlayProps, parent: ContainerNode) => void;
-  /**
-   * Once we for sure have a valid experience, this is another chance to update values
-   * before the overlay renders.
-   */
-  updateExperience: (
-    props: UpdateExperienceProps,
-  ) => Partial<PrivacyExperience>;
-  overrides?: Partial<FidesOverrides>;
-}): Promise<Partial<FidesGlobal>> => {
+}: InitializeProps): Promise<Partial<FidesGlobal>> => {
   const { config } = fides;
   if (!config) {
     throw new Error("Fides config should be initialized");
