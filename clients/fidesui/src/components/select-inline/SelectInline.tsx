@@ -1,7 +1,7 @@
 import { Select } from "antd/lib";
 import React, { ComponentProps, useState } from "react";
 
-import { CustomTag as AntTag } from "../../hoc";
+import { CustomTag as AntTag, CustomTypography } from "../../hoc";
 import styles from "./SelectInline.module.scss";
 
 type SelectProps = ComponentProps<typeof Select>;
@@ -26,7 +26,7 @@ type SelectProps = ComponentProps<typeof Select>;
 
 const SelectInlinePrefix = () => (
   <div style={{ paddingTop: "1px" }}>
-    <AntTag addable color="white" className="cursor-pointer m-0 " />
+    <AntTag addable className="cursor-pointer m-0 border-none" />
   </div>
 );
 
@@ -46,7 +46,15 @@ export const SelectInline = ({
   readonly = false,
   onTagClick,
   tagRender = (props) => {
-    const { label, closable, onClose, value } = props;
+    const { label, closable, onClose, value, isMaxTag } = props;
+
+    if (isMaxTag) {
+      return (
+        <CustomTypography.Text className="block ml-1 text-xs">
+          {label}
+        </CustomTypography.Text>
+      );
+    }
 
     const handleTagClick = (e: React.MouseEvent) => {
       if (onTagClick) {

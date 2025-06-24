@@ -1,5 +1,5 @@
-import type { ColumnsType } from "antd/es/table";
 import {
+  AntColumnsType as ColumnsType,
   AntTable as Table,
   AntTag as Tag,
   AntTypography as Typography,
