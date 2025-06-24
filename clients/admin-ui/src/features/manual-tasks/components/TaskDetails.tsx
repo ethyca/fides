@@ -1,4 +1,7 @@
-import { AntTypography as Typography } from "fidesui";
+import { AntTag as Tag, AntTypography as Typography } from "fidesui";
+
+import { SubjectRequestActionTypeMap } from "~/features/privacy-requests/constants";
+import { ActionType } from "~/types/api";
 
 import { ManualTask } from "../mocked/types";
 
@@ -23,6 +26,15 @@ const TaskInfoRow = ({
 );
 
 export const TaskDetails = ({ task }: TaskDetailsProps) => {
+  // Map the request type using the existing map
+  const actionType =
+    task.privacy_request.request_type === "access"
+      ? ActionType.ACCESS
+      : ActionType.ERASURE;
+  const requestTypeDisplay =
+    SubjectRequestActionTypeMap.get(actionType) ||
+    task.privacy_request.request_type;
+
   return (
     <div className="flex flex-col space-y-3">
       <TaskInfoRow label="Name">
@@ -34,30 +46,37 @@ export const TaskDetails = ({ task }: TaskDetailsProps) => {
       </TaskInfoRow>
 
       <TaskInfoRow label="Request Type">
-        <Typography.Text>
-          {task.privacy_request.request_type.charAt(0).toUpperCase() +
-            task.privacy_request.request_type.slice(1)}
-        </Typography.Text>
+        <Typography.Text>{requestTypeDisplay}</Typography.Text>
       </TaskInfoRow>
 
       <TaskInfoRow label="Assigned To">
         {task.assigned_users.length > 0 ? (
-          <div className="flex flex-wrap gap-1">
+          <div
+            className="flex flex-wrap gap-1"
+            data-testid="assigned-users-tags"
+          >
             {task.assigned_users.map((user) => (
-              <span
-                key={user.id}
-                className="inline-flex items-center rounded bg-gray-100 px-2 py-1 text-xs text-gray-800"
-              >
+              <Tag key={user.id} data-testid={`assigned-user-tag-${user.id}`}>
                 {`${user.first_name || ""} ${user.last_name || ""}`.trim() ||
                   user.email_address ||
                   "Unknown User"}
-              </span>
+              </Tag>
             ))}
           </div>
         ) : (
           <Typography.Text>No one assigned</Typography.Text>
         )}
       </TaskInfoRow>
+
+      {/* Show all available identity fields */}
+      {task.privacy_request.subject_identity &&
+        Object.entries(task.privacy_request.subject_identity).map(
+          ([key, identity]) => (
+            <TaskInfoRow key={key} label={`Identity - ${identity.label}`}>
+              <Typography.Text>{identity.value}</Typography.Text>
+            </TaskInfoRow>
+          ),
+        )}
     </div>
   );
 };

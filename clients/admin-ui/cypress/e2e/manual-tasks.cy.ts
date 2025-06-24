@@ -277,6 +277,17 @@ describe("Manual Tasks", () => {
         cy.getByTestId("complete-modal-upload-button").should("be.visible");
         cy.getByTestId("complete-modal-save-button").should("be.disabled");
 
+        // Verify improved TaskDetails: proper request type mapping and ant tags
+        cy.contains("Request Type").should("be.visible");
+        cy.getByTestId("assigned-users-tags").should("exist"); // Ant tags for assigned users
+        cy.getByTestId("assigned-users-tags").within(() => {
+          cy.get("[data-testid^='assigned-user-tag-']").should(
+            "have.length.at.least",
+            1,
+          );
+        });
+        cy.contains("Identity -").should("exist"); // Multiple identity fields
+
         cy.getByTestId("complete-modal-comment-input").type(
           "Test comment for file upload",
         );

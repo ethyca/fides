@@ -29,6 +29,14 @@
           "email": {
             "label": "Email",
             "value": "customer@email.com"
+          },
+          "phone_number": {
+            "label": "Phone Number",
+            "value": "+1-555-0456"
+          },
+          "user_id": {
+            "label": "User ID",
+            "value": "user_12345"
           }
         }
       },
