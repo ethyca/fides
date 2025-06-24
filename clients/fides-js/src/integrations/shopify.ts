@@ -25,16 +25,7 @@ declare global {
 
 const CONSENT_MAP = {
   marketing: MARKETING_CONSENT_KEYS,
-  sale_of_data: [
-    "marketing",
-    "data_sales",
-    "data_sales_and_sharing",
-    "data_sales_sharing_gpp_us_state",
-    "data_sharing_gpp_us_state",
-    "data_sales_gpp_us_state",
-    "targeted_advertising_gpp_us_state",
-    "sales_sharing_targeted_advertising",
-  ],
+  sale_of_data: MARKETING_CONSENT_KEYS,
   analytics: ["analytics"],
   preferences: ["functional"],
 };
