@@ -11,13 +11,15 @@ export interface FidesUIProviderProps {
   children: ReactNode;
   antTheme?: ThemeConfig;
   theme?: ChakraProviderProps["theme"];
+  wave?: { disabled?: boolean };
 }
 export const FidesUIProvider = ({
   children,
   theme = defaultTheme,
   antTheme,
+  wave,
 }: FidesUIProviderProps) => (
-  <BaseAntDesignProvider theme={antTheme}>
+  <BaseAntDesignProvider theme={antTheme} wave={wave}>
     <BaseChakraProvider theme={theme}>{children}</BaseChakraProvider>
   </BaseAntDesignProvider>
 );
