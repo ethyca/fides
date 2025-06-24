@@ -401,16 +401,7 @@ export const initialize = async ({
        * don't block the rest of the code from executing, we use setTimeout with
        * no delay which simply moves it to the end of the JavaScript event queue.
        */
-      setTimeout(
-        automaticallyApplyPreferences.bind(null, {
-          savedConsent: fides.saved_consent,
-          effectiveExperience: fides.experience as PrivacyExperience,
-          cookie: fides.cookie,
-          fidesOptions: options,
-          geolocation,
-          locale: fides.locale,
-        }),
-      );
+      setTimeout(automaticallyApplyPreferences.bind(null, fides));
     } else {
       fidesDebugger("Skipping overlay initialization.", fides.experience);
     }

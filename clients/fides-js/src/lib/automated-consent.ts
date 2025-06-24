@@ -3,16 +3,12 @@ import { readConsentFromAnyProvider } from "./consent-migration";
 import {
   ConsentMechanism,
   ConsentMethod,
-  FidesCookie,
-  FidesInitOptions,
+  FidesGlobal,
   NoticeConsent,
-  PrivacyExperience,
-  UserGeolocation,
 } from "./consent-types";
 import { decodeNoticeConsentString } from "./consent-utils";
 import { getFidesConsentCookie } from "./cookie";
 import { decodeFidesString } from "./fides-string";
-import { Locale } from "./i18n";
 import { updateConsent } from "./preferences";
 import {
   noticeHasConsentInCookie,
@@ -24,26 +20,23 @@ import {
  * This does not currently do anything with TCF unless the experience has custom notices applied.
  * Returns true if GPC or Notice Consent string has been applied
  */
-export const automaticallyApplyPreferences = async ({
-  savedConsent,
-  effectiveExperience,
-  cookie,
-  fidesOptions,
-  locale,
-  geolocation,
-}: {
-  savedConsent: NoticeConsent;
-  effectiveExperience: PrivacyExperience;
-  cookie: FidesCookie;
-  fidesOptions: FidesInitOptions;
-  locale: Locale;
-  geolocation: UserGeolocation | undefined;
-}): Promise<boolean> => {
+export const automaticallyApplyPreferences = async (
+  fidesGlobal: Pick<
+    FidesGlobal,
+    | "experience"
+    | "saved_consent"
+    | "cookie"
+    | "geolocation"
+    | "options"
+    | "locale"
+  >,
+): Promise<boolean> => {
+  const { experience, saved_consent: savedConsent, options } = fidesGlobal;
   // Early-exit if there is no experience or notices, since we've nothing to do
   if (
-    !effectiveExperience ||
-    !effectiveExperience.experience_config ||
-    !effectiveExperience.privacy_notices?.length
+    !experience ||
+    !experience.experience_config ||
+    !experience.privacy_notices?.length
   ) {
     return false;
   }
@@ -51,7 +44,7 @@ export const automaticallyApplyPreferences = async ({
   const context = getConsentContext();
   // let fidesString: string | undefined;
   const { nc: noticeConsentString } = decodeFidesString(
-    fidesOptions.fidesString || "",
+    options.fidesString || "",
   );
   if (context.globalPrivacyControl) {
     fidesDebugger("GPC is enabled");
@@ -63,7 +56,7 @@ export const automaticallyApplyPreferences = async ({
 
   // Check for migrated consent from OneTrust
   const { consent: migratedConsent, method: migrationMethod } =
-    readConsentFromAnyProvider(fidesOptions);
+    readConsentFromAnyProvider(options);
   const hasMigratedConsent =
     !!migratedConsent && !!migrationMethod && !getFidesConsentCookie();
 
@@ -79,7 +72,7 @@ export const automaticallyApplyPreferences = async ({
   let noticeConsentApplied = false;
   let migratedConsentApplied = false;
 
-  const noticeConsentToSave = effectiveExperience.privacy_notices.reduce(
+  const noticeConsentToSave = experience.privacy_notices.reduce(
     (accumulator, notice) => {
       const appliedConsent = { ...accumulator };
       const defaultBoolean = transformUserPreferenceToBoolean(
@@ -148,19 +141,10 @@ export const automaticallyApplyPreferences = async ({
       consentMethod = ConsentMethod.GPC;
     }
 
-    await updateConsent(
-      {
-        experience: effectiveExperience,
-        cookie,
-        geolocation,
-        options: fidesOptions,
-        locale,
-      },
-      {
-        noticeConsent: noticeConsentToSave,
-        consentMethod,
-      },
-    );
+    await updateConsent(fidesGlobal, {
+      noticeConsent: noticeConsentToSave,
+      consentMethod,
+    });
     return true;
   }
   return false;

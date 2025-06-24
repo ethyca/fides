@@ -82,14 +82,29 @@ describe("automaticallyApplyPreferences", () => {
     fidesConsentFlagType: null,
   };
 
-  const expectedConsentContext: Partial<FidesGlobal> = {
-    experience: undefined,
-    cookie: mockCookie,
-    geolocation: {
-      country: "US",
-    },
-    options: mockOptions,
-    locale: "en",
+  const mockFidesGlobal = (override?: Partial<FidesGlobal>) => {
+    let fidesGlobal: Pick<
+      FidesGlobal,
+      | "experience"
+      | "cookie"
+      | "geolocation"
+      | "options"
+      | "locale"
+      | "saved_consent"
+    > = {
+      saved_consent: {},
+      experience: undefined,
+      cookie: mockCookie,
+      geolocation: {
+        country: "US",
+      },
+      options: mockOptions,
+      locale: "en",
+    };
+    if (override) {
+      fidesGlobal = { ...fidesGlobal, ...override };
+    }
+    return fidesGlobal;
   };
 
   beforeEach(() => {
@@ -148,27 +163,21 @@ describe("automaticallyApplyPreferences", () => {
         },
       ] as PrivacyNotice[],
     };
-    expectedConsentContext.experience = mockRegularExperience;
+    mockFidesGlobal({ experience: mockRegularExperience });
 
     it("applies GPC to notices when GPC is enabled", async () => {
       mockGetConsentContext.mockReturnValue({
         globalPrivacyControl: true,
       });
-
-      const result = await automaticallyApplyPreferences({
-        savedConsent: {}, // No prior consent
-        effectiveExperience: mockRegularExperience,
-        cookie: mockCookie,
-        fidesOptions: mockOptions,
-        locale: "en",
-        geolocation: {
-          country: "US",
-        },
+      const fidesGlobal = mockFidesGlobal({
+        experience: mockRegularExperience,
       });
+
+      const result = await automaticallyApplyPreferences(fidesGlobal);
 
       expect(result).toBe(true);
       expect(mockUpdateConsent).toHaveBeenCalledWith(
-        expectedConsentContext,
+        fidesGlobal,
         expect.objectContaining({
           consentMethod: ConsentMethod.GPC,
           noticeConsent: { analytics: false, marketing: false },
@@ -181,16 +190,7 @@ describe("automaticallyApplyPreferences", () => {
         globalPrivacyControl: false,
       });
 
-      const result = await automaticallyApplyPreferences({
-        savedConsent: {},
-        effectiveExperience: mockRegularExperience,
-        cookie: mockCookie,
-        fidesOptions: mockOptions,
-        locale: "en",
-        geolocation: {
-          country: "US",
-        },
-      });
+      const result = await automaticallyApplyPreferences(mockFidesGlobal());
 
       expect(result).toBe(false);
       expect(mockUpdateConsent).not.toHaveBeenCalled();
@@ -200,23 +200,18 @@ describe("automaticallyApplyPreferences", () => {
       mockGetConsentContext.mockReturnValue({
         globalPrivacyControl: true,
       });
-
-      const result = await automaticallyApplyPreferences({
-        savedConsent: {
-          analytics: true, // Prior consent exists
+      const fidesGlobal = mockFidesGlobal({
+        saved_consent: {
+          analytics: true,
         },
-        effectiveExperience: mockRegularExperience,
-        cookie: mockCookie,
-        fidesOptions: mockOptions,
-        locale: "en",
-        geolocation: {
-          country: "US",
-        },
+        experience: mockRegularExperience,
       });
+
+      const result = await automaticallyApplyPreferences(fidesGlobal);
 
       expect(result).toBe(true);
       expect(mockUpdateConsent).toHaveBeenCalledWith(
-        expectedConsentContext,
+        fidesGlobal,
         expect.objectContaining({
           consentMethod: ConsentMethod.GPC,
           noticeConsent: { analytics: true, marketing: false },
@@ -243,22 +238,15 @@ describe("automaticallyApplyPreferences", () => {
         globalPrivacyControl: true,
       });
 
-      expectedConsentContext.experience = experienceWithMixedGpcSupport;
-
-      const result = await automaticallyApplyPreferences({
-        savedConsent: {},
-        effectiveExperience: experienceWithMixedGpcSupport,
-        cookie: mockCookie,
-        fidesOptions: mockOptions,
-        locale: "en",
-        geolocation: {
-          country: "US",
-        },
+      const fidesGlobal = mockFidesGlobal({
+        experience: experienceWithMixedGpcSupport,
       });
+
+      const result = await automaticallyApplyPreferences(fidesGlobal);
 
       expect(result).toBe(true);
       expect(mockUpdateConsent).toHaveBeenCalledWith(
-        expectedConsentContext,
+        fidesGlobal,
         expect.objectContaining({
           consentMethod: ConsentMethod.GPC,
           noticeConsent: { analytics: false, marketing: true },
@@ -276,21 +264,15 @@ describe("automaticallyApplyPreferences", () => {
           },
         ] as PrivacyNotice[],
       };
+      const fidesGlobal = mockFidesGlobal({
+        experience: experienceWithNoticeOnly,
+      });
 
       mockGetConsentContext.mockReturnValue({
         globalPrivacyControl: true,
       });
 
-      const result = await automaticallyApplyPreferences({
-        savedConsent: {},
-        effectiveExperience: experienceWithNoticeOnly,
-        cookie: mockCookie,
-        fidesOptions: mockOptions,
-        locale: "en",
-        geolocation: {
-          country: "US",
-        },
-      });
+      const result = await automaticallyApplyPreferences(fidesGlobal);
 
       expect(result).toBe(false);
       expect(mockUpdateConsent).not.toHaveBeenCalled();
@@ -348,30 +330,23 @@ describe("automaticallyApplyPreferences", () => {
         },
       ] as PrivacyNotice[],
     };
-    it.only("still applies GPC to TCF experiences with custom notices", async () => {
+    it("still applies GPC to TCF experiences with custom notices", async () => {
       mockGetConsentContext.mockReturnValue({
         globalPrivacyControl: true,
       });
 
-      expectedConsentContext.experience = mockTCFExperienceWithCustomNotices;
-      expectedConsentContext.geolocation = {
-        country: "EEA",
-      };
-
-      const result = await automaticallyApplyPreferences({
-        savedConsent: {}, // No prior consent
-        effectiveExperience: mockTCFExperienceWithCustomNotices,
-        cookie: mockCookie,
-        fidesOptions: mockOptions,
-        locale: "en",
+      const fidesGlobal = mockFidesGlobal({
+        experience: mockTCFExperienceWithCustomNotices,
         geolocation: {
           country: "EEA",
         },
       });
 
+      const result = await automaticallyApplyPreferences(fidesGlobal);
+
       expect(result).toBe(true);
       expect(mockUpdateConsent).toHaveBeenCalledWith(
-        expectedConsentContext,
+        fidesGlobal,
         expect.objectContaining({
           consentMethod: ConsentMethod.GPC,
           noticeConsent: { custom_notice_1: false, custom_notice_2: false },
