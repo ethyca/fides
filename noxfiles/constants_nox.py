@@ -91,6 +91,14 @@ EXEC_IT = (
     CI_ARGS_EXEC,
     CONTAINER_NAME,
 )
+RUN = (
+    "docker-compose",
+    "run",
+    "--rm",
+    *ANALYTICS_OPT_OUT,
+    CI_ARGS,
+    COMPOSE_SERVICE_NAME,
+)
 RUN_NO_DEPS = (
     "docker",
     "compose",

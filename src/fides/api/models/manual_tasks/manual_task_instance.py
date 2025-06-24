@@ -1,12 +1,13 @@
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import Column, DateTime, ForeignKey, String
+from sqlalchemy import Column, DateTime, ForeignKey, Index, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 
-from fides.api.db.base_class import Base
+from fides.api.db.base_class import Base, FidesBase
 from fides.api.db.util import EnumColumn
 from fides.api.models.manual_tasks.manual_task_config import ManualTaskConfigField
 from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskEntityType
@@ -38,10 +39,35 @@ class ManualTaskInstance(Base, StatusTransitionMixin):
         """Overriding base class method to set the table name."""
         return "manual_task_instance"
 
+    id = Column(String(255), primary_key=True, default=FidesBase.generate_uuid)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
     # Database columns
-    task_id: Column[str] = Column(String, ForeignKey("manual_task.id"), nullable=False)
+    task_id: Column[str] = Column(
+        String,
+        ForeignKey(
+            "manual_task.id",
+            name="manual_task_instance_task_id_fkey",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+    )
     config_id: Column[str] = Column(
-        String, ForeignKey("manual_task_config.id"), nullable=False
+        String,
+        ForeignKey(
+            "manual_task_config.id",
+            name="manual_task_instance_config_id_fkey",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
     )
     # entity id is the entity that the instance relates to
     # (e.g. a privacy request is an entity that has its own manual task instance)
@@ -55,6 +81,16 @@ class ManualTaskInstance(Base, StatusTransitionMixin):
     completed_at: Column[Optional[datetime]] = Column(DateTime, nullable=True)  # type: ignore[assignment]
     completed_by_id: Column[Optional[str]] = Column(String, nullable=True)  # type: ignore[assignment]
     due_date: Column[Optional[datetime]] = Column(DateTime, nullable=True)
+
+    __table_args__ = (
+        Index("ix_manual_task_instance_completed_at", "completed_at"),
+        Index("ix_manual_task_instance_config_id", "config_id"),
+        Index("ix_manual_task_instance_entity", "entity_type", "entity_id"),
+        Index("ix_manual_task_instance_entity_id", "entity_id"),
+        Index("ix_manual_task_instance_entity_type", "entity_type"),
+        Index("ix_manual_task_instance_status", "status"),
+        Index("ix_manual_task_instance_task_id", "task_id"),
+    )
 
     # Relationships
     task = relationship("ManualTask", back_populates="instances")
@@ -149,14 +185,75 @@ class ManualTaskSubmission(Base):
         """Overriding base class method to set the table name."""
         return "manual_task_submission"
 
+    id = Column(String(255), primary_key=True, default=FidesBase.generate_uuid)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
     # Database columns
-    task_id = Column(String, ForeignKey("manual_task.id"))
-    config_id = Column(String, ForeignKey("manual_task_config.id"))
-    field_id = Column(String, ForeignKey("manual_task_config_field.id"))
-    instance_id = Column(String, ForeignKey("manual_task_instance.id"), nullable=False)
-    submitted_by = Column(String, ForeignKey("fidesuser.id"), nullable=True)
+    task_id = Column(
+        String,
+        ForeignKey(
+            "manual_task.id",
+            name="manual_task_submission_task_id_fkey",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+    )
+    config_id = Column(
+        String,
+        ForeignKey(
+            "manual_task_config.id",
+            name="manual_task_submission_config_id_fkey",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+    )
+    field_id = Column(
+        String,
+        ForeignKey(
+            "manual_task_config_field.id",
+            name="manual_task_submission_field_id_fkey",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+    )
+    instance_id = Column(
+        String,
+        ForeignKey(
+            "manual_task_instance.id",
+            name="manual_task_submission_instance_id_fkey",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+    )
+    submitted_by = Column(
+        String,
+        ForeignKey(
+            "fidesuser.id",
+            name="manual_task_submission_submitted_by_fkey",
+            ondelete="SET NULL",
+        ),
+        nullable=True,
+    )
     submitted_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
     data = Column(JSONB, nullable=False)
+
+    __table_args__ = (
+        Index("ix_manual_task_submission_config_id", "config_id"),
+        Index("ix_manual_task_submission_field_id", "field_id"),
+        Index("ix_manual_task_submission_instance_field", "instance_id", "field_id"),
+        Index("ix_manual_task_submission_instance_id", "instance_id"),
+        Index("ix_manual_task_submission_submitted_at", "submitted_at"),
+        Index("ix_manual_task_submission_submitted_by", "submitted_by"),
+        Index("ix_manual_task_submission_task_id", "task_id"),
+    )
 
     # Relationships
     task = relationship("ManualTask", back_populates="submissions", viewonly=True)

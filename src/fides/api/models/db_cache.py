@@ -6,7 +6,7 @@ from sqlalchemy.dialects.postgresql import BYTEA
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import flag_modified
 
-from fides.api.db.base_class import Base
+from fides.api.db.base_class import Base, FidesBase
 
 
 class DBCacheNamespace(Enum):
@@ -25,6 +25,10 @@ class DBCache(Base):
     any sort of personal data or sensitive information.
     """
 
+    id = Column(
+        String(255), primary_key=True, index=True, default=FidesBase.generate_uuid
+    )
+
     namespace = Column(
         String, nullable=False, index=True
     )  # Add a namespace since the same cache key could technically be used for different contexts
@@ -32,7 +36,7 @@ class DBCache(Base):
     cache_value = Column(BYTEA, nullable=False)
 
     __table_args__ = (
-        Index("ix_dbcache_namespace_cache_key", "namespace", "cache_key"),
+        Index("ix_dbcache_namespace_cache_key", "namespace", "cache_key", unique=True),
     )
 
     @classmethod
