@@ -1,6 +1,6 @@
 import "../fides.css";
 
-import { FunctionComponent, h } from "preact";
+import { h } from "preact";
 import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 
 import { FidesEvent } from "../../docs/fides-event";
@@ -11,6 +11,7 @@ import {
   FidesCookie,
   Layer1ButtonOption,
   NoticeConsent,
+  PrivacyExperience,
   PrivacyNotice,
   PrivacyNoticeItem,
   ServingComponent,
@@ -45,12 +46,16 @@ import Overlay from "../Overlay";
 import { OverlayProps } from "../types";
 import { NoticeToggleProps, NoticeToggles } from "./NoticeToggles";
 
-const NoticeOverlay: FunctionComponent<OverlayProps> = ({
+export interface NoticeOverlayProps extends OverlayProps {
+  experience: PrivacyExperience;
+}
+
+const NoticeOverlay = ({
   options,
   experience,
   fidesRegionString,
   cookie,
-}) => {
+}: NoticeOverlayProps) => {
   const { i18n, currentLocale, setCurrentLocale } = useI18n();
   const {
     triggerRef,

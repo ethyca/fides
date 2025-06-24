@@ -1,4 +1,4 @@
-import { RenderOverlayType } from "../components/types";
+import { InitializedFidesGlobal, RenderOverlayType } from "../components/types";
 import { fetchExperience } from "../services/api";
 import { getGeolocation } from "../services/external/geolocation";
 import { automaticallyApplyPreferences } from "./automated-consent";
@@ -371,14 +371,17 @@ export const initialize = async ({
       }
 
       if (!!initOverlay && shouldContinueInitOverlay) {
+        const initializedFides: InitializedFidesGlobal = {
+          ...fides,
+          cookie: fides.cookie,
+          config,
+          experience: fides.experience,
+          fidesRegionString: fidesRegionString as string,
+        };
         // OK, we're (finally) ready to initialize & render the overlay!
         initOverlay({
-          options,
-          experience: fides.experience,
+          fides: initializedFides,
           i18n,
-          fidesRegionString: fidesRegionString as string,
-          cookie: fides.cookie,
-          savedConsent: fides.saved_consent,
           renderOverlay,
           translationOverrides: overrides?.experienceTranslationOverrides,
         }).catch((e) => {
