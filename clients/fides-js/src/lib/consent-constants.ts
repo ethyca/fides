@@ -150,10 +150,12 @@ export const FIDES_I18N_ICON = "fides-i18n-icon";
 
 export const MARKETING_CONSENT_KEYS = [
   "marketing",
+  "data_sales",
   "data_sales_and_sharing",
   "data_sales_sharing_gpp_us_state",
   "data_sharing_gpp_us_state",
   "data_sales_gpp_us_state",
   "targeted_advertising_gpp_us_state",
   "sales_sharing_targeted_advertising_gpp_us_national",
+  "sales_sharing_targeted_advertising",
 ];
