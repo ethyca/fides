@@ -92,7 +92,8 @@ EXEC_IT = (
     CONTAINER_NAME,
 )
 RUN = (
-    "docker-compose",
+    "docker",
+    "compose",
     "run",
     "--rm",
     *ANALYTICS_OPT_OUT,
