@@ -17,7 +17,6 @@ import {
   ServingComponent,
 } from "../../lib/consent-types";
 import {
-  createConsentPreferencesToSave,
   getGpcStatusFromNotice,
   isConsentOverride,
 } from "../../lib/consent-utils";
@@ -25,7 +24,6 @@ import { resolveConsentValue } from "../../lib/consent-value";
 import {
   consentCookieObjHasSomeConsentSet,
   getFidesConsentCookie,
-  updateCookieFromNoticePreferences,
 } from "../../lib/cookie";
 import {
   FidesEventDetailsPreference,
@@ -37,7 +35,7 @@ import {
   selectBestNoticeTranslation,
 } from "../../lib/i18n";
 import { useI18n } from "../../lib/i18n/i18n-context";
-import { updateConsentPreferences } from "../../lib/preferences";
+import { updateConsent } from "../../lib/preferences";
 import { useEvent } from "../../lib/providers/event-context";
 import { useFidesGlobal } from "../../lib/providers/fides-global-context";
 import { processExternalConsentValue } from "../../lib/shared-consent-utils";
@@ -208,45 +206,40 @@ const NoticeOverlay = () => {
       consentMethod: ConsentMethod,
       enabledPrivacyNoticeKeys: Array<PrivacyNotice["notice_key"]>,
     ) => {
-      const consentPreferencesToSave = createConsentPreferencesToSave(
-        privacyNoticeItems,
-        enabledPrivacyNoticeKeys,
-      );
-      updateConsentPreferences({
-        consentPreferencesToSave,
-        privacyExperienceConfigHistoryId,
-        experience,
-        consentMethod,
-        options,
-        userLocationString: fidesRegionString,
-        cookie,
-        eventExtraDetails: {
-          servingComponent: servingComponentRef.current,
-          trigger: triggerRef.current,
+      const noticeConsent: NoticeConsent = {};
+      privacyNoticeItems.forEach((item) => {
+        if (item.notice.consent_mechanism !== ConsentMechanism.NOTICE_ONLY) {
+          noticeConsent[item.notice.notice_key] =
+            enabledPrivacyNoticeKeys.includes(item.notice.notice_key);
+        } else {
+          // always set notice-only notices to true
+          noticeConsent[item.notice.notice_key] = true;
+        }
+      });
+      updateConsent(
+        fidesGlobal,
+        {
+          noticeConsent,
+          consentMethod,
+          eventExtraDetails: {
+            servingComponent: servingComponentRef.current,
+            trigger: triggerRef.current,
+          },
         },
         servedNoticeHistoryId,
-        updateCookie: (oldCookie) =>
-          updateCookieFromNoticePreferences(
-            oldCookie,
-            consentPreferencesToSave,
-          ),
-      }).finally(() => {
+      ).finally(() => {
         setTrigger(undefined);
       });
       // Make sure our draft state also updates
       setDraftEnabledNoticeKeys(enabledPrivacyNoticeKeys);
     },
     [
-      cookie,
-      fidesRegionString,
-      experience,
-      options,
-      privacyExperienceConfigHistoryId,
       privacyNoticeItems,
-      servedNoticeHistoryId,
-      triggerRef,
-      setTrigger,
+      fidesGlobal,
       servingComponentRef,
+      triggerRef,
+      servedNoticeHistoryId,
+      setTrigger,
     ],
   );
 
