@@ -12,14 +12,14 @@ import {
   UNCATEGORIZED_SEGMENT,
 } from "~/features/common/nav/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
-import { ActionCenterTabHash } from "~/features/data-discovery-and-detection/action-center/tables/useActionCenterTabs";
-import { successToastContent } from "~/features/data-discovery-and-detection/action-center/utils/successToastContent";
 import { SystemStagedResourcesAggregateRecord } from "~/types/api";
 
 import {
   useAddMonitorResultSystemsMutation,
   useIgnoreMonitorResultSystemsMutation,
 } from "../../action-center.slice";
+import { ActionCenterTabHash } from "../../hooks/useActionCenterTabs";
+import { SuccessToastContent } from "../../SuccessToastContent";
 
 interface DiscoveredSystemActionsCellProps {
   monitorId: string;
@@ -64,7 +64,7 @@ export const DiscoveredSystemActionsCell = ({
       const href = `${SYSTEM_ROUTE}/configure/${systemToLink}#assets`;
       toast(
         successToastParams(
-          successToastContent(
+          SuccessToastContent(
             systemKey
               ? `${totalUpdates} assets from ${systemName} have been added to the system inventory.`
               : `${systemName} and ${totalUpdates} assets have been added to the system inventory. ${systemName} is now configured for consent.`,
@@ -85,7 +85,7 @@ export const DiscoveredSystemActionsCell = ({
     } else {
       toast(
         successToastParams(
-          successToastContent(
+          SuccessToastContent(
             systemName
               ? `${totalUpdates} assets from ${systemName} have been ignored and will not appear in future scans.`
               : `${totalUpdates} uncategorized assets have been ignored and will not appear in future scans.`,
