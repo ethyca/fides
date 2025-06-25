@@ -314,7 +314,13 @@ export const updateConsent = async (
     throw new Error("Cookie is not initialized");
   }
   // If neither consent nor fidesString is provided, raise an error
-  if (!consentOptions?.noticeConsent && !consentOptions?.fidesString) {
+  // Note: this error primarily benefits customers using the window.Fides.updateConsent API,
+  // which doesn't support TCF. That's why we don't call out TCF in the error message.
+  if (
+    !consentOptions?.noticeConsent &&
+    !consentOptions?.fidesString &&
+    !consentOptions?.tcf
+  ) {
     throw new Error("Either consent object or fidesString must be provided");
   }
   if (

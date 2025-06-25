@@ -51,7 +51,6 @@ export const automaticallyApplyPreferences = async (
   }
   if (noticeConsentString) {
     fidesDebugger("Notice consent string found", noticeConsentString);
-    // fidesString = fidesOptions.fidesString!;
   }
 
   // Check for migrated consent from OneTrust
@@ -72,7 +71,7 @@ export const automaticallyApplyPreferences = async (
   let noticeConsentApplied = false;
   let migratedConsentApplied = false;
 
-  const noticeConsentToSave = experience.privacy_notices.reduce(
+  const noticeConsentToSave: NoticeConsent = experience.privacy_notices.reduce(
     (accumulator, notice) => {
       const appliedConsent = { ...accumulator };
       const defaultBoolean = transformUserPreferenceToBoolean(
