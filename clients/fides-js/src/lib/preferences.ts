@@ -117,6 +117,7 @@ interface UpdateConsentPreferencesProps {
  * 5. Save preferences to Fides API or a custom function (`savePreferencesFn`)
  * 6. Remove any cookies from notices that were opted-out from the browser
  * 7. Dispatch a "FidesUpdated" event
+ * NOTE: only exported for use by unit tests, use updateConsent instead.
  */
 export const updateConsentPreferences = async ({
   consentPreferencesToSave,
