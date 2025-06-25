@@ -25,10 +25,6 @@ class DBCache(Base):
     any sort of personal data or sensitive information.
     """
 
-    id = Column(
-        String(255), primary_key=True, index=True, default=FidesBase.generate_uuid
-    )
-
     namespace = Column(
         String, nullable=False, index=True
     )  # Add a namespace since the same cache key could technically be used for different contexts
