@@ -39,8 +39,8 @@ import {
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import useActionCenterTabs, {
   getIndexFromHash,
-} from "~/features/data-discovery-and-detection/action-center/tables/useActionCenterTabs";
-import { successToastContent } from "~/features/data-discovery-and-detection/action-center/utils/successToastContent";
+} from "~/features/data-discovery-and-detection/action-center/hooks/useActionCenterTabs";
+import { SuccessToastContent } from "~/features/data-discovery-and-detection/action-center/SuccessToastContent";
 import { DiffStatus, SystemStagedResourcesAggregateRecord } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
@@ -167,7 +167,7 @@ export const DiscoveredSystemAggregateTable = ({
     } else {
       toast(
         successToastParams(
-          successToastContent(
+          SuccessToastContent(
             `${totalUpdates} assets have been added to the system inventory.`,
             () => router.push(SYSTEM_ROUTE),
           ),
@@ -195,7 +195,7 @@ export const DiscoveredSystemAggregateTable = ({
     } else {
       toast(
         successToastParams(
-          successToastContent(
+          SuccessToastContent(
             `${totalUpdates} assets have been ignored and will not appear in future scans.`,
             () => onTabChange(getIndexFromHash("#ignored")!),
           ),

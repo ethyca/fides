@@ -44,8 +44,8 @@ import {
   useUpdateAssetsSystemMutation,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import AddDataUsesModal from "~/features/data-discovery-and-detection/action-center/AddDataUsesModal";
-import useActionCenterTabs from "~/features/data-discovery-and-detection/action-center/tables/useActionCenterTabs";
-import { successToastContent } from "~/features/data-discovery-and-detection/action-center/utils/successToastContent";
+import useActionCenterTabs from "~/features/data-discovery-and-detection/action-center/hooks/useActionCenterTabs";
+import { SuccessToastContent } from "~/features/data-discovery-and-detection/action-center/SuccessToastContent";
 import { DiffStatus } from "~/types/api";
 
 import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
@@ -194,7 +194,7 @@ export const DiscoveredAssetsTable = ({
       tableInstance.resetRowSelection();
       toast(
         successToastParams(
-          successToastContent(
+          SuccessToastContent(
             `${selectedUrns.length} assets from ${systemName} have been added to the system inventory.`,
             systemToLink
               ? () =>
