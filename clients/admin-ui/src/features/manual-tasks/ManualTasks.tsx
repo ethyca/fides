@@ -1,6 +1,8 @@
 import {
   AntColumnsType as ColumnsType,
+  AntFilterValue as FilterValue,
   AntTable as Table,
+  AntTablePaginationConfig as TablePaginationConfig,
   AntTag as Tag,
   AntTypography as Typography,
   SelectInline,
@@ -22,12 +24,36 @@ import {
   AssignedUser,
   ManualTask,
   RequestType,
+  SubjectIdentity,
   System,
   TaskStatus,
 } from "./mocked/types";
 
+// Type definitions for better type safety
+interface FilterOption {
+  text: string;
+  value: string;
+}
+
+interface ManualTaskFilters {
+  status?: string;
+  systemName?: string;
+  requestType?: string;
+  assignedUsers?: string;
+}
+
+interface StatusMapEntry {
+  color: string;
+  label: string;
+}
+
+interface UserOption {
+  label: string;
+  value: string;
+}
+
 // Map task status to tag colors and labels - aligned with RequestStatusBadge colors
-const statusMap: Record<TaskStatus, { color: string; label: string }> = {
+const statusMap: Record<TaskStatus, StatusMapEntry> = {
   new: { color: "info", label: "New" },
   completed: { color: "success", label: "Completed" },
   skipped: { color: "marble", label: "Skipped" },
@@ -35,8 +61,8 @@ const statusMap: Record<TaskStatus, { color: string; label: string }> = {
 
 // Extract column definitions to a separate function for better readability
 const getColumns = (
-  systemFilters: { text: string; value: string }[],
-  userFilters: { text: string; value: string }[],
+  systemFilters: FilterOption[],
+  userFilters: FilterOption[],
   onUserClick: (userId: string) => void,
 ): ColumnsType<ManualTask> => [
   {
@@ -97,7 +123,7 @@ const getColumns = (
     key: "assigned_users",
     width: 380,
     render: (assignedUsers: AssignedUser[]) => {
-      const userOptions = assignedUsers.map((user) => ({
+      const userOptions: UserOption[] = assignedUsers.map((user) => ({
         label:
           `${user.first_name || ""} ${user.last_name || ""}`.trim() ||
           user.email_address ||
@@ -137,7 +163,7 @@ const getColumns = (
     dataIndex: ["privacy_request", "subject_identity"],
     key: "subject_identity",
     width: 200,
-    render: (subjectIdentity) => {
+    render: (subjectIdentity: SubjectIdentity) => {
       if (!subjectIdentity) {
         return <Typography.Text>-</Typography.Text>;
       }
@@ -167,12 +193,7 @@ export const ManualTasks = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(25);
-  const [filters, setFilters] = useState<{
-    status?: string;
-    systemName?: string;
-    requestType?: string;
-    assignedUsers?: string;
-  }>({});
+  const [filters, setFilters] = useState<ManualTaskFilters>({});
 
   const { data, isLoading, isFetching } = useGetTasksQuery({
     page: pageIndex,
@@ -220,21 +241,24 @@ export const ManualTasks = () => {
   );
 
   // Handle table filter changes
-  const handleTableChange = (pagination: any, tableFilters: any) => {
+  const handleTableChange = (
+    _pagination: TablePaginationConfig,
+    tableFilters: Record<string, FilterValue | null>,
+  ) => {
     // Convert Ant Design filters to our filter state
-    const newFilters: typeof filters = {};
+    const newFilters: ManualTaskFilters = {};
 
     if (tableFilters.status) {
-      [newFilters.status] = tableFilters.status; // Single select filter
+      [newFilters.status] = tableFilters.status as string[]; // Single select filter
     }
     if (tableFilters.system_name) {
-      [newFilters.systemName] = tableFilters.system_name; // Single select filter
+      [newFilters.systemName] = tableFilters.system_name as string[]; // Single select filter
     }
     if (tableFilters.request_type) {
-      [newFilters.requestType] = tableFilters.request_type; // Single select filter
+      [newFilters.requestType] = tableFilters.request_type as string[]; // Single select filter
     }
     if (tableFilters.assigned_users) {
-      [newFilters.assignedUsers] = tableFilters.assigned_users; // Single select filter
+      [newFilters.assignedUsers] = tableFilters.assigned_users as string[]; // Single select filter
     }
 
     setFilters(newFilters);
