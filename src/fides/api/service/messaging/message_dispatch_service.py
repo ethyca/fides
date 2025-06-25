@@ -26,6 +26,7 @@ from fides.api.schemas.messaging.messaging import (
     EmailForActionType,
     ErasureRequestBodyParams,
     ErrorNotificationBodyParams,
+    ExternalUserWelcomeBodyParams,
     FidesopsMessage,
     MessagingActionType,
     MessagingMethod,
@@ -176,6 +177,7 @@ def dispatch_message(
             ErasureRequestBodyParams,
             UserInviteBodyParams,
             ErrorNotificationBodyParams,
+            ExternalUserWelcomeBodyParams,
         ]
     ] = None,
     subject_override: Optional[str] = None,
@@ -351,7 +353,7 @@ def _render(template_str: str, variables: Optional[Dict] = None) -> str:
     return template_str
 
 
-def _build_email(  # pylint: disable=too-many-return-statements
+def _build_email(  # pylint: disable=too-many-return-statements, too-many-branches
     config_proxy: ConfigProxy,
     action_type: MessagingActionType,
     body_params: Any,
@@ -463,6 +465,29 @@ def _build_email(  # pylint: disable=too-many-return-statements
                 }
             ),
         )
+    if action_type == MessagingActionType.EXTERNAL_USER_WELCOME:
+        base_template = get_email_template(action_type)
+        # Generate display name for personalization
+        display_name = body_params.username
+        if body_params.first_name:
+            display_name = body_params.first_name
+            if body_params.last_name:
+                display_name = f"{body_params.first_name} {body_params.last_name}"
+
+        return EmailForActionType(
+            subject="Welcome to our Privacy Center",
+            body=base_template.render(
+                {
+                    "username": body_params.username,
+                    "display_name": display_name,
+                    "first_name": body_params.first_name,
+                    "last_name": body_params.last_name,
+                    "privacy_center_url": body_params.privacy_center_url,
+                    "access_token": body_params.access_token,
+                }
+            ),
+        )
+
     logger.error("Message action type {} is not implemented", action_type)
     raise MessageDispatchException(
         f"Message action type {action_type} is not implemented"

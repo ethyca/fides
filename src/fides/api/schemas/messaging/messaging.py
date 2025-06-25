@@ -69,6 +69,7 @@ class MessagingActionType(str, Enum):
     PRIVACY_REQUEST_REVIEW_DENY = "privacy_request_review_deny"
     PRIVACY_REQUEST_REVIEW_APPROVE = "privacy_request_review_approve"
     USER_INVITE = "user_invite"
+    EXTERNAL_USER_WELCOME = "external_user_welcome"
     TEST_MESSAGE = "test_message"
 
 
@@ -182,6 +183,16 @@ class UserInviteBodyParams(BaseModel):
     invite_code: str
 
 
+class ExternalUserWelcomeBodyParams(BaseModel):
+    """Body params required to send a welcome email to external users"""
+
+    username: str
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    privacy_center_url: str
+    access_token: str
+
+
 class FidesopsMessage(
     BaseModel,
 ):
@@ -198,6 +209,7 @@ class FidesopsMessage(
             ErasureRequestBodyParams,
             ErrorNotificationBodyParams,
             UserInviteBodyParams,
+            ExternalUserWelcomeBodyParams,
         ]
     ] = None
 
@@ -217,6 +229,7 @@ class FidesopsMessage(
             MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT: ErasureRequestBodyParams,
             MessagingActionType.PRIVACY_REQUEST_ERROR_NOTIFICATION: ErrorNotificationBodyParams,
             MessagingActionType.USER_INVITE: UserInviteBodyParams,
+            MessagingActionType.EXTERNAL_USER_WELCOME: ExternalUserWelcomeBodyParams,
         }
 
         valid_body_params = valid_body_params_for_action_type.get(
