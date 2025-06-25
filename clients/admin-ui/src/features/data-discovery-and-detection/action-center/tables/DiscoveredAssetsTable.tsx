@@ -44,15 +44,15 @@ import {
   useUpdateAssetsSystemMutation,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import AddDataUsesModal from "~/features/data-discovery-and-detection/action-center/AddDataUsesModal";
-import useActionCenterTabs, {
-  ActionCenterTabHash,
-} from "~/features/data-discovery-and-detection/action-center/tables/useActionCenterTabs";
-import { successToastContent } from "~/features/data-discovery-and-detection/action-center/utils/successToastContent";
 import { DiffStatus } from "~/types/api";
 
 import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
 import { AssignSystemModal } from "../AssignSystemModal";
+import useActionCenterTabs, {
+  ActionCenterTabHash,
+} from "../hooks/useActionCenterTabs";
 import { useDiscoveredAssetsColumns } from "../hooks/useDiscoveredAssetsColumns";
+import { SuccessToastContent } from "../SuccessToastContent";
 
 interface DiscoveredAssetsTableProps {
   monitorId: string;
@@ -194,7 +194,7 @@ export const DiscoveredAssetsTable = ({
       tableInstance.resetRowSelection();
       toast(
         successToastParams(
-          successToastContent(
+          SuccessToastContent(
             `${selectedUrns.length} assets from ${systemName} have been added to the system inventory.`,
             systemToLink
               ? () =>
