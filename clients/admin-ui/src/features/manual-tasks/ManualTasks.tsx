@@ -15,6 +15,7 @@ import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import FidesSpinner from "~/features/common/FidesSpinner";
 import { USER_PROFILE_ROUTE } from "~/features/common/nav/routes";
 import { PAGE_SIZES } from "~/features/common/table/v2/PaginationBar";
+import { formatUser } from "~/features/common/utils";
 import { SubjectRequestActionTypeMap } from "~/features/privacy-requests/constants";
 import { ActionType, PrivacyRequestStatus } from "~/types/api";
 
@@ -110,10 +111,7 @@ const getColumns = (
     width: 380,
     render: (assignedUsers: AssignedUser[]) => {
       const userOptions: UserOption[] = assignedUsers.map((user) => ({
-        label:
-          `${user.first_name || ""} ${user.last_name || ""}`.trim() ||
-          user.email_address ||
-          "Unknown User",
+        label: formatUser(user),
         value: user.id,
       }));
 
@@ -124,7 +122,7 @@ const getColumns = (
           value={currentAssignedUserIds}
           options={userOptions}
           readonly
-          onTagClick={(userId) => onUserClick(userId)}
+          onTagClick={(userId) => onUserClick(String(userId))}
         />
       );
     },
@@ -218,7 +216,7 @@ export const ManualTasks = () => {
   const userFilters = useMemo(
     () =>
       filterOptions?.assigned_users?.map((user: AssignedUser) => ({
-        text: `${user.first_name} ${user.last_name}`,
+        text: formatUser(user),
         value: user.id,
       })) || [],
     [filterOptions?.assigned_users],
