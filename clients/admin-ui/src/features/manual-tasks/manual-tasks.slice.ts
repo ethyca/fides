@@ -3,6 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import { baseApi } from "~/features/common/api.slice";
 import { PaginationQueryParams } from "~/types/common/PaginationQueryParams";
 
+import { PAGE_SIZES } from "../common/table/v2";
 // Import mock data and types
 import mockTasksData from "./mocked/manual-tasks.json";
 import {
@@ -237,7 +238,7 @@ export const manualTasksSlice = createSlice({
   name: "manualTasks",
   initialState: {
     page: 1,
-    pageSize: 25, // Default to 25 instead of 10 to match PAGE_SIZES
+    pageSize: PAGE_SIZES[0],
   },
   reducers: {
     setPage: (state, action) => {
