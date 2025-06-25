@@ -167,6 +167,7 @@ export const ManualTasks = () => {
     status?: string[];
     systemName?: string[];
     requestType?: string[];
+    assignedUsers?: string[];
   }>({});
 
   const { data, isLoading, isFetching } = useGetTasksQuery({
@@ -177,6 +178,7 @@ export const ManualTasks = () => {
     status: filters.status?.[0] as TaskStatus,
     systemName: filters.systemName?.[0],
     requestType: filters.requestType?.[0] as RequestType,
+    assignedUserId: filters.assignedUsers?.[0],
   });
 
   const {
@@ -227,7 +229,9 @@ export const ManualTasks = () => {
     if (tableFilters.request_type) {
       newFilters.requestType = tableFilters.request_type;
     }
-    // Note: assigned_users filtering not supported by API yet
+    if (tableFilters.assigned_users) {
+      newFilters.assignedUsers = tableFilters.assigned_users;
+    }
 
     setFilters(newFilters);
     setPageIndex(1); // Reset to first page when filters change

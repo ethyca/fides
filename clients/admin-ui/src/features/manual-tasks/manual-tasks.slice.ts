@@ -34,6 +34,7 @@ const paginateAndFilterResults = (
   status?: TaskStatus,
   requestType?: RequestType,
   systemName?: string,
+  assignedUserId?: string,
 ): PageManualTask => {
   // Start with all tasks from the mock data
   let filteredTasks = mockApiResponse.items;
@@ -64,6 +65,12 @@ const paginateAndFilterResults = (
     );
   }
 
+  if (assignedUserId) {
+    filteredTasks = filteredTasks.filter((task) =>
+      task.assigned_users.some((user) => user.id === assignedUserId),
+    );
+  }
+
   // Calculate pagination
   const total = filteredTasks.length;
   const pages = Math.ceil(total / size);
@@ -87,6 +94,7 @@ interface TaskQueryParams extends PaginationQueryParams {
   status?: TaskStatus;
   requestType?: RequestType;
   systemName?: string;
+  assignedUserId?: string;
 }
 
 // API endpoints
@@ -125,6 +133,7 @@ export const manualTasksApi = baseApi.injectEndpoints({
                 status,
                 requestType,
                 systemName,
+                assignedUserId,
               } = queryParams;
 
               // Return paginated and filtered results
@@ -136,6 +145,7 @@ export const manualTasksApi = baseApi.injectEndpoints({
                   status,
                   requestType,
                   systemName,
+                  assignedUserId,
                 ),
               };
             },
