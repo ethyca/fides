@@ -9,8 +9,8 @@ import { useRouter } from "next/router";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { SYSTEM_ROUTE } from "~/features/common/nav/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
-import { getIndexFromHash } from "~/features/data-discovery-and-detection/action-center/tables/useActionCenterTabs";
-import { successToastContent } from "~/features/data-discovery-and-detection/action-center/utils/successToastContent";
+import { getIndexFromHash } from "~/features/data-discovery-and-detection/action-center/hooks/useActionCenterTabs";
+import { SuccessToastContent } from "~/features/data-discovery-and-detection/action-center/SuccessToastContent";
 import { DiffStatus } from "~/types/api";
 import { StagedResourceAPIResponse } from "~/types/api/models/StagedResourceAPIResponse";
 
@@ -67,7 +67,7 @@ export const DiscoveredAssetActionsCell = ({
       const href = `${SYSTEM_ROUTE}/configure/${systemToLink}#assets`;
       toast(
         successToastParams(
-          successToastContent(
+          SuccessToastContent(
             `${type} "${name}" has been added to the system inventory.`,
             systemToLink ? () => router.push(href) : undefined,
           ),
@@ -85,7 +85,7 @@ export const DiscoveredAssetActionsCell = ({
     } else {
       toast(
         successToastParams(
-          successToastContent(
+          SuccessToastContent(
             `${type} "${name}" has been ignored and will not appear in future scans.`,
             () => onTabChange(getIndexFromHash("#ignored")!),
           ),
