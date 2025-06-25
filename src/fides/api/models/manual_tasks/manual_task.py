@@ -1,10 +1,11 @@
 from typing import TYPE_CHECKING, Any
 
-from sqlalchemy import Column, ForeignKey, String
+from sqlalchemy import Column, DateTime, ForeignKey, Index, String, UniqueConstraint
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
+from sqlalchemy.sql import func
 
-from fides.api.db.base_class import Base
+from fides.api.db.base_class import Base, FidesBase
 from fides.api.db.util import EnumColumn
 from fides.api.models.manual_tasks.manual_task_log import ManualTaskLog
 from fides.api.schemas.manual_tasks.manual_task_schemas import (
@@ -40,6 +41,22 @@ class ManualTask(Base):
         """Overriding base class method to set the table name."""
         return "manual_task"
 
+    # redefined here because there's a minor, unintended discrepancy between
+    # this `id` field and that of the `Base` class, which explicitly sets `index=True`.
+    # TODO: we likely should _not_ be setting `index=True` on the `id`
+    # attribute of the `Base` class, as `primary_key=True` already specifies a
+    # primary key constraint, which will implicitly create an index for the field.
+    id = Column(String(255), primary_key=True, default=FidesBase.generate_uuid)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
     # Database columns
     task_type = Column(
         EnumColumn(ManualTaskType),
@@ -51,6 +68,16 @@ class ManualTask(Base):
         EnumColumn(ManualTaskParentEntityType),
         nullable=False,
         default=ManualTaskParentEntityType.connection_config,
+    )
+
+    __table_args__ = (
+        UniqueConstraint(
+            "parent_entity_id",
+            "parent_entity_type",
+            name="uq_manual_task_parent_entity",
+        ),
+        Index("ix_manual_task_parent_entity", "parent_entity_type", "parent_entity_id"),
+        Index("ix_manual_task_task_type", "task_type"),
     )
 
     # Relationships
@@ -125,12 +152,33 @@ class ManualTaskReference(Base):
         """Overriding base class method to set the table name."""
         return "manual_task_reference"
 
+    # redefined here because there's a minor, unintended discrepancy between
+    # this `id` field and that of the `Base` class, which explicitly sets `index=True`.
+    # TODO: we likely should _not_ be setting `index=True` on the `id`
+    # attribute of the `Base` class, as `primary_key=True` already specifies a
+    # primary key constraint, which will implicitly create an index for the field.
+    id = Column(String(255), primary_key=True, default=FidesBase.generate_uuid)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
     # Database columns
     task_id = Column(
         String, ForeignKey("manual_task.id", ondelete="CASCADE"), nullable=False
     )
     reference_id = Column(String, nullable=False)
     reference_type = Column(EnumColumn(ManualTaskReferenceType), nullable=False)
+
+    __table_args__ = (
+        Index("ix_manual_task_reference_reference", "reference_id", "reference_type"),
+        Index("ix_manual_task_reference_task_id", "task_id"),
+    )
 
     # Relationships
     task = relationship("ManualTask", back_populates="references", viewonly=True)

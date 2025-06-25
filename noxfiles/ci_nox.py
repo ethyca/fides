@@ -12,12 +12,13 @@ from constants_nox import (
     CONTAINER_NAME,
     IMAGE_NAME,
     LOGIN,
+    RUN,
     RUN_NO_DEPS,
     START_APP,
     WITH_TEST_CONFIG,
 )
 from setup_tests_nox import pytest_api, pytest_ctl, pytest_lib, pytest_nox, pytest_ops
-from utils_nox import install_requirements
+from utils_nox import db, install_requirements
 
 
 ###################
@@ -136,6 +137,18 @@ def check_install(session: nox.Session) -> None:
 
     run_command = ("python", "-c", "from fides.api.main import start_webserver")
     session.run(*run_command, env=REQUIRED_ENV_VARS)
+
+
+@nox.session()
+def check_migrations(session: nox.Session) -> None:
+    """Check for missing migrations."""
+    db(session, "init")
+    check_migration_command = (
+        "python",
+        "-c",
+        "from fides.api.db.database import check_missing_migrations; from fides.config import get_config; config = get_config(); check_missing_migrations(config.database.sync_database_uri);",
+    )
+    session.run(*RUN, *check_migration_command, external=True)
 
 
 @nox.session()
