@@ -63,6 +63,7 @@ const getColumns = (
       { text: "Completed", value: "completed" },
       { text: "Skipped", value: "skipped" },
     ],
+    filterMultiple: false,
   },
   {
     title: "System",
@@ -70,6 +71,7 @@ const getColumns = (
     key: "system_name",
     width: 210,
     filters: systemFilters,
+    filterMultiple: false,
   },
   {
     title: "Type",
@@ -87,6 +89,7 @@ const getColumns = (
       { text: "Access", value: "access" },
       { text: "Erasure", value: "erasure" },
     ],
+    filterMultiple: false,
   },
   {
     title: "Assigned to",
@@ -114,6 +117,7 @@ const getColumns = (
       );
     },
     filters: userFilters,
+    filterMultiple: false,
   },
   {
     title: "Days left",
@@ -164,10 +168,10 @@ export const ManualTasks = () => {
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const [filters, setFilters] = useState<{
-    status?: string[];
-    systemName?: string[];
-    requestType?: string[];
-    assignedUsers?: string[];
+    status?: string;
+    systemName?: string;
+    requestType?: string;
+    assignedUsers?: string;
   }>({});
 
   const { data, isLoading, isFetching } = useGetTasksQuery({
@@ -175,10 +179,10 @@ export const ManualTasks = () => {
     size: pageSize,
     search: searchTerm,
     // Pass filter parameters to API
-    status: filters.status?.[0] as TaskStatus,
-    systemName: filters.systemName?.[0],
-    requestType: filters.requestType?.[0] as RequestType,
-    assignedUserId: filters.assignedUsers?.[0],
+    status: filters.status as TaskStatus,
+    systemName: filters.systemName,
+    requestType: filters.requestType as RequestType,
+    assignedUserId: filters.assignedUsers,
   });
 
   const {
@@ -221,16 +225,16 @@ export const ManualTasks = () => {
     const newFilters: typeof filters = {};
 
     if (tableFilters.status) {
-      newFilters.status = tableFilters.status;
+      [newFilters.status] = tableFilters.status; // Single select filter
     }
     if (tableFilters.system_name) {
-      newFilters.systemName = tableFilters.system_name;
+      [newFilters.systemName] = tableFilters.system_name; // Single select filter
     }
     if (tableFilters.request_type) {
-      newFilters.requestType = tableFilters.request_type;
+      [newFilters.requestType] = tableFilters.request_type; // Single select filter
     }
     if (tableFilters.assigned_users) {
-      newFilters.assignedUsers = tableFilters.assigned_users;
+      [newFilters.assignedUsers] = tableFilters.assigned_users; // Single select filter
     }
 
     setFilters(newFilters);
