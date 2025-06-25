@@ -6,7 +6,7 @@ from sqlalchemy.dialects.postgresql import BYTEA
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import flag_modified
 
-from fides.api.db.base_class import Base, FidesBase
+from fides.api.db.base_class import Base
 
 
 class DBCacheNamespace(Enum):

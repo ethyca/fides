@@ -586,9 +586,9 @@ class MonitorExecution(Base):
     configuration details used in connecting to the external data store.
     """
 
-    # redefined here because there's a minor, unintended discrepancy between 
+    # redefined here because there's a minor, unintended discrepancy between
     # this `id` field and that of the `Base` class, which explicitly sets `index=True`.
-    # TODO: we likely should _not_ be setting `index=True` on the `id` 
+    # TODO: we likely should _not_ be setting `index=True` on the `id`
     # attribute of the `Base` class, as `primary_key=True` already specifies a
     # primary key constraint, which will implicitly create an index for the field.
     id = Column(String(255), primary_key=True, default=FidesBase.generate_uuid)
