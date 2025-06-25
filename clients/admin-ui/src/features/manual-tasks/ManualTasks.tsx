@@ -19,6 +19,11 @@ import { SubjectRequestActionTypeMap } from "~/features/privacy-requests/constan
 import { ActionType, PrivacyRequestStatus } from "~/types/api";
 
 import { ActionButtons } from "./components/ActionButtons";
+import {
+  REQUEST_TYPE_FILTER_OPTIONS,
+  STATUS_FILTER_OPTIONS,
+  STATUS_MAP,
+} from "./constants";
 import { useGetTasksQuery } from "./manual-tasks.slice";
 import {
   AssignedUser,
@@ -29,7 +34,6 @@ import {
   TaskStatus,
 } from "./mocked/types";
 
-// Type definitions for better type safety
 interface FilterOption {
   text: string;
   value: string;
@@ -42,24 +46,11 @@ interface ManualTaskFilters {
   assignedUsers?: string;
 }
 
-interface StatusMapEntry {
-  color: string;
-  label: string;
-}
-
 interface UserOption {
   label: string;
   value: string;
 }
 
-// Map task status to tag colors and labels - aligned with RequestStatusBadge colors
-const statusMap: Record<TaskStatus, StatusMapEntry> = {
-  new: { color: "info", label: "New" },
-  completed: { color: "success", label: "Completed" },
-  skipped: { color: "marble", label: "Skipped" },
-};
-
-// Extract column definitions to a separate function for better readability
 const getColumns = (
   systemFilters: FilterOption[],
   userFilters: FilterOption[],
@@ -80,15 +71,14 @@ const getColumns = (
     key: "status",
     width: 120,
     render: (status: TaskStatus) => (
-      <Tag color={statusMap[status].color} data-testid="manual-task-status-tag">
-        {statusMap[status].label}
+      <Tag
+        color={STATUS_MAP[status].color}
+        data-testid="manual-task-status-tag"
+      >
+        {STATUS_MAP[status].label}
       </Tag>
     ),
-    filters: [
-      { text: "New", value: "new" },
-      { text: "Completed", value: "completed" },
-      { text: "Skipped", value: "skipped" },
-    ],
+    filters: STATUS_FILTER_OPTIONS,
     filterMultiple: false,
   },
   {
@@ -105,16 +95,12 @@ const getColumns = (
     key: "request_type",
     width: 150,
     render: (type: RequestType) => {
-      // Map the lowercase string to the ActionType enum value
       const actionType =
         type === "access" ? ActionType.ACCESS : ActionType.ERASURE;
       const displayName = SubjectRequestActionTypeMap.get(actionType) || type;
       return <Typography.Text>{displayName}</Typography.Text>;
     },
-    filters: [
-      { text: "Access", value: "access" },
-      { text: "Erasure", value: "erasure" },
-    ],
+    filters: REQUEST_TYPE_FILTER_OPTIONS,
     filterMultiple: false,
   },
   {
@@ -168,7 +154,6 @@ const getColumns = (
         return <Typography.Text>-</Typography.Text>;
       }
 
-      // Display email or phone number, similar to privacy requests
       const identity =
         subjectIdentity.email?.value ||
         subjectIdentity.phone_number?.value ||
@@ -199,7 +184,7 @@ export const ManualTasks = () => {
     page: pageIndex,
     size: pageSize,
     search: searchTerm,
-    // Pass filter parameters to API
+
     status: filters.status as TaskStatus,
     systemName: filters.systemName,
     requestType: filters.requestType as RequestType,
@@ -221,7 +206,6 @@ export const ManualTasks = () => {
     [data],
   );
 
-  // Create filter options from API response
   const systemFilters = useMemo(
     () =>
       filterOptions?.systems?.map((system: System) => ({
@@ -240,29 +224,27 @@ export const ManualTasks = () => {
     [filterOptions?.assigned_users],
   );
 
-  // Handle table filter changes
   const handleTableChange = (
     _pagination: TablePaginationConfig,
     tableFilters: Record<string, FilterValue | null>,
   ) => {
-    // Convert Ant Design filters to our filter state
     const newFilters: ManualTaskFilters = {};
 
     if (tableFilters.status) {
-      [newFilters.status] = tableFilters.status as string[]; // Single select filter
+      [newFilters.status] = tableFilters.status as string[];
     }
     if (tableFilters.system_name) {
-      [newFilters.systemName] = tableFilters.system_name as string[]; // Single select filter
+      [newFilters.systemName] = tableFilters.system_name as string[];
     }
     if (tableFilters.request_type) {
-      [newFilters.requestType] = tableFilters.request_type as string[]; // Single select filter
+      [newFilters.requestType] = tableFilters.request_type as string[];
     }
     if (tableFilters.assigned_users) {
-      [newFilters.assignedUsers] = tableFilters.assigned_users as string[]; // Single select filter
+      [newFilters.assignedUsers] = tableFilters.assigned_users as string[];
     }
 
     setFilters(newFilters);
-    setPageIndex(1); // Reset to first page when filters change
+    setPageIndex(1);
   };
 
   const handleSearchChange = (value: string) => {
@@ -311,7 +293,7 @@ export const ManualTasks = () => {
             setPageIndex(page);
             if (size !== pageSize) {
               setPageSize(size);
-              setPageIndex(1); // Reset to first page when changing page size
+              setPageIndex(1);
             }
           },
         }}
