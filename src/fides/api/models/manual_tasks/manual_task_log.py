@@ -27,6 +27,11 @@ class ManualTaskLog(Base):
         """Overriding base class method to set the table name."""
         return "manual_task_log"
 
+    # redefined here because there's a minor, unintended discrepancy between 
+    # this `id` field and that of the `Base` class, which explicitly sets `index=True`.
+    # TODO: we likely should _not_ be setting `index=True` on the `id` 
+    # attribute of the `Base` class, as `primary_key=True` already specifies a
+    # primary key constraint, which will implicitly create an index for the field.
     id = Column(String(255), primary_key=True, default=FidesBase.generate_uuid)
     created_at = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
