@@ -1,16 +1,19 @@
-import { AntButton as Button, Box, useToast, VStack } from "fidesui";
+import { Box, useToast, VStack } from "fidesui";
 import { Form, Formik } from "formik";
 import { isEmpty, isUndefined, mapValues, omitBy } from "lodash";
-import * as Yup from "yup";
+import { useEffect } from "react";
 
 import FidesSpinner from "~/features/common/FidesSpinner";
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
+import { FormFieldFromSchema } from "~/features/common/form/FormFieldFromSchema";
 import { CustomTextInput } from "~/features/common/form/inputs";
+import { useFormFieldsFromSchema } from "~/features/common/form/useFormFieldsFromSchema";
 import { getErrorMessage } from "~/features/common/helpers";
 import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
 import type { ConnectionTypeSecretSchemaResponse } from "~/features/connection-type/types";
 import { useGetAllFilteredDatasetsQuery } from "~/features/dataset";
 import {
+  useCreateUnlinkedSassConnectionConfigMutation,
   usePatchDatastoreConnectionMutation,
   usePatchDatastoreConnectionSecretsMutation,
 } from "~/features/datastore-connections";
@@ -28,6 +31,7 @@ import {
   ConnectionType,
   DynamoDBDocsSchema,
   ScyllaDocsSchema,
+  SystemType,
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
@@ -43,16 +47,51 @@ type FormValues = {
   dataset?: string[];
 };
 
+// Helper component to handle form state communication
+const FormStateHandler = ({
+  dirty,
+  isValid,
+  submitForm,
+  loading,
+  onFormStateChange,
+}: {
+  dirty: boolean;
+  isValid: boolean;
+  submitForm: () => void;
+  loading: boolean;
+  onFormStateChange?: (formState: {
+    dirty: boolean;
+    isValid: boolean;
+    submitForm: () => void;
+    loading: boolean;
+  }) => void;
+}) => {
+  useEffect(() => {
+    if (onFormStateChange) {
+      onFormStateChange({ dirty, isValid, submitForm, loading });
+    }
+  }, [dirty, isValid, submitForm, loading, onFormStateChange]);
+
+  return null;
+};
+
 const ConfigureIntegrationForm = ({
   connection,
   connectionOption,
   onCancel,
   description,
+  onFormStateChange,
 }: {
   connection?: ConnectionConfigurationResponse;
   connectionOption: ConnectionSystemTypeMap;
   onCancel: () => void;
   description: React.ReactNode;
+  onFormStateChange?: (formState: {
+    dirty: boolean;
+    isValid: boolean;
+    submitForm: () => void;
+    loading: boolean;
+  }) => void;
 }) => {
   const [
     patchConnectionSecretsMutationTrigger,
@@ -62,6 +101,9 @@ const ConfigureIntegrationForm = ({
     usePatchDatastoreConnectionMutation();
   const [patchSystemConnectionsTrigger, { isLoading: systemPatchIsLoading }] =
     usePatchSystemConnectionConfigsMutation();
+
+  const [createUnlinkedSassConnectionConfigTrigger] =
+    useCreateUnlinkedSassConnectionConfigMutation();
 
   const hasSecrets =
     connectionOption.identifier !== ConnectionType.MANUAL_WEBHOOK;
@@ -92,8 +134,8 @@ const ConfigureIntegrationForm = ({
       connectionConfig: connection,
     });
 
-  const submitPending =
-    secretsIsLoading || patchIsLoading || systemPatchIsLoading;
+  const { getFieldValidation, preprocessValues } =
+    useFormFieldsFromSchema(secrets);
 
   const initialValues: FormValues = {
     name: connection?.name ?? "",
@@ -101,7 +143,7 @@ const ConfigureIntegrationForm = ({
     ...(hasSecrets && {
       secrets: mapValues(
         secrets?.properties,
-        (s, key) => connection?.secrets?.[key] ?? "",
+        (s, key) => connection?.secrets?.[key] ?? s.default ?? "",
       ),
     }),
     dataset: initialDatasets,
@@ -110,6 +152,7 @@ const ConfigureIntegrationForm = ({
   const toast = useToast();
 
   const isEditing = !!connection;
+  const isSaas = connectionOption.type === SystemType.SAAS;
 
   // Exclude secrets fields that haven't changed
   // The api returns secrets masked as asterisks (*****)
@@ -123,8 +166,10 @@ const ConfigureIntegrationForm = ({
     );
 
   const handleSubmit = async (values: FormValues) => {
+    const processedValues = preprocessValues(values);
+
     const newSecretsValues = hasSecrets
-      ? excludeUnchangedSecrets(values.secrets!)
+      ? excludeUnchangedSecrets(processedValues.secrets!)
       : {};
 
     const connectionPayload = isEditing
@@ -142,7 +187,7 @@ const ConfigureIntegrationForm = ({
           access: AccessLevel.READ,
           disabled: false,
           description: values.description,
-          secrets: values.secrets,
+          secrets: processedValues.secrets,
           dataset: values.dataset,
         };
 
@@ -152,6 +197,13 @@ const ConfigureIntegrationForm = ({
       patchResult = await patchSystemConnectionsTrigger({
         systemFidesKey: values.system_fides_key,
         connectionConfigs: [connectionPayload],
+      });
+    } else if (isSaas && !isEditing) {
+      patchResult = await createUnlinkedSassConnectionConfigTrigger({
+        ...connectionPayload,
+        instance_key: formatKey(values.name),
+        saas_connector_type: connectionOption.identifier,
+        secrets: values.secrets || {},
       });
     } else {
       patchResult = await patchDatastoreConnectionsTrigger(connectionPayload);
@@ -215,6 +267,8 @@ const ConfigureIntegrationForm = ({
     }
   };
 
+  const loading = secretsIsLoading || patchIsLoading || systemPatchIsLoading;
+
   if (secretsSchemaIsLoading) {
     return <FidesSpinner />;
   }
@@ -223,45 +277,17 @@ const ConfigureIntegrationForm = ({
     Object.entries(secretsSchema.properties).map(([fieldKey, fieldInfo]) => {
       const fieldName = `secrets.${fieldKey}`;
       return (
-        <CustomTextInput
-          name={fieldName}
+        <FormFieldFromSchema
           key={fieldName}
-          id={fieldName}
-          type={fieldInfo.sensitive ? "password" : undefined}
-          label={fieldInfo.title}
+          name={fieldName}
+          fieldSchema={fieldInfo}
           isRequired={secretsSchema.required.includes(fieldKey)}
-          tooltip={fieldInfo.description}
-          variant="stacked"
+          secretsSchema={secretsSchema}
+          validate={getFieldValidation(fieldKey, fieldInfo)}
         />
       );
     });
 
-  const generateValidationSchema = (
-    secretsSchema?: ConnectionTypeSecretSchemaResponse,
-  ) => {
-    const baseSchema = {
-      name: Yup.string().required().label("Name"),
-      description: Yup.string().nullable().label("Description"),
-    };
-
-    if (!hasSecrets || !secretsSchema) {
-      return Yup.object().shape(baseSchema);
-    }
-
-    const fieldsFromSchema = Object.entries(secretsSchema.properties).map(
-      ([fieldKey, fieldInfo]) => [
-        fieldKey,
-        secretsSchema.required.includes(fieldKey)
-          ? Yup.string().required().label(fieldInfo.title)
-          : Yup.string().nullable().label(fieldInfo.title),
-      ],
-    );
-
-    return Yup.object().shape({
-      ...baseSchema,
-      secrets: Yup.object().shape(Object.fromEntries(fieldsFromSchema)),
-    });
-  };
   return (
     <>
       {description && (
@@ -281,68 +307,57 @@ const ConfigureIntegrationForm = ({
         initialValues={initialValues}
         enableReinitialize
         onSubmit={handleSubmit}
-        validationSchema={generateValidationSchema(secrets)}
       >
-        {({ dirty, isValid, resetForm }) => (
-          <Form>
-            <VStack alignItems="start" spacing={6} mt={4}>
-              <CustomTextInput
-                id="name"
-                name="name"
-                label="Name"
-                variant="stacked"
-                isRequired
-              />
-              <CustomTextInput
-                id="description"
-                name="description"
-                label="Description"
-                variant="stacked"
-              />
-              {hasSecrets && secrets && generateFields(secrets)}
-              {!isEditing && (
-                <ControlledSelect
-                  id="system_fides_key"
-                  name="system_fides_key"
-                  options={systemOptions ?? []}
-                  label="System"
-                  tooltip="The system to associate with the integration"
-                  layout="stacked"
+        {({ dirty, isValid, submitForm }) => {
+          return (
+            <Form>
+              <VStack alignItems="start" spacing={6} mt={4}>
+                <CustomTextInput
+                  id="name"
+                  name="name"
+                  label="Name"
+                  variant="stacked"
+                  isRequired
                 />
-              )}
-              {connectionOption.identifier === ConnectionType.DATAHUB && (
-                <ControlledSelect
-                  id="dataset"
-                  name="dataset"
-                  options={datasetOptions ?? []}
-                  label="Datasets"
-                  tooltip="Only BigQuery datasets are supported. Selected datasets will sync with matching DataHub datasets. If none are selected, all datasets will be included by default."
-                  layout="stacked"
-                  mode="multiple"
+                <CustomTextInput
+                  id="description"
+                  name="description"
+                  label="Description"
+                  variant="stacked"
                 />
-              )}
-              <div className="flex w-full justify-between">
-                <Button
-                  onClick={() => {
-                    onCancel();
-                    resetForm();
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  htmlType="submit"
-                  type="primary"
-                  disabled={!dirty || !isValid}
-                  loading={submitPending}
-                  data-testid="save-btn"
-                >
-                  Save
-                </Button>
-              </div>
-            </VStack>
-          </Form>
-        )}
+                {hasSecrets && secrets && generateFields(secrets)}
+                {!isEditing && !isSaas && (
+                  <ControlledSelect
+                    id="system_fides_key"
+                    name="system_fides_key"
+                    options={systemOptions ?? []}
+                    label="System"
+                    tooltip="The system to associate with the integration"
+                    layout="stacked"
+                  />
+                )}
+                {connectionOption.identifier === ConnectionType.DATAHUB && (
+                  <ControlledSelect
+                    id="dataset"
+                    name="dataset"
+                    options={datasetOptions ?? []}
+                    label="Datasets"
+                    tooltip="Only BigQuery datasets are supported. Selected datasets will sync with matching DataHub datasets. If none are selected, all datasets will be included by default."
+                    layout="stacked"
+                    mode="multiple"
+                  />
+                )}
+              </VStack>
+              <FormStateHandler
+                dirty={dirty}
+                isValid={isValid}
+                submitForm={submitForm}
+                loading={loading}
+                onFormStateChange={onFormStateChange}
+              />
+            </Form>
+          );
+        }}
       </Formik>
     </>
   );

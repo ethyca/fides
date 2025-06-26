@@ -1,10 +1,4 @@
-import {
-  AntButton as Button,
-  AntInput as Input,
-  AntSelect as Select,
-  Flex,
-  Spacer,
-} from "fidesui";
+import { AntInput as Input, AntSelect as Select } from "fidesui";
 import { useMemo, useState } from "react";
 
 import { useFlags } from "~/features/common/features";
@@ -13,19 +7,19 @@ import {
   INTEGRATION_TYPE_LIST,
   IntegrationTypeInfo,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
-import IntegrationBox from "~/features/integrations/IntegrationBox";
+import SelectableIntegrationBox from "~/features/integrations/SelectableIntegrationBox";
 import { IntegrationFilterTabs } from "~/features/integrations/useIntegrationFilterTabs";
 
 type Props = {
-  onCancel: () => void;
+  selectedIntegration?: IntegrationTypeInfo;
+  onSelectIntegration: (type: IntegrationTypeInfo | undefined) => void;
   onDetailClick: (type: IntegrationTypeInfo) => void;
-  onConfigureClick: (type: IntegrationTypeInfo) => void;
 };
 
 const SelectIntegrationType = ({
-  onCancel,
+  selectedIntegration,
+  onSelectIntegration,
   onDetailClick,
-  onConfigureClick,
 }: Props) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>(
@@ -34,7 +28,7 @@ const SelectIntegrationType = ({
   const [isFiltering, setIsFiltering] = useState(false);
 
   const {
-    flags: { oktaMonitor, alphaNewManualIntegration },
+    flags: { oktaMonitor, alphaNewManualDSR },
   } = useFlags();
 
   // Get available categories based on flags
@@ -42,9 +36,9 @@ const SelectIntegrationType = ({
     return Object.values(IntegrationFilterTabs).filter(
       (tab) =>
         (tab !== IntegrationFilterTabs.IDENTITY_PROVIDER || oktaMonitor) &&
-        (tab !== IntegrationFilterTabs.MANUAL || alphaNewManualIntegration),
+        (tab !== IntegrationFilterTabs.MANUAL || alphaNewManualDSR),
     );
-  }, [oktaMonitor, alphaNewManualIntegration]);
+  }, [oktaMonitor, alphaNewManualDSR]);
 
   // Filter integrations based on search and category
   const filteredTypes = useMemo(() => {
@@ -68,15 +62,16 @@ const SelectIntegrationType = ({
       if (!oktaMonitor && i.placeholder.connection_type === "okta") {
         return false;
       }
+      // DEFER (ENG-675): Remove this once the alpha feature is released
       if (
-        !alphaNewManualIntegration &&
+        !alphaNewManualDSR &&
         i.placeholder.connection_type === "manual_webhook"
       ) {
         return false;
       }
       return true;
     });
-  }, [searchTerm, selectedCategory, oktaMonitor, alphaNewManualIntegration]);
+  }, [searchTerm, selectedCategory, oktaMonitor, alphaNewManualDSR]);
 
   const handleCategoryChange = (value: string) => {
     setIsFiltering(true);
@@ -91,15 +86,13 @@ const SelectIntegrationType = ({
 
   return (
     <>
-      <div className="mb-4 flex items-center justify-between gap-4">
-        <Input.Search
+      <div className="mb-4 mt-3 flex items-center justify-between gap-4">
+        <Input
           placeholder="Search by name..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          onSearch={setSearchTerm}
           className="w-64"
           allowClear
-          enterButton
         />
         <Select
           value={selectedCategory}
@@ -107,29 +100,34 @@ const SelectIntegrationType = ({
           options={categoryOptions}
           className="w-48"
           placeholder="Select category"
+          data-testid="category-filter-select"
         />
       </div>
 
       {isFiltering ? (
         <FidesSpinner />
       ) : (
-        <Flex direction="column">
+        <div className="grid grid-cols-3 gap-6">
           {filteredTypes.map((i) => (
-            <IntegrationBox
-              integration={i.placeholder}
-              key={i.placeholder.key}
-              onConfigureClick={() => onConfigureClick(i)}
-              otherButtons={
-                <Button onClick={() => onDetailClick(i)}>Details</Button>
-              }
-            />
+            <div key={i.placeholder.key}>
+              <SelectableIntegrationBox
+                integration={i.placeholder}
+                selected={
+                  selectedIntegration?.placeholder.key === i.placeholder.key
+                }
+                onClick={() => {
+                  // Toggle selection: if already selected, deselect; otherwise select
+                  const isAlreadySelected =
+                    selectedIntegration?.placeholder.key === i.placeholder.key;
+                  onSelectIntegration(isAlreadySelected ? undefined : i);
+                }}
+                onDetailsClick={() => onDetailClick(i)}
+                onUnfocus={() => onSelectIntegration(undefined)}
+              />
+            </div>
           ))}
-        </Flex>
+        </div>
       )}
-      <Flex>
-        <Spacer />
-        <Button onClick={onCancel}>Cancel</Button>
-      </Flex>
     </>
   );
 };

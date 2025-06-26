@@ -506,6 +506,9 @@ describe("Fides-js TCF", () => {
                 extraDetails: {
                   consentMethod: undefined,
                   shouldShowExperience: true,
+                  trigger: {
+                    origin: "fides",
+                  },
                 },
                 fides_string: undefined,
               },
@@ -527,7 +530,9 @@ describe("Fides-js TCF", () => {
                 extraDetails: {
                   consentMethod: undefined,
                   shouldShowExperience: true,
-                  firstInit: false,
+                  trigger: {
+                    origin: "fides",
+                  },
                 },
                 fides_string: undefined,
               });
@@ -549,13 +554,13 @@ describe("Fides-js TCF", () => {
               expect(updatingEvent.event).to.equal("FidesUpdating");
               expect(
                 updatingEvent.Fides.extraDetails.servingComponent,
-              ).to.equal(undefined);
+              ).to.equal("tcf_banner");
 
               // FidesUpdated event
               const updatedEvent = args[4][0];
               expect(updatedEvent.event).to.equal("FidesUpdated");
               expect(updatedEvent.Fides.extraDetails.servingComponent).to.equal(
-                undefined,
+                "tcf_banner",
               );
             });
 
@@ -575,6 +580,12 @@ describe("Fides-js TCF", () => {
                   : {},
                 extraDetails: {
                   consentMethod: "accept",
+                  servingComponent: "tcf_banner",
+                  trigger: {
+                    type: "button",
+                    label: "Opt in to all",
+                    origin: "fides",
+                  },
                 },
               });
               expect(call.Fides.fides_string).to.contain(",2~~dv.");
@@ -596,6 +607,12 @@ describe("Fides-js TCF", () => {
                   : {},
                 extraDetails: {
                   consentMethod: "accept",
+                  servingComponent: "tcf_banner",
+                  trigger: {
+                    type: "button",
+                    label: "Opt in to all",
+                    origin: "fides",
+                  },
                 },
               });
               expect(call.Fides.fides_string).to.contain(",2~~dv.");
@@ -1233,6 +1250,9 @@ describe("Fides-js TCF", () => {
                   extraDetails: {
                     consentMethod: undefined,
                     shouldShowExperience: true,
+                    trigger: {
+                      origin: "fides",
+                    },
                   },
                   fides_string: undefined,
                 },
@@ -1254,7 +1274,7 @@ describe("Fides-js TCF", () => {
                   extraDetails: {
                     consentMethod: undefined,
                     shouldShowExperience: true,
-                    firstInit: false,
+                    trigger: { origin: "fides" },
                   },
                   fides_string: undefined,
                 });
@@ -1283,7 +1303,7 @@ describe("Fides-js TCF", () => {
                 expect(modalClosedEvent.event).to.equal("FidesModalClosed");
                 expect(
                   modalClosedEvent.Fides.extraDetails.servingComponent,
-                ).to.equal(undefined);
+                ).to.equal("tcf_overlay");
               });
 
             // FidesUpdating call
@@ -1302,6 +1322,12 @@ describe("Fides-js TCF", () => {
                     : {},
                   extraDetails: {
                     consentMethod: "accept",
+                    servingComponent: "tcf_overlay",
+                    trigger: {
+                      type: "button",
+                      label: "Opt in to all",
+                      origin: "fides",
+                    },
                   },
                 });
                 expect(call.Fides.fides_string).to.contain(",2~~dv.");
@@ -1323,6 +1349,12 @@ describe("Fides-js TCF", () => {
                     : {},
                   extraDetails: {
                     consentMethod: "accept",
+                    servingComponent: "tcf_overlay",
+                    trigger: {
+                      type: "button",
+                      label: "Opt in to all",
+                      origin: "fides",
+                    },
                   },
                 });
                 expect(call.Fides.fides_string).to.contain(",2~~dv.");

@@ -114,6 +114,19 @@ def s3_client(storage_config):
         yield s3
 
 
+@pytest.fixture
+def mock_s3_client(s3_client, monkeypatch):
+    """Fixture to mock the S3 client for attachment tests"""
+
+    def mock_get_s3_client(auth_method, storage_secrets):
+        return s3_client
+
+    monkeypatch.setattr(
+        "fides.api.service.storage.s3.get_s3_client", mock_get_s3_client
+    )
+    return s3_client
+
+
 @pytest.fixture(scope="session")
 def db(api_client, config):
     """Return a connection to the test DB"""
@@ -2207,6 +2220,16 @@ def mock_gcs_client(
         mock_blob.download_as_bytes = types.MethodType(
             mock_download_as_bytes, mock_blob
         )
+
+        def mock_download_to_file(self, fileobj, *args, **kwargs):
+            """Mock implementation of download_to_file method.
+            Cannot use autospec because it is bound to the mock_blob instance.
+            """
+            fileobj.write(file_content)
+            fileobj.seek(0)
+            return None
+
+        mock_blob.download_to_file = types.MethodType(mock_download_to_file, mock_blob)
 
         def mock_upload_from_file(
             self,

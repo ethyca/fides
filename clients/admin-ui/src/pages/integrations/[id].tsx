@@ -1,5 +1,6 @@
 import {
   AntButton as Button,
+  AntFlex,
   Box,
   Flex,
   Spacer,
@@ -23,9 +24,11 @@ import DatahubDataSyncTab from "~/features/integrations/configure-scan/DatahubDa
 import TaskConfigTab from "~/features/integrations/configure-tasks/TaskConfigTab";
 import ConfigureIntegrationModal from "~/features/integrations/ConfigureIntegrationModal";
 import ConnectionStatusNotice from "~/features/integrations/ConnectionStatusNotice";
+import { useIntegrationAuthorization } from "~/features/integrations/hooks/useIntegrationAuthorization";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
 import { IntegrationFeatureEnum } from "~/features/integrations/IntegrationFeatureEnum";
-import SharedConfigModal from "~/features/integrations/SharedConfigModal";
+import { IntegrationSetupSteps } from "~/features/integrations/setup-steps/IntegrationSetupSteps";
+import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
 import { ConnectionType } from "~/types/api";
 
@@ -35,7 +38,15 @@ const IntegrationDetailView: NextPage = () => {
   const { data: connection, isLoading: integrationIsLoading } =
     useGetDatastoreConnectionByKeyQuery(id ?? "");
 
-  const integrationOption = useIntegrationOption(connection?.connection_type);
+  // Only pass the saas type if it's a valid SaasConnectionTypes value
+  const saasType = connection?.saas_config?.type;
+  const isSaasType = (type: string): type is SaasConnectionTypes =>
+    Object.values(SaasConnectionTypes).includes(type as SaasConnectionTypes);
+
+  const integrationOption = useIntegrationOption(
+    connection?.connection_type,
+    saasType && isSaasType(saasType) ? saasType : undefined,
+  );
 
   const {
     testConnection,
@@ -43,10 +54,19 @@ const IntegrationDetailView: NextPage = () => {
     testData,
   } = useTestConnection(connection);
 
+  const { handleAuthorize, needsAuthorization } = useIntegrationAuthorization({
+    connection,
+    connectionOption: integrationOption,
+    testData,
+  });
+
   const { onOpen, isOpen, onClose } = useDisclosure();
 
   const { overview, instructions, description, enabledFeatures } =
-    getIntegrationTypeInfo(connection?.connection_type);
+    getIntegrationTypeInfo(
+      connection?.connection_type,
+      connection?.saas_config?.type,
+    );
 
   const router = useRouter();
   if (
@@ -66,7 +86,7 @@ const IntegrationDetailView: NextPage = () => {
     tabs.push({
       label: "Details",
       content: (
-        <Box maxW="720px">
+        <Box>
           <Flex>
             <Button onClick={onOpen} data-testid="manage-btn">
               Edit integration
@@ -88,7 +108,7 @@ const IntegrationDetailView: NextPage = () => {
     tabs.push({
       label: "Connection",
       content: (
-        <Box maxW="720px">
+        <Box>
           {supportsConnectionTest && (
             <Flex
               borderRadius="md"
@@ -98,31 +118,36 @@ const IntegrationDetailView: NextPage = () => {
               p={3}
             >
               <Flex flexDirection="column">
-                <ConnectionStatusNotice testData={testData} />
+                <ConnectionStatusNotice
+                  testData={testData}
+                  connectionOption={integrationOption}
+                />
               </Flex>
               <Spacer />
               <div className="flex gap-4">
-                <Button
-                  onClick={testConnection}
-                  loading={testIsLoading}
-                  data-testid="test-connection-btn"
-                >
-                  Test connection
-                </Button>
+                {needsAuthorization && (
+                  <Button
+                    onClick={handleAuthorize}
+                    data-testid="authorize-integration-btn"
+                  >
+                    Authorize integration
+                  </Button>
+                )}
+                {!needsAuthorization && (
+                  <Button
+                    onClick={testConnection}
+                    loading={testIsLoading}
+                    data-testid="test-connection-btn"
+                  >
+                    Test connection
+                  </Button>
+                )}
                 <Button onClick={onOpen} data-testid="manage-btn">
                   Manage
                 </Button>
               </div>
             </Flex>
           )}
-          {!supportsConnectionTest && (
-            <Flex>
-              <Button onClick={onOpen} data-testid="manage-btn">
-                Edit integration
-              </Button>
-            </Flex>
-          )}
-
           <ConfigureIntegrationModal
             isOpen={isOpen}
             onClose={onClose}
@@ -177,13 +202,34 @@ const IntegrationDetailView: NextPage = () => {
           },
         ]}
       >
-        <SharedConfigModal />
-        <IntegrationBox integration={connection} showDeleteButton />
-        {integrationIsLoading ? (
-          <Spinner />
-        ) : (
-          !!connection && <DataTabs data={tabs} isLazy />
-        )}
+        <AntFlex gap={24}>
+          <div className="grow">
+            <div className="mb-6">
+              <IntegrationBox integration={connection} showDeleteButton />
+            </div>
+            {integrationIsLoading ? (
+              <Spinner />
+            ) : (
+              !!connection && (
+                <DataTabs data={tabs} border="full-width" isLazy />
+              )
+            )}
+          </div>
+          <div className="w-[350px] shrink-0">
+            {integrationIsLoading ? (
+              <Spinner />
+            ) : (
+              !!connection && (
+                <IntegrationSetupSteps
+                  testData={testData}
+                  testIsLoading={testIsLoading}
+                  connectionOption={integrationOption!}
+                  connection={connection}
+                />
+              )
+            )}
+          </div>
+        </AntFlex>
       </PageHeader>
     </Layout>
   );

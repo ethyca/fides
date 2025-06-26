@@ -1,18 +1,20 @@
 import {
   AntButton as Button,
   AntColumnsType as ColumnsType,
-  AntInput as Input,
   AntTable as Table,
   AntTableProps as TableProps,
   AntTag as Tag,
-  LinkIcon,
+  AntTooltip as Tooltip,
+  AntTypography as Typography,
   useDisclosure,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 
+import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
+import { useFlags } from "~/features/common/features/features.slice";
 import FidesSpinner from "~/features/common/FidesSpinner";
 import Layout from "~/features/common/Layout";
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
@@ -24,9 +26,8 @@ import AddIntegrationModal from "~/features/integrations/add-integration/AddInte
 import getIntegrationTypeInfo, {
   SUPPORTED_INTEGRATIONS,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
-import { ConnectionCategory } from "~/features/integrations/ConnectionCategory";
 import SharedConfigModal from "~/features/integrations/SharedConfigModal";
-import { ConnectionConfigurationResponse } from "~/types/api";
+import { ConnectionConfigurationResponse, ConnectionType } from "~/types/api";
 
 const DEFAULT_PAGE_SIZE = 50;
 
@@ -40,21 +41,51 @@ const IntegrationListView: NextPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const router = useRouter();
 
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setPage(1);
+  };
+
+  const handleTableChange = useCallback(
+    (pagination: any) => {
+      if (pagination?.current !== page) {
+        setPage(pagination.current);
+      }
+      if (pagination?.pageSize && pagination.pageSize !== pageSize) {
+        setPageSize(pagination.pageSize);
+      }
+    },
+    [page, pageSize],
+  );
+
+  // DEFER (ENG-675): Remove this once the alpha feature is released
+  const { flags } = useFlags();
+  const supportedIntegrations = useMemo(() => {
+    return SUPPORTED_INTEGRATIONS.filter((integration) => {
+      return (
+        integration !== ConnectionType.MANUAL_WEBHOOK || flags.alphaNewManualDSR
+      );
+    });
+  }, [flags.alphaNewManualDSR]);
+
   const { data, isLoading } = useGetAllDatastoreConnectionsQuery({
-    connection_type: SUPPORTED_INTEGRATIONS,
+    connection_type: supportedIntegrations,
     size: pageSize,
     page,
+    search: searchTerm.trim() || undefined,
   });
   const { items } = data ?? {};
 
   const { onOpen, isOpen, onClose } = useDisclosure();
 
   const allTableData: IntegrationTableData[] = useMemo(
+  const tableData: IntegrationTableData[] = useMemo(
     () =>
       items?.map((integration) => ({
         ...integration,
         integrationTypeInfo: getIntegrationTypeInfo(
           integration.connection_type,
+          integration.saas_config?.type,
         ),
       })) ?? [],
     [items],
@@ -155,29 +186,38 @@ const IntegrationListView: NextPage = () => {
       filters: connectionTypes,
       filterMultiple: true,
       onFilter: (value, record) => record.connection_type === value,
-      render: (connectionType) => {
-        const typeInfo = getIntegrationTypeInfo(connectionType);
-        return typeInfo.placeholder.name || connectionType;
-      },
+      width: 250,
+      render: (name: string | null, record) => (
+        <div className="flex items-center gap-3">
+          <ConnectionTypeLogo data={record} boxSize="20px" />
+          <Typography.Text
+            ellipsis={{ tooltip: name || "(No name)" }}
+            className="font-semibold"
+          >
+            {name || "(No name)"}
+          </Typography.Text>
+        </div>
+      ),
     },
     {
-      title: "Category",
-      dataIndex: ["integrationTypeInfo", "category"],
-      key: "category",
-      filters: categories,
-      filterMultiple: true,
-      onFilter: (value, record) =>
-        record.integrationTypeInfo.category === value,
-      render: (category: ConnectionCategory) => category,
+      title: "Type",
+      dataIndex: "connection_type",
+      key: "connection_type",
+      width: 150,
+      render: (connectionType) => {
+        const typeInfo = getIntegrationTypeInfo(
+          connectionType,
+          items?.find((item) => item.connection_type === connectionType)
+            ?.saas_config?.type,
+        );
+        return typeInfo.placeholder.name || connectionType;
+      },
     },
     {
       title: "Capabilities",
       dataIndex: ["integrationTypeInfo", "tags"],
       key: "capabilities",
-      filters: capabilities,
-      filterMultiple: true,
-      onFilter: (value, record) =>
-        record.integrationTypeInfo.tags.includes(value as string),
+      width: 300,
       render: (tags: string[]) => (
         <div className="flex flex-wrap gap-1">
           {tags.map((tag) => (
@@ -187,24 +227,42 @@ const IntegrationListView: NextPage = () => {
       ),
     },
     {
-      title: "Last Connection",
-      dataIndex: "last_test_timestamp",
-      key: "last_connection",
-      render: (lastTestTimestamp, record) =>
-        formatLastConnection(lastTestTimestamp, record.last_test_succeeded),
-      sorter: (a, b) => {
-        const aTime = a.last_test_timestamp
-          ? new Date(a.last_test_timestamp).getTime()
-          : 0;
-        const bTime = b.last_test_timestamp
-          ? new Date(b.last_test_timestamp).getTime()
-          : 0;
-        return aTime - bTime;
+      title: "Connection Status",
+      key: "connection_status",
+      width: 150,
+      render: (_, record) => {
+        const getConnectionStatus = () => {
+          if (
+            record.last_test_timestamp === null ||
+            record.last_test_timestamp === undefined
+          ) {
+            return { status: "Untested", color: "default" };
+          }
+          if (record.last_test_succeeded === true) {
+            return { status: "Healthy", color: "success" };
+          }
+          if (record.last_test_succeeded === false) {
+            return { status: "Failed", color: "error" };
+          }
+          return { status: "Untested", color: "default" };
+        };
+
+        const { status, color } = getConnectionStatus();
+        const tooltipText = record.last_test_timestamp
+          ? `Last connection: ${formatDate(record.last_test_timestamp)}`
+          : "The connection has not been tested";
+
+        return (
+          <Tooltip title={tooltipText}>
+            <Tag color={color}>{status}</Tag>
+          </Tooltip>
+        );
       },
     },
     {
       title: "Actions",
       key: "actions",
+      width: 100,
       render: (_, record) => (
         <Button
           onClick={() => handleManageClick(record)}
@@ -220,24 +278,23 @@ const IntegrationListView: NextPage = () => {
   const paginationConfig: TableProps<IntegrationTableData>["pagination"] = {
     current: page,
     pageSize,
-    total: tableData.length,
+    total,
     showSizeChanger: true,
     showQuickJumper: false,
     showTotal: (totalItems, range) =>
       `${range[0]}-${range[1]} of ${totalItems} integrations`,
-    onChange: (newPage, newPageSize) => {
-      setPage(newPage);
-      if (newPageSize !== pageSize) {
-        setPageSize(newPageSize);
-      }
-    },
     pageSizeOptions: ["10", "25", "50", "100"],
   };
 
   const tableLocale = {
-    emptyText: searchTerm.trim()
-      ? "No integrations match your search"
-      : 'You have not configured any integrations. Click "Add Integration" to connect and configure systems now.',
+    emptyText: searchTerm.trim() ? (
+      "No integrations match your search"
+    ) : (
+      <div data-testid="empty-state">
+        You have not configured any integrations. Click &quot;Add
+        Integration&quot; to connect and configure systems now.
+      </div>
+    ),
   };
 
   return (
@@ -249,28 +306,25 @@ const IntegrationListView: NextPage = () => {
             title: "All integrations",
           },
         ]}
-      >
-        <SharedConfigModal />
-      </PageHeader>
+        rightContent={
+          <Button
+            onClick={onOpen}
+            data-testid="add-integration-btn"
+            type="primary"
+          >
+            Add integration
+          </Button>
+        }
+      />
 
       <div className="mb-4 flex items-center justify-between gap-4">
-        <Input.Search
+        <DebouncedSearchInput
           placeholder="Search by name..."
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          onSearch={setSearchTerm}
+          onChange={handleSearchChange}
           className="max-w-sm"
-          allowClear
-          enterButton
         />
-        <Button
-          onClick={onOpen}
-          data-testid="add-integration-btn"
-          icon={<LinkIcon />}
-          iconPosition="end"
-        >
-          Add Integration
-        </Button>
+        <SharedConfigModal />
       </div>
 
       {isLoading ? (
@@ -282,9 +336,16 @@ const IntegrationListView: NextPage = () => {
           rowKey="key"
           pagination={paginationConfig}
           loading={isLoading}
-          scroll={{ x: "max-content" }}
-          size="middle"
+          size="small"
           locale={tableLocale}
+          bordered
+          onRow={(record) => ({
+            onClick: () => handleManageClick(record),
+            "data-testid": `integration-info-${record.key}`,
+          })}
+          rowClassName="cursor-pointer"
+          onChange={handleTableChange}
+          data-testid="integrations-table"
         />
       )}
 

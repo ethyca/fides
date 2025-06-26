@@ -1,0 +1,57 @@
+{
+  "items": [
+    {
+      "name": "teststeststst",
+      "key": "salesforce_integration_2_monitor",
+      "connection_config_key": "salesforce_integration_2",
+      "classify_params": {
+        "possible_targets": null,
+        "top_n": 5,
+        "remove_stop_words": false,
+        "pii_threshold": 0.4,
+        "num_samples": 25,
+        "num_threads": 1,
+        "context_weight": 0.55,
+        "content_weight": 0.45,
+        "prefer_context": true,
+        "excluded_categories": [
+          "user.financial.account_number",
+          "user.payment.financial_account_number",
+          "user.credentials.biometric_credentials",
+          "user.content.private",
+          "user.content.public",
+          "user.content.self_image",
+          "user.content"
+        ],
+        "language": "en",
+        "decision_method": "direct-mapping",
+        "aggregation_method": "mean",
+        "infer_not_pii": true,
+        "content_model": "content",
+        "context_regex_pattern_mapping": []
+      },
+      "datasource_params": {},
+      "databases": [],
+      "execution_start_date": "2025-05-08T13:59:00Z",
+      "execution_frequency": "Monthly",
+      "excluded_databases": [],
+      "enabled": true,
+      "last_monitored": "2025-05-08T13:59:07.821765Z",
+      "execution_records": [
+        {
+          "id": "e2e0f84f-a014-4bb5-9a6c-11d44bd2faad",
+          "monitor_config_key": "salesforce_integration_2_monitor",
+          "status": "Completed",
+          "started": "2025-05-08T13:59:03.881813Z",
+          "completed": "2025-05-08T13:59:07.820413Z",
+          "classification_instances": [],
+          "messages": []
+        }
+      ]
+    }
+  ],
+  "total": 1,
+  "page": 1,
+  "size": 1,
+  "pages": 1
+}

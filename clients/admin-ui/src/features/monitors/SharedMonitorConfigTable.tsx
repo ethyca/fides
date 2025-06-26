@@ -54,23 +54,21 @@ const SharedMonitorConfigTable = ({
       <CustomTypography.Title level={2}>
         Shared monitor configurations
       </CustomTypography.Title>
-      <CustomTypography.Paragraph className="mt-4">
+      <CustomTypography.Paragraph className="mb-2 mt-4">
         Shared monitor configurations can be applied to monitors to customize
         classification.
       </CustomTypography.Paragraph>
-      <Flex className="absolute right-16 top-4">
-        <Button
-          type="primary"
-          onClick={onNewClick}
-          data-testid="create-new-btn"
-        >
-          Create new
-        </Button>
-      </Flex>
+      <Button
+        type="primary"
+        onClick={onNewClick}
+        data-testid="create-new-btn"
+        className="mb-3"
+      >
+        Create new
+      </Button>
       <Table
         columns={columns}
         dataSource={data?.items}
-        size="small"
         pagination={false}
         // @ts-ignore -- TS doesn't like the data-testid prop on rows
         onRow={(row) => ({
@@ -83,7 +81,6 @@ const SharedMonitorConfigTable = ({
             </CustomTypography.Paragraph>
           ),
         }}
-        className="mt-6"
       />
       <Flex justify="space-between" className="mt-4">
         <PaginationBar

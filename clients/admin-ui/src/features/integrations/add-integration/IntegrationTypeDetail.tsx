@@ -1,16 +1,12 @@
-import { AntButton as Button, Flex, Spacer } from "fidesui";
-
 import { IntegrationTypeInfo } from "~/features/integrations/add-integration/allIntegrationTypes";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
 
 const IntegrationTypeDetail = ({
   integrationType,
   onConfigure,
-  onCancel,
 }: {
   integrationType?: IntegrationTypeInfo;
   onConfigure: () => void;
-  onCancel: () => void;
 }) => (
   <>
     <IntegrationBox
@@ -18,10 +14,6 @@ const IntegrationTypeDetail = ({
       onConfigureClick={onConfigure}
     />
     {integrationType?.overview}
-    <Flex>
-      <Spacer />
-      <Button onClick={onCancel}>Cancel</Button>
-    </Flex>
   </>
 );
 

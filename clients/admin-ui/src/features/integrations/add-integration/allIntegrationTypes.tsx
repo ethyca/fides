@@ -14,6 +14,7 @@ import POSTGRES_TYPE_INFO from "~/features/integrations/integration-type-info/po
 import RDS_MYSQL_TYPE_INFO from "~/features/integrations/integration-type-info/rdsMySQLInfo";
 import RDS_POSTGRES_TYPE_INFO from "~/features/integrations/integration-type-info/rdsPostgresInfo";
 import S3_TYPE_INFO from "~/features/integrations/integration-type-info/s3Info";
+import SALESFORCE_TYPE_INFO from "~/features/integrations/integration-type-info/salesforceInfo";
 import SCYLLA_TYPE_INFO from "~/features/integrations/integration-type-info/scyllaInfo";
 import SNOWFLAKE_TYPE_INFO from "~/features/integrations/integration-type-info/snowflakeInfo";
 import WEBSITE_INTEGRATION_TYPE_INFO from "~/features/integrations/integration-type-info/websiteInfo";
@@ -33,6 +34,9 @@ export type IntegrationTypeInfo = {
   tags: string[];
   enabledFeatures: IntegrationFeatureEnum[];
 };
+
+// Define SaaS integrations
+export const SAAS_INTEGRATIONS: IntegrationTypeInfo[] = [SALESFORCE_TYPE_INFO];
 
 const INTEGRATION_TYPE_MAP: { [K in ConnectionType]?: IntegrationTypeInfo } = {
   [ConnectionType.BIGQUERY]: BIGQUERY_TYPE_INFO,
@@ -54,10 +58,15 @@ const INTEGRATION_TYPE_MAP: { [K in ConnectionType]?: IntegrationTypeInfo } = {
   [ConnectionType.MANUAL_WEBHOOK]: MANUAL_TYPE_INFO,
 };
 
-export const INTEGRATION_TYPE_LIST: IntegrationTypeInfo[] =
-  Object.values(INTEGRATION_TYPE_MAP);
+export const INTEGRATION_TYPE_LIST: IntegrationTypeInfo[] = [
+  ...Object.values(INTEGRATION_TYPE_MAP),
+  ...SAAS_INTEGRATIONS,
+];
 
-export const SUPPORTED_INTEGRATIONS = Object.keys(INTEGRATION_TYPE_MAP);
+export const SUPPORTED_INTEGRATIONS = [
+  ...Object.keys(INTEGRATION_TYPE_MAP),
+  // ConnectionType.SAAS, // DEFER(ENG-801) Add back once we're ready to show all SAAS integrations
+];
 
 const EMPTY_TYPE = {
   placeholder: {
@@ -74,11 +83,29 @@ const EMPTY_TYPE = {
 
 const getIntegrationTypeInfo = (
   type: ConnectionType | undefined,
+  saasType?: string,
 ): IntegrationTypeInfo => {
   if (!type) {
     return EMPTY_TYPE;
   }
-  return INTEGRATION_TYPE_MAP[type] ?? EMPTY_TYPE;
+
+  if (type === ConnectionType.SAAS && saasType) {
+    const saasIntegration = SAAS_INTEGRATIONS.find(
+      (integration) => integration.placeholder.saas_config?.type === saasType,
+    );
+    if (saasIntegration) {
+      return saasIntegration;
+    }
+  }
+
+  if (type !== ConnectionType.SAAS) {
+    const integration = INTEGRATION_TYPE_MAP[type];
+    if (integration) {
+      return integration;
+    }
+  }
+
+  return EMPTY_TYPE;
 };
 
 export default getIntegrationTypeInfo;

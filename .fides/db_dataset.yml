@@ -1028,6 +1028,136 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
+  - name: manual_task
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: task_type
+      data_categories: [system.operations]
+    - name: parent_entity_id
+      data_categories: [system.operations]
+    - name: parent_entity_type
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+  - name: manual_task_reference
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: task_id
+      data_categories: [system.operations]
+    - name: reference_id
+      data_categories: [system.operations]
+    - name: reference_type
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+  - name: manual_task_log
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: task_id
+      data_categories: [system.operations]
+    - name: config_id
+      data_categories: [system.operations]
+    - name: instance_id
+      data_categories: [system.operations]
+    - name: status
+      data_categories: [system.operations]
+    - name: message
+      data_categories: [system.operations]
+    - name: details
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+  - name: manual_task_config
+    fields:
+    - name: config_type
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: id
+      data_categories: [system.operations]
+    - name: is_current
+      data_categories: [system.operations]
+    - name: task_id
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+    - name: version
+      data_categories: [system.operations]
+    - name: execution_timing
+      data_categories: [system.operations]
+  - name: manual_task_config_field
+    fields:
+    - name: config_id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: field_key
+      data_categories: [system.operations]
+    - name: field_metadata
+      data_categories: [system.operations]
+    - name: field_type
+      data_categories: [system.operations]
+    - name: id
+      data_categories: [system.operations]
+    - name: task_id
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+  - name: manual_task_instance
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: task_id
+      data_categories: [system.operations]
+    - name: config_id
+      data_categories: [system.operations]
+    - name: entity_id
+      data_categories: [system.operations]
+    - name: entity_type
+      data_categories: [system.operations]
+    - name: status
+      data_categories: [system.operations]
+    - name: due_date
+      data_categories: [system.operations]
+    - name: completed_at
+      data_categories: [system.operations]
+    - name: completed_by_id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+  - name: manual_task_submission
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: task_id
+      data_categories: [system.operations]
+    - name: config_id
+      data_categories: [system.operations]
+    - name: instance_id
+      data_categories: [system.operations]
+    - name: submitted_by
+      data_categories: [system.operations]
+    - name: submitted_at
+      data_categories: [system.operations]
+    - name: field_id
+      data_categories: [system.operations]
+    - name: data
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
   - name: monitorexecution
     data_categories: []
     fields:
@@ -2354,8 +2484,6 @@ dataset:
       data_categories: [system]
   - name: stagedresource
     fields:
-    - name: child_diff_statuses
-      data_categories: [system]
     - name: children
       data_categories: [system]
     - name: classifications
@@ -2582,6 +2710,60 @@ dataset:
       - name: vendor_restriction
         data_categories: [system.operations]
       - name: range_entries
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+  - name: stagedresourceancestor
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: descendant_urn
+        data_categories: [system.operations]
+      - name: ancestor_urn
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+  - name: monitortask
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: action_type
+        data_categories: [system.operations]
+      - name: status
+        data_categories: [system.operations]
+      - name: celery_id
+        data_categories: [system.operations]
+      - name: task_arguments
+        data_categories: [system.operations]
+      - name: message
+        data_categories: [system.operations]
+      - name: monitor_config_id
+        data_categories: [system.operations]
+      - name: staged_resource_urns
+        data_categories: [system.operations]
+      - name: child_resource_urns
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+  - name: monitortaskexecutionlog
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: celery_id
+        data_categories: [system.operations]
+      - name: monitor_task_id
+        data_categories: [system.operations]
+      - name: run_type
+        data_categories: [system.operations]
+      - name: status
+        data_categories: [system.operations]
+      - name: message
         data_categories: [system.operations]
       - name: created_at
         data_categories: [system.operations]

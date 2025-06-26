@@ -7,6 +7,17 @@ declare global {
   interface WindowEventMap extends Record<FidesEventType, FidesEvent> {}
 }
 
+export enum FidesEventOrigin {
+  FIDES = "fides",
+  EXTERNAL = "external",
+}
+
+export enum FidesEventTargetType {
+  TOGGLE = "toggle",
+  BUTTON = "button",
+  LINK = "link",
+}
+
 /**
  * Defines the type of "extra" details that can be optionally added to certain
  * events. This is intentionally vague. See the /docs/fides-event.ts
@@ -28,6 +39,13 @@ export type FidesEventDetail = FidesCookie & {
   extraDetails?: FidesEventExtraDetails;
   timestamp?: number;
 };
+
+/**
+ * Defines the properties available on event.detail.extraDetails.servingComponent
+ */
+export type FidesEventDetailsServingComponent = NonNullable<
+  DocsFidesEvent["detail"]["extraDetails"]
+>["servingComponent"];
 
 /**
  * Defines the properties available on event.detail.extraDetails.trigger
@@ -84,6 +102,12 @@ export const dispatchFidesEvent = (
         .consentMethod as FidesEventExtraDetails["consentMethod"],
       ...extraDetails,
     };
+    if (!(extraDetails?.trigger as FidesEventDetailsTrigger)?.origin) {
+      constructedExtraDetails.trigger = {
+        ...(constructedExtraDetails.trigger as FidesEventDetailsTrigger),
+        ...({ origin: FidesEventOrigin.FIDES } as FidesEventDetailsTrigger),
+      } as FidesEventDetailsTrigger;
+    }
     const perfMark = performance?.mark?.(type);
     const timestamp = perfMark?.startTime;
     const normalizedCookie: FidesCookie | undefined = cookie;
@@ -134,4 +158,39 @@ export const onFidesEvent = (
   return () => {
     window.removeEventListener(type, listener);
   };
+};
+
+/**
+ * Helper function to dispatch the deprecated FidesInitialized event with standard parameters
+ * @deprecated - FidesInitialized is used for backwards compatibility only
+ */
+export const dispatchFidesInitialized = (
+  fidesCookie: FidesCookie,
+  extraDetails?: FidesEventExtraDetails,
+) => {
+  dispatchFidesEvent("FidesInitialized", fidesCookie, extraDetails);
+};
+
+/**
+ * Helper function to dispatch both FidesConsentLoaded and FidesInitialized events
+ * for backwards compatibility.
+ */
+export const dispatchConsentLoadedEvents = (
+  fidesCookie: FidesCookie,
+  extraDetails?: FidesEventExtraDetails,
+) => {
+  dispatchFidesEvent("FidesConsentLoaded", fidesCookie, extraDetails);
+  dispatchFidesInitialized(fidesCookie, extraDetails);
+};
+
+/**
+ * Helper function to dispatch both FidesReady and FidesInitialized events
+ * for backwards compatibility.
+ */
+export const dispatchReadyEvents = (
+  fidesCookie: FidesCookie,
+  extraDetails?: FidesEventExtraDetails,
+) => {
+  dispatchFidesEvent("FidesReady", fidesCookie, extraDetails);
+  dispatchFidesInitialized(fidesCookie, extraDetails);
 };

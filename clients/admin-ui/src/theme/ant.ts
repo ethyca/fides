@@ -50,6 +50,9 @@ export const antTheme: AntThemeConfig = {
       colorLink: palette.FIDESUI_MINOS,
       colorLinkHover: palette.FIDESUI_NEUTRAL_500,
     },
+    Card: {
+      colorBorderSecondary: palette.FIDESUI_NEUTRAL_200,
+    },
     Input: {
       colorBgContainer: palette.FIDESUI_FULL_WHITE,
     },
@@ -65,6 +68,10 @@ export const antTheme: AntThemeConfig = {
       darkItemColor: palette.FIDESUI_CORINTH,
       darkSubMenuItemBg: palette.FIDESUI_MINOS,
       darkItemSelectedBg: palette.FIDESUI_SANDSTONE,
+    },
+    Table: {
+      cellPaddingBlockSM: 8,
+      cellPaddingInlineSM: 16,
     },
     Tooltip: {
       colorBgSpotlight: palette.FIDESUI_MINOS,

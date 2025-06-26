@@ -13,6 +13,9 @@ import DeleteConnectionModal from "~/features/datastore-connections/DeleteConnec
 import useTestConnection from "~/features/datastore-connections/useTestConnection";
 import getIntegrationTypeInfo from "~/features/integrations/add-integration/allIntegrationTypes";
 import ConnectionStatusNotice from "~/features/integrations/ConnectionStatusNotice";
+import { useIntegrationAuthorization } from "~/features/integrations/hooks/useIntegrationAuthorization";
+import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
+import useIntegrationOption from "~/features/integrations/useIntegrationOption";
 import { ConnectionConfigurationResponse } from "~/types/api";
 
 const IntegrationBox = ({
@@ -35,12 +38,29 @@ const IntegrationBox = ({
 
   const integrationTypeInfo = getIntegrationTypeInfo(
     integration?.connection_type,
+    integration?.saas_config?.type,
   );
+
+  // Only pass the saas type if it's a valid SaasConnectionTypes value
+  const saasType = integration?.saas_config?.type;
+  const isSaasType = (type: string): type is SaasConnectionTypes =>
+    Object.values(SaasConnectionTypes).includes(type as SaasConnectionTypes);
+
+  const connectionOption = useIntegrationOption(
+    integration?.connection_type,
+    saasType && isSaasType(saasType) ? saasType : undefined,
+  );
+
+  const { handleAuthorize, needsAuthorization } = useIntegrationAuthorization({
+    connection: integration,
+    connectionOption,
+    testData,
+  });
 
   return (
     <Box
-      maxW="760px"
       borderWidth={1}
+      borderColor="gray.200"
       borderRadius="lg"
       overflow="hidden"
       padding="12px"
@@ -54,7 +74,10 @@ const IntegrationBox = ({
             {integration?.name || "(No name)"}
           </Text>
           {showTestNotice ? (
-            <ConnectionStatusNotice testData={testData} />
+            <ConnectionStatusNotice
+              testData={testData}
+              connectionOption={connectionOption}
+            />
           ) : (
             <Text color="gray.700" fontSize="sm" fontWeight="semibold" mt={1}>
               {integrationTypeInfo.category}
@@ -68,7 +91,15 @@ const IntegrationBox = ({
               connection_key={integration.key}
             />
           )}
-          {showTestNotice && (
+          {showTestNotice && needsAuthorization && (
+            <Button
+              onClick={handleAuthorize}
+              data-testid="authorize-integration-btn"
+            >
+              Authorize integration
+            </Button>
+          )}
+          {showTestNotice && !needsAuthorization && (
             <Button
               onClick={testConnection}
               loading={isLoading}

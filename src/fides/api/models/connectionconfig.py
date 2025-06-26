@@ -23,7 +23,7 @@ from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.config import CONFIG
 
 if TYPE_CHECKING:
-    from fides.api.models.detection_discovery import MonitorConfig
+    from fides.api.models.detection_discovery.core import MonitorConfig
     from fides.api.schemas.connection_configuration.enums.system_type import SystemType
 
 
@@ -53,6 +53,7 @@ class ConnectionType(enum.Enum):
     https = "https"
     manual = "manual"  # Deprecated - use manual_webhook instead
     manual_webhook = "manual_webhook"  # Runs upfront before the traversal
+    manual_task = "manual_task"  # Manual task integration
     mariadb = "mariadb"
     mongodb = "mongodb"
     mssql = "mssql"
@@ -88,6 +89,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.google_cloud_sql_postgres.value: "Google Cloud SQL for Postgres",
             ConnectionType.https.value: "Policy Webhook",
             ConnectionType.manual_webhook.value: "Manual Process",
+            ConnectionType.manual_task.value: "Manual Task",
             ConnectionType.manual.value: "Manual Connector",
             ConnectionType.mariadb.value: "MariaDB",
             ConnectionType.mongodb.value: "MongoDB",
@@ -132,6 +134,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.google_cloud_sql_postgres.value: SystemType.database,
             ConnectionType.https.value: SystemType.manual,
             ConnectionType.manual_webhook.value: SystemType.manual,
+            ConnectionType.manual_task.value: SystemType.manual,
             ConnectionType.manual.value: SystemType.manual,
             ConnectionType.mariadb.value: SystemType.database,
             ConnectionType.mongodb.value: SystemType.database,
@@ -225,6 +228,14 @@ class ConnectionConfig(Base):
     access_manual_webhook = relationship(  # type: ignore[misc]
         "AccessManualWebhook",
         back_populates="connection_config",
+        cascade="delete",
+        uselist=False,
+    )
+
+    manual_task = relationship(  # type: ignore[misc]
+        "ManualTask",
+        primaryjoin="and_(ConnectionConfig.id == foreign(ManualTask.parent_entity_id), "
+        "ManualTask.parent_entity_type == 'connection_config')",
         cascade="delete",
         uselist=False,
     )

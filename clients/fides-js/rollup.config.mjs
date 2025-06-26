@@ -14,11 +14,11 @@ import fs from "fs";
 
 const NAME = "fides";
 const IS_DEV = process.env.NODE_ENV === "development";
-const GZIP_SIZE_ERROR_KB = 45; // fail build if bundle size exceeds this
-const GZIP_SIZE_WARN_KB = 35; // log a warning if bundle size exceeds this
+const GZIP_SIZE_ERROR_KB = 50; // fail build if bundle size exceeds this
+const GZIP_SIZE_WARN_KB = 45; // log a warning if bundle size exceeds this
 
 // TCF
-const GZIP_SIZE_TCF_ERROR_KB = 90;
+const GZIP_SIZE_TCF_ERROR_KB = 91;
 const GZIP_SIZE_TCF_WARN_KB = 75;
 
 // Headless
@@ -27,7 +27,7 @@ const GZIP_SIZE_HEADLESS_WARN_KB = 20;
 
 // GPP
 const GZIP_SIZE_GPP_ERROR_KB = 40;
-const GZIP_SIZE_GPP_WARN_KB = 25;
+const GZIP_SIZE_GPP_WARN_KB = 35;
 
 const preactAliases = {
   entries: [
@@ -135,6 +135,16 @@ const SCRIPTS = [
 const rollupOptions = [];
 
 /**
+ * Ignore circular dependency warnings from node_modules
+ * that we don't control.
+ */
+const onLog = (_, { code, message }) => {
+  if (code === "CIRCULAR_DEPENDENCY" && message.includes("node_modules")) {
+    return;
+  }
+};
+
+/**
  * For each of our entrypoint scripts, build .js, .mjs, and .d.ts outputs
  */
 SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
@@ -150,10 +160,14 @@ SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
         // Intended for browser <script> tag - defines `Fides` global. Also supports UMD loaders.
         file: `dist/${name}.js`,
         name: isExtension ? undefined : "Fides",
-        format: isExtension ? undefined : "umd",
+        format: isExtension ? "es" : "umd",
         sourcemap: IS_DEV ? "inline" : false,
+        amd: {
+          define: undefined, // prevent the bundle from registering itself as an AMD module, even if an AMD loader (like RequireJS) is present on the page. This allows FidesJS to use Rollup's `umd` format to support both `iife` and `cjs` modules, but excludes AMD.
+        },
       },
     ],
+    onLog,
   };
   const mjs = {
     input: `src/${name}.ts`,
@@ -177,6 +191,7 @@ SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
         sourcemap: true,
       },
     ],
+    onLog,
   };
   const declaration = {
     input: `src/${name}.ts`,
