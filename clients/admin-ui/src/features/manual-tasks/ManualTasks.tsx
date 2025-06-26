@@ -1,6 +1,8 @@
 import {
   AntColumnsType as ColumnsType,
+  AntFilterValue as FilterValue,
   AntTable as Table,
+  AntTablePaginationConfig as TablePaginationConfig,
   AntTag as Tag,
   AntTypography as Typography,
   SelectInline,
@@ -13,30 +15,46 @@ import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import FidesSpinner from "~/features/common/FidesSpinner";
 import { USER_PROFILE_ROUTE } from "~/features/common/nav/routes";
 import { PAGE_SIZES } from "~/features/common/table/v2/PaginationBar";
+import { formatUser } from "~/features/common/utils";
 import { SubjectRequestActionTypeMap } from "~/features/privacy-requests/constants";
 import { ActionType, PrivacyRequestStatus } from "~/types/api";
 
 import { ActionButtons } from "./components/ActionButtons";
+import {
+  REQUEST_TYPE_FILTER_OPTIONS,
+  STATUS_FILTER_OPTIONS,
+  STATUS_MAP,
+} from "./constants";
 import { useGetTasksQuery } from "./manual-tasks.slice";
 import {
   AssignedUser,
   ManualTask,
   RequestType,
+  SubjectIdentity,
   System,
   TaskStatus,
 } from "./mocked/types";
 
-// Map task status to tag colors and labels - aligned with RequestStatusBadge colors
-const statusMap: Record<TaskStatus, { color: string; label: string }> = {
-  new: { color: "info", label: "New" },
-  completed: { color: "success", label: "Completed" },
-  skipped: { color: "marble", label: "Skipped" },
-};
+interface FilterOption {
+  text: string;
+  value: string;
+}
 
-// Extract column definitions to a separate function for better readability
+interface ManualTaskFilters {
+  status?: string;
+  systemName?: string;
+  requestType?: string;
+  assignedUsers?: string;
+}
+
+interface UserOption {
+  label: string;
+  value: string;
+}
+
 const getColumns = (
-  systemFilters: { text: string; value: string }[],
-  userFilters: { text: string; value: string }[],
+  systemFilters: FilterOption[],
+  userFilters: FilterOption[],
   onUserClick: (userId: string) => void,
 ): ColumnsType<ManualTask> => [
   {
@@ -54,15 +72,15 @@ const getColumns = (
     key: "status",
     width: 120,
     render: (status: TaskStatus) => (
-      <Tag color={statusMap[status].color} data-testid="manual-task-status-tag">
-        {statusMap[status].label}
+      <Tag
+        color={STATUS_MAP[status].color}
+        data-testid="manual-task-status-tag"
+      >
+        {STATUS_MAP[status].label}
       </Tag>
     ),
-    filters: [
-      { text: "New", value: "new" },
-      { text: "Completed", value: "completed" },
-      { text: "Skipped", value: "skipped" },
-    ],
+    filters: STATUS_FILTER_OPTIONS,
+    filterMultiple: false,
   },
   {
     title: "System",
@@ -70,6 +88,7 @@ const getColumns = (
     key: "system_name",
     width: 210,
     filters: systemFilters,
+    filterMultiple: false,
   },
   {
     title: "Type",
@@ -77,16 +96,13 @@ const getColumns = (
     key: "request_type",
     width: 150,
     render: (type: RequestType) => {
-      // Map the lowercase string to the ActionType enum value
       const actionType =
         type === "access" ? ActionType.ACCESS : ActionType.ERASURE;
       const displayName = SubjectRequestActionTypeMap.get(actionType) || type;
       return <Typography.Text>{displayName}</Typography.Text>;
     },
-    filters: [
-      { text: "Access", value: "access" },
-      { text: "Erasure", value: "erasure" },
-    ],
+    filters: REQUEST_TYPE_FILTER_OPTIONS,
+    filterMultiple: false,
   },
   {
     title: "Assigned to",
@@ -94,11 +110,8 @@ const getColumns = (
     key: "assigned_users",
     width: 380,
     render: (assignedUsers: AssignedUser[]) => {
-      const userOptions = assignedUsers.map((user) => ({
-        label:
-          `${user.first_name || ""} ${user.last_name || ""}`.trim() ||
-          user.email_address ||
-          "Unknown User",
+      const userOptions: UserOption[] = assignedUsers.map((user) => ({
+        label: formatUser(user),
         value: user.id,
       }));
 
@@ -109,11 +122,12 @@ const getColumns = (
           value={currentAssignedUserIds}
           options={userOptions}
           readonly
-          onTagClick={(userId) => onUserClick(userId)}
+          onTagClick={(userId) => onUserClick(String(userId))}
         />
       );
     },
     filters: userFilters,
+    filterMultiple: false,
   },
   {
     title: "Days left",
@@ -133,12 +147,11 @@ const getColumns = (
     dataIndex: ["privacy_request", "subject_identity"],
     key: "subject_identity",
     width: 200,
-    render: (subjectIdentity) => {
+    render: (subjectIdentity: SubjectIdentity) => {
       if (!subjectIdentity) {
         return <Typography.Text>-</Typography.Text>;
       }
 
-      // Display email or phone number, similar to privacy requests
       const identity =
         subjectIdentity.email?.value ||
         subjectIdentity.phone_number?.value ||
@@ -163,20 +176,17 @@ export const ManualTasks = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(25);
-  const [filters, setFilters] = useState<{
-    status?: string[];
-    systemName?: string[];
-    requestType?: string[];
-  }>({});
+  const [filters, setFilters] = useState<ManualTaskFilters>({});
 
   const { data, isLoading, isFetching } = useGetTasksQuery({
     page: pageIndex,
     size: pageSize,
     search: searchTerm,
-    // Pass filter parameters to API
-    status: filters.status?.[0] as TaskStatus,
-    systemName: filters.systemName?.[0],
-    requestType: filters.requestType?.[0] as RequestType,
+
+    status: filters.status as TaskStatus,
+    systemName: filters.systemName,
+    requestType: filters.requestType as RequestType,
+    assignedUserId: filters.assignedUsers,
   });
 
   const {
@@ -194,7 +204,6 @@ export const ManualTasks = () => {
     [data],
   );
 
-  // Create filter options from API response
   const systemFilters = useMemo(
     () =>
       filterOptions?.systems?.map((system: System) => ({
@@ -207,30 +216,33 @@ export const ManualTasks = () => {
   const userFilters = useMemo(
     () =>
       filterOptions?.assigned_users?.map((user: AssignedUser) => ({
-        text: `${user.first_name} ${user.last_name}`,
+        text: formatUser(user),
         value: user.id,
       })) || [],
     [filterOptions?.assigned_users],
   );
 
-  // Handle table filter changes
-  const handleTableChange = (pagination: any, tableFilters: any) => {
-    // Convert Ant Design filters to our filter state
-    const newFilters: typeof filters = {};
+  const handleTableChange = (
+    _pagination: TablePaginationConfig,
+    tableFilters: Record<string, FilterValue | null>,
+  ) => {
+    const newFilters: ManualTaskFilters = {};
 
     if (tableFilters.status) {
-      newFilters.status = tableFilters.status;
+      [newFilters.status] = tableFilters.status as string[];
     }
     if (tableFilters.system_name) {
-      newFilters.systemName = tableFilters.system_name;
+      [newFilters.systemName] = tableFilters.system_name as string[];
     }
     if (tableFilters.request_type) {
-      newFilters.requestType = tableFilters.request_type;
+      [newFilters.requestType] = tableFilters.request_type as string[];
     }
-    // Note: assigned_users filtering not supported by API yet
+    if (tableFilters.assigned_users) {
+      [newFilters.assignedUsers] = tableFilters.assigned_users as string[];
+    }
 
     setFilters(newFilters);
-    setPageIndex(1); // Reset to first page when filters change
+    setPageIndex(1);
   };
 
   const handleSearchChange = (value: string) => {
@@ -279,7 +291,7 @@ export const ManualTasks = () => {
             setPageIndex(page);
             if (size !== pageSize) {
               setPageSize(size);
-              setPageIndex(1); // Reset to first page when changing page size
+              setPageIndex(1);
             }
           },
         }}

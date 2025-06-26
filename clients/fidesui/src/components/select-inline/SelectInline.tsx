@@ -6,6 +6,8 @@ import styles from "./SelectInline.module.scss";
 
 type SelectProps = ComponentProps<typeof Select>;
 
+type SelectInlineValue = string | number | boolean;
+
 /**
  * SelectInline is a multi-select component wrapper around Ant Design's Select.
  * It provides consistent styling and behavior for inline multi-selection use cases.
@@ -80,7 +82,7 @@ export const SelectInline = ({
   ...props
 }: SelectProps & {
   readonly?: boolean;
-  onTagClick?: (value: any, label: React.ReactNode) => void;
+  onTagClick?: (value: SelectInlineValue, label: React.ReactNode) => void;
 }) => {
   const [expanded, setExpanded] = useState(false);
 
@@ -96,7 +98,9 @@ export const SelectInline = ({
     }
   };
 
-  const renderMaxTagPlaceholder = (omittedValues: any[]) => {
+  const renderMaxTagPlaceholder: SelectProps["maxTagPlaceholder"] = (
+    omittedValues,
+  ) => {
     const count = omittedValues.length;
 
     if (readonly) {
@@ -113,7 +117,7 @@ export const SelectInline = ({
       );
     }
 
-    return `+ ${count} more`;
+    return <span>+ {count} more</span>;
   };
 
   const customMaxTagPlaceholder = maxTagPlaceholder || renderMaxTagPlaceholder;
