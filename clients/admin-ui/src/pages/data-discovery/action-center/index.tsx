@@ -146,7 +146,7 @@ const ActionCenterPage = () => {
         }}
         renderItem={(summary: MonitorAggregatedResults) => {
           return (
-            !!summary && (
+            !!summary?.key && (
               <MonitorResult
                 showSkeleton={isFetching}
                 key={summary.key}
