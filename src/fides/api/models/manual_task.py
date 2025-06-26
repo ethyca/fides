@@ -294,7 +294,7 @@ class ManualTaskInstance(Base):
     )
 
     # Database columns
-    task_id: Column[str] = Column(
+    task_id = Column(
         String,
         ForeignKey(
             "manual_task.id",
