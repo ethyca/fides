@@ -85,11 +85,10 @@ export const CompleteTaskModal = ({
       case "string":
         return (
           <div className="space-y-2">
-            <div className="text-sm font-medium text-gray-700">Text Input</div>
+            <div className="text-sm font-medium text-gray-700">Text input</div>
             <Input.TextArea
               value={textValue}
               onChange={(e) => setTextValue(e.target.value)}
-              placeholder="Enter your response..."
               rows={4}
               data-testid="complete-modal-text-input"
             />
@@ -111,7 +110,7 @@ export const CompleteTaskModal = ({
         // For file uploads or when input_type is undefined, show file upload
         return (
           <div className="space-y-2">
-            <div className="text-sm font-medium text-gray-700">Upload File</div>
+            <div className="text-sm font-medium text-gray-700">Upload file</div>
             <div>
               <Upload
                 fileList={fileList}
