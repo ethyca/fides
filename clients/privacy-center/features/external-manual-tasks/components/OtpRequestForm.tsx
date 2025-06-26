@@ -7,6 +7,7 @@ import {
 } from "fidesui";
 import React from "react";
 
+import { useRequestOtpMutation } from "../external-auth.slice";
 import { OtpRequestFormProps } from "../types";
 
 /**
@@ -21,16 +22,37 @@ const OtpRequestForm = ({
   isLoading = false,
   error = null,
 }: OtpRequestFormProps) => {
-  const handleRequestOtp = () => {
-    onOtpRequested();
+  const [requestOtp, { isLoading: isMutationLoading, error: mutationError }] =
+    useRequestOtpMutation();
+
+  const handleRequestOtp = async () => {
+    try {
+      // For now, we'll use a placeholder email - this will be resolved from the token
+      // TODO: Extract email from emailToken when backend integration is complete
+      const displayEmail = "user@example.com";
+
+      await requestOtp({
+        email: displayEmail,
+        email_token: emailToken,
+      }).unwrap();
+
+      onOtpRequested();
+    } catch (err) {
+      // Error will be handled by the mutation error state
+      console.error("Failed to request OTP:", err);
+    }
   };
 
   // For now, we'll show a placeholder email - this will be resolved from the token
   // TODO: Extract email from emailToken when backend integration is complete
   const displayEmail = "user@example.com";
 
-  // Suppress unused variable warning - emailToken will be used for API call
-  console.debug("Email token:", emailToken);
+  const isFormLoading = isLoading || isMutationLoading;
+  const displayError =
+    error ||
+    (mutationError
+      ? "Failed to send verification code. Please try again."
+      : null);
 
   return (
     <div className="space-y-4" data-testid="otp-request-form">
@@ -41,11 +63,11 @@ const OtpRequestForm = ({
         </Typography.Text>
       </div>
 
-      {error && (
+      {displayError && (
         <Alert
           type="error"
           message="Authentication Error"
-          description={error}
+          description={displayError}
           showIcon
           data-testid="auth-error-message"
         />
@@ -68,11 +90,11 @@ const OtpRequestForm = ({
           type="primary"
           size="large"
           block
-          loading={isLoading}
+          loading={isFormLoading}
           onClick={handleRequestOtp}
           data-testid="otp-request-button"
         >
-          {isLoading ? "Sending..." : "Send Verification Code"}
+          {isFormLoading ? "Sending..." : "Send Verification Code"}
         </Button>
       </div>
 

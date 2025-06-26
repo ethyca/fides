@@ -1,14 +1,24 @@
 "use client";
 
 import { AntTypography as Typography } from "fidesui";
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 
+import { useSettings } from "~/features/common/settings.slice";
+import { ExternalTaskLayout } from "~/features/external-manual-tasks/components/ExternalTaskLayout";
 import OtpRequestForm from "~/features/external-manual-tasks/components/OtpRequestForm";
 import OtpVerificationForm from "~/features/external-manual-tasks/components/OtpVerificationForm";
 import {
-  ExternalUser,
-  OtpVerifyResponse,
-} from "~/features/external-manual-tasks/types";
+  selectExternalAuthError,
+  selectExternalAuthLoading,
+  selectExternalUser,
+  selectIsExternalAuthenticated,
+  setEmailToken,
+} from "~/features/external-manual-tasks/external-auth.slice";
+import ExternalStoreProvider from "~/features/external-manual-tasks/ExternalStoreProvider";
+import {
+  useExternalAppDispatch,
+  useExternalAppSelector,
+} from "~/features/external-manual-tasks/hooks";
 import { NextSearchParams } from "~/types/next";
 
 interface ExternalTasksClientProps {
@@ -21,53 +31,45 @@ type AuthStep = "request-otp" | "verify-otp" | "authenticated";
  * Client component for the external manual tasks page.
  * Handles the OTP authentication flow and task management UI.
  */
-const ExternalTasksClient = ({ searchParams }: ExternalTasksClientProps) => {
+const ExternalTasksClientInner = ({
+  searchParams,
+}: ExternalTasksClientProps) => {
   const resolvedSearchParams = React.use(searchParams);
   const token = resolvedSearchParams?.token as string;
 
-  const [authStep, setAuthStep] = useState<AuthStep>("request-otp");
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [authenticatedUser, setAuthenticatedUser] =
-    useState<ExternalUser | null>(null);
+  const dispatch = useExternalAppDispatch();
+  const authenticatedUser = useExternalAppSelector(selectExternalUser);
+  const isAuthenticated = useExternalAppSelector(selectIsExternalAuthenticated);
+  const isLoading = useExternalAppSelector(selectExternalAuthLoading);
+  const error = useExternalAppSelector(selectExternalAuthError);
 
-  const handleOtpRequested = async () => {
-    setIsLoading(true);
-    setError(null);
+  const [authStep, setAuthStep] = React.useState<AuthStep>("request-otp");
 
-    try {
-      // TODO: Replace with actual API call
-      // await requestOtp({ email_token: token });
-
-      // Simulate API call
-      await new Promise<void>((resolve) => setTimeout(resolve, 1000));
-
-      setAuthStep("verify-otp");
-    } catch (err) {
-      setError("Failed to send verification code. Please try again.");
-    } finally {
-      setIsLoading(false);
+  // Set email token when component mounts
+  useEffect(() => {
+    if (token) {
+      dispatch(setEmailToken(token));
     }
+  }, [token, dispatch]);
+
+  // Update auth step based on authentication state
+  useEffect(() => {
+    if (isAuthenticated && authenticatedUser) {
+      setAuthStep("authenticated");
+    }
+  }, [isAuthenticated, authenticatedUser]);
+
+  const handleOtpRequested = () => {
+    setAuthStep("verify-otp");
   };
 
-  const handleOtpVerified = async (response: OtpVerifyResponse) => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      // TODO: Store auth token and user data in Redux
-      setAuthenticatedUser(response.user_data);
-      setAuthStep("authenticated");
-    } catch (err) {
-      setError("Failed to verify code. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
+  const handleOtpVerified = () => {
+    // This will be handled by the Redux action in the component
+    setAuthStep("authenticated");
   };
 
   const handleBackToRequest = () => {
     setAuthStep("request-otp");
-    setError(null);
   };
 
   const renderAuthContent = () => {
@@ -94,23 +96,19 @@ const ExternalTasksClient = ({ searchParams }: ExternalTasksClientProps) => {
         );
 
       case "authenticated":
-        return (
-          <div data-testid="external-task-layout">
-            <Typography.Title level={3}>
-              Welcome, {authenticatedUser?.first_name}!
-            </Typography.Title>
-            <Typography.Text>
-              Authentication successful. Task management UI will be implemented
-              next.
-            </Typography.Text>
-          </div>
-        );
+        return <ExternalTaskLayout />;
 
       default:
         return null;
     }
   };
 
+  // For authenticated state, render the full-width layout
+  if (authStep === "authenticated") {
+    return renderAuthContent();
+  }
+
+  // For auth steps, render centered layout
   return (
     <div
       className="min-h-screen flex items-center justify-center bg-gray-50"
@@ -129,6 +127,17 @@ const ExternalTasksClient = ({ searchParams }: ExternalTasksClientProps) => {
         {renderAuthContent()}
       </div>
     </div>
+  );
+};
+
+// Wrapper component with Redux provider
+const ExternalTasksClient = ({ searchParams }: ExternalTasksClientProps) => {
+  const settings = useSettings(); // Get settings from main store
+
+  return (
+    <ExternalStoreProvider settings={settings}>
+      <ExternalTasksClientInner searchParams={searchParams} />
+    </ExternalStoreProvider>
   );
 };
 
