@@ -32,7 +32,7 @@ class DBCache(Base):
     cache_value = Column(BYTEA, nullable=False)
 
     __table_args__ = (
-        Index("ix_dbcache_namespace_cache_key", "namespace", "cache_key"),
+        Index("ix_dbcache_namespace_cache_key", "namespace", "cache_key", unique=True),
     )
 
     @classmethod
