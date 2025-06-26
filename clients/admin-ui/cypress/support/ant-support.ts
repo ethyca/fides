@@ -34,6 +34,16 @@ declare global {
         optionLabel: string | number,
         clickOptions?: { force?: boolean },
       ) => void;
+
+      /**
+       * Apply a filter to an Ant Design table column
+       * @param columnTitle The title of the column to filter
+       * @param filterOption The filter option to select (string for specific option, number for index)
+       */
+      applyTableFilter: (
+        columnTitle: string,
+        filterOption: string | number,
+      ) => void;
     }
   }
 }
@@ -120,5 +130,42 @@ Cypress.Commands.add(
   (subject, option) =>
     cy.get(subject.selector).getAntMenuOption(option).click(),
 );
+
+Cypress.Commands.add("applyTableFilter", (columnTitle, filterOption) => {
+  // Click the filter trigger for the specified column
+  cy.get(".ant-table-column-title")
+    .contains(columnTitle)
+    .siblings(".ant-dropdown-trigger")
+    .click();
+
+  // Wait for the filter dropdown to appear and find the visible one
+  cy.get(".ant-table-filter-dropdown:visible")
+    .should("be.visible")
+    .within(() => {
+      // Wait for menu items to be available
+      cy.get(".ant-dropdown-menu-item").should("have.length.at.least", 1);
+
+      // Select the filter option
+      if (typeof filterOption === "string") {
+        cy.get(".ant-dropdown-menu-item")
+          .contains(filterOption)
+          .should("exist")
+          .click();
+      } else {
+        cy.get(".ant-dropdown-menu-item")
+          .eq(filterOption)
+          .should("exist")
+          .click();
+      }
+
+      // Click OK to apply the filter
+      cy.get(".ant-table-filter-dropdown-btns .ant-btn-primary")
+        .should("exist")
+        .click();
+    });
+
+  // Wait for the dropdown to disappear
+  cy.get(".ant-table-filter-dropdown:visible").should("not.exist");
+});
 
 export {};
