@@ -4,6 +4,7 @@ import { AntTypography as Typography } from "fidesui";
 import React, { useEffect } from "react";
 
 import { useSettings } from "~/features/common/settings.slice";
+import { ExternalAuthLayout } from "~/features/external-manual-tasks/components/ExternalAuthLayout";
 import { ExternalTaskLayout } from "~/features/external-manual-tasks/components/ExternalTaskLayout";
 import OtpRequestForm from "~/features/external-manual-tasks/components/OtpRequestForm";
 import OtpVerificationForm from "~/features/external-manual-tasks/components/OtpVerificationForm";
@@ -113,23 +114,16 @@ const ExternalTasksClientInner = ({
 
   // For auth steps, render centered layout
   return (
-    <div
-      className="min-h-screen flex items-center justify-center bg-gray-50"
-      data-testid="external-auth-container"
-    >
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
-          <Typography.Title level={2}>External Manual Tasks</Typography.Title>
-          {process.env.NODE_ENV === "development" && (
-            <Typography.Text type="secondary" className="text-xs">
-              Token: {token}
-            </Typography.Text>
-          )}
+    <ExternalAuthLayout title="External Manual Tasks">
+      {process.env.NODE_ENV === "development" && (
+        <div style={{ textAlign: "center", marginBottom: "16px" }}>
+          <Typography.Text type="secondary" style={{ fontSize: "12px" }}>
+            Token: {token}
+          </Typography.Text>
         </div>
-
-        {renderAuthContent()}
-      </div>
-    </div>
+      )}
+      {renderAuthContent()}
+    </ExternalAuthLayout>
   );
 };
 

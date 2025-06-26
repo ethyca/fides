@@ -14,6 +14,7 @@
 import {
   AntColumnsType as ColumnsType,
   AntInput as Input,
+  AntSpace as Space,
   AntTable as Table,
   AntTag as Tag,
   AntTypography as Typography,
@@ -231,50 +232,55 @@ export const ExternalManualTasks = () => {
   }
 
   return (
-    <div className="space-y-4" data-testid="external-tasks-container">
-      <Input
-        placeholder="Search tasks by name or description..."
-        value={searchTerm}
-        onChange={(e) => handleSearchChange(e.target.value)}
-        className="max-w-sm"
-        data-testid="external-tasks-search"
-      />
+    <div data-testid="external-tasks-container">
+      <Space direction="vertical" size={16} style={{ width: "100%" }}>
+        <Input
+          placeholder="Search tasks by name or description..."
+          value={searchTerm}
+          onChange={(e) => handleSearchChange(e.target.value)}
+          className="max-w-sm"
+          data-testid="external-tasks-search"
+        />
 
-      <Table
-        columns={columns}
-        dataSource={tasks}
-        rowKey="task_id"
-        data-testid="external-tasks-table"
-        pagination={{
-          current: pageIndex,
-          pageSize,
-          total: totalRows || 0,
-          showSizeChanger: true,
-          pageSizeOptions: PAGE_SIZES,
-          showTotal: (total, range) =>
-            `${range[0]}-${range[1]} of ${total} items`,
-          onChange: (page, size) => {
-            setPageIndex(page);
-            if (size !== pageSize) {
-              setPageSize(size);
-              setPageIndex(1); // Reset to first page when changing page size
-            }
-          },
-        }}
-        onChange={handleTableChange}
-        locale={{
-          emptyText: searchTerm ? (
-            <div data-testid="external-empty-state">
-              No tasks match your search
-            </div>
-          ) : (
-            <div data-testid="external-empty-state">
-              No manual tasks available
-            </div>
-          ),
-        }}
-        loading={showSpinner}
-      />
+        <div className="overflow-x-auto">
+          <Table
+            columns={columns}
+            dataSource={tasks}
+            rowKey="task_id"
+            data-testid="external-tasks-table"
+            scroll={{ x: 1300 }}
+            pagination={{
+              current: pageIndex,
+              pageSize,
+              total: totalRows || 0,
+              showSizeChanger: true,
+              pageSizeOptions: PAGE_SIZES,
+              showTotal: (total, range) =>
+                `${range[0]}-${range[1]} of ${total} items`,
+              onChange: (page, size) => {
+                setPageIndex(page);
+                if (size !== pageSize) {
+                  setPageSize(size);
+                  setPageIndex(1); // Reset to first page when changing page size
+                }
+              },
+            }}
+            onChange={handleTableChange}
+            locale={{
+              emptyText: searchTerm ? (
+                <div data-testid="external-empty-state">
+                  No tasks match your search
+                </div>
+              ) : (
+                <div data-testid="external-empty-state">
+                  No manual tasks available
+                </div>
+              ),
+            }}
+            loading={showSpinner}
+          />
+        </div>
+      </Space>
     </div>
   );
 };

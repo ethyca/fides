@@ -5,7 +5,12 @@
  * It includes a header with user information, logout functionality, and the tasks table.
  */
 
-import { AntButton as Button, AntTypography as Typography } from "fidesui";
+import {
+  AntButton as Button,
+  AntCard as Card,
+  AntSpace as Space,
+  AntTypography as Typography,
+} from "fidesui";
 
 import {
   logout,
@@ -36,44 +41,64 @@ export const ExternalTaskLayout = () => {
 
   return (
     <div
-      className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8"
+      style={{
+        minHeight: "100vh",
+        backgroundColor: "#f5f5f5", // neutral-75 from palette
+        padding: "32px 16px",
+      }}
       data-testid="external-task-layout"
     >
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="bg-white shadow rounded-lg mb-6 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <Typography.Title
-                level={2}
-                className="mb-2"
-                data-testid="external-task-header"
-              >
-                My Tasks
-              </Typography.Title>
-              <Typography.Text
-                className="text-gray-600"
-                data-testid="external-user-info"
-              >
-                Welcome, {displayName}
-              </Typography.Text>
-            </div>
-            <div>
-              <Button
-                onClick={handleLogout}
-                data-testid="external-logout-button"
-                aria-label="Logout"
-              >
-                Logout
-              </Button>
+      <div className="mx-auto w-full px-6">
+        <Space direction="vertical" size={24} style={{ width: "100%" }}>
+          {/* Header */}
+          <div
+            style={{
+              backgroundColor: "white",
+              borderRadius: "8px",
+              padding: "24px",
+              boxShadow:
+                "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <div>
+                <Typography.Title
+                  level={2}
+                  style={{ marginBottom: "8px" }}
+                  data-testid="external-task-header"
+                >
+                  My Tasks
+                </Typography.Title>
+                <Typography.Text
+                  type="secondary"
+                  data-testid="external-user-info"
+                >
+                  Welcome, {displayName}
+                </Typography.Text>
+              </div>
+              <div>
+                <Button
+                  onClick={handleLogout}
+                  data-testid="external-logout-button"
+                  aria-label="Logout"
+                >
+                  Logout
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Tasks Content */}
-        <div className="bg-white shadow rounded-lg p-6">
-          <ExternalManualTasks />
-        </div>
+          {/* Tasks Content */}
+          <Card>
+            <ExternalManualTasks />
+          </Card>
+        </Space>
       </div>
     </div>
   );
