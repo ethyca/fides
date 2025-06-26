@@ -8,7 +8,6 @@ import {
   AntTypography as Typography,
   useDisclosure,
 } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import React, { useCallback, useMemo, useState } from "react";
@@ -78,7 +77,6 @@ const IntegrationListView: NextPage = () => {
 
   const { onOpen, isOpen, onClose } = useDisclosure();
 
-  const allTableData: IntegrationTableData[] = useMemo(
   const tableData: IntegrationTableData[] = useMemo(
     () =>
       items?.map((integration) => ({
@@ -91,101 +89,15 @@ const IntegrationListView: NextPage = () => {
     [items],
   );
 
-  // Filter data based on search term
-  const tableData = useMemo(() => {
-    if (!searchTerm.trim()) {
-      return allTableData;
-    }
-
-    const lowerSearchTerm = searchTerm.toLowerCase();
-    return allTableData.filter((integration) => {
-      const name = (integration.name || "").toLowerCase();
-
-      return name.includes(lowerSearchTerm);
-    });
-  }, [allTableData, searchTerm]);
-
   const handleManageClick = (integration: ConnectionConfigurationResponse) => {
     router.push(`${INTEGRATION_MANAGEMENT_ROUTE}/${integration.key}`);
   };
-
-  const formatLastConnection = (
-    lastTestTimestamp?: string | null,
-    lastTestSucceeded?: boolean | null,
-  ) => {
-    if (!lastTestTimestamp) {
-      return "-";
-    }
-
-    const formattedDate = formatDate(lastTestTimestamp);
-
-    if (lastTestSucceeded === true) {
-      return (
-        <span style={{ color: palette.FIDESUI_SUCCESS_TEXT }}>
-          ✓ {formattedDate}
-        </span>
-      );
-    }
-    if (lastTestSucceeded === false) {
-      return (
-        <span style={{ color: palette.FIDESUI_ERROR_TEXT }}>
-          ✗ {formattedDate}
-        </span>
-      );
-    }
-
-    return formattedDate;
-  };
-
-  // Get unique values for filters
-  const connectionTypes = useMemo(() => {
-    const types = new Set(tableData.map((item) => item.connection_type));
-    return Array.from(types).map((type) => ({
-      text: getIntegrationTypeInfo(type).placeholder.name || type,
-      value: type,
-    }));
-  }, [tableData]);
-
-  const categories = useMemo(() => {
-    const cats = new Set(
-      tableData.map((item) => item.integrationTypeInfo.category),
-    );
-    return Array.from(cats).map((category) => ({
-      text: category,
-      value: category,
-    }));
-  }, [tableData]);
-
-  const capabilities = useMemo(() => {
-    const caps = new Set(
-      tableData.flatMap((item) => item.integrationTypeInfo.tags),
-    );
-    return Array.from(caps).map((capability) => ({
-      text: capability,
-      value: capability,
-    }));
-  }, [tableData]);
 
   const columns: ColumnsType<IntegrationTableData> = [
     {
       title: "Name",
       dataIndex: "name",
       key: "name",
-      render: (name: string | null, record) => (
-        <div className="flex items-center gap-3">
-          <ConnectionTypeLogo data={record} boxSize="32px" />
-          <span className="font-medium">{name || "(No name)"}</span>
-        </div>
-      ),
-      sorter: (a, b) => (a.name || "").localeCompare(b.name || ""),
-    },
-    {
-      title: "Connection",
-      dataIndex: "connection_type",
-      key: "connection_type",
-      filters: connectionTypes,
-      filterMultiple: true,
-      onFilter: (value, record) => record.connection_type === value,
       width: 250,
       render: (name: string | null, record) => (
         <div className="flex items-center gap-3">
@@ -278,7 +190,7 @@ const IntegrationListView: NextPage = () => {
   const paginationConfig: TableProps<IntegrationTableData>["pagination"] = {
     current: page,
     pageSize,
-    total,
+    total: tableData.length,
     showSizeChanger: true,
     showQuickJumper: false,
     showTotal: (totalItems, range) =>
