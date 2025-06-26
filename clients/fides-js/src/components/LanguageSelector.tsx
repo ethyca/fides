@@ -17,12 +17,18 @@ interface LanguageSelectorProps {
   availableLocales: Locale[];
   options: FidesInitOptions;
   isTCF?: boolean;
+  isOpen: boolean;
+  onToggle: (isOpen: boolean) => void;
+  id?: string;
 }
 
 const LanguageSelector = ({
   availableLocales,
   options,
   isTCF,
+  isOpen,
+  onToggle,
+  id,
 }: LanguageSelectorProps) => {
   const { i18n, currentLocale, setCurrentLocale, setIsLoading } = useI18n();
   const contextGvl = useContext(GVLContext);
@@ -55,10 +61,28 @@ const LanguageSelector = ({
       }
     }
     document.getElementById(FIDES_OVERLAY_WRAPPER)?.focus();
+    onToggle(false); // Close the menu after selection
+  };
+
+  const handleToggle = () => {
+    onToggle(!isOpen);
+  };
+
+  const handleMouseEnter = () => {
+    onToggle(true);
+  };
+
+  const handleMouseLeave = () => {
+    onToggle(false);
   };
 
   return (
-    <div className="fides-i18n-menu">
+    <div
+      id={id}
+      className={`fides-i18n-menu ${isOpen ? "fides-i18n-menu-open" : ""}`}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
       <div role="group" className="fides-i18n-popover">
         {i18n.availableLanguages.map((lang) => (
           <MenuItem
@@ -75,7 +99,13 @@ const LanguageSelector = ({
           </MenuItem>
         ))}
       </div>
-      <div className="fides-i18n-pseudo-button">
+      <div
+        className="fides-i18n-pseudo-button"
+        onClick={handleToggle}
+        onKeyPress={handleToggle}
+        role="button"
+        tabIndex={0}
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           height="100%"
