@@ -8,12 +8,8 @@ describe("Manual Tasks", () => {
   });
 
   describe("Manual Tasks Tab and Basic Functionality", () => {
-    beforeEach(() => {
-      cy.visit("/privacy-requests#manual-tasks");
-      cy.getByTestId("privacy-requests").should("exist");
-    });
-
     it("should display the manual tasks tab and load tasks correctly", () => {
+      cy.visit("/privacy-requests#manual-tasks");
       cy.wait("@getManualTasks");
 
       // Check that the Manual tasks tab is visible and active
@@ -39,6 +35,7 @@ describe("Manual Tasks", () => {
     });
 
     it("should handle search functionality and empty states", () => {
+      cy.visit("/privacy-requests#manual-tasks");
       cy.wait("@getManualTasks");
 
       // Test search functionality
@@ -68,7 +65,7 @@ describe("Manual Tasks", () => {
 
     it("should display empty state when no tasks are available", () => {
       // Mock empty response before navigation
-      cy.intercept("GET", "/api/v1/manual-tasks*", {
+      cy.intercept("GET", "/api/v1/manual-tasks?page=1&size=25&search=*", {
         body: {
           items: [],
           total: 0,
@@ -77,10 +74,10 @@ describe("Manual Tasks", () => {
           pages: 0,
           filterOptions: { assigned_users: [], systems: [] },
         },
-      }).as("getManualTasks");
+      }).as("getManualTasksEmpty");
 
       cy.visit("/privacy-requests#manual-tasks");
-      cy.wait("@getManualTasks");
+      cy.wait("@getManualTasksEmpty");
       cy.getByTestId("empty-state").should(
         "contain",
         "No manual tasks available",
