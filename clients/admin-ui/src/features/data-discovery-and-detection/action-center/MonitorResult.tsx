@@ -2,6 +2,7 @@ import { formatDistance } from "date-fns";
 import {
   AntAvatar as Avatar,
   AntCol as Col,
+  AntFlex as Flex,
   AntList as List,
   AntListItemProps as ListItemProps,
   AntRow as Row,
@@ -11,7 +12,7 @@ import {
   Icons,
 } from "fidesui";
 import NextLink from "next/link";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
 import {
@@ -20,6 +21,7 @@ import {
   getWebsiteIconUrl,
 } from "~/features/common/utils";
 
+import { DiscoveryStatusIcon } from "./DiscoveryStatusIcon";
 import { MonitorAggregatedResults } from "./types";
 
 const { Text } = Typography;
@@ -34,18 +36,24 @@ export const MonitorResult = ({
   showSkeleton,
   ...props
 }: MonitorResultProps) => {
-  const [iconUrl, setIconUrl] = useState<string | undefined>(undefined);
-
   const {
     name,
-    property,
     total_updates: totalUpdates,
     updates,
     last_monitored: lastMonitored,
-    warning,
     secrets,
     key,
   } = monitorSummary;
+
+  const consentStatus = undefined; // TODO: replace with the actual consent status from the API
+
+  const property = useMemo(() => {
+    return secrets?.url ? getDomain(secrets.url) : undefined;
+  }, [secrets?.url]);
+
+  const iconUrl = useMemo(() => {
+    return property ? getWebsiteIconUrl(property, 60) : undefined;
+  }, [property]);
 
   const assetCountString = Object.entries(updates)
     .map((update) => {
@@ -62,15 +70,6 @@ export const MonitorResult = ({
         addSuffix: true,
       })
     : undefined;
-
-  useEffect(() => {
-    if (property) {
-      setIconUrl(getWebsiteIconUrl(property, 60));
-    }
-    if (secrets?.url) {
-      setIconUrl(getWebsiteIconUrl(getDomain(secrets.url), 60));
-    }
-  }, [property, secrets?.url]);
 
   return (
     <List.Item data-testid={`monitor-result-${key}`} {...props}>
@@ -90,22 +89,15 @@ export const MonitorResult = ({
                 />
               }
               title={
-                <NextLink
-                  href={`${ACTION_CENTER_ROUTE}/${key}`}
-                  className="whitespace-nowrap"
-                >
-                  {`${totalUpdates} assets detected${property ? ` on ${property}` : ""}`}
-                  {!!warning && (
-                    <Tooltip
-                      title={typeof warning === "string" ? warning : undefined}
-                    >
-                      <Icons.WarningAltFilled
-                        className="ml-1 inline-block align-middle"
-                        style={{ color: "var(--fidesui-error)" }}
-                      />
-                    </Tooltip>
-                  )}
-                </NextLink>
+                <Flex align="center" gap={4}>
+                  <NextLink
+                    href={`${ACTION_CENTER_ROUTE}/${key}`}
+                    className="whitespace-nowrap"
+                  >
+                    {`${totalUpdates} assets detected${property ? ` on ${property}` : ""}`}
+                  </NextLink>
+                  <DiscoveryStatusIcon consentStatus={consentStatus} />
+                </Flex>
               }
               description={`${assetCountString} detected.`}
             />
