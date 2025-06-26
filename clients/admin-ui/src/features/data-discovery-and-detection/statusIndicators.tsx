@@ -4,6 +4,8 @@ import { RightUpArrowIcon } from "~/features/common/Icon/RightUpArrowIcon";
 import { TagIcon } from "~/features/common/Icon/TagIcon";
 import { ResourceChangeType } from "~/features/data-discovery-and-detection/types/ResourceChangeType";
 
+// FIXME: remove all layout styles (margins) from these components and apply those to the wrapper. Layout styles should never be hard coded on a component!
+
 export const AdditionIndicator = () => (
   <RightUpArrowIcon
     color="green.400"
