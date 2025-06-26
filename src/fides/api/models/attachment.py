@@ -5,9 +5,9 @@ from typing import IO, TYPE_CHECKING, Any, Tuple
 
 from fideslang.validation import AnyHttpUrlString
 from loguru import logger as log
-from sqlalchemy import Column
+from sqlalchemy import Column, DateTime
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import ForeignKey, String, UniqueConstraint, orm
+from sqlalchemy import ForeignKey, Index, String, UniqueConstraint, func, orm
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
 
@@ -64,8 +64,14 @@ class AttachmentReference(Base):
         """Overriding base class method to set the table name."""
         return "attachment_reference"
 
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
     attachment_id = Column(
-        String, ForeignKey("attachment.id", ondelete="CASCADE"), nullable=False
+        String,
+        ForeignKey("attachment.id", name="attachment_reference_attachment_id_fkey"),
+        nullable=False,
     )
     reference_id = Column(String, nullable=False)
     reference_type = Column(EnumColumn(AttachmentReferenceType), nullable=False)
@@ -74,6 +80,8 @@ class AttachmentReference(Base):
         UniqueConstraint(
             "attachment_id", "reference_id", name="_attachment_reference_uc"
         ),
+        Index("ix_attachment_reference_reference_id", "reference_id"),
+        Index("ix_attachment_reference_reference_type", "reference_type"),
     )
 
     # Relationships
@@ -91,6 +99,10 @@ class Attachment(Base):
     """
     Stores information about an Attachment.
     """
+
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
 
     user_id = Column(
         String, ForeignKey("fidesuser.id", ondelete="SET NULL"), nullable=True
