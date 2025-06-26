@@ -48,8 +48,6 @@ export const defaultAntTheme: ThemeConfig = {
       defaultShadow: undefined,
       dangerShadow: undefined,
       defaultBg: palette.FIDESUI_FULL_WHITE,
-      colorLink: palette.FIDESUI_MINOS,
-      colorLinkHover: palette.FIDESUI_NEUTRAL_500,
     },
     Card: {
       colorBorderSecondary: palette.FIDESUI_NEUTRAL_200,
