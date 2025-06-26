@@ -157,7 +157,7 @@ export const CompleteTaskModal = ({
                   <Input.TextArea
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
-                    placeholder="Add any additional comments..."
+                    placeholder="(Optional) Add an internal comment..."
                     rows={3}
                     data-testid="complete-modal-comment-input"
                   />
