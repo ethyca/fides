@@ -3,7 +3,7 @@ import { AntTooltip as Tooltip, Icons } from "fidesui";
 import { ConsentStatus, ConsentStatusInfo } from "~/types/api";
 
 interface DiscoveryStatusIconProps {
-  consentStatus: ConsentStatusInfo | undefined;
+  consentStatus: ConsentStatusInfo | null | undefined;
 }
 
 export const DiscoveryStatusIcon = ({
