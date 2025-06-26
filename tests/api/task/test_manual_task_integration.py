@@ -229,7 +229,7 @@ class TestManualTaskGraphIntegration:
 
         # Since we don't have any manual tasks set up, this should return unchanged
         result_nodes, result_end_nodes = include_manual_tasks_in_graph(
-            db, None, policy, traversal_nodes, end_nodes
+            db, traversal_nodes, end_nodes
         )
 
         # Should return the same empty graph since no manual tasks match policy

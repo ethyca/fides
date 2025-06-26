@@ -31,7 +31,8 @@ export const usePrivacyRequestEventLogs = (results?: PrivacyRequestResults) => {
           title: key,
           date: new Date(logs[0].updated_at),
           type: ActivityTimelineItemTypeEnum.REQUEST_UPDATE,
-          showViewLog: hasUnresolvedError || hasSkippedEntry || hasAwaitingProcessing,
+          showViewLog:
+            hasUnresolvedError || hasSkippedEntry || hasAwaitingProcessing,
           onClick: () => {}, // This will be overridden in the component
           isError: hasUnresolvedError,
           isSkipped: hasSkippedEntry,

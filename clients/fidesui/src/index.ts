@@ -10,6 +10,11 @@ export * from "@chakra-ui/utils";
 export type { ThemeConfig as AntThemeConfig } from "antd/es";
 export type { ColumnsType as AntColumnsType } from "antd/es/table";
 export type {
+  FilterValue as AntFilterValue,
+  SorterResult as AntSorterResult,
+  TablePaginationConfig as AntTablePaginationConfig,
+} from "antd/es/table/interface";
+export type {
   ButtonProps as AntButtonProps,
   CollapseProps as AntCollapseProps,
   FlexProps as AntFlexProps,
@@ -61,7 +66,6 @@ export {
   Spin as AntSpin,
   Steps as AntSteps,
   Switch as AntSwitch,
-  Table as AntTable,
   Tabs as AntTabs,
   Tooltip as AntTooltip,
   Upload as AntUpload,
@@ -81,6 +85,7 @@ export type { UploadChangeParam as AntUploadChangeParam } from "antd/lib/upload"
 export {
   CustomDateRangePicker as AntDateRangePicker,
   CustomSelect as AntSelect,
+  CustomTable as AntTable,
   CustomTag as AntTag,
   CustomTypography as AntTypography,
 } from "./hoc";
@@ -124,4 +129,5 @@ export { DataCategoryDropdown } from "./components/data-category-dropdown";
 export { ExampleComponent } from "./components/example-component";
 export { FloatingMenu } from "./components/floating-menu";
 export { PrimaryLink, SecondaryLink } from "./components/links";
+export { SelectInline } from "./components/select-inline";
 export { SystemsCheckboxTable } from "./components/systems-checkbox-table";

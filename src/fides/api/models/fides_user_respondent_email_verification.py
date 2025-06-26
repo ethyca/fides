@@ -3,12 +3,13 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING, Any, Optional
 
-from sqlalchemy import Column, DateTime, ForeignKey, String
+from sqlalchemy import Column, DateTime, ForeignKey, Index, String
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
+from sqlalchemy.sql import func
 
 from fides.api.cryptography.cryptographic_util import generate_secure_random_string
-from fides.api.db.base_class import Base
+from fides.api.db.base_class import Base, FidesBase
 from fides.api.util.identity_verification import IdentityVerificationMixin
 from fides.config import get_config
 
@@ -40,6 +41,22 @@ class FidesUserRespondentEmailVerification(Base, IdentityVerificationMixin):
     def __tablename__(self) -> str:
         return "fides_user_respondent_email_verification"
 
+    # redefined here because there's a minor, unintended discrepancy between
+    # this `id` field and that of the `Base` class, which explicitly sets `index=True`.
+    # TODO: we likely should _not_ be setting `index=True` on the `id`
+    # attribute of the `Base` class, as `primary_key=True` already specifies a
+    # primary key constraint, which will implicitly create an index for the field.
+    id = Column(String(255), primary_key=True, default=FidesBase.generate_uuid)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
     user_id = Column(
         String,
         ForeignKey("fidesuser.id", ondelete="CASCADE"),
@@ -57,6 +74,14 @@ class FidesUserRespondentEmailVerification(Base, IdentityVerificationMixin):
         "FidesUser",
         back_populates="email_verifications",
         foreign_keys=[user_id],
+    )
+
+    __table_args__ = (
+        Index(
+            "ix_fides_user_respondent_email_verification_id",
+            "id",
+            unique=True,
+        ),
     )
 
     @classmethod

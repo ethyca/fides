@@ -3,12 +3,22 @@ from enum import Enum
 from typing import TYPE_CHECKING, Annotated, Any, Optional, cast
 
 from pydantic import ConfigDict, Field
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    UniqueConstraint,
+)
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
+from sqlalchemy.sql import func
 
-from fides.api.db.base_class import Base
+from fides.api.db.base_class import Base, FidesBase
 from fides.api.db.util import EnumColumn
 from fides.api.schemas.base_class import FidesSchema
 
@@ -160,6 +170,22 @@ class ManualTask(Base):
         """Overriding base class method to set the table name."""
         return "manual_task"
 
+    # redefined here because there's a minor, unintended discrepancy between
+    # this `id` field and that of the `Base` class, which explicitly sets `index=True`.
+    # TODO: we likely should _not_ be setting `index=True` on the `id`
+    # attribute of the `Base` class, as `primary_key=True` already specifies a
+    # primary key constraint, which will implicitly create an index for the field.
+    id = Column(String(255), primary_key=True, default=FidesBase.generate_uuid)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
     # Database columns
     task_type = Column(
         EnumColumn(ManualTaskType),
@@ -171,6 +197,16 @@ class ManualTask(Base):
         EnumColumn(ManualTaskParentEntityType),
         nullable=False,
         default=ManualTaskParentEntityType.connection_config,
+    )
+
+    __table_args__ = (
+        UniqueConstraint(
+            "parent_entity_id",
+            "parent_entity_type",
+            name="uq_manual_task_parent_entity",
+        ),
+        Index("ix_manual_task_parent_entity", "parent_entity_type", "parent_entity_id"),
+        Index("ix_manual_task_task_type", "task_type"),
     )
 
     # Relationships
@@ -241,12 +277,40 @@ class ManualTaskInstance(Base):
         """Overriding base class method to set the table name."""
         return "manual_task_instance"
 
+    # redefined here because there's a minor, unintended discrepancy between
+    # this `id` field and that of the `Base` class, which explicitly sets `index=True`.
+    # TODO: we likely should _not_ be setting `index=True` on the `id`
+    # attribute of the `Base` class, as `primary_key=True` already specifies a
+    # primary key constraint, which will implicitly create an index for the field.
+    id = Column(String(255), primary_key=True, default=FidesBase.generate_uuid)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
     # Database columns
     task_id = Column(
-        String, ForeignKey("manual_task.id", ondelete="SET NULL"), nullable=True
+        String,
+        ForeignKey(
+            "manual_task.id",
+            name="manual_task_instance_task_id_fkey",
+            ondelete="SET NULL",
+        ),
+        nullable=True,
     )
     config_id = Column(
-        String, ForeignKey("manual_task_config.id", ondelete="RESTRICT"), nullable=False
+        String,
+        ForeignKey(
+            "manual_task_config.id",
+            name="manual_task_instance_config_id_fkey",
+            ondelete="RESTRICT",
+        ),
+        nullable=False,
     )
     # entity id is the entity that the instance relates to
     # (e.g. a privacy request is an entity that has its own manual task instance)
@@ -258,6 +322,16 @@ class ManualTaskInstance(Base):
     completed_at = Column(DateTime, nullable=True)  # type: ignore[assignment]
     completed_by_id = Column(String, nullable=True)  # type: ignore[assignment]
     due_date = Column(DateTime, nullable=True)
+
+    __table_args__ = (
+        Index("ix_manual_task_instance_completed_at", "completed_at"),
+        Index("ix_manual_task_instance_config_id", "config_id"),
+        Index("ix_manual_task_instance_entity", "entity_type", "entity_id"),
+        Index("ix_manual_task_instance_entity_id", "entity_id"),
+        Index("ix_manual_task_instance_entity_type", "entity_type"),
+        Index("ix_manual_task_instance_status", "status"),
+        Index("ix_manual_task_instance_task_id", "task_id"),
+    )
 
     # Relationships
     task = relationship("ManualTask", back_populates="instances")
@@ -381,12 +455,33 @@ class ManualTaskReference(Base):
         """Overriding base class method to set the table name."""
         return "manual_task_reference"
 
+    # redefined here because there's a minor, unintended discrepancy between
+    # this `id` field and that of the `Base` class, which explicitly sets `index=True`.
+    # TODO: we likely should _not_ be setting `index=True` on the `id`
+    # attribute of the `Base` class, as `primary_key=True` already specifies a
+    # primary key constraint, which will implicitly create an index for the field.
+    id = Column(String(255), primary_key=True, default=FidesBase.generate_uuid)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
     # Database columns
     task_id = Column(
         String, ForeignKey("manual_task.id", ondelete="CASCADE"), nullable=False
     )
     reference_id = Column(String, nullable=False)
     reference_type = Column(EnumColumn(ManualTaskReferenceType), nullable=False)
+
+    __table_args__ = (
+        Index("ix_manual_task_reference_reference", "reference_id", "reference_type"),
+        Index("ix_manual_task_reference_task_id", "task_id"),
+    )
 
     # Relationships
     task = relationship("ManualTask", back_populates="references")
@@ -401,8 +496,30 @@ class ManualTaskConfig(Base):
     def __tablename__(cls) -> str:
         return "manual_task_config"
 
+    # redefined here because there's a minor, unintended discrepancy between
+    # this `id` field and that of the `Base` class, which explicitly sets `index=True`.
+    # TODO: we likely should _not_ be setting `index=True` on the `id`
+    # attribute of the `Base` class, as `primary_key=True` already specifies a
+    # primary key constraint, which will implicitly create an index for the field.
+    id = Column(String(255), primary_key=True, default=FidesBase.generate_uuid)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
     task_id = Column(
-        String, ForeignKey("manual_task.id", ondelete="SET NULL"), nullable=True
+        String,
+        ForeignKey(
+            "manual_task.id",
+            name="manual_task_config_task_id_fkey",
+            ondelete="SET NULL",
+        ),
+        nullable=True,
     )
     config_type = Column(EnumColumn(ManualTaskConfigurationType), nullable=False)
     version = Column(Integer, nullable=False, default=1)
@@ -411,6 +528,11 @@ class ManualTaskConfig(Base):
         EnumColumn(ManualTaskExecutionTiming),
         nullable=False,
         default=ManualTaskExecutionTiming.pre_execution,
+    )
+
+    __table_args__ = (
+        Index("ix_manual_task_config_config_type", "config_type"),
+        Index("ix_manual_task_config_task_id", "task_id"),
     )
 
     # Relationships
@@ -481,16 +603,53 @@ class ManualTaskConfigField(Base):
     def __tablename__(cls) -> str:
         return "manual_task_config_field"
 
-    task_id = Column(
-        String, ForeignKey("manual_task.id", ondelete="SET NULL"), nullable=True
+    # redefined here because there's a minor, unintended discrepancy between
+    # this `id` field and that of the `Base` class, which explicitly sets `index=True`.
+    # TODO: we likely should _not_ be setting `index=True` on the `id`
+    # attribute of the `Base` class, as `primary_key=True` already specifies a
+    # primary key constraint, which will implicitly create an index for the field.
+    id = Column(String(255), primary_key=True, default=FidesBase.generate_uuid)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
     )
-    config_id = Column(String, ForeignKey("manual_task_config.id"), nullable=False)
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
+    task_id = Column(
+        String,
+        ForeignKey(
+            "manual_task.id",
+            name="manual_task_config_field_task_id_fkey",
+            ondelete="SET NULL",
+        ),
+        nullable=True,
+    )
+    config_id = Column(
+        String,
+        ForeignKey(
+            "manual_task_config.id",
+            name="manual_task_config_field_config_id_fkey",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+    )
     field_key = Column(String, nullable=False)
     field_type = Column(
         EnumColumn(ManualTaskFieldType), nullable=False
     )  # Using ManualTaskFieldType
     field_metadata: dict[str, Any] = cast(
         dict[str, Any], Column(JSONB, nullable=False, default={})
+    )
+
+    __table_args__ = (
+        UniqueConstraint("config_id", "field_key", name="unique_field_key_per_config"),
+        Index("ix_manual_task_config_field_config_id", "config_id"),
+        Index("ix_manual_task_config_field_field_key", "field_key"),
+        Index("ix_manual_task_config_field_task_id", "task_id"),
     )
 
     # Relationships
@@ -548,26 +707,80 @@ class ManualTaskSubmission(Base):
         """Overriding base class method to set the table name."""
         return "manual_task_submission"
 
+    # redefined here because there's a minor, unintended discrepancy between
+    # this `id` field and that of the `Base` class, which explicitly sets `index=True`.
+    # TODO: we likely should _not_ be setting `index=True` on the `id`
+    # attribute of the `Base` class, as `primary_key=True` already specifies a
+    # primary key constraint, which will implicitly create an index for the field.
+    id = Column(String(255), primary_key=True, default=FidesBase.generate_uuid)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
     # Database columns
     task_id = Column(
-        String, ForeignKey("manual_task.id", ondelete="SET NULL"), nullable=True
+        String,
+        ForeignKey(
+            "manual_task.id",
+            name="manual_task_submission_task_id_fkey",
+            ondelete="SET NULL",
+        ),
+        nullable=True,
     )
     config_id = Column(
-        String, ForeignKey("manual_task_config.id", ondelete="RESTRICT"), nullable=True
+        String,
+        ForeignKey(
+            "manual_task_config.id",
+            name="manual_task_submission_config_id_fkey",
+            ondelete="RESTRICT",
+        ),
+        nullable=False,
     )
     field_id = Column(
         String,
-        ForeignKey("manual_task_config_field.id", ondelete="RESTRICT"),
-        nullable=True,
+        ForeignKey(
+            "manual_task_config_field.id",
+            name="manual_task_submission_field_id_fkey",
+            ondelete="RESTRICT",
+        ),
+        nullable=False,
     )
     instance_id = Column(
         String,
-        ForeignKey("manual_task_instance.id", ondelete="CASCADE"),
+        ForeignKey(
+            "manual_task_instance.id",
+            name="manual_task_submission_instance_id_fkey",
+            ondelete="CASCADE",
+        ),
         nullable=False,
     )
-    submitted_by = Column(String, ForeignKey("fidesuser.id"), nullable=True)
+    submitted_by = Column(
+        String,
+        ForeignKey(
+            "fidesuser.id",
+            name="manual_task_submission_submitted_by_fkey",
+            ondelete="SET NULL",
+        ),
+        nullable=True,
+    )
     submitted_at = Column(DateTime, default=datetime.now(timezone.utc), nullable=False)
     data = Column(JSONB, nullable=False)
+
+    __table_args__ = (
+        Index("ix_manual_task_submission_config_id", "config_id"),
+        Index("ix_manual_task_submission_field_id", "field_id"),
+        Index("ix_manual_task_submission_instance_field", "instance_id", "field_id"),
+        Index("ix_manual_task_submission_instance_id", "instance_id"),
+        Index("ix_manual_task_submission_submitted_at", "submitted_at"),
+        Index("ix_manual_task_submission_submitted_by", "submitted_by"),
+        Index("ix_manual_task_submission_task_id", "task_id"),
+    )
 
     # Relationships
     task = relationship("ManualTask", back_populates="submissions")
@@ -640,6 +853,22 @@ class ManualTaskLog(Base):
         """Overriding base class method to set the table name."""
         return "manual_task_log"
 
+    # redefined here because there's a minor, unintended discrepancy between
+    # this `id` field and that of the `Base` class, which explicitly sets `index=True`.
+    # TODO: we likely should _not_ be setting `index=True` on the `id`
+    # attribute of the `Base` class, as `primary_key=True` already specifies a
+    # primary key constraint, which will implicitly create an index for the field.
+    id = Column(String(255), primary_key=True, default=FidesBase.generate_uuid)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
     task_id = Column(
         String, ForeignKey("manual_task.id", ondelete="SET NULL"), nullable=True
     )
@@ -652,8 +881,16 @@ class ManualTaskLog(Base):
         nullable=True,
     )
     status = Column(String, nullable=False)
-    message = Column(String, nullable=False)
+    message = Column(String, nullable=True)
     details = Column(JSONB, nullable=True)
+
+    __table_args__ = (
+        Index("ix_manual_task_log_config_id", "config_id"),
+        Index("ix_manual_task_log_created_at", "created_at"),
+        Index("ix_manual_task_log_instance_id", "instance_id"),
+        Index("ix_manual_task_log_status", "status"),
+        Index("ix_manual_task_log_task_id", "task_id"),
+    )
 
     # Relationships
     task = relationship("ManualTask", back_populates="logs", foreign_keys=[task_id])

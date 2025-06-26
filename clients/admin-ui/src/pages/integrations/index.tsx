@@ -62,11 +62,10 @@ const IntegrationListView: NextPage = () => {
   const supportedIntegrations = useMemo(() => {
     return SUPPORTED_INTEGRATIONS.filter((integration) => {
       return (
-        integration !== ConnectionType.MANUAL_WEBHOOK ||
-        flags.alphaNewManualIntegration
+        integration !== ConnectionType.MANUAL_WEBHOOK || flags.alphaNewManualDSR
       );
     });
-  }, [flags.alphaNewManualIntegration]);
+  }, [flags.alphaNewManualDSR]);
 
   const { data, isLoading } = useGetAllDatastoreConnectionsQuery({
     connection_type: supportedIntegrations,
