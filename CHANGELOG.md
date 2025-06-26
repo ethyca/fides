@@ -26,6 +26,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Changed
 - Update FastAPI to 0.115.2 for starlette 0.40.0 [#6244](https://github.com/ethyca/fides/pull/6244)
+- Update Shopify integration so that we do not pass consent keys to Shopify with undefined values [#6270](https://github.com/ethyca/fides/pull/6270)
 
 ### Developer Experience
 - Updated SQLAlchemy models to match the contents of the Alembic migrations [#6262](https://github.com/ethyca/fides/pull/6262)
