@@ -1,6 +1,7 @@
 import { baseApi } from "~/features/common/api.slice";
 import { getQueryParamsFromArray } from "~/features/common/utils";
 import {
+  AggregatedConsent,
   DiffStatus,
   Page_StagedResourceAPIResponse_,
   Page_SystemStagedResourcesAggregateRecord_,
@@ -75,7 +76,7 @@ const actionCenterApi = baseApi.injectEndpoints({
       providesTags: () => ["Discovery Monitor Results"],
     }),
     addMonitorResultSystems: build.mutation<
-      any,
+      any, // TASK: add API response type
       MonitorResultSystemQueryParams
     >({
       query: ({ monitor_config_key, resolved_system_ids }) => {
@@ -91,7 +92,7 @@ const actionCenterApi = baseApi.injectEndpoints({
       invalidatesTags: ["Discovery Monitor Results"],
     }),
     ignoreMonitorResultSystems: build.mutation<
-      any,
+      any, // TASK: add API response type
       MonitorResultSystemQueryParams
     >({
       query: ({ monitor_config_key, resolved_system_ids }) => {
@@ -196,6 +197,24 @@ const actionCenterApi = baseApi.injectEndpoints({
         body: params.assets,
       }),
       invalidatesTags: ["Discovery Monitor Results"],
+    }),
+    getConsentStatusTableData: build.query<
+      any, // TASK: add API response type
+      {
+        monitorId: string;
+        status: AggregatedConsent;
+        page?: number;
+        size?: number;
+      } & PaginationQueryParams
+    >({
+      query: ({ monitorId, status, page = 1, size = 20 }) => ({
+        url: `/plus/discovery-monitor/staged_resource/${monitorId}/consent`,
+        params: {
+          status,
+          page,
+          size,
+        },
+      }),
     }),
   }),
 });
