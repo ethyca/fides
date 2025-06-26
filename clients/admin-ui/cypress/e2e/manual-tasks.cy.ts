@@ -283,7 +283,31 @@ describe("Manual Tasks", () => {
         );
         cy.getByTestId("complete-modal-save-button").should("be.disabled");
 
-        cy.getByTestId("complete-modal-cancel-button").click();
+        // Attach a file
+        cy.get('input[type="file"]').selectFile(
+          "cypress/fixtures/privacy-requests/test-upload.pdf",
+          { force: true },
+        );
+
+        // Save button should now be enabled
+        cy.getByTestId("complete-modal-save-button").should("not.be.disabled");
+
+        // Submit and verify request parameters
+        cy.getByTestId("complete-modal-save-button").click();
+      });
+
+      // Verify correct parameters are sent in the request
+      cy.wait("@completeTask").then((interception) => {
+        expect(interception.request.body).to.deep.include({
+          task_id: "task_001",
+          attachment_type: "file",
+          comment: "Test comment for file upload",
+        });
+        // Verify other input types are not included
+        expect(interception.request.body).to.not.have.property("text_value");
+        expect(interception.request.body).to.not.have.property(
+          "checkbox_value",
+        );
       });
 
       cy.getByTestId("complete-task-modal").should("not.exist");
