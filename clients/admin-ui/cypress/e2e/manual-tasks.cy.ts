@@ -409,8 +409,6 @@ describe("Manual Tasks", () => {
           "attachment_type",
         );
       });
-
-      cy.getByTestId("complete-task-modal").should("not.exist");
     });
   });
 

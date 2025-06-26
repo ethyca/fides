@@ -1,3 +1,4 @@
+import type { UploadFile } from "antd";
 import {
   AntButton as Button,
   AntCheckbox as Checkbox,
@@ -34,7 +35,14 @@ export const CompleteTaskModal = ({
   const [textValue, setTextValue] = useState("");
   const [checkboxValue, setCheckboxValue] = useState(false);
   const [comment, setComment] = useState("");
-  const [fileList, setFileList] = useState<any[]>([]);
+  const [fileList, setFileList] = useState<UploadFile[]>([]);
+
+  const resetForm = () => {
+    setTextValue("");
+    setCheckboxValue(false);
+    setComment("");
+    setFileList([]);
+  };
 
   const handleSave = async () => {
     try {
@@ -47,11 +55,7 @@ export const CompleteTaskModal = ({
         comment: comment || undefined,
       }).unwrap();
 
-      // Reset form
-      setTextValue("");
-      setCheckboxValue(false);
-      setComment("");
-      setFileList([]);
+      resetForm();
       onClose();
     } catch (error) {
       console.error("Failed to complete task:", error);
@@ -59,11 +63,7 @@ export const CompleteTaskModal = ({
   };
 
   const handleCancel = () => {
-    // Reset form
-    setTextValue("");
-    setCheckboxValue(false);
-    setComment("");
-    setFileList([]);
+    resetForm();
     onClose();
   };
 
@@ -119,6 +119,7 @@ export const CompleteTaskModal = ({
                 }
                 beforeUpload={() => false} // Prevent auto upload
                 data-testid="complete-modal-file-upload"
+                maxCount={1}
               >
                 <Button data-testid="complete-modal-upload-button">
                   Click to Upload
