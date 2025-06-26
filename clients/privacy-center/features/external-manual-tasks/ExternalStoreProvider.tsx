@@ -31,13 +31,13 @@ const SettingsLoader = ({
 }: {
   children: ReactNode;
   settings: PrivacyCenterClientSettings;
-}) => {
+}): React.ReactElement => {
   useEffect(() => {
     // Load settings into external store
     externalStore.dispatch(loadSettings(settings));
   }, [settings]);
 
-  return children;
+  return children as React.ReactElement;
 };
 
 const ExternalStoreProvider = ({
