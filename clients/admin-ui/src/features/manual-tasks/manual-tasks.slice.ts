@@ -106,7 +106,7 @@ export const manualTasksApi = baseApi.injectEndpoints({
       ...(isTestEnvironment()
         ? {
             query: (params) => {
-              const queryParams = params || { page: 1, size: 10 };
+              const queryParams = params || { page: 1, size: 25 };
               const searchParams = new URLSearchParams();
 
               Object.entries(queryParams).forEach(([key, value]) => {

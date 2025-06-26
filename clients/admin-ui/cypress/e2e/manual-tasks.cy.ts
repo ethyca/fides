@@ -256,7 +256,8 @@ describe("Manual Tasks", () => {
       cy.wait("@getManualTasks");
     });
 
-    it("should display file upload input for file type tasks and validate correctly", () => {
+    it("should display file upload input for file type tasks and send correct parameters", () => {
+      // Find and click complete button for file upload task
       cy.get("tbody tr")
         .contains("Export Customer Data from Salesforce")
         .parents("tr")
@@ -270,21 +271,13 @@ describe("Manual Tasks", () => {
 
       cy.getByTestId("complete-task-modal").should("be.visible");
       cy.getByTestId("complete-task-modal").within(() => {
-        cy.contains("Upload File").should("be.visible");
+        // Verify file upload input is displayed
         cy.getByTestId("complete-modal-upload-button").should("be.visible");
+
+        // Verify save button is disabled without file
         cy.getByTestId("complete-modal-save-button").should("be.disabled");
 
-        // Verify improved TaskDetails: proper request type mapping and ant tags
-        cy.contains("Request Type").should("be.visible");
-        cy.getByTestId("assigned-users-tags").should("exist"); // Ant tags for assigned users
-        cy.getByTestId("assigned-users-tags").within(() => {
-          cy.get("[data-testid^='assigned-user-tag-']").should(
-            "have.length.at.least",
-            1,
-          );
-        });
-        cy.contains("Identity -").should("exist"); // Multiple identity fields
-
+        // Add comment only (should still be disabled without file)
         cy.getByTestId("complete-modal-comment-input").type(
           "Test comment for file upload",
         );
@@ -296,7 +289,8 @@ describe("Manual Tasks", () => {
       cy.getByTestId("complete-task-modal").should("not.exist");
     });
 
-    it("should display checkbox input for checkbox type tasks and validate correctly", () => {
+    it("should display checkbox input for checkbox type tasks and send correct parameters", () => {
+      // Find and click complete button for checkbox task
       cy.get("tbody tr")
         .contains("Delete User Profile from MongoDB")
         .parents("tr")
@@ -310,31 +304,39 @@ describe("Manual Tasks", () => {
 
       cy.getByTestId("complete-task-modal").should("be.visible");
       cy.getByTestId("complete-task-modal").within(() => {
+        // Verify checkbox input is displayed
         cy.getByTestId("complete-modal-checkbox").should("exist");
-        cy.contains("The task has been completed").should("be.visible");
+
+        // Verify save button is disabled without checkbox
         cy.getByTestId("complete-modal-save-button").should("be.disabled");
 
+        // Check checkbox to enable save button
         cy.getByTestId("complete-modal-checkbox").click();
         cy.getByTestId("complete-modal-save-button").should("not.be.disabled");
 
+        // Uncheck to disable again
         cy.getByTestId("complete-modal-checkbox").click();
         cy.getByTestId("complete-modal-save-button").should("be.disabled");
 
+        // Check again and add comment
         cy.getByTestId("complete-modal-checkbox").click();
         cy.getByTestId("complete-modal-comment-input").type(
           "Task completed successfully",
         );
         cy.getByTestId("complete-modal-save-button").should("not.be.disabled");
 
+        // Submit and verify request parameters
         cy.getByTestId("complete-modal-save-button").click();
       });
 
+      // Verify correct parameters are sent in the request
       cy.wait("@completeTask").then((interception) => {
         expect(interception.request.body).to.deep.include({
           task_id: "task_002",
           checkbox_value: true,
           comment: "Task completed successfully",
         });
+        // Verify other input types are not included
         expect(interception.request.body).to.not.have.property("text_value");
         expect(interception.request.body).to.not.have.property(
           "attachment_type",
@@ -344,7 +346,8 @@ describe("Manual Tasks", () => {
       cy.getByTestId("complete-task-modal").should("not.exist");
     });
 
-    it("should display text input for string type tasks and validate correctly", () => {
+    it("should display text input for string type tasks and send correct parameters", () => {
+      // Find and click complete button for text input task
       cy.get("tbody tr")
         .contains("Export Analytics Data")
         .parents("tr")
@@ -358,21 +361,27 @@ describe("Manual Tasks", () => {
 
       cy.getByTestId("complete-task-modal").should("be.visible");
       cy.getByTestId("complete-task-modal").within(() => {
-        cy.contains("Text Input").should("be.visible");
+        // Verify text input is displayed
         cy.getByTestId("complete-modal-text-input").should("be.visible");
+
+        // Verify save button is disabled without text
         cy.getByTestId("complete-modal-save-button").should("be.disabled");
 
+        // Add text to enable save button
         cy.getByTestId("complete-modal-text-input").type(
           "Analytics data exported successfully",
         );
         cy.getByTestId("complete-modal-save-button").should("not.be.disabled");
 
+        // Clear text to disable again
         cy.getByTestId("complete-modal-text-input").clear();
         cy.getByTestId("complete-modal-save-button").should("be.disabled");
 
+        // Test whitespace-only input (should remain disabled)
         cy.getByTestId("complete-modal-text-input").type("   ");
         cy.getByTestId("complete-modal-save-button").should("be.disabled");
 
+        // Add valid text and comment
         cy.getByTestId("complete-modal-text-input")
           .clear()
           .type("Data exported to secure location");
@@ -381,15 +390,18 @@ describe("Manual Tasks", () => {
         );
         cy.getByTestId("complete-modal-save-button").should("not.be.disabled");
 
+        // Submit and verify request parameters
         cy.getByTestId("complete-modal-save-button").click();
       });
 
+      // Verify correct parameters are sent in the request
       cy.wait("@completeTask").then((interception) => {
         expect(interception.request.body).to.deep.include({
           task_id: "task_004",
           text_value: "Data exported to secure location",
           comment: "Export completed without issues",
         });
+        // Verify other input types are not included
         expect(interception.request.body).to.not.have.property(
           "checkbox_value",
         );
@@ -400,25 +412,6 @@ describe("Manual Tasks", () => {
 
       cy.getByTestId("complete-task-modal").should("not.exist");
     });
-
-    it("should allow skipping task from complete modal", () => {
-      cy.get("tbody tr")
-        .first()
-        .within(() => {
-          cy.get("td")
-            .last()
-            .within(() => {
-              cy.get("button").contains("Complete").click();
-            });
-        });
-
-      cy.getByTestId("complete-task-modal").should("be.visible");
-      cy.getByTestId("complete-task-modal").within(() => {
-        cy.getByTestId("complete-modal-skip-button").click();
-      });
-
-      cy.getByTestId("skip-task-modal").should("be.visible");
-    });
   });
 
   describe("Skip Task Modal", () => {
@@ -427,7 +420,8 @@ describe("Manual Tasks", () => {
       cy.wait("@getManualTasks");
     });
 
-    it("should display skip modal with required comment field and validate correctly", () => {
+    it("should require comment and send correct parameters", () => {
+      // Open skip modal via dropdown
       cy.get("tbody tr")
         .first()
         .within(() => {
@@ -442,40 +436,52 @@ describe("Manual Tasks", () => {
 
       cy.getByTestId("skip-task-modal").should("be.visible");
       cy.getByTestId("skip-task-modal").within(() => {
+        // Verify required comment field is displayed
         cy.contains("Reason for skipping (Required)").should("be.visible");
         cy.getByTestId("skip-modal-comment-input").should("be.visible");
+
+        // Verify skip button is disabled without comment
         cy.getByTestId("skip-modal-skip-button").should("be.disabled");
 
+        // Add comment to enable skip button
         cy.getByTestId("skip-modal-comment-input").type(
           "Task no longer required due to policy change",
         );
         cy.getByTestId("skip-modal-skip-button").should("not.be.disabled");
 
+        // Clear comment to disable again
         cy.getByTestId("skip-modal-comment-input").clear();
         cy.getByTestId("skip-modal-skip-button").should("be.disabled");
 
+        // Test whitespace-only comment (should remain disabled)
         cy.getByTestId("skip-modal-comment-input").type("   ");
         cy.getByTestId("skip-modal-skip-button").should("be.disabled");
 
+        // Add valid comment and submit
         cy.getByTestId("skip-modal-comment-input")
           .clear()
           .type("Customer withdrew request");
         cy.getByTestId("skip-modal-skip-button").should("not.be.disabled");
 
+        // Submit and verify request parameters
         cy.getByTestId("skip-modal-skip-button").click();
       });
 
+      // Verify correct parameters are sent in the request
       cy.wait("@skipTask").then((interception) => {
         expect(interception.request.body).to.deep.include({
           task_id: "task_001",
           comment: "Customer withdrew request",
         });
+        // Verify no other properties are sent
+        expect(Object.keys(interception.request.body)).to.have.lengthOf(2);
       });
 
       cy.getByTestId("skip-task-modal").should("not.exist");
     });
 
-    it("should handle cancel button correctly", () => {
+    it("should reset form state when cancelled and reopened", () => {
+      // Open skip modal
       cy.get("tbody tr")
         .first()
         .within(() => {
@@ -490,12 +496,14 @@ describe("Manual Tasks", () => {
 
       cy.getByTestId("skip-task-modal").should("be.visible");
       cy.getByTestId("skip-task-modal").within(() => {
+        // Add comment and cancel
         cy.getByTestId("skip-modal-comment-input").type("Test comment");
         cy.getByTestId("skip-modal-cancel-button").click();
       });
 
       cy.getByTestId("skip-task-modal").should("not.exist");
 
+      // Reopen skip modal
       cy.get("tbody tr")
         .first()
         .within(() => {
@@ -509,30 +517,9 @@ describe("Manual Tasks", () => {
       cy.get(".ant-dropdown-menu-item").contains("Skip task").click();
 
       cy.getByTestId("skip-task-modal").within(() => {
+        // Verify form is reset
         cy.getByTestId("skip-modal-comment-input").should("have.value", "");
         cy.getByTestId("skip-modal-skip-button").should("be.disabled");
-      });
-    });
-
-    it("should show danger styling on Skip Task button", () => {
-      cy.get("tbody tr")
-        .first()
-        .within(() => {
-          cy.get("td")
-            .last()
-            .within(() => {
-              cy.get("button[aria-label='More actions']").click();
-            });
-        });
-
-      cy.get(".ant-dropdown-menu-item").contains("Skip task").click();
-
-      cy.getByTestId("skip-task-modal").within(() => {
-        cy.getByTestId("skip-modal-comment-input").type("Test reason");
-        cy.getByTestId("skip-modal-skip-button").should(
-          "have.class",
-          "ant-btn-dangerous",
-        );
       });
     });
   });

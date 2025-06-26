@@ -103,7 +103,6 @@ export const SkipTaskModal = ({
               onClick={handleSave}
               loading={isLoading}
               disabled={!comment.trim()}
-              danger
               data-testid="skip-modal-skip-button"
             >
               Skip Task
