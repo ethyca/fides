@@ -23,7 +23,7 @@ import { useMemo, useState } from "react";
 import { useGetExternalTasksQuery } from "../external-manual-tasks.slice";
 // import { useExternalAppSelector } from "../hooks";
 import { ManualTask, RequestType, System, TaskStatus } from "../types";
-// import { ExternalTaskActionButtons } from "./ExternalTaskActionButtons";
+import { ExternalTaskActionButtons } from "./ExternalTaskActionButtons";
 
 // Map task status to tag colors and labels - aligned with RequestStatusBadge colors
 const statusMap: Record<TaskStatus, { color: string; label: string }> = {
@@ -136,12 +136,7 @@ const getExternalColumns = (
     title: "Actions",
     key: "actions",
     width: 160,
-    render: () => (
-      <div data-testid="task-actions-placeholder">
-        {/* Placeholder for actions - will implement next */}
-        Actions
-      </div>
-    ),
+    render: (_, task: ManualTask) => <ExternalTaskActionButtons task={task} />,
   },
 ];
 

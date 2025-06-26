@@ -46,7 +46,7 @@
       ],
       "privacy_request": {
         "id": "pri_completed_001",
-        "days_left": 20,
+        "days_left": 0,
         "request_type": "access",
         "subject_identity": {
           "email": {
@@ -76,7 +76,7 @@
       ],
       "privacy_request": {
         "id": "pri_skipped_001",
-        "days_left": 5,
+        "days_left": 0,
         "request_type": "erasure",
         "subject_identity": {
           "email": {

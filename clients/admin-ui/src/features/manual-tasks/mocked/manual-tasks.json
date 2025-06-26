@@ -112,7 +112,7 @@
       ],
       "privacy_request": {
         "id": "pri_9f8e7d6c-5b4a-3928-1706-f5e4d3c2b1a0",
-        "days_left": 22,
+        "days_left": 0,
         "request_type": "erasure",
         "subject_identity": {
           "email": {
@@ -188,7 +188,7 @@
       ],
       "privacy_request": {
         "id": "pri_fedcba98-7654-3210-9876-543210fedcba",
-        "days_left": 12,
+        "days_left": 0,
         "request_type": "erasure",
         "subject_identity": {
           "phone_number": {
