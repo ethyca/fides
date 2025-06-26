@@ -10,10 +10,10 @@ export enum StagedResourceTypeValue {
   SCHEMA = "Schema",
   TABLE = "Table",
   FIELD = "Field",
+  ENDPOINT = "Endpoint",
   COOKIE = "Cookie",
   BROWSER_REQUEST = "Browser request",
   IMAGE = "Image",
   I_FRAME = "iFrame",
   JAVASCRIPT_TAG = "Javascript tag",
-  ENDPOINT = "Endpoint",
 }
