@@ -5,6 +5,7 @@ import {
 import { ConfigProvider as BaseAntDesignProvider, ThemeConfig } from "antd/lib";
 import { ReactNode } from "react";
 
+import { defaultAntTheme } from "./ant-theme";
 import { theme as defaultTheme } from "./FidesUITheme";
 
 export interface FidesUIProviderProps {
@@ -16,7 +17,7 @@ export interface FidesUIProviderProps {
 export const FidesUIProvider = ({
   children,
   theme = defaultTheme,
-  antTheme,
+  antTheme = defaultAntTheme, // Use default theme if none provided
   wave,
 }: FidesUIProviderProps) => (
   <BaseAntDesignProvider theme={antTheme} wave={wave}>

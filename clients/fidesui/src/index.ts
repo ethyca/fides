@@ -113,6 +113,11 @@ export * from "./FidesUIProvider";
 export { extendTheme, theme } from "./FidesUITheme";
 
 /**
+ * Ant Design Theme System
+ */
+export { createDefaultAntTheme, defaultAntTheme } from "./ant-theme";
+
+/**
  * Custom Components
  * These components are custom to FidesUI and are not included in ChakraUI, although they may rely on ChakraUI components.
  */
