@@ -23,4 +23,5 @@ export type MonitorClassifyParams = {
   infer_not_pii?: boolean;
   content_model?: string;
   context_regex_pattern_mapping?: Array<any[]>;
+  ignore_classification_updates?: boolean;
 };
