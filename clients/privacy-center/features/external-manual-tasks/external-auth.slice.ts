@@ -87,6 +87,7 @@ const isTestEnvironment = () => {
     (window.Cypress || process.env.NODE_ENV === "test");
 
   if (process.env.NODE_ENV === "development") {
+    // eslint-disable-next-line no-console
     console.log("🔍 isTestEnvironment result:", {
       result,
       windowExists: typeof window !== "undefined",

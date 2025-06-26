@@ -68,6 +68,7 @@ export const ExternalCompleteTaskModal = ({
       setFileList([]);
       onClose();
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error("Failed to complete task:", err);
       setError("Failed to complete task. Please try again.");
     }

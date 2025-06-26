@@ -19,7 +19,8 @@ import { OtpVerificationFormProps } from "../types";
  * This is the second step in the external user authentication flow.
  */
 const OtpVerificationForm = ({
-  emailToken,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  emailToken: _,
   onOtpVerified,
   onBack,
   isLoading = false,
@@ -48,6 +49,7 @@ const OtpVerificationForm = ({
         onOtpVerified();
       } catch (err) {
         // Error will be handled by the mutation error state
+        // eslint-disable-next-line no-console
         console.error("Failed to verify OTP:", err);
       }
     }

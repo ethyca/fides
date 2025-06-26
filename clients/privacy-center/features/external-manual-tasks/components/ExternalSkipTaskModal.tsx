@@ -56,6 +56,7 @@ export const ExternalSkipTaskModal = ({
       setComment("");
       onClose();
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error("Failed to skip task:", err);
       setError("Failed to skip task. Please try again.");
     }

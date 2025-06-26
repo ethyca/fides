@@ -39,6 +39,7 @@ const OtpRequestForm = ({
       onOtpRequested();
     } catch (err) {
       // Error will be handled by the mutation error state
+      // eslint-disable-next-line no-console
       console.error("Failed to request OTP:", err);
     }
   };

@@ -136,7 +136,7 @@ const getExternalColumns = (
     title: "Actions",
     key: "actions",
     width: 160,
-    render: (_, record) => (
+    render: () => (
       <div data-testid="task-actions-placeholder">
         {/* Placeholder for actions - will implement next */}
         Actions
