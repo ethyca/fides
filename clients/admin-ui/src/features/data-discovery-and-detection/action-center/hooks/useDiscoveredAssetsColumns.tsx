@@ -12,10 +12,15 @@ import {
 } from "~/features/common/table/v2/cells";
 import { DiscoveredAssetActionsCell } from "~/features/data-discovery-and-detection/action-center/tables/cells/DiscoveredAssetActionsCell";
 import DiscoveredAssetDataUseCell from "~/features/data-discovery-and-detection/action-center/tables/cells/DiscoveredAssetDataUseCell";
-import { ActionCenterTabHash } from "~/features/data-discovery-and-detection/action-center/tables/useActionCenterTabs";
-import { PrivacyNoticeRegion, StagedResourceAPIResponse } from "~/types/api";
+import {
+  AggregatedConsent,
+  PrivacyNoticeRegion,
+  StagedResourceAPIResponse,
+} from "~/types/api";
 
+import { DiscoveryStatusBadgeCell } from "../tables/cells/DiscoveryStatusBadgeCell";
 import { SystemCell } from "../tables/cells/SystemCell";
+import { ActionCenterTabHash } from "./useActionCenterTabs";
 
 export const useDiscoveredAssetsColumns = ({
   readonly,
@@ -103,18 +108,16 @@ export const useDiscoveredAssetsColumns = ({
       cell: (props) => <DefaultCell value={props.getValue()} />,
       header: (props) => <DefaultHeaderCell value="Domain" {...props} />,
     }),
-    /*
-    // TODO: [HJ-344] uncomment when monitor supports discovery status
-    columnHelper.accessor((row) => row.with_consent, {
-      id: "with_consent",
+    columnHelper.accessor((row) => row.consent_aggregated, {
+      id: "consent_aggregated",
       cell: (props) => (
         <DiscoveryStatusBadgeCell
-          withConsent={props.getValue()}
+          consentAggregated={props.getValue() ?? AggregatedConsent.UNKNOWN}
           dateDiscovered={props.row.original.updated_at}
         />
       ),
       header: "Discovery",
-    }), */
+    }),
     columnHelper.accessor((row) => row.page, {
       id: "page",
       cell: (props) => (
