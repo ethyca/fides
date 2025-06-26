@@ -56,6 +56,9 @@ const ExternalTasksClientInner = ({
   useEffect(() => {
     if (isAuthenticated && authenticatedUser) {
       setAuthStep("authenticated");
+    } else if (!isAuthenticated) {
+      // Reset to request-otp when user logs out
+      setAuthStep("request-otp");
     }
   }, [isAuthenticated, authenticatedUser]);
 
