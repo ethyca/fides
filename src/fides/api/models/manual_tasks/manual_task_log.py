@@ -1,11 +1,12 @@
 from typing import TYPE_CHECKING, Any, Optional
 
-from sqlalchemy import Column, ForeignKey, String
+from sqlalchemy import Column, DateTime, ForeignKey, Index, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
+from sqlalchemy.sql import func
 
-from fides.api.db.base_class import Base
+from fides.api.db.base_class import Base, FidesBase
 from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskLogStatus
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -26,6 +27,22 @@ class ManualTaskLog(Base):
         """Overriding base class method to set the table name."""
         return "manual_task_log"
 
+    # redefined here because there's a minor, unintended discrepancy between
+    # this `id` field and that of the `Base` class, which explicitly sets `index=True`.
+    # TODO: we likely should _not_ be setting `index=True` on the `id`
+    # attribute of the `Base` class, as `primary_key=True` already specifies a
+    # primary key constraint, which will implicitly create an index for the field.
+    id = Column(String(255), primary_key=True, default=FidesBase.generate_uuid)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
     task_id = Column(
         String, ForeignKey("manual_task.id", ondelete="CASCADE"), nullable=False
     )
@@ -38,8 +55,16 @@ class ManualTaskLog(Base):
         nullable=True,
     )
     status = Column(String, nullable=False)
-    message = Column(String, nullable=False)
+    message = Column(String, nullable=True)
     details = Column(JSONB, nullable=True)
+
+    __table_args__ = (
+        Index("ix_manual_task_log_config_id", "config_id"),
+        Index("ix_manual_task_log_created_at", "created_at"),
+        Index("ix_manual_task_log_instance_id", "instance_id"),
+        Index("ix_manual_task_log_status", "status"),
+        Index("ix_manual_task_log_task_id", "task_id"),
+    )
 
     # Relationships
     task = relationship(
