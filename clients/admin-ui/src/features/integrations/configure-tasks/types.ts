@@ -1,3 +1,7 @@
+// This file can be removed - we're now using the generated API types:
+// ManualTaskFieldType, ManualFieldRequestType, etc.
+
+// Keeping this file for now to avoid breaking imports, but it can be cleaned up later
 export enum TaskInputType {
   STRING = "string",
   FILE = "file",

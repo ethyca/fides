@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-table";
 import {
   AntButton as Button,
+  AntSelect as Select,
   AntTypography as Typography,
   Box,
   Flex,
@@ -23,13 +24,13 @@ import {
   useDeleteManualFieldMutation,
   useGetManualFieldsQuery,
 } from "~/features/datastore-connections/connection-manual-fields.slice";
+import { useGetAllUsersQuery } from "~/features/user-management/user-management.slice";
 import {
   ConnectionConfigurationResponse,
   ManualFieldResponse,
 } from "~/types/api";
 
 import AddManualTaskModal from "./AddManualTaskModal";
-import { TASK_INPUT_TYPE_LABELS, TaskInputType } from "./types";
 
 const { Title, Paragraph } = Typography;
 
@@ -41,8 +42,8 @@ interface Task {
   id: string;
   name: string;
   description: string;
-  types: string;
-  assignedTo: string;
+  fieldType: string;
+  requestType: string;
   originalField: ManualFieldResponse; // Store the original field data for editing
 }
 
@@ -50,34 +51,42 @@ const columnHelper = createColumnHelper<Task>();
 
 const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const { data, refetch } = useGetAccessManualHookQuery(
-    integration ? integration.key : "",
+  const { data, refetch } = useGetManualFieldsQuery(
+    { connectionKey: integration ? integration.key : "" },
     {
       skip: !integration,
     },
   );
 
-  const [patchAccessManualWebhook] = usePatchAccessManualWebhookMutation();
+  const [deleteManualField] = useDeleteManualFieldMutation();
+
+  // Get users for the assigned to field
+  const { data: usersData } = useGetAllUsersQuery({
+    page: 1,
+    size: 100, // Get enough users for the dropdown
+    username: "", // Empty string to get all users
+  });
+
+  const users = usersData?.items ?? [];
+
+  // Create options for the assigned to select
+  const userOptions = users.map((user: any) => ({
+    label: `${user.first_name} ${user.last_name} (${user.email_address})`,
+    value: user.email_address,
+  }));
 
   useEffect(() => {
-    if (data && data.fields) {
-      // Transform the data.fields into task format for the table
-      const transformedTasks = data.fields.map((field: any, index: number) => ({
-        id: `${index}`,
-        name: field.pii_field || `Task ${index + 1}`,
-        description: field.dsr_package_label || "Manual task",
-        types: field.types
-          ? field.types
-              .map(
-                (type: TaskInputType) => TASK_INPUT_TYPE_LABELS[type] || type,
-              )
-              .join(", ")
-          : "N/A",
-        assignedTo: field.assignedTo
-          ? field.assignedTo.join(", ")
-          : "Unassigned",
+    if (data) {
+      // Transform the manual fields into task format for the table
+      const transformedTasks = data.map((field: ManualFieldResponse) => ({
+        id: field.id,
+        name: field.label,
+        description: field.help_text,
+        fieldType: field.field_type,
+        requestType: field.request_type,
         originalField: field, // Store original field for editing
       }));
       setTasks(transformedTasks);
@@ -86,13 +95,9 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
 
   const deleteTask = async (task: Task) => {
     try {
-      // Remove the task from the fields array
-      const updatedFields =
-        data?.fields?.filter((_, index) => index.toString() !== task.id) || [];
-
-      await patchAccessManualWebhook({
-        connection_key: integration.key as string,
-        body: { fields: updatedFields },
+      await deleteManualField({
+        connectionKey: integration.key as string,
+        manualFieldId: task.id,
       }).unwrap();
 
       refetch();
@@ -122,8 +127,10 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
   const renderDescription = (props: any) => (
     <DefaultCell value={props.getValue()} />
   );
-  const renderTypes = (props: any) => <DefaultCell value={props.getValue()} />;
-  const renderAssignedTo = (props: any) => (
+  const renderFieldType = (props: any) => (
+    <DefaultCell value={props.getValue()} />
+  );
+  const renderRequestType = (props: any) => (
     <DefaultCell value={props.getValue()} />
   );
 
@@ -152,11 +159,11 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
   const renderDescriptionHeader = (props: any) => (
     <DefaultHeaderCell value="Description" {...props} />
   );
-  const renderTypesHeader = (props: any) => (
-    <DefaultHeaderCell value="Type" {...props} />
+  const renderFieldTypeHeader = (props: any) => (
+    <DefaultHeaderCell value="Field Type" {...props} />
   );
-  const renderAssignedToHeader = (props: any) => (
-    <DefaultHeaderCell value="Assigned To" {...props} />
+  const renderRequestTypeHeader = (props: any) => (
+    <DefaultHeaderCell value="Request Type" {...props} />
   );
   const renderActionsHeader = (props: any) => (
     <DefaultHeaderCell value="Actions" {...props} />
@@ -174,15 +181,15 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
         cell: renderDescription,
         header: renderDescriptionHeader,
       }),
-      columnHelper.accessor((row) => row.types, {
-        id: "types",
-        cell: renderTypes,
-        header: renderTypesHeader,
+      columnHelper.accessor((row) => row.fieldType, {
+        id: "fieldType",
+        cell: renderFieldType,
+        header: renderFieldTypeHeader,
       }),
-      columnHelper.accessor((row) => row.assignedTo, {
-        id: "assignedTo",
-        cell: renderAssignedTo,
-        header: renderAssignedToHeader,
+      columnHelper.accessor((row) => row.requestType, {
+        id: "requestType",
+        cell: renderRequestType,
+        header: renderRequestTypeHeader,
       }),
       columnHelper.display({
         id: "actions",
@@ -218,6 +225,23 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
           </Button>
         </Flex>
 
+        <Box>
+          <Typography.Text strong>Assign tasks to users:</Typography.Text>
+          <Select
+            mode="tags"
+            placeholder="Select users to assign tasks to"
+            value={selectedUsers}
+            onChange={setSelectedUsers}
+            options={userOptions}
+            style={{ width: "100%", marginTop: 8 }}
+            tokenSeparators={[","]}
+            filterOption={(input, option) =>
+              option?.label?.toLowerCase().includes(input.toLowerCase()) ||
+              false
+            }
+          />
+        </Box>
+
         <FidesTableV2
           tableInstance={tableInstance}
           onRowClick={() => {}}
@@ -238,6 +262,7 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
           onTaskAdded={() => {
             refetch();
           }}
+          selectedUsers={selectedUsers}
         />
       </Flex>
     </Box>

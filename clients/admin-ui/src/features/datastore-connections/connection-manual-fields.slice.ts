@@ -6,7 +6,7 @@ import {
   ManualFieldUpdate,
 } from "~/types/api";
 
-import { CONNECTION_ROUTE } from "../../constants";
+import { PLUS_CONNECTION_API_ROUTE } from "../../constants";
 
 export const connectionManualFieldsApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
@@ -15,7 +15,7 @@ export const connectionManualFieldsApi = baseApi.injectEndpoints({
       { connectionKey: string; requestType?: ManualFieldRequestType }
     >({
       query: ({ connectionKey, requestType }) => {
-        const baseUrl = `${CONNECTION_ROUTE}/${connectionKey}/manual-fields`;
+        const baseUrl = `${PLUS_CONNECTION_API_ROUTE}/${connectionKey}/manual-fields`;
         const queryString = requestType ? `?request_type=${requestType}` : "";
         return {
           url: baseUrl + queryString,
@@ -29,7 +29,7 @@ export const connectionManualFieldsApi = baseApi.injectEndpoints({
       { connectionKey: string; manualFieldId: string }
     >({
       query: ({ connectionKey, manualFieldId }) => ({
-        url: `${CONNECTION_ROUTE}/${connectionKey}/manual-field/${manualFieldId}`,
+        url: `${PLUS_CONNECTION_API_ROUTE}/${connectionKey}/manual-field/${manualFieldId}`,
         method: "GET",
       }),
       providesTags: (result) => [{ type: "Manual Fields", id: result?.id }],
@@ -39,7 +39,7 @@ export const connectionManualFieldsApi = baseApi.injectEndpoints({
       { connectionKey: string; body: ManualFieldCreate }
     >({
       query: ({ connectionKey, body }) => ({
-        url: `${CONNECTION_ROUTE}/${connectionKey}/manual-field`,
+        url: `${PLUS_CONNECTION_API_ROUTE}/${connectionKey}/manual-field`,
         method: "POST",
         body,
       }),
@@ -50,7 +50,7 @@ export const connectionManualFieldsApi = baseApi.injectEndpoints({
       { connectionKey: string; manualFieldId: string; body: ManualFieldUpdate }
     >({
       query: ({ connectionKey, manualFieldId, body }) => ({
-        url: `${CONNECTION_ROUTE}/${connectionKey}/manual-field/${manualFieldId}`,
+        url: `${PLUS_CONNECTION_API_ROUTE}/${connectionKey}/manual-field/${manualFieldId}`,
         method: "PATCH",
         body,
       }),
@@ -61,7 +61,7 @@ export const connectionManualFieldsApi = baseApi.injectEndpoints({
       { connectionKey: string; manualFieldId: string }
     >({
       query: ({ connectionKey, manualFieldId }) => ({
-        url: `${CONNECTION_ROUTE}/${connectionKey}/manual-field/${manualFieldId}`,
+        url: `${PLUS_CONNECTION_API_ROUTE}/${connectionKey}/manual-field/${manualFieldId}`,
         method: "DELETE",
       }),
       invalidatesTags: () => ["Manual Fields"],

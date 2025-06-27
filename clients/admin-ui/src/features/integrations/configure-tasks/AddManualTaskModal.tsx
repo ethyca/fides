@@ -1,14 +1,5 @@
 import { useAlert, useAPIHelper } from "common/hooks";
 import {
-  useCreateAccessManualWebhookMutation,
-  useGetAccessManualHookQuery,
-  usePatchAccessManualWebhookMutation,
-} from "datastore-connections/datastore-connection.slice";
-import {
-  CreateAccessManualWebhookRequest,
-  PatchAccessManualWebhookRequest,
-} from "datastore-connections/types";
-import {
   Box,
   Modal,
   ModalBody,
@@ -20,7 +11,11 @@ import {
 } from "fidesui";
 import React, { useState } from "react";
 
-import { ConnectionConfigurationResponse } from "~/types/api";
+import { useCreateManualFieldMutation } from "~/features/datastore-connections/connection-manual-fields.slice";
+import {
+  ConnectionConfigurationResponse,
+  ManualFieldCreate,
+} from "~/types/api";
 
 import AddManualTaskForm from "./AddManualTaskForm";
 
@@ -29,6 +24,7 @@ type Props = {
   onClose: () => void;
   integration: ConnectionConfigurationResponse;
   onTaskAdded: () => void;
+  selectedUsers: string[];
 };
 
 const AddManualTaskModal = ({
@@ -36,57 +32,30 @@ const AddManualTaskModal = ({
   onClose,
   integration,
   onTaskAdded,
+  selectedUsers,
 }: Props) => {
   const { successAlert } = useAlert();
   const { handleError } = useAPIHelper();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { data: existingData } = useGetAccessManualHookQuery(
-    integration ? integration.key : "",
-    {
-      skip: !integration,
-    },
-  );
-
-  const [createAccessManualWebhook] = useCreateAccessManualWebhookMutation();
-  const [patchAccessManualWebhook] = usePatchAccessManualWebhookMutation();
+  const [createManualField] = useCreateManualFieldMutation();
 
   const handleSubmit = async (values: any) => {
     try {
       setIsSubmitting(true);
 
-      // Check if we have existing fields
-      const existingFields = existingData?.fields || [];
-      const hasExistingFields = existingFields.length > 0;
-
-      // Create the new field object
-      const newField = {
-        pii_field: values.name,
-        types: values.types || [],
-        dsr_package_label: values.description,
-        data_categories: values.data_categories || [],
-        assignedTo: values.assignedTo || [],
+      // Create the new manual field
+      const newField: ManualFieldCreate = {
+        label: values.name,
+        help_text: values.description,
+        field_type: values.fieldType,
+        request_type: values.requestType,
       };
 
-      if (hasExistingFields) {
-        // Use PATCH - include all existing fields plus the new one
-        const params: PatchAccessManualWebhookRequest = {
-          connection_key: integration.key as string,
-          body: {
-            fields: [...existingFields, newField],
-          },
-        };
-        await patchAccessManualWebhook(params).unwrap();
-      } else {
-        // Use POST - first time adding fields
-        const params: CreateAccessManualWebhookRequest = {
-          connection_key: integration.key as string,
-          body: {
-            fields: [newField],
-          },
-        };
-        await createAccessManualWebhook(params).unwrap();
-      }
+      await createManualField({
+        connectionKey: integration.key as string,
+        body: newField,
+      }).unwrap();
 
       successAlert("Manual task added successfully!");
       onTaskAdded();
@@ -120,6 +89,15 @@ const AddManualTaskModal = ({
               onSaveClick={handleSubmit}
               onCancel={handleCancel}
             />
+            <Box mt={4} p={3} bg="gray.50" borderRadius="md">
+              <Box color="gray.600" fontSize="sm">
+                <strong>Note:</strong> Task assignment is configured above the
+                table. Selected users:{" "}
+                {selectedUsers.length > 0
+                  ? selectedUsers.join(", ")
+                  : "None selected"}
+              </Box>
+            </Box>
           </VStack>
         </ModalBody>
       </ModalContent>

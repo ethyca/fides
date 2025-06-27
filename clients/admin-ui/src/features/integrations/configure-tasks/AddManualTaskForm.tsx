@@ -7,9 +7,7 @@ import {
 } from "fidesui";
 import React from "react";
 
-import { useGetAllUsersQuery } from "~/features/user-management/user-management.slice";
-
-import { TASK_INPUT_TYPE_OPTIONS, TaskInputType } from "./types";
+import { ManualFieldRequestType, ManualTaskFieldType } from "~/types/api";
 
 type Props = {
   isSubmitting: boolean;
@@ -20,38 +18,26 @@ type Props = {
 interface TaskFormValues {
   name: string;
   description: string;
-  types: TaskInputType;
-  assignedTo: string[];
+  fieldType: ManualTaskFieldType;
+  requestType: ManualFieldRequestType;
 }
 
 const AddManualTaskForm = ({ isSubmitting, onSaveClick, onCancel }: Props) => {
   const [form] = Form.useForm<TaskFormValues>();
 
-  // Get users for the assigned to field
-  const { data: usersData } = useGetAllUsersQuery({
-    page: 1,
-    size: 100, // Get enough users for the dropdown
-    username: "", // Empty string to get all users
-  });
+  const fieldTypeOptions = [
+    { label: "Text", value: ManualTaskFieldType.TEXT },
+    { label: "Checkbox", value: ManualTaskFieldType.CHECKBOX },
+    { label: "Attachment", value: ManualTaskFieldType.ATTACHMENT },
+  ];
 
-  const users = usersData?.items ?? [];
-
-  // Create options for the assigned to select
-  const userOptions = users.map((user: any) => ({
-    label: `${user.first_name} ${user.last_name} (${user.email_address})`,
-    value: user.email_address,
-  }));
+  const requestTypeOptions = [
+    { label: "Access", value: ManualFieldRequestType.ACCESS },
+    { label: "Erasure", value: ManualFieldRequestType.ERASURE },
+  ];
 
   const handleSubmit = async (values: TaskFormValues) => {
-    // Add empty data_categories array as required by API and convert types to array
-    const formattedValues = {
-      name: values.name,
-      description: values.description,
-      types: [values.types], // Convert single value to array for API
-      assignedTo: values.assignedTo || [],
-      data_categories: [],
-    };
-    onSaveClick(formattedValues);
+    onSaveClick(values);
   };
 
   return (
@@ -84,29 +70,21 @@ const AddManualTaskForm = ({ isSubmitting, onSaveClick, onCancel }: Props) => {
       </Form.Item>
 
       <Form.Item
-        label="Type"
-        name="types"
-        rules={[{ required: true, message: "Please select a type" }]}
+        label="Field Type"
+        name="fieldType"
+        rules={[{ required: true, message: "Please select a field type" }]}
       >
-        <Select
-          placeholder="Select task type"
-          options={TASK_INPUT_TYPE_OPTIONS}
-        />
+        <Select placeholder="Select field type" options={fieldTypeOptions} />
       </Form.Item>
 
       <Form.Item
-        label="Assigned to"
-        name="assignedTo"
-        help="Select users or enter email addresses"
+        label="Request Type"
+        name="requestType"
+        rules={[{ required: true, message: "Please select a request type" }]}
       >
         <Select
-          mode="tags"
-          placeholder="Select users or enter email addresses"
-          options={userOptions}
-          tokenSeparators={[","]}
-          filterOption={(input, option) =>
-            option?.label?.toLowerCase().includes(input.toLowerCase()) || false
-          }
+          placeholder="Select request type"
+          options={requestTypeOptions}
         />
       </Form.Item>
 
