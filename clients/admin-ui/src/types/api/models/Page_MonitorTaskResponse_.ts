@@ -2,10 +2,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ManualTask } from "./ManualTask";
+import type { MonitorTaskResponse } from "./MonitorTaskResponse";
 
-export type Page_ManualTask_ = {
-  items: Array<ManualTask>;
+export type Page_MonitorTaskResponse_ = {
+  items: Array<MonitorTaskResponse>;
   total: number | null;
   page: number | null;
   size: number | null;

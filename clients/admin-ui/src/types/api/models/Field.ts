@@ -40,17 +40,6 @@ export type Field = {
   data_uses?: Array<string> | null;
   source_modified?: string | null;
   classifications?: Array<Classification>;
-  /**
-   *
-   * Represents the presence of various diff statuses of the staged resource's children. This is calculated:
-   * - during detection
-   * - upon queuing classification
-   * - after classification finishes
-   * - upon queuing promotion
-   * - after promotion finishes
-   *
-   */
-  child_diff_statuses?: Record<string, boolean>;
   database_name?: string | null;
   schema_name: string;
   parent_table_urn: string;
