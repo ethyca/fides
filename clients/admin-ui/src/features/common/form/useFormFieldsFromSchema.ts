@@ -41,7 +41,7 @@ export const useFormFieldsFromSchema = (
     key: string,
     fieldSchema: ConnectionTypeSecretSchemaProperty,
   ) => {
-    if (isRequiredField(key) || fieldSchema.type === "integer") {
+    if (isRequiredField(key)) {
       return (value: string | undefined) =>
         validateField(fieldSchema.title, value, fieldSchema.allOf?.[0].$ref);
     }
