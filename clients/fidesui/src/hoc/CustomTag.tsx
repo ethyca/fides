@@ -73,20 +73,21 @@ const withCustomProps = (WrappedComponent: typeof Tag) => {
           ? "calc((var(--ant-padding-xs) * 0.5))"
           : undefined,
       },
-      className: `${styles.tag} ${className || ""}`.trim(),
+      className: `${styles.tag} ${className ?? ""}`.trim(),
       bordered: retainDefaultBorder,
-      closeIcon: props.closable ? (
-        // Ant's own close icon doesn't currently use a button element,
-        // so we need to use our own for accessibility.
-        <button
-          type="button"
-          className={styles.closeButton}
-          aria-label={closeButtonLabel}
-        >
-          <Icons.CloseLarge size={10} />
-        </button>
-      ) : undefined,
       ...props,
+      closeIcon:
+        (props.closable ?? props.onClose) ? (
+          // Ant's own close icon doesn't currently use a button element,
+          // so we need to use our own for accessibility.
+          <button
+            type="button"
+            className={styles.closeButton}
+            aria-label={closeButtonLabel}
+          >
+            {props.closeIcon ?? <Icons.CloseLarge size={10} />}
+          </button>
+        ) : undefined,
       children: (
         <>
           {hasSparkle && <SparkleIcon />}
