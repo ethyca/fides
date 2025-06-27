@@ -38,14 +38,13 @@ export const MonitorResult = ({
 }: MonitorResultProps) => {
   const {
     name,
+    consent_status: consentStatus,
     total_updates: totalUpdates,
     updates,
     last_monitored: lastMonitored,
     secrets,
     key,
   } = monitorSummary;
-
-  const consentStatus = undefined; // TODO: replace with the actual consent status from the API
 
   const property = useMemo(() => {
     return secrets?.url ? getDomain(secrets.url) : undefined;
