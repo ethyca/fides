@@ -209,9 +209,12 @@ const AntPOC: NextPage = () => {
             <Card title="Tooltip" variant="borderless" className="h-full">
               <Space direction="vertical">
                 <Tooltip title="I'm a tooltip">
-                  <span>Hover this text</span>
+                  Hover or focus this text
                 </Tooltip>
-                <InfoTooltip label="Tooltip will show on mouse enter." />
+                <InfoTooltip label="Tooltip will show on mouse enter or focus." />
+                <Tooltip title="Focus styles don't change for naturally focusable elements like buttons">
+                  <Button>Button with tooltip</Button>
+                </Tooltip>
               </Space>
             </Card>
           </Col>

@@ -1,0 +1,14 @@
+@use "sass:map";
+@use "../palette/palette.module.scss" as palette;
+
+.tooltipChild {
+  --custom-tooltip-outline-width: 1px;
+  &:focus-visible {
+    outline: var(--custom-tooltip-outline-width) dashed
+      map.get(palette.$colors, "minos");
+    outline-offset: 1px;
+    transition:
+      outline-offset 0s,
+      outline 0s;
+  }
+}

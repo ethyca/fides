@@ -9,10 +9,13 @@
   line-height: calc(var(--ant-line-height-sm) * var(--ant-font-size-sm) - 2px);
   min-height: calc(var(--ant-line-height-sm) * var(--ant-font-size-sm));
   :global(svg:not([data-icon])) {
+    // `data-icon` comes from Ant icons, we don't want to override those,
+    // only the Carbon icons.
+    // If you need to override the size, use the `style` prop.
     width: 10px;
     height: 10px;
-    margin-inline-start: 0; // we're using gap instead
   }
+  --ant-padding-xxs: 0; //we're using gap instead
 }
 
 .buttonTag {
