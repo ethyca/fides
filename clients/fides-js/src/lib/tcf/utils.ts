@@ -3,6 +3,7 @@ import { TCString } from "@iabtechlabtcf/core";
 import {
   ConsentMechanism,
   FidesCookie,
+  NoticeConsent,
   PrivacyExperience,
   PrivacyExperienceMinimal,
   PrivacyNoticeWithPreference,
@@ -11,7 +12,6 @@ import {
 } from "../consent-types";
 import { resolveConsentValue } from "../consent-value";
 import {
-  buildCookieConsentFromConsentPreferences,
   getFidesConsentCookie,
   transformTcfPreferencesToCookieKeys,
 } from "../cookie";
@@ -472,7 +472,7 @@ export const updateTCFCookie = async (
   tcf: TcfSavePreferences,
   enabledIds: EnabledIds,
   experience: PrivacyExperience | PrivacyExperienceMinimal,
-  consentPreferencesToSave?: SaveConsentPreference[],
+  customPurposesConsent?: NoticeConsent,
 ): Promise<FidesCookie> => {
   const tcString = await generateFidesString({
     tcStringPreferences: enabledIds,
@@ -484,10 +484,8 @@ export const updateTCFCookie = async (
     tcf_consent: transformTcfPreferencesToCookieKeys(tcf),
     tcf_version_hash: experience.meta?.version_hash,
   };
-  if (consentPreferencesToSave) {
-    result.consent = buildCookieConsentFromConsentPreferences(
-      consentPreferencesToSave,
-    );
+  if (customPurposesConsent) {
+    result.consent = customPurposesConsent;
   }
   return result;
 };
