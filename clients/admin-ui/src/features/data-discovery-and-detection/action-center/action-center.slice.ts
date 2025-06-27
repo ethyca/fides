@@ -22,6 +22,8 @@ interface DiscoveredAssetsQueryParams {
   system?: string;
   search?: string;
   diff_status?: DiffStatus[];
+  sort_by?: string;
+  sort_asc?: boolean;
 }
 
 const actionCenterApi = baseApi.injectEndpoints({
@@ -62,7 +64,16 @@ const actionCenterApi = baseApi.injectEndpoints({
       Page_StagedResourceAPIResponse_,
       DiscoveredAssetsQueryParams & PaginationQueryParams
     >({
-      query: ({ key, system, page = 1, size = 20, search, diff_status }) => ({
+      query: ({
+        key,
+        system,
+        page = 1,
+        size = 20,
+        search,
+        diff_status,
+        sort_by = "urn",
+        sort_asc = true,
+      }) => ({
         url: `/plus/discovery-monitor/${key}/results`,
         params: {
           resolved_system_id: system,
@@ -70,7 +81,8 @@ const actionCenterApi = baseApi.injectEndpoints({
           size,
           search,
           diff_status,
-          sort_by: "urn",
+          sort_by,
+          sort_asc,
         },
       }),
       providesTags: () => ["Discovery Monitor Results"],
