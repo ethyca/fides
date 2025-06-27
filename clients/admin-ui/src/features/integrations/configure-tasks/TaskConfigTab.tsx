@@ -20,10 +20,13 @@ import {
   FidesTableV2,
 } from "~/features/common/table/v2";
 import {
-  useGetAccessManualHookQuery,
-  usePatchAccessManualWebhookMutation,
-} from "~/features/datastore-connections/datastore-connection.slice";
-import { ConnectionConfigurationResponse } from "~/types/api";
+  useDeleteManualFieldMutation,
+  useGetManualFieldsQuery,
+} from "~/features/datastore-connections/connection-manual-fields.slice";
+import {
+  ConnectionConfigurationResponse,
+  ManualFieldResponse,
+} from "~/types/api";
 
 import AddManualTaskModal from "./AddManualTaskModal";
 import { TASK_INPUT_TYPE_LABELS, TaskInputType } from "./types";
@@ -40,7 +43,7 @@ interface Task {
   description: string;
   types: string;
   assignedTo: string;
-  originalField: any; // Store the original field data for editing
+  originalField: ManualFieldResponse; // Store the original field data for editing
 }
 
 const columnHelper = createColumnHelper<Task>();
@@ -198,7 +201,7 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
   });
 
   return (
-    <Box maxW="760px">
+    <Box>
       <Flex direction="column" gap={4}>
         <div>
           <Paragraph>
