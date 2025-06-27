@@ -236,7 +236,8 @@ class TestBigQueryConnector:
         assert len(results) == 1
         assert results[0]["email"] == "customer-1@example.com"
 
-
+@pytest.mark.integration_external
+@pytest.mark.integration_bigquery
 class TestBigQueryConnectorTimeBasedPartitioning:
     """
     Tests to verify the BigQuery connector with the new TimeBasedPartitioning schema
