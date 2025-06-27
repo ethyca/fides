@@ -62,7 +62,7 @@ const IntegrationListView: NextPage = () => {
   const supportedIntegrations = useMemo(() => {
     return SUPPORTED_INTEGRATIONS.filter((integration) => {
       return (
-        integration !== ConnectionType.MANUAL_WEBHOOK || flags.alphaNewManualDSR
+        integration !== ConnectionType.MANUAL_TASK || flags.alphaNewManualDSR
       );
     });
   }, [flags.alphaNewManualDSR]);

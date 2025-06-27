@@ -6,7 +6,7 @@ import { AccessLevel, ConnectionType } from "~/types/api";
 export const MANUAL_PLACEHOLDER = {
   name: "Manual",
   key: "manual_placeholder",
-  connection_type: ConnectionType.MANUAL_WEBHOOK,
+  connection_type: ConnectionType.MANUAL_TASK,
   access: AccessLevel.READ,
   created_at: "",
 };

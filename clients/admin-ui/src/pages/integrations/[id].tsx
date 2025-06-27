@@ -77,7 +77,7 @@ const IntegrationDetailView: NextPage = () => {
   }
 
   const supportsConnectionTest =
-    connection?.connection_type !== ConnectionType.MANUAL_WEBHOOK;
+    connection?.connection_type !== ConnectionType.MANUAL_TASK;
 
   const tabs: TabData[] = [];
 
