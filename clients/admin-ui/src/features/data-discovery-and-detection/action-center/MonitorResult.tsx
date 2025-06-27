@@ -65,16 +65,14 @@ export const MonitorResult = ({
     : undefined;
 
   const lastMonitoredDistance = lastMonitored
-    ? formatDistance(new Date(lastMonitored), new Date(), {
-        addSuffix: true,
-      })
+    ? formatDistance(new Date(lastMonitored), new Date())
     : undefined;
 
   return (
     <List.Item data-testid={`monitor-result-${key}`} {...props}>
       <Skeleton avatar title={false} loading={showSkeleton} active>
         <Row gutter={12} className="w-full">
-          <Col span={18} className="align-middle">
+          <Col span={17} className="align-middle">
             <List.Item.Meta
               avatar={
                 <Avatar
@@ -85,6 +83,7 @@ export const MonitorResult = ({
                     backgroundColor: "transparent",
                     color: "var(--ant-color-text)",
                   }}
+                  alt={`${property} icon`}
                 />
               }
               title={
@@ -104,14 +103,14 @@ export const MonitorResult = ({
           <Col span={4} className="flex items-center justify-end">
             <Text ellipsis={{ tooltip: name }}>{name}</Text>
           </Col>
-          <Col span={2} className="flex items-center justify-end">
+          <Col span={3} className="flex items-center justify-end">
             {!!lastMonitoredDistance && (
               <Tooltip title={formattedLastMonitored}>
                 <Text
                   data-testid="monitor-date"
                   ellipsis={{ tooltip: formattedLastMonitored }}
                 >
-                  {lastMonitoredDistance}
+                  {lastMonitoredDistance} ago
                 </Text>
               </Tooltip>
             )}
