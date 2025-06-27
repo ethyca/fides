@@ -33,22 +33,18 @@ export const DiscoveryStatusBadgeCell = ({
     <>
       <Tooltip title={dateDiscovered ? formatDate(dateDiscovered) : undefined}>
         {/* tooltip throws errors if immediate child is not available or changes after render so this div wrapper helps keep it stable */}
-        {consentAggregated === AggregatedConsent.WITH_CONSENT && (
-          <Tag color="success" onClick={handleClick}>
-            With consent
-          </Tag>
-        )}
         {consentAggregated === AggregatedConsent.WITHOUT_CONSENT && (
           <Tag color="error" onClick={handleClick}>
             Without consent
           </Tag>
         )}
+        {consentAggregated === AggregatedConsent.WITH_CONSENT && (
+          <Tag color="success">With consent</Tag>
+        )}
         {consentAggregated === AggregatedConsent.EXEMPT && (
-          <Tag onClick={handleClick}>Consent exempt</Tag>
+          <Tag>Consent exempt</Tag>
         )}
-        {consentAggregated === AggregatedConsent.UNKNOWN && (
-          <Tag onClick={handleClick}>Unknown</Tag>
-        )}
+        {consentAggregated === AggregatedConsent.UNKNOWN && <Tag>Unknown</Tag>}
       </Tooltip>
       {isOpen && (
         <Modal // TASK: convert to component and add API call
