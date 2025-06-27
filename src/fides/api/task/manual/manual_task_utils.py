@@ -182,6 +182,11 @@ def include_manual_tasks_in_graph(
     if not manual_addresses:
         return traversal_nodes, end_nodes
 
+    # Ensure ROOT node exists in traversal_nodes (it's excluded by collect_tasks_fn)
+    if ROOT_COLLECTION_ADDRESS not in traversal_nodes:
+        from fides.api.graph.traversal import artificial_traversal_node
+        traversal_nodes[ROOT_COLLECTION_ADDRESS] = artificial_traversal_node(ROOT_COLLECTION_ADDRESS)
+
     for address in manual_addresses:
         # Create traversal node for manual data collection
         manual_node = create_manual_data_traversal_node(db, address)

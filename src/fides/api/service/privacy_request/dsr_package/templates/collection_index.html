@@ -26,7 +26,15 @@
                   <div class="table-row">
                      <div class="table-cell">{{ field }}</div>
                      <div class="table-cell">
-                        {% if field == "attachments" and value is mapping and value|length > 0 %}
+                        {% set _is_attachment_block = false %}
+                        {% if value is mapping and value|length > 0 %}
+                           {% set _first_key = (value.keys() | list)[0] %}
+                           {% if value[_first_key] is mapping and ('url' in value[_first_key]) %}
+                               {% set _is_attachment_block = true %}
+                           {% endif %}
+                        {% endif %}
+
+                        {% if _is_attachment_block %}
                            <p class="expiration-notice">Note: All download links will expire in 7 days.</p>
                            <div class="table table-hover">
                               <div class="table-row">
