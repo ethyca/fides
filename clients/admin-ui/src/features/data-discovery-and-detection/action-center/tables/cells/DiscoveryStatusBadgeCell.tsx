@@ -4,20 +4,18 @@ import {
   AntTable as Table,
   AntTag as Tag,
   AntTooltip as Tooltip,
+  Icons,
 } from "fidesui";
 import { useState } from "react";
 
-import { formatDate } from "~/features/common/utils";
 import { AggregatedConsent } from "~/types/api";
 
 interface DiscoveryStatusBadgeCellProps {
   consentAggregated: AggregatedConsent;
-  dateDiscovered: string | null | undefined;
 }
 
 export const DiscoveryStatusBadgeCell = ({
   consentAggregated,
-  dateDiscovered,
 }: DiscoveryStatusBadgeCellProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const handleClick = () => {
@@ -31,21 +29,33 @@ export const DiscoveryStatusBadgeCell = ({
   };
   return (
     <>
-      <Tooltip title={dateDiscovered ? formatDate(dateDiscovered) : undefined}>
-        {/* tooltip throws errors if immediate child is not available or changes after render so this div wrapper helps keep it stable */}
-        {consentAggregated === AggregatedConsent.WITHOUT_CONSENT && (
-          <Tag color="error" onClick={handleClick}>
+      {consentAggregated === AggregatedConsent.WITHOUT_CONSENT && (
+        <Tooltip title="Asset was detected before the user gave consent or without any consent. Click the info icon for more details.">
+          <Tag
+            color="error"
+            closeIcon={<Icons.Information style={{ width: 12, height: 12 }} />}
+            closeButtonLabel="View details"
+            onClose={handleClick}
+          >
             Without consent
           </Tag>
-        )}
-        {consentAggregated === AggregatedConsent.WITH_CONSENT && (
+        </Tooltip>
+      )}
+      {consentAggregated === AggregatedConsent.WITH_CONSENT && (
+        <Tooltip title="Asset was detected after the user gave consent">
           <Tag color="success">With consent</Tag>
-        )}
-        {consentAggregated === AggregatedConsent.EXEMPT && (
+        </Tooltip>
+      )}
+      {consentAggregated === AggregatedConsent.EXEMPT && (
+        <Tooltip title="Asset is valid regardless of consent">
           <Tag>Consent exempt</Tag>
-        )}
-        {consentAggregated === AggregatedConsent.UNKNOWN && <Tag>Unknown</Tag>}
-      </Tooltip>
+        </Tooltip>
+      )}
+      {consentAggregated === AggregatedConsent.UNKNOWN && (
+        <Tooltip title="Did not find consent information for this asset. You may need to re-run the monitor.">
+          <Tag>Unknown</Tag>
+        </Tooltip>
+      )}
       {isOpen && (
         <Modal // TASK: convert to component and add API call
           title="Consent discovery"
