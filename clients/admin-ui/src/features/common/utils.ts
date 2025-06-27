@@ -137,3 +137,17 @@ export const getDomain = (urlOrDomain: string): string => {
 export const stripHashFromUrl = (url: string) => {
   return url.split("#")[0];
 };
+
+/**
+ * Formats a user object for display by combining first name, last name, and email
+ * @param user - A partial user object with optional first_name, last_name, and email_address
+ * @returns A formatted display name string
+ */
+export const formatUser = (user: {
+  first_name?: string | null;
+  last_name?: string | null;
+  email_address?: string | null;
+}): string => {
+  const fullName = `${user.first_name || ""} ${user.last_name || ""}`.trim();
+  return fullName || user.email_address || "Unknown User";
+};

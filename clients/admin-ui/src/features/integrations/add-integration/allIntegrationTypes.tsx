@@ -65,7 +65,7 @@ export const INTEGRATION_TYPE_LIST: IntegrationTypeInfo[] = [
 
 export const SUPPORTED_INTEGRATIONS = [
   ...Object.keys(INTEGRATION_TYPE_MAP),
-  ConnectionType.SAAS,
+  // ConnectionType.SAAS, // DEFER(ENG-801) Add back once we're ready to show all SAAS integrations
 ];
 
 const EMPTY_TYPE = {

@@ -169,6 +169,7 @@ jobs:
           - "fides_db_scan"
           - "docs_check"
           - "minimal_config_startup"
+          - "check_migrations"
 
     runs-on: ubuntu-latest
     timeout-minutes: 15
