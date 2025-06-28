@@ -29,6 +29,14 @@
           "email": {
             "label": "Email",
             "value": "customer@email.com"
+          },
+          "phone_number": {
+            "label": "Phone Number",
+            "value": "+1-555-0456"
+          },
+          "user_id": {
+            "label": "User ID",
+            "value": "user_12345"
           }
         }
       },
@@ -102,7 +110,7 @@
       "task_id": "task_004",
       "name": "Export Analytics Data",
       "description": "Extract user analytics data from Google Analytics",
-      "input_type": "file",
+      "input_type": "string",
       "request_type": "access",
       "status": "new",
       "assigned_users": [

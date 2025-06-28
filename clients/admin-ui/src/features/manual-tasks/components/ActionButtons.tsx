@@ -1,16 +1,18 @@
-import type { MenuProps } from "antd";
 import {
   AntButton as Button,
   AntDropdown as Dropdown,
+  AntMenuProps as MenuProps,
   AntSpace as Space,
   Icons,
+  useDisclosure,
 } from "fidesui";
 import { useRouter } from "next/router";
 
 import { PRIVACY_REQUEST_DETAIL_ROUTE } from "~/features/common/nav/routes";
 
-import { useCompleteTaskMutation } from "../manual-tasks.slice";
 import { ManualTask } from "../mocked/types";
+import { CompleteTaskModal } from "./CompleteTaskModal";
+import { SkipTaskModal } from "./SkipTaskModal";
 
 interface Props {
   task: ManualTask;
@@ -18,7 +20,16 @@ interface Props {
 
 export const ActionButtons = ({ task }: Props) => {
   const router = useRouter();
-  const [completeTask, { isLoading: isCompleting }] = useCompleteTaskMutation();
+  const {
+    isOpen: isCompleteModalOpen,
+    onOpen: onCompleteModalOpen,
+    onClose: onCompleteModalClose,
+  } = useDisclosure();
+  const {
+    isOpen: isSkipModalOpen,
+    onOpen: onSkipModalOpen,
+    onClose: onSkipModalClose,
+  } = useDisclosure();
 
   // Don't render anything for non-new tasks
   if (task.status !== "new") {
@@ -26,15 +37,11 @@ export const ActionButtons = ({ task }: Props) => {
   }
 
   const handleComplete = () => {
-    completeTask({
-      task_id: task.task_id,
-      text_value: task.input_type === "string" ? "" : undefined,
-      checkbox_value: task.input_type === "checkbox" ? false : undefined,
-    });
+    onCompleteModalOpen();
   };
 
   const handleSkip = () => {
-    // TODO: Implement skip functionality
+    onSkipModalOpen();
   };
 
   const handleGoToRequest = () => {
@@ -58,28 +65,36 @@ export const ActionButtons = ({ task }: Props) => {
   ];
 
   return (
-    <Space size="small">
-      <Button
-        type="default"
-        onClick={handleComplete}
-        size="small"
-        loading={isCompleting}
-      >
-        Complete
-      </Button>
+    <>
+      <Space size="small">
+        <Button type="default" onClick={handleComplete} size="small">
+          Complete
+        </Button>
 
-      <Dropdown
-        menu={{ items: menuItems }}
-        trigger={["click"]}
-        placement="bottomRight"
-        overlayStyle={{ minWidth: 120 }}
-      >
-        <Button
-          size="small"
-          icon={<Icons.OverflowMenuVertical />}
-          aria-label="More actions"
-        />
-      </Dropdown>
-    </Space>
+        <Dropdown
+          menu={{ items: menuItems }}
+          trigger={["click"]}
+          placement="bottomRight"
+          overlayStyle={{ minWidth: 120 }}
+        >
+          <Button
+            size="small"
+            icon={<Icons.OverflowMenuVertical />}
+            aria-label="More actions"
+          />
+        </Dropdown>
+      </Space>
+
+      <CompleteTaskModal
+        isOpen={isCompleteModalOpen}
+        onClose={onCompleteModalClose}
+        task={task}
+      />
+      <SkipTaskModal
+        isOpen={isSkipModalOpen}
+        onClose={onSkipModalClose}
+        task={task}
+      />
+    </>
   );
 };
