@@ -759,6 +759,21 @@ def erasure_policy_complete_mask(
 
 
 @pytest.fixture
+def hubspot_yaml_config() -> str:
+    return load_yaml_as_string("data/saas/config/hubspot_config.yml")
+
+
+@pytest.fixture
+def hubspot_yaml_dataset() -> str:
+    return load_yaml_as_string("data/saas/dataset/hubspot_dataset.yml")
+
+
+@pytest.fixture
+def hubspot_yaml_icon() -> str:
+    return load_as_string("data/saas/icon/hubspot.svg")
+
+
+@pytest.fixture
 def planet_express_config() -> str:
     return load_yaml_as_string(
         "tests/fixtures/saas/test_data/planet_express/planet_express_config.yml"
