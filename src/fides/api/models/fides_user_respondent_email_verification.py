@@ -19,16 +19,16 @@ CONFIG = get_config()
 if TYPE_CHECKING:
     from fides.api.models.fides_user import FidesUser
 
-# Access links stay active for 45 days - the same as the DSR expiration. A new link is generated for each email.
+# Access links stay active for 30 days for external login functionality. A new link is generated for each email.
 # The emails are created for new DSRs which are assigned to the respondent.
-ACCESS_LINK_TTL_DAYS = 45
+ACCESS_LINK_TTL_DAYS = 30
 
 
 class FidesUserRespondentEmailVerification(Base, IdentityVerificationMixin):
     """Model for handling email verification for external respondents.
 
     This handles two types of verification:
-    1. Access links - long-lived (45 days) for initial access
+    1. Access links - long-lived (30 days) for initial access
     2. Verification codes - short-lived (1 hour) for actual verification
 
     When an email is sent to an external respondent, a new verification is created with a new access token is created.

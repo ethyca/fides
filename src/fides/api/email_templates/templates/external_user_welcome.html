@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome to Privacy Center</title>
+</head>
+<body>
+<main>
+    <p>Hello {{ display_name }},</p>
+    
+    <p>Welcome! Your account has been created successfully. You can access the Privacy Center using the link below:</p>
+    
+    <p><a href="{{ privacy_center_url }}?access_token={{ access_token }}">Access Privacy Center</a></p>
+    
+    <p><em>This link is valid for 30 days. Keep it secure and do not share it with others.</em></p>
+    
+    <p>Through the Privacy Center, you can:</p>
+    <ul>
+        <li>Submit data access requests</li>
+        <li>Request data deletion</li>
+        <li>Manage your privacy preferences</li>
+        <li>Update your consent settings</li>
+    </ul>
+    
+    <p>If you have any questions, please contact our support team.</p>
+    
+    <p>Best regards,<br>
+    The Privacy Team</p>
+</main>
+</body>
+</html> 
