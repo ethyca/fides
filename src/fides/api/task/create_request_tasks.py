@@ -6,7 +6,7 @@ import networkx
 from loguru import logger
 from networkx import NetworkXNoCycle
 from sqlalchemy.orm import Query, Session
-
+from fides.api.task.manual.manual_task_utils import ManualTaskAddress
 from fides.api.common_exceptions import TraversalError
 from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
@@ -33,10 +33,7 @@ from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.task.deprecated_graph_task import format_data_use_map_for_caching
 from fides.api.task.execute_request_tasks import log_task_queued, queue_request_task
-from fides.api.task.manual.manual_task_utils import (
-    create_manual_task_instances_for_privacy_request,
-    include_manual_tasks_in_graph,
-)
+from fides.api.task.manual.manual_task_utils import create_manual_task_instances_for_privacy_request
 from fides.api.util.logger_context_utils import log_context
 
 
@@ -88,6 +85,14 @@ def build_access_networkx_digraph(
     for node in end_nodes:
         # Connect the end nodes, those that have no downstream dependencies, to the terminator node
         networkx_graph.add_edge(node, TERMINATOR_ADDRESS)
+
+    manual_nodes = [
+        addr
+        for addr in traversal_nodes.keys()
+        if addr.collection == ManualTaskAddress.MANUAL_DATA_COLLECTION
+    ]
+    for manual_node in manual_nodes:
+        networkx_graph.add_edge(ROOT_COLLECTION_ADDRESS, manual_node)
 
     _add_edge_if_no_nodes(traversal_nodes, networkx_graph)
     return networkx_graph
@@ -463,14 +468,7 @@ def run_access_request(
                 traversal_nodes, collect_tasks_fn
             )
 
-            # Add manual tasks to traversal_nodes so they can be included in the NetworkX graph
-            # This ensures manual tasks get proper ROOT dependencies and execution logs
-            traversal_nodes, end_nodes = include_manual_tasks_in_graph(
-                session, traversal_nodes, end_nodes
-            )
-
-            # Create manual task instances for this privacy request.
-            # This is a snapshot of the manual task fields required at time of request creation
+            # Snapshot manual task field instances for this privacy request
             create_manual_task_instances_for_privacy_request(session, privacy_request)
 
             # Save Access Request Tasks to the database

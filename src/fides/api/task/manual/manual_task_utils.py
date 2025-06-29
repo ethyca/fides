@@ -162,54 +162,6 @@ def create_manual_data_traversal_node(
     return traversal_node
 
 
-def include_manual_tasks_in_graph(
-    db: Session,
-    traversal_nodes: Dict[CollectionAddress, TraversalNode],
-    end_nodes: List[CollectionAddress],
-) -> Tuple[Dict[CollectionAddress, TraversalNode], List[CollectionAddress]]:
-    """
-    Add ManualTask collections to the traversal graph so they can be included
-    in the NetworkX graph building process with proper ROOT dependencies.
-
-    This ensures manual tasks:
-    1. Get added to traversal_nodes so they're included in NetworkX graph building
-    2. Have ROOT as an upstream dependency for proper execution order
-    3. Generate execution logs through the normal GraphTask flow
-    """
-
-    manual_addresses = get_manual_task_addresses(db)
-
-    if not manual_addresses:
-        return traversal_nodes, end_nodes
-
-    # Ensure ROOT node exists in traversal_nodes (it's excluded by collect_tasks_fn)
-    if ROOT_COLLECTION_ADDRESS not in traversal_nodes:
-        from fides.api.graph.traversal import artificial_traversal_node
-        traversal_nodes[ROOT_COLLECTION_ADDRESS] = artificial_traversal_node(ROOT_COLLECTION_ADDRESS)
-
-    for address in manual_addresses:
-        # Create traversal node for manual data collection
-        manual_node = create_manual_data_traversal_node(db, address)
-
-        # Create field paths for the dependency relationship
-        root_field_path = FieldPath("id")
-        manual_field_path = FieldPath("id")
-
-        # Set up the manual tasks to depend on ROOT
-        root_traversal_node = traversal_nodes[ROOT_COLLECTION_ADDRESS]
-        manual_node.parents[ROOT_COLLECTION_ADDRESS] = [
-            (root_traversal_node, root_field_path, manual_field_path)
-        ]
-        root_traversal_node.children[address] = [
-            (manual_node, root_field_path, manual_field_path)
-        ]
-
-        traversal_nodes[address] = manual_node
-        end_nodes.append(address)
-
-    return traversal_nodes, end_nodes
-
-
 def create_manual_task_instances_for_privacy_request(
     db: Session, privacy_request: PrivacyRequest
 ) -> List[ManualTaskInstance]:

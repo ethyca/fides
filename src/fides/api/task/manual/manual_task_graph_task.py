@@ -50,10 +50,6 @@ class ManualTaskGraphTask(GraphTask):
         if not manual_tasks:
             return []
         
-        # Refresh manual tasks to ensure we have the latest config data
-        for manual_task in manual_tasks:
-            db.refresh(manual_task)
-
         # Check/create manual task instances for ACCESS configs only
         self._ensure_manual_task_instances(
             db,
@@ -71,10 +67,15 @@ class ManualTaskGraphTask(GraphTask):
         )
 
         if submitted_data is not None:
-            # Convert submitted data to Row format for consistency with other collections
-            result = [submitted_data] if submitted_data else []
-            # Persist access data on the RequestTask so it can be included in the final package
+            # Wrap data under 'manual_data' so that reference paths of form
+            # manual_data.<field_key> can be resolved downstream.
+            wrapped_row: Dict[str, Any] = {
+                **submitted_data,
+                "manual_data": submitted_data if submitted_data is not None else {},
+            }
+            result: List[Row] = [wrapped_row] if submitted_data else []
             self.request_task.access_data = result
+            
             # Mark request task as complete and write execution log
             self.log_end(ActionType.access)
             return result
@@ -265,10 +266,6 @@ class ManualTaskGraphTask(GraphTask):
             # No manual tasks defined – nothing to erase
             self.log_end(ActionType.erasure)
             return 0
-
-        # Ensure we have the latest config objects
-        for manual_task in manual_tasks:
-            db.refresh(manual_task)
 
         # Create ManualTaskInstances for ERASURE configs only
         self._ensure_manual_task_instances(
