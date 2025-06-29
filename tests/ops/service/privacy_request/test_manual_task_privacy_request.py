@@ -1,27 +1,31 @@
-from typing import Dict, Any, cast
+from typing import Any, Dict, cast
 
 import pytest
 from sqlalchemy.orm import Session
 
-from fides.api.models.connectionconfig import AccessLevel, ConnectionConfig, ConnectionType
+from fides.api.models.connectionconfig import (
+    AccessLevel,
+    ConnectionConfig,
+    ConnectionType,
+)
+from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.manual_task import (
     ManualTask,
     ManualTaskConfig,
     ManualTaskConfigField,
     ManualTaskConfigurationType,
     ManualTaskFieldType,
-    ManualTaskParentEntityType,
-    ManualTaskType,
     ManualTaskInstance,
+    ManualTaskParentEntityType,
     ManualTaskSubmission,
+    ManualTaskType,
 )
-from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.sql_models import Dataset as CtlDataset
-from fides.api.task.manual.manual_task_utils import ManualTaskAddress
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
+from fides.api.task.manual.manual_task_utils import ManualTaskAddress
 from tests.ops.service.privacy_request.test_request_runner_service import (
-    get_privacy_request_results,
     PRIVACY_REQUEST_TASK_TIMEOUT,
+    get_privacy_request_results,
 )
 
 
@@ -186,7 +190,9 @@ def test_privacy_request_runs_after_manual_input(
 
     assert privacy_request.status == PrivacyRequestStatus.complete
 
-    results = cast(Dict[str, list[Dict[str, Any]]], privacy_request.get_raw_access_results() or {})
+    results = cast(
+        Dict[str, list[Dict[str, Any]]], privacy_request.get_raw_access_results() or {}
+    )
 
     manual_addr_key = ManualTaskAddress.create("manual_connection").value
     orders_addr_key = "postgres_manual_downstream_dataset:orders"

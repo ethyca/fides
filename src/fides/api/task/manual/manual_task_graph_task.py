@@ -4,13 +4,14 @@ from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import AwaitingAsyncTaskCallback
+from fides.api.models.attachment import AttachmentType
 from fides.api.models.manual_task import (
     ManualTask,
+    ManualTaskConfigurationType,
     ManualTaskEntityType,
+    ManualTaskFieldType,
     ManualTaskInstance,
     StatusType,
-    ManualTaskFieldType,
-    ManualTaskConfigurationType,
 )
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.policy import ActionType
@@ -21,7 +22,6 @@ from fides.api.task.manual.manual_task_utils import (
     get_manual_tasks_for_connection_config,
 )
 from fides.api.util.collection_util import Row
-from fides.api.models.attachment import AttachmentType
 
 
 class ManualTaskGraphTask(GraphTask):
@@ -49,7 +49,7 @@ class ManualTaskGraphTask(GraphTask):
 
         if not manual_tasks:
             return []
-        
+
         # Check/create manual task instances for ACCESS configs only
         self._ensure_manual_task_instances(
             db,
@@ -75,7 +75,7 @@ class ManualTaskGraphTask(GraphTask):
             }
             result: List[Row] = [wrapped_row] if submitted_data else []
             self.request_task.access_data = result
-            
+
             # Mark request task as complete and write execution log
             self.log_end(ActionType.access)
             return result
@@ -130,6 +130,7 @@ class ManualTaskGraphTask(GraphTask):
                         },
                     )
 
+    # pylint: disable=too-many-branches,too-many-nested-blocks
     def _get_submitted_data(
         self,
         db: Session,
@@ -142,8 +143,9 @@ class ManualTaskGraphTask(GraphTask):
         Returns None if any field submissions are missing (all fields must be completed or skipped)
         """
         aggregated_data: Dict[str, Any] = {}
+
         def _format_size(size_bytes: int) -> str:
-            units = ["B","KB","MB","GB","TB"]
+            units = ["B", "KB", "MB", "GB", "TB"]
             size = float(size_bytes)
             for unit in units:
                 if size < 1024.0:
@@ -199,12 +201,20 @@ class ManualTaskGraphTask(GraphTask):
                         continue
 
                     field_key = submission.field.field_key
-                    field_type = submission.data.get("field_type")
+
+                    # Ensure `submission.data` is a dictionary before accessing keys to
+                    # satisfy static type checking. Skip this submission if not.
+                    if not isinstance(submission.data, dict):
+                        continue
+
+                    data_dict: Dict[str, Any] = submission.data
+
+                    field_type = data_dict.get("field_type")
 
                     if field_type == ManualTaskFieldType.attachment.value:
                         # Build mapping of filenames to url/size for inline display
                         attachment_map: Dict[str, Dict[str, Any]] = {}
-                        for attachment in (submission.attachments or []):
+                        for attachment in submission.attachments or []:
                             if (
                                 attachment.attachment_type
                                 == AttachmentType.include_with_access_package
@@ -213,7 +223,9 @@ class ManualTaskGraphTask(GraphTask):
                                     size, url = attachment.retrieve_attachment()
                                     attachment_map[attachment.file_name] = {
                                         "url": str(url) if url else None,
-                                        "size": _format_size(size) if size else "Unknown",
+                                        "size": (
+                                            _format_size(size) if size else "Unknown"
+                                        ),
                                     }
                                 except Exception as e:  # pragma: no cover
                                     logger.warning(
@@ -229,7 +241,7 @@ class ManualTaskGraphTask(GraphTask):
 
                     else:
                         # Unwrap to the raw value for text/checkbox, etc.
-                        aggregated_data[field_key] = submission.data.get("value")
+                        aggregated_data[field_key] = data_dict.get("value")
 
         result = aggregated_data if aggregated_data else None
         return result

@@ -1,6 +1,6 @@
+import { useGetAllEnabledAccessManualHooksQuery as useGetManualIntegrationsQuery } from "datastore-connections/datastore-connection.slice";
 import { AntTabs as Tabs, AntTabsProps as TabsProps } from "fidesui";
 import { useMemo, useState } from "react";
-import { useGetAllEnabledAccessManualHooksQuery as useGetManualIntegrationsQuery } from "datastore-connections/datastore-connection.slice";
 
 import { useGetAllPrivacyRequestsQuery } from "~/features/privacy-requests";
 import { PrivacyRequestStatus } from "~/types/api";

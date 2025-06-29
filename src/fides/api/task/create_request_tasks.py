@@ -6,7 +6,7 @@ import networkx
 from loguru import logger
 from networkx import NetworkXNoCycle
 from sqlalchemy.orm import Query, Session
-from fides.api.task.manual.manual_task_utils import ManualTaskAddress
+
 from fides.api.common_exceptions import TraversalError
 from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
@@ -33,7 +33,10 @@ from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.task.deprecated_graph_task import format_data_use_map_for_caching
 from fides.api.task.execute_request_tasks import log_task_queued, queue_request_task
-from fides.api.task.manual.manual_task_utils import create_manual_task_instances_for_privacy_request
+from fides.api.task.manual.manual_task_utils import (
+    ManualTaskAddress,
+    create_manual_task_instances_for_privacy_request,
+)
 from fides.api.util.logger_context_utils import log_context
 
 

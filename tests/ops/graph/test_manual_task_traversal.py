@@ -1,12 +1,12 @@
 import pytest
 
 from fides.api.graph.config import (
+    ROOT_COLLECTION_ADDRESS,
     Collection,
     FieldAddress,
     FieldPath,
     GraphDataset,
     ScalarField,
-    ROOT_COLLECTION_ADDRESS,
 )
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal
@@ -67,7 +67,9 @@ def test_manual_node_present(manual_graph):
     traversal = build_traversal(manual_graph)
 
     manual_addr = ManualTaskAddress.create("manual_connection")
-    assert manual_addr in traversal.traversal_node_dict, "manual_data node missing from traversal"
+    assert (
+        manual_addr in traversal.traversal_node_dict
+    ), "manual_data node missing from traversal"
 
 
 def test_root_edge_to_manual_node(manual_graph):
@@ -87,4 +89,4 @@ def test_root_edge_to_manual_node(manual_graph):
 
 def test_manual_graph_is_traversable(manual_graph):
     """Building a Traversal should not raise a reachability error."""
-    Traversal(manual_graph, data={}) 
+    Traversal(manual_graph, data={})

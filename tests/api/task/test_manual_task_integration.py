@@ -31,6 +31,7 @@ from fides.api.task.manual.manual_task_utils import (
 )
 from fides.api.task.task_resources import TaskResources
 
+
 class TestManualTaskAddress:
     def test_create_manual_task_address(self):
         """Test creating manual task addresses"""

@@ -1,19 +1,18 @@
-from typing import TYPE_CHECKING, Dict, List, Tuple
+from typing import TYPE_CHECKING, List
 
 from sqlalchemy.orm import Session
 
 from fides.api.graph.config import (
-    ROOT_COLLECTION_ADDRESS,
     Collection,
     CollectionAddress,
     Field,
-    FieldPath,
     GraphDataset,
     ScalarField,
 )
 from fides.api.graph.graph import Node
-from fides.api.graph.traversal import TraversalNode
 from fides.api.models.connectionconfig import ConnectionConfig
+
+# Import application models
 from fides.api.models.manual_task import (
     ManualTask,
     ManualTaskConfig,
@@ -23,8 +22,9 @@ from fides.api.models.manual_task import (
 )
 from fides.api.models.privacy_request import PrivacyRequest
 
-if TYPE_CHECKING:
-    from fides.api.graph.graph import DatasetGraph
+# TYPE_CHECKING import placed after all runtime imports to avoid lint issues
+if TYPE_CHECKING:  # pragma: no cover
+    from fides.api.graph.traversal import TraversalNode  # noqa: F401
 
 
 class ManualTaskAddress:
@@ -113,7 +113,7 @@ def get_manual_tasks_for_connection_config(
 
 def create_manual_data_traversal_node(
     db: Session, address: CollectionAddress
-) -> TraversalNode:
+) -> "TraversalNode":
     """
     Create a TraversalNode for a manual_data collection
     """
@@ -155,7 +155,9 @@ def create_manual_data_traversal_node(
         after=set(),
     )
 
-    # Create Node and TraversalNode
+    # Create Node and TraversalNode (import locally to avoid cyclic import)
+    from fides.api.graph.traversal import TraversalNode  # local import
+
     node = Node(dataset, collection)
     traversal_node = TraversalNode(node)
 

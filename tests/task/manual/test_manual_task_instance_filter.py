@@ -4,7 +4,11 @@ from datetime import datetime
 import pytest
 from sqlalchemy.orm import Session
 
-from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType, AccessLevel
+from fides.api.models.connectionconfig import (
+    AccessLevel,
+    ConnectionConfig,
+    ConnectionType,
+)
 from fides.api.models.manual_task import (
     ManualTask,
     ManualTaskConfig,
@@ -89,7 +93,9 @@ class TestManualTaskInstanceFiltering:
         yield pr
         pr.delete(db)
 
-    def test_access_only_creates_access_instances(self, db: Session, manual_setup, privacy_request):
+    def test_access_only_creates_access_instances(
+        self, db: Session, manual_setup, privacy_request
+    ):
         manual_task = manual_setup["manual_task"]
         access_config = manual_setup["access_config"]
         erasure_config = manual_setup["erasure_config"]
@@ -104,7 +110,11 @@ class TestManualTaskInstanceFiltering:
         )
 
         # Fetch instances
-        instances = db.query(ManualTaskInstance).filter(ManualTaskInstance.task_id == manual_task.id).all()
+        instances = (
+            db.query(ManualTaskInstance)
+            .filter(ManualTaskInstance.task_id == manual_task.id)
+            .all()
+        )
         assert len(instances) == 1
         assert instances[0].config_id == access_config.id
         # Ensure erasure config has no instance
@@ -115,7 +125,9 @@ class TestManualTaskInstanceFiltering:
         )
         assert erasure_instance is None
 
-    def test_erasure_only_creates_erasure_instances(self, db: Session, manual_setup, privacy_request):
+    def test_erasure_only_creates_erasure_instances(
+        self, db: Session, manual_setup, privacy_request
+    ):
         manual_task = manual_setup["manual_task"]
         access_config = manual_setup["access_config"]
         erasure_config = manual_setup["erasure_config"]
@@ -129,7 +141,11 @@ class TestManualTaskInstanceFiltering:
             ManualTaskConfigurationType.erasure_privacy_request,
         )
 
-        instances = db.query(ManualTaskInstance).filter(ManualTaskInstance.task_id == manual_task.id).all()
+        instances = (
+            db.query(ManualTaskInstance)
+            .filter(ManualTaskInstance.task_id == manual_task.id)
+            .all()
+        )
         assert len(instances) == 1
         assert instances[0].config_id == erasure_config.id
         access_instance = (
@@ -137,4 +153,4 @@ class TestManualTaskInstanceFiltering:
             .filter(ManualTaskInstance.config_id == access_config.id)
             .first()
         )
-        assert access_instance is None 
+        assert access_instance is None
