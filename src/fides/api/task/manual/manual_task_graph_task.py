@@ -10,6 +10,7 @@ from fides.api.models.manual_task import (
     ManualTaskInstance,
     StatusType,
     ManualTaskFieldType,
+    ManualTaskConfigurationType,
 )
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.policy import ActionType
@@ -53,12 +54,20 @@ class ManualTaskGraphTask(GraphTask):
         for manual_task in manual_tasks:
             db.refresh(manual_task)
 
-        # Check/create manual task instances
-        self._ensure_manual_task_instances(db, manual_tasks, self.resources.request)
+        # Check/create manual task instances for ACCESS configs only
+        self._ensure_manual_task_instances(
+            db,
+            manual_tasks,
+            self.resources.request,
+            ManualTaskConfigurationType.access_privacy_request,
+        )
 
-        # Check if all manual task instances have submissions
+        # Check if all manual task instances have submissions for ACCESS configs only
         submitted_data = self._get_submitted_data(
-            db, manual_tasks, self.resources.request
+            db,
+            manual_tasks,
+            self.resources.request,
+            ManualTaskConfigurationType.access_privacy_request,
         )
 
         if submitted_data is not None:
@@ -85,13 +94,15 @@ class ManualTaskGraphTask(GraphTask):
         db: Session,
         manual_tasks: List[ManualTask],
         privacy_request: PrivacyRequest,
+        allowed_config_type: "ManualTaskConfigurationType",
     ) -> None:
-        """Create ManualTaskInstances if they don't exist for this privacy request"""
+        """Create ManualTaskInstances for configs matching ``allowed_config_type`` if they don't exist."""
 
         for manual_task in manual_tasks:
             # Check each active config for instances
             for config in manual_task.configs:
-                if not config.is_current:
+                if not config.is_current or config.config_type != allowed_config_type:
+                    # Skip configs that are not current or not relevant for this request type
                     continue
 
                 existing_instance = (
@@ -123,6 +134,7 @@ class ManualTaskGraphTask(GraphTask):
         db: Session,
         manual_tasks: List[ManualTask],
         privacy_request: PrivacyRequest,
+        allowed_config_type: "ManualTaskConfigurationType",
     ) -> Optional[Dict[str, Any]]:
         """
         Check if all manual task instances have submissions for ALL fields and return aggregated data
@@ -140,7 +152,7 @@ class ManualTaskGraphTask(GraphTask):
 
         for manual_task in manual_tasks:
             for config in manual_task.configs:
-                if not config.is_current:
+                if not config.is_current or config.config_type != allowed_config_type:
                     continue
 
                 instance = (
@@ -224,3 +236,70 @@ class ManualTaskGraphTask(GraphTask):
     def dry_run_task(self) -> int:
         """Return estimated row count for dry run - manual tasks don't have predictable counts"""
         return 1  # Placeholder - manual tasks generate variable data
+
+    # NEW METHOD: Provide erasure support for manual tasks
+    @retry(action_type=ActionType.erasure, default_return=0)
+    def erasure_request(
+        self,
+        retrieved_data: List[Row],
+        *erasure_prereqs: int,  # noqa: D401, pylint: disable=unused-argument
+    ) -> int:
+        """Execute manual-task-driven erasure logic.
+
+        Mirrors access_request behaviour but returns the number of rows masked (always 0)
+        once all required manual task submissions are present. If submissions are
+        incomplete the privacy request is paused awaiting user input.
+        """
+        db = self.resources.session
+        collection_address = self.execution_node.address
+
+        # Validate manual task address
+        if not ManualTaskAddress.is_manual_task_address(collection_address):
+            raise ValueError(f"Invalid manual task address: {collection_address}")
+
+        connection_key = ManualTaskAddress.get_connection_key(collection_address)
+
+        # Fetch relevant manual tasks for this connection
+        manual_tasks = get_manual_tasks_for_connection_config(db, connection_key)
+        if not manual_tasks:
+            # No manual tasks defined – nothing to erase
+            self.log_end(ActionType.erasure)
+            return 0
+
+        # Ensure we have the latest config objects
+        for manual_task in manual_tasks:
+            db.refresh(manual_task)
+
+        # Create ManualTaskInstances for ERASURE configs only
+        self._ensure_manual_task_instances(
+            db,
+            manual_tasks,
+            self.resources.request,
+            ManualTaskConfigurationType.erasure_privacy_request,
+        )
+
+        # Check for full submissions – reuse helper used by access flow, filtering ERASURE configs
+        submissions_complete = self._get_submitted_data(
+            db,
+            manual_tasks,
+            self.resources.request,
+            ManualTaskConfigurationType.erasure_privacy_request,
+        )
+
+        # If any field submissions are missing, pause processing
+        if submissions_complete is None:
+            if self.resources.request.status != PrivacyRequestStatus.requires_input:
+                self.resources.request.status = PrivacyRequestStatus.requires_input
+                self.resources.request.save(db)
+            raise AwaitingAsyncTaskCallback(
+                f"Manual erasure task for {connection_key} requires user input"
+            )
+
+        # Mark rows_masked = 0 (manual tasks do not mask data directly)
+        if self.request_task.id:
+            # Storing result for DSR 3.0; SQLAlchemy column typing triggers mypy warning
+            self.request_task.rows_masked = 0  # type: ignore[assignment]
+
+        # Mark successful completion
+        self.log_end(ActionType.erasure)
+        return 0
