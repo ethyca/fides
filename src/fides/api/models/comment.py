@@ -36,6 +36,7 @@ class CommentReferenceType(str, EnumType):
     access_manual_webhook = "access_manual_webhook"
     erasure_manual_webhook = "erasure_manual_webhook"
     privacy_request = "privacy_request"
+    manual_task_submission = "manual_task_submission"
 
 
 class CommentReference(Base):

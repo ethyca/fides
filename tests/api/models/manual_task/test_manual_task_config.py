@@ -4,16 +4,18 @@ import pytest
 from sqlalchemy.exc import DataError, IntegrityError, StatementError
 from sqlalchemy.orm import Session
 
-from fides.api.models.manual_tasks.manual_task import ManualTask
-from fides.api.models.manual_tasks.manual_task_config import (
+from fides.api.models.fides_user import FidesUser
+from fides.api.models.manual_task import (
+    ManualTask,
     ManualTaskConfig,
     ManualTaskConfigField,
-)
-from fides.api.models.manual_tasks.manual_task_log import ManualTaskLogStatus
-from fides.api.schemas.manual_tasks.manual_task_config import (
     ManualTaskFieldMetadata,
     ManualTaskFieldType,
+    ManualTaskInstance,
+    ManualTaskLogStatus,
+    ManualTaskSubmission,
 )
+from fides.api.models.privacy_request.privacy_request import PrivacyRequest
 
 TEXT_FIELD_DATA = {
     "field_key": "test_field",
@@ -222,6 +224,7 @@ class TestManualTaskConfigGetField:
         field = ManualTaskConfigField.create(db, data=field_data)
 
         result = manual_task_config.get_field(field.field_key)
+        assert result is not None
         assert result == field
         assert result.field_key == field_data["field_key"]
         assert result.field_type == ManualTaskFieldType.text
@@ -246,3 +249,207 @@ class TestManualTaskConfigGetField:
         result = config.get_field("any_field")
         assert result is None
         assert config.field_definitions == []
+
+
+class TestManualTaskConfigDeletion:
+    def test_config_deletion_with_no_instances(
+        self, db: Session, manual_task: ManualTask
+    ):
+        """Test that a config can be deleted when it has no instances or submissions."""
+        config = ManualTaskConfig.create(
+            db,
+            data={
+                "task_id": manual_task.id,
+                "config_type": "access_privacy_request",
+                "version": 1,
+                "is_current": True,
+            },
+        )
+        config_id = config.id
+
+        # Should delete successfully
+        config.delete(db)
+        db.commit()
+
+        # Verify config is deleted
+        deleted_config = db.query(ManualTaskConfig).filter_by(id=config_id).first()
+        assert deleted_config is None
+
+    def test_config_deletion_prevents_with_instances(
+        self, db: Session, manual_task: ManualTask, manual_task_config: ManualTaskConfig
+    ):
+        """Test that config deletion is prevented when instances exist due to RESTRICT constraint."""
+        from fides.api.models.manual_task import ManualTaskInstance
+
+        # Create an instance for the config
+        instance = ManualTaskInstance.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_id": manual_task_config.id,
+                "entity_id": "test_entity",
+                "entity_type": "privacy_request",
+            },
+        )
+
+        # Try to delete config (should fail due to RESTRICT constraint)
+        with pytest.raises(Exception):  # Database constraint error
+            db.delete(manual_task_config)
+            db.commit()
+
+        # Verify config and instance still exist
+        assert (
+            db.query(ManualTaskConfig).filter_by(id=manual_task_config.id).first()
+            is not None
+        )
+        assert (
+            db.query(ManualTaskInstance).filter_by(id=instance.id).first() is not None
+        )
+
+        # Clean up
+        instance.delete(db)
+        db.commit()
+
+    def test_config_deletion_prevents_with_submissions(
+        self,
+        db: Session,
+        manual_task: ManualTask,
+        user: FidesUser,
+    ):
+        """Test that config deletion is prevented when submissions exist due to RESTRICT constraint."""
+        from fides.api.models.manual_task import (
+            ManualTaskConfig,
+            ManualTaskConfigField,
+            ManualTaskInstance,
+            ManualTaskSubmission,
+        )
+
+        # Create a config
+        config = ManualTaskConfig.create(
+            db,
+            data={
+                "task_id": manual_task.id,
+                "config_type": "access_privacy_request",
+                "version": 1,
+                "is_current": True,
+            },
+        )
+
+        # Create a field for the config
+        field = ManualTaskConfigField.create(
+            db,
+            data={
+                "task_id": manual_task.id,
+                "config_id": config.id,
+                "field_type": "text",
+                "field_key": "test_field",
+                "field_metadata": {
+                    "required": True,
+                },
+            },
+        )
+
+        # Create an instance for the submissions
+        instance = ManualTaskInstance.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_id": config.id,
+                "entity_id": "test_entity",
+                "entity_type": "privacy_request",
+            },
+        )
+
+        # Delete the instance first - this will cascade delete the submission
+        instance.delete(db)
+        db.commit()
+
+        # Try to delete config - should work since no associated submissions remain
+        config.delete(db)
+        db.commit()
+
+        # Verify config is deleted
+        assert db.query(ManualTaskConfig).filter_by(id=config.id).first() is None
+
+
+class TestManualTaskConfigFieldDeletion:
+    def test_field_deletion_with_no_submissions(
+        self, db: Session, manual_task: ManualTask, manual_task_config: ManualTaskConfig
+    ):
+        """Test that a field can be deleted when it has no submissions."""
+        field_data = TEXT_FIELD_DATA.copy()
+        field_data["task_id"] = manual_task.id
+        field_data["config_id"] = manual_task_config.id
+        field = ManualTaskConfigField.create(db, data=field_data)
+        field_id = field.id
+
+        # Should delete successfully
+        field.delete(db)
+        db.commit()
+
+        # Verify field is deleted
+        deleted_field = db.query(ManualTaskConfigField).filter_by(id=field_id).first()
+        assert deleted_field is None
+
+    def test_field_deletion_prevents_with_submissions(
+        self,
+        db: Session,
+        manual_task: ManualTask,
+        manual_task_config: ManualTaskConfig,
+        user: FidesUser,
+    ):
+        """Test that field deletion is prevented when submissions exist due to RESTRICT constraint."""
+        from fides.api.models.manual_task import (
+            ManualTaskConfigField,
+            ManualTaskInstance,
+            ManualTaskSubmission,
+        )
+
+        field_data = TEXT_FIELD_DATA.copy()
+        field_data["task_id"] = manual_task.id
+        field_data["config_id"] = manual_task_config.id
+        field = ManualTaskConfigField.create(db, data=field_data)
+
+        # Create an instance
+        instance = ManualTaskInstance.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_id": manual_task_config.id,
+                "entity_id": "test_entity",
+                "entity_type": "privacy_request",
+            },
+        )
+
+        # Create a submission for the field
+        submission = ManualTaskSubmission.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_id": manual_task_config.id,
+                "field_id": field.id,
+                "instance_id": instance.id,
+                "submitted_by": user.id,
+                "data": {"value": "test"},
+            },
+        )
+
+        # Try to delete field (should fail due to RESTRICT constraint)
+        with pytest.raises(Exception):  # Database constraint error
+            field.delete(db)
+            db.commit()
+
+        # Verify field and submission still exist
+        assert (
+            db.query(ManualTaskConfigField).filter_by(id=field.id).first() is not None
+        )
+        assert (
+            db.query(ManualTaskSubmission).filter_by(id=submission.id).first()
+            is not None
+        )
+
+        # Clean up by deleting from bottom up
+        submission.delete(db)
+        instance.delete(db)
+        field.delete(db)
+        db.commit()

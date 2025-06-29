@@ -1,11 +1,13 @@
 from sqlalchemy.orm import Session
 
-from fides.api.models.manual_tasks.manual_task import ManualTask
-from fides.api.models.manual_tasks.manual_task_config import ManualTaskConfig
-from fides.api.models.manual_tasks.manual_task_instance import ManualTaskInstance
-from fides.api.models.manual_tasks.manual_task_log import ManualTaskLog
+from fides.api.models.manual_task import (
+    ManualTask,
+    ManualTaskConfig,
+    ManualTaskInstance,
+    ManualTaskLog,
+    ManualTaskLogStatus,
+)
 from fides.api.models.privacy_request import PrivacyRequest
-from fides.api.schemas.manual_tasks.manual_task_schemas import ManualTaskLogStatus
 
 
 class TestManualTaskLog:

@@ -18,6 +18,7 @@ from fides.api.models.connectionconfig import (
 )
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.detection_discovery.core import MonitorConfig
+from fides.api.models.manual_task import ManualTask
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.sql_models import Dataset
 from fides.api.oauth.roles import APPROVER, OWNER, VIEWER
@@ -769,6 +770,101 @@ class TestPatchConnections:
             db=db, conditions=(ConnectionConfig.key == "my_connection")
         ).first()
         assert connection_config.enabled_actions is None
+
+    def test_patch_connection_manual_task_auto_creation(
+        self, url, api_client, db: Session, generate_auth_header
+    ):
+        """Test that creating a manual_task connection config automatically creates a ManualTask"""
+
+        payload = [
+            {
+                "name": "My Manual Task Connection",
+                "key": "manual_task_key",
+                "connection_type": "manual_task",
+                "access": "write",
+            }
+        ]
+
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert 200 == response.status_code
+        body = json.loads(response.text)
+        assert body["succeeded"][0]["connection_type"] == "manual_task"
+
+        # Verify the connection config was created
+        connection_config = ConnectionConfig.get_by(
+            db, field="key", value="manual_task_key"
+        )
+        assert connection_config is not None
+        assert connection_config.connection_type == ConnectionType.manual_task
+
+        # Verify a ManualTask was automatically created and associated
+        manual_task = (
+            db.query(ManualTask)
+            .filter(
+                ManualTask.parent_entity_id == connection_config.id,
+                ManualTask.parent_entity_type == "connection_config",
+            )
+            .first()
+        )
+        assert manual_task is not None
+
+        # Verify the relationship works both ways
+        assert connection_config.manual_task == manual_task
+
+    def test_delete_connection_manual_task_cascades(
+        self, url, api_client, db: Session, generate_auth_header
+    ):
+        """Test that deleting a manual_task connection config also deletes the associated ManualTask"""
+
+        # First create a manual task connection config
+        payload = [
+            {
+                "name": "Manual Task Connection To Delete",
+                "key": "manual_task_delete_key",
+                "connection_type": "manual_task",
+                "access": "write",
+            }
+        ]
+
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert 200 == response.status_code
+
+        # Verify the connection config and manual task were created
+        connection_config = ConnectionConfig.get_by(
+            db, field="key", value="manual_task_delete_key"
+        )
+        assert connection_config is not None
+
+        manual_task = (
+            db.query(ManualTask)
+            .filter(
+                ManualTask.parent_entity_id == connection_config.id,
+                ManualTask.parent_entity_type == "connection_config",
+            )
+            .first()
+        )
+        assert manual_task is not None
+        manual_task_id = manual_task.id
+
+        # Now delete the connection config (need DELETE scope)
+        delete_auth_header = generate_auth_header(scopes=[CONNECTION_DELETE])
+        delete_response = api_client.delete(
+            f"{url}/{connection_config.key}",
+            headers=delete_auth_header,
+        )
+        assert delete_response.status_code == 204
+
+        # Verify the connection config is deleted
+        deleted_connection_config = ConnectionConfig.get_by(
+            db, field="key", value="manual_task_delete_key"
+        )
+        assert deleted_connection_config is None
+
+        # Verify the manual task is also deleted due to cascade
+        deleted_manual_task = ManualTask.get_by(db, field="id", value=manual_task_id)
+        assert deleted_manual_task is None
 
 
 class TestGetConnections:

@@ -5,20 +5,16 @@ from sqlalchemy.orm import Session
 
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.fides_user import FidesUser
-from fides.api.models.manual_tasks.manual_task import ManualTask
-from fides.api.models.manual_tasks.manual_task_config import (
+from fides.api.models.manual_task import (
+    ManualTask,
     ManualTaskConfig,
     ManualTaskConfigField,
-)
-from fides.api.models.manual_tasks.manual_task_instance import (
     ManualTaskInstance,
-    ManualTaskSubmission,
-)
-from fides.api.models.privacy_request.privacy_request import PrivacyRequest
-from fides.api.schemas.manual_tasks.manual_task_schemas import (
     ManualTaskParentEntityType,
+    ManualTaskSubmission,
     ManualTaskType,
 )
+from fides.api.models.privacy_request.privacy_request import PrivacyRequest
 
 
 @pytest.fixture
@@ -71,7 +67,24 @@ def manual_task_config_field_1(
         },
     )
     yield field
-    field.delete(db)
+
+    # Clean up submissions first if they exist and field still exists
+    try:
+        if db.query(ManualTaskConfigField).filter_by(id=field.id).first():
+            from fides.api.models.manual_task import ManualTaskSubmission
+
+            for submission in field.submissions:
+                if db.query(ManualTaskSubmission).filter_by(id=submission.id).first():
+                    submission.delete(db)
+            db.commit()
+
+            # Now delete the field if it still exists
+            if db.query(ManualTaskConfigField).filter_by(id=field.id).first():
+                db.delete(field)
+                db.commit()
+    except Exception:
+        # Field may have been cascade deleted, which is fine
+        pass
 
 
 @pytest.fixture
@@ -112,7 +125,14 @@ def manual_task_instance(
         },
     )
     yield instance
-    instance.delete(db)
+    # Only try to delete if instance still exists (may have been cascade deleted)
+    try:
+        if db.query(ManualTaskInstance).filter_by(id=instance.id).first():
+            instance.delete(db)
+            db.commit()
+    except Exception:
+        # Instance may have been cascade deleted, which is fine
+        pass
 
 
 @pytest.fixture
