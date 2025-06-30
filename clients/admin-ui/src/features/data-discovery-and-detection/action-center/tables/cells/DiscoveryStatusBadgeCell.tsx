@@ -1,21 +1,18 @@
-import {
-  AntButton as Button,
-  AntModal as Modal,
-  AntTable as Table,
-  AntTag as Tag,
-  AntTooltip as Tooltip,
-  Icons,
-} from "fidesui";
+import { AntTag as Tag, AntTooltip as Tooltip, Icons } from "fidesui";
 import { useState } from "react";
 
-import { AggregatedConsent } from "~/types/api";
+import { AggregatedConsent, StagedResourceAPIResponse } from "~/types/api";
+
+import { ConsentBreakdownModal } from "../../ConsentBreakdownModal";
 
 interface DiscoveryStatusBadgeCellProps {
   consentAggregated: AggregatedConsent;
+  stagedResource: StagedResourceAPIResponse;
 }
 
 export const DiscoveryStatusBadgeCell = ({
   consentAggregated,
+  stagedResource,
 }: DiscoveryStatusBadgeCellProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const handleClick = () => {
@@ -23,9 +20,6 @@ export const DiscoveryStatusBadgeCell = ({
   };
   const handleCancel = () => {
     setIsOpen(false);
-  };
-  const handleDownload = () => {
-    console.log("download");
   };
   return (
     <>
@@ -56,50 +50,14 @@ export const DiscoveryStatusBadgeCell = ({
           <Tag>Unknown</Tag>
         </Tooltip>
       )}
-      {isOpen && (
-        <Modal // TASK: convert to component and add API call
-          title="Consent discovery"
-          width={768}
-          open={isOpen}
-          onCancel={() => setIsOpen(false)}
-          footer={[
-            <Button key="cancel" onClick={handleCancel}>
-              Cancel
-            </Button>,
-            <Button key="download" type="primary" onClick={handleDownload}>
-              Download
-            </Button>,
-          ]}
-        >
-          <p className="mb-4">
-            View all instances where this asset was detected without consent,
-            organized by location and page. Use this to investigate potential
-            compliance issues.
-          </p>
-          {/* TASK: add table data from API */}
-          <Table
-            columns={[
-              {
-                title: "Location",
-                dataIndex: "location",
-                key: "location",
-              },
-              {
-                title: "Page",
-                dataIndex: "page",
-                key: "page",
-              },
-            ]}
-            dataSource={[
-              {
-                key: "1",
-                location: "United States",
-                page: ".ethyca.com/home",
-              },
-            ]}
-            pagination={false}
-          />
-        </Modal>
+      {isOpen && ( // since this component is on every row, we need to check if it's open to render it (otherwise it will render on every row)
+        <ConsentBreakdownModal
+          isOpen={isOpen}
+          stagedResource={stagedResource}
+          status={consentAggregated}
+          onCancel={handleCancel}
+          // onDownload={handleDownload}
+        />
       )}
     </>
   );
