@@ -1,26 +1,33 @@
 import pytest
 
 from fides.api.common_exceptions import AwaitingAsyncTaskCallback
-from fides.api.models.connectionconfig import ConnectionConfig, AccessLevel, ConnectionType
+from fides.api.graph.config import CollectionAddress
+from fides.api.models.connectionconfig import (
+    AccessLevel,
+    ConnectionConfig,
+    ConnectionType,
+)
 from fides.api.models.manual_task import (
     ManualTask,
     ManualTaskConfig,
     ManualTaskConfigField,
-    ManualTaskType,
-    ManualTaskParentEntityType,
     ManualTaskConfigurationType,
+    ManualTaskEntityType,
     ManualTaskFieldType,
+    ManualTaskInstance,
+    ManualTaskParentEntityType,
+    ManualTaskSubmission,
+    ManualTaskType,
+    StatusType,
 )
+from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.privacy_request.request_task import RequestTask
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
 from fides.api.task.task_resources import TaskResources
-from fides.api.graph.config import CollectionAddress
-from fides.api.models.policy import Policy
-from fides.api.models.worker_task import ExecutionLogStatus
-from fides.api.models.manual_task import ManualTaskSubmission, ManualTaskEntityType, ManualTaskInstance, StatusType
 
 
 @pytest.fixture
@@ -135,9 +142,13 @@ def _build_task_resources(db, privacy_request, policy, connection_config, reques
     )
 
 
-def test_manual_task_erasure_flow(db, erasure_policy, connection_with_manual_erasure_task):
+def test_manual_task_erasure_flow(
+    db, erasure_policy, connection_with_manual_erasure_task
+):
     """Ensure ManualTaskGraphTask.erasure_request pauses until submissions then completes"""
-    connection_config, manual_task, manual_config, field = connection_with_manual_erasure_task
+    connection_config, manual_task, manual_config, field = (
+        connection_with_manual_erasure_task
+    )
 
     # Create privacy request
     privacy_request = PrivacyRequest.create(
@@ -152,13 +163,15 @@ def test_manual_task_erasure_flow(db, erasure_policy, connection_with_manual_era
 
     # Build request task & resources
     request_task = _build_request_task(db, privacy_request, connection_config)
-    resources = _build_task_resources(db, privacy_request, erasure_policy, connection_config, request_task)
+    resources = _build_task_resources(
+        db, privacy_request, erasure_policy, connection_config, request_task
+    )
 
     graph_task = ManualTaskGraphTask(resources)
 
-    # First execution should pause awaiting input
-    with pytest.raises(AwaitingAsyncTaskCallback):
-        graph_task.erasure_request([], 0)
+    # First execution should pause the request and return None (AwaitingAsyncTaskCallback handled internally)
+    initial_result = graph_task.erasure_request([], 0)
+    assert initial_result is None
 
     db.refresh(privacy_request)
     assert privacy_request.status == PrivacyRequestStatus.requires_input
@@ -197,4 +210,4 @@ def test_manual_task_erasure_flow(db, erasure_policy, connection_with_manual_era
 
     # RequestTask.rows_masked should be 0
     db.refresh(request_task)
-    assert request_task.rows_masked == 0 
+    assert request_task.rows_masked == 0

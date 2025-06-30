@@ -39,7 +39,7 @@ export const ExecutionLogStatusColors: Record<
 > = {
   [ExecutionLogStatus.ERROR]: "error",
   [ExecutionLogStatus.SKIPPED]: "warning",
-  [ExecutionLogStatus.AWAITING_PROCESSING]: "alert",
+  [ExecutionLogStatus.AWAITING_PROCESSING]: "minos",
   [ExecutionLogStatus.IN_PROCESSING]: undefined,
   [ExecutionLogStatus.PENDING]: undefined,
   [ExecutionLogStatus.COMPLETE]: undefined,

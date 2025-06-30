@@ -18,7 +18,6 @@ interface UseNoticesServedProps {
   privacyNoticeHistoryIds?: string[];
   userGeography?: string;
   acknowledgeMode?: boolean;
-  propertyId?: string;
   tcfNoticesServed?: Partial<RecordConsentServedRequest>;
 }
 
@@ -29,7 +28,6 @@ export const useNoticesServed = ({
   privacyNoticeHistoryIds,
   userGeography,
   acknowledgeMode,
-  propertyId,
   tcfNoticesServed,
 }: UseNoticesServedProps) => {
   const [servedNoticeHistoryId, setServedNoticeHistoryId] =
@@ -72,7 +70,7 @@ export const useNoticesServed = ({
         acknowledge_mode: acknowledgeMode,
         privacy_notice_history_ids: privacyNoticeHistoryIds || [],
         serving_component: String(event.detail.extraDetails.servingComponent),
-        property_id: propertyId,
+        property_id: privacyExperience.property_id,
         ...tcfNoticesServed,
       };
 
@@ -89,7 +87,6 @@ export const useNoticesServed = ({
       userGeography,
       acknowledgeMode,
       privacyNoticeHistoryIds,
-      propertyId,
       tcfNoticesServed,
     ],
   );

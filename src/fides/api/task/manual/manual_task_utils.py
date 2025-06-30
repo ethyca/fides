@@ -1,19 +1,18 @@
-from typing import TYPE_CHECKING, Dict, List, Tuple
+from typing import TYPE_CHECKING, List
 
 from sqlalchemy.orm import Session
 
 from fides.api.graph.config import (
-    ROOT_COLLECTION_ADDRESS,
     Collection,
     CollectionAddress,
     Field,
-    FieldPath,
     GraphDataset,
     ScalarField,
 )
 from fides.api.graph.graph import Node
-from fides.api.graph.traversal import TraversalNode
 from fides.api.models.connectionconfig import ConnectionConfig
+
+# Import application models
 from fides.api.models.manual_task import (
     ManualTask,
     ManualTaskConfig,
@@ -23,8 +22,9 @@ from fides.api.models.manual_task import (
 )
 from fides.api.models.privacy_request import PrivacyRequest
 
-if TYPE_CHECKING:
-    from fides.api.graph.graph import DatasetGraph
+# TYPE_CHECKING import placed after all runtime imports to avoid lint issues
+if TYPE_CHECKING:  # pragma: no cover
+    from fides.api.graph.traversal import TraversalNode  # noqa: F401
 
 
 class ManualTaskAddress:
@@ -113,7 +113,7 @@ def get_manual_tasks_for_connection_config(
 
 def create_manual_data_traversal_node(
     db: Session, address: CollectionAddress
-) -> TraversalNode:
+) -> "TraversalNode":
     """
     Create a TraversalNode for a manual_data collection
     """
@@ -155,59 +155,13 @@ def create_manual_data_traversal_node(
         after=set(),
     )
 
-    # Create Node and TraversalNode
+    # Create Node and TraversalNode (import locally to avoid cyclic import)
+    from fides.api.graph.traversal import TraversalNode  # local import
+
     node = Node(dataset, collection)
     traversal_node = TraversalNode(node)
 
     return traversal_node
-
-
-def include_manual_tasks_in_graph(
-    db: Session,
-    traversal_nodes: Dict[CollectionAddress, TraversalNode],
-    end_nodes: List[CollectionAddress],
-) -> Tuple[Dict[CollectionAddress, TraversalNode], List[CollectionAddress]]:
-    """
-    Add ManualTask collections to the traversal graph so they can be included
-    in the NetworkX graph building process with proper ROOT dependencies.
-
-    This ensures manual tasks:
-    1. Get added to traversal_nodes so they're included in NetworkX graph building
-    2. Have ROOT as an upstream dependency for proper execution order
-    3. Generate execution logs through the normal GraphTask flow
-    """
-
-    manual_addresses = get_manual_task_addresses(db)
-
-    if not manual_addresses:
-        return traversal_nodes, end_nodes
-
-    # Ensure ROOT node exists in traversal_nodes (it's excluded by collect_tasks_fn)
-    if ROOT_COLLECTION_ADDRESS not in traversal_nodes:
-        from fides.api.graph.traversal import artificial_traversal_node
-        traversal_nodes[ROOT_COLLECTION_ADDRESS] = artificial_traversal_node(ROOT_COLLECTION_ADDRESS)
-
-    for address in manual_addresses:
-        # Create traversal node for manual data collection
-        manual_node = create_manual_data_traversal_node(db, address)
-
-        # Create field paths for the dependency relationship
-        root_field_path = FieldPath("id")
-        manual_field_path = FieldPath("id")
-
-        # Set up the manual tasks to depend on ROOT
-        root_traversal_node = traversal_nodes[ROOT_COLLECTION_ADDRESS]
-        manual_node.parents[ROOT_COLLECTION_ADDRESS] = [
-            (root_traversal_node, root_field_path, manual_field_path)
-        ]
-        root_traversal_node.children[address] = [
-            (manual_node, root_field_path, manual_field_path)
-        ]
-
-        traversal_nodes[address] = manual_node
-        end_nodes.append(address)
-
-    return traversal_nodes, end_nodes
 
 
 def create_manual_task_instances_for_privacy_request(

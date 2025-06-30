@@ -95,6 +95,10 @@ from fides.api.graph.data_type import (
     DataTypeConverter,
     get_data_type_converter,
 )
+from fides.api.schemas.partitioning import TimeBasedPartitioning
+from fides.api.schemas.partitioning.time_based_partitioning import (
+    validate_partitioning_list,
+)
 from fides.api.util.collection_util import merge_dicts
 from fides.api.util.querytoken import QueryToken
 
@@ -459,7 +463,7 @@ class Collection(BaseModel):
     grouped_inputs: Set[str] = set()
     data_categories: Set[FidesKey] = set()
     masking_strategy_override: Optional[MaskingStrategyOverride] = None
-    partitioning: Optional[Dict] = None
+    partitioning: Optional[Union[List[TimeBasedPartitioning], Dict[str, Any]]] = None
 
     @property
     def field_dict(self) -> Dict[FieldPath, Field]:
@@ -655,14 +659,12 @@ class Collection(BaseModel):
     @field_validator("partitioning")
     @classmethod
     def validate_partitioning(
-        cls, partitioning: Optional[Dict[str, Any]]
-    ) -> Optional[Dict[str, Any]]:
+        cls, partitioning: Optional[Union[List[TimeBasedPartitioning], Dict[str, Any]]]
+    ) -> Optional[Union[List[TimeBasedPartitioning], Dict[str, Any]]]:
         """
-        Validates the `partitioning` dict field.
-
-        The `partitioning` dict field is untyped in Fideslang, but here we enforce
-        that it has the required and expected `where_clauses` key, whose value must be
-        a list of strings.
+        Validates the `partitioning` field, which may be either a single dict
+        or a list of dicts.  Each dict must describe either legacy
+        `where_clauses` or the required keys for time-based partitioning.
 
         The string values are validated to ensure they match the expected syntax, which
         is strictly prescribed. The string values MUST be a valid SQL clause that defines
@@ -683,7 +685,12 @@ class Collection(BaseModel):
         in its conditional
 
         """
-        if not partitioning:
+
+        if partitioning is None:
+            return partitioning
+
+        if isinstance(partitioning, list):
+            validate_partitioning_list(partitioning)
             return partitioning
 
         # NOTE: when we deprecate `where_clause` partitioning in favor of a more proper partitioning DSL,

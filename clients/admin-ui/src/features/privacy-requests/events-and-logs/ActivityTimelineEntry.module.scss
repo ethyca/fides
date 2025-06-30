@@ -43,7 +43,7 @@ $horizontal-padding: 20px;
   &--awaiting-input,
   &--awaiting-input:hover,
   &--awaiting-input:focus {
-    border-left: 8px solid var(--fidesui-alert);
+    border-left: 8px solid var(--fidesui-minos);
   }
 }
 
@@ -66,7 +66,7 @@ $horizontal-padding: 20px;
   }
 
   &--awaiting-input {
-    color: var(--fidesui-alert);
+    color: var(--fidesui-minos);
   }
 }
 

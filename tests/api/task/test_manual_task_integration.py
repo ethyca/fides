@@ -28,13 +28,8 @@ from fides.api.task.manual.manual_task_utils import (
     create_manual_task_instances_for_privacy_request,
     get_manual_task_instances_for_privacy_request,
     get_manual_tasks_for_connection_config,
-    include_manual_tasks_in_graph,
 )
 from fides.api.task.task_resources import TaskResources
-from tests.ops.service.privacy_request.test_request_runner_service import (
-    PRIVACY_REQUEST_TASK_TIMEOUT,
-    get_privacy_request_results,
-)
 
 
 class TestManualTaskAddress:
@@ -112,7 +107,7 @@ class TestManualTaskTraversalNode:
         )
 
         # Create manual task field
-        field = ManualTaskConfigField.create(
+        ManualTaskConfigField.create(
             db=db,
             data={
                 "task_id": manual_task.id,
@@ -143,7 +138,7 @@ class TestManualTaskTraversalNode:
 
     def test_create_manual_data_traversal_node(self, db, sample_manual_task):
         """Test creating a TraversalNode for manual data"""
-        manual_task, connection_config = sample_manual_task
+        _, connection_config = sample_manual_task
 
         address = ManualTaskAddress.create(connection_config.key)
         traversal_node = create_manual_data_traversal_node(db, address)
@@ -216,27 +211,6 @@ class TestManualTaskGraphTask:
         assert not ManualTaskAddress.is_manual_task_address(regular_address)
 
 
-class TestManualTaskGraphIntegration:
-    def test_include_manual_tasks_in_graph(self, db):
-        """Test adding manual tasks to traversal graph"""
-        # Create a simple mock policy
-        policy = Mock(spec=Policy)
-        policy.rules = []
-
-        # Create empty traversal graph
-        traversal_nodes = {}
-        end_nodes = []
-
-        # Since we don't have any manual tasks set up, this should return unchanged
-        result_nodes, result_end_nodes = include_manual_tasks_in_graph(
-            db, traversal_nodes, end_nodes
-        )
-
-        # Should return the same empty graph since no manual tasks match policy
-        assert result_nodes == traversal_nodes
-        assert result_end_nodes == end_nodes
-
-
 @pytest.mark.integration
 class TestManualTaskSimulatedEndToEnd:
     """Simplified end-to-end test for manual task flow without complex database setup"""
@@ -279,7 +253,7 @@ class TestManualTaskSimulatedEndToEnd:
             },
         )
 
-        # Create manual task config
+        # Create an active ManualTaskConfig so instance creation picks it up
         manual_config = ManualTaskConfig.create(
             db=db,
             data={
@@ -307,12 +281,6 @@ class TestManualTaskSimulatedEndToEnd:
         )
 
         yield connection_config, manual_task, manual_config, email_field
-
-        # Cleanup
-        email_field.delete(db)
-        manual_config.delete(db)
-        manual_task.delete(db)
-        connection_config.delete(db)
 
     def test_manual_task_workflow_simulation(
         self, db, simple_policy, simple_connection_with_manual_task
@@ -415,11 +383,6 @@ class TestManualTaskSimulatedEndToEnd:
         assert len(instance_submissions) == 1
         assert instance_submissions[0].data["value"] == "manually-entered@example.com"
 
-        # Cleanup
-        submission.delete(db)
-        manual_instance.delete(db)
-        privacy_request.delete(db)
-
     def test_manual_task_with_missing_required_field(
         self, db, simple_policy, simple_connection_with_manual_task
     ):
@@ -469,10 +432,6 @@ class TestManualTaskSimulatedEndToEnd:
         db.refresh(privacy_request)
         assert privacy_request.status == PrivacyRequestStatus.requires_input
 
-        # Cleanup
-        manual_instance.delete(db)
-        privacy_request.delete(db)
-
 
 @pytest.mark.integration
 class TestManualTaskInstanceCreation:
@@ -497,8 +456,8 @@ class TestManualTaskInstanceCreation:
             data={
                 "name": "Test Connection",
                 "key": "test_connection",
-                "connection_type": "postgres",
-                "access": "read",
+                "connection_type": ConnectionType.manual_task,
+                "access": AccessLevel.read,
                 "disabled": False,
             },
         )
@@ -506,15 +465,27 @@ class TestManualTaskInstanceCreation:
     @pytest.fixture
     def sample_manual_task(self, db, sample_connection_config):
         """Create a sample manual task"""
-        return ManualTask.create(
+        manual_task = ManualTask.create(
             db=db,
             data={
-                "name": "Test Manual Task",
-                "description": "A test manual task",
+                "task_type": ManualTaskType.privacy_request,
                 "parent_entity_id": sample_connection_config.id,
-                "parent_entity_type": "connection_config",
+                "parent_entity_type": ManualTaskParentEntityType.connection_config,
             },
         )
+
+        # Create an active ManualTaskConfig so instance creation picks it up
+        ManualTaskConfig.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_type": ManualTaskConfigurationType.access_privacy_request,
+                "version": 1,
+                "is_current": True,
+            },
+        )
+
+        return manual_task
 
     @pytest.fixture
     def sample_privacy_request(self, db, sample_policy):
@@ -547,8 +518,8 @@ class TestManualTaskInstanceCreation:
 
         # Verify instances were created
         assert len(created_instances) == 1
-        assert created_instances[0].privacy_request_id == sample_privacy_request.id
-        assert created_instances[0].manual_task_id == sample_manual_task.id
+        assert created_instances[0].entity_id == sample_privacy_request.id
+        assert created_instances[0].task_id == sample_manual_task.id
 
         # Verify we can retrieve the instances
         retrieved_instances = get_manual_task_instances_for_privacy_request(
@@ -583,7 +554,3 @@ class TestManualTaskInstanceCreation:
             db, sample_privacy_request
         )
         assert len(all_instances) == 1
-
-        # Cleanup
-        for instance in all_instances:
-            instance.delete(db)
