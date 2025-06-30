@@ -1690,6 +1690,27 @@ describe("Fides-js TCF", () => {
             });
           });
 
+          it("remembers consent when re-opening the modal", () => {
+            cy.getByTestId("consent-modal").within(() => {
+              // opt in to purpose 4
+              cy.getByTestId(`toggle-${PURPOSE_4.name}`).click();
+              if (includeCustomPurposes) {
+                cy.getByTestId(`toggle-Advertising English`).click();
+              }
+              cy.get("button").contains("Save").click();
+            });
+            cy.wait("@patchPrivacyPreference");
+            cy.get("#fides-modal-link").click();
+            cy.getByTestId(`toggle-${PURPOSE_4.name}`).within(() => {
+              cy.get("input").should("be.checked");
+            });
+            if (includeCustomPurposes) {
+              cy.getByTestId(`toggle-Advertising English`).within(() => {
+                cy.get("input").should("be.checked");
+              });
+            }
+          });
+
           it("can opt out of some custom consent and some tcf consent", () => {
             cy.getByTestId("consent-modal").within(() => {
               if (includeCustomPurposes) {

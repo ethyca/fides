@@ -473,6 +473,7 @@ export const updateTCFCookie = async (
   enabledIds: EnabledIds,
   experience: PrivacyExperience | PrivacyExperienceMinimal,
   customPurposesConsent?: NoticeConsent,
+  onUpdate?: (cookie: FidesCookie) => void,
 ): Promise<FidesCookie> => {
   const tcString = await generateFidesString({
     tcStringPreferences: enabledIds,
@@ -487,7 +488,10 @@ export const updateTCFCookie = async (
   if (customPurposesConsent) {
     result.consent = customPurposesConsent;
   }
-  return result;
+  if (onUpdate) {
+    onUpdate(result);
+  }
+  return result as FidesCookie;
 };
 
 /**
