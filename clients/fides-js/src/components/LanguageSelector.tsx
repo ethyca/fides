@@ -1,5 +1,5 @@
 import { h } from "preact";
-import { useContext } from "preact/hooks";
+import { useContext, useState } from "preact/hooks";
 
 import { FIDES_OVERLAY_WRAPPER } from "../lib/consent-constants";
 import { FidesInitOptions } from "../lib/consent-types";
@@ -24,8 +24,13 @@ const LanguageSelector = ({
   options,
   isTCF,
 }: LanguageSelectorProps) => {
+  const [isOpen, setIsOpen] = useState(false);
   const { i18n, currentLocale, setCurrentLocale, setIsLoading } = useI18n();
   const contextGvl = useContext(GVLContext);
+
+  const handleToggle = () => {
+    setIsOpen(!isOpen);
+  };
 
   const handleLocaleSelect = async (locale: string) => {
     if (locale !== i18n.locale) {
@@ -55,17 +60,20 @@ const LanguageSelector = ({
       }
     }
     document.getElementById(FIDES_OVERLAY_WRAPPER)?.focus();
+    setIsOpen(false);
   };
 
   return (
-    <div className="fides-i18n-menu">
+    <div className={`fides-i18n-menu ${isOpen ? "fides-i18n-menu-open" : ""}`}>
       <div role="group" className="fides-i18n-popover">
         {i18n.availableLanguages.map((lang) => (
           <MenuItem
             key={lang.locale}
             data-testid={`fides-i18n-option-${lang.locale}`}
             id={
-              currentLocale === lang.locale ? "fidesActiveMenuItem" : undefined
+              currentLocale === lang.locale
+                ? "fidesActiveMenuItem"
+                : undefined
             }
             onClick={() => handleLocaleSelect(lang.locale)}
             isActive={currentLocale === lang.locale}
@@ -75,7 +83,11 @@ const LanguageSelector = ({
           </MenuItem>
         ))}
       </div>
-      <div className="fides-i18n-pseudo-button">
+      <button
+        type="button"
+        className="fides-i18n-button"
+        onClick={handleToggle}
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           height="100%"
@@ -98,7 +110,7 @@ const LanguageSelector = ({
         >
           <path d="M12 13.172L16.95 8.22198L18.364 9.63598L12 16L5.63599 9.63598L7.04999 8.22198L12 13.172Z" />
         </svg>
-      </div>
+      </button>
     </div>
   );
 };
