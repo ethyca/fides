@@ -109,10 +109,10 @@ def retry(
                         method_name,
                         self.execution_node.address,
                     )
-                    # Log the awaiting processing status, then propagate the exception so upstream handlers
-                    # can pause the privacy request without triggering the retry logic.
+                    # Log the awaiting processing status and exit without retrying.
                     self.log_awaiting_processing(action_type, ex)
-                    raise
+                    # Request Task put in "awaiting_processing" status and exited, awaiting Async Callback
+                    return None
                 except PrivacyRequestErasureEmailSendRequired as exc:
                     traceback.print_exc()
                     self.request_task.rows_masked = 0

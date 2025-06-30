@@ -169,9 +169,9 @@ def test_manual_task_erasure_flow(
 
     graph_task = ManualTaskGraphTask(resources)
 
-    # First execution should pause awaiting input
-    with pytest.raises(AwaitingAsyncTaskCallback):
-        graph_task.erasure_request([], 0)
+    # First execution should pause the request and return None (AwaitingAsyncTaskCallback handled internally)
+    initial_result = graph_task.erasure_request([], 0)
+    assert initial_result is None
 
     db.refresh(privacy_request)
     assert privacy_request.status == PrivacyRequestStatus.requires_input
