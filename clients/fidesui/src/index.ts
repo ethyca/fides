@@ -10,6 +10,11 @@ export * from "@chakra-ui/utils";
 export type { ThemeConfig as AntThemeConfig } from "antd/es";
 export type { ColumnsType as AntColumnsType } from "antd/es/table";
 export type {
+  FilterValue as AntFilterValue,
+  SorterResult as AntSorterResult,
+  TablePaginationConfig as AntTablePaginationConfig,
+} from "antd/es/table/interface";
+export type {
   ButtonProps as AntButtonProps,
   CollapseProps as AntCollapseProps,
   FlexProps as AntFlexProps,

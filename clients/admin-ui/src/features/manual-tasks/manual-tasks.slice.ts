@@ -3,6 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import { baseApi } from "~/features/common/api.slice";
 import { PaginationQueryParams } from "~/types/common/PaginationQueryParams";
 
+import { PAGE_SIZES } from "../common/table/v2";
 // Import mock data and types
 import mockTasksData from "./mocked/manual-tasks.json";
 import {
@@ -34,6 +35,7 @@ const paginateAndFilterResults = (
   status?: TaskStatus,
   requestType?: RequestType,
   systemName?: string,
+  assignedUserId?: string,
 ): PageManualTask => {
   // Start with all tasks from the mock data
   let filteredTasks = mockApiResponse.items;
@@ -64,6 +66,12 @@ const paginateAndFilterResults = (
     );
   }
 
+  if (assignedUserId) {
+    filteredTasks = filteredTasks.filter((task) =>
+      task.assigned_users.some((user) => user.id === assignedUserId),
+    );
+  }
+
   // Calculate pagination
   const total = filteredTasks.length;
   const pages = Math.ceil(total / size);
@@ -87,6 +95,7 @@ interface TaskQueryParams extends PaginationQueryParams {
   status?: TaskStatus;
   requestType?: RequestType;
   systemName?: string;
+  assignedUserId?: string;
 }
 
 // API endpoints
@@ -125,6 +134,7 @@ export const manualTasksApi = baseApi.injectEndpoints({
                 status,
                 requestType,
                 systemName,
+                assignedUserId,
               } = queryParams;
 
               // Return paginated and filtered results
@@ -136,6 +146,7 @@ export const manualTasksApi = baseApi.injectEndpoints({
                   status,
                   requestType,
                   systemName,
+                  assignedUserId,
                 ),
               };
             },
@@ -227,7 +238,7 @@ export const manualTasksSlice = createSlice({
   name: "manualTasks",
   initialState: {
     page: 1,
-    pageSize: 25, // Default to 25 instead of 10 to match PAGE_SIZES
+    pageSize: PAGE_SIZES[0],
   },
   reducers: {
     setPage: (state, action) => {

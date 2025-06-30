@@ -112,7 +112,11 @@
       ],
       "privacy_request": {
         "id": "pri_9f8e7d6c-5b4a-3928-1706-f5e4d3c2b1a0",
+<<<<<<< HEAD
         "days_left": 0,
+=======
+        "days_left": 22,
+>>>>>>> 324be9db5da9a34805b69e55c58adb56672ed147
         "request_type": "erasure",
         "subject_identity": {
           "email": {
@@ -136,7 +140,11 @@
       "task_id": "task_004",
       "name": "Export Analytics Data",
       "description": "Extract user analytics data from Google Analytics",
+<<<<<<< HEAD
       "input_type": "string",
+=======
+      "input_type": "file",
+>>>>>>> 324be9db5da9a34805b69e55c58adb56672ed147
       "request_type": "access",
       "status": "new",
       "assigned_users": [
@@ -188,7 +196,11 @@
       ],
       "privacy_request": {
         "id": "pri_fedcba98-7654-3210-9876-543210fedcba",
+<<<<<<< HEAD
         "days_left": 0,
+=======
+        "days_left": 12,
+>>>>>>> 324be9db5da9a34805b69e55c58adb56672ed147
         "request_type": "erasure",
         "subject_identity": {
           "phone_number": {
