@@ -368,7 +368,10 @@ describe("Privacy notices", () => {
       cy.getByTestId("input-name").type(notice.name);
 
       // consent mechanism section
-      cy.getByTestId("controlled-select-consent_mechanism").antSelect("Opt in");
+      cy.getByTestId("controlled-select-consent_mechanism").antSelect(
+        "Opt in",
+        { force: true },
+      );
       cy.getByTestId("input-has_gpc_flag").click();
 
       // configuration section
