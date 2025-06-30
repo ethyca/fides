@@ -67,7 +67,9 @@ describe("Smoke test", () => {
         numCompletedRequests = items.filter(
           (i) => i.status === "complete",
         ).length;
-        mostRecentPrivacyRequestId = Cypress._.maxBy(items, "created_at").id;
+        mostRecentPrivacyRequestId = (
+          Cypress._.maxBy(items, "created_at") as any
+        ).id;
       });
 
       cy.get(`tr[data-testid^='row-pending-']`)

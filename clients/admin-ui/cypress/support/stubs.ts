@@ -749,3 +749,28 @@ export const stubSharedMonitorConfig = () => {
     response: 200,
   }).as("createSharedMonitorConfig");
 };
+
+export const stubManualTasks = () => {
+  // Intercept the manual tasks API endpoints
+  cy.intercept("GET", "/api/v1/manual-tasks*", {
+    fixture: "manual-tasks/manual-tasks-response.json",
+  }).as("getManualTasks");
+
+  cy.intercept("POST", "/api/v1/manual-tasks/*/complete", {
+    body: {
+      task_id: "task_001",
+      status: "completed",
+    },
+  }).as("completeTask");
+
+  cy.intercept("POST", "/api/v1/manual-tasks/*/skip", {
+    body: {
+      task_id: "task_001",
+      status: "skipped",
+    },
+  }).as("skipTask");
+
+  cy.intercept("GET", "/api/v1/manual-tasks/*", {
+    fixture: "manual-tasks/manual-task-detail.json",
+  }).as("getTaskById");
+};

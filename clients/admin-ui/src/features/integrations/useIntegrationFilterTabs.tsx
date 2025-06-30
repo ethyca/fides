@@ -50,8 +50,7 @@ const useIntegrationFilterTabs = ({
     (tab) =>
       (tab !== IntegrationFilterTabHash.IDENTITY_PROVIDER ||
         flags.oktaMonitor) &&
-      (tab !== IntegrationFilterTabHash.MANUAL ||
-        flags.alphaNewManualIntegration), // DEFER (ENG-675): Remove this once the alpha feature is released
+      (tab !== IntegrationFilterTabHash.MANUAL || flags.alphaNewManualDSR), // DEFER (ENG-675): Remove this once the alpha feature is released
   ).map((t) => ({
     key: t,
     label: TAB_HASH_LABEL_MAP[t],
