@@ -6,17 +6,10 @@ import React from "react";
 import palette from "../palette/palette.module.scss";
 
 // Filter icon component for consistent styling
-<<<<<<< HEAD
-const FilterIcon = () => (
-  <SettingsAdjust
-    style={{
-      color: palette.FIDESUI_NEUTRAL_500,
-=======
 const FilterIcon = (filtered: boolean) => (
   <SettingsAdjust
     style={{
       color: filtered ? palette.FIDESUI_MINOS : palette.FIDESUI_NEUTRAL_500,
->>>>>>> 324be9db5da9a34805b69e55c58adb56672ed147
       width: "14px",
     }}
   />
