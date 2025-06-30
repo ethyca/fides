@@ -1,11 +1,11 @@
 import { AntTooltip as Tooltip, Icons } from "fidesui";
 
-import { MonitorConsentStatus } from "../types";
+import { ConsentStatusInfo } from "~/types/api";
 
 export const DiscoveryStatusIcon = ({
   consentStatus,
 }: {
-  consentStatus: MonitorConsentStatus | undefined;
+  consentStatus: ConsentStatusInfo | undefined;
 }) => {
   return !consentStatus?.status ? (
     <Tooltip title="{consentStatus?.message}">
