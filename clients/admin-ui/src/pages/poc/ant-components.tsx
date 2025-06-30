@@ -322,10 +322,12 @@ const AntPOC: NextPage = () => {
                 <Paragraph>
                   This paragraph has no bottom margin. Imperdiet ex curae
                   laoreet turpis adipiscing pulvinar erat conubia rhoncus,
-                  faucibus dictum porta integer tincidunt iaculis pharetra. Dis
-                  praesent egestas curae tortor primis volutpat metus ridiculus
-                  sit rutrum vitae ac aenean, nisi dolor a per molestie etiam ad
-                  tristique magnis fames laoreet.
+                  faucibus dictum porta integer tincidunt iaculis pharetra.
+                </Paragraph>
+                <Paragraph type="secondary">
+                  This paragraph uses secondary color. laoreet turpis adipiscing
+                  pulvinar erat conubia rhoncus, faucibus dictum porta integer
+                  tincidunt iaculis pharetra.
                 </Paragraph>
               </Typography>
             </Card>
