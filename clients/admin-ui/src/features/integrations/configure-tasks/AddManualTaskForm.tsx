@@ -40,11 +40,23 @@ const AddManualTaskForm = ({ isSubmitting, onSaveClick, onCancel }: Props) => {
     onSaveClick(values);
   };
 
+  const handleValuesChange = (changedValues: Partial<TaskFormValues>) => {
+    // When request type changes to erasure, automatically set field type to checkbox
+    if (changedValues.requestType === ManualFieldRequestType.ERASURE) {
+      form.setFieldsValue({ fieldType: ManualTaskFieldType.CHECKBOX });
+    }
+  };
+
+  // Watch request type to determine if field type should be disabled
+  const requestType = Form.useWatch("requestType", form);
+  const isFieldTypeDisabled = requestType === ManualFieldRequestType.ERASURE;
+
   return (
     <Form
       form={form}
       layout="vertical"
       onFinish={handleSubmit}
+      onValuesChange={handleValuesChange}
       disabled={isSubmitting}
     >
       <Form.Item
@@ -70,14 +82,6 @@ const AddManualTaskForm = ({ isSubmitting, onSaveClick, onCancel }: Props) => {
       </Form.Item>
 
       <Form.Item
-        label="Field Type"
-        name="fieldType"
-        rules={[{ required: true, message: "Please select a field type" }]}
-      >
-        <Select placeholder="Select field type" options={fieldTypeOptions} />
-      </Form.Item>
-
-      <Form.Item
         label="Request Type"
         name="requestType"
         rules={[{ required: true, message: "Please select a request type" }]}
@@ -85,6 +89,18 @@ const AddManualTaskForm = ({ isSubmitting, onSaveClick, onCancel }: Props) => {
         <Select
           placeholder="Select request type"
           options={requestTypeOptions}
+        />
+      </Form.Item>
+
+      <Form.Item
+        label="Field Type"
+        name="fieldType"
+        rules={[{ required: true, message: "Please select a field type" }]}
+      >
+        <Select
+          placeholder="Select field type"
+          options={fieldTypeOptions}
+          disabled={isFieldTypeDisabled}
         />
       </Form.Item>
 

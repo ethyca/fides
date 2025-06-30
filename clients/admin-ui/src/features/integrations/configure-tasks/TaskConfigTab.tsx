@@ -17,6 +17,7 @@ import {
   useDeleteManualFieldMutation,
   useGetManualFieldsQuery,
 } from "~/features/datastore-connections/connection-manual-fields.slice";
+import { useAssignUsersToManualTaskMutation } from "~/features/datastore-connections/connection-manual-tasks.slice";
 import { useGetAllUsersQuery } from "~/features/user-management/user-management.slice";
 import {
   ConnectionConfigurationResponse,
@@ -51,6 +52,7 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
   );
 
   const [deleteManualField] = useDeleteManualFieldMutation();
+  const [assignUsersToManualTask] = useAssignUsersToManualTaskMutation();
 
   // Get users for the assigned to field
   const { data: usersData, refetch: refetchUsers } = useGetAllUsersQuery({
@@ -131,6 +133,22 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
     onCreateUserClose();
   };
 
+  const handleUserAssignmentChange = useCallback(
+    async (userIds: string[]) => {
+      setSelectedUsers(userIds);
+
+      try {
+        await assignUsersToManualTask({
+          connectionKey: integration.key,
+          userIds,
+        }).unwrap();
+      } catch (error) {
+        console.error("Error assigning users to manual task:", error);
+      }
+    },
+    [assignUsersToManualTask, integration.key],
+  );
+
   // Use the custom hook for columns
   const { columns } = useTaskColumns({
     onEdit: handleEdit,
@@ -162,7 +180,7 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
             mode="tags"
             placeholder="Select users to assign tasks to"
             value={selectedUsers}
-            onChange={setSelectedUsers}
+            onChange={handleUserAssignmentChange}
             options={userOptions}
             style={{ width: "100%", marginTop: 8 }}
             tokenSeparators={[","]}
