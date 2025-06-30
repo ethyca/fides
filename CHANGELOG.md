@@ -36,7 +36,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Fixed
 - Fixed an accessibility issue where tooltips could not be triggered by keyboard focus. [#6276](https://github.com/ethyca/fides/pull/6276)
 
-## [2.64.2](https://github.com/ethyca/fides/compare/2.64.0...2.64.1)
+## [2.64.2](https://github.com/ethyca/fides/compare/2.64.1...2.64.2)
 
 ### Fixed
 - Fixed a bug where number fields in integration forms were un-editable [#6275](https://github.com/ethyca/fides/pull/6275)
