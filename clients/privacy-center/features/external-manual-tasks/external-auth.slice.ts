@@ -5,7 +5,7 @@
  *
  * Key differences for external users:
  * - Two-step authentication (request OTP + verify OTP)
- * - Uses external-login endpoints from endpoint-design.md
+ * - Uses real plus/external-login endpoints (no mocking)
  * - Simplified state management (no complex role/permission handling)
  * - Always filtered to current external user
  *
@@ -80,88 +80,23 @@ export const externalAuthSlice = createSlice({
   },
 });
 
-// Check if we're in a test environment (Cypress)
-const isTestEnvironment = () => {
-  const result =
-    typeof window !== "undefined" &&
-    (window.Cypress || process.env.NODE_ENV === "test");
-
-  if (process.env.NODE_ENV === "development") {
-    // eslint-disable-next-line no-console
-    console.log("🔍 isTestEnvironment result:", {
-      result,
-      windowExists: typeof window !== "undefined",
-      hasCypress: typeof window !== "undefined" && !!window.Cypress,
-      nodeEnv: process.env.NODE_ENV,
-    });
-  }
-
-  return result;
-};
-
 // External Auth API - Inject into baseApi to use dynamic base query
+// Now uses real backend endpoints consistently (no more mocking)
 export const externalAuthApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     requestOtp: build.mutation<OtpRequestResponse, OtpRequestPayload>({
-      // Use real API call in test environment, mock otherwise
-      ...(isTestEnvironment()
-        ? {
-            query: (data) => ({
-              url: "external-login/request-otp",
-              method: "POST",
-              body: data,
-            }),
-          }
-        : {
-            queryFn: async () => {
-              // Mock response for development
-              await new Promise<void>((resolve) => {
-                setTimeout(() => resolve(), 500);
-              });
-              return {
-                data: {
-                  message: "OTP code sent to email",
-                  email: "john.doe@example.com",
-                },
-              };
-            },
-          }),
+      query: (data) => ({
+        url: "plus/external-login/request-otp",
+        method: "POST",
+        body: data,
+      }),
     }),
     verifyOtp: build.mutation<OtpVerifyResponse, OtpVerifyPayload>({
-      // Use real API call in test environment, mock otherwise
-      ...(isTestEnvironment()
-        ? {
-            query: (data) => ({
-              url: "external-login/verify-otp",
-              method: "POST",
-              body: data,
-            }),
-          }
-        : {
-            queryFn: async () => {
-              // Mock response for development
-              await new Promise<void>((resolve) => {
-                setTimeout(() => resolve(), 500);
-              });
-              return {
-                data: {
-                  user_data: {
-                    id: "ext_user_123",
-                    username: "john.doe.external",
-                    created_at: "2025-06-17T20:17:08.391Z",
-                    email_address: "john.doe@example.com",
-                    first_name: "John",
-                    last_name: "Doe",
-                    disabled: false,
-                    disabled_reason: "",
-                  },
-                  token_data: {
-                    access_token: "ext_token_abc123def456",
-                  },
-                },
-              };
-            },
-          }),
+      query: (data) => ({
+        url: "plus/external-login/verify-otp",
+        method: "POST",
+        body: data,
+      }),
     }),
   }),
 });

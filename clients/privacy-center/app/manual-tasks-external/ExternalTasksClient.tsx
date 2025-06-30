@@ -9,11 +9,15 @@ import { ExternalTaskLayout } from "~/features/external-manual-tasks/components/
 import OtpRequestForm from "~/features/external-manual-tasks/components/OtpRequestForm";
 import OtpVerificationForm from "~/features/external-manual-tasks/components/OtpVerificationForm";
 import {
+  loginSuccess,
+  selectEmailToken,
   selectExternalAuthError,
   selectExternalAuthLoading,
   selectExternalUser,
   selectIsExternalAuthenticated,
   setEmailToken,
+  useRequestOtpMutation,
+  useVerifyOtpMutation,
 } from "~/features/external-manual-tasks/external-auth.slice";
 import ExternalStoreProvider from "~/features/external-manual-tasks/ExternalStoreProvider";
 import {
@@ -31,6 +35,7 @@ type AuthStep = "request-otp" | "verify-otp" | "authenticated";
 /**
  * Client component for the external manual tasks page.
  * Handles the OTP authentication flow and task management UI.
+ * Centralizes all authentication logic using Redux slice hooks.
  */
 const ExternalTasksClientInner = ({
   searchParams,
@@ -39,12 +44,22 @@ const ExternalTasksClientInner = ({
   const token = resolvedSearchParams?.token as string;
 
   const dispatch = useExternalAppDispatch();
+
+  // Redux selectors
   const authenticatedUser = useExternalAppSelector(selectExternalUser);
   const isAuthenticated = useExternalAppSelector(selectIsExternalAuthenticated);
   const isLoading = useExternalAppSelector(selectExternalAuthLoading);
   const error = useExternalAppSelector(selectExternalAuthError);
+  const emailToken = useExternalAppSelector(selectEmailToken);
+
+  // Authentication mutations
+  const [requestOtp, { isLoading: isRequestingOtp, error: requestOtpError }] =
+    useRequestOtpMutation();
+  const [verifyOtp, { isLoading: isVerifyingOtp, error: verifyOtpError }] =
+    useVerifyOtpMutation();
 
   const [authStep, setAuthStep] = React.useState<AuthStep>("request-otp");
+  const [enteredEmail, setEnteredEmail] = React.useState<string>("");
 
   // Set email token when component mounts
   useEffect(() => {
@@ -60,42 +75,94 @@ const ExternalTasksClientInner = ({
     } else if (!isAuthenticated) {
       // Reset to request-otp when user logs out
       setAuthStep("request-otp");
+      setEnteredEmail(""); // Clear email when logging out
     }
   }, [isAuthenticated, authenticatedUser]);
 
-  const handleOtpRequested = () => {
-    setAuthStep("verify-otp");
+  // Centralized OTP request handler
+  const handleRequestOtp = async (email: string) => {
+    if (!emailToken) {
+      console.error("Email token not available");
+      return;
+    }
+
+    try {
+      await requestOtp({
+        email,
+        email_token: emailToken,
+      }).unwrap();
+
+      // Store the email that was used for the OTP request
+      setEnteredEmail(email);
+      setAuthStep("verify-otp");
+    } catch (err) {
+      console.error("Failed to request OTP:", err);
+      // Error will be shown via Redux state
+    }
   };
 
-  const handleOtpVerified = () => {
-    // This will be handled by the Redux action in the component
-    setAuthStep("authenticated");
+  // Centralized OTP verification handler
+  const handleVerifyOtp = async (otpCode: string) => {
+    // Use the same email that was entered in the request form
+    if (!enteredEmail) {
+      console.error("No email address available for verification");
+      return;
+    }
+
+    try {
+      const response = await verifyOtp({
+        email: enteredEmail,
+        otp_code: otpCode,
+      }).unwrap();
+
+      // Dispatch login success to update Redux state
+      dispatch(loginSuccess(response));
+
+      setAuthStep("authenticated");
+    } catch (err) {
+      console.error("Failed to verify OTP:", err);
+      // Error will be shown via Redux state
+    }
   };
 
   const handleBackToRequest = () => {
     setAuthStep("request-otp");
+    // Keep the email when going back so user doesn't have to re-enter it
   };
+
+  // Combine all loading states
+  const combinedLoading = isLoading || isRequestingOtp || isVerifyingOtp;
+
+  // Combine all error states
+  const combinedError =
+    error ||
+    (requestOtpError
+      ? "Failed to send verification code. Please try again."
+      : null) ||
+    (verifyOtpError ? "Failed to verify code. Please try again." : null);
 
   const renderAuthContent = () => {
     switch (authStep) {
       case "request-otp":
         return (
           <OtpRequestForm
-            emailToken={token}
-            onOtpRequested={handleOtpRequested}
-            isLoading={isLoading}
-            error={error}
+            emailToken={emailToken || ""}
+            onRequestOtp={handleRequestOtp}
+            initialEmail={enteredEmail}
+            isLoading={combinedLoading}
+            error={combinedError}
           />
         );
 
       case "verify-otp":
         return (
           <OtpVerificationForm
-            emailToken={token}
-            onOtpVerified={handleOtpVerified}
+            emailToken={emailToken || ""}
+            enteredEmail={enteredEmail}
+            onVerifyOtp={handleVerifyOtp}
             onBack={handleBackToRequest}
-            isLoading={isLoading}
-            error={error}
+            isLoading={combinedLoading}
+            error={combinedError}
           />
         );
 

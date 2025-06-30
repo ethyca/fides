@@ -103,14 +103,16 @@ export interface ExternalTasksResponse {
 // Component Props Types
 export interface OtpRequestFormProps {
   emailToken: string;
-  onOtpRequested: () => void;
+  onRequestOtp: (email: string) => Promise<void>;
+  initialEmail?: string;
   isLoading?: boolean;
   error?: string | null;
 }
 
 export interface OtpVerificationFormProps {
   emailToken: string;
-  onOtpVerified: () => void;
+  enteredEmail: string;
+  onVerifyOtp: (otpCode: string) => Promise<void>;
   onBack: () => void;
   isLoading?: boolean;
   error?: string | null;

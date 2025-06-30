@@ -9,8 +9,6 @@ import {
 } from "fidesui";
 import React, { useState } from "react";
 
-import { loginSuccess, useVerifyOtpMutation } from "../external-auth.slice";
-import { useExternalAppDispatch } from "../hooks";
 import { OtpVerificationFormProps } from "../types";
 
 /**
@@ -18,41 +16,22 @@ import { OtpVerificationFormProps } from "../types";
  *
  * Allows users to enter the OTP code they received via email.
  * This is the second step in the external user authentication flow.
+ * Now purely presentational - authentication logic is handled by parent.
  */
 const OtpVerificationForm = ({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   emailToken: _,
-  onOtpVerified,
+  enteredEmail,
+  onVerifyOtp,
   onBack,
   isLoading = false,
   error = null,
 }: OtpVerificationFormProps) => {
   const [otpCode, setOtpCode] = useState("");
-  const dispatch = useExternalAppDispatch();
-  const [verifyOtp, { isLoading: isMutationLoading, error: mutationError }] =
-    useVerifyOtpMutation();
 
   const handleVerifyOtp = async () => {
     if (otpCode.trim()) {
-      try {
-        // For now, we'll use a placeholder email - this will be resolved from the token
-        // TODO: Extract email from emailToken when backend integration is complete
-        const displayEmail = "john.doe@example.com";
-
-        const response = await verifyOtp({
-          email: displayEmail,
-          otp_code: otpCode,
-        }).unwrap();
-
-        // Dispatch login success to update Redux state
-        dispatch(loginSuccess(response));
-
-        onOtpVerified();
-      } catch (err) {
-        // Error will be handled by the mutation error state
-        // eslint-disable-next-line no-console
-        console.error("Failed to verify OTP:", err);
-      }
+      await onVerifyOtp(otpCode);
     }
   };
 
@@ -62,10 +41,6 @@ const OtpVerificationForm = ({
   };
 
   const isValidOtp = otpCode.length === 6;
-  const isFormLoading = isLoading || isMutationLoading;
-  const displayError =
-    error ||
-    (mutationError ? "Failed to verify code. Please try again." : null);
 
   return (
     <div data-testid="otp-verification-form">
@@ -76,16 +51,19 @@ const OtpVerificationForm = ({
               Enter Verification Code
             </Typography.Title>
             <Typography.Text type="secondary">
-              Please enter the 6-digit code sent to your email
+              Please enter the 6-digit code sent to:
+            </Typography.Text>
+            <Typography.Text strong style={{ fontSize: "16px" }}>
+              {enteredEmail}
             </Typography.Text>
           </Space>
         </div>
 
-        {displayError && (
+        {error && (
           <Alert
             type="error"
             message="Verification Failed"
-            description={displayError}
+            description={error}
             showIcon
             data-testid="auth-error-message"
           />
@@ -121,19 +99,19 @@ const OtpVerificationForm = ({
               type="primary"
               size="large"
               block
-              loading={isFormLoading}
-              disabled={!isValidOtp || isFormLoading}
+              loading={isLoading}
+              disabled={!isValidOtp || isLoading}
               onClick={handleVerifyOtp}
               data-testid="otp-verify-button"
             >
-              {isFormLoading ? "Verifying..." : "Verify Code"}
+              {isLoading ? "Verifying..." : "Verify Code"}
             </Button>
 
             <Button
               type="default"
               size="large"
               block
-              disabled={isFormLoading}
+              disabled={isLoading}
               onClick={onBack}
               data-testid="otp-back-button"
             >

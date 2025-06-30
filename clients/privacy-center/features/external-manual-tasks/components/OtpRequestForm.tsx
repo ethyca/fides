@@ -3,58 +3,72 @@
 import {
   AntAlert as Alert,
   AntButton as Button,
+  AntInput as Input,
   AntSpace as Space,
   AntTypography as Typography,
 } from "fidesui";
-import React from "react";
+import React, { useEffect, useState } from "react";
 
-import { useRequestOtpMutation } from "../external-auth.slice";
 import { OtpRequestFormProps } from "../types";
 
 /**
  * OTP Request Form Component - Step 1 of Authentication
  *
- * Displays the user's email and allows them to request an OTP code.
+ * Displays an email input field and allows users to request an OTP code.
  * This is the first step in the external user authentication flow.
+ * Now purely presentational - authentication logic is handled by parent.
  */
 const OtpRequestForm = ({
-  emailToken,
-  onOtpRequested,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  emailToken: _,
+  onRequestOtp,
+  initialEmail = "",
   isLoading = false,
   error = null,
 }: OtpRequestFormProps) => {
-  const [requestOtp, { isLoading: isMutationLoading, error: mutationError }] =
-    useRequestOtpMutation();
+  const [email, setEmail] = useState(initialEmail);
+  const [emailError, setEmailError] = useState<string | null>(null);
 
-  const handleRequestOtp = async () => {
-    try {
-      // For now, we'll use a placeholder email - this will be resolved from the token
-      // TODO: Extract email from emailToken when backend integration is complete
-      const displayEmail = "user@example.com";
+  // Update email when initialEmail changes (when going back from verification)
+  useEffect(() => {
+    setEmail(initialEmail);
+  }, [initialEmail]);
 
-      await requestOtp({
-        email: displayEmail,
-        email_token: emailToken,
-      }).unwrap();
+  // Simple email validation
+  const validateEmail = (emailValue: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(emailValue);
+  };
 
-      onOtpRequested();
-    } catch (err) {
-      // Error will be handled by the mutation error state
-      // eslint-disable-next-line no-console
-      console.error("Failed to request OTP:", err);
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    setEmail(value);
+
+    // Clear email error when user starts typing
+    if (emailError) {
+      setEmailError(null);
     }
   };
 
-  // For now, we'll show a placeholder email - this will be resolved from the token
-  // TODO: Extract email from emailToken when backend integration is complete
-  const displayEmail = "user@example.com";
+  const handleRequestOtp = async () => {
+    // Validate email before sending request
+    if (!email.trim()) {
+      setEmailError("Email address is required");
+      return;
+    }
 
-  const isFormLoading = isLoading || isMutationLoading;
-  const displayError =
-    error ||
-    (mutationError
-      ? "Failed to send verification code. Please try again."
-      : null);
+    if (!validateEmail(email.trim())) {
+      setEmailError("Please enter a valid email address");
+      return;
+    }
+
+    // Clear any previous email errors
+    setEmailError(null);
+
+    await onRequestOtp(email.trim());
+  };
+
+  const isValidEmail = email.trim() && validateEmail(email.trim());
 
   return (
     <div data-testid="otp-request-form">
@@ -70,11 +84,11 @@ const OtpRequestForm = ({
           </Space>
         </div>
 
-        {displayError && (
+        {error && (
           <Alert
             type="error"
             message="Authentication Error"
-            description={displayError}
+            description={error}
             showIcon
             data-testid="auth-error-message"
           />
@@ -83,13 +97,24 @@ const OtpRequestForm = ({
         <Space direction="vertical" size={16} style={{ width: "100%" }}>
           <div>
             <Typography.Text strong>Email Address:</Typography.Text>
-            <div style={{ marginTop: "4px" }}>
-              <Typography.Text
-                data-testid="otp-request-email-display"
-                style={{ fontSize: "18px" }}
-              >
-                {displayEmail}
-              </Typography.Text>
+            <div style={{ marginTop: "8px" }}>
+              <Input
+                size="large"
+                type="email"
+                placeholder="Enter your email address"
+                value={email}
+                onChange={handleEmailChange}
+                disabled={isLoading}
+                status={emailError ? "error" : undefined}
+                data-testid="otp-request-email-input"
+              />
+              {emailError && (
+                <div style={{ marginTop: "4px" }}>
+                  <Typography.Text type="danger" style={{ fontSize: "14px" }}>
+                    {emailError}
+                  </Typography.Text>
+                </div>
+              )}
             </div>
           </div>
 
@@ -97,11 +122,12 @@ const OtpRequestForm = ({
             type="primary"
             size="large"
             block
-            loading={isFormLoading}
+            loading={isLoading}
+            disabled={!isValidEmail || isLoading}
             onClick={handleRequestOtp}
             data-testid="otp-request-button"
           >
-            {isFormLoading ? "Sending..." : "Send Verification Code"}
+            {isLoading ? "Sending..." : "Send Verification Code"}
           </Button>
         </Space>
 

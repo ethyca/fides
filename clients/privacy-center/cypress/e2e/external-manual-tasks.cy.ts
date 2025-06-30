@@ -2,15 +2,15 @@ import { API_URL } from "../support/constants";
 
 describe("External Manual Tasks", () => {
   beforeEach(() => {
-    // Mock external auth API endpoints
-    cy.intercept("POST", `${API_URL}/external-login/request-otp`, {
+    // Intercept real external auth API endpoints for testing
+    cy.intercept("POST", `${API_URL}/plus/external-login/request-otp`, {
       body: {
         message: "OTP code sent to email",
         email: "john.doe@example.com",
       },
     }).as("postRequestOtp");
 
-    cy.intercept("POST", `${API_URL}/external-login/verify-otp`, {
+    cy.intercept("POST", `${API_URL}/plus/external-login/verify-otp`, {
       body: {
         user_data: {
           id: "ext_user_123",
@@ -54,11 +54,14 @@ describe("External Manual Tasks", () => {
       // Step 1: Should show OTP request form
       cy.get('[data-testid="external-auth-container"]').should("be.visible");
       cy.get('[data-testid="otp-request-form"]').should("be.visible");
-      cy.get('[data-testid="otp-request-email-display"]')
+      cy.get('[data-testid="otp-request-email-input"]')
         .should("be.visible")
-        .and("contain", "user@example.com");
+        .and("have.attr", "placeholder", "Enter your email address");
 
-      // Request OTP
+      // Enter email and request OTP
+      cy.get('[data-testid="otp-request-email-input"]').type(
+        "user@example.com",
+      );
       cy.get('[data-testid="otp-request-button"]')
         .should("not.be.disabled")
         .click();
@@ -93,6 +96,9 @@ describe("External Manual Tasks", () => {
     it("should handle logout correctly", () => {
       // Complete authentication first
       cy.visit("/manual-tasks-external?token=test_token_123");
+      cy.get('[data-testid="otp-request-email-input"]').type(
+        "user@example.com",
+      );
       cy.get('[data-testid="otp-request-button"]').click();
       cy.wait("@postRequestOtp");
       cy.get('[data-testid="otp-input"]').type("123456");
@@ -111,12 +117,44 @@ describe("External Manual Tasks", () => {
       cy.get('[data-testid="external-auth-container"]').should("be.visible");
       cy.get('[data-testid="otp-request-form"]').should("be.visible");
     });
+
+    it("should validate email input before allowing OTP request", () => {
+      cy.visit("/manual-tasks-external?token=test_token_123");
+
+      // Button should be disabled initially (no email)
+      cy.get('[data-testid="otp-request-button"]').should("be.disabled");
+
+      // Enter invalid email
+      cy.get('[data-testid="otp-request-email-input"]').type("invalid-email");
+      cy.get('[data-testid="otp-request-button"]').should("be.disabled");
+
+      // Clear and enter valid email
+      cy.get('[data-testid="otp-request-email-input"]')
+        .clear()
+        .type("valid@example.com");
+      cy.get('[data-testid="otp-request-button"]').should("not.be.disabled");
+
+      // Test clicking with invalid email shows error
+      cy.get('[data-testid="otp-request-email-input"]')
+        .clear()
+        .type("bad-email");
+      cy.get('[data-testid="otp-request-button"]').click();
+      cy.contains("Please enter a valid email address").should("be.visible");
+
+      // Test empty email shows error
+      cy.get('[data-testid="otp-request-email-input"]').clear();
+      cy.get('[data-testid="otp-request-button"]').click();
+      cy.contains("Email address is required").should("be.visible");
+    });
   });
 
   describe("Task Management", () => {
     beforeEach(() => {
       // Helper to authenticate first
       cy.visit("/manual-tasks-external?token=test_token_123");
+      cy.get('[data-testid="otp-request-email-input"]').type(
+        "user@example.com",
+      );
       cy.get('[data-testid="otp-request-button"]').click();
       cy.wait("@postRequestOtp");
       cy.get('[data-testid="otp-input"]').type("123456");
@@ -218,6 +256,9 @@ describe("External Manual Tasks", () => {
     beforeEach(() => {
       // Authenticate and get to tasks
       cy.visit("/manual-tasks-external?token=test_token_123");
+      cy.get('[data-testid="otp-request-email-input"]').type(
+        "user@example.com",
+      );
       cy.get('[data-testid="otp-request-button"]').click();
       cy.wait("@postRequestOtp");
       cy.get('[data-testid="otp-input"]').type("123456");
