@@ -7,25 +7,17 @@
 <body>
 <main>
     <p>Hello {{ display_name }},</p>
-    
-    <p>Welcome! Your account has been created successfully. You can access the Privacy Center using the link below:</p>
-    
-    <p><a href="{{ privacy_center_url }}?access_token={{ access_token }}">Access Privacy Center</a></p>
-    
-    <p><em>This link is valid for 30 days. Keep it secure and do not share it with others.</em></p>
-    
-    <p>Through the Privacy Center, you can:</p>
-    <ul>
-        <li>Submit data access requests</li>
-        <li>Request data deletion</li>
-        <li>Manage your privacy preferences</li>
-        <li>Update your consent settings</li>
-    </ul>
-    
-    <p>If you have any questions, please contact our support team.</p>
-    
-    <p>Best regards,<br>
-    The Privacy Team</p>
+
+    <p>An account has been created for you by the privacy team at {{ org_name }} so that you can assist them in responding to data subject requests, as required by the GDPR and many US state laws, for users that have data in your systems.</p>
+
+    <p>A portal is available to view and take action on these requests at: <a href="{{ portal_link }}">{{ portal_link }}</a>. Through this portal you can upload or provide user data for users who have requested a copy of their information and attest that users have been removed from your system in the case of a</p>
+
+    <p>The provided link is valid for 30 days and you will be asked to verify your email address each time you access the portal.</p>
+
+    <p>If you have any questions, please reach out first to your contacts at: {{ org_name }}</p>
+
+    <p>Regards,<br/>
+    {{ org_name }} Privacy Team</p>
 </main>
 </body>
 </html> 

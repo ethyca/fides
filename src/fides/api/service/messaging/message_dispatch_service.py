@@ -474,18 +474,25 @@ def _build_email(  # pylint: disable=too-many-return-statements, too-many-branch
             if body_params.last_name:
                 display_name = f"{body_params.first_name} {body_params.last_name}"
 
+        portal_link = (
+            f"{body_params.privacy_center_url}?access_token={body_params.access_token}"
+        )
+
+        variables = {
+            "username": body_params.username,
+            "display_name": display_name,
+            "first_name": body_params.first_name,
+            "last_name": body_params.last_name,
+            "org_name": body_params.org_name,
+            "portal_link": portal_link,
+            "privacy_center_url": body_params.privacy_center_url,
+            "access_token": body_params.access_token,
+        }
+
         return EmailForActionType(
             subject="Welcome to our Privacy Center",
-            body=base_template.render(
-                {
-                    "username": body_params.username,
-                    "display_name": display_name,
-                    "first_name": body_params.first_name,
-                    "last_name": body_params.last_name,
-                    "privacy_center_url": body_params.privacy_center_url,
-                    "access_token": body_params.access_token,
-                }
-            ),
+            body=base_template.render(variables),
+            template_variables=variables,
         )
 
     logger.error("Message action type {} is not implemented", action_type)

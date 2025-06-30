@@ -191,6 +191,7 @@ class ExternalUserWelcomeBodyParams(BaseModel):
     last_name: Optional[str] = None
     privacy_center_url: str
     access_token: str
+    org_name: str
 
 
 class FidesopsMessage(
