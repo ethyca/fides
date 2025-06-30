@@ -3,6 +3,7 @@ import { getQueryParamsFromArray } from "~/features/common/utils";
 import {
   AggregatedConsent,
   DiffStatus,
+  Page_ConsentBreakdown_,
   Page_StagedResourceAPIResponse_,
   Page_SystemStagedResourcesAggregateRecord_,
   StagedResourceAPIResponse,
@@ -90,7 +91,7 @@ const actionCenterApi = baseApi.injectEndpoints({
       providesTags: () => ["Discovery Monitor Results"],
     }),
     addMonitorResultSystems: build.mutation<
-      any, // TASK: add API response type
+      any, // TODO: add API response type
       MonitorResultSystemQueryParams
     >({
       query: ({ monitor_config_key, resolved_system_ids }) => {
@@ -106,7 +107,7 @@ const actionCenterApi = baseApi.injectEndpoints({
       invalidatesTags: ["Discovery Monitor Results"],
     }),
     ignoreMonitorResultSystems: build.mutation<
-      any, // TASK: add API response type
+      string | null,
       MonitorResultSystemQueryParams
     >({
       query: ({ monitor_config_key, resolved_system_ids }) => {
@@ -212,17 +213,19 @@ const actionCenterApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Discovery Monitor Results"],
     }),
-    getConsentStatusTableData: build.query<
-      any, // TASK: add API response type
+    getConsentBreakdown: build.query<
+      Page_ConsentBreakdown_,
       {
-        monitorId: string;
+        stagedResourceUrn: string;
         status: AggregatedConsent;
         page?: number;
         size?: number;
       } & PaginationQueryParams
     >({
-      query: ({ monitorId, status, page = 1, size = 20 }) => ({
-        url: `/plus/discovery-monitor/staged_resource/${monitorId}/consent`,
+      query: ({ stagedResourceUrn, status, page = 1, size = 20 }) => ({
+        url: `/plus/discovery-monitor/staged_resource/${encodeURIComponent(
+          stagedResourceUrn,
+        )}/consent`,
         params: {
           status,
           page,
@@ -245,4 +248,5 @@ export const {
   useUpdateAssetsSystemMutation,
   useUpdateAssetsDataUseMutation,
   useUpdateAssetsMutation,
+  useGetConsentBreakdownQuery,
 } = actionCenterApi;
