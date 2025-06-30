@@ -339,8 +339,8 @@ const PrivacyRequestForm = ({
 
   const action = openAction
     ? (config.actions as PrivacyRequestOption[]).find(
-      ({ policy_key }) => policy_key === openAction,
-    )
+        ({ policy_key }) => policy_key === openAction,
+      )
     : null;
 
   const {
