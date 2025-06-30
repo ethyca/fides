@@ -166,35 +166,19 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
       <Flex direction="column" gap={4}>
         <div>
           <Paragraph>
-            Configure and manage manual tasks for this integration. Tasks allow
-            you to perform specific actions or operations related to your{" "}
-            {integration.connection_type} integration.
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Sit amet
+            iusto, nobis dignissimos obcaecati perferendis unde consectetur
+            delectus laborum autem fuga reprehenderit quibusdam ipsum,
+            laudantium tenetur omnis odit earum molestiae.
+            <br />
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Sit amet
+            iusto, nobis dignissimos obcaecati perferendis unde consectetur
+            delectus laborum autem fuga reprehenderit quibusdam ipsum,
+            laudantium tenetur omnis odit earum molestiae.
           </Paragraph>
         </div>
 
-        <Title level={5}>Configured Tasks</Title>
-
-        <Box>
-          <Typography.Text strong>Assign tasks to users:</Typography.Text>
-          <Select
-            mode="tags"
-            placeholder="Select users to assign tasks to"
-            value={selectedUsers}
-            onChange={handleUserAssignmentChange}
-            options={userOptions}
-            style={{ width: "100%", marginTop: 8 }}
-            tokenSeparators={[","]}
-            filterOption={(input, option) => {
-              return (
-                (typeof option?.label === "string" &&
-                  option.label.toLowerCase().includes(input.toLowerCase())) ||
-                false
-              );
-            }}
-          />
-        </Box>
-
-        <Flex justify="flex-end">
+        <Flex justify="flex-end" className="mt-6">
           <Flex justify="flex-start" align="center" gap={2}>
             <Button type="primary" onClick={onOpen}>
               Add manual task
@@ -227,6 +211,31 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
             </Box>
           }
         />
+
+        <Box className="mt-4">
+          <Typography.Text strong>Assign tasks to users:</Typography.Text>
+          <div className="w-1/2">
+            <Select
+              mode="tags"
+              placeholder="Select users to assign tasks to"
+              value={selectedUsers}
+              onChange={handleUserAssignmentChange}
+              options={userOptions}
+              style={{ width: "100%", marginTop: 8 }}
+              tokenSeparators={[","]}
+              filterOption={(input, option) => {
+                return (
+                  (typeof option?.label === "string" &&
+                    option.label.toLowerCase().includes(input.toLowerCase())) ||
+                  false
+                );
+              }}
+            />
+          </div>
+          <div className="mt-4 flex ">
+            <Button type="primary">Save</Button>
+          </div>
+        </Box>
 
         <AddManualTaskModal
           isOpen={isOpen}
