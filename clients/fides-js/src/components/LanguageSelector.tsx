@@ -71,9 +71,7 @@ const LanguageSelector = ({
             key={lang.locale}
             data-testid={`fides-i18n-option-${lang.locale}`}
             id={
-              currentLocale === lang.locale
-                ? "fidesActiveMenuItem"
-                : undefined
+              currentLocale === lang.locale ? "fidesActiveMenuItem" : undefined
             }
             onClick={() => handleLocaleSelect(lang.locale)}
             isActive={currentLocale === lang.locale}

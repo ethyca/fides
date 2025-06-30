@@ -170,9 +170,7 @@ div#fides-banner-inner-container {
     min-height: unset;
   }
 
-  .fides-tcf-banner-container
-    .fides-banner-secondary-actions
-    .fides-i18n-menu {
+  .fides-tcf-banner-container .fides-banner-secondary-actions .fides-i18n-menu {
     position: relative;
     left: unset;
     bottom: unset;
