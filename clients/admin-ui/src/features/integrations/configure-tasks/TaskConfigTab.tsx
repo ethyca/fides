@@ -183,19 +183,6 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
             <Button type="primary" onClick={onOpen}>
               Add manual task
             </Button>
-
-            <Dropdown
-              menu={{ items: menuItems }}
-              trigger={["click"]}
-              placement="bottomRight"
-              overlayStyle={{ minWidth: 160 }}
-            >
-              <Button
-                size="middle"
-                icon={<Icons.OverflowMenuVertical />}
-                aria-label="More actions"
-              />
-            </Dropdown>
           </Flex>
         </Flex>
 
@@ -233,6 +220,9 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
             />
           </div>
           <div className="mt-4 flex ">
+            <Button type="default" onClick={onCreateUserOpen}>
+              Manage secure access
+            </Button>
             <Button type="primary">Save</Button>
           </div>
         </Box>
