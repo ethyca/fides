@@ -1,11 +1,8 @@
-import {
-  ColumnDef,
-  createColumnHelper,
-  getCoreRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
+import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
+import type { MenuProps } from "antd";
 import {
   AntButton as Button,
+  AntDropdown as Dropdown,
   AntSelect as Select,
   AntTypography as Typography,
   Box,
@@ -13,13 +10,9 @@ import {
   Icons,
   useDisclosure,
 } from "fidesui";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
-import {
-  DefaultCell,
-  DefaultHeaderCell,
-  FidesTableV2,
-} from "~/features/common/table/v2";
+import { FidesTableV2 } from "~/features/common/table/v2";
 import {
   useDeleteManualFieldMutation,
   useGetManualFieldsQuery,
@@ -31,6 +24,8 @@ import {
 } from "~/types/api";
 
 import AddManualTaskModal from "./AddManualTaskModal";
+import CreateExternalUserModal from "./CreateExternalUserModal";
+import { Task, useTaskColumns } from "./useTaskColumns";
 
 const { Title, Paragraph } = Typography;
 
@@ -38,21 +33,14 @@ interface TaskConfigTabProps {
   integration: ConnectionConfigurationResponse;
 }
 
-interface Task {
-  id: string;
-  name: string;
-  description: string;
-  fieldType: string;
-  requestType: string;
-  originalField: ManualFieldResponse; // Store the original field data for editing
-}
-
-const columnHelper = createColumnHelper<Task>();
-
 const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const {
+    isOpen: isCreateUserOpen,
+    onOpen: onCreateUserOpen,
+    onClose: onCreateUserClose,
+  } = useDisclosure();
 
   const { data, refetch } = useGetManualFieldsQuery(
     { connectionKey: integration ? integration.key : "" },
@@ -63,20 +51,12 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
 
   const [deleteManualField] = useDeleteManualFieldMutation();
 
-  // Get users for the assigned to field
-  const { data: usersData } = useGetAllUsersQuery({
+  // Get users for the dropdown (used for refreshing after user creation)
+  const { refetch: refetchUsers } = useGetAllUsersQuery({
     page: 1,
-    size: 100, // Get enough users for the dropdown
-    username: "", // Empty string to get all users
+    size: 100,
+    username: "",
   });
-
-  const users = usersData?.items ?? [];
-
-  // Create options for the assigned to select
-  const userOptions = users.map((user: any) => ({
-    label: `${user.first_name} ${user.last_name} (${user.email_address})`,
-    value: user.email_address,
-  }));
 
   useEffect(() => {
     if (data) {
@@ -93,113 +73,60 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
     }
   }, [data]);
 
-  const deleteTask = async (task: Task) => {
-    try {
-      await deleteManualField({
-        connectionKey: integration.key as string,
-        manualFieldId: task.id,
-      }).unwrap();
+  const deleteTask = useCallback(
+    async (task: Task) => {
+      try {
+        await deleteManualField({
+          connectionKey: integration.key as string,
+          manualFieldId: task.id,
+        }).unwrap();
 
-      refetch();
-    } catch (error) {
-      console.error("Error deleting task:", error);
-    }
-  };
+        refetch();
+      } catch (error) {
+        console.error("Error deleting task:", error);
+      }
+    },
+    [deleteManualField, integration.key, refetch],
+  );
 
-  const handleEdit = (task: Task) => {
+  const handleEdit = useCallback((task: Task) => {
     // TODO: Implement edit functionality
     console.log("Edit task:", task);
+  }, []);
+
+  const handleDelete = useCallback(
+    (task: Task) => {
+      const confirmed = window.confirm(
+        `Are you sure you want to delete the task "${task.name}"?`,
+      );
+
+      if (confirmed) {
+        deleteTask(task);
+      }
+    },
+    [deleteTask],
+  );
+
+  // Menu items for the dropdown
+  const menuItems: MenuProps["items"] = [
+    {
+      key: "manage-access",
+      label: "Manage secure access",
+      onClick: onCreateUserOpen,
+    },
+  ];
+
+  const handleUserCreated = () => {
+    // Refetch users to update the dropdown
+    refetchUsers();
+    onCreateUserClose();
   };
 
-  const handleDelete = (task: Task) => {
-    const confirmed = window.confirm(
-      `Are you sure you want to delete the task "${task.name}"?`,
-    );
-
-    if (confirmed) {
-      deleteTask(task);
-    }
-  };
-
-  const renderTaskName = (props: any) => (
-    <DefaultCell value={props.getValue()} />
-  );
-  const renderDescription = (props: any) => (
-    <DefaultCell value={props.getValue()} />
-  );
-  const renderFieldType = (props: any) => (
-    <DefaultCell value={props.getValue()} />
-  );
-  const renderRequestType = (props: any) => (
-    <DefaultCell value={props.getValue()} />
-  );
-
-  const renderActions = (props: any) => {
-    const task = props.row.original;
-    return (
-      <Flex gap={2}>
-        <Button
-          size="small"
-          icon={<Icons.Edit />}
-          onClick={() => handleEdit(task)}
-        />
-        <Button
-          size="small"
-          danger
-          icon={<Icons.TrashCan />}
-          onClick={() => handleDelete(task)}
-        />
-      </Flex>
-    );
-  };
-
-  const renderTaskNameHeader = (props: any) => (
-    <DefaultHeaderCell value="Task Name" {...props} />
-  );
-  const renderDescriptionHeader = (props: any) => (
-    <DefaultHeaderCell value="Description" {...props} />
-  );
-  const renderFieldTypeHeader = (props: any) => (
-    <DefaultHeaderCell value="Field Type" {...props} />
-  );
-  const renderRequestTypeHeader = (props: any) => (
-    <DefaultHeaderCell value="Request Type" {...props} />
-  );
-  const renderActionsHeader = (props: any) => (
-    <DefaultHeaderCell value="Actions" {...props} />
-  );
-
-  const columns: ColumnDef<Task, any>[] = useMemo(
-    () => [
-      columnHelper.accessor((row) => row.name, {
-        id: "name",
-        cell: renderTaskName,
-        header: renderTaskNameHeader,
-      }),
-      columnHelper.accessor((row) => row.description, {
-        id: "description",
-        cell: renderDescription,
-        header: renderDescriptionHeader,
-      }),
-      columnHelper.accessor((row) => row.fieldType, {
-        id: "fieldType",
-        cell: renderFieldType,
-        header: renderFieldTypeHeader,
-      }),
-      columnHelper.accessor((row) => row.requestType, {
-        id: "requestType",
-        cell: renderRequestType,
-        header: renderRequestTypeHeader,
-      }),
-      columnHelper.display({
-        id: "actions",
-        cell: renderActions,
-        header: renderActionsHeader,
-        meta: { disableRowClick: true },
-      }),
-    ],
-    [],
-  );
+  // Use the custom hook for columns
+  const { columns } = useTaskColumns({
+    onEdit: handleEdit,
+    onDelete: handleDelete,
+  });
 
   const tableInstance = useReactTable<Task>({
     data: tasks,
@@ -218,29 +145,26 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
           </Paragraph>
         </div>
 
-        <Flex justify="space-between" align="center">
-          <Title level={5}>Configured Tasks</Title>
-          <Button type="primary" onClick={onOpen}>
-            Add manual task
-          </Button>
-        </Flex>
+        <Flex justify="flex-end">
+          <Flex justify="flex-start" align="center" gap={2}>
+            <Button type="primary" onClick={onOpen}>
+              Add manual task
+            </Button>
 
-        <Box>
-          <Typography.Text strong>Assign tasks to users:</Typography.Text>
-          <Select
-            mode="tags"
-            placeholder="Select users to assign tasks to"
-            value={selectedUsers}
-            onChange={setSelectedUsers}
-            options={userOptions}
-            style={{ width: "100%", marginTop: 8 }}
-            tokenSeparators={[","]}
-            filterOption={(input, option) =>
-              option?.label?.toLowerCase().includes(input.toLowerCase()) ||
-              false
-            }
-          />
-        </Box>
+            <Dropdown
+              menu={{ items: menuItems }}
+              trigger={["click"]}
+              placement="bottomRight"
+              overlayStyle={{ minWidth: 160 }}
+            >
+              <Button
+                size="middle"
+                icon={<Icons.OverflowMenuVertical />}
+                aria-label="More actions"
+              />
+            </Dropdown>
+          </Flex>
+        </Flex>
 
         <FidesTableV2
           tableInstance={tableInstance}
@@ -262,7 +186,12 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
           onTaskAdded={() => {
             refetch();
           }}
-          selectedUsers={selectedUsers}
+        />
+
+        <CreateExternalUserModal
+          isOpen={isCreateUserOpen}
+          onClose={onCreateUserClose}
+          onUserCreated={handleUserCreated}
         />
       </Flex>
     </Box>

@@ -24,7 +24,6 @@ type Props = {
   onClose: () => void;
   integration: ConnectionConfigurationResponse;
   onTaskAdded: () => void;
-  selectedUsers: string[];
 };
 
 const AddManualTaskModal = ({
@@ -32,7 +31,6 @@ const AddManualTaskModal = ({
   onClose,
   integration,
   onTaskAdded,
-  selectedUsers,
 }: Props) => {
   const { successAlert } = useAlert();
   const { handleError } = useAPIHelper();
@@ -89,15 +87,6 @@ const AddManualTaskModal = ({
               onSaveClick={handleSubmit}
               onCancel={handleCancel}
             />
-            <Box mt={4} p={3} bg="gray.50" borderRadius="md">
-              <Box color="gray.600" fontSize="sm">
-                <strong>Note:</strong> Task assignment is configured above the
-                table. Selected users:{" "}
-                {selectedUsers.length > 0
-                  ? selectedUsers.join(", ")
-                  : "None selected"}
-              </Box>
-            </Box>
           </VStack>
         </ModalBody>
       </ModalContent>
