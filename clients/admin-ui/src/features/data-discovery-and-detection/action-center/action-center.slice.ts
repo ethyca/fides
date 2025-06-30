@@ -22,7 +22,7 @@ interface DiscoveredAssetsQueryParams {
   system?: string;
   search?: string;
   diff_status?: DiffStatus[];
-  sort_by?: string;
+  sort_by?: string | string[];
   sort_asc?: boolean;
 }
 
@@ -71,17 +71,19 @@ const actionCenterApi = baseApi.injectEndpoints({
         size = 20,
         search,
         diff_status,
-        sort_by = "urn",
+        sort_by = ["consent_aggregated", "urn"],
         sort_asc = true,
       }) => ({
-        url: `/plus/discovery-monitor/${key}/results`,
+        url: `/plus/discovery-monitor/${key}/results?${getQueryParamsFromArray(
+          Array.isArray(sort_by) ? sort_by : [sort_by],
+          "sort_by",
+        )}`,
         params: {
           resolved_system_id: system,
           page,
           size,
           search,
           diff_status,
-          sort_by,
           sort_asc,
         },
       }),
