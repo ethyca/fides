@@ -1,7 +1,9 @@
 import { ContainerNode, render } from "preact";
 
-import { OverlayProps } from "../components/types";
+import { RenderOverlayType } from "../components/types";
 import { ComponentType } from "./consent-types";
+import type { I18n } from "./i18n";
+import { InitializedFidesGlobal } from "./providers/fides-global-context";
 import { ColorFormat, generateLighterColor } from "./style-utils";
 
 const FIDES_EMBED_CONTAINER_ID = "fides-embed-container";
@@ -14,24 +16,23 @@ const FIDES_OVERLAY_DEFAULT_ID = "fides-overlay";
  */
 let renderedParentElem: ContainerNode | undefined;
 
+export interface InitOverlayProps {
+  initializedFides: InitializedFidesGlobal;
+  i18n: I18n;
+  renderOverlay?: RenderOverlayType;
+}
+
 /**
  * Initialize the Fides Consent overlay components.
  *
  * (see the type definition of FidesOptions for what options are available)
  */
 export const initOverlay = async ({
-  options,
-  experience,
+  initializedFides,
   i18n,
-  fidesRegionString,
-  cookie,
-  savedConsent,
   renderOverlay,
-  propertyId,
-  translationOverrides,
-}: OverlayProps & {
-  renderOverlay?: (props: OverlayProps, parent: ContainerNode) => void;
-}): Promise<void> => {
+}: InitOverlayProps): Promise<void> => {
+  const { options, experience } = initializedFides;
   fidesDebugger("Initializing Fides consent overlays...");
 
   const renderFidesOverlay = async (): Promise<void> => {
@@ -141,14 +142,8 @@ export const initOverlay = async ({
         // Render the Overlay to the DOM!
         renderOverlay(
           {
-            options,
-            experience,
+            initializedFides,
             i18n,
-            fidesRegionString,
-            cookie,
-            savedConsent,
-            propertyId,
-            translationOverrides,
           },
           parentElem,
         );

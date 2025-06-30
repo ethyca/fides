@@ -90,5 +90,10 @@ export const antTheme: AntThemeConfig = {
       fontSizeSM: 12,
       titleMarginBottom: 0,
     },
+    Tag: {
+      colorText: palette.FIDESUI_NEUTRAL_900,
+      colorIcon: palette.FIDESUI_NEUTRAL_700,
+      colorIconHover: palette.FIDESUI_NEUTRAL_900,
+    },
   },
 };
