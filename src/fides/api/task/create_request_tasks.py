@@ -33,6 +33,10 @@ from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.task.deprecated_graph_task import format_data_use_map_for_caching
 from fides.api.task.execute_request_tasks import log_task_queued, queue_request_task
+from fides.api.task.manual.manual_task_utils import (
+    ManualTaskAddress,
+    create_manual_task_instances_for_privacy_request,
+)
 from fides.api.util.logger_context_utils import log_context
 
 
@@ -84,6 +88,14 @@ def build_access_networkx_digraph(
     for node in end_nodes:
         # Connect the end nodes, those that have no downstream dependencies, to the terminator node
         networkx_graph.add_edge(node, TERMINATOR_ADDRESS)
+
+    manual_nodes = [
+        addr
+        for addr in traversal_nodes.keys()
+        if addr.collection == ManualTaskAddress.MANUAL_DATA_COLLECTION
+    ]
+    for manual_node in manual_nodes:
+        networkx_graph.add_edge(ROOT_COLLECTION_ADDRESS, manual_node)
 
     _add_edge_if_no_nodes(traversal_nodes, networkx_graph)
     return networkx_graph
@@ -458,6 +470,10 @@ def run_access_request(
             end_nodes: List[CollectionAddress] = traversal.traverse(
                 traversal_nodes, collect_tasks_fn
             )
+
+            # Snapshot manual task field instances for this privacy request
+            create_manual_task_instances_for_privacy_request(session, privacy_request)
+
             # Save Access Request Tasks to the database
             ready_tasks = persist_new_access_request_tasks(
                 session, privacy_request, traversal, traversal_nodes, end_nodes, graph

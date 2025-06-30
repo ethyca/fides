@@ -114,6 +114,23 @@ class BaseTraversal:
                 )
             )
 
+        # Ensure manual_task collections execute right after ROOT
+        from fides.api.task.manual.manual_task_utils import ManualTaskAddress
+
+        for addr in self.traversal_node_dict.keys():
+            if ManualTaskAddress.is_manual_task_address(addr):
+                # Add a simple synthetic edge ROOT.id -> manual_data.id
+                self.edges.add(
+                    Edge(
+                        FieldAddress(
+                            ROOT_COLLECTION_ADDRESS.dataset,
+                            ROOT_COLLECTION_ADDRESS.collection,
+                            "id",
+                        ),
+                        addr.field_address(FieldPath("id")),
+                    )
+                )
+
         self._verify_traversal()
 
     def _verify_traversal(self) -> None:
@@ -192,6 +209,7 @@ class BaseTraversal:
         )
         finished_nodes: dict[CollectionAddress, TraversalNode] = {}
         running_node_queue: MatchingQueue[TraversalNode] = MatchingQueue(self.root_node)
+
         remaining_edges: Set[Edge] = self.edges.copy()
         while not running_node_queue.is_empty():
             # this is to support the "run traversal_node A AFTER traversal_node B functionality:"

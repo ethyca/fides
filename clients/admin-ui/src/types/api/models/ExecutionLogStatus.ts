@@ -11,6 +11,7 @@ export enum ExecutionLogStatus {
   COMPLETE = "complete",
   ERROR = "error",
   PAUSED = "paused",
+  AWAITING_PROCESSING = "awaiting_processing",
   RETRYING = "retrying",
   SKIPPED = "skipped",
 }

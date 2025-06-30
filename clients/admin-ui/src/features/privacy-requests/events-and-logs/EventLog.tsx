@@ -47,14 +47,16 @@ const EventLog = ({ eventLogs, openErrorPanel }: EventDetailsProps) => {
       key={detail.updated_at}
       backgroundColor={
         detail.status === ExecutionLogStatus.ERROR ||
-        (detail.status === ExecutionLogStatus.SKIPPED && detail.message)
+        (detail.status === ExecutionLogStatus.SKIPPED && detail.message) ||
+        detail.status === ExecutionLogStatus.AWAITING_PROCESSING
           ? palette.FIDESUI_NEUTRAL_50
           : "unset"
       }
       onClick={() => {
         if (
           detail.status === ExecutionLogStatus.ERROR ||
-          (detail.status === ExecutionLogStatus.SKIPPED && detail.message)
+          (detail.status === ExecutionLogStatus.SKIPPED && detail.message) ||
+          detail.status === ExecutionLogStatus.AWAITING_PROCESSING
         ) {
           openErrorPanel(detail.message, detail.status);
         }
@@ -62,7 +64,8 @@ const EventLog = ({ eventLogs, openErrorPanel }: EventDetailsProps) => {
       style={{
         cursor:
           detail.status === ExecutionLogStatus.ERROR ||
-          (detail.status === ExecutionLogStatus.SKIPPED && detail.message)
+          (detail.status === ExecutionLogStatus.SKIPPED && detail.message) ||
+          detail.status === ExecutionLogStatus.AWAITING_PROCESSING
             ? "pointer"
             : "unset",
       }}
