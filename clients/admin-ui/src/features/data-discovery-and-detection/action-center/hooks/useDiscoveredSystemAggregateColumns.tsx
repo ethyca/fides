@@ -1,4 +1,5 @@
 import { createColumnHelper } from "@tanstack/react-table";
+import { AntSpace as Space } from "fidesui";
 import { useMemo } from "react";
 
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
@@ -12,18 +13,21 @@ import {
   ListCellExpandable,
 } from "~/features/common/table/v2/cells";
 import DiscoveredSystemDataUseCell from "~/features/data-discovery-and-detection/action-center/tables/cells/DiscoveredSystemDataUseCell";
-import { ActionCenterTabHash } from "~/features/data-discovery-and-detection/action-center/tables/useActionCenterTabs";
 import {
+  ConsentStatusInfo,
   PrivacyNoticeRegion,
   SystemStagedResourcesAggregateRecord,
 } from "~/types/api";
 
+import { DiscoveryStatusIcon } from "../DiscoveryStatusIcon";
 import { DiscoveredSystemActionsCell } from "../tables/cells/DiscoveredSystemAggregateActionsCell";
 import { DiscoveredSystemStatusCell } from "../tables/cells/DiscoveredSystemAggregateStatusCell";
+import { ActionCenterTabHash } from "./useActionCenterTabs";
 
 interface UseDiscoveredSystemAggregateColumnsProps {
   monitorId: string;
   readonly: boolean;
+  consentStatus: ConsentStatusInfo | null | undefined;
   allowIgnore?: boolean;
   onTabChange: (tab: ActionCenterTabHash) => void;
 }
@@ -31,6 +35,7 @@ interface UseDiscoveredSystemAggregateColumnsProps {
 export const useDiscoveredSystemAggregateColumns = ({
   monitorId,
   readonly,
+  consentStatus,
   allowIgnore,
   onTabChange,
 }: UseDiscoveredSystemAggregateColumnsProps) => {
@@ -66,7 +71,14 @@ export const useDiscoveredSystemAggregateColumns = ({
   const systemName = columnHelper.accessor((row) => row.name, {
     id: "system_name",
     cell: (props) => <DiscoveredSystemStatusCell system={props.row.original} />,
-    header: "System",
+    header: () => {
+      return (
+        <Space>
+          <div>System test</div>
+          <DiscoveryStatusIcon consentStatus={consentStatus} />
+        </Space>
+      );
+    },
     size: 300,
     meta: {
       headerProps: !readonly

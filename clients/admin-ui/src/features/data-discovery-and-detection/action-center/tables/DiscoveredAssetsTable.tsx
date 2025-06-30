@@ -34,6 +34,9 @@ import {
   useServerSidePagination,
 } from "~/features/common/table/v2";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
+import { AggregatedConsent, DiffStatus } from "~/types/api";
+
+import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
 import {
   useAddMonitorResultAssetsMutation,
   useAddMonitorResultSystemsMutation,
@@ -42,11 +45,8 @@ import {
   useRestoreMonitorResultAssetsMutation,
   useUpdateAssetsMutation,
   useUpdateAssetsSystemMutation,
-} from "~/features/data-discovery-and-detection/action-center/action-center.slice";
-import AddDataUsesModal from "~/features/data-discovery-and-detection/action-center/AddDataUsesModal";
-import { DiffStatus } from "~/types/api";
-
-import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
+} from "../action-center.slice";
+import AddDataUsesModal from "../AddDataUsesModal";
 import { AssignSystemModal } from "../AssignSystemModal";
 import useActionCenterTabs, {
   ActionCenterTabHash,
@@ -66,6 +66,9 @@ export const DiscoveredAssetsTable = ({
   onSystemName,
 }: DiscoveredAssetsTableProps) => {
   const router = useRouter();
+  const [firstItemConsentStatus, setFirstItemConsentStatus] = useState<
+    AggregatedConsent | null | undefined
+  >();
 
   const [systemName, setSystemName] = useState(systemId);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
@@ -145,9 +148,21 @@ export const DiscoveredAssetsTable = ({
     }
   }, [data, systemId, onSystemName, setTotalPages, systemName]);
 
+  useEffect(() => {
+    if (data?.items && !firstItemConsentStatus) {
+      // this ensures that the column header remembers the consent status
+      // even when the user navigates to a different paginated page
+      const consentStatus = data.items.find(
+        (item) => item.consent_aggregated === AggregatedConsent.WITHOUT_CONSENT,
+      )?.consent_aggregated;
+      setFirstItemConsentStatus(consentStatus);
+    }
+  }, [data, firstItemConsentStatus]);
+
   const { columns } = useDiscoveredAssetsColumns({
     readonly: actionsDisabled ?? false,
     onTabChange,
+    aggregatedConsent: firstItemConsentStatus,
   });
 
   const tableInstance = useReactTable({
