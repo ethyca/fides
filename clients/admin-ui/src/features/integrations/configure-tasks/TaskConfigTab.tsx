@@ -35,6 +35,7 @@ interface TaskConfigTabProps {
 
 const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const {
     isOpen: isCreateUserOpen,
@@ -51,12 +52,20 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
 
   const [deleteManualField] = useDeleteManualFieldMutation();
 
-  // Get users for the dropdown (used for refreshing after user creation)
-  const { refetch: refetchUsers } = useGetAllUsersQuery({
+  // Get users for the assigned to field
+  const { data: usersData, refetch: refetchUsers } = useGetAllUsersQuery({
     page: 1,
-    size: 100,
-    username: "",
+    size: 100, // Get enough users for the dropdown
+    username: "", // Empty string to get all users
   });
+
+  const users = usersData?.items ?? [];
+
+  // Create options for the assigned to select (without create new user option)
+  const userOptions = users.map((user: any) => ({
+    label: `${user.first_name} ${user.last_name} (${user.email_address})`,
+    value: user.email_address,
+  }));
 
   useEffect(() => {
     if (data) {
@@ -145,6 +154,28 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
           </Paragraph>
         </div>
 
+        <Title level={5}>Configured Tasks</Title>
+
+        <Box>
+          <Typography.Text strong>Assign tasks to users:</Typography.Text>
+          <Select
+            mode="tags"
+            placeholder="Select users to assign tasks to"
+            value={selectedUsers}
+            onChange={setSelectedUsers}
+            options={userOptions}
+            style={{ width: "100%", marginTop: 8 }}
+            tokenSeparators={[","]}
+            filterOption={(input, option) => {
+              return (
+                (typeof option?.label === "string" &&
+                  option.label.toLowerCase().includes(input.toLowerCase())) ||
+                false
+              );
+            }}
+          />
+        </Box>
+
         <Flex justify="flex-end">
           <Flex justify="flex-start" align="center" gap={2}>
             <Button type="primary" onClick={onOpen}>
@@ -186,6 +217,7 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
           onTaskAdded={() => {
             refetch();
           }}
+          selectedUsers={selectedUsers}
         />
 
         <CreateExternalUserModal
