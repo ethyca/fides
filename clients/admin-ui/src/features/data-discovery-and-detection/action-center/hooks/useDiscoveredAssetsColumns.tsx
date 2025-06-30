@@ -113,7 +113,7 @@ export const useDiscoveredAssetsColumns = ({
       cell: (props) => (
         <DiscoveryStatusBadgeCell
           consentAggregated={props.getValue() ?? AggregatedConsent.UNKNOWN}
-          dateDiscovered={props.row.original.updated_at}
+          stagedResource={props.row.original}
         />
       ),
       header: "Discovery",
