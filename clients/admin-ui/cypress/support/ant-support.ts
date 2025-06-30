@@ -65,7 +65,7 @@ Cypress.Commands.add(
   {
     prevSubject: "element",
   },
-  (subject, option, clickOptions) => {
+  (subject, option, clickOptions = { force: true }) => {
     cy.get(subject.selector).first().should("have.class", "ant-select");
     cy.get(subject.selector)
       .first()
