@@ -46,7 +46,7 @@ import {
 import AddDataUsesModal from "~/features/data-discovery-and-detection/action-center/AddDataUsesModal";
 import useActionCenterTabs from "~/features/data-discovery-and-detection/action-center/hooks/useActionCenterTabs";
 import { SuccessToastContent } from "~/features/data-discovery-and-detection/action-center/SuccessToastContent";
-import { DiffStatus } from "~/types/api";
+import { AggregatedConsent, DiffStatus } from "~/types/api";
 
 import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
 import { AssignSystemModal } from "../AssignSystemModal";
@@ -65,6 +65,9 @@ export const DiscoveredAssetsTable = ({
 }: DiscoveredAssetsTableProps) => {
   const router = useRouter();
   const tabHash = router.asPath.split("#")[1];
+  const [firstItemConsentStatus, setFirstItemConsentStatus] = useState<
+    AggregatedConsent | null | undefined
+  >();
 
   const [systemName, setSystemName] = useState(systemId);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
@@ -145,9 +148,21 @@ export const DiscoveredAssetsTable = ({
     }
   }, [data, systemId, onSystemName, setTotalPages, systemName]);
 
+  useEffect(() => {
+    if (data?.items && !firstItemConsentStatus) {
+      // this ensures that the column header remembers the consent status
+      // even when the user navigates to a different paginated page
+      const consentStatus = data.items.find(
+        (item) => item.consent_aggregated === AggregatedConsent.WITHOUT_CONSENT,
+      )?.consent_aggregated;
+      setFirstItemConsentStatus(consentStatus);
+    }
+  }, [data, firstItemConsentStatus]);
+
   const { columns } = useDiscoveredAssetsColumns({
     readonly: actionsDisabled,
     onTabChange,
+    aggregatedConsent: firstItemConsentStatus,
   });
 
   const tableInstance = useReactTable({

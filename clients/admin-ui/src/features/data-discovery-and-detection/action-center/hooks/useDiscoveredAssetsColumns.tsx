@@ -1,4 +1,5 @@
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
+import { AntSpace as Space } from "fidesui";
 
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import {
@@ -14,18 +15,22 @@ import { DiscoveredAssetActionsCell } from "~/features/data-discovery-and-detect
 import DiscoveredAssetDataUseCell from "~/features/data-discovery-and-detection/action-center/tables/cells/DiscoveredAssetDataUseCell";
 import {
   AggregatedConsent,
+  ConsentStatus,
   PrivacyNoticeRegion,
   StagedResourceAPIResponse,
 } from "~/types/api";
 
+import { DiscoveryStatusIcon } from "../DiscoveryStatusIcon";
 import { DiscoveryStatusBadgeCell } from "../tables/cells/DiscoveryStatusBadgeCell";
 import { SystemCell } from "../tables/cells/SystemCell";
 
 export const useDiscoveredAssetsColumns = ({
   readonly,
+  aggregatedConsent,
   onTabChange,
 }: {
   readonly: boolean;
+  aggregatedConsent: AggregatedConsent | null | undefined;
   onTabChange: (index: number) => void;
 }) => {
   const columnHelper = createColumnHelper<StagedResourceAPIResponse>();
@@ -115,7 +120,21 @@ export const useDiscoveredAssetsColumns = ({
           stagedResource={props.row.original}
         />
       ),
-      header: "Discovery",
+      header: () => {
+        return (
+          <Space>
+            <div>Discovery</div>
+            {aggregatedConsent === AggregatedConsent.WITHOUT_CONSENT && (
+              <DiscoveryStatusIcon
+                consentStatus={{
+                  status: ConsentStatus.ALERT,
+                  message: "One or more assets were detected without consent",
+                }}
+              />
+            )}
+          </Space>
+        );
+      },
     }),
     columnHelper.accessor((row) => row.page, {
       id: "page",
