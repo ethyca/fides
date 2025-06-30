@@ -74,7 +74,7 @@ export const useDiscoveredSystemAggregateColumns = ({
     header: () => {
       return (
         <Space>
-          <div>System test</div>
+          <div>System</div>
           <DiscoveryStatusIcon consentStatus={consentStatus} />
         </Space>
       );
