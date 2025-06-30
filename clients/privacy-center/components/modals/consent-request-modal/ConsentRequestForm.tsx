@@ -353,6 +353,7 @@ const ConsentRequestForm = ({
                       return (
                         <AntSelect
                           id={key}
+                          data-testid={`select-${key}`}
                           mode="multiple"
                           placeholder={`Select ${item.label.toLowerCase()}`}
                           value={values[key] || []}
@@ -379,6 +380,7 @@ const ConsentRequestForm = ({
                       return (
                         <AntSelect
                           id={key}
+                          data-testid={`select-${key}`}
                           placeholder={`Select ${item.label.toLowerCase()}`}
                           value={values[key] || ""}
                           onChange={(selectedValue) => {

@@ -339,8 +339,8 @@ const PrivacyRequestForm = ({
 
   const action = openAction
     ? (config.actions as PrivacyRequestOption[]).find(
-        ({ policy_key }) => policy_key === openAction,
-      )
+      ({ policy_key }) => policy_key === openAction,
+    )
     : null;
 
   const {
@@ -498,6 +498,7 @@ const PrivacyRequestForm = ({
                       return (
                         <AntSelect
                           id={key}
+                          data-testid={`select-${key}`}
                           mode="multiple"
                           placeholder={`Select ${item.label.toLowerCase()}`}
                           value={values[key] || []}
@@ -524,6 +525,7 @@ const PrivacyRequestForm = ({
                       return (
                         <AntSelect
                           id={key}
+                          data-testid={`select-${key}`}
                           placeholder={`Select ${item.label.toLowerCase()}`}
                           value={values[key] || ""}
                           onChange={(selectedValue) => {
