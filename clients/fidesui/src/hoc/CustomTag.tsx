@@ -14,7 +14,7 @@ type ColorName = BgColorKeys extends `FIDESUI_BG_${infer Name}` ? Name : never;
 // Create a union type of all available brand colors (without the bg- prefix)
 export type BrandColor = Lowercase<ColorName>;
 
-interface CustomTagProps extends Omit<TagProps, "color"> {
+export interface CustomTagProps extends Omit<TagProps, "color"> {
   color?: TagProps["color"] | BrandColor;
   addable?: boolean;
   hasSparkle?: boolean;
