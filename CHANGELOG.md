@@ -19,7 +19,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.64.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.64.2...main)
 
 ### Added
 - Added ManualTaskInstance and ManualTaskSubmission models, foundational for for ManualDSRs [#6212](https://github.com/ethyca/fides/pull/6212) https://github.com/ethyca/fides/labels/db-migration
@@ -35,6 +35,10 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Fixed
 - Fixed an accessibility issue where tooltips could not be triggered by keyboard focus. [#6276](https://github.com/ethyca/fides/pull/6276)
+
+## [2.64.2](https://github.com/ethyca/fides/compare/2.64.0...2.64.1)
+
+### Fixed
 - Fixed a bug where number fields in integration forms were un-editable [#6275](https://github.com/ethyca/fides/pull/6275)
 
 ## [2.64.1](https://github.com/ethyca/fides/compare/2.64.0...2.64.1)
