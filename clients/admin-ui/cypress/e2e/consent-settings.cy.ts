@@ -370,6 +370,7 @@ describe("Consent settings", () => {
         cy.getByTestId("add-restriction-button").click();
         cy.getByTestId("controlled-select-restriction_type").antSelect(
           "Require consent",
+          { force: true },
         );
         cy.getByTestId("controlled-select-vendor_restriction").antSelect(
           "Restrict specific vendors",
@@ -406,6 +407,7 @@ describe("Consent settings", () => {
         cy.getByTestId("add-restriction-button").click();
         cy.getByTestId("controlled-select-restriction_type").antSelect(
           "Require consent",
+          { force: true },
         );
         cy.getByTestId("controlled-select-vendor_restriction").antSelect(
           "Restrict specific vendors",
