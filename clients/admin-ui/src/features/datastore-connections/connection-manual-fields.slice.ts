@@ -51,7 +51,7 @@ export const connectionManualFieldsApi = baseApi.injectEndpoints({
     >({
       query: ({ connectionKey, manualFieldId, body }) => ({
         url: `${PLUS_CONNECTION_API_ROUTE}/${connectionKey}/manual-field/${manualFieldId}`,
-        method: "PATCH",
+        method: "PUT",
         body,
       }),
       invalidatesTags: () => ["Manual Fields"],

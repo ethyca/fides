@@ -1,13 +1,12 @@
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
-import type { MenuProps } from "antd";
 import {
   AntButton as Button,
-  AntDropdown as Dropdown,
+  AntDivider as Divider,
+  AntMessage as message,
   AntSelect as Select,
   AntTypography as Typography,
   Box,
   Flex,
-  Icons,
   useDisclosure,
 } from "fidesui";
 import { useCallback, useEffect, useState } from "react";
@@ -28,7 +27,7 @@ import AddManualTaskModal from "./AddManualTaskModal";
 import CreateExternalUserModal from "./CreateExternalUserModal";
 import { Task, useTaskColumns } from "./useTaskColumns";
 
-const { Title, Paragraph } = Typography;
+const { Paragraph } = Typography;
 
 interface TaskConfigTabProps {
   integration: ConnectionConfigurationResponse;
@@ -37,6 +36,7 @@ interface TaskConfigTabProps {
 const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const {
     isOpen: isCreateUserOpen,
@@ -94,19 +94,24 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
 
         refetch();
       } catch (error) {
-        console.error("Error deleting task:", error);
+        message.error("Failed to delete task. Please try again.");
       }
     },
     [deleteManualField, integration.key, refetch],
   );
 
-  const handleEdit = useCallback((task: Task) => {
-    // TODO: Implement edit functionality
-    console.log("Edit task:", task);
-  }, []);
+  const handleEdit = useCallback(
+    (task: Task) => {
+      setEditingTask(task);
+      onOpen();
+    },
+    [onOpen],
+  );
 
   const handleDelete = useCallback(
     (task: Task) => {
+      // Using window.confirm for now - can be replaced with a proper modal later
+      // eslint-disable-next-line no-alert
       const confirmed = window.confirm(
         `Are you sure you want to delete the task "${task.name}"?`,
       );
@@ -118,14 +123,15 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
     [deleteTask],
   );
 
-  // Menu items for the dropdown
-  const menuItems: MenuProps["items"] = [
-    {
-      key: "manage-access",
-      label: "Manage secure access",
-      onClick: onCreateUserOpen,
-    },
-  ];
+  const handleAddTask = useCallback(() => {
+    setEditingTask(null);
+    onOpen();
+  }, [onOpen]);
+
+  const handleModalClose = useCallback(() => {
+    setEditingTask(null);
+    onClose();
+  }, [onClose]);
 
   const handleUserCreated = () => {
     // Refetch users to update the dropdown
@@ -143,7 +149,7 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
           userIds,
         }).unwrap();
       } catch (error) {
-        console.error("Error assigning users to manual task:", error);
+        message.error("Failed to assign users to task. Please try again.");
       }
     },
     [assignUsersToManualTask, integration.key],
@@ -180,7 +186,7 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
 
         <Flex justify="flex-end" className="mt-6">
           <Flex justify="flex-start" align="center" gap={2}>
-            <Button type="primary" onClick={onOpen}>
+            <Button type="primary" onClick={handleAddTask}>
               Add manual task
             </Button>
           </Flex>
@@ -198,8 +204,8 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
             </Box>
           }
         />
-
-        <Box className="mt-4">
+        <Divider className="mb-3 mt-2" />
+        <Box>
           <Typography.Text strong>Assign tasks to users:</Typography.Text>
           <div className="w-1/2">
             <Select
@@ -229,12 +235,12 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
 
         <AddManualTaskModal
           isOpen={isOpen}
-          onClose={onClose}
+          onClose={handleModalClose}
           integration={integration}
           onTaskAdded={() => {
             refetch();
           }}
-          selectedUsers={selectedUsers}
+          editingTask={editingTask}
         />
 
         <CreateExternalUserModal

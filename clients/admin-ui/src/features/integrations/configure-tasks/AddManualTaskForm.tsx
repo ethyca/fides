@@ -5,14 +5,17 @@ import {
   AntSelect as Select,
   Flex,
 } from "fidesui";
-import React from "react";
+import React, { useEffect } from "react";
 
 import { ManualFieldRequestType, ManualTaskFieldType } from "~/types/api";
+
+import { Task } from "./useTaskColumns";
 
 type Props = {
   isSubmitting: boolean;
   onSaveClick: (values: any) => void;
   onCancel: () => void;
+  editingTask?: Task | null;
 };
 
 interface TaskFormValues {
@@ -22,8 +25,15 @@ interface TaskFormValues {
   requestType: ManualFieldRequestType;
 }
 
-const AddManualTaskForm = ({ isSubmitting, onSaveClick, onCancel }: Props) => {
+const AddManualTaskForm = ({
+  isSubmitting,
+  onSaveClick,
+  onCancel,
+  editingTask,
+}: Props) => {
   const [form] = Form.useForm<TaskFormValues>();
+
+  const isEditing = !!editingTask;
 
   const fieldTypeOptions = [
     { label: "Text", value: ManualTaskFieldType.TEXT },
@@ -35,6 +45,21 @@ const AddManualTaskForm = ({ isSubmitting, onSaveClick, onCancel }: Props) => {
     { label: "Access", value: ManualFieldRequestType.ACCESS },
     { label: "Erasure", value: ManualFieldRequestType.ERASURE },
   ];
+
+  // Populate form with existing values when editing
+  useEffect(() => {
+    if (isEditing && editingTask) {
+      form.setFieldsValue({
+        name: editingTask.name,
+        description: editingTask.description,
+        fieldType: editingTask.fieldType as ManualTaskFieldType,
+        requestType: editingTask.requestType as ManualFieldRequestType,
+      });
+    } else {
+      // Reset form when not editing
+      form.resetFields();
+    }
+  }, [form, isEditing, editingTask]);
 
   const handleSubmit = async (values: TaskFormValues) => {
     onSaveClick(values);
@@ -109,7 +134,7 @@ const AddManualTaskForm = ({ isSubmitting, onSaveClick, onCancel }: Props) => {
           Cancel
         </Button>
         <Button type="primary" htmlType="submit" loading={isSubmitting}>
-          Add Task
+          {isEditing ? "Update Task" : "Add Task"}
         </Button>
       </Flex>
     </Form>
