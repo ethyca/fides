@@ -39,16 +39,23 @@ export const CompleteTaskModal = ({
 
   const handleSave = async () => {
     try {
+      const getFieldValue = () => {
+        if (task.input_type === ManualTaskFieldType.TEXT) {
+          return textValue;
+        }
+        if (task.input_type === ManualTaskFieldType.CHECKBOX) {
+          return checkboxValue.toString();
+        }
+        return undefined;
+      };
+
       await completeTask({
-        task_id: task.manual_field_id,
-        text_value:
-          task.input_type === ManualTaskFieldType.TEXT ? textValue : undefined,
-        checkbox_value:
-          task.input_type === ManualTaskFieldType.CHECKBOX
-            ? checkboxValue
-            : undefined,
-        attachment_type: fileList.length > 0 ? "file" : undefined,
-        comment: comment || undefined,
+        privacy_request_id: task.privacy_request.id,
+        manual_field_id: task.manual_field_id,
+        field_key: task.manual_field_id,
+        field_value: getFieldValue(),
+        comment_text: comment || undefined,
+        attachment: fileList.length > 0 ? fileList[0].originFileObj : undefined,
       }).unwrap();
 
       // Reset form

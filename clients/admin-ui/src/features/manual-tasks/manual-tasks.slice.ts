@@ -2,6 +2,10 @@ import { createSlice } from "@reduxjs/toolkit";
 
 import { baseApi } from "~/features/common/api.slice";
 import {
+  AttachmentType,
+  Body_skip_single_manual_field_api_v1_privacy_request__privacy_request_id__connection__connection_key__manual_field_skip_post,
+  Body_submit_single_manual_field_api_v1_privacy_request__privacy_request_id__connection__connection_key__manual_field_complete_post,
+  CommentType,
   ManualFieldListItem,
   ManualFieldRequestType,
   ManualFieldSearchResponse,
@@ -60,30 +64,55 @@ export const manualTasksApi = baseApi.injectEndpoints({
     completeTask: build.mutation<
       { manual_field_id: string; status: ManualFieldStatus },
       {
-        task_id: string;
-        text_value?: string;
-        checkbox_value?: boolean;
-        attachment_type?: string;
-        comment?: string;
-      }
+        privacy_request_id: string;
+        manual_field_id: string;
+      } & Body_submit_single_manual_field_api_v1_privacy_request__privacy_request_id__connection__connection_key__manual_field_complete_post
     >({
-      query: (payload) => ({
-        url: `plus/manual-fields/${payload.task_id}/complete`,
-        method: "POST",
-        body: payload,
-      }),
+      query: (payload) => {
+        const {
+          privacy_request_id: privacyRequestId,
+          manual_field_id: manualFieldId,
+          ...body
+        } = payload;
+        return {
+          url: `privacy-request/${privacyRequestId}/manual-field/${manualFieldId}/complete`,
+          method: "POST",
+          body: {
+            ...body,
+            field_key: manualFieldId,
+            comment_type: body.comment_text ? CommentType.NOTE : undefined,
+            attachment_type: body.attachment
+              ? AttachmentType.INCLUDE_WITH_ACCESS_PACKAGE
+              : undefined,
+          },
+        };
+      },
       invalidatesTags: [{ type: "Manual Tasks" }],
     }),
 
     skipTask: build.mutation<
       { manual_field_id: string; status: ManualFieldStatus },
-      { task_id: string; comment: string }
+      {
+        privacy_request_id: string;
+        manual_field_id: string;
+      } & Body_skip_single_manual_field_api_v1_privacy_request__privacy_request_id__connection__connection_key__manual_field_skip_post
     >({
-      query: (payload) => ({
-        url: `plus/manual-fields/${payload.task_id}/skip`,
-        method: "POST",
-        body: payload,
-      }),
+      query: (payload) => {
+        const {
+          privacy_request_id: privacyRequestId,
+          manual_field_id: manualFieldId,
+          ...body
+        } = payload;
+        return {
+          url: `privacy-request/${privacyRequestId}/manual-field/${manualFieldId}/skip`,
+          method: "POST",
+          body: {
+            ...body,
+            field_key: manualFieldId,
+            comment_type: body.comment_text ? CommentType.NOTE : undefined,
+          },
+        };
+      },
       invalidatesTags: [{ type: "Manual Tasks" }],
     }),
 

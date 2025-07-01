@@ -9,13 +9,10 @@ import {
 import { useRouter } from "next/router";
 
 import { PRIVACY_REQUEST_DETAIL_ROUTE } from "~/features/common/nav/routes";
-import {
-  ManualFieldListItem,
-  ManualFieldStatus,
-  ManualTaskFieldType,
-} from "~/types/api";
+import { ManualFieldListItem, ManualFieldStatus } from "~/types/api";
 
-import { useCompleteTaskMutation } from "../manual-tasks.slice";
+import { CompleteTaskModal } from "./CompleteTaskModal";
+import { SkipTaskModal } from "./SkipTaskModal";
 
 interface Props {
   task: ManualFieldListItem;
@@ -39,19 +36,6 @@ export const ActionButtons = ({ task }: Props) => {
     return null;
   }
 
-  const handleComplete = () => {
-    completeTask({
-      task_id: task.manual_field_id,
-      text_value: task.input_type === ManualTaskFieldType.TEXT ? "" : undefined,
-      checkbox_value:
-        task.input_type === ManualTaskFieldType.CHECKBOX ? false : undefined,
-    });
-  };
-
-  const handleSkip = () => {
-    onSkipModalOpen();
-  };
-
   const handleGoToRequest = () => {
     router.push({
       pathname: PRIVACY_REQUEST_DETAIL_ROUTE,
@@ -63,7 +47,7 @@ export const ActionButtons = ({ task }: Props) => {
     {
       key: "skip",
       label: "Skip task",
-      onClick: handleSkip,
+      onClick: onSkipModalOpen,
     },
     {
       key: "go-to-request",
@@ -75,7 +59,7 @@ export const ActionButtons = ({ task }: Props) => {
   return (
     <>
       <Space size="small">
-        <Button type="default" onClick={handleComplete} size="small">
+        <Button type="default" onClick={onCompleteModalOpen} size="small">
           Complete
         </Button>
 
