@@ -59,10 +59,12 @@ Cypress.Commands.add("getAntSelectOption", (option: string | number) =>
   typeof option === "string"
     ? cy.get(
         `.ant-select-dropdown:not(.ant-select-dropdown-hidden) .ant-select-item-option[title="${option}"]`,
+        { withinSubject: null },
       )
     : cy
         .get(
           `.ant-select-dropdown:not(.ant-select-dropdown-hidden) .ant-select-item-option`,
+          { withinSubject: null },
         )
         .eq(option),
 );
@@ -123,9 +125,9 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add("antSelectDropdownVisible", () => {
-  cy.get(".ant-select-dropdown:not(.ant-select-dropdown-hidden)").should(
-    "be.visible",
-  );
+  cy.get(".ant-select-dropdown:not(.ant-select-dropdown-hidden)", {
+    withinSubject: null,
+  }).should("be.visible");
 });
 
 Cypress.Commands.add("getAntMenuOption", (option: string | number) =>
