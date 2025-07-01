@@ -6,6 +6,7 @@ import { PrivacyRequestStatus } from "~/types/api";
 
 import ActivityTab from "./events-and-logs/ActivityTab";
 import PrivacyRequestDetailsManualTaskTab from "./PrivacyRequestDetailsManualTaskTab";
+import FinalizePrivacyRequest from "./FinalizePrivacyRequest";
 import RequestDetails from "./RequestDetails";
 import { PrivacyRequestEntity } from "./types";
 
@@ -36,7 +37,8 @@ const PrivacyRequest = ({ data: initialData }: PrivacyRequestProps) => {
   const subjectRequest = latestData?.items[0] ?? initialData;
 
   const isRequiringInputStatus =
-    subjectRequest.status === PrivacyRequestStatus.REQUIRES_INPUT;
+    subjectRequest.status === PrivacyRequestStatus.REQUIRES_INPUT ||
+    subjectRequest.status === PrivacyRequestStatus.REQUIRES_MANUAL_FINALIZATION;
   const showManualTasks = isRequiringInputStatus;
 
   const [activeTabKey, setActiveTabKey] = useState("activity");
@@ -51,12 +53,16 @@ const PrivacyRequest = ({ data: initialData }: PrivacyRequestProps) => {
       {
         key: "manual-tasks",
         label: "Manual tasks",
-        children: (
-          <PrivacyRequestDetailsManualTaskTab
-            subjectRequest={subjectRequest}
-            onComplete={() => setActiveTabKey("activity")}
-          />
-        ),
+        children:
+          subjectRequest.status ===
+          PrivacyRequestStatus.REQUIRES_MANUAL_FINALIZATION ? (
+            <FinalizePrivacyRequest id={subjectRequest.id} />
+          ) : (
+            <PrivacyRequestDetailsManualTaskTab
+              subjectRequest={subjectRequest}
+              onComplete={() => setActiveTabKey("activity")}
+            />
+          ),
         disabled: !showManualTasks,
       },
     ],
