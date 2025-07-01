@@ -13,7 +13,7 @@ import {
 } from "fidesui";
 import { useFormik } from "formik";
 import { Headers } from "headers-polyfill";
-import { useSearchParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import React, { useEffect } from "react";
 import * as Yup from "yup";
 
@@ -71,6 +71,7 @@ const usePrivacyRequestForm = ({
   const searchParams = useSearchParams();
 
   const property = useProperty();
+  const params = useSearchParams();
 
   // Use our custom hook for form field logic
   const { getInitialValues, getValidationSchema } = useCustomFieldsForm({
@@ -92,6 +93,12 @@ const usePrivacyRequestForm = ({
           .map(([key]) => [key, ""]),
       ),
       ...getInitialValues(),
+      ...Object.fromEntries(
+        Object.entries(identityInputs).map(([key]) => {
+          const value = params?.get(key) ?? "";
+          return [key, value];
+        }),
+      ),
     },
     onSubmit: async (values) => {
       if (!action) {
@@ -471,7 +478,7 @@ const PrivacyRequestForm = ({
             _active={{ bg: "primary.500" }}
             colorScheme="primary"
             isLoading={isSubmitting}
-            isDisabled={isSubmitting || !(isValid && dirty)}
+            isDisabled={isSubmitting}
             size="sm"
           >
             {action.confirmButtonText || "Continue"}
