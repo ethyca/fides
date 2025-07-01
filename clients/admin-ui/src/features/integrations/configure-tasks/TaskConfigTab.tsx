@@ -214,32 +214,42 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
             </Box>
           }
         />
-        <Divider className="mb-3 mt-2" />
+        <Divider className="my-2" />
         <Box>
           <Typography.Text strong>Assign tasks to users:</Typography.Text>
-          <div className="w-1/2">
-            <Select
-              mode="tags"
-              placeholder="Select users to assign tasks to"
-              value={selectedUsers}
-              onChange={handleUserAssignmentChange}
-              options={userOptions}
-              style={{ width: "100%", marginTop: 8 }}
-              tokenSeparators={[","]}
-              filterOption={(input, option) => {
-                return (
-                  (typeof option?.label === "string" &&
-                    option.label.toLowerCase().includes(input.toLowerCase())) ||
-                  false
-                );
-              }}
-            />
-          </div>
-          <div className="mt-4 flex ">
-            <Button type="default" onClick={onCreateUserOpen}>
-              Manage secure access
-            </Button>
+
+          <div className="mt-4 flex items-center gap-2">
+            <div className="w-1/2">
+              <Select
+                className="!mt-0"
+                mode="tags"
+                placeholder="Select users to assign tasks to"
+                value={selectedUsers}
+                onChange={handleUserAssignmentChange}
+                options={userOptions}
+                style={{ width: "100%", marginTop: 8 }}
+                tokenSeparators={[","]}
+                filterOption={(input, option) => {
+                  return (
+                    (typeof option?.label === "string" &&
+                      option.label
+                        .toLowerCase()
+                        .includes(input.toLowerCase())) ||
+                    false
+                  );
+                }}
+              />
+            </div>
+
             <Button type="primary">Save</Button>
+          </div>
+          <div className="mt-4">
+            <Typography.Text strong>Secure access:</Typography.Text>
+            <div className="mt-2">
+              <Button type="default" onClick={onCreateUserOpen}>
+                Manage secure access
+              </Button>
+            </div>
           </div>
         </Box>
 
