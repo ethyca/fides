@@ -2,6 +2,9 @@ import { formatDate } from "common/utils";
 import {
   AntTag,
   Box,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  IconButton,
   Table,
   TableContainer,
   Tbody,
@@ -18,6 +21,7 @@ import {
   ExecutionLogStatusColors,
   ExecutionLogStatusLabels,
 } from "privacy-requests/types";
+import React from "react";
 
 import { ActionType } from "~/types/api";
 
@@ -41,53 +45,105 @@ const actionTypeToLabel = (actionType: string) => {
   }
 };
 
+const EventLogRows = ({
+  detail,
+  openErrorPanel,
+}: {
+  detail: ExecutionLog;
+  openErrorPanel: (message: string, status?: ExecutionLogStatus) => void;
+}) => {
+  const [expanded, setExpanded] = React.useState<boolean>(false);
+  return (
+    <>
+      <Tr
+        backgroundColor={
+          detail.status === ExecutionLogStatus.ERROR ||
+          (detail.status === ExecutionLogStatus.SKIPPED && detail.message)
+            ? palette.FIDESUI_NEUTRAL_50
+            : "unset"
+        }
+        onClick={() => {
+          if (
+            detail.status === ExecutionLogStatus.ERROR ||
+            (detail.status === ExecutionLogStatus.SKIPPED && detail.message)
+          ) {
+            openErrorPanel(detail.message, detail.status);
+          }
+        }}
+        style={{
+          cursor:
+            detail.status === ExecutionLogStatus.ERROR ||
+            (detail.status === ExecutionLogStatus.SKIPPED && detail.message)
+              ? "pointer"
+              : "unset",
+        }}
+      >
+        <Td>
+          <Text
+            color="gray.600"
+            fontSize="xs"
+            lineHeight="4"
+            fontWeight="medium"
+          >
+            {formatDate(detail.updated_at)}
+          </Text>
+        </Td>
+        <Td>
+          <Text
+            color="gray.600"
+            fontSize="xs"
+            lineHeight="4"
+            fontWeight="medium"
+          >
+            {actionTypeToLabel(detail.action_type)}
+          </Text>
+        </Td>
+        <Td>
+          <AntTag color={ExecutionLogStatusColors[detail.status]}>
+            {ExecutionLogStatusLabels[detail.status]}
+          </AntTag>
+        </Td>
+        <Td>
+          <Text
+            color="gray.600"
+            fontSize="xs"
+            lineHeight="4"
+            fontWeight="medium"
+          >
+            {detail.collection_name}
+          </Text>
+        </Td>
+        <Td>
+          <IconButton
+            type="button"
+            variant="solid"
+            backgroundColor="transparent"
+            aria-label="Expand log"
+            icon={expanded ? <ChevronUpIcon /> : <ChevronDownIcon />}
+            onClick={() => {
+              setExpanded(!expanded);
+            }}
+          />
+        </Td>
+      </Tr>
+      {expanded ? (
+        <Tr>
+          <Td colSpan={5}>
+            <Box paddingX={4}>{detail.message}</Box>
+          </Td>
+        </Tr>
+      ) : null}
+    </>
+  );
+};
+
 const EventLog = ({ eventLogs, openErrorPanel }: EventDetailsProps) => {
   const tableItems = eventLogs?.map((detail) => (
-    <Tr
+    <EventLogRows
       key={detail.updated_at}
-      backgroundColor={
-        detail.status === ExecutionLogStatus.ERROR ||
-        (detail.status === ExecutionLogStatus.SKIPPED && detail.message)
-          ? palette.FIDESUI_NEUTRAL_50
-          : "unset"
-      }
-      onClick={() => {
-        if (
-          detail.status === ExecutionLogStatus.ERROR ||
-          (detail.status === ExecutionLogStatus.SKIPPED && detail.message)
-        ) {
-          openErrorPanel(detail.message, detail.status);
-        }
-      }}
-      style={{
-        cursor:
-          detail.status === ExecutionLogStatus.ERROR ||
-          (detail.status === ExecutionLogStatus.SKIPPED && detail.message)
-            ? "pointer"
-            : "unset",
-      }}
-    >
-      <Td>
-        <Text color="gray.600" fontSize="xs" lineHeight="4" fontWeight="medium">
-          {formatDate(detail.updated_at)}
-        </Text>
-      </Td>
-      <Td>
-        <Text color="gray.600" fontSize="xs" lineHeight="4" fontWeight="medium">
-          {actionTypeToLabel(detail.action_type)}
-        </Text>
-      </Td>
-      <Td>
-        <AntTag color={ExecutionLogStatusColors[detail.status]}>
-          {ExecutionLogStatusLabels[detail.status]}
-        </AntTag>
-      </Td>
-      <Td>
-        <Text color="gray.600" fontSize="xs" lineHeight="4" fontWeight="medium">
-          {detail.collection_name}
-        </Text>
-      </Td>
-    </Tr>
+      detail={detail}
+      openErrorPanel={openErrorPanel}
+    />
   ));
 
   return (
@@ -147,6 +203,7 @@ const EventLog = ({ eventLogs, openErrorPanel }: EventDetailsProps) => {
                   Collection
                 </Text>
               </Th>
+              <Th />
             </Tr>
           </Thead>
 
