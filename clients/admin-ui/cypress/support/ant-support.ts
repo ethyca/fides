@@ -72,7 +72,7 @@ Cypress.Commands.add(
   {
     prevSubject: "element",
   },
-  (subject, option, clickOptions) => {
+  (subject, option, clickOptions = { force: true }) => {
     cy.get(subject.selector).first().should("have.class", "ant-select");
     cy.get(subject.selector)
       .first()
@@ -83,9 +83,13 @@ Cypress.Commands.add(
         }
         if (!classes.includes("ant-select-open")) {
           if (classes.includes("ant-select-multiple")) {
-            cy.get(subject.selector).first().find("input").click();
+            cy.get(subject.selector).first().find("input").focus().click();
           } else {
-            cy.get(subject.selector).first().click(clickOptions);
+            cy.get(subject.selector)
+              .first()
+              .find("input")
+              .focus()
+              .click(clickOptions);
           }
         }
       });
