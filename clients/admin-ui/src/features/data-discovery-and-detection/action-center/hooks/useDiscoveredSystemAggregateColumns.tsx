@@ -154,22 +154,21 @@ export const useDiscoveredSystemAggregateColumns = ({
     },
   });
 
-  const readonlyColumns = useMemo(
-    () => [systemName, totalUpdates, dataUse, locations, domains],
-    [systemName, totalUpdates, dataUse, locations, domains],
-  );
-
-  if (readonly) {
-    return {
-      columns: readonlyColumns,
-    };
-  }
-
-  const columns: ColumnDef<SystemStagedResourcesAggregateRecord, any>[] = [
-    select,
-    ...readonlyColumns,
-    actions,
+  const readonlyColumns = [
+    systemName,
+    totalUpdates,
+    dataUse,
+    locations,
+    domains,
   ];
+
+  const allColumns = [select, ...readonlyColumns, actions];
+
+  const columns = useMemo(
+    () => (readonly ? readonlyColumns : allColumns),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [readonly],
+  );
 
   return { columns };
 };

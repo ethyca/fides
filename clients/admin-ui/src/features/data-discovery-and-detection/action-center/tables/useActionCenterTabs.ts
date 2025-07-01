@@ -2,9 +2,9 @@ import useURLHashedTabs from "~/features/common/tabs/useURLHashedTabs";
 import { DiffStatus } from "~/types/api";
 
 export enum ActionCenterTabHash {
-  ATTENTION_REQUIRED = "#attention-required",
-  RECENT_ACTIVITY = "#recent-activity",
-  IGNORED = "#ignored",
+  ATTENTION_REQUIRED = "attention-required",
+  RECENT_ACTIVITY = "recent-activity",
+  IGNORED = "ignored",
 }
 
 const useActionCenterTabs = (systemId?: string) => {
