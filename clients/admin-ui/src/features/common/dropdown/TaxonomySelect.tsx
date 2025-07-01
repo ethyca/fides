@@ -18,7 +18,7 @@ export const TaxonomyOption = ({ data }: { data: TaxonomySelectOption }) => {
   return (
     <Flex
       gap={12}
-      title={`${data.primaryName || ""}${data.primaryName ? ": " : ""}${data.name} - ${data.description}`}
+      title={`${data.primaryName}${data.primaryName && ": "}${data.name} - ${data.description}`}
     >
       <div>
         <strong>{data.primaryName || data.name}</strong>
@@ -44,9 +44,16 @@ export const TaxonomySelect = ({
     className: styles.option,
   }));
 
+  /*
+   * @description Matches options where the displayed value includes the input text 
+   */
+  const filterOption = (input: string, option?: TaxonomySelectOption) => [option?.primaryName, option?.name].join(": ").toLowerCase().includes(input.toLowerCase())
+  
   return (
     <Select<string, TaxonomySelectOption>
       options={selectOptions}
+      filterOption={filterOption}
+      optionFilterProp="label"
       autoFocus
       variant="borderless"
       optionRender={TaxonomyOption}
