@@ -584,6 +584,69 @@ export const stubWebsiteMonitor = () => {
   cy.intercept("POST", "/api/v1/plus/discovery-monitor/un-mute*", {
     response: 200,
   }).as("restoreAssets");
+  cy.intercept(
+    "GET",
+    "/api/v1/plus/discovery-monitor/staged_resource/*/consent*",
+    {
+      fixture: "detection-discovery/activity-center/consent-breakdown",
+    },
+  ).as("getConsentBreakdown");
+};
+
+export const stubWebsiteMonitorWithConsent = () => {
+  cy.intercept("GET", "/api/v1/config*", {
+    body: {
+      detection_discovery: {
+        website_monitor_enabled: true,
+      },
+    },
+  }).as("getTranslationConfig");
+  cy.intercept("GET", "/api/v1/plus/discovery-monitor/aggregate-results*", {
+    fixture: "detection-discovery/activity-center/aggregate-results",
+  }).as("getMonitorResults");
+  cy.intercept(
+    "GET",
+    "/api/v1/plus/discovery-monitor/system-aggregate-results*",
+    {
+      fixture: "detection-discovery/activity-center/system-aggregate-results",
+    },
+  ).as("getSystemAggregateResults");
+  cy.intercept("GET", "/api/v1/plus/discovery-monitor/*/results*", {
+    fixture:
+      "detection-discovery/activity-center/system-asset-results-with-consent",
+  }).as("getSystemAssetResults");
+  cy.intercept(
+    "GET",
+    "/api/v1/plus/discovery-monitor/*/results?resolved_system_id=%5Bundefined%5D*",
+    {
+      fixture: "detection-discovery/activity-center/system-asset-uncategorized",
+    },
+  ).as("getSystemAssetsUncategorized");
+  cy.intercept("POST", "/api/v1/plus/discovery-monitor/mute*", {
+    response: 200,
+  }).as("ignoreAssets");
+  cy.intercept("POST", "/api/v1/plus/discovery-monitor/promote*", {
+    response: 200,
+  }).as("addAssets");
+  cy.intercept("POST", "/api/v1/plus/discovery-monitor/*/mute*", {
+    response: 200,
+  }).as("ignoreMonitorResultSystem");
+  cy.intercept("POST", "/api/v1/plus/discovery-monitor/*/promote*", {
+    response: 200,
+  }).as("addMonitorResultSystem");
+  cy.intercept("PATCH", "/api/v1/plus/discovery-monitor/*/results", {
+    response: 200,
+  }).as("patchAssets");
+  cy.intercept("POST", "/api/v1/plus/discovery-monitor/un-mute*", {
+    response: 200,
+  }).as("restoreAssets");
+  cy.intercept(
+    "GET",
+    "/api/v1/plus/discovery-monitor/staged_resource/*/consent*",
+    {
+      fixture: "detection-discovery/activity-center/consent-breakdown",
+    },
+  ).as("getConsentBreakdown");
 };
 
 export const stubSystemAssets = () => {
