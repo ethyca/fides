@@ -27,7 +27,6 @@ export type {
   SwitchProps as AntSwitchProps,
   TableProps as AntTableProps,
   TabsProps as AntTabsProps,
-  TagProps as AntTagProps,
   TooltipProps as AntTooltipProps,
   UploadFile as AntUploadFile,
   GetProps,
@@ -89,6 +88,7 @@ export {
   CustomTooltip as AntTooltip,
   CustomTypography as AntTypography,
 } from "./hoc";
+export type { CustomTagProps as AntTagProps } from "./hoc/CustomTag";
 
 // Export the destructured Typography components individually
 export const AntText = CustomTypography.Text;
