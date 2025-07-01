@@ -2093,6 +2093,23 @@ def base_gcs_client_mock():
     return mock_client
 
 
+@pytest.fixture(scope="function")
+def privacy_request_requires_manual_finalization(
+    db: Session, erasure_policy: Policy
+) -> Generator:
+    pr = PrivacyRequest.create(
+        db=db,
+        data={
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_id": erasure_policy.id,
+            "status": "requires_manual_finalization",
+            "external_id": "b5d78237-f831-4add-8a88-883a4843b016",
+        },
+    )
+    yield pr
+    pr.delete(db=db)
+
+
 @pytest.fixture
 def mock_gcs_client(
     base_gcs_client_mock, monkeypatch, storage_config_default_gcs, attachment_file
