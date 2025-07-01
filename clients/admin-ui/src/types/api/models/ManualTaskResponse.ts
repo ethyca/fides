@@ -2,6 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { AssignedUserSummary } from "./AssignedUserSummary";
 import type { ManualTaskParentEntityType } from "./ManualTaskParentEntityType";
 import type { StatusType } from "./StatusType";
 
@@ -33,4 +34,8 @@ export type ManualTaskResponse = {
    * Last update timestamp
    */
   updated_at: string;
+  /**
+   * Users assigned to the manual task
+   */
+  assigned_users?: Array<AssignedUserSummary> | null;
 };

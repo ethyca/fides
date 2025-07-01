@@ -92,6 +92,8 @@ export enum ScopeRegistryEnum {
   LANGUAGE_READ = "language:read",
   LOCATION_READ = "location:read",
   LOCATION_UPDATE = "location:update",
+  MANUAL_FIELD_READ_ALL = "manual_field:read-all",
+  MANUAL_FIELD_READ_OWN = "manual_field:read-own",
   MASKING_EXEC = "masking:exec",
   MASKING_READ = "masking:read",
   MESSAGING_TEMPLATE_UPDATE = "messaging-template:update",
