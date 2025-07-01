@@ -168,12 +168,9 @@ describe("Privacy Request with multiselect custom fields", () => {
       cy.getByTestId("card").contains("Access your data").click();
 
       cy.getByTestId("privacy-request-form").within(() => {
-        // Open departments dropdown and add Marketing
+        // Try to add Marketing by typing and pressing Enter
         cy.get('[data-testid="select-departments"]').click();
-        cy.get(".privacy-form-dropdown").should("be.visible");
-        cy.get('.privacy-form-dropdown .ant-select-item[title="Marketing"]')
-          .should("be.visible")
-          .click();
+        cy.get('[data-testid="select-departments"]').type("Marketing{enter}");
 
         // Verify Marketing was added
         cy.get('[data-testid="select-departments"]').within(() => {
@@ -222,12 +219,9 @@ describe("Privacy Request with multiselect custom fields", () => {
         cy.should("contain", "Areas of Interest is required");
         cy.get("button[type='submit']").should("be.disabled");
 
-        // Add a selection to interests field
+        // Add a selection to interests field by typing
         cy.get('[data-testid="select-interests"]').click();
-        cy.get(".privacy-form-dropdown").should("be.visible");
-        cy.get('.privacy-form-dropdown .ant-select-item[title="Privacy"]')
-          .should("be.visible")
-          .click();
+        cy.get('[data-testid="select-interests"]').type("Privacy{enter}");
 
         // Form should now be valid
         cy.get("button[type='submit']").should("be.enabled");
@@ -245,38 +239,19 @@ describe("Privacy Request with multiselect custom fields", () => {
         // Fill required email
         cy.get("#email").type("test@test.com");
 
-        // Select multiple values in departments (modify default)
+        // Select multiple values in departments by typing
         cy.get('[data-testid="select-departments"]').click();
-        cy.get(".privacy-form-dropdown").should("be.visible");
-        cy.get('.privacy-form-dropdown .ant-select-item[title="Marketing"]')
-          .should("be.visible")
-          .click();
-        cy.get('.privacy-form-dropdown .ant-select-item[title="Sales"]')
-          .should("be.visible")
-          .click();
-        // Close dropdown by clicking outside
-        cy.get("body").click();
+        cy.get('[data-testid="select-departments"]').type("Marketing{enter}");
+        cy.get('[data-testid="select-departments"]').type("Sales{enter}");
 
-        // Select required interests
+        // Select required interests by typing
         cy.get('[data-testid="select-interests"]').click();
-        cy.get(".privacy-form-dropdown").should("be.visible");
-        cy.get('.privacy-form-dropdown .ant-select-item[title="Privacy"]')
-          .should("be.visible")
-          .click();
-        cy.get('.privacy-form-dropdown .ant-select-item[title="Security"]')
-          .should("be.visible")
-          .click();
-        // Close dropdown by clicking outside
-        cy.get("body").click();
+        cy.get('[data-testid="select-interests"]').type("Privacy{enter}");
+        cy.get('[data-testid="select-interests"]').type("Security{enter}");
 
-        // Modify regions (add one, remove one)
+        // Modify regions by typing
         cy.get('[data-testid="select-regions"]').click();
-        cy.get(".privacy-form-dropdown").should("be.visible");
-        cy.get('.privacy-form-dropdown .ant-select-item[title="Asia"]')
-          .should("be.visible")
-          .click();
-        // Close dropdown by clicking outside
-        cy.get("body").click();
+        cy.get('[data-testid="select-regions"]').type("Asia{enter}");
         // Remove Europe
         cy.get('[data-testid="select-regions"]')
           .find(
@@ -365,12 +340,9 @@ describe("Privacy Request with multiselect custom fields", () => {
           )
           .click();
 
-        // Add required interests selection
+        // Add required interests selection by typing
         cy.get('[data-testid="select-interests"]').click();
-        cy.get(".privacy-form-dropdown").should("be.visible");
-        cy.get('.privacy-form-dropdown .ant-select-item[title="Technology"]')
-          .should("be.visible")
-          .click();
+        cy.get('[data-testid="select-interests"]').type("Technology{enter}");
 
         // Submit form
         cy.get("button[type='submit']").click();
@@ -408,12 +380,9 @@ describe("Privacy Request with multiselect custom fields", () => {
         // Fill required email
         cy.get("#email").type("test@test.com");
 
-        // Select department
+        // Select department by typing
         cy.get('[data-testid="select-departments"]').click();
-        cy.get(".privacy-form-dropdown").should("be.visible");
-        cy.get('.privacy-form-dropdown .ant-select-item[title="HR"]')
-          .should("be.visible")
-          .click();
+        cy.get('[data-testid="select-departments"]').type("HR{enter}");
 
         // Submit form
         cy.get("button[type='submit']").click();
@@ -461,17 +430,14 @@ describe("Consent Request with multiselect custom fields", () => {
             );
           });
 
-        // Add additional consent categories
+        // Add additional consent categories by typing
         cy.get('[data-testid="select-consent_categories"]').click();
-        cy.get(".privacy-form-dropdown").should("be.visible");
-        cy.get('.privacy-form-dropdown .ant-select-item[title="Analytics"]')
-          .should("be.visible")
-          .click();
-        cy.get('.privacy-form-dropdown .ant-select-item[title="Functional"]')
-          .should("be.visible")
-          .click();
-        // Close dropdown by clicking outside
-        cy.get("body").click();
+        cy.get('[data-testid="select-consent_categories"]').type(
+          "Analytics{enter}",
+        );
+        cy.get('[data-testid="select-consent_categories"]').type(
+          "Functional{enter}",
+        );
 
         // Submit form
         cy.get("button[type='submit']").click();
