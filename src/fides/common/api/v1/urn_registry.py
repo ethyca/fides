@@ -93,7 +93,9 @@ PRIVACY_REQUEST_ACCESS_RESULTS = "/privacy-request/{privacy_request_id}/access-r
 PRIVACY_REQUEST_FILTERED_RESULTS = (
     "/privacy-request/{privacy_request_id}/filtered-results"
 )
-
+PRIVACY_REQUEST_FINALIZE = (
+    V1_URL_PREFIX + "/privacy-request/{privacy_request_id}/finalize"
+)
 PRIVACY_REQUEST_VERIFY_IDENTITY = "/privacy-request/{privacy_request_id}/verify"
 PRIVACY_REQUEST_RESUME = "/privacy-request/{privacy_request_id}/resume"
 PRIVACY_REQUEST_NOTIFICATIONS = "/privacy-request/notification"

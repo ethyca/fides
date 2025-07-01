@@ -145,6 +145,12 @@ class PrivacyRequest(
         ForeignKey(FidesUser.id_field_path, ondelete="SET NULL"),
         nullable=True,
     )
+    finalized_at = Column(DateTime(timezone=True), nullable=True)
+    finalized_by = Column(
+        String,
+        ForeignKey(FidesUser.id_field_path, ondelete="SET NULL"),
+        nullable=True,
+    )
     submitted_by = Column(
         String,
         ForeignKey(FidesUser.id_field_path, ondelete="SET NULL"),
