@@ -76,7 +76,9 @@ const ConfigureSystem: NextPage = () => {
   if (!system) {
     return (
       <Layout title="Systems">
-        <Text>Could not find a system with id {systemId}</Text>
+        <Text data-testid="system-not-found">
+          Could not find a system with id {systemId}
+        </Text>
       </Layout>
     );
   }

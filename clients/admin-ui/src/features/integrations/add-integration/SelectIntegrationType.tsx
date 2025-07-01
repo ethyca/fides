@@ -7,8 +7,19 @@ import {
   INTEGRATION_TYPE_LIST,
   IntegrationTypeInfo,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
+import { ConnectionCategory } from "~/features/integrations/ConnectionCategory";
 import SelectableIntegrationBox from "~/features/integrations/SelectableIntegrationBox";
-import { IntegrationFilterTabHash } from "~/features/integrations/useIntegrationFilterTabs";
+
+enum IntegrationCategoryFilter {
+  ALL = "All",
+  DATA_CATALOG = "Data Catalog",
+  DATA_WAREHOUSE = "Data Warehouse",
+  DATABASE = "Database",
+  IDENTITY_PROVIDER = "Identity Provider",
+  WEBSITE = "Website",
+  CRM = "CRM",
+  MANUAL = "Manual",
+}
 
 type Props = {
   selectedIntegration?: IntegrationTypeInfo;
@@ -22,9 +33,8 @@ const SelectIntegrationType = ({
   onDetailClick,
 }: Props) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>(
-    IntegrationFilterTabHash.ALL,
-  );
+  const [selectedCategory, setSelectedCategory] =
+    useState<IntegrationCategoryFilter>(IntegrationCategoryFilter.ALL);
   const [isFiltering, setIsFiltering] = useState(false);
 
   const {
@@ -33,10 +43,10 @@ const SelectIntegrationType = ({
 
   // Get available categories based on flags
   const availableCategories = useMemo(() => {
-    return Object.values(IntegrationFilterTabHash).filter(
+    return Object.values(IntegrationCategoryFilter).filter(
       (tab) =>
-        (tab !== IntegrationFilterTabHash.IDENTITY_PROVIDER || oktaMonitor) &&
-        (tab !== IntegrationFilterTabHash.MANUAL || alphaNewManualDSR),
+        (tab !== IntegrationCategoryFilter.IDENTITY_PROVIDER || oktaMonitor) &&
+        (tab !== IntegrationCategoryFilter.MANUAL || alphaNewManualDSR),
     );
   }, [oktaMonitor, alphaNewManualDSR]);
 
@@ -45,8 +55,12 @@ const SelectIntegrationType = ({
     let filtered = INTEGRATION_TYPE_LIST;
 
     // Filter by category
-    if (selectedCategory !== IntegrationFilterTabHash.ALL) {
-      filtered = filtered.filter((i) => i.category === selectedCategory);
+    if (selectedCategory !== IntegrationCategoryFilter.ALL) {
+      filtered = filtered.filter(
+        // @ts-ignore -- all non-ALL values of IntegrationCategoryFilter are
+        // valid values for ConnectionCategory
+        (i) => i.category === (selectedCategory as ConnectionCategory),
+      );
     }
 
     // Filter by search term (name only)
@@ -73,7 +87,7 @@ const SelectIntegrationType = ({
     });
   }, [searchTerm, selectedCategory, oktaMonitor, alphaNewManualDSR]);
 
-  const handleCategoryChange = (value: string) => {
+  const handleCategoryChange = (value: IntegrationCategoryFilter) => {
     setIsFiltering(true);
     setSelectedCategory(value);
     setTimeout(() => setIsFiltering(false), 100);

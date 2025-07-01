@@ -594,26 +594,28 @@ describe("System management with Plus features", () => {
 
       it("validates base URL for non-cookie assets", () => {
         cy.getByTestId("add-asset-btn").click();
-        cy.getByTestId("add-modal-content").should("exist");
-
-        cy.getByTestId("input-name").type("test_tag");
-        cy.getByTestId("input-domain").type("example.com");
-        cy.getByTestId("controlled-select-asset_type").antSelect(
-          "Javascript tag",
-        );
-        cy.getByTestId("controlled-select-data_uses").antSelect("analytics");
-        cy.getByTestId("controlled-select-data_uses").within(() => {
-          // force select menu to close so it doesn't cover the input
-          cy.get("input").focus().blur();
+        cy.getByTestId("add-modal-content").within(() => {
+          cy.getByTestId("input-name").type("test_tag");
+          cy.getByTestId("input-domain").type("example.com");
+          cy.getByTestId("controlled-select-asset_type").antSelect(
+            "Javascript tag",
+          );
+          cy.getByTestId("controlled-select-data_uses").antSelect("analytics");
+          cy.getByTestId("controlled-select-data_uses").within(() => {
+            // force select menu to close so it doesn't cover the input
+            cy.get("input").focus().blur();
+            // blur the input without entering anything to trigger the error
+            cy.getByTestId("input-base_url").clear().blur();
+            cy.getByTestId("save-btn").should("be.disabled");
+            cy.getByTestId("error-base_url").should(
+              "contain",
+              "Base URL is required",
+            );
+            cy.getByTestId("input-base_url").type(
+              "https://example.com/script.js",
+            );
+          });
         });
-        // blur the input without entering anything to trigger the error
-        cy.getByTestId("input-base_url").clear().blur();
-        cy.getByTestId("save-btn").should("be.disabled");
-        cy.getByTestId("error-base_url").should(
-          "contain",
-          "Base URL is required",
-        );
-        cy.getByTestId("input-base_url").type("https://example.com/script.js");
         cy.getByTestId("save-btn").click();
         cy.wait("@addSystemAsset");
       });

@@ -64,6 +64,7 @@ const UserManagementTabs = ({
         </Flex>
       ),
       disabled: permissionsTabDisabled,
+      forceRender: !permissionsTabDisabled,
     },
   ];
 
