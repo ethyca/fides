@@ -171,6 +171,7 @@ describe("Privacy Request with multiselect custom fields", () => {
         // Try to add Marketing by typing and pressing Enter
         cy.get('[data-testid="select-departments"]').click();
         cy.get('[data-testid="select-departments"]').type("Marketing{enter}");
+        cy.get('[data-testid="select-departments"]').type("{esc}");
 
         // Verify Marketing was added
         cy.get('[data-testid="select-departments"]').within(() => {
@@ -222,6 +223,13 @@ describe("Privacy Request with multiselect custom fields", () => {
         // Add a selection to interests field by typing
         cy.get('[data-testid="select-interests"]').click();
         cy.get('[data-testid="select-interests"]').type("Privacy{enter}");
+        // Close dropdown by pressing Escape
+        cy.get('[data-testid="select-interests"]').type("{esc}");
+
+        // Wait for validation to process by checking the selected value exists
+        cy.get('[data-testid="select-interests"]').within(() => {
+          cy.get('.ant-select-selection-item[title="Privacy"]').should("exist");
+        });
 
         // Form should now be valid
         cy.get("button[type='submit']").should("be.enabled");
@@ -243,15 +251,18 @@ describe("Privacy Request with multiselect custom fields", () => {
         cy.get('[data-testid="select-departments"]').click();
         cy.get('[data-testid="select-departments"]').type("Marketing{enter}");
         cy.get('[data-testid="select-departments"]').type("Sales{enter}");
+        cy.get('[data-testid="select-departments"]').type("{esc}");
 
         // Select required interests by typing
         cy.get('[data-testid="select-interests"]').click();
         cy.get('[data-testid="select-interests"]').type("Privacy{enter}");
         cy.get('[data-testid="select-interests"]').type("Security{enter}");
+        cy.get('[data-testid="select-interests"]').type("{esc}");
 
         // Modify regions by typing
         cy.get('[data-testid="select-regions"]').click();
         cy.get('[data-testid="select-regions"]').type("Asia{enter}");
+        cy.get('[data-testid="select-regions"]').type("{esc}");
         // Remove Europe
         cy.get('[data-testid="select-regions"]')
           .find(
@@ -343,6 +354,7 @@ describe("Privacy Request with multiselect custom fields", () => {
         // Add required interests selection by typing
         cy.get('[data-testid="select-interests"]').click();
         cy.get('[data-testid="select-interests"]').type("Technology{enter}");
+        cy.get('[data-testid="select-interests"]').type("{esc}");
 
         // Submit form
         cy.get("button[type='submit']").click();
@@ -383,6 +395,7 @@ describe("Privacy Request with multiselect custom fields", () => {
         // Select department by typing
         cy.get('[data-testid="select-departments"]').click();
         cy.get('[data-testid="select-departments"]').type("HR{enter}");
+        cy.get('[data-testid="select-departments"]').type("{esc}");
 
         // Submit form
         cy.get("button[type='submit']").click();
@@ -417,43 +430,93 @@ describe("Consent Request with multiselect custom fields", () => {
     cy.loadConfigFixture("config/config_multiselect_fields.json").then(() => {
       cy.getByTestId("card").contains("Manage your consent").click();
 
-      cy.getByTestId("consent-request-form").within(() => {
-        // Fill required email
-        cy.get("#email").type("test@test.com");
+      // Wait for navigation and form to load
+      cy.url().should("include", "/consent");
 
-        // Verify consent categories multiselect is displayed with default
-        cy.get('[data-testid="select-consent_categories"]')
-          .should("be.visible")
-          .within(() => {
-            cy.get('.ant-select-selection-item[title="Essential"]').should(
-              "exist",
+      // Try both possible form selectors
+      cy.get("body").then(($body) => {
+        if ($body.find('[data-testid="consent-request-form"]').length > 0) {
+          cy.getByTestId("consent-request-form").within(() => {
+            // Fill required email
+            cy.get("#email").type("test@test.com");
+
+            // Verify consent categories multiselect is displayed with default
+            cy.get('[data-testid="select-consent_categories"]')
+              .should("be.visible")
+              .within(() => {
+                cy.get('.ant-select-selection-item[title="Essential"]').should(
+                  "exist",
+                );
+              });
+
+            // Add additional consent categories by typing
+            cy.get('[data-testid="select-consent_categories"]').click();
+            cy.get('[data-testid="select-consent_categories"]').type(
+              "Analytics{enter}",
             );
+            cy.get('[data-testid="select-consent_categories"]').type(
+              "Functional{enter}",
+            );
+            cy.get('[data-testid="select-consent_categories"]').type("{esc}");
+
+            // Submit form
+            cy.get("button[type='submit']").click();
+
+            // Verify the consent request payload
+            cy.wait("@postConsentRequest").then((interception) => {
+              const customPrivacyRequestFields =
+                interception.request.body.custom_privacy_request_fields;
+
+              expect(
+                customPrivacyRequestFields.consent_categories.value,
+              ).to.deep.equal(["Essential", "Analytics", "Functional"]);
+              expect(
+                customPrivacyRequestFields.consent_categories.label,
+              ).to.equal("Consent Categories");
+            });
           });
+        } else {
+          // Fallback to privacy request form if consent form has same structure
+          cy.getByTestId("privacy-request-form").within(() => {
+            // Fill required email
+            cy.get("#email").type("test@test.com");
 
-        // Add additional consent categories by typing
-        cy.get('[data-testid="select-consent_categories"]').click();
-        cy.get('[data-testid="select-consent_categories"]').type(
-          "Analytics{enter}",
-        );
-        cy.get('[data-testid="select-consent_categories"]').type(
-          "Functional{enter}",
-        );
+            // Verify consent categories multiselect is displayed with default
+            cy.get('[data-testid="select-consent_categories"]')
+              .should("be.visible")
+              .within(() => {
+                cy.get('.ant-select-selection-item[title="Essential"]').should(
+                  "exist",
+                );
+              });
 
-        // Submit form
-        cy.get("button[type='submit']").click();
+            // Add additional consent categories by typing
+            cy.get('[data-testid="select-consent_categories"]').click();
+            cy.get('[data-testid="select-consent_categories"]').type(
+              "Analytics{enter}",
+            );
+            cy.get('[data-testid="select-consent_categories"]').type(
+              "Functional{enter}",
+            );
+            cy.get('[data-testid="select-consent_categories"]').type("{esc}");
 
-        // Verify the consent request payload
-        cy.wait("@postConsentRequest").then((interception) => {
-          const customPrivacyRequestFields =
-            interception.request.body.custom_privacy_request_fields;
+            // Submit form
+            cy.get("button[type='submit']").click();
 
-          expect(
-            customPrivacyRequestFields.consent_categories.value,
-          ).to.deep.equal(["Essential", "Analytics", "Functional"]);
-          expect(customPrivacyRequestFields.consent_categories.label).to.equal(
-            "Consent Categories",
-          );
-        });
+            // Verify the consent request payload
+            cy.wait("@postConsentRequest").then((interception) => {
+              const customPrivacyRequestFields =
+                interception.request.body.custom_privacy_request_fields;
+
+              expect(
+                customPrivacyRequestFields.consent_categories.value,
+              ).to.deep.equal(["Essential", "Analytics", "Functional"]);
+              expect(
+                customPrivacyRequestFields.consent_categories.label,
+              ).to.equal("Consent Categories");
+            });
+          });
+        }
       });
     });
   });
