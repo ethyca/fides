@@ -35,16 +35,32 @@ const AddManualTaskForm = ({
 
   const isEditing = !!editingTask;
 
-  const fieldTypeOptions = [
-    { label: "Text", value: ManualTaskFieldType.TEXT },
-    { label: "Checkbox", value: ManualTaskFieldType.CHECKBOX },
-    { label: "Attachment", value: ManualTaskFieldType.ATTACHMENT },
-  ];
-
   const requestTypeOptions = [
     { label: "Access", value: ManualFieldRequestType.ACCESS },
     { label: "Erasure", value: ManualFieldRequestType.ERASURE },
   ];
+
+  // Watch request type to determine available field type options
+  const requestType = Form.useWatch("requestType", form);
+
+  // Filter field type options based on request type
+  const getFieldTypeOptions = () => {
+    if (requestType === ManualFieldRequestType.ACCESS) {
+      return [
+        { label: "Text", value: ManualTaskFieldType.TEXT },
+        { label: "Attachment", value: ManualTaskFieldType.ATTACHMENT },
+      ];
+    }
+    if (requestType === ManualFieldRequestType.ERASURE) {
+      return [{ label: "Checkbox", value: ManualTaskFieldType.CHECKBOX }];
+    }
+    // Return empty options when no request type is selected
+    return [];
+  };
+
+  const fieldTypeOptions = getFieldTypeOptions();
+  const isFieldTypeDisabled =
+    !requestType || requestType === ManualFieldRequestType.ERASURE;
 
   // Populate form with existing values when editing
   useEffect(() => {
@@ -66,15 +82,27 @@ const AddManualTaskForm = ({
   };
 
   const handleValuesChange = (changedValues: Partial<TaskFormValues>) => {
-    // When request type changes to erasure, automatically set field type to checkbox
-    if (changedValues.requestType === ManualFieldRequestType.ERASURE) {
-      form.setFieldsValue({ fieldType: ManualTaskFieldType.CHECKBOX });
+    if (changedValues.requestType !== undefined) {
+      // When request type changes to erasure, automatically set field type to checkbox
+      if (changedValues.requestType === ManualFieldRequestType.ERASURE) {
+        form.setFieldsValue({ fieldType: ManualTaskFieldType.CHECKBOX });
+      }
+      // When request type changes to access, clear field type if it was checkbox
+      else if (changedValues.requestType === ManualFieldRequestType.ACCESS) {
+        const currentFieldType = form.getFieldValue("fieldType");
+        if (currentFieldType === ManualTaskFieldType.CHECKBOX) {
+          form.setFieldsValue({ fieldType: undefined });
+        }
+      }
+      // When request type is cleared, clear field type
+      else if (
+        changedValues.requestType === null ||
+        changedValues.requestType === ""
+      ) {
+        form.setFieldsValue({ fieldType: undefined });
+      }
     }
   };
-
-  // Watch request type to determine if field type should be disabled
-  const requestType = Form.useWatch("requestType", form);
-  const isFieldTypeDisabled = requestType === ManualFieldRequestType.ERASURE;
 
   return (
     <Form
