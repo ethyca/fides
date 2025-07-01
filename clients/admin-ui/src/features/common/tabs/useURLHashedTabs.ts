@@ -16,8 +16,6 @@ const useURLHashedTabs = ({ tabKeys, initialTab }: UseURLHashedTabsProps) => {
 
   const initialKey = router.asPath.split("#")[1];
 
-  console.log(initialKey);
-
   const [activeTab, setActiveTab] = useState<string>(initialKey);
 
   // needed to prevent a race condition on some pages where activeTab is set
