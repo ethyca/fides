@@ -5,7 +5,7 @@ import {
   useClipboard,
   useToast,
 } from "fidesui";
-import { Form, Formik, validateYupSchema } from "formik";
+import { Form, Formik } from "formik";
 import { lazy } from "yup";
 import * as Yup from "yup";
 
