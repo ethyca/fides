@@ -1,16 +1,16 @@
 /**
- * react-a11y-dialog adapted to preact
- * https://github.com/KittyGiraudel/react-a11y-dialog
+ * a11y-dialog adapted to preact
+ * https://github.com/KittyGiraudel/a11y-dialog
  */
 
-import A11yDialogLib from "a11y-dialog";
+import A11yDialog from "a11y-dialog";
 import { useCallback, useEffect, useState } from "preact/hooks";
 
 const useA11yDialogInstance = () => {
-  const [instance, setInstance] = useState<A11yDialogLib | null>(null);
-  const container = useCallback((node: Element) => {
+  const [instance, setInstance] = useState<A11yDialog | null>(null);
+  const container = useCallback((node: HTMLElement) => {
     if (node !== null) {
-      const dialog = new A11yDialogLib(node);
+      const dialog = new A11yDialog(node);
       dialog
         .on("show", () => {
           document.documentElement.style.overflowY = "hidden";
@@ -25,14 +25,11 @@ const useA11yDialogInstance = () => {
 };
 
 interface Props {
-  role: "dialog" | "alertdialog";
   id: string;
-  title: string;
   onClose?: () => void;
 }
-export const useA11yDialog = ({ role, id, onClose }: Props) => {
+export const useA11yDialog = ({ id, onClose }: Props) => {
   const { instance, container: ref } = useA11yDialogInstance();
-  const isAlertDialog = role === "alertdialog";
   const titleId = `${id}-title`;
 
   const handleClose = useCallback(() => {
@@ -60,13 +57,12 @@ export const useA11yDialog = ({ role, id, onClose }: Props) => {
       container: {
         id,
         ref,
-        role,
+        role: "alertdialog",
         tabIndex: -1,
         "aria-modal": true,
         "aria-hidden": true,
         "aria-labelledby": titleId,
       },
-      overlay: { onClick: isAlertDialog ? undefined : handleClose },
       dialog: { role: "document" } as const,
       closeButton: { type: "button", onClick: handleClose },
       title: { role: "heading", "aria-level": 1, id: titleId } as const,

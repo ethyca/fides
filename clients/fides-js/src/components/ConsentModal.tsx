@@ -19,7 +19,7 @@ const ConsentModal = ({
   onVendorPageClick?: () => void;
   renderModalFooter: () => VNode | null;
 }) => {
-  const { container, overlay, dialog, title, closeButton } = attributes;
+  const { container, dialog, title, closeButton } = attributes;
   const { setTrigger } = useEvent();
   return (
     <div
@@ -27,7 +27,7 @@ const ConsentModal = ({
       {...(container as Partial<HTMLAttributes<HTMLDivElement>>)}
       className="fides-modal-container"
     >
-      <div {...overlay} className="fides-modal-overlay" />
+      <div className="fides-modal-overlay" />
       <div
         data-testid="fides-modal-content"
         {...dialog}
