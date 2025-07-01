@@ -20,3 +20,5 @@ class ConnectionSystemTypeMap(BaseModel):
     user_guide: Optional[str] = None
     supported_actions: List[ActionType]
     model_config = ConfigDict(use_enum_values=True, from_attributes=True)
+    is_custom: bool = False
+    default_connector_available: bool = False
