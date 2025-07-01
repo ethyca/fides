@@ -62,17 +62,15 @@ const MonitorStatusCell = ({ monitor }: { monitor: MonitorStatusResponse }) => {
   if (executionRecord.status === MonitorExecutionStatus.ERRORED) {
     return (
       <>
-        <Tooltip title="Click the info icon for more details">
-          <Tag
-            color="error"
-            closeIcon={<Icons.Information />}
-            closeButtonLabel="View details"
-            onClose={onOpen}
-            data-testid="tag-error"
-          >
-            Incomplete
-          </Tag>
-        </Tooltip>
+        <Tag
+          color="error"
+          closeIcon={<Icons.Information />}
+          closeButtonLabel="View details"
+          onClose={onOpen}
+          data-testid="tag-error"
+        >
+          Incomplete
+        </Tag>
         <Drawer isOpen={isOpen} onClose={onClose} size="md">
           <DrawerOverlay />
           <DrawerContent data-testid="error-log-drawer">
