@@ -222,8 +222,9 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
             <div className="w-1/2">
               <Select
                 className="!mt-0"
-                mode="tags"
                 placeholder="Select users to assign tasks to"
+                mode="multiple"
+                maxTagCount="responsive"
                 value={selectedUsers}
                 onChange={handleUserAssignmentChange}
                 options={userOptions}
