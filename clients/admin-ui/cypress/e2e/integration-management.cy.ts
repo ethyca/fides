@@ -529,7 +529,10 @@ describe("Integration management for data detection & discovery", () => {
           cy.getByTestId("tag-success").should("exist");
         });
         cy.getByTestId("row-test monitor 3-col-monitor_status").within(() => {
-          cy.getByTestId("tag-error").should("exist").click();
+          cy.getByTestId("tag-error").should("exist");
+          cy.getByTestId("tag-error").within(() => {
+            cy.get("button").click();
+          });
         });
         cy.getByTestId("error-log-drawer")
           .should("be.visible")

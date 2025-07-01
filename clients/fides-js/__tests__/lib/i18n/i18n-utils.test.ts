@@ -655,25 +655,34 @@ describe("i18n-utils", () => {
 
     it("selects an exact match for current locale if available", () => {
       mockCurrentLocale = "es";
-      expect(selectBestNoticeTranslation(mockI18n, mockNotice)).toHaveProperty(
-        "language",
-        "es",
-      );
+      expect(
+        selectBestNoticeTranslation(
+          mockCurrentLocale,
+          mockDefaultLocale,
+          mockNotice,
+        ),
+      ).toHaveProperty("language", "es");
     });
 
     it("falls back to the default locale if an exact match isn't available", () => {
       mockCurrentLocale = "zh";
       mockDefaultLocale = "en";
-      expect(selectBestNoticeTranslation(mockI18n, mockNotice)).toHaveProperty(
-        "language",
-        "en",
-      );
+      expect(
+        selectBestNoticeTranslation(
+          mockCurrentLocale,
+          mockDefaultLocale,
+          mockNotice,
+        ),
+      ).toHaveProperty("language", "en");
 
       mockDefaultLocale = "es";
-      expect(selectBestNoticeTranslation(mockI18n, mockNotice)).toHaveProperty(
-        "language",
-        "es",
-      );
+      expect(
+        selectBestNoticeTranslation(
+          mockCurrentLocale,
+          mockDefaultLocale,
+          mockNotice,
+        ),
+      ).toHaveProperty("language", "es");
     });
 
     it("falls back to the first locale if neither exact match nor default locale are available", () => {
@@ -687,20 +696,34 @@ describe("i18n-utils", () => {
       mockCurrentLocale = "zh";
       mockDefaultLocale = "en";
       expect(
-        selectBestNoticeTranslation(mockI18n, mockNoticeNoEnglish),
+        selectBestNoticeTranslation(
+          mockCurrentLocale,
+          mockDefaultLocale,
+          mockNoticeNoEnglish,
+        ),
       ).toHaveProperty("language", "es");
     });
 
     it("returns null for invalid/missing translations", () => {
-      expect(selectBestNoticeTranslation(mockI18n, null as any)).toBeNull();
       expect(
-        selectBestNoticeTranslation(mockI18n, { translations: [] } as any),
+        selectBestNoticeTranslation(
+          mockCurrentLocale,
+          mockDefaultLocale,
+          null as any,
+        ),
       ).toBeNull();
       expect(
-        selectBestNoticeTranslation(mockI18n, { translations: null } as any),
+        selectBestNoticeTranslation(mockCurrentLocale, mockDefaultLocale, {
+          translations: [],
+        } as any),
       ).toBeNull();
       expect(
-        selectBestNoticeTranslation(mockI18n, {
+        selectBestNoticeTranslation(mockCurrentLocale, mockDefaultLocale, {
+          translations: null,
+        } as any),
+      ).toBeNull();
+      expect(
+        selectBestNoticeTranslation(mockCurrentLocale, mockDefaultLocale, {
           translations: undefined,
         } as any),
       ).toBeNull();
@@ -721,7 +744,11 @@ describe("i18n-utils", () => {
     it("selects an exact match for current locale if available", () => {
       mockCurrentLocale = "es";
       expect(
-        selectBestExperienceConfigTranslation(mockI18n, mockExperienceConfig),
+        selectBestExperienceConfigTranslation(
+          mockCurrentLocale,
+          mockDefaultLocale,
+          mockExperienceConfig,
+        ),
       ).toHaveProperty("language", "es");
     });
 
@@ -729,12 +756,20 @@ describe("i18n-utils", () => {
       mockCurrentLocale = "zh";
       mockDefaultLocale = "en";
       expect(
-        selectBestExperienceConfigTranslation(mockI18n, mockExperienceConfig),
+        selectBestExperienceConfigTranslation(
+          mockCurrentLocale,
+          mockDefaultLocale,
+          mockExperienceConfig,
+        ),
       ).toHaveProperty("language", "en");
 
       mockDefaultLocale = "es";
       expect(
-        selectBestExperienceConfigTranslation(mockI18n, mockExperienceConfig),
+        selectBestExperienceConfigTranslation(
+          mockCurrentLocale,
+          mockDefaultLocale,
+          mockExperienceConfig,
+        ),
       ).toHaveProperty("language", "es");
     });
 
@@ -748,28 +783,48 @@ describe("i18n-utils", () => {
       ]);
       mockCurrentLocale = "zh";
       expect(
-        selectBestExperienceConfigTranslation(mockI18n, mockExpNoEnglish),
+        selectBestExperienceConfigTranslation(
+          mockCurrentLocale,
+          mockDefaultLocale,
+          mockExpNoEnglish,
+        ),
       ).toHaveProperty("language", "es");
     });
 
     it("returns null for invalid/missing translations", () => {
       expect(
-        selectBestExperienceConfigTranslation(mockI18n, null as any),
+        selectBestExperienceConfigTranslation(
+          mockCurrentLocale,
+          mockDefaultLocale,
+          null as any,
+        ),
       ).toBeNull();
       expect(
-        selectBestExperienceConfigTranslation(mockI18n, {
-          translations: [],
-        } as any),
+        selectBestExperienceConfigTranslation(
+          mockCurrentLocale,
+          mockDefaultLocale,
+          {
+            translations: [],
+          } as any,
+        ),
       ).toBeNull();
       expect(
-        selectBestExperienceConfigTranslation(mockI18n, {
-          translations: null,
-        } as any),
+        selectBestExperienceConfigTranslation(
+          mockCurrentLocale,
+          mockDefaultLocale,
+          {
+            translations: null,
+          } as any,
+        ),
       ).toBeNull();
       expect(
-        selectBestExperienceConfigTranslation(mockI18n, {
-          translations: undefined,
-        } as any),
+        selectBestExperienceConfigTranslation(
+          mockCurrentLocale,
+          mockDefaultLocale,
+          {
+            translations: undefined,
+          } as any,
+        ),
       ).toBeNull();
     });
   });

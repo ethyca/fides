@@ -72,4 +72,4 @@ toml==0.10.2
 twilio==7.15.0
 typing-extensions==4.12.2
 versioneer==0.19
-fideslang===3.1.0
+fideslang==3.1.1
