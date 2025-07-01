@@ -10,7 +10,7 @@ export const connectionManualTasksApi = baseApi.injectEndpoints({
       { connectionKey: string }
     >({
       query: ({ connectionKey }) => ({
-        url: `${PLUS_CONNECTION_API_ROUTE}/${connectionKey}/manual-task-config`,
+        url: `${PLUS_CONNECTION_API_ROUTE}/${connectionKey}/manual-task`,
         method: "GET",
       }),
       providesTags: () => ["Manual Tasks"],

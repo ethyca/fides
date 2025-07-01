@@ -20,9 +20,11 @@ export const useAssignTasksToUsersStep = ({
     return null;
   }
 
-  // For now, we'll assume this step is complete if the connection exists and manual task config exists
-  // In the future, we could check if there are specific users assigned
-  const isComplete = !!manualTaskConfig;
+  // Check if there are actually assigned users, not just if the config exists
+  const isComplete = !!(
+    manualTaskConfig?.assigned_users &&
+    manualTaskConfig.assigned_users.length > 0
+  );
 
   return {
     title: "Assign the tasks to users",

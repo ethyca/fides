@@ -19,7 +19,10 @@ import {
   useDeleteManualFieldMutation,
   useGetManualFieldsQuery,
 } from "~/features/datastore-connections/connection-manual-fields.slice";
-import { useAssignUsersToManualTaskMutation } from "~/features/datastore-connections/connection-manual-tasks.slice";
+import {
+  useAssignUsersToManualTaskMutation,
+  useGetManualTaskConfigQuery,
+} from "~/features/datastore-connections/connection-manual-tasks.slice";
 import { useGetAllUsersQuery } from "~/features/user-management/user-management.slice";
 import {
   ConnectionConfigurationResponse,
@@ -39,6 +42,7 @@ interface TaskConfigTabProps {
 const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [isSavingUsers, setIsSavingUsers] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -54,6 +58,14 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
   } = useDisclosure();
 
   const { data, refetch } = useGetManualFieldsQuery(
+    { connectionKey: integration ? integration.key : "" },
+    {
+      skip: !integration,
+    },
+  );
+
+  // Get manual task config to load currently assigned users
+  const { data: manualTaskConfig } = useGetManualTaskConfigQuery(
     { connectionKey: integration ? integration.key : "" },
     {
       skip: !integration,
@@ -92,6 +104,16 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
       setTasks(transformedTasks);
     }
   }, [data]);
+
+  // Load currently assigned users when manual task config loads
+  useEffect(() => {
+    if (manualTaskConfig?.assigned_users) {
+      const assignedUserEmails = manualTaskConfig.assigned_users
+        .map((user) => user.email_address)
+        .filter((email) => email !== null && email !== undefined) as string[];
+      setSelectedUsers(assignedUserEmails);
+    }
+  }, [manualTaskConfig]);
 
   const deleteTask = useCallback(
     async (task: Task) => {
@@ -149,21 +171,24 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
     onCreateUserClose();
   };
 
-  const handleUserAssignmentChange = useCallback(
-    async (userIds: string[]) => {
-      setSelectedUsers(userIds);
+  const handleUserAssignmentChange = useCallback((userIds: string[]) => {
+    setSelectedUsers(userIds);
+  }, []);
 
-      try {
-        await assignUsersToManualTask({
-          connectionKey: integration.key,
-          userIds,
-        }).unwrap();
-      } catch (error) {
-        message.error("Failed to assign users to task. Please try again.");
-      }
-    },
-    [assignUsersToManualTask, integration.key],
-  );
+  const handleSaveUserAssignments = useCallback(async () => {
+    setIsSavingUsers(true);
+    try {
+      await assignUsersToManualTask({
+        connectionKey: integration.key,
+        userIds: selectedUsers,
+      }).unwrap();
+      message.success("User assignments saved successfully!");
+    } catch (error) {
+      message.error("Failed to assign users to task. Please try again.");
+    } finally {
+      setIsSavingUsers(false);
+    }
+  }, [assignUsersToManualTask, integration.key, selectedUsers]);
 
   // Use the custom hook for columns
   const { columns } = useTaskColumns({
@@ -242,7 +267,13 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
               />
             </div>
 
-            <Button type="primary">Save</Button>
+            <Button
+              type="primary"
+              onClick={handleSaveUserAssignments}
+              loading={isSavingUsers}
+            >
+              Save
+            </Button>
           </div>
           <div className="mt-4">
             <Typography.Text strong>Secure access:</Typography.Text>
