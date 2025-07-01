@@ -530,6 +530,13 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         url: `privacy-request/${privacy_request_id}/logs`,
       }),
     }),
+    postPrivacyRequestFinalize: build.mutation({
+      query: ({ privacyRequestId }: { privacyRequestId: string }) => ({
+        method: "POST",
+        url: `/privacy-request/${privacyRequestId}/finalize`,
+      }),
+      invalidatesTags: ["Privacy Requests"],
+    }),
   }),
 });
 
@@ -559,4 +566,5 @@ export const {
   useGetPrivacyRequestAccessResultsQuery,
   useGetFilteredResultsQuery,
   useGetTestLogsQuery,
+  usePostPrivacyRequestFinalizeMutation,
 } = privacyRequestApi;

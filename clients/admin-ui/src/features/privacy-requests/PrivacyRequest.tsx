@@ -6,6 +6,7 @@ import { useGetAllPrivacyRequestsQuery } from "~/features/privacy-requests";
 import { PrivacyRequestStatus } from "~/types/api";
 
 import ActivityTab from "./events-and-logs/ActivityTab";
+import FinalizePrivacyRequest from "./FinalizePrivacyRequest";
 import ManualProcessingList from "./manual-processing/ManualProcessingList";
 import RequestDetails from "./RequestDetails";
 import { PrivacyRequestEntity } from "./types";
@@ -37,7 +38,8 @@ const PrivacyRequest = ({ data: initialData }: PrivacyRequestProps) => {
   const subjectRequest = latestData?.items[0] ?? initialData;
 
   const isManualStepsRequired =
-    subjectRequest.status === PrivacyRequestStatus.REQUIRES_INPUT;
+    subjectRequest.status === PrivacyRequestStatus.REQUIRES_INPUT ||
+    subjectRequest.status === PrivacyRequestStatus.REQUIRES_MANUAL_FINALIZATION;
 
   // Check if any manual-process integrations exist
   const { data: manualIntegrations } = useGetManualIntegrationsQuery();
@@ -58,12 +60,16 @@ const PrivacyRequest = ({ data: initialData }: PrivacyRequestProps) => {
       {
         key: "manual-steps",
         label: "Manual steps",
-        children: (
-          <ManualProcessingList
-            subjectRequest={subjectRequest}
-            onComplete={() => setActiveTabKey("activity")}
-          />
-        ),
+        children:
+          subjectRequest.status ===
+          PrivacyRequestStatus.REQUIRES_MANUAL_FINALIZATION ? (
+            <FinalizePrivacyRequest id={subjectRequest.id} />
+          ) : (
+            <ManualProcessingList
+              subjectRequest={subjectRequest}
+              onComplete={() => setActiveTabKey("activity")}
+            />
+          ),
         disabled: !showManualSteps,
       },
     ],
