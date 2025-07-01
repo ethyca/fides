@@ -1,12 +1,6 @@
 import { AntTag as Tag, AntTypography as Typography } from "fidesui";
 
 import { SubjectRequestActionTypeMap } from "~/features/privacy-requests/constants";
-import {
-  ActionType,
-  IdentityField,
-  ManualFieldListItem,
-  ManualFieldRequestType,
-} from "~/types/api";
 
 interface TaskDetailsProps {
   task: ManualFieldListItem;

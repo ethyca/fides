@@ -19,17 +19,28 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.64.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.64.2...main)
 
 ### Added
 - Added ManualTaskInstance and ManualTaskSubmission models, foundational for for ManualDSRs [#6212](https://github.com/ethyca/fides/pull/6212) https://github.com/ethyca/fides/labels/db-migration
 - Expose shopify() interface on Fides within docs [#6269](https://github.com/ethyca/fides/pull/6269)
+- Added a new time-based partitioning spec to simplify BigQuery partition definitions [#6182](https://github.com/ethyca/fides/pull/6182)
 
 ### Changed
 - Update FastAPI to 0.115.2 for starlette 0.40.0 [#6244](https://github.com/ethyca/fides/pull/6244)
+- Refactored fides-js SDK to use React Context for global state management and simplified consent updating method [#6257](https://github.com/ethyca/fides/pull/6257)
 
 ### Developer Experience
 - Updated SQLAlchemy models to match the contents of the Alembic migrations [#6262](https://github.com/ethyca/fides/pull/6262)
+
+### Fixed
+- Fixed an accessibility issue where tooltips could not be triggered by keyboard focus. [#6276](https://github.com/ethyca/fides/pull/6276)
+- Fixed accessibility issues with text contrast and interactive Tags. [#6278](https://github.com/ethyca/fides/pull/6278)
+
+## [2.64.2](https://github.com/ethyca/fides/compare/2.64.1...2.64.2)
+
+### Fixed
+- Fixed a bug where number fields in integration forms were un-editable [#6275](https://github.com/ethyca/fides/pull/6275)
 
 ## [2.64.1](https://github.com/ethyca/fides/compare/2.64.0...2.64.1)
 

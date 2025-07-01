@@ -403,7 +403,8 @@ export function messageExists(i18n: I18n, id: string): boolean {
  * and handle that state.
  */
 export function selectBestNoticeTranslation(
-  i18n: I18n,
+  currentLocale: Locale | undefined,
+  defaultLocale: Locale,
   notice: PrivacyNotice,
 ): PrivacyNoticeTranslation | null {
   // Defensive checks
@@ -412,17 +413,18 @@ export function selectBestNoticeTranslation(
   }
 
   // 1) Look for an exact match for the current locale
-  const currentLocale = getCurrentLocale(i18n);
-  const matchTranslation = notice.translations.find((e) =>
-    areLocalesEqual(e.language, currentLocale),
-  );
-  if (matchTranslation) {
-    return matchTranslation;
+  if (currentLocale) {
+    const matchTranslation = notice.translations.find((e) =>
+      areLocalesEqual(e.language, currentLocale),
+    );
+    if (matchTranslation) {
+      return matchTranslation;
+    }
   }
 
   // 2) Fallback to default locale, if an exact match isn't found
   const defaultTranslation = notice.translations.find((e) =>
-    areLocalesEqual(e.language, i18n.getDefaultLocale()),
+    areLocalesEqual(e.language, defaultLocale),
   );
   if (defaultTranslation) {
     return defaultTranslation;
@@ -444,7 +446,8 @@ export function selectBestNoticeTranslation(
  * miss default English translations in the future...
  */
 export function selectBestExperienceConfigTranslation(
-  i18n: I18n,
+  currentLocale: Locale | undefined,
+  defaultLocale: Locale,
   experienceConfig: Partial<ExperienceConfig>,
 ): ExperienceConfigTranslation | null {
   // Defensive checks
@@ -453,17 +456,18 @@ export function selectBestExperienceConfigTranslation(
   }
 
   // 1) Look for an exact match for the current locale
-  const currentLocale = getCurrentLocale(i18n);
-  const matchTranslation = experienceConfig.translations.find((e) =>
-    areLocalesEqual(e.language, currentLocale),
-  );
-  if (matchTranslation) {
-    return matchTranslation;
+  if (currentLocale) {
+    const matchTranslation = experienceConfig.translations.find((e) =>
+      areLocalesEqual(e.language, currentLocale),
+    );
+    if (matchTranslation) {
+      return matchTranslation;
+    }
   }
 
   // 2) Fallback to default locale, if an exact match isn't found
   const defaultTranslation = experienceConfig.translations.find((e) =>
-    areLocalesEqual(e.language, i18n.getDefaultLocale()),
+    areLocalesEqual(e.language, defaultLocale),
   );
   if (defaultTranslation) {
     return defaultTranslation;
@@ -557,7 +561,8 @@ export function initializeI18n(
     );
   if (!isBestLocaleInTranslations) {
     const bestTranslation = selectBestExperienceConfigTranslation(
-      i18n,
+      bestLocale,
+      defaultLocale,
       experience.experience_config!,
     );
     const bestAvailableLocale = bestTranslation?.language || bestLocale;
