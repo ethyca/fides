@@ -7,10 +7,13 @@ import {
   AntTypography as Typography,
   Box,
   Flex,
+  Text,
   useDisclosure,
+  WarningIcon,
 } from "fidesui";
 import { useCallback, useEffect, useState } from "react";
 
+import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { FidesTableV2 } from "~/features/common/table/v2";
 import {
   useDeleteManualFieldMutation,
@@ -37,11 +40,17 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const {
     isOpen: isCreateUserOpen,
     onOpen: onCreateUserOpen,
     onClose: onCreateUserClose,
+  } = useDisclosure();
+  const {
+    isOpen: isDeleteOpen,
+    onOpen: onDeleteOpen,
+    onClose: onDeleteClose,
   } = useDisclosure();
 
   const { data, refetch } = useGetManualFieldsQuery(
@@ -110,18 +119,19 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
 
   const handleDelete = useCallback(
     (task: Task) => {
-      // Using window.confirm for now - can be replaced with a proper modal later
-      // eslint-disable-next-line no-alert
-      const confirmed = window.confirm(
-        `Are you sure you want to delete the task "${task.name}"?`,
-      );
-
-      if (confirmed) {
-        deleteTask(task);
-      }
+      setTaskToDelete(task);
+      onDeleteOpen();
     },
-    [deleteTask],
+    [onDeleteOpen],
   );
+
+  const handleConfirmDelete = useCallback(async () => {
+    if (taskToDelete) {
+      await deleteTask(taskToDelete);
+      setTaskToDelete(null);
+    }
+    onDeleteClose();
+  }, [taskToDelete, deleteTask, onDeleteClose]);
 
   const handleAddTask = useCallback(() => {
     setEditingTask(null);
@@ -247,6 +257,25 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
           isOpen={isCreateUserOpen}
           onClose={onCreateUserClose}
           onUserCreated={handleUserCreated}
+        />
+
+        <ConfirmationModal
+          isOpen={isDeleteOpen}
+          onClose={() => {
+            setTaskToDelete(null);
+            onDeleteClose();
+          }}
+          onConfirm={handleConfirmDelete}
+          title="Delete manual task"
+          message={
+            <Text color="gray.500">
+              Are you sure you want to delete the task &ldquo;
+              {taskToDelete?.name}&rdquo;? This action cannot be undone.
+            </Text>
+          }
+          continueButtonText="Delete"
+          isCentered
+          icon={<WarningIcon />}
         />
       </Flex>
     </Box>
