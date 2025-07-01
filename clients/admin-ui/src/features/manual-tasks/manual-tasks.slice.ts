@@ -72,19 +72,45 @@ export const manualTasksApi = baseApi.injectEndpoints({
         const {
           privacy_request_id: privacyRequestId,
           manual_field_id: manualFieldId,
-          ...body
+          field_value: fieldValue,
+          comment_text: commentText,
+          attachment,
+          ...rest
         } = payload;
+
+        const formData = new FormData();
+
+        // Append field_value if provided
+        if (fieldValue !== undefined && fieldValue !== null) {
+          formData.append("field_value", fieldValue);
+        }
+
+        // Append comment fields if provided
+        if (commentText) {
+          formData.append("comment_text", commentText);
+          formData.append("comment_type", CommentType.NOTE);
+        }
+
+        // Append attachment fields if provided
+        if (attachment) {
+          formData.append("attachment", attachment);
+          formData.append(
+            "attachment_type",
+            AttachmentType.INCLUDE_WITH_ACCESS_PACKAGE,
+          );
+        }
+
+        // Append any other fields from rest
+        Object.entries(rest).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            formData.append(key, String(value));
+          }
+        });
+
         return {
           url: `privacy-request/${privacyRequestId}/manual-field/${manualFieldId}/complete`,
           method: "POST",
-          body: {
-            ...body,
-            field_key: manualFieldId,
-            comment_type: body.comment_text ? CommentType.NOTE : undefined,
-            attachment_type: body.attachment
-              ? AttachmentType.INCLUDE_WITH_ACCESS_PACKAGE
-              : undefined,
-          },
+          body: formData,
         };
       },
       invalidatesTags: [{ type: "Manual Tasks" }],
