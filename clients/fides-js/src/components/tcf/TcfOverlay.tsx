@@ -401,6 +401,19 @@ export const TcfOverlay = () => {
               enabledIds,
               experienceFull || experienceMinimal,
               customPurposesConsent,
+              (result) => {
+                if (experienceFull) {
+                  const updatedTcfEntities = buildUserPrefs(
+                    experienceFull,
+                    result,
+                  );
+                  // update the experienceFull state with the new user preferences from the updated cookie
+                  setExperienceFull({
+                    ...experienceFull,
+                    ...updatedTcfEntities,
+                  });
+                }
+              },
             );
           },
         },
