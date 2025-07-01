@@ -15,14 +15,15 @@ import {
 } from "fidesui";
 import { useState } from "react";
 
+import { ManualFieldListItem, ManualTaskFieldType } from "~/types/api";
+
 import { useCompleteTaskMutation } from "../manual-tasks.slice";
-import { ManualTask } from "../mocked/types";
 import { TaskDetails } from "./TaskDetails";
 
 interface CompleteTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
-  task: ManualTask;
+  task: ManualFieldListItem;
 }
 
 export const CompleteTaskModal = ({
@@ -39,10 +40,13 @@ export const CompleteTaskModal = ({
   const handleSave = async () => {
     try {
       await completeTask({
-        task_id: task.task_id,
-        text_value: task.input_type === "string" ? textValue : undefined,
+        task_id: task.manual_field_id,
+        text_value:
+          task.input_type === ManualTaskFieldType.TEXT ? textValue : undefined,
         checkbox_value:
-          task.input_type === "checkbox" ? checkboxValue : undefined,
+          task.input_type === ManualTaskFieldType.CHECKBOX
+            ? checkboxValue
+            : undefined,
         attachment_type: fileList.length > 0 ? "file" : undefined,
         comment: comment || undefined,
       }).unwrap();
@@ -70,9 +74,9 @@ export const CompleteTaskModal = ({
   // Check if the required field is filled based on input type
   const isRequiredFieldFilled = () => {
     switch (task.input_type) {
-      case "string":
+      case ManualTaskFieldType.TEXT:
         return textValue.trim().length > 0;
-      case "checkbox":
+      case ManualTaskFieldType.CHECKBOX:
         return checkboxValue;
       default:
         // For file uploads, require at least one file
@@ -82,7 +86,7 @@ export const CompleteTaskModal = ({
 
   const renderTaskInput = () => {
     switch (task.input_type) {
-      case "string":
+      case ManualTaskFieldType.TEXT:
         return (
           <div className="space-y-2">
             <div className="text-sm font-medium text-gray-700">Text Input</div>
@@ -95,7 +99,7 @@ export const CompleteTaskModal = ({
             />
           </div>
         );
-      case "checkbox":
+      case ManualTaskFieldType.CHECKBOX:
         return (
           <div className="space-y-2">
             <Checkbox
@@ -108,7 +112,7 @@ export const CompleteTaskModal = ({
           </div>
         );
       default:
-        // For file uploads or when input_type is undefined, show file upload
+        // For file uploads or when input_type is attachment, show file upload
         return (
           <div className="space-y-2">
             <div className="text-sm font-medium text-gray-700">Upload File</div>

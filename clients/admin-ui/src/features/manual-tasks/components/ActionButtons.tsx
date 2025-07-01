@@ -8,12 +8,16 @@ import {
 import { useRouter } from "next/router";
 
 import { PRIVACY_REQUEST_DETAIL_ROUTE } from "~/features/common/nav/routes";
+import {
+  ManualFieldListItem,
+  ManualFieldStatus,
+  ManualTaskFieldType,
+} from "~/types/api";
 
 import { useCompleteTaskMutation } from "../manual-tasks.slice";
-import { ManualTask } from "../mocked/types";
 
 interface Props {
-  task: ManualTask;
+  task: ManualFieldListItem;
 }
 
 export const ActionButtons = ({ task }: Props) => {
@@ -21,15 +25,16 @@ export const ActionButtons = ({ task }: Props) => {
   const [completeTask, { isLoading: isCompleting }] = useCompleteTaskMutation();
 
   // Don't render anything for non-new tasks
-  if (task.status !== "new") {
+  if (task.status !== ManualFieldStatus.NEW) {
     return null;
   }
 
   const handleComplete = () => {
     completeTask({
-      task_id: task.task_id,
-      text_value: task.input_type === "string" ? "" : undefined,
-      checkbox_value: task.input_type === "checkbox" ? false : undefined,
+      task_id: task.manual_field_id,
+      text_value: task.input_type === ManualTaskFieldType.TEXT ? "" : undefined,
+      checkbox_value:
+        task.input_type === ManualTaskFieldType.CHECKBOX ? false : undefined,
     });
   };
 
