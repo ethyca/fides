@@ -530,6 +530,23 @@ class StagedResource(Base):
         default=dict,
     )
 
+    __table_args__ = (
+        # Used for querying monitor aggregates
+        Index(
+            "ix_stagedresource_monitor_config_resource_type_consent",
+            "monitor_config_id",
+            "resource_type",
+            text("(meta->>'consent_aggregated')"),
+        ),
+        # Used for querying system aggregates
+        Index(
+            "ix_stagedresource_system_vendor_consent",
+            "system_id",
+            "vendor_id",
+            text("(meta->>'consent_aggregated')"),
+        ),
+    )
+
     @classmethod
     def get_urn(cls, db: Session, urn: str) -> Optional[StagedResource]:
         """Utility to retrieve the staged resource with the given URN"""
