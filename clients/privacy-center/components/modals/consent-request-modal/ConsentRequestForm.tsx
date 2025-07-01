@@ -1,6 +1,5 @@
 import { getOrMakeFidesCookie, saveFidesCookie } from "fides-js";
 import {
-  AntSelect,
   Button,
   chakra,
   FormControl,
@@ -15,11 +14,12 @@ import {
 } from "fidesui";
 import { useFormik } from "formik";
 import { Headers } from "headers-polyfill";
-import React, { ReactNode, useEffect, useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import * as Yup from "yup";
 
 import { addCommonHeaders } from "~/common/CommonHeaders";
 import { ErrorToastOptions } from "~/common/toast-options";
+import CustomFieldRenderer from "~/components/common/CustomFieldRenderer";
 import { FormErrorMessage } from "~/components/FormErrorMessage";
 import { ModalViews, VerificationType } from "~/components/modals/types";
 import {
@@ -30,6 +30,7 @@ import { PhoneInput } from "~/components/phone-input";
 import { defaultIdentityInput } from "~/constants";
 import { useConfig } from "~/features/common/config.slice";
 import { useSettings } from "~/features/common/settings.slice";
+import { useCustomFieldsForm } from "~/hooks/useCustomFieldsForm";
 import { PrivacyRequestSource } from "~/types/api/models/PrivacyRequestSource";
 
 type KnownKeys = {
@@ -63,30 +64,18 @@ const useConsentRequestForm = ({
   const { BASE_64_COOKIE } = settings;
   const toast = useToast();
   const cookie = useMemo(() => getOrMakeFidesCookie(), []);
+
+  // Use our custom hook for form field logic
+  const { getInitialValues, getValidationSchema } = useCustomFieldsForm({
+    customPrivacyRequestFields: customPrivacyRequestFields as any,
+    searchParams: null, // ConsentRequestForm doesn't use URL params
+  });
+
   const formik = useFormik<FormValues>({
     initialValues: {
       email: "",
       phone: "",
-      ...Object.fromEntries(
-        Object.entries(customPrivacyRequestFields)
-          .filter(([, field]) => !field.hidden)
-          .map(([key, field]) => {
-            let value;
-            if (field.field_type === "multiselect") {
-              // For multiselect fields, default to empty array or convert to array
-              if (Array.isArray(field.default_value)) {
-                value = field.default_value;
-              } else if (field.default_value) {
-                value = [field.default_value];
-              } else {
-                value = [];
-              }
-            } else {
-              value = field.default_value || "";
-            }
-            return [key, value];
-          }),
-      ),
+      ...getInitialValues(),
     },
     onSubmit: async (values) => {
       const { email, phone, ...customPrivacyRequestFieldValues } = values;
@@ -198,27 +187,7 @@ const useConsentRequestForm = ({
           return true;
         },
       ),
-      ...Object.fromEntries(
-        Object.entries(customPrivacyRequestFields)
-          .filter(([, field]) => !field.hidden)
-          .map(([key, { label, required, field_type }]) => {
-            const isRequired = required !== false;
-            if (field_type === "multiselect") {
-              return [
-                key,
-                isRequired
-                  ? Yup.array().min(1, `${label} is required`)
-                  : Yup.array().notRequired(),
-              ];
-            }
-            return [
-              key,
-              isRequired
-                ? Yup.string().required(`${label} is required`)
-                : Yup.string().notRequired(),
-            ];
-          }),
-      ),
+      ...getValidationSchema().fields,
     }),
   });
 
@@ -348,75 +317,18 @@ const ConsentRequestForm = ({
                   isRequired={item.required !== false}
                 >
                   <FormLabel fontSize="sm">{item.label}</FormLabel>
-                  {(() => {
-                    if (item.field_type === "multiselect" && item.options) {
-                      return (
-                        <AntSelect
-                          id={key}
-                          data-testid={`select-${key}`}
-                          mode="multiple"
-                          placeholder={`Select ${item.label.toLowerCase()}`}
-                          value={values[key] || []}
-                          onChange={(selectedValues: any) => {
-                            setFieldValue(key, selectedValues);
-                          }}
-                          onBlur={() => handleBlur({ target: { name: key } })}
-                          options={item.options.map((option: string) => ({
-                            label: option,
-                            value: option,
-                          }))}
-                          style={{ width: "100%" }}
-                          getPopupContainer={() => document.body}
-                          dropdownStyle={{
-                            maxHeight: 400,
-                            overflow: "auto",
-                            zIndex: 1500,
-                          }}
-                          dropdownClassName="privacy-form-dropdown"
-                        />
-                      );
+                  <CustomFieldRenderer
+                    field={item}
+                    fieldKey={key}
+                    value={values[key]}
+                    onChange={(value) => setFieldValue(key, value)}
+                    onBlur={() => handleBlur({ target: { name: key } })}
+                    error={
+                      touched[key] && errors[key]
+                        ? String(errors[key])
+                        : undefined
                     }
-                    if (item.field_type === "select" && item.options) {
-                      return (
-                        <AntSelect
-                          id={key}
-                          data-testid={`select-${key}`}
-                          placeholder={`Select ${item.label.toLowerCase()}`}
-                          value={values[key] || ""}
-                          onChange={(selectedValue) => {
-                            setFieldValue(key, selectedValue);
-                          }}
-                          onBlur={() => handleBlur({ target: { name: key } })}
-                          options={item.options.map((option: string) => ({
-                            label: option,
-                            value: option,
-                          }))}
-                          style={{ width: "100%" }}
-                          getPopupContainer={() => document.body}
-                          dropdownStyle={{
-                            maxHeight: 400,
-                            overflow: "auto",
-                            zIndex: 1500,
-                          }}
-                          dropdownClassName="privacy-form-dropdown"
-                          allowClear
-                        />
-                      );
-                    }
-                    return (
-                      <Input
-                        id={key}
-                        name={key}
-                        focusBorderColor="primary.500"
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        value={values[key]}
-                      />
-                    );
-                  })()}
-                  <FormErrorMessage>
-                    {errors[key] as ReactNode}
-                  </FormErrorMessage>
+                  />
                 </FormControl>
               ))}
           </Stack>

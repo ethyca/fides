@@ -117,6 +117,23 @@ describe("Privacy Request with multiselect custom fields", () => {
     cy.intercept("POST", `${API_URL}/privacy-request`, {
       fixture: "privacy-request/success",
     }).as("postPrivacyRequest");
+
+    // Intercept the property API call used during SSR to return multiselect configuration
+    cy.intercept("GET", `${API_URL}/plus/property*`, (req) => {
+      req.reply((res) => {
+        // Load the multiselect configuration and return it as if from the API
+        cy.fixture("config/config_multiselect_fields.json").then((config) => {
+          res.send({
+            statusCode: 200,
+            body: {
+              id: "test-property",
+              privacy_center_config: config,
+              stylesheet: "",
+            },
+          });
+        });
+      });
+    }).as("getProperty");
   });
 
   it("displays multiselect fields with default values", () => {
