@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.64.6b0.post0.dev3"
+    "version": "2.64.6b1.post0.dev1"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -19785,6 +19785,7 @@
           "privacy_request_review_deny",
           "privacy_request_review_approve",
           "user_invite",
+          "external_user_welcome",
           "test_message"
         ],
         "title": "MessagingActionType",
