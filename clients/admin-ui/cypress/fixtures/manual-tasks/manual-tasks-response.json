@@ -64,7 +64,7 @@
       "manual_field_id": "task_003",
       "name": "Confirm Payment Data Deletion",
       "description": "Verify that payment data has been deleted from Stripe",
-      "input_type": "string",
+      "input_type": "text",
       "request_type": "erasure",
       "status": "completed",
       "assigned_users": [
