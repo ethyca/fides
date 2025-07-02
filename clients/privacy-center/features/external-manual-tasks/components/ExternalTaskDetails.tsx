@@ -11,10 +11,13 @@
 
 import { AntTag as Tag, AntTypography as Typography } from "fidesui";
 
-import { ManualTask } from "../types";
+import {
+  IdentityField,
+  ManualFieldListItem,
+} from "../external-manual-tasks.slice";
 
 interface ExternalTaskDetailsProps {
-  task: ManualTask;
+  task: ManualFieldListItem;
 }
 
 // Helper component for displaying task information rows

@@ -14,15 +14,7 @@
 
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-import { baseApi } from "~/features/common/api.slice";
-
-import {
-  ExternalUser,
-  OtpRequestPayload,
-  OtpRequestResponse,
-  OtpVerifyPayload,
-  OtpVerifyResponse,
-} from "./types";
+import { ExternalUser, OtpVerifyResponse } from "./types";
 
 // External Auth State
 export interface ExternalAuthState {
@@ -80,26 +72,8 @@ export const externalAuthSlice = createSlice({
   },
 });
 
-// External Auth API - Inject into baseApi to use dynamic base query
-// Now uses real backend endpoints consistently (no more mocking)
-export const externalAuthApi = baseApi.injectEndpoints({
-  endpoints: (build) => ({
-    requestOtp: build.mutation<OtpRequestResponse, OtpRequestPayload>({
-      query: (data) => ({
-        url: "plus/external-login/request-otp",
-        method: "POST",
-        body: data,
-      }),
-    }),
-    verifyOtp: build.mutation<OtpVerifyResponse, OtpVerifyPayload>({
-      query: (data) => ({
-        url: "plus/external-login/verify-otp",
-        method: "POST",
-        body: data,
-      }),
-    }),
-  }),
-});
+// External Auth API endpoints will be defined in external-auth-api.slice.ts
+// to use the proper externalBaseApi with authentication
 
 // Action creators
 export const {
@@ -133,8 +107,7 @@ export const selectIsExternalAuthenticated = (state: {
 export const selectEmailToken = (state: { externalAuth: ExternalAuthState }) =>
   selectExternalAuth(state).emailToken;
 
-// API hooks
-export const { useRequestOtpMutation, useVerifyOtpMutation } = externalAuthApi;
+// API hooks will be exported from external-auth-api.slice.ts
 
 // Reducer export
 export const { reducer } = externalAuthSlice;

@@ -27,14 +27,17 @@ import {
 } from "fidesui";
 import { useState } from "react";
 
-import { useCompleteExternalTaskMutation } from "../external-manual-tasks.slice";
-import { ManualTask } from "../types";
+import {
+  ManualFieldListItem,
+  ManualTaskFieldType,
+  useCompleteExternalTaskMutation,
+} from "../external-manual-tasks.slice";
 import { ExternalTaskDetails } from "./ExternalTaskDetails";
 
 interface ExternalCompleteTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
-  task: ManualTask;
+  task: ManualFieldListItem;
 }
 
 export const ExternalCompleteTaskModal = ({
@@ -52,13 +55,23 @@ export const ExternalCompleteTaskModal = ({
   const handleSave = async () => {
     try {
       setError(null);
+
+      const getFieldValue = () => {
+        if (task.input_type === ManualTaskFieldType.TEXT) {
+          return textValue;
+        }
+        if (task.input_type === ManualTaskFieldType.CHECKBOX) {
+          return checkboxValue.toString();
+        }
+        return undefined;
+      };
+
       await completeTask({
-        task_id: task.task_id,
-        text_value: task.input_type === "string" ? textValue : undefined,
-        checkbox_value:
-          task.input_type === "checkbox" ? checkboxValue : undefined,
-        attachment_type: fileList.length > 0 ? "file" : undefined,
-        comment: comment || undefined,
+        privacy_request_id: task.privacy_request.id,
+        manual_field_id: task.manual_field_id,
+        field_value: getFieldValue(),
+        comment_text: comment || undefined,
+        attachment: fileList.length > 0 ? fileList[0].originFileObj : undefined,
       }).unwrap();
 
       // Reset form
@@ -87,9 +100,9 @@ export const ExternalCompleteTaskModal = ({
   // Check if the required field is filled based on input type
   const isRequiredFieldFilled = () => {
     switch (task.input_type) {
-      case "string":
+      case ManualTaskFieldType.TEXT:
         return textValue.trim().length > 0;
-      case "checkbox":
+      case ManualTaskFieldType.CHECKBOX:
         return checkboxValue;
       default:
         // For file uploads, require at least one file
@@ -99,7 +112,7 @@ export const ExternalCompleteTaskModal = ({
 
   const renderTaskInput = () => {
     switch (task.input_type) {
-      case "string":
+      case ManualTaskFieldType.TEXT:
         return (
           <div className="space-y-2">
             <div className="text-sm font-medium text-gray-700">Text Input</div>
@@ -112,7 +125,7 @@ export const ExternalCompleteTaskModal = ({
             />
           </div>
         );
-      case "checkbox":
+      case ManualTaskFieldType.CHECKBOX:
         return (
           <div className="space-y-2">
             <Checkbox
@@ -125,7 +138,7 @@ export const ExternalCompleteTaskModal = ({
           </div>
         );
       default:
-        // For file uploads or when input_type is undefined, show file upload
+        // For file uploads or when input_type is attachment, show file upload
         return (
           <div className="space-y-2">
             <div className="text-sm font-medium text-gray-700">Upload File</div>

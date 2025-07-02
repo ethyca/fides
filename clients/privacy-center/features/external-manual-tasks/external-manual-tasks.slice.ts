@@ -5,226 +5,226 @@
  * - Uses privacy-center's base API instead of admin-ui's baseApi
  * - Simplified filtering (no assignee filter, always filtered to current user)
  * - Uses external store instead of admin-ui store
- * - Uses external types instead of admin-ui types
+ * - External user authentication context
  *
  * IMPORTANT: When updating admin-ui manual-tasks.slice.ts, review this component for sync!
  */
 
 import { createSlice } from "@reduxjs/toolkit";
 
-import { baseApi } from "~/features/common/api.slice";
+import { externalBaseApi } from "./external-base-api.slice";
 
-// Import mock data from fixtures
-import mockTasksData from "../../cypress/fixtures/external-manual-tasks/user-tasks.json";
-import {
-  CompleteTaskPayload,
-  ManualTask,
-  PageManualTask,
-  RequestType,
-  SkipTaskPayload,
-  TaskActionResponse,
-  TaskStatus,
-} from "./types";
+// Import real API types - we'll need to make sure these are available in privacy-center
+// For now, let's define the essential types locally based on the admin-ui implementation
+export enum ManualFieldStatus {
+  NEW = "new",
+  COMPLETED = "completed",
+  SKIPPED = "skipped",
+}
 
-// Use the mock data directly since it's already in the correct format
-const mockApiResponse: PageManualTask = mockTasksData as PageManualTask;
+export enum ManualFieldRequestType {
+  ACCESS = "access",
+  ERASURE = "erasure",
+}
 
-// Check if we're in a test environment (Cypress)
-const isTestEnvironment = () => {
-  return (
-    typeof window !== "undefined" &&
-    (window.Cypress || process.env.NODE_ENV === "test")
-  );
-};
+export enum ManualTaskFieldType {
+  TEXT = "text",
+  CHECKBOX = "checkbox",
+  ATTACHMENT = "attachment",
+}
 
-// Helper function to paginate and filter results for external users
-const paginateAndFilterResults = (
-  page: number = 1,
-  size: number = 25,
-  searchTerm?: string,
-  status?: TaskStatus,
-  requestType?: RequestType,
-  systemName?: string,
-): PageManualTask => {
-  // Start with all tasks from the mock data (already filtered to current user)
-  let filteredTasks = mockApiResponse.items;
+export enum CommentType {
+  NOTE = "note",
+}
 
-  // Apply filters
-  if (searchTerm) {
-    const lowerSearchTerm = searchTerm.toLowerCase();
-    filteredTasks = filteredTasks.filter(
-      (task) =>
-        task.name.toLowerCase().includes(lowerSearchTerm) ||
-        task.description.toLowerCase().includes(lowerSearchTerm),
-    );
-  }
+export enum AttachmentType {
+  INCLUDE_WITH_ACCESS_PACKAGE = "include_with_access_package",
+}
 
-  if (status) {
-    filteredTasks = filteredTasks.filter((task) => task.status === status);
-  }
+export interface ManualFieldUser {
+  id: string;
+  email_address?: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
+}
 
-  if (requestType) {
-    filteredTasks = filteredTasks.filter(
-      (task) => task.privacy_request.request_type === requestType,
-    );
-  }
+export interface ManualFieldSystem {
+  id: string;
+  name: string;
+}
 
-  if (systemName) {
-    filteredTasks = filteredTasks.filter(
-      (task) => task.system.name === systemName,
-    );
-  }
+export interface IdentityField {
+  label: string;
+  value: string;
+}
 
-  // Calculate pagination
-  const total = filteredTasks.length;
-  const pages = Math.ceil(total / size);
-  const startIndex = (page - 1) * size;
-  const endIndex = Math.min(startIndex + size, total);
-  const paginatedTasks = filteredTasks.slice(startIndex, endIndex);
+export interface ManualFieldPrivacyRequest {
+  id: string;
+  days_left?: number | null;
+  request_type: ManualFieldRequestType;
+  subject_identity?: {
+    email?: IdentityField | null;
+    phone_number?: IdentityField | null;
+  } | null;
+}
 
-  return {
-    items: paginatedTasks,
-    total,
-    page,
-    size,
-    pages,
-    filterOptions: mockApiResponse.filterOptions, // Always include filter options
-  };
-};
+export interface ManualFieldListItem {
+  manual_field_id: string;
+  name: string;
+  description?: string | null;
+  input_type: ManualTaskFieldType;
+  request_type: ManualFieldRequestType;
+  status: ManualFieldStatus;
+  assigned_users?: ManualFieldUser[];
+  privacy_request: ManualFieldPrivacyRequest;
+  system?: ManualFieldSystem | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ManualFieldSearchFilterOptions {
+  assigned_users?: ManualFieldUser[];
+  systems?: ManualFieldSystem[];
+}
+
+export interface ManualFieldSearchResponse {
+  items: ManualFieldListItem[];
+  total: number;
+  page: number;
+  size: number;
+  pages: number;
+  filter_options: ManualFieldSearchFilterOptions;
+}
 
 // Interface for task query parameters (simplified for external users)
 interface ExternalTaskQueryParams {
   page?: number;
   size?: number;
   search?: string;
-  status?: TaskStatus;
-  requestType?: RequestType;
+  status?: ManualFieldStatus;
+  requestType?: ManualFieldRequestType;
   systemName?: string;
 }
 
 // API endpoints
-export const externalManualTasksApi = baseApi.injectEndpoints({
+export const externalManualTasksApi = externalBaseApi.injectEndpoints({
   endpoints: (build) => ({
     getExternalTasks: build.query<
-      PageManualTask,
+      ManualFieldSearchResponse,
       ExternalTaskQueryParams | void
     >({
-      // Use real API call in test environment, mock otherwise
-      ...(isTestEnvironment()
-        ? {
-            query: (params) => {
-              const queryParams = params || { page: 1, size: 25 };
-              const searchParams = new URLSearchParams();
+      query: (params) => {
+        const queryParams = params || { page: 1, size: 25 };
+        const searchParams = new URLSearchParams();
 
-              Object.entries(queryParams).forEach(([key, value]) => {
-                if (value !== undefined && value !== null) {
-                  searchParams.append(key, String(value));
-                }
-              });
+        // Convert page to be 1-indexed for API
+        const page = queryParams.page || 1;
+        searchParams.append("page", String(page));
+        searchParams.append("size", String(queryParams.size || 25));
 
-              return {
-                url: "manual-tasks",
-                params: searchParams,
-              };
-            },
-          }
-        : {
-            queryFn: (params) => {
-              // Set default values if params is undefined
-              const queryParams = params || { page: 1, size: 25 };
+        if (queryParams.search) {
+          searchParams.append("search", queryParams.search);
+        }
+        if (queryParams.status) {
+          searchParams.append("status", queryParams.status);
+        }
+        if (queryParams.requestType) {
+          searchParams.append("request_type", queryParams.requestType);
+        }
+        if (queryParams.systemName) {
+          searchParams.append("system_name", queryParams.systemName);
+        }
 
-              // Extract pagination parameters
-              const {
-                page = 1,
-                size = 25,
-                search,
-                status,
-                requestType,
-                systemName,
-              } = queryParams;
-
-              // Return paginated and filtered results
-              return {
-                data: paginateAndFilterResults(
-                  page,
-                  size,
-                  search,
-                  status,
-                  requestType,
-                  systemName,
-                ),
-              };
-            },
-          }),
+        return {
+          url: "plus/manual-fields",
+          params: searchParams,
+        };
+      },
       providesTags: () => [{ type: "External Manual Tasks" }],
     }),
 
     completeExternalTask: build.mutation<
-      TaskActionResponse,
-      CompleteTaskPayload
+      { manual_field_id: string; status: ManualFieldStatus },
+      {
+        privacy_request_id: string;
+        manual_field_id: string;
+        field_value?: string;
+        comment_text?: string;
+        attachment?: File;
+      }
     >({
-      // Use real API call in test environment, mock otherwise
-      ...(isTestEnvironment()
-        ? {
-            query: (payload) => ({
-              url: `manual-tasks/${payload.task_id}/complete`,
-              method: "POST",
-              body: payload,
-            }),
-          }
-        : {
-            queryFn: (payload) => ({
-              data: {
-                task_id: payload.task_id,
-                status: "completed" as TaskStatus,
-              },
-            }),
-          }),
+      query: (payload) => {
+        const {
+          privacy_request_id: privacyRequestId,
+          manual_field_id: manualFieldId,
+          field_value: fieldValue,
+          comment_text: commentText,
+          attachment,
+        } = payload;
+
+        const formData = new FormData();
+
+        // Append field_value if provided
+        if (fieldValue !== undefined && fieldValue !== null) {
+          formData.append("field_value", fieldValue);
+        }
+
+        // Append comment fields if provided
+        if (commentText) {
+          formData.append("comment_text", commentText);
+          formData.append("comment_type", CommentType.NOTE);
+        }
+
+        // Append attachment fields if provided
+        if (attachment) {
+          formData.append("attachment", attachment);
+          formData.append(
+            "attachment_type",
+            AttachmentType.INCLUDE_WITH_ACCESS_PACKAGE,
+          );
+        }
+
+        return {
+          url: `privacy-request/${privacyRequestId}/manual-field/${manualFieldId}/complete`,
+          method: "POST",
+          body: formData,
+        };
+      },
       invalidatesTags: [{ type: "External Manual Tasks" }],
     }),
 
-    skipExternalTask: build.mutation<TaskActionResponse, SkipTaskPayload>({
-      // Use real API call in test environment, mock otherwise
-      ...(isTestEnvironment()
-        ? {
-            query: (payload) => ({
-              url: `manual-tasks/${payload.task_id}/skip`,
-              method: "POST",
-              body: payload,
-            }),
-          }
-        : {
-            queryFn: (payload) => ({
-              data: {
-                task_id: payload.task_id,
-                status: "skipped" as TaskStatus,
-              },
-            }),
-          }),
+    skipExternalTask: build.mutation<
+      { manual_field_id: string; status: ManualFieldStatus },
+      {
+        privacy_request_id: string;
+        manual_field_id: string;
+        field_key: string;
+        skip_reason: string;
+      }
+    >({
+      query: (payload) => {
+        const {
+          privacy_request_id: privacyRequestId,
+          manual_field_id: manualFieldId,
+          field_key: fieldKey,
+          skip_reason: skipReason,
+        } = payload;
+        return {
+          url: `privacy-request/${privacyRequestId}/manual-field/${manualFieldId}/skip`,
+          method: "POST",
+          body: {
+            field_key: fieldKey,
+            skip_reason: skipReason,
+            comment_text: skipReason,
+            comment_type: CommentType.NOTE,
+          },
+        };
+      },
       invalidatesTags: [{ type: "External Manual Tasks" }],
     }),
 
-    getExternalTaskById: build.query<ManualTask, string>({
-      // Use real API call in test environment, mock otherwise
-      ...(isTestEnvironment()
-        ? {
-            query: (taskId) => `manual-tasks/${taskId}`,
-          }
-        : {
-            queryFn: (taskId) => {
-              const task = mockApiResponse.items.find(
-                (t) => t.task_id === taskId,
-              );
-              return task
-                ? { data: task }
-                : {
-                    error: {
-                      status: 404,
-                      data: { message: "Task not found" },
-                    },
-                  };
-            },
-          }),
+    getExternalTaskById: build.query<ManualFieldListItem, string>({
+      query: (taskId) => `plus/manual-fields/${taskId}`,
       providesTags: (_result, _error, taskId) => [
         { type: "External Manual Tasks", id: taskId },
       ],

@@ -21,16 +21,20 @@ import {
 } from "fidesui";
 import { useMemo, useState } from "react";
 
-import { useGetExternalTasksQuery } from "../external-manual-tasks.slice";
-// import { useExternalAppSelector } from "../hooks";
-import { ManualTask, RequestType, System, TaskStatus } from "../types";
+import {
+  ManualFieldListItem,
+  ManualFieldRequestType,
+  ManualFieldStatus,
+  ManualFieldSystem,
+  useGetExternalTasksQuery,
+} from "../external-manual-tasks.slice";
 import { ExternalTaskActionButtons } from "./ExternalTaskActionButtons";
 
 // Map task status to tag colors and labels - aligned with RequestStatusBadge colors
-const statusMap: Record<TaskStatus, { color: string; label: string }> = {
-  new: { color: "info", label: "New" },
-  completed: { color: "success", label: "Completed" },
-  skipped: { color: "marble", label: "Skipped" },
+const statusMap: Record<ManualFieldStatus, { color: string; label: string }> = {
+  [ManualFieldStatus.NEW]: { color: "info", label: "New" },
+  [ManualFieldStatus.COMPLETED]: { color: "success", label: "Completed" },
+  [ManualFieldStatus.SKIPPED]: { color: "marble", label: "Skipped" },
 };
 
 // Page sizes for external users (simplified)
@@ -39,7 +43,7 @@ const PAGE_SIZES = ["10", "25", "50"];
 // Extract column definitions for external users
 const getExternalColumns = (
   systemFilters: { text: string; value: string }[],
-): ColumnsType<ManualTask> => [
+): ColumnsType<ManualFieldListItem> => [
   {
     title: "Task name",
     dataIndex: "name",
@@ -59,7 +63,7 @@ const getExternalColumns = (
     dataIndex: "status",
     key: "status",
     width: 120,
-    render: (status: TaskStatus) => (
+    render: (status: ManualFieldStatus) => (
       <Tag
         color={statusMap[status].color}
         data-testid="external-task-status-tag"
@@ -68,9 +72,9 @@ const getExternalColumns = (
       </Tag>
     ),
     filters: [
-      { text: "New", value: "new" },
-      { text: "Completed", value: "completed" },
-      { text: "Skipped", value: "skipped" },
+      { text: "New", value: ManualFieldStatus.NEW },
+      { text: "Completed", value: ManualFieldStatus.COMPLETED },
+      { text: "Skipped", value: ManualFieldStatus.SKIPPED },
     ],
   },
   {
@@ -82,17 +86,17 @@ const getExternalColumns = (
   },
   {
     title: "Type",
-    dataIndex: ["privacy_request", "request_type"],
+    dataIndex: "request_type",
     key: "request_type",
     width: 150,
-    render: (type: RequestType) => {
+    render: (type: ManualFieldRequestType) => {
       // Capitalize the first letter for display
       const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1);
       return <Typography.Text>{capitalizedType}</Typography.Text>;
     },
     filters: [
-      { text: "Access", value: "access" },
-      { text: "Erasure", value: "erasure" },
+      { text: "Access", value: ManualFieldRequestType.ACCESS },
+      { text: "Erasure", value: ManualFieldRequestType.ERASURE },
     ],
   },
   {
@@ -100,7 +104,11 @@ const getExternalColumns = (
     dataIndex: ["privacy_request", "days_left"],
     key: "days_left",
     width: 120,
-    render: (daysLeft: number) => {
+    render: (daysLeft: number | null) => {
+      if (!daysLeft) {
+        return <Typography.Text>-</Typography.Text>;
+      }
+
       // Simple days left display for external users
       let color = "green";
       if (daysLeft <= 5) {
@@ -137,7 +145,9 @@ const getExternalColumns = (
     title: "Actions",
     key: "actions",
     width: 160,
-    render: (_, task: ManualTask) => <ExternalTaskActionButtons task={task} />,
+    render: (_, task: ManualFieldListItem) => (
+      <ExternalTaskActionButtons task={task} />
+    ),
   },
 ];
 
@@ -157,22 +167,22 @@ export const ExternalManualTasks = () => {
     size: pageSize,
     search: searchTerm,
     // Pass filter parameters to API
-    status: filters.status?.[0] as TaskStatus,
+    status: filters.status?.[0] as ManualFieldStatus,
     systemName: filters.systemName?.[0],
-    requestType: filters.requestType?.[0] as RequestType,
+    requestType: filters.requestType?.[0] as ManualFieldRequestType,
   });
 
   const {
     items: tasks,
     total: totalRows,
-    filterOptions,
+    filter_options: filterOptions,
   } = useMemo(
     () =>
       data || {
         items: [],
         total: 0,
         pages: 0,
-        filterOptions: { assigned_users: [], systems: [] },
+        filter_options: { assigned_users: [], systems: [] },
       },
     [data],
   );
@@ -180,7 +190,7 @@ export const ExternalManualTasks = () => {
   // Create filter options from API response
   const systemFilters = useMemo(
     () =>
-      filterOptions?.systems?.map((system: System) => ({
+      filterOptions?.systems?.map((system: ManualFieldSystem) => ({
         text: system.name,
         value: system.name,
       })) || [],
@@ -203,12 +213,22 @@ export const ExternalManualTasks = () => {
     }
 
     setFilters(newFilters);
-    setPageIndex(1); // Reset to first page when filters change
+    setPageIndex(1); // Reset to first page when filtering
   };
 
+  // Handle search input changes
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
     setPageIndex(1); // Reset to first page when searching
+  };
+
+  // Handle pagination changes
+  const handlePaginationChange = (page: number, size?: number) => {
+    setPageIndex(page);
+    if (size && size !== pageSize) {
+      setPageSize(size);
+      setPageIndex(1); // Reset to first page when changing page size
+    }
   };
 
   const columns = useMemo(
@@ -216,71 +236,74 @@ export const ExternalManualTasks = () => {
     [systemFilters],
   );
 
-  const showSpinner = (isLoading || isFetching) && pageIndex === 1;
-
-  // Error state
   if (error) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center">
-          <Typography.Text type="danger" data-testid="tasks-error-message">
-            Failed to load tasks. Please try again.
-          </Typography.Text>
-        </div>
+      <div
+        className="p-4 text-center text-red-600"
+        data-testid="tasks-error-message"
+      >
+        Failed to load tasks. Please try again later.
       </div>
     );
   }
 
-  return (
-    <div data-testid="external-tasks-container">
-      <Space direction="vertical" size={16} style={{ width: "100%" }}>
-        <Input
-          placeholder="Search tasks by name or description..."
-          value={searchTerm}
-          onChange={(e) => handleSearchChange(e.target.value)}
-          className="max-w-sm"
-          data-testid="external-tasks-search"
-        />
+  if (isLoading) {
+    return (
+      <div className="p-8 text-center" data-testid="external-tasks-loading">
+        <Typography.Text>Loading tasks...</Typography.Text>
+      </div>
+    );
+  }
 
-        <div className="overflow-x-auto">
-          <Table
-            columns={columns}
-            dataSource={tasks}
-            rowKey="task_id"
-            data-testid="external-tasks-table"
-            scroll={{ x: 1300 }}
-            pagination={{
-              current: pageIndex,
-              pageSize,
-              total: totalRows || 0,
-              showSizeChanger: true,
-              pageSizeOptions: PAGE_SIZES,
-              showTotal: (total, range) =>
-                `${range[0]}-${range[1]} of ${total} items`,
-              onChange: (page, size) => {
-                setPageIndex(page);
-                if (size !== pageSize) {
-                  setPageSize(size);
-                  setPageIndex(1); // Reset to first page when changing page size
-                }
-              },
-            }}
-            onChange={handleTableChange}
-            locale={{
-              emptyText: searchTerm ? (
-                <div data-testid="external-empty-state">
-                  No tasks match your search
-                </div>
-              ) : (
-                <div data-testid="external-empty-state">
-                  No manual tasks available
-                </div>
-              ),
-            }}
-            loading={showSpinner}
+  const showSpinner = isLoading || isFetching;
+
+  return (
+    <div className="space-y-4" data-testid="external-manual-tasks">
+      {/* Search Input */}
+      <div className="flex justify-between items-center">
+        <Space>
+          <Input.Search
+            placeholder="Search by name or description..."
+            value={searchTerm}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            style={{ width: 300 }}
+            data-testid="external-tasks-search"
+            allowClear
           />
-        </div>
-      </Space>
+        </Space>
+      </div>
+
+      {/* Tasks Table */}
+      <Table
+        columns={columns}
+        dataSource={tasks}
+        rowKey="manual_field_id"
+        pagination={{
+          current: pageIndex,
+          pageSize,
+          total: totalRows || 0,
+          showSizeChanger: true,
+          pageSizeOptions: PAGE_SIZES,
+          showTotal: (total, range) =>
+            `${range[0]}-${range[1]} of ${total} items`,
+          onChange: handlePaginationChange,
+        }}
+        onChange={handleTableChange}
+        locale={{
+          emptyText: searchTerm ? (
+            <div data-testid="external-search-empty">
+              No tasks match your search
+            </div>
+          ) : (
+            <div data-testid="external-empty-state">
+              No manual tasks available.
+            </div>
+          ),
+        }}
+        loading={showSpinner}
+        data-testid="external-tasks-table"
+        scroll={{ x: 1200 }} // Make table scrollable on mobile
+      />
     </div>
   );
 };

@@ -19,12 +19,15 @@ import {
   useDisclosure,
 } from "fidesui";
 
-import { ManualTask } from "../types";
+import {
+  ManualFieldListItem,
+  ManualFieldStatus,
+} from "../external-manual-tasks.slice";
 import { ExternalCompleteTaskModal } from "./ExternalCompleteTaskModal";
 import { ExternalSkipTaskModal } from "./ExternalSkipTaskModal";
 
 interface Props {
-  task: ManualTask;
+  task: ManualFieldListItem;
 }
 
 export const ExternalTaskActionButtons = ({ task }: Props) => {
@@ -40,7 +43,7 @@ export const ExternalTaskActionButtons = ({ task }: Props) => {
   } = useDisclosure();
 
   // Don't render anything for non-new tasks
-  if (task.status !== "new") {
+  if (task.status !== ManualFieldStatus.NEW) {
     return null;
   }
 

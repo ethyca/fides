@@ -16,9 +16,11 @@ import {
   selectExternalUser,
   selectIsExternalAuthenticated,
   setEmailToken,
+} from "~/features/external-manual-tasks/external-auth.slice";
+import {
   useRequestOtpMutation,
   useVerifyOtpMutation,
-} from "~/features/external-manual-tasks/external-auth.slice";
+} from "~/features/external-manual-tasks/external-auth-api.slice";
 import ExternalStoreProvider from "~/features/external-manual-tasks/ExternalStoreProvider";
 import {
   useExternalAppDispatch,

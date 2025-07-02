@@ -25,14 +25,16 @@ import {
 } from "fidesui";
 import { useState } from "react";
 
-import { useSkipExternalTaskMutation } from "../external-manual-tasks.slice";
-import { ManualTask } from "../types";
+import {
+  ManualFieldListItem,
+  useSkipExternalTaskMutation,
+} from "../external-manual-tasks.slice";
 import { ExternalTaskDetails } from "./ExternalTaskDetails";
 
 interface ExternalSkipTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
-  task: ManualTask;
+  task: ManualFieldListItem;
 }
 
 export const ExternalSkipTaskModal = ({
@@ -48,8 +50,10 @@ export const ExternalSkipTaskModal = ({
     try {
       setError(null);
       await skipTask({
-        task_id: task.task_id,
-        comment,
+        privacy_request_id: task.privacy_request.id,
+        manual_field_id: task.manual_field_id,
+        field_key: task.manual_field_id,
+        skip_reason: comment,
       }).unwrap();
 
       // Reset form

@@ -8,6 +8,7 @@
  * - External-specific reducers and APIs
  * - Same redux-persist strategy as admin-ui
  * - Isolated from main privacy-center store
+ * - Custom base API with external auth integration
  *
  * IMPORTANT: When updating admin-ui store.ts, review this store for sync!
  */
@@ -31,11 +32,11 @@ import {
 } from "redux-persist";
 import createWebStorage from "redux-persist/lib/storage/createWebStorage";
 
-import { baseApi } from "~/features/common/api.slice";
 import { configSlice } from "~/features/common/config.slice";
 import { settingsSlice } from "~/features/common/settings.slice";
 
 import { externalAuthSlice } from "./external-auth.slice";
+import { externalBaseApi } from "./external-base-api.slice";
 import { externalManualTasksReducer } from "./external-manual-tasks.slice";
 
 /**
@@ -60,11 +61,8 @@ const storage =
     ? createWebStorage("local")
     : createNoopStorage();
 
+// Define the external root state type first
 const reducer = {
-  // API reducers
-  [baseApi.reducerPath]: baseApi.reducer,
-
-  // Slice reducers
   [externalAuthSlice.name]: externalAuthSlice.reducer,
   [settingsSlice.name]: settingsSlice.reducer,
   [configSlice.name]: configSlice.reducer,
@@ -73,7 +71,15 @@ const reducer = {
 
 export type ExternalRootState = StateFromReducersMapObject<typeof reducer>;
 
-const allReducers = combineReducers(reducer);
+// External base API is now defined in external-base-api.slice.ts
+
+// Add the external base API to the reducer
+const reducerWithApi = {
+  ...reducer,
+  [externalBaseApi.reducerPath]: externalBaseApi.reducer,
+};
+
+const allReducers = combineReducers(reducerWithApi);
 const rootReducer = (
   state: ExternalRootState | undefined,
   action: AnyAction,
@@ -95,7 +101,7 @@ const persistConfig = {
     and restored which could leave you with phantom subscriptions from components that do not exist any more.
     (https://redux-toolkit.js.org/usage/usage-guide#use-with-redux-persist)
   */
-  blacklist: [baseApi.reducerPath],
+  blacklist: [externalBaseApi.reducerPath],
 };
 
 export const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -110,7 +116,7 @@ export const makeExternalStore = (
         serializableCheck: {
           ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
         },
-      }).concat(baseApi.middleware),
+      }).concat(externalBaseApi.middleware),
     devTools: true,
     preloadedState,
   });
