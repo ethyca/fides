@@ -67,13 +67,7 @@ class ManualTaskGraphTask(GraphTask):
         )
 
         if submitted_data is not None:
-            # Wrap data under 'manual_data' so that reference paths of form
-            # manual_data.<field_key> can be resolved downstream.
-            wrapped_row: Dict[str, Any] = {
-                **submitted_data,
-                "manual_data": submitted_data if submitted_data is not None else {},
-            }
-            result: List[Row] = [wrapped_row] if submitted_data else []
+            result: List[Row] = [submitted_data] if submitted_data else []
             self.request_task.access_data = result
 
             # Mark request task as complete and write execution log
