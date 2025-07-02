@@ -119,12 +119,12 @@ const HomePage: NextPage = () => {
 
   const content: any = [];
 
-  config.actions.forEach((action) => {
+  config.actions.forEach((action, index) => {
     content.push(
       <PrivacyCard
         key={action.title}
+        index={index}
         title={action.title}
-        policyKey={action.policy_key}
         iconPath={action.icon_path}
         description={action.description}
         onOpen={onPrivacyModalOpen}
