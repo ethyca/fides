@@ -596,7 +596,7 @@ describe("System management with Plus features", () => {
         cy.wait("@deleteSystemAssets");
       });
 
-      it.only("validates base URL for non-cookie assets", () => {
+      it("validates base URL for non-cookie assets", () => {
         cy.getByTestId("add-asset-btn").click();
         cy.getByTestId("add-modal-content").within(() => {
           cy.getByTestId("input-name").type("test_tag");
