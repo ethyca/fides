@@ -2537,16 +2537,15 @@ describe("Consent overlay", () => {
             [PRIVACY_NOTICE_KEY_2]: true,
             [PRIVACY_NOTICE_KEY_3]: true,
           });
-        cy.get("@FidesInitialized")
-          .should("have.been.calledTwice")
+        cy.get("@FidesConsentLoaded")
           .its("firstCall.args.0.detail.consent")
           .should("deep.equal", {
             data_sales: false,
             tracking: false,
             analytics: true,
           });
-        cy.get("@FidesInitialized")
-          .its("secondCall.args.0.detail.consent")
+        cy.get("@FidesReady")
+          .its("firstCall.args.0.detail.consent")
           .should("deep.equal", {
             [PRIVACY_NOTICE_KEY_1]: false,
             [PRIVACY_NOTICE_KEY_2]: true,
@@ -2593,16 +2592,15 @@ describe("Consent overlay", () => {
             [PRIVACY_NOTICE_KEY_2]: true,
             [PRIVACY_NOTICE_KEY_3]: true,
           });
-        cy.get("@FidesInitialized")
-          .should("have.been.calledTwice")
+        cy.get("@FidesConsentLoaded")
           .its("firstCall.args.0.detail.consent")
           .should("deep.equal", {
             data_sales: false,
             tracking: false,
             analytics: true,
           });
-        cy.get("@FidesInitialized")
-          .its("secondCall.args.0.detail.consent")
+        cy.get("@FidesReady")
+          .its("firstCall.args.0.detail.consent")
           .should("deep.equal", {
             [PRIVACY_NOTICE_KEY_1]: false,
             [PRIVACY_NOTICE_KEY_2]: true,
@@ -2648,8 +2646,8 @@ describe("Consent overlay", () => {
           tracking: false,
           analytics: true,
         });
-        cy.get("@FidesInitialized")
-          .should("have.been.calledTwice")
+        cy.get("@FidesConsentLoaded")
+          .should("have.been.calledOnce")
           .its("firstCall.args.0.detail.consent")
           .should("deep.equal", {
             data_sales: false,
@@ -2695,8 +2693,8 @@ describe("Consent overlay", () => {
           tracking: false,
           analytics: true,
         });
-        cy.get("@FidesInitialized")
-          .should("have.been.calledTwice")
+        cy.get("@FidesConsentLoaded")
+          .should("have.been.calledOnce")
           .its("firstCall.args.0.detail.consent")
           .should("deep.equal", {
             data_sales: false,
@@ -3748,6 +3746,73 @@ describe("Consent overlay", () => {
             [PRIVACY_NOTICE_KEY_2]: true,
             [PRIVACY_NOTICE_KEY_3]: false,
           });
+      });
+    });
+  });
+
+  describe("Legacy event support", () => {
+    beforeEach(() => {
+      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+    });
+
+    it("dispatches FidesInitialized at FidesConsentLoaded time when fides_legacy_event includes 'FidesInitialized'", () => {
+      // Set up a cookie so that FidesConsentLoaded will be dispatched
+      const originalCookie = {
+        identity: { fides_user_device_id: "test-user-device-id" },
+        fides_meta: {
+          version: "0.9.0",
+          createdAt: "2022-12-24T12:00:00.000Z",
+          updatedAt: "2022-12-25T12:00:00.000Z",
+        },
+        consent: {
+          [PRIVACY_NOTICE_KEY_1]: false,
+          [PRIVACY_NOTICE_KEY_2]: true,
+          [PRIVACY_NOTICE_KEY_3]: true,
+        },
+      };
+      cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(originalCookie));
+
+      // Enable legacy event support
+      stubConfig({
+        options: {
+          isOverlayEnabled: true,
+          fidesLegacyEvent: "FidesInitialized",
+        },
+      });
+
+      cy.waitUntilFidesInitialized().then(() => {
+        // Check that FidesInitialized was called twice (once for legacy, once for normal)
+        cy.get("@FidesInitialized").should("have.been.calledTwice");
+      });
+    });
+
+    it("does not dispatch FidesInitialized at FidesConsentLoaded time when fides_legacy_event is not set", () => {
+      // Set up a cookie so that FidesConsentLoaded will be dispatched
+      const originalCookie = {
+        identity: { fides_user_device_id: "test-user-device-id" },
+        fides_meta: {
+          version: "0.9.0",
+          createdAt: "2022-12-24T12:00:00.000Z",
+          updatedAt: "2022-12-25T12:00:00.000Z",
+        },
+        consent: {
+          [PRIVACY_NOTICE_KEY_1]: false,
+          [PRIVACY_NOTICE_KEY_2]: true,
+          [PRIVACY_NOTICE_KEY_3]: true,
+        },
+      };
+      cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(originalCookie));
+
+      // Do not enable legacy event support
+      stubConfig({
+        options: {
+          isOverlayEnabled: true,
+        },
+      });
+
+      cy.waitUntilFidesInitialized().then(() => {
+        // Check that FidesInitialized was called only once (no legacy event)
+        cy.get("@FidesInitialized").should("have.been.calledOnce");
       });
     });
   });
