@@ -91,38 +91,47 @@ class ManualTaskGraphTask(GraphTask):
         privacy_request: PrivacyRequest,
         allowed_config_type: "ManualTaskConfigurationType",
     ) -> None:
-        """Create ManualTaskInstances for configs matching ``allowed_config_type`` if they don't exist."""
+        """Create ManualTaskInstances for configs matching `allowed_config_type` if they don't exist."""
 
         for manual_task in manual_tasks:
-            # Check each active config for instances
+            # ------------------------------------------------------------------
+            # Short-circuit: if instances already exist for this task & entity
+            # (no matter what config version they were created for) we should reuse
+            # them instead of creating a brand-new one that would result in
+            # duplicates when configurations are versioned after the privacy
+            # request has started.
+            # ------------------------------------------------------------------
+            existing_task_instance = (
+                db.query(ManualTaskInstance)
+                .filter(
+                    ManualTaskInstance.task_id == manual_task.id,
+                    ManualTaskInstance.entity_id == privacy_request.id,
+                    ManualTaskInstance.entity_type
+                    == ManualTaskEntityType.privacy_request,
+                )
+                .first()
+            )
+            if existing_task_instance:
+                # An instance already exists for this privacy request – no need
+                # to create another one tied to a newer config version.
+                continue
+
+            # Check each active config for instances (now we know none exist yet)
             for config in manual_task.configs:
                 if not config.is_current or config.config_type != allowed_config_type:
                     # Skip configs that are not current or not relevant for this request type
                     continue
 
-                existing_instance = (
-                    db.query(ManualTaskInstance)
-                    .filter(
-                        ManualTaskInstance.task_id == manual_task.id,
-                        ManualTaskInstance.config_id == config.id,
-                        ManualTaskInstance.entity_id == privacy_request.id,
-                        ManualTaskInstance.entity_type
-                        == ManualTaskEntityType.privacy_request,
-                    )
-                    .first()
+                ManualTaskInstance.create(
+                    db=db,
+                    data={
+                        "task_id": manual_task.id,
+                        "config_id": config.id,
+                        "entity_id": privacy_request.id,
+                        "entity_type": ManualTaskEntityType.privacy_request.value,
+                        "status": StatusType.pending.value,
+                    },
                 )
-
-                if not existing_instance:
-                    ManualTaskInstance.create(
-                        db=db,
-                        data={
-                            "task_id": manual_task.id,
-                            "config_id": config.id,
-                            "entity_id": privacy_request.id,
-                            "entity_type": ManualTaskEntityType.privacy_request.value,
-                            "status": StatusType.pending.value,
-                        },
-                    )
 
     # pylint: disable=too-many-branches,too-many-nested-blocks
     def _get_submitted_data(
@@ -148,56 +157,44 @@ class ManualTaskGraphTask(GraphTask):
             return f"{size:.1f} PB"
 
         for manual_task in manual_tasks:
-            for config in manual_task.configs:
-                if not config.is_current or config.config_type != allowed_config_type:
+
+            candidate_instances: list[ManualTaskInstance] = (
+                db.query(ManualTaskInstance)
+                .filter(
+                    ManualTaskInstance.task_id == manual_task.id,
+                    ManualTaskInstance.entity_id == privacy_request.id,
+                    ManualTaskInstance.entity_type
+                    == ManualTaskEntityType.privacy_request,
+                )
+                .all()
+            )
+
+            if not candidate_instances:
+                return None  # No instance yet for this manual task
+
+            for inst in candidate_instances:
+                # Skip instances tied to other request types
+                if not inst.config or inst.config.config_type != allowed_config_type:
                     continue
 
-                instance = (
-                    db.query(ManualTaskInstance)
-                    .filter(
-                        ManualTaskInstance.task_id == manual_task.id,
-                        ManualTaskInstance.config_id == config.id,
-                        ManualTaskInstance.entity_id == privacy_request.id,
-                        ManualTaskInstance.entity_type
-                        == ManualTaskEntityType.privacy_request,
-                    )
-                    .first()
-                )
+                all_fields = inst.config.field_definitions or []
 
-                if not instance:
-                    return None
+                # Every field must have a submission
+                if not all(inst.get_submission_for_field(f.id) for f in all_fields):
+                    return None  # At least one instance still incomplete
 
-                # Check if instance has submissions for ALL fields (not just required)
-                all_fields = config.field_definitions or []
-                submissions = instance.submissions
+                # Ensure status set
+                if inst.status != StatusType.completed:
+                    inst.status = StatusType.completed
+                    inst.save(db)
 
-                if not submissions:
-                    return None
-
-                # Check if we have submissions for ALL fields (completed or skipped)
-                submitted_field_ids = {
-                    submission.field_id for submission in submissions
-                }
-                all_field_ids = {field.id for field in all_fields}
-
-                missing_field_ids = all_field_ids - submitted_field_ids
-                if missing_field_ids:
-                    return None
-
-                # Update instance status to completed if not already
-                if instance.status != StatusType.completed:
-                    instance.status = StatusType.completed
-                    instance.save(db)
-
-                # Aggregate submission data
-                for submission in submissions:
+                # Aggregate submission data from this instance
+                for submission in inst.submissions:
                     if not submission.field or not submission.field.field_key:
                         continue
 
                     field_key = submission.field.field_key
 
-                    # Ensure `submission.data` is a dictionary before accessing keys to
-                    # satisfy static type checking. Skip this submission if not.
                     if not isinstance(submission.data, dict):
                         continue
 
@@ -206,7 +203,6 @@ class ManualTaskGraphTask(GraphTask):
                     field_type = data_dict.get("field_type")
 
                     if field_type == ManualTaskFieldType.attachment.value:
-                        # Build mapping of filenames to url/size for inline display
                         attachment_map: Dict[str, Dict[str, Any]] = {}
                         for attachment in submission.attachments or []:
                             if (
@@ -217,28 +213,20 @@ class ManualTaskGraphTask(GraphTask):
                                     size, url = attachment.retrieve_attachment()
                                     attachment_map[attachment.file_name] = {
                                         "url": str(url) if url else None,
-                                        "size": (
-                                            _format_size(size) if size else "Unknown"
-                                        ),
+                                        "size": _format_size(size) if size else "Unknown",
                                     }
-                                except Exception as e:  # pragma: no cover
+                                except Exception as exc:  # pylint: disable=broad-exception-caught
                                     logger.warning(
                                         "Error retrieving attachment {}: {}",
                                         attachment.file_name,
-                                        str(e),
+                                        str(exc),
                                     )
 
-                        if attachment_map:
-                            aggregated_data[field_key] = attachment_map
-                        else:
-                            aggregated_data[field_key] = None
-
+                        aggregated_data[field_key] = attachment_map or None
                     else:
-                        # Unwrap to the raw value for text/checkbox, etc.
                         aggregated_data[field_key] = data_dict.get("value")
 
-        result = aggregated_data if aggregated_data else None
-        return result
+        return aggregated_data if aggregated_data else None
 
     def dry_run_task(self) -> int:
         """Return estimated row count for dry run - manual tasks don't have predictable counts"""
