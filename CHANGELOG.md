@@ -40,6 +40,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed an accessibility issue where tooltips could not be triggered by keyboard focus. [#6276](https://github.com/ethyca/fides/pull/6276)
 - Fixed accessibility issues with text contrast and interactive Tags in Admin UI. [#6278](https://github.com/ethyca/fides/pull/6278)
 - Improved FidesJS banner dialog accessibility by providing proper ARIA roles, states, and regions. [#6291](https://github.com/ethyca/fides/pull/6291)
+- Fixed an issue in FidesJS where "IAB TCF" badges were misaligned when translation changed from English. [#6294](https://github.com/ethyca/fides/pull/6294)
 - Appropriately expose Shopify interface docs [#6284](https://github.com/ethyca/fides/pull/6284)
 
 ## [2.64.2](https://github.com/ethyca/fides/compare/2.64.1...2.64.2)
