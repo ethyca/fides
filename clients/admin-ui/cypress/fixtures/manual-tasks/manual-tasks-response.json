@@ -94,7 +94,7 @@
       "manual_field_id": "task_004",
       "name": "Export Analytics Data",
       "description": "Extract user analytics data from Google Analytics",
-      "input_type": "string",
+      "input_type": "text",
       "request_type": "access",
       "status": "new",
       "assigned_users": [
@@ -155,7 +155,7 @@
   "page": 1,
   "size": 25,
   "pages": 1,
-  "filterOptions": {
+  "filter_options": {
     "assigned_users": [
       {
         "id": "fid_dcf26c27-b992-43e0-9178-2b577720e0c6",
