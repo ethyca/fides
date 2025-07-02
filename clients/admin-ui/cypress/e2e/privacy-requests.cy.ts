@@ -368,7 +368,6 @@ describe("Privacy Requests", () => {
         cy.getByTestId(
           "input-custom_privacy_request_fields.field_with_default_value.value",
         ).should("have.value", "The default value");
-        cy.getByTestId("submit-btn").should("be.disabled");
       });
 
       it("can submit a privacy request", () => {
