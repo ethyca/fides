@@ -80,7 +80,7 @@ describe("automaticallyApplyPreferences", () => {
     fidesDisabledNotices: null,
     fidesConsentNonApplicableFlagMode: null,
     fidesConsentFlagType: null,
-    fidesLegacyEvent: null,
+    fidesInitializedEventMode: "once",
   };
 
   const mockFidesGlobal = (override?: Partial<FidesGlobal>) => {

@@ -157,9 +157,13 @@ export interface FidesInitOptions {
   fidesConsentFlagType: ConsentFlagType | null;
 
   /**
-   * A comma separated string of deprecated event names that should be dispatched for legacy support.
+   * Controls when the deprecated FidesInitialized event should be dispatched.
+   * "multiple" = fires alongside both FidesReady and FidesConsentLoaded events
+   * "once" = fires alongside FidesReady only
+   * "disable" = never fires
+   * Defaults to "once".
    */
-  fidesLegacyEvent: string | null;
+  fidesInitializedEventMode: "multiple" | "once" | "disable";
 }
 
 /**
@@ -803,7 +807,7 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesDisabledNotices"
   | "fidesConsentNonApplicableFlagMode"
   | "fidesConsentFlagType"
-  | "fidesLegacyEvent"
+  | "fidesInitializedEventMode"
 >;
 
 export type FidesExperienceTranslationOverrides = {

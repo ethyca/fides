@@ -309,10 +309,14 @@ Defaults to `undefined`.
 
 ***
 
-### fides\_legacy\_event
+### fides\_initialized\_event\_mode
 
-> **fides\_legacy\_event**: `string`
+> **fides\_initialized\_event\_mode**: `"multiple"` \| `"once"` \| `"disable"`
 
-A comma separated string of deprecated event names that should be dispatched for legacy support.
+Controls when the deprecated FidesInitialized event should be dispatched.
 
-Defaults to `undefined`.
+- "multiple" = fires alongside both FidesReady and FidesConsentLoaded events
+- "once" = fires alongside FidesReady only
+- "disable" = never fires
+
+Defaults to `"once"`.

@@ -38,9 +38,11 @@ current user's consent preferences - either previously saved or applicable
 defaults - have been set on the `Fides` global object.
 This event will always be dispatched, even if no previous consent was found.
 
-- `FidesInitialized`: This event is dispatched at the same time as `FidesReady`
-for backwards compatibility. For new projects, we strongly encourage using
-`FidesReady` instead.
+- `FidesInitialized`: This event is dispatched based on the `fidesInitializedEventMode` setting:
+  - "once" (default): fires alongside `FidesReady` only
+  - "multiple": fires alongside both `FidesReady` and `FidesConsentLoaded` events
+  - "disable": never fires
+For new projects, we strongly encourage using `FidesReady` and `FidesConsentLoaded` instead.
 
 - `FidesUpdating`: Dispatched when a user action (e.g. accepting all, saving
 changes, applying GPC) has started updating the user's consent preferences.

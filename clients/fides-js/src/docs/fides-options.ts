@@ -276,9 +276,13 @@ export interface FidesOptions {
   fides_disabled_notices: string;
 
   /**
-   * A comma separated string of deprecated event names that should be dispatched for legacy support.
+   * Controls when the deprecated FidesInitialized event should be dispatched.
    *
-   * Defaults to `undefined`.
+   * - "multiple" = fires alongside both FidesReady and FidesConsentLoaded events
+   * - "once" = fires alongside FidesReady only
+   * - "disable" = never fires
+   *
+   * Defaults to `"once"`.
    */
-  fides_legacy_event: string;
+  fides_initialized_event_mode: "multiple" | "once" | "disable";
 }
