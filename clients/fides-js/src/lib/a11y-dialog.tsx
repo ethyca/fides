@@ -4,31 +4,46 @@
  */
 
 import A11yDialog from "a11y-dialog";
+import { RefCallback } from "preact";
+import { HTMLAttributes } from "preact/compat";
 import { useCallback, useEffect, useState } from "preact/hooks";
 
 const useA11yDialogInstance = () => {
   const [instance, setInstance] = useState<A11yDialog | null>(null);
-  const container = useCallback((node: HTMLElement) => {
-    if (node !== null) {
-      const dialog = new A11yDialog(node);
-      dialog
-        .on("show", () => {
-          document.documentElement.style.overflowY = "hidden";
-        })
-        .on("hide", () => {
-          document.documentElement.style.overflowY = "";
-        });
-      setInstance(dialog);
-    }
-  }, []);
+  const container: RefCallback<HTMLDivElement | null> = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (node !== null) {
+        const dialog = new A11yDialog(node);
+        setInstance(dialog);
+      }
+    },
+    [],
+  );
   return { instance, container };
 };
+
+export interface A11yDialogProperties {
+  instance: A11yDialog | null;
+  attributes: {
+    container: Partial<HTMLAttributes<HTMLDivElement>>;
+    dialog: Partial<HTMLAttributes<HTMLDivElement>>;
+    closeButton: Partial<HTMLAttributes<HTMLButtonElement>> & {
+      onClick: () => void;
+    };
+    title: Partial<HTMLAttributes<HTMLHeadingElement>>;
+  };
+}
 
 interface Props {
   id: string;
   onClose?: () => void;
+  ariaHidden?: boolean;
 }
-export const useA11yDialog = ({ id, onClose }: Props) => {
+export const useA11yDialog = ({
+  id,
+  onClose,
+  ariaHidden = true,
+}: Props): A11yDialogProperties => {
   const { instance, container: ref } = useA11yDialogInstance();
   const titleId = `${id}-title`;
 
@@ -58,9 +73,7 @@ export const useA11yDialog = ({ id, onClose }: Props) => {
         id,
         ref,
         role: "alertdialog",
-        tabIndex: -1,
-        "aria-modal": true,
-        "aria-hidden": true,
+        "aria-hidden": ariaHidden,
         "aria-labelledby": titleId,
       },
       dialog: { role: "document" } as const,
@@ -70,4 +83,4 @@ export const useA11yDialog = ({ id, onClose }: Props) => {
   };
 };
 
-export type Attributes = ReturnType<typeof useA11yDialog>["attributes"];
+export type A11yDialogAttributes = A11yDialogProperties["attributes"];

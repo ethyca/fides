@@ -4,7 +4,7 @@ import "./fides.css";
 import { FunctionComponent, h, VNode } from "preact";
 import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 
-import { useA11yDialog } from "../lib/a11y-dialog";
+import { A11yDialogAttributes, useA11yDialog } from "../lib/a11y-dialog";
 import { FIDES_OVERLAY_WRAPPER } from "../lib/consent-constants";
 import {
   FidesCookie,
@@ -22,6 +22,7 @@ import ConsentContent from "./ConsentContent";
 import ConsentModal from "./ConsentModal";
 
 interface RenderBannerProps {
+  attributes: A11yDialogAttributes;
   isOpen: boolean;
   isEmbedded: boolean;
   onClose: () => void;
@@ -119,6 +120,26 @@ const Overlay: FunctionComponent<Props> = ({
         dispatchCloseEvent({ saved: false });
       },
     });
+
+  useEffect(() => {
+    if (modalDialogInstance) {
+      modalDialogInstance
+        .on("show", () => {
+          document.documentElement.style.overflowY = "hidden";
+        })
+        .on("hide", () => {
+          document.documentElement.style.overflowY = "";
+        });
+    }
+  }, [modalDialogInstance]);
+
+  const { attributes: bannerDialogAttributes } = useA11yDialog({
+    id: "fides-banner",
+    ariaHidden: !bannerIsOpen && !options.fidesEmbed,
+    onClose: () => {
+      setBannerIsOpen(false);
+    },
+  });
 
   const handleOpenModal = useCallback(
     (origin = FidesEventOrigin.FIDES) => {
@@ -255,6 +276,7 @@ const Overlay: FunctionComponent<Props> = ({
       )}
       {!disableBanner &&
         renderBanner({
+          attributes: bannerDialogAttributes,
           isOpen: bannerIsOpen,
           isEmbedded: options.fidesEmbed,
           onClose: () => {
