@@ -7,7 +7,6 @@ import {
   useState,
 } from "preact/hooks";
 
-import { FIDES_OVERLAY_WRAPPER } from "../lib/consent-constants";
 import { FidesInitOptions } from "../lib/consent-types";
 import {
   DEFAULT_LOCALE,
