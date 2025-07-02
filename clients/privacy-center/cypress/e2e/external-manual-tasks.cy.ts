@@ -399,7 +399,7 @@ describe("External Manual Tasks", () => {
     });
 
     it("should open skip modal from dropdown and require comment", () => {
-      cy.get('[data-testid="external-tasks-table"] tbody tr')
+      cy.get("table tbody tr[data-row-key='pri_ext_001-task_ext_001']")
         .first()
         .within(() => {
           cy.get('[data-testid="task-actions-dropdown"]').click();
@@ -441,22 +441,25 @@ describe("External Manual Tasks", () => {
       });
 
       cy.wait("@skipExternalTask").then((interception) => {
-        expect(interception.request.headers).to.have.property("content-type");
         expect(interception.request.headers["content-type"]).to.include(
-          "multipart/form-data",
+          "application/json",
         );
-        expect(interception.request.body).to.exist;
+        expect(interception.request.body.skip_reason).to.equal(
+          "Customer withdrew request",
+        );
       });
 
       cy.get('[data-testid="skip-task-modal"]').should("not.exist");
     });
 
     it("should handle modal cancellation", () => {
-      cy.get('[data-testid="external-tasks-table"] tbody tr')
-        .first()
-        .within(() => {
-          cy.get('[data-testid="task-actions-dropdown"]').click();
-        });
+      cy.get("table tbody tr[data-row-key='pri_ext_001-task_ext_001']").within(
+        () => {
+          cy.get('[data-testid="task-actions-dropdown"]').click({
+            force: true,
+          });
+        },
+      );
 
       cy.get(".ant-dropdown-menu-item").contains("Skip task").click();
 
@@ -471,7 +474,7 @@ describe("External Manual Tasks", () => {
       cy.get('[data-testid="skip-task-modal"]').should("not.exist");
 
       // Reopen - field should be reset
-      cy.get('[data-testid="external-tasks-table"] tbody tr')
+      cy.get("table tbody tr[data-row-key='pri_ext_001-task_ext_001']")
         .first()
         .within(() => {
           cy.get('[data-testid="task-actions-dropdown"]').click();
