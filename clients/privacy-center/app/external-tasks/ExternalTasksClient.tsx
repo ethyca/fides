@@ -1,5 +1,6 @@
 "use client";
 
+import { AntMessage as message } from "fidesui";
 import React, { useEffect } from "react";
 
 import { useConfig } from "~/features/common/config.slice";
@@ -84,7 +85,7 @@ const ExternalTasksClientInner = ({
   // Centralized OTP request handler
   const handleRequestOtp = async (email: string) => {
     if (!emailToken) {
-      console.error("Email token not available");
+      message.error("Email token not available");
       return;
     }
 
@@ -98,7 +99,7 @@ const ExternalTasksClientInner = ({
       setEnteredEmail(email);
       setAuthStep("verify-otp");
     } catch (err) {
-      console.error("Failed to request OTP:", err);
+      message.error("Failed to request OTP. Please try again.");
       // Error will be shown via Redux state
     }
   };
@@ -107,7 +108,7 @@ const ExternalTasksClientInner = ({
   const handleVerifyOtp = async (otpCode: string) => {
     // Use the same email that was entered in the request form
     if (!enteredEmail) {
-      console.error("No email address available for verification");
+      message.error("No email address available for verification");
       return;
     }
 
@@ -122,7 +123,7 @@ const ExternalTasksClientInner = ({
 
       setAuthStep("authenticated");
     } catch (err) {
-      console.error("Failed to verify OTP:", err);
+      message.error("Failed to verify OTP. Please try again.");
       // Error will be shown via Redux state
     }
   };

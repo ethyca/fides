@@ -3,6 +3,7 @@ import {
   AntCheckbox as Checkbox,
   AntDivider as Divider,
   AntInput as Input,
+  AntMessage as message,
   AntSpace as Space,
   AntTypography as Typography,
   AntUpload as Upload,
@@ -65,7 +66,7 @@ export const CompleteTaskModal = ({
       setFileList([]);
       onClose();
     } catch (error) {
-      console.error("Failed to complete task:", error);
+      message.error("Failed to complete task. Please try again.");
     }
   };
 

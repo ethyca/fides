@@ -2,6 +2,7 @@ import {
   AntButton as Button,
   AntDivider as Divider,
   AntInput as Input,
+  AntMessage as message,
   AntSpace as Space,
   AntTypography as Typography,
   Modal,
@@ -45,7 +46,7 @@ export const SkipTaskModal = ({
       setComment("");
       onClose();
     } catch (error) {
-      console.error("Failed to skip task:", error);
+      message.error("Failed to skip task. Please try again.");
     }
   };
 
