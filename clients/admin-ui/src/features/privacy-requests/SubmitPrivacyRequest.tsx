@@ -157,11 +157,11 @@ const SubmitPrivacyRequest = () => {
               key: "create-request-link",
               icon: <LinkIcon />,
               onClick: handleCreateLinkOpen,
+              disabled: !hasPrivacyCenterUrl,
             },
           ],
         }}
         icon={<ChevronDownIcon />}
-        disabled={!hasPrivacyCenterUrl}
       >
         Create request
       </Dropdown.Button>
