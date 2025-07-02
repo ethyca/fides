@@ -1,10 +1,11 @@
 {
   "items": [
     {
-      "task_id": "task_ext_001",
+      "manual_field_id": "task_ext_001",
       "name": "Export Customer Data from Salesforce",
       "description": "Export all customer data from Salesforce for privacy request",
       "input_type": "file",
+      "request_type": "access",
       "status": "new",
       "assigned_users": [
         {
@@ -28,10 +29,11 @@
       }
     },
     {
-      "task_id": "task_ext_002",
+      "manual_field_id": "task_ext_002",
       "name": "Export Analytics Data",
       "description": "Extract user analytics data for privacy request",
-      "input_type": "string",
+      "input_type": "text",
+      "request_type": "access",
       "status": "new",
       "assigned_users": [
         {
@@ -56,10 +58,11 @@
       }
     },
     {
-      "task_id": "task_ext_003",
+      "manual_field_id": "task_ext_003",
       "name": "Delete User Profile from MongoDB",
       "description": "Remove user profile and associated data",
       "input_type": "checkbox",
+      "request_type": "erasure",
       "status": "new",
       "assigned_users": [
         {
@@ -88,7 +91,7 @@
   "page": 1,
   "size": 25,
   "pages": 1,
-  "filterOptions": {
+  "filter_options": {
     "systems": [
       { "id": "sys_sf_001", "name": "Salesforce" },
       { "id": "sys_ga_001", "name": "Google Analytics" },

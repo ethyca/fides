@@ -1,10 +1,11 @@
 {
   "items": [
     {
-      "task_id": "task_new_001",
+      "manual_field_id": "task_new_001",
       "name": "New Task - Export Data",
       "description": "This is a new task that should have actions",
-      "input_type": "string",
+      "input_type": "text",
+      "request_type": "access",
       "status": "new",
       "assigned_users": [
         {
@@ -28,10 +29,11 @@
       }
     },
     {
-      "task_id": "task_completed_001",
+      "manual_field_id": "task_completed_001",
       "name": "Completed Task - Data Exported",
       "description": "This task is already completed",
-      "input_type": "string",
+      "input_type": "text",
+      "request_type": "access",
       "status": "completed",
       "assigned_users": [
         {
@@ -55,10 +57,11 @@
       }
     },
     {
-      "task_id": "task_skipped_001",
+      "manual_field_id": "task_skipped_001",
       "name": "Skipped Task - Not Needed",
       "description": "This task was skipped",
       "input_type": "checkbox",
+      "request_type": "erasure",
       "status": "skipped",
       "assigned_users": [
         {
@@ -86,7 +89,7 @@
   "page": 1,
   "size": 25,
   "pages": 1,
-  "filterOptions": {
+  "filter_options": {
     "systems": [
       { "id": "sys_new_001", "name": "Test System" },
       { "id": "sys_completed_001", "name": "Completed System" },

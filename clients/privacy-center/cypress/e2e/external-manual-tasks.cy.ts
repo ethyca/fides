@@ -29,27 +29,31 @@ describe("External Manual Tasks", () => {
     }).as("postVerifyOtp");
 
     // Mock external tasks API endpoints
-    cy.intercept("GET", `${API_URL}/manual-tasks*`, {
+    cy.intercept("GET", `${API_URL}/plus/manual-fields*`, {
       fixture: "external-manual-tasks/user-tasks.json",
     }).as("getExternalTasks");
 
-    cy.intercept("POST", `${API_URL}/manual-tasks/*/complete`, {
-      fixture: "external-manual-tasks/complete-task-success.json",
-    }).as("completeExternalTask");
+    cy.intercept(
+      "POST",
+      `${API_URL}/privacy-request/*/manual-field/*/complete`,
+      {
+        fixture: "external-manual-tasks/complete-task-success.json",
+      },
+    ).as("completeExternalTask");
 
-    cy.intercept("POST", `${API_URL}/manual-tasks/*/skip`, {
+    cy.intercept("POST", `${API_URL}/privacy-request/*/manual-field/*/skip`, {
       fixture: "external-manual-tasks/skip-task-success.json",
     }).as("skipExternalTask");
 
     // Mock mixed status tasks for action visibility tests
-    cy.intercept("GET", `${API_URL}/manual-tasks*status*`, {
+    cy.intercept("GET", `${API_URL}/plus/manual-fields*status*`, {
       fixture: "external-manual-tasks/mixed-status-tasks.json",
     }).as("getMixedStatusTasks");
   });
 
   describe("Authentication Flow", () => {
     it("should complete full OTP authentication and show tasks", () => {
-      cy.visit("/manual-tasks-external?token=test_token_123");
+      cy.visit("/external-tasks?access_token=test_token_123");
 
       // Step 1: Should show OTP request form
       cy.get('[data-testid="external-auth-container"]').should("be.visible");
@@ -95,7 +99,7 @@ describe("External Manual Tasks", () => {
 
     it("should handle logout correctly", () => {
       // Complete authentication first
-      cy.visit("/manual-tasks-external?token=test_token_123");
+      cy.visit("/external-tasks?access_token=test_token_123");
       cy.get('[data-testid="otp-request-email-input"]').type(
         "user@example.com",
       );
@@ -113,13 +117,13 @@ describe("External Manual Tasks", () => {
       cy.get('[data-testid="external-logout-button"]').click();
 
       // Wait for logout to process
-      cy.url().should("include", "/manual-tasks-external");
+      cy.url().should("include", "/external-tasks");
       cy.get('[data-testid="external-auth-container"]').should("be.visible");
       cy.get('[data-testid="otp-request-form"]').should("be.visible");
     });
 
     it("should validate email input before allowing OTP request", () => {
-      cy.visit("/manual-tasks-external?token=test_token_123");
+      cy.visit("/external-tasks?access_token=test_token_123");
 
       // Button should be disabled initially (no email)
       cy.get('[data-testid="otp-request-button"]').should("be.disabled");
@@ -151,7 +155,7 @@ describe("External Manual Tasks", () => {
   describe("Task Management", () => {
     beforeEach(() => {
       // Helper to authenticate first
-      cy.visit("/manual-tasks-external?token=test_token_123");
+      cy.visit("/external-tasks?access_token=test_token_123");
       cy.get('[data-testid="otp-request-email-input"]').type(
         "user@example.com",
       );
@@ -217,7 +221,7 @@ describe("External Manual Tasks", () => {
 
     it("should show correct actions based on task status", () => {
       // Load mixed status tasks to test action visibility
-      cy.intercept("GET", `${API_URL}/manual-tasks*`, {
+      cy.intercept("GET", `${API_URL}/plus/manual-fields*`, {
         fixture: "external-manual-tasks/mixed-status-tasks.json",
       }).as("getMixedTasks");
       cy.reload();
@@ -255,7 +259,7 @@ describe("External Manual Tasks", () => {
   describe("Complete Task Modal", () => {
     beforeEach(() => {
       // Authenticate and get to tasks
-      cy.visit("/manual-tasks-external?token=test_token_123");
+      cy.visit("/external-tasks?access_token=test_token_123");
       cy.get('[data-testid="otp-request-email-input"]').type(
         "user@example.com",
       );
@@ -400,7 +404,7 @@ describe("External Manual Tasks", () => {
   describe("Skip Task Modal", () => {
     beforeEach(() => {
       // Authenticate and get to tasks
-      cy.visit("/manual-tasks-external?token=test_token_123");
+      cy.visit("/external-tasks?access_token=test_token_123");
       cy.get('[data-testid="otp-request-button"]').click();
       cy.wait("@postRequestOtp");
       cy.get('[data-testid="otp-input"]').type("123456");
