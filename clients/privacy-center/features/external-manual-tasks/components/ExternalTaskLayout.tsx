@@ -14,7 +14,9 @@ import {
 import palette from "fidesui/src/palette/palette.module.scss";
 import Image from "next/image";
 
+import BrandLink from "~/components/BrandLink";
 import { useConfig } from "~/features/common/config.slice";
+import { useSettings } from "~/features/common/settings.slice";
 
 import {
   logout,
@@ -29,6 +31,7 @@ export const ExternalTaskLayout = () => {
   const user = useExternalAppSelector(selectExternalUser);
   const isAuthenticated = useExternalAppSelector(selectIsExternalAuthenticated);
   const config = useConfig();
+  const { SHOW_BRAND_LINK } = useSettings();
 
   // If not authenticated, don't render anything (parent should handle this)
   if (!isAuthenticated || !user) {
@@ -50,6 +53,7 @@ export const ExternalTaskLayout = () => {
         minHeight: "100vh",
         backgroundColor: palette.FIDESUI_NEUTRAL_75,
         padding: "32px 16px",
+        position: "relative",
       }}
       data-testid="external-task-layout"
     >
@@ -103,6 +107,16 @@ export const ExternalTaskLayout = () => {
           </Card>
         </Flex>
       </div>
+
+      {/* Brand Link - positioned in bottom right if enabled */}
+      {SHOW_BRAND_LINK && (
+        <BrandLink
+          position="fixed"
+          right={6}
+          bottom={6}
+          data-testid="external-brand-link"
+        />
+      )}
     </div>
   );
 };
