@@ -26,7 +26,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Expose shopify() interface on Fides within docs [#6269](https://github.com/ethyca/fides/pull/6269)
 - Added a new time-based partitioning spec to simplify BigQuery partition definitions [#6182](https://github.com/ethyca/fides/pull/6182)
 - Added manual tasks to DSR execution (Fidesplus) [#6261](https://github.com/ethyca/fides/pull/6261)
-- Added a `extract_for_execution_log` postprocessor for SaaS integrations [#6201](https://github.com/ethyca/fides/pull/6201)
+- Added an `extract_for_execution_log` postprocessor for SaaS integrations [#6201](https://github.com/ethyca/fides/pull/6201)
 
 ### Changed
 - Update FastAPI to 0.115.2 for starlette 0.40.0 [#6244](https://github.com/ethyca/fides/pull/6244)
