@@ -109,6 +109,7 @@ def retry(
                         method_name,
                         self.execution_node.address,
                     )
+                    # Log the awaiting processing status and exit without retrying.
                     self.log_awaiting_processing(action_type, ex)
                     # Request Task put in "awaiting_processing" status and exited, awaiting Async Callback
                     return None

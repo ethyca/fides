@@ -24,6 +24,7 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
     onClick,
     isError,
     isSkipped,
+    isAwaitingInput,
     description,
   } = item;
 
@@ -42,6 +43,7 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
           <span
             className={classNames(styles.title, {
               [styles["title--error"]]: isError,
+              [styles["title--awaiting-input"]]: isAwaitingInput,
             })}
             data-testid="activity-timeline-title"
           >
@@ -62,7 +64,7 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
         >
           {type}
         </Tag>
-        {(isError || isSkipped) && (
+        {(isError || isSkipped || isAwaitingInput) && (
           <span
             className={styles.viewLogs}
             data-testid="activity-timeline-view-logs"
@@ -84,6 +86,7 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
   const commonProps = {
     className: classNames(styles.itemButton, {
       [styles["itemButton--error"]]: isError,
+      [styles["itemButton--awaiting-input"]]: isAwaitingInput,
       [styles["itemButton--clickable"]]: isClickable,
       [styles["itemButton--comment"]]:
         type === ActivityTimelineItemTypeEnum.INTERNAL_COMMENT,
