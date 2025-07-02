@@ -19,14 +19,36 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.64.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.64.2...main)
 
 ### Added
 - Added single select and multiselect custom field support to Privacy Center forms [#6232](https://github.com/ethyca/fides/pull/6232)
-- Added ManualTaskInstance and ManualTaskSubmission models, foundational for for ManualDSRs [#6212](https://github.com/ethyca/fides/pull/6212) https://github.com/ethyca/fides/labels/db-migration
+- Added ManualTaskInstance and ManualTaskSubmission models, foundational for manual DSRs [#6212](https://github.com/ethyca/fides/pull/6212) https://github.com/ethyca/fides/labels/db-migration
+- Expose shopify() interface on Fides within docs [#6269](https://github.com/ethyca/fides/pull/6269)
+- Added a new time-based partitioning spec to simplify BigQuery partition definitions [#6182](https://github.com/ethyca/fides/pull/6182)
+- Added manual tasks to DSR execution (Fidesplus) [#6261](https://github.com/ethyca/fides/pull/6261)
+- Added an `extract_for_execution_log` postprocessor for SaaS integrations [#6201](https://github.com/ethyca/fides/pull/6201)
 
 ### Changed
 - Update FastAPI to 0.115.2 for starlette 0.40.0 [#6244](https://github.com/ethyca/fides/pull/6244)
+- Refactored fides-js SDK to use React Context for global state management and simplified consent updating method [#6257](https://github.com/ethyca/fides/pull/6257)
+- Update Shopify integration so that we do not pass consent keys to Shopify with undefined values [#6270](https://github.com/ethyca/fides/pull/6270)
+
+### Developer Experience
+- Updated SQLAlchemy models to match the contents of the Alembic migrations [#6262](https://github.com/ethyca/fides/pull/6262)
+
+### Fixed
+- Fixed an accessibility issue where tooltips could not be triggered by keyboard focus. [#6276](https://github.com/ethyca/fides/pull/6276)
+- Fixed accessibility issues with text contrast and interactive Tags in Admin UI. [#6278](https://github.com/ethyca/fides/pull/6278)
+- Improved FidesJS banner dialog accessibility by providing proper ARIA roles, states, and regions. [#6291](https://github.com/ethyca/fides/pull/6291)
+- Appropriately expose Shopify interface docs [#6284](https://github.com/ethyca/fides/pull/6284)
+
+## [2.64.2](https://github.com/ethyca/fides/compare/2.64.1...2.64.2)
+
+### Fixed
+- Fixed a bug where number fields in integration forms were un-editable [#6275](https://github.com/ethyca/fides/pull/6275)
+
+## [2.64.1](https://github.com/ethyca/fides/compare/2.64.0...2.64.1)
 
 ### Fixed
 - Fixed Postgres Monitor's usage of SSL Mode [#6247](https://github.com/ethyca/fides/pull/6247)

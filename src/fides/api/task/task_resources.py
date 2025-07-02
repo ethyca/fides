@@ -15,6 +15,7 @@ from fides.api.service.connectors import (
     FidesConnector,
     GoogleCloudSQLMySQLConnector,
     GoogleCloudSQLPostgresConnector,
+    ManualTaskConnector,
     MariaDBConnector,
     MicrosoftSQLServerConnector,
     MongoDBConnector,
@@ -92,6 +93,8 @@ class Connections:
             return S3Connector(connection_config)
         if connection_config.connection_type == ConnectionType.scylla:
             return ScyllaConnector(connection_config)
+        if connection_config.connection_type == ConnectionType.manual_task:
+            return ManualTaskConnector(connection_config)
         raise NotImplementedError(
             f"No connector available for {connection_config.connection_type}"
         )

@@ -257,6 +257,49 @@ export interface Fides {
   }) => void;
 
   /**
+   * Enable the Shopify integration. This should be called immediately after
+   * FidesJS is included. Once enabled, FidesJS will automatically push all
+   * consent updates to Shopify's Customer Privacy API, which can then be used
+   * to ensure consent is enforced on Shopify-managed apps & pixels.
+   *
+   * See the [Shopify installation tutorial](/tutorials/consent-management/consent-management-configuration/install-fides-shopify) for more.
+   *
+   * @param options - Optional configuration for the Shopify integration
+   * @param options.sale_of_data_default - Controls the default value for Shopify's "sale of data" consent. If `true`, the user will be opted-in by default. If `false` or omitted, the user will be opted-out by default.
+   *
+   * @example
+   * Basic usage in your site's `<head>`:
+   * ```html
+   * <head>
+   *   <script src="path/to/fides.js"></script>
+   *   <script>
+   *     if (typeof Fides !== 'undefined' && typeof Fides.shopify === 'function') {
+   *       Fides.shopify();
+   *     }
+   *   </script>
+   * </head>
+   * ```
+   *
+   * @example
+   * With options to default "sale of data" to opt-in:
+   * ```html
+   * <head>
+   *   <script src="path/to/fides.js"></script>
+   *   <script>
+   *     if (typeof Fides !== 'undefined' && typeof Fides.shopify === 'function') {
+   *       Fides.shopify({
+   *          sale_of_data_default: true
+   *       });
+   *     }
+   *   </script>
+   * </head>
+   * ```
+   */
+  shopify: (options?: {
+    sale_of_data_default?: boolean;
+  }) => void;
+
+  /**
    * Initializes FidesJS with an initial configuration object.
    *
    * In most cases, you should never have to call this directly, since
@@ -544,11 +587,6 @@ export interface Fides {
    * @internal
    */
   meta: (options: any) => void;
-
-  /**
-   * @internal
-   */
-  shopify: (options: any) => void;
 
   /**
    * @internal

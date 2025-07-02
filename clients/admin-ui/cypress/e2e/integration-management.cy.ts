@@ -529,7 +529,10 @@ describe("Integration management for data detection & discovery", () => {
           cy.getByTestId("tag-success").should("exist");
         });
         cy.getByTestId("row-test monitor 3-col-monitor_status").within(() => {
-          cy.getByTestId("tag-error").should("exist").click();
+          cy.getByTestId("tag-error").should("exist");
+          cy.getByTestId("tag-error").within(() => {
+            cy.get("button").click();
+          });
         });
         cy.getByTestId("error-log-drawer")
           .should("be.visible")
@@ -817,7 +820,8 @@ describe("Integration management for data detection & discovery", () => {
       });
     });
 
-    describe("data discovery tab for API integration", () => {
+    // DEFER(ENG-801) Add back once we're ready to show all SAAS integrations
+    describe.skip("data discovery tab for API integration", () => {
       beforeEach(() => {
         cy.intercept("GET", "/api/v1/connection/*", {
           fixture: "connectors/salesforce_connection.json",
