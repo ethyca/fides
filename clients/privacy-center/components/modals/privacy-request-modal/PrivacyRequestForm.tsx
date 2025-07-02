@@ -1,4 +1,5 @@
 import {
+  AntSelect,
   Button,
   chakra,
   FormControl,
@@ -32,8 +33,12 @@ import { useConfig } from "~/features/common/config.slice";
 import { useProperty } from "~/features/common/property.slice";
 import { useSettings } from "~/features/common/settings.slice";
 import { PrivacyRequestStatus } from "~/types";
+import { PrivacyRequestOption as ApiPrivacyRequestOption } from "~/types/api";
 import { PrivacyRequestSource } from "~/types/api/models/PrivacyRequestSource";
-import { CustomIdentity, PrivacyRequestOption } from "~/types/config";
+import {
+  CustomIdentity,
+  PrivacyRequestOption as ConfigPrivacyRequestOption,
+} from "~/types/config";
 
 type FormValues = {
   [key: string]: any;
@@ -55,7 +60,7 @@ const usePrivacyRequestForm = ({
   isVerificationRequired,
 }: {
   onClose: () => void;
-  action?: PrivacyRequestOption | null;
+  action?: ConfigPrivacyRequestOption | ApiPrivacyRequestOption | null;
   setCurrentView: (view: ModalViews) => void;
   setPrivacyRequestId: (id: string) => void;
   isVerificationRequired: boolean;
@@ -68,6 +73,7 @@ const usePrivacyRequestForm = ({
   const searchParams = useSearchParams();
 
   const property = useProperty();
+  const params = useSearchParams();
 
   const formik = useFormik<FormValues>({
     initialValues: {
@@ -90,10 +96,30 @@ const usePrivacyRequestForm = ({
               field.query_param_key &&
               (searchParams?.get(field.query_param_key) as string);
 
-            const value = valueFromQueryParam || field.default_value || "";
+            let value;
+            if (field.field_type === "multiselect") {
+              // For multiselect fields, default to empty array or convert string to array
+              if (valueFromQueryParam) {
+                value = [valueFromQueryParam];
+              } else if (Array.isArray(field.default_value)) {
+                value = field.default_value;
+              } else if (field.default_value) {
+                value = [field.default_value];
+              } else {
+                value = [];
+              }
+            } else {
+              value = valueFromQueryParam || field.default_value || "";
+            }
 
             return [key, value];
           }),
+      ),
+      ...Object.fromEntries(
+        Object.entries(identityInputs).map(([key]) => {
+          const value = params?.get(key) ?? "";
+          return [key, value];
+        }),
       ),
     },
     onSubmit: async (values) => {
@@ -279,8 +305,16 @@ const usePrivacyRequestForm = ({
       ...Object.fromEntries(
         Object.entries(customPrivacyRequestFields)
           .filter(([, field]) => !field.hidden)
-          .map(([key, { label, required }]) => {
+          .map(([key, { label, required, field_type }]) => {
             const isRequired = required !== false;
+            if (field_type === "multiselect") {
+              return [
+                key,
+                isRequired
+                  ? Yup.array().min(1, `${label} is required`)
+                  : Yup.array().notRequired(),
+              ];
+            }
             return [
               key,
               isRequired
@@ -298,7 +332,7 @@ const usePrivacyRequestForm = ({
 type PrivacyRequestFormProps = {
   isOpen: boolean;
   onClose: () => void;
-  openAction: string | null;
+  openAction: number | null;
   setCurrentView: (view: ModalViews) => void;
   setPrivacyRequestId: (id: string) => void;
   isVerificationRequired: boolean;
@@ -314,11 +348,8 @@ const PrivacyRequestForm = ({
 }: PrivacyRequestFormProps) => {
   const config = useConfig();
 
-  const action = openAction
-    ? (config.actions as PrivacyRequestOption[]).find(
-        ({ policy_key }) => policy_key === openAction,
-      )
-    : null;
+  const action =
+    typeof openAction === "number" ? config.actions[openAction] : undefined;
 
   const {
     errors,
@@ -328,9 +359,7 @@ const PrivacyRequestForm = ({
     setFieldValue,
     touched,
     values,
-    isValid,
     isSubmitting,
-    dirty,
     resetForm,
     identityInputs,
     customPrivacyRequestFields,
@@ -470,14 +499,72 @@ const PrivacyRequestForm = ({
                   isRequired={item.required !== false}
                 >
                   <FormLabel fontSize="sm">{item.label}</FormLabel>
-                  <Input
-                    id={key}
-                    name={key}
-                    focusBorderColor="primary.500"
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    value={values[key]}
-                  />
+                  {(() => {
+                    if (item.field_type === "multiselect" && item.options) {
+                      return (
+                        <AntSelect
+                          id={key}
+                          data-testid={`select-${key}`}
+                          mode="multiple"
+                          placeholder={`Select ${item.label.toLowerCase()}`}
+                          value={values[key] || []}
+                          onChange={(selectedValues) => {
+                            setFieldValue(key, selectedValues);
+                          }}
+                          onBlur={() => handleBlur({ target: { name: key } })}
+                          options={item.options.map((option: string) => ({
+                            label: option,
+                            value: option,
+                          }))}
+                          style={{ width: "100%" }}
+                          getPopupContainer={() => document.body}
+                          dropdownStyle={{
+                            maxHeight: 400,
+                            overflow: "auto",
+                            zIndex: 1500,
+                          }}
+                          dropdownClassName="privacy-form-dropdown"
+                        />
+                      );
+                    }
+                    if (item.field_type === "select" && item.options) {
+                      return (
+                        <AntSelect
+                          id={key}
+                          data-testid={`select-${key}`}
+                          placeholder={`Select ${item.label.toLowerCase()}`}
+                          value={values[key] || ""}
+                          onChange={(selectedValue) => {
+                            setFieldValue(key, selectedValue);
+                          }}
+                          onBlur={() => handleBlur({ target: { name: key } })}
+                          options={item.options.map((option: string) => ({
+                            label: option,
+                            value: option,
+                          }))}
+                          style={{ width: "100%" }}
+                          getPopupContainer={() => document.body}
+                          dropdownStyle={{
+                            maxHeight: 400,
+                            overflow: "auto",
+                            zIndex: 1500,
+                          }}
+                          dropdownClassName="privacy-form-dropdown"
+                          allowClear
+                        />
+                      );
+                    }
+                    return (
+                      <Input
+                        id={key}
+                        name={key}
+                        focusBorderColor="primary.500"
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        value={values[key]}
+                      />
+                    );
+                  })()}
                   <FormErrorMessage>
                     {JSON.stringify(errors[key])}
                   </FormErrorMessage>
@@ -498,7 +585,7 @@ const PrivacyRequestForm = ({
             _active={{ bg: "primary.500" }}
             colorScheme="primary"
             isLoading={isSubmitting}
-            isDisabled={isSubmitting || !(isValid && dirty)}
+            isDisabled={isSubmitting}
             size="sm"
           >
             {action.confirmButtonText || "Continue"}
