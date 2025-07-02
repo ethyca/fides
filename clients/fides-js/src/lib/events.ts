@@ -170,6 +170,8 @@ export const dispatchConsentLoadedEvents = (
 ) => {
   dispatchFidesEvent("FidesConsentLoaded", fidesCookie, extraDetails);
   if (window.Fides?.options?.fidesLegacyEvent?.includes("FidesInitialized")) {
+    // Firing this event at this point is deprecated and only supported for
+    // backwards compatibility when the fides_legacy_event option is set.
     dispatchFidesEvent("FidesInitialized", fidesCookie, extraDetails);
   }
 };
@@ -183,5 +185,6 @@ export const dispatchReadyEvents = (
   extraDetails?: FidesEventExtraDetails,
 ) => {
   dispatchFidesEvent("FidesReady", fidesCookie, extraDetails);
+  // Firing this event at this point is still supported and is not deprecated/legacy.
   dispatchFidesEvent("FidesInitialized", fidesCookie, extraDetails);
 };
