@@ -1,7 +1,7 @@
 """
 Utilities for storing and accessing request-scoped context that must be
-accessible across the entire application stack (endpoints → services →
-helpers → decorators) without having to thread additional parameters through
+accessible across the entire application stack (endpoints -> services ->
+helpers -> decorators) without having to thread additional parameters through
 all call-sites.
 
 Currently we only capture the authenticated `user_id` but additional fields
@@ -28,10 +28,8 @@ __all__ = [
 
 
 @dataclass(slots=True)
-class RequestContext:  # noqa: D101 – simple container
+class RequestContext:
     user_id: Optional[str] = None
-    # place-holder for arbitrary extra data
-    extra: Dict[str, Any] | None = None
 
 
 # A single ContextVar holding the current request context.
@@ -42,16 +40,14 @@ _ctx: contextvars.ContextVar[RequestContext] = contextvars.ContextVar(
 
 
 def get_request_context() -> RequestContext:
-    """Return the current :class:`RequestContext` for this request.
+    """Return the current `RequestContext` for this request.
 
-    • The context is populated during authentication by
-      `extract_token_and_load_client()`, which calls
-      `fides.api.request_context.set_request_context` with the authenticated
-      `user_id`.
-    • A `ContextVar` keeps the data isolated per request -
-      each coroutine or thread sees its own copy and it is discarded at the
-      end of the request.
-    • The returned object is the live context; treat it as read-only and use
+    - The context is populated during authentication by `extract_token_and_load_client()`,
+      which calls `fides.api.request_context.set_request_context` with
+      the authenticated `user_id`.
+    - A `ContextVar` keeps the data isolated per request. Each coroutine
+      or thread sees its own copy and it is discarded at the end of the request.
+    - The returned object is the live context; treat it as read-only and use
       `set_request_context` to mutate values.
     """
     return _ctx.get()
@@ -63,13 +59,8 @@ def set_request_context(**kwargs: Any) -> None:
     for key, value in kwargs.items():
         if hasattr(ctx, key):
             setattr(ctx, key, value)
-        else:
-            # Fallback: store unknown keys inside the `extra` mapping
-            if ctx.extra is None:
-                ctx.extra = {}
-            ctx.extra[key] = value
 
 
 def reset_request_context() -> None:
-    """Remove all context - mainly for test clean-up."""
+    """Remove all context, mainly for test clean-up."""
     _ctx.set(RequestContext())
