@@ -384,7 +384,7 @@ describe("Consent i18n", () => {
       cy.get("#fides-banner").within(() => {
         cy.getByTestId(`fides-i18n-option-${locale}`).should(
           "have.attr",
-          "aria-pressed",
+          "aria-checked",
         );
       });
     };
