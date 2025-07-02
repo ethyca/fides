@@ -274,4 +274,11 @@ export interface FidesOptions {
    * Defaults to `undefined`.
    */
   fides_disabled_notices: string;
+
+  /**
+   * A comma separated string of deprecated event names that should be dispatched for legacy support.
+   *
+   * Defaults to `undefined`.
+   */
+  fides_legacy_event: string;
 }

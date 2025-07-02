@@ -139,6 +139,8 @@ const loadEnvironmentVariables = () => {
       (process.env
         .FIDES_PRIVACY_CENTER__FIDES_CONSENT_FLAG_TYPE as ConsentFlagType) ||
       null,
+    FIDES_LEGACY_EVENT:
+      process.env.FIDES_PRIVACY_CENTER__FIDES_LEGACY_EVENT || null,
   };
   return settings;
 };

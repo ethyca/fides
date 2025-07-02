@@ -306,3 +306,13 @@ A comma-separated list of notice_keys to disable their respective Toggle element
 For example: "data_sales,data_sharing,analytics"
 
 Defaults to `undefined`.
+
+***
+
+### fides\_legacy\_event
+
+> **fides\_legacy\_event**: `string`
+
+A comma separated string of deprecated event names that should be dispatched for legacy support.
+
+Defaults to `undefined`.

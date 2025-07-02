@@ -155,6 +155,11 @@ export interface FidesInitOptions {
 
   // The type of value to use for consent (boolean or consent_mechanism)
   fidesConsentFlagType: ConsentFlagType | null;
+
+  /**
+   * A comma separated string of deprecated event names that should be dispatched for legacy support.
+   */
+  fidesLegacyEvent: string | null;
 }
 
 /**
@@ -798,6 +803,7 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesDisabledNotices"
   | "fidesConsentNonApplicableFlagMode"
   | "fidesConsentFlagType"
+  | "fidesLegacyEvent"
 >;
 
 export type FidesExperienceTranslationOverrides = {
