@@ -1,38 +1,50 @@
 /**
- * react-a11y-dialog adapted to preact
- * https://github.com/KittyGiraudel/react-a11y-dialog
+ * a11y-dialog adapted to preact
+ * https://github.com/KittyGiraudel/a11y-dialog
  */
 
-import A11yDialogLib from "a11y-dialog";
+import A11yDialog from "a11y-dialog";
+import { RefCallback } from "preact";
+import { HTMLAttributes } from "preact/compat";
 import { useCallback, useEffect, useState } from "preact/hooks";
 
 const useA11yDialogInstance = () => {
-  const [instance, setInstance] = useState<A11yDialogLib | null>(null);
-  const container = useCallback((node: Element) => {
-    if (node !== null) {
-      const dialog = new A11yDialogLib(node);
-      dialog
-        .on("show", () => {
-          document.documentElement.style.overflowY = "hidden";
-        })
-        .on("hide", () => {
-          document.documentElement.style.overflowY = "";
-        });
-      setInstance(dialog);
-    }
-  }, []);
+  const [instance, setInstance] = useState<A11yDialog | null>(null);
+  const container: RefCallback<HTMLDivElement | null> = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (node !== null) {
+        const dialog = new A11yDialog(node);
+        setInstance(dialog);
+      }
+    },
+    [],
+  );
   return { instance, container };
 };
 
-interface Props {
-  role: "dialog" | "alertdialog";
-  id: string;
-  title: string;
-  onClose?: () => void;
+export interface A11yDialogProperties {
+  instance: A11yDialog | null;
+  attributes: {
+    container: Partial<HTMLAttributes<HTMLDivElement>>;
+    dialog: Partial<HTMLAttributes<HTMLDivElement>>;
+    closeButton: Partial<HTMLAttributes<HTMLButtonElement>> & {
+      onClick: () => void;
+    };
+    title: Partial<HTMLAttributes<HTMLHeadingElement>>;
+  };
 }
-export const useA11yDialog = ({ role, id, onClose }: Props) => {
+
+interface Props {
+  id: string;
+  onClose?: () => void;
+  ariaHidden?: boolean;
+}
+export const useA11yDialog = ({
+  id,
+  onClose,
+  ariaHidden = true,
+}: Props): A11yDialogProperties => {
   const { instance, container: ref } = useA11yDialogInstance();
-  const isAlertDialog = role === "alertdialog";
   const titleId = `${id}-title`;
 
   const handleClose = useCallback(() => {
@@ -60,13 +72,10 @@ export const useA11yDialog = ({ role, id, onClose }: Props) => {
       container: {
         id,
         ref,
-        role,
-        tabIndex: -1,
-        "aria-modal": true,
-        "aria-hidden": true,
+        role: "alertdialog",
+        "aria-hidden": ariaHidden,
         "aria-labelledby": titleId,
       },
-      overlay: { onClick: isAlertDialog ? undefined : handleClose },
       dialog: { role: "document" } as const,
       closeButton: { type: "button", onClick: handleClose },
       title: { role: "heading", "aria-level": 1, id: titleId } as const,
@@ -74,4 +83,4 @@ export const useA11yDialog = ({ role, id, onClose }: Props) => {
   };
 };
 
-export type Attributes = ReturnType<typeof useA11yDialog>["attributes"];
+export type A11yDialogAttributes = A11yDialogProperties["attributes"];
