@@ -51,6 +51,7 @@ class Asset(Base):
     consent_status = Column(
         EnumColumn(ConsentStatus, native_enum=True),
         default=ConsentStatus.unknown,
+        server_default="unknown",
         nullable=False,
     )
     data_uses = Column(ARRAY(String), server_default="{}", nullable=False)
