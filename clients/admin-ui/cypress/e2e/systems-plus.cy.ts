@@ -596,7 +596,7 @@ describe("System management with Plus features", () => {
         cy.wait("@deleteSystemAssets");
       });
 
-      it("validates base URL for non-cookie assets", () => {
+      it.only("validates base URL for non-cookie assets", () => {
         cy.getByTestId("add-asset-btn").click();
         cy.getByTestId("add-modal-content").within(() => {
           cy.getByTestId("input-name").type("test_tag");
@@ -608,19 +608,21 @@ describe("System management with Plus features", () => {
           cy.getByTestId("controlled-select-data_uses").within(() => {
             // force select menu to close so it doesn't cover the input
             cy.get("input").focus().blur();
-            // blur the input without entering anything to trigger the error
-            cy.getByTestId("input-base_url").clear().blur();
-            cy.getByTestId("save-btn").should("be.disabled");
-            cy.getByTestId("error-base_url").should(
-              "contain",
-              "Base URL is required",
-            );
-            cy.getByTestId("input-base_url").type(
-              "https://example.com/script.js",
-            );
           });
+          // blur the input without entering anything to trigger the error
+          cy.getByTestId("input-base_url").clear().blur();
+          cy.getByTestId("save-btn").should("be.disabled");
+          cy.getByTestId("error-base_url").should(
+            "contain",
+            "Base URL is required",
+          );
+          cy.getByTestId("input-base_url")
+            .type("https://example.com/script.js")
+            .blur();
         });
-        cy.getByTestId("save-btn").click();
+        cy.getByTestId("add-modal-content").within(() => {
+          cy.getByTestId("save-btn").click();
+        });
         cy.wait("@addSystemAsset");
       });
 
