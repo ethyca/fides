@@ -18,11 +18,8 @@
         "id": "pri_new_001",
         "days_left": 10,
         "request_type": "access",
-        "subject_identity": {
-          "email": {
-            "label": "Email",
-            "value": "new.task@example.com"
-          }
+        "subject_identities": {
+          "email": "new.task@example.com"
         }
       },
       "system": {
@@ -48,11 +45,8 @@
         "id": "pri_completed_001",
         "days_left": 0,
         "request_type": "access",
-        "subject_identity": {
-          "email": {
-            "label": "Email",
-            "value": "completed.task@example.com"
-          }
+        "subject_identities": {
+          "email": "completed.task@example.com"
         }
       },
       "system": {
@@ -78,11 +72,8 @@
         "id": "pri_skipped_001",
         "days_left": 0,
         "request_type": "erasure",
-        "subject_identity": {
-          "email": {
-            "label": "Email",
-            "value": "skipped.task@example.com"
-          }
+        "subject_identities": {
+          "email": "skipped.task@example.com"
         }
       },
       "system": {

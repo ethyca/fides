@@ -18,11 +18,8 @@
         "id": "pri_ext_001",
         "days_left": 15,
         "request_type": "access",
-        "subject_identity": {
-          "email": {
-            "label": "Email",
-            "value": "customer@example.com"
-          }
+        "subject_identities": {
+          "email": "customer@example.com"
         }
       },
       "system": {
@@ -48,11 +45,9 @@
         "id": "pri_ext_002",
         "days_left": 8,
         "request_type": "access",
-        "subject_identity": {
-          "email": {
-            "label": "Email",
-            "value": "analytics.user@example.com"
-          }
+        "subject_identities": {
+          "email": "analytics.user@example.com",
+          "phone_number": "+15555551234"
         }
       },
       "system": {
@@ -78,11 +73,9 @@
         "id": "pri_ext_003",
         "days_left": 12,
         "request_type": "erasure",
-        "subject_identity": {
-          "email": {
-            "label": "Email",
-            "value": "delete.user@example.com"
-          }
+        "subject_identities": {
+          "email": "delete.user@example.com",
+          "agent_id": "12345"
         }
       },
       "system": {

@@ -91,15 +91,20 @@ export const ExternalTaskDetails = ({ task }: ExternalTaskDetailsProps) => {
       </TaskInfoRow>
 
       {/* Show all available identity fields */}
-      {task.privacy_request.subject_identity &&
-        Object.entries(task.privacy_request.subject_identity).map(
-          ([key, identity]) =>
-            identity ? (
-              <TaskInfoRow key={key} label={`Identity - ${identity.label}`}>
-                <Typography.Text>{identity.value}</Typography.Text>
-              </TaskInfoRow>
-            ) : null,
-        )}
+      {task.privacy_request.subject_identities &&
+      Object.keys(task.privacy_request.subject_identities).length > 0 ? (
+        <TaskInfoRow label="Subject identities">
+          <Flex wrap="wrap" gap="small">
+            {Object.entries(task.privacy_request.subject_identities).map(
+              ([key, value]) => (
+                <Tag key={key}>
+                  {key}: {value}
+                </Tag>
+              ),
+            )}
+          </Flex>
+        </TaskInfoRow>
+      ) : null}
     </Flex>
   );
 };

@@ -62,10 +62,7 @@ export interface ManualFieldPrivacyRequest {
   id: string;
   days_left?: number | null;
   request_type: ManualFieldRequestType;
-  subject_identity?: {
-    email?: IdentityField | null;
-    phone_number?: IdentityField | null;
-  } | null;
+  subject_identities?: Record<string, string> | null;
 }
 
 export interface ManualFieldListItem {

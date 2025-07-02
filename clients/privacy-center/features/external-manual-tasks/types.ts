@@ -8,6 +8,13 @@
  * - No admin-specific properties
  */
 
+// Re-export enums from existing external-manual-tasks slice
+export {
+  ManualFieldRequestType,
+  ManualFieldStatus,
+  ManualTaskFieldType,
+} from "./external-manual-tasks.slice";
+
 // Authentication Types
 export interface ExternalAuthState {
   isAuthenticated: boolean;
@@ -63,12 +70,7 @@ export interface ExternalManualTask {
     id: string;
     days_left: number;
     request_type: "access" | "erasure";
-    subject_identity: {
-      [key: string]: {
-        label: string;
-        value: string;
-      };
-    };
+    subject_identities: Record<string, string>;
   };
   system: {
     id: string;
@@ -156,7 +158,7 @@ export interface PrivacyRequest {
   id: string;
   days_left: number;
   request_type: RequestType;
-  subject_identity?: SubjectIdentity;
+  subject_identities?: Record<string, string>;
 }
 
 export interface ManualTask {

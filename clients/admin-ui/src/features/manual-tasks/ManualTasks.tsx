@@ -149,18 +149,17 @@ const getColumns = (
   },
   {
     title: "Subject identity",
-    dataIndex: ["privacy_request", "subject_identity"],
-    key: "subject_identity",
+    dataIndex: ["privacy_request", "subject_identities"],
+    key: "subject_identities",
     width: 200,
-    render: (subjectIdentity) => {
-      if (!subjectIdentity) {
+    render: (subjectIdentities: Record<string, string>) => {
+      if (!subjectIdentities) {
         return <Typography.Text>-</Typography.Text>;
       }
 
+      // Display email or phone_number if available
       const identity =
-        subjectIdentity.email?.value ||
-        subjectIdentity.phone_number?.value ||
-        "";
+        subjectIdentities.email || subjectIdentities.phone_number || "";
       return (
         <Typography.Text ellipsis={{ tooltip: identity }}>
           {identity}

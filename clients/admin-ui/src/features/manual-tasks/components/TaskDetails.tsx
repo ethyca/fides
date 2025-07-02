@@ -3,7 +3,6 @@ import { AntTag as Tag, AntTypography as Typography } from "fidesui";
 import { SubjectRequestActionTypeMap } from "~/features/privacy-requests/constants";
 import {
   ActionType,
-  IdentityField,
   ManualFieldListItem,
   ManualFieldRequestType,
 } from "~/types/api";
@@ -71,20 +70,20 @@ export const TaskDetails = ({ task }: TaskDetailsProps) => {
       </TaskInfoRow>
 
       {/* Show all available identity fields */}
-      {task.privacy_request.subject_identity &&
-        Object.entries(task.privacy_request.subject_identity).map(
-          ([key, identity]) => {
-            const identityField = identity as IdentityField;
-            return (
-              <TaskInfoRow
-                key={key}
-                label={`Identity - ${identityField.label}`}
-              >
-                <Typography.Text>{identityField.value}</Typography.Text>
-              </TaskInfoRow>
-            );
-          },
-        )}
+      {task.privacy_request.subject_identities &&
+      Object.keys(task.privacy_request.subject_identities).length > 0 ? (
+        <TaskInfoRow label="Subject identities">
+          <div className="flex flex-wrap gap-1">
+            {Object.entries(
+              task.privacy_request.subject_identities as Record<string, string>,
+            ).map(([key, value]) => (
+              <Tag key={key}>
+                {key}: {String(value)}
+              </Tag>
+            ))}
+          </div>
+        </TaskInfoRow>
+      ) : null}
     </div>
   );
 };
