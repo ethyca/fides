@@ -100,7 +100,6 @@ export interface ManualFieldSearchResponse {
 interface ExternalTaskQueryParams {
   page?: number;
   size?: number;
-  search?: string;
   status?: ManualFieldStatus;
   requestType?: ManualFieldRequestType;
   systemName?: string;
@@ -122,9 +121,6 @@ export const externalManualTasksApi = externalBaseApi.injectEndpoints({
         searchParams.append("page", String(page));
         searchParams.append("size", String(queryParams.size || 25));
 
-        if (queryParams.search) {
-          searchParams.append("search", queryParams.search);
-        }
         if (queryParams.status) {
           searchParams.append("status", queryParams.status);
         }

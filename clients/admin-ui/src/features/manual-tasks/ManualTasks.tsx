@@ -11,7 +11,6 @@ import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
 import DaysLeftTag from "~/features/common/DaysLeftTag";
-import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import FidesSpinner from "~/features/common/FidesSpinner";
 import { USER_PROFILE_ROUTE } from "~/features/common/nav/routes";
 import { PAGE_SIZES } from "~/features/common/table/v2/PaginationBar";
@@ -179,7 +178,6 @@ const getColumns = (
 
 export const ManualTasks = () => {
   const router = useRouter();
-  const [searchTerm, setSearchTerm] = useState("");
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const [filters, setFilters] = useState<ManualTaskFilters>({});
@@ -187,7 +185,6 @@ export const ManualTasks = () => {
   const { data, isLoading, isFetching } = useGetTasksQuery({
     page: pageIndex,
     size: pageSize,
-    search: searchTerm,
     status: filters.status as ManualFieldStatus,
     systemName: filters.systemName,
     requestType: filters.requestType as ManualFieldRequestType,
@@ -250,10 +247,6 @@ export const ManualTasks = () => {
     setPageIndex(1);
   };
 
-  const handleSearchChange = (value: string) => {
-    setSearchTerm(value);
-  };
-
   const columns = useMemo(
     () =>
       getColumns(systemFilters, userFilters, (userId) => {
@@ -273,17 +266,12 @@ export const ManualTasks = () => {
 
   return (
     <div className="mt-2 space-y-4">
-      <DebouncedSearchInput
-        placeholder="Search by name or description..."
-        value={searchTerm}
-        onChange={handleSearchChange}
-        className="max-w-sm"
-      />
-
       <Table
         columns={columns}
         dataSource={tasks}
-        rowKey="manual_field_id"
+        rowKey={(record) =>
+          `${record.privacy_request.id}-${record.manual_field_id}`
+        }
         pagination={{
           current: pageIndex,
           pageSize,
@@ -302,9 +290,7 @@ export const ManualTasks = () => {
         }}
         onChange={handleTableChange}
         locale={{
-          emptyText: searchTerm ? (
-            "No tasks match your search"
-          ) : (
+          emptyText: (
             <div data-testid="empty-state">No manual tasks available.</div>
           ),
         }}

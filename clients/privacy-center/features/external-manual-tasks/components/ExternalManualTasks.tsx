@@ -13,8 +13,6 @@
 
 import {
   AntColumnsType as ColumnsType,
-  AntInput as Input,
-  AntSpace as Space,
   AntTable as Table,
   AntTag as Tag,
   AntTypography as Typography,
@@ -152,7 +150,6 @@ const getExternalColumns = (
 ];
 
 export const ExternalManualTasks = () => {
-  const [searchTerm, setSearchTerm] = useState("");
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const [filters, setFilters] = useState<{
@@ -165,7 +162,6 @@ export const ExternalManualTasks = () => {
   const { data, isLoading, isFetching, error } = useGetExternalTasksQuery({
     page: pageIndex,
     size: pageSize,
-    search: searchTerm,
     // Pass filter parameters to API
     status: filters.status?.[0] as ManualFieldStatus,
     systemName: filters.systemName?.[0],
@@ -216,12 +212,6 @@ export const ExternalManualTasks = () => {
     setPageIndex(1); // Reset to first page when filtering
   };
 
-  // Handle search input changes
-  const handleSearchChange = (value: string) => {
-    setSearchTerm(value);
-    setPageIndex(1); // Reset to first page when searching
-  };
-
   // Handle pagination changes
   const handlePaginationChange = (page: number, size?: number) => {
     setPageIndex(page);
@@ -259,25 +249,13 @@ export const ExternalManualTasks = () => {
 
   return (
     <div className="space-y-4" data-testid="external-manual-tasks">
-      {/* Search Input */}
-      <div className="flex justify-between items-center">
-        <Space>
-          <Input.Search
-            placeholder="Search by name or description..."
-            value={searchTerm}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            style={{ width: 300 }}
-            data-testid="external-tasks-search"
-            allowClear
-          />
-        </Space>
-      </div>
-
       {/* Tasks Table */}
       <Table
         columns={columns}
         dataSource={tasks}
-        rowKey="manual_field_id"
+        rowKey={(record) =>
+          `${record.privacy_request.id}-${record.manual_field_id}`
+        }
         pagination={{
           current: pageIndex,
           pageSize,
@@ -290,11 +268,7 @@ export const ExternalManualTasks = () => {
         }}
         onChange={handleTableChange}
         locale={{
-          emptyText: searchTerm ? (
-            <div data-testid="external-search-empty">
-              No tasks match your search
-            </div>
-          ) : (
+          emptyText: (
             <div data-testid="external-empty-state">
               No manual tasks available.
             </div>

@@ -17,7 +17,6 @@ import { PAGE_SIZES } from "../common/table/v2";
 
 // Interface for task query parameters
 interface TaskQueryParams extends PaginationQueryParams {
-  search?: string;
   status?: ManualFieldStatus;
   requestType?: ManualFieldRequestType;
   systemName?: string;
@@ -37,9 +36,6 @@ export const manualTasksApi = baseApi.injectEndpoints({
         searchParams.append("page", String(page));
         searchParams.append("size", String(queryParams.size || 10));
 
-        if (queryParams.search) {
-          searchParams.append("search", queryParams.search);
-        }
         if (queryParams.status) {
           searchParams.append("status", queryParams.status);
         }
