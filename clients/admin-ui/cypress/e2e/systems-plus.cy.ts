@@ -32,6 +32,7 @@ describe("System management with Plus features", () => {
     cy.intercept({ method: "POST", url: "/api/v1/system*" }).as(
       "postDictSystem",
     );
+    cy.intercept("/api/v1/config?api_set=false", {});
     stubDatasetCrud();
     stubSystemIntegrations();
     stubSystemVendors();
@@ -144,13 +145,15 @@ describe("System management with Plus features", () => {
     });
 
     it("locks editing for a GVL vendor when TCF is enabled", () => {
-      cy.getByTestId("vendor-name-select").find("input").type("Aniview{enter}");
+      cy.getByTestId("vendor-name-select").find("input").type("Aniview");
+      cy.getByTestId("vendor-name-select").antSelect("Aniview LTD");
       cy.getByTestId("locked-for-GVL-notice");
       cy.getByTestId("input-description").should("be.disabled");
     });
 
     it("does not allow changes to data uses when locked", () => {
-      cy.getByTestId("vendor-name-select").find("input").type("Aniview{enter}");
+      cy.getByTestId("vendor-name-select").find("input").type("Aniview");
+      cy.getByTestId("vendor-name-select").antSelect("Aniview LTD");
       cy.getByTestId("save-btn").click();
       cy.wait(["@postSystem", "@getSystem", "@getSystems"]);
       cy.getByTestId("tab-Data uses").click();
@@ -161,7 +164,8 @@ describe("System management with Plus features", () => {
     });
 
     it("does not allow system assets to be edited when locked", () => {
-      cy.getByTestId("vendor-name-select").find("input").type("Aniview{enter}");
+      cy.getByTestId("vendor-name-select").find("input").type("Aniview");
+      cy.getByTestId("vendor-name-select").antSelect("Aniview LTD");
       cy.getByTestId("save-btn").click();
       cy.wait(["@postSystem", "@getSystem", "@getSystems"]);
       cy.getByTestId("tab-Assets").click();
