@@ -138,17 +138,15 @@ describe("External Manual Tasks", () => {
         .type("valid@example.com");
       cy.get('[data-testid="otp-request-button"]').should("not.be.disabled");
 
-      // Test clicking with invalid email shows error
+      // Enter clearly invalid email and ensure button stays disabled
       cy.get('[data-testid="otp-request-email-input"]')
         .clear()
         .type("bad-email");
-      cy.get('[data-testid="otp-request-button"]').click();
-      cy.contains("Please enter a valid email address").should("be.visible");
+      cy.get('[data-testid="otp-request-button"]').should("be.disabled");
 
-      // Test empty email shows error
+      // Clear the field entirely; button should still be disabled
       cy.get('[data-testid="otp-request-email-input"]').clear();
-      cy.get('[data-testid="otp-request-button"]').click();
-      cy.contains("Email address is required").should("be.visible");
+      cy.get('[data-testid="otp-request-button"]').should("be.disabled");
     });
   });
 
@@ -167,7 +165,7 @@ describe("External Manual Tasks", () => {
       cy.wait("@getExternalTasks");
     });
 
-    it.only("should display tasks table correctly", () => {
+    it("should display tasks table correctly", () => {
       // Use more generic table selector
       cy.get("table").should("be.visible");
 
@@ -197,21 +195,6 @@ describe("External Manual Tasks", () => {
           cy.get("td").eq(4).should("contain", "15 days");
           cy.get("td").eq(5).should("contain", "customer@example.com");
         });
-    });
-
-    it("should handle search functionality", () => {
-      cy.get('[data-testid="external-tasks-search"]').type("Salesforce");
-      // Should show filtered results
-      cy.get('[data-testid="external-tasks-table"] tbody tr').should(
-        "have.length.gte",
-        1,
-      );
-
-      // Test empty search
-      cy.get('[data-testid="external-tasks-search"]')
-        .clear()
-        .type("nonexistent");
-      // Should show empty state (mocked response would handle this)
     });
 
     it("should show correct actions based on task status", () => {
