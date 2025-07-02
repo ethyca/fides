@@ -13,8 +13,6 @@ import {
 
 import { addCommonHeaders } from "~/common/CommonHeaders";
 
-import { selectExternalToken } from "./external-auth.slice";
-
 // Define the external root state type for the base query
 interface ExternalRootState {
   externalAuth: {
@@ -48,8 +46,8 @@ const externalDynamicBaseQuery: BaseQueryFn = async (
   // Get settings from external store
   const settingsState = state.settings;
   if (settingsState?.settings?.FIDES_API_URL) {
-    // Get external auth token from external store
-    const authToken = selectExternalToken({ externalAuth: state.externalAuth });
+    // Access the auth token directly from the externalAuth slice to avoid a circular dependency
+    const authToken = state.externalAuth.token;
 
     const isMultipart =
       typeof args === "object" &&
