@@ -110,6 +110,13 @@ const LanguageSelector = ({
   );
 
   useEffect(() => {
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleKeyDown]);
+
+  useEffect(() => {
     if (isOpen) {
       const menuItems =
         menuRef.current?.querySelectorAll<HTMLButtonElement>(
@@ -143,7 +150,6 @@ const LanguageSelector = ({
   return (
     <div
       className={`fides-i18n-menu ${isOpen ? "fides-i18n-menu-open" : ""}`}
-      onKeyDown={handleKeyDown}
       ref={menuRef}
     >
       <div role="group" className="fides-i18n-popover" id="fides-i18n-popover">
