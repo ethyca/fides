@@ -127,7 +127,7 @@ const CreateExternalUserModal = ({
           label="First Name"
           rules={[{ required: true, message: "First name is required" }]}
         >
-          <Input placeholder="John" />
+          <Input />
         </Form.Item>
 
         <Form.Item
@@ -135,7 +135,7 @@ const CreateExternalUserModal = ({
           label="Last Name"
           rules={[{ required: true, message: "Last name is required" }]}
         >
-          <Input placeholder="Doe" />
+          <Input />
         </Form.Item>
 
         <Form.Item style={{ marginBottom: 0, marginTop: 24 }}>
