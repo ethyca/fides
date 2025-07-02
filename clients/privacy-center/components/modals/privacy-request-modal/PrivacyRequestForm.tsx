@@ -33,8 +33,12 @@ import { useConfig } from "~/features/common/config.slice";
 import { useProperty } from "~/features/common/property.slice";
 import { useSettings } from "~/features/common/settings.slice";
 import { PrivacyRequestStatus } from "~/types";
+import { PrivacyRequestOption as ApiPrivacyRequestOption } from "~/types/api";
 import { PrivacyRequestSource } from "~/types/api/models/PrivacyRequestSource";
-import { CustomIdentity, PrivacyRequestOption } from "~/types/config";
+import {
+  CustomIdentity,
+  PrivacyRequestOption as ConfigPrivacyRequestOption,
+} from "~/types/config";
 
 type FormValues = {
   [key: string]: any;
@@ -56,7 +60,7 @@ const usePrivacyRequestForm = ({
   isVerificationRequired,
 }: {
   onClose: () => void;
-  action?: PrivacyRequestOption | null;
+  action?: ConfigPrivacyRequestOption | ApiPrivacyRequestOption | null;
   setCurrentView: (view: ModalViews) => void;
   setPrivacyRequestId: (id: string) => void;
   isVerificationRequired: boolean;
@@ -328,7 +332,7 @@ const usePrivacyRequestForm = ({
 type PrivacyRequestFormProps = {
   isOpen: boolean;
   onClose: () => void;
-  openAction: string | null;
+  openAction: number | null;
   setCurrentView: (view: ModalViews) => void;
   setPrivacyRequestId: (id: string) => void;
   isVerificationRequired: boolean;
@@ -344,11 +348,8 @@ const PrivacyRequestForm = ({
 }: PrivacyRequestFormProps) => {
   const config = useConfig();
 
-  const action = openAction
-    ? (config.actions as PrivacyRequestOption[]).find(
-        ({ policy_key }) => policy_key === openAction,
-      )
-    : null;
+  const action =
+    typeof openAction === "number" ? config.actions[openAction] : undefined;
 
   const {
     errors,
