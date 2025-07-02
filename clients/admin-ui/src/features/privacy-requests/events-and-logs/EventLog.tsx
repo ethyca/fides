@@ -56,7 +56,8 @@ const EventLog = ({ eventLogs, onDetailPanel }: EventDetailsProps) => {
       onClick={() => {
         if (
           detail.status === ExecutionLogStatus.ERROR ||
-          (detail.status === ExecutionLogStatus.SKIPPED && detail.message)
+          (detail.status === ExecutionLogStatus.SKIPPED && detail.message) ||
+          detail.status === ExecutionLogStatus.AWAITING_PROCESSING
         ) {
           onDetailPanel(detail.message, detail.status);
         }
