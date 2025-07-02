@@ -213,9 +213,13 @@ class ManualTaskGraphTask(GraphTask):
                                     size, url = attachment.retrieve_attachment()
                                     attachment_map[attachment.file_name] = {
                                         "url": str(url) if url else None,
-                                        "size": _format_size(size) if size else "Unknown",
+                                        "size": (
+                                            _format_size(size) if size else "Unknown"
+                                        ),
                                     }
-                                except Exception as exc:  # pylint: disable=broad-exception-caught
+                                except (
+                                    Exception
+                                ) as exc:  # pylint: disable=broad-exception-caught
                                     logger.warning(
                                         "Error retrieving attachment {}: {}",
                                         attachment.file_name,
