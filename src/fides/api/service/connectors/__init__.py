@@ -113,6 +113,7 @@ supported_connectors: Dict[str, Any] = {
     ConnectionType.sovrn.value: SovrnConnector,
     ConnectionType.timescale.value: TimescaleConnector,
     ConnectionType.website.value: WebsiteConnector,
+    ConnectionType.test_website.value: WebsiteConnector,
 }
 
 

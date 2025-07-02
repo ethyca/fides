@@ -236,6 +236,7 @@ def get_connection_types(
                     ConnectionType.manual_webhook,
                     ConnectionType.saas,
                     ConnectionType.sovrn,
+                    ConnectionType.test_website,
                 ]
                 and is_match(conn_type.value)
             ],
