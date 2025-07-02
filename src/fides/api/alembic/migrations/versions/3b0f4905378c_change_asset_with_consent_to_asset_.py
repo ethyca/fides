@@ -29,6 +29,7 @@ def upgrade():
             sa.Enum(
                 name="consentstatus",
             ),
+            server_default="unknown",
             nullable=False,
         ),
     )
