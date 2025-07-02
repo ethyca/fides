@@ -15,10 +15,11 @@ export const antTheme: AntThemeConfig = {
   cssVar: true,
   token: {
     fontFamily: `Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"`,
+    colorText: palette.FIDESUI_MINOS,
     colorTextBase: palette.FIDESUI_MINOS,
     colorTextHeading: palette.FIDESUI_MINOS,
-    colorTextDescription: palette.FIDESUI_NEUTRAL_400,
-    colorTextDisabled: palette.FIDESUI_NEUTRAL_300,
+    colorTextDescription: palette.FIDESUI_NEUTRAL_700, // minimum for accessibility
+    colorTextDisabled: palette.FIDESUI_NEUTRAL_400,
     colorPrimary: palette.FIDESUI_MINOS,
     colorInfo: palette.FIDESUI_MINOS,
     colorSuccess: palette.FIDESUI_SUCCESS,
@@ -89,6 +90,11 @@ export const antTheme: AntThemeConfig = {
       fontSizeLG: 18,
       fontSizeSM: 12,
       titleMarginBottom: 0,
+    },
+    Tag: {
+      colorText: palette.FIDESUI_NEUTRAL_900,
+      colorIcon: palette.FIDESUI_NEUTRAL_700,
+      colorIconHover: palette.FIDESUI_NEUTRAL_900,
     },
   },
 };

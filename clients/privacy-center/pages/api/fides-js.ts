@@ -188,7 +188,7 @@ export default async function handler(
 
   // If a geolocation can be determined, "prefetch" the experience from the Fides API immediately.
   // This allows the bundle to be fully configured server-side, so that the Fides.js bundle can initialize instantly!
-  let fidesRegionString: string | null = null;
+  let fidesRegionString: string | undefined;
   if (
     geolocation &&
     environment.settings.IS_OVERLAY_ENABLED &&

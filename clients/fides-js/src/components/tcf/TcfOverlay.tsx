@@ -10,6 +10,9 @@ import {
   ConsentMechanism,
   ConsentMethod,
   FidesCookie,
+  FidesExperienceTranslationOverrides,
+  NoticeConsent,
+  OverrideType,
   PrivacyExperience,
   PrivacyExperienceMinimal,
   PrivacyNoticeWithPreference,
@@ -42,8 +45,13 @@ import {
   selectBestNoticeTranslation,
 } from "../../lib/i18n";
 import { useI18n } from "../../lib/i18n/i18n-context";
-import { updateConsentPreferences } from "../../lib/preferences";
+import { getOverridesByType } from "../../lib/initialize";
+import { updateConsent } from "../../lib/preferences";
 import { useEvent } from "../../lib/providers/event-context";
+import {
+  InitializedFidesGlobal,
+  useFidesGlobal,
+} from "../../lib/providers/fides-global-context";
 import { EMPTY_ENABLED_IDS } from "../../lib/tcf/constants";
 import { useGvl } from "../../lib/tcf/gvl-context";
 import {
@@ -55,7 +63,6 @@ import {
 import {
   buildTcfEntitiesFromCookieAndFidesString as buildUserPrefs,
   constructTCFNoticesServedProps,
-  createTCFConsentPreferencesToSave,
   createTcfSavePayload,
   createTcfSavePayloadFromMinExp,
   getEnabledIds,
@@ -68,7 +75,6 @@ import { fetchExperience, fetchGvlTranslations } from "../../services/api";
 import Button from "../Button";
 import ConsentBanner from "../ConsentBanner";
 import Overlay from "../Overlay";
-import { OverlayProps } from "../types";
 import { TCFBannerSupplemental } from "./TCFBannerSupplemental";
 import { TcfConsentButtons } from "./TcfConsentButtons";
 import TcfTabs from "./TcfTabs";
@@ -82,19 +88,21 @@ const getAllIds = (
   return modelList.map((m) => `${m.id}`);
 };
 
-interface TcfOverlayProps extends Omit<OverlayProps, "experience"> {
-  experienceMinimal: PrivacyExperienceMinimal;
-}
-
-export const TcfOverlay = ({
-  options,
-  experienceMinimal,
-  fidesRegionString,
-  cookie,
-  savedConsent,
-  propertyId,
-  translationOverrides,
-}: TcfOverlayProps) => {
+export const TcfOverlay = () => {
+  const { fidesGlobal, setFidesGlobal } = useFidesGlobal();
+  const {
+    fidesRegionString,
+    cookie,
+    config,
+    options,
+    saved_consent: savedConsent,
+  } = fidesGlobal;
+  const experienceMinimal = fidesGlobal.experience as PrivacyExperienceMinimal;
+  const translationOverrides: Partial<FidesExperienceTranslationOverrides> =
+    getOverridesByType<Partial<FidesExperienceTranslationOverrides>>(
+      OverrideType.EXPERIENCE_TRANSLATION,
+      config,
+    );
   const {
     i18n,
     currentLocale,
@@ -160,11 +168,15 @@ export const TcfOverlay = ({
             (options.fidesDisabledNotices?.includes(notice.notice_key) ??
               false) ||
             notice.disabled;
-          const bestTranslation = selectBestNoticeTranslation(i18n, notice);
+          const bestTranslation = selectBestNoticeTranslation(
+            currentLocale,
+            i18n.getDefaultLocale(),
+            notice,
+          );
           return { ...notice, bestTranslation, disabled };
         }),
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      [experienceMinimal.privacy_notices, i18n, currentLocale],
+      [experienceMinimal.privacy_notices, currentLocale],
     );
 
   /**
@@ -201,7 +213,7 @@ export const TcfOverlay = ({
       userLocationString: fidesRegionString,
       fidesApiUrl: options.fidesApiUrl,
       apiOptions: options.apiOptions,
-      propertyId,
+      propertyId: experienceMinimal.property_id,
       requestMinimalTCF: false,
     }).then((result) => {
       if (isPrivacyExperience(result)) {
@@ -294,13 +306,14 @@ export const TcfOverlay = ({
       experienceFull?.experience_config || experienceMinimal.experience_config;
     if (experienceConfig) {
       const bestTranslation = selectBestExperienceConfigTranslation(
-        i18n,
+        currentLocale,
+        i18n.getDefaultLocale(),
         experienceConfig,
       );
       return bestTranslation?.privacy_experience_config_history_id;
     }
     return undefined;
-  }, [experienceMinimal, experienceFull, i18n]);
+  }, [experienceMinimal, experienceFull, currentLocale, i18n]);
 
   const customPurposes: (string | undefined)[] = useMemo(() => {
     const notices = privacyNoticesWithBestTranslation.map(
@@ -360,49 +373,70 @@ export const TcfOverlay = ({
           enabledIds,
         });
       }
-      const consentPreferencesToSave = createTCFConsentPreferencesToSave(
-        privacyNoticesWithBestTranslation,
-        enabledIds.customPurposesConsent,
-      );
-      updateConsentPreferences({
-        consentPreferencesToSave,
-        privacyExperienceConfigHistoryId,
-        experience: experienceFull || experienceMinimal,
-        consentMethod,
-        options,
-        userLocationString: fidesRegionString,
-        cookie,
-        eventExtraDetails: {
-          servingComponent: servingComponentRef.current,
-          trigger: triggerRef.current,
+
+      const customPurposesConsent: NoticeConsent = {};
+      privacyNoticesWithBestTranslation.forEach((notice) => {
+        if (notice.consent_mechanism !== ConsentMechanism.NOTICE_ONLY) {
+          customPurposesConsent[notice.notice_key] =
+            enabledIds.customPurposesConsent.includes(notice.id);
+        } else {
+          // always set notice-only notices to true
+          customPurposesConsent[notice.notice_key] = true;
+        }
+      });
+      updateConsent(
+        fidesGlobal,
+        {
+          noticeConsent: customPurposesConsent,
+          consentMethod,
+          eventExtraDetails: {
+            servingComponent: servingComponentRef.current,
+            trigger: triggerRef.current,
+          },
+          tcf,
+          updateCookie: (oldCookie) => {
+            return updateTCFCookie(
+              oldCookie,
+              tcf,
+              enabledIds,
+              experienceFull || experienceMinimal,
+              customPurposesConsent,
+              (result) => {
+                if (experienceFull) {
+                  const updatedTcfEntities = buildUserPrefs(
+                    experienceFull,
+                    result,
+                  );
+                  // update the experienceFull state with the new user preferences from the updated cookie
+                  setExperienceFull({
+                    ...experienceFull,
+                    ...updatedTcfEntities,
+                  });
+                }
+              },
+            );
+          },
         },
-        tcf,
         servedNoticeHistoryId,
-        updateCookie: (oldCookie) =>
-          updateTCFCookie(
-            oldCookie,
-            tcf,
-            enabledIds,
-            experienceFull || experienceMinimal,
-            consentPreferencesToSave,
-          ),
-      }).finally(() => {
+      ).finally(() => {
+        if (window.Fides) {
+          // apply any updates to the fidesGlobal
+          setFidesGlobal(window.Fides as InitializedFidesGlobal);
+        }
         setTrigger(undefined);
       });
       setDraftIds(enabledIds);
     },
     [
-      cookie,
       experienceFull,
       experienceMinimal,
-      fidesRegionString,
-      options,
-      privacyExperienceConfigHistoryId,
       privacyNoticesWithBestTranslation,
-      servedNoticeHistoryId,
-      triggerRef,
-      setTrigger,
+      fidesGlobal,
       servingComponentRef,
+      triggerRef,
+      servedNoticeHistoryId,
+      setTrigger,
+      setFidesGlobal,
     ],
   );
 
