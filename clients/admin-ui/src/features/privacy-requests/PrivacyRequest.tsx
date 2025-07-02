@@ -1,3 +1,4 @@
+import { useGetAllEnabledAccessManualHooksQuery as useGetManualIntegrationsQuery } from "datastore-connections/datastore-connection.slice";
 import { AntTabs as Tabs, AntTabsProps as TabsProps } from "fidesui";
 import { useMemo, useState } from "react";
 
@@ -38,8 +39,14 @@ const PrivacyRequest = ({ data: initialData }: PrivacyRequestProps) => {
   const isManualStepsRequired =
     subjectRequest.status === PrivacyRequestStatus.REQUIRES_INPUT;
 
+  // Check if any manual-process integrations exist
+  const { data: manualIntegrations } = useGetManualIntegrationsQuery();
+  const hasManualIntegrations = (manualIntegrations || []).length > 0;
+
+  const showManualSteps = isManualStepsRequired && hasManualIntegrations;
+
   const [activeTabKey, setActiveTabKey] = useState(
-    isManualStepsRequired ? "manual-steps" : "activity",
+    showManualSteps ? "manual-steps" : "activity",
   );
   const items: TabsProps["items"] = useMemo(
     () => [
@@ -57,10 +64,10 @@ const PrivacyRequest = ({ data: initialData }: PrivacyRequestProps) => {
             onComplete={() => setActiveTabKey("activity")}
           />
         ),
-        disabled: !isManualStepsRequired,
+        disabled: !showManualSteps,
       },
     ],
-    [isManualStepsRequired, subjectRequest],
+    [showManualSteps, subjectRequest],
   );
 
   return (

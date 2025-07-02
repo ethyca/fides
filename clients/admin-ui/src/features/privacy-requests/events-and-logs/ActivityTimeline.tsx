@@ -99,6 +99,7 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
       showViewLog: false,
       isError: false,
       isSkipped: false,
+      isAwaitingInput: false,
       id: "initial-request",
     };
 
