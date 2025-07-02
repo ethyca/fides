@@ -31,6 +31,7 @@ from fides.api.models.policy import PolicyPreWebhook
 from fides.api.models.pre_approval_webhook import PreApprovalWebhook
 from fides.api.models.privacy_request import RequestTask
 from fides.api.oauth.roles import get_scopes_from_roles
+from fides.api.request_context import set as set_request_context
 from fides.api.schemas.external_https import RequestTaskJWE, WebhookJWE
 from fides.api.schemas.oauth import OAuth2ClientCredentialsBearer
 from fides.common.api.v1.urn_registry import TOKEN, V1_URL_PREFIX
@@ -324,6 +325,16 @@ def extract_token_and_load_client(
     if not client:
         logger.debug("Auth token belongs to an invalid client_id.")
         raise AuthorizationError(detail="Not Authorized for this action")
+
+    # Populate request-scoped context with the authenticated user identifier.
+    # Prefer the linked user_id; fall back to the client id when this is the
+    # special root client (which has no associated FidesUser row).
+    ctx_user_id = client.user_id
+    if not ctx_user_id and client.id == CONFIG.security.oauth_root_client_id:
+        ctx_user_id = CONFIG.security.oauth_root_client_id
+
+    if ctx_user_id:
+        set_request_context(user_id=ctx_user_id)
 
     return token_data, client
 

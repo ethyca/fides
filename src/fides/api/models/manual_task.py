@@ -13,6 +13,7 @@ from sqlalchemy import (
     String,
     UniqueConstraint,
 )
+from fides.api.request_context import get as get_request_context
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
@@ -880,6 +881,10 @@ class ManualTaskLog(Base):
         ForeignKey("manual_task_instance.id", ondelete="CASCADE"),
         nullable=True,
     )
+    # The user responsible for the action being logged.  This may be `None`
+    # for system-initiated events or for legacy records created before this
+    # column existed.
+    user_id = Column(String, nullable=True, index=True)
     status = Column(String, nullable=False)
     message = Column(String, nullable=True)
     details = Column(JSONB, nullable=True)
@@ -890,6 +895,7 @@ class ManualTaskLog(Base):
         Index("ix_manual_task_log_instance_id", "instance_id"),
         Index("ix_manual_task_log_status", "status"),
         Index("ix_manual_task_log_task_id", "task_id"),
+        Index("ix_manual_task_log_user_id", "user_id"),
     )
 
     # Relationships
@@ -908,6 +914,7 @@ class ManualTaskLog(Base):
         task_id: str,
         status: "ManualTaskLogStatus",
         message: str,
+        user_id: Optional[str] = None,
         config_id: Optional[str] = None,
         instance_id: Optional[str] = None,
         details: Optional[dict[str, Any]] = None,
@@ -921,10 +928,12 @@ class ManualTaskLog(Base):
             message: Optional message describing the event
             details: Optional additional details about the event
         """
+
         data = {
             "task_id": task_id,
             "config_id": config_id,
             "instance_id": instance_id,
+            "user_id": user_id or get_request_context().user_id,
             "status": status,
             "message": message,
             "details": details,
@@ -937,6 +946,7 @@ class ManualTaskLog(Base):
         db: Session,
         task_id: str,
         message: str,
+        user_id: Optional[str] = None,
         config_id: Optional[str] = None,
         instance_id: Optional[str] = None,
         details: Optional[dict[str, Any]] = None,
@@ -954,12 +964,14 @@ class ManualTaskLog(Base):
         Returns:
             The created error log entry
         """
+
         return cls.create_log(
             db=db,
             status=ManualTaskLogStatus.error,
             task_id=task_id,
             config_id=config_id,
             instance_id=instance_id,
+            user_id=user_id or get_request_context().user_id,
             message=message,
             details=details,
         )
