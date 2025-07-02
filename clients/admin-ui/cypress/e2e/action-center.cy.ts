@@ -4,7 +4,6 @@ import {
   stubTaxonomyEntities,
   stubVendorList,
   stubWebsiteMonitor,
-  stubWebsiteMonitorWithConsent,
 } from "cypress/support/stubs";
 
 import {
@@ -688,7 +687,10 @@ describe("Action center", () => {
     beforeEach(() => {
       cy.login();
       stubPlus(true);
-      stubWebsiteMonitorWithConsent();
+      cy.intercept("GET", "/api/v1/plus/discovery-monitor/*/results*", {
+        fixture:
+          "detection-discovery/activity-center/system-asset-results-with-consent",
+      }).as("getSystemAssetResultsWithConsent");
     });
 
     describe("Monitor list consent warnings", () => {
@@ -722,7 +724,7 @@ describe("Action center", () => {
     describe("Discovery column in assets table", () => {
       beforeEach(() => {
         cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}/${systemId}`);
-        cy.wait("@getSystemAssetResults");
+        cy.wait("@getSystemAssetResultsWithConsent");
       });
 
       it("should display discovery column with consent status badges", () => {
