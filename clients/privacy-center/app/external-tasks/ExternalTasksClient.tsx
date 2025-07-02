@@ -2,6 +2,7 @@
 
 import React, { useEffect } from "react";
 
+import { useConfig } from "~/features/common/config.slice";
 import { useSettings } from "~/features/common/settings.slice";
 import { ExternalAuthLayout } from "~/features/external-manual-tasks/components/ExternalAuthLayout";
 import { ExternalTaskLayout } from "~/features/external-manual-tasks/components/ExternalTaskLayout";
@@ -189,9 +190,10 @@ const ExternalTasksClientInner = ({
 // Wrapper component with Redux provider
 const ExternalTasksClient = ({ searchParams }: ExternalTasksClientProps) => {
   const settings = useSettings(); // Get settings from main store
+  const config = useConfig(); // Config should be available from server component
 
   return (
-    <ExternalStoreProvider settings={settings}>
+    <ExternalStoreProvider settings={settings} config={config}>
       <ExternalTasksClientInner searchParams={searchParams} />
     </ExternalStoreProvider>
   );

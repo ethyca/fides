@@ -32,6 +32,7 @@ import {
 import createWebStorage from "redux-persist/lib/storage/createWebStorage";
 
 import { baseApi } from "~/features/common/api.slice";
+import { configSlice } from "~/features/common/config.slice";
 import { settingsSlice } from "~/features/common/settings.slice";
 
 import { externalAuthSlice } from "./external-auth.slice";
@@ -66,6 +67,7 @@ const reducer = {
   // Slice reducers
   [externalAuthSlice.name]: externalAuthSlice.reducer,
   [settingsSlice.name]: settingsSlice.reducer,
+  [configSlice.name]: configSlice.reducer,
   externalManualTasks: externalManualTasksReducer,
 };
 

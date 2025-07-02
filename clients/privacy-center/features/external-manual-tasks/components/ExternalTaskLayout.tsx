@@ -12,6 +12,9 @@ import {
   AntTypography as Typography,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
+import Image from "next/image";
+
+import { useConfig } from "~/features/common/config.slice";
 
 import {
   logout,
@@ -25,6 +28,7 @@ export const ExternalTaskLayout = () => {
   const dispatch = useExternalAppDispatch();
   const user = useExternalAppSelector(selectExternalUser);
   const isAuthenticated = useExternalAppSelector(selectIsExternalAuthenticated);
+  const config = useConfig();
 
   // If not authenticated, don't render anything (parent should handle this)
   if (!isAuthenticated || !user) {
@@ -54,21 +58,33 @@ export const ExternalTaskLayout = () => {
           {/* Header */}
           <Card>
             <Flex justify="space-between" align="center">
-              <div>
-                <Typography.Title
-                  level={2}
-                  style={{ marginBottom: "8px" }}
-                  data-testid="external-task-header"
-                >
-                  My Tasks
-                </Typography.Title>
-                <Typography.Text
-                  type="secondary"
-                  data-testid="external-user-info"
-                >
-                  Welcome, {displayName}
-                </Typography.Text>
-              </div>
+              {/* Left side - Logo and Title */}
+              <Flex align="center" gap={32}>
+                <Image
+                  src={config?.logo_path || "/logo.svg"}
+                  alt="Fides logo"
+                  width={205}
+                  height={46}
+                  priority
+                />
+                <div>
+                  <Typography.Title
+                    level={2}
+                    style={{ marginBottom: "8px" }}
+                    data-testid="external-task-header"
+                  >
+                    My Tasks
+                  </Typography.Title>
+                  <Typography.Text
+                    type="secondary"
+                    data-testid="external-user-info"
+                  >
+                    Welcome, {displayName}
+                  </Typography.Text>
+                </div>
+              </Flex>
+
+              {/* Right side - Logout button */}
               <div>
                 <Button
                   onClick={handleLogout}
