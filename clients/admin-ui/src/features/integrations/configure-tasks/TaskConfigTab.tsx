@@ -205,20 +205,6 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
   return (
     <Box>
       <Flex direction="column" gap={4}>
-        <div>
-          <Paragraph>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Sit amet
-            iusto, nobis dignissimos obcaecati perferendis unde consectetur
-            delectus laborum autem fuga reprehenderit quibusdam ipsum,
-            laudantium tenetur omnis odit earum molestiae.
-            <br />
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Sit amet
-            iusto, nobis dignissimos obcaecati perferendis unde consectetur
-            delectus laborum autem fuga reprehenderit quibusdam ipsum,
-            laudantium tenetur omnis odit earum molestiae.
-          </Paragraph>
-        </div>
-
         <Flex justify="flex-end" className="mt-6">
           <Flex justify="flex-start" align="center" gap={2}>
             <Button type="primary" onClick={handleAddTask}>
