@@ -11,13 +11,20 @@ import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
 import DaysLeftTag from "~/features/common/DaysLeftTag";
-import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import FidesSpinner from "~/features/common/FidesSpinner";
 import { USER_PROFILE_ROUTE } from "~/features/common/nav/routes";
 import { PAGE_SIZES } from "~/features/common/table/v2/PaginationBar";
 import { formatUser } from "~/features/common/utils";
 import { SubjectRequestActionTypeMap } from "~/features/privacy-requests/constants";
-import { ActionType, PrivacyRequestStatus } from "~/types/api";
+import {
+  ActionType,
+  ManualFieldListItem,
+  ManualFieldRequestType,
+  ManualFieldStatus,
+  ManualFieldSystem,
+  ManualFieldUser,
+  PrivacyRequestStatus,
+} from "~/types/api";
 
 import { ActionButtons } from "./components/ActionButtons";
 import {
@@ -26,14 +33,6 @@ import {
   STATUS_MAP,
 } from "./constants";
 import { useGetTasksQuery } from "./manual-tasks.slice";
-import {
-  AssignedUser,
-  ManualTask,
-  RequestType,
-  SubjectIdentity,
-  System,
-  TaskStatus,
-} from "./mocked/types";
 
 interface FilterOption {
   text: string;
@@ -56,7 +55,7 @@ const getColumns = (
   systemFilters: FilterOption[],
   userFilters: FilterOption[],
   onUserClick: (userId: string) => void,
-): ColumnsType<ManualTask> => [
+): ColumnsType<ManualFieldListItem> => [
   {
     title: "Task name",
     dataIndex: "name",
@@ -71,7 +70,7 @@ const getColumns = (
     dataIndex: "status",
     key: "status",
     width: 120,
-    render: (status: TaskStatus) => (
+    render: (status: ManualFieldStatus) => (
       <Tag
         color={STATUS_MAP[status].color}
         data-testid="manual-task-status-tag"
@@ -92,12 +91,14 @@ const getColumns = (
   },
   {
     title: "Type",
-    dataIndex: ["privacy_request", "request_type"],
+    dataIndex: "request_type",
     key: "request_type",
     width: 150,
-    render: (type: RequestType) => {
+    render: (type: ManualFieldRequestType) => {
       const actionType =
-        type === "access" ? ActionType.ACCESS : ActionType.ERASURE;
+        type === ManualFieldRequestType.ACCESS
+          ? ActionType.ACCESS
+          : ActionType.ERASURE;
       const displayName = SubjectRequestActionTypeMap.get(actionType) || type;
       return <Typography.Text>{displayName}</Typography.Text>;
     },
@@ -109,7 +110,11 @@ const getColumns = (
     dataIndex: "assigned_users",
     key: "assigned_users",
     width: 380,
-    render: (assignedUsers: AssignedUser[]) => {
+    render: (assignedUsers: ManualFieldUser[]) => {
+      if (!assignedUsers || assignedUsers.length === 0) {
+        return <Typography.Text>-</Typography.Text>;
+      }
+
       const userOptions: UserOption[] = assignedUsers.map((user) => ({
         label: formatUser(user),
         value: user.id,
@@ -134,9 +139,9 @@ const getColumns = (
     dataIndex: ["privacy_request", "days_left"],
     key: "days_left",
     width: 140,
-    render: (daysLeft: number) => (
+    render: (daysLeft: number | null) => (
       <DaysLeftTag
-        daysLeft={daysLeft}
+        daysLeft={daysLeft || 0}
         includeText={false}
         status={PrivacyRequestStatus.PENDING}
       />
@@ -144,18 +149,17 @@ const getColumns = (
   },
   {
     title: "Subject identity",
-    dataIndex: ["privacy_request", "subject_identity"],
-    key: "subject_identity",
+    dataIndex: ["privacy_request", "subject_identities"],
+    key: "subject_identities",
     width: 200,
-    render: (subjectIdentity: SubjectIdentity) => {
-      if (!subjectIdentity) {
+    render: (subjectIdentities: Record<string, string>) => {
+      if (!subjectIdentities) {
         return <Typography.Text>-</Typography.Text>;
       }
 
+      // Display email or phone_number if available
       const identity =
-        subjectIdentity.email?.value ||
-        subjectIdentity.phone_number?.value ||
-        "";
+        subjectIdentities.email || subjectIdentities.phone_number || "";
       return (
         <Typography.Text ellipsis={{ tooltip: identity }}>
           {identity}
@@ -173,7 +177,6 @@ const getColumns = (
 
 export const ManualTasks = () => {
   const router = useRouter();
-  const [searchTerm, setSearchTerm] = useState("");
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const [filters, setFilters] = useState<ManualTaskFilters>({});
@@ -181,32 +184,30 @@ export const ManualTasks = () => {
   const { data, isLoading, isFetching } = useGetTasksQuery({
     page: pageIndex,
     size: pageSize,
-    search: searchTerm,
-
-    status: filters.status as TaskStatus,
+    status: filters.status as ManualFieldStatus,
     systemName: filters.systemName,
-    requestType: filters.requestType as RequestType,
+    requestType: filters.requestType as ManualFieldRequestType,
     assignedUserId: filters.assignedUsers,
   });
 
   const {
     items: tasks,
     total: totalRows,
-    filterOptions,
+    filter_options: filterOptions,
   } = useMemo(
     () =>
       data || {
         items: [],
         total: 0,
         pages: 0,
-        filterOptions: { assigned_users: [], systems: [] },
+        filter_options: { assigned_users: [], systems: [] },
       },
     [data],
   );
 
   const systemFilters = useMemo(
     () =>
-      filterOptions?.systems?.map((system: System) => ({
+      filterOptions?.systems?.map((system: ManualFieldSystem) => ({
         text: system.name,
         value: system.name,
       })) || [],
@@ -215,7 +216,7 @@ export const ManualTasks = () => {
 
   const userFilters = useMemo(
     () =>
-      filterOptions?.assigned_users?.map((user: AssignedUser) => ({
+      filterOptions?.assigned_users?.map((user: ManualFieldUser) => ({
         text: formatUser(user),
         value: user.id,
       })) || [],
@@ -245,10 +246,6 @@ export const ManualTasks = () => {
     setPageIndex(1);
   };
 
-  const handleSearchChange = (value: string) => {
-    setSearchTerm(value);
-  };
-
   const columns = useMemo(
     () =>
       getColumns(systemFilters, userFilters, (userId) => {
@@ -268,17 +265,12 @@ export const ManualTasks = () => {
 
   return (
     <div className="mt-2 space-y-4">
-      <DebouncedSearchInput
-        placeholder="Search by name or description..."
-        value={searchTerm}
-        onChange={handleSearchChange}
-        className="max-w-sm"
-      />
-
       <Table
         columns={columns}
         dataSource={tasks}
-        rowKey="task_id"
+        rowKey={(record) =>
+          `${record.privacy_request.id}-${record.manual_field_id}`
+        }
         pagination={{
           current: pageIndex,
           pageSize,
@@ -297,9 +289,7 @@ export const ManualTasks = () => {
         }}
         onChange={handleTableChange}
         locale={{
-          emptyText: searchTerm ? (
-            "No tasks match your search"
-          ) : (
+          emptyText: (
             <div data-testid="empty-state">No manual tasks available.</div>
           ),
         }}
