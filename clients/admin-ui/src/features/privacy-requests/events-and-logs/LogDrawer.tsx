@@ -88,7 +88,7 @@ const LogDrawer = ({
           {currentLogs && !isViewingError ? (
             <EventLog
               eventLogs={currentLogs}
-              openErrorPanel={onOpenErrorPanel}
+              onDetailPanel={onOpenErrorPanel}
             />
           ) : null}
           {isViewingError ? (

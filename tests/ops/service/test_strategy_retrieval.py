@@ -1,9 +1,11 @@
 from abc import abstractmethod
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 
 import pytest
+from requests import Response
 
 from fides.api.common_exceptions import NoSuchStrategyException
+from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.saas.strategy_configuration import StrategyConfiguration
 from fides.api.service.processors.post_processor_strategy.post_processor_strategy import (
     PostProcessorStrategy,
@@ -22,7 +24,11 @@ class SomeStrategy(PostProcessorStrategy):
         self.some_config = configuration.some_key
 
     def process(
-        self, data: Any, identity_data: Dict[str, Any] = None
+        self,
+        data: Any,
+        identity_data: Optional[Dict[str, Any]] = None,
+        privacy_request: Optional[PrivacyRequest] = None,
+        response: Optional[Response] = None,
     ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
         pass
 
@@ -82,7 +88,11 @@ class DifferentStrategySubClass(SomeAbstractStrategyClass):
         self.some_config = configuration.some_key
 
     def process(
-        self, data: Any, identity_data: Dict[str, Any] = None
+        self,
+        data: Any,
+        identity_data: Optional[Dict[str, Any]] = None,
+        privacy_request: Optional[PrivacyRequest] = None,
+        response: Optional[Response] = None,
     ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
         pass
 
