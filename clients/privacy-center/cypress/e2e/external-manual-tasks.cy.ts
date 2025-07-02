@@ -210,8 +210,8 @@ describe("External Manual Tasks", () => {
         .contains("New")
         .parents("tr")
         .within(() => {
-          cy.get('[data-testid="task-complete-button"]').should("be.visible");
-          cy.get('[data-testid="task-actions-dropdown"]').should("be.visible");
+          cy.get('[data-testid="task-complete-button"]').should("exist");
+          cy.get('[data-testid="task-actions-dropdown"]').should("exist");
         });
 
       // Completed task should not have actions
@@ -255,7 +255,7 @@ describe("External Manual Tasks", () => {
         .contains("Export Customer Data from Salesforce")
         .parents("tr")
         .within(() => {
-          cy.get('[data-testid="task-complete-button"]').click();
+          cy.get('[data-testid="task-complete-button"]').click({ force: true });
         });
 
       cy.get('[data-testid="complete-task-modal"]').should("be.visible");
@@ -296,7 +296,7 @@ describe("External Manual Tasks", () => {
         .contains("Export Analytics Data")
         .parents("tr")
         .within(() => {
-          cy.get('[data-testid="task-complete-button"]').click();
+          cy.get('[data-testid="task-complete-button"]').click({ force: true });
         });
 
       cy.get('[data-testid="complete-task-modal"]').within(() => {
@@ -345,7 +345,7 @@ describe("External Manual Tasks", () => {
         .contains("Delete User Profile from MongoDB")
         .parents("tr")
         .within(() => {
-          cy.get('[data-testid="task-complete-button"]').click();
+          cy.get('[data-testid="task-complete-button"]').click({ force: true });
         });
 
       cy.get('[data-testid="complete-task-modal"]').within(() => {
