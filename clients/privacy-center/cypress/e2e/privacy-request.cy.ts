@@ -198,6 +198,10 @@ describe("Privacy Request with multiselect custom fields", () => {
       cy.get('[data-testid="select-data_categories"]').type(
         "Analytics Data{enter}",
       );
+
+      // Close the dropdown by clicking on another field to avoid covering the submit button
+      cy.get("#email").click();
+
       // Submit form
       cy.get("button[type='submit']").click();
 
@@ -268,6 +272,9 @@ describe("Privacy Request with multiselect custom fields", () => {
         "Activity History{enter}",
       );
 
+      // Close the dropdown by clicking on another field to avoid covering the submit button
+      cy.get("#email").click();
+
       // Submit form
       cy.get("button[type='submit']").click();
 
@@ -306,6 +313,9 @@ describe("Privacy Request with multiselect custom fields", () => {
       cy.get('[data-testid="select-preferred_format"]').within(() => {
         cy.get('.ant-select-selection-item[title="HTML"]').should("exist");
       });
+
+      // Close the dropdown by clicking on another field to avoid covering the submit button
+      cy.get("#email").click();
 
       // Submit form
       cy.get("button[type='submit']").click();
