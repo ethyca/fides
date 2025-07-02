@@ -3,8 +3,10 @@
 /* eslint-disable */
 
 import type { ManualFieldRequestType } from "./ManualFieldRequestType";
-import type { SubjectIdentitySnapshot } from "./SubjectIdentitySnapshot";
 
+/**
+ * Privacy request snapshot with identity fields.
+ */
 export type ManualFieldPrivacyRequest = {
   id: string;
   /**
@@ -12,5 +14,5 @@ export type ManualFieldPrivacyRequest = {
    */
   days_left?: number | null;
   request_type: ManualFieldRequestType;
-  subject_identity?: SubjectIdentitySnapshot | null;
+  subject_identities: any;
 };
