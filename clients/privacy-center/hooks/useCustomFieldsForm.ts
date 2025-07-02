@@ -22,16 +22,11 @@ export const useCustomFieldsForm = ({
   customPrivacyRequestFields,
   searchParams,
 }: UseCustomFieldsFormProps) => {
-  // Debug logging to understand what we're receiving
-  console.log("useCustomFieldsForm received:", customPrivacyRequestFields);
-
   const getInitialValues = (): FormValues => {
     const values = Object.fromEntries(
       Object.entries(customPrivacyRequestFields)
         .filter(([, field]) => !field.hidden)
         .map(([key, field]) => {
-          console.log(`Processing field ${key}:`, field);
-
           const valueFromQueryParam =
             field.query_param_key &&
             searchParams &&
@@ -56,12 +51,10 @@ export const useCustomFieldsForm = ({
             value = valueFromQueryParam || field.default_value || "";
           }
 
-          console.log(`Field ${key} initial value:`, value);
           return [key, value];
         }),
     );
 
-    console.log("getInitialValues returning:", values);
     return values;
   };
 
@@ -90,10 +83,6 @@ export const useCustomFieldsForm = ({
       ),
     });
 
-    console.log(
-      "getValidationSchema returning schema with fields:",
-      Object.keys(schema.fields),
-    );
     return schema;
   };
 
