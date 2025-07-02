@@ -31,18 +31,7 @@ const CustomFieldRenderer = ({
   onBlur,
   error,
 }: CustomFieldRendererProps) => {
-  // Debug logging
-  console.log(`CustomFieldRenderer rendering field ${fieldKey}:`, {
-    field,
-    value,
-    field_type: field.field_type,
-    options: field.options,
-  });
-
   if (field.field_type === "multiselect" && field.options) {
-    console.log(
-      `Rendering multiselect for ${fieldKey} with data-testid="select-${fieldKey}"`,
-    );
     return (
       <>
         <AntSelect
@@ -50,9 +39,8 @@ const CustomFieldRenderer = ({
           data-testid={`select-${fieldKey}`}
           mode="multiple"
           placeholder={`Select ${field.label.toLowerCase()}`}
-          value={(value as MultiselectFieldValue) || []}
+          value={Array.isArray(value) ? value : []}
           onChange={(selectedValues: string[]) => {
-            console.log(`${fieldKey} multiselect onChange:`, selectedValues);
             onChange(selectedValues);
           }}
           onBlur={onBlur}
@@ -80,18 +68,14 @@ const CustomFieldRenderer = ({
   }
 
   if (field.field_type === "select" && field.options) {
-    console.log(
-      `Rendering select for ${fieldKey} with data-testid="select-${fieldKey}"`,
-    );
     return (
       <>
         <AntSelect
           id={fieldKey}
           data-testid={`select-${fieldKey}`}
           placeholder={`Select ${field.label.toLowerCase()}`}
-          value={(value as string) || ""}
+          value={typeof value === "string" ? value : ""}
           onChange={(selectedValue: string) => {
-            console.log(`${fieldKey} select onChange:`, selectedValue);
             onChange(selectedValue);
           }}
           onBlur={onBlur}
@@ -119,7 +103,6 @@ const CustomFieldRenderer = ({
     );
   }
 
-  console.log(`Rendering text input for ${fieldKey}`);
   return (
     <>
       <Input
@@ -128,7 +111,7 @@ const CustomFieldRenderer = ({
         placeholder={field.label}
         onChange={(e) => onChange(e.target.value)}
         onBlur={onBlur}
-        value={value as string}
+        value={typeof value === "string" ? value : ""}
         aria-label={field.label}
         aria-describedby={`${fieldKey}-error`}
         aria-required={field.required !== false}
