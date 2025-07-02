@@ -1,6 +1,5 @@
 "use client";
 
-import { AntTypography as Typography } from "fidesui";
 import React, { useEffect } from "react";
 
 import { useSettings } from "~/features/common/settings.slice";
@@ -41,7 +40,7 @@ const ExternalTasksClientInner = ({
   searchParams,
 }: ExternalTasksClientProps) => {
   const resolvedSearchParams = React.use(searchParams);
-  const token = resolvedSearchParams?.token as string;
+  const token = resolvedSearchParams?.access_token as string;
 
   const dispatch = useExternalAppDispatch();
 
@@ -182,13 +181,6 @@ const ExternalTasksClientInner = ({
   // For auth steps, render centered layout
   return (
     <ExternalAuthLayout title="External Manual Tasks">
-      {process.env.NODE_ENV === "development" && (
-        <div style={{ textAlign: "center", marginBottom: "16px" }}>
-          <Typography.Text type="secondary" style={{ fontSize: "12px" }}>
-            Token: {token}
-          </Typography.Text>
-        </div>
-      )}
       {renderAuthContent()}
     </ExternalAuthLayout>
   );

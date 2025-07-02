@@ -8,9 +8,10 @@
 import {
   AntButton as Button,
   AntCard as Card,
-  AntSpace as Space,
+  AntFlex as Flex,
   AntTypography as Typography,
 } from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 
 import {
   logout,
@@ -43,30 +44,16 @@ export const ExternalTaskLayout = () => {
     <div
       style={{
         minHeight: "100vh",
-        backgroundColor: "#f5f5f5", // neutral-75 from palette
+        backgroundColor: palette.FIDESUI_NEUTRAL_75,
         padding: "32px 16px",
       }}
       data-testid="external-task-layout"
     >
-      <div className="mx-auto w-full px-6">
-        <Space direction="vertical" size={24} style={{ width: "100%" }}>
+      <div style={{ margin: "0 auto", width: "100%", padding: "0 24px" }}>
+        <Flex vertical gap={24} style={{ width: "100%" }}>
           {/* Header */}
-          <div
-            style={{
-              backgroundColor: "white",
-              borderRadius: "8px",
-              padding: "24px",
-              boxShadow:
-                "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
+          <Card>
+            <Flex justify="space-between" align="center">
               <div>
                 <Typography.Title
                   level={2}
@@ -91,14 +78,14 @@ export const ExternalTaskLayout = () => {
                   Logout
                 </Button>
               </div>
-            </div>
-          </div>
+            </Flex>
+          </Card>
 
           {/* Tasks Content */}
           <Card>
             <ExternalManualTasks />
           </Card>
-        </Space>
+        </Flex>
       </div>
     </div>
   );
