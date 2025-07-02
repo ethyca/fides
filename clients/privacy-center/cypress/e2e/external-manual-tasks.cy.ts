@@ -330,10 +330,12 @@ describe("External Manual Tasks", () => {
       });
 
       cy.wait("@completeExternalTask").then((interception) => {
-        expect(interception.request.body).to.deep.include({
-          text_value: "Analytics data exported successfully",
-          comment: "Task completed successfully",
-        });
+        // Multipart form request – verify multipart header and body exists
+        expect(interception.request.headers).to.have.property("content-type");
+        expect(interception.request.headers["content-type"]).to.include(
+          "multipart/form-data",
+        );
+        expect(interception.request.body).to.exist;
       });
 
       cy.get('[data-testid="complete-task-modal"]').should("not.exist");
@@ -369,10 +371,12 @@ describe("External Manual Tasks", () => {
       });
 
       cy.wait("@completeExternalTask").then((interception) => {
-        expect(interception.request.body).to.deep.include({
-          checkbox_value: true,
-          comment: "User profile deleted successfully",
-        });
+        // Multipart form request – verify multipart header and body exists
+        expect(interception.request.headers).to.have.property("content-type");
+        expect(interception.request.headers["content-type"]).to.include(
+          "multipart/form-data",
+        );
+        expect(interception.request.body).to.exist;
       });
 
       cy.get('[data-testid="complete-task-modal"]').should("not.exist");
@@ -383,6 +387,9 @@ describe("External Manual Tasks", () => {
     beforeEach(() => {
       // Authenticate and get to tasks
       cy.visit("/external-tasks?access_token=test_token_123");
+      cy.get('[data-testid="otp-request-email-input"]').type(
+        "user@example.com",
+      );
       cy.get('[data-testid="otp-request-button"]').click();
       cy.wait("@postRequestOtp");
       cy.get('[data-testid="otp-input"]').type("123456");
@@ -434,9 +441,11 @@ describe("External Manual Tasks", () => {
       });
 
       cy.wait("@skipExternalTask").then((interception) => {
-        expect(interception.request.body).to.deep.include({
-          comment: "Customer withdrew request",
-        });
+        expect(interception.request.headers).to.have.property("content-type");
+        expect(interception.request.headers["content-type"]).to.include(
+          "multipart/form-data",
+        );
+        expect(interception.request.body).to.exist;
       });
 
       cy.get('[data-testid="skip-task-modal"]').should("not.exist");

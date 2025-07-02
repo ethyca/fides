@@ -51,9 +51,21 @@ const externalDynamicBaseQuery: BaseQueryFn = async (
     // Get external auth token from external store
     const authToken = selectExternalToken({ externalAuth: state.externalAuth });
 
+    const isMultipart =
+      typeof args === "object" &&
+      args !== null &&
+      (args as any).body instanceof FormData;
+
     const baseQuery = fetchBaseQuery({
       baseUrl: settingsState.settings.FIDES_API_URL,
-      prepareHeaders: (headers) => addCommonHeaders(headers, authToken),
+      prepareHeaders: (headers) => {
+        addCommonHeaders(headers, authToken);
+        // If the request uses FormData, ensure we don't override the browser-set multipart header
+        if (isMultipart) {
+          headers.delete("Content-Type");
+        }
+        return headers;
+      },
     });
     return baseQuery(args, api, extraOptions);
   }
