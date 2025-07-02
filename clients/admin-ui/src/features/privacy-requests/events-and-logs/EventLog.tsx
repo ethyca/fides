@@ -18,12 +18,13 @@ import {
   ExecutionLogStatusColors,
   ExecutionLogStatusLabels,
 } from "privacy-requests/types";
+import React from "react";
 
 import { ActionType } from "~/types/api";
 
 type EventDetailsProps = {
   eventLogs: ExecutionLog[];
-  openErrorPanel: (message: string, status?: ExecutionLogStatus) => void;
+  onDetailPanel: (message: string, status?: ExecutionLogStatus) => void;
 };
 
 const actionTypeToLabel = (actionType: string) => {
@@ -41,7 +42,7 @@ const actionTypeToLabel = (actionType: string) => {
   }
 };
 
-const EventLog = ({ eventLogs, openErrorPanel }: EventDetailsProps) => {
+const EventLog = ({ eventLogs, onDetailPanel }: EventDetailsProps) => {
   const tableItems = eventLogs?.map((detail) => (
     <Tr
       key={detail.updated_at}
@@ -58,17 +59,13 @@ const EventLog = ({ eventLogs, openErrorPanel }: EventDetailsProps) => {
           (detail.status === ExecutionLogStatus.SKIPPED && detail.message) ||
           detail.status === ExecutionLogStatus.AWAITING_PROCESSING
         ) {
-          openErrorPanel(detail.message, detail.status);
+          onDetailPanel(detail.message, detail.status);
         }
       }}
       style={{
-        cursor:
-          detail.status === ExecutionLogStatus.ERROR ||
-          (detail.status === ExecutionLogStatus.SKIPPED && detail.message) ||
-          detail.status === ExecutionLogStatus.AWAITING_PROCESSING
-            ? "pointer"
-            : "unset",
+        cursor: detail.message ? "pointer" : "unset",
       }}
+      _hover={{ backgroundColor: palette.FIDESUI_NEUTRAL_50 }}
     >
       <Td>
         <Text color="gray.600" fontSize="xs" lineHeight="4" fontWeight="medium">

@@ -19,6 +19,7 @@ import * as Yup from "yup";
 
 import { addCommonHeaders } from "~/common/CommonHeaders";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
+import CustomFieldRenderer from "~/components/common/CustomFieldRenderer";
 import { FormErrorMessage } from "~/components/FormErrorMessage";
 import { ModalViews } from "~/components/modals/types";
 import {
@@ -31,20 +32,18 @@ import { defaultIdentityInput } from "~/constants";
 import { useConfig } from "~/features/common/config.slice";
 import { useProperty } from "~/features/common/property.slice";
 import { useSettings } from "~/features/common/settings.slice";
+import { useCustomFieldsForm } from "~/hooks/useCustomFieldsForm";
 import { PrivacyRequestStatus } from "~/types";
 import { PrivacyRequestSource } from "~/types/api/models/PrivacyRequestSource";
 import { CustomIdentity, PrivacyRequestOption } from "~/types/config";
-
-type FormValues = {
-  [key: string]: any;
-};
+import { FormValues, MultiselectFieldValue } from "~/types/forms";
 
 /**
  *
  * @param value
  * @returns Default to null if the value is undefined or an empty string
  */
-const fallbackNull = (value: any) =>
+const fallbackNull = (value: string | MultiselectFieldValue) =>
   value === undefined || value === "" ? null : value;
 
 const usePrivacyRequestForm = ({
@@ -69,6 +68,12 @@ const usePrivacyRequestForm = ({
 
   const property = useProperty();
 
+  // Use our custom hook for form field logic
+  const { getInitialValues, getValidationSchema } = useCustomFieldsForm({
+    customPrivacyRequestFields,
+    searchParams,
+  });
+
   const formik = useFormik<FormValues>({
     initialValues: {
       ...Object.fromEntries(
@@ -82,19 +87,7 @@ const usePrivacyRequestForm = ({
           )
           .map(([key]) => [key, ""]),
       ),
-      ...Object.fromEntries(
-        Object.entries(customPrivacyRequestFields)
-          .filter(([, field]) => !field.hidden)
-          .map(([key, field]) => {
-            const valueFromQueryParam =
-              field.query_param_key &&
-              (searchParams?.get(field.query_param_key) as string);
-
-            const value = valueFromQueryParam || field.default_value || "";
-
-            return [key, value];
-          }),
-      ),
+      ...getInitialValues(),
     },
     onSubmit: async (values) => {
       if (!action) {
@@ -276,19 +269,7 @@ const usePrivacyRequestForm = ({
             ];
           }),
       ),
-      ...Object.fromEntries(
-        Object.entries(customPrivacyRequestFields)
-          .filter(([, field]) => !field.hidden)
-          .map(([key, { label, required }]) => {
-            const isRequired = required !== false;
-            return [
-              key,
-              isRequired
-                ? Yup.string().required(`${label} is required`)
-                : Yup.string().notRequired(),
-            ];
-          }),
-      ),
+      ...getValidationSchema().fields,
     }),
   });
 
@@ -381,9 +362,7 @@ const PrivacyRequestForm = ({
                   onBlur={handleBlur}
                   value={values.name}
                 />
-                <FormErrorMessage>
-                  {JSON.stringify(errors.name)}
-                </FormErrorMessage>
+                <FormErrorMessage>{errors.name}</FormErrorMessage>
               </FormControl>
             ) : null}
             {identityInputs.email ? (
@@ -403,9 +382,7 @@ const PrivacyRequestForm = ({
                   onBlur={handleBlur}
                   value={values.email}
                 />
-                <FormErrorMessage>
-                  {JSON.stringify(errors.email)}
-                </FormErrorMessage>
+                <FormErrorMessage>{errors.email}</FormErrorMessage>
               </FormControl>
             ) : null}
             {identityInputs.phone ? (
@@ -424,9 +401,7 @@ const PrivacyRequestForm = ({
                   onBlur={handleBlur}
                   value={values.phone}
                 />
-                <FormErrorMessage>
-                  {JSON.stringify(errors.phone)}
-                </FormErrorMessage>
+                <FormErrorMessage>{errors.phone}</FormErrorMessage>
               </FormControl>
             ) : null}
             {Object.entries(identityInputs)
@@ -455,9 +430,7 @@ const PrivacyRequestForm = ({
                     onBlur={handleBlur}
                     value={values[key]}
                   />
-                  <FormErrorMessage>
-                    {JSON.stringify(errors[key])}
-                  </FormErrorMessage>
+                  <FormErrorMessage>{errors[key]}</FormErrorMessage>
                 </FormControl>
               ))}
             {Object.entries(customPrivacyRequestFields)
@@ -470,17 +443,16 @@ const PrivacyRequestForm = ({
                   isRequired={item.required !== false}
                 >
                   <FormLabel fontSize="sm">{item.label}</FormLabel>
-                  <Input
-                    id={key}
-                    name={key}
-                    focusBorderColor="primary.500"
-                    onChange={handleChange}
-                    onBlur={handleBlur}
+                  <CustomFieldRenderer
+                    field={item}
+                    fieldKey={key}
                     value={values[key]}
+                    onChange={(value) => setFieldValue(key, value)}
+                    onBlur={() => handleBlur({ target: { name: key } })}
+                    error={
+                      touched[key] && errors[key] ? errors[key] : undefined
+                    }
                   />
-                  <FormErrorMessage>
-                    {JSON.stringify(errors[key])}
-                  </FormErrorMessage>
                 </FormControl>
               ))}
           </Stack>
