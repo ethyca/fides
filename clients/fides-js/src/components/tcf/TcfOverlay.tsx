@@ -626,6 +626,7 @@ export const TcfOverlay = () => {
       onOpen={dispatchOpenOverlayEvent}
       onDismiss={handleDismiss}
       renderBanner={({
+        attributes,
         isEmbedded,
         isOpen,
         onClose,
@@ -637,6 +638,7 @@ export const TcfOverlay = () => {
         };
         return (
           <ConsentBanner
+            attributes={attributes}
             dismissable={isDismissable}
             bannerIsOpen={isOpen}
             isEmbedded={isEmbedded}

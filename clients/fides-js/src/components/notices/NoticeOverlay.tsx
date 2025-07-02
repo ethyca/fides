@@ -376,6 +376,7 @@ const NoticeOverlay = () => {
       onOpen={dispatchOpenOverlayEvent}
       onDismiss={handleDismiss}
       renderBanner={({
+        attributes,
         isEmbedded,
         isOpen,
         onClose,
@@ -387,6 +388,7 @@ const NoticeOverlay = () => {
             Layer1ButtonOption.ACKNOWLEDGE;
         return (
           <ConsentBanner
+            attributes={attributes}
             bannerIsOpen={isOpen}
             dismissable={isDismissable}
             onOpen={dispatchOpenBannerEvent}

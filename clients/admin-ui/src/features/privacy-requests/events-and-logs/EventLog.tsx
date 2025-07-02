@@ -46,8 +46,18 @@ const EventLog = ({ eventLogs, onDetailPanel }: EventDetailsProps) => {
   const tableItems = eventLogs?.map((detail) => (
     <Tr
       key={detail.updated_at}
+      backgroundColor={
+        detail.status === ExecutionLogStatus.ERROR ||
+        (detail.status === ExecutionLogStatus.SKIPPED && detail.message) ||
+        detail.status === ExecutionLogStatus.AWAITING_PROCESSING
+          ? palette.FIDESUI_NEUTRAL_50
+          : "unset"
+      }
       onClick={() => {
-        if (detail.message) {
+        if (
+          detail.status === ExecutionLogStatus.ERROR ||
+          (detail.status === ExecutionLogStatus.SKIPPED && detail.message)
+        ) {
           onDetailPanel(detail.message, detail.status);
         }
       }}
