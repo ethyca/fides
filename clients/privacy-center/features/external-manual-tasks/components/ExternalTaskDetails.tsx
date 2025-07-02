@@ -9,12 +9,13 @@
  * IMPORTANT: When updating admin-ui TaskDetails.tsx, review this component for sync!
  */
 
-import { AntTag as Tag, AntTypography as Typography } from "fidesui";
-
 import {
-  IdentityField,
-  ManualFieldListItem,
-} from "../external-manual-tasks.slice";
+  AntFlex as Flex,
+  AntTag as Tag,
+  AntTypography as Typography,
+} from "fidesui";
+
+import { ManualFieldListItem } from "../external-manual-tasks.slice";
 
 interface ExternalTaskDetailsProps {
   task: ManualFieldListItem;
@@ -28,12 +29,21 @@ const TaskInfoRow = ({
   label: string;
   children: React.ReactNode;
 }) => (
-  <div className="flex items-center">
-    <div className="shrink-0 grow-0 basis-1/3 pr-2">
-      <Typography.Text className="text-gray-700">{label}:</Typography.Text>
+  <Flex align="center" gap="small">
+    <div
+      style={{
+        flexShrink: 0,
+        flexGrow: 0,
+        flexBasis: "33%",
+        paddingRight: "8px",
+      }}
+    >
+      <Typography.Text style={{ color: "#374151" }}>{label}:</Typography.Text>
     </div>
-    <div className="min-w-0 shrink grow text-gray-600">{children}</div>
-  </div>
+    <div style={{ minWidth: 0, flexShrink: 1, flexGrow: 1, color: "#6b7280" }}>
+      {children}
+    </div>
+  </Flex>
 );
 
 export const ExternalTaskDetails = ({ task }: ExternalTaskDetailsProps) => {
@@ -43,7 +53,7 @@ export const ExternalTaskDetails = ({ task }: ExternalTaskDetailsProps) => {
     task.privacy_request.request_type.slice(1);
 
   return (
-    <div className="flex flex-col space-y-3">
+    <Flex vertical gap="middle">
       <TaskInfoRow label="Name">
         <Typography.Text data-testid="task-details-name">
           {task.name}
@@ -51,7 +61,9 @@ export const ExternalTaskDetails = ({ task }: ExternalTaskDetailsProps) => {
       </TaskInfoRow>
 
       <TaskInfoRow label="Description">
-        <Typography.Text>{task.description}</Typography.Text>
+        <Typography.Text>
+          {task.description || "No description"}
+        </Typography.Text>
       </TaskInfoRow>
 
       <TaskInfoRow label="Request Type">
@@ -59,15 +71,12 @@ export const ExternalTaskDetails = ({ task }: ExternalTaskDetailsProps) => {
       </TaskInfoRow>
 
       <TaskInfoRow label="System">
-        <Typography.Text>{task.system.name}</Typography.Text>
+        <Typography.Text>{task.system?.name || "No system"}</Typography.Text>
       </TaskInfoRow>
 
       <TaskInfoRow label="Assigned To">
-        {task.assigned_users.length > 0 ? (
-          <div
-            className="flex flex-wrap gap-1"
-            data-testid="assigned-users-tags"
-          >
+        {task.assigned_users && task.assigned_users.length > 0 ? (
+          <Flex wrap="wrap" gap="small" data-testid="assigned-users-tags">
             {task.assigned_users.map((user) => (
               <Tag key={user.id} data-testid={`assigned-user-tag-${user.id}`}>
                 {`${user.first_name || ""} ${user.last_name || ""}`.trim() ||
@@ -75,7 +84,7 @@ export const ExternalTaskDetails = ({ task }: ExternalTaskDetailsProps) => {
                   "Unknown User"}
               </Tag>
             ))}
-          </div>
+          </Flex>
         ) : (
           <Typography.Text>No one assigned</Typography.Text>
         )}
@@ -84,12 +93,13 @@ export const ExternalTaskDetails = ({ task }: ExternalTaskDetailsProps) => {
       {/* Show all available identity fields */}
       {task.privacy_request.subject_identity &&
         Object.entries(task.privacy_request.subject_identity).map(
-          ([key, identity]) => (
-            <TaskInfoRow key={key} label={`Identity - ${identity.label}`}>
-              <Typography.Text>{identity.value}</Typography.Text>
-            </TaskInfoRow>
-          ),
+          ([key, identity]) =>
+            identity ? (
+              <TaskInfoRow key={key} label={`Identity - ${identity.label}`}>
+                <Typography.Text>{identity.value}</Typography.Text>
+              </TaskInfoRow>
+            ) : null,
         )}
-    </div>
+    </Flex>
   );
 };
