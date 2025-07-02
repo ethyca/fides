@@ -151,7 +151,7 @@ const LanguageSelector = ({
       className={`fides-i18n-menu ${isOpen ? "fides-i18n-menu-open" : ""}`}
       ref={menuRef}
     >
-      <div role="group" className="fides-i18n-popover" id="fides-i18n-popover">
+      <div role="menu" className="fides-i18n-popover" id="fides-i18n-popover">
         {i18n.availableLanguages.map((lang) => (
           <MenuItem
             key={lang.locale}
