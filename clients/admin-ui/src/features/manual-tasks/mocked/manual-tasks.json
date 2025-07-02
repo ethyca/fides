@@ -136,7 +136,7 @@
       "task_id": "task_004",
       "name": "Export Analytics Data",
       "description": "Extract user analytics data from Google Analytics",
-      "input_type": "file",
+      "input_type": "string",
       "request_type": "access",
       "status": "new",
       "assigned_users": [

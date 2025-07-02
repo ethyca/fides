@@ -35,6 +35,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Fixed
 - Fixed an accessibility issue where tooltips could not be triggered by keyboard focus. [#6276](https://github.com/ethyca/fides/pull/6276)
+- Fixed accessibility issues with text contrast and interactive Tags. [#6278](https://github.com/ethyca/fides/pull/6278)
 - Appropriately expose Shopify interface docs [#6284](https://github.com/ethyca/fides/pull/6284)
 
 ## [2.64.2](https://github.com/ethyca/fides/compare/2.64.1...2.64.2)
