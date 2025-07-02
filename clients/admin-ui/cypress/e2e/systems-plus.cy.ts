@@ -134,13 +134,13 @@ describe("System management with Plus features", () => {
       cy.wait("@postDictSystem");
       cy.wait("@getDictSystem");
       cy.getByTestId("input-dpo").should("have.value", "DPO@anzu.io");
-      cy.getByTestId("tab-Data uses").click();
+      cy.getAntTab("Data uses").click();
       // eslint-disable-next-line cypress/no-unnecessary-waiting
       cy.wait(500);
-      cy.getByTestId("tab-Information").click();
+      cy.getAntTab("Information").click();
       // eslint-disable-next-line cypress/no-unnecessary-waiting
       cy.wait(500);
-      cy.getByTestId("tab-Data uses").click();
+      cy.getAntTab("Data uses").click();
       cy.getByTestId("confirmation-modal").should("not.exist");
     });
 
@@ -156,7 +156,7 @@ describe("System management with Plus features", () => {
       cy.getByTestId("vendor-name-select").antSelect("Aniview LTD");
       cy.getByTestId("save-btn").click();
       cy.wait(["@postSystem", "@getSystem", "@getSystems"]);
-      cy.getByTestId("tab-Data uses").click();
+      cy.getAntTab("Data uses").click();
       cy.getByTestId("add-btn").should("not.exist");
       cy.getByTestId("delete-btn").should("not.exist");
       cy.getByTestId("row-functional.service.improve").click();
@@ -168,7 +168,7 @@ describe("System management with Plus features", () => {
       cy.getByTestId("vendor-name-select").antSelect("Aniview LTD");
       cy.getByTestId("save-btn").click();
       cy.wait(["@postSystem", "@getSystem", "@getSystems"]);
-      cy.getByTestId("tab-Assets").click();
+      cy.getAntTab("Assets").click();
       cy.getByTestId("col-select").should("not.exist");
       cy.getByTestId("col-actions").should("not.exist");
       cy.getByTestId("add-asset-btn").should("not.exist");
@@ -221,7 +221,7 @@ describe("System management with Plus features", () => {
       cy.getByTestId("vendor-name-select").realPress("Enter");
       cy.getByTestId("save-btn").click();
       cy.wait(["@postSystem", "@getSystem", "@getSystems"]);
-      cy.getByTestId("tab-Data uses").click();
+      cy.getAntTab("Data uses").click();
       cy.getByTestId("add-btn");
       cy.getByTestId("delete-btn");
       cy.getByTestId("row-functional.service.improve").click();
@@ -234,7 +234,7 @@ describe("System management with Plus features", () => {
       cy.getByTestId("vendor-name-select").find("input").type("L{enter}");
       cy.getByTestId("save-btn").click();
       cy.wait(["@postSystem", "@getSystem", "@getSystems"]);
-      cy.getByTestId("tab-Data uses").click();
+      cy.getAntTab("Data uses").click();
       cy.getByTestId("row-functional.service.improve").click();
       cy.getByTestId("input-name").should("be.disabled");
     });
@@ -245,7 +245,7 @@ describe("System management with Plus features", () => {
       cy.getByTestId("vendor-name-select").realPress("Enter");
       cy.getByTestId("save-btn").click();
       cy.wait(["@postSystem", "@getSystem", "@getSystems"]);
-      cy.getByTestId("tab-Data uses").click();
+      cy.getAntTab("Data uses").click();
       cy.getByTestId("row-functional.service.improve").click();
       cy.getByTestId("controlled-select-data_use")
         .find("input")
@@ -521,13 +521,13 @@ describe("System management with Plus features", () => {
       cy.intercept("GET", "/api/v1/plus/system-assets/*", {
         fixture: "empty-pagination",
       }).as("getEmptySystemAssets");
-      cy.getByTestId("tab-Assets").click({ force: true });
+      cy.getAntTab("Assets").click({ force: true });
       cy.wait("@getEmptySystemAssets");
       cy.getByTestId("empty-state").should("exist");
     });
 
     it("lists assets in the system assets tab", () => {
-      cy.getByTestId("tab-Assets").click({ force: true });
+      cy.getAntTab("Assets").click({ force: true });
       cy.wait("@getSystemAssets");
       cy.getByTestId("row-0-col-name").should("contain", "ar_debug");
       cy.getByTestId("row-0-col-locations").should("contain", "United States");
@@ -536,18 +536,19 @@ describe("System management with Plus features", () => {
 
     describe("asset operations", () => {
       beforeEach(() => {
-        cy.getByTestId("tab-Assets").click({ force: true });
+        cy.getAntTab("Assets").click({ force: true });
         cy.wait("@getSystemAssets");
       });
 
       it("can add a new asset", () => {
         cy.getByTestId("add-asset-btn").click();
-        cy.getByTestId("add-modal-content").should("exist");
-        cy.getByTestId("input-name").type("test_cookie");
-        cy.getByTestId("input-domain").type("example.com");
-        cy.getByTestId("controlled-select-asset_type").antSelect("Cookie");
-        cy.getByTestId("controlled-select-data_uses").antSelect("analytics");
-        cy.getByTestId("save-btn").click({ force: true });
+        cy.getByTestId("add-modal-content").within(() => {
+          cy.getByTestId("input-name").type("test_cookie");
+          cy.getByTestId("input-domain").type("example.com");
+          cy.getByTestId("controlled-select-asset_type").antSelect("Cookie");
+          cy.getByTestId("controlled-select-data_uses").antSelect("analytics");
+          cy.getByTestId("save-btn").click({ force: true });
+        });
         cy.wait("@addSystemAsset");
       });
 
@@ -555,28 +556,28 @@ describe("System management with Plus features", () => {
         cy.getByTestId("row-0-col-actions").within(() => {
           cy.getByTestId("edit-btn").click();
         });
-        cy.getByTestId("add-modal-content").should("exist");
+        cy.getByTestId("add-modal-content").within(() => {
+          cy.getByTestId("input-name")
+            .should("have.value", "ar_debug")
+            .should("be.disabled");
+          cy.getByTestId("controlled-select-asset_type")
+            .should("contain", "Cookie")
+            .should("have.class", "ant-select-disabled");
+          cy.getByTestId("controlled-select-data_uses").should(
+            "contain",
+            "essential",
+          );
+          cy.getByTestId("controlled-select-data_uses").antSelect(0);
+          cy.getByTestId("input-domain")
+            .should("have.value", ".doubleclick.net")
+            .should("be.disabled");
+          cy.getByTestId("input-description")
+            .should("have.value", "This is a test description")
+            .clear({ force: true })
+            .type("Updating the description");
 
-        cy.getByTestId("input-name")
-          .should("have.value", "ar_debug")
-          .should("be.disabled");
-        cy.getByTestId("controlled-select-asset_type")
-          .should("contain", "Cookie")
-          .should("have.class", "ant-select-disabled");
-        cy.getByTestId("controlled-select-data_uses").should(
-          "contain",
-          "essential",
-        );
-        cy.getByTestId("controlled-select-data_uses").antSelect(0);
-        cy.getByTestId("input-domain")
-          .should("have.value", ".doubleclick.net")
-          .should("be.disabled");
-        cy.getByTestId("input-description")
-          .should("have.value", "This is a test description")
-          .clear({ force: true })
-          .type("Updating the description");
-
-        cy.getByTestId("save-btn").click();
+          cy.getByTestId("save-btn").click();
+        });
         cy.wait("@updateSystemAssets").then((interception) => {
           expect(interception.request.body[0].data_uses).to.eql([
             "essential",
@@ -597,27 +598,31 @@ describe("System management with Plus features", () => {
 
       it("validates base URL for non-cookie assets", () => {
         cy.getByTestId("add-asset-btn").click();
-        cy.getByTestId("add-modal-content").should("exist");
-
-        cy.getByTestId("input-name").type("test_tag");
-        cy.getByTestId("input-domain").type("example.com");
-        cy.getByTestId("controlled-select-asset_type").antSelect(
-          "Javascript tag",
-        );
-        cy.getByTestId("controlled-select-data_uses").antSelect("analytics");
-        cy.getByTestId("controlled-select-data_uses").within(() => {
-          // force select menu to close so it doesn't cover the input
-          cy.get("input").focus().blur();
+        cy.getByTestId("add-modal-content").within(() => {
+          cy.getByTestId("input-name").type("test_tag");
+          cy.getByTestId("input-domain").type("example.com");
+          cy.getByTestId("controlled-select-asset_type").antSelect(
+            "Javascript tag",
+          );
+          cy.getByTestId("controlled-select-data_uses").antSelect("analytics");
+          cy.getByTestId("controlled-select-data_uses").within(() => {
+            // force select menu to close so it doesn't cover the input
+            cy.get("input").focus().blur();
+          });
+          // blur the input without entering anything to trigger the error
+          cy.getByTestId("input-base_url").clear().blur();
+          cy.getByTestId("save-btn").should("be.disabled");
+          cy.getByTestId("error-base_url").should(
+            "contain",
+            "Base URL is required",
+          );
+          cy.getByTestId("input-base_url")
+            .type("https://example.com/script.js")
+            .blur();
         });
-        // blur the input without entering anything to trigger the error
-        cy.getByTestId("input-base_url").clear().blur();
-        cy.getByTestId("save-btn").should("be.disabled");
-        cy.getByTestId("error-base_url").should(
-          "contain",
-          "Base URL is required",
-        );
-        cy.getByTestId("input-base_url").type("https://example.com/script.js");
-        cy.getByTestId("save-btn").click();
+        cy.getByTestId("add-modal-content").within(() => {
+          cy.getByTestId("save-btn").click();
+        });
         cy.wait("@addSystemAsset");
       });
 
@@ -639,27 +644,27 @@ describe("System management with Plus features", () => {
 
       // eslint-disable-next-line cypress/no-unnecessary-waiting
       cy.wait(500);
-      cy.getByTestId("tab-Data uses").click();
+      cy.getAntTab("Data uses").click({ force: true });
       cy.location("hash").should("eq", "#data-uses");
 
       // eslint-disable-next-line cypress/no-unnecessary-waiting
       cy.wait(500);
-      cy.getByTestId("tab-Data flow").click();
+      cy.getAntTab("Data flow").click({ force: true });
       cy.location("hash").should("eq", "#data-flow");
 
       // eslint-disable-next-line cypress/no-unnecessary-waiting
       cy.wait(500);
-      cy.getByTestId("tab-Integrations").click();
+      cy.getAntTab("Integrations").click({ force: true });
       cy.location("hash").should("eq", "#integrations");
 
       // eslint-disable-next-line cypress/no-unnecessary-waiting
       cy.wait(500);
-      cy.getByTestId("tab-Assets").click({ force: true });
+      cy.getAntTab("Assets").click({ force: true });
       cy.location("hash").should("eq", "#assets");
 
       // eslint-disable-next-line cypress/no-unnecessary-waiting
       cy.wait(500);
-      cy.getByTestId("tab-History").click({ force: true });
+      cy.getAntTab("History").click({ force: true });
       cy.location("hash").should("eq", "#history");
     });
 
@@ -668,11 +673,7 @@ describe("System management with Plus features", () => {
       cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system#data-uses`);
 
       // Verify correct tab is active
-      cy.getByTestId("tab-Data uses").should(
-        "have.attr",
-        "aria-selected",
-        "true",
-      );
+      cy.getAntTab("Data uses").should("have.attr", "aria-selected", "true");
       cy.location("hash").should("eq", "#data-uses");
     });
   });

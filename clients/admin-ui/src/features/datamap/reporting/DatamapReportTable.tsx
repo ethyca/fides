@@ -470,7 +470,7 @@ export const DatamapReportTable = () => {
       <ColumnSettingsModal<DatamapReport>
         isOpen={isColumnSettingsOpen}
         onClose={onColumnSettingsClose}
-        headerText="Data map settings"
+        headerText="Columns"
         columnNameMap={{ ...DEFAULT_COLUMN_NAMES, ...columnNameMapOverrides }}
         prefixColumns={getPrefixColumns(groupBy)}
         tableInstance={tableInstance}

@@ -1,11 +1,9 @@
-import { AntButton as Button, Box, Text, VStack } from "fidesui";
+import { AntButton as Button, AntTabs as Tabs, Text } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import DataTabsContent from "~/features/common/DataTabsContent";
-import DataTabsHeader from "~/features/common/DataTabsHeader";
 import { useFeatures } from "~/features/common/features";
 import FidesSpinner from "~/features/common/FidesSpinner";
 import { extractVendorSource, VendorSources } from "~/features/common/helpers";
@@ -63,7 +61,7 @@ const ConfigureSystem: NextPage = () => {
     }
   }, [system, dispatch, isTCFEnabled]);
 
-  const { tabData, tabIndex, onTabChange } = useSystemFormTabs({
+  const { tabData, activeKey, onTabChange } = useSystemFormTabs({
     isCreate: false,
   });
 
@@ -71,6 +69,16 @@ const ConfigureSystem: NextPage = () => {
     return (
       <Layout title="Systems">
         <FidesSpinner />
+      </Layout>
+    );
+  }
+
+  if (!system) {
+    return (
+      <Layout title="Systems">
+        <Text data-testid="system-not-found">
+          Could not find a system with id {systemId}
+        </Text>
       </Layout>
     );
   }
@@ -83,19 +91,14 @@ const ConfigureSystem: NextPage = () => {
           { title: "All systems", href: SYSTEM_ROUTE },
           { title: system?.name || "" },
         ]}
-      >
-        <Box position="relative">
-          <DataTabsHeader
-            data={tabData}
-            data-testid="system-tabs"
-            index={tabIndex}
-            isLazy
-            isManual
-            onChange={onTabChange}
-            width="full"
-            border="full-width"
-          />
-          {isPlusEnabled && (
+      />
+      <Tabs
+        activeKey={activeKey}
+        onChange={onTabChange}
+        items={tabData}
+        className="w-full"
+        tabBarExtraContent={
+          isPlusEnabled && (
             <Button
               size="small"
               className="absolute right-2 top-2"
@@ -105,25 +108,15 @@ const ConfigureSystem: NextPage = () => {
               <Text>Integrations</Text>
               <GearLightIcon marginLeft={2} />
             </Button>
-          )}
-        </Box>
-      </PageHeader>
-      {lockedForGVL ? <GVLNotice /> : null}
-      {!system && !isLoading && !isDictionaryLoading ? (
-        <Text data-testid="system-not-found">
-          Could not find a system with id {systemId}
-        </Text>
-      ) : (
-        <VStack alignItems="stretch">
-          <DataTabsContent
-            data={tabData}
-            index={tabIndex}
-            isLazy
-            isManual
-            onChange={onTabChange}
-          />
-        </VStack>
-      )}
+          )
+        }
+        renderTabBar={(props, DefaultTabBar) => (
+          <>
+            <DefaultTabBar {...props} />
+            {lockedForGVL && <GVLNotice />}
+          </>
+        )}
+      />
     </Layout>
   );
 };

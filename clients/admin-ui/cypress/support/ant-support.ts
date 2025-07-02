@@ -36,7 +36,14 @@ declare global {
       ) => void;
 
       /**
-       * Apply a filter to an Ant Design table column
+       * Get an option from an Ant Design Tabs component by label
+       * @param tab The label of the tab to get
+       * @example cy.getAntTab("Some tab").click();
+       * @example cy.getAntTab("Some tab").should("have.attr", "aria-disabled", "true");
+       */
+      getAntTab: (tab: string) => Chainable;
+
+      /** Apply a filter to an Ant Design table column
        * @param columnTitle The title of the column to filter
        * @param filterOption The filter option to select (string for specific option, number for index)
        */
@@ -52,10 +59,12 @@ Cypress.Commands.add("getAntSelectOption", (option: string | number) =>
   typeof option === "string"
     ? cy.get(
         `.ant-select-dropdown:not(.ant-select-dropdown-hidden) .ant-select-item-option[title="${option}"]`,
+        { withinSubject: null },
       )
     : cy
         .get(
           `.ant-select-dropdown:not(.ant-select-dropdown-hidden) .ant-select-item-option`,
+          { withinSubject: null },
         )
         .eq(option),
 );
@@ -116,9 +125,9 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add("antSelectDropdownVisible", () => {
-  cy.get(".ant-select-dropdown:not(.ant-select-dropdown-hidden)").should(
-    "be.visible",
-  );
+  cy.get(".ant-select-dropdown:not(.ant-select-dropdown-hidden)", {
+    withinSubject: null,
+  }).should("be.visible");
 });
 
 Cypress.Commands.add("getAntMenuOption", (option: string | number) =>
@@ -135,6 +144,9 @@ Cypress.Commands.add(
     cy.get(subject.selector).getAntMenuOption(option).click(),
 );
 
+Cypress.Commands.add("getAntTab", (tab: string) =>
+  cy.get(`.ant-tabs-tab-btn`).filter(`:contains("${tab}")`),
+);
 Cypress.Commands.add("applyTableFilter", (columnTitle, filterOption) => {
   // Click the filter trigger for the specified column
   cy.get(".ant-table-column-title")
