@@ -17,13 +17,13 @@ from __future__ import annotations
 
 import contextvars
 from dataclasses import dataclass
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
 __all__ = [
     "RequestContext",
-    "get",
-    "set",
-    "reset",
+    "get_request_context",
+    "set_request_context",
+    "reset_request_context",
 ]
 
 
@@ -41,23 +41,23 @@ _ctx: contextvars.ContextVar[RequestContext] = contextvars.ContextVar(
 )
 
 
-def get() -> RequestContext:  # noqa: D401 – simple helper
+def get_request_context() -> RequestContext:
     """Return the current :class:`RequestContext` for this request.
 
     • The context is populated during authentication by
       `extract_token_and_load_client()`, which calls
-      `fides.api.request_context.set` with the authenticated
+      `fides.api.request_context.set_request_context` with the authenticated
       `user_id`.
     • A `ContextVar` keeps the data isolated per request -
       each coroutine or thread sees its own copy and it is discarded at the
       end of the request.
     • The returned object is the live context; treat it as read-only and use
-      `set` to mutate values.
+      `set_request_context` to mutate values.
     """
     return _ctx.get()
 
 
-def set(**kwargs: Any) -> None:  # noqa: D401 – simple helper
+def set_request_context(**kwargs: Any) -> None:
     """Mutate the current context in place using `key=value` pairs."""
     ctx = _ctx.get()
     for key, value in kwargs.items():
@@ -70,6 +70,6 @@ def set(**kwargs: Any) -> None:  # noqa: D401 – simple helper
             ctx.extra[key] = value
 
 
-def reset() -> None:
+def reset_request_context() -> None:
     """Remove all context - mainly for test clean-up."""
     _ctx.set(RequestContext())

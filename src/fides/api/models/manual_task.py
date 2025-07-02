@@ -13,7 +13,6 @@ from sqlalchemy import (
     String,
     UniqueConstraint,
 )
-from fides.api.request_context import get as get_request_context
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
@@ -21,6 +20,7 @@ from sqlalchemy.sql import func
 
 from fides.api.db.base_class import Base, FidesBase
 from fides.api.db.util import EnumColumn
+from fides.api.request_context import get_request_context
 from fides.api.schemas.base_class import FidesSchema
 
 if TYPE_CHECKING:
