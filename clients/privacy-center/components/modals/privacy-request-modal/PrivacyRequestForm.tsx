@@ -13,7 +13,7 @@ import {
 } from "fidesui";
 import { useFormik } from "formik";
 import { Headers } from "headers-polyfill";
-import { useParams, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import React, { useEffect } from "react";
 import * as Yup from "yup";
 
@@ -317,9 +317,7 @@ const PrivacyRequestForm = ({
     setFieldValue,
     touched,
     values,
-    isValid,
     isSubmitting,
-    dirty,
     resetForm,
     identityInputs,
     customPrivacyRequestFields,
