@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Optional, Type
 from enum import Enum
+from typing import Any, Dict, Optional, Type
 
 from sqlalchemy import (
     ARRAY,
-    BOOLEAN,
     Column,
     ForeignKey,
     Index,
