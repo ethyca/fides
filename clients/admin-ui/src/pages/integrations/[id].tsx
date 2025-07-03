@@ -21,6 +21,7 @@ import getIntegrationTypeInfo, {
 } from "~/features/integrations/add-integration/allIntegrationTypes";
 import MonitorConfigTab from "~/features/integrations/configure-monitor/MonitorConfigTab";
 import DatahubDataSyncTab from "~/features/integrations/configure-scan/DatahubDataSyncTab";
+import TaskConfigTab from "~/features/integrations/configure-tasks/TaskConfigTab";
 import ConfigureIntegrationModal from "~/features/integrations/ConfigureIntegrationModal";
 import ConnectionStatusNotice from "~/features/integrations/ConnectionStatusNotice";
 import { useIntegrationAuthorization } from "~/features/integrations/hooks/useIntegrationAuthorization";
@@ -76,7 +77,7 @@ const IntegrationDetailView: NextPage = () => {
   }
 
   const supportsConnectionTest =
-    connection?.connection_type !== ConnectionType.MANUAL_WEBHOOK;
+    connection?.connection_type !== ConnectionType.MANUAL_TASK;
 
   const tabs: TabData[] = [];
 
@@ -177,6 +178,13 @@ const IntegrationDetailView: NextPage = () => {
           integrationOption={integrationOption}
         />
       ),
+    });
+  }
+
+  if (enabledFeatures?.includes(IntegrationFeatureEnum.TASKS)) {
+    tabs.push({
+      label: "Manual tasks",
+      content: <TaskConfigTab integration={connection!} />,
     });
   }
 

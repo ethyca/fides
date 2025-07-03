@@ -1,5 +1,6 @@
-import { AntThemeConfig } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
+import { ThemeConfig } from "antd/es";
+
+import palette from "../palette/palette.module.scss";
 
 /**
  * Order of priority for styling
@@ -11,7 +12,7 @@ import palette from "fidesui/src/palette/palette.module.scss";
  * 6. SCSS modules (for custom-component-specific styles)
  */
 
-export const antTheme: AntThemeConfig = {
+export const defaultAntTheme: ThemeConfig = {
   cssVar: true,
   token: {
     fontFamily: `Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"`,
@@ -48,8 +49,6 @@ export const antTheme: AntThemeConfig = {
       defaultShadow: undefined,
       dangerShadow: undefined,
       defaultBg: palette.FIDESUI_FULL_WHITE,
-      colorLink: palette.FIDESUI_MINOS,
-      colorLinkHover: palette.FIDESUI_NEUTRAL_500,
     },
     Card: {
       colorBorderSecondary: palette.FIDESUI_NEUTRAL_200,
@@ -98,3 +97,22 @@ export const antTheme: AntThemeConfig = {
     },
   },
 };
+
+/**
+ * Factory function to create customized Ant themes
+ * Allows for deep merging of theme overrides
+ */
+export const createDefaultAntTheme = (
+  overrides?: Partial<ThemeConfig>,
+): ThemeConfig => ({
+  ...defaultAntTheme,
+  ...overrides,
+  token: {
+    ...defaultAntTheme.token,
+    ...overrides?.token,
+  },
+  components: {
+    ...defaultAntTheme.components,
+    ...overrides?.components,
+  },
+});
