@@ -155,6 +155,15 @@ export interface FidesInitOptions {
 
   // The type of value to use for consent (boolean or consent_mechanism)
   fidesConsentFlagType: ConsentFlagType | null;
+
+  /**
+   * Controls when the deprecated FidesInitialized event should be dispatched.
+   * "multiple" = fires alongside both FidesReady and FidesConsentLoaded events
+   * "once" = fires alongside FidesReady only
+   * "disable" = never fires
+   * Defaults to "once".
+   */
+  fidesInitializedEventMode: "multiple" | "once" | "disable";
 }
 
 /**
@@ -798,6 +807,7 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesDisabledNotices"
   | "fidesConsentNonApplicableFlagMode"
   | "fidesConsentFlagType"
+  | "fidesInitializedEventMode"
 >;
 
 export type FidesExperienceTranslationOverrides = {

@@ -139,6 +139,11 @@ const loadEnvironmentVariables = () => {
       (process.env
         .FIDES_PRIVACY_CENTER__FIDES_CONSENT_FLAG_TYPE as ConsentFlagType) ||
       null,
+    FIDES_INITIALIZED_EVENT_MODE:
+      (process.env.FIDES_PRIVACY_CENTER__FIDES_INITIALIZED_EVENT_MODE as
+        | "multiple"
+        | "once"
+        | "disable") || "once",
   };
   return settings;
 };
