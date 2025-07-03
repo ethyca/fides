@@ -566,23 +566,13 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 unwrapped.extend(pydash.get(row, masking_request.data_path))
             rows = unwrapped
 
-        # Post-process access response rows only if post-processors are defined.
-        if masking_request.postprocessors:
-            try:
-                rows = self.process_response_data(
-                    rows,
-                    privacy_request.get_cached_identity_data(),
-                    cast(
-                        Optional[List[PostProcessorStrategy]],
-                        masking_request.postprocessors,
-                    ),
-                    None,
-                )
-            except PostProcessingException as exc:
-                # Log and continue—post-processing is optional for masking logic.
-                logger.warning(
-                    "Unable to post-process masking request input rows: {}", exc
-                )
+        # post-process access request response specific to masking request needs
+        rows = self.process_response_data(
+            rows,
+            privacy_request.get_cached_identity_data(),
+            cast(Optional[List[PostProcessorStrategy]], masking_request.postprocessors),
+            None,
+        )
 
         client = self.create_client()
         for row in rows:
