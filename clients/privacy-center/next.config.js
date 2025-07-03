@@ -1,4 +1,3 @@
-const fs = require("fs");
 const isDebugMode = process.env.FIDES_PRIVACY_CENTER__DEBUG === "true";
 const debugMarker = "=>";
 globalThis.fidesDebugger = isDebugMode
@@ -12,47 +11,7 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
   enabled: process.env.ANALYZE === "true",
 });
 
-/**
- * TODO: This is copied to rollup.config.mjs in clients/fides-js. We should refactor this to be shared.
- *
- * Imports and validates the Fides package version from a JSON file
- * @param {string} path - Path to the version.json file, defaults to "../version.json"
- * @returns {string} The package version string, or "unknown" if version cannot be determined
- * @example
- * // version.json
- * {
- *   "version": "1.2.3"
- * }
- *
- * importFidesPackageVersion() // Returns "1.2.3"
- * importFidesPackageVersion("invalid/path") // Returns "unknown"
- */
-const importFidesPackageVersion = (path = "../version.json") => {
-  const errorVersion = "unknown";
-  try {
-    const versionJson = JSON.parse(fs.readFileSync(path, "utf-8"));
-
-    // Validate version file structure and content
-    if (
-      !versionJson?.version ||
-      typeof versionJson.version !== "string" ||
-      versionJson.version.trim() === ""
-    ) {
-      console.warn(
-        `WARNING: Importing Fides package version failed! Invalid version file format or missing version in ${path}`,
-      );
-      return errorVersion;
-    }
-
-    return versionJson.version.trim();
-  } catch (error) {
-    console.warn(
-      `WARNING: Importing Fides package version failed! Error when importing version file from ${path}:`,
-      error,
-    );
-    return errorVersion;
-  }
-};
+const { importFidesPackageVersion } = require("../build-utils");
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
