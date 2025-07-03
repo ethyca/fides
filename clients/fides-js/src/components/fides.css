@@ -766,6 +766,9 @@ div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
 .fides-notice-toggle-controls {
   white-space: nowrap;
   margin-left: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* GPC */
@@ -862,8 +865,6 @@ div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
   display: inline-flex;
   align-items: center;
   height: 18px;
-  margin-right: 8px;
-  margin-left: 4px;
   text-transform: uppercase;
   padding: 0 4px;
   font-weight: 600;
