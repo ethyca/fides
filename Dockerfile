@@ -119,13 +119,15 @@ COPY clients/privacy-center/package.json ./privacy-center/package.json
 
 RUN npm install
 
-COPY --from=backend /fides/version.json ./version.json
 COPY clients/ .
 
 ####################
 ## Built frontend ##
 ####################
 FROM frontend AS built_frontend
+
+# Imports the Fides package version from the backend
+COPY --from=backend /fides/version.json ./version.json
 
 # Builds and exports admin-ui
 RUN npm run export-admin-ui
