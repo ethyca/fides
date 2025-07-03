@@ -2288,7 +2288,7 @@ describe("Consent overlay", () => {
 
     // NOTE: See definition of cy.visitConsentDemo in commands.ts for where we
     // register listeners for these window events
-    it("emits a FidesInitialized but not any subsequent events when initialized", () => {
+    it("emits a FidesReady but not any subsequent events when initialized", () => {
       cy.window()
         .its("Fides")
         .its("consent")
@@ -2297,7 +2297,7 @@ describe("Consent overlay", () => {
           [PRIVACY_NOTICE_KEY_2]: true,
           [PRIVACY_NOTICE_KEY_3]: true,
         });
-      cy.get("@FidesInitialized")
+      cy.get("@FidesReady")
         .should("have.been.calledOnce")
         .its("firstCall.args.0.detail.consent")
         .should("deep.equal", {
@@ -2313,11 +2313,7 @@ describe("Consent overlay", () => {
 
     describe("when preferences are changed / saved", () => {
       it("emits FidesUpdating -> FidesUpdated events when reject all is clicked", () => {
-        cy.get("div#fides-banner").within(() => {
-          cy.contains("button", "Opt out of all").click();
-        });
-        cy.get("@FidesUIChanged").should("not.have.been.called");
-        cy.get("@FidesInitialized")
+        cy.get("@FidesReady")
           // First event, before the user rejects all
           .should("have.been.calledOnce")
           .its("firstCall.args.0.detail.consent")
@@ -2326,6 +2322,10 @@ describe("Consent overlay", () => {
             [PRIVACY_NOTICE_KEY_2]: true,
             [PRIVACY_NOTICE_KEY_3]: true,
           });
+        cy.get("div#fides-banner").within(() => {
+          cy.contains("button", "Opt out of all").click();
+        });
+        cy.get("@FidesUIChanged").should("not.have.been.called");
         cy.get("@FidesUpdating")
           // Updating event, when the user rejects all
           .should("have.been.calledOnce")
@@ -2351,11 +2351,7 @@ describe("Consent overlay", () => {
           });
       });
       it("emits FidesUpdating -> FidesUpdated events when accept all is clicked", () => {
-        cy.get("div#fides-banner").within(() => {
-          cy.contains("button", "Opt in to all").should("be.visible").click();
-        });
-        cy.get("@FidesUIChanged").should("not.have.been.called");
-        cy.get("@FidesInitialized")
+        cy.get("@FidesReady")
           // First event, before the user accepts all
           .should("have.been.calledOnce")
           .its("firstCall.args.0.detail.consent")
@@ -2364,6 +2360,10 @@ describe("Consent overlay", () => {
             [PRIVACY_NOTICE_KEY_2]: true,
             [PRIVACY_NOTICE_KEY_3]: true,
           });
+        cy.get("div#fides-banner").within(() => {
+          cy.contains("button", "Opt in to all").should("be.visible").click();
+        });
+        cy.get("@FidesUIChanged").should("not.have.been.called");
         cy.get("@FidesUpdating")
           // Updating event, when the user accepts all
           .should("have.been.calledOnce")
@@ -2393,7 +2393,7 @@ describe("Consent overlay", () => {
         cy.contains("button", "Manage preferences")
           .should("be.visible")
           .click();
-        cy.get("@FidesInitialized")
+        cy.get("@FidesReady")
           // First event, before the user saved preferences
           .should("have.been.calledOnce")
           .its("firstCall.args.0.detail.consent")
@@ -3147,7 +3147,7 @@ describe("Consent overlay", () => {
     it("reinitializes FidesJS and loads any changed options", () => {
       // First, it should initialize normally and show the banner
       cy.waitUntilFidesInitialized().then(() => {
-        cy.get("@FidesInitialized").should("have.callCount", 1);
+        cy.get("@FidesReady").should("have.callCount", 1);
         cy.get("#fides-overlay .fides-banner").should("exist");
         cy.get("#fides-overlay .fides-banner").should(
           "have.class",
@@ -3168,7 +3168,7 @@ describe("Consent overlay", () => {
 
       // FidesJS should re-initialize and re-show the banner
       cy.waitUntilFidesInitialized().then(() => {
-        cy.get("@FidesInitialized").should("have.callCount", 2);
+        cy.get("@FidesReady").should("have.callCount", 2);
         cy.get("#fides-overlay .fides-banner").should("exist");
         cy.get("#fides-embed-container .fides-banner").should("not.exist");
         cy.get("#fides-embed-container .fides-modal-body").should("not.exist");
@@ -3197,7 +3197,7 @@ describe("Consent overlay", () => {
 
       // FidesJS should initialize again, in embedded mode this time
       cy.waitUntilFidesInitialized().then(() => {
-        cy.get("@FidesInitialized").should("have.callCount", 3);
+        cy.get("@FidesReady").should("have.callCount", 3);
         cy.get("#fides-overlay .fides-banner").should("not.exist");
         cy.get("#fides-embed-container .fides-banner").should("exist");
         cy.get("#fides-embed-container .fides-modal-body").should("not.exist");
@@ -3216,7 +3216,7 @@ describe("Consent overlay", () => {
 
       // FidesJS should initialize once again, without any banners
       cy.waitUntilFidesInitialized().then(() => {
-        cy.get("@FidesInitialized").should("have.callCount", 4);
+        cy.get("@FidesReady").should("have.callCount", 4);
         cy.get("#fides-overlay .fides-banner").should("not.exist");
         cy.get("#fides-embed-container .fides-banner").should("not.exist");
         cy.get("#fides-embed-container .fides-modal-body").should("exist");
@@ -3232,10 +3232,7 @@ describe("Consent overlay", () => {
         qs: { initialize: "false" },
       });
       cy.window().then((win) => {
-        win.addEventListener(
-          "FidesInitialized",
-          cy.stub().as("FidesInitialized"),
-        );
+        win.addEventListener("FidesReady", cy.stub().as("FidesReady"));
       });
     });
     it("does not trigger any side-effects (like banners displaying, events firing, etc.)", () => {
@@ -3243,7 +3240,7 @@ describe("Consent overlay", () => {
         assert.isTrue(!!win.Fides.config);
         assert.isFalse(win.Fides.initialized);
       });
-      cy.get("@FidesInitialized").should("not.have.been.called");
+      cy.get("@FidesReady").should("not.have.been.called");
       cy.get("#fides-overlay .fides-banner").should("not.exist");
     });
     it("can still be initialized manually by the developer after adjusting settings", () => {
@@ -3307,8 +3304,8 @@ describe("Consent overlay", () => {
         });
       });
 
-      it("formats FidesInitialized events with consent mechanism strings and omits non-applicable notices", () => {
-        cy.get("@FidesInitialized")
+      it("formats FidesReady events with consent mechanism strings and omits non-applicable notices", () => {
+        cy.get("@FidesReady")
           .should("have.been.calledOnce")
           .its("firstCall.args.0.detail.consent")
           .then((consent) => {
@@ -3429,8 +3426,8 @@ describe("Consent overlay", () => {
         });
       });
 
-      it("formats FidesInitialized events with consent mechanism strings", () => {
-        cy.get("@FidesInitialized")
+      it("formats FidesReady events with consent mechanism strings", () => {
+        cy.get("@FidesReady")
           .should("have.been.calledOnce")
           .its("firstCall.args.0.detail.consent")
           .then((consent) => {
@@ -3583,8 +3580,8 @@ describe("Consent overlay", () => {
         });
       });
 
-      it("formats FidesInitialized events with boolean values and includes non-applicable notices", () => {
-        cy.get("@FidesInitialized")
+      it("formats FidesReady events with boolean values and includes non-applicable notices", () => {
+        cy.get("@FidesReady")
           .should("have.been.calledOnce")
           .its("firstCall.args.0.detail.consent")
           .then((consent) => {
@@ -3750,13 +3747,8 @@ describe("Consent overlay", () => {
     });
   });
 
-  describe("Legacy event support", () => {
+  describe("FidesInitialized event support", () => {
     beforeEach(() => {
-      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
-    });
-
-    it("dispatches FidesInitialized at FidesConsentLoaded time when fides_legacy_event includes 'FidesInitialized'", () => {
-      // Set up a cookie so that FidesConsentLoaded will be dispatched
       const originalCookie = {
         identity: { fides_user_device_id: "test-user-device-id" },
         fides_meta: {
@@ -3771,39 +3763,24 @@ describe("Consent overlay", () => {
         },
       };
       cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(originalCookie));
+    });
 
-      // Enable legacy event support
+    it("dispatches FidesInitialized twice when fidesInitializedEventMode is 'multiple'", () => {
       stubConfig({
         options: {
           isOverlayEnabled: true,
-          fidesLegacyEvent: "FidesInitialized",
+          fidesInitializedEventMode: "multiple",
         },
       });
 
       cy.waitUntilFidesInitialized().then(() => {
-        // Check that FidesInitialized was called twice (once for legacy, once for normal)
+        cy.get("@FidesConsentLoaded").should("have.been.calledOnce");
+        cy.get("@FidesReady").should("have.been.calledOnce");
         cy.get("@FidesInitialized").should("have.been.calledTwice");
       });
     });
 
-    it("does not dispatch FidesInitialized at FidesConsentLoaded time when fides_legacy_event is not set", () => {
-      // Set up a cookie so that FidesConsentLoaded will be dispatched
-      const originalCookie = {
-        identity: { fides_user_device_id: "test-user-device-id" },
-        fides_meta: {
-          version: "0.9.0",
-          createdAt: "2022-12-24T12:00:00.000Z",
-          updatedAt: "2022-12-25T12:00:00.000Z",
-        },
-        consent: {
-          [PRIVACY_NOTICE_KEY_1]: false,
-          [PRIVACY_NOTICE_KEY_2]: true,
-          [PRIVACY_NOTICE_KEY_3]: true,
-        },
-      };
-      cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(originalCookie));
-
-      // Do not enable legacy event support
+    it("dispatches FidesInitialized once when fidesInitializedEventMode is default", () => {
       stubConfig({
         options: {
           isOverlayEnabled: true,
@@ -3811,8 +3788,24 @@ describe("Consent overlay", () => {
       });
 
       cy.waitUntilFidesInitialized().then(() => {
-        // Check that FidesInitialized was called only once (no legacy event)
+        cy.get("@FidesConsentLoaded").should("have.been.calledOnce");
+        cy.get("@FidesReady").should("have.been.calledOnce");
         cy.get("@FidesInitialized").should("have.been.calledOnce");
+      });
+    });
+
+    it("does not dispatch FidesInitialized when fidesInitializedEventMode is 'disable'", () => {
+      stubConfig({
+        options: {
+          isOverlayEnabled: true,
+          fidesInitializedEventMode: "disable",
+        },
+      });
+
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("@FidesConsentLoaded").should("have.been.calledOnce");
+        cy.get("@FidesReady").should("have.been.calledOnce");
+        cy.get("@FidesInitialized").should("not.have.been.called");
       });
     });
   });

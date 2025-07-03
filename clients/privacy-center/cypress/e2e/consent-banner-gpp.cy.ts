@@ -472,7 +472,7 @@ describe("Fides-js GPP extension", () => {
       });
 
       cy.waitUntilFidesInitialized().then(() => {
-        cy.get("@FidesInitialized").should("have.been.calledOnce");
+        cy.get("@FidesReady").should("have.been.calledOnce");
 
         cy.window().then((win) => {
           win.__gpp("addEventListener", cy.stub().as("gppListener"));

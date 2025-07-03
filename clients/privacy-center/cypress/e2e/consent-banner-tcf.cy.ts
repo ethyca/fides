@@ -4251,7 +4251,7 @@ describe("Fides-js TCF", () => {
       cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
     });
 
-    it("dispatches FidesInitialized at FidesConsentLoaded time when fides_legacy_event includes 'FidesInitialized'", () => {
+    it("dispatches FidesInitialized at FidesConsentLoaded time when fides_initialized_event_mode is 'multiple'", () => {
       // Set up a cookie so that FidesConsentLoaded will be dispatched
       const cookie = mockCookie({
         tcf_version_hash: TCF_VERSION_HASH,
@@ -4260,7 +4260,7 @@ describe("Fides-js TCF", () => {
 
       // Enable legacy event support
       stubTCFExperience({
-        stubOptions: { fidesLegacyEvent: "FidesInitialized" },
+        stubOptions: { fidesInitializedEventMode: "multiple" },
       });
 
       cy.waitUntilFidesInitialized().then(() => {
@@ -4290,7 +4290,7 @@ describe("Fides-js TCF", () => {
       });
     });
 
-    it("does not dispatch FidesInitialized at FidesConsentLoaded time when fides_legacy_event is not set", () => {
+    it("does not dispatch FidesInitialized at FidesConsentLoaded time when fides_initialized_event_mode is 'once'", () => {
       // Set up a cookie so that FidesConsentLoaded will be dispatched
       const cookie = mockCookie({
         tcf_version_hash: TCF_VERSION_HASH,
@@ -4327,7 +4327,7 @@ describe("Fides-js TCF", () => {
       });
     });
 
-    it("supports fides_legacy_event via query param", () => {
+    it("supports fides_initialized_event_mode via query param", () => {
       // Set up a cookie so that FidesConsentLoaded will be dispatched
       const cookie = mockCookie({
         tcf_version_hash: TCF_VERSION_HASH,
@@ -4336,7 +4336,7 @@ describe("Fides-js TCF", () => {
 
       // Enable legacy event support via query param
       stubTCFExperience({
-        demoPageQueryParams: { fides_legacy_event: "FidesInitialized" },
+        demoPageQueryParams: { fides_initialized_event_mode: "multiple" },
       });
 
       cy.waitUntilFidesInitialized().then(() => {
@@ -4358,7 +4358,7 @@ describe("Fides-js TCF", () => {
       });
     });
 
-    it("supports fides_legacy_event via window object", () => {
+    it("supports fides_initialized_event_mode via window object", () => {
       // Set up a cookie so that FidesConsentLoaded will be dispatched
       const cookie = mockCookie({
         tcf_version_hash: TCF_VERSION_HASH,
@@ -4367,7 +4367,7 @@ describe("Fides-js TCF", () => {
 
       // Enable legacy event support via window object
       stubTCFExperience({
-        demoPageWindowParams: { fides_legacy_event: "FidesInitialized" },
+        demoPageWindowParams: { fides_initialized_event_mode: "multiple" },
       });
 
       cy.waitUntilFidesInitialized().then(() => {
