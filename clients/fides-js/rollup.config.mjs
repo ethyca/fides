@@ -40,6 +40,48 @@ const preactAliases = {
   ],
 };
 
+/**
+ * TODO: This is copied from next.config.js in clients/privacy-center. We should refactor this to be shared.
+ *
+ * Imports and validates the Fides package version from a JSON file
+ * @param {string} path - Path to the version.json file, defaults to "../version.json"
+ * @returns {string} The package version string, or "unknown" if version cannot be determined
+ * @example
+ * // version.json
+ * {
+ *   "version": "1.2.3"
+ * }
+ *
+ * importFidesPackageVersion() // Returns "1.2.3"
+ * importFidesPackageVersion("invalid/path") // Returns "unknown"
+ */
+const importFidesPackageVersion = (path = "../version.json") => {
+  const errorVersion = "unknown";
+  try {
+    const versionJson = JSON.parse(fs.readFileSync(path, "utf-8"));
+
+    // Validate version file structure and content
+    if (
+      !versionJson?.version ||
+      typeof versionJson.version !== "string" ||
+      versionJson.version.trim() === ""
+    ) {
+      console.warn(
+        `WARNING: Importing Fides package version failed! Invalid version file format or missing version in ${path}`,
+      );
+      return errorVersion;
+    }
+
+    return versionJson.version.trim();
+  } catch (error) {
+    console.warn(
+      `WARNING: Importing Fides package version failed! Error when importing version file from ${path}:`,
+      error,
+    );
+    return errorVersion;
+  }
+};
+
 const fidesScriptPlugins = ({ name, gzipWarnSizeKb, gzipErrorSizeKb }) => [
   alias(preactAliases),
   nodeResolve(),
@@ -58,16 +100,7 @@ const fidesScriptPlugins = ({ name, gzipWarnSizeKb, gzipErrorSizeKb }) => [
   !IS_DEV && minify(),
   replace({
     // version.json is created by the docker build process and contains the versioneer version
-    __RELEASE_VERSION__: () => {
-      try {
-        const versionData = JSON.parse(
-          fs.readFileSync("../version.json", "utf-8"),
-        );
-        return versionData.version;
-      } catch (error) {
-        return "unknown";
-      }
-    },
+    __RELEASE_VERSION__: () => importFidesPackageVersion(),
     preventAssignment: true,
     include: ["src/lib/init-utils.ts"],
   }),
