@@ -27,13 +27,14 @@ def upgrade():
         "privacyrequest", sa.Column("finalized_by", sa.String(), nullable=True)
     )
     op.create_foreign_key(
-        None,
+        "privacyrequest_fidesuser_id_fkey",
         "privacyrequest",
         "fidesuser",
         ["finalized_by"],
         ["id"],
         ondelete="SET NULL",
     )
+    op.execute("alter type privacyrequeststatus add value 'requires_manual_finalization'")
     # ### end Alembic commands ###
 
 
@@ -42,4 +43,18 @@ def downgrade():
     op.drop_constraint(None, "privacyrequest", type_="foreignkey")
     op.drop_column("privacyrequest", "finalized_by")
     op.drop_column("privacyrequest", "finalized_at")
+
+    op.execute("delete from privacyrequest where status in ('requires_manual_finalization')")
+
+    op.execute("alter type privacyrequeststatus rename to privacyrequeststatus_old")
+    op.execute(
+        "create type privacyrequeststatus as enum('identity_unverified', 'requires_input', 'pending', 'in_processing', 'complete', 'pending', 'error', 'paused', 'approved', 'denied', 'canceled', 'awaiting_email_send')"
+    )
+    op.execute(
+        (
+            "alter table privacyrequest alter column status type privacyrequeststatus using "
+            "status::text::privacyrequeststatus"
+        )
+    )
+    op.execute("drop type privacyrequeststatus_old")
     # ### end Alembic commands ###
