@@ -1,8 +1,6 @@
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { useFlags } from "~/features/common/features";
-
 export const PRIVACY_REQUEST_TABS = {
   REQUEST: "request",
   MANUAL_TASK: "manual-tasks",
@@ -13,7 +11,6 @@ export type PrivacyRequestTabKey =
 
 export const usePrivacyRequestTabs = () => {
   const router = useRouter();
-  const { flags } = useFlags();
   const [activeTab, setActiveTab] = useState<PrivacyRequestTabKey>(
     PRIVACY_REQUEST_TABS.REQUEST,
   );
@@ -21,9 +18,9 @@ export const usePrivacyRequestTabs = () => {
   const availableTabs = useMemo(
     () => ({
       request: true,
-      manualTask: flags.alphaNewManualDSR,
+      manualTask: true,
     }),
-    [flags.alphaNewManualDSR],
+    [],
   );
 
   const parseHashFromUrl = useCallback(
