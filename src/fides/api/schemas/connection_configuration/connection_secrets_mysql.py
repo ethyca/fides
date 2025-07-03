@@ -39,7 +39,8 @@ class MySQLSchema(ConnectionConfigSecretsSchema):
         description="The password used to authenticate and access the database.",
         json_schema_extra={"sensitive": True},
     )
-    dbname: str = Field(
+    dbname: Optional[str] = Field(
+        default=None,
         title="Database",
         description="The name of the specific database within the database server that you want to connect to.",
     )
@@ -54,7 +55,7 @@ class MySQLSchema(ConnectionConfigSecretsSchema):
         description="The SSL mode to use for the connection. Accepted values are: 'required', 'preferred', 'disabled', or an empty value.",
     )
 
-    _required_components: ClassVar[List[str]] = ["host", "dbname"]
+    _required_components: ClassVar[List[str]] = ["host"]
 
 
 class MySQLDocsSchema(MySQLSchema, NoValidationSchema):
