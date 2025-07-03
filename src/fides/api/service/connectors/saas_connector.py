@@ -561,18 +561,29 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         # unwrap response using data_path
         if masking_request.data_path and rows:
-            unwrapped = []
+            unwrapped: List[Any] = []
             for row in rows:
-                unwrapped.extend(pydash.get(row, masking_request.data_path))
+                data = pydash.get(row, masking_request.data_path)
+                if isinstance(data, list):
+                    unwrapped.extend(data)
+                elif data is not None:
+                    unwrapped.append(data)
             rows = unwrapped
 
-        # post-process access request response specific to masking request needs
-        rows = self.process_response_data(
-            rows,
-            privacy_request.get_cached_identity_data(),
-            cast(Optional[List[PostProcessorStrategy]], masking_request.postprocessors),
-            None,
-        )
+        # Post-process access response rows only if post-processors are defined.
+        if masking_request.postprocessors:
+            try:
+                rows = self.process_response_data(
+                    rows,
+                    privacy_request.get_cached_identity_data(),
+                    cast(Optional[List[PostProcessorStrategy]], masking_request.postprocessors),
+                    None,
+                )
+            except PostProcessingException as exc:
+                # Log and continue—post-processing is optional for masking logic.
+                logger.warning(
+                    "Unable to post-process masking request input rows: {}", exc
+                )
 
         client = self.create_client()
         for row in rows:
@@ -604,16 +615,19 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                     masking_request, handled_response
                 )
 
-                self.process_response_data(
-                    response_data,
-                    privacy_request.get_cached_identity_data(),
-                    cast(
-                        Optional[List[PostProcessorStrategy]],
-                        masking_request.postprocessors,
-                    ),
-                    handled_response,
-                )
-            except Exception as exc:  # pylint: disable=broad-except
+                # Only attempt post-processing if we have post-processors and the response body
+                # is JSON-serializable (dict or list of dicts).
+                if masking_request.postprocessors and isinstance(response_data, (dict, list)):
+                    self.process_response_data(
+                        response_data,
+                        privacy_request.get_cached_identity_data(),
+                        cast(
+                            Optional[List[PostProcessorStrategy]],
+                            masking_request.postprocessors,
+                        ),
+                        handled_response,
+                    )
+            except (PostProcessingException, Exception) as exc:  # pylint: disable=broad-except
                 # We do not want a post-processing failure to prevent the masking
                 # operation itself from succeeding.
                 logger.warning(
