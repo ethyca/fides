@@ -53,6 +53,10 @@ export const statusPropMap: {
     colorScheme: "minos",
     label: "Requires Input",
   },
+  requires_manual_finalization: {
+    colorScheme: "minos",
+    label: "Requires Finalization",
+  },
 };
 
 export const RequestStatusBadgeCell = ({
