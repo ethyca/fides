@@ -7,16 +7,19 @@ import { PersistGate } from "redux-persist/integration/react";
 import { defaultAntTheme, FidesUIProvider } from "~/../fidesui/src";
 import { I18nProvider } from "~/common/i18nContext";
 import Error from "~/components/Error";
+import VersionLogger from "~/components/VersionLogger";
 import theme from "~/theme";
 
 import store, { persistor } from "../app/store";
 
 interface ProvidersProps {
   children: React.ReactNode;
+  version: string;
 }
 
-const Providers = ({ children }: ProvidersProps) => (
+const Providers = ({ children, version }: ProvidersProps) => (
   <Provider store={store}>
+    <VersionLogger version={version} />
     <I18nProvider>
       <PersistGate persistor={persistor}>
         <FidesUIProvider

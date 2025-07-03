@@ -33,7 +33,6 @@ const getPrivacyCenterEnvironment = async ({
 } = {}): Promise<PrivacyCenterEnvironment> => {
   const envVariables = loadEnvironmentVariables();
   const log = createLogger();
-  // DEFER: Log a version number here (see https://github.com/ethyca/fides/issues/3171)
   log.debug("Load Privacy Center environment for session...");
 
   const userLocation = skipGeolocation

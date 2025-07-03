@@ -24,7 +24,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ## [2.65.0](https://github.com/ethyca/fides/compare/2.64.2...2.65.0)
 
 ### Added
-- Added single select and multiselect custom field support to Privacy Center forms [#6232](https://github.com/ethyca/fides/pull/6232)
+- Added `version` to the global `window.Fides` object in FidesJS [#6239](https://github.com/ethyca/fides/pull/6239)
 - Added ManualTaskInstance and ManualTaskSubmission models, foundational for manual DSRs [#6212](https://github.com/ethyca/fides/pull/6212) https://github.com/ethyca/fides/labels/db-migration
 - Expose shopify() interface on Fides within docs [#6269](https://github.com/ethyca/fides/pull/6269)
 - Added a new time-based partitioning spec to simplify BigQuery partition definitions [#6182](https://github.com/ethyca/fides/pull/6182)

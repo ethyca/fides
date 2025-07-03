@@ -11,6 +11,7 @@ import { visualizer } from "rollup-plugin-visualizer";
 import strip from "@rollup/plugin-strip";
 import replace from "@rollup/plugin-replace";
 import fs from "fs";
+import { importFidesPackageVersion } from "../build-utils.js";
 
 const NAME = "fides";
 const IS_DEV = process.env.NODE_ENV === "development";
@@ -48,6 +49,12 @@ const fidesScriptPlugins = ({ name, gzipWarnSizeKb, gzipErrorSizeKb }) => [
   }),
   esbuild({
     minify: !IS_DEV,
+  }),
+  replace({
+    // version.json is created by the docker build process and contains the versioneer version
+    __RELEASE_VERSION__: () => importFidesPackageVersion(),
+    preventAssignment: true,
+    include: ["src/lib/init-utils.ts"],
   }),
   strip(
     IS_DEV
