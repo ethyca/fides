@@ -37,15 +37,14 @@ const PrivacyRequest = ({ data: initialData }: PrivacyRequestProps) => {
   // Use latest data if available, otherwise use initial data
   const subjectRequest = latestData?.items[0] ?? initialData;
 
-  const isManualStepsRequired =
-    subjectRequest.status === PrivacyRequestStatus.REQUIRES_INPUT ||
-    subjectRequest.status === PrivacyRequestStatus.REQUIRES_MANUAL_FINALIZATION;
-
   // Check if any manual-process integrations exist
   const { data: manualIntegrations } = useGetManualIntegrationsQuery();
   const hasManualIntegrations = (manualIntegrations || []).length > 0;
 
-  const showManualSteps = isManualStepsRequired && hasManualIntegrations;
+  const showManualSteps =
+    (subjectRequest.status === PrivacyRequestStatus.REQUIRES_INPUT &&
+      hasManualIntegrations) ||
+    subjectRequest.status === PrivacyRequestStatus.REQUIRES_MANUAL_FINALIZATION;
 
   const [activeTabKey, setActiveTabKey] = useState(
     showManualSteps ? "manual-steps" : "activity",
