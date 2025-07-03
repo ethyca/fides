@@ -15,9 +15,9 @@ const VersionLogger = ({ version }: VersionLoggerProps) => {
      * If the version is not set, it means we are running locally
      * so we don't want to log the version.
      */
-    if (version !== "__RELEASE_VERSION__") {
+    if (version && version !== "unknown") {
       // eslint-disable-next-line no-console
-      console.info(`Privacy Center version: ${version}`);
+      console.info(`Fides Privacy Center version: ${version}`);
     }
   }, [version]);
 
