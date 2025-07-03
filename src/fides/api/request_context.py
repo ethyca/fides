@@ -29,7 +29,6 @@ __all__ = [
 
 @dataclass
 class RequestContext:
-    __slots__ = ("user_id",)  # For Python 3.9 compatibility
     user_id: Optional[str] = None
 
 
