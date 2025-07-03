@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import contextvars
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 __all__ = [
     "RequestContext",
@@ -27,8 +27,9 @@ __all__ = [
 ]
 
 
-@dataclass(slots=True)
+@dataclass
 class RequestContext:
+    __slots__ = ("user_id",)  # For Python 3.9 compatibility
     user_id: Optional[str] = None
 
 
