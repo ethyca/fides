@@ -561,13 +561,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         # unwrap response using data_path
         if masking_request.data_path and rows:
-            unwrapped: List[Any] = []
+            unwrapped = []
             for row in rows:
-                data = pydash.get(row, masking_request.data_path)
-                if isinstance(data, list):
-                    unwrapped.extend(data)
-                elif data is not None:
-                    unwrapped.append(data)
+                unwrapped.extend(pydash.get(row, masking_request.data_path))
             rows = unwrapped
 
         # Post-process access response rows only if post-processors are defined.
@@ -576,7 +572,10 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 rows = self.process_response_data(
                     rows,
                     privacy_request.get_cached_identity_data(),
-                    cast(Optional[List[PostProcessorStrategy]], masking_request.postprocessors),
+                    cast(
+                        Optional[List[PostProcessorStrategy]],
+                        masking_request.postprocessors,
+                    ),
                     None,
                 )
             except PostProcessingException as exc:
@@ -617,7 +616,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
                 # Only attempt post-processing if we have post-processors and the response body
                 # is JSON-serializable (dict or list of dicts).
-                if masking_request.postprocessors and isinstance(response_data, (dict, list)):
+                if masking_request.postprocessors and isinstance(
+                    response_data, (dict, list)
+                ):
                     self.process_response_data(
                         response_data,
                         privacy_request.get_cached_identity_data(),
@@ -627,7 +628,10 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                         ),
                         handled_response,
                     )
-            except (PostProcessingException, Exception) as exc:  # pylint: disable=broad-except
+            except (
+                PostProcessingException,
+                Exception,
+            ) as exc:  # pylint: disable=broad-except
                 # We do not want a post-processing failure to prevent the masking
                 # operation itself from succeeding.
                 logger.warning(
