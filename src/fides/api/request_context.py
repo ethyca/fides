@@ -20,9 +20,8 @@ from dataclasses import dataclass
 from typing import Any, Optional
 
 __all__ = [
-    "RequestContext",
-    "get_request_context",
-    "set_request_context",
+    "get_user_id",
+    "set_user_id",
     "reset_request_context",
 ]
 
@@ -64,3 +63,14 @@ def set_request_context(**kwargs: Any) -> None:
 def reset_request_context() -> None:
     """Remove all context, mainly for test clean-up."""
     _ctx.set(RequestContext())
+
+
+def get_user_id() -> Optional[str]:
+    """Return the user_id from the current request context."""
+    ctx = get_request_context()
+    return ctx.user_id
+
+
+def set_user_id(user_id: str) -> None:
+    """Set the user_id in the current request context."""
+    set_request_context(user_id=user_id)

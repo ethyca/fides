@@ -20,7 +20,7 @@ from sqlalchemy.sql import func
 
 from fides.api.db.base_class import Base, FidesBase
 from fides.api.db.util import EnumColumn
-from fides.api.request_context import get_request_context
+from fides.api.request_context import get_user_id
 from fides.api.schemas.base_class import FidesSchema
 
 if TYPE_CHECKING:
@@ -933,7 +933,7 @@ class ManualTaskLog(Base):
             "task_id": task_id,
             "config_id": config_id,
             "instance_id": instance_id,
-            "user_id": user_id or get_request_context().user_id,
+            "user_id": user_id or get_user_id(),
             "status": status,
             "message": message,
             "details": details,
@@ -971,7 +971,7 @@ class ManualTaskLog(Base):
             task_id=task_id,
             config_id=config_id,
             instance_id=instance_id,
-            user_id=user_id or get_request_context().user_id,
+            user_id=user_id or get_user_id(),
             message=message,
             details=details,
         )

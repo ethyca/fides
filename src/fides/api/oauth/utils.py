@@ -31,7 +31,7 @@ from fides.api.models.policy import PolicyPreWebhook
 from fides.api.models.pre_approval_webhook import PreApprovalWebhook
 from fides.api.models.privacy_request import RequestTask
 from fides.api.oauth.roles import get_scopes_from_roles
-from fides.api.request_context import set_request_context
+from fides.api.request_context import set_user_id
 from fides.api.schemas.external_https import RequestTaskJWE, WebhookJWE
 from fides.api.schemas.oauth import OAuth2ClientCredentialsBearer
 from fides.common.api.v1.urn_registry import TOKEN, V1_URL_PREFIX
@@ -334,7 +334,7 @@ def extract_token_and_load_client(
         ctx_user_id = CONFIG.security.oauth_root_client_id
 
     if ctx_user_id:
-        set_request_context(user_id=ctx_user_id)
+        set_user_id(ctx_user_id)
 
     return token_data, client
 
