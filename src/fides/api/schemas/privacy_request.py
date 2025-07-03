@@ -124,6 +124,8 @@ class PrivacyRequestResubmit(PrivacyRequestCreate):
     identity_verified_at: Optional[datetime] = None
     custom_privacy_request_fields_approved_at: Optional[datetime] = None
     custom_privacy_request_fields_approved_by: Optional[str] = None
+    finalized_at: Optional[datetime] = None
+    finalized_by: Optional[str] = None
 
 
 class ConsentRequestCreate(FidesSchema):
@@ -141,6 +143,8 @@ class FieldsAffectedResponse(FidesSchema):
     path: Optional[str]
     field_name: Optional[str]
     data_categories: Optional[List[str]]
+    finalized_at: Optional[datetime] = None
+    finalized_by: Optional[str] = None
     model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
 
@@ -287,6 +291,7 @@ class PrivacyRequestStatus(str, EnumType):
     complete = "complete"
     paused = "paused"
     awaiting_email_send = "awaiting_email_send"
+    requires_manual_finalization = "requires_manual_finalization"
     canceled = "canceled"
     error = "error"
 
@@ -320,6 +325,8 @@ class PrivacyRequestResponse(FidesSchema):
     source: Optional[PrivacyRequestSource] = None
     deleted_at: Optional[datetime] = None
     deleted_by: Optional[str] = None
+    finalized_at: Optional[datetime] = None
+    finalized_by: Optional[str] = None
     model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
 

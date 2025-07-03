@@ -14,7 +14,7 @@ import ApprovePrivacyRequestModal from "~/features/privacy-requests/ApprovePriva
 import DenyPrivacyRequestModal from "~/features/privacy-requests/DenyPrivacyRequestModal";
 import { useMutations } from "~/features/privacy-requests/hooks/useMutations";
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
-import { ScopeRegistryEnum } from "~/types/api";
+import { PrivacyRequestStatus, ScopeRegistryEnum } from "~/types/api";
 
 interface RequestTableActionsProps extends StackProps {
   subjectRequest: PrivacyRequestEntity;
@@ -31,6 +31,7 @@ export const RequestTableActions = ({
     handleApproveRequest,
     handleDenyRequest,
     handleDeleteRequest,
+    handleFinalizeRequest,
     isLoading,
   } = useMutations({
     subjectRequest,
@@ -74,6 +75,29 @@ export const RequestTableActions = ({
     );
   };
 
+  const renderFinalizeButton = () => {
+    if (
+      subjectRequest.status !==
+      PrivacyRequestStatus.REQUIRES_MANUAL_FINALIZATION
+    ) {
+      return null;
+    }
+    return (
+      <Restrict scopes={[ScopeRegistryEnum.PRIVACY_REQUEST_REVIEW]}>
+        <Button
+          title="Finalize"
+          aria-label="Finalize"
+          icon={<Icons.Checkmark />}
+          onClick={handleFinalizeRequest}
+          loading={isLoading}
+          disabled={isLoading}
+          data-testid="privacy-request-finalize-btn"
+          size="small"
+        />
+      </Restrict>
+    );
+  };
+
   const renderDeleteButton = () => {
     return (
       <Restrict scopes={[ScopeRegistryEnum.PRIVACY_REQUEST_DELETE]}>
@@ -96,6 +120,7 @@ export const RequestTableActions = ({
       <HStack {...props}>
         {renderApproveButton()}
         {renderDenyButton()}
+        {renderFinalizeButton()}
         {renderDeleteButton()}
       </HStack>
 
