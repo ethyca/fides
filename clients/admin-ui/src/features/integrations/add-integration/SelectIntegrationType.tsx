@@ -65,7 +65,7 @@ const SelectIntegrationType = ({
       // DEFER (ENG-675): Remove this once the alpha feature is released
       if (
         !alphaNewManualDSR &&
-        i.placeholder.connection_type === "manual_webhook"
+        i.placeholder.connection_type === "manual_task"
       ) {
         return false;
       }

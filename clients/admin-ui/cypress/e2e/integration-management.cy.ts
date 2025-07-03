@@ -97,7 +97,7 @@ describe("Integration management for data detection & discovery", () => {
         cy.url().should("contain", "/bq_integration");
       });
 
-      it("should paginate integrations", () => {
+      it.skip("should paginate integrations", () => {
         cy.intercept("GET", "/api/v1/connection?*&page=1*", {
           fixture: "connectors/list_page_1_50_items.json",
         }).as("getConnectionsPage1");

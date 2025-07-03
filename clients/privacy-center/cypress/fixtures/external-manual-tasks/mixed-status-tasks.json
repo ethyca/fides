@@ -1,0 +1,106 @@
+{
+  "items": [
+    {
+      "manual_field_id": "task_new_001",
+      "name": "New Task - Export Data",
+      "description": "This is a new task that should have actions",
+      "input_type": "text",
+      "request_type": "access",
+      "status": "new",
+      "assigned_users": [
+        {
+          "id": "ext_user_123",
+          "email_address": "john.doe@example.com",
+          "first_name": "John",
+          "last_name": "Doe"
+        }
+      ],
+      "privacy_request": {
+        "id": "pri_new_001",
+        "days_left": 10,
+        "request_type": "access",
+        "subject_identities": {
+          "email": "new.task@example.com"
+        }
+      },
+      "system": {
+        "id": "sys_new_001",
+        "name": "Test System"
+      }
+    },
+    {
+      "manual_field_id": "task_completed_001",
+      "name": "Completed Task - Data Exported",
+      "description": "This task is already completed",
+      "input_type": "text",
+      "request_type": "access",
+      "status": "completed",
+      "assigned_users": [
+        {
+          "id": "ext_user_123",
+          "email_address": "john.doe@example.com",
+          "first_name": "John",
+          "last_name": "Doe"
+        }
+      ],
+      "privacy_request": {
+        "id": "pri_completed_001",
+        "days_left": 0,
+        "request_type": "access",
+        "subject_identities": {
+          "email": "completed.task@example.com"
+        }
+      },
+      "system": {
+        "id": "sys_completed_001",
+        "name": "Completed System"
+      }
+    },
+    {
+      "manual_field_id": "task_skipped_001",
+      "name": "Skipped Task - Not Needed",
+      "description": "This task was skipped",
+      "input_type": "checkbox",
+      "request_type": "erasure",
+      "status": "skipped",
+      "assigned_users": [
+        {
+          "id": "ext_user_123",
+          "email_address": "john.doe@example.com",
+          "first_name": "John",
+          "last_name": "Doe"
+        }
+      ],
+      "privacy_request": {
+        "id": "pri_skipped_001",
+        "days_left": 0,
+        "request_type": "erasure",
+        "subject_identities": {
+          "email": "skipped.task@example.com"
+        }
+      },
+      "system": {
+        "id": "sys_skipped_001",
+        "name": "Skipped System"
+      }
+    }
+  ],
+  "total": 3,
+  "page": 1,
+  "size": 25,
+  "pages": 1,
+  "filter_options": {
+    "systems": [
+      { "id": "sys_new_001", "name": "Test System" },
+      { "id": "sys_completed_001", "name": "Completed System" },
+      { "id": "sys_skipped_001", "name": "Skipped System" }
+    ],
+    "assigned_users": [
+      {
+        "id": "ext_user_123",
+        "first_name": "John",
+        "last_name": "Doe"
+      }
+    ]
+  }
+}

@@ -1072,6 +1072,8 @@ dataset:
       data_categories: [system.operations]
     - name: details
       data_categories: [system.operations]
+    - name: user_id
+      data_categories: [user.unique_id]
     - name: created_at
       data_categories: [system.operations]
     - name: updated_at

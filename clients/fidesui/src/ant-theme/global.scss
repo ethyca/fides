@@ -1,4 +1,9 @@
-@import "fidesui/src/palette/palette.module.scss";
+@import "../palette/palette.module.scss";
+
+/**
+ * Global Ant Design styles for Fides applications
+ * These styles handle cases where tokens are not available
+ */
 
 /**
   * Chakra removes heading font weight, wheras Ant assumes browser defaults.

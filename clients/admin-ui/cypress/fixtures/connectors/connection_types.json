@@ -80,7 +80,7 @@
       "encoded_icon": null
     },
     {
-      "identifier": "manual_webhook",
+      "identifier": "manual_task",
       "type": "manual",
       "human_readable": "Manual Process",
       "encoded_icon": null

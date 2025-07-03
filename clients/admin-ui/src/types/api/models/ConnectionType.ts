@@ -19,6 +19,7 @@ export enum ConnectionType {
   HTTPS = "https",
   MANUAL = "manual",
   MANUAL_WEBHOOK = "manual_webhook",
+  MANUAL_TASK = "manual_task",
   MARIADB = "mariadb",
   MONGODB = "mongodb",
   MSSQL = "mssql",

@@ -1,0 +1,19 @@
+{
+  "otp_request": {
+    "message": "OTP code sent to email",
+    "email": "john.doe@example.com"
+  },
+  "otp_verify": {
+    "user_data": {
+      "id": "ext_user_123",
+      "username": "john.doe.external",
+      "email_address": "john.doe@example.com",
+      "first_name": "John",
+      "last_name": "Doe",
+      "disabled": false
+    },
+    "token_data": {
+      "access_token": "ext_token_abc123def456"
+    }
+  }
+}

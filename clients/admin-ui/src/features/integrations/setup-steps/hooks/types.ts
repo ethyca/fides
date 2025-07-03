@@ -1,5 +1,5 @@
 import {
-  ConnectionConfigurationResponse,
+  ConnectionConfigurationResponseWithSystemKey,
   ConnectionSystemTypeMap,
 } from "~/types/api";
 
@@ -17,5 +17,5 @@ export interface BaseStepHookParams {
   testData?: ConnectionStatusData;
   testIsLoading?: boolean;
   connectionOption: ConnectionSystemTypeMap;
-  connection: ConnectionConfigurationResponse;
+  connection: ConnectionConfigurationResponseWithSystemKey;
 }

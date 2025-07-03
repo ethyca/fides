@@ -62,7 +62,7 @@ const IntegrationListView: NextPage = () => {
   const supportedIntegrations = useMemo(() => {
     return SUPPORTED_INTEGRATIONS.filter((integration) => {
       return (
-        integration !== ConnectionType.MANUAL_WEBHOOK || flags.alphaNewManualDSR
+        integration !== ConnectionType.MANUAL_TASK || flags.alphaNewManualDSR
       );
     });
   }, [flags.alphaNewManualDSR]);
@@ -73,7 +73,7 @@ const IntegrationListView: NextPage = () => {
     page,
     search: searchTerm.trim() || undefined,
   });
-  const { items, total } = data ?? {};
+  const { items } = data ?? {};
 
   const { onOpen, isOpen, onClose } = useDisclosure();
 
@@ -190,7 +190,7 @@ const IntegrationListView: NextPage = () => {
   const paginationConfig: TableProps<IntegrationTableData>["pagination"] = {
     current: page,
     pageSize,
-    total,
+    total: tableData.length,
     showSizeChanger: true,
     showQuickJumper: false,
     showTotal: (totalItems, range) =>

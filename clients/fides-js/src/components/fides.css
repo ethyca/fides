@@ -231,9 +231,13 @@ div#fides-banner-heading {
 }
 
 .fides-banner-description a,
-.fides-modal-description a {
+.fides-modal-description a,
+.fides-banner-description .fides-link-button,
+.fides-modal-description .fides-link-button {
   /* in case HTML rendering is turned on and customer adds a link */
   color: var(--fides-overlay-primary-color);
+  text-decoration: underline;
+  font-weight: 600;
 }
 
 div#fides-banner-notices {
@@ -766,6 +770,9 @@ div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
 .fides-notice-toggle-controls {
   white-space: nowrap;
   margin-left: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* GPC */
@@ -862,8 +869,6 @@ div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
   display: inline-flex;
   align-items: center;
   height: 18px;
-  margin-right: 8px;
-  margin-left: 4px;
   text-transform: uppercase;
   padding: 0 4px;
   font-weight: 600;
@@ -936,8 +941,6 @@ div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
   background: none;
   padding: 0;
   cursor: pointer;
-  text-decoration: underline;
-  color: var(--fides-overlay-body-font-color);
 }
 
 .fides-primary-text-color {

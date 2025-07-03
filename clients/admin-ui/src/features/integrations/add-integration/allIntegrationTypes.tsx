@@ -55,7 +55,7 @@ const INTEGRATION_TYPE_MAP: { [K in ConnectionType]?: IntegrationTypeInfo } = {
   [ConnectionType.MYSQL]: MYSQL_TYPE_INFO,
   [ConnectionType.WEBSITE]: WEBSITE_INTEGRATION_TYPE_INFO,
   [ConnectionType.POSTGRES]: POSTGRES_TYPE_INFO,
-  [ConnectionType.MANUAL_WEBHOOK]: MANUAL_TYPE_INFO,
+  [ConnectionType.MANUAL_TASK]: MANUAL_TYPE_INFO,
 };
 
 export const INTEGRATION_TYPE_LIST: IntegrationTypeInfo[] = [

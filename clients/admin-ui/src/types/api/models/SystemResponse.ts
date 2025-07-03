@@ -182,8 +182,6 @@ export type SystemResponse = {
    *
    * Describes the returned schema for a ConnectionConfiguration.
    *
-   * The mixin base class ensures that `secrets` sensitive values are masked.
-   *
    */
   connection_configs: ConnectionConfigurationResponse | null;
   /**

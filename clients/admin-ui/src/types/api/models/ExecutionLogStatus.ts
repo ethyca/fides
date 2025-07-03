@@ -3,7 +3,7 @@
 /* eslint-disable */
 
 /**
- * Enum for execution log statuses, reflecting where they are in their workflow
+ * Enum for task execution log statuses, reflecting where they are in their workflow
  */
 export enum ExecutionLogStatus {
   IN_PROCESSING = "in_processing",
