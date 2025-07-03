@@ -604,16 +604,24 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                     masking_request, handled_response
                 )
 
-                self.process_response_data(
-                    response_data,
-                    privacy_request.get_cached_identity_data(),
-                    cast(
-                        Optional[List[PostProcessorStrategy]],
-                        masking_request.postprocessors,
-                    ),
-                    handled_response,
-                )
-            except Exception as exc:  # pylint: disable=broad-except
+                # Only attempt post-processing if we have post-processors and the response body
+                # is JSON-serializable (dict or list of dicts).
+                if masking_request.postprocessors and isinstance(
+                    response_data, (dict, list)
+                ):
+                    self.process_response_data(
+                        response_data,
+                        privacy_request.get_cached_identity_data(),
+                        cast(
+                            Optional[List[PostProcessorStrategy]],
+                            masking_request.postprocessors,
+                        ),
+                        handled_response,
+                    )
+            except (
+                PostProcessingException,
+                Exception,
+            ) as exc:  # pylint: disable=broad-except
                 # We do not want a post-processing failure to prevent the masking
                 # operation itself from succeeding.
                 logger.warning(
