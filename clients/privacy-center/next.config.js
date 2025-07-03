@@ -11,13 +11,53 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
   enabled: process.env.ANALYZE === "true",
 });
 
+/**
+ * Imports and validates the Fides package version from a JSON file
+ * @param {string} path - Path to the version.json file, defaults to "../version.json"
+ * @returns {string} The package version string, or "unknown" if version cannot be determined
+ * @example
+ * // version.json
+ * {
+ *   "version": "1.2.3"
+ * }
+ *
+ * importFidesPackageVersion() // Returns "1.2.3"
+ * importFidesPackageVersion("invalid/path") // Returns "unknown"
+ */
+const importFidesPackageVersion = (path = "../version.json") => {
+  const errorVersion = "unknown";
+  try {
+    const versionJson = require(path);
+
+    // Validate version file structure and content
+    if (
+      !versionJson?.version ||
+      typeof versionJson.version !== "string" ||
+      versionJson.version.trim() === ""
+    ) {
+      console.warn(
+        `WARNING: Importing Fides package version failed! Invalid version file format or missing version in ${path}`,
+      );
+      return errorVersion;
+    }
+
+    return versionJson.version.trim();
+  } catch (error) {
+    console.warn(
+      `WARNING: Importing Fides package version failed! Error when importing version file from ${path}:`,
+      error,
+    );
+    return errorVersion;
+  }
+};
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // `reactStrictMode` must be false for Chakra v2 modals to behave properly. See https://github.com/chakra-ui/chakra-ui/issues/5321#issuecomment-1219327270
   reactStrictMode: false,
   poweredByHeader: false,
   env: {
-    version: "__RELEASE_VERSION__",
+    version: importFidesPackageVersion(),
   },
   transpilePackages: ["react-syntax-highlighter", "fidesui"],
 
