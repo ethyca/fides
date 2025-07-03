@@ -81,7 +81,7 @@ describe("Consent third party extensions", () => {
                   fides_string: undefined,
                 },
               });
-            // Second call should be from deprecated FidesInitialized
+            // Second call should be from FidesInitialized (dispatched at FidesReady time for backwards compatibility)
             cy.get("@dataLayerPush")
               .its("args")
               .then((args) => {
@@ -243,7 +243,7 @@ describe("Consent third party extensions", () => {
                     origin: "fides",
                   },
                 });
-              // Second call should be from deprecated FidesInitialized
+              // Second call should be from FidesInitialized (dispatched at FidesReady time for backwards compatibility)
               cy.get("@dataLayerPush")
                 .its("secondCall.args.0.event")
                 .should("eq", "FidesInitialized");
@@ -415,7 +415,7 @@ describe("Consent third party extensions", () => {
                   },
                 });
 
-              // Second call should be from deprecated FidesInitialized
+              // Second call should be from FidesInitialized (dispatched at FidesReady time for backwards compatibility)
               cy.get("@dataLayerPush")
                 .its("secondCall.args.0.event")
                 .should("eq", "FidesInitialized");
