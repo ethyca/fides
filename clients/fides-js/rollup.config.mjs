@@ -12,6 +12,7 @@ import strip from "@rollup/plugin-strip";
 import replace from "@rollup/plugin-replace";
 import fs from "fs";
 import jsxRemoveAttributes from "rollup-plugin-jsx-remove-attributes";
+import { importFidesPackageVersion } from "../build-utils.js";
 
 const NAME = "fides";
 const IS_DEV = process.env.NODE_ENV === "development";
@@ -38,48 +39,6 @@ const preactAliases = {
     { find: "react-dom", replacement: "preact/compat" },
     { find: "react/jsx-runtime", replacement: "preact/jsx-runtime" },
   ],
-};
-
-/**
- * TODO: This is copied from next.config.js in clients/privacy-center. We should refactor this to be shared.
- *
- * Imports and validates the Fides package version from a JSON file
- * @param {string} path - Path to the version.json file, defaults to "../version.json"
- * @returns {string} The package version string, or "unknown" if version cannot be determined
- * @example
- * // version.json
- * {
- *   "version": "1.2.3"
- * }
- *
- * importFidesPackageVersion() // Returns "1.2.3"
- * importFidesPackageVersion("invalid/path") // Returns "unknown"
- */
-const importFidesPackageVersion = (path = "../version.json") => {
-  const errorVersion = "unknown";
-  try {
-    const versionJson = JSON.parse(fs.readFileSync(path, "utf-8"));
-
-    // Validate version file structure and content
-    if (
-      !versionJson?.version ||
-      typeof versionJson.version !== "string" ||
-      versionJson.version.trim() === ""
-    ) {
-      console.warn(
-        `WARNING: Importing Fides package version failed! Invalid version file format or missing version in ${path}`,
-      );
-      return errorVersion;
-    }
-
-    return versionJson.version.trim();
-  } catch (error) {
-    console.warn(
-      `WARNING: Importing Fides package version failed! Error when importing version file from ${path}:`,
-      error,
-    );
-    return errorVersion;
-  }
 };
 
 const fidesScriptPlugins = ({ name, gzipWarnSizeKb, gzipErrorSizeKb }) => [
