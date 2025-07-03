@@ -116,10 +116,10 @@ COPY clients/package.json clients/package-lock.json ./
 COPY clients/fides-js/package.json ./fides-js/package.json
 COPY clients/admin-ui/package.json ./admin-ui/package.json
 COPY clients/privacy-center/package.json ./privacy-center/package.json
-COPY --from=backend /fides/version.json ./version.json
 
 RUN npm install
 
+COPY --from=backend /fides/version.json ./version.json
 COPY clients/ .
 
 ####################
