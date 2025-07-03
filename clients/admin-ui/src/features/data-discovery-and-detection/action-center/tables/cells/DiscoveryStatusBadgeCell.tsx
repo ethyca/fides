@@ -1,38 +1,64 @@
-import {
-  AntTag as Tag,
-  AntTagProps as TagProps,
-  AntTooltip as Tooltip,
-} from "fidesui";
+import { AntTag as Tag, AntTooltip as Tooltip, Icons } from "fidesui";
+import { useState } from "react";
 
-import { formatDate } from "~/features/common/utils";
+import { AggregatedConsent, StagedResourceAPIResponse } from "~/types/api";
 
-interface ResultStatusBadgeProps extends Omit<TagProps, "color"> {
-  color: "success" | "error";
-}
-
-const ResultStatusBadge = ({ children, ...props }: ResultStatusBadgeProps) => {
-  return <Tag {...props}>{children}</Tag>;
-};
+import { ConsentBreakdownModal } from "../../ConsentBreakdownModal";
 
 interface DiscoveryStatusBadgeCellProps {
-  withConsent: boolean;
-  dateDiscovered: string | null | undefined;
+  consentAggregated: AggregatedConsent;
+  stagedResource: StagedResourceAPIResponse;
 }
 
 export const DiscoveryStatusBadgeCell = ({
-  withConsent,
-  dateDiscovered,
+  consentAggregated,
+  stagedResource,
 }: DiscoveryStatusBadgeCellProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const handleClick = () => {
+    setIsOpen(true);
+  };
+  const handleCancel = () => {
+    setIsOpen(false);
+  };
   return (
-    <Tooltip title={dateDiscovered ? formatDate(dateDiscovered) : undefined}>
-      {/* tooltip throws errors if immediate child is not available or changes after render so this div wrapper helps keep it stable */}
-      <div>
-        {withConsent ? (
-          <ResultStatusBadge color="success">With consent</ResultStatusBadge>
-        ) : (
-          <ResultStatusBadge color="error">Without consent</ResultStatusBadge>
-        )}
-      </div>
-    </Tooltip>
+    <>
+      {consentAggregated === AggregatedConsent.WITHOUT_CONSENT && (
+        <Tooltip title="Asset was detected before the user gave consent or without any consent. Click the info icon for more details.">
+          <Tag
+            color="error"
+            closeIcon={<Icons.Information style={{ width: 12, height: 12 }} />}
+            closeButtonLabel="View details"
+            onClose={handleClick}
+          >
+            Without consent
+          </Tag>
+        </Tooltip>
+      )}
+      {consentAggregated === AggregatedConsent.WITH_CONSENT && (
+        <Tooltip title="Asset was detected after the user gave consent">
+          <Tag color="success">With consent</Tag>
+        </Tooltip>
+      )}
+      {consentAggregated === AggregatedConsent.EXEMPT && (
+        <Tooltip title="Asset is valid regardless of consent">
+          <Tag>Consent exempt</Tag>
+        </Tooltip>
+      )}
+      {consentAggregated === AggregatedConsent.UNKNOWN && (
+        <Tooltip title="Did not find consent information for this asset. You may need to re-run the monitor.">
+          <Tag>Unknown</Tag>
+        </Tooltip>
+      )}
+      {isOpen && ( // since this component is on every row, we need to check if it's open to render it (otherwise it will render on every row)
+        <ConsentBreakdownModal
+          isOpen={isOpen}
+          stagedResource={stagedResource}
+          status={consentAggregated}
+          onCancel={handleCancel}
+          // onDownload={handleDownload}
+        />
+      )}
+    </>
   );
 };

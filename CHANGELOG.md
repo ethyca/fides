@@ -21,6 +21,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.65.0...main)
 
+### Added
+- Added consent status to the Action Center, including a new discovery status column and a details modal for assets detected without consent [#6283](https://github.com/ethyca/fides/pull/6283)
+
 ## [2.65.0](https://github.com/ethyca/fides/compare/2.64.2...2.65.0)
 
 ### Added

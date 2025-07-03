@@ -1,4 +1,5 @@
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
+import { AntSpace as Space } from "fidesui";
 
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import {
@@ -12,15 +13,24 @@ import {
 } from "~/features/common/table/v2/cells";
 import { DiscoveredAssetActionsCell } from "~/features/data-discovery-and-detection/action-center/tables/cells/DiscoveredAssetActionsCell";
 import DiscoveredAssetDataUseCell from "~/features/data-discovery-and-detection/action-center/tables/cells/DiscoveredAssetDataUseCell";
-import { PrivacyNoticeRegion, StagedResourceAPIResponse } from "~/types/api";
+import {
+  AggregatedConsent,
+  ConsentStatus,
+  PrivacyNoticeRegion,
+  StagedResourceAPIResponse,
+} from "~/types/api";
 
+import { DiscoveryStatusIcon } from "../DiscoveryStatusIcon";
+import { DiscoveryStatusBadgeCell } from "../tables/cells/DiscoveryStatusBadgeCell";
 import { SystemCell } from "../tables/cells/SystemCell";
 
 export const useDiscoveredAssetsColumns = ({
   readonly,
+  aggregatedConsent,
   onTabChange,
 }: {
   readonly: boolean;
+  aggregatedConsent: AggregatedConsent | null | undefined;
   onTabChange: (index: number) => void;
 }) => {
   const columnHelper = createColumnHelper<StagedResourceAPIResponse>();
@@ -102,18 +112,30 @@ export const useDiscoveredAssetsColumns = ({
       cell: (props) => <DefaultCell value={props.getValue()} />,
       header: (props) => <DefaultHeaderCell value="Domain" {...props} />,
     }),
-    /*
-    // TODO: [HJ-344] uncomment when monitor supports discovery status
-    columnHelper.accessor((row) => row.with_consent, {
-      id: "with_consent",
+    columnHelper.accessor((row) => row.consent_aggregated, {
+      id: "consent_aggregated",
       cell: (props) => (
         <DiscoveryStatusBadgeCell
-          withConsent={props.getValue()}
-          dateDiscovered={props.row.original.updated_at}
+          consentAggregated={props.getValue() ?? AggregatedConsent.UNKNOWN}
+          stagedResource={props.row.original}
         />
       ),
-      header: "Discovery",
-    }), */
+      header: () => {
+        return (
+          <Space>
+            <div>Discovery</div>
+            {aggregatedConsent === AggregatedConsent.WITHOUT_CONSENT && (
+              <DiscoveryStatusIcon
+                consentStatus={{
+                  status: ConsentStatus.ALERT,
+                  message: "One or more assets were detected without consent",
+                }}
+              />
+            )}
+          </Space>
+        );
+      },
+    }),
     columnHelper.accessor((row) => row.page, {
       id: "page",
       cell: (props) => (
