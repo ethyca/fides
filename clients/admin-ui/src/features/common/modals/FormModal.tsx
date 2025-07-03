@@ -26,8 +26,8 @@ const FormModal = ({
   children,
   isOpen,
   onClose,
-  showCloseButton = false,
   modalContentProps,
+  showCloseButton = false,
   footer,
   ...props
 }: FormModalProps) => (

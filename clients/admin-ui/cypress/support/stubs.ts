@@ -752,25 +752,25 @@ export const stubSharedMonitorConfig = () => {
 
 export const stubManualTasks = () => {
   // Intercept the manual tasks API endpoints
-  cy.intercept("GET", "/api/v1/manual-tasks*", {
+  cy.intercept("GET", "/api/v1/plus/manual-fields*", {
     fixture: "manual-tasks/manual-tasks-response.json",
   }).as("getManualTasks");
 
-  cy.intercept("POST", "/api/v1/manual-tasks/*/complete", {
+  cy.intercept("POST", "/api/v1/privacy-request/*/manual-field/*/complete", {
     body: {
-      task_id: "task_001",
+      manual_field_id: "task_001",
       status: "completed",
     },
   }).as("completeTask");
 
-  cy.intercept("POST", "/api/v1/manual-tasks/*/skip", {
+  cy.intercept("POST", "/api/v1/privacy-request/*/manual-field/*/skip", {
     body: {
-      task_id: "task_001",
+      manual_field_id: "task_001",
       status: "skipped",
     },
   }).as("skipTask");
 
-  cy.intercept("GET", "/api/v1/manual-tasks/*", {
+  cy.intercept("GET", "/api/v1/plus/manual-fields/*", {
     fixture: "manual-tasks/manual-task-detail.json",
   }).as("getTaskById");
 };

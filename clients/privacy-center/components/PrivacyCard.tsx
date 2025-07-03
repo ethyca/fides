@@ -4,25 +4,25 @@ import Card from "./Card";
 
 type PrivacyCardProps = {
   title: string;
-  policyKey: string;
   iconPath: string;
   description: string;
-  onOpen: (policyKey: string) => void;
+  onOpen: (index: number) => void;
+  index: number;
 };
 
 const PrivacyCard = ({
   title,
-  policyKey,
   iconPath,
   description,
   onOpen,
+  index,
 }: PrivacyCardProps) => (
   <Card
     title={title}
     iconPath={iconPath}
     description={description}
     onClick={() => {
-      onOpen(policyKey);
+      onOpen(index);
     }}
   />
 );
