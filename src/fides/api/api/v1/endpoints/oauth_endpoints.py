@@ -46,6 +46,7 @@ from fides.common.api.scope_registry import (
     SCOPE_REGISTRY,
     ScopeRegistryEnum,
 )
+from fides.common.api.v1.tag_registry import PUBLIC_INTERNET
 from fides.common.api.v1.urn_registry import (
     CLIENT,
     CLIENT_BY_ID,
@@ -223,7 +224,7 @@ def read_roles_to_scopes_mapping() -> Dict[str, List]:
     return ROLES_TO_SCOPES_MAPPING
 
 
-@router.get(OAUTH_CALLBACK)
+@router.get(OAUTH_CALLBACK, tags=[PUBLIC_INTERNET])
 def oauth_callback(code: str, state: str, db: Session = Depends(get_db)) -> Response:
     """
     Uses the passed in code to generate the token access request
