@@ -1,7 +1,6 @@
 import React, { useCallback, useState } from "react";
 
 import { useConfig } from "~/features/common/config.slice";
-import { PrivacyRequestOption } from "~/types/api";
 
 import RequestModal from "../RequestModal";
 import { ModalViews, VerificationType } from "../types";
@@ -11,13 +10,13 @@ import RequestSubmitted from "./RequestSubmitted";
 
 export const usePrivacyRequestModal = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [openAction, setOpenAction] = useState<string | null>(null);
+  const [openAction, setOpenAction] = useState<number | null>(null);
   const [currentView, setCurrentView] = useState<ModalViews>(
     ModalViews.PrivacyRequest,
   );
   const [privacyRequestId, setPrivacyRequestId] = useState<string>("");
 
-  const onOpen = (action: string) => {
+  const onOpen = (action: number) => {
     setOpenAction(action);
     setIsOpen(true);
   };
@@ -49,7 +48,7 @@ export const usePrivacyRequestModal = () => {
 export type RequestModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  openAction: string | null;
+  openAction: number | null;
   currentView: ModalViews;
   setCurrentView: (view: ModalViews) => void;
   privacyRequestId: string;
@@ -70,11 +69,8 @@ export const PrivacyRequestModal = ({
   successHandler,
 }: RequestModalProps) => {
   const config = useConfig();
-  const action = openAction
-    ? (config.actions as Array<PrivacyRequestOption>).find(
-        ({ policy_key }) => policy_key === openAction,
-      )
-    : null;
+  const action =
+    typeof openAction === "number" ? config.actions[openAction] : null;
 
   if (!action) {
     return null;
