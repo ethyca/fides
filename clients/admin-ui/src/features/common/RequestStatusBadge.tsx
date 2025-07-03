@@ -60,6 +60,10 @@ export const statusPropMap: {
     color: "minos",
     label: "Requires Input",
   },
+  requires_manual_finalization: {
+    color: "minos",
+    label: "Requires Finalization",
+  },
 };
 
 interface RequestBadgeProps {
