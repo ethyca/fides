@@ -63,6 +63,9 @@ export interface ManualFieldPrivacyRequest {
   days_left?: number | null;
   request_type: ManualFieldRequestType;
   subject_identities?: Record<string, string> | null;
+  custom_fields?: {
+    [key: string]: string;
+  };
 }
 
 export interface ManualFieldListItem {

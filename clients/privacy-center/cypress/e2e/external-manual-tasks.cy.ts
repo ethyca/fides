@@ -341,6 +341,52 @@ describe("External Manual Tasks", () => {
       cy.get('[data-testid="complete-task-modal"]').should("not.exist");
     });
 
+    it("should display custom fields in task details", () => {
+      // Open first task that has custom fields
+      cy.get('[data-testid="external-tasks-table"] tbody tr')
+        .contains("Export Customer Data from Salesforce")
+        .parents("tr")
+        .within(() => {
+          cy.get('[data-testid="task-complete-button"]').click({ force: true });
+        });
+
+      cy.get('[data-testid="complete-task-modal"]').within(() => {
+        // Verify custom fields are displayed
+        cy.contains("Custom fields").should("be.visible");
+
+        // Check for specific custom fields from fixture
+        cy.get('[data-testid="task-details-container"]').within(() => {
+          cy.contains("department: Marketing").should("be.visible");
+          cy.contains("priority: High").should("be.visible");
+        });
+
+        // Cancel to close modal
+        cy.get('[data-testid="complete-modal-cancel-button"]').click();
+      });
+
+      // Test second task with different custom fields format
+      cy.get('[data-testid="external-tasks-table"] tbody tr')
+        .contains("Export Analytics Data")
+        .parents("tr")
+        .within(() => {
+          cy.get('[data-testid="task-complete-button"]').click({ force: true });
+        });
+
+      cy.get('[data-testid="complete-task-modal"]').within(() => {
+        // Verify custom fields are displayed
+        cy.contains("Custom fields").should("be.visible");
+
+        // Check for simple custom field key-value pairs
+        cy.get('[data-testid="task-details-container"]').within(() => {
+          cy.contains("region: US, EU").should("be.visible");
+          cy.contains("account_type: Premium").should("be.visible");
+        });
+
+        // Cancel to close modal
+        cy.get('[data-testid="complete-modal-cancel-button"]').click();
+      });
+    });
+
     it("should handle checkbox input tasks", () => {
       // Find checkbox task (Delete User Profile)
       cy.get('[data-testid="external-tasks-table"] tbody tr')
