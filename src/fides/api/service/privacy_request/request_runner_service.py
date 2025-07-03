@@ -676,7 +676,7 @@ def run_privacy_request(
                         action_type=ActionType.erasure
                     )
                     if (
-                        privacy_request.finalized_by is None
+                        privacy_request.finalized_at is None
                         and erasure_rules
                         and CONFIG.execution.erasure_request_finalization_required
                     ):
