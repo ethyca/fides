@@ -340,6 +340,8 @@ export default async function handler(
       fidesConsentNonApplicableFlagMode:
         environment.settings.FIDES_CONSENT_NON_APPLICABLE_FLAG_MODE,
       fidesConsentFlagType: environment.settings.FIDES_CONSENT_FLAG_TYPE,
+      fidesInitializedEventMode:
+        environment.settings.FIDES_INITIALIZED_EVENT_MODE,
     },
     experience: experience || undefined,
     geolocation: geolocation || undefined,

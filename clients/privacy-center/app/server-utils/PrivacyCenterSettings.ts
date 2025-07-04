@@ -69,4 +69,5 @@ export interface PrivacyCenterSettings {
   FIDES_CONSENT_NON_APPLICABLE_FLAG_MODE: ConsentNonApplicableFlagMode | null; // (optional) determines how non-applicable privacy notices are handled (omit|include)
   FIDES_CONSENT_FLAG_TYPE: ConsentFlagType | null; // (optional) determines the type of value to use for consent (boolean|consent_mechanism)
   ENABLE_EXTERNAL_TASK_PORTAL: boolean; // whether the external task portal is enabled
+  FIDES_INITIALIZED_EVENT_MODE: "multiple" | "once" | "disable"; // (optional) controls when the deprecated FidesInitialized event should be dispatched (defaults to "once")
 }

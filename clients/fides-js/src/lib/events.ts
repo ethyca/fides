@@ -161,26 +161,18 @@ export const onFidesEvent = (
 };
 
 /**
- * Helper function to dispatch the deprecated FidesInitialized event with standard parameters
- * @deprecated - FidesInitialized is used for backwards compatibility only
- */
-export const dispatchFidesInitialized = (
-  fidesCookie: FidesCookie,
-  extraDetails?: FidesEventExtraDetails,
-) => {
-  dispatchFidesEvent("FidesInitialized", fidesCookie, extraDetails);
-};
-
-/**
- * Helper function to dispatch both FidesConsentLoaded and FidesInitialized events
- * for backwards compatibility.
+ * Helper function to dispatch FidesConsentLoaded event
+ * If there's an option to dispatch FidesInitialized event, it will be dispatched as well
  */
 export const dispatchConsentLoadedEvents = (
   fidesCookie: FidesCookie,
   extraDetails?: FidesEventExtraDetails,
 ) => {
   dispatchFidesEvent("FidesConsentLoaded", fidesCookie, extraDetails);
-  dispatchFidesInitialized(fidesCookie, extraDetails);
+  const mode = window.Fides?.options?.fidesInitializedEventMode;
+  if (mode === "multiple") {
+    dispatchFidesEvent("FidesInitialized", fidesCookie, extraDetails);
+  }
 };
 
 /**
@@ -192,5 +184,8 @@ export const dispatchReadyEvents = (
   extraDetails?: FidesEventExtraDetails,
 ) => {
   dispatchFidesEvent("FidesReady", fidesCookie, extraDetails);
-  dispatchFidesInitialized(fidesCookie, extraDetails);
+  const mode = window.Fides?.options?.fidesInitializedEventMode;
+  if (mode === "multiple" || mode === "once") {
+    dispatchFidesEvent("FidesInitialized", fidesCookie, extraDetails);
+  }
 };
