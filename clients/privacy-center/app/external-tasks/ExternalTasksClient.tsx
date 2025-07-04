@@ -7,6 +7,7 @@ import { useConfig } from "~/features/common/config.slice";
 import { useSettings } from "~/features/common/settings.slice";
 import { ExternalAuthLayout } from "~/features/external-manual-tasks/components/ExternalAuthLayout";
 import { ExternalTaskLayout } from "~/features/external-manual-tasks/components/ExternalTaskLayout";
+import NoAccessTokenMessage from "~/features/external-manual-tasks/components/NoAccessTokenMessage";
 import OtpRequestForm from "~/features/external-manual-tasks/components/OtpRequestForm";
 import OtpVerificationForm from "~/features/external-manual-tasks/components/OtpVerificationForm";
 import {
@@ -70,6 +71,26 @@ const ExternalTasksClientInner = ({
       dispatch(setEmailToken(token));
     }
   }, [token, dispatch]);
+
+  // Remove access_token from URL history to prevent storing sensitive data
+  useEffect(() => {
+    if (typeof window !== "undefined" && token) {
+      const currentUrl = new URL(window.location.href);
+      const urlParams = new URLSearchParams(currentUrl.search);
+
+      // Check if access_token exists in the current URL
+      if (urlParams.has("access_token")) {
+        // Remove the access_token parameter
+        urlParams.delete("access_token");
+
+        // Build the new URL without the access_token
+        const newUrl = `${currentUrl.pathname}${urlParams.toString() ? `?${urlParams.toString()}` : ""}`;
+
+        // Update the URL without adding a new history entry
+        window.history.replaceState(null, "", newUrl);
+      }
+    }
+  }, [token]); // Run when token changes
 
   // Update auth step based on authentication state
   useEffect(() => {
@@ -145,6 +166,10 @@ const ExternalTasksClientInner = ({
     (verifyOtpError ? "Failed to verify code. Please try again." : null);
 
   const renderAuthContent = () => {
+    if (!token) {
+      return <NoAccessTokenMessage />;
+    }
+
     switch (authStep) {
       case "request-otp":
         return (
