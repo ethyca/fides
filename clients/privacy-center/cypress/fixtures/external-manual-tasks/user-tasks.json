@@ -21,6 +21,10 @@
         "request_type": "access",
         "subject_identities": {
           "email": "customer@example.com"
+        },
+        "custom_fields": {
+          "department": "Marketing",
+          "priority": "High"
         }
       },
       "system": {
@@ -50,6 +54,10 @@
         "subject_identities": {
           "email": "analytics.user@example.com",
           "phone_number": "+15555551234"
+        },
+        "custom_fields": {
+          "region": "US, EU",
+          "account_type": "Premium"
         }
       },
       "system": {

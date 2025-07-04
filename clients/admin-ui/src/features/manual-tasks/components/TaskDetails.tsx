@@ -37,7 +37,10 @@ export const TaskDetails = ({ task }: TaskDetailsProps) => {
     SubjectRequestActionTypeMap.get(actionType) || task.request_type;
 
   return (
-    <div className="flex flex-col space-y-3">
+    <div
+      className="flex flex-col space-y-3"
+      data-testid="task-details-container"
+    >
       <TaskInfoRow label="Name">
         <Typography.Text>{task.name}</Typography.Text>
       </TaskInfoRow>
@@ -81,6 +84,22 @@ export const TaskDetails = ({ task }: TaskDetailsProps) => {
                 {key}: {String(value)}
               </Tag>
             ))}
+          </div>
+        </TaskInfoRow>
+      ) : null}
+
+      {/* Show custom fields if available */}
+      {task.privacy_request.custom_fields &&
+      task.privacy_request.custom_fields.length > 0 ? (
+        <TaskInfoRow label="Custom fields">
+          <div className="flex flex-wrap gap-1">
+            {task.privacy_request.custom_fields
+              .filter((field) => field.value) // Only show fields with values
+              .map((field) => (
+                <Tag key={field.label}>
+                  {field.label}: {field.value}
+                </Tag>
+              ))}
           </div>
         </TaskInfoRow>
       ) : null}
