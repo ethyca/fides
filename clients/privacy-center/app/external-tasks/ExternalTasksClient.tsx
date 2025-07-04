@@ -209,7 +209,7 @@ const ExternalTasksClientInner = ({
 
   // For auth steps, render centered layout
   return (
-    <ExternalAuthLayout title="External Manual Tasks">
+    <ExternalAuthLayout title="External task portal">
       {renderAuthContent()}
     </ExternalAuthLayout>
   );

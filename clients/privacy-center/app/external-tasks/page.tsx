@@ -1,5 +1,6 @@
 "use server";
 
+import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import getPrivacyCenterEnvironmentCached from "~/app/server-utils/getPrivacyCenterEnvironment";
@@ -8,6 +9,21 @@ import LoadServerEnvironmentIntoStores from "~/components/LoadServerEnvironmentI
 import { NextSearchParams } from "~/types/next";
 
 import ExternalTasksClient from "./ExternalTasksClient";
+
+/**
+ * Generate metadata for the external tasks page
+ */
+export const generateMetadata = async (): Promise<Metadata> => {
+  const { config } = await getPrivacyCenterEnvironmentCached();
+
+  return {
+    title: "External task portal",
+    description: "External task portal for privacy requests",
+    icons: {
+      icon: config?.favicon_path || "/favicon.ico",
+    },
+  };
+};
 
 /**
  * Server component wrapper for the external manual tasks page.
