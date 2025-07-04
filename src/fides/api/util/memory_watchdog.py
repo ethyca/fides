@@ -10,7 +10,6 @@ calling code to perform clean-up and let Celery record the task as failed.
 This allows tasks to terminate gracefully with proper error logging, rather than being forcefully
 killed by the system's OOM killer which would result in a WorkerLostError and incomplete cleanup.
 """
-
 from __future__ import annotations
 
 import os
@@ -239,7 +238,6 @@ def memory_limiter(
 # relevant cgroup files (v2 first, then v1) and compute the percentage of the *container limit* in
 # use.  When cgroup information is unavailable (e.g. running directly on the host) we return
 # `None` and fall back to `psutil`.
-
 
 def _cgroup_memory_percent() -> Optional[float]:
     """Return container memory usage as *percentage* of the cgroup limit or `None` when not

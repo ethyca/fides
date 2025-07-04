@@ -87,6 +87,7 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
+from fides.api.util.memory_watchdog import memory_limiter
 
 
 class ManualWebhookResults(FidesSchema):
