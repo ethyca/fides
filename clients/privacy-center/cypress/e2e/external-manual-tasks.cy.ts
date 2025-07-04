@@ -201,9 +201,11 @@ describe("External Manual Tasks", () => {
       // Load mixed status tasks to test action visibility
       cy.intercept("GET", `${API_URL}/plus/manual-fields*`, {
         fixture: "external-manual-tasks/mixed-status-tasks.json",
-      }).as("getMixedTasks");
-      cy.reload();
-      cy.wait("@getMixedTasks");
+      }).as("getMixedStatusTasksReload");
+
+      // Revisit the page with the access token since a simple reload strips it
+      cy.visit("/external-tasks?access_token=test_token_123");
+      cy.wait("@getMixedStatusTasksReload");
 
       // New task should have actions
       cy.get('[data-testid="external-tasks-table"] tbody tr')
