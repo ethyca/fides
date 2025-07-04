@@ -97,7 +97,7 @@ describe("External Manual Tasks", () => {
       cy.get('[data-testid="external-logout-button"]').should("be.visible");
     });
 
-    it.skip("should handle logout correctly", () => {
+    it("should handle logout correctly", () => {
       // Complete authentication first
       cy.visit("/external-tasks?access_token=test_token_123");
       cy.get('[data-testid="otp-request-email-input"]').type(
