@@ -139,6 +139,9 @@ const loadEnvironmentVariables = () => {
       (process.env
         .FIDES_PRIVACY_CENTER__FIDES_CONSENT_FLAG_TYPE as ConsentFlagType) ||
       null,
+    ENABLE_EXTERNAL_TASK_PORTAL:
+      process.env.FIDES_PRIVACY_CENTER__ENABLE_EXTERNAL_TASK_PORTAL ===
+        "true" || false,
   };
   return settings;
 };

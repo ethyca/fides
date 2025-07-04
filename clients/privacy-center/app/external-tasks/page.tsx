@@ -1,6 +1,9 @@
 "use server";
 
+import { notFound } from "next/navigation";
+
 import getPrivacyCenterEnvironmentCached from "~/app/server-utils/getPrivacyCenterEnvironment";
+import loadEnvironmentVariables from "~/app/server-utils/loadEnvironmentVariables";
 import LoadServerEnvironmentIntoStores from "~/components/LoadServerEnvironmentIntoStores";
 import { NextSearchParams } from "~/types/next";
 
@@ -15,6 +18,12 @@ const ExternalTasksPage = async ({
 }: {
   searchParams: NextSearchParams;
 }) => {
+  // Check if external task portal is enabled
+  const envVariables = loadEnvironmentVariables();
+  if (!envVariables.ENABLE_EXTERNAL_TASK_PORTAL) {
+    notFound();
+  }
+
   const serverEnvironment = await getPrivacyCenterEnvironmentCached({
     searchParams,
   });

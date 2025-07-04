@@ -68,4 +68,5 @@ export interface PrivacyCenterSettings {
   FIDES_DISABLED_NOTICES: string | null; // (optional) comma-separated list of notice_keys to disable in the CMP Overlay
   FIDES_CONSENT_NON_APPLICABLE_FLAG_MODE: ConsentNonApplicableFlagMode | null; // (optional) determines how non-applicable privacy notices are handled (omit|include)
   FIDES_CONSENT_FLAG_TYPE: ConsentFlagType | null; // (optional) determines the type of value to use for consent (boolean|consent_mechanism)
+  ENABLE_EXTERNAL_TASK_PORTAL: boolean; // whether the external task portal is enabled
 }
