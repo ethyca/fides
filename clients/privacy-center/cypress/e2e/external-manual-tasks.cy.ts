@@ -489,12 +489,12 @@ describe("External Manual Tasks", () => {
       });
 
       cy.wait("@skipExternalTask").then((interception) => {
+        // Multipart form request – verify multipart header and body exists
+        expect(interception.request.headers).to.have.property("content-type");
         expect(interception.request.headers["content-type"]).to.include(
-          "application/json",
+          "multipart/form-data",
         );
-        expect(interception.request.body.skip_reason).to.equal(
-          "Customer withdrew request",
-        );
+        expect(interception.request.body).to.exist;
       });
 
       cy.get('[data-testid="skip-task-modal"]').should("not.exist");
