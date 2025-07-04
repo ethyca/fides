@@ -1,0 +1,34 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Large Data Test Connector
+  type: large_data_test
+  description: A test connector that generates 1GB of data to test external storage mechanisms
+  version: 0.0.1
+
+  connector_params:
+    - name: domain
+      default_value: api.largedatatest.com
+    - name: api_key
+      label: API Key
+      default_value: test_key_123
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: bearer
+      configuration:
+        token: <api_key>
+
+  test_request:
+    method: GET
+    path: /health
+
+  endpoints:
+    - name: large_records
+      requests:
+        read:
+          request_override: large_data_retrieve
+          param_values:
+            - name: email
+              identity: email
