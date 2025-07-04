@@ -1,0 +1,23 @@
+dataset:
+  - fides_key: <instance_fides_key>
+    name: Large Data Test Dataset
+    description: Dataset for testing large data handling with external storage
+    collections:
+      - name: large_records
+        fields:
+          - name: id
+            data_categories: [system.operations]
+          - name: email
+            data_categories: [user.contact.email]
+            data_subjects: [customer]
+          - name: name
+            data_categories: [user.content]
+            data_subjects: [customer]
+          - name: data
+            data_categories: [user.content]
+            data_subjects: [customer]
+          - name: created_at
+            data_categories: [system.operations]
+          - name: metadata
+            data_categories: [user.content]
+            data_subjects: [customer]

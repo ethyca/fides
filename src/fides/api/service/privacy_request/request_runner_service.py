@@ -84,6 +84,7 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
+from fides.api.util.memory_watchdog import memory_limiter
 
 
 class ManualWebhookResults(FidesSchema):
@@ -356,8 +357,8 @@ def upload_and_save_access_results(  # pylint: disable=R0912
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
-# TODO: Add log_context back in, this is just for some temporary testing
-# @log_context(capture_args={"privacy_request_id": LoggerContextKeys.privacy_request_id})
+@memory_limiter
+@log_context(capture_args={"privacy_request_id": LoggerContextKeys.privacy_request_id})
 def run_privacy_request(
     self: DatabaseTask,
     privacy_request_id: str,

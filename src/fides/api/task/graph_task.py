@@ -61,6 +61,7 @@ from fides.api.util.consent_util import (
 )
 from fides.api.util.logger import Pii
 from fides.api.util.logger_context_utils import LoggerContextKeys
+from fides.api.util.memory_watchdog import MemoryLimitExceeded
 from fides.api.util.saas_util import FIDESOPS_GROUPED_INPUTS
 from fides.config import CONFIG
 
@@ -68,6 +69,16 @@ COLLECTION_FIELD_PATH_MAP = Dict[CollectionAddress, List[Tuple[FieldPath, FieldP
 
 EMPTY_REQUEST = PrivacyRequest()
 EMPTY_REQUEST_TASK = RequestTask()
+
+
+def _is_memory_limit_exceeded(exception: BaseException) -> bool:
+    """Check if the exception or any exception in its chain is a MemoryLimitExceeded."""
+    current_exception = exception
+    while current_exception:
+        if isinstance(current_exception, MemoryLimitExceeded):
+            return True
+        current_exception = current_exception.__cause__ or current_exception.__context__
+    return False
 
 
 def retry(
@@ -144,7 +155,31 @@ def retry(
                     self.log_skipped(action_type, exc)
                     self.cache_system_status_for_preferences()
                     return default_return
+                except MemoryLimitExceeded as ex:
+                    # Hard failure – mark task & downstream as errored and abort.
+                    logger.error(
+                        "Memory watchdog exceeded ({}%). Aborting {} {} without retry.",
+                        ex.memory_percent,
+                        method_name,
+                        self.execution_node.address,
+                    )
+                    # Persist error status and create execution logs before raising
+                    self.log_end(action_type, ex)
+                    self.add_error_status_for_consent_reporting()
+                    raise
                 except BaseException as ex:  # pylint: disable=W0703
+                    # Check if this exception was caused by memory limit exceeded
+                    if _is_memory_limit_exceeded(ex):
+                        logger.error(
+                            "Memory watchdog exceeded (wrapped exception). Aborting {} {} without retry.",
+                            method_name,
+                            self.execution_node.address,
+                        )
+                        # Persist error status and create execution logs before raising
+                        self.log_end(action_type, ex)
+                        self.add_error_status_for_consent_reporting()
+                        raise
+
                     traceback.print_exc()
                     func_delay *= CONFIG.execution.task_retry_backoff
                     logger.warning(
