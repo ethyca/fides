@@ -21,6 +21,7 @@ interface TaskQueryParams extends PaginationQueryParams {
   requestType?: ManualFieldRequestType;
   systemName?: string;
   assignedUserId?: string;
+  privacyRequestId?: string;
 }
 
 // API endpoints
@@ -48,7 +49,12 @@ export const manualTasksApi = baseApi.injectEndpoints({
         if (queryParams.assignedUserId) {
           searchParams.append("assigned_user_id", queryParams.assignedUserId);
         }
-
+        if (queryParams.privacyRequestId) {
+          searchParams.append(
+            "privacy_request_id",
+            queryParams.privacyRequestId,
+          );
+        }
         return {
           url: "plus/manual-fields",
           params: searchParams,
