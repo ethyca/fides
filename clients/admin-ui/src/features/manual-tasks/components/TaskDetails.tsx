@@ -90,14 +90,14 @@ export const TaskDetails = ({ task }: TaskDetailsProps) => {
 
       {/* Show custom fields if available */}
       {task.privacy_request.custom_fields &&
-      task.privacy_request.custom_fields.length > 0 ? (
+      Object.keys(task.privacy_request.custom_fields).length > 0 ? (
         <TaskInfoRow label="Custom fields">
           <div className="flex flex-wrap gap-1">
-            {task.privacy_request.custom_fields
-              .filter((field) => field.value) // Only show fields with values
-              .map((field) => (
-                <Tag key={field.label}>
-                  {field.label}: {field.value}
+            {Object.entries(task.privacy_request.custom_fields)
+              .filter(([, value]) => value) // Only show fields with values
+              .map(([key, value]) => (
+                <Tag key={key}>
+                  {key}: {value}
                 </Tag>
               ))}
           </div>
