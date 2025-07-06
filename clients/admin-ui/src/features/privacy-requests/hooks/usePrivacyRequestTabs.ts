@@ -41,7 +41,12 @@ export const usePrivacyRequestTabs = () => {
   const updateUrlHash = useCallback(
     (tabKey: PrivacyRequestTabKey) => {
       const newUrl = `${router.pathname}#${tabKey}`;
-      router.replace(newUrl, undefined, { shallow: true });
+      router.replace(newUrl, undefined, { shallow: true }).catch((e) => {
+        // workaround for https://github.com/vercel/next.js/issues/37362
+        if (!e.cancelled) {
+          throw e;
+        }
+      });
     },
     [router],
   );
