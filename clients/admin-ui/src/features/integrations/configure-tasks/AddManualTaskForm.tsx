@@ -3,8 +3,11 @@ import {
   AntForm as Form,
   AntInput as Input,
   AntSelect as Select,
+  AntTooltip as Tooltip,
   Flex,
+  Icons,
 } from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 import React, { useEffect } from "react";
 
 import { ManualFieldRequestType, ManualTaskFieldType } from "~/types/api";
@@ -19,11 +22,24 @@ type Props = {
 };
 
 interface TaskFormValues {
+  key?: string;
   name: string;
   description: string;
   fieldType: ManualTaskFieldType;
   requestType: ManualFieldRequestType;
 }
+
+const HelpIcon = ({ text }: { text: string }) => (
+  <Tooltip title={text}>
+    <Icons.Information
+      style={{
+        color: palette.FIDESUI_NEUTRAL_500,
+        marginLeft: 4,
+        cursor: "help",
+      }}
+    />
+  </Tooltip>
+);
 
 const AddManualTaskForm = ({
   isSubmitting,
@@ -66,6 +82,7 @@ const AddManualTaskForm = ({
   useEffect(() => {
     if (isEditing && editingTask) {
       form.setFieldsValue({
+        key: editingTask.originalField?.key || "",
         name: editingTask.name,
         description: editingTask.description,
         fieldType: editingTask.fieldType as ManualTaskFieldType,
@@ -113,7 +130,12 @@ const AddManualTaskForm = ({
       disabled={isSubmitting}
     >
       <Form.Item
-        label="Task Name"
+        label={
+          <div style={{ display: "flex", alignItems: "center" }}>
+            Task name
+            <HelpIcon text="A clear, descriptive name for this manual task. Example: Export user profile data" />
+          </div>
+        }
         name="name"
         rules={[
           { required: true, message: "Please enter a task name" },
@@ -124,7 +146,12 @@ const AddManualTaskForm = ({
       </Form.Item>
 
       <Form.Item
-        label="Description"
+        label={
+          <div style={{ display: "flex", alignItems: "center" }}>
+            Description
+            <HelpIcon text="Detailed instructions for completing this task. Example: Download and attach user's profile data from the customer portal" />
+          </div>
+        }
         name="description"
         rules={[
           { required: true, message: "Please enter a description" },
@@ -134,8 +161,49 @@ const AddManualTaskForm = ({
         <Input placeholder="Enter task description" />
       </Form.Item>
 
+      {!isEditing && (
+        <Form.Item
+          label={
+            <div style={{ display: "flex", alignItems: "center" }}>
+              Key
+              <HelpIcon text="Recommended: Unique identifier for this task that will appear in the DSR package sent to the data subject. If left empty, will be auto-generated from the task name. Example: user_data_export" />
+            </div>
+          }
+          name="key"
+          rules={[
+            { max: 50, message: "Key must be less than 50 characters" },
+            {
+              pattern: /^[a-z0-9_]*$/,
+              message:
+                "Key can only contain lowercase letters, numbers, and underscores",
+            },
+          ]}
+        >
+          <Input placeholder="Recommended to specify (auto-generated if empty)" />
+        </Form.Item>
+      )}
+
+      {isEditing && (
+        <Form.Item
+          label={
+            <div style={{ display: "flex", alignItems: "center" }}>
+              Key
+              <HelpIcon text="Unique identifier for this task that appears in the DSR package sent to the data subject." />
+            </div>
+          }
+          name="key"
+        >
+          <Input disabled />
+        </Form.Item>
+      )}
+
       <Form.Item
-        label="Request Type"
+        label={
+          <div style={{ display: "flex", alignItems: "center" }}>
+            Request type
+            <HelpIcon text="Whether this task applies to access requests (providing data) or erasure requests (confirming deletion)" />
+          </div>
+        }
         name="requestType"
         rules={[{ required: true, message: "Please select a request type" }]}
       >
@@ -146,7 +214,12 @@ const AddManualTaskForm = ({
       </Form.Item>
 
       <Form.Item
-        label="Field Type"
+        label={
+          <div style={{ display: "flex", alignItems: "center" }}>
+            Field type
+            <HelpIcon text="Type of input required: Text (for written responses), Attachment (for file uploads), or Checkbox (for confirmation)" />
+          </div>
+        }
         name="fieldType"
         rules={[{ required: true, message: "Please select a field type" }]}
       >
@@ -162,7 +235,7 @@ const AddManualTaskForm = ({
           Cancel
         </Button>
         <Button type="primary" htmlType="submit" loading={isSubmitting}>
-          {isEditing ? "Update Task" : "Add Task"}
+          {isEditing ? "Update task" : "Add task"}
         </Button>
       </Flex>
     </Form>
