@@ -10,6 +10,10 @@ import type { ManualTaskFieldType } from "./ManualTaskFieldType";
  */
 export type ManualFieldCreate = {
   /**
+   * Unique key for the field
+   */
+  key?: string | null;
+  /**
    * Display label for the field
    */
   label: string;
