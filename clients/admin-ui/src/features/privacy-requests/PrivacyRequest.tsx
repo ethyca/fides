@@ -36,17 +36,16 @@ const PrivacyRequest = ({ data: initialData }: PrivacyRequestProps) => {
   // Use latest data if available, otherwise use initial data
   const subjectRequest = latestData?.items[0] ?? initialData;
 
-  const isManualStepsRequired =
+  const isRequiringInputStatus =
     subjectRequest.status === PrivacyRequestStatus.REQUIRES_INPUT;
+  const showManualTasks = isRequiringInputStatus;
 
   // Check if any manual-process integrations exist
   const { data: manualIntegrations } = useGetManualIntegrationsQuery();
   const hasManualIntegrations = (manualIntegrations || []).length > 0;
 
-  const showManualSteps = isManualStepsRequired && hasManualIntegrations;
-
   const [activeTabKey, setActiveTabKey] = useState(
-    showManualSteps ? "manual-steps" : "activity",
+    showManualTasks ? "manual-steps" : "activity",
   );
   const items: TabsProps["items"] = useMemo(
     () => [
@@ -56,18 +55,18 @@ const PrivacyRequest = ({ data: initialData }: PrivacyRequestProps) => {
         children: <ActivityTab subjectRequest={subjectRequest} />,
       },
       {
-        key: "manual-steps",
-        label: "Manual steps",
+        key: "manual-tasks",
+        label: "Manual tasks",
         children: (
           <ManualProcessingList
             subjectRequest={subjectRequest}
             onComplete={() => setActiveTabKey("activity")}
           />
         ),
-        disabled: !showManualSteps,
+        disabled: !showManualTasks,
       },
     ],
-    [showManualSteps, subjectRequest],
+    [showManualTasks, subjectRequest],
   );
 
   return (
