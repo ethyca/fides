@@ -344,11 +344,19 @@ describe("Integration management for data detection & discovery", () => {
         cy.getByTestId("configure-modal-btn").click();
         cy.getByTestId("input-name").type("BigQuery Integration");
         cy.getByTestId("input-description").type("BigQuery integration test");
+        cy.getByTestId("input-secrets.keyfile_creds").type(
+          `{"credentials": "test"}`,
+          {
+            parseSpecialCharSequences: false,
+          },
+        );
 
         // Verify that the minimal dataset query was called for BigQuery datasets
         cy.wait("@getMinimalDatasets").then((interception) => {
           expect(interception.request.url).to.contain("minimal=true");
-          expect(interception.request.url).to.contain("connection_type=bigquery");
+          expect(interception.request.url).to.contain(
+            "connection_type=bigquery",
+          );
         });
 
         cy.getByTestId("save-btn").click();
