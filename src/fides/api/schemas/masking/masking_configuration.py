@@ -68,3 +68,7 @@ class HmacMaskingConfiguration(MaskingConfiguration):
 
 class NullMaskingConfiguration(MaskingConfiguration):
     """Configuration for the NullMaskingStrategy - this is the simplest masking strategy, no details are supplied"""
+
+
+class PreserveMaskingConfiguration(MaskingConfiguration):
+    """Configuration for the PreserveMaskingStrategy - preserves values as-is without any modifications"""
