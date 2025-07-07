@@ -278,18 +278,27 @@ def patch_connection_configs(
 
             # Automatically create a ManualTask if this is a connection config of type manual_task
             # and it doesn't already have one
-            if (
-                connection_config.connection_type == ConnectionType.manual_task
-                and not connection_config.manual_task
-            ):
-                ManualTask.create(
-                    db=db,
-                    data={
-                        "task_type": ManualTaskType.privacy_request,
-                        "parent_entity_id": connection_config.id,
-                        "parent_entity_type": ManualTaskParentEntityType.connection_config,
-                    },
+            if connection_config.connection_type == ConnectionType.manual_task:
+                # Check if manual task already exists
+                # querying directly to avoid relationship lazy loading issues
+                existing_manual_task = (
+                    db.query(ManualTask)
+                    .filter(
+                        ManualTask.parent_entity_id == connection_config.id,
+                        ManualTask.parent_entity_type == "connection_config",
+                    )
+                    .first()
                 )
+
+                if not existing_manual_task:
+                    ManualTask.create(
+                        db=db,
+                        data={
+                            "task_type": ManualTaskType.privacy_request,
+                            "parent_entity_id": connection_config.id,
+                            "parent_entity_type": ManualTaskParentEntityType.connection_config,
+                        },
+                    )
 
             created_or_updated.append(
                 ConnectionConfigurationResponse.model_validate(connection_config)

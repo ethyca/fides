@@ -72,11 +72,12 @@ def get_manual_task_addresses(db: Session) -> List[CollectionAddress]:
     that's part of the dataset graph, regardless of specific policy targets. This allows
     manual tasks to collect additional data that may be needed for the privacy request.
     """
-    # Get all connection configs that have manual tasks
+    # Get all connection configs that have manual tasks (excluding disabled ones)
     connection_configs_with_manual_tasks = (
         db.query(ConnectionConfig)
         .join(ManualTask, ConnectionConfig.id == ManualTask.parent_entity_id)
         .filter(ManualTask.parent_entity_type == "connection_config")
+        .filter(ConnectionConfig.disabled.is_(False))
         .all()
     )
 
@@ -170,11 +171,12 @@ def create_manual_task_instances_for_privacy_request(
     """Create ManualTaskInstance entries for all active manual tasks relevant to a privacy request."""
     instances = []
 
-    # Get all connection configs that have manual tasks
+    # Get all connection configs that have manual tasks (excluding disabled ones)
     connection_configs_with_manual_tasks = (
         db.query(ConnectionConfig)
         .join(ManualTask, ConnectionConfig.id == ManualTask.parent_entity_id)
         .filter(ManualTask.parent_entity_type == "connection_config")
+        .filter(ConnectionConfig.disabled.is_(False))
         .all()
     )
 
