@@ -69,7 +69,8 @@ export const usePrivacyRequestTabs = () => {
 
     setActiveTab(PRIVACY_REQUEST_TABS.REQUEST);
     updateUrlTab(PRIVACY_REQUEST_TABS.REQUEST);
-  }, [router.query, availableTabs, parseTabFromQuery, updateUrlTab]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleTabChange = useCallback(
     (tabKey: string) => {
