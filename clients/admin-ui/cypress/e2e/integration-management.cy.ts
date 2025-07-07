@@ -323,6 +323,38 @@ describe("Integration management for data detection & discovery", () => {
           cy.getByTestId("integration-info-bq_placeholder").should("exist");
         });
       });
+
+      it("should fetch datasets with minimal=true for BigQuery integration", () => {
+        cy.intercept("GET", "/api/v1/connection_type/*/secret", {
+          fixture: "connectors/bigquery_secret.json",
+        }).as("getBigquerySecretsSchema");
+        cy.intercept("PATCH", "/api/v1/connection", { statusCode: 200 }).as(
+          "patchConnection",
+        );
+        cy.intercept("PATCH", "/api/v1/connection/*/secret*", {
+          response: 200,
+        }).as("patchConnectionSecrets");
+
+        cy.getByTestId("add-integration-btn").click();
+        cy.getByTestId("add-modal-content").within(() => {
+          cy.getByTestId("integration-info-bq_placeholder").within(() => {
+            cy.contains("Details").click();
+          });
+        });
+        cy.getByTestId("configure-modal-btn").click();
+        cy.getByTestId("input-name").type("BigQuery Integration");
+        cy.getByTestId("input-description").type("BigQuery integration test");
+
+        // Verify that the minimal dataset query was called for BigQuery datasets
+        cy.wait("@getMinimalDatasets").then((interception) => {
+          expect(interception.request.url).to.contain("minimal=true");
+          expect(interception.request.url).to.contain("connection_type=bigquery");
+        });
+
+        cy.getByTestId("save-btn").click();
+        cy.wait("@patchConnection");
+        cy.wait("@patchConnectionSecrets");
+      });
     });
 
     describe("adding a website integration", () => {

@@ -146,6 +146,29 @@ describe("Connectors", () => {
       cy.wait("@getEmptyPostgresConnectorDatasetconfig");
       cy.getByTestId("dataset-selector-section").should("not.exist");
     });
+
+    it("Should fetch datasets with minimal=true parameter for performance", () => {
+      // Intercept the dataset call with minimal=true to verify it's being used
+      cy.intercept("GET", "/api/v1/dataset?only_unlinked_datasets=true&minimal=true", {
+        fixture: "connectors/empty_unlinked_datasets.json",
+      }).as("getMinimalUnlinkedDatasets");
+
+      cy.visit("/datastore-connection");
+      cy.getByTestId("connection-grid-item-postgres_connector").within(() => {
+        cy.getByTestId("connection-menu-btn").click();
+      });
+      cy.getByTestId("connection-menu-postgres_connector").within(() => {
+        cy.getByTestId("configure-btn").click();
+      });
+      cy.getByTestId("tab-Dataset configuration").click();
+      cy.wait("@getPostgresConnectorDatasetconfig");
+
+      // Verify that the minimal dataset query was called
+      cy.wait("@getMinimalUnlinkedDatasets").then((interception) => {
+        expect(interception.request.url).to.contain("minimal=true");
+        expect(interception.request.url).to.contain("only_unlinked_datasets=true");
+      });
+    });
   });
 
   describe("Email connector", () => {
