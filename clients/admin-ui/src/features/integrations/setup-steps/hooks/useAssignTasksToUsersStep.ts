@@ -30,7 +30,7 @@ export const useAssignTasksToUsersStep = ({
     title: "Assign the tasks to users",
     description: isComplete
       ? "Tasks have been assigned to users"
-      : "Assign the configured manual tasks to specific users who will be responsible for completing them during privacy requests.",
+      : "Assign the configured manual tasks to one or more users.",
     state: isComplete ? "finish" : "process",
   };
 };

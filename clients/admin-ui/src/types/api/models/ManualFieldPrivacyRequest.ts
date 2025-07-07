@@ -15,4 +15,7 @@ export type ManualFieldPrivacyRequest = {
   days_left?: number | null;
   request_type: ManualFieldRequestType;
   subject_identities: any;
+  custom_fields?: {
+    [key: string]: string;
+  };
 };
