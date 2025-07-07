@@ -2861,6 +2861,74 @@ describe("Consent overlay", () => {
       });
     });
 
+    it("uses consistent served_notice_history_id between manual and automated consent flows", () => {
+      // Test both manual consent (via UI) and automated consent (via GPC)
+      // to ensure they use the same session-level served_notice_history_id
+      cy.on("window:before:load", (win) => {
+        // eslint-disable-next-line no-param-reassign
+        win.navigator.globalPrivacyControl = true;
+      });
+
+      stubConfig({
+        experience: {
+          privacy_notices: [
+            mockPrivacyNotice({
+              title: "Advertising with GPC enabled",
+              id: "pri_notice-advertising",
+              notice_key: "advertising_gpc",
+              has_gpc_flag: true,
+              consent_mechanism: ConsentMechanism.OPT_OUT,
+            }),
+            ...buildMockNotices(),
+          ],
+        },
+      });
+
+      let automatedServedNoticeHistoryId: string;
+      let manualServedNoticeHistoryId: string;
+
+      // First, automated consent should be applied via GPC
+      cy.wait("@patchPrivacyPreference").then((gpcInterception) => {
+        const { served_notice_history_id } = gpcInterception.request.body;
+        expect(served_notice_history_id).to.be.a("string");
+        automatedServedNoticeHistoryId = served_notice_history_id;
+        expect(gpcInterception.request.body.method).to.eql(ConsentMethod.GPC);
+      });
+
+      // Then, open the modal to trigger notices-served
+      cy.get("#fides-modal-link").click();
+      cy.wait("@patchNoticesServed").then((noticesServedInterception) => {
+        const { served_notice_history_id } =
+          noticesServedInterception.request.body;
+        expect(served_notice_history_id).to.be.a("string");
+        manualServedNoticeHistoryId = served_notice_history_id;
+
+        // The served_notice_history_id should be the same as the automated consent
+        expect(manualServedNoticeHistoryId).to.eql(
+          automatedServedNoticeHistoryId,
+        );
+      });
+
+      // Finally, make manual changes and save to trigger privacy-preferences
+      cy.getByTestId("consent-modal").within(() => {
+        // Toggle one of the non-GPC notices to trigger a manual save
+        cy.getByTestId("toggle-Data Sales and Sharing").click();
+        cy.get("button").contains("Save").click();
+      });
+
+      cy.wait("@patchPrivacyPreference").then((manualInterception) => {
+        const { served_notice_history_id } = manualInterception.request.body;
+        expect(served_notice_history_id).to.be.a("string");
+        expect(manualInterception.request.body.method).to.eql(
+          ConsentMethod.SAVE,
+        );
+
+        // The served_notice_history_id should be consistent across all flows
+        expect(served_notice_history_id).to.eql(automatedServedNoticeHistoryId);
+        expect(served_notice_history_id).to.eql(manualServedNoticeHistoryId);
+      });
+    });
+
     it("can be sent from the banner if show_layer1_notices is true", () => {
       const noticeOnlyNotices = buildMockNotices().map((notice) => ({
         ...notice,
