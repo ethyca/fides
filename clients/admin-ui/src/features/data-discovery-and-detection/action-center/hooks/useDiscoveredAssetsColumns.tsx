@@ -12,7 +12,7 @@ import {
   ListCellExpandable,
 } from "~/features/common/table/v2/cells";
 import {
-  AggregatedConsent,
+  AlertLevel,
   ConsentStatus,
   PrivacyNoticeRegion,
   StagedResourceAPIResponse,
@@ -31,7 +31,7 @@ export const useDiscoveredAssetsColumns = ({
   onTabChange,
 }: {
   readonly: boolean;
-  aggregatedConsent: AggregatedConsent | null | undefined;
+  aggregatedConsent: ConsentStatus | null | undefined;
   onTabChange: (tab: ActionCenterTabHash) => void;
 }) => {
   const columnHelper = createColumnHelper<StagedResourceAPIResponse>();
@@ -117,7 +117,7 @@ export const useDiscoveredAssetsColumns = ({
       id: "consent_aggregated",
       cell: (props) => (
         <DiscoveryStatusBadgeCell
-          consentAggregated={props.getValue() ?? AggregatedConsent.UNKNOWN}
+          consentAggregated={props.getValue() ?? ConsentStatus.UNKNOWN}
           stagedResource={props.row.original}
         />
       ),
@@ -125,10 +125,10 @@ export const useDiscoveredAssetsColumns = ({
         return (
           <Space>
             <div>Discovery</div>
-            {aggregatedConsent === AggregatedConsent.WITHOUT_CONSENT && (
+            {aggregatedConsent === ConsentStatus.WITHOUT_CONSENT && (
               <DiscoveryStatusIcon
                 consentStatus={{
-                  status: ConsentStatus.ALERT,
+                  status: AlertLevel.ALERT,
                   message: "One or more assets were detected without consent",
                 }}
               />

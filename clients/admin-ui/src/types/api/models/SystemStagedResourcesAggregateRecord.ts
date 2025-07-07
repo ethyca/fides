@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ConsentStatusInfo } from "./ConsentStatusInfo";
+import type { ConsentAlertInfo } from "./ConsentAlertInfo";
 
 /**
  * API response model for records of aggregated staged resources by system
@@ -19,5 +19,5 @@ export type SystemStagedResourcesAggregateRecord = {
   total_updates?: number;
   locations?: Array<string>;
   domains?: Array<string>;
-  consent_status?: ConsentStatusInfo | null;
+  consent_status?: ConsentAlertInfo | null;
 };

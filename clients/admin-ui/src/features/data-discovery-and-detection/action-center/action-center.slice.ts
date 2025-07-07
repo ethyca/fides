@@ -1,7 +1,7 @@
 import { baseApi } from "~/features/common/api.slice";
 import { getQueryParamsFromArray } from "~/features/common/utils";
 import {
-  AggregatedConsent,
+  ConsentStatus,
   DiffStatus,
   Page_ConsentBreakdown_,
   Page_StagedResourceAPIResponse_,
@@ -217,7 +217,7 @@ const actionCenterApi = baseApi.injectEndpoints({
       Page_ConsentBreakdown_,
       {
         stagedResourceUrn: string;
-        status: AggregatedConsent;
+        status: ConsentStatus;
         page?: number;
         size?: number;
       } & PaginationQueryParams

@@ -14,7 +14,7 @@ import {
 } from "~/features/common/table/v2/cells";
 import DiscoveredSystemDataUseCell from "~/features/data-discovery-and-detection/action-center/tables/cells/DiscoveredSystemDataUseCell";
 import {
-  ConsentStatusInfo,
+  ConsentAlertInfo,
   PrivacyNoticeRegion,
   SystemStagedResourcesAggregateRecord,
 } from "~/types/api";
@@ -27,7 +27,7 @@ import { ActionCenterTabHash } from "./useActionCenterTabs";
 interface UseDiscoveredSystemAggregateColumnsProps {
   monitorId: string;
   readonly: boolean;
-  consentStatus: ConsentStatusInfo | null | undefined;
+  consentStatus: ConsentAlertInfo | null | undefined;
   allowIgnore?: boolean;
   onTabChange: (tab: ActionCenterTabHash) => void;
 }

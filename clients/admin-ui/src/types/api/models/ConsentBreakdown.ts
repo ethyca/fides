@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { AggregatedConsent } from "./AggregatedConsent";
+import type { ConsentStatus } from "./ConsentStatus";
 
 /**
  * Response model for consent breakdown information for a given asset
@@ -10,5 +10,5 @@ import type { AggregatedConsent } from "./AggregatedConsent";
 export type ConsentBreakdown = {
   location: string;
   page: string;
-  status: AggregatedConsent;
+  status: ConsentStatus;
 };

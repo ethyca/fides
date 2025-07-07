@@ -1,12 +1,12 @@
 import { AntTag as Tag, AntTooltip as Tooltip, Icons } from "fidesui";
 import { useState } from "react";
 
-import { AggregatedConsent, StagedResourceAPIResponse } from "~/types/api";
+import { ConsentStatus, StagedResourceAPIResponse } from "~/types/api";
 
 import { ConsentBreakdownModal } from "../../ConsentBreakdownModal";
 
 interface DiscoveryStatusBadgeCellProps {
-  consentAggregated: AggregatedConsent;
+  consentAggregated: ConsentStatus;
   stagedResource: StagedResourceAPIResponse;
 }
 
@@ -23,7 +23,7 @@ export const DiscoveryStatusBadgeCell = ({
   };
   return (
     <>
-      {consentAggregated === AggregatedConsent.WITHOUT_CONSENT && (
+      {consentAggregated === ConsentStatus.WITHOUT_CONSENT && (
         <Tooltip title="Asset was detected before the user gave consent or without any consent. Click the info icon for more details.">
           <Tag
             color="error"
@@ -35,17 +35,17 @@ export const DiscoveryStatusBadgeCell = ({
           </Tag>
         </Tooltip>
       )}
-      {consentAggregated === AggregatedConsent.WITH_CONSENT && (
+      {consentAggregated === ConsentStatus.WITH_CONSENT && (
         <Tooltip title="Asset was detected after the user gave consent">
           <Tag color="success">With consent</Tag>
         </Tooltip>
       )}
-      {consentAggregated === AggregatedConsent.EXEMPT && (
+      {consentAggregated === ConsentStatus.EXEMPT && (
         <Tooltip title="Asset is valid regardless of consent">
           <Tag>Consent exempt</Tag>
         </Tooltip>
       )}
-      {consentAggregated === AggregatedConsent.UNKNOWN && (
+      {consentAggregated === ConsentStatus.UNKNOWN && (
         <Tooltip title="Did not find consent information for this asset. You may need to re-run the monitor.">
           <Tag>Unknown</Tag>
         </Tooltip>
