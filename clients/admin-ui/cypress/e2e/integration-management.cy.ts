@@ -145,9 +145,13 @@ describe("Integration management for data detection & discovery", () => {
         cy.intercept("GET", "/api/v1/connection/datasetconfig", {
           fixture: "connectors/empty_datasetconfig.json",
         }).as("getDatasetConfig");
-        cy.intercept("GET", "/api/v1/dataset?only_unlinked_datasets=true", {
-          fixture: "connectors/empty_unlinked_datasets.json",
-        }).as("getUnlinkedDatasets");
+        cy.intercept(
+          "GET",
+          "/api/v1/dataset?only_unlinked_datasets=true&minimal=true",
+          {
+            fixture: "connectors/empty_unlinked_datasets.json",
+          },
+        ).as("getUnlinkedDatasets");
         cy.intercept("GET", "/api/v1/dataset?minimal=true&connection_type=*", {
           fixture: "connectors/empty_minimal_datasets.json",
         }).as("getMinimalDatasets");

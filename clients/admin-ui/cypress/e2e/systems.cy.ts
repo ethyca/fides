@@ -367,9 +367,9 @@ describe("System management page", () => {
     });
 
     it.skip("Can render and edit extended form fields", () => {
-      cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
-        "getDatasets",
-      );
+      cy.intercept("GET", "/api/v1/dataset?minimal=true", {
+        fixture: "connectors/minimal_datasets.json",
+      }).as("getDatasets");
       const system = {
         fides_key: "fidesctl_system",
         system_type: "cool system",
