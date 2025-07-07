@@ -228,14 +228,14 @@ async def list_dataset_paginated(
     results = await async_paginate(db, filtered_query, pagination_params)
 
     validated_items = []
-    for result in results.items:
+    for result in results.items:  # type: ignore[attr-defined]
         # run pydantic validation in a threadpool to avoid blocking the main thread
         validated_item = await run_in_threadpool(
             partial(DatasetResponse.model_validate, result.__dict__)
         )
         validated_items.append(validated_item)
 
-    results.items = validated_items
+    results.items = validated_items  # type: ignore[attr-defined]
 
     return results
 
