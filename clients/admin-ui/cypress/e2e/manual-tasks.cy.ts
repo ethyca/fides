@@ -1,15 +1,25 @@
-import { stubManualTasks, stubPlus } from "cypress/support/stubs";
+import {
+  stubManualTasks,
+  stubPlus,
+  stubPrivacyRequests,
+} from "cypress/support/stubs";
 
 describe("Manual Tasks", () => {
   beforeEach(() => {
     cy.login();
     stubManualTasks();
+    stubPrivacyRequests();
     stubPlus(true);
+
+    // Add mock for config endpoint
+    cy.intercept("GET", "/api/v1/config?api_set=false", {
+      body: {},
+    }).as("getConfig");
   });
 
   describe("Manual Tasks Tab and Basic Functionality", () => {
     it("should display the manual tasks tab and load tasks correctly", () => {
-      cy.visit("/privacy-requests#manual-tasks");
+      cy.visit("/privacy-requests?tab=manual-tasks");
       cy.wait("@getManualTasks");
 
       // Check that the Manual tasks tab is visible and active
@@ -47,7 +57,7 @@ describe("Manual Tasks", () => {
         },
       }).as("getManualTasksEmpty");
 
-      cy.visit("/privacy-requests#manual-tasks");
+      cy.visit("/privacy-requests?tab=manual-tasks");
       cy.wait("@getManualTasksEmpty");
       cy.getByTestId("empty-state").should(
         "contain",
@@ -58,7 +68,7 @@ describe("Manual Tasks", () => {
 
   describe("Task Actions and User Interactions", () => {
     beforeEach(() => {
-      cy.visit("/privacy-requests#manual-tasks");
+      cy.visit("/privacy-requests?tab=manual-tasks");
       cy.wait("@getManualTasks");
     });
 
@@ -147,7 +157,7 @@ describe("Manual Tasks", () => {
 
   describe("Table Features (Filtering and Pagination)", () => {
     beforeEach(() => {
-      cy.visit("/privacy-requests#manual-tasks");
+      cy.visit("/privacy-requests?tab=manual-tasks");
       cy.wait("@getManualTasks");
     });
 
@@ -223,7 +233,7 @@ describe("Manual Tasks", () => {
 
   describe("Complete Task Modal", () => {
     beforeEach(() => {
-      cy.visit("/privacy-requests#manual-tasks");
+      cy.visit("/privacy-requests?tab=manual-tasks");
       cy.wait("@getManualTasks");
     });
 
@@ -401,7 +411,7 @@ describe("Manual Tasks", () => {
 
   describe("Skip Task Modal", () => {
     beforeEach(() => {
-      cy.visit("/privacy-requests#manual-tasks");
+      cy.visit("/privacy-requests?tab=manual-tasks");
       cy.wait("@getManualTasks");
     });
 
