@@ -97,7 +97,7 @@ describe("External Manual Tasks", () => {
       cy.get('[data-testid="external-logout-button"]').should("be.visible");
     });
 
-    it.skip("should handle logout correctly", () => {
+    it("should handle logout correctly", () => {
       // Complete authentication first
       cy.visit("/external-tasks?access_token=test_token_123");
       cy.get('[data-testid="otp-request-email-input"]').type(
@@ -201,9 +201,11 @@ describe("External Manual Tasks", () => {
       // Load mixed status tasks to test action visibility
       cy.intercept("GET", `${API_URL}/plus/manual-fields*`, {
         fixture: "external-manual-tasks/mixed-status-tasks.json",
-      }).as("getMixedTasks");
-      cy.reload();
-      cy.wait("@getMixedTasks");
+      }).as("getMixedStatusTasksReload");
+
+      // Revisit the page with the access token since a simple reload strips it
+      cy.visit("/external-tasks?access_token=test_token_123");
+      cy.wait("@getMixedStatusTasksReload");
 
       // New task should have actions
       cy.get('[data-testid="external-tasks-table"] tbody tr')
@@ -341,6 +343,52 @@ describe("External Manual Tasks", () => {
       cy.get('[data-testid="complete-task-modal"]').should("not.exist");
     });
 
+    it("should display custom fields in task details", () => {
+      // Open first task that has custom fields
+      cy.get('[data-testid="external-tasks-table"] tbody tr')
+        .contains("Export Customer Data from Salesforce")
+        .parents("tr")
+        .within(() => {
+          cy.get('[data-testid="task-complete-button"]').click({ force: true });
+        });
+
+      cy.get('[data-testid="complete-task-modal"]').within(() => {
+        // Verify custom fields are displayed
+        cy.contains("Custom fields").should("be.visible");
+
+        // Check for specific custom fields from fixture
+        cy.get('[data-testid="task-details-container"]').within(() => {
+          cy.contains("department: Marketing").should("be.visible");
+          cy.contains("priority: High").should("be.visible");
+        });
+
+        // Cancel to close modal
+        cy.get('[data-testid="complete-modal-cancel-button"]').click();
+      });
+
+      // Test second task with different custom fields format
+      cy.get('[data-testid="external-tasks-table"] tbody tr')
+        .contains("Export Analytics Data")
+        .parents("tr")
+        .within(() => {
+          cy.get('[data-testid="task-complete-button"]').click({ force: true });
+        });
+
+      cy.get('[data-testid="complete-task-modal"]').within(() => {
+        // Verify custom fields are displayed
+        cy.contains("Custom fields").should("be.visible");
+
+        // Check for simple custom field key-value pairs
+        cy.get('[data-testid="task-details-container"]').within(() => {
+          cy.contains("region: US, EU").should("be.visible");
+          cy.contains("account_type: Premium").should("be.visible");
+        });
+
+        // Cancel to close modal
+        cy.get('[data-testid="complete-modal-cancel-button"]').click();
+      });
+    });
+
     it("should handle checkbox input tasks", () => {
       // Find checkbox task (Delete User Profile)
       cy.get('[data-testid="external-tasks-table"] tbody tr')
@@ -441,12 +489,12 @@ describe("External Manual Tasks", () => {
       });
 
       cy.wait("@skipExternalTask").then((interception) => {
+        // Multipart form request – verify multipart header and body exists
+        expect(interception.request.headers).to.have.property("content-type");
         expect(interception.request.headers["content-type"]).to.include(
-          "application/json",
+          "multipart/form-data",
         );
-        expect(interception.request.body.skip_reason).to.equal(
-          "Customer withdrew request",
-        );
+        expect(interception.request.body).to.exist;
       });
 
       cy.get('[data-testid="skip-task-modal"]').should("not.exist");

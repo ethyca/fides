@@ -26,7 +26,7 @@ export const useAddManualTaskStep = ({
     title: "Add a manual task",
     description: isComplete
       ? "Manual tasks have been configured"
-      : "Configure manual tasks for this integration. Manual tasks allow you to define custom data collection or processing steps that require human intervention.",
+      : "Configure a manual task for this integration. ",
     state: isComplete ? "finish" : "process",
   };
 };

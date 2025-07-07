@@ -84,12 +84,19 @@ const rootReducer = (
   state: ExternalRootState | undefined,
   action: AnyAction,
 ) => {
-  let newState = state;
   if (action.type === "externalAuth/logout") {
     storage.removeItem("external-manual-tasks:root");
-    newState = undefined;
+
+    // Clone current state and remove auth / tasks / api cache slices
+    const sanitizedState: Partial<ExternalRootState> = { ...(state || {}) };
+    delete (sanitizedState as any)[externalAuthSlice.name];
+    delete (sanitizedState as any).externalManualTasks;
+    delete (sanitizedState as any)[externalBaseApi.reducerPath];
+
+    return allReducers(sanitizedState as ExternalRootState | undefined, action);
   }
-  return allReducers(newState, action);
+
+  return allReducers(state, action);
 };
 
 const persistConfig = {

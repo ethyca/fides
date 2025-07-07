@@ -53,11 +53,5 @@
     "development": true,
     "test": true,
     "production": false
-  },
-  "alphaNewManualDSR": {
-    "description": "New DSR Workflow Manual Tasks",
-    "development": true,
-    "test": true,
-    "production": false
   }
 }

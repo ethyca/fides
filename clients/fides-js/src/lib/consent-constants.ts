@@ -111,6 +111,12 @@ export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: FidesOverrideValidatorMap[] =
       overrideKey: "fides_consent_flag_type",
       validationRegex: /^(boolean|consent_mechanism)$/,
     },
+    {
+      overrideName: "fidesInitializedEventMode",
+      overrideType: "string",
+      overrideKey: "fides_initialized_event_mode",
+      validationRegex: /^(multiple|once|disable)$/,
+    },
   ];
 
 /**

@@ -115,7 +115,9 @@ export const ExternalCompleteTaskModal = ({
       case ManualTaskFieldType.TEXT:
         return (
           <div className="space-y-2">
-            <div className="text-sm font-medium text-gray-700">Text Input</div>
+            <div className="text-sm font-medium text-gray-700">
+              Subject data
+            </div>
             <Input.TextArea
               value={textValue}
               onChange={(e) => setTextValue(e.target.value)}

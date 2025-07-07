@@ -5,14 +5,16 @@ import {
   AntTablePaginationConfig as TablePaginationConfig,
   AntTag as Tag,
   AntTypography as Typography,
+  Flex,
   SelectInline,
 } from "fidesui";
 import { useRouter } from "next/router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import DaysLeftTag from "~/features/common/DaysLeftTag";
 import FidesSpinner from "~/features/common/FidesSpinner";
 import { USER_PROFILE_ROUTE } from "~/features/common/nav/routes";
+import { GlobalFilterV2 } from "~/features/common/table/v2/filters/GlobalFilterV2";
 import { PAGE_SIZES } from "~/features/common/table/v2/PaginationBar";
 import { formatUser } from "~/features/common/utils";
 import { SubjectRequestActionTypeMap } from "~/features/privacy-requests/constants";
@@ -44,6 +46,7 @@ interface ManualTaskFilters {
   systemName?: string;
   requestType?: string;
   assignedUsers?: string;
+  privacyRequestId?: string;
 }
 
 interface UserOption {
@@ -181,6 +184,36 @@ export const ManualTasks = () => {
   const [pageSize, setPageSize] = useState(25);
   const [filters, setFilters] = useState<ManualTaskFilters>({});
 
+  const [privacyRequestIdInput, setPrivacyRequestIdInput] = useState(
+    router.query.privacy_request_id || "",
+  );
+
+  // Initialize privacy request ID filter from URL query parameter
+  useEffect(() => {
+    const { privacy_request_id: privacyRequestIdQuery } = router.query;
+    if (privacyRequestIdQuery && typeof privacyRequestIdQuery === "string") {
+      setPrivacyRequestIdInput(privacyRequestIdQuery);
+      setFilters((prev) => ({
+        ...prev,
+        privacyRequestId: privacyRequestIdQuery,
+      }));
+    }
+  }, [router.query]);
+
+  const handlePrivacyRequestIdChange = (value: string | undefined) => {
+    setPrivacyRequestIdInput(value || "");
+
+    const newFilters = { ...filters };
+    if (value && value.trim()) {
+      newFilters.privacyRequestId = value.trim();
+    } else {
+      delete newFilters.privacyRequestId;
+    }
+
+    setFilters(newFilters);
+    setPageIndex(1);
+  };
+
   const { data, isLoading, isFetching } = useGetTasksQuery({
     page: pageIndex,
     size: pageSize,
@@ -188,6 +221,7 @@ export const ManualTasks = () => {
     systemName: filters.systemName,
     requestType: filters.requestType as ManualFieldRequestType,
     assignedUserId: filters.assignedUsers,
+    privacyRequestId: filters.privacyRequestId,
   });
 
   const {
@@ -227,7 +261,10 @@ export const ManualTasks = () => {
     _pagination: TablePaginationConfig,
     tableFilters: Record<string, FilterValue | null>,
   ) => {
-    const newFilters: ManualTaskFilters = {};
+    const newFilters: ManualTaskFilters = {
+      // Keep the privacy request ID filter if it exists
+      privacyRequestId: filters.privacyRequestId,
+    };
 
     if (tableFilters.status) {
       [newFilters.status] = tableFilters.status as string[];
@@ -265,6 +302,15 @@ export const ManualTasks = () => {
 
   return (
     <div className="mt-2 space-y-4">
+      <Flex gap={3} align="center" className="mb-4">
+        <GlobalFilterV2
+          globalFilter={privacyRequestIdInput}
+          setGlobalFilter={handlePrivacyRequestIdChange}
+          placeholder="Search by privacy request ID"
+          testid="privacy-request-id-filter"
+        />
+      </Flex>
+
       <Table
         columns={columns}
         dataSource={tasks}
