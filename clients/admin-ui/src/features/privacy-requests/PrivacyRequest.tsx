@@ -1,4 +1,3 @@
-import { useGetAllEnabledAccessManualHooksQuery as useGetManualIntegrationsQuery } from "datastore-connections/datastore-connection.slice";
 import { AntTabs as Tabs, AntTabsProps as TabsProps } from "fidesui";
 import { useMemo, useState } from "react";
 
@@ -6,7 +5,7 @@ import { useGetAllPrivacyRequestsQuery } from "~/features/privacy-requests";
 import { PrivacyRequestStatus } from "~/types/api";
 
 import ActivityTab from "./events-and-logs/ActivityTab";
-import ManualProcessingList from "./manual-processing/ManualProcessingList";
+import PrivacyRequestDetailsManualTaskTab from "./PrivacyRequestDetailsManualTaskTab";
 import RequestDetails from "./RequestDetails";
 import { PrivacyRequestEntity } from "./types";
 
@@ -40,12 +39,8 @@ const PrivacyRequest = ({ data: initialData }: PrivacyRequestProps) => {
     subjectRequest.status === PrivacyRequestStatus.REQUIRES_INPUT;
   const showManualTasks = isRequiringInputStatus;
 
-  // Check if any manual-process integrations exist
-  const { data: manualIntegrations } = useGetManualIntegrationsQuery();
-  const hasManualIntegrations = (manualIntegrations || []).length > 0;
-
   const [activeTabKey, setActiveTabKey] = useState(
-    showManualTasks ? "manual-steps" : "activity",
+    showManualTasks ? "manual-tasks" : "activity",
   );
   const items: TabsProps["items"] = useMemo(
     () => [
@@ -58,7 +53,7 @@ const PrivacyRequest = ({ data: initialData }: PrivacyRequestProps) => {
         key: "manual-tasks",
         label: "Manual tasks",
         children: (
-          <ManualProcessingList
+          <PrivacyRequestDetailsManualTaskTab
             subjectRequest={subjectRequest}
             onComplete={() => setActiveTabKey("activity")}
           />
