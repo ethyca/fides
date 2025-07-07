@@ -39,9 +39,8 @@ const PrivacyRequest = ({ data: initialData }: PrivacyRequestProps) => {
     subjectRequest.status === PrivacyRequestStatus.REQUIRES_INPUT;
   const showManualTasks = isRequiringInputStatus;
 
-  const [activeTabKey, setActiveTabKey] = useState(
-    showManualTasks ? "manual-tasks" : "activity",
-  );
+  const [activeTabKey, setActiveTabKey] = useState("activity");
+
   const items: TabsProps["items"] = useMemo(
     () => [
       {
