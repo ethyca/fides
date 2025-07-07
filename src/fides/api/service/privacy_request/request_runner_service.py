@@ -696,6 +696,14 @@ def run_privacy_request(
                             "Marking privacy request '{}' as complete.",
                             privacy_request.id,
                         )
+                        privacy_request.add_success_execution_log(
+                            db,
+                            connection_key=None,
+                            dataset_name=None,
+                            collection_name=None,
+                            message="Request finalized",
+                            action_type=privacy_request.policy.get_action_type(),  # type: ignore
+                        )
                         privacy_request.status = PrivacyRequestStatus.complete
 
                     privacy_request.finished_processing_at = datetime.utcnow()

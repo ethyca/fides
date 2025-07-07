@@ -34,7 +34,9 @@ def upgrade():
         ["id"],
         ondelete="SET NULL",
     )
-    op.execute("alter type privacyrequeststatus add value 'requires_manual_finalization'")
+    op.execute(
+        "alter type privacyrequeststatus add value 'requires_manual_finalization'"
+    )
     # ### end Alembic commands ###
 
 
@@ -44,7 +46,9 @@ def downgrade():
     op.drop_column("privacyrequest", "finalized_by")
     op.drop_column("privacyrequest", "finalized_at")
 
-    op.execute("delete from privacyrequest where status in ('requires_manual_finalization')")
+    op.execute(
+        "delete from privacyrequest where status in ('requires_manual_finalization')"
+    )
 
     op.execute("alter type privacyrequeststatus rename to privacyrequeststatus_old")
     op.execute(
