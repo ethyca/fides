@@ -53,6 +53,11 @@ export const usePrivacyRequestTabs = () => {
   );
 
   useEffect(() => {
+    // Ensure the router is ready before reading query params to avoid initial undefined values
+    if (!router.isReady) {
+      return;
+    }
+
     const queryTab = parseTabFromQuery();
 
     if (queryTab) {
@@ -69,8 +74,13 @@ export const usePrivacyRequestTabs = () => {
 
     setActiveTab(PRIVACY_REQUEST_TABS.REQUEST);
     updateUrlTab(PRIVACY_REQUEST_TABS.REQUEST);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [
+    router.isReady,
+    router.query,
+    availableTabs,
+    parseTabFromQuery,
+    updateUrlTab,
+  ]);
 
   const handleTabChange = useCallback(
     (tabKey: string) => {
