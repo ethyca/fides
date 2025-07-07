@@ -34,7 +34,11 @@ import {
   useServerSidePagination,
 } from "~/features/common/table/v2";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
-import { ConsentStatus, DiffStatus } from "~/types/api";
+import {
+  ConsentStatus,
+  DiffStatus,
+  StagedResourceAPIResponse,
+} from "~/types/api";
 
 import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
 import {
@@ -48,6 +52,7 @@ import {
 } from "../action-center.slice";
 import AddDataUsesModal from "../AddDataUsesModal";
 import { AssignSystemModal } from "../AssignSystemModal";
+import { ConsentBreakdownModal } from "../ConsentBreakdownModal";
 import useActionCenterTabs, {
   ActionCenterTabHash,
 } from "../hooks/useActionCenterTabs";
@@ -76,6 +81,10 @@ export const DiscoveredAssetsTable = ({
     useState<boolean>(false);
   const [isAddDataUseModalOpen, setIsAddDataUseModalOpen] =
     useState<boolean>(false);
+  const [consentBreakdownModalData, setConsentBreakdownModalData] = useState<{
+    stagedResource: StagedResourceAPIResponse;
+    status: ConsentStatus;
+  } | null>(null);
   const [addMonitorResultAssetsMutation, { isLoading: isAddingResults }] =
     useAddMonitorResultAssetsMutation();
   const [ignoreMonitorResultAssetsMutation, { isLoading: isIgnoringResults }] =
@@ -159,10 +168,22 @@ export const DiscoveredAssetsTable = ({
     }
   }, [data, firstItemConsentStatus]);
 
+  const handleShowBreakdown = (
+    stagedResource: StagedResourceAPIResponse,
+    status: ConsentStatus,
+  ) => {
+    setConsentBreakdownModalData({ stagedResource, status });
+  };
+
+  const handleCloseBreakdown = () => {
+    setConsentBreakdownModalData(null);
+  };
+
   const { columns } = useDiscoveredAssetsColumns({
     readonly: actionsDisabled ?? false,
     onTabChange,
     aggregatedConsent: firstItemConsentStatus,
+    onShowBreakdown: handleShowBreakdown,
   });
 
   const tableInstance = useReactTable({
@@ -492,6 +513,14 @@ export const DiscoveredAssetsTable = ({
         onSave={handleBulkAddDataUse}
         isSaving={isBulkAddingDataUses}
       />
+      {consentBreakdownModalData && (
+        <ConsentBreakdownModal
+          isOpen={!!consentBreakdownModalData}
+          stagedResource={consentBreakdownModalData.stagedResource}
+          status={consentBreakdownModalData.status}
+          onCancel={handleCloseBreakdown}
+        />
+      )}
     </>
   );
 };
