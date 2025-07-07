@@ -216,7 +216,7 @@ def create_manual_task_instances_for_privacy_request(
                             ManualTaskConfigurationType.access_privacy_request,
                             ManualTaskConfigurationType.erasure_privacy_request,
                         ]
-                    )
+                    ).filter(ManualTaskConfig.is_current.is_(True))
                 )
             elif has_access_rules:
                 # Only access rules - only include access configurations
@@ -234,32 +234,34 @@ def create_manual_task_instances_for_privacy_request(
                 # No relevant rules - skip this manual task
                 continue
 
-            active_config = active_config_query.first()
+            active_configs = active_config_query.all()
 
-            if not active_config:
-                continue  # Skip if no active config
+            if not active_configs:
+                continue  # Skip if no active configs
 
-            # Check if instance already exists
-            existing_instance = (
-                db.query(ManualTaskInstance)
-                .filter(
-                    ManualTaskInstance.entity_id == privacy_request.id,
-                    ManualTaskInstance.entity_type == "privacy_request",
-                    ManualTaskInstance.task_id == manual_task.id,
-                    ManualTaskInstance.config_id == active_config.id,
+            # Create instances for each active config
+            for active_config in active_configs:
+                # Check if instance already exists for this config
+                existing_instance = (
+                    db.query(ManualTaskInstance)
+                    .filter(
+                        ManualTaskInstance.entity_id == privacy_request.id,
+                        ManualTaskInstance.entity_type == "privacy_request",
+                        ManualTaskInstance.task_id == manual_task.id,
+                        ManualTaskInstance.config_id == active_config.id,
+                    )
+                    .first()
                 )
-                .first()
-            )
 
-            if not existing_instance:
-                instance = ManualTaskInstance(
-                    entity_id=privacy_request.id,
-                    entity_type=ManualTaskEntityType.privacy_request,
-                    task_id=manual_task.id,
-                    config_id=active_config.id,
-                )
-                db.add(instance)
-                instances.append(instance)
+                if not existing_instance:
+                    instance = ManualTaskInstance(
+                        entity_id=privacy_request.id,
+                        entity_type=ManualTaskEntityType.privacy_request,
+                        task_id=manual_task.id,
+                        config_id=active_config.id,
+                    )
+                    db.add(instance)
+                    instances.append(instance)
 
     if instances:
         db.commit()
