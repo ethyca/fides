@@ -4,6 +4,9 @@ import {
   stubPrivacyRequests,
 } from "cypress/support/stubs";
 
+// Use a reliable selector for table rows
+const ROW_SELECTOR = "tbody tr[data-row-key]";
+
 describe("Manual Tasks", () => {
   beforeEach(() => {
     cy.login();
@@ -27,10 +30,10 @@ describe("Manual Tasks", () => {
 
       // Verify the manual tasks table is displayed with data
       cy.get("table").should("exist");
-      cy.get("tbody tr").should("have.length.at.least", 1);
+      cy.get(ROW_SELECTOR).should("have.length.at.least", 1);
 
       // Check that task data is displayed correctly in the first row
-      cy.get("tbody tr")
+      cy.get(ROW_SELECTOR)
         .first()
         .within(() => {
           cy.get("td")
@@ -74,7 +77,7 @@ describe("Manual Tasks", () => {
 
     it("should show appropriate action buttons based on task status", () => {
       // Check action buttons for new tasks - specifically in the Actions column (last column)
-      cy.get("tbody tr")
+      cy.get(ROW_SELECTOR)
         .first()
         .within(() => {
           // Check the Actions column specifically (last td)
@@ -87,7 +90,7 @@ describe("Manual Tasks", () => {
         });
 
       // Check that completed/skipped tasks don't show action buttons in the Actions column
-      cy.get("tbody tr").each(($row) => {
+      cy.get(ROW_SELECTOR).each(($row) => {
         cy.wrap($row).within(() => {
           cy.get("td").then(($cells) => {
             const statusCell = $cells.eq(1);
@@ -109,7 +112,7 @@ describe("Manual Tasks", () => {
 
     it("should handle task completion and dropdown actions", () => {
       // Test task completion - Complete button now opens a modal
-      cy.get("tbody tr")
+      cy.get(ROW_SELECTOR)
         .first()
         .within(() => {
           cy.get("td")
@@ -131,7 +134,7 @@ describe("Manual Tasks", () => {
       cy.getByTestId("complete-task-modal").should("not.exist");
 
       // Test dropdown menu
-      cy.get("tbody tr")
+      cy.get(ROW_SELECTOR)
         .first()
         .within(() => {
           cy.get("td")
@@ -164,7 +167,7 @@ describe("Manual Tasks", () => {
     it("should apply table filters and send correct API parameters", () => {
       // Wait for initial data to load
       cy.get("table").should("exist");
-      cy.get("tbody tr").should("have.length.at.least", 1);
+      cy.get(ROW_SELECTOR).should("have.length.at.least", 1);
 
       // Apply status filter
       cy.applyTableFilter("Status", "New");
@@ -206,7 +209,7 @@ describe("Manual Tasks", () => {
       });
 
       // Test assigned users display
-      cy.get("tbody tr")
+      cy.get(ROW_SELECTOR)
         .first()
         .within(() => {
           cy.get("td")
@@ -217,7 +220,7 @@ describe("Manual Tasks", () => {
         });
 
       // Test tasks with no assigned users
-      cy.get("tbody tr").each(($row) => {
+      cy.get(ROW_SELECTOR).each(($row) => {
         cy.wrap($row).within(() => {
           cy.get("td")
             .eq(4)
@@ -239,7 +242,7 @@ describe("Manual Tasks", () => {
 
     it("should display file upload input for file type tasks and send correct parameters", () => {
       // Find and click complete button for file upload task
-      cy.get("tbody tr")
+      cy.get(ROW_SELECTOR)
         .contains("Export Customer Data from Salesforce")
         .parents("tr")
         .within(() => {
@@ -294,7 +297,7 @@ describe("Manual Tasks", () => {
 
     it("should display checkbox input for checkbox type tasks and send correct parameters", () => {
       // Find and click complete button for checkbox task
-      cy.get("tbody tr")
+      cy.get(ROW_SELECTOR)
         .contains("Delete User Profile from MongoDB")
         .parents("tr")
         .within(() => {
@@ -349,7 +352,7 @@ describe("Manual Tasks", () => {
 
     it("should display text input for string type tasks and send correct parameters", () => {
       // Find and click complete button for text input task
-      cy.get("tbody tr")
+      cy.get(ROW_SELECTOR)
         .contains("Export Analytics Data")
         .parents("tr")
         .within(() => {
@@ -417,7 +420,7 @@ describe("Manual Tasks", () => {
 
     it("should require comment and send correct parameters", () => {
       // Open skip modal via dropdown
-      cy.get("tbody tr")
+      cy.get(ROW_SELECTOR)
         .first()
         .within(() => {
           cy.get("td")
@@ -479,7 +482,7 @@ describe("Manual Tasks", () => {
 
     it("should reset form state when cancelled and reopened", () => {
       // Open skip modal
-      cy.get("tbody tr")
+      cy.get(ROW_SELECTOR)
         .first()
         .within(() => {
           cy.get("td")
@@ -501,7 +504,7 @@ describe("Manual Tasks", () => {
       cy.getByTestId("skip-task-modal").should("not.exist");
 
       // Reopen skip modal
-      cy.get("tbody tr")
+      cy.get(ROW_SELECTOR)
         .first()
         .within(() => {
           cy.get("td")
