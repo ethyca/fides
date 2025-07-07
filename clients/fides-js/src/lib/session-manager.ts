@@ -1,10 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
 
-/**
- * Session-level manager for served_notice_history_id to ensure consistency
- * across the entire FidesJS session for accurate analytics correlation
- * between notices-served and privacy-preferences endpoints.
- */
 class SessionManager {
   private servedNoticeHistoryId: string | null = null;
 
@@ -35,4 +30,9 @@ class SessionManager {
 }
 
 // Export a singleton instance
+/**
+ * Session-level manager for served_notice_history_id to ensure consistency
+ * across the entire FidesJS session for accurate analytics correlation
+ * between notices-served and privacy-preferences endpoints.
+ */
 export const sessionManager = new SessionManager();
