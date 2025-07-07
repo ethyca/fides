@@ -1,7 +1,7 @@
 """Change Asset.with_consent to Asset.consent_status
 
 Revision ID: 3b0f4905378c
-Revises: 41a634d8c669
+Revises: 641f6bcd424f
 Create Date: 2025-07-01 15:17:32.542511
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "3b0f4905378c"
-down_revision = "41a634d8c669"
+down_revision = "641f6bcd424f"
 branch_labels = None
 depends_on = None
 
