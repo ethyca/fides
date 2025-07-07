@@ -12,6 +12,8 @@ import useApproveDenyPrivacyRequest from "./hooks/useApproveDenyPrivacyRequest";
 import useDownloadPrivacyRequestResults from "./hooks/useDownloadPrivacyRequestResults";
 import useReprocessPrivacyRequest from "./hooks/useReprocessPrivacyRequest";
 import { PrivacyRequestEntity } from "./types";
+import { useFinalizePrivacyRequest } from "./hooks/useFinalizePrivacyRequest";
+import { PrivacyRequestStatus } from "~/types/api";
 
 interface PrivacyRequestActionsDropdownProps {
   privacyRequest: PrivacyRequestEntity;
@@ -50,6 +52,9 @@ const PrivacyRequestActionsDropdown = ({
     { privacyRequest },
   );
 
+  const { handleFinalize, isLoading: isFinalizeLoading } =
+    useFinalizePrivacyRequest();
+
   const menuItems = useMemo(() => {
     const menu = [];
     menu.push({
@@ -73,6 +78,20 @@ const PrivacyRequestActionsDropdown = ({
       onClick: reprocessPrivacyRequest,
       disabled: !showReprocess,
     });
+
+    if (
+      privacyRequest.status ===
+      PrivacyRequestStatus.REQUIRES_MANUAL_FINALIZATION
+    ) {
+      menu.push({
+        key: "finalize",
+        label: (
+          <span data-testid="privacy-request-action-finalize">Finalize</span>
+        ),
+        onClick: () => handleFinalize(privacyRequest.id),
+        disabled: isFinalizeLoading,
+      });
+    }
 
     if (showDownloadResults) {
       menu.push({
@@ -104,6 +123,10 @@ const PrivacyRequestActionsDropdown = ({
     openDenyConfirmationModal,
     showReprocess,
     reprocessPrivacyRequest,
+    isFinalizeLoading,
+    handleFinalize,
+    privacyRequest.status,
+    privacyRequest.id,
   ]);
 
   return (
