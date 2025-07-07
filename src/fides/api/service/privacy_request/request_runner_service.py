@@ -697,7 +697,7 @@ def run_privacy_request(
                             privacy_request.id,
                         )
                         privacy_request.add_success_execution_log(
-                            db,
+                            session,
                             connection_key=None,
                             dataset_name=None,
                             collection_name=None,
