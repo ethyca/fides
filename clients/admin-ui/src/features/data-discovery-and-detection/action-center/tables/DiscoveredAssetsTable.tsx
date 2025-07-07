@@ -34,7 +34,7 @@ import {
   useServerSidePagination,
 } from "~/features/common/table/v2";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
-import { AggregatedConsent, DiffStatus } from "~/types/api";
+import { ConsentStatus, DiffStatus } from "~/types/api";
 
 import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
 import {
@@ -67,7 +67,7 @@ export const DiscoveredAssetsTable = ({
 }: DiscoveredAssetsTableProps) => {
   const router = useRouter();
   const [firstItemConsentStatus, setFirstItemConsentStatus] = useState<
-    AggregatedConsent | null | undefined
+    ConsentStatus | null | undefined
   >();
 
   const [systemName, setSystemName] = useState(systemId);
@@ -153,7 +153,7 @@ export const DiscoveredAssetsTable = ({
       // this ensures that the column header remembers the consent status
       // even when the user navigates to a different paginated page
       const consentStatus = data.items.find(
-        (item) => item.consent_aggregated === AggregatedConsent.WITHOUT_CONSENT,
+        (item) => item.consent_aggregated === ConsentStatus.WITHOUT_CONSENT,
       )?.consent_aggregated;
       setFirstItemConsentStatus(consentStatus);
     }

@@ -33,8 +33,8 @@ import {
 } from "~/features/common/table/v2";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
-  ConsentStatus,
-  ConsentStatusInfo,
+  AlertLevel,
+  ConsentAlertInfo,
   DiffStatus,
   SystemStagedResourcesAggregateRecord,
 } from "~/types/api";
@@ -62,7 +62,7 @@ export const DiscoveredSystemAggregateTable = ({
   const router = useRouter();
 
   const [firstItemConsentStatus, setFirstItemConsentStatus] = useState<
-    ConsentStatusInfo | null | undefined
+    ConsentAlertInfo | null | undefined
   >();
 
   const {
@@ -122,7 +122,7 @@ export const DiscoveredSystemAggregateTable = ({
       // this ensures that the column header remembers the consent status
       // even when the user navigates to a different paginated page
       const consentStatus = data.items.find(
-        (item) => item.consent_status?.status === ConsentStatus.ALERT,
+        (item) => item.consent_status?.status === AlertLevel.ALERT,
       )?.consent_status;
       setFirstItemConsentStatus(consentStatus);
     }

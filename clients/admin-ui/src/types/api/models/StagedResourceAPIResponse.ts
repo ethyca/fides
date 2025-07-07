@@ -2,9 +2,9 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { AggregatedConsent } from "./AggregatedConsent";
 import type { Classification } from "./Classification";
 import type { ConsentInfo } from "./ConsentInfo";
+import type { ConsentStatus } from "./ConsentStatus";
 import type { Constraint } from "./Constraint";
 import type { DiffStatus } from "./DiffStatus";
 import type { StagedResourceTypeValue } from "./StagedResourceTypeValue";
@@ -68,7 +68,7 @@ export type StagedResourceAPIResponse = {
   /**
    * Aggregated consent for the asset
    */
-  consent_aggregated?: AggregatedConsent | null;
+  consent_aggregated?: ConsentStatus | null;
   /**
    * The Compass Vendor ID associated with the asset
    */

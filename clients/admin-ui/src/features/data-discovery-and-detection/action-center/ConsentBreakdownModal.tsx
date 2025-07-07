@@ -11,7 +11,7 @@ import { useMemo, useState } from "react";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import { PAGE_SIZES } from "~/features/common/table/v2";
 import {
-  AggregatedConsent,
+  ConsentStatus,
   PrivacyNoticeRegion,
   StagedResourceAPIResponse,
 } from "~/types/api";
@@ -23,7 +23,7 @@ const { Paragraph, Text, Link } = Typography;
 interface ConsentBreakdownModalProps {
   isOpen: boolean;
   stagedResource: StagedResourceAPIResponse;
-  status: AggregatedConsent;
+  status: ConsentStatus;
   onCancel: () => void;
   onDownload?: () => void;
 }

@@ -1,15 +1,15 @@
 import { AntTooltip as Tooltip, Icons } from "fidesui";
 
-import { ConsentStatus, ConsentStatusInfo } from "~/types/api";
+import { AlertLevel, ConsentAlertInfo } from "~/types/api";
 
 interface DiscoveryStatusIconProps {
-  consentStatus: ConsentStatusInfo | null | undefined;
+  consentStatus: ConsentAlertInfo | null | undefined;
 }
 
 export const DiscoveryStatusIcon = ({
   consentStatus,
 }: DiscoveryStatusIconProps) => {
-  return consentStatus?.status === ConsentStatus.ALERT ? (
+  return consentStatus?.status === AlertLevel.ALERT ? (
     <Tooltip title={consentStatus?.message}>
       <div className="mb-px" data-testid="discovery-status-icon-alert">
         {/* div wrapper helps keep tooltip accessible and icon size consistent */}
