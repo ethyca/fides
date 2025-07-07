@@ -30,6 +30,7 @@ export const DiscoveryStatusBadgeCell = ({
             closeIcon={<Icons.Information style={{ width: 12, height: 12 }} />}
             closeButtonLabel="View details"
             onClose={handleClick}
+            data-testid="status-badge_without-consent"
           >
             Without consent
           </Tag>
@@ -37,17 +38,19 @@ export const DiscoveryStatusBadgeCell = ({
       )}
       {consentAggregated === ConsentStatus.WITH_CONSENT && (
         <Tooltip title="Asset was detected after the user gave consent">
-          <Tag color="success">With consent</Tag>
+          <Tag color="success" data-testid="status-badge_with-consent">
+            With consent
+          </Tag>
         </Tooltip>
       )}
       {consentAggregated === ConsentStatus.EXEMPT && (
         <Tooltip title="Asset is valid regardless of consent">
-          <Tag>Consent exempt</Tag>
+          <Tag data-testid="status-badge_consent-exempt">Consent exempt</Tag>
         </Tooltip>
       )}
       {consentAggregated === ConsentStatus.UNKNOWN && (
         <Tooltip title="Did not find consent information for this asset. You may need to re-run the monitor.">
-          <Tag>Unknown</Tag>
+          <Tag data-testid="status-badge_unknown">Unknown</Tag>
         </Tooltip>
       )}
       {isOpen && ( // since this component is on every row, we need to check if it's open to render it (otherwise it will render on every row)
@@ -56,7 +59,7 @@ export const DiscoveryStatusBadgeCell = ({
           stagedResource={stagedResource}
           status={consentAggregated}
           onCancel={handleCancel}
-          // onDownload={handleDownload}
+          // onDownload={handleDownload} // deferred until we have a download endpoint
         />
       )}
     </>
