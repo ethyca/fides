@@ -1,5 +1,3 @@
-import { v4 as uuidv4 } from "uuid";
-
 import { patchUserPreference } from "../services/api";
 import {
   ConsentMechanism,
@@ -42,6 +40,7 @@ import {
   selectBestExperienceConfigTranslation,
   selectBestNoticeTranslation,
 } from "./i18n";
+import { sessionManager } from "./session-manager";
 import { transformConsentToFidesUserPreference } from "./shared-consent-utils";
 import { TcfSavePreferences } from "./tcf/types";
 
@@ -302,7 +301,6 @@ export interface UpdateConsentOptions {
 export const updateConsent = async (
   context: Pick<FidesGlobal, "experience" | "cookie" | "config" | "locale">,
   consentOptions: UpdateConsentOptions,
-  servedNoticeHistoryId?: string,
 ): Promise<void> => {
   const { experience, cookie, config, locale } = context;
   if (!experience) {
@@ -465,12 +463,8 @@ export const updateConsent = async (
 
   const fidesRegionString = constructFidesRegionString(config.geolocation);
 
-  // Generate a new served notice history ID for the served notice
-  // DEFER: This should match with the id used in the notices-served endpoint
-  if (!servedNoticeHistoryId) {
-    // eslint-disable-next-line no-param-reassign
-    servedNoticeHistoryId = uuidv4();
-  }
+  // Get the session-level served notice history ID for consistency
+  const servedNoticeHistoryId = sessionManager.getServedNoticeHistoryId();
 
   // Call updateConsentPreferences with necessary parameters
   return updateConsentPreferences({
