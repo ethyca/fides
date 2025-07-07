@@ -1,26 +1,25 @@
 import { AntTag as Tag, AntTooltip as Tooltip, Icons } from "fidesui";
-import { useState } from "react";
 
 import { ConsentStatus, StagedResourceAPIResponse } from "~/types/api";
-
-import { ConsentBreakdownModal } from "../../ConsentBreakdownModal";
 
 interface DiscoveryStatusBadgeCellProps {
   consentAggregated: ConsentStatus;
   stagedResource: StagedResourceAPIResponse;
+  onShowBreakdown?: (
+    stagedResource: StagedResourceAPIResponse,
+    status: ConsentStatus,
+  ) => void;
 }
 
 export const DiscoveryStatusBadgeCell = ({
   consentAggregated,
   stagedResource,
+  onShowBreakdown,
 }: DiscoveryStatusBadgeCellProps) => {
-  const [isOpen, setIsOpen] = useState(false);
   const handleClick = () => {
-    setIsOpen(true);
+    onShowBreakdown?.(stagedResource, consentAggregated);
   };
-  const handleCancel = () => {
-    setIsOpen(false);
-  };
+
   return (
     <>
       {consentAggregated === ConsentStatus.WITHOUT_CONSENT && (
@@ -52,15 +51,6 @@ export const DiscoveryStatusBadgeCell = ({
         <Tooltip title="Did not find consent information for this asset. You may need to re-run the monitor.">
           <Tag data-testid="status-badge_unknown">Unknown</Tag>
         </Tooltip>
-      )}
-      {isOpen && ( // since this component is on every row, we need to check if it's open to render it (otherwise it will render on every row)
-        <ConsentBreakdownModal
-          isOpen={isOpen}
-          stagedResource={stagedResource}
-          status={consentAggregated}
-          onCancel={handleCancel}
-          // onDownload={handleDownload} // deferred until we have a download endpoint
-        />
       )}
     </>
   );

@@ -29,10 +29,15 @@ export const useDiscoveredAssetsColumns = ({
   readonly,
   aggregatedConsent,
   onTabChange,
+  onShowBreakdown,
 }: {
   readonly: boolean;
   aggregatedConsent: ConsentStatus | null | undefined;
   onTabChange: (tab: ActionCenterTabHash) => void;
+  onShowBreakdown?: (
+    stagedResource: StagedResourceAPIResponse,
+    status: ConsentStatus,
+  ) => void;
 }) => {
   const columnHelper = createColumnHelper<StagedResourceAPIResponse>();
 
@@ -119,6 +124,7 @@ export const useDiscoveredAssetsColumns = ({
         <DiscoveryStatusBadgeCell
           consentAggregated={props.getValue() ?? ConsentStatus.UNKNOWN}
           stagedResource={props.row.original}
+          onShowBreakdown={onShowBreakdown}
         />
       ),
       header: () => {
