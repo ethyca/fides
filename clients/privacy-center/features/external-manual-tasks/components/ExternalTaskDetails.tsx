@@ -53,7 +53,7 @@ export const ExternalTaskDetails = ({ task }: ExternalTaskDetailsProps) => {
     task.privacy_request.request_type.slice(1);
 
   return (
-    <Flex vertical gap="middle">
+    <Flex vertical gap="middle" data-testid="task-details-container">
       <TaskInfoRow label="Name">
         <Typography.Text data-testid="task-details-name">
           {task.name}
@@ -102,6 +102,22 @@ export const ExternalTaskDetails = ({ task }: ExternalTaskDetailsProps) => {
                 </Tag>
               ),
             )}
+          </Flex>
+        </TaskInfoRow>
+      ) : null}
+
+      {/* Show custom fields if available */}
+      {task.privacy_request.custom_fields &&
+      Object.keys(task.privacy_request.custom_fields).length > 0 ? (
+        <TaskInfoRow label="Custom fields">
+          <Flex wrap="wrap" gap="small">
+            {Object.entries(task.privacy_request.custom_fields)
+              .filter(([, value]) => value) // Only show fields with values
+              .map(([key, value]) => (
+                <Tag key={key}>
+                  {key}: {value}
+                </Tag>
+              ))}
           </Flex>
         </TaskInfoRow>
       ) : null}

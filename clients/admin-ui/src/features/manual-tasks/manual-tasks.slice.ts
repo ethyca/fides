@@ -21,6 +21,7 @@ interface TaskQueryParams extends PaginationQueryParams {
   requestType?: ManualFieldRequestType;
   systemName?: string;
   assignedUserId?: string;
+  privacyRequestId?: string;
 }
 
 // API endpoints
@@ -48,7 +49,12 @@ export const manualTasksApi = baseApi.injectEndpoints({
         if (queryParams.assignedUserId) {
           searchParams.append("assigned_user_id", queryParams.assignedUserId);
         }
-
+        if (queryParams.privacyRequestId) {
+          searchParams.append(
+            "privacy_request_id",
+            queryParams.privacyRequestId,
+          );
+        }
         return {
           url: "plus/manual-fields",
           params: searchParams,
@@ -125,14 +131,26 @@ export const manualTasksApi = baseApi.injectEndpoints({
           manual_field_id: manualFieldId,
           ...body
         } = payload;
+
+        const formData = new FormData();
+        formData.append("field_key", manualFieldId);
+
+        // Append all other fields from body
+        Object.entries(body).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            formData.append(key, String(value));
+          }
+        });
+
+        // Add comment_type if comment_text is provided
+        if (body.comment_text) {
+          formData.append("comment_type", CommentType.NOTE);
+        }
+
         return {
           url: `privacy-request/${privacyRequestId}/manual-field/${manualFieldId}/skip`,
           method: "POST",
-          body: {
-            ...body,
-            field_key: manualFieldId,
-            comment_type: body.comment_text ? CommentType.NOTE : undefined,
-          },
+          body: formData,
         };
       },
       invalidatesTags: [{ type: "Manual Tasks" }],

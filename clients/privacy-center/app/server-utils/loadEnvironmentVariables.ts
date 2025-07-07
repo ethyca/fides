@@ -59,6 +59,8 @@ const loadEnvironmentVariables = () => {
       process.env.FIDES_PRIVACY_CENTER__MISSING_EXPERIENCE_BEHAVIOR,
     ),
     LOG_LEVEL: defaultLogLevel(process.env.FIDES_PRIVACY_CENTER__LOG_LEVEL),
+    ENABLE_EXTERNAL_TASK_PORTAL:
+      process.env.FIDES_PRIVACY_CENTER__ENABLE_EXTERNAL_TASK_PORTAL === "true",
 
     // Overlay options
     DEBUG: process.env.FIDES_PRIVACY_CENTER__DEBUG

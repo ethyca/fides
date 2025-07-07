@@ -65,8 +65,10 @@ const RoleOption = ({
           </Text>
           <GreenCheckCircleIcon />
         </Flex>
-        {/* The approver role cannot be assigned systems */}
-        {roleKey !== RoleRegistryEnum.APPROVER ? (
+        {/* The approver and respondent roles cannot be assigned systems */}
+        {roleKey !== RoleRegistryEnum.APPROVER &&
+        roleKey !== RoleRegistryEnum.RESPONDENT &&
+        roleKey !== RoleRegistryEnum.EXTERNAL_RESPONDENT ? (
           <>
             <Flex alignItems="center">
               <Text fontSize="sm" fontWeight="semibold" mr={1}>

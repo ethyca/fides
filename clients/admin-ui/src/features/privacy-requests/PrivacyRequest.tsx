@@ -1,4 +1,3 @@
-import { useGetAllEnabledAccessManualHooksQuery as useGetManualIntegrationsQuery } from "datastore-connections/datastore-connection.slice";
 import { AntTabs as Tabs, AntTabsProps as TabsProps } from "fidesui";
 import { useMemo, useState } from "react";
 
@@ -6,7 +5,7 @@ import { useGetAllPrivacyRequestsQuery } from "~/features/privacy-requests";
 import { PrivacyRequestStatus } from "~/types/api";
 
 import ActivityTab from "./events-and-logs/ActivityTab";
-import ManualProcessingList from "./manual-processing/ManualProcessingList";
+import PrivacyRequestDetailsManualTaskTab from "./PrivacyRequestDetailsManualTaskTab";
 import RequestDetails from "./RequestDetails";
 import { PrivacyRequestEntity } from "./types";
 
@@ -36,18 +35,12 @@ const PrivacyRequest = ({ data: initialData }: PrivacyRequestProps) => {
   // Use latest data if available, otherwise use initial data
   const subjectRequest = latestData?.items[0] ?? initialData;
 
-  const isManualStepsRequired =
+  const isRequiringInputStatus =
     subjectRequest.status === PrivacyRequestStatus.REQUIRES_INPUT;
+  const showManualTasks = isRequiringInputStatus;
 
-  // Check if any manual-process integrations exist
-  const { data: manualIntegrations } = useGetManualIntegrationsQuery();
-  const hasManualIntegrations = (manualIntegrations || []).length > 0;
+  const [activeTabKey, setActiveTabKey] = useState("activity");
 
-  const showManualSteps = isManualStepsRequired && hasManualIntegrations;
-
-  const [activeTabKey, setActiveTabKey] = useState(
-    showManualSteps ? "manual-steps" : "activity",
-  );
   const items: TabsProps["items"] = useMemo(
     () => [
       {
@@ -56,18 +49,18 @@ const PrivacyRequest = ({ data: initialData }: PrivacyRequestProps) => {
         children: <ActivityTab subjectRequest={subjectRequest} />,
       },
       {
-        key: "manual-steps",
-        label: "Manual steps",
+        key: "manual-tasks",
+        label: "Manual tasks",
         children: (
-          <ManualProcessingList
+          <PrivacyRequestDetailsManualTaskTab
             subjectRequest={subjectRequest}
             onComplete={() => setActiveTabKey("activity")}
           />
         ),
-        disabled: !showManualSteps,
+        disabled: !showManualTasks,
       },
     ],
-    [showManualSteps, subjectRequest],
+    [showManualTasks, subjectRequest],
   );
 
   return (
