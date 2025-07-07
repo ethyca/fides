@@ -738,7 +738,11 @@ describe("Action center", () => {
         cy.getByTestId(`row-${rowUrns[0]}-col-consent_aggregated`).within(
           () => {
             cy.contains("Without consent").should("exist");
-            cy.get(".ant-tag").should("have.attr", "data-color", "error");
+            cy.getByTestId("status-badge_without-consent").should(
+              "have.attr",
+              "data-color",
+              "error",
+            );
           },
         );
 
@@ -746,7 +750,11 @@ describe("Action center", () => {
         cy.getByTestId(`row-${rowUrns[1]}-col-consent_aggregated`).within(
           () => {
             cy.contains("With consent").should("exist");
-            cy.get(".ant-tag").should("have.attr", "data-color", "success");
+            cy.getByTestId("status-badge_with-consent").should(
+              "have.attr",
+              "data-color",
+              "success",
+            );
           },
         );
 
@@ -754,7 +762,11 @@ describe("Action center", () => {
         cy.getByTestId(`row-${rowUrns[2]}-col-consent_aggregated`).within(
           () => {
             cy.contains("Without consent").should("exist");
-            cy.get(".ant-tag").should("have.attr", "data-color", "error");
+            cy.getByTestId("status-badge_without-consent").should(
+              "have.attr",
+              "data-color",
+              "error",
+            );
           },
         );
       });
@@ -782,11 +794,11 @@ describe("Action center", () => {
         cy.wait("@getConsentBreakdown");
 
         // Check modal is open
-        cy.get(".ant-modal").should("exist");
-        cy.get(".ant-modal-title").should("contain", "Consent discovery");
+        cy.getByTestId("consent-breakdown-modal").should("exist");
+        cy.contains("Consent discovery").should("exist");
 
         // Check modal content
-        cy.get(".ant-modal-body").within(() => {
+        cy.getByTestId("consent-breakdown-modal-content").within(() => {
           cy.contains(
             "View all instances where this asset was detected without consent",
           ).should("exist");
@@ -801,13 +813,15 @@ describe("Action center", () => {
           });
 
           // Check table data
-          cy.get(".ant-table-tbody tr").should("have.length", 3);
-          cy.get(".ant-table-tbody tr")
-            .first()
-            .within(() => {
-              cy.contains("United States").should("exist");
-              cy.get("a[href='https://example.com/page1']").should("exist");
-            });
+          cy.getByTestId("consent-breakdown-modal-table").within(() => {
+            cy.get("tbody tr").should("have.length", 3);
+            cy.get("tbody tr")
+              .first()
+              .within(() => {
+                cy.contains("United States").should("exist");
+                cy.get("a[href='https://example.com/page1']").should("exist");
+              });
+          });
         });
 
         // Check modal footer buttons
@@ -819,7 +833,7 @@ describe("Action center", () => {
 
         // Close modal
         cy.contains("Cancel").click();
-        cy.get(".ant-modal").should("not.exist");
+        cy.getByTestId("consent-breakdown-modal").should("not.exist");
       });
 
       it("should open external links in new tab from consent breakdown modal", () => {
@@ -833,7 +847,7 @@ describe("Action center", () => {
 
         cy.wait("@getConsentBreakdown");
 
-        cy.get(".ant-modal-body").within(() => {
+        cy.getByTestId("consent-breakdown-modal-content").within(() => {
           cy.get("a[href='https://example.com/page1']")
             .should("have.attr", "target", "_blank")
             .should("have.attr", "rel", "noopener noreferrer");

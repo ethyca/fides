@@ -72,8 +72,13 @@ export const ConsentBreakdownModal = ({
           </Button>
         ),
       ]}
+      data-testid="consent-breakdown-modal"
     >
-      <Flex vertical className="gap-6">
+      <Flex
+        vertical
+        className="gap-6"
+        data-testid="consent-breakdown-modal-content"
+      >
         <div>
           <Paragraph>
             View all instances where this asset was detected without consent,
@@ -139,6 +144,7 @@ export const ConsentBreakdownModal = ({
                 : false
             }
             loading={isFetching}
+            data-testid="consent-breakdown-modal-table"
           />
         )}
       </Flex>
