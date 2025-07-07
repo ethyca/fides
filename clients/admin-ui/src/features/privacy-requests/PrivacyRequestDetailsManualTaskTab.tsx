@@ -21,6 +21,7 @@ import {
 } from "~/types/api";
 
 import { PRIVACY_REQUESTS_ROUTE } from "../common/nav/routes";
+import { PRIVACY_REQUEST_TABS } from "./hooks/usePrivacyRequestTabs";
 import ManualProcessingList from "./manual-processing/ManualProcessingList";
 import { PrivacyRequestEntity } from "./types";
 
@@ -71,8 +72,10 @@ const PrivacyRequestDetailsManualTaskTab = ({
   const handleViewTasksClick = () => {
     router.push({
       pathname: PRIVACY_REQUESTS_ROUTE,
-      query: { privacy_request_id: subjectRequest.id },
-      hash: "#manual-tasks",
+      query: {
+        privacy_request_id: subjectRequest.id,
+        tab: PRIVACY_REQUEST_TABS.MANUAL_TASK,
+      },
     });
   };
 

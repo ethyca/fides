@@ -183,7 +183,10 @@ export const ManualTasks = () => {
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const [filters, setFilters] = useState<ManualTaskFilters>({});
-  const [privacyRequestIdInput, setPrivacyRequestIdInput] = useState("");
+
+  const [privacyRequestIdInput, setPrivacyRequestIdInput] = useState(
+    router.query.privacy_request_id || "",
+  );
 
   // Initialize privacy request ID filter from URL query parameter
   useEffect(() => {

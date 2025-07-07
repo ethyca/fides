@@ -23,63 +23,53 @@ export const usePrivacyRequestTabs = () => {
     [],
   );
 
-  const parseHashFromUrl = useCallback(
-    (url: string): PrivacyRequestTabKey | null => {
-      const hashParts = url.split("#");
-      if (hashParts.length < 2) {
-        return null;
-      }
+  const parseTabFromQuery = useCallback((): PrivacyRequestTabKey | null => {
+    const { tab } = router.query;
+    if (!tab || typeof tab !== "string") {
+      return null;
+    }
 
-      const hash = hashParts[1];
-      const validTabs = Object.values(PRIVACY_REQUEST_TABS) as string[];
+    const validTabs = Object.values(PRIVACY_REQUEST_TABS) as string[];
+    return validTabs.includes(tab) ? (tab as PrivacyRequestTabKey) : null;
+  }, [router.query]);
 
-      return validTabs.includes(hash) ? (hash as PrivacyRequestTabKey) : null;
-    },
-    [],
-  );
-
-  const updateUrlHash = useCallback(
+  const updateUrlTab = useCallback(
     (tabKey: PrivacyRequestTabKey) => {
-      const newUrl = `${router.pathname}#${tabKey}`;
-      router.replace(newUrl, undefined, { shallow: true }).catch((e) => {
-        // workaround for https://github.com/vercel/next.js/issues/37362
-        if (!e.cancelled) {
-          throw e;
-        }
-      });
+      router.replace(
+        {
+          pathname: router.pathname,
+          query: {
+            ...router.query,
+            tab: tabKey,
+          },
+        },
+        undefined,
+        {
+          shallow: true,
+        },
+      );
     },
     [router],
   );
 
   useEffect(() => {
-    if (!router.isReady) {
-      return;
-    }
+    const queryTab = parseTabFromQuery();
 
-    const hashTab = parseHashFromUrl(router.asPath);
-
-    if (hashTab) {
+    if (queryTab) {
       const isTabAvailable =
-        hashTab === PRIVACY_REQUEST_TABS.REQUEST ||
-        (hashTab === PRIVACY_REQUEST_TABS.MANUAL_TASK &&
+        queryTab === PRIVACY_REQUEST_TABS.REQUEST ||
+        (queryTab === PRIVACY_REQUEST_TABS.MANUAL_TASK &&
           availableTabs.manualTask);
 
       if (isTabAvailable) {
-        setActiveTab(hashTab);
+        setActiveTab(queryTab);
         return;
       }
     }
 
     setActiveTab(PRIVACY_REQUEST_TABS.REQUEST);
-    updateUrlHash(PRIVACY_REQUEST_TABS.REQUEST);
-  }, [
-    router.isReady,
-    router.asPath,
-    router.pathname,
-    availableTabs,
-    parseHashFromUrl,
-    updateUrlHash,
-  ]);
+    updateUrlTab(PRIVACY_REQUEST_TABS.REQUEST);
+  }, [router.query, availableTabs, parseTabFromQuery, updateUrlTab]);
 
   const handleTabChange = useCallback(
     (tabKey: string) => {
@@ -90,9 +80,9 @@ export const usePrivacyRequestTabs = () => {
 
       const typedTabKey = tabKey as PrivacyRequestTabKey;
       setActiveTab(typedTabKey);
-      updateUrlHash(typedTabKey);
+      updateUrlTab(typedTabKey);
     },
-    [updateUrlHash],
+    [updateUrlTab],
   );
 
   return {
