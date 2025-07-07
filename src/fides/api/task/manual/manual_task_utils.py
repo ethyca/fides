@@ -21,6 +21,7 @@ from fides.api.models.manual_task import (
     ManualTaskInstance,
 )
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.schemas.policy import ActionType
 
 # TYPE_CHECKING import placed after all runtime imports to avoid lint issues
 if TYPE_CHECKING:  # pragma: no cover
@@ -64,6 +65,19 @@ class ManualTaskAddress:
         return address.dataset
 
 
+def get_connection_configs_with_manual_tasks(db: Session) -> List[ConnectionConfig]:
+    """
+    Get all connection configs that have manual tasks.
+    """
+    return (
+        db.query(ConnectionConfig)
+        .join(ManualTask, ConnectionConfig.id == ManualTask.parent_entity_id)
+        .filter(ManualTask.parent_entity_type == "connection_config")
+        .filter(ConnectionConfig.disabled.is_(False))
+        .all()
+    )
+
+
 def get_manual_task_addresses(db: Session) -> List[CollectionAddress]:
     """
     Get manual task addresses for all connection configs that have manual tasks.
@@ -73,13 +87,7 @@ def get_manual_task_addresses(db: Session) -> List[CollectionAddress]:
     manual tasks to collect additional data that may be needed for the privacy request.
     """
     # Get all connection configs that have manual tasks (excluding disabled ones)
-    connection_configs_with_manual_tasks = (
-        db.query(ConnectionConfig)
-        .join(ManualTask, ConnectionConfig.id == ManualTask.parent_entity_id)
-        .filter(ManualTask.parent_entity_type == "connection_config")
-        .filter(ConnectionConfig.disabled.is_(False))
-        .all()
-    )
+    connection_configs_with_manual_tasks = get_connection_configs_with_manual_tasks(db)
 
     # Create addresses for all connections that have manual tasks
     manual_task_addresses = []
@@ -172,12 +180,14 @@ def create_manual_task_instances_for_privacy_request(
     instances = []
 
     # Get all connection configs that have manual tasks (excluding disabled ones)
-    connection_configs_with_manual_tasks = (
-        db.query(ConnectionConfig)
-        .join(ManualTask, ConnectionConfig.id == ManualTask.parent_entity_id)
-        .filter(ManualTask.parent_entity_type == "connection_config")
-        .filter(ConnectionConfig.disabled.is_(False))
-        .all()
+    connection_configs_with_manual_tasks = get_connection_configs_with_manual_tasks(db)
+
+    # Determine the privacy request type based on policy rules
+    has_access_rules = bool(
+        privacy_request.policy.get_rules_for_action(action_type=ActionType.access)
+    )
+    has_erasure_rules = bool(
+        privacy_request.policy.get_rules_for_action(action_type=ActionType.erasure)
     )
 
     for connection_config in connection_configs_with_manual_tasks:
@@ -191,15 +201,40 @@ def create_manual_task_instances_for_privacy_request(
         )
 
         for manual_task in manual_tasks:
-            # Get the active config for this manual task
-            active_config = (
-                db.query(ManualTaskConfig)
-                .filter(
-                    ManualTaskConfig.task_id == manual_task.id,
-                    ManualTaskConfig.is_current.is_(True),
-                )
-                .first()
+            # Get the active config for this manual task, filtered by request type
+            active_config_query = db.query(ManualTaskConfig).filter(
+                ManualTaskConfig.task_id == manual_task.id,
+                ManualTaskConfig.is_current.is_(True),
             )
+
+            # Filter by configuration type based on privacy request type
+            if has_access_rules and has_erasure_rules:
+                # If both access and erasure rules exist, include both types
+                active_config_query = active_config_query.filter(
+                    ManualTaskConfig.config_type.in_(
+                        [
+                            ManualTaskConfigurationType.access_privacy_request,
+                            ManualTaskConfigurationType.erasure_privacy_request,
+                        ]
+                    )
+                )
+            elif has_access_rules:
+                # Only access rules - only include access configurations
+                active_config_query = active_config_query.filter(
+                    ManualTaskConfig.config_type
+                    == ManualTaskConfigurationType.access_privacy_request
+                )
+            elif has_erasure_rules:
+                # Only erasure rules - only include erasure configurations
+                active_config_query = active_config_query.filter(
+                    ManualTaskConfig.config_type
+                    == ManualTaskConfigurationType.erasure_privacy_request
+                )
+            else:
+                # No relevant rules - skip this manual task
+                continue
+
+            active_config = active_config_query.first()
 
             if not active_config:
                 continue  # Skip if no active config
