@@ -71,6 +71,7 @@ const AddManualTaskModal = ({
       } else {
         // Create new field
         const newField: ManualFieldCreate = {
+          key: values.key || undefined,
           label: values.name,
           help_text: values.description,
           field_type: values.fieldType,
@@ -103,7 +104,7 @@ const AddManualTaskModal = ({
       <ModalOverlay />
       <ModalContent minWidth="775px">
         <ModalHeader>
-          {isEditing ? "Edit Manual Task" : "Add Manual Task"}
+          {isEditing ? "Edit manual task" : "Add manual task"}
         </ModalHeader>
         <ModalCloseButton />
         <ModalBody pb={6}>

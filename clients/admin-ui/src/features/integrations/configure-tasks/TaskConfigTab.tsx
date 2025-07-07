@@ -205,7 +205,13 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
   return (
     <Box>
       <Flex direction="column" gap={4}>
-        <Flex justify="flex-end" className="mt-6">
+        <Typography.Paragraph className="mt-2">
+          Configure manual tasks for this integration. Manual tasks allow you to
+          define custom data collection or processing steps that require human
+          intervention.
+        </Typography.Paragraph>
+
+        <Flex justify="flex-end">
           <Flex justify="flex-start" align="center" gap={2}>
             <Button type="primary" onClick={handleAddTask}>
               Add manual task

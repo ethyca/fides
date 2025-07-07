@@ -93,10 +93,9 @@ const CreateExternalUserModal = ({
     >
       <div style={{ marginBottom: 16 }}>
         <Paragraph type="secondary">
-          Create an external respondent user who can respond to privacy
-          requests. These users cannot log in to the Fides admin interface -
-          they only receive email notifications with links to respond to privacy
-          requests.
+          Create an external respondent user who can be assigned manual DSR
+          tasks. These users access a secure external task portal to complete
+          assigned tasks without logging into the Fides admin interface.
         </Paragraph>
         <Paragraph type="secondary">
           If you need to create an internal user that can log in to the Fides

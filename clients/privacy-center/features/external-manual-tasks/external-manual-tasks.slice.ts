@@ -63,6 +63,9 @@ export interface ManualFieldPrivacyRequest {
   days_left?: number | null;
   request_type: ManualFieldRequestType;
   subject_identities?: Record<string, string> | null;
+  custom_fields?: {
+    [key: string]: string;
+  };
 }
 
 export interface ManualFieldListItem {
@@ -202,15 +205,17 @@ export const externalManualTasksApi = externalBaseApi.injectEndpoints({
           field_key: fieldKey,
           skip_reason: skipReason,
         } = payload;
+
+        const formData = new FormData();
+        formData.append("field_key", fieldKey);
+        formData.append("skip_reason", skipReason);
+        formData.append("comment_text", skipReason);
+        formData.append("comment_type", CommentType.NOTE);
+
         return {
           url: `privacy-request/${privacyRequestId}/manual-field/${manualFieldId}/skip`,
           method: "POST",
-          body: {
-            field_key: fieldKey,
-            skip_reason: skipReason,
-            comment_text: skipReason,
-            comment_type: CommentType.NOTE,
-          },
+          body: formData,
         };
       },
       invalidatesTags: [{ type: "External Manual Tasks" }],
