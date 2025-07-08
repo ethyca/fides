@@ -43,8 +43,9 @@ const SelectIntegrationType = ({
 
   // Get available categories based on flags
   const availableCategories = useMemo(() => {
-    return Object.values(IntegrationFilterTabs).filter(
-      (tab) => tab !== IntegrationFilterTabs.IDENTITY_PROVIDER || oktaMonitor,
+    return Object.values(IntegrationCategoryFilter).filter(
+      (tab) =>
+        tab !== IntegrationCategoryFilter.IDENTITY_PROVIDER || oktaMonitor,
     );
   }, [oktaMonitor]);
 
