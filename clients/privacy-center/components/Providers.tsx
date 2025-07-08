@@ -4,7 +4,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 
-import { FidesUIProvider } from "~/../fidesui/src";
+import { defaultAntTheme, FidesUIProvider } from "~/../fidesui/src";
 import { I18nProvider } from "~/common/i18nContext";
 import Error from "~/components/Error";
 import theme from "~/theme";
@@ -19,7 +19,11 @@ const Providers = ({ children }: ProvidersProps) => (
   <Provider store={store}>
     <I18nProvider>
       <PersistGate persistor={persistor}>
-        <FidesUIProvider theme={theme}>
+        <FidesUIProvider
+          theme={theme}
+          antTheme={defaultAntTheme}
+          wave={{ disabled: true }}
+        >
           <ErrorBoundary fallbackRender={Error}>{children}</ErrorBoundary>
         </FidesUIProvider>
       </PersistGate>

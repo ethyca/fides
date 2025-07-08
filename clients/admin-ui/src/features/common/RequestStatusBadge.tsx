@@ -11,7 +11,8 @@ export const statusPropMap: {
       | "warning"
       | "info"
       | "alert"
-      | "caution";
+      | "caution"
+      | "minos";
     label?: string;
   };
 } = {
@@ -56,7 +57,7 @@ export const statusPropMap: {
     label: "Unverified",
   },
   requires_input: {
-    color: "alert",
+    color: "minos",
     label: "Requires Input",
   },
 };

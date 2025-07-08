@@ -35,7 +35,7 @@
     "@iabtechlabtcf/cmpapi": "1.5.15",
     "@iabtechlabtcf/core": "1.5.15",
     "@rollup/plugin-replace": "^6.0.2",
-    "a11y-dialog": "^7.5.2",
+    "a11y-dialog": "^7.5.3",
     "base-64": "^1.0.0",
     "js-cookie": "^3.0.5",
     "preact": "~10.22.0",

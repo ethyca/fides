@@ -274,4 +274,15 @@ export interface FidesOptions {
    * Defaults to `undefined`.
    */
   fides_disabled_notices: string;
+
+  /**
+   * Controls when the deprecated FidesInitialized event should be dispatched.
+   *
+   * - "multiple" = fires alongside both FidesReady and FidesConsentLoaded events
+   * - "once" = fires alongside FidesReady only
+   * - "disable" = never fires
+   *
+   * Defaults to `"once"`.
+   */
+  fides_initialized_event_mode: "multiple" | "once" | "disable";
 }

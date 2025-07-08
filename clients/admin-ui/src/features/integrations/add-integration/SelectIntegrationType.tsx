@@ -38,17 +38,15 @@ const SelectIntegrationType = ({
   const [isFiltering, setIsFiltering] = useState(false);
 
   const {
-    flags: { oktaMonitor, alphaNewManualDSR },
+    flags: { oktaMonitor },
   } = useFlags();
 
   // Get available categories based on flags
   const availableCategories = useMemo(() => {
-    return Object.values(IntegrationCategoryFilter).filter(
-      (tab) =>
-        (tab !== IntegrationCategoryFilter.IDENTITY_PROVIDER || oktaMonitor) &&
-        (tab !== IntegrationCategoryFilter.MANUAL || alphaNewManualDSR),
+    return Object.values(IntegrationFilterTabs).filter(
+      (tab) => tab !== IntegrationFilterTabs.IDENTITY_PROVIDER || oktaMonitor,
     );
-  }, [oktaMonitor, alphaNewManualDSR]);
+  }, [oktaMonitor]);
 
   // Filter integrations based on search and category
   const filteredTypes = useMemo(() => {
@@ -76,16 +74,9 @@ const SelectIntegrationType = ({
       if (!oktaMonitor && i.placeholder.connection_type === "okta") {
         return false;
       }
-      // DEFER (ENG-675): Remove this once the alpha feature is released
-      if (
-        !alphaNewManualDSR &&
-        i.placeholder.connection_type === "manual_webhook"
-      ) {
-        return false;
-      }
       return true;
     });
-  }, [searchTerm, selectedCategory, oktaMonitor, alphaNewManualDSR]);
+  }, [searchTerm, selectedCategory, oktaMonitor]);
 
   const handleCategoryChange = (value: IntegrationCategoryFilter) => {
     setIsFiltering(true);

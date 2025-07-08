@@ -1,9 +1,9 @@
-import type { UploadFile } from "antd";
 import {
   AntButton as Button,
   AntCheckbox as Checkbox,
   AntDivider as Divider,
   AntInput as Input,
+  AntMessage as message,
   AntSpace as Space,
   AntTypography as Typography,
   AntUpload as Upload,
@@ -16,14 +16,15 @@ import {
 } from "fidesui";
 import { useState } from "react";
 
+import { ManualFieldListItem, ManualTaskFieldType } from "~/types/api";
+
 import { useCompleteTaskMutation } from "../manual-tasks.slice";
-import { ManualTask } from "../mocked/types";
 import { TaskDetails } from "./TaskDetails";
 
 interface CompleteTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
-  task: ManualTask;
+  task: ManualFieldListItem;
 }
 
 export const CompleteTaskModal = ({
@@ -35,44 +36,55 @@ export const CompleteTaskModal = ({
   const [textValue, setTextValue] = useState("");
   const [checkboxValue, setCheckboxValue] = useState(false);
   const [comment, setComment] = useState("");
-  const [fileList, setFileList] = useState<UploadFile[]>([]);
-
-  const resetForm = () => {
-    setTextValue("");
-    setCheckboxValue(false);
-    setComment("");
-    setFileList([]);
-  };
+  const [fileList, setFileList] = useState<any[]>([]);
 
   const handleSave = async () => {
     try {
+      const getFieldValue = () => {
+        if (task.input_type === ManualTaskFieldType.TEXT) {
+          return textValue;
+        }
+        if (task.input_type === ManualTaskFieldType.CHECKBOX) {
+          return checkboxValue.toString();
+        }
+        return undefined;
+      };
+
       await completeTask({
-        task_id: task.task_id,
-        text_value: task.input_type === "string" ? textValue : undefined,
-        checkbox_value:
-          task.input_type === "checkbox" ? checkboxValue : undefined,
-        attachment_type: fileList.length > 0 ? "file" : undefined,
-        comment: comment || undefined,
+        privacy_request_id: task.privacy_request.id,
+        manual_field_id: task.manual_field_id,
+        field_key: task.manual_field_id,
+        field_value: getFieldValue(),
+        comment_text: comment || undefined,
+        attachment: fileList.length > 0 ? fileList[0].originFileObj : undefined,
       }).unwrap();
 
-      resetForm();
+      // Reset form
+      setTextValue("");
+      setCheckboxValue(false);
+      setComment("");
+      setFileList([]);
       onClose();
     } catch (error) {
-      console.error("Failed to complete task:", error);
+      message.error("Failed to complete task. Please try again.");
     }
   };
 
   const handleCancel = () => {
-    resetForm();
+    // Reset form
+    setTextValue("");
+    setCheckboxValue(false);
+    setComment("");
+    setFileList([]);
     onClose();
   };
 
   // Check if the required field is filled based on input type
   const isRequiredFieldFilled = () => {
     switch (task.input_type) {
-      case "string":
+      case ManualTaskFieldType.TEXT:
         return textValue.trim().length > 0;
-      case "checkbox":
+      case ManualTaskFieldType.CHECKBOX:
         return checkboxValue;
       default:
         // For file uploads, require at least one file
@@ -82,19 +94,22 @@ export const CompleteTaskModal = ({
 
   const renderTaskInput = () => {
     switch (task.input_type) {
-      case "string":
+      case ManualTaskFieldType.TEXT:
         return (
           <div className="space-y-2">
-            <div className="text-sm font-medium text-gray-700">Text input</div>
+            <div className="text-sm font-medium text-gray-700">
+              Subject data
+            </div>
             <Input.TextArea
               value={textValue}
               onChange={(e) => setTextValue(e.target.value)}
+              placeholder="Enter your response..."
               rows={4}
               data-testid="complete-modal-text-input"
             />
           </div>
         );
-      case "checkbox":
+      case ManualTaskFieldType.CHECKBOX:
         return (
           <div className="space-y-2">
             <Checkbox
@@ -107,10 +122,10 @@ export const CompleteTaskModal = ({
           </div>
         );
       default:
-        // For file uploads or when input_type is undefined, show file upload
+        // For file uploads or when input_type is attachment, show file upload
         return (
           <div className="space-y-2">
-            <div className="text-sm font-medium text-gray-700">Upload file</div>
+            <div className="text-sm font-medium text-gray-700">Upload File</div>
             <div>
               <Upload
                 fileList={fileList}
@@ -119,7 +134,6 @@ export const CompleteTaskModal = ({
                 }
                 beforeUpload={() => false} // Prevent auto upload
                 data-testid="complete-modal-file-upload"
-                maxCount={1}
               >
                 <Button data-testid="complete-modal-upload-button">
                   Click to Upload
@@ -157,7 +171,7 @@ export const CompleteTaskModal = ({
                   <Input.TextArea
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
-                    placeholder="(Optional) Add an internal comment..."
+                    placeholder="Add any additional comments..."
                     rows={3}
                     data-testid="complete-modal-comment-input"
                   />

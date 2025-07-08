@@ -32,9 +32,9 @@ describe("Connectors", () => {
         "/api/v1/connection/postgres_connector/datasetconfig",
         { body: {} },
       ).as("patchDatasetconfig");
-      cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
-        "getDatasets",
-      );
+      cy.intercept("GET", "/api/v1/dataset?minimal=true", {
+        fixture: "connectors/minimal_datasets.json",
+      }).as("getDatasets");
     });
 
     it("Should show data store connections and view configuration", () => {
@@ -124,7 +124,9 @@ describe("Connectors", () => {
     });
 
     it("Should not show the dataset selector if no datasets exist", () => {
-      cy.intercept("GET", "/api/v1/dataset", { body: [] }).as("getDatasets");
+      cy.intercept("GET", "/api/v1/dataset?minimal=true", { body: [] }).as(
+        "getDatasets",
+      );
       cy.intercept(
         "GET",
         "/api/v1/connection/postgres_connector/datasetconfig",
@@ -145,6 +147,28 @@ describe("Connectors", () => {
       cy.getAntTab("Dataset configuration").click({ force: true });
       cy.wait("@getEmptyPostgresConnectorDatasetconfig");
       cy.getByTestId("dataset-selector-section").should("not.exist");
+    });
+
+    it("Should fetch datasets with minimal=true parameter for performance", () => {
+      // Override the existing intercept to verify the minimal parameter is used
+      cy.intercept("GET", "/api/v1/dataset?minimal=true", {
+        fixture: "connectors/minimal_datasets.json",
+      }).as("getMinimalDatasets");
+
+      cy.visit("/datastore-connection");
+      cy.getByTestId("connection-grid-item-postgres_connector").within(() => {
+        cy.getByTestId("connection-menu-btn").click();
+      });
+      cy.getByTestId("connection-menu-postgres_connector").within(() => {
+        cy.getByTestId("configure-btn").click();
+      });
+      cy.getByTestId("tab-Dataset configuration").click();
+      cy.wait("@getPostgresConnectorDatasetconfig");
+
+      // Verify that the minimal datasets API was called
+      cy.wait("@getMinimalDatasets").then((interception) => {
+        expect(interception.request.url).to.contain("minimal=true");
+      });
     });
   });
 

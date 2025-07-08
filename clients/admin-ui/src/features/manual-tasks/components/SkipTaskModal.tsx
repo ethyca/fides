@@ -2,6 +2,7 @@ import {
   AntButton as Button,
   AntDivider as Divider,
   AntInput as Input,
+  AntMessage as message,
   AntSpace as Space,
   AntTypography as Typography,
   Modal,
@@ -13,14 +14,15 @@ import {
 } from "fidesui";
 import { useState } from "react";
 
+import { ManualFieldListItem } from "~/types/api";
+
 import { useSkipTaskMutation } from "../manual-tasks.slice";
-import { ManualTask } from "../mocked/types";
 import { TaskDetails } from "./TaskDetails";
 
 interface SkipTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
-  task: ManualTask;
+  task: ManualFieldListItem;
 }
 
 export const SkipTaskModal = ({
@@ -34,15 +36,17 @@ export const SkipTaskModal = ({
   const handleSave = async () => {
     try {
       await skipTask({
-        task_id: task.task_id,
-        comment,
+        privacy_request_id: task.privacy_request.id,
+        manual_field_id: task.manual_field_id,
+        field_key: task.manual_field_id,
+        skip_reason: comment,
       }).unwrap();
 
       // Reset form
       setComment("");
       onClose();
     } catch (error) {
-      console.error("Failed to skip task:", error);
+      message.error("Failed to skip task. Please try again.");
     }
   };
 
@@ -103,6 +107,7 @@ export const SkipTaskModal = ({
               onClick={handleSave}
               loading={isLoading}
               disabled={!comment.trim()}
+              danger
               data-testid="skip-modal-skip-button"
             >
               Skip Task
