@@ -35,8 +35,8 @@ const statusMap: Record<ManualFieldStatus, { color: string; label: string }> = {
   [ManualFieldStatus.SKIPPED]: { color: "marble", label: "Skipped" },
 };
 
-// Page sizes for external users (simplified)
-const PAGE_SIZES = ["10", "25", "50"];
+// Page sizes for external users (match admin UI)
+const PAGE_SIZES = ["25", "50", "100"];
 
 // Extract column definitions for external users
 const getExternalColumns = (
@@ -74,6 +74,7 @@ const getExternalColumns = (
       { text: "Completed", value: ManualFieldStatus.COMPLETED },
       { text: "Skipped", value: ManualFieldStatus.SKIPPED },
     ],
+    filterMultiple: false,
   },
   {
     title: "System",
@@ -81,6 +82,7 @@ const getExternalColumns = (
     key: "system_name",
     width: 200,
     filters: systemFilters,
+    filterMultiple: false,
   },
   {
     title: "Type",
@@ -96,6 +98,7 @@ const getExternalColumns = (
       { text: "Access", value: ManualFieldRequestType.ACCESS },
       { text: "Erasure", value: ManualFieldRequestType.ERASURE },
     ],
+    filterMultiple: false,
   },
   {
     title: "Days left",
@@ -151,9 +154,9 @@ export const ExternalManualTasks = () => {
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const [filters, setFilters] = useState<{
-    status?: string[];
-    systemName?: string[];
-    requestType?: string[];
+    status?: string;
+    systemName?: string;
+    requestType?: string;
   }>({});
 
   // Use external tasks query
@@ -161,9 +164,9 @@ export const ExternalManualTasks = () => {
     page: pageIndex,
     size: pageSize,
     // Pass filter parameters to API
-    status: filters.status?.[0] as ManualFieldStatus,
-    systemName: filters.systemName?.[0],
-    requestType: filters.requestType?.[0] as ManualFieldRequestType,
+    status: filters.status as ManualFieldStatus,
+    systemName: filters.systemName,
+    requestType: filters.requestType as ManualFieldRequestType,
   });
 
   const {
@@ -197,13 +200,13 @@ export const ExternalManualTasks = () => {
     const newFilters: typeof filters = {};
 
     if (tableFilters.status) {
-      newFilters.status = tableFilters.status;
+      [newFilters.status] = tableFilters.status as string[];
     }
     if (tableFilters.system_name) {
-      newFilters.systemName = tableFilters.system_name;
+      [newFilters.systemName] = tableFilters.system_name as string[];
     }
     if (tableFilters.request_type) {
-      newFilters.requestType = tableFilters.request_type;
+      [newFilters.requestType] = tableFilters.request_type as string[];
     }
 
     setFilters(newFilters);

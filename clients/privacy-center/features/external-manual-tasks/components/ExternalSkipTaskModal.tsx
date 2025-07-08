@@ -52,7 +52,6 @@ export const ExternalSkipTaskModal = ({
       await skipTask({
         privacy_request_id: task.privacy_request.id,
         manual_field_id: task.manual_field_id,
-        field_key: task.manual_field_id,
         skip_reason: comment,
       }).unwrap();
 

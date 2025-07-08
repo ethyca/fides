@@ -13,6 +13,8 @@ import {
 import Image from "next/image";
 import React from "react";
 
+import { useConfig } from "~/features/common/config.slice";
+
 interface ExternalAuthLayoutProps {
   children: React.ReactNode;
   title?: string;
@@ -22,6 +24,8 @@ export const ExternalAuthLayout = ({
   children,
   title = "External Manual Tasks",
 }: ExternalAuthLayoutProps) => {
+  const config = useConfig();
+
   return (
     <Flex
       justify="center"
@@ -38,7 +42,7 @@ export const ExternalAuthLayout = ({
           {/* Fides Logo */}
           <Flex justify="center">
             <Image
-              src="/logo.svg"
+              src={config?.logo_path || "/logo.svg"}
               alt="Fides logo"
               width={205}
               height={46}
