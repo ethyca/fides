@@ -142,7 +142,7 @@ describe("System management page", () => {
             "@getDataCategories",
             "@getDataSubjects",
             "@getDataUses",
-            "@getFilteredDatasets",
+            "@getMinimalUnlinkedDatasets",
             "@getDemoSystem",
           ]);
           cy.getByTestId("declaration-form");
