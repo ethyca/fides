@@ -10,7 +10,7 @@ import {
 } from "fidesui";
 import { isEqual } from "lodash";
 import { useRouter } from "next/router";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { selectUser } from "~/features/auth";
@@ -140,7 +140,7 @@ const getColumns = (
     },
     filters: userFilters,
     filterMultiple: false,
-    defaultFilteredValue: currentFilters.assignedUsers
+    filteredValue: currentFilters.assignedUsers
       ? [currentFilters.assignedUsers]
       : undefined,
   },
@@ -191,34 +191,33 @@ export const ManualTasks = () => {
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(25);
 
+  const privacyRequestIdQueryParam =
+    router.query.privacy_request_id || undefined;
+
   // Default filters - current user assigned by default
-  const defaultFilters: ManualTaskFilters = useMemo(
-    () => (currentUser?.id ? { assignedUsers: currentUser.id } : {}),
-    [currentUser?.id],
-  );
+  // (unless we're receiving a privacy_request_id query param)
+  // which means it comes from a link to view the tasks for a specific privacy request
+  const defaultFilters: ManualTaskFilters = useMemo(() => {
+    const filters: ManualTaskFilters = {};
+
+    if (currentUser?.id && !privacyRequestIdQueryParam) {
+      filters.assignedUsers = currentUser.id;
+    }
+
+    if (
+      privacyRequestIdQueryParam &&
+      typeof privacyRequestIdQueryParam === "string"
+    ) {
+      filters.privacyRequestId = privacyRequestIdQueryParam;
+    }
+
+    return filters;
+  }, [currentUser?.id, privacyRequestIdQueryParam]);
 
   // Initialize filters with default
   const [filters, setFilters] = useState<ManualTaskFilters>(defaultFilters);
 
-  const [privacyRequestIdInput, setPrivacyRequestIdInput] = useState(
-    router.query.privacy_request_id || "",
-  );
-
-  // Initialize privacy request ID filter from URL query parameter
-  useEffect(() => {
-    const { privacy_request_id: privacyRequestIdQuery } = router.query;
-    if (privacyRequestIdQuery && typeof privacyRequestIdQuery === "string") {
-      setPrivacyRequestIdInput(privacyRequestIdQuery);
-      setFilters((prev) => ({
-        ...prev,
-        privacyRequestId: privacyRequestIdQuery,
-      }));
-    }
-  }, [router.query]);
-
   const handlePrivacyRequestIdChange = (value: string | undefined) => {
-    setPrivacyRequestIdInput(value || "");
-
     const newFilters = { ...filters };
     if (value && value.trim()) {
       newFilters.privacyRequestId = value.trim();
@@ -362,7 +361,7 @@ export const ManualTasks = () => {
     <div className="mt-2 space-y-4">
       <Flex gap={3} align="center" className="mb-4">
         <GlobalFilterV2
-          globalFilter={privacyRequestIdInput}
+          globalFilter={filters.privacyRequestId || ""}
           setGlobalFilter={handlePrivacyRequestIdChange}
           placeholder="Search by privacy request ID"
           testid="privacy-request-id-filter"
