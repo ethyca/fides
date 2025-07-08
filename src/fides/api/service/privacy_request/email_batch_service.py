@@ -15,7 +15,7 @@ from fides.api.service.privacy_request.request_runner_service import (
     get_erasure_email_connection_configs,
 )
 from fides.api.tasks import DatabaseTask, celery_app
-from fides.api.tasks.scheduled.scheduler import scheduler
+from fides.api.tasks.scheduled.scheduler import create_cron_trigger, scheduler
 from fides.api.util.lock import redis_lock
 from fides.config import get_config
 from fides.service.privacy_request.privacy_request_service import queue_privacy_request
@@ -150,6 +150,11 @@ def initiate_scheduled_batch_email_send() -> None:
 
     assert scheduler.running, "Scheduler is not running! Cannot add Batch Email job."
 
+    cron_trigger = create_cron_trigger(
+        cron_expression=CONFIG.execution.email_send_cron_expression,
+        timezone=CONFIG.execution.email_send_timezone,
+    )
+
     logger.info("Initiating scheduler for batch email send")
     scheduler.add_job(
         func=send_email_batch,
@@ -157,9 +162,5 @@ def initiate_scheduled_batch_email_send() -> None:
         id=BATCH_EMAIL_SEND,
         coalesce=False,
         replace_existing=True,
-        trigger="cron",
-        minute="*/2",
-        # hour="12",
-        # day_of_week="mon",
-        # timezone="US/Eastern",
+        trigger=cron_trigger,
     )
