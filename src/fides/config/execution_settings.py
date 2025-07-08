@@ -65,4 +65,12 @@ class ExecutionSettings(FidesSettings):
         default=True,
         description="Whether fuzzy search is enabled for privacy request lookups.",
     )
+    email_send_cron_expression: str = Field(
+        default="0 12 * * mon",
+        description="The cron expression to send batch emails for DSR email integration.",
+    )
+    email_send_timezone: str = Field(
+        default="US/Eastern",
+        description="The timezone to send batch emails for DSR email integration.",
+    )
     model_config = SettingsConfigDict(env_prefix=ENV_PREFIX)
