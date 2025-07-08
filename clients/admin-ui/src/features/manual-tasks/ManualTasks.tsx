@@ -11,6 +11,8 @@ import {
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
+import { useAppSelector } from "~/app/hooks";
+import { selectUser } from "~/features/auth";
 import DaysLeftTag from "~/features/common/DaysLeftTag";
 import FidesSpinner from "~/features/common/FidesSpinner";
 import { USER_PROFILE_ROUTE } from "~/features/common/nav/routes";
@@ -58,6 +60,7 @@ const getColumns = (
   systemFilters: FilterOption[],
   userFilters: FilterOption[],
   onUserClick: (userId: string) => void,
+  currentUser?: { id: string },
 ): ColumnsType<ManualFieldListItem> => [
   {
     title: "Task name",
@@ -136,6 +139,7 @@ const getColumns = (
     },
     filters: userFilters,
     filterMultiple: false,
+    defaultFilteredValue: currentUser?.id ? [currentUser.id] : undefined,
   },
   {
     title: "Days left",
@@ -180,8 +184,11 @@ const getColumns = (
 
 export const ManualTasks = () => {
   const router = useRouter();
+  const currentUser = useAppSelector(selectUser);
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(25);
+
+  // Initialize filters
   const [filters, setFilters] = useState<ManualTaskFilters>({});
 
   const [privacyRequestIdInput, setPrivacyRequestIdInput] = useState(
@@ -285,20 +292,66 @@ export const ManualTasks = () => {
 
   const columns = useMemo(
     () =>
-      getColumns(systemFilters, userFilters, (userId) => {
-        router.push({
-          pathname: USER_PROFILE_ROUTE,
-          query: { id: userId },
-        });
-      }),
-    [systemFilters, userFilters, router],
+      getColumns(
+        systemFilters,
+        userFilters,
+        (userId) => {
+          router.push({
+            pathname: USER_PROFILE_ROUTE,
+            query: { id: userId },
+          });
+        },
+        currentUser || undefined,
+      ),
+    [systemFilters, userFilters, router, currentUser],
   );
+
+  // Check if only the current user filter is applied (for custom empty state)
+  const isOnlyCurrentUserFiltered = useMemo(() => {
+    if (!currentUser?.id) {
+      return false;
+    }
+
+    const { assignedUsers, status, systemName, requestType, privacyRequestId } =
+      filters;
+
+    // Check if only assignedUsers filter is set and it matches current user
+    // When using defaultFilteredValue, assignedUsers might be undefined initially
+    // but the table is still filtering by current user
+    return (
+      (assignedUsers === currentUser.id || assignedUsers === undefined) &&
+      !status &&
+      !systemName &&
+      !requestType &&
+      !privacyRequestId
+    );
+  }, [filters, currentUser?.id]);
 
   if (isLoading) {
     return <FidesSpinner />;
   }
 
   const showSpinner = isLoading || isFetching;
+
+  // Custom empty text based on filters
+  const getEmptyText = () => {
+    if (isOnlyCurrentUserFiltered) {
+      return (
+        <div data-testid="empty-state-current-user" className="my-4">
+          <Typography.Paragraph>
+            You have no tasks assigned. You can modify the &quot;Assigned
+            to&quot; column filter to view tasks assigned to other users.
+          </Typography.Paragraph>
+        </div>
+      );
+    }
+
+    return (
+      <div data-testid="empty-state" className="my-4">
+        No results found.
+      </div>
+    );
+  };
 
   return (
     <div className="mt-2 space-y-4">
@@ -335,9 +388,7 @@ export const ManualTasks = () => {
         }}
         onChange={handleTableChange}
         locale={{
-          emptyText: (
-            <div data-testid="empty-state">No manual tasks available.</div>
-          ),
+          emptyText: getEmptyText(),
         }}
         loading={showSpinner}
       />
