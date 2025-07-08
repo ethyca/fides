@@ -5,7 +5,7 @@ import React, { Fragment, useRef, useState } from "react";
 
 import { Editor, isYamlException } from "~/features/common/yaml/helpers";
 import YamlError from "~/features/common/yaml/YamlError";
-import { useGetAllDatasetsQuery } from "~/features/dataset";
+import { useGetAllFilteredDatasetsQuery } from "~/features/dataset";
 import { Dataset } from "~/types/api";
 
 type YamlEditorFormProps = {
@@ -39,7 +39,9 @@ const YamlEditor = ({
   We need to get all the datasets, including saas datasets, so that we can verify that
   the fides_key is not already in use.
    */
-  const { data: allDatasets } = useGetAllDatasetsQuery();
+  const { data: allDatasets } = useGetAllFilteredDatasetsQuery({
+    minimal: true,
+  });
   const [overWrittenKeys, setOverWrittenKeys] = useState<string[]>([]);
 
   const validate = (value: string) => {

@@ -22,6 +22,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.65.0...main)
 - Changed behavior of beta feature flags to persist across user login sessions
 
+### Fixed
+- Fixed FidesJS GPP to use national section when a supported US state has no specific notices and approach is set to both. [#6307](https://github.com/ethyca/fides/pull/6307)
+
 ## [2.65.0](https://github.com/ethyca/fides/compare/2.64.2...2.65.0)
 
 ### Added
@@ -35,11 +38,13 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added Masking Strategy `preserve` for preserving original field values while adding them to masking payloads [#6295](https://github.com/ethyca/fides/pull/6295)
 - Added `fides_legacy_event` configuration option to control deprecated event dispatching for backward compatibility [#6249](https://github.com/ethyca/fides/pull/6249)
 - Added user_id field to the ManualTaskLog model and implemented request-scoped user tracking using contextvars [#6296](https://github.com/ethyca/fides/pull/6296)
+- Ability to prefill Privacy Center fields with query parameters [#6271](https://github.com/ethyca/fides/pull/6271)
 
 ### Changed
 - Update FastAPI to 0.115.2 for starlette 0.40.0 [#6244](https://github.com/ethyca/fides/pull/6244)
 - Refactored fides-js SDK to use React Context for global state management and simplified consent updating method [#6257](https://github.com/ethyca/fides/pull/6257)
 - Update Shopify integration so that we do not pass consent keys to Shopify with undefined values [#6270](https://github.com/ethyca/fides/pull/6270)
+- Privacy Center visitors can get validation feedback by pressing submit [#6271](https://github.com/ethyca/fides/pull/6271)
 
 ### Developer Experience
 - Updated SQLAlchemy models to match the contents of the Alembic migrations [#6262](https://github.com/ethyca/fides/pull/6262)
@@ -51,6 +56,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Improved FidesJS accessibility by giving HTML rendered links more prominent styling [#6293](https://github.com/ethyca/fides/pull/6293)
 - Fixed an issue in FidesJS where "IAB TCF" badges were misaligned when translation changed from English. [#6294](https://github.com/ethyca/fides/pull/6294)
 - Appropriately expose Shopify interface docs [#6284](https://github.com/ethyca/fides/pull/6284)
+- Ensure dataset API serialization does not block main server thread [#6310](https://github.com/ethyca/fides/pull/6310)
+- Update admin UI to query for `minimal` dataset representation when only minimal information is needed [#6310](https://github.com/ethyca/fides/pull/6310)
 
 ## [2.64.2](https://github.com/ethyca/fides/compare/2.64.1...2.64.2)
 

@@ -8,7 +8,7 @@
 
 "use client";
 
-import React, { ReactNode, useEffect } from "react";
+import React, { ReactNode, useEffect, useState } from "react";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 
@@ -37,7 +37,9 @@ const StoreDataLoader = ({
   children: ReactNode;
   settings: PrivacyCenterClientSettings;
   config?: Config | PrivacyCenterConfig;
-}): React.ReactElement => {
+}): React.ReactElement | null => {
+  const [hasInitializedStores, setHasInitializedStores] = useState(false);
+
   useEffect(() => {
     // Load settings into external store
     externalStore.dispatch(loadSettings(settings));
@@ -46,7 +48,14 @@ const StoreDataLoader = ({
     if (config) {
       externalStore.dispatch(loadConfig(config));
     }
+
+    // Mark stores as initialized so children can render
+    setHasInitializedStores(true);
   }, [settings, config]);
+
+  if (!hasInitializedStores) {
+    return null;
+  }
 
   return children as React.ReactElement;
 };
