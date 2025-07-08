@@ -59,16 +59,14 @@ export const DiscoveredSystemActionsCell = ({
     if (isErrorResult(result)) {
       toast(errorToastParams(getErrorMessage(result.error)));
     } else {
-      const promotedSystemKey = result.data?.items?.[0]?.promoted_system_key;
-      const systemToLink = promotedSystemKey || systemKey;
-      const href = `${SYSTEM_ROUTE}/configure/${systemToLink}#assets`;
+      const href = `${SYSTEM_ROUTE}/configure/${systemKey}#assets`;
       toast(
         successToastParams(
           SuccessToastContent(
             systemKey
               ? `${totalUpdates} assets from ${systemName} have been added to the system inventory.`
               : `${systemName} and ${totalUpdates} assets have been added to the system inventory. ${systemName} is now configured for consent.`,
-            systemToLink ? () => router.push(href) : undefined,
+            systemKey ? () => router.push(href) : undefined,
           ),
         ),
       );

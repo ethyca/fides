@@ -6,9 +6,9 @@ import {
   Page_ConsentBreakdown_,
   Page_StagedResourceAPIResponse_,
   Page_SystemStagedResourcesAggregateRecord_,
+  PromoteResourcesResponse,
   StagedResourceAPIResponse,
 } from "~/types/api";
-import { PromotedResourceResponse } from "~/types/api/models/PromotedResourceResponse";
 import { PaginationQueryParams } from "~/types/common/PaginationQueryParams";
 
 import { MonitorSummaryPaginatedResponse } from "./types";
@@ -91,7 +91,7 @@ const actionCenterApi = baseApi.injectEndpoints({
       providesTags: () => ["Discovery Monitor Results"],
     }),
     addMonitorResultSystems: build.mutation<
-      any, // TODO: add API response type
+      PromoteResourcesResponse,
       MonitorResultSystemQueryParams
     >({
       query: ({ monitor_config_key, resolved_system_ids }) => {
@@ -123,7 +123,7 @@ const actionCenterApi = baseApi.injectEndpoints({
       invalidatesTags: ["Discovery Monitor Results"],
     }),
     addMonitorResultAssets: build.mutation<
-      PromotedResourceResponse[],
+      PromoteResourcesResponse,
       { urnList?: string[] }
     >({
       query: (params) => {
