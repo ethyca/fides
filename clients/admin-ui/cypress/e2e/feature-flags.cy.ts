@@ -5,10 +5,10 @@ import {
   stubPlus,
   stubPlusAuth,
 } from "cypress/support/stubs";
+
 import { STORAGE_ROOT_KEY } from "~/constants";
 
 describe("Feature Flags", () => {
-
   it("Persist features through logout", () => {
     // Initial Login
     stubOpenIdProviders();
