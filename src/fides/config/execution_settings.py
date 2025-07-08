@@ -67,7 +67,7 @@ class ExecutionSettings(FidesSettings):
     )
     email_send_cron_expression: str = Field(
         default="0 12 * * mon",
-        description="The cron expression to send batch emails for DSR email integration.",
+        description="The cron expression to send batch emails for DSR email integration. Defaults to weekly on Mondays at 12pm (noon).",
     )
     email_send_timezone: str = Field(
         default="US/Eastern",
