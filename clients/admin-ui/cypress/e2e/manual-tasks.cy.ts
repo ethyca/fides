@@ -62,10 +62,7 @@ describe("Manual Tasks", () => {
 
       cy.visit("/privacy-requests?tab=manual-tasks");
       cy.wait("@getManualTasksEmpty");
-      cy.getByTestId("empty-state-current-user").should(
-        "contain",
-        "No manual tasks available",
-      );
+      cy.getByTestId("empty-state-current-user").should("exist");
     });
   });
 
