@@ -27,7 +27,6 @@ export type {
   SwitchProps as AntSwitchProps,
   TableProps as AntTableProps,
   TabsProps as AntTabsProps,
-  TagProps as AntTagProps,
   TooltipProps as AntTooltipProps,
   UploadFile as AntUploadFile,
   GetProps,
@@ -89,6 +88,7 @@ export {
   CustomTooltip as AntTooltip,
   CustomTypography as AntTypography,
 } from "./hoc";
+export type { CustomTagProps as AntTagProps } from "./hoc/CustomTag";
 
 // Export the destructured Typography components individually
 export const AntText = CustomTypography.Text;
@@ -116,6 +116,11 @@ export * as Icons from "@carbon/icons-react";
 
 export * from "./FidesUIProvider";
 export { extendTheme, theme } from "./FidesUITheme";
+
+/**
+ * Ant Design Theme System
+ */
+export { createDefaultAntTheme, defaultAntTheme } from "./ant-theme";
 
 /**
  * Custom Components

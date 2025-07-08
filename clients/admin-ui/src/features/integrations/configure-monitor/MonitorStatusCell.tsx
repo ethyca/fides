@@ -10,6 +10,7 @@ import {
   DrawerContent,
   DrawerHeader,
   DrawerOverlay,
+  Icons,
   useDisclosure,
 } from "fidesui";
 import { Fragment } from "react";
@@ -17,8 +18,6 @@ import { Fragment } from "react";
 import { formatDate } from "~/features/common/utils";
 import { MonitorExecutionStatus } from "~/types/api";
 import { MonitorStatusResponse } from "~/types/api/models/MonitorStatusResponse";
-
-import styles from "./MonitorStatusCell.module.scss";
 
 const MonitorStatusCell = ({ monitor }: { monitor: MonitorStatusResponse }) => {
   const executionRecord = monitor.execution_records?.[0];
@@ -65,16 +64,12 @@ const MonitorStatusCell = ({ monitor }: { monitor: MonitorStatusResponse }) => {
       <>
         <Tag
           color="error"
-          className={styles.monitorStatusTag}
+          closeIcon={<Icons.Information />}
+          closeButtonLabel="View details"
+          onClose={onOpen}
           data-testid="tag-error"
         >
-          <button
-            onClick={onOpen}
-            className={styles.errorTagText}
-            type="button"
-          >
-            Incomplete
-          </button>
+          Incomplete
         </Tag>
         <Drawer isOpen={isOpen} onClose={onClose} size="md">
           <DrawerOverlay />
@@ -83,7 +78,7 @@ const MonitorStatusCell = ({ monitor }: { monitor: MonitorStatusResponse }) => {
             <DrawerCloseButton />
             <DrawerBody>
               {executionRecord.completed && (
-                <Typography.Paragraph className={styles.errorResultTimestamp}>
+                <Typography.Paragraph type="secondary">
                   {formatDate(new Date(executionRecord.completed))}
                 </Typography.Paragraph>
               )}

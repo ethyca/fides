@@ -13,7 +13,6 @@ import { useRouter } from "next/router";
 import React, { useCallback, useMemo, useState } from "react";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
-import { useFlags } from "~/features/common/features/features.slice";
 import FidesSpinner from "~/features/common/FidesSpinner";
 import Layout from "~/features/common/Layout";
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
@@ -26,7 +25,7 @@ import getIntegrationTypeInfo, {
   SUPPORTED_INTEGRATIONS,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
 import SharedConfigModal from "~/features/integrations/SharedConfigModal";
-import { ConnectionConfigurationResponse, ConnectionType } from "~/types/api";
+import { ConnectionConfigurationResponse } from "~/types/api";
 
 const DEFAULT_PAGE_SIZE = 50;
 
@@ -57,23 +56,13 @@ const IntegrationListView: NextPage = () => {
     [page, pageSize],
   );
 
-  // DEFER (ENG-675): Remove this once the alpha feature is released
-  const { flags } = useFlags();
-  const supportedIntegrations = useMemo(() => {
-    return SUPPORTED_INTEGRATIONS.filter((integration) => {
-      return (
-        integration !== ConnectionType.MANUAL_WEBHOOK || flags.alphaNewManualDSR
-      );
-    });
-  }, [flags.alphaNewManualDSR]);
-
   const { data, isLoading } = useGetAllDatastoreConnectionsQuery({
-    connection_type: supportedIntegrations,
+    connection_type: SUPPORTED_INTEGRATIONS,
     size: pageSize,
     page,
     search: searchTerm.trim() || undefined,
   });
-  const { items, total } = data ?? {};
+  const { items } = data ?? {};
 
   const { onOpen, isOpen, onClose } = useDisclosure();
 
@@ -190,7 +179,7 @@ const IntegrationListView: NextPage = () => {
   const paginationConfig: TableProps<IntegrationTableData>["pagination"] = {
     current: page,
     pageSize,
-    total,
+    total: tableData.length,
     showSizeChanger: true,
     showQuickJumper: false,
     showTotal: (totalItems, range) =>

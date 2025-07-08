@@ -1,7 +1,7 @@
 import { ComponentChildren, h, VNode } from "preact";
 import { HTMLAttributes } from "preact/compat";
 
-import { Attributes } from "../lib/a11y-dialog";
+import { A11yDialogAttributes } from "../lib/a11y-dialog";
 import { useEvent } from "../lib/providers/event-context";
 import CloseButton from "./CloseButton";
 import ConsentContent from "./ConsentContent";
@@ -13,13 +13,13 @@ const ConsentModal = ({
   onVendorPageClick,
   renderModalFooter,
 }: {
-  attributes: Attributes;
+  attributes: A11yDialogAttributes;
   children: ComponentChildren;
   dismissable: boolean | undefined;
   onVendorPageClick?: () => void;
   renderModalFooter: () => VNode | null;
 }) => {
-  const { container, overlay, dialog, title, closeButton } = attributes;
+  const { container, dialog, title, closeButton } = attributes;
   const { setTrigger } = useEvent();
   return (
     <div
@@ -27,7 +27,7 @@ const ConsentModal = ({
       {...(container as Partial<HTMLAttributes<HTMLDivElement>>)}
       className="fides-modal-container"
     >
-      <div {...overlay} className="fides-modal-overlay" />
+      <div className="fides-modal-overlay" />
       <div
         data-testid="fides-modal-content"
         {...dialog}

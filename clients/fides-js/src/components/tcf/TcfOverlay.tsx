@@ -401,6 +401,19 @@ export const TcfOverlay = () => {
               enabledIds,
               experienceFull || experienceMinimal,
               customPurposesConsent,
+              (result) => {
+                if (experienceFull) {
+                  const updatedTcfEntities = buildUserPrefs(
+                    experienceFull,
+                    result,
+                  );
+                  // update the experienceFull state with the new user preferences from the updated cookie
+                  setExperienceFull({
+                    ...experienceFull,
+                    ...updatedTcfEntities,
+                  });
+                }
+              },
             );
           },
         },
@@ -613,6 +626,7 @@ export const TcfOverlay = () => {
       onOpen={dispatchOpenOverlayEvent}
       onDismiss={handleDismiss}
       renderBanner={({
+        attributes,
         isEmbedded,
         isOpen,
         onClose,
@@ -624,6 +638,7 @@ export const TcfOverlay = () => {
         };
         return (
           <ConsentBanner
+            attributes={attributes}
             dismissable={isDismissable}
             bannerIsOpen={isOpen}
             isEmbedded={isEmbedded}

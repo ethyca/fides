@@ -306,3 +306,17 @@ A comma-separated list of notice_keys to disable their respective Toggle element
 For example: "data_sales,data_sharing,analytics"
 
 Defaults to `undefined`.
+
+***
+
+### fides\_initialized\_event\_mode
+
+> **fides\_initialized\_event\_mode**: `"multiple"` \| `"once"` \| `"disable"`
+
+Controls when the deprecated FidesInitialized event should be dispatched.
+
+- "multiple" = fires alongside both FidesReady and FidesConsentLoaded events
+- "once" = fires alongside FidesReady only
+- "disable" = never fires
+
+Defaults to `"once"`.

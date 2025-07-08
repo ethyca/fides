@@ -113,6 +113,7 @@ export const getCoreFides = ({
       fidesDisabledNotices: null,
       fidesConsentNonApplicableFlagMode: null,
       fidesConsentFlagType: null,
+      fidesInitializedEventMode: "once",
     },
     fides_meta: {},
     identity: {},

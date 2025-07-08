@@ -115,6 +115,17 @@ export const setGppNoticesProvidedFromExperience = ({
     gppSection = FIDES_US_REGION_TO_GPP_SECTION[gppRegion];
   }
 
+  if (!!gppSection && usApproach === GPPUSApproach.ALL) {
+    // if we're using the "all" approach, and the current state is supported but no notices are provided for that state, we should default to national.
+    const hasNoticesForRegion = notices.some((notice) =>
+      notice.gpp_field_mapping?.find((fm) => fm.region === experienceRegion),
+    );
+    if (!hasNoticesForRegion) {
+      gppRegion = US_NATIONAL_REGION;
+      gppSection = FIDES_US_REGION_TO_GPP_SECTION[gppRegion];
+    }
+  }
+
   if (
     !gppSection ||
     (gppRegion === US_NATIONAL_REGION && usApproach === GPPUSApproach.STATE)
@@ -176,6 +187,17 @@ export const setGppOptOutsFromCookieAndExperience = ({
     // if we're using the all approach, and the current state isn't supported, we should default to national
     gppRegion = US_NATIONAL_REGION;
     gppSection = FIDES_US_REGION_TO_GPP_SECTION[gppRegion];
+  }
+
+  if (!!gppSection && usApproach === GPPUSApproach.ALL) {
+    // if we're using the "all" approach, and the current state is supported but no notices are provided for that state, we should default to national.
+    const hasStateNotice = notices.some((notice) =>
+      notice.gpp_field_mapping?.find((fm) => fm.region === experienceRegion),
+    );
+    if (!hasStateNotice) {
+      gppRegion = US_NATIONAL_REGION;
+      gppSection = FIDES_US_REGION_TO_GPP_SECTION[gppRegion];
+    }
   }
 
   if (

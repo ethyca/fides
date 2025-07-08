@@ -1,7 +1,7 @@
 {
   "items": [
     {
-      "task_id": "task_001",
+      "manual_field_id": "task_001",
       "name": "Export Customer Data from Salesforce",
       "description": "Export all customer data from Salesforce for privacy request",
       "input_type": "file",
@@ -25,11 +25,9 @@
         "id": "pri_5005c923-474c-4168-8c9e-2670fd40dc19",
         "days_left": 15,
         "request_type": "access",
-        "subject_identity": {
-          "email": {
-            "label": "Email",
-            "value": "customer@email.com"
-          }
+        "subject_identities": {
+          "email": "customer@email.com",
+          "phone_number": "+1-555-0456"
         }
       },
       "system": {
@@ -40,7 +38,7 @@
       "updated_at": "2024-03-15T10:00:00Z"
     },
     {
-      "task_id": "task_002",
+      "manual_field_id": "task_002",
       "name": "Delete User Profile from MongoDB",
       "description": "Remove user profile and associated data from MongoDB",
       "input_type": "checkbox",
@@ -51,11 +49,8 @@
         "id": "pri_7a2b4c8d-3e5f-4a9b-8c7d-1e2f3a4b5c6d",
         "days_left": 8,
         "request_type": "erasure",
-        "subject_identity": {
-          "phone_number": {
-            "label": "Phone Number",
-            "value": "+1-555-0123"
-          }
+        "subject_identities": {
+          "phone_number": "+1-555-0123"
         }
       },
       "system": {
@@ -66,10 +61,10 @@
       "updated_at": "2024-03-14T14:30:00Z"
     },
     {
-      "task_id": "task_003",
+      "manual_field_id": "task_003",
       "name": "Confirm Payment Data Deletion",
       "description": "Verify that payment data has been deleted from Stripe",
-      "input_type": "string",
+      "input_type": "text",
       "request_type": "erasure",
       "status": "completed",
       "assigned_users": [
@@ -84,11 +79,8 @@
         "id": "pri_9f8e7d6c-5b4a-3928-1706-f5e4d3c2b1a0",
         "days_left": 22,
         "request_type": "erasure",
-        "subject_identity": {
-          "email": {
-            "label": "Email",
-            "value": "user.stripe@example.com"
-          }
+        "subject_identities": {
+          "email": "user.stripe@example.com"
         }
       },
       "system": {
@@ -99,10 +91,10 @@
       "updated_at": "2024-03-12T16:45:00Z"
     },
     {
-      "task_id": "task_004",
+      "manual_field_id": "task_004",
       "name": "Export Analytics Data",
       "description": "Extract user analytics data from Google Analytics",
-      "input_type": "file",
+      "input_type": "text",
       "request_type": "access",
       "status": "new",
       "assigned_users": [
@@ -117,11 +109,8 @@
         "id": "pri_1a2b3c4d-5e6f-7890-abcd-ef1234567890",
         "days_left": 4,
         "request_type": "access",
-        "subject_identity": {
-          "email": {
-            "label": "Email",
-            "value": "analytics@example.com"
-          }
+        "subject_identities": {
+          "email": "analytics@example.com"
         }
       },
       "system": {
@@ -132,7 +121,7 @@
       "updated_at": "2024-03-16T11:20:00Z"
     },
     {
-      "task_id": "task_005",
+      "manual_field_id": "task_005",
       "name": "Remove User from CRM",
       "description": "Delete user record from HubSpot CRM system",
       "input_type": "checkbox",
@@ -150,11 +139,8 @@
         "id": "pri_fedcba98-7654-3210-9876-543210fedcba",
         "days_left": 12,
         "request_type": "erasure",
-        "subject_identity": {
-          "phone_number": {
-            "label": "Phone Number",
-            "value": "+1-555-0789"
-          }
+        "subject_identities": {
+          "phone_number": "+1-555-0789"
         }
       },
       "system": {
@@ -169,7 +155,7 @@
   "page": 1,
   "size": 25,
   "pages": 1,
-  "filterOptions": {
+  "filter_options": {
     "assigned_users": [
       {
         "id": "fid_dcf26c27-b992-43e0-9178-2b577720e0c6",
