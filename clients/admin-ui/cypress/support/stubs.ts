@@ -140,9 +140,15 @@ export const stubDatasetCrud = () => {
   cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
     "getDatasets",
   );
+  cy.intercept("GET", "/api/v1/dataset?minimal=true", {
+    fixture: "connectors/minimal_datasets.json",
+  }).as("getMinimalDatasets");
   cy.intercept("GET", "/api/v1/dataset?page*", {
     fixture: "datasets_paginated.json",
   }).as("getFilteredDatasets");
+  cy.intercept("GET", "/api/v1/dataset?page*&minimal=true", {
+    fixture: "datasets_paginated_minimal.json",
+  }).as("getFilteredMinimalDatasets");
 
   cy.intercept("GET", "/api/v1/dataset/*", { fixture: "dataset.json" }).as(
     "getDataset",
@@ -151,6 +157,11 @@ export const stubDatasetCrud = () => {
   cy.intercept("GET", "/api/v1/dataset?only_unlinked_datasets=false", []).as(
     "getUnlinkedDatasets",
   );
+  cy.intercept(
+    "GET",
+    "/api/v1/dataset?only_unlinked_datasets=false&minimal=true",
+    { fixture: "connectors/minimal_datasets.json" },
+  ).as("getMinimalUnlinkedDatasets");
 
   // Update
   cy.intercept("PUT", "/api/v1/dataset*", { fixture: "dataset.json" }).as(

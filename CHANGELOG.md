@@ -51,6 +51,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Improved FidesJS accessibility by giving HTML rendered links more prominent styling [#6293](https://github.com/ethyca/fides/pull/6293)
 - Fixed an issue in FidesJS where "IAB TCF" badges were misaligned when translation changed from English. [#6294](https://github.com/ethyca/fides/pull/6294)
 - Appropriately expose Shopify interface docs [#6284](https://github.com/ethyca/fides/pull/6284)
+- Ensure dataset API serialization does not block main server thread [#6310](https://github.com/ethyca/fides/pull/6310)
+- Update admin UI to query for `minimal` dataset representation when only minimal information is needed [#6310](https://github.com/ethyca/fides/pull/6310)
 
 ## [2.64.2](https://github.com/ethyca/fides/compare/2.64.1...2.64.2)
 
