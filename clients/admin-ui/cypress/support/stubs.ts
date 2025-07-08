@@ -774,3 +774,23 @@ export const stubManualTasks = () => {
     fixture: "manual-tasks/manual-task-detail.json",
   }).as("getTaskById");
 };
+
+export const stubFeatureFlags = () => {
+  // Intercept the manual tasks API endpoints
+  cy.intercept("GET", "/api/v1/config*", {
+    fixture: "/privacy-requests/settings_configuration.json",
+  }).as("createConfigurationSettings");
+};
+
+export const stubLogout = () => {
+  cy.intercept("POST", "/api/v1/logout", {
+    statusCode: 204,
+  }).as("logoutRequest");
+}
+
+export const stubPlusAuth = () => {
+  cy.intercept("GET", "/api/v1/plus/authentication-methods", {
+    statusCode: 200,
+    body: {}
+  }).as("logoutRequest");
+}
