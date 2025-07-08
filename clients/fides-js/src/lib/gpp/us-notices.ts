@@ -84,93 +84,17 @@ export const deriveGppFieldRegion = ({
   return experienceRegion;
 };
 
-/**
- * Sets the appropriate fields on a GPP CMP API model for whether notices were provided
- *
- * Returns GPP section IDs which were updated
- */
-export const setGppNoticesProvidedFromExperience = ({
-  cmpApi,
-  experience,
-}: {
+type CmpApiUpdater = (props: {
   cmpApi: CmpApi;
+  gppRegion: string;
+  gppSection: GPPSection;
   experience: PrivacyExperience;
-}) => {
-  const sectionsChanged = new Set<GPPSection>();
-  const {
-    privacy_notices: notices = [],
-    region: experienceRegion,
-    gpp_settings: gppSettings,
-  } = experience;
-  const usApproach = gppSettings?.us_approach;
-  let gppRegion = deriveGppFieldRegion({
-    experienceRegion,
-    usApproach,
-  });
-  let gppSection = FIDES_US_REGION_TO_GPP_SECTION[gppRegion];
+  cookie?: FidesCookie;
+}) => void;
 
-  if (!gppSection && usApproach === GPPUSApproach.ALL) {
-    // if we're using the "all" approach, and the user's state isn't supported yet, we should default to national.
-    gppRegion = US_NATIONAL_REGION;
-    gppSection = FIDES_US_REGION_TO_GPP_SECTION[gppRegion];
-  }
-
-  if (!!gppSection && usApproach === GPPUSApproach.ALL) {
-    // if we're using the "all" approach, and the current state is supported but no notices are provided for that state, we should default to national.
-    const hasNoticesForRegion = notices.some((notice) =>
-      notice.gpp_field_mapping?.find((fm) => fm.region === experienceRegion),
-    );
-    if (!hasNoticesForRegion) {
-      gppRegion = US_NATIONAL_REGION;
-      gppSection = FIDES_US_REGION_TO_GPP_SECTION[gppRegion];
-    }
-  }
-
-  if (
-    !gppSection ||
-    (gppRegion === US_NATIONAL_REGION && usApproach === GPPUSApproach.STATE)
-  ) {
-    // If we don't have a section, we can't set anything.
-    // If we're using the state approach we shouldn't return the national section, even if region is set to national.
-    return [];
-  }
-
-  sectionsChanged.add(gppSection);
-
-  notices.forEach((notice) => {
-    const { gpp_field_mapping: fieldMapping } = notice;
-    const gppNotices = fieldMapping?.find(
-      (fm) => fm.region === gppRegion,
-    )?.notice;
-    if (gppNotices) {
-      gppNotices.forEach((gppNotice) => {
-        // 1 means notice was provided
-        cmpApi.setFieldValue(gppSection.name, gppNotice, 1);
-      });
-    }
-  });
-
-  // Set MSPA
-  setMspaSections({ cmpApi, sectionName: gppSection.name, gppSettings });
-
-  return Array.from(sectionsChanged);
-};
-
-/**
- * Sets the appropriate fields on a GPP CMP API model for user opt-outs
- *
- * Returns GPP sections which were updated
- */
-export const setGppOptOutsFromCookieAndExperience = ({
-  cmpApi,
-  cookie,
-  experience,
-}: {
-  cmpApi: CmpApi;
-  cookie: FidesCookie;
-  experience: PrivacyExperience;
-}) => {
-  const sectionsChanged = new Set<GPPSection>();
+export const getGppSectionAndRegion = (
+  experience: PrivacyExperience,
+): { gppRegion?: string; gppSection?: GPPSection } => {
   const {
     privacy_notices: notices = [],
     region: experienceRegion,
@@ -189,12 +113,12 @@ export const setGppOptOutsFromCookieAndExperience = ({
     gppSection = FIDES_US_REGION_TO_GPP_SECTION[gppRegion];
   }
 
-  if (!!gppSection && usApproach === GPPUSApproach.ALL) {
+  if (gppSection && usApproach === GPPUSApproach.ALL) {
     // if we're using the "all" approach, and the current state is supported but no notices are provided for that state, we should default to national.
-    const hasStateNotice = notices.some((notice) =>
+    const hasNoticesForRegion = notices.some((notice) =>
       notice.gpp_field_mapping?.find((fm) => fm.region === experienceRegion),
     );
-    if (!hasStateNotice) {
+    if (!hasNoticesForRegion) {
       gppRegion = US_NATIONAL_REGION;
       gppSection = FIDES_US_REGION_TO_GPP_SECTION[gppRegion];
     }
@@ -204,13 +128,43 @@ export const setGppOptOutsFromCookieAndExperience = ({
     !gppSection ||
     (gppRegion === US_NATIONAL_REGION && usApproach === GPPUSApproach.STATE)
   ) {
-    // If we don't have a section, we can't set anything.
-    // If we're using the state approach, we shouldn't return the national section, even if region is set to national.
-    return [];
+    return {};
   }
+  return { gppRegion, gppSection };
+};
 
-  sectionsChanged.add(gppSection);
+const setNoticesProvided: CmpApiUpdater = ({
+  cmpApi,
+  gppRegion,
+  gppSection,
+  experience,
+}) => {
+  const { privacy_notices: notices = [] } = experience;
+  notices.forEach((notice) => {
+    const { gpp_field_mapping: fieldMapping } = notice;
+    const gppNotices = fieldMapping?.find(
+      (fm) => fm.region === gppRegion,
+    )?.notice;
+    if (gppNotices) {
+      gppNotices.forEach((gppNotice) => {
+        // 1 means notice was provided
+        cmpApi.setFieldValue(gppSection.name, gppNotice, 1);
+      });
+    }
+  });
+};
 
+const setOptOuts: CmpApiUpdater = ({
+  cmpApi,
+  gppRegion,
+  gppSection,
+  experience,
+  cookie,
+}) => {
+  if (!cookie) {
+    return;
+  }
+  const { privacy_notices: notices = [] } = experience;
   const { consent } = cookie;
   const noticeKeys = Object.keys(consent);
   noticeKeys.forEach((noticeKey) => {
@@ -240,12 +194,63 @@ export const setGppOptOutsFromCookieAndExperience = ({
       }
     }
   });
+};
 
-  setMspaSections({
+const updateGpp = (
+  updater: CmpApiUpdater,
+  {
     cmpApi,
-    sectionName: gppSection.name,
-    gppSettings,
-  });
+    experience,
+    cookie,
+  }: {
+    cmpApi: CmpApi;
+    experience: PrivacyExperience;
+    cookie?: FidesCookie;
+  },
+) => {
+  const { gppRegion, gppSection } = getGppSectionAndRegion(experience);
+
+  if (!gppRegion || !gppSection) {
+    // If we don't have a section, we can't set anything.
+    // If we're using the state approach we shouldn't return the national section, even if region is set to national.
+    return [];
+  }
+
+  const sectionsChanged = new Set<GPPSection>();
+  sectionsChanged.add(gppSection);
+
+  updater({ cmpApi, gppRegion, gppSection, experience, cookie });
+
+  const { gpp_settings: gppSettings } = experience;
+  setMspaSections({ cmpApi, sectionName: gppSection.name, gppSettings });
 
   return Array.from(sectionsChanged);
 };
+
+/**
+ * Sets the appropriate fields on a GPP CMP API model for whether notices were provided
+ *
+ * Returns GPP section IDs which were updated
+ */
+export const setGppNoticesProvidedFromExperience = ({
+  cmpApi,
+  experience,
+}: {
+  cmpApi: CmpApi;
+  experience: PrivacyExperience;
+}) => updateGpp(setNoticesProvided, { cmpApi, experience });
+
+/**
+ * Sets the appropriate fields on a GPP CMP API model for user opt-outs
+ *
+ * Returns GPP sections which were updated
+ */
+export const setGppOptOutsFromCookieAndExperience = ({
+  cmpApi,
+  cookie,
+  experience,
+}: {
+  cmpApi: CmpApi;
+  cookie: FidesCookie;
+  experience: PrivacyExperience;
+}) => updateGpp(setOptOuts, { cmpApi, cookie, experience });
