@@ -140,7 +140,7 @@ const getColumns = (
     },
     filters: userFilters,
     filterMultiple: false,
-    filteredValue: currentFilters.assignedUsers
+    defaultFilteredValue: currentFilters.assignedUsers
       ? [currentFilters.assignedUsers]
       : undefined,
   },
