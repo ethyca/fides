@@ -240,11 +240,13 @@ export const ManualTasks = () => {
     privacyRequestId: filters.privacyRequestId,
   });
 
-  const {
-    items: tasks,
-    total: totalRows,
-    filter_options: filterOptions,
-  } = useMemo(
+  // Separate query for filter options without any filters applied
+  const { data: filterOptionsData } = useGetTasksQuery({
+    page: 1,
+    size: 1, // Minimal results, we only need the filter_options
+  });
+
+  const { items: tasks, total: totalRows } = useMemo(
     () =>
       data || {
         items: [],
@@ -253,6 +255,15 @@ export const ManualTasks = () => {
         filter_options: { assigned_users: [], systems: [] },
       },
     [data],
+  );
+
+  const filterOptions = useMemo(
+    () =>
+      filterOptionsData?.filter_options || {
+        assigned_users: [],
+        systems: [],
+      },
+    [filterOptionsData],
   );
 
   const systemFilters = useMemo(
