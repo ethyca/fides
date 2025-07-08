@@ -144,7 +144,6 @@ export const externalManualTasksApi = externalBaseApi.injectEndpoints({
       {
         privacy_request_id: string;
         manual_field_id: string;
-        field_key: string;
         field_value?: string;
         comment_text?: string;
         attachment?: File;
@@ -154,16 +153,12 @@ export const externalManualTasksApi = externalBaseApi.injectEndpoints({
         const {
           privacy_request_id: privacyRequestId,
           manual_field_id: manualFieldId,
-          field_key: fieldKey,
           field_value: fieldValue,
           comment_text: commentText,
           attachment,
         } = payload;
 
         const formData = new FormData();
-
-        // Append field_key (consistent with admin UI and skip task implementation)
-        formData.append("field_key", fieldKey);
 
         // Append field_value if provided
         if (fieldValue !== undefined && fieldValue !== null) {
@@ -199,7 +194,6 @@ export const externalManualTasksApi = externalBaseApi.injectEndpoints({
       {
         privacy_request_id: string;
         manual_field_id: string;
-        field_key: string;
         skip_reason: string;
       }
     >({
@@ -207,12 +201,10 @@ export const externalManualTasksApi = externalBaseApi.injectEndpoints({
         const {
           privacy_request_id: privacyRequestId,
           manual_field_id: manualFieldId,
-          field_key: fieldKey,
           skip_reason: skipReason,
         } = payload;
 
         const formData = new FormData();
-        formData.append("field_key", fieldKey);
         formData.append("skip_reason", skipReason);
         formData.append("comment_text", skipReason);
         formData.append("comment_type", CommentType.NOTE);

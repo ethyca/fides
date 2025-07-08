@@ -82,9 +82,6 @@ export const manualTasksApi = baseApi.injectEndpoints({
 
         const formData = new FormData();
 
-        // Append field_key (consistent with complete task implementation)
-        formData.append("field_key", manualFieldId);
-
         // Append field_value if provided
         if (fieldValue !== undefined && fieldValue !== null) {
           formData.append("field_value", fieldValue);
@@ -136,7 +133,6 @@ export const manualTasksApi = baseApi.injectEndpoints({
         } = payload;
 
         const formData = new FormData();
-        formData.append("field_key", manualFieldId);
 
         // Append all other fields from body
         Object.entries(body).forEach(([key, value]) => {

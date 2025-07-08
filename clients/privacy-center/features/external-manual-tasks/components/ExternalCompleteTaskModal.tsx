@@ -69,7 +69,6 @@ export const ExternalCompleteTaskModal = ({
       await completeTask({
         privacy_request_id: task.privacy_request.id,
         manual_field_id: task.manual_field_id,
-        field_key: task.manual_field_id,
         field_value: getFieldValue(),
         comment_text: comment || undefined,
         attachment: fileList.length > 0 ? fileList[0].originFileObj : undefined,
