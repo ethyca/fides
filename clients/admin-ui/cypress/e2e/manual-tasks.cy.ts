@@ -194,6 +194,9 @@ describe("Manual Tasks", () => {
     });
 
     it("should handle pagination controls and assigned users display", () => {
+      cy.intercept("GET", "/api/v1/plus/manual-fields?page=1&size=50*", {
+        fixture: "manual-tasks/manual-tasks-response.json",
+      }).as("getManualTasks50");
       // Test pagination controls - now using Ant Design's standard pagination
       cy.get(".ant-pagination").should("be.visible");
       cy.get(".ant-pagination-prev").should("exist");
@@ -204,7 +207,8 @@ describe("Manual Tasks", () => {
       cy.get(".ant-select-dropdown").within(() => {
         cy.get(".ant-select-item").contains("50").click();
       });
-      cy.wait("@getManualTasks").then((interception) => {
+
+      cy.wait("@getManualTasks50").then((interception) => {
         expect(interception.request.url).to.include("size=50");
       });
 
