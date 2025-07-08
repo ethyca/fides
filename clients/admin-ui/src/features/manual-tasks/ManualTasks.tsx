@@ -274,14 +274,24 @@ export const ManualTasks = () => {
     [filterOptions?.systems],
   );
 
-  const userFilters = useMemo(
-    () =>
+  const userFilters = useMemo(() => {
+    const users =
       filterOptions?.assigned_users?.map((user: ManualFieldUser) => ({
         text: formatUser(user),
         value: user.id,
-      })) || [],
-    [filterOptions?.assigned_users],
-  );
+      })) || [];
+
+    // If it's a root user, it's not going to be in the list of users from the API
+    // so we need to add it to the list of users for it to be a valid option in the dropdown
+    const isRootUser = currentUser?.id && !currentUser?.id.startsWith("fid_");
+    if (isRootUser) {
+      users.push({
+        text: currentUser.id,
+        value: currentUser.id,
+      });
+    }
+    return users;
+  }, [filterOptions?.assigned_users, currentUser?.id]);
 
   const handleTableChange = (
     _pagination: TablePaginationConfig,
