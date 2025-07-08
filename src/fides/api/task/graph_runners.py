@@ -107,6 +107,19 @@ def erasure_runner(
     use_dsr_3_0 = use_dsr_3_0_scheduler(privacy_request, ActionType.erasure)
 
     if use_dsr_3_0:
+        # Check if this is an erasure-only request (no access tasks exist but erasure tasks do)
+        # For erasure-only requests, the erasure tasks were already created and queued in access_runner
+        is_erasure_only = privacy_request.access_tasks.count() == 0 and privacy_request.erasure_tasks.count() > 0
+
+        if is_erasure_only:
+            logger.info(
+                "Erasure-only request detected. Erasure tasks were already created and queued in access_runner. "
+                "Skipping erasure_runner for privacy request {}.",
+                privacy_request.id,
+            )
+            # Return empty results since erasure tasks are already running
+            return {}
+
         run_erasure_request(
             privacy_request=privacy_request,
             session=session,

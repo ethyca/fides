@@ -36,6 +36,7 @@ from fides.api.task.execute_request_tasks import log_task_queued, queue_request_
 from fides.api.task.manual.manual_task_utils import (
     ManualTaskAddress,
     create_manual_task_instances_for_privacy_request,
+    get_request_type_from_policy,
 )
 from fides.api.util.logger_context_utils import log_context
 
@@ -301,12 +302,13 @@ def persist_initial_erasure_request_tasks(
     traversal_nodes: Dict[CollectionAddress, TraversalNode],
     end_nodes: List[CollectionAddress],
     dataset_graph: DatasetGraph,
+    erasure_only: bool = False,
 ) -> List[RequestTask]:
     """
     Create starter individual erasure RequestTasks from the TraversalNodes and persist to the database.
 
-    These are not ready to run yet as they are still waiting for access data from the access graph
-    to be able to build masking requests
+    For erasure-only requests, return the root erasure task(s) so they can be queued immediately.
+    For access+erasure requests, return an empty list (wait for access to finish).
     """
     logger.info(
         "Creating initial erasure request tasks for privacy request {}.",
@@ -330,9 +332,8 @@ def persist_initial_erasure_request_tasks(
             },
         )
 
-    # If a policy has an erasure rule, this method is run immediately after creating the access tasks, so their
-    # nodes in the database are the same.  There are no "ready" tasks yet, because we need to wait for the
-    # access step to run, so we return an empty list here.
+    if erasure_only:
+        return [privacy_request.get_root_task_by_action(ActionType.erasure)]
     return []
 
 
@@ -453,6 +454,9 @@ def run_access_request(
     If we are *reprocessing* a Privacy Request, instead queue tasks whose upstream nodes are complete.
     """
 
+    # Check if this is an erasure-only request (no access rules, only erasure rules)
+    _, has_erasure_rules, is_erasure_only = get_request_type_from_policy(policy)
+
     if privacy_request.access_tasks.count():
         # If we are reprocessing a privacy request, just see if there
         # are existing ready tasks; don't create new ones.
@@ -474,33 +478,47 @@ def run_access_request(
             # Snapshot manual task field instances for this privacy request
             create_manual_task_instances_for_privacy_request(session, privacy_request)
 
-            # Save Access Request Tasks to the database
-            ready_tasks = persist_new_access_request_tasks(
-                session, privacy_request, traversal, traversal_nodes, end_nodes, graph
-            )
-
-            if (
-                policy.get_rules_for_action(action_type=ActionType.erasure)
-                and not privacy_request.erasure_tasks.count()
-            ):
-                # If applicable, go ahead and save Erasure Request Tasks to the Database.
-                # These erasure tasks aren't ready to run until the access graph is completed
-                # in full, but this makes sure the nodes in the graphs match.
+            if is_erasure_only:
+                logger.info(
+                    "Erasure-only request detected. Creating erasure tasks directly for privacy request {}.",
+                    privacy_request.id,
+                )
                 erasure_end_nodes: List[CollectionAddress] = list(graph.nodes.keys())
-                persist_initial_erasure_request_tasks(
-                    session, privacy_request, traversal_nodes, erasure_end_nodes, graph
+                ready_tasks = persist_initial_erasure_request_tasks(
+                    session, privacy_request, traversal_nodes, erasure_end_nodes, graph, erasure_only=True
+                )
+                privacy_request.cache_data_use_map(
+                    format_data_use_map_for_caching(
+                        {
+                            coll_address: tn.node.dataset.connection_key
+                            for (coll_address, tn) in traversal_nodes.items()
+                        },
+                        connection_configs,
+                    )
+                )
+            else:
+                # Save Access Request Tasks to the database
+                ready_tasks = persist_new_access_request_tasks(
+                    session, privacy_request, traversal, traversal_nodes, end_nodes, graph
                 )
 
-            # cache a map of collections -> data uses for the output package of access requests
-            privacy_request.cache_data_use_map(
-                format_data_use_map_for_caching(
-                    {
-                        coll_address: tn.node.dataset.connection_key
-                        for (coll_address, tn) in traversal_nodes.items()
-                    },
-                    connection_configs,
+                if (
+                    has_erasure_rules
+                    and not privacy_request.erasure_tasks.count()
+                ):
+                    erasure_end_nodes: List[CollectionAddress] = list(graph.nodes.keys())
+                    persist_initial_erasure_request_tasks(
+                        session, privacy_request, traversal_nodes, erasure_end_nodes, graph, erasure_only=False
+                    )
+                privacy_request.cache_data_use_map(
+                    format_data_use_map_for_caching(
+                        {
+                            coll_address: tn.node.dataset.connection_key
+                            for (coll_address, tn) in traversal_nodes.items()
+                        },
+                        connection_configs,
+                    )
                 )
-            )
 
             # Add execution logs for skipped nodes
             if traversal.skipped_nodes:
@@ -515,7 +533,7 @@ def run_access_request(
                         dataset_name="Dataset traversal",
                         collection_name=node_address.replace(":", "."),
                         message=skip_message,
-                        action_type=ActionType.access,
+                        action_type=ActionType.access if not is_erasure_only else ActionType.erasure,
                     )
             # Or log success if all collections are reachable
             else:
@@ -525,7 +543,7 @@ def run_access_request(
                     dataset_name="Dataset traversal",
                     collection_name=None,
                     message=f"Traversal successful for privacy request: {privacy_request.id}",
-                    action_type=ActionType.access,
+                    action_type=ActionType.access if not is_erasure_only else ActionType.erasure,
                 )
         except TraversalError as err:
             log_traversal_error_and_update_privacy_request(
@@ -552,7 +570,13 @@ def run_erasure_request(  # pylint: disable = too-many-arguments
 
     If we are reprocessing a Privacy Request, instead queue tasks whose upstream nodes are complete.
     """
-    update_erasure_tasks_with_access_data(session, privacy_request)
+    # Check if this is an erasure-only request (no access tasks exist)
+    is_erasure_only = privacy_request.access_tasks.count() == 0 and privacy_request.erasure_tasks.count() > 0
+
+    if not is_erasure_only:
+        # For regular requests with both access and erasure, transfer data from access tasks
+        update_erasure_tasks_with_access_data(session, privacy_request)
+
     ready_tasks: List[RequestTask] = (
         get_existing_ready_tasks(session, privacy_request, ActionType.erasure) or []
     )
