@@ -29,13 +29,13 @@ export const manualTasksApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getTasks: build.query<ManualFieldSearchResponse, TaskQueryParams | void>({
       query: (params) => {
-        const queryParams = params || { page: 1, size: 10 };
+        const queryParams = params || { page: 1, size: 25 };
         const searchParams = new URLSearchParams();
 
         // Convert page to be 1-indexed for API
         const page = queryParams.page || 1;
         searchParams.append("page", String(page));
-        searchParams.append("size", String(queryParams.size || 10));
+        searchParams.append("size", String(queryParams.size || 25));
 
         if (queryParams.status) {
           searchParams.append("status", queryParams.status);
@@ -81,6 +81,9 @@ export const manualTasksApi = baseApi.injectEndpoints({
         } = payload;
 
         const formData = new FormData();
+
+        // Append field_key (consistent with complete task implementation)
+        formData.append("field_key", manualFieldId);
 
         // Append field_value if provided
         if (fieldValue !== undefined && fieldValue !== null) {
