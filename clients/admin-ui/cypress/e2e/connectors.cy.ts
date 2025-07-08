@@ -149,7 +149,7 @@ describe("Connectors", () => {
       cy.getByTestId("dataset-selector-section").should("not.exist");
     });
 
-    it("Should fetch datasets with minimal=true parameter for performance", () => {
+    it.only("Should fetch datasets with minimal=true parameter for performance", () => {
       // Override the existing intercept to verify the minimal parameter is used
       cy.intercept("GET", "/api/v1/dataset?minimal=true", {
         fixture: "connectors/minimal_datasets.json",
@@ -162,7 +162,7 @@ describe("Connectors", () => {
       cy.getByTestId("connection-menu-postgres_connector").within(() => {
         cy.getByTestId("configure-btn").click();
       });
-      cy.getByTestId("tab-Dataset configuration").click();
+      cy.getAntTab("Dataset configuration").click({ force: true });
       cy.wait("@getPostgresConnectorDatasetconfig");
 
       // Verify that the minimal datasets API was called
