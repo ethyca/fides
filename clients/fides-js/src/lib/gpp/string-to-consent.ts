@@ -18,7 +18,7 @@ import {
   createTcfSavePayloadFromMinExp,
   updateTCFCookie,
 } from "../tcf/utils";
-import { getGppSectionAndRegion } from "./us-notices";
+import { getGppSectionAndRegion } from "./gpp-utils";
 
 const FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS = [1, 3, 4, 5, 6];
 
@@ -37,7 +37,11 @@ const getConsentFromGppCmpApi = ({
   const consent: NoticeConsent = {};
   const { privacy_notices: notices = [] } = experience;
 
-  const { gppRegion, gppSection } = getGppSectionAndRegion(experience);
+  const { gppRegion, gppSection } = getGppSectionAndRegion(
+    experience.region,
+    experience.gpp_settings?.us_approach,
+    experience.privacy_notices,
+  );
 
   if (!gppRegion || !gppSection) {
     fidesDebugger(

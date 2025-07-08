@@ -9,11 +9,11 @@ import {
   PrivacyNoticeFramework,
   UserConsentPreference,
 } from "../../../src/lib/consent-types";
+import { GPPUSApproach } from "../../../src/lib/gpp/constants";
 import { makeStub } from "../../../src/lib/gpp/stub";
 import {
   GPPFieldMapping,
   GPPMechanismMapping,
-  GPPUSApproach,
 } from "../../../src/lib/gpp/types";
 import {
   setGppNoticesProvidedFromExperience,
