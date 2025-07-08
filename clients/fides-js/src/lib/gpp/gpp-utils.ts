@@ -1,3 +1,16 @@
+/**
+ * @fileoverview GPP utility functions for handling Global Privacy Platform operations.
+ *
+ * ⚠️  IMPORTANT: This file is synchronized between repositories!
+ *
+ * This file exists in both:
+ * - fides: clients/fides-js/src/lib/gpp/gpp-utils.ts
+ * - fidesplus: src/fidesplus/gpp_js_integration/gpp-utils.ts
+ *
+ * Any changes made to this file should be applied to both locations
+ * to maintain consistency between the open-source and enterprise versions.
+ */
+
 import { UsNatField } from "@iabgpp/cmpapi";
 
 import { FIDES_US_REGION_TO_GPP_SECTION, GPPUSApproach } from "./constants";
