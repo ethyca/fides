@@ -8,6 +8,7 @@ import {
   Flex,
   SelectInline,
 } from "fidesui";
+import { isEqual } from "lodash";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
@@ -60,7 +61,7 @@ const getColumns = (
   systemFilters: FilterOption[],
   userFilters: FilterOption[],
   onUserClick: (userId: string) => void,
-  currentUser?: { id: string },
+  currentFilters: ManualTaskFilters,
 ): ColumnsType<ManualFieldListItem> => [
   {
     title: "Task name",
@@ -139,7 +140,9 @@ const getColumns = (
     },
     filters: userFilters,
     filterMultiple: false,
-    defaultFilteredValue: currentUser?.id ? [currentUser.id] : undefined,
+    filteredValue: currentFilters.assignedUsers
+      ? [currentFilters.assignedUsers]
+      : undefined,
   },
   {
     title: "Days left",
@@ -188,8 +191,14 @@ export const ManualTasks = () => {
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(25);
 
-  // Initialize filters
-  const [filters, setFilters] = useState<ManualTaskFilters>({});
+  // Default filters - current user assigned by default
+  const defaultFilters: ManualTaskFilters = useMemo(
+    () => (currentUser?.id ? { assignedUsers: currentUser.id } : {}),
+    [currentUser?.id],
+  );
+
+  // Initialize filters with default
+  const [filters, setFilters] = useState<ManualTaskFilters>(defaultFilters);
 
   const [privacyRequestIdInput, setPrivacyRequestIdInput] = useState(
     router.query.privacy_request_id || "",
@@ -301,31 +310,16 @@ export const ManualTasks = () => {
             query: { id: userId },
           });
         },
-        currentUser || undefined,
+        filters,
       ),
-    [systemFilters, userFilters, router, currentUser],
+    [systemFilters, userFilters, router, filters],
   );
 
   // Check if only the current user filter is applied (for custom empty state)
-  const isOnlyCurrentUserFiltered = useMemo(() => {
-    if (!currentUser?.id) {
-      return false;
-    }
-
-    const { assignedUsers, status, systemName, requestType, privacyRequestId } =
-      filters;
-
-    // Check if only assignedUsers filter is set and it matches current user
-    // When using defaultFilteredValue, assignedUsers might be undefined initially
-    // but the table is still filtering by current user
-    return (
-      (assignedUsers === currentUser.id || assignedUsers === undefined) &&
-      !status &&
-      !systemName &&
-      !requestType &&
-      !privacyRequestId
-    );
-  }, [filters, currentUser?.id]);
+  const isOnlyCurrentUserFiltered = useMemo(
+    () => isEqual(filters, defaultFilters),
+    [filters, defaultFilters],
+  );
 
   if (isLoading) {
     return <FidesSpinner />;
