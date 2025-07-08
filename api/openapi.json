@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.64.2"
+    "version": "2.65.0"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -11830,6 +11830,117 @@
         ]
       }
     },
+    "/api/v1/dataset/partitions/verify": {
+      "post": {
+        "tags": [
+          "Partitions"
+        ],
+        "summary": "Verify dataset partitioning schemas",
+        "description": "Validate the provided partitioning specs and return the rendered SQL WHERE clauses in the BigQuery dialect.",
+        "operationId": "Verify_dataset_partitioning_schemas_api_v1_dataset_partitions_verify_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "$ref": "#/components/schemas/TimeBasedPartitioning"
+                },
+                "type": "array",
+                "title": "Partitions"
+              },
+              "examples": {
+                "recent_data_weekly": {
+                  "summary": "Recent data partitioned weekly",
+                  "description": "Partition the last 30 days of data into weekly chunks",
+                  "value": [
+                    {
+                      "field": "created_at",
+                      "start": "NOW() - 30 DAYS",
+                      "end": "NOW()",
+                      "interval": "7 DAYS"
+                    }
+                  ]
+                },
+                "historical_data_monthly": {
+                  "summary": "Historical data partitioned monthly",
+                  "description": "Partition a specific year of data into monthly chunks",
+                  "value": [
+                    {
+                      "field": "order_date",
+                      "start": "2024-01-01",
+                      "end": "2024-12-31",
+                      "interval": "1 MONTH"
+                    }
+                  ]
+                },
+                "multiple_partitions": {
+                  "summary": "Multiple time ranges",
+                  "description": "Combine historical monthly data with recent daily data",
+                  "value": [
+                    {
+                      "field": "event_timestamp",
+                      "start": "2023-01-01",
+                      "end": "2023-12-31",
+                      "interval": "1 MONTH"
+                    },
+                    {
+                      "field": "event_timestamp",
+                      "start": "NOW() - 14 DAYS",
+                      "end": "NOW()",
+                      "interval": "1 DAY"
+                    }
+                  ]
+                },
+                "open_ended_partition": {
+                  "summary": "Open-ended partition",
+                  "description": "Partition all data from a specific date onwards",
+                  "value": [
+                    {
+                      "field": "user_created_at",
+                      "start": "2024-01-01"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array",
+                  "title": "Response Verify Dataset Partitioning Schemas Api V1 Dataset Partitions Verify Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "ctl_dataset:read"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/user/{user_id}": {
       "put": {
         "tags": [
@@ -15159,6 +15270,12 @@
                 "type": "object"
               },
               {
+                "items": {
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
                 "type": "null"
               }
             ],
@@ -15574,6 +15691,7 @@
           "https",
           "manual",
           "manual_webhook",
+          "manual_task",
           "mariadb",
           "mongodb",
           "mssql",
@@ -19667,6 +19785,7 @@
           "privacy_request_review_deny",
           "privacy_request_review_approve",
           "user_invite",
+          "external_user_welcome",
           "test_message"
         ],
         "title": "MessagingActionType",
@@ -27156,6 +27275,82 @@
         ],
         "title": "TestStatusMessage",
         "description": "A schema for checking status."
+      },
+      "TimeBasedPartitioning": {
+        "properties": {
+          "field": {
+            "type": "string",
+            "title": "Field",
+            "description": "Column name to partition on (e.g., `created_at`, `updated_at`)"
+          },
+          "start": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start",
+            "description": "Start time expression. Supported formats: `NOW()`, `TODAY()`, `TIMESTAMP(TODAY())`, `YYYY-MM-DD`, `YYYY-MM-DD HH:MM:SS`, or arithmetic expressions like `NOW() - 30 DAYS`, `TIMESTAMP(TODAY() - 30 DAYS)`."
+          },
+          "end": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End",
+            "description": "End time expression. Same formats as start field."
+          },
+          "interval": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interval",
+            "description": "Interval expression defining the size of each partition in `DAY(S)`, `WEEK(S)`, `MONTH(S)`, or `YEAR(S)`."
+          }
+        },
+        "type": "object",
+        "required": [
+          "field"
+        ],
+        "title": "TimeBasedPartitioning",
+        "description": "Allows you to partition data based on time ranges using various\ntime expressions and intervals.",
+        "examples": [
+          {
+            "end": "NOW()",
+            "field": "created_at",
+            "interval": "7 DAYS",
+            "start": "NOW() - 30 DAYS"
+          },
+          {
+            "end": "2024-12-31",
+            "field": "order_date",
+            "interval": "1 MONTH",
+            "start": "2024-01-01"
+          },
+          {
+            "field": "event_timestamp",
+            "interval": "1 WEEK",
+            "start": "TODAY() - 1 YEAR"
+          },
+          {
+            "end": "TIMESTAMP(TODAY())",
+            "field": "created_at",
+            "interval": "1 DAY",
+            "start": "TIMESTAMP(TODAY() - 7 DAYS)"
+          }
+        ]
       },
       "TimescaleDocsSchema": {
         "properties": {
