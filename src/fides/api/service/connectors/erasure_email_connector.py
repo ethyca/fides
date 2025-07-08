@@ -9,7 +9,7 @@ from fides.api.models.connectionconfig import (
     ConnectionTestStatus,
     ConnectionType,
 )
-from fides.api.models.privacy_request import ExecutionLog
+from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.connection_configuration import EmailSchema
 from fides.api.schemas.policy import ActionType
@@ -67,7 +67,7 @@ class GenericErasureEmailConnector(BaseErasureEmailConnector):
             return ConnectionTestStatus.failed
         return ConnectionTestStatus.succeeded
 
-    def batch_email_send(self, privacy_requests: Query) -> None:
+    def batch_email_send(self, privacy_requests: Query, batch_id: str) -> None:
         skipped_privacy_requests: List[str] = []
         batched_identities: List[str] = []
         db = Session.object_session(self.configuration)
@@ -85,14 +85,16 @@ class GenericErasureEmailConnector(BaseErasureEmailConnector):
 
         if not batched_identities:
             logger.info(
-                "Skipping erasure email send for connector: '{}'. "
+                "Skipping erasure email send for connector '{}' and batch '{}'. "
                 "No corresponding user identities found for pending privacy requests.",
                 self.configuration.key,
+                batch_id,
             )
             return
 
         logger.info(
-            "Sending batched erasure email for connector {}...",
+            "Sending batch erasure email {} for connector {}...",
+            batch_id,
             self.configuration.key,
         )
 
@@ -105,10 +107,14 @@ class GenericErasureEmailConnector(BaseErasureEmailConnector):
                 test_mode=False,
             )
         except MessageDispatchException as exc:
-            logger.info(
-                "Erasure email for connector {} failed with exception {}",
-                self.configuration.key,
-                exc,
+            message = f"Batch erasure email {batch_id} for connector {self.configuration.key} failed with exception {exc}"
+            logger.error(message)
+            self.error_all_privacy_requests(
+                db,
+                privacy_requests.filter(
+                    PrivacyRequest.id.notin_(skipped_privacy_requests)
+                ),
+                message,
             )
             raise
 

@@ -22,7 +22,6 @@ from fides.api.schemas.connection_configuration.connection_secrets_dynamic_erasu
     DynamicErasureEmailSchema,
 )
 from fides.api.schemas.policy import ActionType
-from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.base_erasure_email_connector import (
     BaseErasureEmailConnector,
@@ -67,9 +66,11 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
     def get_config(self, configuration: ConnectionConfig) -> DynamicErasureEmailSchema:
         return DynamicErasureEmailSchema(**configuration.secrets or {})
 
-    def batch_email_send(self, privacy_requests: Query) -> None:
+    def batch_email_send(self, privacy_requests: Query, batch_id: str) -> None:
         logger.debug(
-            "Starting batch_email_send for connector: {} ...", self.configuration.key
+            "Starting batch erasure email {} for connector: {} ...",
+            batch_id,
+            self.configuration.key,
         )
 
         db: Session = Session.object_session(self.configuration)
@@ -133,14 +134,16 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
 
         if not batched_identities:
             logger.info(
-                "Skipping erasure email send for connector: '{}'. "
+                "Skipping erasure email send for connector '{}' and batch '{}'. "
                 "No corresponding user identities or email addresses found for pending privacy requests.",
                 self.configuration.key,
+                batch_id,
             )
             return
 
         logger.info(
-            "Sending batched erasure email for connector {}...",
+            "Sending batch erasure email {} for connector {}...",
+            batch_id,
             self.configuration.key,
         )
 
@@ -155,15 +158,14 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
                     test_mode=False,
                 )
             except MessageDispatchException as exc:
-                logger.error(
-                    "Dynamic erasure email for connector {} failed with exception {}",
-                    self.configuration.key,
-                    exc,
-                )
+                message = f"Dynamic batch erasure email {batch_id} for connector {self.configuration.key} failed with exception {exc}"
+                logger.error(message)
                 self.error_all_privacy_requests(
                     db,
-                    privacy_requests,
-                    f"Dynamic erasure email for connector failed with MessageDispatchException. Error: {exc}",
+                    privacy_requests.filter(
+                        PrivacyRequest.id.notin_(skipped_privacy_requests)
+                    ),
+                    message,
                 )
                 raise exc
 
@@ -469,42 +471,6 @@ class DynamicErasureEmailConnector(BaseErasureEmailConnector):
         vendor = retrieved_data[0][processed_config.vendor_field]
 
         return email, vendor
-
-    def error_all_privacy_requests(
-        self, db: Session, privacy_requests: Query, failure_reason: str
-    ) -> None:
-        """
-        Creates an ExecutionLog with status error for each privacy request in the batch, and sets the
-        privacy request status to error.
-        """
-        for privacy_request in privacy_requests:
-            self.error_privacy_request(db, privacy_request, failure_reason)
-
-    def error_privacy_request(
-        self,
-        db: Session,
-        privacy_request: PrivacyRequest,
-        failure_reason: Optional[str],
-    ) -> None:
-        """
-        Creates an ExecutionLog with status error for the privacy request, using the failure_reason
-        as the message, and sets the privacy request status to error.
-        """
-        ExecutionLog.create(
-            db=db,
-            data={
-                "connection_key": self.configuration.key,
-                "dataset_name": self.configuration.name_or_key,
-                "collection_name": self.configuration.name_or_key,
-                "privacy_request_id": privacy_request.id,
-                "action_type": ActionType.erasure,
-                "status": ExecutionLogStatus.error,
-                "message": failure_reason
-                or "An error occurred when trying to send the erasure email",
-            },
-        )
-        privacy_request.status = PrivacyRequestStatus.error
-        privacy_request.save(db)
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
         """

@@ -18,10 +18,13 @@ from fides.api.schemas.privacy_request import (
 )
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.privacy_request.email_batch_service import (
+    BATCH_EMAIL_SEND_LOCK,
+    BATCH_EMAIL_SEND_LOCK_TIMEOUT,
     EmailExitState,
     send_email_batch,
 )
 from fides.api.util.cache import get_all_cache_keys_for_privacy_request, get_cache
+from fides.api.util.lock import redis_lock
 from fides.config import get_config
 from tests.fixtures.application_fixtures import _create_privacy_request_for_policy
 
@@ -1208,3 +1211,24 @@ class TestErasureEmailBatchSend:
             second_privacy_request_log.message
             == f"Erasure email instructions dispatched for '{attentive_email_connection_config.name}'"
         )
+
+
+class TestEmailBatchSendLocking:
+    def test_send_email_batch_already_running(
+        self,
+        loguru_caplog,
+    ) -> None:
+        """
+        Tests that the batch email send task exits gracefully if the lock is already held.
+        """
+        with redis_lock(
+            lock_key=BATCH_EMAIL_SEND_LOCK, timeout=BATCH_EMAIL_SEND_LOCK_TIMEOUT
+        ):
+            exit_state = send_email_batch.delay().get()
+            assert exit_state == EmailExitState.email_send_already_running
+
+            assert (
+                "Another process is already running for lock 'batch_email_send_lock'"
+                in loguru_caplog.text
+            )
+            assert "Starting batch email send" not in loguru_caplog.text
