@@ -786,11 +786,11 @@ export const stubLogout = () => {
   cy.intercept("POST", "/api/v1/logout", {
     statusCode: 204,
   }).as("logoutRequest");
-}
+};
 
 export const stubPlusAuth = () => {
   cy.intercept("GET", "/api/v1/plus/authentication-methods", {
     statusCode: 200,
-    body: {}
+    body: {},
   }).as("logoutRequest");
-}
+};

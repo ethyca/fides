@@ -1,4 +1,8 @@
-import { stubLogout, stubOpenIdProviders, stubUserManagement } from "cypress/support/stubs";
+import {
+  stubLogout,
+  stubOpenIdProviders,
+  stubUserManagement,
+} from "cypress/support/stubs";
 
 import { SYSTEM_ROUTE } from "~/features/common/nav/routes";
 

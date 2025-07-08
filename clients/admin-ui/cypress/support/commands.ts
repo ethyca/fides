@@ -13,7 +13,7 @@ Cypress.Commands.add("getByTestIdPrefix", (prefix, options) =>
 );
 
 /**
- * @arg initialStorage - allow an initial storage to be passed both for convenience and simulating real world usage where some state can be retained after logout  
+ * @arg initialStorage - allow an initial storage to be passed both for convenience and simulating real world usage where some state can be retained after logout
  */
 Cypress.Commands.add("login", (initialStorage?: RootState) => {
   cy.fixture("login.json").then((body) => {
@@ -93,9 +93,9 @@ declare global {
       selector: string,
       options?: Partial<
         Cypress.Loggable &
-        Cypress.Timeoutable &
-        Cypress.Withinable &
-        Cypress.Shadow
+          Cypress.Timeoutable &
+          Cypress.Withinable &
+          Cypress.Shadow
       >,
     ) => Chainable<JQuery<HTMLElement>>;
 
@@ -152,4 +152,4 @@ declare global {
 }
 
 // Convert this to a module instead of script (allows import/export)
-export { };
+export {};
