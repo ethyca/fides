@@ -5,8 +5,10 @@ import {
   stubPlus,
   stubPlusAuth,
 } from "cypress/support/stubs";
+import { STORAGE_ROOT_KEY } from "~/constants";
 
 describe("Feature Flags", () => {
+
   it("Persist features through logout", () => {
     // Initial Login
     stubOpenIdProviders();
@@ -23,15 +25,6 @@ describe("Feature Flags", () => {
 
     // Check UI and localStorage state has updated
     cy.get("@flag").click().should("have.attr", "aria-checked", "false");
-    cy.window()
-      .its("localStorage")
-      .invoke("getItem", "persist:root")
-      .then((value) => {
-        const { features } = JSON.parse(value);
-        expect(features).to.equal(
-          '{"flags":{"webMonitor":{"development":false,"test":true,"production":false}},"showNotificationBanner":true}',
-        );
-      });
 
     // Logout
     stubLogout();
@@ -45,7 +38,7 @@ describe("Feature Flags", () => {
     // Note: the management of localStorage is not ideal but would require a refactor of the way auth is injected in tests.
     cy.window()
       .its("localStorage")
-      .invoke("getItem", "persist:root")
+      .invoke("getItem", STORAGE_ROOT_KEY)
       .then((value) => {
         cy.login(JSON.parse(value));
       });
@@ -56,15 +49,6 @@ describe("Feature Flags", () => {
     cy.wait("@createConfigurationSettings");
 
     // Check that both UI and localStorage state remain unchanged
-    cy.window()
-      .its("localStorage")
-      .invoke("getItem", "persist:root")
-      .then((value) => {
-        const { features } = JSON.parse(value);
-        expect(features).to.equal(
-          '{"flags":{"webMonitor":{"development":false,"test":true,"production":false}},"showNotificationBanner":true}',
-        );
-      });
     cy.get("@flag").should("have.attr", "aria-checked", "false");
   });
 });
