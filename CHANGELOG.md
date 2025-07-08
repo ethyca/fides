@@ -20,6 +20,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.65.0...main)
+- Changed behavior of beta feature flags to persist across user login sessions
 
 ## [2.65.0](https://github.com/ethyca/fides/compare/2.64.2...2.65.0)
 
