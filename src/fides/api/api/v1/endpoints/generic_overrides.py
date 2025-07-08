@@ -1,6 +1,8 @@
+from functools import partial
 from typing import Dict, List, Optional, Type, Union
 
 from fastapi import Depends, HTTPException, Query, Response, Security
+from fastapi.concurrency import run_in_threadpool
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from fastapi_pagination import Page, Params
@@ -224,9 +226,17 @@ async def list_dataset_paginated(
 
     pagination_params = Params(page=page or 1, size=size or 50)
     results = await async_paginate(db, filtered_query, pagination_params)
-    results.items = [  # type: ignore[attr-defined]
-        DatasetResponse.model_validate(result.__dict__) for result in results.items  # type: ignore[attr-defined]
-    ]
+
+    validated_items = []
+    for result in results.items:  # type: ignore[attr-defined]
+        # run pydantic validation in a threadpool to avoid blocking the main thread
+        validated_item = await run_in_threadpool(
+            partial(DatasetResponse.model_validate, result.__dict__)
+        )
+        validated_items.append(validated_item)
+
+    results.items = validated_items  # type: ignore[attr-defined]
+
     return results
 
 

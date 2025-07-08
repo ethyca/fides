@@ -25,7 +25,9 @@ from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
 from fides.api.task.manual.manual_task_utils import (
     ManualTaskAddress,
     create_manual_data_traversal_node,
+    create_manual_task_artificial_graphs,
     create_manual_task_instances_for_privacy_request,
+    get_manual_task_addresses,
     get_manual_task_instances_for_privacy_request,
     get_manual_tasks_for_connection_config,
 )
@@ -554,3 +556,197 @@ class TestManualTaskInstanceCreation:
             db, sample_privacy_request
         )
         assert len(all_instances) == 1
+
+
+@pytest.mark.integration
+class TestManualTaskDisabledConnectionConfig:
+    """Test that disabled connection configs are properly filtered out from manual task processing"""
+
+    @pytest.fixture
+    def test_policy(self, db):
+        """Create a test policy"""
+        return Policy.create(
+            db=db,
+            data={
+                "name": "Test Policy",
+                "key": "test_policy",
+            },
+        )
+
+    @pytest.fixture
+    def enabled_connection_config(self, db):
+        """Create an enabled connection config with manual task"""
+        connection_config = ConnectionConfig.create(
+            db=db,
+            data={
+                "name": "Enabled Connection",
+                "key": "enabled_connection",
+                "connection_type": ConnectionType.manual_task,
+                "access": AccessLevel.read,
+                "disabled": False,
+            },
+        )
+
+        # Create manual task for enabled connection
+        manual_task = ManualTask.create(
+            db=db,
+            data={
+                "task_type": ManualTaskType.privacy_request,
+                "parent_entity_id": connection_config.id,
+                "parent_entity_type": ManualTaskParentEntityType.connection_config,
+            },
+        )
+
+        # Create active config for manual task
+        manual_config = ManualTaskConfig.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_type": ManualTaskConfigurationType.access_privacy_request,
+                "version": 1,
+                "is_current": True,
+            },
+        )
+
+        # Create a field for the manual task config
+        ManualTaskConfigField.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_id": manual_config.id,
+                "field_key": "test_field",
+                "field_type": ManualTaskFieldType.text,
+                "field_metadata": {
+                    "label": "Test Field",
+                    "required": True,
+                    "data_categories": ["user.contact.email"],
+                },
+            },
+        )
+
+        return connection_config, manual_task
+
+    @pytest.fixture
+    def disabled_connection_config(self, db):
+        """Create a disabled connection config with manual task"""
+        connection_config = ConnectionConfig.create(
+            db=db,
+            data={
+                "name": "Disabled Connection",
+                "key": "disabled_connection",
+                "connection_type": ConnectionType.manual_task,
+                "access": AccessLevel.read,
+                "disabled": True,
+            },
+        )
+
+        # Create manual task for disabled connection
+        manual_task = ManualTask.create(
+            db=db,
+            data={
+                "task_type": ManualTaskType.privacy_request,
+                "parent_entity_id": connection_config.id,
+                "parent_entity_type": ManualTaskParentEntityType.connection_config,
+            },
+        )
+
+        # Create active config for manual task
+        manual_config = ManualTaskConfig.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_type": ManualTaskConfigurationType.access_privacy_request,
+                "version": 1,
+                "is_current": True,
+            },
+        )
+
+        # Create a field for the manual task config
+        ManualTaskConfigField.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_id": manual_config.id,
+                "field_key": "test_field",
+                "field_type": ManualTaskFieldType.text,
+                "field_metadata": {
+                    "label": "Test Field",
+                    "required": True,
+                    "data_categories": ["user.contact.email"],
+                },
+            },
+        )
+
+        return connection_config, manual_task
+
+    @pytest.fixture
+    def test_privacy_request(self, db, test_policy):
+        """Create a test privacy request"""
+        return PrivacyRequest.create(
+            db=db,
+            data={
+                "external_id": "test_disabled_filter_123",
+                "started_processing_at": None,
+                "status": "pending",
+                "policy_id": test_policy.id,
+            },
+        )
+
+    @pytest.mark.usefixtures("enabled_connection_config", "disabled_connection_config")
+    def test_disabled_connection_configs_filtered_from_addresses(self, db):
+        """Test that disabled connection configs are filtered out from manual task addresses"""
+
+        # Get manual task addresses
+        addresses = get_manual_task_addresses(db)
+
+        # Should only include enabled connection configs
+        assert len(addresses) == 1
+        assert addresses[0].dataset == "enabled_connection"
+        assert addresses[0].collection == "manual_data"
+
+        # Verify disabled connection is not included
+        disabled_address = f"disabled_connection:manual_data"
+        assert not any(str(addr) == disabled_address for addr in addresses)
+
+    def test_disabled_connection_configs_filtered_from_instance_creation(
+        self,
+        db,
+        test_privacy_request,
+        enabled_connection_config,
+        disabled_connection_config,
+    ):
+        """Test that disabled connection configs are filtered out from manual task instance creation"""
+
+        # Create manual task instances
+        created_instances = create_manual_task_instances_for_privacy_request(
+            db, test_privacy_request
+        )
+
+        # Should only create instances for enabled connection configs
+        assert len(created_instances) == 1
+
+        # Verify the instance is for the enabled connection
+        enabled_connection, enabled_task = enabled_connection_config
+        assert created_instances[0].task_id == enabled_task.id
+
+        # Verify no instances were created for disabled connection
+        disabled_connection, disabled_task = disabled_connection_config
+        all_instances = get_manual_task_instances_for_privacy_request(
+            db, test_privacy_request
+        )
+        assert not any(
+            instance.task_id == disabled_task.id for instance in all_instances
+        )
+
+    @pytest.mark.usefixtures("enabled_connection_config", "disabled_connection_config")
+    def test_disabled_connection_configs_filtered_from_artificial_graphs(self, db):
+        """Test that disabled connection configs are filtered out from artificial graph creation"""
+        # Create artificial graphs
+        graphs = create_manual_task_artificial_graphs(db)
+
+        # Should only include graphs for enabled connection configs
+        assert len(graphs) == 1
+        assert graphs[0].name == "enabled_connection"
+
+        # Verify disabled connection is not included
+        assert not any(graph.name == "disabled_connection" for graph in graphs)

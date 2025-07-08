@@ -166,6 +166,12 @@ const ExternalTasksClientInner = ({
     (verifyOtpError ? "Failed to verify code. Please try again." : null);
 
   const renderAuthContent = () => {
+    // If user is authenticated, show authenticated content regardless of token
+    if (authStep === "authenticated") {
+      return <ExternalTaskLayout />;
+    }
+
+    // For non-authenticated users, require token
     if (!token) {
       return <NoAccessTokenMessage />;
     }
@@ -193,9 +199,6 @@ const ExternalTasksClientInner = ({
             error={combinedError}
           />
         );
-
-      case "authenticated":
-        return <ExternalTaskLayout />;
 
       default:
         return null;
