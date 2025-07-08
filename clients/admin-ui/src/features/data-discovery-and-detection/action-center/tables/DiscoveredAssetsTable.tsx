@@ -218,11 +218,7 @@ export const DiscoveredAssetsTable = ({
       return assetKey === systemKey;
     });
 
-    const systemKeyFromResult = result.data?.[0]?.promoted_system_key;
-
-    const systemToLink = allAssetsHaveSameSystemKey
-      ? (systemKeyFromResult ?? systemKey)
-      : undefined;
+    const systemToLink = allAssetsHaveSameSystemKey ? systemKey : undefined;
 
     if (isErrorResult(result)) {
       toast(errorToastParams(getErrorMessage(result.error)));

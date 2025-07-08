@@ -61,9 +61,7 @@ export const DiscoveredAssetActionsCell = ({
     if (isErrorResult(result)) {
       toast(errorToastParams(getErrorMessage(result.error)));
     } else {
-      const promotedSystemKey = result.data?.[0]?.promoted_system_key;
-      const systemToLink =
-        promotedSystemKey || userAssignedSystemKey || systemKey;
+      const systemToLink = userAssignedSystemKey || systemKey;
       const href = `${SYSTEM_ROUTE}/configure/${systemToLink}#assets`;
       toast(
         successToastParams(
