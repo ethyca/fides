@@ -458,7 +458,7 @@ async function fetchCustomFidesCss(
     (lastFetched && currentTime - lastFetched > CUSTOM_FIDES_CSS_TTL_MS);
   // refresh if forced or auto-refresh is enabled and the cache is invalid
   const shouldRefresh = forceRefresh || (autoRefresh && isCacheInvalid);
-  log.debug({ shouldRefresh, forceRefresh, autoRefresh, isCacheInvalid });
+
   if (shouldRefresh) {
     try {
       const fidesUrl = getFidesApiUrl();
