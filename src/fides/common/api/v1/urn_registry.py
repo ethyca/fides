@@ -77,7 +77,7 @@ POLICY_DETAIL = "/dsr/policy/{policy_key}"
 PRIVACY_REQUESTS = "/privacy-request"
 PRIVACY_REQUEST_APPROVE = "/privacy-request/administrate/approve"
 PRIVACY_REQUEST_BATCH_EMAIL_SEND = (
-    "/privacy-request/administrate/send-email-integrations"
+    "/privacy-request/administrate/process-awaiting-email-send"
 )
 PRIVACY_REQUEST_AUTHENTICATED = "/privacy-request/authenticated"
 PRIVACY_REQUEST_BULK_RETRY = "/privacy-request/bulk/retry"

@@ -8694,10 +8694,8 @@ class TestResubmitPrivacyRequest:
 
 class TestSendBatchEmailIntegrations:
     @pytest.fixture(scope="function")
-    def url(self, privacy_request):
-        return V1_URL_PREFIX + PRIVACY_REQUEST_BATCH_EMAIL_SEND.format(
-            privacy_request_id=privacy_request.id
-        )
+    def url(self):
+        return V1_URL_PREFIX + PRIVACY_REQUEST_BATCH_EMAIL_SEND
 
     def test_send_batch_email_integrations_not_authenticated(
         self,
