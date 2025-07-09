@@ -18,9 +18,7 @@ import {
   createTcfSavePayloadFromMinExp,
   updateTCFCookie,
 } from "../tcf/utils";
-import { FIDES_US_REGION_TO_GPP_SECTION } from "./constants";
-import { GPPUSApproach } from "./types";
-import { deriveGppFieldRegion, US_NATIONAL_REGION } from "./us-notices";
+import { getGppSectionAndRegion } from "./gpp-utils";
 
 const FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS = [1, 3, 4, 5, 6];
 
@@ -37,32 +35,13 @@ const getConsentFromGppCmpApi = ({
   experience: PrivacyExperience;
 }): NoticeConsent => {
   const consent: NoticeConsent = {};
-  const {
-    privacy_notices: notices = [],
-    region: experienceRegion,
-    gpp_settings: gppSettings,
-  } = experience;
-  const usApproach = gppSettings?.us_approach;
-  let gppRegion = deriveGppFieldRegion({
-    experienceRegion,
-    usApproach,
-  });
-  let gppSection = FIDES_US_REGION_TO_GPP_SECTION[gppRegion];
+  const { privacy_notices: notices = [] } = experience;
 
-  if (!gppSection && usApproach === GPPUSApproach.ALL) {
-    fidesDebugger(
-      'GPP: current state isn\'t supported, defaulting to USNat since "Both/All" approach is selected',
-    );
-    gppRegion = US_NATIONAL_REGION;
-    gppSection = FIDES_US_REGION_TO_GPP_SECTION[gppRegion];
-  }
+  const { gppRegion, gppSection } = getGppSectionAndRegion(experience);
 
-  if (
-    !gppSection ||
-    (gppRegion === US_NATIONAL_REGION && usApproach === GPPUSApproach.STATE)
-  ) {
+  if (!gppRegion || !gppSection) {
     fidesDebugger(
-      'GPP: current state isn\'t supported, returning empty consent since "US State" approach is selected',
+      "GPP: current state isn't supported, returning empty consent.",
     );
     return consent;
   }

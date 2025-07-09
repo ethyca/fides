@@ -189,7 +189,7 @@ const NoticeOverlay = () => {
     };
   });
 
-  const { servedNoticeHistoryId } = useNoticesServed({
+  useNoticesServed({
     privacyExperienceConfigHistoryId,
     privacyNoticeHistoryIds: privacyNoticeItems.reduce((ids, e) => {
       const id = e.bestTranslation?.privacy_notice_history_id;
@@ -219,18 +219,14 @@ const NoticeOverlay = () => {
           noticeConsent[item.notice.notice_key] = true;
         }
       });
-      updateConsent(
-        fidesGlobal,
-        {
-          noticeConsent,
-          consentMethod,
-          eventExtraDetails: {
-            servingComponent: servingComponentRef.current,
-            trigger: triggerRef.current,
-          },
+      updateConsent(fidesGlobal, {
+        noticeConsent,
+        consentMethod,
+        eventExtraDetails: {
+          servingComponent: servingComponentRef.current,
+          trigger: triggerRef.current,
         },
-        servedNoticeHistoryId,
-      ).finally(() => {
+      }).finally(() => {
         if (window.Fides) {
           // apply any updates to the fidesGlobal
           setFidesGlobal(window.Fides as InitializedFidesGlobal);
@@ -245,7 +241,6 @@ const NoticeOverlay = () => {
       fidesGlobal,
       servingComponentRef,
       triggerRef,
-      servedNoticeHistoryId,
       setTrigger,
       setFidesGlobal,
     ],
