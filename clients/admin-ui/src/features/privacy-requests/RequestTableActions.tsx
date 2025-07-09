@@ -27,6 +27,7 @@ export const RequestTableActions = ({
   const approvalModal = useDisclosure();
   const denyModal = useDisclosure();
   const deleteModal = useDisclosure();
+  const finalizeModal = useDisclosure();
   const {
     handleApproveRequest,
     handleDenyRequest,
@@ -88,7 +89,7 @@ export const RequestTableActions = ({
           title="Finalize"
           aria-label="Finalize"
           icon={<Icons.Checkmark />}
-          onClick={handleFinalizeRequest}
+          onClick={finalizeModal.onOpen}
           loading={isLoading}
           disabled={isLoading}
           data-testid="privacy-request-finalize-btn"
@@ -148,6 +149,18 @@ export const RequestTableActions = ({
           <Text>
             You are about to permanently delete the privacy request. Are you
             sure you would like to continue?
+          </Text>
+        }
+      />
+      <ConfirmationModal
+        isOpen={finalizeModal.isOpen}
+        onClose={finalizeModal.onClose}
+        onConfirm={handleFinalizeRequest}
+        title="Finalize privacy request"
+        message={
+          <Text>
+            You are about to finalize this privacy request, which moves its
+            status to complete. Are you sure you would like to continue?
           </Text>
         }
       />

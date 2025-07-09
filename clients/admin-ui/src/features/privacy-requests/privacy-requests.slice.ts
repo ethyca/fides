@@ -535,7 +535,7 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         method: "POST",
         url: `/privacy-request/${privacyRequestId}/finalize`,
       }),
-      invalidatesTags: ["Privacy Requests"],
+      invalidatesTags: ["Request"],
     }),
   }),
 });
