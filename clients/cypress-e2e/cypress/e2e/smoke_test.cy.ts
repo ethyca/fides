@@ -106,7 +106,7 @@ describe("Smoke test", () => {
         cy.getByTestId("edit-btn").click();
       });
 
-      cy.getByTestId("tab-Integrations").click();
+      cy.get(`.ant-tabs-tab-btn`).filter(`:contains("Integrations")`).click();
       cy.getByTestId("test-connection-button").click();
       cy.getByTestId("toast-success-msg").should("be.visible");
     });
@@ -118,7 +118,7 @@ describe("Smoke test", () => {
       cy.getByTestId("system-cookie_house_customer_database").within(() => {
         cy.getByTestId("edit-btn").click();
       });
-      cy.getByTestId("tab-Integrations").click();
+      cy.get(`.ant-tabs-tab-btn`).filter(`:contains("Integrations")`).click();
       cy.getByTestId("test-connection-button").click();
       cy.getByTestId("toast-success-msg").should("be.visible");
     });
