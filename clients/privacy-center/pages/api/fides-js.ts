@@ -50,6 +50,9 @@ const missingExperienceBehaviors: Record<
 const PREFETCH_RETRY_MIN_TIMEOUT_MS = 100;
 const PREFETCH_MAX_RETRIES = 10;
 const PREFETCH_BACKOFF_FACTOR = 1.125;
+const CUSTOM_CSS_RETRY_MIN_TIMEOUT_MS = 100;
+const CUSTOM_CSS_MAX_RETRIES = 10;
+const CUSTOM_CSS_BACKOFF_FACTOR = 1.125;
 
 /**
  * @swagger
@@ -246,7 +249,7 @@ export default async function handler(
             onFailedAttempt: (error) => {
               log.debug(
                 error,
-                `Attempt to get privacy experience failed, ${error.retriesLeft} remain.`,
+                `Attempt to get privacy experience failed, ${error.retriesLeft} retries remain.`,
               );
             },
           },
@@ -340,8 +343,7 @@ export default async function handler(
       fidesConsentNonApplicableFlagMode:
         environment.settings.FIDES_CONSENT_NON_APPLICABLE_FLAG_MODE,
       fidesConsentFlagType: environment.settings.FIDES_CONSENT_FLAG_TYPE,
-      fidesInitializedEventMode:
-        environment.settings.FIDES_INITIALIZED_EVENT_MODE,
+      fidesLegacyEvent: environment.settings.FIDES_LEGACY_EVENT,
     },
     experience: experience || undefined,
     geolocation: geolocation || undefined,
@@ -456,41 +458,67 @@ async function fetchCustomFidesCss(
     (lastFetched && currentTime - lastFetched > CUSTOM_FIDES_CSS_TTL_MS);
   // refresh if forced or auto-refresh is enabled and the cache is invalid
   const shouldRefresh = forceRefresh || (autoRefresh && isCacheInvalid);
-
+  log.debug({ shouldRefresh, forceRefresh, autoRefresh, isCacheInvalid });
   if (shouldRefresh) {
     try {
       const fidesUrl = getFidesApiUrl();
-      const response = await fetch(
-        `${fidesUrl}/plus/custom-asset/custom-fides.css`,
+      const css = await pRetry(
+        async () => {
+          const assetResponse = await fetch(
+            `${fidesUrl}/plus/custom-asset/custom-fides.css`,
+          );
+          if (assetResponse.status === 404) {
+            log.debug(
+              "No custom-fides.css found, disabling Custom CSS polling.",
+            );
+            autoRefresh = false;
+            return null;
+          }
+
+          const data = await assetResponse.text();
+          if (!data) {
+            throw new Error("No data returned by the server");
+          }
+          if (!assetResponse.ok) {
+            log.error(
+              "Error fetching custom-fides.css:",
+              assetResponse.status,
+              assetResponse.statusText,
+              data,
+            );
+            throw new Error(
+              `HTTP error occurred. Status: ${assetResponse.status}`,
+            );
+          }
+
+          return data;
+        },
+        {
+          retries: CUSTOM_CSS_MAX_RETRIES,
+          factor: CUSTOM_CSS_BACKOFF_FACTOR,
+          minTimeout: CUSTOM_CSS_RETRY_MIN_TIMEOUT_MS,
+          onFailedAttempt: (error) => {
+            log.debug(
+              error,
+              `Attempt to get Custom CSS failed, ${error.retriesLeft} retries remain.`,
+            );
+          },
+        },
       );
-      const data = await response.text();
 
-      if (!response.ok) {
-        if (response.status === 404) {
-          log.debug("No custom-fides.css found, skipping...");
-          autoRefresh = false;
-          return null;
-        }
-        log.error(
-          "Error fetching custom-fides.css:",
-          response.status,
-          response.statusText,
-          data,
-        );
-        throw new Error(`HTTP error occurred. Status: ${response.status}`);
-      }
-
-      if (!data) {
-        throw new Error("No data returned by the server");
+      if (!css) {
+        return null;
       }
 
       log.debug("Successfully retrieved custom-fides.css");
       autoRefresh = true;
-      cachedCustomFidesCss = data;
+      cachedCustomFidesCss = css;
       lastFetched = currentTime;
     } catch (error) {
-      autoRefresh = false; // /custom-asset endpoint unreachable stop auto-refresh
-      log.error(error, `Error during fetch operation`);
+      log.error(
+        error,
+        `Encountered an error while trying to fetch Custom CSS. Relying on cached copy.`,
+      );
     }
   }
   return cachedCustomFidesCss;
