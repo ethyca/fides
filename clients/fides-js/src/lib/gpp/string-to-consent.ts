@@ -37,11 +37,7 @@ const getConsentFromGppCmpApi = ({
   const consent: NoticeConsent = {};
   const { privacy_notices: notices = [] } = experience;
 
-  const { gppRegion, gppSection } = getGppSectionAndRegion(
-    experience.region,
-    experience.gpp_settings?.us_approach,
-    experience.privacy_notices,
-  );
+  const { gppRegion, gppSection } = getGppSectionAndRegion(experience);
 
   if (!gppRegion || !gppSection) {
     fidesDebugger(

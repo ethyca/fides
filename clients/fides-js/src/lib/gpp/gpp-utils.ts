@@ -14,7 +14,13 @@
 import { UsNatField } from "@iabgpp/cmpapi";
 
 import { FIDES_US_REGION_TO_GPP_SECTION, GPPUSApproach } from "./constants";
-import { GPPSection, GPPSettings, NoticeConsent, PrivacyNotice } from "./types";
+import {
+  GPPPrivacyExperience,
+  GPPSection,
+  GPPSettings,
+  NoticeConsent,
+  PrivacyNotice,
+} from "./types";
 
 export const US_NATIONAL_REGION = "us";
 
@@ -108,25 +114,28 @@ export const setMspaSections = ({
  * Common logic for determining GPP section and region from a privacy experience
  */
 export const getGppSectionAndRegion = (
-  experienceRegion: string,
-  usApproach: GPPUSApproach | undefined,
-  notices: Array<{ gpp_field_mapping?: Array<{ region: string }> }> = [],
+  experience: GPPPrivacyExperience,
 ): { gppRegion?: string; gppSection?: GPPSection } => {
+  const {
+    region: experienceRegion,
+    gpp_settings: gppSettings,
+    privacy_notices: notices,
+  } = experience;
   let gppRegion = deriveGppFieldRegion({
     experienceRegion,
-    usApproach,
+    usApproach: gppSettings?.us_approach,
   });
   let gppSection = FIDES_US_REGION_TO_GPP_SECTION[gppRegion];
 
-  if (!gppSection && usApproach === GPPUSApproach.ALL) {
+  if (!gppSection && gppSettings?.us_approach === GPPUSApproach.ALL) {
     // if we're using the "all" approach, and the user's state isn't supported yet, we should default to national.
     gppRegion = US_NATIONAL_REGION;
     gppSection = FIDES_US_REGION_TO_GPP_SECTION[gppRegion];
   }
 
-  if (gppSection && usApproach === GPPUSApproach.ALL) {
+  if (gppSection && gppSettings?.us_approach === GPPUSApproach.ALL) {
     // if we're using the "all" approach, and the current state is supported but no notices are provided for that state, we should default to national.
-    const hasNoticesForRegion = notices.some((notice) =>
+    const hasNoticesForRegion = notices?.some((notice) =>
       notice.gpp_field_mapping?.find((fm) => fm.region === experienceRegion),
     );
     if (!hasNoticesForRegion) {
@@ -137,7 +146,8 @@ export const getGppSectionAndRegion = (
 
   if (
     !gppSection ||
-    (gppRegion === US_NATIONAL_REGION && usApproach === GPPUSApproach.STATE)
+    (gppRegion === US_NATIONAL_REGION &&
+      gppSettings?.us_approach === GPPUSApproach.STATE)
   ) {
     // If we don't have a section, we can't set anything.
     // If we're using the state approach we shouldn't return the national section, even if region is set to national.

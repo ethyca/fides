@@ -69,3 +69,10 @@ export interface GPPSection {
 
 export type NoticeConsent = Record<string, boolean | UserConsentPreference>;
 export type PrivacyNotice = PrivacyNoticeWithPreference;
+
+// Generic privacy experience type for GPP use
+export interface GPPPrivacyExperience {
+  region: string;
+  gpp_settings?: GPPSettings;
+  privacy_notices?: Array<PrivacyNotice>;
+}

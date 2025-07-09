@@ -23,11 +23,7 @@ const updateGpp = (
   updater: (props: CmpApiUpdaterProps) => void,
   { cmpApi, experience, cookie }: UpdateGppProps,
 ) => {
-  const { gppRegion, gppSection } = getGppSectionAndRegion(
-    experience.region,
-    experience.gpp_settings?.us_approach,
-    experience.privacy_notices,
-  );
+  const { gppRegion, gppSection } = getGppSectionAndRegion(experience);
 
   if (!gppRegion || !gppSection) {
     // If we don't have a section, we can't set anything.
