@@ -9,7 +9,7 @@ import {
   ServingComponent,
 } from "../consent-types";
 import { FidesEvent } from "../events";
-import { sessionManager } from "../session-manager";
+import { fidesLifecycleManager } from "../fides-lifecycle-manager";
 
 interface UseNoticesServedProps {
   options: FidesInitOptions;
@@ -53,13 +53,13 @@ export const useNoticesServed = ({
         return;
       }
 
-      // Use the session-level served_notice_history_id for consistency
-      const sessionServedNoticeHistoryId =
-        sessionManager.getServedNoticeHistoryId();
+      // Use the lifecycle-level served_notice_history_id for consistency
+      const lifecycleServedNoticeHistoryId =
+        fidesLifecycleManager.getServedNoticeHistoryId();
 
       // Construct the notices-served API request and send!
       const request: RecordConsentServedRequest = {
-        served_notice_history_id: sessionServedNoticeHistoryId,
+        served_notice_history_id: lifecycleServedNoticeHistoryId,
         browser_identity: event.detail.identity,
         privacy_experience_config_history_id:
           privacyExperienceConfigHistoryId || "",

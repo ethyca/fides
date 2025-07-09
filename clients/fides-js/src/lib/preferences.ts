@@ -40,7 +40,7 @@ import {
   selectBestExperienceConfigTranslation,
   selectBestNoticeTranslation,
 } from "./i18n";
-import { sessionManager } from "./session-manager";
+import { fidesLifecycleManager } from "./fides-lifecycle-manager";
 import { transformConsentToFidesUserPreference } from "./shared-consent-utils";
 import { TcfSavePreferences } from "./tcf/types";
 
@@ -463,8 +463,9 @@ export const updateConsent = async (
 
   const fidesRegionString = constructFidesRegionString(config.geolocation);
 
-  // Get the session-level served notice history ID for consistency
-  const servedNoticeHistoryId = sessionManager.getServedNoticeHistoryId();
+  // Get the lifecycle-level served notice history ID for consistency
+  const servedNoticeHistoryId =
+    fidesLifecycleManager.getServedNoticeHistoryId();
 
   // Call updateConsentPreferences with necessary parameters
   return updateConsentPreferences({
