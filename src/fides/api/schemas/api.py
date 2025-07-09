@@ -24,6 +24,12 @@ class BulkResponse(BaseModel):
             )
 
 
+class ResponseWithMessage(BaseModel):
+    """Generic schema for responses with a message"""
+
+    message: str
+
+
 class BulkUpdateFailed(BaseModel):
     """Schema for use when Bulk Create/Update fails."""
 
