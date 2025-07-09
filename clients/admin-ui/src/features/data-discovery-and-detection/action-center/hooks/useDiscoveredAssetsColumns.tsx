@@ -12,6 +12,7 @@ import {
 } from "~/features/common/table/v2/cells";
 import { DiscoveredAssetActionsCell } from "~/features/data-discovery-and-detection/action-center/tables/cells/DiscoveredAssetActionsCell";
 import DiscoveredAssetDataUseCell from "~/features/data-discovery-and-detection/action-center/tables/cells/DiscoveredAssetDataUseCell";
+import { ActionCenterTabHash } from "~/features/data-discovery-and-detection/action-center/tables/useActionCenterTabs";
 import { PrivacyNoticeRegion, StagedResourceAPIResponse } from "~/types/api";
 
 import { SystemCell } from "../tables/cells/SystemCell";
@@ -21,7 +22,7 @@ export const useDiscoveredAssetsColumns = ({
   onTabChange,
 }: {
   readonly: boolean;
-  onTabChange: (index: number) => void;
+  onTabChange: (tab: ActionCenterTabHash) => void;
 }) => {
   const columnHelper = createColumnHelper<StagedResourceAPIResponse>();
 

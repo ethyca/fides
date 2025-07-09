@@ -25,6 +25,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Improvements to Generic Erasure Email Integrations so email batch jobs run with a Redis lock and execution time is configurable [#6316](https://github.com/ethyca/fides/pull/6316)
 
 ### Developer Experience
+- Migrate tabs to Ant Design [#6260](https://github.com/ethyca/fides/pull/6260)
 - Refactored GPP utility functions to reduce code duplication and improve maintainability [#6318](https://github.com/ethyca/fides/pull/6318)
 
 ### Fixed

@@ -8,6 +8,7 @@ import {
   AntDefaultOptionType as DefaultOptionType,
   AntDropdown as Dropdown,
   AntEmpty as Empty,
+  AntTabs as Tabs,
   AntTooltip as Tooltip,
   Flex,
   HStack,
@@ -19,7 +20,6 @@ import { uniq } from "lodash";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
-import DataTabsHeader from "~/features/common/DataTabsHeader";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import {
   ACTION_CENTER_ROUTE,
@@ -44,7 +44,9 @@ import {
   useUpdateAssetsSystemMutation,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import AddDataUsesModal from "~/features/data-discovery-and-detection/action-center/AddDataUsesModal";
-import useActionCenterTabs from "~/features/data-discovery-and-detection/action-center/tables/useActionCenterTabs";
+import useActionCenterTabs, {
+  ActionCenterTabHash,
+} from "~/features/data-discovery-and-detection/action-center/tables/useActionCenterTabs";
 import { successToastContent } from "~/features/data-discovery-and-detection/action-center/utils/successToastContent";
 import { DiffStatus } from "~/types/api";
 
@@ -64,7 +66,6 @@ export const DiscoveredAssetsTable = ({
   onSystemName,
 }: DiscoveredAssetsTableProps) => {
   const router = useRouter();
-  const tabHash = router.asPath.split("#")[1];
 
   const [systemName, setSystemName] = useState(systemId);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
@@ -115,17 +116,16 @@ export const DiscoveredAssetsTable = ({
 
   const toast = useToast();
 
-  const {
-    filterTabs,
-    filterTabIndex,
-    onTabChange,
-    activeParams,
-    actionsDisabled,
-  } = useActionCenterTabs({ systemId, initialHash: tabHash });
+  useEffect(() => {
+    resetPageIndexToDefault();
+  }, [monitorId, searchQuery, resetPageIndexToDefault]);
+
+  const { filterTabs, activeTab, onTabChange, activeParams, actionsDisabled } =
+    useActionCenterTabs(systemId);
 
   useEffect(() => {
     resetPageIndexToDefault();
-  }, [monitorId, searchQuery, filterTabIndex, resetPageIndexToDefault]);
+  }, [monitorId, searchQuery, activeTab, resetPageIndexToDefault]);
 
   const { data, isLoading, isFetching } = useGetDiscoveredAssetsQuery({
     key: monitorId,
@@ -146,7 +146,7 @@ export const DiscoveredAssetsTable = ({
   }, [data, systemId, onSystemName, setTotalPages, systemName]);
 
   const { columns } = useDiscoveredAssetsColumns({
-    readonly: actionsDisabled,
+    readonly: actionsDisabled ?? false,
     onTabChange,
   });
 
@@ -323,8 +323,8 @@ export const DiscoveredAssetsTable = ({
     }
   };
 
-  const handleTabChange = (index: number) => {
-    onTabChange(index);
+  const handleTabChange = (tab: ActionCenterTabHash) => {
+    onTabChange(tab);
     setRowSelection({});
   };
 
@@ -338,13 +338,13 @@ export const DiscoveredAssetsTable = ({
 
   return (
     <>
-      <DataTabsHeader
-        data={filterTabs}
-        data-testid="filter-tabs"
-        index={filterTabIndex}
-        isLazy
-        isManual
-        onChange={handleTabChange}
+      <Tabs
+        items={filterTabs.map((tab) => ({
+          key: tab.hash,
+          label: tab.label,
+        }))}
+        activeKey={activeTab}
+        onChange={(tab) => handleTabChange(tab as ActionCenterTabHash)}
       />
       <TableActionBar>
         <DebouncedSearchInput
@@ -381,7 +381,7 @@ export const DiscoveredAssetsTable = ({
                     label: "Assign system",
                     onClick: () => setIsAssignSystemModalOpen(true),
                   },
-                  ...(activeParams.diff_status.includes(DiffStatus.MUTED)
+                  ...(activeParams?.diff_status?.includes(DiffStatus.MUTED)
                     ? [
                         {
                           key: "restore",

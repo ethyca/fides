@@ -1,11 +1,10 @@
 import { DataFlowAccordion } from "common/system-data-flow/DataFlowAccordion";
-import { Box, Link, Text, useToast } from "fidesui";
+import { AntTabsProps as TabsProps, Box, Link, Text, useToast } from "fidesui";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import { type TabData } from "~/features/common/DataTabs";
 import { useFeatures } from "~/features/common/features";
 import {
   DirtyFormConfirmationModal,
@@ -16,6 +15,7 @@ import {
   EDIT_SYSTEM_ROUTE,
   INTEGRATION_MANAGEMENT_ROUTE,
 } from "~/features/common/nav/routes";
+import useURLHashedTabs from "~/features/common/tabs/useURLHashedTabs";
 import {
   DEFAULT_TOAST_PARAMS,
   errorToastParams,
@@ -39,41 +39,14 @@ import SystemInformationForm from "~/features/system/SystemInformationForm";
 import SystemAssetsTable from "~/features/system/tabs/system-assets/SystemAssetsTable";
 import { SystemResponse } from "~/types/api";
 
-const SYSTEM_TABS = {
-  INFORMATION: {
-    index: 0,
-    hash: "#information",
-  },
-  DATA_USES: {
-    index: 1,
-    hash: "#data-uses",
-  },
-  DATA_FLOW: {
-    index: 2,
-    hash: "#data-flow",
-  },
-  INTEGRATIONS: {
-    index: 3,
-    hash: "#integrations",
-  },
-  ASSETS: {
-    index: 4,
-    hash: "#assets",
-  },
-  HISTORY: {
-    index: 5,
-    hash: "#history",
-  },
-} as const;
-
-const getTabFromHash = (hash: string) => {
-  const normalizedHash = hash.startsWith("#") ? hash : `#${hash}`;
-  return Object.values(SYSTEM_TABS).find((tab) => tab.hash === normalizedHash);
-};
-
-const getTabFromIndex = (index: number) => {
-  return Object.values(SYSTEM_TABS).find((tab) => tab.index === index);
-};
+enum SystemTabKeys {
+  INFORMATION = "information",
+  DATA_USES = "data-uses",
+  DATA_FLOW = "data-flow",
+  INTEGRATIONS = "integrations",
+  ASSETS = "assets",
+  HISTORY = "history",
+}
 
 // The toast doesn't seem to handle next links well, so use buttons with onClick
 // handlers instead
@@ -106,15 +79,9 @@ const useSystemFormTabs = ({
 }) => {
   const router = useRouter();
 
-  // Get initial tab index based on URL hash
-  const getInitialTabIndex = (): number => {
-    const hash: string = router.asPath.split("#")[1];
-    return hash
-      ? (getTabFromHash(hash)?.index ?? SYSTEM_TABS.INFORMATION.index)
-      : SYSTEM_TABS.INFORMATION.index;
-  };
-
-  const [tabIndex, setTabIndex] = useState(getInitialTabIndex());
+  const { activeTab, onTabChange: baseOnTabChange } = useURLHashedTabs({
+    tabKeys: Object.values(SystemTabKeys),
+  });
 
   const [showSaveMessage, setShowSaveMessage] = useState(false);
   const { systemOrDatamapRoute } = useSystemOrDatamapRoute();
@@ -165,7 +132,7 @@ const useSystemFormTabs = ({
               });
             }}
             onAddPrivacyDeclaration={() => {
-              setTabIndex(1);
+              baseOnTabChange("data-uses");
               toast.closeAll();
             }}
           />
@@ -173,7 +140,14 @@ const useSystemFormTabs = ({
       };
       toast({ ...toastParams });
     },
-    [activeSystem, dispatch, router, systemOrDatamapRoute, toast],
+    [
+      activeSystem,
+      dispatch,
+      router,
+      systemOrDatamapRoute,
+      toast,
+      baseOnTabChange,
+    ],
   );
 
   useEffect(() => {
@@ -196,7 +170,7 @@ const useSystemFormTabs = ({
   const { attemptAction } = useIsAnyFormDirty();
 
   const onTabChange = useCallback(
-    (index: number) => {
+    (key: string) => {
       attemptAction().then(async (modalConfirmed: boolean) => {
         if (modalConfirmed) {
           const { status } = router.query;
@@ -208,46 +182,42 @@ const useSystemFormTabs = ({
             }
           }
 
-          // Update local state first
-          setTabIndex(index);
-
           // Update URL if router is ready
           if (router.isReady) {
-            const tab = getTabFromIndex(index);
-            if (tab) {
-              const newQuery = { ...router.query };
-              delete newQuery.status;
+            const newQuery = { ...router.query };
+            delete newQuery.status;
 
-              await router.replace(
-                {
-                  pathname: router.pathname,
-                  query: newQuery,
-                  hash: tab.hash,
-                },
-                undefined,
-                { shallow: true },
-              );
-            }
+            await router.replace(
+              {
+                pathname: router.pathname,
+                query: newQuery,
+              },
+              undefined,
+              { shallow: true },
+            );
           }
+
+          baseOnTabChange(key);
         }
       });
     },
-    [attemptAction, router, toast],
+    [attemptAction, router, toast, baseOnTabChange],
   );
 
   useEffect(() => {
     const { status } = router.query;
     if (status) {
-      onTabChange(SYSTEM_TABS.INTEGRATIONS.index);
+      onTabChange("integrations");
     }
   }, [router.query, onTabChange]);
 
   const showNewIntegrationNotice = hasPlus;
 
-  const tabData: TabData[] = [
+  const tabData: NonNullable<TabsProps["items"]> = [
     {
       label: "Information",
-      content: (
+      key: "information",
+      children: (
         <>
           <Box px={6} mb={9}>
             <DirtyFormConfirmationModal />
@@ -281,16 +251,18 @@ const useSystemFormTabs = ({
     },
     {
       label: "Data uses",
-      content: activeSystem ? (
+      key: "data-uses",
+      children: activeSystem ? (
         <Box px={6} width={{ base: "100%", lg: "70%" }}>
           <PrivacyDeclarationStep system={activeSystem} />
         </Box>
       ) : null,
-      isDisabled: !activeSystem || !systemProcessesPersonalData,
+      disabled: !activeSystem || !systemProcessesPersonalData,
     },
     {
       label: "Data flow",
-      content: activeSystem ? (
+      key: "data-flow",
+      children: activeSystem ? (
         <Box width={{ base: "100%", lg: "70%" }}>
           <Box px={6} paddingBottom={2}>
             <Text
@@ -312,11 +284,12 @@ const useSystemFormTabs = ({
           <DataFlowAccordion system={activeSystem} isSystemTab />
         </Box>
       ) : null,
-      isDisabled: !activeSystem,
+      disabled: !activeSystem,
     },
     {
       label: "Integrations",
-      content: activeSystem ? (
+      key: "integrations",
+      children: activeSystem ? (
         <Box width={{ base: "100%", lg: "70%" }}>
           <Box px={6} paddingBottom={2}>
             <Text fontSize="sm" lineHeight={5}>
@@ -346,24 +319,26 @@ const useSystemFormTabs = ({
           )}
         </Box>
       ) : null,
-      isDisabled: !activeSystem,
+      disabled: !activeSystem,
     },
   ];
 
   if (isPlusEnabled) {
     tabData.push({
       label: "Assets",
-      content: activeSystem ? (
+      key: "assets",
+      children: activeSystem ? (
         <SystemAssetsTable system={activeSystem} />
       ) : null,
-      isDisabled: !activeSystem,
+      disabled: !activeSystem,
     });
   }
 
   if (isPlusEnabled) {
     tabData.push({
       label: "History",
-      content: activeSystem ? (
+      key: "history",
+      children: activeSystem ? (
         <Box width={{ base: "100%", lg: "70%" }}>
           <Box px={6} paddingBottom={6}>
             <Text fontSize="sm" lineHeight={5} fontWeight="medium">
@@ -375,10 +350,10 @@ const useSystemFormTabs = ({
           <SystemHistoryTable system={activeSystem} />
         </Box>
       ) : null,
-      isDisabled: !activeSystem,
+      disabled: !activeSystem,
     });
   }
 
-  return { tabData, tabIndex, onTabChange };
+  return { tabData, activeKey: activeTab, onTabChange };
 };
 export default useSystemFormTabs;
