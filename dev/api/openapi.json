@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.65.1b1.post0.dev1"
+    "version": "2.65.1b1.post0.dev2"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -9889,6 +9889,35 @@
             }
           }
         }
+      }
+    },
+    "/api/v1/privacy-request/administrate/process-awaiting-email-send": {
+      "post": {
+        "tags": [
+          "Privacy Requests"
+        ],
+        "summary": "Send Batch Email Integrations",
+        "description": "Send batch email integrations for a privacy request.",
+        "operationId": "send_batch_email_integrations_api_v1_privacy_request_administrate_process_awaiting_email_send_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseWithMessage"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-request-email-integrations:send"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/id-verification/config": {
@@ -24606,6 +24635,20 @@
         "title": "ResponseFormat",
         "description": "Response formats"
       },
+      "ResponseWithMessage": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "ResponseWithMessage",
+        "description": "Generic schema for responses with a message"
+      },
       "ReviewPrivacyRequestIds": {
         "properties": {
           "request_ids": {
@@ -25530,6 +25573,7 @@
           "privacy-request:resume",
           "privacy-request-access-results:read",
           "privacy-request:delete",
+          "privacy-request-email-integrations:send",
           "privacy-request:manual-steps:respond",
           "privacy-request:manual-steps:review",
           "privacy-request-notifications:create_or_update",

@@ -1541,7 +1541,14 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">426</span>
 <span class="normal">427</span>
 <span class="normal">428</span>
-<span class="normal">429</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">429</span>
+<span class="normal">430</span>
+<span class="normal">431</span>
+<span class="normal">432</span>
+<span class="normal">433</span>
+<span class="normal">434</span>
+<span class="normal">435</span>
+<span class="normal">436</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -1582,7 +1589,7 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># A fully anonymized unique identifier that is automatically generated</span>
 <span class="c1"># by the application. Used for anonymous analytics when opted-in.</span>
-<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;2c80eff5349fdec3fe4758ac9932411c&quot;</span><span class="w"> </span><span class="c1"># string</span>
+<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;4682b1a240b88dc1f4229afc25e82422&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># When set to True, disables functionality that requires making calls</span>
 <span class="c1"># to a Fides webserver.</span>
@@ -1745,6 +1752,13 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># Whether fuzzy search is enabled for privacy request lookups.</span>
 <span class="n">fuzzy_search_enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="c1"># boolean</span>
+
+<span class="c1"># The cron expression to send batch emails for DSR email integration.</span>
+<span class="c1"># Defaults to weekly on Mondays at 12pm (noon).</span>
+<span class="n">email_send_cron_expression</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;0 12 * * mon&quot;</span><span class="w"> </span><span class="c1"># string</span>
+
+<span class="c1"># The timezone to send batch emails for DSR email integration.</span>
+<span class="n">email_send_timezone</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;US/Eastern&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1">#-------------#</span>
 <span class="c1">#-- LOGGING --#</span>
