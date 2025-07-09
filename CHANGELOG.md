@@ -21,6 +21,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.65.0...main)
 
+### Developer Experience
+- Migrate tabs to Ant Design [#6260](https://github.com/ethyca/fides/pull/6260)
+
 ### Fixed
 - Fixed FidesJS GPP to use national section when a supported US state has no specific notices and approach is set to both. [#6307](https://github.com/ethyca/fides/pull/6307)
 
