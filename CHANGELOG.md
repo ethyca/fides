@@ -25,6 +25,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ## [2.65.1](https://github.com/ethyca/fides/compare/2.65.0...2.65.1)
 
 ### Changed
+- Improvements to Generic Erasure Email Integrations so email batch jobs run with a Redis lock and execution time is configurable [#6316](https://github.com/ethyca/fides/pull/6316)
 - Manual tasks table will now filter by the logged in user by default [#6317](https://github.com/ethyca/fides/pull/6317)
 
 ## [2.65.0](https://github.com/ethyca/fides/compare/2.64.2...2.65.0)
