@@ -1,9 +1,14 @@
 import type { EventData, PingData } from "@iabgpp/cmpapi";
 
-export type GppCallback = (
-  event: PingData | EventData | boolean | null,
-  success: boolean,
-) => void;
+import {
+  PrivacyNoticeWithPreference,
+  UserConsentPreference,
+} from "../consent-types";
+import { GPPUSApproach } from "./constants";
+
+export interface GppCallback {
+  (event: PingData | EventData | boolean | null, success: boolean): void;
+}
 
 export type GppFunction = (
   command: string,
@@ -12,13 +17,7 @@ export type GppFunction = (
   version?: string,
 ) => void;
 
-export enum GPPUSApproach {
-  NATIONAL = "national",
-  STATE = "state",
-  ALL = "all",
-}
-
-export type GPPSettings = {
+export interface GPPSettings {
   enabled?: boolean;
   /**
    * National ('national') or state-by-state ('state') approach. Only required if regions includes US.
@@ -48,22 +47,32 @@ export type GPPSettings = {
    * Whether the GPP CMP API is required for the experience
    */
   cmp_api_required?: boolean;
-};
+}
 
-export type GPPMechanismMapping = {
+export interface GPPMechanismMapping {
   field: string;
   not_available: string;
   opt_out: string;
   not_opt_out: string;
-};
+}
 
-export type GPPFieldMapping = {
+export interface GPPFieldMapping {
   region: string;
   notice?: Array<string>;
   mechanism?: Array<GPPMechanismMapping>;
-};
+}
 
-export type GPPSection = {
+export interface GPPSection {
   name: string;
   id: number;
-};
+}
+
+export type NoticeConsent = Record<string, boolean | UserConsentPreference>;
+export type PrivacyNotice = PrivacyNoticeWithPreference;
+
+// Generic privacy experience type for GPP use
+export interface GPPPrivacyExperience {
+  region: string;
+  gpp_settings?: GPPSettings;
+  privacy_notices?: Array<PrivacyNotice>;
+}
