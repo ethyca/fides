@@ -33,6 +33,7 @@ import {
   FidesEventExtraDetails,
   FidesEventOrigin,
 } from "./events";
+import { fidesLifecycleManager } from "./fides-lifecycle-manager";
 import { decodeFidesString } from "./fides-string";
 import {
   DEFAULT_LOCALE,
@@ -40,7 +41,6 @@ import {
   selectBestExperienceConfigTranslation,
   selectBestNoticeTranslation,
 } from "./i18n";
-import { fidesLifecycleManager } from "./fides-lifecycle-manager";
 import { transformConsentToFidesUserPreference } from "./shared-consent-utils";
 import { TcfSavePreferences } from "./tcf/types";
 
