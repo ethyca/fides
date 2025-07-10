@@ -280,7 +280,7 @@ class TestGetCache:
             ):
                 get_cache()
 
-            assert (
-                "Redis connection failed with Exception: Test exception"
-                in loguru_caplog.text
-            )
+        assert (
+            "Redis connection failed with Exception: Test exception"
+            in loguru_caplog.text
+        )
