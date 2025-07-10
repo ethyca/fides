@@ -190,7 +190,7 @@ def _determine_redis_db_index(
     return CONFIG.redis.read_only_db_index if read_only else CONFIG.redis.db_index
 
 
-def get_cache(should_log: Optional[bool] = False) -> FidesopsRedis:
+def get_cache() -> FidesopsRedis:
     """Return a singleton connection to our Redis cache"""
 
     if not CONFIG.redis.enabled:
@@ -213,21 +213,20 @@ def get_cache(should_log: Optional[bool] = False) -> FidesopsRedis:
             ssl_ca_certs=CONFIG.redis.ssl_ca_certs,
             ssl_cert_reqs=CONFIG.redis.ssl_cert_reqs,
         )
-        if should_log:
-            logger.debug("New Redis connection created.")
 
-    if should_log:
-        logger.debug("Testing Redis connection...")
+        logger.debug("New Redis connection created.")
+
+    logger.debug("Testing Redis connection...")
     try:
         connected = _connection.ping()
-    except ConnectionErrorFromRedis:
+    except ConnectionErrorFromRedis as e:
         connected = False
+        logger.error("Redis connection failed with ConnectionErrorFromRedis: {}", e)
     else:
-        if should_log:
-            logger.debug("Redis connection succeeded.")
+        logger.debug("Redis connection succeeded.")
 
     if not connected:
-        logger.debug("Redis connection failed.")
+        logger.error("Redis connection failed.")
         raise common_exceptions.RedisConnectionError(
             "Unable to establish Redis connection. Fidesops is unable to accept PrivacyRequsts."
         )
