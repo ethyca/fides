@@ -26,6 +26,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Changed
 - Improvements to Generic Erasure Email Integrations so email batch jobs run with a Redis lock and execution time is configurable [#6316](https://github.com/ethyca/fides/pull/6316)
+- Privacy Center now only disabled `custom-fides.css` polling when it receives a 404. It will continue to poll after receiving other HTTP Status Codes. [#6319](https://github.com/ethyca/fides/pull/6319)
+- Privacy Center will now retry when it receives an error HTTP Status code while retrieving `custom-fides.css` [#6319](https://github.com/ethyca/fides/pull/6319)
 
 ### Developer Experience
 - Migrate tabs to Ant Design [#6260](https://github.com/ethyca/fides/pull/6260)
