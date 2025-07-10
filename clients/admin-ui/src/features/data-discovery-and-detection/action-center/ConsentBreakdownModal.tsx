@@ -129,8 +129,6 @@ export const ConsentBreakdownModal = ({
                     current: pageIndex,
                     pageSize,
                     total: totalRows || 0,
-                    showSizeChanger: true,
-                    pageSizeOptions: PAGE_SIZES,
                     showTotal: (total, range) =>
                       `${range[0]}-${range[1]} of ${total} items`,
                     onChange: (page, size) => {
