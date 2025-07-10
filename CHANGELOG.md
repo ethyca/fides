@@ -19,7 +19,13 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.65.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.65.1...main)
+
+
+## [2.65.1](https://github.com/ethyca/fides/compare/2.65.0...2.65.1)
+
+### Changed
+- Manual tasks table will now filter by the logged in user by default [#6317](https://github.com/ethyca/fides/pull/6317)
 
 ## [2.65.0](https://github.com/ethyca/fides/compare/2.64.2...2.65.0)
 
@@ -40,6 +46,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Refactored fides-js SDK to use React Context for global state management and simplified consent updating method [#6257](https://github.com/ethyca/fides/pull/6257)
 - Update Shopify integration so that we do not pass consent keys to Shopify with undefined values [#6270](https://github.com/ethyca/fides/pull/6270)
 - Privacy Center visitors can get validation feedback by pressing submit [#6271](https://github.com/ethyca/fides/pull/6271)
+- Manual tasks table will now filter by the logged in user by default [#6317](https://github.com/ethyca/fides/pull/6317)
 
 ### Developer Experience
 - Updated SQLAlchemy models to match the contents of the Alembic migrations [#6262](https://github.com/ethyca/fides/pull/6262)
