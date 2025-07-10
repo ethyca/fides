@@ -337,7 +337,7 @@ export const TcfOverlay = () => {
     experienceFull || experienceMinimal,
   );
 
-  const { servedNoticeHistoryId } = useNoticesServed({
+  useNoticesServed({
     privacyExperienceConfigHistoryId,
     privacyNoticeHistoryIds: privacyNoticesWithBestTranslation.reduce(
       (ids, e) => {
@@ -384,41 +384,37 @@ export const TcfOverlay = () => {
           customPurposesConsent[notice.notice_key] = true;
         }
       });
-      updateConsent(
-        fidesGlobal,
-        {
-          noticeConsent: customPurposesConsent,
-          consentMethod,
-          eventExtraDetails: {
-            servingComponent: servingComponentRef.current,
-            trigger: triggerRef.current,
-          },
-          tcf,
-          updateCookie: (oldCookie) => {
-            return updateTCFCookie(
-              oldCookie,
-              tcf,
-              enabledIds,
-              experienceFull || experienceMinimal,
-              customPurposesConsent,
-              (result) => {
-                if (experienceFull) {
-                  const updatedTcfEntities = buildUserPrefs(
-                    experienceFull,
-                    result,
-                  );
-                  // update the experienceFull state with the new user preferences from the updated cookie
-                  setExperienceFull({
-                    ...experienceFull,
-                    ...updatedTcfEntities,
-                  });
-                }
-              },
-            );
-          },
+      updateConsent(fidesGlobal, {
+        noticeConsent: customPurposesConsent,
+        consentMethod,
+        eventExtraDetails: {
+          servingComponent: servingComponentRef.current,
+          trigger: triggerRef.current,
         },
-        servedNoticeHistoryId,
-      ).finally(() => {
+        tcf,
+        updateCookie: (oldCookie) => {
+          return updateTCFCookie(
+            oldCookie,
+            tcf,
+            enabledIds,
+            experienceFull || experienceMinimal,
+            customPurposesConsent,
+            (result) => {
+              if (experienceFull) {
+                const updatedTcfEntities = buildUserPrefs(
+                  experienceFull,
+                  result,
+                );
+                // update the experienceFull state with the new user preferences from the updated cookie
+                setExperienceFull({
+                  ...experienceFull,
+                  ...updatedTcfEntities,
+                });
+              }
+            },
+          );
+        },
+      }).finally(() => {
         if (window.Fides) {
           // apply any updates to the fidesGlobal
           setFidesGlobal(window.Fides as InitializedFidesGlobal);
@@ -434,7 +430,6 @@ export const TcfOverlay = () => {
       fidesGlobal,
       servingComponentRef,
       triggerRef,
-      servedNoticeHistoryId,
       setTrigger,
       setFidesGlobal,
     ],

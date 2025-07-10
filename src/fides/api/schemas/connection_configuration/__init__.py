@@ -191,6 +191,7 @@ secrets_schemas: Dict[str, Any] = {
     ConnectionType.sovrn.value: SovrnSchema,
     ConnectionType.timescale.value: TimescaleSchema,
     ConnectionType.website.value: WebsiteSchema,
+    ConnectionType.test_website.value: WebsiteSchema,
 }
 
 

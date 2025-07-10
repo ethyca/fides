@@ -1,81 +1,16 @@
-import { useRouter } from "next/router";
-import { useCallback, useState } from "react";
-
+import useURLHashedTabs from "~/features/common/tabs/useURLHashedTabs";
 import { DiffStatus } from "~/types/api";
 
-const ACTION_CENTER_TABLE_TABS = {
-  ATTENTION_REQUIRED: {
-    index: 0,
-    hash: "#attention-required",
-  },
-  RECENT_ACTIVITY: {
-    index: 1,
-    hash: "#recent-activity",
-  },
-  IGNORED: {
-    index: 2,
-    hash: "#ignored",
-  },
-};
+export enum ActionCenterTabHash {
+  ATTENTION_REQUIRED = "attention-required",
+  RECENT_ACTIVITY = "recent-activity",
+  IGNORED = "ignored",
+}
 
-const getTabFromHash = (hash: string) => {
-  const normalizedHash = hash.startsWith("#") ? hash : `#${hash}`;
-  return Object.values(ACTION_CENTER_TABLE_TABS).find(
-    (tab) => tab.hash === normalizedHash,
-  );
-};
-
-const getTabFromIndex = (index: number) => {
-  return Object.values(ACTION_CENTER_TABLE_TABS).find(
-    (tab) => tab.index === index,
-  );
-};
-
-export const getIndexFromHash = (hash: string) => {
-  return getTabFromHash(hash)?.index;
-};
-
-const useActionCenterTabs = ({
-  systemId,
-  initialHash,
-}: {
-  systemId?: string;
-  initialHash?: string;
-}) => {
-  const router = useRouter();
-  const getInitialTabIndex = () => {
-    return initialHash
-      ? getTabFromHash(initialHash)?.index
-      : ACTION_CENTER_TABLE_TABS.ATTENTION_REQUIRED.index;
-  };
-
-  const [filterTabIndex, setFilterTabIndex] = useState(getInitialTabIndex());
-
-  const onTabChange = useCallback(
-    async (index: number) => {
-      // Update local state first
-      setFilterTabIndex(index);
-
-      // Update URL if router is ready
-      if (router.isReady) {
-        const tab = getTabFromIndex(index);
-        if (tab) {
-          const newQuery = { ...router.query };
-
-          await router.replace(
-            {
-              pathname: router.pathname,
-              query: newQuery,
-              hash: tab.hash,
-            },
-            undefined,
-            { shallow: true },
-          );
-        }
-      }
-    },
-    [router],
-  );
+const useActionCenterTabs = (systemId?: string) => {
+  const { activeTab, onTabChange } = useURLHashedTabs({
+    tabKeys: Object.values(ActionCenterTabHash),
+  });
 
   const filterTabs = [
     {
@@ -84,12 +19,14 @@ const useActionCenterTabs = ({
         diff_status: [DiffStatus.ADDITION],
         system: systemId,
       },
+      hash: ActionCenterTabHash.ATTENTION_REQUIRED,
     },
     {
       label: "Recent activity",
       params: {
         diff_status: [DiffStatus.MONITORED],
       },
+      hash: ActionCenterTabHash.RECENT_ACTIVITY,
     },
     {
       label: "Ignored",
@@ -97,18 +34,23 @@ const useActionCenterTabs = ({
         diff_status: [DiffStatus.MUTED],
         system: systemId,
       },
+      hash: ActionCenterTabHash.IGNORED,
     },
   ];
 
+  const activeTabData =
+    filterTabs.find((tab) => tab.hash === activeTab) ?? filterTabs[0];
+
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  const { diff_status, system } = filterTabs[filterTabIndex!].params;
+  const { diff_status, system } = activeTabData.params;
+
   const actionsDisabled = diff_status.includes(DiffStatus.MONITORED);
 
   const activeParams = systemId ? { diff_status, system } : { diff_status };
 
   return {
     filterTabs,
-    filterTabIndex,
+    activeTab,
     onTabChange,
     activeParams,
     actionsDisabled,

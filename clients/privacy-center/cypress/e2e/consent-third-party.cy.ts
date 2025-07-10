@@ -1,10 +1,9 @@
-import { CONSENT_COOKIE_NAME } from "fides-js";
-import { stubConfig, stubTCFExperience } from "support/stubs";
-
 import {
+  CONSENT_COOKIE_NAME,
   ConsentFlagType,
   ConsentNonApplicableFlagMode,
-} from "../../../fides-js/src/lib/consent-types";
+} from "fides-js";
+import { stubConfig, stubTCFExperience } from "support/stubs";
 
 const PRIVACY_NOTICE_KEY_1 = "advertising";
 const PRIVACY_NOTICE_KEY_2 = "essential";

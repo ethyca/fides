@@ -6,13 +6,13 @@ import {
   FidesCookie,
   FidesEndpointPaths,
   Layer1ButtonOption,
+  NoticeConsent,
   PrivacyExperience,
   PrivacyExperienceMinimal,
   RejectAllMechanism,
 } from "fides-js";
-import { NoticeConsent } from "fides-js/src/lib/consent-types";
-import { FIDES_SEPARATOR } from "fides-js/src/lib/tcf/constants";
 
+import { FIDES_SEPARATOR } from "../../../fides-js/src/lib/tcf/constants";
 import {
   API_URL,
   TCF_VERSION_HASH,
