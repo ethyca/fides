@@ -481,7 +481,7 @@ async function fetchCustomFidesCss(
             throw new Error("No data returned by the server");
           }
           if (!assetResponse.ok) {
-            log.error(
+            log.debug(
               "Error fetching custom-fides.css:",
               assetResponse.status,
               assetResponse.statusText,
@@ -508,6 +508,7 @@ async function fetchCustomFidesCss(
       );
 
       if (!css) {
+        log.debug("No custom-fides.css returned.");
         return null;
       }
 
