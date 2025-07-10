@@ -14,9 +14,7 @@ import {
   useDisclosure,
 } from "fidesui";
 
-import { useAppSelector } from "~/app/hooks";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
-import { selectLockedForGVL } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import { DataUse, PrivacyDeclarationResponse } from "~/types/api";
 
 const PrivacyDeclarationRow = ({
@@ -155,23 +153,19 @@ export const PrivacyDeclarationDisplayGroup = ({
     return "";
   };
 
-  const lockedForGVL = useAppSelector(selectLockedForGVL);
-
   return (
     <PrivacyDeclarationTabTable
       heading={heading}
       footerButton={
-        !lockedForGVL ? (
-          <Button
-            onClick={handleAdd}
-            size="small"
-            icon={<SmallAddIcon boxSize={4} />}
-            iconPosition="end"
-            data-testid="add-btn"
-          >
-            Add data use
-          </Button>
-        ) : null
+        <Button
+          onClick={handleAdd}
+          size="small"
+          icon={<SmallAddIcon boxSize={4} />}
+          iconPosition="end"
+          data-testid="add-btn"
+        >
+          Add data use
+        </Button>
       }
     >
       {declarations.map((pd) => (
@@ -179,7 +173,7 @@ export const PrivacyDeclarationDisplayGroup = ({
           declaration={pd}
           key={pd.id}
           title={declarationTitle(pd)}
-          handleDelete={!lockedForGVL ? handleDelete : undefined}
+          handleDelete={handleDelete}
           handleEdit={handleEdit}
         />
       ))}
