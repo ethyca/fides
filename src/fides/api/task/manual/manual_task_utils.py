@@ -284,6 +284,37 @@ def get_manual_task_instances_for_privacy_request(
     )
 
 
+def filter_manual_task_configs_by_policy(
+    policy: "Policy", config: ManualTaskConfig
+) -> bool:
+    """
+    Filter manual task configs by policy.
+    """
+    filer_match = False
+    has_access_rules = bool(policy.get_rules_for_action(action_type=ActionType.access))
+    has_erasure_rules = bool(
+        policy.get_rules_for_action(action_type=ActionType.erasure)
+    )
+
+    if has_access_rules and has_erasure_rules:
+        # If both access and erasure rules exist, include both types
+        if config.config_type in [
+            ManualTaskConfigurationType.access_privacy_request,
+            ManualTaskConfigurationType.erasure_privacy_request,
+        ]:
+            filer_match = True
+    elif has_access_rules:
+        # Only access rules - only include access configurations
+        if config.config_type == ManualTaskConfigurationType.access_privacy_request:
+            filer_match = True
+    elif has_erasure_rules:
+        # Only erasure rules - only include erasure configurations
+        if config.config_type == ManualTaskConfigurationType.erasure_privacy_request:
+            filer_match = True
+
+    return filer_match
+
+
 def create_manual_task_artificial_graphs(
     db: Session,
     policy: Optional["Policy"] = None,
@@ -310,17 +341,6 @@ def create_manual_task_artificial_graphs(
     manual_task_graphs = []
     manual_addresses = get_manual_task_addresses(db)
 
-    # Determine the privacy request type based on policy rules (if policy is provided)
-    has_access_rules = False
-    has_erasure_rules = False
-    if policy:
-        has_access_rules = bool(
-            policy.get_rules_for_action(action_type=ActionType.access)
-        )
-        has_erasure_rules = bool(
-            policy.get_rules_for_action(action_type=ActionType.erasure)
-        )
-
     for address in manual_addresses:
         connection_key = address.dataset
 
@@ -344,29 +364,7 @@ def create_manual_task_artificial_graphs(
 
                 # Filter by configuration type based on policy rules (if policy is provided)
                 if policy:
-                    if has_access_rules and has_erasure_rules:
-                        # If both access and erasure rules exist, include both types
-                        if config.config_type not in [
-                            ManualTaskConfigurationType.access_privacy_request,
-                            ManualTaskConfigurationType.erasure_privacy_request,
-                        ]:
-                            continue
-                    elif has_access_rules:
-                        # Only access rules - only include access configurations
-                        if (
-                            config.config_type
-                            != ManualTaskConfigurationType.access_privacy_request
-                        ):
-                            continue
-                    elif has_erasure_rules:
-                        # Only erasure rules - only include erasure configurations
-                        if (
-                            config.config_type
-                            != ManualTaskConfigurationType.erasure_privacy_request
-                        ):
-                            continue
-                    else:
-                        # No relevant rules - skip this config
+                    if not filter_manual_task_configs_by_policy(policy, config):
                         continue
 
                 for field in config.field_definitions:
