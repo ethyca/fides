@@ -8,7 +8,11 @@
         "Browser request": 92,
         "Cookie": 5
       },
-      "total_updates": 97
+      "total_updates": 97,
+      "consent_status": {
+        "status": "alert",
+        "message": "One or more assets were detected without consent"
+      }
     },
     {
       "name": "my web monitor 1",
@@ -18,7 +22,11 @@
         "Browser request": 201,
         "Cookie": 24
       },
-      "total_updates": 225
+      "total_updates": 225,
+      "consent_status": {
+        "status": "alert",
+        "message": "One or more assets were detected without consent"
+      }
     },
     {
       "name": "My New BQ Monitor",

@@ -35,6 +35,13 @@ import {
 } from "~/features/common/table/v2";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
+  ConsentStatus,
+  DiffStatus,
+  StagedResourceAPIResponse,
+} from "~/types/api";
+
+import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
+import {
   useAddMonitorResultAssetsMutation,
   useAddMonitorResultSystemsMutation,
   useGetDiscoveredAssetsQuery,
@@ -42,17 +49,15 @@ import {
   useRestoreMonitorResultAssetsMutation,
   useUpdateAssetsMutation,
   useUpdateAssetsSystemMutation,
-} from "~/features/data-discovery-and-detection/action-center/action-center.slice";
-import AddDataUsesModal from "~/features/data-discovery-and-detection/action-center/AddDataUsesModal";
+} from "../action-center.slice";
+import AddDataUsesModal from "../AddDataUsesModal";
+import { AssignSystemModal } from "../AssignSystemModal";
+import { ConsentBreakdownModal } from "../ConsentBreakdownModal";
 import useActionCenterTabs, {
   ActionCenterTabHash,
-} from "~/features/data-discovery-and-detection/action-center/tables/useActionCenterTabs";
-import { successToastContent } from "~/features/data-discovery-and-detection/action-center/utils/successToastContent";
-import { DiffStatus } from "~/types/api";
-
-import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
-import { AssignSystemModal } from "../AssignSystemModal";
+} from "../hooks/useActionCenterTabs";
 import { useDiscoveredAssetsColumns } from "../hooks/useDiscoveredAssetsColumns";
+import { SuccessToastContent } from "../SuccessToastContent";
 
 interface DiscoveredAssetsTableProps {
   monitorId: string;
@@ -66,6 +71,9 @@ export const DiscoveredAssetsTable = ({
   onSystemName,
 }: DiscoveredAssetsTableProps) => {
   const router = useRouter();
+  const [firstItemConsentStatus, setFirstItemConsentStatus] = useState<
+    ConsentStatus | null | undefined
+  >();
 
   const [systemName, setSystemName] = useState(systemId);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
@@ -73,6 +81,10 @@ export const DiscoveredAssetsTable = ({
     useState<boolean>(false);
   const [isAddDataUseModalOpen, setIsAddDataUseModalOpen] =
     useState<boolean>(false);
+  const [consentBreakdownModalData, setConsentBreakdownModalData] = useState<{
+    stagedResource: StagedResourceAPIResponse;
+    status: ConsentStatus;
+  } | null>(null);
   const [addMonitorResultAssetsMutation, { isLoading: isAddingResults }] =
     useAddMonitorResultAssetsMutation();
   const [ignoreMonitorResultAssetsMutation, { isLoading: isIgnoringResults }] =
@@ -145,9 +157,33 @@ export const DiscoveredAssetsTable = ({
     }
   }, [data, systemId, onSystemName, setTotalPages, systemName]);
 
+  useEffect(() => {
+    if (data?.items && !firstItemConsentStatus) {
+      // this ensures that the column header remembers the consent status
+      // even when the user navigates to a different paginated page
+      const consentStatus = data.items.find(
+        (item) => item.consent_aggregated === ConsentStatus.WITHOUT_CONSENT,
+      )?.consent_aggregated;
+      setFirstItemConsentStatus(consentStatus);
+    }
+  }, [data, firstItemConsentStatus]);
+
+  const handleShowBreakdown = (
+    stagedResource: StagedResourceAPIResponse,
+    status: ConsentStatus,
+  ) => {
+    setConsentBreakdownModalData({ stagedResource, status });
+  };
+
+  const handleCloseBreakdown = () => {
+    setConsentBreakdownModalData(null);
+  };
+
   const { columns } = useDiscoveredAssetsColumns({
     readonly: actionsDisabled ?? false,
     onTabChange,
+    aggregatedConsent: firstItemConsentStatus,
+    onShowBreakdown: handleShowBreakdown,
   });
 
   const tableInstance = useReactTable({
@@ -182,11 +218,7 @@ export const DiscoveredAssetsTable = ({
       return assetKey === systemKey;
     });
 
-    const systemKeyFromResult = result.data?.[0]?.promoted_system_key;
-
-    const systemToLink = allAssetsHaveSameSystemKey
-      ? (systemKeyFromResult ?? systemKey)
-      : undefined;
+    const systemToLink = allAssetsHaveSameSystemKey ? systemKey : undefined;
 
     if (isErrorResult(result)) {
       toast(errorToastParams(getErrorMessage(result.error)));
@@ -194,7 +226,7 @@ export const DiscoveredAssetsTable = ({
       tableInstance.resetRowSelection();
       toast(
         successToastParams(
-          successToastContent(
+          SuccessToastContent(
             `${selectedUrns.length} assets from ${systemName} have been added to the system inventory.`,
             systemToLink
               ? () =>
@@ -477,6 +509,14 @@ export const DiscoveredAssetsTable = ({
         onSave={handleBulkAddDataUse}
         isSaving={isBulkAddingDataUses}
       />
+      {consentBreakdownModalData && (
+        <ConsentBreakdownModal
+          isOpen={!!consentBreakdownModalData}
+          stagedResource={consentBreakdownModalData.stagedResource}
+          status={consentBreakdownModalData.status}
+          onCancel={handleCloseBreakdown}
+        />
+      )}
     </>
   );
 };
