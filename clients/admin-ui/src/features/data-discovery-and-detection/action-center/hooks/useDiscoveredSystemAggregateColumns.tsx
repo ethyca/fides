@@ -39,147 +39,147 @@ export const useDiscoveredSystemAggregateColumns = ({
   allowIgnore,
   onTabChange,
 }: UseDiscoveredSystemAggregateColumnsProps) => {
-  const columnHelper =
-    createColumnHelper<SystemStagedResourcesAggregateRecord>();
+  const columns = useMemo(() => {
+    const columnHelper =
+      createColumnHelper<SystemStagedResourcesAggregateRecord>();
 
-  const select = columnHelper.display({
-    id: "select",
-    cell: ({ row }) => (
-      <IndeterminateCheckboxCell
-        isChecked={row.getIsSelected()}
-        onChange={row.getToggleSelectedHandler()}
-        dataTestId={`select-${row.original.name || row.id}`}
-      />
-    ),
-    header: ({ table }) => (
-      <IndeterminateCheckboxCell
-        isChecked={table.getIsAllPageRowsSelected()}
-        isIndeterminate={table.getIsSomeRowsSelected()}
-        onChange={table.getToggleAllRowsSelectedHandler()}
-        dataTestId="select-all-rows"
-      />
-    ),
-    maxSize: 40,
-    meta: {
-      disableRowClick: true,
-      cellProps: {
-        borderRight: "none",
+    const select = columnHelper.display({
+      id: "select",
+      cell: ({ row }) => (
+        <IndeterminateCheckboxCell
+          isChecked={row.getIsSelected()}
+          onChange={row.getToggleSelectedHandler()}
+          dataTestId={`select-${row.original.name || row.id}`}
+        />
+      ),
+      header: ({ table }) => (
+        <IndeterminateCheckboxCell
+          isChecked={table.getIsAllPageRowsSelected()}
+          isIndeterminate={table.getIsSomeRowsSelected()}
+          onChange={table.getToggleAllRowsSelectedHandler()}
+          dataTestId="select-all-rows"
+        />
+      ),
+      maxSize: 40,
+      meta: {
+        disableRowClick: true,
+        cellProps: {
+          borderRight: "none",
+        },
       },
-    },
-  });
+    });
 
-  const systemName = columnHelper.accessor((row) => row.name, {
-    id: "system_name",
-    cell: (props) => <DiscoveredSystemStatusCell system={props.row.original} />,
-    header: () => {
-      return (
-        <Space>
-          <div>System</div>
-          <DiscoveryStatusIcon consentStatus={consentStatus} />
-        </Space>
-      );
-    },
-    size: 300,
-    meta: {
-      headerProps: !readonly
-        ? {
-            paddingLeft: "0px",
+    const systemName = columnHelper.accessor((row) => row.name, {
+      id: "system_name",
+      cell: (props) => (
+        <DiscoveredSystemStatusCell system={props.row.original} />
+      ),
+      header: () => {
+        return (
+          <Space>
+            <div>System</div>
+            <DiscoveryStatusIcon consentStatus={consentStatus} />
+          </Space>
+        );
+      },
+      size: 300,
+      meta: {
+        headerProps: !readonly
+          ? {
+              paddingLeft: "0px",
+            }
+          : undefined,
+        cellProps: !readonly
+          ? {
+              padding: "0 !important",
+            }
+          : undefined,
+      },
+    });
+
+    const totalUpdates = columnHelper.accessor((row) => row.total_updates, {
+      id: "total_updates",
+      cell: (props) => <DefaultCell value={props.getValue()} />,
+      header: "Assets",
+      size: 80,
+    });
+
+    const dataUse = columnHelper.display({
+      id: "data_use",
+      cell: (props) => (
+        <DiscoveredSystemDataUseCell system={props.row.original} />
+      ),
+      header: "Categories of consent",
+      size: 400,
+      meta: {
+        disableRowClick: true,
+      },
+    });
+
+    const locations = columnHelper.accessor((row) => row.locations, {
+      id: "locations",
+      cell: (props) => (
+        <BadgeCellExpandable
+          values={
+            props.getValue()?.map((location) => ({
+              label:
+                PRIVACY_NOTICE_REGION_RECORD[location as PrivacyNoticeRegion],
+              key: location,
+            })) ?? []
           }
-        : undefined,
-      cellProps: !readonly
-        ? {
-            padding: "0 !important",
-          }
-        : undefined,
-    },
-  });
+        />
+      ),
+      header: (props) => <DefaultHeaderCell value="Locations" {...props} />,
+      size: 300,
+      meta: {
+        showHeaderMenu: true,
+        disableRowClick: true,
+      },
+    });
 
-  const totalUpdates = columnHelper.accessor((row) => row.total_updates, {
-    id: "total_updates",
-    cell: (props) => <DefaultCell value={props.getValue()} />,
-    header: "Assets",
-    size: 80,
-  });
+    const domains = columnHelper.accessor((row) => row.domains, {
+      id: "domains",
+      cell: (props) => (
+        <ListCellExpandable
+          values={props.getValue()}
+          valueSuffix="domains"
+          cellProps={props}
+        />
+      ),
+      header: (props) => <DefaultHeaderCell value="Domains" {...props} />,
+      meta: {
+        showHeaderMenu: true,
+        disableRowClick: true,
+      },
+    });
 
-  const dataUse = columnHelper.display({
-    id: "data_use",
-    cell: (props) => (
-      <DiscoveredSystemDataUseCell system={props.row.original} />
-    ),
-    header: "Categories of consent",
-    size: 400,
-    meta: {
-      disableRowClick: true,
-    },
-  });
+    const actions = columnHelper.display({
+      id: "actions",
+      cell: (props) => (
+        <DiscoveredSystemActionsCell
+          system={props.row.original}
+          monitorId={monitorId}
+          allowIgnore={allowIgnore}
+          onTabChange={onTabChange}
+        />
+      ),
+      header: "Actions",
+      meta: {
+        disableRowClick: true,
+      },
+    });
 
-  const locations = columnHelper.accessor((row) => row.locations, {
-    id: "locations",
-    cell: (props) => (
-      <BadgeCellExpandable
-        values={
-          props.getValue()?.map((location) => ({
-            label:
-              PRIVACY_NOTICE_REGION_RECORD[location as PrivacyNoticeRegion],
-            key: location,
-          })) ?? []
-        }
-      />
-    ),
-    header: (props) => <DefaultHeaderCell value="Locations" {...props} />,
-    size: 300,
-    meta: {
-      showHeaderMenu: true,
-      disableRowClick: true,
-    },
-  });
+    const readonlyColumns = [
+      systemName,
+      totalUpdates,
+      dataUse,
+      locations,
+      domains,
+    ];
+    const allColumns = [select, ...readonlyColumns, actions];
 
-  const domains = columnHelper.accessor((row) => row.domains, {
-    id: "domains",
-    cell: (props) => (
-      <ListCellExpandable
-        values={props.getValue()}
-        valueSuffix="domains"
-        cellProps={props}
-      />
-    ),
-    header: (props) => <DefaultHeaderCell value="Domains" {...props} />,
-    meta: {
-      showHeaderMenu: true,
-      disableRowClick: true,
-    },
-  });
-
-  const actions = columnHelper.display({
-    id: "actions",
-    cell: (props) => (
-      <DiscoveredSystemActionsCell
-        system={props.row.original}
-        monitorId={monitorId}
-        allowIgnore={allowIgnore}
-        onTabChange={onTabChange}
-      />
-    ),
-    header: "Actions",
-    meta: {
-      disableRowClick: true,
-    },
-  });
-
-  const readonlyColumns = useMemo(
-    () => [systemName, totalUpdates, dataUse, locations, domains],
-    [systemName, totalUpdates, dataUse, locations, domains],
-  );
-
-  const allColumns = useMemo(
-    () => [select, ...readonlyColumns, actions],
-    [select, readonlyColumns, actions],
-  );
-
-  const columns = useMemo(
-    () => (readonly ? readonlyColumns : allColumns),
-    [readonly, readonlyColumns, allColumns],
-  );
+    return readonly ? readonlyColumns : allColumns;
+  }, [monitorId, readonly, consentStatus, allowIgnore, onTabChange]);
 
   return { columns };
 };

@@ -1,5 +1,6 @@
 import { AntTooltip as Tooltip, Icons } from "fidesui";
 
+import { useFeatures } from "~/features/common/features/features.slice";
 import { AlertLevel, ConsentAlertInfo } from "~/types/api";
 
 interface DiscoveryStatusIconProps {
@@ -9,7 +10,11 @@ interface DiscoveryStatusIconProps {
 export const DiscoveryStatusIcon = ({
   consentStatus,
 }: DiscoveryStatusIconProps) => {
-  return consentStatus?.status === AlertLevel.ALERT ? (
+  const { flags } = useFeatures();
+  const { assetConsentStatusLabels } = flags;
+
+  return assetConsentStatusLabels &&
+    consentStatus?.status === AlertLevel.ALERT ? (
     <Tooltip
       title={consentStatus?.message}
       data-testid="discovery-status-icon-alert-tooltip"
