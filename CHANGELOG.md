@@ -21,7 +21,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.65.1...main)
 
+
 ## [2.65.1](https://github.com/ethyca/fides/compare/2.65.0...2.65.1)
+
 ### Changed
 - Manual tasks table will now filter by the logged in user by default [#6317](https://github.com/ethyca/fides/pull/6317)
 
