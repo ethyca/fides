@@ -272,7 +272,6 @@ class TestGetCache:
             mock_redis_instance = MagicMock()
             MockRedis.return_value = mock_redis_instance
 
-            # Mock ping to return True (successful connection)
             mock_redis_instance.ping.side_effect = Exception("Test exception")
 
             with pytest.raises(
