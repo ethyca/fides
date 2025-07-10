@@ -121,6 +121,7 @@ class ManualTaskGraphTask(GraphTask):
                 if not config.is_current or config.config_type != allowed_config_type:
                     # Skip configs that are not current or not relevant for this request type
                     continue
+
                 ManualTaskInstance.create(
                     db=db,
                     data={

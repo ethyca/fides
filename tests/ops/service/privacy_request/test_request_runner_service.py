@@ -1869,39 +1869,37 @@ class TestAsyncCallbacks:
         )
 
         if dsr_version == "use_dsr_3_0":
-            # For erasure-only requests, there are no access tasks
-            # Erasure task is expected async results and is now paused
+            # Access async task fired first
+            assert pr.access_tasks[1].status == ExecutionLogStatus.awaiting_processing
+            jwe_token = mock_send.call_args[0][0].headers["reply-to-token"]
+            auth_header = {"Authorization": "Bearer " + jwe_token}
+            # Post to callback URL to supply access results async
+            # This requeues task and proceeds downstream
+            response = api_client.post(
+                V1_URL_PREFIX + REQUEST_TASK_CALLBACK,
+                headers=auth_header,
+                json={"access_results": [{"id": 1, "user_id": "abcde", "state": "VA"}]},
+            )
+            assert response.status_code == 200
+
+            # Erasure task is also expected async results and is now paused
             assert pr.erasure_tasks[1].status == ExecutionLogStatus.awaiting_processing
+            jwe_token = mock_send.call_args[0][0].headers["reply-to-token"]
+            auth_header = {"Authorization": "Bearer " + jwe_token}
+            # Post to callback URL to supply erasure results async
+            # This requeues task and proceeds downstream to complete privacy request
+            response = api_client.post(
+                V1_URL_PREFIX + REQUEST_TASK_CALLBACK,
+                headers=auth_header,
+                json={"rows_masked": 2},
+            )
+            assert response.status_code == 200
 
-            # Check if mock has been called for the erasure request
-            assert (
-                mock_send.called
-            ), "Mock should have been called for async erasure request"
+            db.refresh(pr)
+            assert pr.status == PrivacyRequestStatus.complete
 
-            # Get the JWE token from the mock call
-            if mock_send.call_args and mock_send.call_args[0]:
-                jwe_token = mock_send.call_args[0][0].headers["reply-to-token"]
-                auth_header = {"Authorization": "Bearer " + jwe_token}
-                # Post to callback URL to supply erasure results async
-                # This requeues task and proceeds downstream to complete privacy request
-                response = api_client.post(
-                    V1_URL_PREFIX + REQUEST_TASK_CALLBACK,
-                    headers=auth_header,
-                    json={"rows_masked": 2},
-                )
-                assert response.status_code == 200
-
-                db.refresh(pr)
-                assert pr.status == PrivacyRequestStatus.complete
-
-                assert pr.erasure_tasks[1].rows_masked == 2
-                assert pr.erasure_tasks[1].status == ExecutionLogStatus.complete
-            else:
-                # If mock call structure is different, at least verify the task state
-                db.refresh(pr)
-                assert (
-                    pr.erasure_tasks[1].status == ExecutionLogStatus.awaiting_processing
-                )
+            assert pr.erasure_tasks[1].rows_masked == 2
+            assert pr.erasure_tasks[1].status == ExecutionLogStatus.complete
 
         else:
             # Async Erasure Requests not supported for DSR 2.0 - the given
