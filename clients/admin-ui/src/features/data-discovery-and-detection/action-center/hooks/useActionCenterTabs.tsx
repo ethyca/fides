@@ -1,3 +1,5 @@
+import { useMemo } from "react";
+
 import useURLHashedTabs from "~/features/common/tabs/useURLHashedTabs";
 import { DiffStatus } from "~/types/api";
 
@@ -12,41 +14,52 @@ const useActionCenterTabs = (systemId?: string) => {
     tabKeys: Object.values(ActionCenterTabHash),
   });
 
-  const filterTabs = [
-    {
-      label: "Attention required",
-      params: {
-        diff_status: [DiffStatus.ADDITION],
-        system: systemId,
+  const filterTabs = useMemo(
+    () => [
+      {
+        label: "Attention required",
+        params: {
+          diff_status: [DiffStatus.ADDITION],
+          system: systemId,
+        },
+        hash: ActionCenterTabHash.ATTENTION_REQUIRED,
       },
-      hash: ActionCenterTabHash.ATTENTION_REQUIRED,
-    },
-    {
-      label: "Recent activity",
-      params: {
-        diff_status: [DiffStatus.MONITORED],
+      {
+        label: "Recent activity",
+        params: {
+          diff_status: [DiffStatus.MONITORED],
+        },
+        hash: ActionCenterTabHash.RECENT_ACTIVITY,
       },
-      hash: ActionCenterTabHash.RECENT_ACTIVITY,
-    },
-    {
-      label: "Ignored",
-      params: {
-        diff_status: [DiffStatus.MUTED],
-        system: systemId,
+      {
+        label: "Ignored",
+        params: {
+          diff_status: [DiffStatus.MUTED],
+          system: systemId,
+        },
+        hash: ActionCenterTabHash.IGNORED,
       },
-      hash: ActionCenterTabHash.IGNORED,
-    },
-  ];
+    ],
+    [systemId],
+  );
 
-  const activeTabData =
-    filterTabs.find((tab) => tab.hash === activeTab) ?? filterTabs[0];
+  const activeTabData = useMemo(
+    () => filterTabs.find((tab) => tab.hash === activeTab) ?? filterTabs[0],
+    [filterTabs, activeTab],
+  );
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const { diff_status, system } = activeTabData.params;
 
-  const actionsDisabled = diff_status.includes(DiffStatus.MONITORED);
+  const actionsDisabled = useMemo(
+    () => diff_status.includes(DiffStatus.MONITORED),
+    [diff_status],
+  );
 
-  const activeParams = systemId ? { diff_status, system } : { diff_status };
+  const activeParams = useMemo(
+    () => (systemId ? { diff_status, system } : { diff_status }),
+    [systemId, diff_status, system],
+  );
 
   return {
     filterTabs,
