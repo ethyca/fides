@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Optional
 
 from sqlalchemy.orm import Session
 
@@ -26,6 +26,7 @@ from fides.api.schemas.policy import ActionType
 # TYPE_CHECKING import placed after all runtime imports to avoid lint issues
 if TYPE_CHECKING:  # pragma: no cover
     from fides.api.graph.traversal import TraversalNode  # noqa: F401
+    from fides.api.models.policy import Policy  # noqa: F401
 
 
 class ManualTaskAddress:
@@ -285,6 +286,7 @@ def get_manual_task_instances_for_privacy_request(
 
 def create_manual_task_artificial_graphs(
     db: Session,
+    policy: Optional["Policy"] = None,
 ) -> List:
     """
     Create artificial GraphDataset objects for manual tasks that can be included
@@ -299,7 +301,7 @@ def create_manual_task_artificial_graphs(
 
     Args:
         db: Database session
-        policy: The policy being executed
+        policy: The policy being executed (optional, for filtering manual task configs)
 
     Returns:
         List of GraphDataset objects representing manual tasks as root nodes
@@ -307,6 +309,17 @@ def create_manual_task_artificial_graphs(
 
     manual_task_graphs = []
     manual_addresses = get_manual_task_addresses(db)
+
+    # Determine the privacy request type based on policy rules (if policy is provided)
+    has_access_rules = False
+    has_erasure_rules = False
+    if policy:
+        has_access_rules = bool(
+            policy.get_rules_for_action(action_type=ActionType.access)
+        )
+        has_erasure_rules = bool(
+            policy.get_rules_for_action(action_type=ActionType.erasure)
+        )
 
     for address in manual_addresses:
         connection_key = address.dataset
@@ -328,6 +341,34 @@ def create_manual_task_artificial_graphs(
                     continue
                 if not config.is_current:
                     continue
+
+                # Filter by configuration type based on policy rules (if policy is provided)
+                if policy:
+                    if has_access_rules and has_erasure_rules:
+                        # If both access and erasure rules exist, include both types
+                        if config.config_type not in [
+                            ManualTaskConfigurationType.access_privacy_request,
+                            ManualTaskConfigurationType.erasure_privacy_request,
+                        ]:
+                            continue
+                    elif has_access_rules:
+                        # Only access rules - only include access configurations
+                        if (
+                            config.config_type
+                            != ManualTaskConfigurationType.access_privacy_request
+                        ):
+                            continue
+                    elif has_erasure_rules:
+                        # Only erasure rules - only include erasure configurations
+                        if (
+                            config.config_type
+                            != ManualTaskConfigurationType.erasure_privacy_request
+                        ):
+                            continue
+                    else:
+                        # No relevant rules - skip this config
+                        continue
+
                 for field in config.field_definitions:
                     # Create a scalar field for each manual task field
                     field_metadata = field.field_metadata or {}
