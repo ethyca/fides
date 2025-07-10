@@ -61,7 +61,7 @@ export const DiscoveredSystemAggregateTable = ({
 }: DiscoveredSystemAggregateTableProps) => {
   const router = useRouter();
 
-  const [firstItemConsentStatus, setFirstItemConsentStatus] = useState<
+  const [firstPageConsentStatus, setFirstPageConsentStatus] = useState<
     ConsentAlertInfo | null | undefined
   >();
 
@@ -118,15 +118,15 @@ export const DiscoveredSystemAggregateTable = ({
   }, [data, setTotalPages]);
 
   useEffect(() => {
-    if (data?.items && !firstItemConsentStatus) {
+    if (data?.items && !firstPageConsentStatus) {
       // this ensures that the column header remembers the consent status
       // even when the user navigates to a different paginated page
       const consentStatus = data.items.find(
         (item) => item.consent_status?.status === AlertLevel.ALERT,
       )?.consent_status;
-      setFirstItemConsentStatus(consentStatus);
+      setFirstPageConsentStatus(consentStatus);
     }
-  }, [data, firstItemConsentStatus]);
+  }, [data, firstPageConsentStatus]);
 
   const handleTabChange = (tab: ActionCenterTabHash) => {
     onTabChange(tab);
@@ -138,7 +138,7 @@ export const DiscoveredSystemAggregateTable = ({
     onTabChange: handleTabChange,
     readonly: actionsDisabled,
     allowIgnore: !activeParams.diff_status.includes(DiffStatus.MUTED),
-    consentStatus: firstItemConsentStatus,
+    consentStatus: firstPageConsentStatus,
   });
 
   const tableInstance = useReactTable({

@@ -166,20 +166,19 @@ export const useDiscoveredSystemAggregateColumns = ({
     },
   });
 
-  const readonlyColumns = [
-    systemName,
-    totalUpdates,
-    dataUse,
-    locations,
-    domains,
-  ];
+  const readonlyColumns = useMemo(
+    () => [systemName, totalUpdates, dataUse, locations, domains],
+    [systemName, totalUpdates, dataUse, locations, domains],
+  );
 
-  const allColumns = [select, ...readonlyColumns, actions];
+  const allColumns = useMemo(
+    () => [select, ...readonlyColumns, actions],
+    [select, readonlyColumns, actions],
+  );
 
   const columns = useMemo(
     () => (readonly ? readonlyColumns : allColumns),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [readonly],
+    [readonly, readonlyColumns, allColumns],
   );
 
   return { columns };
