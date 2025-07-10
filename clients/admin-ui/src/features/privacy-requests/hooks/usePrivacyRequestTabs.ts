@@ -39,7 +39,6 @@ export const usePrivacyRequestTabs = () => {
         {
           pathname: router.pathname,
           query: {
-            ...router.query,
             tab: tabKey,
           },
         },

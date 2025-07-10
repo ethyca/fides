@@ -62,10 +62,7 @@ describe("Manual Tasks", () => {
 
       cy.visit("/privacy-requests?tab=manual-tasks");
       cy.wait("@getManualTasksEmpty");
-      cy.getByTestId("empty-state").should(
-        "contain",
-        "No manual tasks available",
-      );
+      cy.getByTestId("empty-state-current-user").should("exist");
     });
   });
 
@@ -172,7 +169,9 @@ describe("Manual Tasks", () => {
       // Apply status filter
       cy.applyTableFilter("Status", "New");
       cy.wait("@getManualTasks").then((interception) => {
+        const url = interception.request.url;
         expect(interception.request.url).to.include("status=new");
+        expect(url).to.include("assigned_user_id=123"); // request_type parameter (snake_case)
       });
 
       // Apply system filter (first available system)
@@ -181,6 +180,7 @@ describe("Manual Tasks", () => {
         const url = interception.request.url;
         expect(url).to.include("status=new"); // Previous filter should still be there
         expect(url).to.include("system_name=Salesforce"); // Should have system_name parameter (snake_case)
+        expect(url).to.include("assigned_user_id=123"); // request_type parameter (snake_case)
       });
 
       // Apply request type filter
@@ -194,6 +194,9 @@ describe("Manual Tasks", () => {
     });
 
     it("should handle pagination controls and assigned users display", () => {
+      cy.intercept("GET", "/api/v1/plus/manual-fields?page=1&size=50*", {
+        fixture: "manual-tasks/manual-tasks-response.json",
+      }).as("getManualTasks50");
       // Test pagination controls - now using Ant Design's standard pagination
       cy.get(".ant-pagination").should("be.visible");
       cy.get(".ant-pagination-prev").should("exist");
@@ -204,7 +207,8 @@ describe("Manual Tasks", () => {
       cy.get(".ant-select-dropdown").within(() => {
         cy.get(".ant-select-item").contains("50").click();
       });
-      cy.wait("@getManualTasks").then((interception) => {
+
+      cy.wait("@getManualTasks50").then((interception) => {
         expect(interception.request.url).to.include("size=50");
       });
 
