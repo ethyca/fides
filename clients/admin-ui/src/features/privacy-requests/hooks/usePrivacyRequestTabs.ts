@@ -1,6 +1,9 @@
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { useHasPermission } from "~/features/common/Restrict";
+import { ScopeRegistryEnum } from "~/types/api";
+
 export const PRIVACY_REQUEST_TABS = {
   REQUEST: "request",
   MANUAL_TASK: "manual-tasks",
@@ -15,12 +18,19 @@ export const usePrivacyRequestTabs = () => {
     PRIVACY_REQUEST_TABS.REQUEST,
   );
 
+  const hasPrivacyRequestReadScope = useHasPermission([
+    ScopeRegistryEnum.PRIVACY_REQUEST_READ,
+  ]);
+  const hasManualTaskReadScope = useHasPermission([
+    ScopeRegistryEnum.MANUAL_FIELD_READ_OWN,
+    ScopeRegistryEnum.MANUAL_FIELD_READ_ALL,
+  ]);
   const availableTabs = useMemo(
     () => ({
-      request: true,
-      manualTask: true,
+      request: hasPrivacyRequestReadScope,
+      manualTask: hasManualTaskReadScope,
     }),
-    [],
+    [hasPrivacyRequestReadScope, hasManualTaskReadScope],
   );
 
   const parseTabFromQuery = useCallback((): PrivacyRequestTabKey | null => {
