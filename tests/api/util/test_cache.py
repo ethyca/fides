@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from fides.api import common_exceptions
-from fides.api.util.cache import get_read_only_cache
+from fides.api.util.cache import get_cache, get_read_only_cache
 
 
 class TestGetReadOnlyCache:
@@ -251,3 +251,37 @@ class TestGetReadOnlyCache:
             # Should ping to test connection
             mock_redis_instance.ping.assert_called_once()
             assert result == mock_redis_instance
+
+
+class TestGetCache:
+    @pytest.fixture(scope="function", autouse=True)
+    def clear_regular_connection(self):
+        """Auto-use fixture to clear the global regular connection before and after each test"""
+        import fides.api.util.cache as cache_module
+
+        # Clear before test
+        cache_module._connection = None
+        yield
+        # Clear after test
+        cache_module._connection = None
+
+    def test_get_cache_logs_redis_connection_error(self, loguru_caplog):
+        """Test that get_cache raises RedisConnectionError when Redis is not available"""
+
+        with patch("fides.api.util.cache.FidesopsRedis") as MockRedis:
+            mock_redis_instance = MagicMock()
+            MockRedis.return_value = mock_redis_instance
+
+            # Mock ping to return True (successful connection)
+            mock_redis_instance.ping.side_effect = Exception("Test exception")
+
+            with pytest.raises(
+                common_exceptions.RedisConnectionError,
+                match="Unable to establish Redis connection. Fides is unable to accept Privacy Requests.",
+            ):
+                get_cache()
+
+            assert (
+                "Redis connection failed with Exception: Test exception"
+                in loguru_caplog.text
+            )

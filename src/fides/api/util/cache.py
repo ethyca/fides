@@ -219,16 +219,18 @@ def get_cache() -> FidesopsRedis:
     logger.debug("Testing Redis connection...")
     try:
         connected = _connection.ping()
+        logger.debug("Redis connection succeeded.")
     except ConnectionErrorFromRedis as e:
         connected = False
         logger.error("Redis connection failed with ConnectionErrorFromRedis: {}", e)
-    else:
-        logger.debug("Redis connection succeeded.")
+    except Exception as e:
+        connected = False
+        logger.error("Redis connection failed with Exception: {}", e)
 
     if not connected:
         logger.error("Redis connection failed.")
         raise common_exceptions.RedisConnectionError(
-            "Unable to establish Redis connection. Fidesops is unable to accept PrivacyRequsts."
+            "Unable to establish Redis connection. Fides is unable to accept Privacy Requests."
         )
 
     return _connection
