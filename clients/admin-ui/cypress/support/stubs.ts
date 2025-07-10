@@ -762,8 +762,13 @@ export const stubSharedMonitorConfig = () => {
 };
 
 export const stubManualTasks = () => {
+  // Intercept this call that is made to get the full list of filters available
+  cy.intercept("GET", "/api/v1/plus/manual-fields?page=1&size=1", {
+    fixture: "manual-tasks/manual-tasks-response.json",
+  }).as("getManualTasksFullFilters");
+
   // Intercept the manual tasks API endpoints
-  cy.intercept("GET", "/api/v1/plus/manual-fields*", {
+  cy.intercept("GET", "/api/v1/plus/manual-fields?page=1&size=25*", {
     fixture: "manual-tasks/manual-tasks-response.json",
   }).as("getManualTasks");
 
