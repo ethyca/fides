@@ -286,12 +286,12 @@ export const ManualTasks = () => {
     const isRootUser = currentUser?.id && !currentUser?.id.startsWith("fid_");
     if (isRootUser) {
       users.push({
-        text: currentUser.id,
+        text: currentUser?.username || currentUser?.id,
         value: currentUser.id,
       });
     }
     return users;
-  }, [filterOptions?.assigned_users, currentUser?.id]);
+  }, [filterOptions?.assigned_users, currentUser?.id, currentUser?.username]);
 
   const handleTableChange = (
     _pagination: TablePaginationConfig,
