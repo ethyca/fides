@@ -477,15 +477,20 @@ def run_access_request(
 
             # Snapshot manual task field instances for this privacy request
             create_manual_task_instances_for_privacy_request(session, privacy_request)
-
+            erasure_end_nodes: List[CollectionAddress] = []
             if is_erasure_only:
                 logger.info(
                     "Erasure-only request detected. Creating erasure tasks directly for privacy request {}.",
                     privacy_request.id,
                 )
-                erasure_end_nodes: List[CollectionAddress] = list(graph.nodes.keys())
+                erasure_end_nodes = list(graph.nodes.keys())
                 ready_tasks = persist_initial_erasure_request_tasks(
-                    session, privacy_request, traversal_nodes, erasure_end_nodes, graph, erasure_only=True
+                    session,
+                    privacy_request,
+                    traversal_nodes,
+                    erasure_end_nodes,
+                    graph,
+                    erasure_only=True,
                 )
                 privacy_request.cache_data_use_map(
                     format_data_use_map_for_caching(
@@ -499,16 +504,23 @@ def run_access_request(
             else:
                 # Save Access Request Tasks to the database
                 ready_tasks = persist_new_access_request_tasks(
-                    session, privacy_request, traversal, traversal_nodes, end_nodes, graph
+                    session,
+                    privacy_request,
+                    traversal,
+                    traversal_nodes,
+                    end_nodes,
+                    graph,
                 )
 
-                if (
-                    has_erasure_rules
-                    and not privacy_request.erasure_tasks.count()
-                ):
-                    erasure_end_nodes: List[CollectionAddress] = list(graph.nodes.keys())
+                if has_erasure_rules and not privacy_request.erasure_tasks.count():
+                    erasure_end_nodes = list(graph.nodes.keys())
                     persist_initial_erasure_request_tasks(
-                        session, privacy_request, traversal_nodes, erasure_end_nodes, graph, erasure_only=False
+                        session,
+                        privacy_request,
+                        traversal_nodes,
+                        erasure_end_nodes,
+                        graph,
+                        erasure_only=False,
                     )
                 privacy_request.cache_data_use_map(
                     format_data_use_map_for_caching(
@@ -533,7 +545,11 @@ def run_access_request(
                         dataset_name="Dataset traversal",
                         collection_name=node_address.replace(":", "."),
                         message=skip_message,
-                        action_type=ActionType.access if not is_erasure_only else ActionType.erasure,
+                        action_type=(
+                            ActionType.access
+                            if not is_erasure_only
+                            else ActionType.erasure
+                        ),
                     )
             # Or log success if all collections are reachable
             else:
@@ -543,7 +559,9 @@ def run_access_request(
                     dataset_name="Dataset traversal",
                     collection_name=None,
                     message=f"Traversal successful for privacy request: {privacy_request.id}",
-                    action_type=ActionType.access if not is_erasure_only else ActionType.erasure,
+                    action_type=(
+                        ActionType.access if not is_erasure_only else ActionType.erasure
+                    ),
                 )
         except TraversalError as err:
             log_traversal_error_and_update_privacy_request(
@@ -571,7 +589,10 @@ def run_erasure_request(  # pylint: disable = too-many-arguments
     If we are reprocessing a Privacy Request, instead queue tasks whose upstream nodes are complete.
     """
     # Check if this is an erasure-only request (no access tasks exist)
-    is_erasure_only = privacy_request.access_tasks.count() == 0 and privacy_request.erasure_tasks.count() > 0
+    is_erasure_only = (
+        privacy_request.access_tasks.count() == 0
+        and privacy_request.erasure_tasks.count() > 0
+    )
 
     if not is_erasure_only:
         # For regular requests with both access and erasure, transfer data from access tasks

@@ -109,7 +109,10 @@ def erasure_runner(
     if use_dsr_3_0:
         # Check if this is an erasure-only request (no access tasks exist but erasure tasks do)
         # For erasure-only requests, the erasure tasks were already created and queued in access_runner
-        is_erasure_only = privacy_request.access_tasks.count() == 0 and privacy_request.erasure_tasks.count() > 0
+        is_erasure_only = (
+            privacy_request.access_tasks.count() == 0
+            and privacy_request.erasure_tasks.count() > 0
+        )
 
         if is_erasure_only:
             logger.info(
