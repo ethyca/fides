@@ -290,7 +290,7 @@ def filter_manual_task_configs_by_policy(
     """
     Filter manual task configs by policy.
     """
-    filer_match = False
+    filter_match = False
     has_access_rules = bool(policy.get_rules_for_action(action_type=ActionType.access))
     has_erasure_rules = bool(
         policy.get_rules_for_action(action_type=ActionType.erasure)
@@ -302,17 +302,17 @@ def filter_manual_task_configs_by_policy(
             ManualTaskConfigurationType.access_privacy_request,
             ManualTaskConfigurationType.erasure_privacy_request,
         ]:
-            filer_match = True
+            filter_match = True
     elif has_access_rules:
         # Only access rules - only include access configurations
         if config.config_type == ManualTaskConfigurationType.access_privacy_request:
-            filer_match = True
+            filter_match = True
     elif has_erasure_rules:
         # Only erasure rules - only include erasure configurations
         if config.config_type == ManualTaskConfigurationType.erasure_privacy_request:
-            filer_match = True
+            filter_match = True
 
-    return filer_match
+    return filter_match
 
 
 def create_manual_task_artificial_graphs(
