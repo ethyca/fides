@@ -71,7 +71,7 @@ class ConnectionType(enum.Enum):
     timescale = "timescale"
     website = "website"
     # Test connection types, used for testing purposes only
-    test_website = "test_website" # used for ConfigurableTesteWebsiteMonitor
+    test_website = "test_website"  # used for ConfigurableTesteWebsiteMonitor
 
     @property
     def human_readable(self) -> str:
