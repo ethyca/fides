@@ -2669,7 +2669,7 @@ dataset:
         data_categories: [system.operations]
       - name: locations
         data_categories: [system.operations]
-      - name: with_consent
+      - name: consent_status
         data_categories: [system.operations]
       - name: data_uses
         data_categories: [system.operations]
