@@ -1,6 +1,8 @@
 import {
   AntButton as Button,
   AntFlex,
+  AntTabs as Tabs,
+  AntTabsProps as TabsProps,
   Box,
   Flex,
   Spacer,
@@ -10,10 +12,10 @@ import {
 import { NextPage } from "next";
 import { useRouter } from "next/router";
 
-import DataTabs, { TabData } from "~/features/common/DataTabs";
 import Layout from "~/features/common/Layout";
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
+import useURLHashedTabs from "~/features/common/tabs/useURLHashedTabs";
 import { useGetDatastoreConnectionByKeyQuery } from "~/features/datastore-connections";
 import useTestConnection from "~/features/datastore-connections/useTestConnection";
 import getIntegrationTypeInfo, {
@@ -33,8 +35,11 @@ import useIntegrationOption from "~/features/integrations/useIntegrationOption";
 import { ConnectionType } from "~/types/api";
 
 const IntegrationDetailView: NextPage = () => {
-  const { query } = useRouter();
-  const id = Array.isArray(query.id) ? query.id[0] : query.id;
+  const router = useRouter();
+  const id = Array.isArray(router.query.id)
+    ? router.query.id[0]
+    : router.query.id;
+
   const { data: connection, isLoading: integrationIsLoading } =
     useGetDatastoreConnectionByKeyQuery(id ?? "");
 
@@ -68,7 +73,6 @@ const IntegrationDetailView: NextPage = () => {
       connection?.saas_config?.type,
     );
 
-  const router = useRouter();
   if (
     !!connection &&
     !SUPPORTED_INTEGRATIONS.includes(connection.connection_type)
@@ -79,13 +83,14 @@ const IntegrationDetailView: NextPage = () => {
   const supportsConnectionTest =
     connection?.connection_type !== ConnectionType.MANUAL_TASK;
 
-  const tabs: TabData[] = [];
+  const tabs: TabsProps["items"] = [];
 
   // Show Details tab for integrations without connection, Connection tab for others
   if (enabledFeatures?.includes(IntegrationFeatureEnum.WITHOUT_CONNECTION)) {
     tabs.push({
       label: "Details",
-      content: (
+      key: "details",
+      children: (
         <Box>
           <Flex>
             <Button onClick={onOpen} data-testid="manage-btn">
@@ -107,7 +112,8 @@ const IntegrationDetailView: NextPage = () => {
   } else {
     tabs.push({
       label: "Connection",
-      content: (
+      key: "connection",
+      children: (
         <Box>
           {supportsConnectionTest && (
             <Flex
@@ -165,14 +171,16 @@ const IntegrationDetailView: NextPage = () => {
   if (enabledFeatures?.includes(IntegrationFeatureEnum.DATA_SYNC)) {
     tabs.push({
       label: "Data sync",
-      content: <DatahubDataSyncTab integration={connection!} />,
+      key: "data-sync",
+      children: <DatahubDataSyncTab integration={connection!} />,
     });
   }
 
   if (enabledFeatures?.includes(IntegrationFeatureEnum.DATA_DISCOVERY)) {
     tabs.push({
       label: "Data discovery",
-      content: (
+      key: "data-discovery",
+      children: (
         <MonitorConfigTab
           integration={connection!}
           integrationOption={integrationOption}
@@ -180,13 +188,17 @@ const IntegrationDetailView: NextPage = () => {
       ),
     });
   }
-
   if (enabledFeatures?.includes(IntegrationFeatureEnum.TASKS)) {
     tabs.push({
       label: "Manual tasks",
-      content: <TaskConfigTab integration={connection!} />,
+      key: "manual-tasks",
+      children: <TaskConfigTab integration={connection!} />,
     });
   }
+
+  const { activeTab, onTabChange } = useURLHashedTabs({
+    tabKeys: tabs.map((tab) => tab.key),
+  });
 
   return (
     <Layout title="Integrations">
@@ -211,7 +223,11 @@ const IntegrationDetailView: NextPage = () => {
               <Spinner />
             ) : (
               !!connection && (
-                <DataTabs data={tabs} border="full-width" isLazy />
+                <Tabs
+                  items={tabs}
+                  activeKey={activeTab}
+                  onChange={onTabChange}
+                />
               )
             )}
           </div>

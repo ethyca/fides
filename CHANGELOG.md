@@ -22,9 +22,20 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.65.0...main)
 - Changed behavior of beta feature flags to persist across user login sessions
 
+### Added
+- Replaced Asset's `with_consent` field with the enum `consent_status` field and added indexes to the `StagedResource` table [#6287](https://github.com/ethyca/fides/pull/6287)
+
+### Changed
+- Improvements to Generic Erasure Email Integrations so email batch jobs run with a Redis lock and execution time is configurable [#6316](https://github.com/ethyca/fides/pull/6316)
+
+### Developer Experience
+- Migrate tabs to Ant Design [#6260](https://github.com/ethyca/fides/pull/6260)
+- Refactored GPP utility functions to reduce code duplication and improve maintainability [#6318](https://github.com/ethyca/fides/pull/6318)
+
 ### Fixed
 - Fixed FidesJS GPP to use national section when a supported US state has no specific notices and approach is set to both. [#6307](https://github.com/ethyca/fides/pull/6307)
 - Fixed taxonomy search behavior to include label and value text
+- Fixed FidesJS to use consistent served_notice_history_id across all consent flows for improved analytics correlation [#6312](https://github.com/ethyca/fides/pull/6312)
 
 ## [2.65.0](https://github.com/ethyca/fides/compare/2.64.2...2.65.0)
 
@@ -40,6 +51,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added `fides_legacy_event` configuration option to control deprecated event dispatching for backward compatibility [#6249](https://github.com/ethyca/fides/pull/6249)
 - Added user_id field to the ManualTaskLog model and implemented request-scoped user tracking using contextvars [#6296](https://github.com/ethyca/fides/pull/6296)
 - Ability to prefill Privacy Center fields with query parameters [#6271](https://github.com/ethyca/fides/pull/6271)
+
 
 ### Changed
 - Update FastAPI to 0.115.2 for starlette 0.40.0 [#6244](https://github.com/ethyca/fides/pull/6244)

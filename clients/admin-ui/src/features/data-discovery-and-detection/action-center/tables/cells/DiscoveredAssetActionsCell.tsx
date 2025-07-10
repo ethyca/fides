@@ -9,7 +9,7 @@ import { useRouter } from "next/router";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { SYSTEM_ROUTE } from "~/features/common/nav/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
-import { getIndexFromHash } from "~/features/data-discovery-and-detection/action-center/tables/useActionCenterTabs";
+import { ActionCenterTabHash } from "~/features/data-discovery-and-detection/action-center/tables/useActionCenterTabs";
 import { successToastContent } from "~/features/data-discovery-and-detection/action-center/utils/successToastContent";
 import { DiffStatus } from "~/types/api";
 import { StagedResourceAPIResponse } from "~/types/api/models/StagedResourceAPIResponse";
@@ -22,7 +22,7 @@ import {
 
 interface DiscoveredAssetActionsCellProps {
   asset: StagedResourceAPIResponse;
-  onTabChange: (index: number) => void;
+  onTabChange: (tab: ActionCenterTabHash) => void;
 }
 
 export const DiscoveredAssetActionsCell = ({
@@ -87,7 +87,7 @@ export const DiscoveredAssetActionsCell = ({
         successToastParams(
           successToastContent(
             `${type} "${name}" has been ignored and will not appear in future scans.`,
-            () => onTabChange(getIndexFromHash("#ignored")!),
+            () => onTabChange(ActionCenterTabHash.IGNORED),
           ),
         ),
       );

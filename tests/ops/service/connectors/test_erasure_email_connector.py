@@ -4,12 +4,14 @@ import pytest
 
 from fides.api.common_exceptions import MessageDispatchException
 from fides.api.models.connectionconfig import AccessLevel, ConnectionTestStatus
+from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest
 from fides.api.schemas.connection_configuration.connection_secrets_email import (
     AdvancedSettings,
     EmailSchema,
     IdentityTypes,
 )
 from fides.api.schemas.messaging.messaging import MessagingActionType
+from fides.api.schemas.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
 from fides.api.service.connectors.base_erasure_email_connector import (
     filter_user_identities_for_connector,
     get_identity_types_for_connector,
@@ -259,6 +261,48 @@ class TestErasureEmailConnectorMethods:
                 privacy_request_with_erasure_policy,
             )
             is False
+        )
+
+    @mock.patch(
+        "fides.api.service.connectors.erasure_email_connector.send_single_erasure_email"
+    )
+    def test_batch_email_send_logs_errors_when_failed(
+        self,
+        mock_send_single_erasure_email,
+        db,
+        test_generic_erasure_email_connector,
+        privacy_request_with_erasure_policy,
+    ):
+        mock_send_single_erasure_email.side_effect = MessageDispatchException(
+            "Test error"
+        )
+
+        privacy_request_with_erasure_policy.status = (
+            PrivacyRequestStatus.awaiting_email_send
+        )
+        privacy_request_with_erasure_policy.save(db=db)
+
+        privacy_requests = db.query(PrivacyRequest).filter(
+            PrivacyRequest.id == privacy_request_with_erasure_policy.id
+        )
+        with pytest.raises(MessageDispatchException):
+            test_generic_erasure_email_connector.batch_email_send(
+                privacy_requests=privacy_requests,
+                batch_id="123",
+            )
+        db.refresh(privacy_request_with_erasure_policy)
+
+        assert privacy_request_with_erasure_policy.status == PrivacyRequestStatus.error
+
+        execution_logs = privacy_request_with_erasure_policy.execution_logs.filter(
+            ExecutionLog.status == ExecutionLogStatus.error
+        )
+
+        assert execution_logs.count() == 1
+        error_message = execution_logs.first().message
+        assert (
+            error_message
+            == f"Batch erasure email 123 for connector {test_generic_erasure_email_connector.configuration.key} failed with exception Test error"
         )
 
 

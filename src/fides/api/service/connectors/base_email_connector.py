@@ -38,7 +38,7 @@ class BaseEmailConnector(Generic[DB_CONNECTOR_TYPE], ABC):
         """
 
     @abstractmethod
-    def batch_email_send(self, privacy_requests: Query) -> None:
+    def batch_email_send(self, privacy_requests: Query, batch_id: str) -> None:
         """
         Aggregates the identities provided by multiple privacy requests and sends them in a single batch email.
         """
