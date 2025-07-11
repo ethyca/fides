@@ -38,6 +38,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed FidesJS GPP to use national section when a supported US state has no specific notices and approach is set to both. [#6307](https://github.com/ethyca/fides/pull/6307)
 - Fixed taxonomy search behavior to include label and value text
 - Fixed FidesJS to use consistent served_notice_history_id across all consent flows for improved analytics correlation [#6312](https://github.com/ethyca/fides/pull/6312)
+- Fixed bug where FidesJS modals wouldn't scroll on very short screens [#6327](https://github.com/ethyca/fides/pull/6327)
 
 ## [2.65.0](https://github.com/ethyca/fides/compare/2.64.2...2.65.0)
 
