@@ -202,11 +202,7 @@ def get_cache(should_log: Optional[bool] = False) -> FidesopsRedis:
 
     db_index = _determine_redis_db_index()
 
-    logger.debug(
-        f"Redis settings: host={CONFIG.redis.host}, port={CONFIG.redis.port}, db={db_index}, ssl={CONFIG.redis.ssl}, ssl_cert_reqs={CONFIG.redis.ssl_cert_reqs}, decode_responses={CONFIG.redis.decode_responses}"
-    )
     if _connection is None:
-        logger.debug("Creating new Redis connection...")
         _connection = FidesopsRedis(  # type: ignore[call-overload]
             charset=CONFIG.redis.charset,
             decode_responses=CONFIG.redis.decode_responses,
@@ -219,23 +215,15 @@ def get_cache(should_log: Optional[bool] = False) -> FidesopsRedis:
             ssl_ca_certs=CONFIG.redis.ssl_ca_certs,
             ssl_cert_reqs=CONFIG.redis.ssl_cert_reqs,
         )
-        logger.debug("New Redis connection created.")
-
-    logger.debug("Testing Redis connection...")
 
     try:
         connected = _connection.ping()
-    except ConnectionErrorFromRedis as e:
+    except ConnectionErrorFromRedis:
         connected = False
-        logger.error(f"Redis connection failed with ConnectionErrorFromRedis: {e}")
-    except Exception as e:
-        logger.error(f"Redis connection failed with Exception: {e}")
+    except Exception:
         connected = False
-    else:
-        logger.debug("Redis connection succeeded.")
 
     if not connected:
-        logger.debug("Redis connection failed.")
         raise common_exceptions.RedisConnectionError(
             "Unable to establish Redis connection. Fidesops is unable to accept PrivacyRequsts."
         )
