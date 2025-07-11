@@ -1,6 +1,9 @@
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { useHasPermission } from "~/features/common/Restrict";
+import { ScopeRegistryEnum } from "~/types/api";
+
 export const PRIVACY_REQUEST_TABS = {
   REQUEST: "request",
   MANUAL_TASK: "manual-tasks",
@@ -11,16 +14,25 @@ export type PrivacyRequestTabKey =
 
 export const usePrivacyRequestTabs = () => {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<PrivacyRequestTabKey>(
-    PRIVACY_REQUEST_TABS.REQUEST,
-  );
 
+  const hasPrivacyRequestReadScope = useHasPermission([
+    ScopeRegistryEnum.PRIVACY_REQUEST_READ,
+  ]);
+  const hasManualTaskReadScope = useHasPermission([
+    ScopeRegistryEnum.MANUAL_FIELD_READ_OWN,
+    ScopeRegistryEnum.MANUAL_FIELD_READ_ALL,
+  ]);
   const availableTabs = useMemo(
     () => ({
-      request: true,
-      manualTask: true,
+      request: hasPrivacyRequestReadScope,
+      manualTask: hasManualTaskReadScope,
     }),
-    [],
+    [hasPrivacyRequestReadScope, hasManualTaskReadScope],
+  );
+  const [activeTab, setActiveTab] = useState<PrivacyRequestTabKey>(
+    availableTabs.request
+      ? PRIVACY_REQUEST_TABS.REQUEST
+      : PRIVACY_REQUEST_TABS.MANUAL_TASK,
   );
 
   const parseTabFromQuery = useCallback((): PrivacyRequestTabKey | null => {
@@ -67,12 +79,8 @@ export const usePrivacyRequestTabs = () => {
 
       if (isTabAvailable) {
         setActiveTab(queryTab);
-        return;
       }
     }
-
-    setActiveTab(PRIVACY_REQUEST_TABS.REQUEST);
-    updateUrlTab(PRIVACY_REQUEST_TABS.REQUEST);
   }, [
     router.isReady,
     router.query,
