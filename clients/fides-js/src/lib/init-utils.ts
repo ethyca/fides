@@ -22,7 +22,7 @@ import {
 } from "./cookie";
 import { onFidesEvent } from "./events";
 import { DEFAULT_LOCALE, DEFAULT_MODAL_LINK_LABEL } from "./i18n";
-import { updateConsent } from "./preferences";
+import { acceptAll, rejectAll, updateConsent } from "./preferences";
 
 declare global {
   interface Window {
@@ -166,6 +166,12 @@ export const getCoreFides = ({
         fidesString,
         validation,
       });
+    },
+    acceptAll(this: FidesGlobal): Promise<void> {
+      return acceptAll(this);
+    },
+    rejectAll(this: FidesGlobal): Promise<void> {
+      return rejectAll(this);
     },
   };
 };
