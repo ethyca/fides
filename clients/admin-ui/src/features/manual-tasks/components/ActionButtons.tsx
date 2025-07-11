@@ -9,7 +9,12 @@ import {
 import { useRouter } from "next/router";
 
 import { PRIVACY_REQUEST_DETAIL_ROUTE } from "~/features/common/nav/routes";
-import { ManualFieldListItem, ManualFieldStatus } from "~/types/api";
+import { useHasPermission } from "~/features/common/Restrict";
+import {
+  ManualFieldListItem,
+  ManualFieldStatus,
+  ScopeRegistryEnum,
+} from "~/types/api";
 
 import { CompleteTaskModal } from "./CompleteTaskModal";
 import { SkipTaskModal } from "./SkipTaskModal";
@@ -31,6 +36,11 @@ export const ActionButtons = ({ task }: Props) => {
     onClose: onSkipModalClose,
   } = useDisclosure();
 
+  // Check if user has permission to read privacy requests
+  const hasPrivacyRequestReadAccess = useHasPermission([
+    ScopeRegistryEnum.PRIVACY_REQUEST_READ,
+  ]);
+
   // Don't render anything for non-new tasks
   if (task.status !== ManualFieldStatus.NEW) {
     return null;
@@ -49,12 +59,16 @@ export const ActionButtons = ({ task }: Props) => {
       label: "Skip task",
       onClick: onSkipModalOpen,
     },
-    {
+  ];
+
+  // Conditionally add "Go to request" if user has permission
+  if (hasPrivacyRequestReadAccess) {
+    menuItems.push({
       key: "go-to-request",
       label: "Go to request",
       onClick: handleGoToRequest,
-    },
-  ];
+    });
+  }
 
   return (
     <>
