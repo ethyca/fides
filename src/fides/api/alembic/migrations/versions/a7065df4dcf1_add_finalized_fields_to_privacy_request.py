@@ -1,7 +1,7 @@
 """add finalized fields to privacy request
 
 Revision ID: a7065df4dcf1
-Revises: 3b0f4905378c
+Revises: d45dec7e541d
 Create Date: 2025-07-01 14:07:36.779437
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "a7065df4dcf1"
-down_revision = "3b0f4905378c"
+down_revision = "d45dec7e541d"
 branch_labels = None
 depends_on = None
 
