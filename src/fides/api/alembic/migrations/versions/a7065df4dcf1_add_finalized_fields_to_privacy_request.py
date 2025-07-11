@@ -1,7 +1,7 @@
 """add finalized fields to privacy request
 
 Revision ID: a7065df4dcf1
-Revises: 41a634d8c669
+Revises: 3b0f4905378c
 Create Date: 2025-07-01 14:07:36.779437
 
 """
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "a7065df4dcf1"
-down_revision = "41a634d8c669"
+down_revision = "3b0f4905378c"
 branch_labels = None
 depends_on = None
 
