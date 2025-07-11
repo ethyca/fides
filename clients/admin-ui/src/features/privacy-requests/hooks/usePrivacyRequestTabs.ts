@@ -29,8 +29,10 @@ export const usePrivacyRequestTabs = () => {
     }),
     [hasPrivacyRequestReadScope, hasManualTaskReadScope],
   );
-  const [activeTab, setActiveTab] = useState<PrivacyRequestTabKey | undefined>(
-    undefined,
+  const [activeTab, setActiveTab] = useState<PrivacyRequestTabKey>(
+    availableTabs.request
+      ? PRIVACY_REQUEST_TABS.REQUEST
+      : PRIVACY_REQUEST_TABS.MANUAL_TASK,
   );
 
   const parseTabFromQuery = useCallback((): PrivacyRequestTabKey | null => {
@@ -77,12 +79,8 @@ export const usePrivacyRequestTabs = () => {
 
       if (isTabAvailable) {
         setActiveTab(queryTab);
-        return;
       }
     }
-
-    setActiveTab(PRIVACY_REQUEST_TABS.REQUEST);
-    updateUrlTab(PRIVACY_REQUEST_TABS.REQUEST);
   }, [
     router.isReady,
     router.query,
