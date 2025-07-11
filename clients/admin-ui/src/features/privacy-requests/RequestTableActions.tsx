@@ -8,6 +8,7 @@ import {
   useDisclosure,
 } from "fidesui";
 
+import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import Restrict from "~/features/common/Restrict";
 import ApprovePrivacyRequestModal from "~/features/privacy-requests/ApprovePrivacyRequestModal";
@@ -15,6 +16,7 @@ import DenyPrivacyRequestModal from "~/features/privacy-requests/DenyPrivacyRequ
 import { useMutations } from "~/features/privacy-requests/hooks/useMutations";
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 import { PrivacyRequestStatus, ScopeRegistryEnum } from "~/types/api";
+import { useGetActiveMessagingProviderQuery } from "./privacy-requests.slice";
 
 interface RequestTableActionsProps extends StackProps {
   subjectRequest: PrivacyRequestEntity;
@@ -37,6 +39,14 @@ export const RequestTableActions = ({
   } = useMutations({
     subjectRequest,
   });
+
+  const { data: config } = useGetConfigurationSettingsQuery({
+    api_set: false,
+  });
+  const { data: activeMessagingProvider } =
+    useGetActiveMessagingProviderQuery();
+  const sendRequestCompletionNotification =
+    config?.notifications?.send_request_completion_notification;
 
   const renderApproveButton = () => {
     if (subjectRequest.status !== "pending") {
@@ -159,8 +169,10 @@ export const RequestTableActions = ({
         title="Finalize privacy request"
         message={
           <Text>
-            You are about to finalize this privacy request, which moves its
-            status to complete. Are you sure you would like to continue?
+            {activeMessagingProvider?.service_type &&
+            sendRequestCompletionNotification
+              ? 'You are about to finalize this privacy request. The status will be updated to "Complete" and the requesting user will be notified. Would you like to continue?'
+              : 'You are about to finalize this privacy request. The status will be updated to "Complete". Would you like to continue?'}
           </Text>
         }
       />
