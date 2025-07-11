@@ -47,6 +47,7 @@ interface UseManualTaskColumnsProps {
   userFilters: FilterOption[];
   onUserClick: (userId: string) => void;
   currentFilters: ManualTaskFilters;
+  hasAccessToAllTasks: boolean;
 }
 
 export const useManualTaskColumns = ({
@@ -54,8 +55,9 @@ export const useManualTaskColumns = ({
   userFilters,
   onUserClick,
   currentFilters,
+  hasAccessToAllTasks,
 }: UseManualTaskColumnsProps): ColumnsType<ManualFieldListItem> => {
-  return [
+  const allColumns: ColumnsType<ManualFieldListItem> = [
     {
       title: "Task name",
       dataIndex: "name",
@@ -177,4 +179,11 @@ export const useManualTaskColumns = ({
       render: (_, record) => <ActionButtons task={record} />,
     },
   ];
+
+  // If user doesn't have access to all tasks, remove the "Assigned to" column
+  if (!hasAccessToAllTasks) {
+    return allColumns.filter((column) => column.key !== "assigned_users");
+  }
+
+  return allColumns;
 };

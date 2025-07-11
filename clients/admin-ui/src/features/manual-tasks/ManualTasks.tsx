@@ -13,6 +13,7 @@ import { useAppSelector } from "~/app/hooks";
 import { selectUser } from "~/features/auth";
 import FidesSpinner from "~/features/common/FidesSpinner";
 import { USER_PROFILE_ROUTE } from "~/features/common/nav/routes";
+import { useHasPermission } from "~/features/common/Restrict";
 import { GlobalFilterV2 } from "~/features/common/table/v2/filters/GlobalFilterV2";
 import { PAGE_SIZES } from "~/features/common/table/v2/PaginationBar";
 import { formatUser } from "~/features/common/utils";
@@ -21,6 +22,7 @@ import {
   ManualFieldStatus,
   ManualFieldSystem,
   ManualFieldUser,
+  ScopeRegistryEnum,
 } from "~/types/api";
 
 import { useManualTaskColumns } from "./hooks";
@@ -39,6 +41,11 @@ export const ManualTasks = () => {
   const currentUser = useAppSelector(selectUser);
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(25);
+
+  // Check if user has access to all tasks (not just their own)
+  const hasAccessToAllTasks = useHasPermission([
+    ScopeRegistryEnum.MANUAL_FIELD_READ_ALL,
+  ]);
 
   const privacyRequestIdQueryParam =
     router.query.privacy_request_id || undefined;
@@ -180,6 +187,7 @@ export const ManualTasks = () => {
     userFilters,
     onUserClick,
     currentFilters: filters,
+    hasAccessToAllTasks,
   });
 
   // Check if only the current user filter is applied (for custom empty state)
