@@ -199,6 +199,12 @@ def get_cache(should_log: Optional[bool] = False) -> FidesopsRedis:
         )
 
     global _connection  # pylint: disable=W0603
+
+    db_index = _determine_redis_db_index()
+
+    logger.debug(
+        f"Redis settings: host={CONFIG.redis.host}, port={CONFIG.redis.port}, db={db_index}, ssl={CONFIG.redis.ssl}, ssl_cert_reqs={CONFIG.redis.ssl_cert_reqs}, decode_responses={CONFIG.redis.decode_responses}"
+    )
     if _connection is None:
         logger.debug("Creating new Redis connection...")
         _connection = FidesopsRedis(  # type: ignore[call-overload]
@@ -206,25 +212,27 @@ def get_cache(should_log: Optional[bool] = False) -> FidesopsRedis:
             decode_responses=CONFIG.redis.decode_responses,
             host=CONFIG.redis.host,
             port=CONFIG.redis.port,
-            db=_determine_redis_db_index(),
+            db=db_index,
             username=CONFIG.redis.user,
             password=CONFIG.redis.password,
             ssl=CONFIG.redis.ssl,
             ssl_ca_certs=CONFIG.redis.ssl_ca_certs,
             ssl_cert_reqs=CONFIG.redis.ssl_cert_reqs,
         )
-        if should_log:
-            logger.debug("New Redis connection created.")
+        logger.debug("New Redis connection created.")
 
-    if should_log:
-        logger.debug("Testing Redis connection...")
+    logger.debug("Testing Redis connection...")
+
     try:
         connected = _connection.ping()
-    except ConnectionErrorFromRedis:
+    except ConnectionErrorFromRedis as e:
+        connected = False
+        logger.error(f"Redis connection failed with ConnectionErrorFromRedis: {e}")
+    except Exception as e:
+        logger.error(f"Redis connection failed with Exception: {e}")
         connected = False
     else:
-        if should_log:
-            logger.debug("Redis connection succeeded.")
+        logger.debug("Redis connection succeeded.")
 
     if not connected:
         logger.debug("Redis connection failed.")
