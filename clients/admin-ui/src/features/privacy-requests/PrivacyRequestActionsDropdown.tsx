@@ -6,10 +6,13 @@ import {
 } from "fidesui";
 import { useMemo } from "react";
 
+import { PrivacyRequestStatus } from "~/types/api";
+
 import ApprovePrivacyRequestModal from "./ApprovePrivacyRequestModal";
 import DenyPrivacyRequestModal from "./DenyPrivacyRequestModal";
 import useApproveDenyPrivacyRequest from "./hooks/useApproveDenyPrivacyRequest";
 import useDownloadPrivacyRequestResults from "./hooks/useDownloadPrivacyRequestResults";
+import { useMutations } from "./hooks/useMutations";
 import useReprocessPrivacyRequest from "./hooks/useReprocessPrivacyRequest";
 import { PrivacyRequestEntity } from "./types";
 
@@ -50,6 +53,10 @@ const PrivacyRequestActionsDropdown = ({
     { privacyRequest },
   );
 
+  const { handleFinalizeRequest, finalizeRequestResult } = useMutations({
+    subjectRequest: privacyRequest,
+  });
+
   const menuItems = useMemo(() => {
     const menu = [];
     menu.push({
@@ -73,6 +80,20 @@ const PrivacyRequestActionsDropdown = ({
       onClick: reprocessPrivacyRequest,
       disabled: !showReprocess,
     });
+
+    if (
+      privacyRequest.status ===
+      PrivacyRequestStatus.REQUIRES_MANUAL_FINALIZATION
+    ) {
+      menu.push({
+        key: "finalize",
+        label: (
+          <span data-testid="privacy-request-action-finalize">Finalize</span>
+        ),
+        onClick: handleFinalizeRequest,
+        disabled: finalizeRequestResult.isLoading,
+      });
+    }
 
     if (showDownloadResults) {
       menu.push({
@@ -104,6 +125,9 @@ const PrivacyRequestActionsDropdown = ({
     openDenyConfirmationModal,
     showReprocess,
     reprocessPrivacyRequest,
+    privacyRequest.status,
+    handleFinalizeRequest,
+    finalizeRequestResult.isLoading,
   ]);
 
   return (
