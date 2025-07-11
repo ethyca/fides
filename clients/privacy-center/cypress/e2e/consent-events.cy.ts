@@ -314,34 +314,53 @@ describe("Consent FidesEvents", () => {
         },
       });
 
-      // Update preferences from Fides.updateConsent()
-      cy.window().then(async (win) => {
-        await win.Fides.updateConsent({
-          consent: {
-            analytics_opt_out: false,
-          },
+      // Test various global window.Fides consent methods
+      const globalFidesConsentMethods = [
+        {
+          name: "updateConsent",
+          action: (win: any) =>
+            win.Fides.updateConsent({
+              consent: {
+                analytics_opt_out: false,
+              },
+            }),
+        },
+        {
+          name: "acceptAll",
+          action: (win: any) => win.Fides.acceptAll(),
+        },
+        {
+          name: "rejectAll",
+          action: (win: any) => win.Fides.rejectAll(),
+        },
+      ];
+
+      globalFidesConsentMethods.forEach((method) => {
+        // Update preferences from Fides.${method.name}()
+        cy.window().then(async (win) => {
+          await method.action(win);
         });
+        expectedEvents.push(
+          {
+            type: "FidesUpdating",
+            detail: {
+              extraDetails: {
+                consentMethod: "script",
+                trigger: { origin: "external" },
+              },
+            },
+          },
+          {
+            type: "FidesUpdated",
+            detail: {
+              extraDetails: {
+                consentMethod: "script",
+                trigger: { origin: "external" },
+              },
+            },
+          },
+        );
       });
-      expectedEvents.push(
-        {
-          type: "FidesUpdating",
-          detail: {
-            extraDetails: {
-              consentMethod: "script",
-              trigger: { origin: "external" },
-            },
-          },
-        },
-        {
-          type: "FidesUpdated",
-          detail: {
-            extraDetails: {
-              consentMethod: "script",
-              trigger: { origin: "external" },
-            },
-          },
-        },
-      );
 
       expectFidesEventSequence(expectedEvents);
     });

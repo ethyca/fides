@@ -482,3 +482,27 @@ export const updateConsent = async (
     updateCookie,
   });
 };
+
+const updateAllConsent = async (context: FidesGlobal, accept: boolean) => {
+  const { experience } = context;
+  if (!experience) {
+    throw new Error("Experience must be initialized before updating consent");
+  }
+  const privacyNoticeItems = experience.privacy_notices;
+  const consent = privacyNoticeItems?.reduce((acc, n) => {
+    if (n.consent_mechanism !== ConsentMechanism.NOTICE_ONLY) {
+      // eslint-disable-next-line no-param-reassign
+      acc[n.notice_key] = accept;
+    }
+    return acc;
+  }, {} as NoticeConsent);
+  return updateConsent(context, { noticeConsent: consent });
+};
+
+export const acceptAll = async (context: FidesGlobal) => {
+  return updateAllConsent(context, true);
+};
+
+export const rejectAll = async (context: FidesGlobal) => {
+  return updateAllConsent(context, false);
+};

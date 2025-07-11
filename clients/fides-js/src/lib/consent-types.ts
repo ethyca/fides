@@ -215,6 +215,8 @@ export interface FidesGlobal
     fidesString?: string;
     validation?: UpdateConsentValidation;
   }) => Promise<void>;
+  acceptAll: () => Promise<void>;
+  rejectAll: () => Promise<void>;
 }
 
 /**

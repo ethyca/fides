@@ -94,6 +94,7 @@ export const ConsentButtons = ({
                   handleTCFManagePreferencesClick();
                 }}
                 className="fides-manage-preferences-button"
+                id="fides-manage-preferences-button"
                 loading={isLoadingModal}
               />
             )}
@@ -109,6 +110,7 @@ export const ConsentButtons = ({
                   onRejectAll();
                 }}
                 className="fides-reject-all-button"
+                id="fides-reject-all-button"
                 loading={isGVLLoading}
               />
             )}
@@ -123,6 +125,7 @@ export const ConsentButtons = ({
                 onAcceptAll();
               }}
               className="fides-accept-all-button"
+              id="fides-accept-all-button"
               loading={isGVLLoading}
             />
           </Fragment>
@@ -156,6 +159,7 @@ export const ConsentButtons = ({
               onManagePreferencesClick();
             }}
             className="fides-manage-preferences-button"
+            id="fides-manage-preferences-button"
           />
         )}
         {includePrivacyPolicyLink && <PrivacyPolicyLink />}
@@ -240,6 +244,7 @@ export const NoticeConsentButtons = ({
             handleSave();
           }}
           className="fides-save-button"
+          id="fides-save-button"
         />
       );
     }
