@@ -19,8 +19,12 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.65.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.65.2...main)
 
+## [2.65.2](https://github.com/ethyca/fides/compare/2.65.1...2.65.2)
+
+### Fixed
+- Fixed hanging test privacy requests by removing all logger calls from `get_cache` [#6328](https://github.com/ethyca/fides/pull/6328)
 
 ## [2.65.1](https://github.com/ethyca/fides/compare/2.65.0...2.65.1)
 
@@ -29,7 +33,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Privacy Center now only disables `custom-fides.css` polling when it receives a 404. It will continue to poll after receiving other HTTP Status Codes [#6319](https://github.com/ethyca/fides/pull/6319)
 - Privacy Center now retries when it receives an error HTTP Status code while retrieving `custom-fides.css` [#6319](https://github.com/ethyca/fides/pull/6319)
 - Manual tasks table will now filter by the logged in user by default [#6317](https://github.com/ethyca/fides/pull/6317)
-
 
 ## [2.65.0](https://github.com/ethyca/fides/compare/2.64.2...2.65.0)
 
