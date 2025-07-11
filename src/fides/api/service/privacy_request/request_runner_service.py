@@ -698,9 +698,9 @@ def run_privacy_request(
                         privacy_request.add_success_execution_log(
                             session,
                             connection_key=None,
-                            dataset_name=None,
+                            dataset_name="Request finalized",
                             collection_name=None,
-                            message="Request finalized",
+                            message=f"Request finalized for privacy request: {privacy_request.id}",
                             action_type=privacy_request.policy.get_action_type(),  # type: ignore
                         )
                         privacy_request.status = PrivacyRequestStatus.complete
