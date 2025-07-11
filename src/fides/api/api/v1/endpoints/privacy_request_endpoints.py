@@ -1901,7 +1901,7 @@ def finalize_privacy_request(
         privacy_request_id=privacy_request_id,
     )
 
-    return privacy_request
+    return privacy_request  # type: ignore[return-value]
 
 
 @router.get(
