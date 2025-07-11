@@ -4,6 +4,8 @@ import {
   stubPrivacyRequests,
 } from "cypress/support/stubs";
 
+import { RoleRegistryEnum } from "~/types/api";
+
 // Use a reliable selector for table rows
 const ROW_SELECTOR = "tbody tr[data-row-key]";
 
@@ -525,6 +527,133 @@ describe("Manual Tasks", () => {
         cy.getByTestId("skip-modal-comment-input").should("have.value", "");
         cy.getByTestId("skip-modal-skip-button").should("be.disabled");
       });
+    });
+  });
+
+  describe("Internal Respondent Access", () => {
+    beforeEach(() => {
+      cy.login();
+      cy.assumeRole(RoleRegistryEnum.RESPONDENT);
+      stubManualTasks();
+      stubPrivacyRequests();
+      stubPlus(true);
+
+      // Add mock for config endpoint
+      cy.intercept("GET", "/api/v1/config?api_set=false", {
+        body: {},
+      }).as("getConfig");
+    });
+
+    it("should allow internal respondent to access manual tasks with limited permissions", () => {
+      cy.visit("/privacy-requests?tab=manual-tasks");
+      cy.wait("@getManualTasks");
+
+      // Verify the manual tasks table is displayed with data
+      cy.get("table").should("exist");
+      cy.get(ROW_SELECTOR).should("have.length.at.least", 1);
+
+      // Verify that the "Assigned to" column is NOT visible for internal respondents
+      cy.get("table thead th").should("not.contain", "Assigned to");
+
+      // Verify other columns are still visible
+      cy.get("table thead th").should("contain", "Task name");
+      cy.get("table thead th").should("contain", "Status");
+      cy.get("table thead th").should("contain", "System");
+      cy.get("table thead th").should("contain", "Type");
+      cy.get("table thead th").should("contain", "Days left");
+      cy.get("table thead th").should("contain", "Subject identity");
+      cy.get("table thead th").should("contain", "Actions");
+
+      // Verify task data is displayed correctly in the first row
+      cy.get(ROW_SELECTOR)
+        .first()
+        .within(() => {
+          cy.get("td")
+            .first()
+            .should("contain", "Export Customer Data from Salesforce");
+          cy.getByTestId("manual-task-status-tag").should("contain", "New");
+          cy.get("td").contains("Salesforce").should("exist");
+          cy.get("td").contains("Access").should("exist");
+          cy.get("td").contains("15").should("exist");
+          cy.get("td").contains("customer@email.com").should("exist");
+        });
+
+      // Test complete action is available
+      cy.get(ROW_SELECTOR)
+        .first()
+        .within(() => {
+          cy.get("td")
+            .last()
+            .within(() => {
+              cy.get("button").contains("Complete").should("exist");
+              cy.get("button[aria-label='More actions']").should("exist");
+            });
+        });
+
+      // Test skip action is available but "Go to request" is NOT available
+      cy.get(ROW_SELECTOR)
+        .first()
+        .within(() => {
+          cy.get("td")
+            .last()
+            .within(() => {
+              cy.get("button[aria-label='More actions']").click();
+            });
+        });
+
+      // Verify dropdown menu contains skip but NOT "Go to request"
+      cy.get(".ant-dropdown-menu-item")
+        .contains("Skip task")
+        .should("be.visible");
+      cy.get(".ant-dropdown-menu-item")
+        .contains("Go to request")
+        .should("not.exist");
+
+      // Close dropdown by clicking elsewhere
+      cy.get("body").click();
+
+      // Test that complete modal can be opened
+      cy.get(ROW_SELECTOR)
+        .first()
+        .within(() => {
+          cy.get("td")
+            .last()
+            .within(() => {
+              cy.get("button").contains("Complete").click();
+            });
+        });
+
+      // Verify modal opens and can be used
+      cy.getByTestId("complete-task-modal").should("be.visible");
+      cy.getByTestId("complete-task-modal").within(() => {
+        cy.get("h4").contains("Complete Task").should("be.visible");
+        // Close modal
+        cy.getByTestId("complete-modal-cancel-button").click();
+      });
+
+      cy.getByTestId("complete-task-modal").should("not.exist");
+
+      // Test that skip modal can be opened and used
+      cy.get(ROW_SELECTOR)
+        .first()
+        .within(() => {
+          cy.get("td")
+            .last()
+            .within(() => {
+              cy.get("button[aria-label='More actions']").click();
+            });
+        });
+
+      cy.get(".ant-dropdown-menu-item").contains("Skip task").click();
+
+      cy.getByTestId("skip-task-modal").should("be.visible");
+      cy.getByTestId("skip-task-modal").within(() => {
+        cy.contains("Reason for skipping (Required)").should("be.visible");
+        // Close modal
+        cy.getByTestId("skip-modal-cancel-button").click();
+      });
+
+      cy.getByTestId("skip-task-modal").should("not.exist");
     });
   });
 });

@@ -218,7 +218,9 @@
     "data_use:read",
     "datamap:read",
     "dataset:read",
+    "discovery_monitor:read",
     "evaluation:read",
+    "manual_field:read-own",
     "masking:exec",
     "masking:read",
     "messaging:read",
@@ -228,10 +230,12 @@
     "privacy-notice:read",
     "privacy-request-notifications:read",
     "privacy-request:read",
+    "privacy_center_config:read",
     "property:read",
     "rule:read",
     "saas_config:read",
     "scope:read",
+    "shared_monitor_config:read",
     "storage:read",
     "system:read",
     "system_history:read",
@@ -248,6 +252,10 @@
     "privacy-request:review",
     "privacy-request:upload_data",
     "privacy-request:view_data"
+  ],
+  "respondent": [
+    "manual_field:read-own",
+    "privacy-request:manual-steps:respond"
   ],
   "contributor": [
     "allow_list:create",
