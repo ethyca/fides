@@ -12,7 +12,7 @@ import {
   PrivacyExperience,
   PrivacyExperienceMinimal,
   UserGeolocation,
-} from "fides-js";
+} from "fides-js"; // NOTE: these import from the mjs file so a prod FidesJS build is needed to test changes
 import { promises as fsPromises } from "fs";
 import type { NextApiRequest, NextApiResponse } from "next";
 import pRetry from "p-retry";
