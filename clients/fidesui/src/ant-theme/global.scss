@@ -111,3 +111,12 @@ h6 {
 .ant-steps-item-title {
   font-weight: 500;
 }
+
+/*
+  For the filter icon in the table, we want to highlight the background when it's active
+  This is to make it more visible that the filter is active, given we changed
+  Ant's solid icon with a Carbon icon which has lines.
+*/
+.ant-table-filter-trigger.active {
+  background-color: var(--fidesui-neutral-100);
+}
