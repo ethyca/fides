@@ -6,14 +6,15 @@ import {
 } from "fidesui";
 import { useMemo } from "react";
 
+import { PrivacyRequestStatus } from "~/types/api";
+
 import ApprovePrivacyRequestModal from "./ApprovePrivacyRequestModal";
 import DenyPrivacyRequestModal from "./DenyPrivacyRequestModal";
 import useApproveDenyPrivacyRequest from "./hooks/useApproveDenyPrivacyRequest";
 import useDownloadPrivacyRequestResults from "./hooks/useDownloadPrivacyRequestResults";
+import { useMutations } from "./hooks/useMutations";
 import useReprocessPrivacyRequest from "./hooks/useReprocessPrivacyRequest";
 import { PrivacyRequestEntity } from "./types";
-import { PrivacyRequestStatus } from "~/types/api";
-import { useMutations } from "./hooks/useMutations";
 
 interface PrivacyRequestActionsDropdownProps {
   privacyRequest: PrivacyRequestEntity;
