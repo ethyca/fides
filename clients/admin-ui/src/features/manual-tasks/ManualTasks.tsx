@@ -1,12 +1,9 @@
 import {
-  AntColumnsType as ColumnsType,
   AntFilterValue as FilterValue,
   AntTable as Table,
   AntTablePaginationConfig as TablePaginationConfig,
-  AntTag as Tag,
   AntTypography as Typography,
   Flex,
-  SelectInline,
 } from "fidesui";
 import { isEqual } from "lodash";
 import { useRouter } from "next/router";
@@ -14,35 +11,20 @@ import { useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { selectUser } from "~/features/auth";
-import DaysLeftTag from "~/features/common/DaysLeftTag";
 import FidesSpinner from "~/features/common/FidesSpinner";
 import { USER_PROFILE_ROUTE } from "~/features/common/nav/routes";
 import { GlobalFilterV2 } from "~/features/common/table/v2/filters/GlobalFilterV2";
 import { PAGE_SIZES } from "~/features/common/table/v2/PaginationBar";
 import { formatUser } from "~/features/common/utils";
-import { SubjectRequestActionTypeMap } from "~/features/privacy-requests/constants";
 import {
-  ActionType,
-  ManualFieldListItem,
   ManualFieldRequestType,
   ManualFieldStatus,
   ManualFieldSystem,
   ManualFieldUser,
-  PrivacyRequestStatus,
 } from "~/types/api";
 
-import { ActionButtons } from "./components/ActionButtons";
-import {
-  REQUEST_TYPE_FILTER_OPTIONS,
-  STATUS_FILTER_OPTIONS,
-  STATUS_MAP,
-} from "./constants";
+import { useManualTaskColumns } from "./hooks";
 import { useGetTasksQuery } from "./manual-tasks.slice";
-
-interface FilterOption {
-  text: string;
-  value: string;
-}
 
 interface ManualTaskFilters {
   status?: string;
@@ -51,139 +33,6 @@ interface ManualTaskFilters {
   assignedUsers?: string;
   privacyRequestId?: string;
 }
-
-interface UserOption {
-  label: string;
-  value: string;
-}
-
-const getColumns = (
-  systemFilters: FilterOption[],
-  userFilters: FilterOption[],
-  onUserClick: (userId: string) => void,
-  currentFilters: ManualTaskFilters,
-): ColumnsType<ManualFieldListItem> => [
-  {
-    title: "Task name",
-    dataIndex: "name",
-    key: "name",
-    width: 300,
-    render: (name) => (
-      <Typography.Text ellipsis={{ tooltip: name }}>{name}</Typography.Text>
-    ),
-  },
-  {
-    title: "Status",
-    dataIndex: "status",
-    key: "status",
-    width: 120,
-    render: (status: ManualFieldStatus) => (
-      <Tag
-        color={STATUS_MAP[status].color}
-        data-testid="manual-task-status-tag"
-      >
-        {STATUS_MAP[status].label}
-      </Tag>
-    ),
-    filters: STATUS_FILTER_OPTIONS,
-    filterMultiple: false,
-  },
-  {
-    title: "System",
-    dataIndex: ["system", "name"],
-    key: "system_name",
-    width: 210,
-    filters: systemFilters,
-    filterMultiple: false,
-  },
-  {
-    title: "Type",
-    dataIndex: "request_type",
-    key: "request_type",
-    width: 150,
-    render: (type: ManualFieldRequestType) => {
-      const actionType =
-        type === ManualFieldRequestType.ACCESS
-          ? ActionType.ACCESS
-          : ActionType.ERASURE;
-      const displayName = SubjectRequestActionTypeMap.get(actionType) || type;
-      return <Typography.Text>{displayName}</Typography.Text>;
-    },
-    filters: REQUEST_TYPE_FILTER_OPTIONS,
-    filterMultiple: false,
-  },
-  {
-    title: "Assigned to",
-    dataIndex: "assigned_users",
-    key: "assigned_users",
-    width: 380,
-    render: (assignedUsers: ManualFieldUser[]) => {
-      if (!assignedUsers || assignedUsers.length === 0) {
-        return <Typography.Text>-</Typography.Text>;
-      }
-
-      const userOptions: UserOption[] = assignedUsers.map((user) => ({
-        label: formatUser(user),
-        value: user.id,
-      }));
-
-      const currentAssignedUserIds = assignedUsers.map((user) => user.id);
-
-      return (
-        <SelectInline
-          value={currentAssignedUserIds}
-          options={userOptions}
-          readonly
-          onTagClick={(userId) => onUserClick(String(userId))}
-        />
-      );
-    },
-    filters: userFilters,
-    filterMultiple: false,
-    defaultFilteredValue: currentFilters.assignedUsers
-      ? [currentFilters.assignedUsers]
-      : undefined,
-  },
-  {
-    title: "Days left",
-    dataIndex: ["privacy_request", "days_left"],
-    key: "days_left",
-    width: 140,
-    render: (daysLeft: number | null) => (
-      <DaysLeftTag
-        daysLeft={daysLeft || 0}
-        includeText={false}
-        status={PrivacyRequestStatus.PENDING}
-      />
-    ),
-  },
-  {
-    title: "Subject identity",
-    dataIndex: ["privacy_request", "subject_identities"],
-    key: "subject_identities",
-    width: 200,
-    render: (subjectIdentities: Record<string, string>) => {
-      if (!subjectIdentities) {
-        return <Typography.Text>-</Typography.Text>;
-      }
-
-      // Display email or phone_number if available
-      const identity =
-        subjectIdentities.email || subjectIdentities.phone_number || "";
-      return (
-        <Typography.Text ellipsis={{ tooltip: identity }}>
-          {identity}
-        </Typography.Text>
-      );
-    },
-  },
-  {
-    title: "Actions",
-    key: "actions",
-    width: 120,
-    render: (_, record) => <ActionButtons task={record} />,
-  },
-];
 
 export const ManualTasks = () => {
   const router = useRouter();
@@ -319,21 +168,19 @@ export const ManualTasks = () => {
     setPageIndex(1);
   };
 
-  const columns = useMemo(
-    () =>
-      getColumns(
-        systemFilters,
-        userFilters,
-        (userId) => {
-          router.push({
-            pathname: USER_PROFILE_ROUTE,
-            query: { id: userId },
-          });
-        },
-        filters,
-      ),
-    [systemFilters, userFilters, router, filters],
-  );
+  const onUserClick = (userId: string) => {
+    router.push({
+      pathname: USER_PROFILE_ROUTE,
+      query: { id: userId },
+    });
+  };
+
+  const columns = useManualTaskColumns({
+    systemFilters,
+    userFilters,
+    onUserClick,
+    currentFilters: filters,
+  });
 
   // Check if only the current user filter is applied (for custom empty state)
   const isOnlyCurrentUserFiltered = useMemo(
