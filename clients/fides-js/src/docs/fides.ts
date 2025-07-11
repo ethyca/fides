@@ -295,9 +295,7 @@ export interface Fides {
    * </head>
    * ```
    */
-  shopify: (options?: {
-    sale_of_data_default?: boolean;
-  }) => void;
+  shopify: (options?: { sale_of_data_default?: boolean }) => void;
 
   /**
    * Initializes FidesJS with an initial configuration object.
@@ -465,7 +463,7 @@ export interface Fides {
   identity: Record<string, string>;
 
   /**
-   * Updates user consent preferences with either a `consent` object or `fidesString`.
+   * Updates user consent preferences using either a `consent` object or `fidesString`.
    * If both are provided, `fidesString` takes priority.
    *
    * @example
@@ -533,6 +531,18 @@ export interface Fides {
     fidesString?: string;
     validation?: "throw" | "warn" | "ignore";
   }) => Promise<void>;
+
+  /**
+   * Accept all consent preferences. This is a convenience method that is similar to
+   * pressing the "Accept All" button in the Fides UI.
+   */
+  acceptAll: () => Promise<void>;
+
+  /**
+   * Reject all consent preferences. This is a convenience method that is similar to
+   * pressing the "Reject All" button in the Fides UI.
+   */
+  rejectAll: () => Promise<void>;
 
   /**
    * NOTE: The properties below are all marked @internal, despite being exported

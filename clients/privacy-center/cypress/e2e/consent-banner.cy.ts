@@ -3716,101 +3716,96 @@ describe("Consent overlay", () => {
       });
     });
 
-    it("should update the consent cookie using consent object", () => {
-      cy.window().then((win) => {
-        // Initial consent
-        cy.window()
-          .its("Fides")
-          .its("consent")
-          .should("eql", {
-            [PRIVACY_NOTICE_KEY_1]: false,
-            [PRIVACY_NOTICE_KEY_2]: true,
-            [PRIVACY_NOTICE_KEY_3]: true,
-          });
+    const fidesConsentTestCases = [
+      {
+        name: "should update the consent cookie using consent object",
+        action: (win: any) =>
+          win.Fides.updateConsent({
+            consent: {
+              [PRIVACY_NOTICE_KEY_1]: true,
+              [PRIVACY_NOTICE_KEY_2]: UserConsentPreference.ACKNOWLEDGE,
+              [PRIVACY_NOTICE_KEY_3]: UserConsentPreference.OPT_OUT,
+            },
+          }),
+        expectedResult: {
+          [PRIVACY_NOTICE_KEY_1]: true,
+          [PRIVACY_NOTICE_KEY_2]: true,
+          [PRIVACY_NOTICE_KEY_3]: false,
+        },
+      },
+      {
+        name: "should update the consent cookie using fidesString",
+        action: (win: any) =>
+          win.Fides.updateConsent({
+            fidesString:
+              ",,,eyJhZHZlcnRpc2luZyI6dHJ1ZSwiZXNzZW50aWFsIjp0cnVlLCJhbmFseXRpY3Nfb3B0X291dCI6ZmFsc2V9",
+          }),
+        expectedResult: {
+          [PRIVACY_NOTICE_KEY_1]: true,
+          [PRIVACY_NOTICE_KEY_2]: true,
+          [PRIVACY_NOTICE_KEY_3]: false,
+        },
+      },
+      {
+        name: "should update the consent cookie using fidesString when both are provided",
+        action: (win: any) =>
+          win.Fides.updateConsent({
+            consent: {
+              [PRIVACY_NOTICE_KEY_1]: false,
+              [PRIVACY_NOTICE_KEY_2]: UserConsentPreference.ACKNOWLEDGE,
+              [PRIVACY_NOTICE_KEY_3]: false,
+            },
+            fidesString:
+              ",,,eyJhZHZlcnRpc2luZyI6dHJ1ZSwiZXNzZW50aWFsIjp0cnVlLCJhbmFseXRpY3Nfb3B0X291dCI6ZmFsc2V9",
+          }),
+        expectedResult: {
+          [PRIVACY_NOTICE_KEY_1]: true,
+          [PRIVACY_NOTICE_KEY_2]: true,
+          [PRIVACY_NOTICE_KEY_3]: false,
+        },
+      },
+      {
+        name: "should accept all consent using acceptAll",
+        action: (win: any) => win.Fides.acceptAll(),
+        expectedResult: {
+          [PRIVACY_NOTICE_KEY_1]: true,
+          [PRIVACY_NOTICE_KEY_2]: true,
+          [PRIVACY_NOTICE_KEY_3]: true,
+        },
+      },
+      {
+        name: "should reject all consent using rejectAll",
+        action: (win: any) => win.Fides.rejectAll(),
+        expectedResult: {
+          [PRIVACY_NOTICE_KEY_1]: false,
+          [PRIVACY_NOTICE_KEY_2]: true, // Notice-only should stay true
+          [PRIVACY_NOTICE_KEY_3]: false,
+        },
+      },
+    ];
 
-        // Update consent
-        win.Fides.updateConsent({
-          consent: {
-            [PRIVACY_NOTICE_KEY_1]: true,
-            [PRIVACY_NOTICE_KEY_2]: UserConsentPreference.ACKNOWLEDGE,
-            [PRIVACY_NOTICE_KEY_3]: UserConsentPreference.OPT_OUT,
-          },
+    fidesConsentTestCases.forEach((testCase) => {
+      it(testCase.name, () => {
+        cy.window().then((win) => {
+          // Initial consent
+          cy.window()
+            .its("Fides")
+            .its("consent")
+            .should("eql", {
+              [PRIVACY_NOTICE_KEY_1]: false,
+              [PRIVACY_NOTICE_KEY_2]: true,
+              [PRIVACY_NOTICE_KEY_3]: true,
+            });
+
+          // Execute the action
+          testCase.action(win);
+
+          // Verify consent was updated
+          cy.window()
+            .its("Fides")
+            .its("consent")
+            .should("eql", testCase.expectedResult);
         });
-
-        // Verify consent was updated
-        cy.window()
-          .its("Fides")
-          .its("consent")
-          .should("eql", {
-            [PRIVACY_NOTICE_KEY_1]: true,
-            [PRIVACY_NOTICE_KEY_2]: true,
-            [PRIVACY_NOTICE_KEY_3]: false,
-          });
-      });
-    });
-
-    it("should update the consent cookie using fidesString", () => {
-      cy.window().then((win) => {
-        // Initial consent
-        cy.window()
-          .its("Fides")
-          .its("consent")
-          .should("eql", {
-            [PRIVACY_NOTICE_KEY_1]: false,
-            [PRIVACY_NOTICE_KEY_2]: true,
-            [PRIVACY_NOTICE_KEY_3]: true,
-          });
-
-        // Update consent
-        win.Fides.updateConsent({
-          fidesString:
-            ",,,eyJhZHZlcnRpc2luZyI6dHJ1ZSwiZXNzZW50aWFsIjp0cnVlLCJhbmFseXRpY3Nfb3B0X291dCI6ZmFsc2V9",
-        });
-
-        // Verify consent was updated
-        cy.window()
-          .its("Fides")
-          .its("consent")
-          .should("eql", {
-            [PRIVACY_NOTICE_KEY_1]: true,
-            [PRIVACY_NOTICE_KEY_2]: true,
-            [PRIVACY_NOTICE_KEY_3]: false,
-          });
-      });
-    });
-
-    it("should update the consent cookie using fidesString when both are provided", () => {
-      cy.window().then((win) => {
-        // Initial consent
-        cy.window()
-          .its("Fides")
-          .its("consent")
-          .should("eql", {
-            [PRIVACY_NOTICE_KEY_1]: false,
-            [PRIVACY_NOTICE_KEY_2]: true,
-            [PRIVACY_NOTICE_KEY_3]: true,
-          });
-
-        // Update consent
-        win.Fides.updateConsent({
-          consent: {
-            [PRIVACY_NOTICE_KEY_1]: false,
-            [PRIVACY_NOTICE_KEY_2]: UserConsentPreference.ACKNOWLEDGE,
-            [PRIVACY_NOTICE_KEY_3]: false,
-          },
-          fidesString:
-            ",,,eyJhZHZlcnRpc2luZyI6dHJ1ZSwiZXNzZW50aWFsIjp0cnVlLCJhbmFseXRpY3Nfb3B0X291dCI6ZmFsc2V9",
-        });
-
-        // Verify consent was updated from the fidesString and not the consent object
-        cy.window()
-          .its("Fides")
-          .its("consent")
-          .should("eql", {
-            [PRIVACY_NOTICE_KEY_1]: true,
-            [PRIVACY_NOTICE_KEY_2]: true,
-            [PRIVACY_NOTICE_KEY_3]: false,
-          });
       });
     });
   });

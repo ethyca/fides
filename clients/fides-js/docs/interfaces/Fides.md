@@ -594,7 +594,7 @@ This field is read-only.
 
 > **updateConsent**: (`options`) => `Promise`\<`void`\>
 
-Updates user consent preferences with either a `consent` object or `fidesString`.
+Updates user consent preferences using either a `consent` object or `fidesString`.
 If both are provided, `fidesString` takes priority.
 
 #### Parameters
@@ -654,3 +654,29 @@ Fides.updateConsent({
   validation: "ignore"
 });
 ```
+
+***
+
+### acceptAll()
+
+> **acceptAll**: () => `Promise`\<`void`\>
+
+Accept all consent preferences. This is a convenience method that is similar to
+pressing the "Accept All" button in the Fides UI.
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### rejectAll()
+
+> **rejectAll**: () => `Promise`\<`void`\>
+
+Reject all consent preferences. This is a convenience method that is similar to
+pressing the "Reject All" button in the Fides UI.
+
+#### Returns
+
+`Promise`\<`void`\>
