@@ -5,6 +5,7 @@ from typing import Dict
 import yaml
 from pydantic import BaseModel
 
+from fides.api.logger import logger
 from fides.api.util.text import to_snake_case
 from fides.config.helpers import load_file
 
@@ -25,6 +26,7 @@ def _load_supported_languages() -> Dict[str, Language]:
     """Loads language dict based on yml file on disk"""
     with open(load_file([LANGUAGES_YAML_FILE_PATH]), "r", encoding="utf-8") as file:
         _languages = yaml.safe_load(file).get("languages", [])
+        logger.debug(f"Loaded languages: {_languages}")
         language_dict = {}
         for language in _languages:
             language_dict[language["id"]] = Language.model_validate(language)
