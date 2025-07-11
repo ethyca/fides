@@ -83,3 +83,5 @@ languages:
   name: Ukrainian
 - id: zh
   name: Chinese
+- id: zh-Hant
+  name: Chinese (Traditional)
