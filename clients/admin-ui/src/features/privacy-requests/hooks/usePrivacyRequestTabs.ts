@@ -14,9 +14,6 @@ export type PrivacyRequestTabKey =
 
 export const usePrivacyRequestTabs = () => {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<PrivacyRequestTabKey>(
-    PRIVACY_REQUEST_TABS.REQUEST,
-  );
 
   const hasPrivacyRequestReadScope = useHasPermission([
     ScopeRegistryEnum.PRIVACY_REQUEST_READ,
@@ -31,6 +28,9 @@ export const usePrivacyRequestTabs = () => {
       manualTask: hasManualTaskReadScope,
     }),
     [hasPrivacyRequestReadScope, hasManualTaskReadScope],
+  );
+  const [activeTab, setActiveTab] = useState<PrivacyRequestTabKey | undefined>(
+    undefined,
   );
 
   const parseTabFromQuery = useCallback((): PrivacyRequestTabKey | null => {
