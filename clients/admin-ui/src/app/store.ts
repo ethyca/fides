@@ -105,12 +105,23 @@ const reducer = {
 export type RootState = StateFromReducersMapObject<typeof reducer>;
 
 const allReducers = combineReducers(reducer);
-const rootReducer = (state: RootState | undefined, action: AnyAction) => {
+
+const rootReducer = (
+  state: Partial<RootState> | undefined,
+  action: AnyAction,
+) => {
   let newState = state;
+
   if (action.type === "auth/logout") {
+    // retains features slice when logging out
+    newState = state?.[featuresSlice.name]
+      ? {
+          [featuresSlice.name]: state[featuresSlice.name],
+        }
+      : undefined;
     storage.removeItem(STORAGE_ROOT_KEY);
-    newState = undefined;
   }
+
   return allReducers(newState, action);
 };
 
