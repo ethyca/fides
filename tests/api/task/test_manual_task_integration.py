@@ -742,7 +742,9 @@ class TestManualTaskDisabledConnectionConfig:
     def test_disabled_connection_configs_filtered_from_artificial_graphs(self, db):
         """Test that disabled connection configs are filtered out from artificial graph creation"""
         # Create artificial graphs
-        graphs = create_manual_task_artificial_graphs(db)
+        graphs = create_manual_task_artificial_graphs(
+            db, None
+        )  # No policy filtering for this test
 
         # Should only include graphs for enabled connection configs
         assert len(graphs) == 1
