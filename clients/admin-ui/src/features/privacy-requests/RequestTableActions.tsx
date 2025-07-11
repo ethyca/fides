@@ -8,14 +8,15 @@ import {
   useDisclosure,
 } from "fidesui";
 
-import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import Restrict from "~/features/common/Restrict";
+import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import ApprovePrivacyRequestModal from "~/features/privacy-requests/ApprovePrivacyRequestModal";
 import DenyPrivacyRequestModal from "~/features/privacy-requests/DenyPrivacyRequestModal";
 import { useMutations } from "~/features/privacy-requests/hooks/useMutations";
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 import { PrivacyRequestStatus, ScopeRegistryEnum } from "~/types/api";
+
 import { useGetActiveMessagingProviderQuery } from "./privacy-requests.slice";
 
 interface RequestTableActionsProps extends StackProps {
