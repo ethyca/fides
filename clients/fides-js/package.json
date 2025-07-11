@@ -28,9 +28,8 @@
     }
   },
   "scripts": {
-    "dev": "NODE_ENV=development rollup --watch -c",
-    "build": "NODE_ENV=production rollup -c",
-    "build:windows": "set NODE_ENV=production && rollup -c",
+    "dev": "rollup --watch -c --environment NODE_ENV:development",
+    "build": "rollup -c --environment NODE_ENV:production",
     "postbuild": "npm run docs:generate",
     "clean": "rm -rf dist .turbo node_modules",
     "docs:generate": "typedoc --tsconfig ./tsconfig.json --out docs src/docs/ ",
@@ -83,7 +82,7 @@
     "jest-environment-jsdom": "^29.7.0",
     "postcss": "^8.4.31",
     "prettier": "^3.3.3",
-    "rollup": "^3.29.5",
+    "rollup": "^4.44.2",
     "rollup-plugin-copy": "^3.4.0",
     "rollup-plugin-dts": "^5.3.0",
     "rollup-plugin-esbuild": "^5.0.0",
