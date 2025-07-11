@@ -39,7 +39,7 @@ task_always_eager = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "dd96c73588d9a3d35827be570b644831" # string
+analytics_id = "996a9dcd0e964d1a0f0b2067e43fb552" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -202,6 +202,13 @@ use_dsr_3_0 = false # boolean
 
 # Whether fuzzy search is enabled for privacy request lookups.
 fuzzy_search_enabled = true # boolean
+
+# The cron expression to send batch emails for DSR email integration.
+# Defaults to weekly on Mondays at 12pm (noon).
+email_send_cron_expression = "0 12 * * mon" # string
+
+# The timezone to send batch emails for DSR email integration.
+email_send_timezone = "US/Eastern" # string
 
 #-------------#
 #-- LOGGING --#
