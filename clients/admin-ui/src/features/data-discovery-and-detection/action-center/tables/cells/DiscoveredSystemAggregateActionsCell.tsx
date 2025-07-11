@@ -12,7 +12,7 @@ import {
   UNCATEGORIZED_SEGMENT,
 } from "~/features/common/nav/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
-import { getIndexFromHash } from "~/features/data-discovery-and-detection/action-center/tables/useActionCenterTabs";
+import { ActionCenterTabHash } from "~/features/data-discovery-and-detection/action-center/tables/useActionCenterTabs";
 import { successToastContent } from "~/features/data-discovery-and-detection/action-center/utils/successToastContent";
 import { SystemStagedResourcesAggregateRecord } from "~/types/api";
 
@@ -25,7 +25,7 @@ interface DiscoveredSystemActionsCellProps {
   monitorId: string;
   system: SystemStagedResourcesAggregateRecord;
   allowIgnore?: boolean;
-  onTabChange: (index: number) => void;
+  onTabChange: (tab: ActionCenterTabHash) => void;
 }
 
 export const DiscoveredSystemActionsCell = ({
@@ -89,7 +89,7 @@ export const DiscoveredSystemActionsCell = ({
             systemName
               ? `${totalUpdates} assets from ${systemName} have been ignored and will not appear in future scans.`
               : `${totalUpdates} uncategorized assets have been ignored and will not appear in future scans.`,
-            () => onTabChange(getIndexFromHash("#ignored")!),
+            () => onTabChange(ActionCenterTabHash.IGNORED),
           ),
         ),
       );

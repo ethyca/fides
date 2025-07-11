@@ -1,4 +1,4 @@
-import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
+import { createColumnHelper } from "@tanstack/react-table";
 import { useMemo } from "react";
 
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
@@ -12,6 +12,7 @@ import {
   ListCellExpandable,
 } from "~/features/common/table/v2/cells";
 import DiscoveredSystemDataUseCell from "~/features/data-discovery-and-detection/action-center/tables/cells/DiscoveredSystemDataUseCell";
+import { ActionCenterTabHash } from "~/features/data-discovery-and-detection/action-center/tables/useActionCenterTabs";
 import {
   PrivacyNoticeRegion,
   SystemStagedResourcesAggregateRecord,
@@ -24,7 +25,7 @@ interface UseDiscoveredSystemAggregateColumnsProps {
   monitorId: string;
   readonly: boolean;
   allowIgnore?: boolean;
-  onTabChange: (index: number) => void;
+  onTabChange: (tab: ActionCenterTabHash) => void;
 }
 
 export const useDiscoveredSystemAggregateColumns = ({
@@ -153,22 +154,21 @@ export const useDiscoveredSystemAggregateColumns = ({
     },
   });
 
-  const readonlyColumns = useMemo(
-    () => [systemName, totalUpdates, dataUse, locations, domains],
-    [systemName, totalUpdates, dataUse, locations, domains],
-  );
-
-  if (readonly) {
-    return {
-      columns: readonlyColumns,
-    };
-  }
-
-  const columns: ColumnDef<SystemStagedResourcesAggregateRecord, any>[] = [
-    select,
-    ...readonlyColumns,
-    actions,
+  const readonlyColumns = [
+    systemName,
+    totalUpdates,
+    dataUse,
+    locations,
+    domains,
   ];
+
+  const allColumns = [select, ...readonlyColumns, actions];
+
+  const columns = useMemo(
+    () => (readonly ? readonlyColumns : allColumns),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [readonly],
+  );
 
   return { columns };
 };

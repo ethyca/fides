@@ -1,18 +1,10 @@
 import {
   AntButton as Button,
   AntSelect as Select,
-  Box,
-  DeleteIcon,
+  AntTabs as Tabs,
   Flex,
   Heading,
-  HStack,
-  SmallAddIcon,
-  Tab,
-  TabList,
-  TabPanel,
-  TabPanels,
-  Tabs,
-  VStack,
+  Icons,
 } from "fidesui";
 import { FieldArray, useFormikContext } from "formik";
 import { useState } from "react";
@@ -30,7 +22,6 @@ import {
 import { OOBTranslationNotice } from "~/features/privacy-experience/PrivacyExperienceTranslationForm";
 import {
   NoticeTranslation,
-  NoticeTranslationCreate,
   PrivacyNoticeCreation,
   SupportedLanguage,
 } from "~/types/api";
@@ -51,6 +42,49 @@ const NoticeFormFields = ({ index }: { index: number }) => (
   </>
 );
 
+const AddTranslationMenu = ({
+  languageOptions,
+  handleCreateLanguage,
+}: {
+  languageOptions: { label: string; value: string }[];
+  handleCreateLanguage: (language: SupportedLanguage) => void;
+}) => {
+  const [isSelectingLanguage, setIsSelectingLanguage] = useState(false);
+
+  const handleSelect = (language: SupportedLanguage) => {
+    handleCreateLanguage(language as SupportedLanguage);
+    setIsSelectingLanguage(false);
+  };
+
+  if (isSelectingLanguage) {
+    return (
+      <Select
+        autoFocus
+        defaultOpen
+        allowClear
+        placeholder="Select a language..."
+        options={languageOptions}
+        onChange={handleSelect}
+        data-testid="select-language"
+        className="w-full"
+      />
+    );
+  }
+
+  return (
+    <Button
+      block
+      icon={<Icons.Add />}
+      iconPosition="end"
+      onClick={() => setIsSelectingLanguage(true)}
+      data-testid="add-language-btn"
+      className="mb-1"
+    >
+      Add
+    </Button>
+  );
+};
+
 const TranslationFormBlock = ({
   index,
   name,
@@ -67,37 +101,6 @@ const TranslationFormBlock = ({
   </Flex>
 );
 
-const TranslationTabButton = ({
-  translation,
-  name,
-  onLanguageDeleted,
-}: {
-  translation: NoticeTranslationCreate;
-  name: string;
-  onLanguageDeleted?: (language: string) => void;
-}) => (
-  <Flex gap={2} direction="row" w="100%">
-    <Tab
-      as={Button}
-      fontWeight="normal"
-      key={translation.language}
-      className="grow overflow-x-hidden border-gray-300"
-      textOverflow="ellipsis"
-      _selected={{ color: "white", bg: "gray.500" }}
-    >
-      {name}
-    </Tab>
-    {onLanguageDeleted && (
-      <Button
-        aria-label="Delete translation"
-        onClick={() => onLanguageDeleted(translation.language)}
-        icon={<DeleteIcon boxSize={3} />}
-        className="min-w-4"
-      />
-    )}
-  </Flex>
-);
-
 const PrivacyNoticeTranslationForm = ({
   availableTranslations,
 }: {
@@ -105,10 +108,10 @@ const PrivacyNoticeTranslationForm = ({
 }) => {
   const { values, setFieldValue } = useFormikContext<PrivacyNoticeCreation>();
 
-  const [isSelectingLanguage, setIsSelectingLanguage] =
-    useState<boolean>(false);
   const [translationIsOOB, setTranslationIsOOB] = useState<boolean>(false);
-  const [tabIndex, setTabIndex] = useState<number>(0);
+  const [activeLanguage, setActiveLanguage] = useState<string>(
+    values.translations?.[0]?.language ?? "",
+  );
 
   const { data: appConfig } = useGetConfigurationSettingsQuery({
     api_set: false,
@@ -131,8 +134,8 @@ const PrivacyNoticeTranslationForm = ({
     )
     .map((lang) => ({ label: lang.name, value: lang.id as SupportedLanguage }));
 
-  const handleTabSelected = (index: number) => {
-    setTabIndex(index);
+  const handleTabSelected = (language: string) => {
+    setActiveLanguage(language);
     setTranslationIsOOB(false);
   };
 
@@ -146,21 +149,20 @@ const PrivacyNoticeTranslationForm = ({
       title: "",
       description: "",
     };
-    setTabIndex(values.translations!.length);
+    setActiveLanguage(language);
     setFieldValue("translations", [...values.translations!, newTranslation]);
-    setIsSelectingLanguage(false);
   };
 
-  const handleLanguageDeleted = (tag: string) => {
+  const handleLanguageDeleted = (language: string) => {
     const newTranslations = values.translations
-      ? values.translations.slice().filter((lang) => lang.language !== tag)
+      ? values.translations.slice().filter((lang) => lang.language !== language)
       : [];
-    const newTabIndex =
-      tabIndex === newTranslations.length
-        ? newTranslations.length - 1
-        : tabIndex;
+    const newActiveLanguage =
+      activeLanguage === language
+        ? (newTranslations[newTranslations.length - 1]?.language ?? "")
+        : activeLanguage;
     setFieldValue("translations", newTranslations);
-    setTabIndex(newTabIndex);
+    setActiveLanguage(newActiveLanguage);
   };
 
   const getLanguageDisplayName = (lang: SupportedLanguage) =>
@@ -176,80 +178,44 @@ const PrivacyNoticeTranslationForm = ({
 
   return (
     <FormSection title="Localizations">
-      <Tabs
-        index={tabIndex}
-        onChange={handleTabSelected}
-        as={HStack}
-        spacing={8}
-        align="start"
-        w="100%"
-        orientation="vertical"
-        variant="unstyled"
-      >
-        <VStack spacing={4} minW="30%" p={2}>
-          <TabList w="100%">
-            <VStack
-              spacing={2}
-              w="100%"
-              p={4}
-              maxH={60}
-              overflow="scroll"
-              outline="1px solid"
-              outlineColor="gray.200"
-              borderRadius="md"
-            >
-              {values.translations!.map((translation) => (
-                <TranslationTabButton
-                  translation={translation}
-                  key={translation.language}
-                  name={getLanguageDisplayName(translation.language)}
-                  onLanguageDeleted={handleLanguageDeleted}
+      <FieldArray
+        name="translations"
+        render={() => (
+          <Tabs
+            activeKey={activeLanguage}
+            onChange={handleTabSelected}
+            type="editable-card"
+            tabBarExtraContent={
+              !!languageOptions.length && (
+                <AddTranslationMenu
+                  languageOptions={languageOptions}
+                  handleCreateLanguage={handleCreateLanguage}
                 />
-              ))}
-            </VStack>
-          </TabList>
-          {isSelectingLanguage && (
-            <Select
-              autoFocus
-              defaultOpen
-              allowClear
-              placeholder="Select a language..."
-              options={languageOptions}
-              onChange={handleCreateLanguage}
-              data-testid="select-language"
-              className="w-full"
-            />
-          )}
-          {!isSelectingLanguage && !!languageOptions.length && (
-            <Button
-              icon={<SmallAddIcon boxSize={6} />}
-              onClick={() => setIsSelectingLanguage(true)}
-              data-testid="add-language-btn"
-              className="w-full"
-            >
-              Add a language
-            </Button>
-          )}
-        </VStack>
-        <Box w="100%">
-          <FieldArray
-            name="translations"
-            render={() => (
-              <TabPanels w="100%">
-                {values.translations!.map((translation, idx) => (
-                  <TabPanel key={translation.language}>
-                    <TranslationFormBlock
-                      index={idx}
-                      name={getLanguageDisplayName(translation.language)}
-                      isOOB={translationIsOOB}
-                    />
-                  </TabPanel>
-                ))}
-              </TabPanels>
-            )}
+              )
+            }
+            hideAdd
+            onEdit={(e, action) => {
+              if (action === "remove") {
+                handleLanguageDeleted(e as SupportedLanguage);
+              }
+            }}
+            items={values.translations!.map((translation) => ({
+              key: translation.language,
+              label: getLanguageDisplayName(translation.language),
+              children: (
+                <TranslationFormBlock
+                  index={values.translations!.findIndex(
+                    (t) => t.language === translation.language,
+                  )}
+                  name={getLanguageDisplayName(translation.language)}
+                  isOOB={translationIsOOB}
+                />
+              ),
+              closable: values.translations!.length > 1,
+            }))}
           />
-        </Box>
-      </Tabs>
+        )}
+      />
     </FormSection>
   );
 };
