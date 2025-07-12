@@ -127,6 +127,7 @@ export const useDiscoveredSystemAggregateColumns = ({
               key: location,
             })) ?? []
           }
+          cellProps={props}
         />
       ),
       header: (props) => <DefaultHeaderCell value="Locations" {...props} />,
