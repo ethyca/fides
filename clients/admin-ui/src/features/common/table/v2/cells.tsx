@@ -144,6 +144,9 @@ export const BadgeCellCount = ({
 };
 
 type BadgeCellExpandableValues = { label: string | ReactNode; key: string }[];
+/**
+ * @deprecated Use Ant version of TagExpandableCell from ./cells instead
+ */
 export const BadgeCellExpandable = <T,>({
   values,
   cellProps,
