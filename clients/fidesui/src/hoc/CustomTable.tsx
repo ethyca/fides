@@ -33,6 +33,7 @@ export const CustomTable = <RecordType = any,>({
   columns,
   pagination,
   dataSource,
+  scroll = { scrollToFirstRowOnChange: true, x: "max-content" },
   ...props
 }: TableProps<RecordType>) => {
   // Enhance columns with custom filter icon if they have filters
@@ -45,8 +46,10 @@ export const CustomTable = <RecordType = any,>({
       // If column has filters but no custom filterIcon, add our Carbon filter icon
       if (column.filters && !column.filterIcon) {
         return {
-          ...column,
+          ellipsis: true,
           filterIcon: FilterIcon,
+          fontSize: "sm",
+          ...column,
         };
       }
       return column;
@@ -91,6 +94,7 @@ export const CustomTable = <RecordType = any,>({
       columns={enhancedColumns}
       pagination={enhancedPagination}
       dataSource={dataSource}
+      scroll={scroll}
       {...props}
     />
   );
