@@ -691,17 +691,28 @@ def run_privacy_request(
                         )
 
                     else:
+                        if privacy_request.finalized_at:
+                            privacy_request.add_success_execution_log(
+                                session,
+                                connection_key=None,
+                                dataset_name="Request finalized",
+                                collection_name=None,
+                                message=f"Request finalized for privacy request: {privacy_request.id}",
+                                action_type=privacy_request.policy.get_action_type(),  # type: ignore
+                            )
+
                         logger.info(
                             "Marking privacy request '{}' as complete.",
                             privacy_request.id,
                         )
-                        privacy_request.add_success_execution_log(
-                            session,
-                            connection_key=None,
-                            dataset_name="Request finalized",
-                            collection_name=None,
-                            message=f"Request finalized for privacy request: {privacy_request.id}",
-                            action_type=privacy_request.policy.get_action_type(),  # type: ignore
+                        AuditLog.create(
+                            db=session,
+                            data={
+                                "user_id": "system",
+                                "privacy_request_id": privacy_request.id,
+                                "action": AuditLogAction.finished,
+                                "message": "",
+                            },
                         )
                         privacy_request.status = PrivacyRequestStatus.complete
 
