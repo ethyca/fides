@@ -49,7 +49,7 @@ const ConfirmationModal = ({
     isCentered={isCentered}
   >
     <ModalOverlay />
-    <ModalContent textAlign="center" p={6} data-testid={testId}>
+    <ModalContent textAlign="left" p={6} data-testid={testId}>
       {icon ? <Center mb={2}>{icon}</Center> : null}
       {title ? (
         <ModalHeader fontWeight="medium" pb={0}>
