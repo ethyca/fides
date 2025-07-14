@@ -12,6 +12,8 @@ const ROW_SELECTOR = "tbody tr[data-row-key]";
 describe("Manual Tasks", () => {
   beforeEach(() => {
     cy.login();
+    cy.assumeRole(RoleRegistryEnum.OWNER);
+
     stubManualTasks();
     stubPrivacyRequests();
     stubPlus(true);
