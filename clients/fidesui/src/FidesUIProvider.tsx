@@ -2,7 +2,7 @@ import {
   ChakraProvider as BaseChakraProvider,
   ChakraProviderProps,
 } from "@chakra-ui/react";
-import { ConfigProvider as BaseAntDesignProvider, ThemeConfig } from "antd/lib";
+import { ConfigProvider as BaseAntDesignProvider, ThemeConfig } from "antd/es";
 import { ReactNode } from "react";
 
 import { defaultAntTheme } from "./ant-theme";

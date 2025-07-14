@@ -34,7 +34,7 @@ export type {
   RadioChangeEvent,
   UploadFile,
   UploadProps,
-} from "antd/lib";
+} from "antd/es";
 export {
   Alert as AntAlert,
   Avatar as AntAvatar,
@@ -67,17 +67,17 @@ export {
   Switch as AntSwitch,
   Tabs as AntTabs,
   Upload as AntUpload,
-} from "antd/lib";
+} from "antd/es";
 export type {
   BreadcrumbItemType as AntBreadcrumbItemType,
   BreadcrumbProps as AntBreadcrumbProps,
-} from "antd/lib/breadcrumb/Breadcrumb";
-export type { ListItemProps as AntListItemProps } from "antd/lib/list";
+} from "antd/es/breadcrumb/Breadcrumb";
+export type { ListItemProps as AntListItemProps } from "antd/es/list";
 export type {
   BaseOptionType as AntBaseOptionType,
   DefaultOptionType as AntDefaultOptionType,
-} from "antd/lib/select";
-export type { UploadChangeParam as AntUploadChangeParam } from "antd/lib/upload";
+} from "antd/es/select";
+export type { UploadChangeParam as AntUploadChangeParam } from "antd/es/upload";
 
 // Higher-order components
 export {
