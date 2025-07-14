@@ -1,6 +1,5 @@
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, List
 
-from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.graph.config import (
@@ -285,32 +284,8 @@ def get_manual_task_instances_for_privacy_request(
     )
 
 
-def manual_task_configs_allowed_by_policy(
-    policy: "Policy", config: ManualTaskConfig
-) -> bool:
-    """
-    Check if a manual task config is allowed by a policy.
-    Returns True if the config is allowed, False otherwise.
-    Returns False if the policy is not a valid policy object.
-    """
-    try:
-        allowed: set[ManualTaskConfigurationType] = set()
-        # has access rules
-        if policy.get_rules_for_action(action_type=ActionType.access):
-            allowed.add(ManualTaskConfigurationType.access_privacy_request)
-        # has erasure rules
-        if policy.get_rules_for_action(action_type=ActionType.erasure):
-            allowed.add(ManualTaskConfigurationType.erasure_privacy_request)
-        # return True if config.config_type is in allowed, False otherwise
-        return config.config_type in allowed
-    except AttributeError:
-        logger.error(f"Requires a valid policy object, got {policy}")
-        return False
-
-
 def create_manual_task_artificial_graphs(
     db: Session,
-    policy: Optional["Policy"] = None,
 ) -> List:
     """
     Create artificial GraphDataset objects for manual tasks that can be included
@@ -346,19 +321,15 @@ def create_manual_task_artificial_graphs(
         # Manual task collections act as root nodes - they don't need identity dependencies
         # since they provide manually-entered data rather than consuming identity data.
         for manual_task in manual_tasks:
-            for config in manual_task.configs:
+            current_configs = [
+                config for config in manual_task.configs if config.is_current
+            ]
+            for config in current_configs:
                 if config.config_type not in [
                     ManualTaskConfigurationType.access_privacy_request,
                     ManualTaskConfigurationType.erasure_privacy_request,
                 ]:
                     continue
-                if not config.is_current:
-                    continue
-
-                # Filter by configuration type based on policy rules (if policy is provided)
-                if policy:
-                    if not manual_task_configs_allowed_by_policy(policy, config):
-                        continue
 
                 for field in config.field_definitions:
                     # Create a scalar field for each manual task field
