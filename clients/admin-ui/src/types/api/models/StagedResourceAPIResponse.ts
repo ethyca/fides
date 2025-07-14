@@ -3,6 +3,8 @@
 /* eslint-disable */
 
 import type { Classification } from "./Classification";
+import type { ConsentInfo } from "./ConsentInfo";
+import type { ConsentStatus } from "./ConsentStatus";
 import type { Constraint } from "./Constraint";
 import type { DiffStatus } from "./DiffStatus";
 import type { StagedResourceTypeValue } from "./StagedResourceTypeValue";
@@ -60,9 +62,13 @@ export type StagedResourceAPIResponse = {
    */
   locations?: Array<string>;
   /**
-   * Whether the asset was discovered with consent
+   * Consent breakdown for the asset
    */
-  with_consent?: boolean;
+  consent_breakdown?: ConsentInfo | null;
+  /**
+   * Aggregated consent for the asset
+   */
+  consent_aggregated?: ConsentStatus | null;
   /**
    * The Compass Vendor ID associated with the asset
    */

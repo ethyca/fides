@@ -21,9 +21,12 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.65.2...main)
 
+### Changed
+- Changed behavior of beta feature flags to persist across user login sessions
+
 ### Added
 - Replaced Asset's `with_consent` field with the enum `consent_status` field and added indexes to the `StagedResource` table [#6287](https://github.com/ethyca/fides/pull/6287)
-
+- Added consent status to the Action Center, including a new discovery status column and a details modal for assets detected without consent [#6283](https://github.com/ethyca/fides/pull/6283)
 
 ### Developer Experience
 - Migrate tabs to Ant Design [#6260](https://github.com/ethyca/fides/pull/6260)

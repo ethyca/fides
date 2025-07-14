@@ -120,3 +120,27 @@ h6 {
 .ant-table-filter-trigger.active {
   background-color: var(--fidesui-neutral-100);
 }
+
+.ant-list {
+  * {
+    // Ant inappropriately removes outline from everything in the list
+    // This breaks the focus outline for links and buttons in the list,
+    // which causes accessibility issues for non-mouse users.
+    // This restores the outline for focusable elements.
+    &:focus-visible {
+      outline: auto;
+    }
+  }
+  // By default, Ant transitions from text color to primary color on
+  // hover of list title links. Since our text color and primary color
+  // are the same, it breaks the hover state. This fixes it.
+  // Unfortunately, this level of specificity is required since it's the
+  // level of specificity that Ant uses.
+  .ant-list-item .ant-list-item-meta .ant-list-item-meta-title > a,
+  .ant-list-item-meta-title a {
+    &:hover,
+    &:focus-visible {
+      color: var(--fidesui-neutral-600);
+    }
+  }
+}
