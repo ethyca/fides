@@ -50,6 +50,13 @@ interface MenuHeaderCellProps extends DropdownProps {
   menu?: MenuProps;
 }
 
+/**
+ * A header cell that displays a title and a menu button.
+ * @param title - The title of the header cell.
+ * @param menuIcon - The icon to display in the menu.
+ * @param menuIconLabel - The a11y label for the menu icon.
+ * @param menu - The menu to display (extends AntDropdownProps).
+ */
 export const MenuHeaderCell = ({
   title,
   menuIcon,

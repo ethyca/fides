@@ -23,6 +23,13 @@ interface TagExpandableCellProps extends TagProps {
   columnState?: ColumnState;
 }
 
+/**
+ * A cell that displays a list of tags and a button to expand the list.
+ * Click the cell to collapse the list.
+ * @param values - The values to display in the cell.
+ * @param columnState - The state of the column.
+ * @param tagProps - The props to pass to the Tag component.
+ */
 export const TagExpandableCell = ({
   values,
   columnState,

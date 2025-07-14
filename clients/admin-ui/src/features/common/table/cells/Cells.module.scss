@@ -1,3 +1,4 @@
+/* bleed the cell contents out to the edges of the table cell */
 .cellBleed {
   margin: calc(-1 * var(--ant-table-cell-padding-block-sm))
     calc(-1 * var(--ant-table-cell-padding-inline-sm));
@@ -5,6 +6,7 @@
     var(--ant-table-cell-padding-inline-sm);
 }
 
+/* highlight a clickable cell container */
 .cellHover {
   &:hover {
     background-color: var(--fidesui-neutral-100);

@@ -11,6 +11,13 @@ import { ColumnState } from "./types";
 
 const { Text } = Typography;
 
+/**
+ * A cell that displays a single value or a count of values and a button to
+ * expand the list. Click the cell to collapse the list.
+ * @param values - The values to display in the cell.
+ * @param valueSuffix - The suffix to display in the cell.
+ * @param columnState - The state of the column.
+ */
 export const ListExpandableCell = ({
   values,
   valueSuffix,
