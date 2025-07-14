@@ -3,6 +3,7 @@
 /* eslint-disable */
 
 import type { ConnectionType } from "./ConnectionType";
+import type { ConsentAlertInfo } from "./ConsentAlertInfo";
 import type { SaaSConfigBase } from "./SaaSConfigBase";
 
 /**
@@ -21,4 +22,5 @@ export type MonitorConfigStagedResourcesAggregateRecord = {
   last_monitored?: string | null;
   updates?: any;
   total_updates?: number;
+  consent_status?: ConsentAlertInfo | null;
 };
