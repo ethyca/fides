@@ -1,18 +1,13 @@
-import { createColumnHelper } from "@tanstack/react-table";
-import { AntSpace as Space } from "fidesui";
-import { useMemo } from "react";
+import { AntColumnsType as ColumnsType, AntSpace as Space } from "fidesui";
+import { useMemo, useState } from "react";
 
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import {
-  DefaultCell,
-  IndeterminateCheckboxCell,
-} from "~/features/common/table/v2";
-import {
-  BadgeCellExpandable,
-  DefaultHeaderCell,
-  ListCellExpandable,
-} from "~/features/common/table/v2/cells";
-import DiscoveredSystemDataUseCell from "~/features/data-discovery-and-detection/action-center/tables/cells/DiscoveredSystemDataUseCell";
+  expandCollapseAllMenuItems,
+  ListExpandableCell,
+  MenuHeaderCell,
+  TagExpandableCell,
+} from "~/features/common/table/cells";
 import {
   ConsentAlertInfo,
   PrivacyNoticeRegion,
@@ -22,165 +17,153 @@ import {
 import { DiscoveryStatusIcon } from "../DiscoveryStatusIcon";
 import { DiscoveredSystemActionsCell } from "../tables/cells/DiscoveredSystemAggregateActionsCell";
 import { DiscoveredSystemStatusCell } from "../tables/cells/DiscoveredSystemAggregateStatusCell";
+import DiscoveredSystemDataUseCell from "../tables/cells/DiscoveredSystemDataUseCell";
 import { ActionCenterTabHash } from "./useActionCenterTabs";
 
 interface UseDiscoveredSystemAggregateColumnsProps {
   monitorId: string;
   readonly: boolean;
-  consentStatus: ConsentAlertInfo | null | undefined;
   allowIgnore?: boolean;
   onTabChange: (tab: ActionCenterTabHash) => void;
+  consentStatus?: ConsentAlertInfo;
+  rowClickUrl?: (record: SystemStagedResourcesAggregateRecord) => string;
 }
 
 export const useDiscoveredSystemAggregateColumns = ({
   monitorId,
   readonly,
-  consentStatus,
   allowIgnore,
   onTabChange,
+  consentStatus,
+  rowClickUrl,
 }: UseDiscoveredSystemAggregateColumnsProps) => {
-  const columns = useMemo(() => {
-    const columnHelper =
-      createColumnHelper<SystemStagedResourcesAggregateRecord>();
-
-    const select = columnHelper.display({
-      id: "select",
-      cell: ({ row }) => (
-        <IndeterminateCheckboxCell
-          isChecked={row.getIsSelected()}
-          onChange={row.getToggleSelectedHandler()}
-          dataTestId={`select-${row.original.name || row.id}`}
-        />
-      ),
-      header: ({ table }) => (
-        <IndeterminateCheckboxCell
-          isChecked={table.getIsAllPageRowsSelected()}
-          isIndeterminate={table.getIsSomeRowsSelected()}
-          onChange={table.getToggleAllRowsSelectedHandler()}
-          dataTestId="select-all-rows"
-        />
-      ),
-      maxSize: 40,
-      meta: {
-        disableRowClick: true,
-        cellProps: {
-          borderRight: "none",
+  const [isLocationsExpanded, setIsLocationsExpanded] = useState(false);
+  const [isDomainsExpanded, setIsDomainsExpanded] = useState(false);
+  const columns: ColumnsType<SystemStagedResourcesAggregateRecord> =
+    useMemo(() => {
+      const baseColumns: ColumnsType<SystemStagedResourcesAggregateRecord> = [
+        {
+          title: () => (
+            <Space>
+              <div>System</div>
+              <DiscoveryStatusIcon consentStatus={consentStatus} />
+            </Space>
+          ),
+          dataIndex: "name",
+          key: "system_name",
+          fixed: "left",
+          render: (_, record) => (
+            <DiscoveredSystemStatusCell
+              system={record}
+              rowClickUrl={rowClickUrl}
+            />
+          ),
         },
-      },
-    });
+        {
+          title: "Assets",
+          dataIndex: "total_updates",
+          key: "total_updates",
+        },
+        {
+          title: "Categories of consent",
+          key: "data_use",
+          render: (_, record) => (
+            <DiscoveredSystemDataUseCell system={record} />
+          ),
+        },
+        {
+          title: () => (
+            <MenuHeaderCell
+              title="Locations"
+              menu={{
+                items: expandCollapseAllMenuItems,
+                onClick: (e) => {
+                  if (e.key === "expand-all") {
+                    setIsLocationsExpanded(true);
+                  } else if (e.key === "collapse-all") {
+                    setIsLocationsExpanded(false);
+                  }
+                },
+              }}
+            />
+          ),
+          dataIndex: "locations",
+          key: "locations",
+          width: 250,
+          render: (locations: string[]) => (
+            <TagExpandableCell
+              values={
+                locations?.map((location) => ({
+                  label:
+                    PRIVACY_NOTICE_REGION_RECORD[
+                      location as PrivacyNoticeRegion
+                    ],
+                  key: location,
+                })) ?? []
+              }
+              columnState={{
+                isExpanded: isLocationsExpanded,
+                isWrapped: true,
+              }}
+            />
+          ),
+        },
+        {
+          title: () => (
+            <MenuHeaderCell
+              title="Domains"
+              menu={{
+                items: expandCollapseAllMenuItems,
+                onClick: (e) => {
+                  if (e.key === "expand-all") {
+                    setIsDomainsExpanded(true);
+                  } else if (e.key === "collapse-all") {
+                    setIsDomainsExpanded(false);
+                  }
+                },
+              }}
+            />
+          ),
+          dataIndex: "domains",
+          key: "domains",
+          render: (domains: string[]) => (
+            <ListExpandableCell
+              values={domains}
+              valueSuffix="domains"
+              columnState={{
+                isExpanded: isDomainsExpanded,
+              }}
+            />
+          ),
+        },
+      ];
 
-    const systemName = columnHelper.accessor((row) => row.name, {
-      id: "system_name",
-      cell: (props) => (
-        <DiscoveredSystemStatusCell system={props.row.original} />
-      ),
-      header: () => {
-        return (
-          <Space>
-            <div>System</div>
-            <DiscoveryStatusIcon consentStatus={consentStatus} />
-          </Space>
-        );
-      },
-      size: 300,
-      meta: {
-        headerProps: !readonly
-          ? {
-              paddingLeft: "0px",
-            }
-          : undefined,
-        cellProps: !readonly
-          ? {
-              padding: "0 !important",
-            }
-          : undefined,
-      },
-    });
+      if (!readonly) {
+        baseColumns.push({
+          title: "Actions",
+          key: "actions",
+          render: (_, record) => (
+            <DiscoveredSystemActionsCell
+              system={record}
+              monitorId={monitorId}
+              allowIgnore={allowIgnore}
+              onTabChange={onTabChange}
+            />
+          ),
+        });
+      }
 
-    const totalUpdates = columnHelper.accessor((row) => row.total_updates, {
-      id: "total_updates",
-      cell: (props) => <DefaultCell value={props.getValue()} />,
-      header: "Assets",
-      size: 80,
-    });
-
-    const dataUse = columnHelper.display({
-      id: "data_use",
-      cell: (props) => (
-        <DiscoveredSystemDataUseCell system={props.row.original} />
-      ),
-      header: "Categories of consent",
-      size: 400,
-      meta: {
-        disableRowClick: true,
-      },
-    });
-
-    const locations = columnHelper.accessor((row) => row.locations, {
-      id: "locations",
-      cell: (props) => (
-        <BadgeCellExpandable
-          values={
-            props.getValue()?.map((location) => ({
-              label:
-                PRIVACY_NOTICE_REGION_RECORD[location as PrivacyNoticeRegion],
-              key: location,
-            })) ?? []
-          }
-          cellProps={props}
-        />
-      ),
-      header: (props) => <DefaultHeaderCell value="Locations" {...props} />,
-      size: 300,
-      meta: {
-        showHeaderMenu: true,
-        disableRowClick: true,
-      },
-    });
-
-    const domains = columnHelper.accessor((row) => row.domains, {
-      id: "domains",
-      cell: (props) => (
-        <ListCellExpandable
-          values={props.getValue()}
-          valueSuffix="domains"
-          cellProps={props}
-        />
-      ),
-      header: (props) => <DefaultHeaderCell value="Domains" {...props} />,
-      meta: {
-        showHeaderMenu: true,
-        disableRowClick: true,
-      },
-    });
-
-    const actions = columnHelper.display({
-      id: "actions",
-      cell: (props) => (
-        <DiscoveredSystemActionsCell
-          system={props.row.original}
-          monitorId={monitorId}
-          allowIgnore={allowIgnore}
-          onTabChange={onTabChange}
-        />
-      ),
-      header: "Actions",
-      meta: {
-        disableRowClick: true,
-      },
-    });
-
-    const readonlyColumns = [
-      systemName,
-      totalUpdates,
-      dataUse,
-      locations,
-      domains,
-    ];
-    const allColumns = [select, ...readonlyColumns, actions];
-
-    return readonly ? readonlyColumns : allColumns;
-  }, [monitorId, readonly, consentStatus, allowIgnore, onTabChange]);
+      return baseColumns;
+    }, [
+      readonly,
+      consentStatus,
+      rowClickUrl,
+      isLocationsExpanded,
+      isDomainsExpanded,
+      monitorId,
+      allowIgnore,
+      onTabChange,
+    ]);
 
   return { columns };
 };

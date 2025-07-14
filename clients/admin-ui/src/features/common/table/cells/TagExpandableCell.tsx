@@ -88,7 +88,6 @@ export const TagExpandableCell = ({
       <Flex
         ref={flexRef}
         align={isCollapsed ? "center" : "flex-start"}
-        vertical={!isCollapsed && isWrappedState}
         wrap={isWrappedState ? "wrap" : "nowrap"}
         gap="small"
         className={`${styles.cellBleed} ${!isCollapsed ? styles.cellHover : ""}`}
