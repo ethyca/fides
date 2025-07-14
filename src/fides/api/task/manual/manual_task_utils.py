@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING, List, Optional
 
+from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.graph.config import (
@@ -284,35 +285,27 @@ def get_manual_task_instances_for_privacy_request(
     )
 
 
-def filter_manual_task_configs_by_policy(
+def manual_task_configs_allowed_by_policy(
     policy: "Policy", config: ManualTaskConfig
 ) -> bool:
     """
-    Filter manual task configs by policy.
+    Check if a manual task config is allowed by a policy.
+    Returns True if the config is allowed, False otherwise.
+    Returns False if the policy is not a valid policy object.
     """
-    filter_match = False
-    has_access_rules = bool(policy.get_rules_for_action(action_type=ActionType.access))
-    has_erasure_rules = bool(
-        policy.get_rules_for_action(action_type=ActionType.erasure)
-    )
-
-    if has_access_rules and has_erasure_rules:
-        # If both access and erasure rules exist, include both types
-        if config.config_type in [
-            ManualTaskConfigurationType.access_privacy_request,
-            ManualTaskConfigurationType.erasure_privacy_request,
-        ]:
-            filter_match = True
-    elif has_access_rules:
-        # Only access rules - only include access configurations
-        if config.config_type == ManualTaskConfigurationType.access_privacy_request:
-            filter_match = True
-    elif has_erasure_rules:
-        # Only erasure rules - only include erasure configurations
-        if config.config_type == ManualTaskConfigurationType.erasure_privacy_request:
-            filter_match = True
-
-    return filter_match
+    try:
+        allowed: set[ManualTaskConfigurationType] = set()
+        # has access rules
+        if policy.get_rules_for_action(action_type=ActionType.access):
+            allowed.add(ManualTaskConfigurationType.access_privacy_request)
+        # has erasure rules
+        if policy.get_rules_for_action(action_type=ActionType.erasure):
+            allowed.add(ManualTaskConfigurationType.erasure_privacy_request)
+        # return True if config.config_type is in allowed, False otherwise
+        return config.config_type in allowed
+    except AttributeError:
+        logger.error(f"Requires a valid policy object, got {policy}")
+        return False
 
 
 def create_manual_task_artificial_graphs(
@@ -364,7 +357,7 @@ def create_manual_task_artificial_graphs(
 
                 # Filter by configuration type based on policy rules (if policy is provided)
                 if policy:
-                    if not filter_manual_task_configs_by_policy(policy, config):
+                    if not manual_task_configs_allowed_by_policy(policy, config):
                         continue
 
                 for field in config.field_definitions:

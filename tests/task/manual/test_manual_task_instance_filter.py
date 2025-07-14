@@ -26,6 +26,7 @@ from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
 from fides.api.task.manual.manual_task_utils import (
     create_manual_task_artificial_graphs,
     create_manual_task_instances_for_privacy_request,
+    manual_task_configs_allowed_by_policy,
 )
 
 
@@ -410,3 +411,147 @@ class TestManualTaskInstanceFiltering:
             assert (
                 field_name not in field_names
             ), f"Unexpected field {field_name} found in graph"
+
+    def test_manual_task_configs_allowed_by_policy_access_only_policy(
+        self, db: Session, manual_setup, access_only_policy
+    ):
+        """Test that manual_task_configs_allowed_by_policy returns True for access configs with access-only policy."""
+        access_config = manual_setup["access_config"]
+        erasure_config = manual_setup["erasure_config"]
+
+        # Test access config with access-only policy
+        assert (
+            manual_task_configs_allowed_by_policy(access_only_policy, access_config)
+            is True
+        )
+
+        # Test erasure config with access-only policy
+        assert (
+            manual_task_configs_allowed_by_policy(access_only_policy, erasure_config)
+            is False
+        )
+
+    def test_manual_task_configs_allowed_by_policy_erasure_only_policy(
+        self, db: Session, manual_setup, erasure_only_policy
+    ):
+        """Test that manual_task_configs_allowed_by_policy returns True for erasure configs with erasure-only policy."""
+        access_config = manual_setup["access_config"]
+        erasure_config = manual_setup["erasure_config"]
+
+        # Test erasure config with erasure-only policy
+        assert (
+            manual_task_configs_allowed_by_policy(erasure_only_policy, erasure_config)
+            is True
+        )
+
+        # Test access config with erasure-only policy
+        assert (
+            manual_task_configs_allowed_by_policy(erasure_only_policy, access_config)
+            is False
+        )
+
+    def test_manual_task_configs_allowed_by_policy_mixed_policy(
+        self, db: Session, manual_setup, mixed_policy
+    ):
+        """Test that manual_task_configs_allowed_by_policy returns True for both configs with mixed policy."""
+        access_config = manual_setup["access_config"]
+        erasure_config = manual_setup["erasure_config"]
+
+        # Test both configs with mixed policy (both access and erasure rules)
+        assert (
+            manual_task_configs_allowed_by_policy(mixed_policy, access_config) is True
+        )
+        assert (
+            manual_task_configs_allowed_by_policy(mixed_policy, erasure_config) is True
+        )
+
+    def test_manual_task_configs_allowed_by_policy_no_rules_policy(
+        self, db: Session, manual_setup
+    ):
+        """Test that manual_task_configs_allowed_by_policy returns False for configs with policy that has no rules."""
+        access_config = manual_setup["access_config"]
+        erasure_config = manual_setup["erasure_config"]
+
+        # Create a policy with no rules
+        empty_policy = Policy.create(
+            db=db,
+            data={
+                "name": "Empty Policy",
+                "key": "empty_policy",
+            },
+        )
+
+        try:
+            # Test both configs with empty policy
+            assert (
+                manual_task_configs_allowed_by_policy(empty_policy, access_config)
+                is False
+            )
+            assert (
+                manual_task_configs_allowed_by_policy(empty_policy, erasure_config)
+                is False
+            )
+        finally:
+            empty_policy.delete(db)
+
+    @pytest.mark.parametrize(
+        "policy_fixture,config_type,expected_result",
+        [
+            ("access_only_policy", "access_privacy_request", True),
+            ("access_only_policy", "erasure_privacy_request", False),
+            ("erasure_only_policy", "access_privacy_request", False),
+            ("erasure_only_policy", "erasure_privacy_request", True),
+            ("mixed_policy", "access_privacy_request", True),
+            ("mixed_policy", "erasure_privacy_request", True),
+        ],
+    )
+    def test_manual_task_configs_allowed_by_policy_parametrized(
+        self,
+        db: Session,
+        manual_setup,
+        policy_fixture,
+        config_type,
+        expected_result,
+        request,
+    ):
+        """Parametrized test for manual_task_configs_allowed_by_policy with different policy and config combinations."""
+        # Get the policy from the fixture
+        policy = request.getfixturevalue(policy_fixture)
+
+        # Get the appropriate config based on config_type
+        if config_type == "access_privacy_request":
+            config = manual_setup["access_config"]
+        else:
+            config = manual_setup["erasure_config"]
+
+        # Test the function
+        result = manual_task_configs_allowed_by_policy(policy, config)
+        assert (
+            result == expected_result
+        ), f"Expected {expected_result} for policy {policy_fixture} and config {config_type}"
+
+    def test_manual_task_configs_allowed_by_policy_edge_cases(
+        self, db: Session, manual_setup
+    ):
+        """Test edge cases for manual_task_configs_allowed_by_policy.
+        These cases should return False because they are not valid policy or config objects.
+        """
+        access_config = manual_setup["access_config"]
+        erasure_config = manual_setup["erasure_config"]
+
+        # Test with None policy should return False
+        assert manual_task_configs_allowed_by_policy(None, access_config) is False
+
+        # Test with None config should return False
+        mixed_policy = Policy.create(
+            db=db,
+            data={
+                "name": "Test Policy",
+                "key": "test_policy",
+            },
+        )
+
+        try:
+            assert manual_task_configs_allowed_by_policy(mixed_policy, None) is False
+        finally:
+            mixed_policy.delete(db)
