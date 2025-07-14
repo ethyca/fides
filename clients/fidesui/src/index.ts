@@ -17,6 +17,7 @@ export type {
 export type {
   ButtonProps as AntButtonProps,
   CollapseProps as AntCollapseProps,
+  DropdownProps as AntDropdownProps,
   FlexProps as AntFlexProps,
   FormInstance as AntFormInstance,
   InputProps as AntInputProps,
