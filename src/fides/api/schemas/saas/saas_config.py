@@ -507,6 +507,7 @@ class SaaSConfig(SaaSConfigBase):
                         reference, secrets
                     )
                     first, *rest = resolved_reference.field.split(".")
+                    # Look for example on how to build dataset reference
                     references.append(
                         (
                             FieldAddress(resolved_reference.dataset, first, *rest),

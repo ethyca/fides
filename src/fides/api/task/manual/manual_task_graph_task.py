@@ -50,6 +50,13 @@ class ManualTaskGraphTask(GraphTask):
         if not manual_tasks:
             return []
 
+        # pre_process_inputs
+        # get conditions from manual_task
+        # if conditions are met
+        # create manual task instances
+        # raise AwaitingAsyncTaskCallback
+        # otherwise, don't create instance, don't raise async callback
+
         # Check/create manual task instances for ACCESS configs only
         self._ensure_manual_task_instances(
             db,
@@ -73,6 +80,15 @@ class ManualTaskGraphTask(GraphTask):
             # Mark request task as complete and write execution log
             self.log_end(ActionType.access)
             return result
+
+        # If we need conditional checks for access
+        self.log_skipped(ActionType.access, "Conditions for collection not met")
+        return []
+
+        # Return data that might be needed by the erasure request to perform the conditional check
+        self.log_skipped(ActionType.access, "No access tasks for this request")
+        return [{"email": "test@test.com"}]
+
 
         # Set privacy request status to requires_input if not already set
         if self.resources.request.status != PrivacyRequestStatus.requires_input:

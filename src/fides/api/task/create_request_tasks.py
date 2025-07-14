@@ -472,7 +472,8 @@ def run_access_request(
             )
 
             # Snapshot manual task field instances for this privacy request
-            create_manual_task_instances_for_privacy_request(session, privacy_request)
+            # We'll call this conditionally in ManualTaskGraphTask.access_request
+            # create_manual_task_instances_for_privacy_request(session, privacy_request)
 
             # Save Access Request Tasks to the database
             ready_tasks = persist_new_access_request_tasks(

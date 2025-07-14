@@ -365,6 +365,7 @@ def create_manual_task_artificial_graphs(
                     field_metadata = field.field_metadata or {}
                     data_categories = field_metadata.get("data_categories", [])
 
+                    # add reference based on the dataset reference in the manual task config
                     scalar_field = ScalarField(
                         name=field.field_key,
                         data_categories=data_categories,
