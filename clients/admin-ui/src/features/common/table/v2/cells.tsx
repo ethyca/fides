@@ -228,6 +228,9 @@ export const BadgeCellExpandable = <T,>({
   }, [displayValues, isCollapsed, isWrappedState, values, tagProps]);
 };
 
+/**
+ * @deprecated Use Ant version of ListExpandableCell from ./cells instead
+ */
 export const ListCellExpandable = <T,>({
   values,
   valueSuffix,

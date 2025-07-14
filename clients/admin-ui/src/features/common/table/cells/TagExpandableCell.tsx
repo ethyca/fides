@@ -13,6 +13,7 @@ import {
   useState,
 } from "react";
 
+import styles from "./Cells.module.scss";
 import { ColumnState } from "./types";
 
 type TagExpandableCellValues = { label: string | ReactNode; key: string }[];
@@ -83,7 +84,7 @@ export const TagExpandableCell = ({
         vertical={!isCollapsed && isWrappedState}
         wrap={isWrappedState ? "wrap" : "nowrap"}
         gap="small"
-        className="-m-2 overflow-x-auto p-2"
+        className={`${styles.cellBleed} ${!isCollapsed ? styles.cellHover : ""}`}
         onClick={(e) => {
           e.stopPropagation();
           if (!isCollapsed) {
@@ -118,7 +119,7 @@ export const TagExpandableCell = ({
               e.stopPropagation();
               handleExpand();
             }}
-            className="p-0 text-xs font-normal"
+            className="p-0 text-xs"
           >
             +{values.length - displayThreshold} more
           </Button>

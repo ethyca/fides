@@ -28,6 +28,10 @@ h6 {
   }
 }
 
+:focus-visible {
+  outline-color: var(--fidesui-minos);
+}
+
 /**
   * Styles for Ant components where tokens are not available
   */
@@ -119,6 +123,13 @@ h6 {
 */
 .ant-table-filter-trigger.active {
   background-color: var(--fidesui-neutral-100);
+}
+
+/*
+  This is to match the font size of the table cells when other Ant components are used in a cell component (eg. Text, Link, List, etc.).
+*/
+.ant-table-cell * {
+  --ant-font-size: var(--ant-table-cell-font-size-sm);
 }
 
 .ant-list {

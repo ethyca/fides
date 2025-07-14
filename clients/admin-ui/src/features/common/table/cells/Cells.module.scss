@@ -1,0 +1,12 @@
+.cellBleed {
+  margin: calc(-1 * var(--ant-table-cell-padding-block-sm))
+    calc(-1 * var(--ant-table-cell-padding-inline-sm));
+  padding: var(--ant-table-cell-padding-block-sm)
+    var(--ant-table-cell-padding-inline-sm);
+}
+
+.cellHover {
+  &:hover {
+    background-color: var(--fidesui-neutral-100);
+  }
+}
