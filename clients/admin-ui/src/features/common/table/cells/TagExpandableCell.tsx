@@ -4,16 +4,9 @@ import {
   AntTag as Tag,
   AntTagProps as TagProps,
 } from "fidesui";
-import {
-  ReactNode,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 
-import styles from "./Cells.module.scss";
+import { COLLAPSE_BUTTON_TEXT } from "./constants";
 import { ColumnState } from "./types";
 
 type TagExpandableCellValues = { label: string | ReactNode; key: string }[];
@@ -42,8 +35,6 @@ export const TagExpandableCell = ({
   const [displayValues, setDisplayValues] = useState<
     TagExpandableCellValues | undefined
   >(!isExpanded ? values?.slice(0, displayThreshold) : values);
-  const flexRef = useRef<HTMLDivElement>(null); // for focus management
-  const buttonRef = useRef<HTMLButtonElement>(null); // for focus management
   useEffect(() => {
     // Also reset isCollapsed state when version changes.
     // This is to handle the case where the user expands cells individually.
@@ -68,17 +59,19 @@ export const TagExpandableCell = ({
     // if we don't also set displayValues here, there's a UI glitch where the tags stop wrapping before they become collapsed which in turn can cause the table to scroll.
     setDisplayValues(values?.slice(0, displayThreshold));
     setIsCollapsed(true);
-    setTimeout(() => {
-      buttonRef.current?.focus();
-    }, 0);
   }, [values]);
 
   const handleExpand = useCallback(() => {
     setIsCollapsed(false);
-    setTimeout(() => {
-      flexRef.current?.focus();
-    }, 0);
   }, []);
+
+  const handleToggle = useCallback(() => {
+    if (isCollapsed) {
+      handleExpand();
+    } else {
+      handleCollapse();
+    }
+  }, [isCollapsed, handleExpand, handleCollapse]);
 
   return useMemo(() => {
     if (!displayValues?.length) {
@@ -86,25 +79,9 @@ export const TagExpandableCell = ({
     }
     return (
       <Flex
-        ref={flexRef}
-        align={isCollapsed ? "center" : "flex-start"}
+        align="center"
         wrap={isWrappedState ? "wrap" : "nowrap"}
         gap="small"
-        className={`${styles.cellBleed} ${!isCollapsed ? styles.cellHover : ""}`}
-        onClick={(e) => {
-          e.stopPropagation();
-          if (!isCollapsed) {
-            handleCollapse();
-          }
-        }}
-        onKeyDown={(e) => {
-          e.stopPropagation();
-          if (e.key === "Enter" || e.key === " ") {
-            handleCollapse();
-          }
-        }}
-        role={!isCollapsed ? "button" : undefined}
-        tabIndex={!isCollapsed ? 0 : undefined}
       >
         {displayValues.map((value) => (
           <Tag
@@ -116,18 +93,19 @@ export const TagExpandableCell = ({
             {value.label}
           </Tag>
         ))}
-        {isCollapsed && values && values.length > displayThreshold && (
+        {values && values.length > displayThreshold && (
           <Button
-            ref={buttonRef}
             type="link"
             size="small"
             onClick={(e) => {
               e.stopPropagation();
-              handleExpand();
+              handleToggle();
             }}
             className="p-0 text-xs"
           >
-            +{values.length - displayThreshold} more
+            {isCollapsed
+              ? `+${values.length - displayThreshold} more`
+              : COLLAPSE_BUTTON_TEXT}
           </Button>
         )}
       </Flex>
@@ -137,8 +115,7 @@ export const TagExpandableCell = ({
     isCollapsed,
     isWrappedState,
     values,
-    handleCollapse,
-    handleExpand,
+    handleToggle,
     tagProps,
   ]);
 };

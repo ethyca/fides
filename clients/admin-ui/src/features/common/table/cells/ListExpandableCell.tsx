@@ -4,9 +4,9 @@ import {
   AntList as List,
   AntTypography as Typography,
 } from "fidesui";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-import styles from "./Cells.module.scss";
+import { COLLAPSE_BUTTON_TEXT } from "./constants";
 import { ColumnState } from "./types";
 
 const { Text } = Typography;
@@ -29,8 +29,6 @@ export const ListExpandableCell = ({
 }) => {
   const { isExpanded, version } = columnState || {};
   const [isCollapsed, setIsCollapsed] = useState<boolean>(!isExpanded);
-  const flexRef = useRef<HTMLDivElement>(null); // for focus management
-  const buttonRef = useRef<HTMLButtonElement>(null); // for focus management
 
   useEffect(() => {
     // Also reset isCollapsed state when version changes.
@@ -41,17 +39,19 @@ export const ListExpandableCell = ({
 
   const handleCollapse = useCallback(() => {
     setIsCollapsed(true);
-    setTimeout(() => {
-      buttonRef.current?.focus();
-    }, 0);
   }, []);
 
   const handleExpand = useCallback(() => {
     setIsCollapsed(false);
-    setTimeout(() => {
-      flexRef.current?.focus();
-    }, 0);
   }, []);
+
+  const handleToggle = useCallback(() => {
+    if (isCollapsed) {
+      handleExpand();
+    } else {
+      handleCollapse();
+    }
+  }, [isCollapsed, handleExpand, handleCollapse]);
 
   return useMemo(() => {
     if (!values?.length) {
@@ -64,48 +64,29 @@ export const ListExpandableCell = ({
 
     return (
       <Flex
-        ref={flexRef}
-        align="center"
+        align={isCollapsed ? "center" : "flex-start"}
+        vertical={!isCollapsed}
         gap="small"
-        className={`${styles.cellBleed} ${!isCollapsed ? styles.cellHover : ""}`}
-        onClick={(e) => {
-          e.stopPropagation();
-          if (!isCollapsed) {
-            handleCollapse();
-          }
-        }}
-        onKeyDown={(e) => {
-          e.stopPropagation();
-          if (e.key === "Enter" || e.key === " ") {
-            handleCollapse();
-          }
-        }}
-        role={!isCollapsed ? "button" : undefined}
-        tabIndex={!isCollapsed ? 0 : undefined}
       >
-        {isCollapsed && (
-          <>
-            <Text ellipsis>
-              {values.length} {valueSuffix}
-            </Text>
-            <Button
-              ref={buttonRef}
-              type="link"
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleExpand();
-              }}
-              className="p-0 text-xs"
-            >
-              View
-            </Button>
-          </>
-        )}
-        {!isCollapsed && (
+        {isCollapsed ? (
+          <Text ellipsis>
+            {values.length} {valueSuffix}
+          </Text>
+        ) : (
           <List dataSource={values} renderItem={(item) => <li>{item}</li>} />
         )}
+        <Button
+          type="link"
+          size="small"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleToggle();
+          }}
+          className="p-0 text-xs"
+        >
+          {isCollapsed ? "view" : COLLAPSE_BUTTON_TEXT}
+        </Button>
       </Flex>
     );
-  }, [isCollapsed, values, valueSuffix, handleCollapse, handleExpand]);
+  }, [isCollapsed, values, valueSuffix, handleToggle]);
 };

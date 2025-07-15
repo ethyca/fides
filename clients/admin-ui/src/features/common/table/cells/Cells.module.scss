@@ -5,10 +5,3 @@
   padding: var(--ant-table-cell-padding-block-sm)
     var(--ant-table-cell-padding-inline-sm);
 }
-
-/* highlight a clickable cell container */
-.cellHover {
-  &:hover {
-    background-color: var(--fidesui-neutral-100);
-  }
-}
