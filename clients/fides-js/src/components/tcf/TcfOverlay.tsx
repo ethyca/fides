@@ -88,6 +88,17 @@ const getAllIds = (
   return modelList.map((m) => `${m.id}`);
 };
 
+// gets the index of the tab to show by default based on the fidesModalDefaultView option
+const parseModalDefaultView = (defaultView: string | undefined): number => {
+  const tab = defaultView?.split("/")[2];
+  if (!tab) {
+    return 0;
+  }
+  const tabKeys = ["purposes", "features", "vendors"];
+  const tabIndex = tabKeys.indexOf(tab);
+  return tabIndex === -1 ? 0 : tabIndex;
+};
+
 export const TcfOverlay = () => {
   const { fidesGlobal, setFidesGlobal } = useFidesGlobal();
   const {
@@ -553,7 +564,8 @@ export const TcfOverlay = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [options.fidesConsentOverride]);
 
-  const [activeTabIndex, setActiveTabIndex] = useState(0);
+  const initialTab = parseModalDefaultView(options.fidesModalDefaultView);
+  const [activeTabIndex, setActiveTabIndex] = useState(initialTab);
 
   const dispatchOpenBannerEvent = useCallback(() => {
     setServingComponent(ServingComponent.TCF_BANNER);

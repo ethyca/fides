@@ -285,4 +285,17 @@ export interface FidesOptions {
    * Defaults to `"once"`.
    */
   fides_initialized_event_mode: "multiple" | "once" | "disable";
+
+  /**
+   * A URL-like route that determines which view is shown by default when the consent modal is opened.
+   * Currently only affects TCF.
+   *
+   * - "/tcf/purposes" (if not set, "purposes" is shown)
+   * - "/tcf/features"
+   * - "/tcf/vendors"
+   *
+   * Defaults to `undefined`.
+   *
+   */
+  fides_modal_default_view: string;
 }
