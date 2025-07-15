@@ -266,6 +266,80 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
 
         return [table.delete().where(*where_clauses)]
 
+    def generate_batched_delete(self, rows: List[Row], client: Engine) -> List[Delete]:
+        """
+        Returns a List of SQLAlchemy DELETE statements for BigQuery optimized for multiple rows.
+
+        This method batches DELETE operations for better performance when multiple rows need to be deleted.
+        It groups rows by their reference field values and creates DELETE statements for each unique
+        combination of reference fields.
+
+        For example, if multiple rows have the same email, it generates:
+        DELETE FROM table WHERE email = 'user@example.com'
+
+        Rather than the naive implementation which would generate separate DELETE statements for each row:
+        DELETE FROM table WHERE email = 'user@example.com' AND id = 1
+        DELETE FROM table WHERE email = 'user@example.com' AND id = 2
+        DELETE FROM table WHERE email = 'user@example.com' AND id = 3
+
+        Used when a collection-level masking override is present and the masking strategy is DELETE.
+
+        Args:
+            rows: List of rows to delete
+            client: SQLAlchemy Engine for database connection
+
+        Returns:
+            List of DELETE statements that can be executed to delete all specified rows
+        """
+        if not rows:
+            return []
+
+        # Group rows by their reference field values
+        reference_field_groups = {}
+        for row in rows:
+            non_empty_reference_field_keys: Dict[str, Field] = filter_nonempty_values(
+                {
+                    fpath.string_path: fld.cast(row[fpath.string_path])
+                    for fpath, fld in self.reference_field_paths.items()
+                    if fpath.string_path in row
+                }
+            )
+
+            if len(non_empty_reference_field_keys) > 0:
+                # Create a hashable key from the reference field values
+                field_key = tuple(sorted(non_empty_reference_field_keys.items()))
+                if field_key not in reference_field_groups:
+                    reference_field_groups[field_key] = (
+                        row  # Store a representative row
+                    )
+
+        if not reference_field_groups:
+            logger.warning(
+                "There is not enough data to generate valid DELETE statements for {}",
+                self.node.address,
+            )
+            return []
+
+        # Use the existing generate_delete method for each unique combination of reference fields
+        delete_statements = []
+        for representative_row in reference_field_groups.values():
+            # generate_delete already handles partitioning and all the complex logic
+            delete_stmts = self.generate_delete(representative_row, client)
+            delete_statements.extend(delete_stmts)
+
+        return delete_statements
+
+    def uses_delete_masking_strategy(self) -> bool:
+        """Check if this collection uses DELETE masking strategy.
+
+        Returns True if masking override is present and strategy is DELETE.
+        """
+        masking_override = self.node.collection.masking_strategy_override
+        return (
+            masking_override is not None
+            and masking_override.strategy == MaskingStrategies.DELETE
+        )
+
     def format_fields_for_query(
         self,
         field_paths: List[FieldPath],

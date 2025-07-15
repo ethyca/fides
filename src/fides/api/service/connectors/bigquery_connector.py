@@ -2,12 +2,7 @@ from typing import List, Optional
 
 from loguru import logger
 from sqlalchemy import text
-from sqlalchemy.engine import (  # type: ignore
-    Connection,
-    Engine,
-    LegacyCursorResult,
-    create_engine,
-)
+from sqlalchemy.engine import Connection, Engine, create_engine  # type: ignore
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import Executable  # type: ignore
 from sqlalchemy.sql.elements import TextClause
@@ -147,17 +142,35 @@ class BigQueryConnector(SQLConnector):
         query_config = self.query_config(node)
         update_or_delete_ct = 0
         client = self.client()
-        for row in rows:
-            update_or_delete_stmts: List[Executable] = (
-                query_config.generate_masking_stmt(
-                    node, row, policy, privacy_request, client
-                )
-            )
-            if update_or_delete_stmts:
+
+        # Check if we're using DELETE masking strategy
+        if query_config.uses_delete_masking_strategy():
+            # Use batched DELETE for better performance
+            delete_stmts = query_config.generate_batched_delete(rows, client)
+            logger.debug(f"Generated {len(delete_stmts)} DELETE statements")
+            if delete_stmts:
                 with client.connect() as connection:
-                    for update_or_delete_stmt in update_or_delete_stmts:
-                        results: LegacyCursorResult = connection.execute(
-                            update_or_delete_stmt
-                        )
-                        update_or_delete_ct = update_or_delete_ct + results.rowcount
+                    for delete_stmt in delete_stmts:
+                        delete_results = connection.execute(delete_stmt)
+                        logger.debug(f"Deleted {delete_results.rowcount} rows")
+                        update_or_delete_ct += delete_results.rowcount
+        else:
+            # For UPDATE operations, process each row individually since each row may have different masked values
+            for row in rows:
+                update_or_delete_stmts: List[Executable] = (
+                    query_config.generate_masking_stmt(
+                        node, row, policy, privacy_request, client
+                    )
+                )
+                logger.debug(
+                    f"Generated {len(update_or_delete_stmts)} UPDATE statements"
+                )
+                if update_or_delete_stmts:
+                    with client.connect() as connection:
+                        for update_or_delete_stmt in update_or_delete_stmts:
+                            update_results = connection.execute(update_or_delete_stmt)
+                            logger.debug(f"Updated {update_results.rowcount} rows")
+                            update_or_delete_ct = (
+                                update_or_delete_ct + update_results.rowcount
+                            )
         return update_or_delete_ct
