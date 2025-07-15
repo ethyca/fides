@@ -1,8 +1,10 @@
+import json
 from unittest.mock import Mock
 
 import pytest
 
 from fides.api.graph.config import Collection, ScalarField
+from fides.api.graph.data_type import DataType
 from fides.api.graph.graph import CollectionAddress
 from fides.api.models.connectionconfig import (
     AccessLevel,
@@ -21,7 +23,11 @@ from fides.api.models.manual_task import (
     ManualTaskType,
 )
 from fides.api.models.policy import ActionType, Policy
-from fides.api.models.privacy_request import PrivacyRequest, RequestTask
+from fides.api.models.privacy_request import (
+    PrivacyRequest,
+    RequestTask,
+    TraversalDetails,
+)
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
 from fides.api.task.manual.manual_task_utils import (
@@ -34,8 +40,6 @@ from fides.api.task.manual.manual_task_utils import (
     get_manual_tasks_for_connection_config,
 )
 from fides.api.task.task_resources import TaskResources
-from fides.api.graph.data_type import DataType
-import json
 
 
 class TestManualTaskAddress:
@@ -579,7 +583,8 @@ class TestManualTaskInstanceCreation:
 def mock_execution_node():
     class MockExecutionNode:
         def __init__(self, address):
-            self.address = address
+            self.address = CollectionAddress.from_string(address)
+            self.connection_key = "test_connection"
 
     return MockExecutionNode("test_connection:manual_data")
 
@@ -603,6 +608,11 @@ def build_mock_request_task(privacy_request, action_type):
     request_task.collection = json.loads(
         collection.model_dump_json(serialize_as_any=True)
     )
+
+    # Create valid traversal details and serialize to dict format
+    traversal_details = TraversalDetails.create_empty_traversal("test_connection")
+    request_task.traversal_details = traversal_details.model_dump(mode="json")
+
     return request_task
 
 
@@ -631,13 +641,40 @@ class TestManualTaskGraphTaskInstanceCreation:
     @pytest.fixture
     def test_policy(self, db):
         """Create a test policy with both access and erasure rules"""
-        return Policy.create(
+        policy = Policy.create(
             db=db,
             data={
                 "name": "Test Policy",
                 "key": "test_policy",
             },
         )
+
+        # Add access rule
+        from fides.api.models.policy import Rule
+
+        Rule.create(
+            db=db,
+            data={
+                "policy_id": policy.id,
+                "action_type": ActionType.access,
+                "name": "Access Rule",
+                "key": "access_rule",
+            },
+        )
+
+        # Add erasure rule
+        Rule.create(
+            db=db,
+            data={
+                "policy_id": policy.id,
+                "action_type": ActionType.erasure,
+                "name": "Erasure Rule",
+                "key": "erasure_rule",
+                "masking_strategy": {"strategy": "null_rewrite", "configuration": {}},
+            },
+        )
+
+        return policy
 
     @pytest.fixture
     def test_connection_config(self, db):
