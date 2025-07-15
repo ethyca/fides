@@ -1,5 +1,6 @@
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Optional
 
+from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.graph.config import (
@@ -26,6 +27,7 @@ from fides.api.schemas.policy import ActionType
 # TYPE_CHECKING import placed after all runtime imports to avoid lint issues
 if TYPE_CHECKING:  # pragma: no cover
     from fides.api.graph.traversal import TraversalNode  # noqa: F401
+    from fides.api.models.policy import Policy  # noqa: F401
 
 
 class ManualTaskAddress:
@@ -283,8 +285,32 @@ def get_manual_task_instances_for_privacy_request(
     )
 
 
+def manual_task_configs_allowed_by_policy(
+    policy: "Policy", config: ManualTaskConfig
+) -> bool:
+    """
+    Check if a manual task config is allowed by a policy.
+    Returns True if the config is allowed, False otherwise.
+    Returns False if the policy is not a valid policy object.
+    """
+    try:
+        allowed: set[ManualTaskConfigurationType] = set()
+        # has access rules
+        if policy.get_rules_for_action(action_type=ActionType.access):
+            allowed.add(ManualTaskConfigurationType.access_privacy_request)
+        # has erasure rules
+        if policy.get_rules_for_action(action_type=ActionType.erasure):
+            allowed.add(ManualTaskConfigurationType.erasure_privacy_request)
+        # return True if config.config_type is in allowed, False otherwise
+        return config.config_type in allowed
+    except AttributeError:
+        logger.error(f"Requires a valid policy object, got {policy}")
+        return False
+
+
 def create_manual_task_artificial_graphs(
     db: Session,
+    policy: Optional["Policy"] = None,
 ) -> List:
     """
     Create artificial GraphDataset objects for manual tasks that can be included
@@ -299,7 +325,7 @@ def create_manual_task_artificial_graphs(
 
     Args:
         db: Database session
-        policy: The policy being executed
+        policy: The policy being executed (optional, for filtering manual task configs)
 
     Returns:
         List of GraphDataset objects representing manual tasks as root nodes
@@ -328,6 +354,12 @@ def create_manual_task_artificial_graphs(
                     continue
                 if not config.is_current:
                     continue
+
+                # Filter by configuration type based on policy rules (if policy is provided)
+                if policy:
+                    if not manual_task_configs_allowed_by_policy(policy, config):
+                        continue
+
                 for field in config.field_definitions:
                     # Create a scalar field for each manual task field
                     field_metadata = field.field_metadata or {}

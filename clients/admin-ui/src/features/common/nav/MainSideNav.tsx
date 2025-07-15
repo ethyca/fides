@@ -124,7 +124,9 @@ export const UnconnectedMainSideNav = ({
           <Box pb={6}>
             <Box px={2}>
               <NextLink href={INDEX_ROUTE}>
-                <Image src={logoImage} alt="Fides Logo" width={116} />
+                {/* this image gets priority because it's the largest contentful paint and above the fold
+                see https://nextjs.org/docs/pages/api-reference/components/image#priority */}
+                <Image src={logoImage} alt="Fides Logo" width={116} priority />
               </NextLink>
             </Box>
           </Box>

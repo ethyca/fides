@@ -61,4 +61,8 @@ export type PrivacyExperienceResponse = {
   gvl_translations?: null;
   available_locales?: Array<string> | null;
   meta?: ExperienceMeta | null;
+  /**
+   * The number of vendors in the TCF experience. Only populated for TCF experiences.
+   */
+  vendor_count?: number | null;
 };
