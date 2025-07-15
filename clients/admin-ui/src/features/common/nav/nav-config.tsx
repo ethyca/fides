@@ -123,6 +123,8 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         scopes: [
           ScopeRegistryEnum.PRIVACY_REQUEST_READ,
           ScopeRegistryEnum.PRIVACY_REQUEST_CREATE,
+          ScopeRegistryEnum.MANUAL_FIELD_READ_OWN,
+          ScopeRegistryEnum.MANUAL_FIELD_READ_ALL,
         ],
       },
       {
