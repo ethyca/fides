@@ -264,7 +264,7 @@ class ManualTaskGraphTask(GraphTask):
     def erasure_request(
         self,
         retrieved_data: List[Row],
-        *erasure_prereqs: int,  # noqa: D401, pylint: disable=unused-argument
+        *inputs: List[Row],  # Upstream input data that provides query context from access phase
     ) -> int:
         """Execute manual-task-driven erasure logic.
 

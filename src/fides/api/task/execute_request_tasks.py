@@ -340,7 +340,7 @@ def run_erasure_node(
     """Run an individual task in the erasure graph for DSR 3.0 and queue downstream nodes
     upon completion if applicable"""
     with self.get_new_session() as session:
-        privacy_request, request_task, _ = run_prerequisite_task_checks(
+        privacy_request, request_task, upstream_results = run_prerequisite_task_checks(
             session, privacy_request_id, privacy_request_task_id
         )
         with logger.contextualize(
@@ -368,8 +368,21 @@ def run_erasure_node(
                         request_task.get_data_for_erasures() or []
                     )
 
-                    # Run the main erasure function!
-                    graph_task.erasure_request(retrieved_data)
+                    # Get upstream input data that was used during access phase to provide query context for erasure
+                    ordered_upstream_tasks: List[Optional[RequestTask]] = (
+                        _order_tasks_by_input_key(
+                            graph_task.execution_node.input_keys, upstream_results
+                        )
+                    )
+                    # Pass in access data dependencies in the same order as the input keys.
+                    # This provides the query context (inputs) that were used during access phase
+                    upstream_access_data: List[List[Row]] = [
+                        upstream.get_access_data() if upstream else []
+                        for upstream in ordered_upstream_tasks
+                    ]
+
+                    # Run the main erasure function with query context!
+                    graph_task.erasure_request(retrieved_data, *upstream_access_data)
 
     queue_downstream_tasks_with_retries(
         self,

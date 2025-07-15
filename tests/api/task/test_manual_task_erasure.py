@@ -170,7 +170,7 @@ def test_manual_task_erasure_flow(
     graph_task = ManualTaskGraphTask(resources)
 
     # First execution should pause the request and return None (AwaitingAsyncTaskCallback handled internally)
-    initial_result = graph_task.erasure_request([], 0)
+    initial_result = graph_task.erasure_request([])
     assert initial_result is None
 
     db.refresh(privacy_request)
@@ -205,7 +205,7 @@ def test_manual_task_erasure_flow(
     instance.save(db)
 
     # Retry erasure_request – should now complete and return 0
-    result = graph_task.erasure_request([], 0)
+    result = graph_task.erasure_request([])
     assert result == 0
 
     # RequestTask.rows_masked should be 0
