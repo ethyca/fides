@@ -62,7 +62,7 @@ async function savePreferencesApi(
   consentPreferencesToSave?: Array<
     Pick<SaveConsentPreference, "noticeHistoryId" | "consentPreference">
   >,
-  tcf?: TcfSavePreferences,
+  tcfPreferences?: TcfSavePreferences,
   userLocationString?: string,
   servedNoticeHistoryId?: string,
 ) {
@@ -83,7 +83,7 @@ async function savePreferencesApi(
     method: consentMethod,
     served_notice_history_id: servedNoticeHistoryId,
     property_id: experience.property_id,
-    ...(tcf ?? []),
+    ...(tcfPreferences ?? []),
   };
   await patchUserPreference(
     consentMethod,
@@ -104,7 +104,7 @@ interface UpdateConsentPreferencesProps {
   cookie: FidesCookie;
   eventExtraDetails?: FidesEventExtraDetails;
   servedNoticeHistoryId?: string;
-  tcf?: TcfSavePreferences;
+  tcfPreferences?: TcfSavePreferences;
   updateCookie?: (oldCookie: FidesCookie) => Promise<FidesCookie>;
 }
 /**
@@ -128,7 +128,7 @@ export const updateConsentPreferences = async ({
   cookie,
   eventExtraDetails,
   servedNoticeHistoryId,
-  tcf,
+  tcfPreferences,
   updateCookie,
 }: UpdateConsentPreferencesProps) => {
   if (!updateCookie && consentPreferencesToSave) {
@@ -187,7 +187,7 @@ export const updateConsentPreferences = async ({
         consentMethod,
         privacyExperienceConfigHistoryId,
         consentPreferencesToSave,
-        tcf,
+        tcfPreferences,
         userLocationString,
         servedNoticeHistoryId,
       );
@@ -295,7 +295,7 @@ export interface UpdateConsentOptions {
   validation?: UpdateConsentValidation;
   consentMethod?: ConsentMethod;
   eventExtraDetails?: FidesEventExtraDetails;
-  tcf?: TcfSavePreferences;
+  tcfPreferences?: TcfSavePreferences;
   updateCookie?: (oldCookie: FidesCookie) => Promise<FidesCookie>;
 }
 export const updateConsent = async (
@@ -318,7 +318,7 @@ export const updateConsent = async (
   if (
     !consentOptions?.noticeConsent &&
     !consentOptions?.fidesString &&
-    !consentOptions?.tcf
+    !consentOptions?.tcfPreferences
   ) {
     throw new Error("Either consent object or fidesString must be provided");
   }
@@ -343,7 +343,7 @@ export const updateConsent = async (
         origin: FidesEventOrigin.EXTERNAL,
       },
     },
-    tcf,
+    tcfPreferences,
     updateCookie,
   } = consentOptions;
 
@@ -478,7 +478,7 @@ export const updateConsent = async (
     cookie,
     eventExtraDetails,
     servedNoticeHistoryId,
-    tcf,
+    tcfPreferences,
     updateCookie,
   });
 };

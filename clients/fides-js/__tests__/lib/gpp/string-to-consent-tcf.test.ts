@@ -155,7 +155,7 @@ describe("fidesStringToConsent", () => {
       expect.objectContaining(expectUpdateConsent()),
       expect.objectContaining(
         expectUpdateConsentOptions({
-          tcf: {
+          tcfPreferences: {
             purpose_consent_preferences: [
               { id: 1, preference: UserConsentPreference.OPT_IN },
               { id: 3, preference: UserConsentPreference.OPT_IN },
@@ -195,7 +195,7 @@ describe("fidesStringToConsent", () => {
       expect.objectContaining(expectUpdateConsent()),
       expect.objectContaining(
         expectUpdateConsentOptions({
-          tcf: {
+          tcfPreferences: {
             purpose_consent_preferences: [],
             purpose_legitimate_interests_preferences: [],
             special_feature_preferences: [],
@@ -222,7 +222,7 @@ describe("fidesStringToConsent", () => {
       expect.objectContaining(expectUpdateConsent()),
       expect.objectContaining(
         expectUpdateConsentOptions({
-          tcf: {
+          tcfPreferences: {
             purpose_consent_preferences: [
               { id: 1, preference: UserConsentPreference.OPT_IN },
               { id: 4, preference: UserConsentPreference.OPT_IN },

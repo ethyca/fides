@@ -361,14 +361,14 @@ export const TcfOverlay = () => {
       if (!experienceFull && !experienceMinimal) {
         return;
       }
-      let tcf: TcfSavePreferences;
+      let tcfPreferences: TcfSavePreferences;
       if (!experienceFull && experienceMinimal?.minimal_tcf) {
-        tcf = createTcfSavePayloadFromMinExp({
+        tcfPreferences = createTcfSavePayloadFromMinExp({
           experience: experienceMinimal,
           enabledIds,
         });
       } else {
-        tcf = createTcfSavePayload({
+        tcfPreferences = createTcfSavePayload({
           experience: experienceFull as PrivacyExperience,
           enabledIds,
         });
@@ -391,11 +391,11 @@ export const TcfOverlay = () => {
           servingComponent: servingComponentRef.current,
           trigger: triggerRef.current,
         },
-        tcf,
+        tcfPreferences,
         updateCookie: (oldCookie) => {
           return updateTCFCookie(
             oldCookie,
-            tcf,
+            tcfPreferences,
             enabledIds,
             experienceFull || experienceMinimal,
             customPurposesConsent,

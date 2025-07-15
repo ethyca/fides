@@ -269,7 +269,7 @@ export const fidesStringToConsent = ({
     });
     updateConsent(window.Fides, {
       noticeConsent,
-      tcf,
+      tcfPreferences: tcf,
       updateCookie,
     });
   }
