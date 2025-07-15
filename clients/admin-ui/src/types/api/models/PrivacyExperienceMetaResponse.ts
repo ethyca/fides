@@ -14,4 +14,8 @@ export type PrivacyExperienceMetaResponse = {
   region: PrivacyNoticeRegion;
   component?: ComponentType | null;
   meta?: ExperienceMeta | null;
+  /**
+   * The number of vendors in the TCF experience. Only populated for TCF experiences.
+   */
+  vendor_count?: number | null;
 };

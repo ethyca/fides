@@ -123,10 +123,10 @@ const withCustomProps = (WrappedComponent: typeof Tag) => {
 
     return onClick ? (
       <button type="button" onClick={onClick} className={styles.buttonTag}>
-        <WrappedComponent {...customProps} ref={tagRef} />
+        <WrappedComponent {...customProps} ref={tagRef} data-color={color} />
       </button>
     ) : (
-      <WrappedComponent {...customProps} ref={tagRef} />
+      <WrappedComponent {...customProps} ref={tagRef} data-color={color} />
     );
   };
   return WrappedTag;

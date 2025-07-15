@@ -30,6 +30,12 @@
     "test": true,
     "production": false
   },
+  "assetConsentStatusLabels": {
+    "description": "Consent status labels for assets discovered by the web monitor",
+    "development": true,
+    "test": true,
+    "production": false
+  },
   "oktaMonitor": {
     "description": "Monitor Okta for activity",
     "development": true,
