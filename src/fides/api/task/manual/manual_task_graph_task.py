@@ -90,7 +90,6 @@ class ManualTaskGraphTask(GraphTask):
             ManualTaskConfigurationType.access_privacy_request,
         )
 
-
         if submitted_data is not None:
             result: List[Row] = [submitted_data] if submitted_data else []
             self.request_task.access_data = result
@@ -134,7 +133,7 @@ class ManualTaskGraphTask(GraphTask):
                     ManualTaskInstance.entity_type
                     == ManualTaskEntityType.privacy_request,
                     # Only check for instances of the same config type
-                    ManualTaskConfig.config_type == allowed_config_type
+                    ManualTaskConfig.config_type == allowed_config_type,
                 )
                 .first()
             )
@@ -298,7 +297,8 @@ class ManualTaskGraphTask(GraphTask):
             for manual_task in manual_tasks
             for config in manual_task.configs
             if config.is_current
-            and config.config_type == ManualTaskConfigurationType.erasure_privacy_request
+            and config.config_type
+            == ManualTaskConfigurationType.erasure_privacy_request
         ]
 
         if not has_erasure_configs:

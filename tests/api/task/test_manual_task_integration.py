@@ -660,13 +660,15 @@ class TestManualTaskGraphTaskInstanceCreation:
             },
         )
 
-    def test_access_request_creates_access_instances_only(self, db, test_privacy_request, test_manual_task_with_both_configs):
+    def test_access_request_creates_access_instances_only(
+        self, db, test_privacy_request, test_manual_task_with_both_configs
+    ):
         """Test that access_request creates only access instances"""
         manual_task, access_config, erasure_config = test_manual_task_with_both_configs
 
         # Create graph task
-        from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
         from fides.api.task.graph_task import GraphTask
+        from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
         from fides.api.task.task_resources import TaskResources
 
         # Mock execution node
@@ -690,9 +692,11 @@ class TestManualTaskGraphTaskInstanceCreation:
         )
 
         # Count instances before
-        initial_instances = db.query(ManualTaskInstance).filter(
-            ManualTaskInstance.entity_id == test_privacy_request.id
-        ).count()
+        initial_instances = (
+            db.query(ManualTaskInstance)
+            .filter(ManualTaskInstance.entity_id == test_privacy_request.id)
+            .count()
+        )
         assert initial_instances == 0
 
         # Call access_request
@@ -703,20 +707,34 @@ class TestManualTaskGraphTaskInstanceCreation:
             pass
 
         # Count instances after - should only have access instances
-        access_instances = db.query(ManualTaskInstance).join(ManualTaskConfig).filter(
-            ManualTaskInstance.entity_id == test_privacy_request.id,
-            ManualTaskConfig.config_type == ManualTaskConfigurationType.access_privacy_request
-        ).count()
+        access_instances = (
+            db.query(ManualTaskInstance)
+            .join(ManualTaskConfig)
+            .filter(
+                ManualTaskInstance.entity_id == test_privacy_request.id,
+                ManualTaskConfig.config_type
+                == ManualTaskConfigurationType.access_privacy_request,
+            )
+            .count()
+        )
 
-        erasure_instances = db.query(ManualTaskInstance).join(ManualTaskConfig).filter(
-            ManualTaskInstance.entity_id == test_privacy_request.id,
-            ManualTaskConfig.config_type == ManualTaskConfigurationType.erasure_privacy_request
-        ).count()
+        erasure_instances = (
+            db.query(ManualTaskInstance)
+            .join(ManualTaskConfig)
+            .filter(
+                ManualTaskInstance.entity_id == test_privacy_request.id,
+                ManualTaskConfig.config_type
+                == ManualTaskConfigurationType.erasure_privacy_request,
+            )
+            .count()
+        )
 
         assert access_instances == 1
         assert erasure_instances == 0
 
-    def test_erasure_request_creates_erasure_instances_only(self, db, test_privacy_request, test_manual_task_with_both_configs):
+    def test_erasure_request_creates_erasure_instances_only(
+        self, db, test_privacy_request, test_manual_task_with_both_configs
+    ):
         """Test that erasure_request creates only erasure instances"""
         manual_task, access_config, erasure_config = test_manual_task_with_both_configs
 
@@ -745,9 +763,11 @@ class TestManualTaskGraphTaskInstanceCreation:
         )
 
         # Count instances before
-        initial_instances = db.query(ManualTaskInstance).filter(
-            ManualTaskInstance.entity_id == test_privacy_request.id
-        ).count()
+        initial_instances = (
+            db.query(ManualTaskInstance)
+            .filter(ManualTaskInstance.entity_id == test_privacy_request.id)
+            .count()
+        )
         assert initial_instances == 0
 
         # Call erasure_request
@@ -758,20 +778,34 @@ class TestManualTaskGraphTaskInstanceCreation:
             pass
 
         # Count instances after - should only have erasure instances
-        access_instances = db.query(ManualTaskInstance).join(ManualTaskConfig).filter(
-            ManualTaskInstance.entity_id == test_privacy_request.id,
-            ManualTaskConfig.config_type == ManualTaskConfigurationType.access_privacy_request
-        ).count()
+        access_instances = (
+            db.query(ManualTaskInstance)
+            .join(ManualTaskConfig)
+            .filter(
+                ManualTaskInstance.entity_id == test_privacy_request.id,
+                ManualTaskConfig.config_type
+                == ManualTaskConfigurationType.access_privacy_request,
+            )
+            .count()
+        )
 
-        erasure_instances = db.query(ManualTaskInstance).join(ManualTaskConfig).filter(
-            ManualTaskInstance.entity_id == test_privacy_request.id,
-            ManualTaskConfig.config_type == ManualTaskConfigurationType.erasure_privacy_request
-        ).count()
+        erasure_instances = (
+            db.query(ManualTaskInstance)
+            .join(ManualTaskConfig)
+            .filter(
+                ManualTaskInstance.entity_id == test_privacy_request.id,
+                ManualTaskConfig.config_type
+                == ManualTaskConfigurationType.erasure_privacy_request,
+            )
+            .count()
+        )
 
         assert access_instances == 0
         assert erasure_instances == 1
 
-    def test_access_request_skips_deleted_configs(self, db, test_privacy_request, test_manual_task_with_both_configs):
+    def test_access_request_skips_deleted_configs(
+        self, db, test_privacy_request, test_manual_task_with_both_configs
+    ):
         """Test that access_request skips configs that are not current"""
         manual_task, access_config, erasure_config = test_manual_task_with_both_configs
 
@@ -808,12 +842,16 @@ class TestManualTaskGraphTaskInstanceCreation:
         assert result == []
 
         # No instances should be created
-        instances = db.query(ManualTaskInstance).filter(
-            ManualTaskInstance.entity_id == test_privacy_request.id
-        ).count()
+        instances = (
+            db.query(ManualTaskInstance)
+            .filter(ManualTaskInstance.entity_id == test_privacy_request.id)
+            .count()
+        )
         assert instances == 0
 
-    def test_erasure_request_skips_deleted_configs(self, db, test_privacy_request, test_manual_task_with_both_configs):
+    def test_erasure_request_skips_deleted_configs(
+        self, db, test_privacy_request, test_manual_task_with_both_configs
+    ):
         """Test that erasure_request skips configs that are not current"""
         manual_task, access_config, erasure_config = test_manual_task_with_both_configs
 
@@ -850,12 +888,16 @@ class TestManualTaskGraphTaskInstanceCreation:
         assert result == 0
 
         # No instances should be created
-        instances = db.query(ManualTaskInstance).filter(
-            ManualTaskInstance.entity_id == test_privacy_request.id
-        ).count()
+        instances = (
+            db.query(ManualTaskInstance)
+            .filter(ManualTaskInstance.entity_id == test_privacy_request.id)
+            .count()
+        )
         assert instances == 0
 
-    def test_access_and_erasure_instances_coexist(self, db, test_privacy_request, test_manual_task_with_both_configs):
+    def test_access_and_erasure_instances_coexist(
+        self, db, test_privacy_request, test_manual_task_with_both_configs
+    ):
         """Test that access and erasure instances can coexist for the same privacy request"""
         manual_task, access_config, erasure_config = test_manual_task_with_both_configs
 
@@ -896,15 +938,27 @@ class TestManualTaskGraphTaskInstanceCreation:
             pass
 
         # Should have both access and erasure instances
-        access_instances = db.query(ManualTaskInstance).join(ManualTaskConfig).filter(
-            ManualTaskInstance.entity_id == test_privacy_request.id,
-            ManualTaskConfig.config_type == ManualTaskConfigurationType.access_privacy_request
-        ).count()
+        access_instances = (
+            db.query(ManualTaskInstance)
+            .join(ManualTaskConfig)
+            .filter(
+                ManualTaskInstance.entity_id == test_privacy_request.id,
+                ManualTaskConfig.config_type
+                == ManualTaskConfigurationType.access_privacy_request,
+            )
+            .count()
+        )
 
-        erasure_instances = db.query(ManualTaskInstance).join(ManualTaskConfig).filter(
-            ManualTaskInstance.entity_id == test_privacy_request.id,
-            ManualTaskConfig.config_type == ManualTaskConfigurationType.erasure_privacy_request
-        ).count()
+        erasure_instances = (
+            db.query(ManualTaskInstance)
+            .join(ManualTaskConfig)
+            .filter(
+                ManualTaskInstance.entity_id == test_privacy_request.id,
+                ManualTaskConfig.config_type
+                == ManualTaskConfigurationType.erasure_privacy_request,
+            )
+            .count()
+        )
 
         assert access_instances == 1
         assert erasure_instances == 1
