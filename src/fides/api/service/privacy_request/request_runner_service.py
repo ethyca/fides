@@ -454,9 +454,7 @@ def run_privacy_request(
                 ]
 
                 # Add manual task artificial graphs to dataset graphs
-                manual_task_graphs = create_manual_task_artificial_graphs(
-                    session, policy
-                )
+                manual_task_graphs = create_manual_task_artificial_graphs(session)
                 dataset_graphs.extend(manual_task_graphs)
 
                 dataset_graph = DatasetGraph(*dataset_graphs)
