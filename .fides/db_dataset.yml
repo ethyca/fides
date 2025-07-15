@@ -1570,6 +1570,10 @@ dataset:
       data_categories: [system.operations]
     - name: reviewed_by
       data_categories: [user.name]
+    - name: finalized_at
+      data_categories: [ system.operations ]
+    - name: finalized_by
+      data_categories: [ user.name ]
     - name: started_processing_at
       data_categories: [system.operations]
     - name: status
