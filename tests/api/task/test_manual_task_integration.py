@@ -14,6 +14,7 @@ from fides.api.models.manual_task import (
     ManualTaskConfigField,
     ManualTaskConfigurationType,
     ManualTaskFieldType,
+    ManualTaskInstance,
     ManualTaskParentEntityType,
     ManualTaskSubmission,
     ManualTaskType,
@@ -556,6 +557,357 @@ class TestManualTaskInstanceCreation:
             db, sample_privacy_request
         )
         assert len(all_instances) == 1
+
+
+@pytest.mark.integration
+class TestManualTaskGraphTaskInstanceCreation:
+    """Test that ManualTaskGraphTask creates the correct number of instances for access and erasure"""
+
+    @pytest.fixture
+    def test_policy(self, db):
+        """Create a test policy with both access and erasure rules"""
+        return Policy.create(
+            db=db,
+            data={
+                "name": "Test Policy",
+                "key": "test_policy",
+            },
+        )
+
+    @pytest.fixture
+    def test_connection_config(self, db):
+        """Create a test connection config"""
+        return ConnectionConfig.create(
+            db=db,
+            data={
+                "name": "Test Connection",
+                "key": "test_connection",
+                "connection_type": ConnectionType.manual_task,
+                "access": AccessLevel.read,
+                "disabled": False,
+            },
+        )
+
+    @pytest.fixture
+    def test_manual_task_with_both_configs(self, db, test_connection_config):
+        """Create a manual task with both access and erasure configs"""
+        manual_task = ManualTask.create(
+            db=db,
+            data={
+                "task_type": ManualTaskType.privacy_request,
+                "parent_entity_id": test_connection_config.id,
+                "parent_entity_type": ManualTaskParentEntityType.connection_config,
+            },
+        )
+
+        # Create access config
+        access_config = ManualTaskConfig.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_type": ManualTaskConfigurationType.access_privacy_request,
+                "version": 1,
+                "is_current": True,
+            },
+        )
+
+        # Create erasure config
+        erasure_config = ManualTaskConfig.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_type": ManualTaskConfigurationType.erasure_privacy_request,
+                "version": 1,
+                "is_current": True,
+            },
+        )
+
+        # Add fields to both configs
+        ManualTaskConfigField.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_id": access_config.id,
+                "field_key": "access_field",
+                "field_type": ManualTaskFieldType.text,
+                "field_metadata": {"label": "Access Field", "required": True},
+            },
+        )
+
+        ManualTaskConfigField.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_id": erasure_config.id,
+                "field_key": "erasure_field",
+                "field_type": ManualTaskFieldType.text,
+                "field_metadata": {"label": "Erasure Field", "required": True},
+            },
+        )
+
+        return manual_task, access_config, erasure_config
+
+    @pytest.fixture
+    def test_privacy_request(self, db, test_policy):
+        """Create a test privacy request"""
+        return PrivacyRequest.create(
+            db=db,
+            data={
+                "external_id": "test_request_123",
+                "started_processing_at": None,
+                "status": "pending",
+                "policy_id": test_policy.id,
+            },
+        )
+
+    def test_access_request_creates_access_instances_only(self, db, test_privacy_request, test_manual_task_with_both_configs):
+        """Test that access_request creates only access instances"""
+        manual_task, access_config, erasure_config = test_manual_task_with_both_configs
+
+        # Create graph task
+        from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
+        from fides.api.task.graph_task import GraphTask
+        from fides.api.task.task_resources import TaskResources
+
+        # Mock execution node
+        class MockExecutionNode:
+            def __init__(self, address):
+                self.address = address
+
+        execution_node = MockExecutionNode("test_connection:manual_data")
+
+        # Create task resources
+        task_resources = TaskResources(
+            request=test_privacy_request,
+            session=db,
+            policy=test_privacy_request.policy,
+        )
+
+        # Create graph task
+        graph_task = ManualTaskGraphTask(
+            task_resources=task_resources,
+            execution_node=execution_node,
+        )
+
+        # Count instances before
+        initial_instances = db.query(ManualTaskInstance).filter(
+            ManualTaskInstance.entity_id == test_privacy_request.id
+        ).count()
+        assert initial_instances == 0
+
+        # Call access_request
+        try:
+            graph_task.access_request()
+        except Exception:
+            # Expected to raise AwaitingAsyncTaskCallback since no submissions exist
+            pass
+
+        # Count instances after - should only have access instances
+        access_instances = db.query(ManualTaskInstance).join(ManualTaskConfig).filter(
+            ManualTaskInstance.entity_id == test_privacy_request.id,
+            ManualTaskConfig.config_type == ManualTaskConfigurationType.access_privacy_request
+        ).count()
+
+        erasure_instances = db.query(ManualTaskInstance).join(ManualTaskConfig).filter(
+            ManualTaskInstance.entity_id == test_privacy_request.id,
+            ManualTaskConfig.config_type == ManualTaskConfigurationType.erasure_privacy_request
+        ).count()
+
+        assert access_instances == 1
+        assert erasure_instances == 0
+
+    def test_erasure_request_creates_erasure_instances_only(self, db, test_privacy_request, test_manual_task_with_both_configs):
+        """Test that erasure_request creates only erasure instances"""
+        manual_task, access_config, erasure_config = test_manual_task_with_both_configs
+
+        # Create graph task
+        from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
+        from fides.api.task.task_resources import TaskResources
+
+        # Mock execution node
+        class MockExecutionNode:
+            def __init__(self, address):
+                self.address = address
+
+        execution_node = MockExecutionNode("test_connection:manual_data")
+
+        # Create task resources
+        task_resources = TaskResources(
+            request=test_privacy_request,
+            session=db,
+            policy=test_privacy_request.policy,
+        )
+
+        # Create graph task
+        graph_task = ManualTaskGraphTask(
+            task_resources=task_resources,
+            execution_node=execution_node,
+        )
+
+        # Count instances before
+        initial_instances = db.query(ManualTaskInstance).filter(
+            ManualTaskInstance.entity_id == test_privacy_request.id
+        ).count()
+        assert initial_instances == 0
+
+        # Call erasure_request
+        try:
+            graph_task.erasure_request([])
+        except Exception:
+            # Expected to raise AwaitingAsyncTaskCallback since no submissions exist
+            pass
+
+        # Count instances after - should only have erasure instances
+        access_instances = db.query(ManualTaskInstance).join(ManualTaskConfig).filter(
+            ManualTaskInstance.entity_id == test_privacy_request.id,
+            ManualTaskConfig.config_type == ManualTaskConfigurationType.access_privacy_request
+        ).count()
+
+        erasure_instances = db.query(ManualTaskInstance).join(ManualTaskConfig).filter(
+            ManualTaskInstance.entity_id == test_privacy_request.id,
+            ManualTaskConfig.config_type == ManualTaskConfigurationType.erasure_privacy_request
+        ).count()
+
+        assert access_instances == 0
+        assert erasure_instances == 1
+
+    def test_access_request_skips_deleted_configs(self, db, test_privacy_request, test_manual_task_with_both_configs):
+        """Test that access_request skips configs that are not current"""
+        manual_task, access_config, erasure_config = test_manual_task_with_both_configs
+
+        # Mark access config as not current
+        access_config.is_current = False
+        db.commit()
+
+        # Create graph task
+        from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
+        from fides.api.task.task_resources import TaskResources
+
+        # Mock execution node
+        class MockExecutionNode:
+            def __init__(self, address):
+                self.address = address
+
+        execution_node = MockExecutionNode("test_connection:manual_data")
+
+        # Create task resources
+        task_resources = TaskResources(
+            request=test_privacy_request,
+            session=db,
+            policy=test_privacy_request.policy,
+        )
+
+        # Create graph task
+        graph_task = ManualTaskGraphTask(
+            task_resources=task_resources,
+            execution_node=execution_node,
+        )
+
+        # Call access_request - should complete immediately since no valid configs
+        result = graph_task.access_request()
+        assert result == []
+
+        # No instances should be created
+        instances = db.query(ManualTaskInstance).filter(
+            ManualTaskInstance.entity_id == test_privacy_request.id
+        ).count()
+        assert instances == 0
+
+    def test_erasure_request_skips_deleted_configs(self, db, test_privacy_request, test_manual_task_with_both_configs):
+        """Test that erasure_request skips configs that are not current"""
+        manual_task, access_config, erasure_config = test_manual_task_with_both_configs
+
+        # Mark erasure config as not current
+        erasure_config.is_current = False
+        db.commit()
+
+        # Create graph task
+        from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
+        from fides.api.task.task_resources import TaskResources
+
+        # Mock execution node
+        class MockExecutionNode:
+            def __init__(self, address):
+                self.address = address
+
+        execution_node = MockExecutionNode("test_connection:manual_data")
+
+        # Create task resources
+        task_resources = TaskResources(
+            request=test_privacy_request,
+            session=db,
+            policy=test_privacy_request.policy,
+        )
+
+        # Create graph task
+        graph_task = ManualTaskGraphTask(
+            task_resources=task_resources,
+            execution_node=execution_node,
+        )
+
+        # Call erasure_request - should complete immediately since no valid configs
+        result = graph_task.erasure_request([])
+        assert result == 0
+
+        # No instances should be created
+        instances = db.query(ManualTaskInstance).filter(
+            ManualTaskInstance.entity_id == test_privacy_request.id
+        ).count()
+        assert instances == 0
+
+    def test_access_and_erasure_instances_coexist(self, db, test_privacy_request, test_manual_task_with_both_configs):
+        """Test that access and erasure instances can coexist for the same privacy request"""
+        manual_task, access_config, erasure_config = test_manual_task_with_both_configs
+
+        # Create graph task
+        from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
+        from fides.api.task.task_resources import TaskResources
+
+        # Mock execution node
+        class MockExecutionNode:
+            def __init__(self, address):
+                self.address = address
+
+        execution_node = MockExecutionNode("test_connection:manual_data")
+
+        # Create task resources
+        task_resources = TaskResources(
+            request=test_privacy_request,
+            session=db,
+            policy=test_privacy_request.policy,
+        )
+
+        # Create graph task
+        graph_task = ManualTaskGraphTask(
+            task_resources=task_resources,
+            execution_node=execution_node,
+        )
+
+        # Call access_request first
+        try:
+            graph_task.access_request()
+        except Exception:
+            pass
+
+        # Call erasure_request
+        try:
+            graph_task.erasure_request([])
+        except Exception:
+            pass
+
+        # Should have both access and erasure instances
+        access_instances = db.query(ManualTaskInstance).join(ManualTaskConfig).filter(
+            ManualTaskInstance.entity_id == test_privacy_request.id,
+            ManualTaskConfig.config_type == ManualTaskConfigurationType.access_privacy_request
+        ).count()
+
+        erasure_instances = db.query(ManualTaskInstance).join(ManualTaskConfig).filter(
+            ManualTaskInstance.entity_id == test_privacy_request.id,
+            ManualTaskConfig.config_type == ManualTaskConfigurationType.erasure_privacy_request
+        ).count()
+
+        assert access_instances == 1
+        assert erasure_instances == 1
 
 
 @pytest.mark.integration
