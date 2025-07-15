@@ -796,10 +796,11 @@ describe("User management", () => {
         beforeEach(() => {
           cy.visit(`/user-management/profile/${USER_1_ID}`);
           cy.getAntTab("Permissions").click({ force: true });
+          cy.wait("@getUserManagedSystems");
 
+          cy.getByTestId("assign-systems-delete-table").should("exist"); // ensure the data is added to the React state before proceeding
           cy.getByTestId("assign-systems-btn").click();
           cy.wait("@getSystems");
-          cy.wait("@getUserManagedSystems");
         });
 
         it("can toggle one system", () => {

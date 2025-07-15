@@ -26,6 +26,7 @@ from fides.api.schemas.policy import ActionType
 # TYPE_CHECKING import placed after all runtime imports to avoid lint issues
 if TYPE_CHECKING:  # pragma: no cover
     from fides.api.graph.traversal import TraversalNode  # noqa: F401
+    from fides.api.models.policy import Policy  # noqa: F401
 
 
 class ManualTaskAddress:
@@ -299,7 +300,7 @@ def create_manual_task_artificial_graphs(
 
     Args:
         db: Database session
-        policy: The policy being executed
+        policy: The policy being executed (optional, for filtering manual task configs)
 
     Returns:
         List of GraphDataset objects representing manual tasks as root nodes
@@ -320,14 +321,16 @@ def create_manual_task_artificial_graphs(
         # Manual task collections act as root nodes - they don't need identity dependencies
         # since they provide manually-entered data rather than consuming identity data.
         for manual_task in manual_tasks:
-            for config in manual_task.configs:
+            current_configs = [
+                config for config in manual_task.configs if config.is_current
+            ]
+            for config in current_configs:
                 if config.config_type not in [
                     ManualTaskConfigurationType.access_privacy_request,
                     ManualTaskConfigurationType.erasure_privacy_request,
                 ]:
                     continue
-                if not config.is_current:
-                    continue
+
                 for field in config.field_definitions:
                     # Create a scalar field for each manual task field
                     field_metadata = field.field_metadata or {}

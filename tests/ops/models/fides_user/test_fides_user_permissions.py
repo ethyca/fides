@@ -57,20 +57,20 @@ class TestFidesUserPermissions:
     @pytest.mark.parametrize(
         "role, expected",
         [
-            (RESPONDENT, True),
+            (RESPONDENT, False),
             (EXTERNAL_RESPONDENT, True),
             (CONTRIBUTOR, False),
             (VIEWER, False),
         ],
     )
-    def test_is_respondent(
+    def test_is_external_respondent(
         self, db: Session, user: FidesUser, role: str, expected: bool
     ) -> None:
         permissions: FidesUserPermissions = FidesUserPermissions.create(
             db=db,
             data={"user_id": user.id, "roles": [role]},
         )
-        assert permissions.is_respondent() == expected
+        assert permissions.is_external_respondent() == expected
         user.delete(db)
 
     @pytest.mark.parametrize(
@@ -79,15 +79,11 @@ class TestFidesUserPermissions:
             ([CONTRIBUTOR], [RESPONDENT], None),
             ([CONTRIBUTOR], [VIEWER], None),
             ([CONTRIBUTOR], [CONTRIBUTOR], None),
-            (
-                [RESPONDENT],
-                [CONTRIBUTOR],
-                "Role changes are not allowed for respondents",
-            ),
+            ([RESPONDENT], [CONTRIBUTOR], None),
             (
                 [EXTERNAL_RESPONDENT],
                 [CONTRIBUTOR],
-                "Role changes are not allowed for respondents",
+                "Role changes are not allowed for external respondents",
             ),
         ],
     )

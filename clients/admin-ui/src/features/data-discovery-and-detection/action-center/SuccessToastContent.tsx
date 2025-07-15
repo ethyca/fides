@@ -1,6 +1,6 @@
 import ToastLink from "~/features/common/ToastLink";
 
-export const successToastContent = (
+export const SuccessToastContent = (
   message: string,
   onViewClick?: () => void,
 ) => (

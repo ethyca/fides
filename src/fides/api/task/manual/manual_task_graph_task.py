@@ -50,6 +50,22 @@ class ManualTaskGraphTask(GraphTask):
         if not manual_tasks:
             return []
 
+        # Check if any manual tasks have ACCESS configs
+        # TODO: This will be changed with Manual Task Dependencies Implementation.
+
+        has_access_configs = [
+            config
+            for manual_task in manual_tasks
+            for config in manual_task.configs
+            if config.is_current
+            and config.config_type == ManualTaskConfigurationType.access_privacy_request
+        ]
+
+        if not has_access_configs:
+            # No access configs - complete immediately
+            self.log_end(ActionType.access)
+            return []
+
         # Check/create manual task instances for ACCESS configs only
         self._ensure_manual_task_instances(
             db,
@@ -65,6 +81,13 @@ class ManualTaskGraphTask(GraphTask):
             self.resources.request,
             ManualTaskConfigurationType.access_privacy_request,
         )
+
+        if not self.resources.request.policy.get_rules_for_action(
+            action_type=ActionType.access
+        ):
+            # TODO: This will be changed with Manual Task Dependencies Implementation.
+            self.log_end(ActionType.access)
+            return []
 
         if submitted_data is not None:
             result: List[Row] = [submitted_data] if submitted_data else []

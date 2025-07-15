@@ -19,20 +19,42 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.65.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.65.2...main)
 
 ### Changed
-- Improvements to Generic Erasure Email Integrations so email batch jobs run with a Redis lock and execution time is configurable [#6316](https://github.com/ethyca/fides/pull/6316)
+- Changed behavior of beta feature flags to persist across user login sessions
+
+### Added
+- Replaced Asset's `with_consent` field with the enum `consent_status` field and added indexes to the `StagedResource` table [#6287](https://github.com/ethyca/fides/pull/6287)
+- New 'Internal Respondent' user role that only has access to complete their assigned manual tasks [#6329](https://github.com/ethyca/fides/pull/6329)
+- Added consent status to the Action Center, including a new discovery status column and a details modal for assets detected without consent [#6283](https://github.com/ethyca/fides/pull/6283)
 - Added the ability to edit more fields for GVL vendors [#6341](https://github.com/ethyca/fides/pull/6341)
+
+### Changed
+- Viewer users can now view/complete their assigned manual tasks [#6329](https://github.com/ethyca/fides/pull/6329)
 
 ### Developer Experience
 - Migrate tabs to Ant Design [#6260](https://github.com/ethyca/fides/pull/6260)
 - Refactored GPP utility functions to reduce code duplication and improve maintainability [#6318](https://github.com/ethyca/fides/pull/6318)
+- Upgraded RollupJS to latest version for FidesJS builds [#6330](https://github.com/ethyca/fides/pull/6330)
 
 ### Fixed
 - Fixed FidesJS GPP to use national section when a supported US state has no specific notices and approach is set to both. [#6307](https://github.com/ethyca/fides/pull/6307)
 - Fixed taxonomy search behavior to include label and value text
 - Fixed FidesJS to use consistent served_notice_history_id across all consent flows for improved analytics correlation [#6312](https://github.com/ethyca/fides/pull/6312)
+
+## [2.65.2](https://github.com/ethyca/fides/compare/2.65.1...2.65.2)
+
+### Fixed
+- Fixed hanging test privacy requests by removing all logger calls from `get_cache` [#6328](https://github.com/ethyca/fides/pull/6328)
+
+## [2.65.1](https://github.com/ethyca/fides/compare/2.65.0...2.65.1)
+
+### Changed
+- Improvements to Generic Erasure Email Integrations so email batch jobs run with a Redis lock and execution time is configurable [#6316](https://github.com/ethyca/fides/pull/6316)
+- Privacy Center now only disables `custom-fides.css` polling when it receives a 404. It will continue to poll after receiving other HTTP Status Codes [#6319](https://github.com/ethyca/fides/pull/6319)
+- Privacy Center now retries when it receives an error HTTP Status code while retrieving `custom-fides.css` [#6319](https://github.com/ethyca/fides/pull/6319)
+- Manual tasks table will now filter by the logged in user by default [#6317](https://github.com/ethyca/fides/pull/6317)
 
 ## [2.65.0](https://github.com/ethyca/fides/compare/2.64.2...2.65.0)
 
@@ -48,6 +70,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added `fides_legacy_event` configuration option to control deprecated event dispatching for backward compatibility [#6249](https://github.com/ethyca/fides/pull/6249)
 - Added user_id field to the ManualTaskLog model and implemented request-scoped user tracking using contextvars [#6296](https://github.com/ethyca/fides/pull/6296)
 - Ability to prefill Privacy Center fields with query parameters [#6271](https://github.com/ethyca/fides/pull/6271)
+
 
 ### Changed
 - Update FastAPI to 0.115.2 for starlette 0.40.0 [#6244](https://github.com/ethyca/fides/pull/6244)

@@ -1,45 +1,32 @@
 import {
-  AntColumnsType as ColumnsType,
   AntFilterValue as FilterValue,
   AntTable as Table,
   AntTablePaginationConfig as TablePaginationConfig,
-  AntTag as Tag,
   AntTypography as Typography,
   Flex,
-  SelectInline,
 } from "fidesui";
+import { isEqual } from "lodash";
 import { useRouter } from "next/router";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
-import DaysLeftTag from "~/features/common/DaysLeftTag";
+import { useAppSelector } from "~/app/hooks";
+import { selectUser } from "~/features/auth";
 import FidesSpinner from "~/features/common/FidesSpinner";
 import { USER_PROFILE_ROUTE } from "~/features/common/nav/routes";
+import { useHasPermission } from "~/features/common/Restrict";
 import { GlobalFilterV2 } from "~/features/common/table/v2/filters/GlobalFilterV2";
 import { PAGE_SIZES } from "~/features/common/table/v2/PaginationBar";
 import { formatUser } from "~/features/common/utils";
-import { SubjectRequestActionTypeMap } from "~/features/privacy-requests/constants";
 import {
-  ActionType,
-  ManualFieldListItem,
   ManualFieldRequestType,
   ManualFieldStatus,
   ManualFieldSystem,
   ManualFieldUser,
-  PrivacyRequestStatus,
+  ScopeRegistryEnum,
 } from "~/types/api";
 
-import { ActionButtons } from "./components/ActionButtons";
-import {
-  REQUEST_TYPE_FILTER_OPTIONS,
-  STATUS_FILTER_OPTIONS,
-  STATUS_MAP,
-} from "./constants";
+import { useManualTaskColumns } from "./hooks";
 import { useGetTasksQuery } from "./manual-tasks.slice";
-
-interface FilterOption {
-  text: string;
-  value: string;
-}
 
 interface ManualTaskFilters {
   status?: string;
@@ -49,160 +36,44 @@ interface ManualTaskFilters {
   privacyRequestId?: string;
 }
 
-interface UserOption {
-  label: string;
-  value: string;
-}
-
-const getColumns = (
-  systemFilters: FilterOption[],
-  userFilters: FilterOption[],
-  onUserClick: (userId: string) => void,
-): ColumnsType<ManualFieldListItem> => [
-  {
-    title: "Task name",
-    dataIndex: "name",
-    key: "name",
-    width: 300,
-    render: (name) => (
-      <Typography.Text ellipsis={{ tooltip: name }}>{name}</Typography.Text>
-    ),
-  },
-  {
-    title: "Status",
-    dataIndex: "status",
-    key: "status",
-    width: 120,
-    render: (status: ManualFieldStatus) => (
-      <Tag
-        color={STATUS_MAP[status].color}
-        data-testid="manual-task-status-tag"
-      >
-        {STATUS_MAP[status].label}
-      </Tag>
-    ),
-    filters: STATUS_FILTER_OPTIONS,
-    filterMultiple: false,
-  },
-  {
-    title: "System",
-    dataIndex: ["system", "name"],
-    key: "system_name",
-    width: 210,
-    filters: systemFilters,
-    filterMultiple: false,
-  },
-  {
-    title: "Type",
-    dataIndex: "request_type",
-    key: "request_type",
-    width: 150,
-    render: (type: ManualFieldRequestType) => {
-      const actionType =
-        type === ManualFieldRequestType.ACCESS
-          ? ActionType.ACCESS
-          : ActionType.ERASURE;
-      const displayName = SubjectRequestActionTypeMap.get(actionType) || type;
-      return <Typography.Text>{displayName}</Typography.Text>;
-    },
-    filters: REQUEST_TYPE_FILTER_OPTIONS,
-    filterMultiple: false,
-  },
-  {
-    title: "Assigned to",
-    dataIndex: "assigned_users",
-    key: "assigned_users",
-    width: 380,
-    render: (assignedUsers: ManualFieldUser[]) => {
-      if (!assignedUsers || assignedUsers.length === 0) {
-        return <Typography.Text>-</Typography.Text>;
-      }
-
-      const userOptions: UserOption[] = assignedUsers.map((user) => ({
-        label: formatUser(user),
-        value: user.id,
-      }));
-
-      const currentAssignedUserIds = assignedUsers.map((user) => user.id);
-
-      return (
-        <SelectInline
-          value={currentAssignedUserIds}
-          options={userOptions}
-          readonly
-          onTagClick={(userId) => onUserClick(String(userId))}
-        />
-      );
-    },
-    filters: userFilters,
-    filterMultiple: false,
-  },
-  {
-    title: "Days left",
-    dataIndex: ["privacy_request", "days_left"],
-    key: "days_left",
-    width: 140,
-    render: (daysLeft: number | null) => (
-      <DaysLeftTag
-        daysLeft={daysLeft || 0}
-        includeText={false}
-        status={PrivacyRequestStatus.PENDING}
-      />
-    ),
-  },
-  {
-    title: "Subject identity",
-    dataIndex: ["privacy_request", "subject_identities"],
-    key: "subject_identities",
-    width: 200,
-    render: (subjectIdentities: Record<string, string>) => {
-      if (!subjectIdentities) {
-        return <Typography.Text>-</Typography.Text>;
-      }
-
-      // Display email or phone_number if available
-      const identity =
-        subjectIdentities.email || subjectIdentities.phone_number || "";
-      return (
-        <Typography.Text ellipsis={{ tooltip: identity }}>
-          {identity}
-        </Typography.Text>
-      );
-    },
-  },
-  {
-    title: "Actions",
-    key: "actions",
-    width: 120,
-    render: (_, record) => <ActionButtons task={record} />,
-  },
-];
-
 export const ManualTasks = () => {
   const router = useRouter();
+  const currentUser = useAppSelector(selectUser);
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(25);
-  const [filters, setFilters] = useState<ManualTaskFilters>({});
 
-  const [privacyRequestIdInput, setPrivacyRequestIdInput] = useState(
-    router.query.privacy_request_id || "",
-  );
+  // Check if user has access to all tasks (not just their own)
+  const hasAccessToAllTasks = useHasPermission([
+    ScopeRegistryEnum.MANUAL_FIELD_READ_ALL,
+  ]);
 
-  // Initialize privacy request ID filter from URL query parameter
-  useEffect(() => {
-    const { privacy_request_id: privacyRequestIdQuery } = router.query;
-    if (privacyRequestIdQuery && typeof privacyRequestIdQuery === "string") {
-      setPrivacyRequestIdInput(privacyRequestIdQuery);
-      setFilters((prev) => ({
-        ...prev,
-        privacyRequestId: privacyRequestIdQuery,
-      }));
+  const privacyRequestIdQueryParam =
+    router.query.privacy_request_id || undefined;
+
+  // Default filters - current user assigned by default
+  // (unless we're receiving a privacy_request_id query param)
+  // which means it comes from a link to view the tasks for a specific privacy request
+  const defaultFilters: ManualTaskFilters = useMemo(() => {
+    const filters: ManualTaskFilters = {};
+
+    if (currentUser?.id && !privacyRequestIdQueryParam) {
+      filters.assignedUsers = currentUser.id;
     }
-  }, [router.query]);
+
+    if (
+      privacyRequestIdQueryParam &&
+      typeof privacyRequestIdQueryParam === "string"
+    ) {
+      filters.privacyRequestId = privacyRequestIdQueryParam;
+    }
+
+    return filters;
+  }, [currentUser?.id, privacyRequestIdQueryParam]);
+
+  // Initialize filters with default
+  const [filters, setFilters] = useState<ManualTaskFilters>(defaultFilters);
 
   const handlePrivacyRequestIdChange = (value: string | undefined) => {
-    setPrivacyRequestIdInput(value || "");
-
     const newFilters = { ...filters };
     if (value && value.trim()) {
       newFilters.privacyRequestId = value.trim();
@@ -224,11 +95,13 @@ export const ManualTasks = () => {
     privacyRequestId: filters.privacyRequestId,
   });
 
-  const {
-    items: tasks,
-    total: totalRows,
-    filter_options: filterOptions,
-  } = useMemo(
+  // Separate query for filter options without any filters applied
+  const { data: filterOptionsData } = useGetTasksQuery({
+    page: 1,
+    size: 1, // Minimal results, we only need the filter_options
+  });
+
+  const { items: tasks, total: totalRows } = useMemo(
     () =>
       data || {
         items: [],
@@ -237,6 +110,15 @@ export const ManualTasks = () => {
         filter_options: { assigned_users: [], systems: [] },
       },
     [data],
+  );
+
+  const filterOptions = useMemo(
+    () =>
+      filterOptionsData?.filter_options || {
+        assigned_users: [],
+        systems: [],
+      },
+    [filterOptionsData],
   );
 
   const systemFilters = useMemo(
@@ -248,14 +130,24 @@ export const ManualTasks = () => {
     [filterOptions?.systems],
   );
 
-  const userFilters = useMemo(
-    () =>
+  const userFilters = useMemo(() => {
+    const users =
       filterOptions?.assigned_users?.map((user: ManualFieldUser) => ({
         text: formatUser(user),
         value: user.id,
-      })) || [],
-    [filterOptions?.assigned_users],
-  );
+      })) || [];
+
+    // If it's a root user, it's not going to be in the list of users from the API
+    // so we need to add it to the list of users for it to be a valid option in the dropdown
+    const isRootUser = currentUser?.id && !currentUser?.id.startsWith("fid_");
+    if (isRootUser) {
+      users.push({
+        text: currentUser?.username || currentUser?.id,
+        value: currentUser.id,
+      });
+    }
+    return users;
+  }, [filterOptions?.assigned_users, currentUser?.id, currentUser?.username]);
 
   const handleTableChange = (
     _pagination: TablePaginationConfig,
@@ -283,15 +175,25 @@ export const ManualTasks = () => {
     setPageIndex(1);
   };
 
-  const columns = useMemo(
-    () =>
-      getColumns(systemFilters, userFilters, (userId) => {
-        router.push({
-          pathname: USER_PROFILE_ROUTE,
-          query: { id: userId },
-        });
-      }),
-    [systemFilters, userFilters, router],
+  const onUserClick = (userId: string) => {
+    router.push({
+      pathname: USER_PROFILE_ROUTE,
+      query: { id: userId },
+    });
+  };
+
+  const columns = useManualTaskColumns({
+    systemFilters,
+    userFilters,
+    onUserClick,
+    currentFilters: filters,
+    hasAccessToAllTasks,
+  });
+
+  // Check if only the current user filter is applied (for custom empty state)
+  const isOnlyCurrentUserFiltered = useMemo(
+    () => isEqual(filters, defaultFilters),
+    [filters, defaultFilters],
   );
 
   if (isLoading) {
@@ -300,11 +202,31 @@ export const ManualTasks = () => {
 
   const showSpinner = isLoading || isFetching;
 
+  // Custom empty text based on filters
+  const getEmptyText = () => {
+    if (isOnlyCurrentUserFiltered) {
+      return (
+        <div data-testid="empty-state-current-user" className="my-4">
+          <Typography.Paragraph>
+            You have no tasks assigned. You can modify the &quot;Assigned
+            to&quot; column filter to view tasks assigned to other users.
+          </Typography.Paragraph>
+        </div>
+      );
+    }
+
+    return (
+      <div data-testid="empty-state" className="my-4">
+        No results found.
+      </div>
+    );
+  };
+
   return (
     <div className="mt-2 space-y-4">
       <Flex gap={3} align="center" className="mb-4">
         <GlobalFilterV2
-          globalFilter={privacyRequestIdInput}
+          globalFilter={filters.privacyRequestId || ""}
           setGlobalFilter={handlePrivacyRequestIdChange}
           placeholder="Search by privacy request ID"
           testid="privacy-request-id-filter"
@@ -335,9 +257,7 @@ export const ManualTasks = () => {
         }}
         onChange={handleTableChange}
         locale={{
-          emptyText: (
-            <div data-testid="empty-state">No manual tasks available.</div>
-          ),
+          emptyText: getEmptyText(),
         }}
         loading={showSpinner}
       />
