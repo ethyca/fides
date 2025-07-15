@@ -136,7 +136,7 @@ class FidesUser(Base):
 
     @classmethod
     def create_respondent(cls, db: Session, data: dict[str, Any]) -> FidesUser:
-        """Create a respondent user. This user will not be able to login with a password and
+        """Create an external respondent user. This user will not be able to login with a password and
         requires an email address to be provided.
         """
         if not data.get("email_address"):
@@ -164,8 +164,10 @@ class FidesUser(Base):
         No validations are performed on the old/existing password within this function.
         """
         if self.permissions is not None:
-            if self.permissions.is_respondent():
-                raise ValueError("Password changes are not allowed for respondents")
+            if self.permissions.is_external_respondent():
+                raise ValueError(
+                    "Password changes are not allowed for external respondents"
+                )
 
         hashed_password, salt = FidesUser.hash_password(new_password)
         self.hashed_password = hashed_password  # type: ignore
@@ -176,9 +178,9 @@ class FidesUser(Base):
     def update_email_address(self, db: Session, new_email_address: str) -> None:
         """Updates the user's email address to the specified value."""
         if self.permissions is not None:
-            if self.permissions.is_respondent():
+            if self.permissions.is_external_respondent():
                 raise ValueError(
-                    "Email address changes are not allowed for respondents"
+                    "Email address changes are not allowed for external respondents"
                 )
 
         self.email_address = new_email_address  # type: ignore
@@ -201,8 +203,10 @@ class FidesUser(Base):
             )
 
         if self.permissions is not None:
-            if self.permissions.is_respondent():
-                raise SystemManagerException("Respondents cannot be system managers.")
+            if self.permissions.is_external_respondent():
+                raise SystemManagerException(
+                    "External respondents cannot be system managers."
+                )
 
         self.systems.append(system)
         self.save(db=db)
