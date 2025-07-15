@@ -9,9 +9,7 @@ import {
   stubVendorList,
 } from "cypress/support/stubs";
 
-import {
-  ADD_SYSTEMS_MANUAL_ROUTE,
-} from "~/features/common/nav/routes";
+import { ADD_SYSTEMS_MANUAL_ROUTE } from "~/features/common/nav/routes";
 
 describe("System Information Tab", () => {
   beforeEach(() => {
@@ -88,11 +86,15 @@ describe("System Information Tab", () => {
 
     cy.getByTestId("locked-for-GVL-notice");
     cy.getByTestId("input-description").should("not.be.disabled");
-    cy.getByTestId("controlled-select-tags").find('input').should("not.be.disabled");
+    cy.getByTestId("controlled-select-tags")
+      .find("input")
+      .should("not.be.disabled");
     cy.getByTestId("input-legal_name").should("not.be.disabled");
     cy.getByTestId("input-legal_address").should("not.be.disabled");
     cy.getByTestId("input-administrating_department").should("not.be.disabled");
-    cy.getByTestId("controlled-select-responsibility").find('input').should("not.be.disabled");
+    cy.getByTestId("controlled-select-responsibility")
+      .find("input")
+      .should("not.be.disabled");
     cy.getByTestId("input-joint_controller_info").should("not.be.disabled");
     cy.getByTestId("input-data_security_practices").should("not.be.disabled");
     cy.getByTestId("input-reason_for_exemption").should("be.disabled");
@@ -103,11 +105,15 @@ describe("System Information Tab", () => {
 
     cy.getByTestId("locked-for-GVL-notice").should("not.exist");
     cy.getByTestId("input-description").should("not.be.disabled");
-    cy.getByTestId("controlled-select-tags").find('input').should("not.be.disabled");
+    cy.getByTestId("controlled-select-tags")
+      .find("input")
+      .should("not.be.disabled");
     cy.getByTestId("input-legal_name").should("not.be.disabled");
     cy.getByTestId("input-legal_address").should("not.be.disabled");
     cy.getByTestId("input-administrating_department").should("not.be.disabled");
-    cy.getByTestId("controlled-select-responsibility").find('input').should("not.be.disabled");
+    cy.getByTestId("controlled-select-responsibility")
+      .find("input")
+      .should("not.be.disabled");
     cy.getByTestId("input-joint_controller_info").should("not.be.disabled");
     cy.getByTestId("input-data_security_practices").should("not.be.disabled");
     cy.getByTestId("input-reason_for_exemption").should("not.be.disabled");

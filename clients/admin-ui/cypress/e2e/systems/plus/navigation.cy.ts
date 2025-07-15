@@ -7,9 +7,7 @@ import {
   stubTaxonomyEntities,
 } from "cypress/support/stubs";
 
-import {
-  SYSTEM_ROUTE,
-} from "~/features/common/nav/routes";
+import { SYSTEM_ROUTE } from "~/features/common/nav/routes";
 
 describe("System Navigation", () => {
   beforeEach(() => {

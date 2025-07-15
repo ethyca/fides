@@ -9,9 +9,7 @@ import {
   stubVendorList,
 } from "cypress/support/stubs";
 
-import {
-  ADD_SYSTEMS_MANUAL_ROUTE,
-} from "~/features/common/nav/routes";
+import { ADD_SYSTEMS_MANUAL_ROUTE } from "~/features/common/nav/routes";
 
 describe("System Assets Tab", () => {
   beforeEach(() => {
@@ -33,7 +31,6 @@ describe("System Assets Tab", () => {
     stubSystemAssets();
     cy.visit(`${ADD_SYSTEMS_MANUAL_ROUTE}`);
     cy.wait(["@getDictionaryEntries", "@getSystems"]);
-
   });
 
   it("does not allow system assets to be edited when locked", () => {

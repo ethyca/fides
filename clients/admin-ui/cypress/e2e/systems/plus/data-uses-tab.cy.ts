@@ -9,9 +9,7 @@ import {
   stubVendorList,
 } from "cypress/support/stubs";
 
-import {
-  ADD_SYSTEMS_MANUAL_ROUTE,
-} from "~/features/common/nav/routes";
+import { ADD_SYSTEMS_MANUAL_ROUTE } from "~/features/common/nav/routes";
 
 describe("System Data Uses Tab", () => {
   beforeEach(() => {
@@ -56,16 +54,21 @@ describe("System Data Uses Tab", () => {
     cy.getByTestId("controlled-select-data_subjects")
       .find("input")
       .should("not.be.disabled");
-    cy.getByTestId("input-impact_assessment_location").should("not.be.disabled");
-    cy.getByTestId("input-processes_special_category_data").should("not.be.disabled");
-    cy.getByTestId("controlled-select-dataset_references").find("input").should("not.be.disabled");
-    cy.getByTestId("input-data_shared_with_third_parties").click()
-    cy.getByTestId("input-third_parties").should("not.be.disabled")
-
+    cy.getByTestId("input-impact_assessment_location").should(
+      "not.be.disabled",
+    );
+    cy.getByTestId("input-processes_special_category_data").should(
+      "not.be.disabled",
+    );
+    cy.getByTestId("controlled-select-dataset_references")
+      .find("input")
+      .should("not.be.disabled");
+    cy.getByTestId("input-data_shared_with_third_parties").click();
+    cy.getByTestId("input-third_parties").should("not.be.disabled");
   });
 
   it("allowed changes to data uses for non-GVL vendors", () => {
-    // TODO: create reusable non-GVL vendor 
+    // TODO: create reusable non-GVL vendor
     cy.getByTestId("vendor-name-select").find("input").type("L");
     cy.antSelectDropdownVisible();
     cy.getByTestId("vendor-name-select").realPress("Enter");
@@ -79,18 +82,24 @@ describe("System Data Uses Tab", () => {
     cy.getByTestId("delete-btn");
     cy.getByTestId("row-functional.service.improve").click();
 
-    // Check state of available inputs   
+    // Check state of available inputs
     cy.getByTestId("controlled-select-data_categories")
       .find("input")
       .should("not.be.disabled");
     cy.getByTestId("controlled-select-data_subjects")
       .find("input")
       .should("not.be.disabled");
-    cy.getByTestId("input-impact_assessment_location").should("not.be.disabled");
-    cy.getByTestId("input-processes_special_category_data").should("not.be.disabled");
-    cy.getByTestId("controlled-select-dataset_references").find("input").should("not.be.disabled");
-    cy.getByTestId("input-data_shared_with_third_parties").click()
-    cy.getByTestId("input-third_parties").should("not.be.disabled")
+    cy.getByTestId("input-impact_assessment_location").should(
+      "not.be.disabled",
+    );
+    cy.getByTestId("input-processes_special_category_data").should(
+      "not.be.disabled",
+    );
+    cy.getByTestId("controlled-select-dataset_references")
+      .find("input")
+      .should("not.be.disabled");
+    cy.getByTestId("input-data_shared_with_third_parties").click();
+    cy.getByTestId("input-third_parties").should("not.be.disabled");
   });
 
   it("don't allow editing declaration name after creation", () => {
