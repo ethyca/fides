@@ -206,7 +206,7 @@ describe("configureNavGroups", () => {
       });
 
       expect(
-        navGroups[2].children
+        navGroups[1].children
           .map((c) => ({ title: c.title, path: c.path }))
           .find((c) => c.title === "Domains"),
       ).toEqual({
