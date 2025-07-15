@@ -139,7 +139,6 @@ class ManualTaskGraphTask(GraphTask):
                 .first()
             )
             if existing_task_instance:
-                logger.info(f"An instance already exists for this privacy request and config type {allowed_config_type} – no need to create another one tied to a newer config version. {existing_task_instance}")
                 # An instance already exists for this privacy request and config type – no need
                 # to create another one tied to a newer config version.
                 continue
@@ -147,10 +146,9 @@ class ManualTaskGraphTask(GraphTask):
             # Check each active config for instances (now we know none exist yet for this config type)
             for config in manual_task.configs:
                 if not config.is_current or config.config_type != allowed_config_type:
-                    logger.info(f"Skipping config {config.id}, {config.config_type} because it is not current or not relevant for this request type")
                     # Skip configs that are not current or not relevant for this request type
                     continue
-                logger.info(f"Creating a new instance for config {config.id}, {config.config_type}")
+
                 ManualTaskInstance.create(
                     db=db,
                     data={
