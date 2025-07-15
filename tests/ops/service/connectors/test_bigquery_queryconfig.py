@@ -279,15 +279,23 @@ class TestBigQueryQueryConfig:
         erasure_policy.rules[0].targets[0].data_category = "user"
         erasure_policy.rules[0].targets[0].save(db)
 
-        delete_stmts = BigQueryQueryConfig(employee_node).generate_delete(
-            bigquery_client,
-            input_data={"email": ["employee-2@example.com"], "address_id": [3]},
+        rows = [
+            {
+                "id": "2",
+                "email": "employee-2@example.com",
+                "name": "John Doe",
+                "address_id": "3",
+            }
+        ]
+
+        delete_stmts = BigQueryQueryConfig(employee_node).generate_batched_delete(
+            rows, bigquery_client
         )
 
         # Check the SQL statement structure
         stmts = set(str(stmt) for stmt in delete_stmts)
         expected_stmts = {
-            "DELETE FROM `employee` WHERE `employee`.`email` = %(email_1:STRING)s OR `employee`.`address_id` = %(address_id_1:INT64)s"
+            "DELETE FROM `employee` WHERE `employee`.`address_id` = %(address_id_1:STRING)s AND `employee`.`email` = %(email_1:STRING)s"
         }
         assert stmts == expected_stmts
 
@@ -299,10 +307,10 @@ class TestBigQueryQueryConfig:
         # Verify the bound parameters contain the correct values
         assert "address_id_1" in params
         assert "email_1" in params
-        assert params["address_id_1"] == 3
+        assert params["address_id_1"] == "3"
         assert params["email_1"] == "employee-2@example.com"
 
-    def test_generate_delete_multiple_rows_same_reference_fields(
+    def test_generate_batched_delete_multiple_rows_same_reference_fields(
         self,
         db,
         employee_node,
@@ -311,7 +319,7 @@ class TestBigQueryQueryConfig:
         dataset_graph,
     ):
         """
-        Test that generate_delete works correctly with multiple rows having the same reference field values
+        Test that generate_batched_delete works correctly with multiple rows having the same reference field values
         """
         assert (
             dataset_graph.nodes[
@@ -323,9 +331,30 @@ class TestBigQueryQueryConfig:
         erasure_policy.rules[0].targets[0].data_category = "user"
         erasure_policy.rules[0].targets[0].save(db)
 
-        delete_stmts = BigQueryQueryConfig(employee_node).generate_delete(
-            bigquery_client,
-            input_data={"email": ["employee-same@example.com"], "address_id": [10]},
+        # Multiple rows with the same email
+        rows = [
+            {
+                "id": "2",
+                "email": "employee-same@example.com",
+                "name": "John Doe",
+                "address_id": "10",
+            },
+            {
+                "id": "4",
+                "email": "employee-same@example.com",
+                "name": "Jane Smith",
+                "address_id": "10",
+            },
+            {
+                "id": "6",
+                "email": "employee-same@example.com",
+                "name": "Bob Johnson",
+                "address_id": "10",
+            },
+        ]
+
+        delete_stmts = BigQueryQueryConfig(employee_node).generate_batched_delete(
+            rows, bigquery_client
         )
 
         # Should generate only ONE DELETE statement since all rows have the same reference field values
@@ -334,7 +363,7 @@ class TestBigQueryQueryConfig:
         # Check the SQL statement structure
         stmts = set(str(stmt) for stmt in delete_stmts)
         expected_stmts = {
-            "DELETE FROM `employee` WHERE `employee`.`email` = %(email_1:STRING)s OR `employee`.`address_id` = %(address_id_1:INT64)s"
+            "DELETE FROM `employee` WHERE `employee`.`address_id` = %(address_id_1:STRING)s AND `employee`.`email` = %(email_1:STRING)s"
         }
         assert stmts == expected_stmts
 
@@ -346,10 +375,10 @@ class TestBigQueryQueryConfig:
         # Verify the bound parameters contain the correct values
         assert "address_id_1" in params
         assert "email_1" in params
-        assert params["address_id_1"] == 10
+        assert params["address_id_1"] == "10"
         assert params["email_1"] == "employee-same@example.com"
 
-    def test_generate_delete_multiple_rows_different_reference_fields(
+    def test_generate_batched_delete_multiple_rows_different_reference_fields(
         self,
         db,
         employee_node,
@@ -358,7 +387,7 @@ class TestBigQueryQueryConfig:
         dataset_graph,
     ):
         """
-        Test that generate_delete works correctly with multiple rows having different reference field values
+        Test that generate_batched_delete works correctly with multiple rows having different reference field values
         """
         assert (
             dataset_graph.nodes[
@@ -370,134 +399,162 @@ class TestBigQueryQueryConfig:
         erasure_policy.rules[0].targets[0].data_category = "user"
         erasure_policy.rules[0].targets[0].save(db)
 
-        delete_stmts = BigQueryQueryConfig(employee_node).generate_delete(
-            bigquery_client,
-            input_data={
-                "email": [
-                    "employee-1@example.com",
-                    "employee-2@example.com",
-                    "employee-3@example.com",
-                ],
-                "address_id": [10, 20, 30],
+        # Multiple rows with different email addresses
+        rows = [
+            {
+                "id": "1",
+                "email": "employee-1@example.com",
+                "name": "John Doe",
+                "address_id": "10",
             },
+            {
+                "id": "2",
+                "email": "employee-2@example.com",
+                "name": "Jane Smith",
+                "address_id": "20",
+            },
+            {
+                "id": "3",
+                "email": "employee-3@example.com",
+                "name": "Bob Johnson",
+                "address_id": "30",
+            },
+        ]
+
+        delete_stmts = BigQueryQueryConfig(employee_node).generate_batched_delete(
+            rows, bigquery_client
         )
 
-        # Should generate ONE delete statement since the where clauses for the delete statement are the same as those for a select statement (access request)
-        assert len(delete_stmts) == 1
+        # Should generate THREE DELETE statements since all rows have different reference field values
+        assert len(delete_stmts) == 3
 
         # Check the SQL statement structure - all should have the same structure
         stmts = set(str(stmt) for stmt in delete_stmts)
-        expected_stmts = {
-            "DELETE FROM `employee` WHERE `employee`.`email` IN UNNEST(%(email_1:STRING)s) OR `employee`.`address_id` IN UNNEST(%(address_id_1:INT64)s)"
-        }
-        assert stmts == expected_stmts
+        expected_stmt_pattern = "DELETE FROM `employee` WHERE `employee`.`address_id` = %(address_id_1:STRING)s AND `employee`.`email` = %(email_1:STRING)s"
 
-        # Check the bound parameter values
+        # All statements should have the same structure (just different parameter values)
+        for stmt_str in stmts:
+            assert stmt_str == expected_stmt_pattern
+
+        # Check the bound parameter values - should have different values for each statement
+        emails_found = set()
+        address_ids_found = set()
+
+        for delete_stmt in delete_stmts:
+            compiled_stmt = delete_stmt.compile(dialect=bigquery_client.dialect)
+            params = compiled_stmt.params
+
+            # Verify the bound parameters exist
+            assert "address_id_1" in params
+            assert "email_1" in params
+
+            # Collect the parameter values
+            emails_found.add(params["email_1"])
+            address_ids_found.add(params["address_id_1"])
+
+        # Verify we have all the expected unique values
+        expected_emails = {
+            "employee-1@example.com",
+            "employee-2@example.com",
+            "employee-3@example.com",
+        }
+        expected_address_ids = {"10", "20", "30"}
+
+        assert emails_found == expected_emails
+        assert address_ids_found == expected_address_ids
+
+    def test_generate_batched_delete_empty_rows(
+        self,
+        db,
+        employee_node,
+        erasure_policy,
+        bigquery_client,
+        dataset_graph,
+    ):
+        """
+        Test that generate_batched_delete handles empty rows list correctly
+        """
+        assert (
+            dataset_graph.nodes[
+                CollectionAddress("bigquery_example_test_dataset", "employee")
+            ].collection.masking_strategy_override.strategy
+            == MaskingStrategies.DELETE
+        )
+
+        erasure_policy.rules[0].targets[0].data_category = "user"
+        erasure_policy.rules[0].targets[0].save(db)
+
+        rows = []
+
+        delete_stmts = BigQueryQueryConfig(employee_node).generate_batched_delete(
+            rows, bigquery_client
+        )
+
+        # Should return empty list for empty input
+        assert delete_stmts == []
+
+    def test_generate_batched_delete_rows_with_missing_reference_fields(
+        self,
+        db,
+        employee_node,
+        erasure_policy,
+        privacy_request,
+        bigquery_client,
+        dataset_graph,
+    ):
+        """
+        Test that generate_batched_delete handles rows with missing reference fields correctly
+        """
+        assert (
+            dataset_graph.nodes[
+                CollectionAddress("bigquery_example_test_dataset", "employee")
+            ].collection.masking_strategy_override.strategy
+            == MaskingStrategies.DELETE
+        )
+
+        erasure_policy.rules[0].targets[0].data_category = "user"
+        erasure_policy.rules[0].targets[0].save(db)
+
+        rows = [
+            {
+                "id": "2",
+                "name": "John Doe",
+                # Missing email and address_id (reference fields)
+            },
+            {
+                "id": "4",
+                "email": "employee-4@example.com",
+                "name": "Jane Smith",
+                "address_id": "5",
+            },
+        ]
+
+        delete_stmts = BigQueryQueryConfig(employee_node).generate_batched_delete(
+            rows, bigquery_client
+        )
+
+        # Should generate statement only for rows with valid reference fields
+        assert len(delete_stmts) == 1
+
+        # Check the SQL statement structure
+        stmt_str = str(delete_stmts[0])
+        expected_stmt = "DELETE FROM `employee` WHERE `employee`.`address_id` = %(address_id_1:STRING)s AND `employee`.`email` = %(email_1:STRING)s"
+        assert stmt_str == expected_stmt
+
+        # Check the bound parameter values to ensure it contains the valid row's data
         delete_stmt = delete_stmts[0]
         compiled_stmt = delete_stmt.compile(dialect=bigquery_client.dialect)
         params = compiled_stmt.params
 
-        # Verify the bound parameters contain the correct values
+        # Verify the bound parameters contain the correct values from the valid row
         assert "address_id_1" in params
         assert "email_1" in params
-        assert params["address_id_1"] == [10, 20, 30]
-        assert params["email_1"] == [
-            "employee-1@example.com",
-            "employee-2@example.com",
-            "employee-3@example.com",
-        ]
+        assert params["address_id_1"] == "5"
+        assert params["email_1"] == "employee-4@example.com"
 
-    def test_generate_delete_missing_input_data(
-        self,
-        db,
-        employee_node,
-        erasure_policy,
-        bigquery_client,
-        dataset_graph,
-    ):
-        """
-        Test that generate_delete handles missing input data correctly
-        """
-        assert (
-            dataset_graph.nodes[
-                CollectionAddress("bigquery_example_test_dataset", "employee")
-            ].collection.masking_strategy_override.strategy
-            == MaskingStrategies.DELETE
-        )
-
-        erasure_policy.rules[0].targets[0].data_category = "user"
-        erasure_policy.rules[0].targets[0].save(db)
-
-        delete_stmts = BigQueryQueryConfig(employee_node).generate_delete(
-            bigquery_client
-        )
-
-        # Should return empty list for missing input data
-        assert delete_stmts == []
-
-    def test_generate_delete_none_valued_input_data(
-        self,
-        db,
-        employee_node,
-        erasure_policy,
-        bigquery_client,
-        dataset_graph,
-    ):
-        """
-        Test that generate_delete handles null input data correctly
-        """
-        assert (
-            dataset_graph.nodes[
-                CollectionAddress("bigquery_example_test_dataset", "employee")
-            ].collection.masking_strategy_override.strategy
-            == MaskingStrategies.DELETE
-        )
-
-        erasure_policy.rules[0].targets[0].data_category = "user"
-        erasure_policy.rules[0].targets[0].save(db)
-
-        delete_stmts = BigQueryQueryConfig(employee_node).generate_delete(
-            bigquery_client,
-            input_data={
-                "email": [None],
-                "address_id": [None],
-            },
-        )
-
-        # Should return empty list for null input data
-        assert delete_stmts == []
-
-    def test_generate_delete_type_mismatch_input_data(
-        self,
-        db,
-        employee_node,
-        erasure_policy,
-        bigquery_client,
-        dataset_graph,
-    ):
-        """
-        The address_id field is annotated with data_type: integer, but the input data is a string and cannot be cast to an integer.
-        This should result in no DELETE statements being generated.
-        """
-        assert (
-            dataset_graph.nodes[
-                CollectionAddress("bigquery_example_test_dataset", "employee")
-            ].collection.masking_strategy_override.strategy
-            == MaskingStrategies.DELETE
-        )
-
-        erasure_policy.rules[0].targets[0].data_category = "user"
-        erasure_policy.rules[0].targets[0].save(db)
-
-        delete_stmts = BigQueryQueryConfig(employee_node).generate_delete(
-            bigquery_client,
-            input_data={
-                "address_id": ["abc"],
-            },
-        )
-
-        # Should return empty list for null input data
-        assert delete_stmts == []
+        # Verify that only the valid row's data is included (not the invalid row)
+        # The name "John Doe" from the invalid row should not be in the parameters
+        assert "John Doe" not in str(params.values())
 
     def test_is_delete_masking_strategy(
         self,
@@ -953,6 +1010,86 @@ class TestBigQueryQueryConfig:
         }
         assert stmts == expected_stmts
 
+    def test_generate_batched_delete_uses_generate_delete(
+        self,
+        db,
+        employee_node,
+        erasure_policy,
+        privacy_request,
+        bigquery_client,
+        dataset_graph,
+    ):
+        """
+        Test that generate_batched_delete uses the existing generate_delete method
+        """
+        assert (
+            dataset_graph.nodes[
+                CollectionAddress("bigquery_example_test_dataset", "employee")
+            ].collection.masking_strategy_override.strategy
+            == MaskingStrategies.DELETE
+        )
+
+        erasure_policy.rules[0].targets[0].data_category = "user"
+        erasure_policy.rules[0].targets[0].save(db)
+
+        # Test with multiple rows having different emails (different reference field values)
+        rows = [
+            {
+                "id": "1",
+                "email": "employee-1@example.com",
+                "name": "John Doe",
+                "address_id": "10",
+            },
+            {
+                "id": "2",
+                "email": "employee-2@example.com",
+                "name": "Jane Smith",
+                "address_id": "20",
+            },
+        ]
+
+        query_config = BigQueryQueryConfig(employee_node)
+
+        # Mock the generate_delete method to track calls
+        original_generate_delete = query_config.generate_delete
+        call_count = 0
+        called_with_rows = []
+
+        def mock_generate_delete(row, client):
+            nonlocal call_count
+            call_count += 1
+            called_with_rows.append(row)
+            return original_generate_delete(row, client)
+
+        query_config.generate_delete = mock_generate_delete
+
+        # Call generate_batched_delete
+        delete_stmts = query_config.generate_batched_delete(rows, bigquery_client)
+
+        # Verify that generate_delete was called for each unique combination of reference fields
+        assert (
+            call_count == 2
+        )  # Should be called twice since we have 2 different emails
+
+        # Verify the statements were generated correctly
+        assert len(delete_stmts) == 2
+
+        # Check that each statement has the correct bound parameters
+        for i, stmt in enumerate(delete_stmts):
+            compiled_stmt = stmt.compile(dialect=bigquery_client.dialect)
+            params = compiled_stmt.params
+
+            # Should contain the email from one of the rows
+            assert "email_1" in params
+            assert params["email_1"] in [
+                "employee-1@example.com",
+                "employee-2@example.com",
+            ]
+
+            # Should contain the address_id from one of the rows
+            assert "address_id_1" in params
+            assert params["address_id_1"] in ["10", "20"]
+
 
 @pytest.mark.integration_external
 @pytest.mark.integration_bigquery
@@ -1234,14 +1371,14 @@ class TestBigQueryQueryConfigPartitioning:
         }
         assert stmts == expected_stmts
 
-    def test_generate_delete_with_partitions_single_row(
+    def test_generate_batched_delete_with_partitions_single_row(
         self,
         db,
         dataset_graph,
         erasure_policy,
         bigquery_client,
     ):
-        """Test that generate_delete correctly handles partitioned tables with a single row"""
+        """Test that generate_batched_delete correctly handles partitioned tables with a single row"""
         # Create a partitioned employee node (employee has DELETE masking override)
         identity = {"email": "employee-1@example.com"}
         bigquery_traversal = Traversal(dataset_graph, identity)
@@ -1267,23 +1404,20 @@ class TestBigQueryQueryConfigPartitioning:
                 "email": "employee-1@example.com",
                 "id": "123",
                 "name": "Jane Doe",
-                "address_id": 456,
+                "address_id": "456",
             }
         ]
 
         query_config = BigQueryQueryConfig(employee_node)
-        delete_stmts = query_config.generate_delete(
-            bigquery_client,
-            input_data={"email": ["employee-1@example.com"], "address_id": [456]},
-        )
+        delete_stmts = query_config.generate_batched_delete(rows, bigquery_client)
 
         # Should generate 2 DELETE statements (one for each partition)
         assert len(delete_stmts) == 2
 
         stmts = set(str(stmt) for stmt in delete_stmts)
         expected_stmts = {
-            "DELETE FROM `employee` WHERE (`employee`.`email` = %(email_1:STRING)s OR `employee`.`address_id` = %(address_id_1:INT64)s) AND `created` >= CURRENT_TIMESTAMP - INTERVAL 1000 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 500 DAY",
-            "DELETE FROM `employee` WHERE (`employee`.`email` = %(email_1:STRING)s OR `employee`.`address_id` = %(address_id_1:INT64)s) AND `created` > CURRENT_TIMESTAMP - INTERVAL 500 DAY AND `created` <= CURRENT_TIMESTAMP",
+            "DELETE FROM `employee` WHERE `employee`.`address_id` = %(address_id_1:STRING)s AND `employee`.`email` = %(email_1:STRING)s AND `created` >= CURRENT_TIMESTAMP - INTERVAL 1000 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 500 DAY",
+            "DELETE FROM `employee` WHERE `employee`.`address_id` = %(address_id_1:STRING)s AND `employee`.`email` = %(email_1:STRING)s AND `created` > CURRENT_TIMESTAMP - INTERVAL 500 DAY AND `created` <= CURRENT_TIMESTAMP",
         }
         assert stmts == expected_stmts
 
@@ -1294,17 +1428,17 @@ class TestBigQueryQueryConfigPartitioning:
 
             assert "address_id_1" in params
             assert "email_1" in params
-            assert params["address_id_1"] == 456
+            assert params["address_id_1"] == "456"
             assert params["email_1"] == "employee-1@example.com"
 
-    def test_generate_delete_with_partitions_same_reference_fields(
+    def test_generate_batched_delete_with_partitions_same_reference_fields(
         self,
         db,
         dataset_graph,
         erasure_policy,
         bigquery_client,
     ):
-        """Test that generate_delete correctly handles partitioned tables with multiple rows having same reference fields"""
+        """Test that generate_batched_delete correctly handles partitioned tables with multiple rows having same reference fields"""
         # Create a partitioned employee node (employee has DELETE masking override)
         identity = {"email": "employee-1@example.com"}
         bigquery_traversal = Traversal(dataset_graph, identity)
@@ -1325,11 +1459,30 @@ class TestBigQueryQueryConfigPartitioning:
         erasure_policy.rules[0].targets[0].data_category = "user"
         erasure_policy.rules[0].targets[0].save(db)
 
+        # Multiple rows with same reference field values
+        rows = [
+            {
+                "email": "employee-same@example.com",
+                "id": "1",
+                "name": "John Doe",
+                "address_id": "100",
+            },
+            {
+                "email": "employee-same@example.com",
+                "id": "2",
+                "name": "Jane Smith",
+                "address_id": "100",
+            },
+            {
+                "email": "employee-same@example.com",
+                "id": "3",
+                "name": "Bob Johnson",
+                "address_id": "100",
+            },
+        ]
+
         query_config = BigQueryQueryConfig(employee_node)
-        delete_stmts = query_config.generate_delete(
-            bigquery_client,
-            input_data={"email": ["employee-same@example.com"], "address_id": [100]},
-        )
+        delete_stmts = query_config.generate_batched_delete(rows, bigquery_client)
 
         # Should generate 2 DELETE statements (one for each partition)
         # Even though we have 3 rows, they all have the same reference field values,
@@ -1338,8 +1491,8 @@ class TestBigQueryQueryConfigPartitioning:
 
         stmts = set(str(stmt) for stmt in delete_stmts)
         expected_stmts = {
-            "DELETE FROM `employee` WHERE (`employee`.`email` = %(email_1:STRING)s OR `employee`.`address_id` = %(address_id_1:INT64)s) AND `created` >= CURRENT_TIMESTAMP - INTERVAL 1000 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 500 DAY",
-            "DELETE FROM `employee` WHERE (`employee`.`email` = %(email_1:STRING)s OR `employee`.`address_id` = %(address_id_1:INT64)s) AND `created` > CURRENT_TIMESTAMP - INTERVAL 500 DAY AND `created` <= CURRENT_TIMESTAMP",
+            "DELETE FROM `employee` WHERE `employee`.`address_id` = %(address_id_1:STRING)s AND `employee`.`email` = %(email_1:STRING)s AND `created` >= CURRENT_TIMESTAMP - INTERVAL 1000 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 500 DAY",
+            "DELETE FROM `employee` WHERE `employee`.`address_id` = %(address_id_1:STRING)s AND `employee`.`email` = %(email_1:STRING)s AND `created` > CURRENT_TIMESTAMP - INTERVAL 500 DAY AND `created` <= CURRENT_TIMESTAMP",
         }
         assert stmts == expected_stmts
 
@@ -1350,17 +1503,17 @@ class TestBigQueryQueryConfigPartitioning:
 
             assert "address_id_1" in params
             assert "email_1" in params
-            assert params["address_id_1"] == 100
+            assert params["address_id_1"] == "100"
             assert params["email_1"] == "employee-same@example.com"
 
-    def test_generate_delete_with_partitions_different_reference_fields(
+    def test_generate_batched_delete_with_partitions_different_reference_fields(
         self,
         db,
         dataset_graph,
         erasure_policy,
         bigquery_client,
     ):
-        """Test that generate_delete correctly handles partitioned tables with multiple rows having different reference fields"""
+        """Test that generate_batched_delete correctly handles partitioned tables with multiple rows having different reference fields"""
         # Create a partitioned employee node (employee has DELETE masking override)
         identity = {"email": "employee-1@example.com"}
         bigquery_traversal = Traversal(dataset_graph, identity)
@@ -1381,37 +1534,57 @@ class TestBigQueryQueryConfigPartitioning:
         erasure_policy.rules[0].targets[0].data_category = "user"
         erasure_policy.rules[0].targets[0].save(db)
 
-        query_config = BigQueryQueryConfig(employee_node)
-        delete_stmts = query_config.generate_delete(
-            bigquery_client,
-            input_data={
-                "email": ["employee-1@example.com", "employee-2@example.com"],
-                "address_id": [100, 200],
+        # Multiple rows with different reference field values
+        rows = [
+            {
+                "email": "employee-1@example.com",
+                "id": "1",
+                "name": "John Doe",
+                "address_id": "100",
             },
-        )
+            {
+                "email": "employee-2@example.com",
+                "id": "2",
+                "name": "Jane Smith",
+                "address_id": "200",
+            },
+        ]
 
-        # Should generate 2 DELETE statements, one for each partition
-        assert len(delete_stmts) == 2
+        query_config = BigQueryQueryConfig(employee_node)
+        delete_stmts = query_config.generate_batched_delete(rows, bigquery_client)
 
-        stmts = set(str(stmt) for stmt in delete_stmts)
-        expected_stmts = {
-            "DELETE FROM `employee` WHERE (`employee`.`email` IN UNNEST(%(email_1:STRING)s) OR `employee`.`address_id` IN UNNEST(%(address_id_1:INT64)s)) AND `created` >= CURRENT_TIMESTAMP - INTERVAL 1000 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 500 DAY",
-            "DELETE FROM `employee` WHERE (`employee`.`email` IN UNNEST(%(email_1:STRING)s) OR `employee`.`address_id` IN UNNEST(%(address_id_1:INT64)s)) AND `created` > CURRENT_TIMESTAMP - INTERVAL 500 DAY AND `created` <= CURRENT_TIMESTAMP",
-        }
-        assert stmts == expected_stmts
+        # Should generate 4 DELETE statements:
+        # 2 unique reference field combinations × 2 partitions = 4 DELETE statements
+        assert len(delete_stmts) == 4
 
-        # Verify bound parameters are correct for all statements
+        # Verify we have the correct combinations of reference fields and partitions
+        emails_found = set()
+        address_ids_found = set()
+        partition_conditions = set()
+
         for delete_stmt in delete_stmts:
+            stmt_str = str(delete_stmt)
             compiled_stmt = delete_stmt.compile(dialect=bigquery_client.dialect)
             params = compiled_stmt.params
 
-            assert "address_id_1" in params
-            assert "email_1" in params
-            assert params["address_id_1"] == [100, 200]
-            assert params["email_1"] == [
-                "employee-1@example.com",
-                "employee-2@example.com",
-            ]
+            # Collect parameter values
+            emails_found.add(params["email_1"])
+            address_ids_found.add(params["address_id_1"])
+
+            # Check that partition conditions are present
+            if "INTERVAL 1000 DAY" in stmt_str and "INTERVAL 500 DAY" in stmt_str:
+                partition_conditions.add("partition_1")
+            elif "INTERVAL 500 DAY" in stmt_str and "CURRENT_TIMESTAMP" in stmt_str:
+                partition_conditions.add("partition_2")
+
+        # Verify we have all expected unique values
+        expected_emails = {"employee-1@example.com", "employee-2@example.com"}
+        expected_address_ids = {"100", "200"}
+        expected_partitions = {"partition_1", "partition_2"}
+
+        assert emails_found == expected_emails
+        assert address_ids_found == expected_address_ids
+        assert partition_conditions == expected_partitions
 
     def test_generate_update_with_namespace_and_partitions(
         self,
