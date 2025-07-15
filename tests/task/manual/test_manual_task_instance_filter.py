@@ -390,7 +390,7 @@ class TestManualTaskInstanceFiltering:
         privacy_request = request.getfixturevalue(policy_fixture)
 
         # Create artificial graphs using the utility function
-        graphs = create_manual_task_artificial_graphs(db, privacy_request.policy)
+        graphs = create_manual_task_artificial_graphs(db)
 
         # Should include exactly one graph
         assert len(graphs) == 1
