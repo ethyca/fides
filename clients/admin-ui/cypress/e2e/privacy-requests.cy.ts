@@ -640,7 +640,7 @@ describe("Privacy Requests", () => {
   /**
    * Tests for privacy request manual tasks functionality
    */
-  describe.only("Request Manual Tasks", () => {
+  describe("Request Manual Tasks", () => {
     beforeEach(() => {
       cy.assumeRole(RoleRegistryEnum.OWNER);
       stubPlus(true);
