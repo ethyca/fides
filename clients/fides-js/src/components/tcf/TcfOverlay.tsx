@@ -11,6 +11,7 @@ import {
   ConsentMethod,
   FidesCookie,
   FidesExperienceTranslationOverrides,
+  FidesModalDefaultView,
   NoticeConsent,
   OverrideType,
   PrivacyExperience,
@@ -89,14 +90,11 @@ const getAllIds = (
 };
 
 // gets the index of the tab to show by default based on the fidesModalDefaultView option
-const parseModalDefaultView = (defaultView: string | undefined): number => {
-  const tab = defaultView?.split("/")[2];
-  if (!tab) {
-    return 0;
-  }
-  const tabKeys = ["purposes", "features", "vendors"];
-  const tabIndex = tabKeys.indexOf(tab);
-  return tabIndex === -1 ? 0 : tabIndex;
+const parseModalDefaultView = (
+  defaultView: FidesModalDefaultView = "/tcf/purposes",
+): number => {
+  const tabRoutes = ["/tcf/purposes", "/tcf/features", "/tcf/vendors"];
+  return tabRoutes.indexOf(defaultView);
 };
 
 export const TcfOverlay = () => {

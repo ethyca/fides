@@ -169,13 +169,13 @@ export interface FidesInitOptions {
    * A URL-like route that determines which view is shown by default when the consent modal is opened.
    * Currently only affects TCF.
    *
-   * - "/tcf/purposes" (default)
+   * - "/tcf/purposes" ("purposes" tab will be shown if not set)
    * - "/tcf/features"
    * - "/tcf/vendors"
    *
    * Defaults to `undefined`.
    */
-  fidesModalDefaultView?: string;
+  fidesModalDefaultView?: FidesModalDefaultView;
 }
 
 /**
@@ -782,6 +782,11 @@ export type UserGeolocation = {
   location?: string; // "US-NY"
   region?: string; // "NY"
 };
+
+export type FidesModalDefaultView =
+  | "/tcf/purposes"
+  | "/tcf/features"
+  | "/tcf/vendors";
 
 /**
  * Re-export the FidesOptions interface from src/docs; mostly for convenience as
