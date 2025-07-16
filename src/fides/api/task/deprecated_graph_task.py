@@ -1,4 +1,5 @@
 # pylint: disable=too-many-lines
+from functools import partial
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
 import dask
@@ -257,8 +258,6 @@ def run_erasure_request_deprecated(  # pylint: disable = too-many-arguments
         # delete statements).  We accomplish this by partially applying the
         # `inputs` kwarg on each task's `erasure_request` method.  The resulting
         # callable accepts the original positional arguments expected by Dask.
-
-        from functools import partial  # Local import to avoid circular deps at top
 
         dsk: Dict[CollectionAddress, Any] = {}
         for k, t in env.items():

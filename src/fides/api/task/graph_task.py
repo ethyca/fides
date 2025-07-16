@@ -644,7 +644,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
     def erasure_request(
         self,
         retrieved_data: List[Row],
-        *erasure_prereqs: int,
+        *erasure_prereqs: int,  # TODO Remove when we stop support for DSR 2.0. DSR 3.0 enforces with downstream_tasks.
         inputs: Optional[
             List[List[Row]]
         ] = None,  # Upstream data from corresponding access task
