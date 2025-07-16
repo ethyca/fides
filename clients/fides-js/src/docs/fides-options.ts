@@ -290,7 +290,7 @@ export interface FidesOptions {
    * A URL-like route that determines which view is shown by default when the consent modal is opened.
    * Currently only affects TCF.
    *
-   * - "/tcf/purposes" (default)
+   * - "/tcf/purposes" ("purposes" tab will be shown if not set)
    * - "/tcf/features"
    * - "/tcf/vendors"
    *
