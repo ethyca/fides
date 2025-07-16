@@ -9,7 +9,7 @@
       "status": "completed",
       "assigned_users": [
         {
-          "id": "user_001",
+          "id": "fid_user_001",
           "email_address": "john.doe@example.com",
           "first_name": "John",
           "last_name": "Doe"
@@ -28,7 +28,7 @@
         "name": "Customer Service Portal"
       },
       "submission_user": {
-        "id": "user_001",
+        "id": "fid_user_001",
         "email_address": "john.doe@example.com",
         "first_name": "John",
         "last_name": "Doe"
@@ -37,7 +37,7 @@
         {
           "id": "comment_001",
           "privacy_request_id": "pri_96bb91d3-cdb9-46c3-9546-0c276eb05a5c",
-          "user_id": "user_001",
+          "user_id": "fid_user_001",
           "username": "John Doe",
           "user_first_name": "John",
           "user_last_name": "Doe",
@@ -50,7 +50,7 @@
       "attachments": [
         {
           "id": "att_001",
-          "user_id": "user_001",
+          "user_id": "fid_user_001",
           "username": "John Doe",
           "user_first_name": "John",
           "user_last_name": "Doe",
@@ -73,7 +73,7 @@
       "status": "skipped",
       "assigned_users": [
         {
-          "id": "user_002",
+          "id": "fid_user_002",
           "email_address": "jane.smith@example.com",
           "first_name": "Jane",
           "last_name": "Smith"
@@ -92,7 +92,7 @@
         "name": "Legacy CRM"
       },
       "submission_user": {
-        "id": "user_002",
+        "id": "fid_user_002",
         "email_address": "jane.smith@example.com",
         "first_name": "Jane",
         "last_name": "Smith"
@@ -101,7 +101,7 @@
         {
           "id": "comment_002",
           "privacy_request_id": "pri_96bb91d3-cdb9-46c3-9546-0c276eb05a5c",
-          "user_id": "user_002",
+          "user_id": "fid_user_002",
           "username": "Jane Smith",
           "user_first_name": "Jane",
           "user_last_name": "Smith",
@@ -124,7 +124,7 @@
       "status": "completed",
       "assigned_users": [
         {
-          "id": "user_003",
+          "id": "fid_user_003",
           "email_address": "bob.johnson@example.com",
           "first_name": "Bob",
           "last_name": "Johnson"
@@ -143,7 +143,7 @@
         "name": "E-commerce Platform"
       },
       "submission_user": {
-        "id": "user_003",
+        "id": "fid_user_003",
         "email_address": "bob.johnson@example.com",
         "first_name": "Bob",
         "last_name": "Johnson"
@@ -152,7 +152,7 @@
       "attachments": [
         {
           "id": "att_003",
-          "user_id": "user_003",
+          "user_id": "fid_user_003",
           "username": "Bob Johnson",
           "user_first_name": "Bob",
           "user_last_name": "Johnson",
@@ -174,19 +174,19 @@
   "filter_options": {
     "assigned_users": [
       {
-        "id": "user_001",
+        "id": "fid_user_001",
         "email_address": "john.doe@example.com",
         "first_name": "John",
         "last_name": "Doe"
       },
       {
-        "id": "user_002",
+        "id": "fid_user_002",
         "email_address": "jane.smith@example.com",
         "first_name": "Jane",
         "last_name": "Smith"
       },
       {
-        "id": "user_003",
+        "id": "fid_user_003",
         "email_address": "bob.johnson@example.com",
         "first_name": "Bob",
         "last_name": "Johnson"
