@@ -39,29 +39,28 @@ export const usePrivacyRequestManualTasks = (privacyRequestId: string) => {
         )
         .map((task: ManualFieldListItem) => {
           // Format the user who completed the task
-          const author = formatUser({
-            first_name: task.completed_by_user_first_name,
-            last_name: task.completed_by_user_last_name,
-            email_address: task.completed_by_user_email_address,
-          });
+          const author = task.submission_user
+            ? formatUser(task.submission_user)
+            : "Root user";
 
           // Create title based on completion status
           const isSkipped = task.status === ManualFieldStatus.SKIPPED;
           const actionText = isSkipped ? "skipped" : "completed";
           const title = `Task ${actionText} - ${task.name}`;
 
-          // Use completion comment if available
-          const description = task.completion_comment?.comment_text;
+          // Use the most recent comment if available
+          const description =
+            task.comments && task.comments.length > 0
+              ? task.comments[task.comments.length - 1].comment_text
+              : undefined;
 
-          // Create attachments array
-          const attachments = task.completion_attachment
-            ? [task.completion_attachment]
-            : [];
+          // Use attachments array directly
+          const attachments = task.attachments || [];
 
           return {
             author,
             title,
-            date: new Date(task.completed_at || task.updated_at),
+            date: new Date(task.updated_at),
             type: ActivityTimelineItemTypeEnum.MANUAL_TASK,
             showViewLog: false, // Manual tasks don't have logs
             description,
