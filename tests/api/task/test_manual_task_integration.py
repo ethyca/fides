@@ -1,8 +1,11 @@
+import json
 from unittest.mock import Mock
 
 import pytest
 
-from fides.api.graph.config import CollectionAddress
+from fides.api.graph.config import Collection, ScalarField
+from fides.api.graph.data_type import DataType
+from fides.api.graph.graph import CollectionAddress
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -14,12 +17,17 @@ from fides.api.models.manual_task import (
     ManualTaskConfigField,
     ManualTaskConfigurationType,
     ManualTaskFieldType,
+    ManualTaskInstance,
     ManualTaskParentEntityType,
     ManualTaskSubmission,
     ManualTaskType,
 )
-from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.models.policy import ActionType, Policy
+from fides.api.models.privacy_request import (
+    PrivacyRequest,
+    RequestTask,
+    TraversalDetails,
+)
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
 from fides.api.task.manual.manual_task_utils import (
@@ -441,14 +449,27 @@ class TestManualTaskInstanceCreation:
 
     @pytest.fixture
     def sample_policy(self, db):
-        """Create a sample policy for testing"""
-        return Policy.create(
+        """Create a sample policy for testing with an access rule"""
+        policy = Policy.create(
             db=db,
             data={
                 "name": "Test Policy",
                 "key": "test_policy",
             },
         )
+        from fides.api.models.policy import Rule
+        from fides.api.schemas.policy import ActionType
+
+        Rule.create(
+            db=db,
+            data={
+                "policy_id": policy.id,
+                "action_type": ActionType.access,
+                "name": "Access Rule",
+                "key": "access_rule",
+            },
+        )
+        return policy
 
     @pytest.fixture
     def sample_connection_config(self, db):
@@ -558,20 +579,460 @@ class TestManualTaskInstanceCreation:
         assert len(all_instances) == 1
 
 
+@pytest.fixture
+def mock_execution_node():
+    class MockExecutionNode:
+        def __init__(self, address):
+            self.address = CollectionAddress.from_string(address)
+            self.connection_key = "test_connection"
+
+    return MockExecutionNode("test_connection:manual_data")
+
+
+def build_mock_request_task(privacy_request, action_type):
+    request_task = RequestTask(
+        privacy_request_id=privacy_request.id,
+        collection_address="test_connection:manual_data",
+        dataset_name="test_connection",
+        collection_name="manual_data",
+        action_type=action_type,
+    )
+    # Create a valid collection and serialize it to dict format for SQLAlchemy
+    collection = Collection(
+        name="manual_data",
+        fields=[
+            ScalarField(name="dummy", data_type_converter=DataType.no_op.value)
+        ],  # minimal valid field
+    )
+    # Serialize the collection to dict format that SQLAlchemy expects
+    request_task.collection = json.loads(
+        collection.model_dump_json(serialize_as_any=True)
+    )
+
+    # Create valid traversal details and serialize to dict format
+    traversal_details = TraversalDetails.create_empty_traversal("test_connection")
+    request_task.traversal_details = traversal_details.model_dump(mode="json")
+
+    return request_task
+
+
+@pytest.fixture
+def build_task_resources(db, test_privacy_request):
+    def _build(action_type):
+        from fides.api.task.task_resources import TaskResources
+
+        connection_configs = db.query(ConnectionConfig).all()
+        mock_request_task = build_mock_request_task(test_privacy_request, action_type)
+        return TaskResources(
+            request=test_privacy_request,
+            policy=test_privacy_request.policy,
+            connection_configs=connection_configs,
+            privacy_request_task=mock_request_task,
+            session=db,
+        )
+
+    return _build
+
+
 @pytest.mark.integration
-class TestManualTaskDisabledConnectionConfig:
-    """Test that disabled connection configs are properly filtered out from manual task processing"""
+class TestManualTaskGraphTaskInstanceCreation:
+    """Test that ManualTaskGraphTask creates the correct number of instances for access and erasure"""
 
     @pytest.fixture
     def test_policy(self, db):
-        """Create a test policy"""
-        return Policy.create(
+        """Create a test policy with both access and erasure rules"""
+        policy = Policy.create(
             db=db,
             data={
                 "name": "Test Policy",
                 "key": "test_policy",
             },
         )
+
+        # Add access rule
+        from fides.api.models.policy import Rule
+
+        Rule.create(
+            db=db,
+            data={
+                "policy_id": policy.id,
+                "action_type": ActionType.access,
+                "name": "Access Rule",
+                "key": "access_rule",
+            },
+        )
+
+        # Add erasure rule
+        Rule.create(
+            db=db,
+            data={
+                "policy_id": policy.id,
+                "action_type": ActionType.erasure,
+                "name": "Erasure Rule",
+                "key": "erasure_rule",
+                "masking_strategy": {"strategy": "null_rewrite", "configuration": {}},
+            },
+        )
+
+        return policy
+
+    @pytest.fixture
+    def test_connection_config(self, db):
+        """Create a test connection config"""
+        return ConnectionConfig.create(
+            db=db,
+            data={
+                "name": "Test Connection",
+                "key": "test_connection",
+                "connection_type": ConnectionType.manual_task,
+                "access": AccessLevel.read,
+                "disabled": False,
+            },
+        )
+
+    @pytest.fixture
+    def test_manual_task_with_both_configs(self, db, test_connection_config):
+        """Create a manual task with both access and erasure configs"""
+        manual_task = ManualTask.create(
+            db=db,
+            data={
+                "task_type": ManualTaskType.privacy_request,
+                "parent_entity_id": test_connection_config.id,
+                "parent_entity_type": ManualTaskParentEntityType.connection_config,
+            },
+        )
+
+        # Create access config
+        access_config = ManualTaskConfig.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_type": ManualTaskConfigurationType.access_privacy_request,
+                "version": 1,
+                "is_current": True,
+            },
+        )
+
+        # Create erasure config
+        erasure_config = ManualTaskConfig.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_type": ManualTaskConfigurationType.erasure_privacy_request,
+                "version": 1,
+                "is_current": True,
+            },
+        )
+
+        # Add fields to both configs
+        ManualTaskConfigField.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_id": access_config.id,
+                "field_key": "access_field",
+                "field_type": ManualTaskFieldType.text,
+                "field_metadata": {"label": "Access Field", "required": True},
+            },
+        )
+
+        ManualTaskConfigField.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_id": erasure_config.id,
+                "field_key": "erasure_field",
+                "field_type": ManualTaskFieldType.text,
+                "field_metadata": {"label": "Erasure Field", "required": True},
+            },
+        )
+
+        return manual_task, access_config, erasure_config
+
+    @pytest.fixture
+    def test_privacy_request(self, db, test_policy):
+        """Create a test privacy request"""
+        return PrivacyRequest.create(
+            db=db,
+            data={
+                "external_id": "test_request_123",
+                "started_processing_at": None,
+                "status": "pending",
+                "policy_id": test_policy.id,
+            },
+        )
+
+    def test_access_request_creates_access_instances_only(
+        self,
+        db,
+        test_privacy_request,
+        test_manual_task_with_both_configs,
+        mock_execution_node,
+        build_task_resources,
+    ):
+        """Test that access_request creates only access instances"""
+        manual_task, access_config, erasure_config = test_manual_task_with_both_configs
+        from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
+
+        task_resources = build_task_resources(ActionType.access)
+        graph_task = ManualTaskGraphTask(task_resources)
+        graph_task.execution_node = mock_execution_node
+
+        # Count instances before
+        initial_instances = (
+            db.query(ManualTaskInstance)
+            .filter(ManualTaskInstance.entity_id == test_privacy_request.id)
+            .count()
+        )
+        assert initial_instances == 0
+
+        # Call access_request
+        try:
+            graph_task.access_request()
+        except Exception:
+            # Expected to raise AwaitingAsyncTaskCallback since no submissions exist
+            pass
+
+        # Count instances after - should only have access instances
+        access_instances = (
+            db.query(ManualTaskInstance)
+            .join(ManualTaskConfig)
+            .filter(
+                ManualTaskInstance.entity_id == test_privacy_request.id,
+                ManualTaskConfig.config_type
+                == ManualTaskConfigurationType.access_privacy_request,
+            )
+            .count()
+        )
+
+        erasure_instances = (
+            db.query(ManualTaskInstance)
+            .join(ManualTaskConfig)
+            .filter(
+                ManualTaskInstance.entity_id == test_privacy_request.id,
+                ManualTaskConfig.config_type
+                == ManualTaskConfigurationType.erasure_privacy_request,
+            )
+            .count()
+        )
+
+        assert access_instances == 1
+        assert erasure_instances == 0
+
+    def test_erasure_request_creates_erasure_instances_only(
+        self,
+        db,
+        test_privacy_request,
+        test_manual_task_with_both_configs,
+        mock_execution_node,
+        build_task_resources,
+    ):
+        """Test that erasure_request creates only erasure instances"""
+        manual_task, access_config, erasure_config = test_manual_task_with_both_configs
+        from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
+
+        task_resources = build_task_resources(ActionType.erasure)
+        graph_task = ManualTaskGraphTask(task_resources)
+        graph_task.execution_node = mock_execution_node
+
+        # Count instances before
+        initial_instances = (
+            db.query(ManualTaskInstance)
+            .filter(ManualTaskInstance.entity_id == test_privacy_request.id)
+            .count()
+        )
+        assert initial_instances == 0
+
+        # Call erasure_request
+        try:
+            graph_task.erasure_request([])
+        except Exception:
+            # Expected to raise AwaitingAsyncTaskCallback since no submissions exist
+            pass
+
+        # Count instances after - should only have erasure instances
+        access_instances = (
+            db.query(ManualTaskInstance)
+            .join(ManualTaskConfig)
+            .filter(
+                ManualTaskInstance.entity_id == test_privacy_request.id,
+                ManualTaskConfig.config_type
+                == ManualTaskConfigurationType.access_privacy_request,
+            )
+            .count()
+        )
+
+        erasure_instances = (
+            db.query(ManualTaskInstance)
+            .join(ManualTaskConfig)
+            .filter(
+                ManualTaskInstance.entity_id == test_privacy_request.id,
+                ManualTaskConfig.config_type
+                == ManualTaskConfigurationType.erasure_privacy_request,
+            )
+            .count()
+        )
+
+        assert access_instances == 0
+        assert erasure_instances == 1
+
+    def test_access_request_skips_deleted_configs(
+        self,
+        db,
+        test_privacy_request,
+        test_manual_task_with_both_configs,
+        mock_execution_node,
+        build_task_resources,
+    ):
+        """Test that access_request skips configs that are not current"""
+        manual_task, access_config, erasure_config = test_manual_task_with_both_configs
+        access_config.is_current = False
+        db.commit()
+        from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
+
+        task_resources = build_task_resources(ActionType.access)
+        graph_task = ManualTaskGraphTask(task_resources)
+        graph_task.execution_node = mock_execution_node
+
+        # Call access_request - should complete immediately since no valid configs
+        result = graph_task.access_request()
+        assert result == []
+
+        # No instances should be created
+        instances = (
+            db.query(ManualTaskInstance)
+            .filter(ManualTaskInstance.entity_id == test_privacy_request.id)
+            .count()
+        )
+        assert instances == 0
+
+    def test_erasure_request_skips_deleted_configs(
+        self,
+        db,
+        test_privacy_request,
+        test_manual_task_with_both_configs,
+        mock_execution_node,
+        build_task_resources,
+    ):
+        """Test that erasure_request skips configs that are not current"""
+        manual_task, access_config, erasure_config = test_manual_task_with_both_configs
+        erasure_config.is_current = False
+        db.commit()
+        from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
+
+        task_resources = build_task_resources(ActionType.erasure)
+        graph_task = ManualTaskGraphTask(task_resources)
+        graph_task.execution_node = mock_execution_node
+
+        # Call erasure_request - should complete immediately since no valid configs
+        result = graph_task.erasure_request([])
+        assert result == 0
+
+        # No instances should be created
+        instances = (
+            db.query(ManualTaskInstance)
+            .filter(ManualTaskInstance.entity_id == test_privacy_request.id)
+            .count()
+        )
+        assert instances == 0
+
+    def test_access_and_erasure_instances_coexist(
+        self,
+        db,
+        test_privacy_request,
+        test_manual_task_with_both_configs,
+        mock_execution_node,
+        build_task_resources,
+    ):
+        """Test that access and erasure instances can coexist for the same privacy request"""
+        manual_task, access_config, erasure_config = test_manual_task_with_both_configs
+        from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
+
+        # Access instance
+        access_task_resources = build_task_resources(ActionType.access)
+        access_graph_task = ManualTaskGraphTask(access_task_resources)
+        access_graph_task.execution_node = mock_execution_node
+        try:
+            access_graph_task.access_request()
+        except Exception:
+            pass
+        # Erasure instance
+        erasure_task_resources = build_task_resources(ActionType.erasure)
+        erasure_graph_task = ManualTaskGraphTask(erasure_task_resources)
+        erasure_graph_task.execution_node = mock_execution_node
+        try:
+            erasure_graph_task.erasure_request([])
+        except Exception:
+            pass
+
+        # Should have both access and erasure instances
+        access_instances = (
+            db.query(ManualTaskInstance)
+            .join(ManualTaskConfig)
+            .filter(
+                ManualTaskInstance.entity_id == test_privacy_request.id,
+                ManualTaskConfig.config_type
+                == ManualTaskConfigurationType.access_privacy_request,
+            )
+            .count()
+        )
+
+        erasure_instances = (
+            db.query(ManualTaskInstance)
+            .join(ManualTaskConfig)
+            .filter(
+                ManualTaskInstance.entity_id == test_privacy_request.id,
+                ManualTaskConfig.config_type
+                == ManualTaskConfigurationType.erasure_privacy_request,
+            )
+            .count()
+        )
+
+        assert access_instances == 1
+        assert erasure_instances == 1
+
+
+@pytest.mark.integration
+class TestManualTaskDisabledConnectionConfig:
+    """Test that disabled connection configs are properly filtered out from manual task processing"""
+
+    @pytest.fixture
+    def test_policy(self, db):
+        """Create a test policy with both access and erasure rules"""
+        policy = Policy.create(
+            db=db,
+            data={
+                "name": "Test Policy",
+                "key": "test_policy",
+            },
+        )
+
+        # Add access rule
+        from fides.api.models.policy import Rule
+
+        Rule.create(
+            db=db,
+            data={
+                "policy_id": policy.id,
+                "action_type": ActionType.access,
+                "name": "Access Rule",
+                "key": "access_rule",
+            },
+        )
+
+        # Add erasure rule
+        Rule.create(
+            db=db,
+            data={
+                "policy_id": policy.id,
+                "action_type": ActionType.erasure,
+                "name": "Erasure Rule",
+                "key": "erasure_rule",
+                "masking_strategy": {"strategy": "null_rewrite", "configuration": {}},
+            },
+        )
+
+        return policy
 
     @pytest.fixture
     def enabled_connection_config(self, db):
@@ -742,9 +1203,7 @@ class TestManualTaskDisabledConnectionConfig:
     def test_disabled_connection_configs_filtered_from_artificial_graphs(self, db):
         """Test that disabled connection configs are filtered out from artificial graph creation"""
         # Create artificial graphs
-        graphs = create_manual_task_artificial_graphs(
-            db, None
-        )  # No policy filtering for this test
+        graphs = create_manual_task_artificial_graphs(db)
 
         # Should only include graphs for enabled connection configs
         assert len(graphs) == 1
