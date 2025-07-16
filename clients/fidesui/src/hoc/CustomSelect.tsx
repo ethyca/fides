@@ -1,6 +1,6 @@
 import { Checkmark, ChevronDown } from "@carbon/icons-react";
-import { Flex, Select, SelectProps, Typography } from "antd/lib";
-import { BaseOptionType, DefaultOptionType } from "antd/lib/select";
+import { Flex, Select, SelectProps, Typography } from "antd/es";
+import { BaseOptionType, DefaultOptionType } from "antd/es/select";
 import React from "react";
 
 const optionDescriptionRender = (
@@ -16,6 +16,7 @@ const optionDescriptionRender = (
       {!!description && (
         <Typography.Text
           type="secondary"
+
           className="text-wrap text-sm leading-tight"
         >
           {description}
@@ -27,7 +28,7 @@ const optionDescriptionRender = (
 
 const withCustomProps = (WrappedComponent: typeof Select) => {
   const WrappedSelect = <
-    ValueType = any,
+    ValueType,
     OptionType extends DefaultOptionType | BaseOptionType = DefaultOptionType,
   >({
     placeholder = "Select...",

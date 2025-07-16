@@ -1,4 +1,4 @@
-import { Tooltip, TooltipProps } from "antd/lib";
+import { Tooltip, TooltipProps } from "antd/es";
 import React, { ReactElement } from "react";
 
 import styles from "./CustomTooltip.module.scss";

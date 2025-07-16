@@ -1,4 +1,4 @@
-import { Menu } from "antd/lib";
+import { Menu } from "antd/es";
 import { ComponentProps } from "react";
 
 import styles from "./FloatingMenu.module.scss";

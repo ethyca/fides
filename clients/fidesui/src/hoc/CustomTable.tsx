@@ -1,6 +1,6 @@
 import { SettingsAdjust } from "@carbon/icons-react";
 import { TableProps } from "antd/es/table";
-import { Table } from "antd/lib";
+import { Table } from "antd/es";
 import React from "react";
 
 import palette from "../palette/palette.module.scss";

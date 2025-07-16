@@ -1,5 +1,5 @@
-import type { TypographyProps } from "antd/lib";
-import { Typography } from "antd/lib";
+import type { TypographyProps } from "antd/es";
+import { Typography } from "antd/es";
 import classNames from "classnames";
 
 import styles from "./CustomTypography.module.scss";

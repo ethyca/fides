@@ -1,4 +1,4 @@
-import { Select } from "antd/lib";
+import { Select } from "antd/es";
 import React, { ComponentProps, useState } from "react";
 
 import { CustomTag as AntTag, CustomTypography } from "../../hoc";

@@ -1,4 +1,4 @@
-import { Tag, TagProps } from "antd/lib";
+import { Tag, TagProps } from "antd/es";
 import { Icons } from "fidesui";
 import React, { useEffect, useRef } from "react";
 
