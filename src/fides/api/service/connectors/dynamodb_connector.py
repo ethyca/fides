@@ -140,8 +140,9 @@ class DynamoDBConnector(BaseConnector[Any]):  # type: ignore
         privacy_request: PrivacyRequest,
         request_task: RequestTask,
         rows: List[Row],
+        input_data: Optional[Dict[str, List[Any]]] = None,
     ) -> int:
-        """Execute a masking requestfor DynamoDB"""
+        """Execute a masking request for DynamoDB"""
 
         query_config = self.query_config(node)
         collection_name = node.address.collection

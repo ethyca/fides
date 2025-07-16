@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional, Union, cast
 import pydash
 from fideslang.models import MaskingStrategies
 from loguru import logger
-from sqlalchemy import MetaData, Table, text
+from sqlalchemy import MetaData, Table, or_, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.sql import Delete, Update
 from sqlalchemy.sql.elements import ColumnElement, TextClause
@@ -125,6 +125,7 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         policy: Policy,
         request: PrivacyRequest,
         client: Engine,
+        input_data: Optional[Dict[str, List[Any]]] = None,
     ) -> Union[List[Update], List[Delete]]:
         """
         Generate a masking statement for BigQuery.
@@ -137,7 +138,7 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
             logger.info(
                 f"Masking override detected for collection {node.address.value}: {masking_override.strategy.value}"
             )
-            return self.generate_delete(row, client)
+            return self.generate_delete(client, input_data or {})
         return self.generate_update(row, policy, request, client)
 
     def generate_update(
@@ -218,27 +219,34 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
 
         return [table.update().where(*where_clauses).values(**final_update_map)]
 
-    def generate_delete(self, row: Row, client: Engine) -> List[Delete]:
-        """Returns a List of SQLAlchemy DELETE statements for BigQuery. Does not actually execute the delete statement.
+    def generate_delete(
+        self,
+        client: Engine,
+        input_data: Optional[Dict[str, List[Any]]] = None,
+    ) -> List[Delete]:
+        """
+        Returns a List of SQLAlchemy DELETE statements for BigQuery. Does not actually execute the delete statement.
 
         Used when a collection-level masking override is present and the masking strategy is DELETE.
 
         A List of multiple DELETE statements are returned for partitioned tables; for a non-partitioned table,
         a single DELETE statement is returned in a List for consistent typing.
-
-        TODO: DRY up this method and `generate_update` a bit
         """
 
-        non_empty_reference_field_keys: Dict[str, Field] = filter_nonempty_values(
-            {
-                fpath.string_path: fld.cast(row[fpath.string_path])
-                for fpath, fld in self.reference_field_paths.items()
-                if fpath.string_path in row
-            }
-        )
+        if not input_data:
+            logger.warning(
+                "No input data provided for node '{}', skipping DELETE statement generation",
+                self.node.address,
+            )
+            return []
 
-        valid = len(non_empty_reference_field_keys) > 0
-        if not valid:
+        reference_values: Dict[str, List[Any]] = {}
+        for fpath, fld in self.reference_field_paths.items():
+            values = input_data.get(fpath.string_path, [])
+            if values:
+                reference_values[fpath.string_path] = [fld.cast(v) for v in values]
+
+        if not reference_values:
             logger.warning(
                 "There is not enough data to generate a valid DELETE statement for {}",
                 self.node.address,
@@ -246,9 +254,17 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
             return []
 
         table = Table(self._generate_table_name(), MetaData(bind=client), autoload=True)
-        where_clauses: List[ColumnElement] = [
-            getattr(table.c, k) == v for k, v in non_empty_reference_field_keys.items()
-        ]
+
+        # Build individual reference clauses
+        where_clauses: List[ColumnElement] = []
+        for col_name, vals in reference_values.items():
+            if len(vals) == 1:
+                where_clauses.append(getattr(table.c, col_name) == vals[0])
+            else:
+                where_clauses.append(getattr(table.c, col_name).in_(vals))
+
+        # Combine reference clauses with OR instead of AND
+        combined_reference_clause = or_(*where_clauses)
 
         if self.partitioning:
             partition_clauses = self.get_partition_clauses()
@@ -259,75 +275,14 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
 
             for partition_clause in partition_clauses:
                 partitioned_queries.append(
-                    table.delete().where(*(where_clauses + [text(partition_clause)]))
+                    table.delete()
+                    .where(combined_reference_clause)
+                    .where(text(partition_clause))
                 )
 
             return partitioned_queries
 
-        return [table.delete().where(*where_clauses)]
-
-    def generate_batched_delete(self, rows: List[Row], client: Engine) -> List[Delete]:
-        """
-        Returns a List of SQLAlchemy DELETE statements for BigQuery optimized for multiple rows.
-
-        This method batches DELETE operations for better performance when multiple rows need to be deleted.
-        It groups rows by their reference field values and creates DELETE statements for each unique
-        combination of reference fields.
-
-        For example, if multiple rows have the same email, it generates:
-        DELETE FROM table WHERE email = 'user@example.com'
-
-        Rather than the naive implementation which would generate separate DELETE statements for each row:
-        DELETE FROM table WHERE email = 'user@example.com' AND id = 1
-        DELETE FROM table WHERE email = 'user@example.com' AND id = 2
-        DELETE FROM table WHERE email = 'user@example.com' AND id = 3
-
-        Used when a collection-level masking override is present and the masking strategy is DELETE.
-
-        Args:
-            rows: List of rows to delete
-            client: SQLAlchemy Engine for database connection
-
-        Returns:
-            List of DELETE statements that can be executed to delete all specified rows
-        """
-        if not rows:
-            return []
-
-        # Group rows by their reference field values
-        reference_field_groups = {}
-        for row in rows:
-            non_empty_reference_field_keys: Dict[str, Field] = filter_nonempty_values(
-                {
-                    fpath.string_path: fld.cast(row[fpath.string_path])
-                    for fpath, fld in self.reference_field_paths.items()
-                    if fpath.string_path in row
-                }
-            )
-
-            if len(non_empty_reference_field_keys) > 0:
-                # Create a hashable key from the reference field values
-                field_key = tuple(sorted(non_empty_reference_field_keys.items()))
-                if field_key not in reference_field_groups:
-                    reference_field_groups[field_key] = (
-                        row  # Store a representative row
-                    )
-
-        if not reference_field_groups:
-            logger.warning(
-                "There is not enough data to generate valid DELETE statements for {}",
-                self.node.address,
-            )
-            return []
-
-        # Use the existing generate_delete method for each unique combination of reference fields
-        delete_statements = []
-        for representative_row in reference_field_groups.values():
-            # generate_delete already handles partitioning and all the complex logic
-            delete_stmts = self.generate_delete(representative_row, client)
-            delete_statements.extend(delete_stmts)
-
-        return delete_statements
+        return [table.delete().where(combined_reference_clause)]
 
     def uses_delete_masking_strategy(self) -> bool:
         """Check if this collection uses DELETE masking strategy.

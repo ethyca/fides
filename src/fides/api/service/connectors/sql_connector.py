@@ -178,6 +178,7 @@ class SQLConnector(BaseConnector[Engine]):
         privacy_request: PrivacyRequest,
         request_task: RequestTask,
         rows: List[Row],
+        input_data: Optional[Dict[str, List[Any]]] = None,
     ) -> int:
         """Execute a masking request. Returns the number of records masked"""
         query_config = self.query_config(node)

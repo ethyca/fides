@@ -265,6 +265,7 @@ class ManualTaskGraphTask(GraphTask):
         self,
         retrieved_data: List[Row],
         *erasure_prereqs: int,  # noqa: D401, pylint: disable=unused-argument
+        inputs: Optional[List[List[Row]]] = None,
     ) -> int:
         """Execute manual-task-driven erasure logic.
 

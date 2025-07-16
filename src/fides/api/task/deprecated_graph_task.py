@@ -252,16 +252,35 @@ def run_erasure_request_deprecated(  # pylint: disable = too-many-arguments
 
         access_request_data[ROOT_COLLECTION_ADDRESS.value] = [identity]
 
-        dsk: Dict[CollectionAddress, Any] = {
-            k: (
-                t.erasure_request,
+        # Build the dask task graph for erasure, ensuring we also pass along the
+        # upstream access data that may be required by the connector (e.g. BigQuery
+        # delete statements).  We accomplish this by partially applying the
+        # `inputs` kwarg on each task's `erasure_request` method.  The resulting
+        # callable accepts the original positional arguments expected by Dask.
+
+        from functools import partial  # Local import to avoid circular deps at top
+
+        dsk: Dict[CollectionAddress, Any] = {}
+        for k, t in env.items():
+            # Collect upstream access data in the same order as the input keys
+            upstream_access_data: List[List[Row]] = [
+                access_request_data.get(str(input_key), [])
+                for input_key in t.execution_node.input_keys
+            ]
+
+            # Bind the `inputs` keyword argument so it is supplied when the task executes
+            erasure_fn_with_inputs = partial(
+                t.erasure_request, inputs=upstream_access_data
+            )
+
+            # Build the task tuple: (callable, retrieved_data, *prereqs)
+            dsk[k] = (
+                erasure_fn_with_inputs,
                 access_request_data.get(
                     str(k), []
-                ),  # Pass in the results of the access request for this collection
+                ),  # Data retrieved for this collection
                 *_evaluate_erasure_dependencies(t, erasure_end_nodes),
             )
-            for k, t in env.items()
-        }
 
         # root node returns 0 to be consistent with the output of the other erasure tasks
         dsk[ROOT_COLLECTION_ADDRESS] = 0

@@ -298,17 +298,11 @@ def run_access_node(
                         )
                         # Currently, upstream tasks and "input keys" (which are built by data dependencies)
                         # are the same, but they may not be the same in the future.
-                        ordered_upstream_tasks: List[Optional[RequestTask]] = (
-                            _order_tasks_by_input_key(
+                        upstream_access_data: List[List[Row]] = (
+                            _build_upstream_access_data(
                                 graph_task.execution_node.input_keys, upstream_results
                             )
                         )
-                        # Pass in access data dependencies in the same order as the input keys.
-                        # If we don't have access data for an upstream node, pass in an empty list
-                        upstream_access_data: List[List[Row]] = [
-                            upstream.get_access_data() if upstream else []
-                            for upstream in ordered_upstream_tasks
-                        ]
                         # Run the main access function
                         graph_task.access_request(*upstream_access_data)
 
@@ -359,7 +353,7 @@ def run_erasure_node(
                     session,
                 ) as resources:
                     # Build GraphTask resource to facilitate execution
-                    graph_task: GraphTask = create_graph_task(
+                    erasure_graph_task: GraphTask = create_graph_task(
                         session, request_task, resources
                     )
                     # Get access data that was saved in the erasure format that was collected from the
@@ -368,8 +362,46 @@ def run_erasure_node(
                         request_task.get_data_for_erasures() or []
                     )
 
-                    # Run the main erasure function!
-                    graph_task.erasure_request(retrieved_data)
+                    upstream_access_data: List[List[Row]] = []
+
+                    try:
+                        # Get the corresponding access task for the current erasure task.
+                        access_request_task = (
+                            session.query(RequestTask)
+                            .filter(
+                                RequestTask.privacy_request_id
+                                == request_task.privacy_request_id,
+                                RequestTask.collection_address
+                                == request_task.collection_address,
+                                RequestTask.action_type == ActionType.access,
+                            )
+                            .first()
+                        )
+
+                        if not access_request_task:
+                            raise Exception(
+                                f"Unable to find access request task for erasure task {request_task.collection_address}"
+                            )
+
+                        # Convert the request task to a GraphTask to get the input_keys
+                        access_graph_task: GraphTask = create_graph_task(
+                            session, access_request_task, resources
+                        )
+
+                        upstream_access_data = _build_upstream_access_data(
+                            access_graph_task.execution_node.input_keys,
+                            access_request_task.upstream_tasks_objects(session),
+                        )
+                    except Exception as e:
+                        logger.error(
+                            f"Unable to get upstream access data for erasure task {request_task.collection_address}: {e}"
+                        )
+
+                    # Run the main erasure function, passing along the upstream access data.
+                    # The extra data is currently only needed for generating BigQuery delete statements.
+                    erasure_graph_task.erasure_request(
+                        retrieved_data, inputs=upstream_access_data
+                    )
 
     queue_downstream_tasks_with_retries(
         self,
@@ -485,6 +517,22 @@ def _order_tasks_by_input_key(
         )
         tasks.append(task)
     return tasks
+
+
+def _build_upstream_access_data(
+    input_keys: List[CollectionAddress],
+    upstream_tasks: Query,
+) -> List[List[Row]]:
+    """
+    Helper function to build the access data for the current node.
+    The access data is passed in the same order as the input keys.
+    If we don't have access data for an upstream node, return an empty list.
+    """
+
+    ordered_upstream: List[Optional[RequestTask]] = _order_tasks_by_input_key(
+        input_keys, upstream_tasks
+    )
+    return [task.get_access_data() if task else [] for task in ordered_upstream]
 
 
 mapping = {

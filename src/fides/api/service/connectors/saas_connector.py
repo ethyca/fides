@@ -517,6 +517,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         privacy_request: PrivacyRequest,
         request_task: RequestTask,
         rows: List[Row],
+        input_data: Optional[Dict[str, List[Any]]] = None,
     ) -> int:
         """Execute a masking request. Return the number of rows that have been updated."""
         self.set_privacy_request_state(privacy_request, node, request_task)

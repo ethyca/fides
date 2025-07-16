@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from loguru import logger
 from sqlalchemy import text
@@ -137,8 +137,10 @@ class BigQueryConnector(SQLConnector):
         privacy_request: PrivacyRequest,
         request_task: RequestTask,
         rows: List[Row],
+        input_data: Optional[Dict[str, List[Any]]] = None,
     ) -> int:
         """Execute a masking request. Returns the number of records updated or deleted"""
+
         query_config = self.query_config(node)
         update_or_delete_ct = 0
         client = self.client()
@@ -146,7 +148,7 @@ class BigQueryConnector(SQLConnector):
         # Check if we're using DELETE masking strategy
         if query_config.uses_delete_masking_strategy():
             # Use batched DELETE for better performance
-            delete_stmts = query_config.generate_batched_delete(rows, client)
+            delete_stmts = query_config.generate_delete(client, input_data or {})
             logger.debug(f"Generated {len(delete_stmts)} DELETE statements")
             if delete_stmts:
                 with client.connect() as connection:

@@ -243,6 +243,7 @@ class TestBigQueryConnector:
             privacy_request=PrivacyRequest(),
             request_task=RequestTask(),
             rows=customer_data["rows"],
+            input_data={"email": ["customer-3@example.com"], "address_id": [3, 4, 5]},
         )
         # Delete all 3 customer rows
         assert update_or_delete_ct == 3
@@ -283,48 +284,6 @@ class TestBigQueryConnector:
         assert update_or_delete_ct == 0
         assert execute_spy.call_count == 0
 
-    def test_mask_data_missing_reference_fields_no_execute(
-        self,
-        bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta: DatasetConfig,
-        execution_node_with_namespace_and_partitioning_meta,
-        erasure_policy,
-        mocker,
-    ):
-        """mask_data should not execute deletes when rows lack reference field data."""
-        dataset_config = (
-            bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta
-        )
-        connector = BigQueryConnector(dataset_config.connection_config)
-
-        # Force DELETE masking strategy for this test
-        execution_node = execution_node_with_namespace_and_partitioning_meta
-        execution_node.collection.masking_strategy_override = MaskingStrategyOverride(
-            strategy=MaskingStrategies.DELETE
-        )
-
-        # A row missing reference fields (e.g. 'email' and 'address_id')
-        rows_missing_refs = [
-            {
-                "email": None,
-                "name": "Jane Doe",
-                "address_id": None,
-            }
-        ]
-
-        execute_spy = mocker.spy(sqlalchemy.engine.Connection, "execute")
-
-        update_or_delete_ct = connector.mask_data(
-            node=execution_node,
-            policy=erasure_policy,
-            privacy_request=PrivacyRequest(),
-            request_task=RequestTask(),
-            rows=rows_missing_refs,
-        )
-
-        # No statements should execute because WHERE clause cannot be built
-        assert update_or_delete_ct == 0
-        assert execute_spy.call_count == 0
-
     def test_generate_delete_partitioned_table(
         self,
         bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta: DatasetConfig,
@@ -340,13 +299,10 @@ class TestBigQueryConnector:
             execution_node_with_namespace_and_partitioning_meta
         )
 
-        row = {
-            "email": "customer-1@example.com",
-            "name": "John Customer",
-            "address_id": 1,
-            "id": 1,
-        }
-        deletes = query_config.generate_delete(row=row, client=connector.client())
+        deletes = query_config.generate_delete(
+            connector.client(),
+            input_data={"email": ["customer-1@example.com"], "address_id": [1]},
+        )
 
         assert len(deletes) == 2
 
@@ -494,14 +450,10 @@ class TestBigQueryConnectorTimeBasedPartitioning:
             execution_node_with_namespace_and_time_based_partitioning_meta
         )
 
-        row = {
-            "email": "customer-1@example.com",
-            "name": "John Customer",
-            "address_id": 1,
-            "id": 1,
-        }
-        deletes = query_config.generate_delete(row=row, client=connector.client())
-
+        deletes = query_config.generate_delete(
+            connector.client(),
+            input_data={"email": ["customer-1@example.com"], "address_id": [1]},
+        )
         assert len(deletes) == 2
 
         stmts = [str(stmt) for stmt in deletes]
