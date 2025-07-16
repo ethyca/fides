@@ -42,9 +42,8 @@ describe("System Data Uses Tab", () => {
 
     cy.getAntTab("Data uses").click();
 
-    // Check crud actions
-    cy.getByTestId("add-btn");
-    cy.getByTestId("delete-btn");
+    cy.getByTestId("add-btn").should("not.exist");
+    cy.getByTestId("delete-btn").should("not.exist");
     cy.getByTestId("row-functional.service.improve").click();
 
     // Check state of available inputs
