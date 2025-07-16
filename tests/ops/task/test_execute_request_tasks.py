@@ -557,17 +557,19 @@ class TestGetUpstreamAccessDataForErasureTask:
 
         # Mock the create_graph_task function to avoid complex graph setup
         mock_graph_task = mocker.Mock()
-        mock_graph_task.execution_node.input_keys = [CollectionAddress("test_dataset", "users")]
+        mock_graph_task.execution_node.input_keys = [
+            CollectionAddress("test_dataset", "users")
+        ]
         mocker.patch(
             "fides.api.task.execute_request_tasks.create_graph_task",
-            return_value=mock_graph_task
+            return_value=mock_graph_task,
         )
 
         # Mock the _build_upstream_access_data function
         mock_upstream_data = [["test_data"]]
         mocker.patch(
             "fides.api.task.execute_request_tasks._build_upstream_access_data",
-            return_value=mock_upstream_data
+            return_value=mock_upstream_data,
         )
 
         with TaskResources(
@@ -615,9 +617,9 @@ class TestGetUpstreamAccessDataForErasureTask:
         ) as resources:
 
             with pytest.raises(Exception) as exc_info:
-                get_upstream_access_data_for_erasure_task(
-                    erasure_task, db, resources
-                )
+                get_upstream_access_data_for_erasure_task(erasure_task, db, resources)
 
-            assert "Unable to find access request task for erasure task" in str(exc_info.value)
+            assert "Unable to find access request task for erasure task" in str(
+                exc_info.value
+            )
             assert "test_dataset:customer" in str(exc_info.value)

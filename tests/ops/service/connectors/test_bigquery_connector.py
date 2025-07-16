@@ -88,6 +88,35 @@ class TestBigQueryConnector:
         ].to_mock_execution_node()
 
     @pytest.fixture
+    def execution_node_with_namespace_and_partitioning_meta_and_multiple_identities(
+        self,
+        bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta: DatasetConfig,
+    ) -> Generator:
+        dataset_config = (
+            bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta
+        )
+        graph_dataset = convert_dataset_to_graph(
+            Dataset.model_validate(dataset_config.ctl_dataset),
+            dataset_config.connection_config.key,
+        )
+        dataset_graph = DatasetGraph(graph_dataset)
+        traversal = Traversal(
+            dataset_graph,
+            {
+                "email": [
+                    "customer-3@example.com",
+                    "customer-4@example.com",
+                    "customer-5@example.com",
+                ],
+                "custom_id": ["custom_id_3", "custom_id_4", "custom_id_5"],
+            },
+        )
+
+        yield traversal.traversal_node_dict[
+            CollectionAddress("bigquery_example_test_dataset", "customer")
+        ].to_mock_execution_node()
+
+    @pytest.fixture
     def customer_data(
         self, bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta
     ):
@@ -137,6 +166,11 @@ class TestBigQueryConnector:
                     "name": "John Customer",
                     "address_id": 4,
                 },
+                {
+                    "email": "customer-3@example.com",
+                    "name": "John Customer",
+                    "address_id": 5,
+                },
             ],
         }
 
@@ -145,10 +179,80 @@ class TestBigQueryConnector:
             with connector.client().connect() as connection:
                 connection.execute(
                     text(
-                        """
-                    DELETE FROM fidesopstest.customer
-                    WHERE email = 'customer-3@example.com'
-                """
+                        "DELETE FROM fidesopstest.customer WHERE email = 'customer-3@example.com'"
+                    )
+                )
+        except Exception as exc:
+            # Log cleanup errors but don't fail the test
+            logger.warning(f"Failed to clean up test data: {exc}")
+
+    @pytest.fixture
+    def multiple_customer_data(
+        self, bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta
+    ):
+        """Fixture to create and clean up test customer data"""
+        dataset_config = (
+            bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta
+        )
+        connector = BigQueryConnector(dataset_config.connection_config)
+
+        # Insert test data
+        with connector.client().connect() as connection:
+            connection.execute(
+                text(
+                    """
+                INSERT INTO fidesopstest.customer VALUES
+                (3, 'customer-3@example.com', 'John Customer', TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 30 DAY), 1, 'custom_id_3', STRUCT('Exampletown' as city, '123' as house, 1 as id, 'NY' as state, 'Example Street' as street, 3 as address_id),
+                ['VIP', 'Rewards', 'Premium'],
+                [STRUCT('ITEM-1' as item_id, 29.99 as price, '2023-01-15' as purchase_date, ['electronics', 'gadgets'] as item_tags),
+                STRUCT('ITEM-2' as item_id, 49.99 as price, '2023-02-20' as purchase_date, ['clothing', 'accessories'] as item_tags)]
+                ),
+                (4, 'customer-4@example.com', 'Jon Customer', TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 60 DAY), 2, 'custom_id_4', STRUCT('Exampletown' as city, '4' as house, 2 as id, 'NY' as state, 'Example Lane' as street, 4 as address_id),
+                ['Standard', 'New'],
+                [STRUCT('ITEM-3' as item_id, 19.99 as price, '2023-03-10' as purchase_date, ['books', 'education'] as item_tags)]
+                ),
+                (5, 'customer-5@example.com', 'Jonny Customer', TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 90 DAY), 3, 'custom_id_5', STRUCT('Exampletown' as city, '5' as house, 3 as id, 'NY' as state, 'Example Street' as street, 5 as address_id),
+                ['Standard', 'New'],
+                [STRUCT('ITEM-4' as item_id, 19.99 as price, '2023-04-10' as purchase_date, ['books', 'education'] as item_tags)]
+                )
+                ;
+            """
+                )
+            )
+
+        yield {
+            "emails": [
+                "customer-3@example.com",
+                "customer-4@example.com",
+                "customer-5@example.com",
+            ],
+            "custom_ids": ["custom_id_3", "custom_id_4", "custom_id_5"],
+            "name": "John Customer",
+            "rows": [
+                {
+                    "email": "customer-3@example.com",
+                    "name": "John Customer",
+                    "address_id": 3,
+                },
+                {
+                    "email": "customer-4@example.com",
+                    "name": "Jon Customer",
+                    "address_id": 4,
+                },
+                {
+                    "email": "customer-5@example.com",
+                    "name": "Jonny Customer",
+                    "address_id": 5,
+                },
+            ],
+        }
+
+        # Clean up test data
+        try:
+            with connector.client().connect() as connection:
+                connection.execute(
+                    text(
+                        "DELETE FROM fidesopstest.customer WHERE email in ('customer-3@example.com', 'customer-4@example.com', 'customer-5@example.com')"
                     )
                 )
         except Exception as exc:
@@ -244,6 +348,50 @@ class TestBigQueryConnector:
             request_task=RequestTask(),
             rows=customer_data["rows"],
             input_data={"email": ["customer-3@example.com"], "address_id": [3, 4, 5]},
+        )
+        # Delete all 3 customer rows
+        assert update_or_delete_ct == 3
+
+        # Verify that we only execute one delete per partition, not per row
+        assert execute_spy.call_count == 2
+
+    def test_generate_delete_partitioned_table_with_batched_delete_multiple_identities(
+        self,
+        bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta: DatasetConfig,
+        execution_node_with_namespace_and_partitioning_meta_and_multiple_identities,
+        erasure_policy,
+        multiple_customer_data,
+        db,
+        mocker,
+    ):
+        dataset_config = (
+            bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta
+        )
+        connector = BigQueryConnector(dataset_config.connection_config)
+
+        # Set DELETE masking strategy for the customer collection
+        execution_node = (
+            execution_node_with_namespace_and_partitioning_meta_and_multiple_identities
+        )
+        execution_node.collection.masking_strategy_override = MaskingStrategyOverride(
+            strategy=MaskingStrategies.DELETE
+        )
+
+        erasure_policy.rules[0].targets[0].data_category = "user"
+        erasure_policy.rules[0].targets[0].save(db)
+
+        execute_spy = mocker.spy(sqlalchemy.engine.Connection, "execute")
+
+        update_or_delete_ct = connector.mask_data(
+            node=execution_node,
+            policy=erasure_policy,
+            privacy_request=PrivacyRequest(),
+            request_task=RequestTask(),
+            rows=multiple_customer_data["rows"],
+            input_data={
+                "email": multiple_customer_data["emails"],
+                "custom_id": multiple_customer_data["custom_ids"],
+            },
         )
         # Delete all 3 customer rows
         assert update_or_delete_ct == 3

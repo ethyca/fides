@@ -365,8 +365,10 @@ def run_erasure_node(
                     upstream_access_data: List[List[Row]] = []
 
                     try:
-                        upstream_access_data = get_upstream_access_data_for_erasure_task(
-                            request_task, session, resources
+                        upstream_access_data = (
+                            get_upstream_access_data_for_erasure_task(
+                                request_task, session, resources
+                            )
                         )
                     except Exception as e:
                         logger.error(
