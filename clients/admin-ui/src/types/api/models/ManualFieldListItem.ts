@@ -27,20 +27,9 @@ export type ManualFieldListItem = {
   assigned_users?: Array<ManualFieldUser>;
   privacy_request: ManualFieldPrivacyRequest;
   system?: ManualFieldSystem | null;
+  submission_user?: ManualFieldUser | null;
+  comments?: Array<CommentResponse>;
+  attachments?: Array<AttachmentResponse>;
   created_at: string;
   updated_at: string;
-  /**
-   * Completion fields - populated when status is COMPLETED or SKIPPED
-   */
-  completed_by_user_id?: string | null;
-  completed_by_user_first_name?: string | null;
-  completed_by_user_last_name?: string | null;
-  completed_by_user_email_address?: string | null;
-  completion_comment?: CommentResponse | null;
-  completion_attachment?: AttachmentResponse | null;
-  completed_at?: string | null;
-  /**
-   * The field value submitted when completing the task
-   */
-  field_value?: string | null;
 };
