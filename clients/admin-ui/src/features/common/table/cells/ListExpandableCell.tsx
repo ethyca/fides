@@ -66,7 +66,7 @@ export const ListExpandableCell = ({
       <Flex
         align={isCollapsed ? "center" : "flex-start"}
         vertical={!isCollapsed}
-        gap="small"
+        gap={isCollapsed ? "small" : "none"}
       >
         {isCollapsed ? (
           <Text ellipsis>
@@ -82,7 +82,10 @@ export const ListExpandableCell = ({
             e.stopPropagation();
             handleToggle();
           }}
-          className="p-0 text-xs"
+          className="h-auto p-0"
+          style={{
+            fontSize: "var(--ant-font-size)",
+          }}
         >
           {isCollapsed ? "view" : COLLAPSE_BUTTON_TEXT}
         </Button>

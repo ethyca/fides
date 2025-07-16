@@ -101,7 +101,10 @@ export const TagExpandableCell = ({
               e.stopPropagation();
               handleToggle();
             }}
-            className="p-0 text-xs"
+            className="h-auto p-0"
+            style={{
+              fontSize: "var(--ant-font-size)",
+            }}
           >
             {isCollapsed
               ? `+${values.length - displayThreshold} more`
