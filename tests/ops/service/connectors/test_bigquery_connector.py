@@ -401,7 +401,7 @@ class TestBigQueryConnector:
         # Verify that we only execute one delete per partition, not per row
         assert execute_spy.call_count == 2
 
-    def test_mask_data_empty_rows_no_execute(
+    def test_mask_data_missing_input_data(
         self,
         bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta: DatasetConfig,
         execution_node_with_namespace_and_partitioning_meta,

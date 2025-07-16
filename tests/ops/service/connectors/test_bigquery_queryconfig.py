@@ -279,15 +279,6 @@ class TestBigQueryQueryConfig:
         erasure_policy.rules[0].targets[0].data_category = "user"
         erasure_policy.rules[0].targets[0].save(db)
 
-        rows = [
-            {
-                "id": "2",
-                "email": "employee-2@example.com",
-                "name": "John Doe",
-                "address_id": "3",
-            }
-        ]
-
         delete_stmts = BigQueryQueryConfig(employee_node).generate_delete(
             bigquery_client,
             input_data={"email": ["employee-2@example.com"], "address_id": ["3"]},
@@ -331,28 +322,6 @@ class TestBigQueryQueryConfig:
 
         erasure_policy.rules[0].targets[0].data_category = "user"
         erasure_policy.rules[0].targets[0].save(db)
-
-        # Multiple rows with the same email
-        rows = [
-            {
-                "id": "2",
-                "email": "employee-same@example.com",
-                "name": "John Doe",
-                "address_id": "10",
-            },
-            {
-                "id": "4",
-                "email": "employee-same@example.com",
-                "name": "Jane Smith",
-                "address_id": "10",
-            },
-            {
-                "id": "6",
-                "email": "employee-same@example.com",
-                "name": "Bob Johnson",
-                "address_id": "10",
-            },
-        ]
 
         delete_stmts = BigQueryQueryConfig(employee_node).generate_delete(
             bigquery_client,
@@ -401,28 +370,6 @@ class TestBigQueryQueryConfig:
         erasure_policy.rules[0].targets[0].data_category = "user"
         erasure_policy.rules[0].targets[0].save(db)
 
-        # Multiple rows with different email addresses
-        rows = [
-            {
-                "id": "1",
-                "email": "employee-1@example.com",
-                "name": "John Doe",
-                "address_id": "10",
-            },
-            {
-                "id": "2",
-                "email": "employee-2@example.com",
-                "name": "Jane Smith",
-                "address_id": "20",
-            },
-            {
-                "id": "3",
-                "email": "employee-3@example.com",
-                "name": "Bob Johnson",
-                "address_id": "30",
-            },
-        ]
-
         delete_stmts = BigQueryQueryConfig(employee_node).generate_delete(
             bigquery_client,
             input_data={
@@ -460,7 +407,7 @@ class TestBigQueryQueryConfig:
             "employee-3@example.com",
         ]
 
-    def test_generate_delete_empty_rows(
+    def test_generate_delete_missing_input_data(
         self,
         db,
         employee_node,
@@ -469,7 +416,7 @@ class TestBigQueryQueryConfig:
         dataset_graph,
     ):
         """
-        Test that generate_delete handles empty rows list correctly
+        Test that generate_delete handles missing input data correctly
         """
         assert (
             dataset_graph.nodes[
@@ -485,7 +432,7 @@ class TestBigQueryQueryConfig:
             bigquery_client
         )
 
-        # Should return empty list for empty input
+        # Should return empty list for missing input data
         assert delete_stmts == []
 
     def test_is_delete_masking_strategy(
@@ -1313,28 +1260,6 @@ class TestBigQueryQueryConfigPartitioning:
 
         erasure_policy.rules[0].targets[0].data_category = "user"
         erasure_policy.rules[0].targets[0].save(db)
-
-        # Multiple rows with same reference field values
-        rows = [
-            {
-                "email": "employee-same@example.com",
-                "id": "1",
-                "name": "John Doe",
-                "address_id": "100",
-            },
-            {
-                "email": "employee-same@example.com",
-                "id": "2",
-                "name": "Jane Smith",
-                "address_id": "100",
-            },
-            {
-                "email": "employee-same@example.com",
-                "id": "3",
-                "name": "Bob Johnson",
-                "address_id": "100",
-            },
-        ]
 
         query_config = BigQueryQueryConfig(employee_node)
         delete_stmts = query_config.generate_delete(
