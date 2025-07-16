@@ -97,7 +97,7 @@ export const useDiscoveredSystemAggregateColumns = ({
                   label:
                     PRIVACY_NOTICE_REGION_RECORD[
                       location as PrivacyNoticeRegion
-                    ],
+                    ] ?? location,
                   key: location,
                 })) ?? []
               }

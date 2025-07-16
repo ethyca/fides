@@ -2,12 +2,12 @@ import {
   AntButton as Button,
   AntDropdown as Dropdown,
   AntEmpty as Empty,
+  AntFlex as Flex,
+  AntSpace as Space,
   AntTable as Table,
   AntTabs as Tabs,
   AntTooltip as Tooltip,
-  Flex,
   Icons,
-  Text,
   useToast,
 } from "fidesui";
 import { useRouter } from "next/router";
@@ -19,6 +19,7 @@ import {
   SYSTEM_ROUTE,
   UNCATEGORIZED_SEGMENT,
 } from "~/features/common/nav/routes";
+import { SelectedText } from "~/features/common/table/SelectedText";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   useAddMonitorResultSystemsMutation,
@@ -123,10 +124,6 @@ export const DiscoveredSystemAggregateTable = ({
     rowClickUrl,
   });
 
-  const handleRowClick = (record: SystemStagedResourcesAggregateRecord) => {
-    router.push(rowClickUrl(record));
-  };
-
   const handleBulkAdd = async () => {
     const totalUpdates = selectedRows.reduce(
       (acc, row) => acc + row.total_updates!,
@@ -213,17 +210,9 @@ export const DiscoveredSystemAggregateTable = ({
                 value={searchQuery}
                 onChange={setSearchQuery}
               />
-              <Flex align="center">
+              <Space size="large">
                 {!!selectedRowKeys.length && (
-                  <Text
-                    fontSize="xs"
-                    fontWeight="semibold"
-                    minW={16}
-                    mr={6}
-                    data-testid="selected-count"
-                  >
-                    {`${selectedRowKeys.length} selected`}
-                  </Text>
+                  <SelectedText count={selectedRowKeys.length} />
                 )}
                 <Dropdown
                   menu={{
@@ -267,7 +256,7 @@ export const DiscoveredSystemAggregateTable = ({
                     Actions
                   </Button>
                 </Dropdown>
-              </Flex>
+              </Space>
             </Flex>
             <Table
               dataSource={data?.items || []}
@@ -286,13 +275,6 @@ export const DiscoveredSystemAggregateTable = ({
                 total: data?.total || 0,
               }}
               onChange={handleTableChange}
-              onRow={(record) => ({
-                onClick: (e) => {
-                  e.stopPropagation();
-                  handleRowClick(record);
-                },
-                style: { cursor: "pointer" },
-              })}
               locale={{
                 emptyText: (
                   <Empty
