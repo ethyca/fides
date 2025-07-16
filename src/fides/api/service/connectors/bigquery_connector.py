@@ -160,8 +160,8 @@ class BigQueryConnector(SQLConnector):
             # For UPDATE operations, process each row individually since each row may have different masked values
             for row in rows:
                 update_or_delete_stmts: List[Executable] = (
-                    query_config.generate_masking_stmt(
-                        node, row, policy, privacy_request, client
+                    query_config.generate_update(
+                        row, policy, privacy_request, client
                     )
                 )
                 logger.debug(
