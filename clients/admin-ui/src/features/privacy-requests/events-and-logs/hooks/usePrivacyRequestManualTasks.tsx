@@ -39,9 +39,16 @@ export const usePrivacyRequestManualTasks = (privacyRequestId: string) => {
         )
         .map((task: ManualFieldListItem) => {
           // Format the user who completed the task
-          const author = task.submission_user
+          let author = task.submission_user
             ? formatUser(task.submission_user)
-            : "Root user";
+            : "Unknown User";
+
+          const isRootUser =
+            task.submission_user?.id &&
+            !task.submission_user?.id.startsWith("fid_");
+          if (isRootUser) {
+            author = task.submission_user?.id || "Unknown User";
+          }
 
           // Create title based on completion status
           const isSkipped = task.status === ManualFieldStatus.SKIPPED;
