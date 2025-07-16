@@ -164,6 +164,18 @@ export interface FidesInitOptions {
    * Defaults to "once".
    */
   fidesInitializedEventMode: "multiple" | "once" | "disable";
+
+  /**
+   * A URL-like route that determines which view is shown by default when the consent modal is opened.
+   * Currently only affects TCF.
+   *
+   * - "/tcf/purposes" ("purposes" tab will be shown if not set)
+   * - "/tcf/features"
+   * - "/tcf/vendors"
+   *
+   * Defaults to `undefined`.
+   */
+  fidesModalDefaultView?: FidesModalDefaultView;
 }
 
 /**
@@ -771,6 +783,12 @@ export type UserGeolocation = {
   region?: string; // "NY"
 };
 
+export enum FidesModalDefaultView {
+  PURPOSES = "/tcf/purposes",
+  FEATURES = "/tcf/features",
+  VENDORS = "/tcf/vendors",
+}
+
 /**
  * Re-export the FidesOptions interface from src/docs; mostly for convenience as
  * a lot of code wants to import from this consent-types.ts file!
@@ -808,6 +826,7 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesConsentNonApplicableFlagMode"
   | "fidesConsentFlagType"
   | "fidesInitializedEventMode"
+  | "fidesModalDefaultView"
 >;
 
 export type FidesExperienceTranslationOverrides = {
