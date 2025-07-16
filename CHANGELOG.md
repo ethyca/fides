@@ -21,9 +21,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.65.2...main)
 
-### Changed
-- Changed behavior of beta feature flags to persist across user login sessions
-
 ### Added
 - Replaced Asset's `with_consent` field with the enum `consent_status` field and added indexes to the `StagedResource` table [#6287](https://github.com/ethyca/fides/pull/6287)
 - New 'Internal Respondent' user role that only has access to complete their assigned manual tasks [#6329](https://github.com/ethyca/fides/pull/6329)
@@ -31,6 +28,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Changed
 - Viewer users can now view/complete their assigned manual tasks [#6329](https://github.com/ethyca/fides/pull/6329)
+- Updated the attachment list to distinguish internal attachment and attachments for the access package [#6344](https://github.com/ethyca/fides/pull/6344)
+- Changed behavior of beta feature flags to persist across user login sessions
+
 
 ### Developer Experience
 - Migrate tabs to Ant Design [#6260](https://github.com/ethyca/fides/pull/6260)
