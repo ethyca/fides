@@ -28,9 +28,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added new option to FidesJS to change default tab in TCF modal [#6338](https://github.com/ethyca/fides/pull/6338)
 
 ### Changed
-- Changed behavior of beta feature flags to persist across user login sessions
-
-### Changed
 - Viewer users can now view/complete their assigned manual tasks [#6329](https://github.com/ethyca/fides/pull/6329)
 - Updated the attachment list to distinguish internal attachment and attachments for the access package [#6344](https://github.com/ethyca/fides/pull/6344)
 - Changed behavior of beta feature flags to persist across user login sessions
