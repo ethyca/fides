@@ -11,6 +11,7 @@ import {
   ConsentMethod,
   FidesCookie,
   FidesExperienceTranslationOverrides,
+  FidesModalDefaultView,
   NoticeConsent,
   OverrideType,
   PrivacyExperience,
@@ -86,6 +87,18 @@ const getAllIds = (
     return [];
   }
   return modelList.map((m) => `${m.id}`);
+};
+
+// gets the index of the tab to show by default based on the fidesModalDefaultView option
+const parseModalDefaultView = (
+  defaultView: FidesModalDefaultView = FidesModalDefaultView.PURPOSES,
+): number => {
+  const tabRoutes = [
+    FidesModalDefaultView.PURPOSES,
+    FidesModalDefaultView.FEATURES,
+    FidesModalDefaultView.VENDORS,
+  ];
+  return tabRoutes.indexOf(defaultView);
 };
 
 export const TcfOverlay = () => {
@@ -553,7 +566,8 @@ export const TcfOverlay = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [options.fidesConsentOverride]);
 
-  const [activeTabIndex, setActiveTabIndex] = useState(0);
+  const initialTab = parseModalDefaultView(options.fidesModalDefaultView);
+  const [activeTabIndex, setActiveTabIndex] = useState(initialTab);
 
   const dispatchOpenBannerEvent = useCallback(() => {
     setServingComponent(ServingComponent.TCF_BANNER);

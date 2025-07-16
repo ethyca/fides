@@ -19,13 +19,17 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.65.2...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.66.0...main)
+
+## [2.66.0](https://github.com/ethyca/fides/compare/2.65.2...2.66.0)
 
 ### Added
 - Replaced Asset's `with_consent` field with the enum `consent_status` field and added indexes to the `StagedResource` table [#6287](https://github.com/ethyca/fides/pull/6287)
 - New 'Internal Respondent' user role that only has access to complete their assigned manual tasks [#6329](https://github.com/ethyca/fides/pull/6329)
 - Added consent status to the Action Center, including a new discovery status column and a details modal for assets detected without consent [#6283](https://github.com/ethyca/fides/pull/6283)
 - Added the ability to edit more fields for GVL vendors [#6341](https://github.com/ethyca/fides/pull/6341)
+- Added new option to FidesJS to change default tab in TCF modal [#6338](https://github.com/ethyca/fides/pull/6338)
+- Added new entries for manual task completion in the activity tab of a privacy request [#6345](https://github.com/ethyca/fides/pull/6345)
 
 ### Changed
 - Viewer users can now view/complete their assigned manual tasks [#6329](https://github.com/ethyca/fides/pull/6329)
@@ -43,6 +47,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed taxonomy search behavior to include label and value text
 - Fixed FidesJS to use consistent served_notice_history_id across all consent flows for improved analytics correlation [#6312](https://github.com/ethyca/fides/pull/6312)
 - Fixed Detection & Discovery menu items showing in the UI to users without the required permissions [#6337](https://github.com/ethyca/fides/pull/6337)
+- Fixed bug where FidesJS modals wouldn't scroll on very short screens [#6327](https://github.com/ethyca/fides/pull/6327)
 
 ## [2.65.2](https://github.com/ethyca/fides/compare/2.65.1...2.65.2)
 
