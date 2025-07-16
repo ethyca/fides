@@ -247,24 +247,28 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
             )
             return []
 
-        filtered_data = self.node.typed_filtered_values(input_data)
+        reference_values: Dict[str, List[Any]] = {}
+        for fpath, fld in self.reference_field_paths.items():
+            values = input_data.get(fpath.string_path, [])
+            if values:
+                reference_values[fpath.string_path] = [fld.cast(v) for v in values]
 
-        if not filtered_data:
+        if not reference_values:
             logger.warning(
                 "There is not enough data to generate a valid DELETE statement for {}",
                 self.node.address,
             )
             return []
 
-        table = Table(self.generate_table_name(), MetaData(bind=client), autoload=True)
+        table = Table(self._generate_table_name(), MetaData(bind=client), autoload=True)
 
         # Build individual reference clauses
         where_clauses: List[ColumnElement] = []
-        for column_name, values in filtered_data.items():
-            if len(values) == 1:
-                where_clauses.append(table.c[column_name] == values[0])
+        for col_name, vals in reference_values.items():
+            if len(vals) == 1:
+                where_clauses.append(getattr(table.c, col_name) == vals[0])
             else:
-                where_clauses.append(table.c[column_name].in_(values))
+                where_clauses.append(getattr(table.c, col_name).in_(vals))
 
         # Combine reference clauses with OR instead of AND
         combined_reference_clause = or_(*where_clauses)

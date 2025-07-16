@@ -259,6 +259,8 @@ def run_erasure_request_deprecated(  # pylint: disable = too-many-arguments
         # `inputs` kwarg on each task's `erasure_request` method.  The resulting
         # callable accepts the original positional arguments expected by Dask.
 
+        from functools import partial  # Local import to avoid circular deps at top
+
         dsk: Dict[CollectionAddress, Any] = {}
         for k, t in env.items():
             # Collect upstream access data in the same order as the input keys

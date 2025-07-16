@@ -195,6 +195,7 @@ class BigQueryConnector(SQLConnector):
         client = self.client()
 
         if query_config.uses_delete_masking_strategy():
+            # Use batched DELETE for better performance
             delete_stmts = query_config.generate_delete(client, input_data or {})
             logger.debug(f"Generated {len(delete_stmts)} DELETE statements")
             update_or_delete_ct += self._execute_statements_with_sql_dry_run(

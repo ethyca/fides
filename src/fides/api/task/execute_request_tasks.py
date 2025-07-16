@@ -379,10 +379,32 @@ def run_erasure_node(
                     upstream_access_data: List[List[Row]] = []
 
                     try:
-                        upstream_access_data = (
-                            get_upstream_access_data_for_erasure_task(
-                                request_task, session, resources
+                        # Get the corresponding access task for the current erasure task.
+                        access_request_task = (
+                            session.query(RequestTask)
+                            .filter(
+                                RequestTask.privacy_request_id
+                                == request_task.privacy_request_id,
+                                RequestTask.collection_address
+                                == request_task.collection_address,
+                                RequestTask.action_type == ActionType.access,
                             )
+                            .first()
+                        )
+
+                        if not access_request_task:
+                            raise Exception(
+                                f"Unable to find access request task for erasure task {request_task.collection_address}"
+                            )
+
+                        # Convert the request task to a GraphTask to get the input_keys
+                        access_graph_task: GraphTask = create_graph_task(
+                            session, access_request_task, resources
+                        )
+
+                        upstream_access_data = _build_upstream_access_data(
+                            access_graph_task.execution_node.input_keys,
+                            access_request_task.upstream_tasks_objects(session),
                         )
                     except Exception as e:
                         logger.error(

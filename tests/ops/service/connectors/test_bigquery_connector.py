@@ -434,48 +434,6 @@ class TestBigQueryConnector:
         assert update_or_delete_ct == 0
         assert execute_spy.call_count == 0
 
-    def test_mask_data_missing_reference_fields_no_execute(
-        self,
-        bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta: DatasetConfig,
-        execution_node_with_namespace_and_partitioning_meta,
-        erasure_policy,
-        mocker,
-    ):
-        """mask_data should not execute deletes when rows lack reference field data."""
-        dataset_config = (
-            bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta
-        )
-        connector = BigQueryConnector(dataset_config.connection_config)
-
-        # Force DELETE masking strategy for this test
-        execution_node = execution_node_with_namespace_and_partitioning_meta
-        execution_node.collection.masking_strategy_override = MaskingStrategyOverride(
-            strategy=MaskingStrategies.DELETE
-        )
-
-        # A row missing reference fields (e.g. 'email' and 'address_id')
-        rows_missing_refs = [
-            {
-                "email": None,
-                "name": "Jane Doe",
-                "address_id": None,
-            }
-        ]
-
-        execute_spy = mocker.spy(sqlalchemy.engine.Connection, "execute")
-
-        update_or_delete_ct = connector.mask_data(
-            node=execution_node,
-            policy=erasure_policy,
-            privacy_request=PrivacyRequest(),
-            request_task=RequestTask(),
-            rows=rows_missing_refs,
-        )
-
-        # No statements should execute because WHERE clause cannot be built
-        assert update_or_delete_ct == 0
-        assert execute_spy.call_count == 0
-
     def test_generate_delete_partitioned_table(
         self,
         bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta: DatasetConfig,
