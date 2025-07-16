@@ -1,5 +1,5 @@
 import { AntMessage as message } from "fidesui";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
 import { formatUser } from "~/features/common/utils";
 import { useGetTasksQuery } from "~/features/manual-tasks/manual-tasks.slice";
@@ -72,8 +72,29 @@ export const usePrivacyRequestManualTasks = (privacyRequestId: string) => {
           };
         });
 
+  // Collect all comment IDs that are part of manual tasks
+  // to avoid duplicate display in the timeline
+  const taskCommentIds = useMemo(() => {
+    const commentIds = new Set<string>();
+    if (tasksData?.items) {
+      tasksData.items
+        .filter(
+          (task: ManualFieldListItem) =>
+            task.status === ManualFieldStatus.COMPLETED ||
+            task.status === ManualFieldStatus.SKIPPED,
+        )
+        .forEach((task: ManualFieldListItem) => {
+          task.comments?.forEach((comment) => {
+            commentIds.add(comment.id);
+          });
+        });
+    }
+    return commentIds;
+  }, [tasksData]);
+
   return {
     manualTaskItems,
+    taskCommentIds,
     isLoading,
   };
 };

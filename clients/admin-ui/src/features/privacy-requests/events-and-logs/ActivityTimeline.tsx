@@ -42,8 +42,11 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
     usePrivacyRequestComments(privacyRequestId);
   const { eventItems, isLoading: isResultsLoading } =
     usePrivacyRequestEventLogs(results);
-  const { manualTaskItems, isLoading: isManualTasksLoading } =
-    usePrivacyRequestManualTasks(privacyRequestId);
+  const {
+    manualTaskItems,
+    taskCommentIds,
+    isLoading: isManualTasksLoading,
+  } = usePrivacyRequestManualTasks(privacyRequestId);
 
   const isLoading =
     isCommentsLoading || isResultsLoading || isManualTasksLoading;
@@ -83,6 +86,16 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
     [onOpen],
   );
 
+  // Filter out comments that are already included in manual tasks
+  // to avoid showing the same comments twice in the timeline
+  const filteredCommentItems = useMemo(() => {
+    return commentItems.filter((commentItem) => {
+      // Extract comment ID from the comment item ID (format: "comment-{id}")
+      const commentId = commentItem.id.replace("comment-", "");
+      return !taskCommentIds.has(commentId);
+    });
+  }, [commentItems, taskCommentIds]);
+
   const timelineItems = useMemo(() => {
     const eventItemsWithClickHandler = eventItems.map((item) => {
       if (item.type === "Request update" && item.title && results) {
@@ -113,7 +126,7 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
     const allItems = [
       initialRequestItem,
       ...eventItemsWithClickHandler,
-      ...commentItems,
+      ...filteredCommentItems,
       ...manualTaskItems,
     ];
 
@@ -123,7 +136,7 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
     });
   }, [
     eventItems,
-    commentItems,
+    filteredCommentItems,
     manualTaskItems,
     results,
     showLogs,

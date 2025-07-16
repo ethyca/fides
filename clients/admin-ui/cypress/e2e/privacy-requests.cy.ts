@@ -652,7 +652,7 @@ describe("Privacy Requests", () => {
 
       cy.intercept("GET", "/api/v1/plus/privacy-request/*/comment*", {
         statusCode: 200,
-        fixture: "privacy-requests/comments/empty-comments.json",
+        fixture: "privacy-requests/comments/comments-list.json",
       }).as("getComments");
 
       cy.intercept("GET", "/api/v1/privacy-request*", {
@@ -844,6 +844,41 @@ describe("Privacy Requests", () => {
         "contain",
         "Failed to fetch manual tasks",
       );
+    });
+
+    it("filters out duplicate comments that are part of manual tasks", () => {
+      // The comments fixture includes "comment_001" which is the same ID as
+      // the comment in the first manual task. It should only appear once in the timeline.
+
+      // Count total timeline items
+      cy.getByTestId("activity-timeline-item").should(
+        "have.length.at.least",
+        5,
+      );
+
+      // Verify the task completion comment appears in the manual task entry
+      cy.getByTestId("activity-timeline-item")
+        .contains("Task completed - Verify customer identity documents")
+        .parents("li")
+        .within(() => {
+          cy.getByTestId("activity-timeline-description").should(
+            "contain",
+            "Identity verification completed successfully with provided documentation",
+          );
+        });
+
+      // Verify the same comment text does NOT appear as a standalone comment
+      // (it should be filtered out because it's already part of the manual task)
+      cy.getByTestId("activity-timeline-item")
+        .contains(
+          "Identity verification completed successfully with provided documentation",
+        )
+        .should("have.length", 1); // Should only appear once, in the task entry
+
+      // Verify that the other standalone comment ("This is a test comment") still appears
+      cy.getByTestId("activity-timeline-item")
+        .contains("This is a test comment")
+        .should("exist");
     });
   });
 });
