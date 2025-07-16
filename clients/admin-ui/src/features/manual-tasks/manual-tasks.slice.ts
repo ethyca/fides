@@ -14,7 +14,6 @@ import {
 import { PaginationQueryParams } from "~/types/common/PaginationQueryParams";
 
 import { PAGE_SIZES } from "../common/table/v2";
-import { addMockCompletionData } from "./utils/mockCompletionData";
 
 // Interface for task query parameters
 interface TaskQueryParams extends PaginationQueryParams {
@@ -23,6 +22,7 @@ interface TaskQueryParams extends PaginationQueryParams {
   systemName?: string;
   assignedUserId?: string;
   privacyRequestId?: string;
+  include_full_submission_details?: boolean;
 }
 
 // API endpoints
@@ -56,17 +56,13 @@ export const manualTasksApi = baseApi.injectEndpoints({
             queryParams.privacyRequestId,
           );
         }
+        if (queryParams.include_full_submission_details) {
+          searchParams.append("include_full_submission_details", "true");
+        }
         return {
           url: "plus/manual-fields",
           params: searchParams,
         };
-      },
-      transformResponse: (response: ManualFieldSearchResponse, meta, arg) => {
-        if (process.env.NODE_ENV === "test") {
-          return response;
-        }
-
-        return response;
       },
       providesTags: () => [{ type: "Manual Tasks" }],
     }),
