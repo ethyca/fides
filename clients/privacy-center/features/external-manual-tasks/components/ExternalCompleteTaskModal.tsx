@@ -114,8 +114,15 @@ export const ExternalCompleteTaskModal = ({
     switch (task.input_type) {
       case ManualTaskFieldType.TEXT:
         return (
-          <div className="space-y-2">
-            <div className="text-sm font-medium text-gray-700">
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}
+          >
+            <div
+              style={{
+                fontSize: "0.875rem",
+                fontWeight: "500",
+              }}
+            >
               Subject data
             </div>
             <Input.TextArea
@@ -129,7 +136,9 @@ export const ExternalCompleteTaskModal = ({
         );
       case ManualTaskFieldType.CHECKBOX:
         return (
-          <div className="space-y-2">
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}
+          >
             <Checkbox
               checked={checkboxValue}
               onChange={(e) => setCheckboxValue(e.target.checked)}
@@ -142,8 +151,17 @@ export const ExternalCompleteTaskModal = ({
       default:
         // For file uploads or when input_type is attachment, show file upload
         return (
-          <div className="space-y-2">
-            <div className="text-sm font-medium text-gray-700">Upload File</div>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}
+          >
+            <div
+              style={{
+                fontSize: "0.875rem",
+                fontWeight: "500",
+              }}
+            >
+              Upload File
+            </div>
             <div>
               <Upload
                 fileList={fileList}
@@ -179,7 +197,7 @@ export const ExternalCompleteTaskModal = ({
               <ExternalTaskDetails task={task} />
             </div>
 
-            <Divider />
+            <Divider style={{ margin: "0" }} />
 
             <div>
               <div
@@ -202,7 +220,6 @@ export const ExternalCompleteTaskModal = ({
                     style={{
                       fontSize: "0.875rem",
                       fontWeight: "500",
-                      color: "#374151",
                     }}
                   >
                     Internal comment
@@ -219,14 +236,7 @@ export const ExternalCompleteTaskModal = ({
             </div>
 
             {/* Error Display */}
-            {error && (
-              <div
-                style={{ color: "#DC2626", fontSize: "0.875rem" }}
-                data-testid="task-completion-error"
-              >
-                {error}
-              </div>
-            )}
+            {error && <div data-testid="task-completion-error">{error}</div>}
           </div>
         </ModalBody>
 
