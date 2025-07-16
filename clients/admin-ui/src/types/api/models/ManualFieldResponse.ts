@@ -14,6 +14,10 @@ export type ManualFieldResponse = {
    */
   id: string;
   /**
+   * Unique key for the field
+   */
+  key: string;
+  /**
    * Display label for the field
    */
   label: string;

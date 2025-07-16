@@ -51,6 +51,7 @@ const getExternalColumns = (
       <Typography.Text
         ellipsis={{ tooltip: name }}
         data-testid="task-details-name"
+        className="!max-w-[350px]"
       >
         {name}
       </Typography.Text>
@@ -83,6 +84,14 @@ const getExternalColumns = (
     width: 200,
     filters: systemFilters,
     filterMultiple: false,
+    render: (systemName: string) => (
+      <Typography.Text
+        ellipsis={{ tooltip: systemName }}
+        className="!max-w-[200px]"
+      >
+        {systemName}
+      </Typography.Text>
+    ),
   },
   {
     title: "Type",

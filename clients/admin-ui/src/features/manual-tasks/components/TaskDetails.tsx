@@ -97,7 +97,7 @@ export const TaskDetails = ({ task }: TaskDetailsProps) => {
               .filter(([, value]) => value) // Only show fields with values
               .map(([key, value]) => (
                 <Tag key={key}>
-                  {key}: {value}
+                  {key}: {String(value)}
                 </Tag>
               ))}
           </div>
