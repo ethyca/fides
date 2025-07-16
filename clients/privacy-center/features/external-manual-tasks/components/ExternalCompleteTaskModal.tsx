@@ -172,7 +172,9 @@ export const ExternalCompleteTaskModal = ({
           <Typography.Title level={4}>Complete Task</Typography.Title>
         </ModalHeader>
         <ModalBody>
-          <div className="flex flex-col space-y-6">
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
+          >
             <div>
               <ExternalTaskDetails task={task} />
             </div>
@@ -180,11 +182,29 @@ export const ExternalCompleteTaskModal = ({
             <Divider />
 
             <div>
-              <div className="flex flex-col space-y-4">
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "1rem",
+                }}
+              >
                 {renderTaskInput()}
 
-                <div className="space-y-2">
-                  <div className="text-sm font-medium text-gray-700">
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "0.5rem",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: "0.875rem",
+                      fontWeight: "500",
+                      color: "#374151",
+                    }}
+                  >
                     Internal comment
                   </div>
                   <Input.TextArea
@@ -201,7 +221,7 @@ export const ExternalCompleteTaskModal = ({
             {/* Error Display */}
             {error && (
               <div
-                className="text-red-600 text-sm"
+                style={{ color: "#DC2626", fontSize: "0.875rem" }}
                 data-testid="task-completion-error"
               >
                 {error}
