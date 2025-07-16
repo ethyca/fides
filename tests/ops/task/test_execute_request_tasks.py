@@ -569,7 +569,7 @@ class TestGetUpstreamAccessDataForErasureTask:
         mock_upstream_data = [["test_data"]]
         mocker.patch(
             "fides.api.task.execute_request_tasks._build_upstream_access_data",
-            return_value=mock_upstream_data
+            return_value=mock_upstream_data,
         )
 
         with TaskResources(
