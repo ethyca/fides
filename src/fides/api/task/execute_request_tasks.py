@@ -365,32 +365,8 @@ def run_erasure_node(
                     upstream_access_data: List[List[Row]] = []
 
                     try:
-                        # Get the corresponding access task for the current erasure task.
-                        access_request_task = (
-                            session.query(RequestTask)
-                            .filter(
-                                RequestTask.privacy_request_id
-                                == request_task.privacy_request_id,
-                                RequestTask.collection_address
-                                == request_task.collection_address,
-                                RequestTask.action_type == ActionType.access,
-                            )
-                            .first()
-                        )
-
-                        if not access_request_task:
-                            raise Exception(
-                                f"Unable to find access request task for erasure task {request_task.collection_address}"
-                            )
-
-                        # Convert the request task to a GraphTask to get the input_keys
-                        access_graph_task: GraphTask = create_graph_task(
-                            session, access_request_task, resources
-                        )
-
-                        upstream_access_data = _build_upstream_access_data(
-                            access_graph_task.execution_node.input_keys,
-                            access_request_task.upstream_tasks_objects(session),
+                        upstream_access_data = get_upstream_access_data_for_erasure_task(
+                            request_task, session, resources
                         )
                     except Exception as e:
                         logger.error(
@@ -517,6 +493,57 @@ def _order_tasks_by_input_key(
         )
         tasks.append(task)
     return tasks
+
+
+def get_upstream_access_data_for_erasure_task(
+    erasure_request_task: RequestTask,
+    session: Session,
+    resources: TaskResources,
+) -> List[List[Row]]:
+    """
+    Retrieves upstream access data for a given erasure request task.
+
+    This function finds the corresponding access task for the erasure task,
+    creates a GraphTask to extract input keys, and builds the upstream access data
+    needed for erasure operations (particularly for BigQuery delete statements).
+
+    Args:
+        erasure_request_task: The erasure task that needs upstream access data
+        session: Database session for querying
+        resources: Task resources for creating GraphTask
+
+    Returns:
+        List[List[Row]]: Upstream access data ordered by input keys
+
+    Raises:
+        Exception: If the corresponding access task cannot be found
+    """
+    # Get the corresponding access task for the current erasure task
+    access_request_task = (
+        session.query(RequestTask)
+        .filter(
+            RequestTask.privacy_request_id == erasure_request_task.privacy_request_id,
+            RequestTask.collection_address == erasure_request_task.collection_address,
+            RequestTask.action_type == ActionType.access,
+        )
+        .first()
+    )
+
+    if not access_request_task:
+        raise Exception(
+            f"Unable to find access request task for erasure task {erasure_request_task.collection_address}"
+        )
+
+    # Convert the request task to a GraphTask to get the input_keys
+    access_graph_task: GraphTask = create_graph_task(
+        session, access_request_task, resources
+    )
+
+    # Build and return the upstream access data
+    return _build_upstream_access_data(
+        access_graph_task.execution_node.input_keys,
+        access_request_task.upstream_tasks_objects(session),
+    )
 
 
 def _build_upstream_access_data(
