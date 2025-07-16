@@ -69,7 +69,9 @@ const getColumns = (
     key: "name",
     width: 300,
     render: (name) => (
-      <Typography.Text ellipsis={{ tooltip: name }}>{name}</Typography.Text>
+      <Typography.Text ellipsis={{ tooltip: name }} className="!max-w-[300px]">
+        {name}
+      </Typography.Text>
     ),
   },
   {
@@ -95,6 +97,14 @@ const getColumns = (
     width: 210,
     filters: systemFilters,
     filterMultiple: false,
+    render: (systemName: string) => (
+      <Typography.Text
+        ellipsis={{ tooltip: systemName }}
+        className="!max-w-[200px]"
+      >
+        {systemName}
+      </Typography.Text>
+    ),
   },
   {
     title: "Type",
