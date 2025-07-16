@@ -24,10 +24,10 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
     type,
     onClick,
     isError,
-    isSkipped,
     isAwaitingInput,
     description,
     attachments,
+    showViewLog,
   } = item;
 
   // Format the date for display
@@ -74,7 +74,7 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
           >
             {type}
           </Tag>
-          {(isError || isSkipped || isAwaitingInput) && (
+          {showViewLog && (
             <span
               className={styles.viewLogs}
               data-testid="activity-timeline-view-logs"
