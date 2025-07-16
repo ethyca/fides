@@ -296,5 +296,5 @@ export interface FidesOptions {
    *
    * Defaults to `undefined`.
    */
-  fides_modal_default_view: string;
+  fides_modal_default_view?: string;
 }
