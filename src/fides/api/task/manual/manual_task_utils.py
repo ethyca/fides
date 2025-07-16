@@ -217,7 +217,7 @@ def create_manual_task_instances_for_privacy_request(
                             ManualTaskConfigurationType.access_privacy_request,
                             ManualTaskConfigurationType.erasure_privacy_request,
                         ]
-                    ).filter(ManualTaskConfig.is_current.is_(True))
+                    )
                 )
             elif has_access_rules:
                 # Only access rules - only include access configurations
