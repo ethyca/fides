@@ -64,7 +64,12 @@ export const useManualTaskColumns = ({
       key: "name",
       width: 300,
       render: (name) => (
-        <Typography.Text ellipsis={{ tooltip: name }}>{name}</Typography.Text>
+        <Typography.Text
+          ellipsis={{ tooltip: name }}
+          className="!max-w-[300px]"
+        >
+          {name}
+        </Typography.Text>
       ),
     },
     {
@@ -88,6 +93,14 @@ export const useManualTaskColumns = ({
       dataIndex: ["system", "name"],
       key: "system_name",
       width: 210,
+      render: (systemName: string) => (
+        <Typography.Text
+          ellipsis={{ tooltip: systemName }}
+          className="!max-w-[210px]"
+        >
+          {systemName}
+        </Typography.Text>
+      ),
       filters: systemFilters,
       filterMultiple: false,
     },
