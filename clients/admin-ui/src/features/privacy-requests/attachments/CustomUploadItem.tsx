@@ -70,7 +70,7 @@ const CustomUploadItem = ({ file }: CustomUploadItemProps) => {
       </Text>
       {isAttachmentForAccessPackage && (
         <Tooltip title="This attachment will be included in the access package.">
-          <Icons.UserFilled className="shrink-0" />
+          <Icons.UserFilled className="shrink-0" title="User icon" />
         </Tooltip>
       )}
       <Button
