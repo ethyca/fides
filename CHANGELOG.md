@@ -28,6 +28,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - New 'Internal Respondent' user role that only has access to complete their assigned manual tasks [#6329](https://github.com/ethyca/fides/pull/6329)
 - Added consent status to the Action Center, including a new discovery status column and a details modal for assets detected without consent [#6283](https://github.com/ethyca/fides/pull/6283)
 - Added new option to FidesJS to change default tab in TCF modal [#6338](https://github.com/ethyca/fides/pull/6338)
+- Added new entries for manual task completion in the activity tab of a privacy request [#6345](https://github.com/ethyca/fides/pull/6345)
 
 ### Changed
 - Viewer users can now view/complete their assigned manual tasks [#6329](https://github.com/ethyca/fides/pull/6329)
