@@ -46,32 +46,32 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "Action center",
         path: routes.ACTION_CENTER_ROUTE,
-        scopes: [],
+        scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
         requiresFlag: "webMonitor",
         requiresPlus: true,
       },
       {
         title: "Activity",
         path: routes.DETECTION_DISCOVERY_ACTIVITY_ROUTE,
-        scopes: [],
+        scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
         requiresPlus: true,
       },
       {
         title: "Data detection",
         path: routes.DATA_DETECTION_ROUTE,
-        scopes: [],
+        scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
         requiresPlus: true,
       },
       {
         title: "Data discovery",
         path: routes.DATA_DISCOVERY_ROUTE,
-        scopes: [],
+        scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
         requiresPlus: true,
       },
       {
         title: "Data catalog",
         path: routes.DATA_CATALOG_ROUTE,
-        scopes: [],
+        scopes: [ScopeRegistryEnum.DISCOVERY_MONITOR_READ],
         requiresFlag: "dataCatalog",
         requiresPlus: true,
       },
@@ -123,6 +123,8 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         scopes: [
           ScopeRegistryEnum.PRIVACY_REQUEST_READ,
           ScopeRegistryEnum.PRIVACY_REQUEST_CREATE,
+          ScopeRegistryEnum.MANUAL_FIELD_READ_OWN,
+          ScopeRegistryEnum.MANUAL_FIELD_READ_ALL,
         ],
       },
       {
