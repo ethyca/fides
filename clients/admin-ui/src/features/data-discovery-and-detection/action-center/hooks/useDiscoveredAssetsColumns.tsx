@@ -1,4 +1,8 @@
-import { AntColumnsType as ColumnsType, AntSpace as Space } from "fidesui";
+import {
+  AntColumnsType as ColumnsType,
+  AntSpace as Space,
+  AntText as Text,
+} from "fidesui";
 import { useMemo, useState } from "react";
 
 import { useFeatures } from "~/features/common/features/features.slice";
@@ -49,6 +53,7 @@ export const useDiscoveredAssetsColumns = ({
         title: "Asset",
         dataIndex: "name",
         key: "name",
+        render: (name) => <Text ellipsis={{ tooltip: true }}>{name}</Text>,
         fixed: "left",
       },
       {
