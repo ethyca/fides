@@ -152,6 +152,7 @@ export const ExternalCompleteTaskModal = ({
                 }
                 beforeUpload={() => false} // Prevent auto upload
                 data-testid="complete-modal-file-upload"
+                maxCount={1}
               >
                 <Button data-testid="complete-modal-upload-button">
                   Click to Upload
