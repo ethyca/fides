@@ -351,7 +351,7 @@ div.fides-modal-content {
     var(--fides-overlay-primary-color);
   background-color: var(--fides-overlay-background-color);
   border-radius: var(--fides-overlay-container-border-radius);
-  max-height: 680px;
+  max-height: min(680px, 100vh);
   width: var(--fides-overlay-width);
 
   z-index: 2;
@@ -363,7 +363,8 @@ div.fides-modal-content {
   display: flex;
   flex-direction: column;
   padding: 0px;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .fides-modal-container,

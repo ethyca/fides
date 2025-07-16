@@ -561,7 +561,7 @@ export const stubWebsiteMonitor = () => {
   }).as("getSystemAssetResults");
   cy.intercept(
     "GET",
-    "/api/v1/plus/discovery-monitor/*/results?resolved_system_id=%5Bundefined%5D*",
+    "/api/v1/plus/discovery-monitor/*/results?*resolved_system_id=%5Bundefined%5D*",
     {
       fixture: "detection-discovery/activity-center/system-asset-uncategorized",
     },
@@ -584,6 +584,13 @@ export const stubWebsiteMonitor = () => {
   cy.intercept("POST", "/api/v1/plus/discovery-monitor/un-mute*", {
     response: 200,
   }).as("restoreAssets");
+  cy.intercept(
+    "GET",
+    "/api/v1/plus/discovery-monitor/staged_resource/*/consent*",
+    {
+      fixture: "detection-discovery/activity-center/consent-breakdown",
+    },
+  ).as("getConsentBreakdown");
 };
 
 export const stubSystemAssets = () => {

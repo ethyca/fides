@@ -5,11 +5,7 @@ from sqlalchemy.orm import Session, relationship
 
 from fides.api.db.base_class import Base
 from fides.api.models.fides_user import FidesUser
-from fides.api.oauth.roles import (
-    EXTERNAL_RESPONDENT,
-    RESPONDENT,
-    ROLES_TO_SCOPES_MAPPING,
-)
+from fides.api.oauth.roles import EXTERNAL_RESPONDENT, ROLES_TO_SCOPES_MAPPING
 
 
 class FidesUserPermissions(Base):
@@ -28,15 +24,15 @@ class FidesUserPermissions(Base):
 
         return sorted(list(set(all_scopes)))
 
-    def is_respondent(self) -> bool:
-        """Check if the user is a respondent."""
-        return any(role in self.roles for role in [RESPONDENT, EXTERNAL_RESPONDENT])
+    def is_external_respondent(self) -> bool:
+        """Check if the user is a external respondent."""
+        return any(role in self.roles for role in [EXTERNAL_RESPONDENT])
 
     def update_roles(self, db: Session, new_roles: List[str]) -> None:
         """Update the user's roles if allowed.
         Raises ValueError if role changes are not allowed."""
-        if self.is_respondent():
-            raise ValueError("Role changes are not allowed for respondents")
+        if self.is_external_respondent():
+            raise ValueError("Role changes are not allowed for external respondents")
 
         self.roles = new_roles
         self.save(db)

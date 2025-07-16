@@ -117,6 +117,12 @@ export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: FidesOverrideValidatorMap[] =
       overrideKey: "fides_initialized_event_mode",
       validationRegex: /^(multiple|once|disable)$/,
     },
+    {
+      overrideName: "fidesModalDefaultView",
+      overrideType: "string",
+      overrideKey: "fides_modal_default_view",
+      validationRegex: /^\/tcf\/(purposes|features|vendors)$/,
+    },
   ];
 
 /**

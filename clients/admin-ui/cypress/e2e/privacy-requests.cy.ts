@@ -452,6 +452,18 @@ describe("Privacy Requests", () => {
         .should("contain", "local-document.pdf");
     });
 
+    it("displays the access package attachment icon", () => {
+      cy.get(".ant-upload-list-item-container")
+        .first()
+        .find("[title='User icon']")
+        .should("not.exist");
+
+      cy.get(".ant-upload-list-item-container")
+        .last()
+        .find("[title='User icon']")
+        .should("exist");
+    });
+
     it("downloads attachment when button is clicked for external links", () => {
       // Stub window.open before intercepting, based on
       // https://glebbahmutov.com/cypress-examples/recipes/window-open.html
