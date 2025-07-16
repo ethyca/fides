@@ -91,9 +91,13 @@ const getAllIds = (
 
 // gets the index of the tab to show by default based on the fidesModalDefaultView option
 const parseModalDefaultView = (
-  defaultView: FidesModalDefaultView = "/tcf/purposes",
+  defaultView: FidesModalDefaultView = FidesModalDefaultView.PURPOSES,
 ): number => {
-  const tabRoutes = ["/tcf/purposes", "/tcf/features", "/tcf/vendors"];
+  const tabRoutes = [
+    FidesModalDefaultView.PURPOSES,
+    FidesModalDefaultView.FEATURES,
+    FidesModalDefaultView.VENDORS,
+  ];
   return tabRoutes.indexOf(defaultView);
 };
 

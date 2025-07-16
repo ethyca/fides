@@ -783,10 +783,11 @@ export type UserGeolocation = {
   region?: string; // "NY"
 };
 
-export type FidesModalDefaultView =
-  | "/tcf/purposes"
-  | "/tcf/features"
-  | "/tcf/vendors";
+export enum FidesModalDefaultView {
+  PURPOSES = "/tcf/purposes",
+  FEATURES = "/tcf/features",
+  VENDORS = "/tcf/vendors",
+}
 
 /**
  * Re-export the FidesOptions interface from src/docs; mostly for convenience as
