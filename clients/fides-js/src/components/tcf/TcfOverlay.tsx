@@ -725,6 +725,7 @@ export const TcfOverlay = () => {
                         onSave(ConsentMethod.SAVE, draftIds);
                       }}
                       className="fides-save-button"
+                      id="fides-save-button"
                     />
                   )}
                   isInModal

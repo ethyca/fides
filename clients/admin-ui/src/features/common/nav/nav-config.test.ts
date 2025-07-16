@@ -29,6 +29,7 @@ const ALL_SCOPES = [
   ScopeRegistryEnum.DATA_USE_READ,
   ScopeRegistryEnum.DATA_CATEGORY_READ,
   ScopeRegistryEnum.DATA_SUBJECT_READ,
+  ScopeRegistryEnum.DISCOVERY_MONITOR_READ,
 ];
 
 describe("configureNavGroups", () => {
@@ -205,7 +206,7 @@ describe("configureNavGroups", () => {
       });
 
       expect(
-        navGroups[2].children
+        navGroups[1].children
           .map((c) => ({ title: c.title, path: c.path }))
           .find((c) => c.title === "Domains"),
       ).toEqual({

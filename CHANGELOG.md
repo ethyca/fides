@@ -23,11 +23,18 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Added
 - Replaced Asset's `with_consent` field with the enum `consent_status` field and added indexes to the `StagedResource` table [#6287](https://github.com/ethyca/fides/pull/6287)
+- New 'Internal Respondent' user role that only has access to complete their assigned manual tasks [#6329](https://github.com/ethyca/fides/pull/6329)
 - Added consent status to the Action Center, including a new discovery status column and a details modal for assets detected without consent [#6283](https://github.com/ethyca/fides/pull/6283)
 - Added new option to FidesJS to change default tab in TCF modal [#6338](https://github.com/ethyca/fides/pull/6338)
 
 ### Changed
 - Changed behavior of beta feature flags to persist across user login sessions
+
+### Changed
+- Viewer users can now view/complete their assigned manual tasks [#6329](https://github.com/ethyca/fides/pull/6329)
+- Updated the attachment list to distinguish internal attachment and attachments for the access package [#6344](https://github.com/ethyca/fides/pull/6344)
+- Changed behavior of beta feature flags to persist across user login sessions
+
 
 ### Developer Experience
 - Migrate tabs to Ant Design [#6260](https://github.com/ethyca/fides/pull/6260)
@@ -38,6 +45,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed FidesJS GPP to use national section when a supported US state has no specific notices and approach is set to both. [#6307](https://github.com/ethyca/fides/pull/6307)
 - Fixed taxonomy search behavior to include label and value text
 - Fixed FidesJS to use consistent served_notice_history_id across all consent flows for improved analytics correlation [#6312](https://github.com/ethyca/fides/pull/6312)
+- Fixed Detection & Discovery menu items showing in the UI to users without the required permissions [#6337](https://github.com/ethyca/fides/pull/6337)
 
 ## [2.65.2](https://github.com/ethyca/fides/compare/2.65.1...2.65.2)
 
