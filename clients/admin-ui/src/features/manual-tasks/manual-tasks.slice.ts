@@ -14,6 +14,7 @@ import {
 import { PaginationQueryParams } from "~/types/common/PaginationQueryParams";
 
 import { PAGE_SIZES } from "../common/table/v2";
+import { addMockCompletionData } from "./utils/mockCompletionData";
 
 // Interface for task query parameters
 interface TaskQueryParams extends PaginationQueryParams {
@@ -58,6 +59,15 @@ export const manualTasksApi = baseApi.injectEndpoints({
         return {
           url: "plus/manual-fields",
           params: searchParams,
+        };
+      },
+      transformResponse: (response: ManualFieldSearchResponse, meta, arg) => {
+        return {
+          ...response,
+          items: addMockCompletionData(
+            response.items,
+            arg?.privacyRequestId || "",
+          ),
         };
       },
       providesTags: () => [{ type: "Manual Tasks" }],

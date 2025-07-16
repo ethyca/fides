@@ -15,7 +15,11 @@ import {
 
 import ActivityTimelineEntry from "./ActivityTimelineEntry";
 import styles from "./ActivityTimelineEntry.module.scss";
-import { usePrivacyRequestComments, usePrivacyRequestEventLogs } from "./hooks";
+import {
+  usePrivacyRequestComments,
+  usePrivacyRequestEventLogs,
+  usePrivacyRequestManualTasks,
+} from "./hooks";
 import LogDrawer from "./LogDrawer";
 
 type ActivityTimelineProps = {
@@ -38,8 +42,11 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
     usePrivacyRequestComments(privacyRequestId);
   const { eventItems, isLoading: isResultsLoading } =
     usePrivacyRequestEventLogs(results);
+  const { manualTaskItems, isLoading: isManualTasksLoading } =
+    usePrivacyRequestManualTasks(privacyRequestId);
 
-  const isLoading = isCommentsLoading || isResultsLoading;
+  const isLoading =
+    isCommentsLoading || isResultsLoading || isManualTasksLoading;
 
   useEffect(() => {
     if (currentKey && results && results[currentKey]) {
@@ -107,13 +114,21 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
       initialRequestItem,
       ...eventItemsWithClickHandler,
       ...commentItems,
+      ...manualTaskItems,
     ];
 
     // Sort by date (oldest first)
     return allItems.sort((a, b) => {
       return new Date(a.date).getTime() - new Date(b.date).getTime();
     });
-  }, [eventItems, commentItems, results, showLogs, subjectRequest.created_at]);
+  }, [
+    eventItems,
+    commentItems,
+    manualTaskItems,
+    results,
+    showLogs,
+    subjectRequest.created_at,
+  ]);
 
   const renderSkeletonItems = () => (
     <div className={styles.itemButton} data-testid="timeline-skeleton">
