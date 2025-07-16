@@ -22,7 +22,7 @@ interface TaskQueryParams extends PaginationQueryParams {
   systemName?: string;
   assignedUserId?: string;
   privacyRequestId?: string;
-  include_full_submission_details?: boolean;
+  includeFullSubmissionDetails?: boolean;
 }
 
 // API endpoints
@@ -56,7 +56,7 @@ export const manualTasksApi = baseApi.injectEndpoints({
             queryParams.privacyRequestId,
           );
         }
-        if (queryParams.include_full_submission_details) {
+        if (queryParams.includeFullSubmissionDetails) {
           searchParams.append("include_full_submission_details", "true");
         }
         return {

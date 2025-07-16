@@ -19,6 +19,7 @@ export const usePrivacyRequestManualTasks = (privacyRequestId: string) => {
     size: 100,
     privacyRequestId,
     status: undefined, // Get all statuses, we'll filter for completed/skipped
+    includeFullSubmissionDetails: true,
   });
 
   useEffect(() => {
