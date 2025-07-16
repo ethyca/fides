@@ -203,8 +203,10 @@ class BigQueryConnector(SQLConnector):
             )
         else:
             for row in rows:
-                update_or_delete_stmts: List[Executable] = query_config.generate_update(
-                    row, policy, privacy_request, client
+                update_or_delete_stmts: List[Executable] = (
+                    query_config.generate_update(
+                        row, policy, privacy_request, client
+                    )
                 )
                 logger.debug(
                     f"Generated {len(update_or_delete_stmts)} UPDATE statements"
