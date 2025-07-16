@@ -62,13 +62,11 @@ export const manualTasksApi = baseApi.injectEndpoints({
         };
       },
       transformResponse: (response: ManualFieldSearchResponse, meta, arg) => {
-        return {
-          ...response,
-          items: addMockCompletionData(
-            response.items,
-            arg?.privacyRequestId || "",
-          ),
-        };
+        if (process.env.NODE_ENV === "test") {
+          return response;
+        }
+
+        return response;
       },
       providesTags: () => [{ type: "Manual Tasks" }],
     }),

@@ -12,7 +12,10 @@ export const AttachmentDisplay = ({ attachments }: AttachmentDisplayProps) => {
   }
 
   return (
-    <div className="flex flex-wrap gap-2 text-sm text-gray-600">
+    <div
+      className="flex flex-wrap gap-2 text-sm text-gray-600"
+      data-testid="activity-timeline-attachments"
+    >
       {attachments.map((attachment) => (
         <div key={attachment.id} className="flex items-center">
           <Icons.Attachment className="mr-1 size-4" />

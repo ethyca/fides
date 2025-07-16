@@ -86,7 +86,10 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
       </div>
       {(description || hasAttachments) && (
         <div className="mt-2 flex justify-between pl-2.5 align-top">
-          <Typography.Paragraph className="!mb-0 whitespace-pre-wrap">
+          <Typography.Paragraph
+            className="!mb-0 whitespace-pre-wrap"
+            data-testid="activity-timeline-description"
+          >
             {description || ""}
           </Typography.Paragraph>
           {hasAttachments && <AttachmentDisplay attachments={attachments} />}
