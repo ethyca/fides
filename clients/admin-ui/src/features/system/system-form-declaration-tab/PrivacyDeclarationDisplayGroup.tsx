@@ -160,29 +160,28 @@ export const PrivacyDeclarationDisplayGroup = ({
     <PrivacyDeclarationTabTable
       heading={heading}
       footerButton={
-        !lockedForGVL && <Button
-          onClick={handleAdd}
-          size="small"
-          icon={<SmallAddIcon boxSize={4} />}
-          iconPosition="end"
-          data-testid="add-btn"
-        >
-          Add data use
-        </Button>
-
+        !lockedForGVL && (
+          <Button
+            onClick={handleAdd}
+            size="small"
+            icon={<SmallAddIcon boxSize={4} />}
+            iconPosition="end"
+            data-testid="add-btn"
+          >
+            Add data use
+          </Button>
+        )
       }
     >
-      {
-        declarations.map((pd) => (
-          <PrivacyDeclarationRow
-            declaration={pd}
-            key={pd.id}
-            title={declarationTitle(pd)}
-            handleDelete={!lockedForGVL ? handleDelete : undefined}
-            handleEdit={handleEdit}
-          />
-        ))
-      }
-    </PrivacyDeclarationTabTable >
+      {declarations.map((pd) => (
+        <PrivacyDeclarationRow
+          declaration={pd}
+          key={pd.id}
+          title={declarationTitle(pd)}
+          handleDelete={!lockedForGVL ? handleDelete : undefined}
+          handleEdit={handleEdit}
+        />
+      ))}
+    </PrivacyDeclarationTabTable>
   );
 };
