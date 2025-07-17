@@ -59,6 +59,19 @@ class SQLConnector(BaseConnector[Engine]):
             )
         self.ssh_server: sshtunnel._ForwardServer = None
 
+    def get_safe_mode_enabled(self) -> bool:
+        """
+        Get the safe_mode setting from the application configuration.
+
+        Returns:
+            bool: True if safe_mode is enabled, False otherwise
+        """
+        from fides.api.api.deps import get_autoclose_db_session as get_db
+
+        with get_db() as db:
+            config_proxy = ConfigProxy(db)
+            return getattr(config_proxy.execution, "safe_mode", False)
+
     @staticmethod
     def cursor_result_to_rows(results: CursorResult) -> List[Row]:
         """Convert SQLAlchemy results to a list of dictionaries"""
@@ -187,9 +200,7 @@ class SQLConnector(BaseConnector[Engine]):
         client = self.client()
 
         # Check if safe_mode is enabled
-        db: Session = Session.object_session(self.configuration)
-        config_proxy = ConfigProxy(db)
-        safe_mode_enabled = getattr(config_proxy.execution, "safe_mode", False)
+        safe_mode_enabled = self.get_safe_mode_enabled()
 
         for row in rows:
             update_stmt: Optional[TextClause] = query_config.generate_update_stmt(

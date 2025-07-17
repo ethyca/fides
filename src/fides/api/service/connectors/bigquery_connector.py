@@ -21,7 +21,6 @@ from fides.api.service.connectors.query_configs.bigquery_query_config import (
 from fides.api.service.connectors.query_configs.query_config import SQLQueryConfig
 from fides.api.service.connectors.sql_connector import SQLConnector
 from fides.api.util.collection_util import Row
-from fides.config.config_proxy import ConfigProxy
 
 
 class BigQueryConnector(SQLConnector):
@@ -182,9 +181,7 @@ class BigQueryConnector(SQLConnector):
         client = self.client()
 
         # Check if safe_mode is enabled
-        db: Session = Session.object_session(self.configuration)
-        config_proxy = ConfigProxy(db)
-        safe_mode_enabled = getattr(config_proxy.execution, "safe_mode", False)
+        safe_mode_enabled = self.get_safe_mode_enabled()
 
         # Check if we're using DELETE masking strategy
         if query_config.uses_delete_masking_strategy():
