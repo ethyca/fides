@@ -1,10 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set
-
-from fides.api.common_exceptions import TraversalError, UnreachableNodesError
+from fides.api.graph.graph import Edge
+from collections import defaultdict, deque
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.policy import Policy
-from fides.api.util.logger import suppress_logging
 
 if TYPE_CHECKING:
     from fides.api.graph.traversal import TraversalNode
@@ -63,15 +62,11 @@ class OptionalIdentityFilter(NodeFilter):
         self.identities = identities
         self.skipped_nodes: Dict[str, str] = {}
 
-        # Pre-compute which nodes are reachable with each identity
-        self.reachable_by_identity: Dict[str, Set[str]] = {}
-
-        # Get all collection addresses as strings
-        all_collection_addresses = {str(addr) for addr in graph.nodes.keys()}
-
-        # Test reachability with each possible identity seed
-        for identity_key in graph.identity_keys.values():
-            self._compute_reachable_nodes(identity_key, all_collection_addresses)
+        # OPTIMIZATION: Use a single traversal-like algorithm to compute reachability
+        # for all identities at once, rather than running full traversals
+        self.reachable_by_identity: Dict[str, Set[str]] = (
+            self._compute_all_reachability()
+        )
 
     def exclude_node(self, node: "TraversalNode") -> bool:
         """
@@ -101,48 +96,78 @@ class OptionalIdentityFilter(NodeFilter):
         # Node isn't reachable by any identity, don't exclude it (will be an error)
         return False
 
-    def _compute_reachable_nodes(
-        self, identity_key: str, all_addresses: Set[str]
-    ) -> None:
-        """Helper method to compute which nodes are reachable with a given identity key"""
+    def _compute_all_reachability(self) -> Dict[str, Set[str]]:
+        """
+        Compute reachability for all identities in a single pass using graph traversal logic.
+        This avoids creating multiple BaseTraversal objects.
+        """
 
-        from fides.api.graph.traversal import BaseTraversal
+        # Result: identity_key -> set of reachable collection addresses
+        reachable_by_identity: Dict[str, Set[str]] = defaultdict(set)
 
-        try:
-            # Create a traversal object with just this identity
-            with suppress_logging():
-                # Suppress the logs since we don't want to flood the logs
-                # with traversal info for each identity we want to evaluate
-                BaseTraversal(self.graph, {identity_key: "dummy_value"})
+        # Build edge index by collection for efficient lookups
+        edges_by_collection: Dict[Any, List[Edge]] = defaultdict(list)
+        for edge in self.graph.edges:
+            edges_by_collection[edge.f1.collection_address()].append(edge)
+            edges_by_collection[edge.f2.collection_address()].append(edge)
 
-            # If successful, all nodes are reachable
-            self.reachable_by_identity[identity_key] = all_addresses
-        except UnreachableNodesError as exc:
-            # Get reachable nodes by removing unreachable ones from all nodes
-            unreachable = set(exc.errors)
-            self.reachable_by_identity[identity_key] = all_addresses - unreachable
-        except TraversalError:
-            # If traversal fails for other reasons, no nodes are reachable
-            self.reachable_by_identity[identity_key] = set()
+        # Group field addresses by identity key (since multiple collections can have the same identity)
+        identity_to_fields: Dict[str, List[Any]] = defaultdict(list)
+        for field_address, identity_key in self.graph.identity_keys.items():
+            identity_to_fields[identity_key].append(field_address)
 
-    def _format_skip_message(
-        self, node_address: str, reaching_identities: List[str]
-    ) -> str:
+        # For each identity key, find all reachable nodes from ALL collections that have this identity
+        for identity_key, field_addresses in identity_to_fields.items():
+            visited = set()
+            queue = deque()
+
+            # Start from ALL collections that have this identity field
+            for field_address in field_addresses:
+                start_collection = field_address.collection_address()
+                if start_collection not in visited:
+                    queue.append(start_collection)
+                    visited.add(start_collection)
+                    reachable_by_identity[identity_key].add(str(start_collection))
+
+            # BFS to find all reachable collections from any starting point
+            while queue:
+                current = queue.popleft()
+
+                # Find all edges from current collection
+                for edge in edges_by_collection.get(current, []):
+                    # Get the other end of the edge
+                    other_addr = None
+                    if edge.f1.collection_address() == current:
+                        other_addr = edge.f2.collection_address()
+                    elif edge.f2.collection_address() == current:
+                        other_addr = edge.f1.collection_address()
+
+                    if other_addr and other_addr not in visited:
+                        visited.add(other_addr)
+                        reachable_by_identity[identity_key].add(str(other_addr))
+                        queue.append(other_addr)
+
+        return dict(reachable_by_identity)  # Convert defaultdict to regular dict
+
+    def _format_skip_message(self, node_address: str, identities: List[str]) -> str:
         """
         Format the skip message with proper grammar based on identity counts.
         """
+        # Get the provided identities for the message
+        provided_identities = list(self.identities.keys())
 
-        # Format lists of quoted identities
-        reachable_ids_str = ", ".join(f'"{id}"' for id in reaching_identities)
-        provided_ids = list(self.identities.keys())
-        provided_ids_str = ", ".join(f'"{id}"' for id in provided_ids)
+        if len(identities) == 1:
+            identity_str = f'the "{identities[0]}" identity'
+        else:
+            # Format as: the "email", "phone" or "user_id" identity
+            identity_list = ", ".join(f'"{id}"' for id in identities[:-1])
+            identity_str = f'the {identity_list} or "{identities[-1]}" identity'
 
-        # Determine singular/plural forms based on counts
-        reachable_term = "identity" if len(reaching_identities) == 1 else "identities"
-        provided_term = "identity" if len(provided_ids) == 1 else "identities"
-        was_were = "was" if len(provided_ids) == 1 else "were"
+        if len(provided_identities) == 1:
+            provided_str = f'the "{provided_identities[0]}" identity was provided'
+        else:
+            # Format as: the "user_id" and "name" identities were provided
+            provided_list = ", ".join(f'"{id}"' for id in provided_identities[:-1])
+            provided_str = f'the {provided_list} and "{provided_identities[-1]}" identities were provided'
 
-        return (
-            f'Skipping the "{node_address}" collection, it is reachable by the {reachable_ids_str} '
-            f"{reachable_term} but only the {provided_ids_str} {provided_term} {was_were} provided"
-        )
+        return f'Skipping the "{node_address}" collection, it is reachable by {identity_str} but only {provided_str}'

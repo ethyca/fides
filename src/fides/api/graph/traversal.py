@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import json
-from collections import defaultdict
+from collections import defaultdict, deque
 from itertools import chain
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, cast
 
@@ -100,10 +100,42 @@ class BaseTraversal:
         self.node_filters = node_filters or []
 
         self.traversal_node_dict = {k: TraversalNode(v) for k, v in graph.nodes.items()}
+
+        # Pre-compute dependencies and track ready nodes
+        self.node_dependencies: Dict[CollectionAddress, Set[CollectionAddress]] = {}
+        self.node_dependents: Dict[CollectionAddress, Set[CollectionAddress]] = (
+            defaultdict(set)
+        )
+        self.ready_nodes: Set[CollectionAddress] = set()
+
+        for addr, tnode in self.traversal_node_dict.items():
+            # Compute all nodes this node depends on
+            deps = set()
+
+            # Collection-level dependencies
+            for dep_addr in tnode.node.collection.after:
+                if dep_addr in self.traversal_node_dict:
+                    deps.add(dep_addr)
+
+            # Dataset-level dependencies
+            for node_addr, _ in self.traversal_node_dict.items():
+                if node_addr.dataset in tnode.node.dataset.after:
+                    deps.add(node_addr)
+
+            self.node_dependencies[addr] = deps
+
+            # Build reverse mapping (who depends on me)
+            for dep in deps:
+                self.node_dependents[dep].add(addr)
+
+            # If no dependencies, it's ready to run
+            if not deps:
+                self.ready_nodes.add(addr)
+
         self.edges: Set[Edge] = graph.edges.copy()
         self.root_node = artificial_traversal_node(ROOT_COLLECTION_ADDRESS)
 
-        # Pre-index edges by node address for O(1) lookup
+        # OPTIMIZATION: Pre-index edges by node address for O(1) lookup
         self.edges_by_node: Dict[CollectionAddress, List[Edge]] = defaultdict(list)
         for edge in self.edges:
             self.edges_by_node[edge.f1.collection_address()].append(edge)
@@ -246,19 +278,23 @@ class BaseTraversal:
             addr.value for addr in self.traversal_node_dict.keys()
         }
         finished_nodes: dict[CollectionAddress, TraversalNode] = {}
-        running_node_queue: MatchingQueue[TraversalNode] = MatchingQueue(self.root_node)
 
-        # Instead of copying entire edge set, use a more efficient approach
+        # Use a simple deque for ready nodes
+        ready_queue: deque[TraversalNode] = deque([self.root_node])
+        # Track which nodes are in the queue to avoid duplicates
+        queued_nodes: Set[CollectionAddress] = {self.root_node.address}
+
+        # OPTIMIZATION: Instead of copying entire edge set, use a more efficient approach
         # We'll simulate Edge.delete_edges behavior without the expensive set operations
         deleted_edges_tracker: Dict[Edge, bool] = {}
 
-        while not running_node_queue.is_empty():
+        while ready_queue or any(deps for deps in self.node_dependencies.values()):
             # this is to support the "run traversal_node A AFTER traversal_node B functionality:"
-            n = running_node_queue.pop_first_match(
-                lambda x: x.can_run_given_str(
-                    remaining_node_keys_str, self.node_after_str, self.dataset_after_str
-                )
-            )
+            if ready_queue:
+                n = ready_queue.popleft()
+                queued_nodes.discard(n.address)
+            else:
+                n = None
 
             if n:
                 node_run_fn(n, environment)
@@ -299,7 +335,7 @@ class BaseTraversal:
                 # next edges = take all edges including n that are _not_ in edges_from_completed_nodes
                 # in the form (field_address_this, field_address_foreign)
 
-                # Use pre-indexed edges instead of iterating through all edges
+                # OPTIMIZATION: Use pre-indexed edges instead of iterating through all edges
                 edges_to_children = pydash.collections.filter_(
                     [
                         e.split_by_address(cast(TraversalNode, n).address)  # type: ignore[redundant-cast]
@@ -315,21 +351,46 @@ class BaseTraversal:
                     a[1].collection_address() for a in edges_to_children if a
                 }
                 for nxt_address in child_node_addresses:
-                    # only add the next traversal_node to the queue if it is not already there (no duplicates)
-                    running_node_queue.push_if_new(
-                        self.traversal_node_dict[nxt_address]
-                    )
+                    # Check if this node is ready (all dependencies met)
+                    if (
+                        nxt_address in self.node_dependencies
+                        and not self.node_dependencies[nxt_address]
+                        and nxt_address not in queued_nodes
+                    ):
+                        ready_queue.append(self.traversal_node_dict[nxt_address])
+                        queued_nodes.add(nxt_address)
+
                 finished_nodes[n.address] = n
-                remaining_node_keys_str.discard(n.address.value)  # Use string value
+                remaining_node_keys.discard(n.address)
+
+                # Check which nodes are now ready
+                for dependent_addr in self.node_dependents.get(n.address, set()):
+                    # Remove this node from the dependent's dependencies
+                    if dependent_addr in self.node_dependencies:
+                        self.node_dependencies[dependent_addr].discard(n.address)
+
+                        # If all dependencies are satisfied and not already queued, it's ready
+                        if (
+                            not self.node_dependencies[dependent_addr]
+                            and dependent_addr in self.traversal_node_dict
+                            and dependent_addr not in queued_nodes
+                        ):
+                            ready_queue.append(self.traversal_node_dict[dependent_addr])
+                            queued_nodes.add(dependent_addr)
             else:
-                # traversal traversal_node dict diff finished nodes
+                # Find nodes with unmet dependencies
+                stuck_nodes = [
+                    addr
+                    for addr, deps in self.node_dependencies.items()
+                    if deps and addr in remaining_node_keys
+                ]
                 logger.error(
-                    "Node could not be reached given specified ordering [{}]",
-                    ", ".join([str(tn.address) for tn in running_node_queue.data]),
+                    "Nodes could not be reached due to circular dependencies: {}",
+                    ", ".join([str(addr) for addr in stuck_nodes]),
                 )
                 raise TraversalError(
-                    f"""Node could not be reached given the specified ordering:
-                    [{', '.join([str(tn.address) for tn in running_node_queue.data])}]""",
+                    f"""Nodes could not be reached due to circular dependencies:
+                    {', '.join([str(addr) for addr in stuck_nodes])}""",
                 )
 
         # Convert back to CollectionAddress set for filtering
@@ -355,16 +416,13 @@ class BaseTraversal:
             )
 
         # filter out remaining_edges if the nodes they link are allowed to remain unreachable
-        remaining_edges = set()
-        for node_key in remaining_node_keys:
-            for edge in self.edges_by_node.get(node_key, []):
-                if not deleted_edges_tracker.get(edge, False):
-                    # Check if both ends of the edge are in remaining nodes
-                    if (
-                        edge.f1.collection_address() in remaining_node_keys
-                        and edge.f2.collection_address() in remaining_node_keys
-                    ):
-                        remaining_edges.add(edge)
+        remaining_edges = {
+            edge
+            for edge in self.edges
+            if not deleted_edges_tracker.get(edge, False)
+            and edge.f1.collection_address() in remaining_node_keys
+            and edge.f2.collection_address() in remaining_node_keys
+        }
 
         # error if there are edges that have not been visited
         if remaining_edges:
