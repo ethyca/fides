@@ -62,6 +62,7 @@ class TestPatchApplicationConfig:
             "execution": {
                 "subject_identity_verification_required": True,
                 "require_manual_request_approval": True,
+                "safe_mode": False,
             },
             "security": {
                 "cors_origins": [
@@ -318,6 +319,46 @@ class TestPatchApplicationConfig:
             is True
         )
         assert db_settings.api_set["security"] == security_payload
+
+    def test_patch_application_config_safe_mode(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        db: Session,
+    ):
+        """Test that safe_mode can be updated individually"""
+        auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
+
+        # Test setting safe_mode to True
+        updated_payload = {"execution": {"safe_mode": True}}
+        response = api_client.patch(
+            url,
+            headers=auth_header,
+            json=updated_payload,
+        )
+        assert response.status_code == 200
+        response_settings = response.json()
+        assert response_settings["execution"]["safe_mode"] is True
+
+        # Verify it was saved to the database
+        db_settings = db.query(ApplicationConfig).first()
+        assert db_settings.api_set["execution"]["safe_mode"] is True
+
+        # Test setting safe_mode to False
+        updated_payload = {"execution": {"safe_mode": False}}
+        response = api_client.patch(
+            url,
+            headers=auth_header,
+            json=updated_payload,
+        )
+        assert response.status_code == 200
+        response_settings = response.json()
+        assert response_settings["execution"]["safe_mode"] is False
+
+        # Verify it was updated in the database
+        db.refresh(db_settings)
+        assert db_settings.api_set["execution"]["safe_mode"] is False
 
     def test_patch_application_config_notifications_properties(
         self,

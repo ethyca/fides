@@ -61,6 +61,7 @@ CONFIG_KEY_ALLOWLIST = {
         "task_retry_backoff",
         "require_manual_request_approval",
         "subject_identity_verification_required",
+        "safe_mode",
     ],
     "storage": [
         "active_default_storage_type",
