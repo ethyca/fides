@@ -44,7 +44,9 @@ from fides.api.service.authentication.authentication_strategy_oauth2_authorizati
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
     CustomConnectorTemplateLoader,
+    FileConnectorTemplateLoader,
     create_connection_config_from_template_no_save,
+    update_existing_connection_configs_for_connector_type,
     upsert_dataset_config_from_template,
 )
 from fides.api.util.api_router import APIRouter
@@ -60,6 +62,7 @@ from fides.common.api.scope_registry import (
 from fides.common.api.v1.urn_registry import (
     AUTHORIZE,
     CONNECTION_TYPES,
+    DELETE_CUSTOM_TEMPLATE,
     REGISTER_CONNECTOR_TEMPLATE,
     SAAS_CONFIG,
     SAAS_CONFIG_VALIDATE,
@@ -311,7 +314,7 @@ def instantiate_connection(
     if not connector_template:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
-            detail=f"SaaS connector type '{saas_connector_type}' is not yet available in Fidesops. For a list of available SaaS connectors, refer to {CONNECTION_TYPES}.",
+            detail=f"SaaS connector type '{saas_connector_type}' is not yet available in Fides. For a list of available SaaS connectors, refer to {CONNECTION_TYPES}.",
         )
 
     if DatasetConfig.filter(
@@ -394,3 +397,81 @@ def register_custom_connector_template(
     return JSONResponse(
         content={"message": "Connector template successfully registered."}
     )
+
+
+@router.delete(
+    DELETE_CUSTOM_TEMPLATE,
+    dependencies=[Security(verify_oauth_client, scopes=[CONNECTOR_TEMPLATE_REGISTER])],
+)
+def delete_custom_connector_template(
+    saas_connector_type: str, db: Session = Depends(deps.get_db)
+) -> JSONResponse:
+    """
+    Deletes a custom connector template and updates the connection configs for the connector type to use the Fides-provided template if available.
+    If a Fides-provided template is not available, the custom template is not deleted and the connection configs for the connector type are not updated.
+    """
+    connector_template: Optional[ConnectorTemplate] = (
+        ConnectorRegistry.get_connector_template(saas_connector_type)
+    )
+    if not connector_template:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"SaaS connector type '{saas_connector_type}' is not yet available in Fides. For a list of available SaaS connectors, refer to {CONNECTION_TYPES}.",
+        )
+    if not connector_template.is_custom:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"SaaS connector type '{saas_connector_type}' is not a custom template.",
+        )
+    if not connector_template.default_connector_available:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"SaaS connector type '{saas_connector_type}' does not have a Fides-provided template to fall back to.",
+        )
+    delete_custom_template(db, saas_connector_type)
+
+    return JSONResponse(
+        content={"message": "Custom connector template successfully deleted."}
+    )
+
+
+def delete_custom_template(db: Session, saas_connector_type: str) -> None:
+    """
+    Deletes a custom template from the database and falls back to the Fides-provided template.
+    """
+
+    if not FileConnectorTemplateLoader.get_connector_templates().get(
+        saas_connector_type
+    ):
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"Fides-provided template with type '{saas_connector_type}' not found.",
+        )
+
+    # delete the template from the database
+    CustomConnectorTemplateLoader.delete_template(db, saas_connector_type)
+    CustomConnectorTemplateLoader.get_connector_templates().pop(
+        saas_connector_type, None
+    )
+
+    file_connector_template = ConnectorRegistry.get_connector_template(
+        saas_connector_type
+    )
+    if not file_connector_template:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"Fides-provided template with type '{saas_connector_type}' not found in the registry.",
+        )
+
+    try:
+        update_existing_connection_configs_for_connector_type(
+            db, saas_connector_type, file_connector_template
+        )
+    except Exception:
+        logger.exception(
+            f"Error updating connection configs for connector type '{saas_connector_type}'."
+        )
+        raise HTTPException(
+            status_code=HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error updating connection configs for connector type '{saas_connector_type}'.",
+        )

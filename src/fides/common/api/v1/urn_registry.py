@@ -183,6 +183,7 @@ SAAS_CONFIG_VALIDATE = CONNECTION_BY_KEY + "/validate_saas_config"
 SAAS_CONFIG = CONNECTION_BY_KEY + "/saas_config"
 SAAS_CONNECTOR_FROM_TEMPLATE = "/connection/instantiate/{saas_connector_type}"
 REGISTER_CONNECTOR_TEMPLATE = "/connector_template/register"
+DELETE_CUSTOM_TEMPLATE = "/connector_template/{saas_connector_type}"
 
 # System Connections
 SYSTEM_CONNECTIONS = "/system/{fides_key}/connection"
