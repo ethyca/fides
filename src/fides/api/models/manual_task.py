@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from enum import Enum
-from typing import TYPE_CHECKING, Annotated, Any, Optional, cast
+from typing import TYPE_CHECKING, Annotated, Any, Optional, Union, cast
 
 from pydantic import ConfigDict, Field
 from sqlalchemy import (
@@ -22,6 +22,10 @@ from fides.api.db.base_class import Base, FidesBase
 from fides.api.db.util import EnumColumn
 from fides.api.request_context import get_user_id
 from fides.api.schemas.base_class import FidesSchema
+from fides.api.task.conditional_dependencies.schemas import (
+    ConditionGroup,
+    ConditionLeaf,
+)
 
 if TYPE_CHECKING:
     from fides.api.models.attachment import Attachment
@@ -121,6 +125,13 @@ class StatusType(str, Enum):
             cls.failed: [cls.pending, cls.in_progress],
         }
         return transitions.get(current_status, [])
+
+
+class ManualTaskConditionalDependencyType(str, Enum):
+    """Enum for manual task conditional dependency types."""
+
+    leaf = "leaf"
+    group = "group"
 
 
 # ------------------------------------------------------------
@@ -240,6 +251,12 @@ class ManualTask(Base):
         back_populates="task",
         uselist=True,
         viewonly=True,  # No cascade delete - submissions are historical data
+    )
+    conditional_dependencies = relationship(
+        "ManualTaskConditionalDependency",
+        back_populates="task",
+        uselist=True,
+        cascade="all, delete-orphan",
     )
 
     # Properties
@@ -975,3 +992,141 @@ class ManualTaskLog(Base):
             message=message,
             details=details,
         )
+
+
+class ManualTaskConditionalDependency(Base):
+    """Model for storing conditional dependencies."""
+
+    @declared_attr
+    def __tablename__(cls) -> str:
+        """Overriding base class method to set the table name."""
+        return "manual_task_conditional_dependency"
+
+    # redefined here because there's a minor, unintended discrepancy between
+    # this `id` field and that of the `Base` class, which explicitly sets `index=True`.
+    # TODO: we likely should _not_ be setting `index=True` on the `id`
+    # attribute of the `Base` class, as `primary_key=True` already specifies a
+    # primary key constraint, which will implicitly create an index for the field.
+    id = Column(String(255), primary_key=True, default=FidesBase.generate_uuid)
+
+    # Foreign key relationships
+    manual_task_id = Column(
+        String, ForeignKey("manual_task.id", ondelete="CASCADE"), nullable=False
+    )
+    parent_id = Column(
+        String,
+        ForeignKey("manual_task_conditional_dependency.id", ondelete="CASCADE"),
+        nullable=True,
+    )
+
+    # Condition metadata
+    condition_type = Column(
+        EnumColumn(ManualTaskConditionalDependencyType), nullable=False
+    )  # privacy_request
+    field = Column(String, nullable=True)  # For leaf conditions
+    operator = Column(String, nullable=True)  # For leaf conditions
+    value = Column(JSONB, nullable=True)  # For leaf conditions
+    logical_operator = Column(String, nullable=True)  # 'and' or 'or' for groups
+
+    # Ordering
+    sort_order = Column(Integer, nullable=False, default=0)
+
+    __table_args__ = (
+        Index("ix_manual_task_conditional_dependency_manual_task_id", "manual_task_id"),
+        Index("ix_manual_task_conditional_dependency_parent_id", "parent_id"),
+        Index("ix_manual_task_conditional_dependency_condition_type", "condition_type"),
+        Index("ix_manual_task_conditional_dependency_sort_order", "sort_order"),
+    )
+
+    # Relationships
+    task = relationship("ManualTask", back_populates="conditional_dependencies")
+    parent = relationship(
+        "ManualTaskConditionalDependency",
+        remote_side=[id],
+        back_populates="children",
+        foreign_keys=[parent_id],
+    )
+    children = relationship(
+        "ManualTaskConditionalDependency",
+        back_populates="parent",
+        cascade="all, delete-orphan",
+        foreign_keys=[parent_id],
+    )
+
+    def to_condition_leaf(self) -> "ConditionLeaf":
+        """Convert to ConditionLeaf if this is a leaf condition"""
+        if self.condition_type != "leaf":
+            raise ValueError("Cannot convert group condition to leaf")
+
+        return ConditionLeaf(field=self.field, operator=self.operator, value=self.value)
+
+    def to_condition_group(self) -> "ConditionGroup":
+        """Convert to ConditionGroup if this is a group condition"""
+        if self.condition_type != "group":
+            raise ValueError("Cannot convert leaf condition to group")
+
+        # Recursively build children
+        child_conditions = []
+        for child in sorted(self.children, key=lambda x: x.sort_order):
+            if child.condition_type == "leaf":
+                child_conditions.append(child.to_condition_leaf())
+            else:
+                child_conditions.append(child.to_condition_group())
+
+        return ConditionGroup(op=self.logical_operator, conditions=child_conditions)
+
+    @classmethod
+    def build_from_condition(
+        cls,
+        condition: Union[ConditionLeaf, ConditionGroup],
+        task_id: str,
+        parent_id: str = None,
+        sort_order: int = 0,
+    ) -> "ManualTaskConditionalDependency":
+        """Build dependency model from condition"""
+
+        if isinstance(condition, ConditionLeaf):
+            return cls(
+                task_id=task_id,
+                parent_id=parent_id,
+                condition_type=ManualTaskConditionalDependencyType.leaf,
+                field=condition.field,
+                operator=condition.operator,
+                value=condition.value,
+                sort_order=sort_order,
+            )
+        else:  # ConditionGroup
+            # Create the group first
+            group = cls(
+                task_id=task_id,
+                parent_id=parent_id,
+                condition_type=ManualTaskConditionalDependencyType.group,
+                logical_operator=condition.op,
+                sort_order=sort_order,
+            )
+
+            # Add children recursively
+            for i, child_condition in enumerate(condition.conditions):
+                child = cls.build_from_condition(child_condition, task_id, group.id, i)
+                group.children.append(child)
+
+            return group
+
+    @classmethod
+    def get_root_condition(
+        cls, db: Session, config_id: str
+    ) -> Optional[Union[ConditionLeaf, ConditionGroup]]:
+        """Get the root condition for a config"""
+        root = (
+            db.query(cls)
+            .filter(cls.config_id == config_id, cls.parent_id.is_(None))
+            .first()
+        )
+
+        if not root:
+            return None
+
+        if root.condition_type == "leaf":
+            return root.to_condition_leaf()
+        else:
+            return root.to_condition_group()
