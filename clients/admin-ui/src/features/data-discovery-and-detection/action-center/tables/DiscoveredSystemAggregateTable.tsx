@@ -199,96 +199,88 @@ export const DiscoveredSystemAggregateTable = ({
   };
 
   return (
-    <Tabs
-      items={filterTabs.map((tab) => ({
-        key: tab.hash,
-        label: tab.label,
-        children: (
-          <>
-            <Flex justify="space-between" align="center" className="mb-4">
-              <DebouncedSearchInput
-                value={searchQuery}
-                onChange={setSearchQuery}
-              />
-              <Space size="large">
-                {!!selectedRowKeys.length && (
-                  <SelectedText count={selectedRowKeys.length} />
-                )}
-                <Dropdown
-                  menu={{
-                    items: [
-                      {
-                        key: "add",
-                        label: (
-                          <Tooltip
-                            title={
-                              uncategorizedIsSelected
-                                ? "Uncategorized assets can't be added to the inventory"
-                                : null
-                            }
-                            placement="left"
-                          >
-                            Add
-                          </Tooltip>
-                        ),
-                        onClick: handleBulkAdd,
-                        disabled: uncategorizedIsSelected,
-                      },
-                      !activeParams.diff_status.includes(DiffStatus.MUTED)
-                        ? {
-                            key: "ignore",
-                            label: "Ignore",
-                            onClick: handleBulkIgnore,
-                          }
-                        : null,
-                    ],
-                  }}
-                  trigger={["click"]}
-                >
-                  <Button
-                    type="primary"
-                    icon={<Icons.ChevronDown />}
-                    iconPosition="end"
-                    loading={anyBulkActionIsLoading}
-                    disabled={!selectedRowKeys.length}
-                    data-testid="bulk-actions-menu"
-                  >
-                    Actions
-                  </Button>
-                </Dropdown>
-              </Space>
-            </Flex>
-            <Table
-              dataSource={data?.items || []}
-              columns={columns}
-              loading={isLoading || isFetching}
-              rowKey={(record) =>
-                record.id ??
-                record.vendor_id ??
-                record.name ??
-                UNCATEGORIZED_SEGMENT
-              }
-              rowSelection={rowSelection}
-              pagination={{
-                current: pageIndex,
-                pageSize,
-                total: data?.total || 0,
-              }}
-              onChange={handleTableChange}
-              locale={{
-                emptyText: (
-                  <Empty
-                    image={Empty.PRESENTED_IMAGE_SIMPLE}
-                    description="All caught up!"
-                  />
-                ),
-              }}
+    <>
+      <Tabs
+        items={filterTabs.map((tab) => ({
+          key: tab.hash,
+          label: tab.label,
+        }))}
+        activeKey={activeTab}
+        onChange={(tab) => handleTabChange(tab as ActionCenterTabHash)}
+      />
+      <Flex justify="space-between" align="center" className="mb-4">
+        <DebouncedSearchInput value={searchQuery} onChange={setSearchQuery} />
+        <Space size="large">
+          {!!selectedRowKeys.length && (
+            <SelectedText count={selectedRowKeys.length} />
+          )}
+          <Dropdown
+            menu={{
+              items: [
+                {
+                  key: "add",
+                  label: (
+                    <Tooltip
+                      title={
+                        uncategorizedIsSelected
+                          ? "Uncategorized assets can't be added to the inventory"
+                          : null
+                      }
+                      placement="left"
+                    >
+                      Add
+                    </Tooltip>
+                  ),
+                  onClick: handleBulkAdd,
+                  disabled: uncategorizedIsSelected,
+                },
+                !activeParams.diff_status.includes(DiffStatus.MUTED)
+                  ? {
+                      key: "ignore",
+                      label: "Ignore",
+                      onClick: handleBulkIgnore,
+                    }
+                  : null,
+              ],
+            }}
+            trigger={["click"]}
+          >
+            <Button
+              type="primary"
+              icon={<Icons.ChevronDown />}
+              iconPosition="end"
+              loading={anyBulkActionIsLoading}
+              disabled={!selectedRowKeys.length}
+              data-testid="bulk-actions-menu"
+            >
+              Actions
+            </Button>
+          </Dropdown>
+        </Space>
+      </Flex>
+      <Table
+        dataSource={data?.items || []}
+        columns={columns}
+        loading={isLoading || isFetching}
+        rowKey={(record) =>
+          record.id ?? record.vendor_id ?? record.name ?? UNCATEGORIZED_SEGMENT
+        }
+        rowSelection={rowSelection}
+        pagination={{
+          current: pageIndex,
+          pageSize,
+          total: data?.total || 0,
+        }}
+        onChange={handleTableChange}
+        locale={{
+          emptyText: (
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description="All caught up!"
             />
-          </>
-        ),
-      }))}
-      activeKey={activeTab}
-      onChange={(tab) => handleTabChange(tab as ActionCenterTabHash)}
-    />
+          ),
+        }}
+      />
+    </>
   );
 };

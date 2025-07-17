@@ -122,6 +122,7 @@ export const ConsentBreakdownModal = ({
                 ),
               },
             ]}
+            rowKey={(record) => record.location}
             dataSource={items}
             pagination={
               !!totalRows && (pageIndex > 1 || pageSize > PAGE_SIZES[0])

@@ -354,125 +354,123 @@ export const DiscoveredAssetsTable = ({
         items={filterTabs.map((tab) => ({
           key: tab.hash,
           label: tab.label,
-          children: (
-            <>
-              <Flex justify="space-between" align="center" className="mb-4">
-                <DebouncedSearchInput
-                  value={searchQuery}
-                  onChange={setSearchQuery}
-                  placeholder="Search by asset name..."
-                />
-                <Space size="large">
-                  {!!selectedUrns.length && (
-                    <SelectedText count={selectedUrns.length} />
-                  )}
-                  <Space size="small">
-                    <Dropdown
-                      menu={{
-                        items: [
-                          {
-                            key: "add",
-                            label: "Add",
-                            onClick: handleBulkAdd,
-                          },
-                          {
-                            key: "add-data-use",
-                            label: "Add consent category",
-                            onClick: () => setIsAddDataUseModalOpen(true),
-                          },
-                          {
-                            key: "assign-system",
-                            label: "Assign system",
-                            onClick: () => setIsAssignSystemModalOpen(true),
-                          },
-                          ...(activeParams?.diff_status?.includes(
-                            DiffStatus.MUTED,
-                          )
-                            ? [
-                                {
-                                  key: "restore",
-                                  label: "Restore",
-                                  onClick: handleBulkRestore,
-                                },
-                              ]
-                            : [
-                                {
-                                  type: "divider" as const,
-                                },
-                                {
-                                  key: "ignore",
-                                  label: "Ignore",
-                                  onClick: handleBulkIgnore,
-                                },
-                              ]),
-                        ],
-                      }}
-                      trigger={["click"]}
-                    >
-                      <Button
-                        icon={<Icons.ChevronDown />}
-                        iconPosition="end"
-                        loading={anyBulkActionIsLoading}
-                        data-testid="bulk-actions-menu"
-                        disabled={
-                          !selectedUrns.length ||
-                          anyBulkActionIsLoading ||
-                          actionsDisabled
-                        }
-                        type="primary"
-                      >
-                        Actions
-                      </Button>
-                    </Dropdown>
-
-                    <Tooltip
-                      title={
-                        disableAddAll
-                          ? `These assets require a system before you can add them to the inventory.`
-                          : undefined
-                      }
-                    >
-                      <Button
-                        onClick={handleAddAll}
-                        disabled={disableAddAll}
-                        loading={isAddingAllResults}
-                        type="primary"
-                        icon={<Icons.Checkmark />}
-                        iconPosition="end"
-                        data-testid="add-all"
-                      >
-                        Add all
-                      </Button>
-                    </Tooltip>
-                  </Space>
-                </Space>
-              </Flex>
-              <Table
-                dataSource={data?.items || []}
-                columns={columns}
-                loading={isLoading || isFetching}
-                rowKey={(record) => record.urn}
-                rowSelection={rowSelection}
-                pagination={{
-                  current: pageIndex,
-                  pageSize,
-                  total: data?.total || 0,
-                }}
-                onChange={handleTableChange}
-                locale={{
-                  emptyText: (
-                    <Empty
-                      image={Empty.PRESENTED_IMAGE_SIMPLE}
-                      description="All caught up!"
-                    />
-                  ),
-                }}
-              />
-            </>
-          ),
         }))}
         activeKey={activeTab}
         onChange={(tab) => handleTabChange(tab as ActionCenterTabHash)}
+      />
+      <Flex justify="space-between" align="center" className="mb-4">
+        <DebouncedSearchInput
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder="Search by asset name..."
+        />
+        <Space size="large">
+          {!!selectedUrns.length && (
+            <SelectedText count={selectedUrns.length} />
+          )}
+          <Space size="small">
+            <Dropdown
+              menu={{
+                items: [
+                  {
+                    key: "add",
+                    label: "Add",
+                    onClick: handleBulkAdd,
+                  },
+                  {
+                    key: "add-data-use",
+                    label: "Add consent category",
+                    onClick: () => setIsAddDataUseModalOpen(true),
+                  },
+                  {
+                    key: "assign-system",
+                    label: "Assign system",
+                    onClick: () => setIsAssignSystemModalOpen(true),
+                  },
+                  ...(activeParams?.diff_status?.includes(DiffStatus.MUTED)
+                    ? [
+                        {
+                          key: "restore",
+                          label: "Restore",
+                          onClick: handleBulkRestore,
+                        },
+                      ]
+                    : [
+                        {
+                          type: "divider" as const,
+                        },
+                        {
+                          key: "ignore",
+                          label: "Ignore",
+                          onClick: handleBulkIgnore,
+                        },
+                      ]),
+                ],
+              }}
+              trigger={["click"]}
+            >
+              <Button
+                icon={<Icons.ChevronDown />}
+                iconPosition="end"
+                loading={anyBulkActionIsLoading}
+                data-testid="bulk-actions-menu"
+                disabled={
+                  !selectedUrns.length ||
+                  anyBulkActionIsLoading ||
+                  actionsDisabled
+                }
+                type="primary"
+              >
+                Actions
+              </Button>
+            </Dropdown>
+
+            <Tooltip
+              title={
+                disableAddAll
+                  ? `These assets require a system before you can add them to the inventory.`
+                  : undefined
+              }
+            >
+              <Button
+                onClick={handleAddAll}
+                disabled={disableAddAll}
+                loading={isAddingAllResults}
+                type="primary"
+                icon={<Icons.Checkmark />}
+                iconPosition="end"
+                data-testid="add-all"
+              >
+                Add all
+              </Button>
+            </Tooltip>
+          </Space>
+        </Space>
+      </Flex>
+      <Table
+        dataSource={data?.items || []}
+        columns={columns}
+        loading={isLoading || isFetching}
+        rowKey={(record) => record.urn}
+        rowSelection={
+          activeTab === ActionCenterTabHash.RECENT_ACTIVITY
+            ? undefined
+            : rowSelection
+        }
+        pagination={{
+          current: pageIndex,
+          pageSize,
+          total: data?.total || 0,
+        }}
+        onChange={handleTableChange}
+        locale={{
+          emptyText: (
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description="All caught up!"
+            />
+          ),
+        }}
       />
       <AssignSystemModal
         isOpen={isAssignSystemModalOpen}

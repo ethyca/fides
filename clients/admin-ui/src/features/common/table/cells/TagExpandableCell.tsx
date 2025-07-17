@@ -75,13 +75,14 @@ export const TagExpandableCell = ({
 
   return useMemo(() => {
     if (!displayValues?.length) {
-      return null;
+      return <span data-testid="tag-expandable-cell-empty" />;
     }
     return (
       <Flex
         align="center"
         wrap={isWrappedState ? "wrap" : "nowrap"}
         gap="small"
+        data-testid="tag-expandable-cell"
       >
         {displayValues.map((value) => (
           <Tag

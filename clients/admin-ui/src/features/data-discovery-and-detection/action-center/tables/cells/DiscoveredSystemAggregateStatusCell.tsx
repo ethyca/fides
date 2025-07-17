@@ -35,6 +35,7 @@ export const DiscoveredSystemStatusCell = ({
           ellipsis
           href={rowClickUrl?.(system)}
           onClick={(e) => e.stopPropagation()}
+          data-testid="system-name-link"
         >
           {system.name || "Uncategorized assets"}
         </Link>

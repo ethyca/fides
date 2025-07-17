@@ -43,6 +43,13 @@ declare global {
        */
       getAntTab: (tab: string) => Chainable;
 
+      /**
+       * Get a panel from an Ant Design Tabs component by label
+       * @param tabKey The key of the tab panel to get
+       * @example cy.getAntTabPanel("some-tab-key").should("be.visible");
+       */
+      getAntTabPanel: (tabKey: string) => Chainable;
+
       /** Apply a filter to an Ant Design table column
        * @param columnTitle The title of the column to filter
        * @param filterOption The filter option to select (string for specific option, number for index)
@@ -51,6 +58,13 @@ declare global {
         columnTitle: string,
         filterOption: string | number,
       ) => void;
+
+      /**
+       * Get a row from an Ant Design Table component by row key
+       * @param rowKey The key of the row to get
+       * @example cy.getAntTableRow("some-row-key").should("be.visible");
+       */
+      getAntTableRow: (rowKey: string) => Chainable;
     }
   }
 }
@@ -147,6 +161,9 @@ Cypress.Commands.add(
 Cypress.Commands.add("getAntTab", (tab: string) =>
   cy.get(`.ant-tabs-tab-btn`).filter(`:contains("${tab}")`),
 );
+Cypress.Commands.add("getAntTabPanel", (tab: string) =>
+  cy.get(`tr#rc-tabs-0-panel-${tab}`),
+);
 Cypress.Commands.add("applyTableFilter", (columnTitle, filterOption) => {
   // Click the filter trigger for the specified column
   cy.get(".ant-table-column-title")
@@ -183,5 +200,9 @@ Cypress.Commands.add("applyTableFilter", (columnTitle, filterOption) => {
   // Wait for the dropdown to disappear
   cy.get(".ant-table-filter-dropdown:visible").should("not.exist");
 });
+
+Cypress.Commands.add("getAntTableRow", (rowKey: string) =>
+  cy.get(`[data-row-key='${rowKey}']`),
+);
 
 export {};

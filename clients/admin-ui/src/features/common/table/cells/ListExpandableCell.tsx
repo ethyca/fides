@@ -59,7 +59,11 @@ export const ListExpandableCell = ({
     }
 
     if (values.length === 1) {
-      return <Text ellipsis>{values[0]}</Text>;
+      return (
+        <Text ellipsis data-testid="list-expandable-cell-single">
+          {values[0]}
+        </Text>
+      );
     }
 
     return (
@@ -67,6 +71,7 @@ export const ListExpandableCell = ({
         align={isCollapsed ? "center" : "flex-start"}
         vertical={!isCollapsed}
         gap={isCollapsed ? "small" : "none"}
+        data-testid="list-expandable-cell"
       >
         {isCollapsed ? (
           <Text ellipsis>

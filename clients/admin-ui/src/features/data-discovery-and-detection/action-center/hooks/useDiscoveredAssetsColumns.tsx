@@ -53,7 +53,11 @@ export const useDiscoveredAssetsColumns = ({
         title: "Asset",
         dataIndex: "name",
         key: "name",
-        render: (name) => <Text ellipsis={{ tooltip: true }}>{name}</Text>,
+        render: (name) => (
+          <Text ellipsis={{ tooltip: true }} style={{ maxWidth: 300 }}>
+            {name}
+          </Text>
+        ),
         fixed: "left",
       },
       {
