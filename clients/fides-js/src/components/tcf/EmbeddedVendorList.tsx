@@ -1,5 +1,3 @@
-import { h } from "preact";
-
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { EmbeddedVendor } from "../../lib/tcf/types";
 import PagingButtons, { usePaging } from "../PagingButtons";

@@ -1,4 +1,4 @@
-import { Fragment, h } from "preact";
+import { Fragment } from "preact";
 import { useContext, useEffect, useState } from "preact/hooks";
 
 import { FidesEventTargetType } from "../lib/events";

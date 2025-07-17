@@ -1,7 +1,7 @@
 /* eslint-disable no-nested-ternary */
 import "./fides.css";
 
-import { FunctionComponent, h, VNode } from "preact";
+import { FunctionComponent, VNode } from "preact";
 import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 
 import { A11yDialogAttributes, useA11yDialog } from "../lib/a11y-dialog";
