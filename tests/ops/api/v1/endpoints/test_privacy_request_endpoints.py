@@ -8761,16 +8761,6 @@ class TestSendBatchEmailIntegrations:
 
 class TestFinalizePrivacyRequest:
     @pytest.fixture(scope="function")
-    def erasure_request_finalization_required(self, db):
-        """Enable erasure request finalization"""
-        original_value = CONFIG.execution.erasure_request_finalization_required
-        CONFIG.execution.erasure_request_finalization_required = True
-        ApplicationConfig.update_config_set(db, CONFIG)
-        yield
-        CONFIG.execution.erasure_request_finalization_required = original_value
-        ApplicationConfig.update_config_set(db, CONFIG)
-
-    @pytest.fixture(scope="function")
     def url(self, privacy_request_requires_manual_finalization) -> str:
         return V1_URL_PREFIX + PRIVACY_REQUEST_FINALIZE.format(
             privacy_request_id=privacy_request_requires_manual_finalization.id
@@ -8812,10 +8802,19 @@ class TestFinalizePrivacyRequest:
         url,
         generate_auth_header,
         privacy_request_requires_manual_finalization,
-        erasure_request_finalization_required,
+        erasure_request_finalization_required_true,
         user,
     ):
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_REVIEW])
+        payload = {
+            JWE_PAYLOAD_ROLES: user.client.roles,
+            JWE_PAYLOAD_CLIENT_ID: user.client.id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+        }
+        # User already has Privacy Request Review scope
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
+        }
         response = api_client.post(url, headers=auth_header)
         assert response.status_code == 200
 
