@@ -3,7 +3,7 @@ from typing import Any, Union
 from loguru import logger
 from sqlalchemy.orm import Session
 
-from fides.api.graph.config import CollectionAddress, FieldAddress, FieldPath
+from fides.api.graph.config import FieldPath
 from fides.api.task.conditional_dependencies.schemas import (
     Condition,
     ConditionGroup,
@@ -23,8 +23,8 @@ class ConditionEvaluator:
         """Evaluate a nested condition rule against input data"""
         if isinstance(rule, ConditionLeaf):
             return self._evaluate_leaf_condition(rule, data)
-        else:  # ConditionGroup
-            return self._evaluate_group_condition(rule, data)
+        # ConditionGroup
+        return self._evaluate_group_condition(rule, data)
 
     def _evaluate_leaf_condition(
         self, condition: ConditionLeaf, data: Union[dict, Any]
@@ -43,8 +43,8 @@ class ConditionEvaluator:
         # Apply logical operator
         if group.op == GroupOperator.and_:
             return all(results)
-        else:  # GroupOperator.or_
-            return any(results)
+        # GroupOperator.or_
+        return any(results)
 
     def _get_nested_value(self, data: Union[dict, Any], keys: list[str]) -> Any:
         """Get nested value from data using dot notation
@@ -75,38 +75,38 @@ class ConditionEvaluator:
                 return None
         return current if current != {} else None
 
+    # pylint: disable=too-many-return-statements
     def _apply_operator(
         self, actual_value: Any, operator: Operator, expected_value: Any
     ) -> bool:
         """Apply operator to actual and expected values"""
         if operator == Operator.exists:
             return actual_value is not None
-        elif operator == Operator.not_exists:
+        if operator == Operator.not_exists:
             return actual_value is None
-        elif operator == Operator.eq:
+        if operator == Operator.eq:
             return actual_value == expected_value
-        elif operator == Operator.neq:
+        if operator == Operator.neq:
             return actual_value != expected_value
-        elif operator == Operator.lt:
+        if operator == Operator.lt:
             return actual_value < expected_value if actual_value is not None else False
-        elif operator == Operator.lte:
+        if operator == Operator.lte:
             return actual_value <= expected_value if actual_value is not None else False
-        elif operator == Operator.gt:
+        if operator == Operator.gt:
             return actual_value > expected_value if actual_value is not None else False
-        elif operator == Operator.gte:
+        if operator == Operator.gte:
             return actual_value >= expected_value if actual_value is not None else False
-        elif operator == Operator.list_contains:
+        if operator == Operator.list_contains:
             return (
                 expected_value in actual_value
                 if isinstance(actual_value, list)
                 else False
             )
-        elif operator == Operator.not_in_list:
+        if operator == Operator.not_in_list:
             return (
                 actual_value not in expected_value
                 if isinstance(expected_value, list)
                 else True
             )
-        else:
-            logger.warning(f"Unknown operator: {operator}")
-            return False
+        logger.warning(f"Unknown operator: {operator}")
+        return False
