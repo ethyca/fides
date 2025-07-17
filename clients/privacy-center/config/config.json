@@ -54,6 +54,26 @@
       "cancelButtonText": "Cancel"
     },
     {
+      "policy_key": "default_access_policy",
+      "icon_path": "/download.svg",
+      "title": "This is a duplicate tile!",
+      "description": "We will provide you a report of all your personal data.",
+      "description_subtext": [],
+      "identity_inputs": {
+        "email": "required"
+      },
+      "custom_privacy_request_fields": {
+        "state": {
+          "label": "State",
+          "field_type": "select",
+          "required": true,
+          "options": ["NJ", "NY"]
+        }
+      },
+      "confirmButtonText": "Continue",
+      "cancelButtonText": "Cancel"
+    },
+    {
       "policy_key": "default_erasure_policy",
       "icon_path": "/delete.svg",
       "title": "Erase your data",
