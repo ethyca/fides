@@ -24,6 +24,7 @@ from fides.api.common_exceptions import (
     SSHTunnelConfigNotFoundException,
 )
 from fides.api.graph.execution import ExecutionNode
+from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
@@ -32,6 +33,7 @@ from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.query_configs.query_config import SQLQueryConfig
 from fides.api.util.collection_util import Row
 from fides.config import get_config
+from fides.config.config_proxy import ConfigProxy
 
 from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
     Dataset as CtlDataset,
@@ -184,15 +186,26 @@ class SQLConnector(BaseConnector[Engine]):
         query_config = self.query_config(node)
         update_ct = 0
         client = self.client()
+
+        # Check if safe_mode is enabled
+        db: Session = Session.object_session(self.configuration)
+        config_proxy = ConfigProxy(db)
+        safe_mode_enabled = getattr(config_proxy.execution, 'safe_mode', False)
+
         for row in rows:
             update_stmt: Optional[TextClause] = query_config.generate_update_stmt(
                 row, policy, privacy_request
             )
             if update_stmt is not None:
-                with client.connect() as connection:
-                    self.set_schema(connection)
-                    results: LegacyCursorResult = connection.execute(update_stmt)
-                    update_ct = update_ct + results.rowcount
+                if safe_mode_enabled:
+                    # In safe mode, log the SQL statement instead of executing it
+                    logger.warning(f"SAFE MODE - Would execute SQL: {update_stmt}")
+                else:
+                    # Normal mode - execute the SQL statement
+                    with client.connect() as connection:
+                        self.set_schema(connection)
+                        results: LegacyCursorResult = connection.execute(update_stmt)
+                        update_ct = update_ct + results.rowcount
         return update_ct
 
     def close(self) -> None:

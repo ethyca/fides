@@ -9,6 +9,7 @@ from sqlalchemy.sql.elements import TextClause
 
 from fides.api.common_exceptions import ConnectionException
 from fides.api.graph.execution import ExecutionNode
+from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.connectionconfig import ConnectionTestStatus
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
@@ -21,6 +22,7 @@ from fides.api.service.connectors.query_configs.bigquery_query_config import (
 from fides.api.service.connectors.query_configs.query_config import SQLQueryConfig
 from fides.api.service.connectors.sql_connector import SQLConnector
 from fides.api.util.collection_util import Row
+from fides.config.config_proxy import ConfigProxy
 
 
 class BigQueryConnector(SQLConnector):
@@ -145,17 +147,28 @@ class BigQueryConnector(SQLConnector):
         update_or_delete_ct = 0
         client = self.client()
 
+        # Check if safe_mode is enabled
+        db: Session = Session.object_session(self.configuration)
+        config_proxy = ConfigProxy(db)
+        safe_mode_enabled = getattr(config_proxy.execution, 'safe_mode', False)
+
         # Check if we're using DELETE masking strategy
         if query_config.uses_delete_masking_strategy():
             # Use batched DELETE for better performance
             delete_stmts = query_config.generate_delete(client, input_data or {})
             logger.debug(f"Generated {len(delete_stmts)} DELETE statements")
             if delete_stmts:
-                with client.connect() as connection:
+                if safe_mode_enabled:
+                    # In safe mode, log the DELETE statements instead of executing them
                     for delete_stmt in delete_stmts:
-                        delete_results = connection.execute(delete_stmt)
-                        logger.debug(f"Deleted {delete_results.rowcount} rows")
-                        update_or_delete_ct += delete_results.rowcount
+                        logger.warning(f"SAFE MODE - Would execute DELETE: {delete_stmt}")
+                else:
+                    # Normal mode - execute the DELETE statements
+                    with client.connect() as connection:
+                        for delete_stmt in delete_stmts:
+                            delete_results = connection.execute(delete_stmt)
+                            logger.debug(f"Deleted {delete_results.rowcount} rows")
+                            update_or_delete_ct += delete_results.rowcount
         else:
             # For UPDATE operations, process each row individually since each row may have different masked values
             for row in rows:
@@ -166,11 +179,17 @@ class BigQueryConnector(SQLConnector):
                     f"Generated {len(update_or_delete_stmts)} UPDATE statements"
                 )
                 if update_or_delete_stmts:
-                    with client.connect() as connection:
+                    if safe_mode_enabled:
+                        # In safe mode, log the UPDATE statements instead of executing them
                         for update_or_delete_stmt in update_or_delete_stmts:
-                            update_results = connection.execute(update_or_delete_stmt)
-                            logger.debug(f"Updated {update_results.rowcount} rows")
-                            update_or_delete_ct = (
-                                update_or_delete_ct + update_results.rowcount
-                            )
+                            logger.warning(f"SAFE MODE - Would execute UPDATE: {update_or_delete_stmt}")
+                    else:
+                        # Normal mode - execute the UPDATE statements
+                        with client.connect() as connection:
+                            for update_or_delete_stmt in update_or_delete_stmts:
+                                update_results = connection.execute(update_or_delete_stmt)
+                                logger.debug(f"Updated {update_results.rowcount} rows")
+                                update_or_delete_ct = (
+                                    update_or_delete_ct + update_results.rowcount
+                                )
         return update_or_delete_ct
