@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set
-from fides.api.graph.graph import Edge
 from collections import defaultdict, deque
-from fides.api.graph.graph import DatasetGraph
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set
+
+from fides.api.graph.config import CollectionAddress
+from fides.api.graph.graph import DatasetGraph, Edge
 from fides.api.models.policy import Policy
 
 if TYPE_CHECKING:
@@ -119,7 +120,7 @@ class OptionalIdentityFilter(NodeFilter):
         # For each identity key, find all reachable nodes from ALL collections that have this identity
         for identity_key, field_addresses in identity_to_fields.items():
             visited = set()
-            queue = deque()
+            queue: deque[CollectionAddress] = deque()
 
             # Start from ALL collections that have this identity field
             for field_address in field_addresses:

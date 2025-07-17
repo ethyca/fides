@@ -1,3 +1,4 @@
+# pylint: disable=too-many-instance-attributes, too-many-branches, too-many-statements
 from __future__ import annotations
 
 import json
@@ -41,7 +42,6 @@ from fides.api.models.privacy_request import (
 from fides.api.schemas.policy import ActionType
 from fides.api.util.collection_util import Row, append, partition
 from fides.api.util.logger_context_utils import Contextualizable, LoggerContextKeys
-from fides.api.util.matching_queue import MatchingQueue
 
 ARTIFICIAL_NODES: List[CollectionAddress] = [
     ROOT_COLLECTION_ADDRESS,
