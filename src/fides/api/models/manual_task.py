@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines
 from datetime import datetime, timezone
 from enum import Enum
 from typing import TYPE_CHECKING, Annotated, Any, Optional, Union, cast
@@ -1067,7 +1068,8 @@ class ManualTaskConditionalDependency(Base):
 
         # Recursively build children
         child_conditions = []
-        for child in sorted(self.children, key=lambda x: x.sort_order):
+        children_list = [child for child in self.children]  # type: ignore[attr-defined]
+        for child in sorted(children_list, key=lambda x: x.sort_order):
             if child.condition_type == "leaf":
                 child_conditions.append(child.to_condition_leaf())
             else:
@@ -1076,50 +1078,13 @@ class ManualTaskConditionalDependency(Base):
         return ConditionGroup(op=self.logical_operator, conditions=child_conditions)
 
     @classmethod
-    def build_from_condition(
-        cls,
-        condition: Union[ConditionLeaf, ConditionGroup],
-        task_id: str,
-        parent_id: str = None,
-        sort_order: int = 0,
-    ) -> "ManualTaskConditionalDependency":
-        """Build dependency model from condition"""
-
-        if isinstance(condition, ConditionLeaf):
-            return cls(
-                task_id=task_id,
-                parent_id=parent_id,
-                condition_type=ManualTaskConditionalDependencyType.leaf,
-                field=condition.field,
-                operator=condition.operator,
-                value=condition.value,
-                sort_order=sort_order,
-            )
-        else:  # ConditionGroup
-            # Create the group first
-            group = cls(
-                task_id=task_id,
-                parent_id=parent_id,
-                condition_type=ManualTaskConditionalDependencyType.group,
-                logical_operator=condition.op,
-                sort_order=sort_order,
-            )
-
-            # Add children recursively
-            for i, child_condition in enumerate(condition.conditions):
-                child = cls.build_from_condition(child_condition, task_id, group.id, i)
-                group.children.append(child)
-
-            return group
-
-    @classmethod
     def get_root_condition(
-        cls, db: Session, config_id: str
+        cls, db: Session, manual_task_id: str
     ) -> Optional[Union[ConditionLeaf, ConditionGroup]]:
         """Get the root condition for a config"""
         root = (
             db.query(cls)
-            .filter(cls.config_id == config_id, cls.parent_id.is_(None))
+            .filter(cls.manual_task_id == manual_task_id, cls.parent_id.is_(None))
             .first()
         )
 
@@ -1128,5 +1093,5 @@ class ManualTaskConditionalDependency(Base):
 
         if root.condition_type == "leaf":
             return root.to_condition_leaf()
-        else:
-            return root.to_condition_group()
+
+        return root.to_condition_group()
