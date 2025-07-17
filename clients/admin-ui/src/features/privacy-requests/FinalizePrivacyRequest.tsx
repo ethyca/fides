@@ -16,7 +16,7 @@ const FinalizePrivacyRequest = ({ id }: FinalizePrivacyRequestProps) => {
   return (
     <Flex vertical>
       <Text>
-        Finalize the DSR once you&#39;ve reviewed and have completed any manual
+        Finalize the DSR once you have reviewed and completed any manual
         erasures outside of Fides
       </Text>
       <Button type="primary" onClick={handleFinalizeClick} loading={isLoading}>

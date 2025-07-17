@@ -1881,19 +1881,20 @@ def finalize_privacy_request(
     """
     Finalizes a privacy request, moving it from the 'requires_finalization' state to 'complete'.
     This is done by re-queueing the request, which will then hit the finalization logic in the
-    request runner service.
+    request runner service. This logic marks the privacy request as complete
+    and sends out any configured messaging to the user.
     """
     privacy_request = get_privacy_request_or_error(db, privacy_request_id)
 
     if privacy_request.status != PrivacyRequestStatus.requires_manual_finalization:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Privacy request with id '{privacy_request_id}' is not in the requires_manual_finalization state.",
+            detail=f"Cannot manually finalize privacy request '{privacy_request_id}': status is {privacy_request.status}, not requires_manual_finalization.",
         )
 
     # Set finalized_by and finalized_at here, so the request runner service knows not to
     # put the request back into the requires_finalization state.
-    privacy_request.finalized_at = datetime.utcnow()
+    privacy_request.finalized_at = datetime.now(timezone.utc)
     privacy_request.finalized_by = client.user_id
     privacy_request.save(db=db)
 

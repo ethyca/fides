@@ -67,7 +67,7 @@ class TestManualFinalization:
         run_privacy_request_task,
         dsr_version,
         request,
-        erasure_request_finalization_required_true,
+        enable_erasure_request_finalization_required,
         privacy_request_erasure_pending,
     ) -> None:
         """Assert marking privacy request as requires_manual_finalization"""
@@ -91,7 +91,7 @@ class TestManualFinalization:
         run_privacy_request_task,
         dsr_version,
         request,
-        erasure_request_finalization_required_false,
+        disable_erasure_request_finalization_required,
         privacy_request_erasure_pending,
     ) -> None:
         """Assert marking pending privacy request as complete"""
@@ -113,7 +113,7 @@ class TestManualFinalization:
         run_privacy_request_task,
         dsr_version,
         request,
-        erasure_request_finalization_required_true,
+        enable_erasure_request_finalization_required,
         privacy_request_requires_manual_finalization,
     ) -> None:
         """Ensures that if finalized_at exists, we mark it as complete"""

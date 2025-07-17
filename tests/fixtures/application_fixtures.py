@@ -4037,7 +4037,7 @@ def comment(db, comment_data):
 
 
 @pytest.fixture(scope="function")
-def erasure_request_finalization_required_true(db):
+def enable_erasure_request_finalization_required(db):
     """Enable erasure finalization via config"""
     original_value = CONFIG.execution.erasure_request_finalization_required
     CONFIG.execution.erasure_request_finalization_required = True
@@ -4046,7 +4046,7 @@ def erasure_request_finalization_required_true(db):
 
 
 @pytest.fixture(scope="function")
-def erasure_request_finalization_required_false(db):
+def disable_erasure_request_finalization_required(db):
     """Disable erasure finalization via config"""
     original_value = CONFIG.execution.erasure_request_finalization_required
     CONFIG.execution.erasure_request_finalization_required = False

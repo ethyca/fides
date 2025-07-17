@@ -478,124 +478,120 @@ def run_privacy_request(
                     connection_configs
                 )
 
-                # Only run the traversal if the request is not being finalized
+                # If the privacy request requires manual finalization, we exit here
                 if (
                     privacy_request.status
-                    != PrivacyRequestStatus.requires_manual_finalization
+                    == PrivacyRequestStatus.requires_manual_finalization
                 ):
-                    # Access CHECKPOINT
-                    if (
-                        policy.get_rules_for_action(action_type=ActionType.access)
-                        or policy.get_rules_for_action(action_type=ActionType.erasure)
-                    ) and can_run_checkpoint(
-                        request_checkpoint=CurrentStep.access,
-                        from_checkpoint=resume_step,
-                    ):
-                        privacy_request.cache_failed_checkpoint_details(
-                            CurrentStep.access
-                        )
-                        access_runner(
-                            privacy_request=privacy_request,
-                            policy=policy,
-                            graph=dataset_graph,
-                            connection_configs=connection_configs,
-                            identity=identity_data,
-                            session=session,
-                            privacy_request_proceed=True,  # Should always be True unless we're testing
-                        )
+                    return
 
-                    # Upload Access Results CHECKPOINT
-                    access_result_urls: list[str] = []
-                    raw_access_results: dict = privacy_request.get_raw_access_results()
-                    if (
-                        policy.get_rules_for_action(action_type=ActionType.access)
-                        or policy.get_rules_for_action(
-                            action_type=ActionType.erasure
-                        )  # Intentional to support requeuing the Privacy Request after the Access step for DSR 3.0 for both access/erasure requests
-                    ) and can_run_checkpoint(
-                        request_checkpoint=CurrentStep.upload_access,
-                        from_checkpoint=resume_step,
-                    ):
-                        privacy_request.cache_failed_checkpoint_details(
-                            CurrentStep.upload_access
-                        )
-                        filtered_access_results = filter_by_enabled_actions(
-                            raw_access_results, connection_configs
-                        )
-                        access_result_urls = upload_and_save_access_results(
-                            session,
-                            policy,
-                            filtered_access_results,
-                            dataset_graph,
-                            privacy_request,
-                            manual_webhook_access_results,
-                            fides_connector_datasets,
-                        )
+                # Access CHECKPOINT
+                if (
+                    policy.get_rules_for_action(action_type=ActionType.access)
+                    or policy.get_rules_for_action(action_type=ActionType.erasure)
+                ) and can_run_checkpoint(
+                    request_checkpoint=CurrentStep.access,
+                    from_checkpoint=resume_step,
+                ):
+                    privacy_request.cache_failed_checkpoint_details(CurrentStep.access)
+                    access_runner(
+                        privacy_request=privacy_request,
+                        policy=policy,
+                        graph=dataset_graph,
+                        connection_configs=connection_configs,
+                        identity=identity_data,
+                        session=session,
+                        privacy_request_proceed=True,  # Should always be True unless we're testing
+                    )
 
-                    # Erasure CHECKPOINT
-                    if policy.get_rules_for_action(
+                # Upload Access Results CHECKPOINT
+                access_result_urls: list[str] = []
+                raw_access_results: dict = privacy_request.get_raw_access_results()
+                if (
+                    policy.get_rules_for_action(action_type=ActionType.access)
+                    or policy.get_rules_for_action(
                         action_type=ActionType.erasure
-                    ) and can_run_checkpoint(
-                        request_checkpoint=CurrentStep.erasure,
-                        from_checkpoint=resume_step,
-                    ):
-                        privacy_request.cache_failed_checkpoint_details(
-                            CurrentStep.erasure
-                        )
-                        # We only need to run the erasure once until masking strategies are handled
-                        erasure_runner(
-                            privacy_request=privacy_request,
-                            policy=policy,
-                            graph=dataset_graph,
-                            connection_configs=connection_configs,
-                            identity=identity_data,
-                            access_request_data=get_cached_data_for_erasures(
-                                privacy_request.id
-                            ),
-                            session=session,
-                            privacy_request_proceed=True,  # Should always be True unless we're testing
-                        )
+                    )  # Intentional to support requeuing the Privacy Request after the Access step for DSR 3.0 for both access/erasure requests
+                ) and can_run_checkpoint(
+                    request_checkpoint=CurrentStep.upload_access,
+                    from_checkpoint=resume_step,
+                ):
+                    privacy_request.cache_failed_checkpoint_details(
+                        CurrentStep.upload_access
+                    )
+                    filtered_access_results = filter_by_enabled_actions(
+                        raw_access_results, connection_configs
+                    )
+                    access_result_urls = upload_and_save_access_results(
+                        session,
+                        policy,
+                        filtered_access_results,
+                        dataset_graph,
+                        privacy_request,
+                        manual_webhook_access_results,
+                        fides_connector_datasets,
+                    )
 
-                    # Finalize Erasure CHECKPOINT
-                    if can_run_checkpoint(
-                        request_checkpoint=CurrentStep.finalize_erasure,
-                        from_checkpoint=resume_step,
-                    ):
-                        # This checkpoint allows a Privacy Request to be re-queued
-                        # after the Erasure Step is complete for DSR 3.0
-                        privacy_request.cache_failed_checkpoint_details(
-                            CurrentStep.finalize_erasure
-                        )
+                # Erasure CHECKPOINT
+                if policy.get_rules_for_action(
+                    action_type=ActionType.erasure
+                ) and can_run_checkpoint(
+                    request_checkpoint=CurrentStep.erasure,
+                    from_checkpoint=resume_step,
+                ):
+                    privacy_request.cache_failed_checkpoint_details(CurrentStep.erasure)
+                    # We only need to run the erasure once until masking strategies are handled
+                    erasure_runner(
+                        privacy_request=privacy_request,
+                        policy=policy,
+                        graph=dataset_graph,
+                        connection_configs=connection_configs,
+                        identity=identity_data,
+                        access_request_data=get_cached_data_for_erasures(
+                            privacy_request.id
+                        ),
+                        session=session,
+                        privacy_request_proceed=True,  # Should always be True unless we're testing
+                    )
 
-                    if policy.get_rules_for_action(
-                        action_type=ActionType.consent
-                    ) and can_run_checkpoint(
-                        request_checkpoint=CurrentStep.consent,
-                        from_checkpoint=resume_step,
-                    ):
-                        privacy_request.cache_failed_checkpoint_details(
-                            CurrentStep.consent
-                        )
-                        consent_runner(
-                            privacy_request=privacy_request,
-                            policy=policy,
-                            graph=build_consent_dataset_graph(datasets),
-                            connection_configs=connection_configs,
-                            identity=identity_data,
-                            session=session,
-                            privacy_request_proceed=True,  # Should always be True unless we're testing
-                        )
+                # Finalize Erasure CHECKPOINT
+                if can_run_checkpoint(
+                    request_checkpoint=CurrentStep.finalize_erasure,
+                    from_checkpoint=resume_step,
+                ):
+                    # This checkpoint allows a Privacy Request to be re-queued
+                    # after the Erasure Step is complete for DSR 3.0
+                    privacy_request.cache_failed_checkpoint_details(
+                        CurrentStep.finalize_erasure
+                    )
 
-                    # Finalize Consent CHECKPOINT
-                    if can_run_checkpoint(
-                        request_checkpoint=CurrentStep.finalize_consent,
-                        from_checkpoint=resume_step,
-                    ):
-                        # This checkpoint allows a Privacy Request to be re-queued
-                        # after the Consent Step is complete for DSR 3.0
-                        privacy_request.cache_failed_checkpoint_details(
-                            CurrentStep.finalize_consent
-                        )
+                if policy.get_rules_for_action(
+                    action_type=ActionType.consent
+                ) and can_run_checkpoint(
+                    request_checkpoint=CurrentStep.consent,
+                    from_checkpoint=resume_step,
+                ):
+                    privacy_request.cache_failed_checkpoint_details(CurrentStep.consent)
+                    consent_runner(
+                        privacy_request=privacy_request,
+                        policy=policy,
+                        graph=build_consent_dataset_graph(datasets),
+                        connection_configs=connection_configs,
+                        identity=identity_data,
+                        session=session,
+                        privacy_request_proceed=True,  # Should always be True unless we're testing
+                    )
+
+                # Finalize Consent CHECKPOINT
+                if can_run_checkpoint(
+                    request_checkpoint=CurrentStep.finalize_consent,
+                    from_checkpoint=resume_step,
+                ):
+                    # This checkpoint allows a Privacy Request to be re-queued
+                    # after the Consent Step is complete for DSR 3.0
+                    privacy_request.cache_failed_checkpoint_details(
+                        CurrentStep.finalize_consent
+                    )
 
             except PrivacyRequestPaused as exc:
                 privacy_request.pause_processing(session)
@@ -665,12 +661,11 @@ def run_privacy_request(
                 if not proceed:
                     return
 
-            # Manual Finalize CHECKPOINT
+            # Request finalization CHECKPOINT
             if can_run_checkpoint(
-                request_checkpoint=CurrentStep.manual_finalization,
+                request_checkpoint=CurrentStep.finalization,
                 from_checkpoint=resume_step,
             ):
-                # Finally, mark the request as complete and send completion notifications.
                 if privacy_request.status != PrivacyRequestStatus.error:
                     erasure_rules = policy.get_rules_for_action(
                         action_type=ActionType.erasure
@@ -692,6 +687,7 @@ def run_privacy_request(
                         )
 
                     else:
+                        # Finally, mark the request as complete
                         if privacy_request.finalized_at:
                             privacy_request.add_success_execution_log(
                                 session,
