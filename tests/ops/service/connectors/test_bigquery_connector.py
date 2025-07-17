@@ -525,6 +525,109 @@ class TestBigQueryConnector:
         assert len(results) == 1
         assert results[0]["email"] == "customer-1@example.com"
 
+    @pytest.mark.integration_external
+    @pytest.mark.integration_bigquery
+    def test_mask_data_safe_mode_enabled(
+        self,
+        bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta: DatasetConfig,
+        execution_node_with_namespace_and_partitioning_meta,
+        erasure_policy,
+        privacy_request_with_email_identity,
+        mocker,
+        loguru_caplog,
+        db,
+    ):
+        """Test that when safe_mode is enabled, DELETE statements are logged instead of executed"""
+        # Set up safe_mode in the database
+        from fides.api.models.application_config import ApplicationConfig
+        ApplicationConfig.update_config_set(db, {"execution": {"safe_mode": True}})
+        db.commit()
+
+        dataset_config = (
+            bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta
+        )
+        connector = BigQueryConnector(dataset_config.connection_config)
+
+        # Force DELETE masking strategy to exercise the delete path
+        execution_node = execution_node_with_namespace_and_partitioning_meta
+        execution_node.collection.masking_strategy_override = MaskingStrategyOverride(
+            strategy=MaskingStrategies.DELETE
+        )
+
+        execute_spy = mocker.spy(sqlalchemy.engine.Connection, "execute")
+
+        update_or_delete_ct = connector.mask_data(
+            node=execution_node,
+            policy=erasure_policy,
+            privacy_request=privacy_request_with_email_identity,
+            request_task=RequestTask(),
+            rows=[{"email": "customer-1@example.com"}],
+            input_data={"email": ["customer-1@example.com"]},
+        )
+
+        # In safe mode, SQL should NOT be executed
+        assert execute_spy.call_count == 0
+
+        # In safe mode, no rows are actually affected so count should be 0
+        assert update_or_delete_ct == 0
+
+        # Check that the DELETE statements were logged as warnings instead of executed
+        assert "SAFE MODE - Would execute DELETE:" in loguru_caplog.text
+
+        # Clean up: disable safe_mode
+        ApplicationConfig.update_config_set(db, {"execution": {"safe_mode": False}})
+        db.commit()
+
+    @pytest.mark.integration_external
+    @pytest.mark.integration_bigquery
+    def test_mask_data_safe_mode_disabled(
+        self,
+        bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta: DatasetConfig,
+        execution_node_with_namespace_and_partitioning_meta,
+        erasure_policy,
+        privacy_request_with_email_identity,
+        mocker,
+        loguru_caplog,
+        db,
+        test_data_with_complex_objects,
+    ):
+        """Test that when safe_mode is disabled, DELETE statements are actually executed"""
+        # Ensure safe_mode is disabled in the database
+        from fides.api.models.application_config import ApplicationConfig
+        ApplicationConfig.update_config_set(db, {"execution": {"safe_mode": False}})
+        db.commit()
+
+        dataset_config = (
+            bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta
+        )
+        connector = BigQueryConnector(dataset_config.connection_config)
+
+        # Force DELETE masking strategy to exercise the delete path
+        execution_node = execution_node_with_namespace_and_partitioning_meta
+        execution_node.collection.masking_strategy_override = MaskingStrategyOverride(
+            strategy=MaskingStrategies.DELETE
+        )
+
+        execute_spy = mocker.spy(sqlalchemy.engine.Connection, "execute")
+
+        update_or_delete_ct = connector.mask_data(
+            node=execution_node,
+            policy=erasure_policy,
+            privacy_request=privacy_request_with_email_identity,
+            request_task=RequestTask(),
+            rows=[{"email": "customer-3@example.com"}],
+            input_data={"email": ["customer-3@example.com"]},
+        )
+
+        # In normal mode, SQL should be executed
+        assert execute_spy.call_count > 0
+
+        # And we should get a count of actual rows affected
+        assert update_or_delete_ct >= 0
+
+        # Check that we don't see safe mode logging
+        assert "SAFE MODE - Would execute DELETE:" not in loguru_caplog.text
+
 
 @pytest.mark.integration_external
 @pytest.mark.integration_bigquery
