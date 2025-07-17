@@ -1,0 +1,58 @@
+name: Update Fides Version in FidesPlus Repo
+
+on:
+  push:
+    tags:
+      - '*b*'  # Runs on only beta tag creation
+
+jobs:
+  update_fides_version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Fides repo
+        uses: actions/checkout@v4
+
+      - name: Extract Tag Name and User
+        id: get_tag_user
+        run: |
+          echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+          echo "TAG_USER=$(git log -1 --format='%an')" >> $GITHUB_ENV
+
+
+      - name: Checkout fidesplus repo
+        uses: actions/checkout@v4
+        with:
+          repository: ethyca/fidesplus
+          token: ${{ secrets.DISPATCH_ACCESS_TOKEN }}
+          path: fidesplus
+
+      - name: Update fides version in requirements.txt
+        run: |
+          cd fidesplus
+          sed -i "s|^ethyca-fides\[all\]==.*|ethyca-fides\[all\]==${{ env.TAG_NAME }}|" requirements.txt
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "GitHub Actions"
+          cat requirements.txt
+
+      - name: Create New Branch
+        run: |
+          cd fidesplus
+          git checkout -b update-fides-${{ env.TAG_NAME }}
+          git add requirements.txt
+          git commit -m "Update ethyca-fides[all] version to ${{ env.TAG_NAME }}"
+          git fetch origin
+          git rebase origin/update-fides-${{ env.TAG_NAME }} || true
+          git push origin update-fides-${{ env.TAG_NAME }} --force
+
+
+
+      - name: Create Pull Request
+        run: |
+          gh pr create \
+            --repo ethyca/fidesplus \
+            --head update-fides-${{ env.TAG_NAME }} \
+            --base main \
+            --title "Update fides version to ${{ env.TAG_NAME }}" \
+            --body "Automatically updating ethyca-fides[all] version based on new tag ${{ env.TAG_NAME }}\n\nTag created by @${{ env.TAG_USER }}"
+        env:
+          GH_TOKEN: ${{ secrets.DISPATCH_ACCESS_TOKEN }}
