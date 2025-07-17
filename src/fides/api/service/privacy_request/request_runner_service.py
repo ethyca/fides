@@ -688,7 +688,6 @@ def run_privacy_request(
                         )
                         return
 
-
                     # Finally, mark the request as complete
                     if privacy_request.finalized_at:
                         privacy_request.add_success_execution_log(
