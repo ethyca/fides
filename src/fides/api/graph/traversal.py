@@ -43,7 +43,6 @@ from fides.api.schemas.policy import ActionType
 from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.util.collection_util import Row, append, partition
 from fides.api.util.logger_context_utils import Contextualizable, LoggerContextKeys
-from fides.api.util.matching_queue import MatchingQueue
 
 ARTIFICIAL_NODES: List[CollectionAddress] = [
     ROOT_COLLECTION_ADDRESS,
