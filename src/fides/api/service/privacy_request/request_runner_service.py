@@ -478,10 +478,11 @@ def run_privacy_request(
                     connection_configs
                 )
 
-                # If the privacy request requires manual finalization, we exit here
+                # If the privacy request requires manual finalization and has not yet been finalized, we exit here
                 if (
                     privacy_request.status
                     == PrivacyRequestStatus.requires_manual_finalization
+                    and privacy_request.finalized_at is None
                 ):
                     return
 
@@ -683,7 +684,7 @@ def run_privacy_request(
                             PrivacyRequestStatus.requires_manual_finalization
                         )
                         privacy_request.cache_failed_checkpoint_details(
-                            CurrentStep.manual_finalization
+                            CurrentStep.finalization
                         )
 
                     else:

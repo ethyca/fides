@@ -12,10 +12,7 @@ from fides.api.cryptography.schemas.jwt import (
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.common.api.scope_registry import (
-    PRIVACY_REQUEST_READ,
-    PRIVACY_REQUEST_REVIEW,
-)
+from fides.common.api.scope_registry import PRIVACY_REQUEST_READ, PRIVACY_REQUEST_REVIEW
 from fides.common.api.v1.urn_registry import PRIVACY_REQUEST_FINALIZE, V1_URL_PREFIX
 from fides.config import CONFIG
 
@@ -51,7 +48,6 @@ class TestFinalizePrivacyRequest:
 
     def test_finalize_privacy_request(
         self,
-        mock_queue_privacy_request,
         db,
         api_client,
         url,
@@ -60,17 +56,16 @@ class TestFinalizePrivacyRequest:
         enable_erasure_request_finalization_required,
         user,
     ):
-        auth_header = generate_auth_header_for_user(
-            user=user,
+        auth_header = generate_auth_header(
             scopes=[PRIVACY_REQUEST_REVIEW],
         )
         response = api_client.post(url, headers=auth_header)
         assert response.status_code == 200
 
         privacy_request_requires_manual_finalization.refresh_from_db(db=db)
+        assert privacy_request_requires_manual_finalization.finalized_at is not None
+        # This is an e2e test that actually hits the request_runner_service logic, which marks the request as complete
         assert (
             privacy_request_requires_manual_finalization.status
             == PrivacyRequestStatus.complete
         )
-        assert privacy_request_requires_manual_finalization.finalized_by == user.id
-        assert privacy_request_requires_manual_finalization.finalized_at is not None

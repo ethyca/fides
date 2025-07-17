@@ -4,7 +4,7 @@ import csv
 import io
 import json
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import (
     Annotated,
     Any,
@@ -1892,10 +1892,14 @@ def finalize_privacy_request(
             detail=f"Cannot manually finalize privacy request '{privacy_request_id}': status is {privacy_request.status}, not requires_manual_finalization.",
         )
 
+    user_id = client.user_id
+    if client.id == CONFIG.security.oauth_root_client_id:
+        user_id = "root"
+
     # Set finalized_by and finalized_at here, so the request runner service knows not to
     # put the request back into the requires_finalization state.
     privacy_request.finalized_at = datetime.now(timezone.utc)
-    privacy_request.finalized_by = client.user_id
+    privacy_request.finalized_by = user_id
     privacy_request.save(db=db)
 
     queue_privacy_request(
