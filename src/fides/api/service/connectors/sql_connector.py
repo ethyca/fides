@@ -24,7 +24,6 @@ from fides.api.common_exceptions import (
     SSHTunnelConfigNotFoundException,
 )
 from fides.api.graph.execution import ExecutionNode
-from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
@@ -190,7 +189,7 @@ class SQLConnector(BaseConnector[Engine]):
         # Check if safe_mode is enabled
         db: Session = Session.object_session(self.configuration)
         config_proxy = ConfigProxy(db)
-        safe_mode_enabled = getattr(config_proxy.execution, 'safe_mode', False)
+        safe_mode_enabled = getattr(config_proxy.execution, "safe_mode", False)
 
         for row in rows:
             update_stmt: Optional[TextClause] = query_config.generate_update_stmt(

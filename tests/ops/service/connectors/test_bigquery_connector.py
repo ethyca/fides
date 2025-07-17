@@ -540,7 +540,8 @@ class TestBigQueryConnector:
         """Test that when safe_mode is enabled, DELETE statements are logged instead of executed"""
         # Set up safe_mode in the database
         from fides.api.models.application_config import ApplicationConfig
-        ApplicationConfig.update_config_set(db, {"execution": {"safe_mode": True}})
+
+        ApplicationConfig.update_api_set(db, {"execution": {"safe_mode": True}})
         db.commit()
 
         dataset_config = (
@@ -572,10 +573,10 @@ class TestBigQueryConnector:
         assert update_or_delete_ct == 0
 
         # Check that the DELETE statements were logged as warnings instead of executed
-        assert "SAFE MODE - Would execute DELETE:" in loguru_caplog.text
+        assert "SAFE MODE - Would execute SQL:" in loguru_caplog.text
 
         # Clean up: disable safe_mode
-        ApplicationConfig.update_config_set(db, {"execution": {"safe_mode": False}})
+        ApplicationConfig.update_api_set(db, {"execution": {"safe_mode": False}})
         db.commit()
 
     @pytest.mark.integration_external
@@ -589,12 +590,12 @@ class TestBigQueryConnector:
         mocker,
         loguru_caplog,
         db,
-        test_data_with_complex_objects,
     ):
         """Test that when safe_mode is disabled, DELETE statements are actually executed"""
         # Ensure safe_mode is disabled in the database
         from fides.api.models.application_config import ApplicationConfig
-        ApplicationConfig.update_config_set(db, {"execution": {"safe_mode": False}})
+
+        ApplicationConfig.update_api_set(db, {"execution": {"safe_mode": False}})
         db.commit()
 
         dataset_config = (
@@ -626,7 +627,7 @@ class TestBigQueryConnector:
         assert update_or_delete_ct >= 0
 
         # Check that we don't see safe mode logging
-        assert "SAFE MODE - Would execute DELETE:" not in loguru_caplog.text
+        assert "SAFE MODE - Would execute SQL:" not in loguru_caplog.text
 
 
 @pytest.mark.integration_external
