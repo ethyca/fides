@@ -8819,7 +8819,7 @@ class TestFinalizePrivacyRequest:
         response = api_client.post(url, headers=auth_header)
         assert response.status_code == 200
 
-        privacy_request_requires_manual_finalization.refresh_from_db()
+        privacy_request_requires_manual_finalization.refresh_from_db(db=db)
         assert (
             privacy_request_requires_manual_finalization.status
             == PrivacyRequestStatus.requires_manual_finalization

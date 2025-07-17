@@ -143,8 +143,6 @@ class FieldsAffectedResponse(FidesSchema):
     path: Optional[str]
     field_name: Optional[str]
     data_categories: Optional[List[str]]
-    finalized_at: Optional[datetime] = None
-    finalized_by: Optional[str] = None
     model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
 

@@ -61,17 +61,18 @@ class TestManualFinalization:
         "dsr_version",
         ["use_dsr_3_0", "use_dsr_2_0"],
     )
-    def test_requires_manual_finalization_true(
+    def test_mark_as_requires_manual_finalization_if_config_true(
         self,
         db: Session,
         run_privacy_request_task,
         dsr_version,
         request,
-        privacy_request_requires_manual_finalization,
+        erasure_request_finalization_required_true,
+        privacy_request_erasure_pending,
     ) -> None:
         """Assert marking privacy request as requires_manual_finalization"""
         request.getfixturevalue(dsr_version)
-        privacy_request = privacy_request_requires_manual_finalization
+        privacy_request = privacy_request_erasure_pending
         run_privacy_request_task.delay(privacy_request.id).get(
             timeout=PRIVACY_REQUEST_TASK_TIMEOUT
         )
@@ -84,12 +85,35 @@ class TestManualFinalization:
         "dsr_version",
         ["use_dsr_3_0", "use_dsr_2_0"],
     )
-    def test_requires_manual_finalization_false_finalized_at_exists(
+    def test_no_manual_finalization_if_config_false(
         self,
         db: Session,
         run_privacy_request_task,
         dsr_version,
         request,
+        erasure_request_finalization_required_false,
+        privacy_request_erasure_pending,
+    ) -> None:
+        """Assert marking pending privacy request as complete"""
+        request.getfixturevalue(dsr_version)
+        privacy_request = privacy_request_erasure_pending
+        run_privacy_request_task.delay(privacy_request.id).get(
+            timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+        )
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.complete
+
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
+    )
+    def test_mark_as_complete_when_finalized_at_exists(
+        self,
+        db: Session,
+        run_privacy_request_task,
+        dsr_version,
+        request,
+        erasure_request_finalization_required_true,
         privacy_request_requires_manual_finalization,
     ) -> None:
         """Ensures that if finalized_at exists, we mark it as complete"""

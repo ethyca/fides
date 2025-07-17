@@ -2094,6 +2094,21 @@ def base_gcs_client_mock():
 
 
 @pytest.fixture(scope="function")
+def privacy_request_erasure_pending(db: Session, erasure_policy: Policy) -> Generator:
+    pr = PrivacyRequest.create(
+        db=db,
+        data={
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_id": erasure_policy.id,
+            "status": "pending",
+            "external_id": "b5d78237-f831-4add-8a88-883a4843b016",
+        },
+    )
+    yield pr
+    pr.delete(db=db)
+
+
+@pytest.fixture(scope="function")
 def privacy_request_requires_manual_finalization(
     db: Session, erasure_policy: Policy
 ) -> Generator:
