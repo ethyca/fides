@@ -19,7 +19,9 @@ from fides.common.api.v1.urn_registry import (
     POLICY_WEBHOOKS_PRE,
     V1_URL_PREFIX,
 )
-from tests.ops.api.v1.endpoints.privacy_request.test_privacy_request_endpoints import stringify_date
+from tests.ops.api.v1.endpoints.privacy_request.test_privacy_request_endpoints import (
+    stringify_date,
+)
 
 
 def embedded_http_connection_config(connection_config: ConnectionConfig) -> Dict:

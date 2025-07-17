@@ -55,7 +55,9 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.config import CONFIG
 from tests.conftest import generate_auth_header_for_user
-from tests.ops.api.v1.endpoints.privacy_request.test_privacy_request_endpoints import stringify_date
+from tests.ops.api.v1.endpoints.privacy_request.test_privacy_request_endpoints import (
+    stringify_date,
+)
 
 page_size = Params().size
 
