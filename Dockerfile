@@ -117,7 +117,7 @@ COPY clients/fides-js/package.json ./fides-js/package.json
 COPY clients/admin-ui/package.json ./admin-ui/package.json
 COPY clients/privacy-center/package.json ./privacy-center/package.json
 
-RUN npm install
+RUN npm ci
 
 COPY clients/ .
 
