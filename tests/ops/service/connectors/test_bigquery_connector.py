@@ -527,7 +527,7 @@ class TestBigQueryConnector:
 
     @pytest.mark.integration_external
     @pytest.mark.integration_bigquery
-    def test_mask_data_safe_mode_enabled(
+    def test_mask_data_sql_dry_run_enabled(
         self,
         bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta: DatasetConfig,
         execution_node_with_namespace_and_partitioning_meta,
@@ -537,11 +537,11 @@ class TestBigQueryConnector:
         loguru_caplog,
         db,
     ):
-        """Test that when safe_mode is enabled, DELETE statements are logged instead of executed"""
-        # Set up safe_mode in the database
+        """Test that when sql_dry_run is enabled, DELETE statements are logged instead of executed"""
+        # Set up sql_dry_run in the database
         from fides.api.models.application_config import ApplicationConfig
 
-        ApplicationConfig.update_api_set(db, {"execution": {"safe_mode": True}})
+        ApplicationConfig.update_api_set(db, {"execution": {"sql_dry_run": True}})
         db.commit()
 
         dataset_config = (
@@ -566,22 +566,22 @@ class TestBigQueryConnector:
             input_data={"email": ["customer-1@example.com"]},
         )
 
-        # In safe mode, SQL should NOT be executed
+        # In sql_dry_run mode, SQL should NOT be executed
         assert execute_spy.call_count == 0
 
-        # In safe mode, no rows are actually affected so count should be 0
+        # In sql_dry_run mode, no rows are actually affected so count should be 0
         assert update_or_delete_ct == 0
 
         # Check that the DELETE statements were logged as warnings instead of executed
-        assert "SAFE MODE - Would execute SQL:" in loguru_caplog.text
+        assert "SQL DRY RUN - Would execute SQL:" in loguru_caplog.text
 
-        # Clean up: disable safe_mode
-        ApplicationConfig.update_api_set(db, {"execution": {"safe_mode": False}})
+        # Clean up: disable sql_dry_run
+        ApplicationConfig.update_api_set(db, {"execution": {"sql_dry_run": False}})
         db.commit()
 
     @pytest.mark.integration_external
     @pytest.mark.integration_bigquery
-    def test_mask_data_safe_mode_disabled(
+    def test_mask_data_sql_dry_run_disabled(
         self,
         bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta: DatasetConfig,
         execution_node_with_namespace_and_partitioning_meta,
@@ -591,11 +591,11 @@ class TestBigQueryConnector:
         loguru_caplog,
         db,
     ):
-        """Test that when safe_mode is disabled, DELETE statements are actually executed"""
-        # Ensure safe_mode is disabled in the database
+        """Test that when sql_dry_run is disabled, DELETE statements are actually executed"""
+        # Ensure sql_dry_run is disabled in the database
         from fides.api.models.application_config import ApplicationConfig
 
-        ApplicationConfig.update_api_set(db, {"execution": {"safe_mode": False}})
+        ApplicationConfig.update_api_set(db, {"execution": {"sql_dry_run": False}})
         db.commit()
 
         dataset_config = (
@@ -626,8 +626,8 @@ class TestBigQueryConnector:
         # And we should get a count of actual rows affected
         assert update_or_delete_ct >= 0
 
-        # Check that we don't see safe mode logging
-        assert "SAFE MODE - Would execute SQL:" not in loguru_caplog.text
+        # Check that we don't see sql_dry_run logging
+        assert "SQL DRY RUN - Would execute SQL:" not in loguru_caplog.text
 
 
 @pytest.mark.integration_external

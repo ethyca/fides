@@ -59,18 +59,18 @@ class SQLConnector(BaseConnector[Engine]):
             )
         self.ssh_server: sshtunnel._ForwardServer = None
 
-    def get_safe_mode_enabled(self) -> bool:
+    def get_sql_dry_run_enabled(self) -> bool:
         """
-        Get the safe_mode setting from the application configuration.
+        Get the sql_dry_run setting from the application configuration.
 
         Returns:
-            bool: True if safe_mode is enabled, False otherwise
+            bool: True if sql_dry_run is enabled, False otherwise
         """
         from fides.api.api.deps import get_autoclose_db_session as get_db
 
         with get_db() as db:
             config_proxy = ConfigProxy(db)
-            return getattr(config_proxy.execution, "safe_mode", False)
+            return getattr(config_proxy.execution, "sql_dry_run", False)
 
     @staticmethod
     def cursor_result_to_rows(results: CursorResult) -> List[Row]:
@@ -199,17 +199,17 @@ class SQLConnector(BaseConnector[Engine]):
         update_ct = 0
         client = self.client()
 
-        # Check if safe_mode is enabled
-        safe_mode_enabled = self.get_safe_mode_enabled()
+        # Check if sql_dry_run is enabled
+        sql_dry_run_enabled = self.get_sql_dry_run_enabled()
 
         for row in rows:
             update_stmt: Optional[TextClause] = query_config.generate_update_stmt(
                 row, policy, privacy_request
             )
             if update_stmt is not None:
-                if safe_mode_enabled:
-                    # In safe mode, log the SQL statement instead of executing it
-                    logger.warning(f"SAFE MODE - Would execute SQL: {update_stmt}")
+                if sql_dry_run_enabled:
+                    # In sql_dry_run mode, log the SQL statement instead of executing it
+                    logger.warning(f"SQL DRY RUN - Would execute SQL: {update_stmt}")
                 else:
                     # Normal mode - execute the SQL statement
                     with client.connect() as connection:
