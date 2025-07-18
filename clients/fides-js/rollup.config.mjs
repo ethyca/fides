@@ -12,6 +12,7 @@ import strip from "@rollup/plugin-strip";
 import replace from "@rollup/plugin-replace";
 import fs from "fs";
 import jsxRemoveAttributes from "rollup-plugin-jsx-remove-attributes";
+import { importFidesPackageVersion } from "../build-utils.js";
 
 const NAME = "fides";
 const IS_DEV = process.env.NODE_ENV === "development";
@@ -56,6 +57,12 @@ const fidesScriptPlugins = ({ name, gzipWarnSizeKb, gzipErrorSizeKb }) => [
       functions: ["fidesDebugger"],
     }),
   !IS_DEV && minify(),
+  replace({
+    // version.json is created by the docker build process and contains the versioneer version
+    __RELEASE_VERSION__: () => importFidesPackageVersion(),
+    preventAssignment: true,
+    include: ["src/lib/init-utils.ts"],
+  }),
   copy({
     // Automatically add the built script to the privacy center's and admin ui's static files for bundling:
     targets: [
