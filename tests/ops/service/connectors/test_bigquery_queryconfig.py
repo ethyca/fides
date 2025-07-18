@@ -435,6 +435,70 @@ class TestBigQueryQueryConfig:
         # Should return empty list for missing input data
         assert delete_stmts == []
 
+    def test_generate_delete_none_valued_input_data(
+        self,
+        db,
+        employee_node,
+        erasure_policy,
+        bigquery_client,
+        dataset_graph,
+    ):
+        """
+        Test that generate_delete handles null input data correctly
+        """
+        assert (
+            dataset_graph.nodes[
+                CollectionAddress("bigquery_example_test_dataset", "employee")
+            ].collection.masking_strategy_override.strategy
+            == MaskingStrategies.DELETE
+        )
+
+        erasure_policy.rules[0].targets[0].data_category = "user"
+        erasure_policy.rules[0].targets[0].save(db)
+
+        delete_stmts = BigQueryQueryConfig(employee_node).generate_delete(
+            bigquery_client,
+            input_data={
+                "email": [None],
+                "address_id": [None],
+            },
+        )
+
+        # Should return empty list for null input data
+        assert delete_stmts == []
+
+    def test_generate_delete_type_mismatch_input_data(
+        self,
+        db,
+        employee_node,
+        erasure_policy,
+        bigquery_client,
+        dataset_graph,
+    ):
+        """
+        The address_id field is annotated with data_type: integer, but the input data is a string and cannot be cast to an integer.
+        This should result in no DELETE statements being generated.
+        """
+        assert (
+            dataset_graph.nodes[
+                CollectionAddress("bigquery_example_test_dataset", "employee")
+            ].collection.masking_strategy_override.strategy
+            == MaskingStrategies.DELETE
+        )
+
+        erasure_policy.rules[0].targets[0].data_category = "user"
+        erasure_policy.rules[0].targets[0].save(db)
+
+        delete_stmts = BigQueryQueryConfig(employee_node).generate_delete(
+            bigquery_client,
+            input_data={
+                "address_id": ["abc"],
+            },
+        )
+
+        # Should return empty list for null input data
+        assert delete_stmts == []
+
     def test_is_delete_masking_strategy(
         self,
         employee_node,
