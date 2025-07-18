@@ -383,14 +383,14 @@ class TestLeafConditionEvaluation(TestConditionEvaluator):
         description,
     ):
         """Test various leaf condition scenarios with sample data"""
-        condition = ConditionLeaf(field=field, operator=operator, value=value)
+        condition = ConditionLeaf(field_address=field, operator=operator, value=value)
         result = evaluator.evaluate_rule(condition, sample_data)
         assert result is expected_result, f"Failed for {description}"
 
     def test_leaf_condition_with_fides_data(self, evaluator, mock_fides_data):
         """Test leaf condition with Fides data structure"""
         condition = ConditionLeaf(
-            field="user.name", operator=Operator.eq, value="test_value"
+            field_address="user.name", operator=Operator.eq, value="test_value"
         )
 
         result = evaluator.evaluate_rule(condition, mock_fides_data)
@@ -405,9 +405,13 @@ class TestGroupConditionEvaluation(TestConditionEvaluator):
         group = ConditionGroup(
             op=GroupOperator.and_,
             conditions=[
-                ConditionLeaf(field="user.age", operator=Operator.gte, value=18),
-                ConditionLeaf(field="user.active", operator=Operator.eq, value=True),
-                ConditionLeaf(field="user.name", operator=Operator.exists),
+                ConditionLeaf(
+                    field_address="user.age", operator=Operator.gte, value=18
+                ),
+                ConditionLeaf(
+                    field_address="user.active", operator=Operator.eq, value=True
+                ),
+                ConditionLeaf(field_address="user.name", operator=Operator.exists),
             ],
         )
 
@@ -419,11 +423,13 @@ class TestGroupConditionEvaluation(TestConditionEvaluator):
         group = ConditionGroup(
             op=GroupOperator.and_,
             conditions=[
-                ConditionLeaf(field="user.age", operator=Operator.gte, value=18),
                 ConditionLeaf(
-                    field="user.active", operator=Operator.eq, value=False
+                    field_address="user.age", operator=Operator.gte, value=18
+                ),
+                ConditionLeaf(
+                    field_address="user.active", operator=Operator.eq, value=False
                 ),  # This is false
-                ConditionLeaf(field="user.name", operator=Operator.exists),
+                ConditionLeaf(field_address="user.name", operator=Operator.exists),
             ],
         )
 
@@ -436,13 +442,13 @@ class TestGroupConditionEvaluation(TestConditionEvaluator):
             op=GroupOperator.or_,
             conditions=[
                 ConditionLeaf(
-                    field="user.age", operator=Operator.lt, value=18
+                    field_address="user.age", operator=Operator.lt, value=18
                 ),  # This is false
                 ConditionLeaf(
-                    field="user.active", operator=Operator.eq, value=True
+                    field_address="user.active", operator=Operator.eq, value=True
                 ),  # This is true
                 ConditionLeaf(
-                    field="user.name", operator=Operator.eq, value="wrong_name"
+                    field_address="user.name", operator=Operator.eq, value="wrong_name"
                 ),  # This is false
             ],
         )
@@ -455,10 +461,12 @@ class TestGroupConditionEvaluation(TestConditionEvaluator):
         group = ConditionGroup(
             op=GroupOperator.or_,
             conditions=[
-                ConditionLeaf(field="user.age", operator=Operator.lt, value=18),
-                ConditionLeaf(field="user.active", operator=Operator.eq, value=False),
+                ConditionLeaf(field_address="user.age", operator=Operator.lt, value=18),
                 ConditionLeaf(
-                    field="user.name", operator=Operator.eq, value="wrong_name"
+                    field_address="user.active", operator=Operator.eq, value=False
+                ),
+                ConditionLeaf(
+                    field_address="user.name", operator=Operator.eq, value="wrong_name"
                 ),
             ],
         )
@@ -471,7 +479,9 @@ class TestGroupConditionEvaluation(TestConditionEvaluator):
         group = ConditionGroup(
             op=GroupOperator.and_,
             conditions=[
-                ConditionLeaf(field="user.name", operator=Operator.eq, value="john_doe")
+                ConditionLeaf(
+                    field_address="user.name", operator=Operator.eq, value="john_doe"
+                )
             ],
         )
 
@@ -488,15 +498,21 @@ class TestNestedGroupEvaluation(TestConditionEvaluator):
         inner_group = ConditionGroup(
             op=GroupOperator.or_,
             conditions=[
-                ConditionLeaf(field="user.role", operator=Operator.eq, value="admin"),
-                ConditionLeaf(field="user.verified", operator=Operator.eq, value=True),
+                ConditionLeaf(
+                    field_address="user.role", operator=Operator.eq, value="admin"
+                ),
+                ConditionLeaf(
+                    field_address="user.verified", operator=Operator.eq, value=True
+                ),
             ],
         )
 
         outer_group = ConditionGroup(
             op=GroupOperator.and_,
             conditions=[
-                ConditionLeaf(field="user.age", operator=Operator.gte, value=18),
+                ConditionLeaf(
+                    field_address="user.age", operator=Operator.gte, value=18
+                ),
                 inner_group,
             ],
         )
@@ -514,10 +530,10 @@ class TestNestedGroupEvaluation(TestConditionEvaluator):
             op=GroupOperator.and_,
             conditions=[
                 ConditionLeaf(
-                    field="user.age", operator=Operator.gte, value=18
+                    field_address="user.age", operator=Operator.gte, value=18
                 ),  # True
                 ConditionLeaf(
-                    field="user.active", operator=Operator.eq, value=True
+                    field_address="user.active", operator=Operator.eq, value=True
                 ),  # True
             ],
         )
@@ -526,10 +542,10 @@ class TestNestedGroupEvaluation(TestConditionEvaluator):
             op=GroupOperator.and_,
             conditions=[
                 ConditionLeaf(
-                    field="user.role", operator=Operator.eq, value="admin"
+                    field_address="user.role", operator=Operator.eq, value="admin"
                 ),  # False
                 ConditionLeaf(
-                    field="user.verified", operator=Operator.eq, value=True
+                    field_address="user.verified", operator=Operator.eq, value=True
                 ),  # True
             ],
         )
@@ -543,7 +559,9 @@ class TestNestedGroupEvaluation(TestConditionEvaluator):
             op=GroupOperator.and_,
             conditions=[
                 middle_group,  # True
-                ConditionLeaf(field="user.name", operator=Operator.exists),  # True
+                ConditionLeaf(
+                    field_address="user.name", operator=Operator.exists
+                ),  # True
             ],
         )
 
@@ -557,10 +575,10 @@ class TestNestedGroupEvaluation(TestConditionEvaluator):
             op=GroupOperator.or_,
             conditions=[
                 ConditionLeaf(
-                    field="user.role", operator=Operator.eq, value="admin"
+                    field_address="user.role", operator=Operator.eq, value="admin"
                 ),  # False
                 ConditionLeaf(
-                    field="user.verified", operator=Operator.eq, value=True
+                    field_address="user.verified", operator=Operator.eq, value=True
                 ),  # True
             ],
         )
@@ -570,7 +588,7 @@ class TestNestedGroupEvaluation(TestConditionEvaluator):
             conditions=[
                 deepest,  # True (OR of False and True)
                 ConditionLeaf(
-                    field="user.active", operator=Operator.eq, value=True
+                    field_address="user.active", operator=Operator.eq, value=True
                 ),  # True
             ],
         )
@@ -580,7 +598,7 @@ class TestNestedGroupEvaluation(TestConditionEvaluator):
             conditions=[
                 level_2,  # True (AND of True and True)
                 ConditionLeaf(
-                    field="user.age", operator=Operator.lt, value=18
+                    field_address="user.age", operator=Operator.lt, value=18
                 ),  # False
             ],
         )
@@ -589,7 +607,9 @@ class TestNestedGroupEvaluation(TestConditionEvaluator):
             op=GroupOperator.and_,
             conditions=[
                 level_3,  # True (OR of True and False)
-                ConditionLeaf(field="user.name", operator=Operator.exists),  # True
+                ConditionLeaf(
+                    field_address="user.name", operator=Operator.exists
+                ),  # True
             ],
         )
 
@@ -601,17 +621,25 @@ class TestNestedGroupEvaluation(TestConditionEvaluator):
         inner_group = ConditionGroup(
             op=GroupOperator.and_,
             conditions=[
-                ConditionLeaf(field="user.verified", operator=Operator.eq, value=True),
-                ConditionLeaf(field="user.premium", operator=Operator.eq, value=True),
+                ConditionLeaf(
+                    field_address="user.verified", operator=Operator.eq, value=True
+                ),
+                ConditionLeaf(
+                    field_address="user.premium", operator=Operator.eq, value=True
+                ),
             ],
         )
 
         mixed_group = ConditionGroup(
             op=GroupOperator.or_,
             conditions=[
-                ConditionLeaf(field="user.admin", operator=Operator.eq, value=True),
+                ConditionLeaf(
+                    field_address="user.admin", operator=Operator.eq, value=True
+                ),
                 inner_group,
-                ConditionLeaf(field="user.moderator", operator=Operator.eq, value=True),
+                ConditionLeaf(
+                    field_address="user.moderator", operator=Operator.eq, value=True
+                ),
             ],
         )
 
@@ -626,21 +654,23 @@ class TestEdgeCases(TestConditionEvaluator):
 
     def test_empty_data(self, evaluator):
         """Test evaluation with empty data"""
-        condition = ConditionLeaf(field="any.field", operator=Operator.exists)
+        condition = ConditionLeaf(field_address="any.field", operator=Operator.exists)
 
         result = evaluator.evaluate_rule(condition, {})
         assert result is False
 
     def test_none_data(self, evaluator):
         """Test evaluation with None data"""
-        condition = ConditionLeaf(field="any.field", operator=Operator.exists)
+        condition = ConditionLeaf(field_address="any.field", operator=Operator.exists)
 
         result = evaluator.evaluate_rule(condition, None)
         assert result is False
 
     def test_missing_field_with_exists(self, evaluator, sample_data):
         """Test exists operator with missing field"""
-        condition = ConditionLeaf(field="user.nonexistent", operator=Operator.exists)
+        condition = ConditionLeaf(
+            field_address="user.nonexistent", operator=Operator.exists
+        )
 
         result = evaluator.evaluate_rule(condition, sample_data)
         assert result is False
@@ -648,7 +678,7 @@ class TestEdgeCases(TestConditionEvaluator):
     def test_missing_field_with_not_exists(self, evaluator, sample_data):
         """Test not_exists operator with missing field"""
         condition = ConditionLeaf(
-            field="user.nonexistent", operator=Operator.not_exists
+            field_address="user.nonexistent", operator=Operator.not_exists
         )
 
         result = evaluator.evaluate_rule(condition, sample_data)
@@ -657,7 +687,7 @@ class TestEdgeCases(TestConditionEvaluator):
     def test_none_value_comparison(self, evaluator, sample_data):
         """Test comparison with None values"""
         condition = ConditionLeaf(
-            field="missing_field", operator=Operator.eq, value=None
+            field_address="missing_field", operator=Operator.eq, value=None
         )
 
         result = evaluator.evaluate_rule(condition, sample_data)
@@ -677,7 +707,7 @@ class TestEdgeCases(TestConditionEvaluator):
         """Test edge case comparisons (empty string, zero, false)"""
         data = {"field": field_value}
         condition = ConditionLeaf(
-            field="field", operator=Operator.eq, value=expected_value
+            field_address="field", operator=Operator.eq, value=expected_value
         )
 
         result = evaluator.evaluate_rule(condition, data)
@@ -694,22 +724,30 @@ class TestIntegration(TestConditionEvaluator):
         role_or_verified = ConditionGroup(
             op=GroupOperator.or_,
             conditions=[
-                ConditionLeaf(field="user.role", operator=Operator.eq, value="admin"),
-                ConditionLeaf(field="user.verified", operator=Operator.eq, value=True),
+                ConditionLeaf(
+                    field_address="user.role", operator=Operator.eq, value="admin"
+                ),
+                ConditionLeaf(
+                    field_address="user.verified", operator=Operator.eq, value=True
+                ),
             ],
         )
 
         user_requirements = ConditionGroup(
             op=GroupOperator.and_,
             conditions=[
-                ConditionLeaf(field="user.age", operator=Operator.gte, value=18),
-                ConditionLeaf(field="user.active", operator=Operator.eq, value=True),
+                ConditionLeaf(
+                    field_address="user.age", operator=Operator.gte, value=18
+                ),
+                ConditionLeaf(
+                    field_address="user.active", operator=Operator.eq, value=True
+                ),
                 role_or_verified,
             ],
         )
 
         subscription_requirement = ConditionLeaf(
-            field="user.billing.subscription.status",
+            field_address="user.billing.subscription.status",
             operator=Operator.eq,
             value="active",
         )
@@ -730,14 +768,18 @@ class TestIntegration(TestConditionEvaluator):
             op=GroupOperator.and_,
             conditions=[
                 ConditionLeaf(
-                    field="order.status", operator=Operator.eq, value="completed"
+                    field_address="order.status",
+                    operator=Operator.eq,
+                    value="completed",
                 ),
-                ConditionLeaf(field="order.total", operator=Operator.gt, value=100.0),
+                ConditionLeaf(
+                    field_address="order.total", operator=Operator.gt, value=100.0
+                ),
             ],
         )
 
         user_premium = ConditionLeaf(
-            field="user.billing.subscription.plan",
+            field_address="user.billing.subscription.plan",
             operator=Operator.eq,
             value="premium",
         )
@@ -754,7 +796,7 @@ class TestIntegration(TestConditionEvaluator):
         """Test scenario using Fides reference structures"""
         # Test that the evaluator works with Fides data structures
         condition = ConditionLeaf(
-            field="customer.email", operator=Operator.eq, value="test_value"
+            field_address="customer.email", operator=Operator.eq, value="test_value"
         )
 
         result = evaluator.evaluate_rule(condition, mock_fides_data)
@@ -781,14 +823,14 @@ class TestIntegration(TestConditionEvaluator):
 
         # Test list_contains operator - check if user.roles contains "admin"
         condition = ConditionLeaf(
-            field="user.roles", operator=Operator.list_contains, value="admin"
+            field_address="user.roles", operator=Operator.list_contains, value="admin"
         )
         result = evaluator.evaluate_rule(condition, data)
         assert result is True  # "admin" is in the user.roles list
 
         # Test not_in_list operator
         condition = ConditionLeaf(
-            field="user.roles",
+            field_address="user.roles",
             operator=Operator.not_in_list,
             value=["guest", "anonymous"],
         )
@@ -797,7 +839,9 @@ class TestIntegration(TestConditionEvaluator):
 
         # Test list_contains operator with permissions
         condition = ConditionLeaf(
-            field="user.permissions", operator=Operator.list_contains, value="write"
+            field_address="user.permissions",
+            operator=Operator.list_contains,
+            value="write",
         )
         result = evaluator.evaluate_rule(condition, data)
         assert result is True  # "write" is in the permissions list
@@ -815,15 +859,17 @@ class TestIntegration(TestConditionEvaluator):
 
         # Complex condition: (user has admin role OR user has write permission) AND order is completed
         role_condition = ConditionLeaf(
-            field="user.roles", operator=Operator.list_contains, value="admin"
+            field_address="user.roles", operator=Operator.list_contains, value="admin"
         )
 
         permission_condition = ConditionLeaf(
-            field="user.permissions", operator=Operator.list_contains, value="write"
+            field_address="user.permissions",
+            operator=Operator.list_contains,
+            value="write",
         )
 
         order_condition = ConditionLeaf(
-            field="order.status", operator=Operator.eq, value="completed"
+            field_address="order.status", operator=Operator.eq, value="completed"
         )
 
         role_or_permission = ConditionGroup(
@@ -854,7 +900,7 @@ class TestIntegration(TestConditionEvaluator):
 
         # Test nested field access with list operators
         condition = ConditionLeaf(
-            field="user.profile.interests",
+            field_address="user.profile.interests",
             operator=Operator.list_contains,
             value="programming",
         )
@@ -863,17 +909,19 @@ class TestIntegration(TestConditionEvaluator):
 
         # Test multiple list conditions
         interests_condition = ConditionLeaf(
-            field="user.profile.interests",
+            field_address="user.profile.interests",
             operator=Operator.list_contains,
             value="programming",
         )
 
         skills_condition = ConditionLeaf(
-            field="user.profile.skills", operator=Operator.list_contains, value="python"
+            field_address="user.profile.skills",
+            operator=Operator.list_contains,
+            value="python",
         )
 
         subscription_condition = ConditionLeaf(
-            field="user.subscriptions.active",
+            field_address="user.subscriptions.active",
             operator=Operator.not_in_list,
             value=["expired", "cancelled"],
         )
