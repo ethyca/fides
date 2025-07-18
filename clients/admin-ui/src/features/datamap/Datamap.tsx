@@ -26,7 +26,6 @@ const SpatialDatamap = dynamic(
         <Spinner />
       </Center>
     ),
-    // Add error fallback
   },
 );
 
