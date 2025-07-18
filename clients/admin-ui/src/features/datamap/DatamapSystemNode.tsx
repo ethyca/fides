@@ -68,7 +68,6 @@ const DatamapSystemNode = ({ data, selected }: NodeProps) => {
           border: buttonStyle.border,
         }}
         type="text"
-        aria-label={`System: ${nodeData.label}${nodeData.description ? `. ${nodeData.description}` : ""}`}
         tabIndex={0}
       >
         <Typography.Text ellipsis style={{ color: "inherit" }}>
