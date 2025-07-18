@@ -1,4 +1,4 @@
-import { createContext, h } from "preact";
+import { createContext } from "preact";
 import { ReactNode, useContext, useMemo, useState } from "preact/compat";
 
 import { GVLTranslationJson } from "./types";

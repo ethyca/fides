@@ -1,5 +1,3 @@
-import { h } from "preact";
-
 import { useI18n } from "../../lib/i18n/i18n-context";
 
 interface TCFBannerSupplementalProps {

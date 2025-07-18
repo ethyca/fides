@@ -1,4 +1,4 @@
-import { Fragment, h } from "preact";
+import { Fragment } from "preact";
 import { useContext, useEffect, useState } from "preact/hooks";
 
 import { FidesEventTargetType } from "../lib/events";
@@ -32,7 +32,7 @@ const ExperienceDescription = ({
   allowHTMLDescription?: boolean | null;
 }) => {
   const [renderedDescription, setRenderedDescription] =
-    useState<(string | h.JSX.Element)[]>();
+    useState<(string | JSX.Element)[]>();
   const { setTrigger } = useEvent();
   let vendorCount = 0;
   const context = useContext(VendorButtonContext);
@@ -44,7 +44,7 @@ const ExperienceDescription = ({
     // Swap out reference to "vendors page" with a button that can go to the vendor page
     if (description) {
       if (description.includes(VENDOR_COUNT_LINK) && onVendorPageClick) {
-        const parts: (string | h.JSX.Element)[] =
+        const parts: (string | JSX.Element)[] =
           description.split(VENDOR_COUNT_LINK);
         // inject vendor count button each time it appeared in the description
         for (let i = 1; i < parts.length; i += 2) {
