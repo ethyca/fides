@@ -66,6 +66,16 @@ const SettingsBar = () => {
           />
         </Flex>
         <Flex>
+          {totalSystemsCount > 0 ? (
+            <Flex alignItems="center" borderRadius="md" gap={1} marginRight={4}>
+              <Text fontSize="xs">
+                {filteredSystemsCount} of {totalSystemsCount} systems displayed
+              </Text>
+              {compassEnabled ? (
+                <InfoTooltip label="Note that Global Vendor List (GVL) and Additional Consent (AC) systems are not currently included in these reports" />
+              ) : null}
+            </Flex>
+          ) : null}
           <Button aria-label="Open Filter Settings" onClick={onFilterModalOpen}>
             Filter
             {totalFiltersApplied > 0 ? (
