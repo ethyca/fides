@@ -162,7 +162,7 @@ Cypress.Commands.add("getAntTab", (tab: string) =>
   cy.get(`.ant-tabs-tab-btn`).filter(`:contains("${tab}")`),
 );
 Cypress.Commands.add("getAntTabPanel", (tab: string) =>
-  cy.get(`tr#rc-tabs-0-panel-${tab}`),
+  cy.get(`#rc-tabs-0-panel-${tab}`),
 );
 Cypress.Commands.add("applyTableFilter", (columnTitle, filterOption) => {
   // Click the filter trigger for the specified column
