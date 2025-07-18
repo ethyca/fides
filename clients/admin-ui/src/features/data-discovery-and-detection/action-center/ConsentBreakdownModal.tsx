@@ -122,6 +122,7 @@ export const ConsentBreakdownModal = ({
                 ),
               },
             ]}
+            rowKey={(record) => record.location}
             dataSource={items}
             pagination={
               !!totalRows && (pageIndex > 1 || pageSize > PAGE_SIZES[0])
@@ -129,8 +130,6 @@ export const ConsentBreakdownModal = ({
                     current: pageIndex,
                     pageSize,
                     total: totalRows || 0,
-                    showSizeChanger: true,
-                    pageSizeOptions: PAGE_SIZES,
                     showTotal: (total, range) =>
                       `${range[0]}-${range[1]} of ${total} items`,
                     onChange: (page, size) => {

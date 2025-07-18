@@ -1,4 +1,4 @@
-import { h, render } from "preact";
+import { render } from "preact";
 
 import { TcfOverlay } from "../../components/tcf/TcfOverlay";
 import { RenderOverlayType } from "../../components/types";

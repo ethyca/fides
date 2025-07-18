@@ -84,6 +84,9 @@ RUN git rm --cached -r .
 # This is a required workaround due to: https://github.com/ethyca/fides/issues/2440
 RUN git config --global --add safe.directory /fides
 
+# Export the version to a file for frontend use
+RUN python -c "import versioneer, json; print(json.dumps({'version': versioneer.get_version()}))" > /fides/version.json
+
 # Enable detection of running within Docker
 ENV RUNNING_IN_DOCKER=true
 
@@ -114,7 +117,7 @@ COPY clients/fides-js/package.json ./fides-js/package.json
 COPY clients/admin-ui/package.json ./admin-ui/package.json
 COPY clients/privacy-center/package.json ./privacy-center/package.json
 
-RUN npm install
+RUN npm ci
 
 COPY clients/ .
 
@@ -122,6 +125,9 @@ COPY clients/ .
 ## Built frontend ##
 ####################
 FROM frontend AS built_frontend
+
+# Imports the Fides package version from the backend
+COPY --from=backend /fides/version.json ./version.json
 
 # Builds and exports admin-ui
 RUN npm run export-admin-ui
@@ -135,8 +141,8 @@ FROM node:20-alpine AS prod_pc
 
 WORKDIR /fides/clients
 
-ENV NODE_ENV production
-ENV NEXT_TELEMETRY_DISABLED 1
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs

@@ -1,5 +1,5 @@
 import { Vendor } from "@iabtechlabtcf/core";
-import { Fragment, h } from "preact";
+import { Fragment } from "preact";
 import { useMemo, useState } from "preact/hooks";
 
 import { PrivacyExperience } from "../../lib/consent-types";

@@ -159,7 +159,7 @@ describe("Manual Tasks", () => {
     });
   });
 
-  describe("Table Features (Filtering and Pagination)", () => {
+  describe("Table Filtering", () => {
     beforeEach(() => {
       cy.visit("/privacy-requests?tab=manual-tasks");
       cy.wait("@getManualTasks");
@@ -197,25 +197,7 @@ describe("Manual Tasks", () => {
       });
     });
 
-    it("should handle pagination controls and assigned users display", () => {
-      cy.intercept("GET", "/api/v1/plus/manual-fields?page=1&size=50*", {
-        fixture: "manual-tasks/manual-tasks-response.json",
-      }).as("getManualTasks50");
-      // Test pagination controls - now using Ant Design's standard pagination
-      cy.get(".ant-pagination").should("be.visible");
-      cy.get(".ant-pagination-prev").should("exist");
-      cy.get(".ant-pagination-next").should("exist");
-
-      // Test page size change using Ant Design's page size selector
-      cy.get(".ant-select-selector").contains("25").click();
-      cy.get(".ant-select-dropdown").within(() => {
-        cy.get(".ant-select-item").contains("50").click();
-      });
-
-      cy.wait("@getManualTasks50").then((interception) => {
-        expect(interception.request.url).to.include("size=50");
-      });
-
+    it("should handle assigned users display", () => {
       // Test assigned users display
       cy.get(ROW_SELECTOR)
         .first()

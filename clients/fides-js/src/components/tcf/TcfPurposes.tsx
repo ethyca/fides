@@ -1,4 +1,3 @@
-import { h } from "preact";
 import { useMemo, useState } from "preact/hooks";
 
 import { UpdateEnabledIds } from "~/components/tcf/TcfTabs";

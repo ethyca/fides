@@ -13,7 +13,7 @@ export default function middleware(request: NextRequest) {
     requestId,
   };
 
-  log.debug(logDict);
+  log.debug(logDict, "Request received");
 
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-request-id", requestId);

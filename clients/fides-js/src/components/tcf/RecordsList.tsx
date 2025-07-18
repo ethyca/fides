@@ -1,4 +1,4 @@
-import { h, VNode } from "preact";
+import { VNode } from "preact";
 
 import { PrivacyNoticeTranslation } from "../../lib/consent-types";
 import { DEFAULT_LOCALE, getCurrentLocale } from "../../lib/i18n";
