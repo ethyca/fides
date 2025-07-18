@@ -95,7 +95,7 @@ describe.skip("Consent overlay", () => {
         cy.getCookie(CONSENT_COOKIE_NAME)
           .should("exist")
           .then(() => {
-            const c = getFidesConsentCookie(true);
+            const c = getFidesConsentCookie();
             expect(c?.fides_meta.consentMethod).to.eq("reject");
           });
         cy.get("button#fides-modal-link").click();
@@ -105,7 +105,7 @@ describe.skip("Consent overlay", () => {
         cy.getCookie(CONSENT_COOKIE_NAME)
           .should("exist")
           .then(() => {
-            const c = getFidesConsentCookie(true);
+            const c = getFidesConsentCookie();
             expect(c?.fides_meta.consentMethod).to.eq("accept");
           });
       });

@@ -1408,30 +1408,32 @@ describe("Consent i18n", () => {
         cy.get(".fides-radio-button-group button").contains(t.legint).click();
 
         // Check the list of Other vendors and toggle open a single example
-        cy.getByTestId("records-list-vendors").within(() => {
-          cy.get(".fides-record-header").contains(t.vendors_other);
-          cy.get(".fides-notice-badge").should("not.exist");
-          cy.get(".fides-notice-toggle")
-            .contains(t.vendor_other_example)
-            .click();
-          cy.get(".fides-disclosure-visible").within(() => {
-            cy.get("p").contains(t.vendor_other_example_description);
-            cy.get(".fides-vendor-details-table").then((tables) => {
-              cy.wrap(tables[0]).within(() => {
-                cy.get("thead").contains(t.purposes);
-                cy.get("thead").contains(t.retention);
-              });
-              cy.wrap(tables[1]).within(() => {
-                cy.get("thead").contains(t.special_purposes);
-                cy.get("thead").contains(t.retention);
-                cy.get("tr").contains(t.special_purpose_example);
-              });
-              cy.wrap(tables[2]).within(() => {
-                cy.get("thead").contains(t.features);
+        cy.getByTestId("records-list-vendors")
+          .eq(1)
+          .within(() => {
+            cy.get(".fides-record-header").contains(t.vendors_other);
+            cy.get(".fides-notice-badge").should("not.exist");
+            cy.get(".fides-notice-toggle")
+              .contains(t.vendor_other_example)
+              .click();
+            cy.get(".fides-disclosure-visible").within(() => {
+              cy.get("p").contains(t.vendor_other_example_description);
+              cy.get(".fides-vendor-details-table").then((tables) => {
+                cy.wrap(tables[0]).within(() => {
+                  cy.get("thead").contains(t.purposes);
+                  cy.get("thead").contains(t.retention);
+                });
+                cy.wrap(tables[1]).within(() => {
+                  cy.get("thead").contains(t.special_purposes);
+                  cy.get("thead").contains(t.retention);
+                  cy.get("tr").contains(t.special_purpose_example);
+                });
+                cy.wrap(tables[2]).within(() => {
+                  cy.get("thead").contains(t.features);
+                });
               });
             });
           });
-        });
       });
     };
 
