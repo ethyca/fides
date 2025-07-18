@@ -1,3 +1,5 @@
+import { cloneDeep } from "lodash";
+
 import {
   ConnectionTypeSecretSchemaProperty,
   ConnectionTypeSecretSchemaResponse,
@@ -31,15 +33,13 @@ export const useFormFieldsFromSchema = (
   };
 
   const isRequiredField = (key: string): boolean =>
-    secretsSchema?.required?.includes(key) ||
-    (secretsSchema?.properties?.[key] !== undefined &&
-      "default" in secretsSchema.properties[key]);
+    secretsSchema?.required?.includes(key) ?? false;
 
   const getFieldValidation = (
     key: string,
     fieldSchema: ConnectionTypeSecretSchemaProperty,
   ) => {
-    if (isRequiredField(key) || fieldSchema.type === "integer") {
+    if (isRequiredField(key)) {
       return (value: string | undefined) =>
         validateField(fieldSchema.title, value, fieldSchema.allOf?.[0].$ref);
     }
@@ -47,20 +47,32 @@ export const useFormFieldsFromSchema = (
   };
 
   const preprocessValues = (values: Record<string, any>) => {
-    const updatedValues = { ...values };
+    const updatedValues = cloneDeep(values);
     if (secretsSchema) {
       Object.keys(secretsSchema.properties).forEach((key) => {
         if (
           secretsSchema.properties[key].allOf?.[0].$ref ===
           FIDES_DATASET_REFERENCE
         ) {
-          const referencePath = updatedValues[key]?.split(".");
+          const referencePath = updatedValues.secrets[key]?.split(".");
           if (referencePath) {
-            updatedValues[key] = {
+            updatedValues.secrets[key] = {
               dataset: referencePath.shift(),
               field: referencePath.join("."),
               direction: "from",
             };
+          }
+        }
+        if (
+          secretsSchema.title === "WebsiteSchema" &&
+          secretsSchema.properties[key].title === "URL"
+        ) {
+          if (
+            !updatedValues.secrets[key].startsWith("http://") &&
+            !updatedValues.secrets[key].startsWith("https://")
+          ) {
+            updatedValues.secrets[key] =
+              `https://${updatedValues.secrets[key]}`;
           }
         }
       });

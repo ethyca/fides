@@ -8,6 +8,12 @@ export * from "@chakra-ui/utils";
 
 // Unmodified component exported directly from Ant Design
 export type { ThemeConfig as AntThemeConfig } from "antd/es";
+export type { ColumnsType as AntColumnsType } from "antd/es/table";
+export type {
+  FilterValue as AntFilterValue,
+  SorterResult as AntSorterResult,
+  TablePaginationConfig as AntTablePaginationConfig,
+} from "antd/es/table/interface";
 export type {
   ButtonProps as AntButtonProps,
   CollapseProps as AntCollapseProps,
@@ -21,7 +27,6 @@ export type {
   SwitchProps as AntSwitchProps,
   TableProps as AntTableProps,
   TabsProps as AntTabsProps,
-  TagProps as AntTagProps,
   TooltipProps as AntTooltipProps,
   UploadFile as AntUploadFile,
   GetProps,
@@ -60,9 +65,7 @@ export {
   Spin as AntSpin,
   Steps as AntSteps,
   Switch as AntSwitch,
-  Table as AntTable,
   Tabs as AntTabs,
-  Tooltip as AntTooltip,
   Upload as AntUpload,
 } from "antd/lib";
 export type {
@@ -80,9 +83,12 @@ export type { UploadChangeParam as AntUploadChangeParam } from "antd/lib/upload"
 export {
   CustomDateRangePicker as AntDateRangePicker,
   CustomSelect as AntSelect,
+  CustomTable as AntTable,
   CustomTag as AntTag,
+  CustomTooltip as AntTooltip,
   CustomTypography as AntTypography,
 } from "./hoc";
+export type { CustomTagProps as AntTagProps } from "./hoc/CustomTag";
 
 // Export the destructured Typography components individually
 export const AntText = CustomTypography.Text;
@@ -112,6 +118,11 @@ export * from "./FidesUIProvider";
 export { extendTheme, theme } from "./FidesUITheme";
 
 /**
+ * Ant Design Theme System
+ */
+export { createDefaultAntTheme, defaultAntTheme } from "./ant-theme";
+
+/**
  * Custom Components
  * These components are custom to FidesUI and are not included in ChakraUI, although they may rely on ChakraUI components.
  */
@@ -123,4 +134,5 @@ export { DataCategoryDropdown } from "./components/data-category-dropdown";
 export { ExampleComponent } from "./components/example-component";
 export { FloatingMenu } from "./components/floating-menu";
 export { PrimaryLink, SecondaryLink } from "./components/links";
+export { SelectInline } from "./components/select-inline";
 export { SystemsCheckboxTable } from "./components/systems-checkbox-table";

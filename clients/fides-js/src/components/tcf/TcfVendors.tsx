@@ -1,12 +1,9 @@
 import { Vendor } from "@iabtechlabtcf/core";
-import { Fragment, h } from "preact";
+import { Fragment } from "preact";
 import { useMemo, useState } from "preact/hooks";
 
 import { PrivacyExperience } from "../../lib/consent-types";
-import {
-  FidesEventDetailsPreference,
-  FidesEventDetailsTrigger,
-} from "../../lib/events";
+import { FidesEventDetailsPreference } from "../../lib/events";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { LEGAL_BASIS_OPTIONS } from "../../lib/tcf/constants";
 import {
@@ -254,11 +251,7 @@ const PagedVendorData = ({
   experience: PrivacyExperience;
   vendors: VendorRecord[];
   enabledIds: string[];
-  onChange: (
-    newIds: string[],
-    vendor: VendorRecord,
-    triggerDetails: FidesEventDetailsTrigger,
-  ) => void;
+  onChange: (newIds: string[], vendor: VendorRecord) => void;
 }) => {
   const { i18n } = useI18n();
   const { activeChunk, ...paging } = usePaging(vendors);
@@ -324,7 +317,6 @@ const TcfVendors = ({
   enabledVendorLegintIds: string[];
   onChange: (
     payload: UpdateEnabledIds,
-    triggerDetails: FidesEventDetailsTrigger,
     preferenceDetails: FidesEventDetailsPreference,
   ) => void;
 }) => {
@@ -365,7 +357,7 @@ const TcfVendors = ({
             ? enabledVendorConsentIds
             : enabledVendorLegintIds
         }
-        onChange={(newEnabledIds, vendor, triggerDetails) => {
+        onChange={(newEnabledIds, vendor) => {
           const modelType =
             activeLegalBasisOption.value === LegalBasisEnum.CONSENT.toString()
               ? "vendorsConsent"
@@ -398,7 +390,7 @@ const TcfVendors = ({
             vendor_name: vendor.name,
           };
 
-          onChange(payload, triggerDetails, preferenceDetails);
+          onChange(payload, preferenceDetails);
         }}
         // This key forces a rerender when legal basis changes, which allows paging to reset properly
         key={`vendor-data-${activeLegalBasisOption.value}`}

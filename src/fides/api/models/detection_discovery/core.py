@@ -159,6 +159,8 @@ class MonitorConfig(Base):
         "MonitorExecution",
         cascade="all, delete-orphan",
         backref="monitor_config",
+        primaryjoin="MonitorExecution.monitor_config_key == foreign(MonitorConfig.key)",
+        single_parent=True,
     )
 
     shared_config_id = Column(
@@ -342,16 +344,16 @@ class StagedResourceAncestor(Base):
     Its entries should be deleted when the staged resource is deleted, via cascade.
     """
 
+    id = Column(String(255), primary_key=True, default=FidesBase.generate_uuid)
+
     ancestor_urn = Column(
         String,
         ForeignKey("stagedresource.urn", ondelete="CASCADE"),
-        primary_key=True,
         nullable=False,
     )
     descendant_urn = Column(
         String,
         ForeignKey("stagedresource.urn", ondelete="CASCADE"),
-        primary_key=True,
         nullable=False,
     )
 
@@ -372,6 +374,7 @@ class StagedResourceAncestor(Base):
         UniqueConstraint(
             "ancestor_urn", "descendant_urn", name="uq_staged_resource_ancestor"
         ),
+        Index("ix_staged_resource_ancestor_pkey", "id", unique=True),
         Index("ix_staged_resource_ancestor_ancestor", "ancestor_urn"),
         Index("ix_staged_resource_ancestor_descendant", "descendant_urn"),
     )
@@ -470,12 +473,7 @@ class StagedResource(Base):
         server_default="{}",
         default=dict,
     )
-    user_assigned_system_id = Column(
-        String,
-        ForeignKey(System.id_field_path),
-        nullable=True,
-        index=True,
-    )
+    user_assigned_system_id = Column(String, nullable=True, index=True)
 
     # pointers to child and parent URNs
     children = Column(
@@ -527,9 +525,26 @@ class StagedResource(Base):
 
     data_uses = Column(
         ARRAY(String),
-        nullable=False,
+        nullable=True,
         server_default="{}",
         default=dict,
+    )
+
+    __table_args__ = (
+        # Used for querying monitor aggregates
+        Index(
+            "ix_stagedresource_monitor_config_resource_type_consent",
+            "monitor_config_id",
+            "resource_type",
+            text("(meta->>'consent_aggregated')"),
+        ),
+        # Used for querying system aggregates
+        Index(
+            "ix_stagedresource_system_vendor_consent",
+            "system_id",
+            "vendor_id",
+            text("(meta->>'consent_aggregated')"),
+        ),
     )
 
     @classmethod
@@ -588,12 +603,14 @@ class MonitorExecution(Base):
     configuration details used in connecting to the external data store.
     """
 
-    monitor_config_key = Column(
-        String,
-        ForeignKey(MonitorConfig.key),
-        nullable=False,
-        index=True,
-    )
+    # redefined here because there's a minor, unintended discrepancy between
+    # this `id` field and that of the `Base` class, which explicitly sets `index=True`.
+    # TODO: we likely should _not_ be setting `index=True` on the `id`
+    # attribute of the `Base` class, as `primary_key=True` already specifies a
+    # primary key constraint, which will implicitly create an index for the field.
+    id = Column(String(255), primary_key=True, default=FidesBase.generate_uuid)
+
+    monitor_config_key = Column(String, nullable=False, index=True)
     status = Column(String, nullable=True)
     started = Column(
         DateTime(timezone=True),

@@ -60,10 +60,11 @@ export type FidesEventType =
  * defaults - have been set on the `Fides` global object.
  * This event will always be dispatched, even if no previous consent was found.
  *
- * - ~~`FidesInitialized`~~: _deprecated_ - We strongly encourage using `FidesConsentLoaded`
- * and/or `FidesReady` instead. This event is dispatched at the same time as
- * `FidesConsentLoaded` and `FidesReady` and has the potential to be dispatched
- * multiple times which can be confusing, hence the deprecation.
+ * - `FidesInitialized`: This event is dispatched based on the `fidesInitializedEventMode` setting:
+ *   - "once" (default): fires alongside `FidesReady` only
+ *   - "multiple": fires alongside both `FidesReady` and `FidesConsentLoaded` events
+ *   - "disable": never fires
+ * For new projects, we strongly encourage using `FidesReady` and `FidesConsentLoaded` instead.
  *
  * - `FidesUpdating`: Dispatched when a user action (e.g. accepting all, saving
  * changes, applying GPC) has started updating the user's consent preferences.
@@ -142,17 +143,34 @@ export interface FidesEvent extends CustomEvent {
       /**
        * What consent method (if any) caused this event.
        */
-      consentMethod?: "accept" | "reject" | "save" | "dismiss" | "gpc";
+      consentMethod?:
+        | "accept"
+        | "reject"
+        | "save"
+        | "dismiss"
+        | "acknowledge"
+        | "gpc"
+        | "script"
+        | "ot_migration";
 
       /**
-       * What UI element (if any) triggered this event.
+       * What UI element (if any) triggered this event, as well as the origin of
+       * the event.
        */
       trigger?: {
         /**
-         * The type of element that triggered the event. Additional types may be
-         * added over time (e.g. "button", "link"), so expect this type to grow.
+         * Where the event originated from. If the event was triggered using an
+         * SDK script, for example, this will be "external", meaning the event
+         * was triggered by something other than a FidesJS UI element.
          */
-        type: "toggle";
+        origin?: "fides" | "external";
+
+        /**
+         * The type of element that triggered the event. Additional types may be
+         * added over time, so expect this type to grow.
+         * Only present when origin is "fides".
+         */
+        type?: "toggle" | "button" | "link";
 
         /**
          * The UI label of the element that triggered the event.

@@ -1,8 +1,5 @@
-import {
-  ConsentFlagType,
-  ConsentNonApplicableFlagMode,
-} from "fides-js/src/lib/consent-types";
-import type { FidesEventDetail, FidesEventType } from "fides-js/src/lib/events";
+import type { FidesEventDetail, FidesEventType } from "fides-js";
+import { ConsentFlagType, ConsentNonApplicableFlagMode } from "fides-js";
 
 import { stubConfig, stubTCFExperience } from "../support/stubs";
 
@@ -89,7 +86,12 @@ describe("Consent FidesEvents", () => {
         { type: "FidesInitialized", detail: {} },
         {
           type: "FidesUIShown",
-          detail: { extraDetails: { servingComponent: "banner" } },
+          detail: {
+            extraDetails: {
+              servingComponent: "banner",
+              trigger: { origin: "fides" }, // automatically opened by fides-js
+            },
+          },
         },
       );
 
@@ -97,7 +99,16 @@ describe("Consent FidesEvents", () => {
       cy.get("#fides-banner .fides-manage-preferences-button").click();
       expectedEvents.push({
         type: "FidesUIShown",
-        detail: { extraDetails: { servingComponent: "modal" } },
+        detail: {
+          extraDetails: {
+            servingComponent: "modal",
+            trigger: {
+              type: "button",
+              label: "Manage preferences",
+              origin: "fides",
+            },
+          },
+        },
       });
 
       // Toggle Advertising notice on then off
@@ -113,6 +124,7 @@ describe("Consent FidesEvents", () => {
                 type: "toggle",
                 label: "Advertising",
                 checked: true,
+                origin: "fides",
               },
               preference: {
                 key: "advertising",
@@ -130,6 +142,7 @@ describe("Consent FidesEvents", () => {
                 type: "toggle",
                 label: "Advertising",
                 checked: false,
+                origin: "fides",
               },
               preference: {
                 key: "advertising",
@@ -151,6 +164,7 @@ describe("Consent FidesEvents", () => {
               type: "toggle",
               label: "Analytics",
               checked: false,
+              origin: "fides",
             },
             preference: {
               key: "analytics_opt_out",
@@ -169,12 +183,12 @@ describe("Consent FidesEvents", () => {
           detail: {
             extraDetails: {
               consentMethod: "save",
-              // DEFER(LJ-478): Restore these checks after updating events to be more consistent
-              // servingComponent: "modal",
-              // trigger: {
-              //   type: "button",
-              //   label: "Save",
-              // },
+              servingComponent: "modal",
+              trigger: {
+                label: "Save",
+                origin: "fides",
+                type: "button",
+              },
             },
           },
         },
@@ -183,12 +197,12 @@ describe("Consent FidesEvents", () => {
           detail: {
             extraDetails: {
               consentMethod: "save",
-              // DEFER(LJ-478): Restore these checks after updating events to be more consistent
-              // servingComponent: "modal",
-              // trigger: {
-              //   type: "button",
-              //   label: "Save",
-              // },
+              servingComponent: "modal",
+              trigger: {
+                label: "Save",
+                origin: "fides",
+                type: "button",
+              },
             },
           },
         },
@@ -198,7 +212,12 @@ describe("Consent FidesEvents", () => {
       cy.get("#fides-modal-link").click();
       expectedEvents.push({
         type: "FidesUIShown",
-        detail: { extraDetails: { servingComponent: "modal" } },
+        detail: {
+          extraDetails: {
+            servingComponent: "modal",
+            trigger: { origin: "external" },
+          },
+        },
       });
 
       // Click opt-out button to reject all notices
@@ -210,12 +229,12 @@ describe("Consent FidesEvents", () => {
           detail: {
             extraDetails: {
               consentMethod: "reject",
-              // DEFER(LJ-478): Restore these checks after updating events to be more consistent
-              // servingComponent: "modal",
-              // trigger: {
-              //   type: "button",
-              //   label: "Opt out of all",
-              // },
+              servingComponent: "modal",
+              trigger: {
+                type: "button",
+                label: "Opt out of all",
+                origin: "fides",
+              },
             },
           },
         },
@@ -224,12 +243,12 @@ describe("Consent FidesEvents", () => {
           detail: {
             extraDetails: {
               consentMethod: "reject",
-              // DEFER(LJ-478): Restore these checks after updating events to be more consistent
-              // servingComponent: "modal",
-              // trigger: {
-              //   type: "button",
-              //   label: "Opt out of all",
-              // },
+              servingComponent: "modal",
+              trigger: {
+                type: "button",
+                label: "Opt out of all",
+                origin: "fides",
+              },
             },
           },
         },
@@ -239,7 +258,12 @@ describe("Consent FidesEvents", () => {
       cy.get("#fides-modal-link").click();
       expectedEvents.push({
         type: "FidesUIShown",
-        detail: { extraDetails: { servingComponent: "modal" } },
+        detail: {
+          extraDetails: {
+            servingComponent: "modal",
+            trigger: { origin: "external" },
+          },
+        },
       });
 
       // Click opt-in button to accept all notices
@@ -251,12 +275,12 @@ describe("Consent FidesEvents", () => {
           detail: {
             extraDetails: {
               consentMethod: "accept",
-              // DEFER(LJ-478): Restore these checks after updating events to be more consistent
-              // servingComponent: "modal",
-              // trigger: {
-              //   type: "button",
-              //   label: "Opt in to all",
-              // },
+              servingComponent: "modal",
+              trigger: {
+                type: "button",
+                label: "Opt in to all",
+                origin: "fides",
+              },
             },
           },
         },
@@ -265,12 +289,55 @@ describe("Consent FidesEvents", () => {
           detail: {
             extraDetails: {
               consentMethod: "accept",
-              // DEFER(LJ-478): Restore these checks after updating events to be more consistent
-              // servingComponent: "modal",
-              // trigger: {
-              //   type: "button",
-              //   label: "Opt in to all",
-              // },
+              servingComponent: "modal",
+              trigger: {
+                type: "button",
+                label: "Opt in to all",
+                origin: "fides",
+              },
+            },
+          },
+        },
+      );
+
+      // Open modal from Fides.showModal()
+      cy.window().then((win) => {
+        win.Fides.showModal();
+      });
+      expectedEvents.push({
+        type: "FidesUIShown",
+        detail: {
+          extraDetails: {
+            servingComponent: "modal",
+            trigger: { origin: "external" },
+          },
+        },
+      });
+
+      // Update preferences from Fides.updateConsent()
+      cy.window().then(async (win) => {
+        await win.Fides.updateConsent({
+          consent: {
+            analytics_opt_out: false,
+          },
+        });
+      });
+      expectedEvents.push(
+        {
+          type: "FidesUpdating",
+          detail: {
+            extraDetails: {
+              consentMethod: "script",
+              trigger: { origin: "external" },
+            },
+          },
+        },
+        {
+          type: "FidesUpdated",
+          detail: {
+            extraDetails: {
+              consentMethod: "script",
+              trigger: { origin: "external" },
             },
           },
         },
@@ -332,11 +399,12 @@ describe("Consent FidesEvents", () => {
           type: "FidesUIChanged",
           detail: {
             extraDetails: {
-              servingComponent: "modal",
+              servingComponent: "tcf_overlay",
               trigger: {
                 type: "toggle",
                 label: "Use profiles to select personalised advertising",
                 checked: true,
+                origin: "fides",
               },
               preference: {
                 key: "tcf_purpose_consent_4",
@@ -349,11 +417,12 @@ describe("Consent FidesEvents", () => {
           type: "FidesUIChanged",
           detail: {
             extraDetails: {
-              servingComponent: "modal",
+              servingComponent: "tcf_overlay",
               trigger: {
                 type: "toggle",
                 label: "Use profiles to select personalised advertising",
                 checked: false,
+                origin: "fides",
               },
               preference: {
                 key: "tcf_purpose_consent_4",
@@ -373,11 +442,12 @@ describe("Consent FidesEvents", () => {
         type: "FidesUIChanged",
         detail: {
           extraDetails: {
-            servingComponent: "modal",
+            servingComponent: "tcf_overlay",
             trigger: {
               type: "toggle",
               label: "Use profiles to select personalised content",
               checked: true,
+              origin: "fides",
             },
             preference: {
               key: "tcf_purpose_consent_6",
@@ -402,11 +472,12 @@ describe("Consent FidesEvents", () => {
         type: "FidesUIChanged",
         detail: {
           extraDetails: {
-            servingComponent: "modal",
+            servingComponent: "tcf_overlay",
             trigger: {
               type: "toggle",
               label: "Use limited data to select advertising",
               checked: false,
+              origin: "fides",
             },
             preference: {
               key: "tcf_purpose_legitimate_interest_2",
@@ -438,11 +509,12 @@ describe("Consent FidesEvents", () => {
           type: "FidesUIChanged",
           detail: {
             extraDetails: {
-              servingComponent: "modal",
+              servingComponent: "tcf_overlay",
               trigger: {
                 type: "toggle",
                 label: "Captify",
                 checked: true,
+                origin: "fides",
               },
               preference: {
                 key: "gvl.2",
@@ -459,11 +531,12 @@ describe("Consent FidesEvents", () => {
           type: "FidesUIChanged",
           detail: {
             extraDetails: {
-              servingComponent: "modal",
+              servingComponent: "tcf_overlay",
               trigger: {
                 type: "toggle",
                 label: "Captify",
                 checked: false,
+                origin: "fides",
               },
               preference: {
                 key: "gvl.2",
@@ -485,11 +558,12 @@ describe("Consent FidesEvents", () => {
           type: "FidesUIChanged",
           detail: {
             extraDetails: {
-              servingComponent: "modal",
+              servingComponent: "tcf_overlay",
               trigger: {
                 type: "toggle",
                 label: "Meta",
                 checked: true,
+                origin: "fides",
               },
               preference: {
                 key: "gacp.89",
@@ -506,11 +580,12 @@ describe("Consent FidesEvents", () => {
           type: "FidesUIChanged",
           detail: {
             extraDetails: {
-              servingComponent: "modal",
+              servingComponent: "tcf_overlay",
               trigger: {
                 type: "toggle",
                 label: "Meta",
                 checked: false,
+                origin: "fides",
               },
               preference: {
                 key: "gacp.89",
@@ -534,12 +609,12 @@ describe("Consent FidesEvents", () => {
           detail: {
             extraDetails: {
               consentMethod: "save",
-              // DEFER(LJ-478): Restore these checks after updating events to be more consistent
-              // servingComponent: "modal",
-              // trigger: {
-              //   type: "button",
-              //   label: "Save",
-              // },
+              servingComponent: "tcf_overlay",
+              trigger: {
+                type: "button",
+                label: "Save",
+                origin: "fides",
+              },
             },
           },
         },
@@ -548,12 +623,12 @@ describe("Consent FidesEvents", () => {
           detail: {
             extraDetails: {
               consentMethod: "save",
-              // DEFER(LJ-478): Restore these checks after updating events to be more consistent
-              // servingComponent: "modal",
-              // trigger: {
-              //   type: "button",
-              //   label: "Save",
-              // },
+              servingComponent: "tcf_overlay",
+              trigger: {
+                type: "button",
+                label: "Save",
+                origin: "fides",
+              },
             },
           },
         },
@@ -575,12 +650,12 @@ describe("Consent FidesEvents", () => {
           detail: {
             extraDetails: {
               consentMethod: "reject",
-              // DEFER(LJ-478): Restore these checks after updating events to be more consistent
-              // servingComponent: "modal",
-              // trigger: {
-              //   type: "button",
-              //   label: "Opt out of all",
-              // },
+              servingComponent: "tcf_overlay",
+              trigger: {
+                type: "button",
+                label: "Opt out of all",
+                origin: "fides",
+              },
             },
           },
         },
@@ -589,12 +664,12 @@ describe("Consent FidesEvents", () => {
           detail: {
             extraDetails: {
               consentMethod: "reject",
-              // DEFER(LJ-478): Restore these checks after updating events to be more consistent
-              // servingComponent: "modal",
-              // trigger: {
-              //   type: "button",
-              //   label: "Opt out of all",
-              // },
+              servingComponent: "tcf_overlay",
+              trigger: {
+                type: "button",
+                label: "Opt out of all",
+                origin: "fides",
+              },
             },
           },
         },
@@ -616,12 +691,12 @@ describe("Consent FidesEvents", () => {
           detail: {
             extraDetails: {
               consentMethod: "accept",
-              // DEFER(LJ-478): Restore these checks after updating events to be more consistent
-              // servingComponent: "modal",
-              // trigger: {
-              //   type: "button",
-              //   label: "Opt in to all",
-              // },
+              servingComponent: "tcf_overlay",
+              trigger: {
+                type: "button",
+                label: "Opt in to all",
+                origin: "fides",
+              },
             },
           },
         },
@@ -630,12 +705,12 @@ describe("Consent FidesEvents", () => {
           detail: {
             extraDetails: {
               consentMethod: "accept",
-              // DEFER(LJ-478): Restore these checks after updating events to be more consistent
-              // servingComponent: "modal",
-              // trigger: {
-              //   type: "button",
-              //   label: "Opt in to all",
-              // },
+              servingComponent: "tcf_overlay",
+              trigger: {
+                type: "button",
+                label: "Opt in to all",
+                origin: "fides",
+              },
             },
           },
         },
@@ -683,11 +758,12 @@ describe("Consent FidesEvents", () => {
         type: "FidesUIChanged",
         detail: {
           extraDetails: {
-            servingComponent: "modal",
+            servingComponent: "tcf_overlay",
             trigger: {
               type: "toggle",
               label: "Advertising English",
               checked: true,
+              origin: "fides",
             },
             preference: {
               key: "advertising", // Should use notice_key instead of ID

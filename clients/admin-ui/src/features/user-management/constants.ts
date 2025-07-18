@@ -35,4 +35,18 @@ export const ROLES = [
     description:
       "Approvers can only access the Privacy Requests portal to manage requests",
   },
+  {
+    label: "Internal respondent",
+    permissions_label: "Internal respondent",
+    roleKey: RoleRegistryEnum.RESPONDENT,
+    description:
+      "Internal respondents have limited access and can only view and complete manual DSR tasks assigned to them",
+  },
+  {
+    label: "External respondent",
+    permissions_label: "External respondent",
+    roleKey: RoleRegistryEnum.EXTERNAL_RESPONDENT,
+    description:
+      "External respondents can only access the external task portal to complete manual DSR tasks assigned to them",
+  },
 ];

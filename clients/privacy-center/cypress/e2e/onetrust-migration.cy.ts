@@ -42,6 +42,7 @@ describe("OneTrust to Fides consent migration", () => {
 
   describe("when user has OneTrust cookie but no Fides cookie", () => {
     it("should migrate consent from OneTrust (all accepted)", () => {
+      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
       // Set OneTrust cookie
       cy.setCookie("OptanonConsent", otConsentCookieAllAccepted);
 

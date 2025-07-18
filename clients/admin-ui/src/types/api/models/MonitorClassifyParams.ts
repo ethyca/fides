@@ -17,10 +17,13 @@ export type MonitorClassifyParams = {
   content_weight?: number;
   prefer_context?: boolean;
   excluded_categories?: Array<any>;
+  context_classification_enabled?: boolean;
   language?: string;
   decision_method?: string;
   aggregation_method?: string;
   infer_not_pii?: boolean;
   content_model?: string;
+  content_classification_enabled?: boolean;
   context_regex_pattern_mapping?: Array<any[]>;
+  ignore_classification_updates?: boolean;
 };

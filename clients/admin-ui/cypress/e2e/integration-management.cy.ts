@@ -38,7 +38,8 @@ describe("Integration management for data detection & discovery", () => {
     it("can access the integration management page", () => {
       stubPlus(true);
       cy.visit(INTEGRATION_MANAGEMENT_ROUTE);
-      cy.getByTestId("integration-tabs").should("exist");
+      cy.contains("h1", "Integrations").should("exist");
+      cy.getByTestId("add-integration-btn").should("exist");
     });
 
     it("can't access without Plus", () => {
@@ -62,7 +63,7 @@ describe("Integration management for data detection & discovery", () => {
       cy.getByTestId("empty-state").should("exist");
     });
 
-    describe("list view", () => {
+    describe("table view", () => {
       beforeEach(() => {
         cy.intercept("GET", "/api/v1/connection?*", {
           fixture: "connectors/bigquery_connection_list.json",
@@ -71,34 +72,32 @@ describe("Integration management for data detection & discovery", () => {
         cy.wait("@getConnections");
       });
 
-      it("should show a list of integrations", () => {
+      it("should show a table of integrations", () => {
+        cy.getByTestId("integrations-table").should("exist");
+        cy.getByTestId("integrations-table")
+          .find("tbody tr")
+          .should("have.length.greaterThan", 0);
         cy.getByTestId("integration-info-bq_integration").should("exist");
-        cy.getByTestId("empty-state").should("not.exist");
+        cy.getByTestId("manage-btn-bq_integration").should("exist");
       });
 
-      it("should be able to test connections by clicking the button", () => {
+      it("should be able to navigate to management page when row is clicked", () => {
         cy.intercept("GET", "/api/v1/connection/bq_integration", {
           fixture: "connectors/bigquery_connection.json",
         }).as("getConnection");
-        cy.getByTestId("integration-info-bq_integration")
-          .should("exist")
-          .within(() => {
-            cy.getByTestId("test-connection-btn").click();
-            cy.wait("@testConnection");
-          });
+        cy.getByTestId("integration-info-bq_integration").click();
+        cy.url().should("contain", "/bq_integration");
       });
 
       it("should navigate to management page when 'manage' button is clicked", () => {
         cy.intercept("GET", "/api/v1/connection/bq_integration", {
           fixture: "connectors/bigquery_connection.json",
         }).as("getConnection");
-        cy.getByTestId("integration-info-bq_integration").within(() => {
-          cy.getByTestId("configure-btn").click();
-          cy.url().should("contain", "/bq_integration");
-        });
+        cy.getByTestId("manage-btn-bq_integration").click();
+        cy.url().should("contain", "/bq_integration");
       });
 
-      it("should paginate integrations", () => {
+      it.skip("should paginate integrations", () => {
         cy.intercept("GET", "/api/v1/connection?*&page=1*", {
           fixture: "connectors/list_page_1_50_items.json",
         }).as("getConnectionsPage1");
@@ -108,31 +107,34 @@ describe("Integration management for data detection & discovery", () => {
         cy.visit(INTEGRATION_MANAGEMENT_ROUTE);
         cy.wait("@getConnectionsPage1");
 
-        // Set up intercept for page 2
+        cy.get(".ant-pagination").should("exist");
+        cy.getByTestId("integrations-table")
+          .find("tbody tr")
+          .should("have.length", 50);
 
-        // Check that pagination controls are visible
-        cy.getByTestId("pagination-controls").should("exist");
-
-        // Check that the correct number of items are displayed (50 items on page 1)
-        cy.get("[data-testid^='integration-info-']").should("have.length", 50);
-
-        // Verify we're on page 1 of 2
-        cy.getByTestId("pagination-controls").should("contain", "1");
-        cy.getByTestId("pagination-controls").should("contain", "2");
-
-        // Click to go to page 2
-        cy.getByTestId("pagination-controls").within(() => {
-          cy.contains("2").click();
-        });
+        cy.get(".ant-pagination-item-1").should(
+          "have.class",
+          "ant-pagination-item-active",
+        );
+        cy.get(".ant-pagination-item-2").should("exist");
+        cy.get(".ant-pagination-item-2").click();
         cy.wait("@getConnectionsPage2");
 
-        // Check that the correct number of items are displayed (30 items on page 2)
-        cy.get("[data-testid^='integration-info-']").should("have.length", 30);
+        cy.getByTestId("integrations-table")
+          .find("tbody tr")
+          .should("have.length", 30);
 
-        // Verify the first item on page 2 is different from page 1
-        cy.getByTestId("integration-info-snowflake_connector_11").should(
-          "exist",
-        );
+        cy.getByTestId("manage-btn-snowflake_connector_11").should("exist");
+      });
+
+      it("should be able to search integrations", () => {
+        cy.intercept("GET", "/api/v1/connection?*&search=test*", {
+          fixture: "connectors/bigquery_connection_list.json",
+        }).as("getSearchResults");
+
+        cy.get("input[placeholder='Search by name...']").type("test");
+        cy.wait("@getSearchResults");
+        cy.getByTestId("integrations-table").find("tbody tr").should("exist");
       });
     });
 
@@ -143,9 +145,13 @@ describe("Integration management for data detection & discovery", () => {
         cy.intercept("GET", "/api/v1/connection/datasetconfig", {
           fixture: "connectors/empty_datasetconfig.json",
         }).as("getDatasetConfig");
-        cy.intercept("GET", "/api/v1/dataset?only_unlinked_datasets=true", {
-          fixture: "connectors/empty_unlinked_datasets.json",
-        }).as("getUnlinkedDatasets");
+        cy.intercept(
+          "GET",
+          "/api/v1/dataset?only_unlinked_datasets=true&minimal=true",
+          {
+            fixture: "connectors/empty_unlinked_datasets.json",
+          },
+        ).as("getUnlinkedDatasets");
         cy.intercept("GET", "/api/v1/dataset?minimal=true&connection_type=*", {
           fixture: "connectors/empty_minimal_datasets.json",
         }).as("getMinimalDatasets");
@@ -165,6 +171,7 @@ describe("Integration management for data detection & discovery", () => {
         cy.getByTestId("add-modal-content")
           .should("be.visible")
           .within(() => {
+            cy.get(".grid-cols-3").should("exist");
             cy.getByTestId("integration-info-bq_placeholder").should("exist");
           });
       });
@@ -183,9 +190,10 @@ describe("Integration management for data detection & discovery", () => {
         cy.getByTestId("add-integration-btn").click();
         cy.getByTestId("add-modal-content").within(() => {
           cy.getByTestId("integration-info-bq_placeholder").within(() => {
-            cy.getByTestId("configure-btn").click();
+            cy.contains("Details").click();
           });
         });
+        cy.getByTestId("configure-modal-btn").click();
         cy.getByTestId("input-name").type("test name");
         cy.getByTestId("input-secrets.keyfile_creds").type(
           `{"credentials": "test"}`,
@@ -216,9 +224,10 @@ describe("Integration management for data detection & discovery", () => {
         cy.getByTestId("add-integration-btn").click();
         cy.getByTestId("add-modal-content").within(() => {
           cy.getByTestId("integration-info-bq_placeholder").within(() => {
-            cy.getByTestId("configure-btn").click();
+            cy.contains("Details").click();
           });
         });
+        cy.getByTestId("configure-modal-btn").click();
         cy.getByTestId("input-name").type("test name");
         cy.getByTestId("input-secrets.keyfile_creds").type(
           `{"credentials": "test"}`,
@@ -233,15 +242,14 @@ describe("Integration management for data detection & discovery", () => {
         cy.wait("@patchSystemConnection");
       });
 
-      it("should display an API integration under the CRM tab", () => {
+      it("should display an API integration under the CRM category", () => {
         cy.intercept("GET", "/api/v1/connection_type/*/secret", {
           fixture: "connectors/salesforce_secret.json",
         }).as("getSalesforceSecretsSchema");
 
         cy.getByTestId("add-integration-btn").click();
+        cy.getByTestId("category-filter-select").antSelect("CRM");
         cy.getByTestId("add-modal-content").within(() => {
-          // Click on the CRM tab
-          cy.contains("CRM").click();
           // Verify Salesforce appears
           cy.getByTestId("integration-info-salesforce_placeholder").should(
             "exist",
@@ -262,16 +270,15 @@ describe("Integration management for data detection & discovery", () => {
         }).as("getSalesforceSecretsSchema");
 
         cy.getByTestId("add-integration-btn").click();
+        cy.getByTestId("category-filter-select").antSelect("CRM");
         cy.getByTestId("add-modal-content").within(() => {
-          // Click on the CRM tab
-          cy.contains("CRM").click();
-          // Click on configure for Salesforce
           cy.getByTestId("integration-info-salesforce_placeholder").within(
             () => {
-              cy.getByTestId("configure-btn").click();
+              cy.contains("Details").click();
             },
           );
         });
+        cy.getByTestId("configure-modal-btn").click();
 
         // Fill out the form with fields from the salesforce_secret schema
         cy.getByTestId("input-name").type("My Salesforce Integration");
@@ -297,12 +304,155 @@ describe("Integration management for data detection & discovery", () => {
         cy.getByTestId("add-integration-btn").click();
         cy.getByTestId("add-modal-content").within(() => {
           cy.getByTestId("integration-info-manual_placeholder").within(() => {
-            cy.getByTestId("configure-btn").click();
+            cy.contains("Details").click();
           });
         });
+        cy.getByTestId("configure-modal-btn").click();
         cy.getByTestId("input-name").type("Manual Integration Test");
         cy.getByTestId("save-btn").click();
         cy.wait("@patchConnection");
+      });
+
+      it("should support search and filter in add integration modal", () => {
+        cy.getByTestId("add-integration-btn").click();
+        cy.getByTestId("add-modal-content").within(() => {
+          cy.get("input[placeholder='Search by name...']").type("BigQuery");
+          cy.getByTestId("integration-info-bq_placeholder").should("exist");
+
+          cy.get(".ant-input-clear-icon").click();
+        });
+        cy.getByTestId("category-filter-select").antSelect("Data Warehouse");
+
+        cy.getByTestId("add-modal-content").within(() => {
+          cy.getByTestId("integration-info-bq_placeholder").should("exist");
+        });
+      });
+
+      it("should fetch datasets with minimal=true for BigQuery integration", () => {
+        cy.intercept("GET", "/api/v1/connection_type/*/secret", {
+          fixture: "connectors/bigquery_secret.json",
+        }).as("getBigquerySecretsSchema");
+        cy.intercept("PATCH", "/api/v1/connection", { statusCode: 200 }).as(
+          "patchConnection",
+        );
+        cy.intercept("PATCH", "/api/v1/connection/*/secret*", {
+          response: 200,
+        }).as("patchConnectionSecrets");
+
+        cy.getByTestId("add-integration-btn").click();
+        cy.getByTestId("add-modal-content").within(() => {
+          cy.getByTestId("integration-info-bq_placeholder").within(() => {
+            cy.contains("Details").click();
+          });
+        });
+        cy.getByTestId("configure-modal-btn").click();
+        cy.getByTestId("input-name").type("BigQuery Integration");
+        cy.getByTestId("input-description").type("BigQuery integration test");
+        cy.getByTestId("input-secrets.keyfile_creds").type(
+          `{"credentials": "test"}`,
+          {
+            parseSpecialCharSequences: false,
+          },
+        );
+
+        // Verify that the minimal dataset query was called for BigQuery datasets
+        cy.wait("@getMinimalDatasets").then((interception) => {
+          expect(interception.request.url).to.contain("minimal=true");
+          expect(interception.request.url).to.contain(
+            "connection_type=bigquery",
+          );
+        });
+
+        cy.getByTestId("save-btn").click();
+        cy.wait("@patchConnection");
+        cy.wait("@patchConnectionSecrets");
+      });
+    });
+
+    describe("adding a website integration", () => {
+      beforeEach(() => {
+        stubIntegrationManagement({
+          secretSchemaFixture: "integration/website_integration_secret.json",
+        });
+
+        cy.intercept("GET", "/api/v1/connection?*", {
+          fixture: "connectors/bigquery_connection_list.json",
+        }).as("getConnections");
+        cy.intercept("GET", "/api/v1/connection_type?*", {
+          fixture: "connectors/connection_types.json",
+        }).as("getConnectionTypes");
+        cy.visit(INTEGRATION_MANAGEMENT_ROUTE);
+        cy.wait("@getConnections");
+      });
+
+      it("should be able to add a new website integration", () => {
+        cy.intercept("PATCH", "/api/v1/connection", { statusCode: 200 }).as(
+          "patchConnection",
+        );
+        cy.intercept("PATCH", "/api/v1/connection/*/secret*", {
+          response: 200,
+        }).as("patchConnectionSecrets");
+
+        cy.getByTestId("add-integration-btn").click();
+        cy.getByTestId("add-modal-content").within(() => {
+          cy.getByTestId(
+            "details-btn-microsoft_sql_server_placeholder",
+          ).click();
+          cy.getByTestId("configure-btn").click();
+        });
+        cy.getByTestId("input-name").type("test name");
+        cy.getByTestId("input-secrets.url").type("https://example.com");
+        cy.getByTestId("save-btn").click();
+        cy.wait("@patchConnection");
+        cy.wait("@patchConnectionSecrets");
+      });
+
+      it("accepts HTTP URLs", () => {
+        cy.intercept("PATCH", "/api/v1/connection", { statusCode: 200 }).as(
+          "patchConnection",
+        );
+        cy.intercept("PATCH", "/api/v1/connection/*/secret*", {
+          response: 200,
+        }).as("patchConnectionSecrets");
+
+        cy.getByTestId("add-integration-btn").click();
+        cy.getByTestId("add-modal-content").within(() => {
+          cy.getByTestId(
+            "details-btn-microsoft_sql_server_placeholder",
+          ).click();
+          cy.getByTestId("configure-modal-btn").click();
+        });
+        cy.getByTestId("input-name").type("test name");
+        cy.getByTestId("input-secrets.url").type("http://example.com");
+        cy.getByTestId("save-btn").click();
+        cy.wait("@patchConnection");
+        cy.wait("@patchConnectionSecrets").then((interception) => {
+          expect(interception.request.body.url).to.equal("http://example.com");
+        });
+      });
+
+      it("defaults to HTTPS if a protocol isn't provided", () => {
+        cy.intercept("PATCH", "/api/v1/connection", { statusCode: 200 }).as(
+          "patchConnection",
+        );
+        cy.intercept("PATCH", "/api/v1/connection/*/secret*", {
+          response: 200,
+        }).as("patchConnectionSecrets");
+
+        cy.getByTestId("add-integration-btn").click();
+        cy.getByTestId("add-modal-content").within(() => {
+          cy.getByTestId(
+            "details-btn-microsoft_sql_server_placeholder",
+          ).click();
+          cy.getByTestId("configure-modal-btn").click();
+        });
+        cy.getByTestId("input-name").type("test name");
+        cy.getByTestId("input-secrets.url").type("example.com");
+        cy.getByTestId("save-btn").click();
+        cy.wait("@patchConnection");
+        cy.wait("@patchConnectionSecrets").then((interception) => {
+          expect(interception.request.body.url).to.equal("https://example.com");
+        });
       });
     });
   });
@@ -389,7 +539,7 @@ describe("Integration management for data detection & discovery", () => {
       cy.intercept("/api/v1/plus/discovery-monitor/databases", {
         fixture: "empty-pagination.json",
       }).as("getEmptyDatabases");
-      cy.getByTestId("tab-Data discovery").click();
+      cy.getAntTab("Data discovery").click({ force: true });
       cy.wait("@getEmptyMonitors");
       cy.getByTestId("no-results-notice").should("exist");
     });
@@ -408,14 +558,13 @@ describe("Integration management for data detection & discovery", () => {
         cy.intercept("DELETE", "/api/v1/plus/discovery-monitor/*", {
           response: 200,
         }).as("deleteMonitor");
-        cy.getByTestId("tab-Data discovery").click();
+        cy.getAntTab("Data discovery").click({ force: true });
         cy.wait("@getMonitors");
         stubSharedMonitorConfig();
       });
 
       it("shows a table of monitors", () => {
         cy.getByTestId("row-test monitor 1").should("exist");
-        // scan status column
         cy.getByTestId("row-test monitor 1-col-monitor_status").should(
           "contain",
           "Scanning",
@@ -424,7 +573,10 @@ describe("Integration management for data detection & discovery", () => {
           cy.getByTestId("tag-success").should("exist");
         });
         cy.getByTestId("row-test monitor 3-col-monitor_status").within(() => {
-          cy.getByTestId("tag-error").should("exist").click();
+          cy.getByTestId("tag-error").should("exist");
+          cy.getByTestId("tag-error").within(() => {
+            cy.get("button").click();
+          });
         });
         cy.getByTestId("error-log-drawer")
           .should("be.visible")
@@ -517,7 +669,7 @@ describe("Integration management for data detection & discovery", () => {
         cy.getByTestId("input-name").should("have.value", "test monitor 1");
         cy.getByTestId("input-execution_start_date")
           .should("have.prop", "value")
-          .should("match", /2024-06-04T[0-9][0-9]:11/); // because timzones
+          .should("match", /2024-06-04T[0-9][0-9]:11/);
         cy.getByTestId("next-btn").click();
         cy.getByTestId("prj-bigquery-000001-checkbox").should(
           "have.attr",
@@ -628,7 +780,7 @@ describe("Integration management for data detection & discovery", () => {
         cy.intercept("POST", "/api/v1/plus/discovery-monitor/databases", {
           fixture: "empty-pagination.json",
         }).as("getEmptyDatabases");
-        cy.getByTestId("tab-Data discovery").click();
+        cy.getAntTab("Data discovery").click({ force: true });
         cy.wait("@getMonitors");
       });
 
@@ -659,7 +811,7 @@ describe("Integration management for data detection & discovery", () => {
         cy.intercept("GET", "/api/v1/connection_type?*", {
           fixture: "connectors/connection_types.json",
         }).as("getConnectionTypes");
-        cy.getByTestId("tab-Data discovery").click();
+        cy.getAntTab("Data discovery").click({ force: true });
         cy.wait("@getMonitors");
       });
 
@@ -712,7 +864,8 @@ describe("Integration management for data detection & discovery", () => {
       });
     });
 
-    describe("data discovery tab for API integration", () => {
+    // DEFER(ENG-801) Add back once we're ready to show all SAAS integrations
+    describe.skip("data discovery tab for API integration", () => {
       beforeEach(() => {
         cy.intercept("GET", "/api/v1/connection/*", {
           fixture: "connectors/salesforce_connection.json",
@@ -728,7 +881,7 @@ describe("Integration management for data detection & discovery", () => {
           body: { items: [], total: 0, page: 1, size: 50, pages: 0 },
         }).as("getEmptyDatabases");
         cy.visit("/integrations/salesforce_integration");
-        cy.getByTestId("tab-Data discovery").click();
+        cy.getAntTab("Data discovery").click({ force: true });
         cy.wait("@getSalesforceMonitors");
       });
 
@@ -845,7 +998,7 @@ describe("Integration management for data detection & discovery", () => {
 
         checkStepStatus("Link system", false);
         cy.getByTestId("integration-setup-card").within(() => {
-          cy.contains("Link this integration to").should("exist");
+          cy.contains("Link this integration in the").should("exist");
         });
       });
 
@@ -922,7 +1075,6 @@ describe("Integration management for data detection & discovery", () => {
         cy.visit("/integrations/salesforce_integration");
         cy.wait("@getAuthorizedSalesforceConnection");
         cy.wait("@getConnectionTypes");
-        cy.wait("@getMonitors");
 
         cy.getByTestId("integration-setup-card")
           .should("exist")

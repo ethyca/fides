@@ -1,5 +1,3 @@
-import { h } from "preact";
-
 import EthycaLogo from "./EthycaLogo";
 
 const BrandLink = () => (

@@ -56,8 +56,8 @@ class TestGetConnections:
         assert resp.status_code == 200
         assert (
             len(data)
-            == len(ConnectionType) + len(ConnectorRegistry.connector_types()) - 4
-        )  # there are 4 connection types that are not returned by the endpoint
+            == len(ConnectionType) + len(ConnectorRegistry.connector_types()) - 5
+        )  # there are 5 connection types that are not returned by the endpoint
 
         assert {
             "identifier": ConnectionType.postgres.value,
@@ -101,9 +101,9 @@ class TestGetConnections:
         assert resp.status_code == 200
         assert (
             len(data)
-            == len(ConnectionType) + len(ConnectorRegistry.connector_types()) - 4
-        )  # there are 4 connection types that are not returned by the endpoint
-        # this value is > 20, so we've efectively tested our "default" size is
+            == len(ConnectionType) + len(ConnectorRegistry.connector_types()) - 5
+        )  # there are 5 connection types that are not returned by the endpoint
+        # this value is > 20, so we've effectively tested our "default" size is
         # > than the default of 20 (it's 100!)
 
         # ensure specifying size works as expected
@@ -355,7 +355,7 @@ class TestGetConnections:
         resp = api_client.get(url + "system_type=database", headers=auth_header)
         assert resp.status_code == 200
         data = resp.json()["items"]
-        assert len(data) == 19
+        assert len(data) == 20
 
     def test_search_system_type_and_connection_type(
         self,

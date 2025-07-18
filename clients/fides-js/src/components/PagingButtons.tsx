@@ -1,4 +1,3 @@
-import { h } from "preact";
 import { useState } from "preact/hooks";
 
 import { chunkItems, PAGE_SIZE } from "../lib/paging";

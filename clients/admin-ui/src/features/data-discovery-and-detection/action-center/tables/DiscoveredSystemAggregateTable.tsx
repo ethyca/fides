@@ -7,6 +7,7 @@ import {
   AntButton as Button,
   AntDropdown as Dropdown,
   AntEmpty as Empty,
+  AntTabs as Tabs,
   AntTooltip as Tooltip,
   Box,
   Flex,
@@ -17,7 +18,6 @@ import {
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
-import DataTabsHeader from "~/features/common/DataTabsHeader";
 import { getErrorMessage } from "~/features/common/helpers";
 import {
   ACTION_CENTER_ROUTE,
@@ -33,19 +33,24 @@ import {
 } from "~/features/common/table/v2";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
-  useAddMonitorResultSystemsMutation,
-  useGetDiscoveredSystemAggregateQuery,
-  useIgnoreMonitorResultSystemsMutation,
-} from "~/features/data-discovery-and-detection/action-center/action-center.slice";
-import useActionCenterTabs, {
-  getIndexFromHash,
-} from "~/features/data-discovery-and-detection/action-center/tables/useActionCenterTabs";
-import { successToastContent } from "~/features/data-discovery-and-detection/action-center/utils/successToastContent";
-import { DiffStatus, SystemStagedResourcesAggregateRecord } from "~/types/api";
+  AlertLevel,
+  ConsentAlertInfo,
+  DiffStatus,
+  SystemStagedResourcesAggregateRecord,
+} from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
+import {
+  useAddMonitorResultSystemsMutation,
+  useGetDiscoveredSystemAggregateQuery,
+  useIgnoreMonitorResultSystemsMutation,
+} from "../action-center.slice";
+import useActionCenterTabs, {
+  ActionCenterTabHash,
+} from "../hooks/useActionCenterTabs";
 import { useDiscoveredSystemAggregateColumns } from "../hooks/useDiscoveredSystemAggregateColumns";
+import { SuccessToastContent } from "../SuccessToastContent";
 
 interface DiscoveredSystemAggregateTableProps {
   monitorId: string;
@@ -55,7 +60,10 @@ export const DiscoveredSystemAggregateTable = ({
   monitorId,
 }: DiscoveredSystemAggregateTableProps) => {
   const router = useRouter();
-  const tabHash = router.asPath.split("#")[1];
+
+  const [firstPageConsentStatus, setFirstPageConsentStatus] = useState<
+    ConsentAlertInfo | null | undefined
+  >();
 
   const {
     PAGE_SIZES,
@@ -88,13 +96,12 @@ export const DiscoveredSystemAggregateTable = ({
     resetPageIndexToDefault();
   }, [monitorId, searchQuery, resetPageIndexToDefault]);
 
-  const {
-    filterTabs,
-    filterTabIndex,
-    onTabChange,
-    activeParams,
-    actionsDisabled,
-  } = useActionCenterTabs({ initialHash: tabHash });
+  const { filterTabs, activeTab, onTabChange, activeParams, actionsDisabled } =
+    useActionCenterTabs();
+
+  useEffect(() => {
+    resetPageIndexToDefault();
+  }, [monitorId, searchQuery, resetPageIndexToDefault]);
 
   const { data, isLoading, isFetching } = useGetDiscoveredSystemAggregateQuery({
     key: monitorId,
@@ -106,12 +113,23 @@ export const DiscoveredSystemAggregateTable = ({
 
   useEffect(() => {
     if (data) {
-      setTotalPages(data.pages || 1);
+      setTotalPages(data.pages ?? 1);
     }
   }, [data, setTotalPages]);
 
-  const handleTabChange = (index: number) => {
-    onTabChange(index);
+  useEffect(() => {
+    if (data?.items && !firstPageConsentStatus) {
+      // this ensures that the column header remembers the consent status
+      // even when the user navigates to a different paginated page
+      const consentStatus = data.items.find(
+        (item) => item.consent_status?.status === AlertLevel.ALERT,
+      )?.consent_status;
+      setFirstPageConsentStatus(consentStatus);
+    }
+  }, [data, firstPageConsentStatus]);
+
+  const handleTabChange = (tab: ActionCenterTabHash) => {
+    onTabChange(tab);
     setRowSelection({});
   };
 
@@ -120,6 +138,7 @@ export const DiscoveredSystemAggregateTable = ({
     onTabChange: handleTabChange,
     readonly: actionsDisabled,
     allowIgnore: !activeParams.diff_status.includes(DiffStatus.MUTED),
+    consentStatus: firstPageConsentStatus,
   });
 
   const tableInstance = useReactTable({
@@ -147,7 +166,7 @@ export const DiscoveredSystemAggregateTable = ({
   }
 
   const handleRowClick = (row: SystemStagedResourcesAggregateRecord) => {
-    const newUrl = `${ACTION_CENTER_ROUTE}/${monitorId}/${row.id ?? UNCATEGORIZED_SEGMENT}${tabHash ? `#${tabHash}` : ""}`;
+    const newUrl = `${ACTION_CENTER_ROUTE}/${monitorId}/${row.id ?? UNCATEGORIZED_SEGMENT}${activeTab ? `#${activeTab}` : ""}`;
     router.push(newUrl);
   };
 
@@ -167,7 +186,7 @@ export const DiscoveredSystemAggregateTable = ({
     } else {
       toast(
         successToastParams(
-          successToastContent(
+          SuccessToastContent(
             `${totalUpdates} assets have been added to the system inventory.`,
             () => router.push(SYSTEM_ROUTE),
           ),
@@ -195,9 +214,9 @@ export const DiscoveredSystemAggregateTable = ({
     } else {
       toast(
         successToastParams(
-          successToastContent(
+          SuccessToastContent(
             `${totalUpdates} assets have been ignored and will not appear in future scans.`,
-            () => onTabChange(getIndexFromHash("#ignored")!),
+            () => onTabChange(ActionCenterTabHash.IGNORED),
           ),
         ),
       );
@@ -207,13 +226,13 @@ export const DiscoveredSystemAggregateTable = ({
 
   return (
     <>
-      <DataTabsHeader
-        data={filterTabs}
-        data-testid="filter-tabs"
-        index={filterTabIndex}
-        isLazy
-        isManual
-        onChange={handleTabChange}
+      <Tabs
+        items={filterTabs.map((tab) => ({
+          key: tab.hash,
+          label: tab.label,
+        }))}
+        activeKey={activeTab}
+        onChange={(tab) => handleTabChange(tab as ActionCenterTabHash)}
       />
       <TableActionBar>
         <Flex

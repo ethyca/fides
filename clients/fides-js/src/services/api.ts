@@ -12,6 +12,7 @@ import {
   RecordsServedResponse,
 } from "../lib/consent-types";
 import { Locale } from "../lib/i18n";
+import sizeOf from "../lib/size-of";
 import { GVLTranslations } from "../lib/tcf/types";
 
 export enum FidesEndpointPaths {
@@ -85,7 +86,6 @@ export const fetchExperience = async <T = PrivacyExperience>({
     // ComponentType.OVERLAY is deprecated but “overlay” is still a backwards compatible filter.
     // Backend will filter to component that matches modal, banner_and_modal, or tcf_overlay
     component: ComponentType.OVERLAY,
-    has_notices: "true",
     has_config: "true",
     systems_applicable: "true",
     exclude_gvl_languages: "true", // backwards compatibility for TCF optimization work
@@ -166,7 +166,7 @@ export const fetchGvlTranslations = async (
   try {
     response = await fetch(
       `${fidesApiUrl}${FidesEndpointPaths.GVL_TRANSLATIONS}${
-        params.size > 0 ? "?" : ""
+        sizeOf(params) > 0 ? "?" : ""
       }${params.toString()}`,
       fetchOptions,
     );

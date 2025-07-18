@@ -1,13 +1,13 @@
 from enum import Enum as EnumType
 from typing import TYPE_CHECKING, Any
 
-from sqlalchemy import Column
+from sqlalchemy import Column, DateTime
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import ForeignKey, String, UniqueConstraint, orm
+from sqlalchemy import ForeignKey, Index, String, func, orm
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
 
-from fides.api.db.base_class import Base
+from fides.api.db.base_class import Base, FidesBase
 from fides.api.models.attachment import Attachment, AttachmentReferenceType
 
 if TYPE_CHECKING:
@@ -36,6 +36,7 @@ class CommentReferenceType(str, EnumType):
     access_manual_webhook = "access_manual_webhook"
     erasure_manual_webhook = "erasure_manual_webhook"
     privacy_request = "privacy_request"
+    manual_task_submission = "manual_task_submission"
 
 
 class CommentReference(Base):
@@ -48,12 +49,24 @@ class CommentReference(Base):
         """Overriding base class method to set the table name."""
         return "comment_reference"
 
-    comment_id = Column(String, ForeignKey("comment.id"), nullable=False)
+    id = Column(String(255), primary_key=True, default=FidesBase.generate_uuid)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+    comment_id = Column(
+        String,
+        ForeignKey(
+            "comment.id", name="comment_reference_comment_id_fkey", ondelete="CASCADE"
+        ),
+        nullable=False,
+    )
     reference_id = Column(String, nullable=False)
     reference_type = Column(EnumColumn(CommentReferenceType), nullable=False)
 
     __table_args__ = (
-        UniqueConstraint("comment_id", "reference_id", name="comment_reference_uc"),
+        Index("ix_comment_reference_reference_id", "reference_id"),
+        Index("ix_comment_reference_reference_type", "reference_type"),
     )
 
     comment = relationship(
@@ -74,6 +87,11 @@ class Comment(Base):
     """
     Stores information about a Comment.
     """
+
+    id = Column(String(255), primary_key=True, default=FidesBase.generate_uuid)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
 
     user_id = Column(
         String, ForeignKey("fidesuser.id", ondelete="SET NULL"), nullable=True

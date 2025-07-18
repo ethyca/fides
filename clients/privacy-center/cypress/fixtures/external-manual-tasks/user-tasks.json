@@ -1,0 +1,116 @@
+{
+  "items": [
+    {
+      "manual_field_id": "task_ext_001",
+      "name": "Export Customer Data from Salesforce",
+      "description": "Export all customer data from Salesforce for privacy request",
+      "input_type": "file",
+      "request_type": "access",
+      "status": "new",
+      "assigned_users": [
+        {
+          "id": "ext_user_123",
+          "email_address": "john.doe@example.com",
+          "first_name": "John",
+          "last_name": "Doe"
+        }
+      ],
+      "privacy_request": {
+        "id": "pri_ext_001",
+        "days_left": 15,
+        "request_type": "access",
+        "subject_identities": {
+          "email": "customer@example.com"
+        },
+        "custom_fields": {
+          "department": "Marketing",
+          "priority": "High"
+        }
+      },
+      "system": {
+        "id": "sys_sf_001",
+        "name": "Salesforce"
+      }
+    },
+    {
+      "manual_field_id": "task_ext_002",
+      "name": "Export Analytics Data",
+      "description": "Extract user analytics data for privacy request",
+      "input_type": "text",
+      "request_type": "access",
+      "status": "new",
+      "assigned_users": [
+        {
+          "id": "ext_user_123",
+          "email_address": "john.doe@example.com",
+          "first_name": "John",
+          "last_name": "Doe"
+        }
+      ],
+      "privacy_request": {
+        "id": "pri_ext_002",
+        "days_left": 8,
+        "request_type": "access",
+        "subject_identities": {
+          "email": "analytics.user@example.com",
+          "phone_number": "+15555551234"
+        },
+        "custom_fields": {
+          "region": "US, EU",
+          "account_type": "Premium"
+        }
+      },
+      "system": {
+        "id": "sys_ga_001",
+        "name": "Google Analytics"
+      }
+    },
+    {
+      "manual_field_id": "task_ext_003",
+      "name": "Delete User Profile from MongoDB",
+      "description": "Remove user profile and associated data",
+      "input_type": "checkbox",
+      "request_type": "erasure",
+      "status": "new",
+      "assigned_users": [
+        {
+          "id": "ext_user_123",
+          "email_address": "john.doe@example.com",
+          "first_name": "John",
+          "last_name": "Doe"
+        }
+      ],
+      "privacy_request": {
+        "id": "pri_ext_003",
+        "days_left": 12,
+        "request_type": "erasure",
+        "subject_identities": {
+          "email": "delete.user@example.com",
+          "agent_id": "12345"
+        }
+      },
+      "system": {
+        "id": "sys_mongo_001",
+        "name": "MongoDB"
+      }
+    }
+  ],
+  "total": 3,
+  "page": 1,
+  "size": 25,
+  "pages": 1,
+  "filter_options": {
+    "systems": [
+      { "id": "sys_sf_001", "name": "Salesforce" },
+      { "id": "sys_ga_001", "name": "Google Analytics" },
+      { "id": "sys_mongo_001", "name": "MongoDB" }
+    ],
+    "assigned_users": [
+      {
+        "id": "ext_user_123",
+        "first_name": "John",
+        "last_name": "Doe"
+      }
+    ]
+  }
+}

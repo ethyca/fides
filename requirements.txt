@@ -17,7 +17,7 @@ deepdiff==6.3.0
 defusedxml==0.7.1
 types-defusedxml==0.7.0.20240218
 expandvars==0.9.0
-fastapi[all]==0.111.0
+fastapi[all]==0.115.2
 fastapi-pagination[sqlalchemy]==0.12.25
 fideslog==1.2.10
 firebase-admin==5.3.0
@@ -72,4 +72,4 @@ toml==0.10.2
 twilio==7.15.0
 typing-extensions==4.12.2
 versioneer==0.19
-fideslang===3.1.0
+fideslang==3.1.1

@@ -63,7 +63,7 @@ jobs:
           for file, count in files:
               # Find the group with the smallest total test count
               min_group_idx = group_counts.index(min(group_counts))
-              groups[min_group_idx].append(file)
+              groups[min_group_idx].append(f"cypress/e2e/{file}")
               group_counts[min_group_idx] += count
 
           # Format for GitHub Actions
@@ -90,7 +90,7 @@ jobs:
           node-version: 20.x
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build FidesJS
         working-directory: clients/fides-js
@@ -104,7 +104,7 @@ jobs:
           start: npm run cy:start
           wait-on: "http://localhost:3000"
           wait-on-timeout: 180
-          spec: cypress/e2e/{${{ matrix.spec_group }}}
+          spec: ${{ matrix.spec_group }}
 
       - uses: actions/upload-artifact@v4
         if: failure()

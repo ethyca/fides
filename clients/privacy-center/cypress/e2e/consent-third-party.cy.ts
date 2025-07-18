@@ -1,10 +1,9 @@
-import { CONSENT_COOKIE_NAME } from "fides-js";
-import { stubConfig, stubTCFExperience } from "support/stubs";
-
 import {
+  CONSENT_COOKIE_NAME,
   ConsentFlagType,
   ConsentNonApplicableFlagMode,
-} from "../../../fides-js/src/lib/consent-types";
+} from "fides-js";
+import { stubConfig, stubTCFExperience } from "support/stubs";
 
 const PRIVACY_NOTICE_KEY_1 = "advertising";
 const PRIVACY_NOTICE_KEY_2 = "essential";
@@ -74,11 +73,14 @@ describe("Consent third party extensions", () => {
                   extraDetails: {
                     consentMethod: undefined,
                     shouldShowExperience: true,
+                    trigger: {
+                      origin: "fides",
+                    },
                   },
                   fides_string: undefined,
                 },
               });
-            // Second call should be from deprecated FidesInitialized
+            // Second call should be from FidesInitialized (dispatched at FidesReady time for backwards compatibility)
             cy.get("@dataLayerPush")
               .its("args")
               .then((args) => {
@@ -93,6 +95,9 @@ describe("Consent third party extensions", () => {
                   extraDetails: {
                     consentMethod: undefined,
                     shouldShowExperience: true,
+                    trigger: {
+                      origin: "fides",
+                    },
                   },
                   fides_string: undefined,
                 });
@@ -112,6 +117,9 @@ describe("Consent third party extensions", () => {
                   extraDetails: {
                     servingComponent: "banner",
                     consentMethod: undefined,
+                    trigger: {
+                      origin: "fides",
+                    },
                   },
                   fides_string: undefined,
                 },
@@ -131,6 +139,12 @@ describe("Consent third party extensions", () => {
                   },
                   extraDetails: {
                     consentMethod: "accept",
+                    servingComponent: "banner",
+                    trigger: {
+                      origin: "fides",
+                      type: "button",
+                      label: "Opt in to all",
+                    },
                   },
                   fides_string: undefined,
                 },
@@ -149,6 +163,12 @@ describe("Consent third party extensions", () => {
                   },
                   extraDetails: {
                     consentMethod: "accept",
+                    servingComponent: "banner",
+                    trigger: {
+                      origin: "fides",
+                      type: "button",
+                      label: "Opt in to all",
+                    },
                   },
                   fides_string: undefined,
                 },
@@ -215,19 +235,14 @@ describe("Consent third party extensions", () => {
                 });
               cy.get("@dataLayerPush")
                 .its("firstCall.args.0.Fides.extraDetails")
-                .should(
-                  "deep.equal",
-                  isTCF
-                    ? {
-                        consentMethod: undefined,
-                        shouldShowExperience: true,
-                      }
-                    : {
-                        consentMethod: undefined,
-                        shouldShowExperience: true,
-                      },
-                );
-              // Second call should be from deprecated FidesInitialized
+                .should("deep.equal", {
+                  consentMethod: undefined,
+                  shouldShowExperience: true,
+                  trigger: {
+                    origin: "fides",
+                  },
+                });
+              // Second call should be from FidesInitialized (dispatched at FidesReady time for backwards compatibility)
               cy.get("@dataLayerPush")
                 .its("secondCall.args.0.event")
                 .should("eq", "FidesInitialized");
@@ -243,6 +258,9 @@ describe("Consent third party extensions", () => {
                 .should("deep.equal", {
                   consentMethod: undefined,
                   shouldShowExperience: true,
+                  trigger: {
+                    origin: "fides",
+                  },
                 });
 
               // Third call is FidesUIShown when banner appears
@@ -261,6 +279,9 @@ describe("Consent third party extensions", () => {
                 .should("deep.equal", {
                   servingComponent: isTCF ? "tcf_banner" : "banner",
                   consentMethod: undefined,
+                  trigger: {
+                    origin: "fides",
+                  },
                 });
 
               // Fourth call is when the user accepts all
@@ -281,6 +302,12 @@ describe("Consent third party extensions", () => {
                 .then((args) => args[3][0].Fides.extraDetails)
                 .should("deep.equal", {
                   consentMethod: "accept",
+                  servingComponent: isTCF ? "tcf_banner" : "banner",
+                  trigger: {
+                    origin: "fides",
+                    type: "button",
+                    label: "Opt in to all",
+                  },
                 });
 
               // Last call is when the preferences finish updating
@@ -298,6 +325,12 @@ describe("Consent third party extensions", () => {
                 .its("lastCall.args.0.Fides.extraDetails")
                 .should("deep.equal", {
                   consentMethod: "accept",
+                  servingComponent: isTCF ? "tcf_banner" : "banner",
+                  trigger: {
+                    origin: "fides",
+                    type: "button",
+                    label: "Opt in to all",
+                  },
                 });
             });
           });
@@ -373,20 +406,15 @@ describe("Consent third party extensions", () => {
                 });
               cy.get("@dataLayerPush")
                 .its("firstCall.args.0.Fides.extraDetails")
-                .should(
-                  "deep.equal",
-                  isTCF
-                    ? {
-                        consentMethod: undefined,
-                        shouldShowExperience: true,
-                      }
-                    : {
-                        consentMethod: undefined,
-                        shouldShowExperience: true,
-                      },
-                );
+                .should("deep.equal", {
+                  consentMethod: undefined,
+                  shouldShowExperience: true,
+                  trigger: {
+                    origin: "fides",
+                  },
+                });
 
-              // Second call should be from deprecated FidesInitialized
+              // Second call should be from FidesInitialized (dispatched at FidesReady time for backwards compatibility)
               cy.get("@dataLayerPush")
                 .its("secondCall.args.0.event")
                 .should("eq", "FidesInitialized");
@@ -404,6 +432,9 @@ describe("Consent third party extensions", () => {
                 .should("deep.equal", {
                   consentMethod: undefined,
                   shouldShowExperience: true,
+                  trigger: {
+                    origin: "fides",
+                  },
                 });
 
               // Third call is FidesUIShown when banner appears
@@ -424,6 +455,9 @@ describe("Consent third party extensions", () => {
                 .should("deep.equal", {
                   servingComponent: isTCF ? "tcf_banner" : "banner",
                   consentMethod: undefined,
+                  trigger: {
+                    origin: "fides",
+                  },
                 });
 
               // Fourth call is when the user accepts all
@@ -446,6 +480,12 @@ describe("Consent third party extensions", () => {
                 .then((args) => args[3][0].Fides.extraDetails)
                 .should("deep.equal", {
                   consentMethod: "accept",
+                  servingComponent: isTCF ? "tcf_banner" : "banner",
+                  trigger: {
+                    origin: "fides",
+                    type: "button",
+                    label: "Opt in to all",
+                  },
                 });
 
               // Last call is when the preferences finish updating
@@ -465,6 +505,12 @@ describe("Consent third party extensions", () => {
                 .its("lastCall.args.0.Fides.extraDetails")
                 .should("deep.equal", {
                   consentMethod: "accept",
+                  servingComponent: isTCF ? "tcf_banner" : "banner",
+                  trigger: {
+                    origin: "fides",
+                    type: "button",
+                    label: "Opt in to all",
+                  },
                 });
             });
           });

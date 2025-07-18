@@ -76,6 +76,9 @@ POLICY_DETAIL = "/dsr/policy/{policy_key}"
 # Privacy request URLs
 PRIVACY_REQUESTS = "/privacy-request"
 PRIVACY_REQUEST_APPROVE = "/privacy-request/administrate/approve"
+PRIVACY_REQUEST_BATCH_EMAIL_SEND = (
+    "/privacy-request/administrate/process-awaiting-email-send"
+)
 PRIVACY_REQUEST_AUTHENTICATED = "/privacy-request/authenticated"
 PRIVACY_REQUEST_BULK_RETRY = "/privacy-request/bulk/retry"
 PRIVACY_REQUEST_BULK_SOFT_DELETE = "/privacy-request/bulk/soft-delete"
@@ -154,6 +157,10 @@ AUTHORIZE = "/connection/{connection_key}/authorize"
 # Manual Webhooks
 ACCESS_MANUAL_WEBHOOKS = "/access_manual_webhook"
 ACCESS_MANUAL_WEBHOOK = CONNECTION_BY_KEY + "/access_manual_webhook"
+
+# Manual Tasks
+MANUAL_TASKS = "/manual-tasks"
+MANUAL_TASK = CONNECTION_BY_KEY + "/manual-task"
 
 # Collection URLs
 DATASETS = "/dataset"

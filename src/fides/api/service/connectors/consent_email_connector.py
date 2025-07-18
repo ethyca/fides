@@ -212,7 +212,7 @@ class GenericConsentEmailConnector(BaseEmailConnector):
             db, privacy_request, self.configuration
         )
 
-    def batch_email_send(self, privacy_requests: Query) -> None:
+    def batch_email_send(self, privacy_requests: Query, batch_id: str) -> None:
         db = Session.object_session(self.configuration)
 
         skipped_privacy_requests: List[str] = []

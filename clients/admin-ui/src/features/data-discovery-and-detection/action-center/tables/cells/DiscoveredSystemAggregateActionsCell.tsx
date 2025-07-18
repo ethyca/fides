@@ -12,20 +12,20 @@ import {
   UNCATEGORIZED_SEGMENT,
 } from "~/features/common/nav/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
-import { getIndexFromHash } from "~/features/data-discovery-and-detection/action-center/tables/useActionCenterTabs";
-import { successToastContent } from "~/features/data-discovery-and-detection/action-center/utils/successToastContent";
 import { SystemStagedResourcesAggregateRecord } from "~/types/api";
 
 import {
   useAddMonitorResultSystemsMutation,
   useIgnoreMonitorResultSystemsMutation,
 } from "../../action-center.slice";
+import { ActionCenterTabHash } from "../../hooks/useActionCenterTabs";
+import { SuccessToastContent } from "../../SuccessToastContent";
 
 interface DiscoveredSystemActionsCellProps {
   monitorId: string;
   system: SystemStagedResourcesAggregateRecord;
   allowIgnore?: boolean;
-  onTabChange: (index: number) => void;
+  onTabChange: (tab: ActionCenterTabHash) => void;
 }
 
 export const DiscoveredSystemActionsCell = ({
@@ -59,16 +59,14 @@ export const DiscoveredSystemActionsCell = ({
     if (isErrorResult(result)) {
       toast(errorToastParams(getErrorMessage(result.error)));
     } else {
-      const promotedSystemKey = result.data?.items?.[0]?.promoted_system_key;
-      const systemToLink = promotedSystemKey || systemKey;
-      const href = `${SYSTEM_ROUTE}/configure/${systemToLink}#assets`;
+      const href = `${SYSTEM_ROUTE}/configure/${systemKey}#assets`;
       toast(
         successToastParams(
-          successToastContent(
+          SuccessToastContent(
             systemKey
               ? `${totalUpdates} assets from ${systemName} have been added to the system inventory.`
               : `${systemName} and ${totalUpdates} assets have been added to the system inventory. ${systemName} is now configured for consent.`,
-            systemToLink ? () => router.push(href) : undefined,
+            systemKey ? () => router.push(href) : undefined,
           ),
         ),
       );
@@ -85,11 +83,11 @@ export const DiscoveredSystemActionsCell = ({
     } else {
       toast(
         successToastParams(
-          successToastContent(
+          SuccessToastContent(
             systemName
               ? `${totalUpdates} assets from ${systemName} have been ignored and will not appear in future scans.`
               : `${totalUpdates} uncategorized assets have been ignored and will not appear in future scans.`,
-            () => onTabChange(getIndexFromHash("#ignored")!),
+            () => onTabChange(ActionCenterTabHash.IGNORED),
           ),
         ),
       );

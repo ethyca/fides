@@ -3,12 +3,13 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING, Any, Optional
 
-from sqlalchemy import Column, DateTime, ForeignKey, String
+from sqlalchemy import Column, DateTime, ForeignKey, Index, String
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
+from sqlalchemy.sql import func
 
 from fides.api.cryptography.cryptographic_util import generate_secure_random_string
-from fides.api.db.base_class import Base
+from fides.api.db.base_class import Base, FidesBase
 from fides.api.util.identity_verification import IdentityVerificationMixin
 from fides.config import get_config
 
@@ -18,16 +19,16 @@ CONFIG = get_config()
 if TYPE_CHECKING:
     from fides.api.models.fides_user import FidesUser
 
-# Access links stay active for 45 days - the same as the DSR expiration. A new link is generated for each email.
+# Access links stay active for 30 days for external login functionality. A new link is generated for each email.
 # The emails are created for new DSRs which are assigned to the respondent.
-ACCESS_LINK_TTL_DAYS = 45
+ACCESS_LINK_TTL_DAYS = 30
 
 
 class FidesUserRespondentEmailVerification(Base, IdentityVerificationMixin):
     """Model for handling email verification for external respondents.
 
     This handles two types of verification:
-    1. Access links - long-lived (45 days) for initial access
+    1. Access links - long-lived (30 days) for initial access
     2. Verification codes - short-lived (1 hour) for actual verification
 
     When an email is sent to an external respondent, a new verification is created with a new access token is created.
@@ -39,6 +40,22 @@ class FidesUserRespondentEmailVerification(Base, IdentityVerificationMixin):
     @declared_attr
     def __tablename__(self) -> str:
         return "fides_user_respondent_email_verification"
+
+    # redefined here because there's a minor, unintended discrepancy between
+    # this `id` field and that of the `Base` class, which explicitly sets `index=True`.
+    # TODO: we likely should _not_ be setting `index=True` on the `id`
+    # attribute of the `Base` class, as `primary_key=True` already specifies a
+    # primary key constraint, which will implicitly create an index for the field.
+    id = Column(String(255), primary_key=True, default=FidesBase.generate_uuid)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
 
     user_id = Column(
         String,
@@ -57,6 +74,14 @@ class FidesUserRespondentEmailVerification(Base, IdentityVerificationMixin):
         "FidesUser",
         back_populates="email_verifications",
         foreign_keys=[user_id],
+    )
+
+    __table_args__ = (
+        Index(
+            "ix_fides_user_respondent_email_verification_id",
+            "id",
+            unique=True,
+        ),
     )
 
     @classmethod

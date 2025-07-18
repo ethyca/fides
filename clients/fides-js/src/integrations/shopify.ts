@@ -2,6 +2,10 @@ import { MARKETING_CONSENT_KEYS } from "../lib/consent-constants";
 import { NoticeConsent } from "../lib/consent-types";
 import { processExternalConsentValue } from "../lib/shared-consent-utils";
 
+export interface ShopifyOptions {
+  sale_of_data_default?: boolean;
+}
+
 declare global {
   interface Window {
     Shopify?: {
@@ -21,15 +25,7 @@ declare global {
 
 const CONSENT_MAP = {
   marketing: MARKETING_CONSENT_KEYS,
-  sale_of_data: [
-    "marketing",
-    "data_sales",
-    "data_sales_and_sharing",
-    "data_sales_sharing_gpp_us_state",
-    "data_sharing_gpp_us_state",
-    "data_sales_gpp_us_state",
-    "targeted_advertising_gpp_us_state",
-  ],
+  sale_of_data: MARKETING_CONSENT_KEYS,
   analytics: ["analytics"],
   preferences: ["functional"],
 };
@@ -48,65 +44,75 @@ type ShopifyConsent = {
   sale_of_data: boolean;
 };
 
-function createShopifyConsent(fidesConsent: NoticeConsent): ShopifyConsent {
+export function createShopifyConsent(
+  fidesConsent: NoticeConsent,
+  options?: ShopifyOptions,
+): ShopifyConsent {
   const processedConsent = Object.fromEntries(
     Object.entries(fidesConsent).map(([k, v]) => [
       k,
       processExternalConsentValue(v),
     ]),
   );
-  const consent = Object.fromEntries(
-    Object.entries(CONSENT_MAP).map(([key, values]) => {
-      const hasTrue = values.some((value) => processedConsent[value] === true);
-      const hasFalse = values.some(
-        (value) => processedConsent[value] === false,
-      );
+  const result: Partial<ShopifyConsent> = {};
 
-      return [key, hasTrue || (hasFalse ? false : undefined)];
-    }),
-  ) as Partial<ShopifyConsent>;
+  Object.entries(CONSENT_MAP).forEach(([key, values]) => {
+    const hasTrue = values.some((value) => processedConsent[value] === true);
+    const hasFalse = values.some((value) => processedConsent[value] === false);
 
-  // Ensure sale_of_data is always boolean
-  consent.sale_of_data = consent.sale_of_data ?? false;
+    if (hasTrue) {
+      result[key as keyof ShopifyConsent] = true;
+    } else if (hasFalse) {
+      result[key as keyof ShopifyConsent] = false;
+    }
+  });
 
-  return consent as ShopifyConsent;
+  // Ensure sale_of_data is always set
+  if (result.sale_of_data === undefined) {
+    result.sale_of_data = options?.sale_of_data_default ?? false;
+  }
+
+  return result as ShopifyConsent;
 }
 
 // Helper function to push consent to Shopify from a Fides Consent object
-const pushConsentToShopify = (fidesConsent: NoticeConsent) => {
+const pushConsentToShopify = (
+  fidesConsent: NoticeConsent,
+  options?: ShopifyOptions,
+) => {
   window.Shopify!.customerPrivacy!.setTrackingConsent(
-    createShopifyConsent(fidesConsent),
+    createShopifyConsent(fidesConsent, options),
     () => {},
   );
 };
 
-const applyOptions = () => {
+const applyOptions = (options?: ShopifyOptions) => {
   if (!window.Shopify?.customerPrivacy) {
     // eslint-disable-next-line no-console
     console.error("Fides could not access Shopify's customerPrivacy API");
   }
   // Listen for Fides events and push them to Shopify
   window.addEventListener("FidesReady", (event) =>
-    pushConsentToShopify(event.detail.consent),
+    pushConsentToShopify(event.detail.consent, options),
   );
   window.addEventListener("FidesUpdating", (event) =>
-    pushConsentToShopify(event.detail.consent),
+    pushConsentToShopify(event.detail.consent, options),
   );
   window.addEventListener("FidesUpdated", (event) =>
-    pushConsentToShopify(event.detail.consent),
+    pushConsentToShopify(event.detail.consent, options),
   );
 
   // If Fides was already initialized, push consent to Shopify immediately
   if (window.Fides?.initialized && window.Fides.cookie) {
     // cookie will always be present in the Fides object after initialization. Event details above also use the cookie.consent so let's stay consistent.
-    pushConsentToShopify(window.Fides.cookie.consent);
+    pushConsentToShopify(window.Fides.cookie.consent, options);
   }
 };
 
 /**
  * Call Fides.shopify to configure Shopify customer privacy.
  */
-export const shopify = () => {
+export const shopify = (options?: ShopifyOptions) => {
   let timeoutId: ReturnType<typeof setTimeout>;
   let pollId: ReturnType<typeof setTimeout>;
 
@@ -122,7 +128,7 @@ export const shopify = () => {
 
       // If the API is already present, simply call it.
       if (window.Shopify.customerPrivacy) {
-        applyOptions();
+        applyOptions(options);
         return;
       }
 
@@ -139,7 +145,7 @@ export const shopify = () => {
             throw Error("Fides could not load Shopify's consent-tracking-api");
           }
 
-          applyOptions();
+          applyOptions(options);
         },
       );
       return;

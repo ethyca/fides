@@ -10,6 +10,7 @@ import {
   TimelineItemColorMap,
 } from "../types";
 import styles from "./ActivityTimelineEntry.module.scss";
+import { AttachmentDisplay } from "./AttachmentDisplay";
 
 interface ActivityTimelineEntryProps {
   item: ActivityTimelineItem;
@@ -23,8 +24,10 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
     type,
     onClick,
     isError,
-    isSkipped,
+    isAwaitingInput,
     description,
+    attachments,
+    showViewLog,
   } = item;
 
   // Format the date for display
@@ -32,50 +35,64 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
 
   const isClickable = !!onClick;
 
+  const hasAttachments = attachments && attachments.length > 0;
+
   const content = (
     <>
       <div className={styles.header}>
-        <span className={styles.author} data-testid="activity-timeline-author">
-          {author}:
-        </span>
-        {title && (
+        <div className={styles.headerLeft}>
           <span
-            className={classNames(styles.title, {
-              [styles["title--error"]]: isError,
-            })}
-            data-testid="activity-timeline-title"
+            className={styles.author}
+            data-testid="activity-timeline-author"
           >
-            {title}
-            {isError && " failed"}
+            {author}:
           </span>
-        )}
-        <span
-          className={styles.timestamp}
-          data-testid="activity-timeline-timestamp"
-        >
-          {formattedDate}
-        </span>
-        <Tag
-          className={styles.type}
-          color={TimelineItemColorMap[type]}
-          data-testid="activity-timeline-type"
-        >
-          {type}
-        </Tag>
-        {(isError || isSkipped) && (
+          {title && (
+            <Typography.Text
+              className={classNames(styles.title, {
+                [styles["title--error"]]: isError,
+                [styles["title--awaiting-input"]]: isAwaitingInput,
+              })}
+              ellipsis={{ tooltip: true }}
+              style={{ maxWidth: "33%" }}
+              data-testid="activity-timeline-title"
+            >
+              {title}
+              {isError && " failed"}
+            </Typography.Text>
+          )}
           <span
-            className={styles.viewLogs}
-            data-testid="activity-timeline-view-logs"
+            className={styles.timestamp}
+            data-testid="activity-timeline-timestamp"
           >
-            View Log
+            {formattedDate}
           </span>
-        )}
+          <Tag
+            className={styles.type}
+            color={TimelineItemColorMap[type]}
+            data-testid="activity-timeline-type"
+          >
+            {type}
+          </Tag>
+          {showViewLog && (
+            <span
+              className={styles.viewLogs}
+              data-testid="activity-timeline-view-logs"
+            >
+              View Log
+            </span>
+          )}
+        </div>
       </div>
-      {description && (
-        <div className="mt-2 pl-2.5">
-          <Typography.Paragraph className="!mb-0 whitespace-pre-wrap">
-            {description}
+      {(description || hasAttachments) && (
+        <div className="mt-2 flex justify-between pl-2.5 align-top">
+          <Typography.Paragraph
+            className="!mb-0 whitespace-pre-wrap"
+            data-testid="activity-timeline-description"
+          >
+            {description || ""}
           </Typography.Paragraph>
+          {hasAttachments && <AttachmentDisplay attachments={attachments} />}
         </div>
       )}
     </>
@@ -84,9 +101,12 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
   const commonProps = {
     className: classNames(styles.itemButton, {
       [styles["itemButton--error"]]: isError,
+      [styles["itemButton--awaiting-input"]]: isAwaitingInput,
       [styles["itemButton--clickable"]]: isClickable,
       [styles["itemButton--comment"]]:
         type === ActivityTimelineItemTypeEnum.INTERNAL_COMMENT,
+      [styles["itemButton--manual-task"]]:
+        type === ActivityTimelineItemTypeEnum.MANUAL_TASK,
     }),
     "data-testid": "activity-timeline-item",
   };

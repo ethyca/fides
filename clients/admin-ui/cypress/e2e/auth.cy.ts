@@ -1,4 +1,8 @@
-import { stubOpenIdProviders, stubUserManagement } from "cypress/support/stubs";
+import {
+  stubLogout,
+  stubOpenIdProviders,
+  stubUserManagement,
+} from "cypress/support/stubs";
 
 import { SYSTEM_ROUTE } from "~/features/common/nav/routes";
 
@@ -74,10 +78,7 @@ describe("User Authentication", () => {
       cy.visit(SYSTEM_ROUTE);
       cy.getByTestId("system-management");
 
-      cy.intercept("POST", "/api/v1/logout", {
-        statusCode: 204,
-      });
-
+      stubLogout();
       cy.getByTestId("header-menu-button").click();
       cy.getByTestId("header-menu-sign-out").click({ force: true });
 

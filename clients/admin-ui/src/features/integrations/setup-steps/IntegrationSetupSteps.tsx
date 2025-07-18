@@ -7,6 +7,8 @@ import { ConnectionConfigurationResponse } from "~/types/api/models/ConnectionCo
 import type { ConnectionStatusData } from "../ConnectionStatusNotice";
 import {
   Step,
+  useAddManualTaskStep,
+  useAssignTasksToUsersStep,
   useAuthorizeIntegrationStep,
   useCreateIntegrationStep,
   useCreateMonitorStep,
@@ -16,8 +18,8 @@ import {
 interface IntegrationSetupStepsProps {
   testData?: ConnectionStatusData;
   testIsLoading?: boolean;
-  connectionOption?: ConnectionSystemTypeMap;
-  connection?: ConnectionConfigurationResponse;
+  connectionOption: ConnectionSystemTypeMap;
+  connection: ConnectionConfigurationResponse;
 }
 
 export const IntegrationSetupSteps = ({
@@ -32,20 +34,36 @@ export const IntegrationSetupSteps = ({
   const authorizeIntegrationStep = useAuthorizeIntegrationStep({
     testData,
     testIsLoading,
+    connection,
     connectionOption,
   });
 
   const createMonitorStep = useCreateMonitorStep({
     testData,
     testIsLoading,
+    connection,
+    connectionOption,
+  });
+
+  const addManualTaskStep = useAddManualTaskStep({
+    testData,
+    testIsLoading,
+    connection,
+    connectionOption,
+  });
+
+  const assignTasksToUsersStep = useAssignTasksToUsersStep({
+    testData,
+    testIsLoading,
+    connection,
     connectionOption,
   });
 
   const linkSystemStep = useLinkSystemStep({
     testData,
     testIsLoading,
-    connectionOption,
     connection,
+    connectionOption,
   });
 
   // Use useMemo just to combine and filter the steps
@@ -54,6 +72,8 @@ export const IntegrationSetupSteps = ({
       addIntegrationStep,
       authorizeIntegrationStep,
       createMonitorStep,
+      addManualTaskStep,
+      assignTasksToUsersStep,
       linkSystemStep,
     ];
 
@@ -63,6 +83,8 @@ export const IntegrationSetupSteps = ({
     addIntegrationStep,
     authorizeIntegrationStep,
     createMonitorStep,
+    addManualTaskStep,
+    assignTasksToUsersStep,
     linkSystemStep,
   ]);
 

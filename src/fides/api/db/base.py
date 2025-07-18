@@ -31,12 +31,15 @@ from fides.api.models.fides_user_respondent_email_verification import (
 )
 from fides.api.models.identity_salt import IdentitySalt
 from fides.api.models.location_regulation_selections import LocationRegulationSelections
-from fides.api.models.manual_tasks.manual_task import ManualTask, ManualTaskReference
-from fides.api.models.manual_tasks.manual_task_config import (
+from fides.api.models.manual_task import (
+    ManualTask,
     ManualTaskConfig,
     ManualTaskConfigField,
+    ManualTaskInstance,
+    ManualTaskLog,
+    ManualTaskReference,
+    ManualTaskSubmission,
 )
-from fides.api.models.manual_tasks.manual_task_log import ManualTaskLog
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.messaging import MessagingConfig
 from fides.api.models.messaging_template import MessagingTemplate

@@ -17,6 +17,7 @@ describe("Action center", () => {
     cy.login();
     stubPlus(true);
     stubWebsiteMonitor();
+    stubTaxonomyEntities();
   });
 
   describe("disabled web monitor", () => {
@@ -285,7 +286,7 @@ describe("Action center", () => {
 
         // eslint-disable-next-line cypress/no-unnecessary-waiting
         cy.wait(500);
-        cy.getByTestId("tab-Recent activity").click({ force: true });
+        cy.getAntTab("Recent activity").click({ force: true });
         cy.location("hash").should("eq", "#recent-activity");
 
         // "recent activity" tab should be read-only
@@ -295,7 +296,7 @@ describe("Action center", () => {
 
         // eslint-disable-next-line cypress/no-unnecessary-waiting
         cy.wait(500);
-        cy.getByTestId("tab-Ignored").click({ force: true });
+        cy.getAntTab("Ignored").click({ force: true });
         cy.location("hash").should("eq", "#ignored");
         // "ignore" option should not show in bulk actions menu
         cy.getByTestId(`row-${rowIds[0]}-col-select`).find("label").click();
@@ -356,12 +357,7 @@ describe("Action center", () => {
       cy.getByTestId("column-data_use").should("exist");
       cy.getByTestId("column-locations").should("exist");
       cy.getByTestId("column-domain").should("exist");
-      // TODO: [HJ-344] uncomment when Discovery column is implemented
-      /* cy.getByTestId("column-with_consent").should("exist");
-      cy.getByTestId("row-4-col-with_consent")
-        .contains("Without consent")
-        .realHover();
-      cy.get(".ant-tooltip-inner").should("contain", "January"); */
+      cy.getByTestId("column-consent_aggregated").should("exist");
       cy.getByTestId("column-actions").should("exist");
       cy.getByTestId(`row-${firstRowUrn}-col-actions`).within(() => {
         cy.getByTestId("add-btn").should("be.disabled");
@@ -414,12 +410,7 @@ describe("Action center", () => {
       cy.getByTestId("column-data_use").should("exist");
       cy.getByTestId("column-locations").should("exist");
       cy.getByTestId("column-domain").should("exist");
-      // TODO: [HJ-344] uncomment when Discovery column is implemented
-      /* cy.getByTestId("column-with_consent").should("exist");
-      cy.getByTestId("row-4-col-with_consent")
-        .contains("Without consent")
-        .realHover();
-      cy.get(".ant-tooltip-inner").should("contain", "January"); */
+      cy.getByTestId("column-consent_aggregated").should("exist");
       cy.getByTestId("column-page").should("exist");
       cy.getByTestId(`row-${rowUrns[0]}-col-page`).should(
         "contain",
@@ -557,7 +548,7 @@ describe("Action center", () => {
     });
 
     it("should bulk restore ignored assets", () => {
-      cy.getByTestId("tab-Ignored").click({ force: true });
+      cy.getAntTab("Ignored").click({ force: true });
       cy.getByTestId("bulk-actions-menu").should("be.disabled");
       cy.getByTestId(`row-${rowUrns[0]}-col-select`).find("label").click();
       cy.getByTestId(`row-${rowUrns[2]}-col-select`).find("label").click();
@@ -651,7 +642,7 @@ describe("Action center", () => {
 
         // eslint-disable-next-line cypress/no-unnecessary-waiting
         cy.wait(500);
-        cy.getByTestId("tab-Recent activity").click({ force: true });
+        cy.getAntTab("Recent activity").click({ force: true });
         cy.location("hash").should("eq", "#recent-activity");
 
         // "recent activity" tab should be read-only
@@ -670,7 +661,7 @@ describe("Action center", () => {
 
         // eslint-disable-next-line cypress/no-unnecessary-waiting
         cy.wait(500);
-        cy.getByTestId("tab-Ignored").click({ force: true });
+        cy.getAntTab("Ignored").click({ force: true });
         cy.location("hash").should("eq", "#ignored");
         // "ignore" option should not show in bulk actions menu
         cy.getByTestId(`row-${rowUrns[0]}-col-select`).find("label").click();
@@ -680,6 +671,207 @@ describe("Action center", () => {
         cy.get(".ant-dropdown-menu-item")
           .contains("Ignore")
           .should("not.exist");
+      });
+    });
+  });
+
+  describe("Action center consent status functionality", () => {
+    const webMonitorKey = "my_web_monitor_1";
+    const systemId = "system_key-8fe42cdb-af2e-4b9e-9b38-f75673180b88";
+    const rowUrns = [
+      "my_web_monitor_1.GET.td.doubleclick.net.https://td.doubleclick.net/td/rul/11020051272",
+      "my_web_monitor_1.GET.td.doubleclick.net.https://td.doubleclick.net/td/rul/697301175",
+      "my_web_monitor_1.POST.www.google.com.https://www.google.com/ccm/collect",
+    ];
+
+    beforeEach(() => {
+      cy.login();
+      stubPlus(true);
+      cy.intercept("GET", "/api/v1/plus/discovery-monitor/*/results*", {
+        fixture:
+          "detection-discovery/activity-center/system-asset-results-with-consent",
+      }).as("getSystemAssetResultsWithConsent");
+    });
+
+    describe("Monitor list consent warnings", () => {
+      beforeEach(() => {
+        cy.visit(ACTION_CENTER_ROUTE);
+        cy.wait("@getMonitorResults");
+      });
+
+      it("should display consent warning icons on monitors with consent issues", () => {
+        // Check that monitors with consent issues show warning icon
+        cy.getByTestId("monitor-result-my_web_monitor_2").within(() => {
+          cy.getByTestId("discovery-status-icon-alert").should("exist");
+          cy.getByTestId("discovery-status-icon-alert").realHover();
+        });
+        cy.get(".ant-tooltip-inner").should(
+          "contain",
+          "One or more assets were detected without consent",
+        );
+
+        cy.getByTestId("monitor-result-my_web_monitor_1").within(() => {
+          cy.getByTestId("discovery-status-icon-alert").should("exist");
+        });
+
+        // Monitor without consent issues should not show warning icon
+        cy.getByTestId("monitor-result-My_New_BQ_Monitor").within(() => {
+          cy.getByTestId("discovery-status-icon-alert").should("not.exist");
+        });
+      });
+    });
+
+    describe("Discovery column in assets table", () => {
+      beforeEach(() => {
+        cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}/${systemId}`);
+        cy.wait("@getSystemAssetResultsWithConsent");
+      });
+
+      it("should display discovery column with consent status badges", () => {
+        cy.getByTestId("column-consent_aggregated").should("exist");
+        cy.getByTestId("column-consent_aggregated").should(
+          "contain",
+          "Discovery",
+        );
+
+        // Check "Without consent" badge
+        cy.getByTestId(`row-${rowUrns[0]}-col-consent_aggregated`).within(
+          () => {
+            cy.contains("Without consent").should("exist");
+            cy.getByTestId("status-badge_without-consent").should(
+              "have.attr",
+              "data-color",
+              "error",
+            );
+          },
+        );
+
+        // Check "With consent" badge
+        cy.getByTestId(`row-${rowUrns[1]}-col-consent_aggregated`).within(
+          () => {
+            cy.contains("With consent").should("exist");
+            cy.getByTestId("status-badge_with-consent").should(
+              "have.attr",
+              "data-color",
+              "success",
+            );
+          },
+        );
+
+        // Check "Without consent" badge for another asset
+        cy.getByTestId(`row-${rowUrns[2]}-col-consent_aggregated`).within(
+          () => {
+            cy.contains("Without consent").should("exist");
+            cy.getByTestId("status-badge_without-consent").should(
+              "have.attr",
+              "data-color",
+              "error",
+            );
+          },
+        );
+      });
+
+      it("should show warning icon in discovery column header when there are assets without consent", () => {
+        cy.getByTestId("column-consent_aggregated").within(() => {
+          cy.getByTestId("discovery-status-icon-alert").should("exist");
+          cy.getByTestId("discovery-status-icon-alert").realHover();
+        });
+        cy.get(".ant-tooltip-inner").should(
+          "contain",
+          "One or more assets were detected without consent",
+        );
+      });
+
+      it("should open consent breakdown modal when clicking 'Without consent' badge", () => {
+        cy.getByTestId(`row-${rowUrns[0]}-col-consent_aggregated`).within(
+          () => {
+            cy.contains("Without consent").within(() => {
+              cy.get("button").click();
+            });
+          },
+        );
+
+        cy.wait("@getConsentBreakdown");
+
+        // Check modal is open
+        cy.getByTestId("consent-breakdown-modal").should("exist");
+        cy.contains("Consent discovery").should("exist");
+
+        // Check modal content
+        cy.getByTestId("consent-breakdown-modal-content").within(() => {
+          cy.contains(
+            "View all instances where this asset was detected without consent",
+          ).should("exist");
+          cy.contains("Asset name:").should("exist");
+          cy.contains("System:").should("exist");
+          cy.contains("Domain:").should("exist");
+
+          // Check table headers
+          cy.get(".ant-table-thead").within(() => {
+            cy.contains("Location").should("exist");
+            cy.contains("Page").should("exist");
+          });
+
+          // Check table data
+          cy.getByTestId("consent-breakdown-modal-table").within(() => {
+            cy.get("tbody tr").should("have.length", 3);
+            cy.get("tbody tr")
+              .first()
+              .within(() => {
+                cy.contains("United States").should("exist");
+                cy.get("a[href='https://example.com/page1']").should("exist");
+              });
+          });
+        });
+
+        // Check modal footer buttons
+        cy.get(".ant-modal-footer").within(() => {
+          cy.contains("Cancel").should("exist");
+          // TODO: uncomment when onDownload is implemented in `DiscoveryStatusBadgeCell.tsx`
+          // cy.contains("Download").should("exist");
+        });
+
+        // Close modal
+        cy.contains("Cancel").click();
+        cy.getByTestId("consent-breakdown-modal").should("not.exist");
+      });
+
+      it("should open external links in new tab from consent breakdown modal", () => {
+        cy.getByTestId(`row-${rowUrns[0]}-col-consent_aggregated`).within(
+          () => {
+            cy.contains("Without consent").within(() => {
+              cy.get("button").click();
+            });
+          },
+        );
+
+        cy.wait("@getConsentBreakdown");
+
+        cy.getByTestId("consent-breakdown-modal-content").within(() => {
+          cy.get("a[href='https://example.com/page1']")
+            .should("have.attr", "target", "_blank")
+            .should("have.attr", "rel", "noopener noreferrer");
+        });
+
+        cy.contains("Cancel").click();
+      });
+    });
+
+    describe("System aggregate view consent status", () => {
+      beforeEach(() => {
+        cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}`);
+        cy.wait("@getSystemAggregateResults");
+      });
+
+      it("should show consent warning icon in system column header", () => {
+        cy.getByTestId("column-system_name").within(() => {
+          cy.getByTestId("discovery-status-icon-alert").should("exist");
+          cy.getByTestId("discovery-status-icon-alert").realHover();
+        });
+        cy.get(".ant-tooltip-inner").should(
+          "contain",
+          "One or more assets were detected without consent",
+        );
       });
     });
   });

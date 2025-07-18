@@ -1038,8 +1038,6 @@ dataset:
       data_categories: [system.operations]
     - name: parent_entity_type
       data_categories: [system.operations]
-    - name: due_date
-      data_categories: [system.operations]
     - name: created_at
       data_categories: [system.operations]
     - name: updated_at
@@ -1074,6 +1072,8 @@ dataset:
       data_categories: [system.operations]
     - name: details
       data_categories: [system.operations]
+    - name: user_id
+      data_categories: [user.unique_id]
     - name: created_at
       data_categories: [system.operations]
     - name: updated_at
@@ -1094,6 +1094,8 @@ dataset:
       data_categories: [system.operations]
     - name: version
       data_categories: [system.operations]
+    - name: execution_timing
+      data_categories: [system.operations]
   - name: manual_task_config_field
     fields:
     - name: config_id
@@ -1109,6 +1111,52 @@ dataset:
     - name: id
       data_categories: [system.operations]
     - name: task_id
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+  - name: manual_task_instance
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: task_id
+      data_categories: [system.operations]
+    - name: config_id
+      data_categories: [system.operations]
+    - name: entity_id
+      data_categories: [system.operations]
+    - name: entity_type
+      data_categories: [system.operations]
+    - name: status
+      data_categories: [system.operations]
+    - name: due_date
+      data_categories: [system.operations]
+    - name: completed_at
+      data_categories: [system.operations]
+    - name: completed_by_id
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+  - name: manual_task_submission
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: task_id
+      data_categories: [system.operations]
+    - name: config_id
+      data_categories: [system.operations]
+    - name: instance_id
+      data_categories: [system.operations]
+    - name: submitted_by
+      data_categories: [system.operations]
+    - name: submitted_at
+      data_categories: [system.operations]
+    - name: field_id
+      data_categories: [system.operations]
+    - name: data
+      data_categories: [system.operations]
+    - name: created_at
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
@@ -2621,7 +2669,7 @@ dataset:
         data_categories: [system.operations]
       - name: locations
         data_categories: [system.operations]
-      - name: with_consent
+      - name: consent_status
         data_categories: [system.operations]
       - name: data_uses
         data_categories: [system.operations]

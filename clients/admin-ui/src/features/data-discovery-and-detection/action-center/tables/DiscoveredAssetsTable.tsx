@@ -8,6 +8,7 @@ import {
   AntDefaultOptionType as DefaultOptionType,
   AntDropdown as Dropdown,
   AntEmpty as Empty,
+  AntTabs as Tabs,
   AntTooltip as Tooltip,
   Flex,
   HStack,
@@ -19,7 +20,6 @@ import { uniq } from "lodash";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
-import DataTabsHeader from "~/features/common/DataTabsHeader";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import {
   ACTION_CENTER_ROUTE,
@@ -35,6 +35,13 @@ import {
 } from "~/features/common/table/v2";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
+  ConsentStatus,
+  DiffStatus,
+  StagedResourceAPIResponse,
+} from "~/types/api";
+
+import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
+import {
   useAddMonitorResultAssetsMutation,
   useAddMonitorResultSystemsMutation,
   useGetDiscoveredAssetsQuery,
@@ -42,15 +49,15 @@ import {
   useRestoreMonitorResultAssetsMutation,
   useUpdateAssetsMutation,
   useUpdateAssetsSystemMutation,
-} from "~/features/data-discovery-and-detection/action-center/action-center.slice";
-import AddDataUsesModal from "~/features/data-discovery-and-detection/action-center/AddDataUsesModal";
-import useActionCenterTabs from "~/features/data-discovery-and-detection/action-center/tables/useActionCenterTabs";
-import { successToastContent } from "~/features/data-discovery-and-detection/action-center/utils/successToastContent";
-import { DiffStatus } from "~/types/api";
-
-import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
+} from "../action-center.slice";
+import AddDataUsesModal from "../AddDataUsesModal";
 import { AssignSystemModal } from "../AssignSystemModal";
+import { ConsentBreakdownModal } from "../ConsentBreakdownModal";
+import useActionCenterTabs, {
+  ActionCenterTabHash,
+} from "../hooks/useActionCenterTabs";
 import { useDiscoveredAssetsColumns } from "../hooks/useDiscoveredAssetsColumns";
+import { SuccessToastContent } from "../SuccessToastContent";
 
 interface DiscoveredAssetsTableProps {
   monitorId: string;
@@ -64,7 +71,9 @@ export const DiscoveredAssetsTable = ({
   onSystemName,
 }: DiscoveredAssetsTableProps) => {
   const router = useRouter();
-  const tabHash = router.asPath.split("#")[1];
+  const [firstItemConsentStatus, setFirstItemConsentStatus] = useState<
+    ConsentStatus | null | undefined
+  >();
 
   const [systemName, setSystemName] = useState(systemId);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
@@ -72,6 +81,10 @@ export const DiscoveredAssetsTable = ({
     useState<boolean>(false);
   const [isAddDataUseModalOpen, setIsAddDataUseModalOpen] =
     useState<boolean>(false);
+  const [consentBreakdownModalData, setConsentBreakdownModalData] = useState<{
+    stagedResource: StagedResourceAPIResponse;
+    status: ConsentStatus;
+  } | null>(null);
   const [addMonitorResultAssetsMutation, { isLoading: isAddingResults }] =
     useAddMonitorResultAssetsMutation();
   const [ignoreMonitorResultAssetsMutation, { isLoading: isIgnoringResults }] =
@@ -119,13 +132,12 @@ export const DiscoveredAssetsTable = ({
     resetPageIndexToDefault();
   }, [monitorId, searchQuery, resetPageIndexToDefault]);
 
-  const {
-    filterTabs,
-    filterTabIndex,
-    onTabChange,
-    activeParams,
-    actionsDisabled,
-  } = useActionCenterTabs({ systemId, initialHash: tabHash });
+  const { filterTabs, activeTab, onTabChange, activeParams, actionsDisabled } =
+    useActionCenterTabs(systemId);
+
+  useEffect(() => {
+    resetPageIndexToDefault();
+  }, [monitorId, searchQuery, activeTab, resetPageIndexToDefault]);
 
   const { data, isLoading, isFetching } = useGetDiscoveredAssetsQuery({
     key: monitorId,
@@ -139,15 +151,39 @@ export const DiscoveredAssetsTable = ({
     if (data) {
       const firstSystemName =
         data.items[0]?.system || systemName || systemId || "";
-      setTotalPages(data.pages || 1);
+      setTotalPages(data.pages ?? 1);
       setSystemName(firstSystemName);
       onSystemName?.(firstSystemName);
     }
   }, [data, systemId, onSystemName, setTotalPages, systemName]);
 
+  useEffect(() => {
+    if (data?.items && !firstItemConsentStatus) {
+      // this ensures that the column header remembers the consent status
+      // even when the user navigates to a different paginated page
+      const consentStatus = data.items.find(
+        (item) => item.consent_aggregated === ConsentStatus.WITHOUT_CONSENT,
+      )?.consent_aggregated;
+      setFirstItemConsentStatus(consentStatus);
+    }
+  }, [data, firstItemConsentStatus]);
+
+  const handleShowBreakdown = (
+    stagedResource: StagedResourceAPIResponse,
+    status: ConsentStatus,
+  ) => {
+    setConsentBreakdownModalData({ stagedResource, status });
+  };
+
+  const handleCloseBreakdown = () => {
+    setConsentBreakdownModalData(null);
+  };
+
   const { columns } = useDiscoveredAssetsColumns({
-    readonly: actionsDisabled,
+    readonly: actionsDisabled ?? false,
     onTabChange,
+    aggregatedConsent: firstItemConsentStatus,
+    onShowBreakdown: handleShowBreakdown,
   });
 
   const tableInstance = useReactTable({
@@ -182,11 +218,7 @@ export const DiscoveredAssetsTable = ({
       return assetKey === systemKey;
     });
 
-    const systemKeyFromResult = result.data?.[0]?.promoted_system_key;
-
-    const systemToLink = allAssetsHaveSameSystemKey
-      ? (systemKeyFromResult ?? systemKey)
-      : undefined;
+    const systemToLink = allAssetsHaveSameSystemKey ? systemKey : undefined;
 
     if (isErrorResult(result)) {
       toast(errorToastParams(getErrorMessage(result.error)));
@@ -194,7 +226,7 @@ export const DiscoveredAssetsTable = ({
       tableInstance.resetRowSelection();
       toast(
         successToastParams(
-          successToastContent(
+          SuccessToastContent(
             `${selectedUrns.length} assets from ${systemName} have been added to the system inventory.`,
             systemToLink
               ? () =>
@@ -323,8 +355,8 @@ export const DiscoveredAssetsTable = ({
     }
   };
 
-  const handleTabChange = (index: number) => {
-    onTabChange(index);
+  const handleTabChange = (tab: ActionCenterTabHash) => {
+    onTabChange(tab);
     setRowSelection({});
   };
 
@@ -338,13 +370,13 @@ export const DiscoveredAssetsTable = ({
 
   return (
     <>
-      <DataTabsHeader
-        data={filterTabs}
-        data-testid="filter-tabs"
-        index={filterTabIndex}
-        isLazy
-        isManual
-        onChange={handleTabChange}
+      <Tabs
+        items={filterTabs.map((tab) => ({
+          key: tab.hash,
+          label: tab.label,
+        }))}
+        activeKey={activeTab}
+        onChange={(tab) => handleTabChange(tab as ActionCenterTabHash)}
       />
       <TableActionBar>
         <DebouncedSearchInput
@@ -381,7 +413,7 @@ export const DiscoveredAssetsTable = ({
                     label: "Assign system",
                     onClick: () => setIsAssignSystemModalOpen(true),
                   },
-                  ...(activeParams.diff_status.includes(DiffStatus.MUTED)
+                  ...(activeParams?.diff_status?.includes(DiffStatus.MUTED)
                     ? [
                         {
                           key: "restore",
@@ -477,6 +509,14 @@ export const DiscoveredAssetsTable = ({
         onSave={handleBulkAddDataUse}
         isSaving={isBulkAddingDataUses}
       />
+      {consentBreakdownModalData && (
+        <ConsentBreakdownModal
+          isOpen={!!consentBreakdownModalData}
+          stagedResource={consentBreakdownModalData.stagedResource}
+          status={consentBreakdownModalData.status}
+          onCancel={handleCloseBreakdown}
+        />
+      )}
     </>
   );
 };

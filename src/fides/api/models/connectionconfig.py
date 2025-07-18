@@ -53,6 +53,7 @@ class ConnectionType(enum.Enum):
     https = "https"
     manual = "manual"  # Deprecated - use manual_webhook instead
     manual_webhook = "manual_webhook"  # Runs upfront before the traversal
+    manual_task = "manual_task"  # Manual task integration
     mariadb = "mariadb"
     mongodb = "mongodb"
     mssql = "mssql"
@@ -69,6 +70,8 @@ class ConnectionType(enum.Enum):
     sovrn = "sovrn"
     timescale = "timescale"
     website = "website"
+    # Test connection types, used for testing purposes only
+    test_website = "test_website"  # used for ConfigurableTesteWebsiteMonitor
 
     @property
     def human_readable(self) -> str:
@@ -88,6 +91,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.google_cloud_sql_postgres.value: "Google Cloud SQL for Postgres",
             ConnectionType.https.value: "Policy Webhook",
             ConnectionType.manual_webhook.value: "Manual Process",
+            ConnectionType.manual_task.value: "Manual Task",
             ConnectionType.manual.value: "Manual Connector",
             ConnectionType.mariadb.value: "MariaDB",
             ConnectionType.mongodb.value: "MongoDB",
@@ -105,6 +109,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.sovrn.value: "Sovrn",
             ConnectionType.timescale.value: "TimescaleDB",
             ConnectionType.website.value: "Website",
+            ConnectionType.test_website.value: "Test Website Connector -- not for production use",
         }
         try:
             return readable_mapping[self.value]
@@ -132,6 +137,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.google_cloud_sql_postgres.value: SystemType.database,
             ConnectionType.https.value: SystemType.manual,
             ConnectionType.manual_webhook.value: SystemType.manual,
+            ConnectionType.manual_task.value: SystemType.manual,
             ConnectionType.manual.value: SystemType.manual,
             ConnectionType.mariadb.value: SystemType.database,
             ConnectionType.mongodb.value: SystemType.database,
@@ -149,6 +155,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.sovrn.value: SystemType.email,
             ConnectionType.timescale.value: SystemType.database,
             ConnectionType.website.value: SystemType.website,
+            ConnectionType.test_website.value: SystemType.website,
         }
 
         try:
@@ -225,6 +232,14 @@ class ConnectionConfig(Base):
     access_manual_webhook = relationship(  # type: ignore[misc]
         "AccessManualWebhook",
         back_populates="connection_config",
+        cascade="delete",
+        uselist=False,
+    )
+
+    manual_task = relationship(  # type: ignore[misc]
+        "ManualTask",
+        primaryjoin="and_(ConnectionConfig.id == foreign(ManualTask.parent_entity_id), "
+        "ManualTask.parent_entity_type == 'connection_config')",
         cascade="delete",
         uselist=False,
     )

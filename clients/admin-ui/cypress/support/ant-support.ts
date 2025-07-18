@@ -34,6 +34,23 @@ declare global {
         optionLabel: string | number,
         clickOptions?: { force?: boolean },
       ) => void;
+
+      /**
+       * Get an option from an Ant Design Tabs component by label
+       * @param tab The label of the tab to get
+       * @example cy.getAntTab("Some tab").click();
+       * @example cy.getAntTab("Some tab").should("have.attr", "aria-disabled", "true");
+       */
+      getAntTab: (tab: string) => Chainable;
+
+      /** Apply a filter to an Ant Design table column
+       * @param columnTitle The title of the column to filter
+       * @param filterOption The filter option to select (string for specific option, number for index)
+       */
+      applyTableFilter: (
+        columnTitle: string,
+        filterOption: string | number,
+      ) => void;
     }
   }
 }
@@ -42,10 +59,12 @@ Cypress.Commands.add("getAntSelectOption", (option: string | number) =>
   typeof option === "string"
     ? cy.get(
         `.ant-select-dropdown:not(.ant-select-dropdown-hidden) .ant-select-item-option[title="${option}"]`,
+        { withinSubject: null },
       )
     : cy
         .get(
           `.ant-select-dropdown:not(.ant-select-dropdown-hidden) .ant-select-item-option`,
+          { withinSubject: null },
         )
         .eq(option),
 );
@@ -55,7 +74,7 @@ Cypress.Commands.add(
   {
     prevSubject: "element",
   },
-  (subject, option, clickOptions) => {
+  (subject, option, clickOptions = { force: true }) => {
     cy.get(subject.selector).first().should("have.class", "ant-select");
     cy.get(subject.selector)
       .first()
@@ -66,9 +85,13 @@ Cypress.Commands.add(
         }
         if (!classes.includes("ant-select-open")) {
           if (classes.includes("ant-select-multiple")) {
-            cy.get(subject.selector).first().find("input").click();
+            cy.get(subject.selector).first().find("input").focus().click();
           } else {
-            cy.get(subject.selector).first().click(clickOptions);
+            cy.get(subject.selector)
+              .first()
+              .find("input")
+              .focus()
+              .click(clickOptions);
           }
         }
       });
@@ -102,9 +125,9 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add("antSelectDropdownVisible", () => {
-  cy.get(".ant-select-dropdown:not(.ant-select-dropdown-hidden)").should(
-    "be.visible",
-  );
+  cy.get(".ant-select-dropdown:not(.ant-select-dropdown-hidden)", {
+    withinSubject: null,
+  }).should("be.visible");
 });
 
 Cypress.Commands.add("getAntMenuOption", (option: string | number) =>
@@ -120,5 +143,45 @@ Cypress.Commands.add(
   (subject, option) =>
     cy.get(subject.selector).getAntMenuOption(option).click(),
 );
+
+Cypress.Commands.add("getAntTab", (tab: string) =>
+  cy.get(`.ant-tabs-tab-btn`).filter(`:contains("${tab}")`),
+);
+Cypress.Commands.add("applyTableFilter", (columnTitle, filterOption) => {
+  // Click the filter trigger for the specified column
+  cy.get(".ant-table-column-title")
+    .contains(columnTitle)
+    .siblings(".ant-dropdown-trigger")
+    .click();
+
+  // Wait for the filter dropdown to appear and find the visible one
+  cy.get(".ant-table-filter-dropdown:visible")
+    .should("be.visible")
+    .within(() => {
+      // Wait for menu items to be available
+      cy.get(".ant-dropdown-menu-item").should("have.length.at.least", 1);
+
+      // Select the filter option
+      if (typeof filterOption === "string") {
+        cy.get(".ant-dropdown-menu-item")
+          .contains(filterOption)
+          .should("exist")
+          .click();
+      } else {
+        cy.get(".ant-dropdown-menu-item")
+          .eq(filterOption)
+          .should("exist")
+          .click();
+      }
+
+      // Click OK to apply the filter
+      cy.get(".ant-table-filter-dropdown-btns .ant-btn-primary")
+        .should("exist")
+        .click();
+    });
+
+  // Wait for the dropdown to disappear
+  cy.get(".ant-table-filter-dropdown:visible").should("not.exist");
+});
 
 export {};

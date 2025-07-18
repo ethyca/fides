@@ -3,6 +3,8 @@
 /* eslint-disable */
 
 import type { Classification } from "./Classification";
+import type { ConsentInfo } from "./ConsentInfo";
+import type { ConsentStatus } from "./ConsentStatus";
 import type { Constraint } from "./Constraint";
 import type { DiffStatus } from "./DiffStatus";
 import type { StagedResourceTypeValue } from "./StagedResourceTypeValue";
@@ -45,17 +47,6 @@ export type StagedResourceAPIResponse = {
   data_uses?: Array<string> | null;
   source_modified?: string | null;
   classifications?: Array<Classification>;
-  /**
-   *
-   * Represents the presence of various diff statuses of the staged resource's children. This is calculated:
-   * - during detection
-   * - upon queuing classification
-   * - after classification finishes
-   * - upon queuing promotion
-   * - after promotion finishes
-   *
-   */
-  child_diff_statuses?: Record<string, boolean>;
   domain?: string | null;
   /**
    * The parent(s) of the asset, i.e. from where the asset was identified
@@ -71,9 +62,13 @@ export type StagedResourceAPIResponse = {
    */
   locations?: Array<string>;
   /**
-   * Whether the asset was discovered with consent
+   * Consent breakdown for the asset
    */
-  with_consent?: boolean;
+  consent_breakdown?: ConsentInfo | null;
+  /**
+   * Aggregated consent for the asset
+   */
+  consent_aggregated?: ConsentStatus | null;
   /**
    * The Compass Vendor ID associated with the asset
    */
@@ -97,4 +92,8 @@ export type StagedResourceAPIResponse = {
   tables?: Array<string>;
   schemas?: Array<string>;
   system?: string | null;
+  /**
+   * A map of diff statuses present in the descendants of this resource, e.g. {'addition': true}
+   */
+  child_diff_statuses?: Record<string, boolean>;
 };

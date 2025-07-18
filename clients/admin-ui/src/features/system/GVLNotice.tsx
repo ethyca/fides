@@ -8,8 +8,8 @@ const GVLNotice = () => (
       title="This system is part of the TCF Global Vendor List (GVL)"
       description={
         <>
-          As a result, the system fields are not editable as they come directly
-          from Fides Compass and the Global Vendor List (GVL). In some cases
+          As a result, certain fields are not editable as they come directly
+          from Fides Compass and the Global Vendor List (GVL). In some cases,
           where the legal basis has been declared to be flexible, you may update
           the legal basis for particular data uses.{" "}
           <Link

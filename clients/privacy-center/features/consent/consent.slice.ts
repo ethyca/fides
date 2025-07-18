@@ -81,7 +81,6 @@ export const consentApi = baseApi.injectEndpoints({
         url: "privacy-experience/",
         params: {
           component: ComponentType.PRIVACY_CENTER,
-          has_notices: true,
           show_disabled: false,
           has_config: true,
           systems_applicable: true,

@@ -25,6 +25,11 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.manual_task import (
+    ManualTask,
+    ManualTaskParentEntityType,
+    ManualTaskType,
+)
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.sql_models import Dataset as CtlDataset  # type: ignore
@@ -243,7 +248,9 @@ def patch_connection_configs(
                     ).model_dump(mode="json")
                     connection_config.save(db=db)
                     created_or_updated.append(
-                        ConnectionConfigurationResponse(**connection_config.__dict__)
+                        ConnectionConfigurationResponse.model_validate(
+                            connection_config
+                        )
                     )
                     continue
 
@@ -268,8 +275,24 @@ def patch_connection_configs(
             connection_config = ConnectionConfig.create_or_update(
                 db, data=config_dict, check_name=False
             )
+
+            # Automatically create a ManualTask if this is a connection config of type manual_task
+            # and it doesn't already have one
+            if (
+                connection_config.connection_type == ConnectionType.manual_task
+                and not connection_config.manual_task
+            ):
+                ManualTask.create(
+                    db=db,
+                    data={
+                        "task_type": ManualTaskType.privacy_request,
+                        "parent_entity_id": connection_config.id,
+                        "parent_entity_type": ManualTaskParentEntityType.connection_config,
+                    },
+                )
+
             created_or_updated.append(
-                ConnectionConfigurationResponse(**connection_config.__dict__)
+                ConnectionConfigurationResponse.model_validate(connection_config)
             )
         except KeyOrNameAlreadyExists as exc:
             logger.warning(

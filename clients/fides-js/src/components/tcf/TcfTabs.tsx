@@ -1,11 +1,7 @@
-import { h } from "preact";
 import { useCallback, useRef } from "preact/hooks";
 
 import { PrivacyExperience } from "../../lib/consent-types";
-import {
-  FidesEventDetailsPreference,
-  FidesEventDetailsTrigger,
-} from "../../lib/events";
+import { FidesEventDetailsPreference } from "../../lib/events";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import {
   EnabledIds,
@@ -37,7 +33,6 @@ const TcfTabs = ({
   enabledIds: EnabledIds;
   onChange: (
     payload: EnabledIds,
-    triggerDetails: FidesEventDetailsTrigger,
     preferenceDetails: FidesEventDetailsPreference,
   ) => void;
   activeTabIndex: number;
@@ -47,11 +42,10 @@ const TcfTabs = ({
   const handleUpdateDraftState = useCallback(
     (
       { newEnabledIds, modelType }: UpdateEnabledIds,
-      triggerDetails: FidesEventDetailsTrigger,
       preferenceDetails: FidesEventDetailsPreference,
     ) => {
       const updated = { ...enabledIds, [modelType]: newEnabledIds };
-      onChange(updated, triggerDetails, preferenceDetails);
+      onChange(updated, preferenceDetails);
     },
     [enabledIds, onChange],
   );

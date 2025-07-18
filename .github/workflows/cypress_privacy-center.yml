@@ -30,11 +30,11 @@ jobs:
           node-version: 20.x
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build FidesJS
         working-directory: clients/fides-js
-        run: npm run build
+        run: npm run build:test
 
       - name: Cypress Privacy Center E2E Tests
         uses: cypress-io/github-action@v6

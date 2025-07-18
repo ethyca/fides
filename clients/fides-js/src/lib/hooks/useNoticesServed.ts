@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useState } from "preact/hooks";
-import { v4 as uuidv4 } from "uuid";
+import { useCallback, useEffect } from "preact/hooks";
 
 import { patchNoticesServed } from "../../services/api";
 import {
@@ -10,6 +9,7 @@ import {
   ServingComponent,
 } from "../consent-types";
 import { FidesEvent } from "../events";
+import { fidesLifecycleManager } from "../fides-lifecycle-manager";
 
 interface UseNoticesServedProps {
   options: FidesInitOptions;
@@ -18,7 +18,6 @@ interface UseNoticesServedProps {
   privacyNoticeHistoryIds?: string[];
   userGeography?: string;
   acknowledgeMode?: boolean;
-  propertyId?: string;
   tcfNoticesServed?: Partial<RecordConsentServedRequest>;
 }
 
@@ -29,12 +28,8 @@ export const useNoticesServed = ({
   privacyNoticeHistoryIds,
   userGeography,
   acknowledgeMode,
-  propertyId,
   tcfNoticesServed,
 }: UseNoticesServedProps) => {
-  const [servedNoticeHistoryId, setServedNoticeHistoryId] =
-    useState<string>(uuidv4());
-
   const handleUIEvent = useCallback(
     async (event: FidesEvent) => {
       // Disable the notices-served API if the fides_disable_save_api option or fides_disable_notices_served_api option is set
@@ -58,13 +53,13 @@ export const useNoticesServed = ({
         return;
       }
 
-      // Create new uuid for each served notice
-      const newUUID = uuidv4();
-      setServedNoticeHistoryId(newUUID);
+      // Use the lifecycle-level served_notice_history_id for consistency
+      const lifecycleServedNoticeHistoryId =
+        fidesLifecycleManager.getServedNoticeHistoryId();
 
       // Construct the notices-served API request and send!
       const request: RecordConsentServedRequest = {
-        served_notice_history_id: newUUID,
+        served_notice_history_id: lifecycleServedNoticeHistoryId,
         browser_identity: event.detail.identity,
         privacy_experience_config_history_id:
           privacyExperienceConfigHistoryId || "",
@@ -72,7 +67,7 @@ export const useNoticesServed = ({
         acknowledge_mode: acknowledgeMode,
         privacy_notice_history_ids: privacyNoticeHistoryIds || [],
         serving_component: String(event.detail.extraDetails.servingComponent),
-        property_id: propertyId,
+        property_id: privacyExperience.property_id,
         ...tcfNoticesServed,
       };
 
@@ -89,7 +84,6 @@ export const useNoticesServed = ({
       userGeography,
       acknowledgeMode,
       privacyNoticeHistoryIds,
-      propertyId,
       tcfNoticesServed,
     ],
   );
@@ -100,7 +94,5 @@ export const useNoticesServed = ({
       window.removeEventListener("FidesUIShown", handleUIEvent);
     };
   }, [handleUIEvent]);
-
-  return { servedNoticeHistoryId };
 };
 export default useNoticesServed;

@@ -46,6 +46,8 @@ export const baseApi = createApi({
     "Fides Cloud Config",
     "Languages",
     "Locations",
+    "Manual Fields",
+    "Manual Tasks",
     "Messaging Templates",
     "Dictionary",
     "System Vendors",

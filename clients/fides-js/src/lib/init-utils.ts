@@ -42,6 +42,12 @@ export const updateWindowFides = (fidesGlobal: FidesGlobal) => {
   }
 };
 
+interface UpdateConsentApiOptions {
+  consent?: NoticeConsent;
+  fidesString?: string;
+  validation?: UpdateConsentValidation;
+}
+
 export interface UpdateExperienceProps {
   cookie: FidesCookie;
   experience: PrivacyExperience;
@@ -107,11 +113,13 @@ export const getCoreFides = ({
       fidesDisabledNotices: null,
       fidesConsentNonApplicableFlagMode: null,
       fidesConsentFlagType: null,
+      fidesInitializedEventMode: "once",
     },
     fides_meta: {},
     identity: {},
     tcf_consent: {},
     saved_consent: {},
+    version: "__RELEASE_VERSION__", // gets replaced by the version.json file during rollup build
     config: undefined,
     initialized: false,
     onFidesEvent,
@@ -151,13 +159,14 @@ export const getCoreFides = ({
     },
     updateConsent(
       this: FidesGlobal,
-      options: {
-        consent?: NoticeConsent;
-        fidesString?: string;
-        validation?: UpdateConsentValidation;
-      },
+      options: UpdateConsentApiOptions,
     ): Promise<void> {
-      return updateConsent(this, options);
+      const { consent, fidesString, validation } = options;
+      return updateConsent(this, {
+        noticeConsent: consent,
+        fidesString,
+        validation,
+      });
     },
   };
 };
