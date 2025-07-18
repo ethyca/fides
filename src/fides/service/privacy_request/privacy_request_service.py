@@ -4,11 +4,7 @@ from typing import Any, Dict, List, Optional
 from loguru import logger
 from sqlalchemy.orm import Session
 
-from fides.api.common_exceptions import (
-    FidesopsException,
-    MessageDispatchException,
-    RedisNotConfigured,
-)
+from fides.api.common_exceptions import MessageDispatchException, RedisNotConfigured
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.policy import Policy
 from fides.api.models.pre_approval_webhook import PreApprovalWebhook
@@ -280,13 +276,14 @@ class PrivacyRequestService:
         if not existing_privacy_request:
             return None
 
-        if existing_privacy_request.status in [
-            PrivacyRequestStatus.complete,
-            PrivacyRequestStatus.pending,
-        ]:
-            raise FidesopsException(
-                f"Cannot resubmit a {existing_privacy_request.status} privacy request"
-            )
+        # TODO: Temporarily commented out for troubleshooting
+        # if existing_privacy_request.status in [
+        #     PrivacyRequestStatus.complete,
+        #     PrivacyRequestStatus.pending,
+        # ]:
+        #     raise FidesopsException(
+        #         f"Cannot resubmit a {existing_privacy_request.status} privacy request"
+        #     )
 
         # Copy all needed data first
         create_data = PrivacyRequestResubmit(
