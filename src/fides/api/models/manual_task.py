@@ -1052,7 +1052,6 @@ class ManualTaskConditionalDependency(Base):
         back_populates="parent",
         cascade="all, delete-orphan",
         foreign_keys=[parent_id],
-        passive_delete=True,
     )
 
     def to_condition_leaf(self) -> "ConditionLeaf":
