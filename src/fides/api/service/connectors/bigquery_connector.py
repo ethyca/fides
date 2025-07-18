@@ -130,6 +130,41 @@ class BigQueryConnector(SQLConnector):
             logger.exception(f"Error testing connection to remote BigQuery {str(e)}")
             raise ConnectionException(f"Connection error: {e}")
 
+    def _execute_statements_with_safe_mode(
+        self,
+        statements: List[Executable],
+        safe_mode_enabled: bool,
+        client: Engine,
+    ) -> int:
+        """
+        Execute SQL statements with safe mode support.
+
+        Args:
+            statements: List of SQL statements to execute
+            safe_mode_enabled: Whether safe mode is enabled
+            client: Database client engine
+
+        Returns:
+            Number of rows affected (0 in safe mode)
+        """
+        if not statements:
+            return 0
+
+        if safe_mode_enabled:
+            # In safe mode, log the statements instead of executing them
+            for stmt in statements:
+                logger.warning(f"SAFE MODE - Would execute SQL: {stmt}")
+            return 0
+
+        # Normal mode - execute the statements
+        row_count = 0
+        with client.connect() as connection:
+            for stmt in statements:
+                results = connection.execute(stmt)
+                logger.debug(f"Affected {results.rowcount} rows")
+                row_count += results.rowcount
+        return row_count
+
     def mask_data(
         self,
         node: ExecutionNode,
@@ -145,17 +180,17 @@ class BigQueryConnector(SQLConnector):
         update_or_delete_ct = 0
         client = self.client()
 
+        # Check if safe_mode is enabled
+        safe_mode_enabled = self.get_safe_mode_enabled()
+
         # Check if we're using DELETE masking strategy
         if query_config.uses_delete_masking_strategy():
             # Use batched DELETE for better performance
             delete_stmts = query_config.generate_delete(client, input_data or {})
             logger.debug(f"Generated {len(delete_stmts)} DELETE statements")
-            if delete_stmts:
-                with client.connect() as connection:
-                    for delete_stmt in delete_stmts:
-                        delete_results = connection.execute(delete_stmt)
-                        logger.debug(f"Deleted {delete_results.rowcount} rows")
-                        update_or_delete_ct += delete_results.rowcount
+            update_or_delete_ct += self._execute_statements_with_safe_mode(
+                delete_stmts, safe_mode_enabled, client
+            )
         else:
             # For UPDATE operations, process each row individually since each row may have different masked values
             for row in rows:
@@ -165,12 +200,8 @@ class BigQueryConnector(SQLConnector):
                 logger.debug(
                     f"Generated {len(update_or_delete_stmts)} UPDATE statements"
                 )
-                if update_or_delete_stmts:
-                    with client.connect() as connection:
-                        for update_or_delete_stmt in update_or_delete_stmts:
-                            update_results = connection.execute(update_or_delete_stmt)
-                            logger.debug(f"Updated {update_results.rowcount} rows")
-                            update_or_delete_ct = (
-                                update_or_delete_ct + update_results.rowcount
-                            )
+                update_or_delete_ct += self._execute_statements_with_safe_mode(
+                    update_or_delete_stmts, safe_mode_enabled, client
+                )
+
         return update_or_delete_ct
