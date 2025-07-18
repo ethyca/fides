@@ -1,0 +1,149 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# 🔒 CRITICAL: Public Repository Security - Zero Tolerance for Sensitive Information
+
+This is a **PUBLIC OSS repository**. Any customer or internal sensitive information committed here is immediately visible to the entire world and permanently recorded in git history.
+
+## 🚨 IMMEDIATE THREATS
+
+### 1. Slack Background Agent Context Exposure
+Background Agents import ENTIRE Slack thread context when creating PRs. Slack threads frequently contain:
+- **Customer identifiers**: Real company names, contact details, domain names
+- **Internal systems**: Server names, database hosts, internal URLs, staging environments
+- **Personnel information**: Employee names, email addresses, Slack handles
+- **Sensitive data**: Customer logs, error messages, configuration values, API responses
+- **Business context**: Support tickets, customer issues, internal processes
+
+### 2. Copy-Paste from Internal Tools
+Common sources of accidental disclosure:
+- Pasting error logs from production systems
+- Copying configuration examples from internal documentation
+- Including actual database queries with real table/column names
+- Sharing screenshots with sensitive information visible
+
+## 🛡️ MANDATORY PRE-COMMIT CHECKLIST
+
+Before ANY commit, verify ZERO instances of:
+
+### Customer Information
+- [ ] Real company/organization names (beyond generic examples)
+- [ ] Actual email addresses (use `user@example.com`, `admin@test.invalid`)
+- [ ] Customer domain names (use `customer.example`, `client.test`)
+- [ ] Production database/table names (use `customer_db`, `user_table`)
+- [ ] Support ticket references (use generic issue descriptions)
+- [ ] Customer-specific configuration values or API responses
+
+### Internal Ethyca Information
+- [ ] Employee names or Slack handles in code/comments
+- [ ] Internal URLs (`*.ethyca.com`, staging environments)
+- [ ] Internal system names (servers, databases, services)
+- [ ] Private API keys/tokens (even fake-looking ones)
+- [ ] Internal Jira/ticket numbers
+- [ ] Proprietary business logic or processes
+
+### Contextual References
+- [ ] Slack conversation excerpts or references
+- [ ] Internal meeting notes or decisions
+- [ ] Customer-specific debugging context
+- [ ] References to internal documentation or tools
+
+## ✅ APPROVED ALTERNATIVES
+
+### Safe Placeholder Patterns
+```
+# Companies
+customer_corp, acme_inc, example_org, test_company
+
+# Emails
+user@example.com, admin@test.invalid, contact@customer.example
+
+# URLs
+https://api.example.com, https://customer.test, https://client.invalid
+
+# Database names
+customer_db, user_data, application_store, test_database
+
+# API keys (clearly marked)
+sk_test_fake_key_example_only, api_key_placeholder_here
+```
+
+### Generic Descriptions
+```
+❌ "Fix validation issue for ACME Corp's user import"
+✅ "Fix validation issue in bulk user import feature"
+
+❌ "Handle edge case found in customer ticket #12345"
+✅ "Handle edge case in date parsing validation"
+
+❌ "Update config for staging.internal.ethyca.com"
+✅ "Update configuration template for deployment environments"
+```
+
+## 📋 FILE TYPE SPECIFIC GUIDELINES
+
+### Source Code
+- Use generic variable names: `customer_config`, `client_data`, `organization_settings`
+- Generic error messages: `"Invalid configuration format"` not `"Invalid format in ACME Corp config"`
+- Generic function names: `validate_customer_data()` not `validate_acme_data()`
+
+### Test Files
+- Generate completely fictional test data
+- Use RFC 2606 reserved domains or subdomains: `.example`, `subdomain.example.com`
+- Fake but realistic data structures
+- No real customer data patterns or schema
+
+### Configuration Files
+- Template configurations only, never actual values
+- Use environment variable placeholders: `${DATABASE_URL}`, `${API_KEY}`
+- Example endpoints using reserved domains
+- Generic service names and identifiers
+
+### Documentation
+- Generic use cases and examples
+- Link to public documentation only
+- Describe patterns, not specific implementations
+- Use "customer", "organization", "user" instead of real names
+
+### Database Migrations/Scripts
+- Generic table/column names that don't mirror customer schemas
+- Example data that's clearly fictional
+- No references to production system structures
+- Generic constraint and index names
+
+## 🚩 AUTOMATIC RED FLAGS
+
+Stop immediately if you see:
+- Email addresses not ending in `.example/.invalid/.example.com`
+- URLs containing real domain names (except public documentation)
+- Any `.com/.org/.net` domains that aren't reserved examples
+- Names that could be real people/companies
+- API keys that look production-ready
+- Internal-looking system names or server references
+- Specific numeric identifiers that could be real tickets/IDs
+
+## 🔍 VERIFICATION PROCESS
+
+### Before Committing
+1. **Search your changes** for company names, email patterns, URL patterns
+2. **Review context**: Does any code comment reference specific customers or incidents?
+3. **Check test data**: Is all test data clearly fictional?
+4. **Validate examples**: Are configuration examples using reserved domains?
+
+### Background Agent PR Reviews
+- **Never directly copy Slack content** into commit messages or PR descriptions
+- **Rewrite in generic terms**: Focus on the technical change, not business context
+- **Strip customer context**: Remove all references to specific customers or incidents
+- **Generic PR titles**: "Fix data validation issue" not "Fix validation for customer X"
+
+## 🎯 SUCCESS METRICS
+
+- Zero customer/internal information in public commits
+- All test data clearly fictional and generic
+- All configuration examples use reserved domains
+- All error messages and logs are sanitized of customer context
+- Background Agent PRs contain no Slack context
+
+**Remember**: Once committed to this public repository, information is permanently visible to the world and recorded in git history. When in doubt, use generic alternatives.
