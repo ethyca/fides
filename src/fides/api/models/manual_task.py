@@ -1023,7 +1023,7 @@ class ManualTaskConditionalDependency(Base):
     # Condition metadata
     condition_type = Column(
         EnumColumn(ManualTaskConditionalDependencyType), nullable=False
-    )  # privacy_request
+    )  # leaf or group
     field = Column(String, nullable=True)  # For leaf conditions
     operator = Column(String, nullable=True)  # For leaf conditions
     value = Column(JSONB, nullable=True)  # For leaf conditions
