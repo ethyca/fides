@@ -1,4 +1,4 @@
-import { createContext, h } from "preact";
+import { createContext } from "preact";
 import { MutableRefObject, ReactNode } from "preact/compat";
 import { useCallback, useContext, useMemo, useRef } from "preact/hooks";
 

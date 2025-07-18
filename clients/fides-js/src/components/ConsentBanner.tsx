@@ -1,4 +1,4 @@
-import { ComponentChildren, FunctionComponent, h, VNode } from "preact";
+import { ComponentChildren, FunctionComponent, VNode } from "preact";
 import { HTMLAttributes } from "preact/compat";
 import { useEffect } from "preact/hooks";
 

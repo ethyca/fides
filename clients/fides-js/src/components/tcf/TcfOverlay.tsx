@@ -1,7 +1,6 @@
 import "../fides.css";
 import "./fides-tcf.css";
 
-import { h } from "preact";
 import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 
 import { FidesEvent } from "../../docs/fides-event";

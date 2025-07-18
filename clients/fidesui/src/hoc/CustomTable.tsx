@@ -4,6 +4,7 @@ import { Table } from "antd/lib";
 import React from "react";
 
 import palette from "../palette/palette.module.scss";
+import { PAGE_SIZES } from "./CustomPagination";
 
 // Filter icon component for consistent styling
 const FilterIcon = (filtered: boolean) => (
@@ -22,12 +23,17 @@ const FilterIcon = (filtered: boolean) => (
  * - Uses "small" size for more compact rows
  * - Enables bordered styling for better visual separation
  * - Uses Carbon SettingsAdjust icon for table column filters
+ * - Automatically hides pagination when there's only one page
+ * - Uses CustomPagination defaults (showSizeChanger=true, consistent PAGE_SIZES)
  *
  */
 export const CustomTable = <RecordType = any,>({
   size = "small",
   bordered = true,
   columns,
+  pagination,
+  dataSource,
+  scroll = { scrollToFirstRowOnChange: true, x: "max-content" },
   ...props
 }: TableProps<RecordType>) => {
   // Enhance columns with custom filter icon if they have filters
@@ -40,19 +46,39 @@ export const CustomTable = <RecordType = any,>({
       // If column has filters but no custom filterIcon, add our Carbon filter icon
       if (column.filters && !column.filterIcon) {
         return {
-          ...column,
+          ellipsis: true,
           filterIcon: FilterIcon,
+          fontSize: "sm",
+          ...column,
         };
       }
       return column;
     });
   }, [columns]);
 
+  const paginationDefaults = React.useMemo(() => {
+    if (pagination === false || !pagination) {
+      return pagination;
+    }
+
+    return {
+      // Apply CustomPagination defaults first
+      showSizeChanger: true,
+      pageSizeOptions: PAGE_SIZES.map(String),
+      hideOnSinglePage: true,
+      // Then apply any user-provided config (allows overriding defaults)
+      ...pagination,
+    };
+  }, [pagination, dataSource]);
+
   return (
     <Table
       size={size}
       bordered={bordered}
       columns={enhancedColumns}
+      pagination={paginationDefaults}
+      dataSource={dataSource}
+      scroll={scroll}
       {...props}
     />
   );

@@ -11,13 +11,15 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
   enabled: process.env.ANALYZE === "true",
 });
 
+const { importFidesPackageVersion } = require("../build-utils");
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // `reactStrictMode` must be false for Chakra v2 modals to behave properly. See https://github.com/chakra-ui/chakra-ui/issues/5321#issuecomment-1219327270
   reactStrictMode: false,
   poweredByHeader: false,
   env: {
-    version: "1.2.3",
+    version: importFidesPackageVersion(),
   },
   transpilePackages: ["react-syntax-highlighter", "fidesui"],
 

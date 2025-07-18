@@ -1,5 +1,3 @@
-import { h } from "preact";
-
 import { FidesEventTargetType } from "../lib/events";
 import { useEvent } from "../lib/providers/event-context";
 

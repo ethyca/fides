@@ -1,0 +1,6 @@
+/* bleed the cell contents out to the edges of the table cell */
+.cellBleed {
+  margin: calc(-1 * var(--ant-table-cell-padding-block-sm))
+    calc(-1 * var(--ant-table-cell-padding-inline-sm));
+  width: calc(100% + (var(--ant-table-cell-padding-inline-sm) * 2));
+}
