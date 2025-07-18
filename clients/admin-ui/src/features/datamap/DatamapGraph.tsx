@@ -322,13 +322,15 @@ const DatamapGraph = ({
   );
 
   return (
-    <Box
+    <div
       ref={reactFlowRef}
-      boxSize="100%"
       data-testid="reactflow-graph"
-      position="absolute"
+      className="absolute size-full"
     >
-      <Box boxSize="100%" bgColor={palette.FIDESUI_BG_CORINTH}>
+      <div
+        className="size-full"
+        style={{ backgroundColor: palette.FIDESUI_BG_CORINTH }}
+      >
         <ReactFlow
           nodes={nodes}
           edges={edges}
