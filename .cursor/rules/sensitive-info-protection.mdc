@@ -67,7 +67,7 @@ https://api.example.com, https://customer.test, https://client.invalid
 customer_db, user_data, application_store, test_database
 
 # API keys (clearly marked)
-sk_test_fake_key_example_only, api_key_placeholder_here
+sk_test_1234567890abcdef (example only), api_key_placeholder
 ```
 
 ### Generic Descriptions
