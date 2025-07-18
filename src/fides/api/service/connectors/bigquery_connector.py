@@ -1,13 +1,8 @@
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from loguru import logger
 from sqlalchemy import text
-from sqlalchemy.engine import (  # type: ignore
-    Connection,
-    Engine,
-    LegacyCursorResult,
-    create_engine,
-)
+from sqlalchemy.engine import Connection, Engine, create_engine  # type: ignore
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import Executable  # type: ignore
 from sqlalchemy.sql.elements import TextClause
@@ -135,6 +130,41 @@ class BigQueryConnector(SQLConnector):
             logger.exception(f"Error testing connection to remote BigQuery {str(e)}")
             raise ConnectionException(f"Connection error: {e}")
 
+    def _execute_statements_with_safe_mode(
+        self,
+        statements: List[Executable],
+        safe_mode_enabled: bool,
+        client: Engine,
+    ) -> int:
+        """
+        Execute SQL statements with safe mode support.
+
+        Args:
+            statements: List of SQL statements to execute
+            safe_mode_enabled: Whether safe mode is enabled
+            client: Database client engine
+
+        Returns:
+            Number of rows affected (0 in safe mode)
+        """
+        if not statements:
+            return 0
+
+        if safe_mode_enabled:
+            # In safe mode, log the statements instead of executing them
+            for stmt in statements:
+                logger.warning(f"SAFE MODE - Would execute SQL: {stmt}")
+            return 0
+
+        # Normal mode - execute the statements
+        row_count = 0
+        with client.connect() as connection:
+            for stmt in statements:
+                results = connection.execute(stmt)
+                logger.debug(f"Affected {results.rowcount} rows")
+                row_count += results.rowcount
+        return row_count
+
     def mask_data(
         self,
         node: ExecutionNode,
@@ -142,22 +172,36 @@ class BigQueryConnector(SQLConnector):
         privacy_request: PrivacyRequest,
         request_task: RequestTask,
         rows: List[Row],
+        input_data: Optional[Dict[str, List[Any]]] = None,
     ) -> int:
         """Execute a masking request. Returns the number of records updated or deleted"""
+
         query_config = self.query_config(node)
         update_or_delete_ct = 0
         client = self.client()
-        for row in rows:
-            update_or_delete_stmts: List[Executable] = (
-                query_config.generate_masking_stmt(
-                    node, row, policy, privacy_request, client
-                )
+
+        # Check if safe_mode is enabled
+        safe_mode_enabled = self.get_safe_mode_enabled()
+
+        # Check if we're using DELETE masking strategy
+        if query_config.uses_delete_masking_strategy():
+            # Use batched DELETE for better performance
+            delete_stmts = query_config.generate_delete(client, input_data or {})
+            logger.debug(f"Generated {len(delete_stmts)} DELETE statements")
+            update_or_delete_ct += self._execute_statements_with_safe_mode(
+                delete_stmts, safe_mode_enabled, client
             )
-            if update_or_delete_stmts:
-                with client.connect() as connection:
-                    for update_or_delete_stmt in update_or_delete_stmts:
-                        results: LegacyCursorResult = connection.execute(
-                            update_or_delete_stmt
-                        )
-                        update_or_delete_ct = update_or_delete_ct + results.rowcount
+        else:
+            # For UPDATE operations, process each row individually since each row may have different masked values
+            for row in rows:
+                update_or_delete_stmts: List[Executable] = query_config.generate_update(
+                    row, policy, privacy_request, client
+                )
+                logger.debug(
+                    f"Generated {len(update_or_delete_stmts)} UPDATE statements"
+                )
+                update_or_delete_ct += self._execute_statements_with_safe_mode(
+                    update_or_delete_stmts, safe_mode_enabled, client
+                )
+
         return update_or_delete_ct

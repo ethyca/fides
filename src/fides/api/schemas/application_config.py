@@ -62,6 +62,7 @@ class ExecutionApplicationConfig(FidesSchema):
     subject_identity_verification_required: Optional[bool] = None
     disable_consent_identity_verification: Optional[bool] = None
     require_manual_request_approval: Optional[bool] = None
+    safe_mode: Optional[bool] = None
     model_config = ConfigDict(extra="forbid")
 
 

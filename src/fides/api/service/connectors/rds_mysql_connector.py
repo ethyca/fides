@@ -158,6 +158,7 @@ class RDSMySQLConnector(RDSConnectorMixin, SQLConnector):
         privacy_request: PrivacyRequest,
         request_task: RequestTask,
         rows: List[Row],
+        input_data: Optional[Dict[str, List[Any]]] = None,
     ) -> int:
         """DSR execution not yet supported for RDS MySQL"""
         return 0
