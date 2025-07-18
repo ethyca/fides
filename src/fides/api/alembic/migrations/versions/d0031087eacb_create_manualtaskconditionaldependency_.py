@@ -100,4 +100,7 @@ def downgrade():
         table_name="manual_task_conditional_dependency",
     )
     op.drop_table("manual_task_conditional_dependency")
+
+    # Drop the enum type
+    op.execute('DROP TYPE IF EXISTS "ManualTaskConditionalDependencyType"')
     # ### end Alembic commands ###

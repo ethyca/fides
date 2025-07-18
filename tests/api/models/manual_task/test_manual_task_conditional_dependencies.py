@@ -50,7 +50,7 @@ class TestManualTaskConditionalDependencyCRUD:
             data={
                 "manual_task_id": manual_task.id,
                 "condition_type": ManualTaskConditionalDependencyType.leaf,
-                "field_address": sample_condition_leaf.field,
+                "field_address": sample_condition_leaf.field_address,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
                 "sort_order": 1,
@@ -60,7 +60,7 @@ class TestManualTaskConditionalDependencyCRUD:
         assert dependency.id is not None
         assert dependency.manual_task_id == manual_task.id
         assert dependency.condition_type == ManualTaskConditionalDependencyType.leaf
-        assert dependency.field == sample_condition_leaf.field
+        assert dependency.field_address == sample_condition_leaf.field_address
         assert dependency.operator == sample_condition_leaf.operator
         assert dependency.value == sample_condition_leaf.value
         assert dependency.sort_order == 1
@@ -122,7 +122,7 @@ class TestManualTaskConditionalDependencyRelationships:
             data={
                 "manual_task_id": manual_task.id,
                 "condition_type": ManualTaskConditionalDependencyType.leaf,
-                "field_address": sample_condition_leaf.field,
+                "field_address": sample_condition_leaf.field_address,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
                 "sort_order": 1,
@@ -150,7 +150,7 @@ class TestManualTaskConditionalDependencyRelationships:
                 data={
                     "manual_task_id": "non_existent_id",
                     "condition_type": ManualTaskConditionalDependencyType.leaf,
-                    "field_address": sample_condition_leaf.field,
+                    "field_address": sample_condition_leaf.field_address,
                     "operator": sample_condition_leaf.operator,
                     "value": sample_condition_leaf.value,
                     "sort_order": 1,
@@ -167,7 +167,7 @@ class TestManualTaskConditionalDependencyRelationships:
             data={
                 "manual_task_id": manual_task.id,
                 "condition_type": ManualTaskConditionalDependencyType.leaf,
-                "field_address": sample_condition_leaf.field,
+                "field_address": sample_condition_leaf.field_address,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
                 "sort_order": 1,
@@ -183,7 +183,7 @@ class TestManualTaskConditionalDependencyRelationships:
                 data={
                     "manual_task_id": manual_task.id,
                     "condition_type": ManualTaskConditionalDependencyType.leaf,
-                    "field_address": sample_condition_leaf.field,
+                    "field_address": sample_condition_leaf.field_address,
                     "operator": sample_condition_leaf.operator,
                     "value": sample_condition_leaf.value,
                     "sort_order": 2,
@@ -205,7 +205,7 @@ class TestManualTaskConditionalDependencyHierarchy:
             data={
                 "manual_task_id": manual_task.id,
                 "condition_type": ManualTaskConditionalDependencyType.leaf,
-                "field_address": sample_condition_leaf.field,
+                "field_address": sample_condition_leaf.field_address,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
                 "sort_order": 1,
@@ -218,7 +218,7 @@ class TestManualTaskConditionalDependencyHierarchy:
             data={
                 "manual_task_id": manual_task.id,
                 "condition_type": ManualTaskConditionalDependencyType.leaf,
-                "field_address": sample_condition_leaf.field,
+                "field_address": sample_condition_leaf.field_address,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
                 "sort_order": 2,
@@ -245,7 +245,7 @@ class TestManualTaskConditionalDependencyHierarchy:
             data={
                 "manual_task_id": manual_task.id,
                 "condition_type": ManualTaskConditionalDependencyType.leaf,
-                "field_address": sample_condition_leaf.field,
+                "field_address": sample_condition_leaf.field_address,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
                 "sort_order": 1,
@@ -260,7 +260,7 @@ class TestManualTaskConditionalDependencyHierarchy:
                 data={
                     "manual_task_id": manual_task.id,
                     "condition_type": ManualTaskConditionalDependencyType.leaf,
-                    "field_address": sample_condition_leaf.field,
+                    "field_address": sample_condition_leaf.field_address,
                     "operator": sample_condition_leaf.operator,
                     "value": sample_condition_leaf.value,
                     "sort_order": i + 2,
@@ -277,7 +277,7 @@ class TestManualTaskConditionalDependencyHierarchy:
                 data={
                     "manual_task_id": manual_task.id,
                     "condition_type": ManualTaskConditionalDependencyType.leaf,
-                    "field_address": sample_condition_leaf.field,
+                    "field_address": sample_condition_leaf.field_address,
                     "operator": sample_condition_leaf.operator,
                     "value": sample_condition_leaf.value,
                     "sort_order": i + 4,
@@ -312,7 +312,7 @@ class TestManualTaskConditionalDependencyCascadeDeletes:
             data={
                 "manual_task_id": manual_task.id,
                 "condition_type": ManualTaskConditionalDependencyType.leaf,
-                "field_address": sample_condition_leaf.field,
+                "field_address": sample_condition_leaf.field_address,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
                 "sort_order": 1,
@@ -349,7 +349,7 @@ class TestManualTaskConditionalDependencyCascadeDeletes:
             data={
                 "manual_task_id": manual_task.id,
                 "condition_type": ManualTaskConditionalDependencyType.leaf,
-                "field_address": sample_condition_leaf.field,
+                "field_address": sample_condition_leaf.field_address,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
                 "sort_order": 1,
@@ -362,7 +362,7 @@ class TestManualTaskConditionalDependencyCascadeDeletes:
             data={
                 "manual_task_id": manual_task.id,
                 "condition_type": ManualTaskConditionalDependencyType.leaf,
-                "field_address": sample_condition_leaf.field,
+                "field_address": sample_condition_leaf.field_address,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
                 "sort_order": 2,
@@ -418,7 +418,7 @@ class TestManualTaskConditionalDependencyValidation:
                 data={
                     "manual_task_id": manual_task.id,
                     "condition_type": ManualTaskConditionalDependencyType.leaf,
-                    "field_address": sample_condition_leaf.field,
+                    "field_address": sample_condition_leaf.field_address,
                     "operator": sample_condition_leaf.operator,
                     "value": sample_condition_leaf.value,
                     "sort_order": i + 1,
@@ -471,7 +471,7 @@ class TestManualTaskConditionalDependencyConversion:
             data={
                 "manual_task_id": manual_task.id,
                 "condition_type": ManualTaskConditionalDependencyType.leaf,
-                "field_address": sample_condition_leaf.field,
+                "field_address": sample_condition_leaf.field_address,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
                 "sort_order": 1,
@@ -483,7 +483,7 @@ class TestManualTaskConditionalDependencyConversion:
 
         # Verify the conversion
         assert isinstance(condition_leaf, ConditionLeaf)
-        assert condition_leaf.field == sample_condition_leaf.field
+        assert condition_leaf.field_address == sample_condition_leaf.field_address
         assert condition_leaf.operator == sample_condition_leaf.operator
         assert condition_leaf.value == sample_condition_leaf.value
 
@@ -526,7 +526,7 @@ class TestManualTaskConditionalDependencyConversion:
             data={
                 "manual_task_id": manual_task.id,
                 "condition_type": ManualTaskConditionalDependencyType.leaf,
-                "field_address": sample_condition_leaf.field,
+                "field_address": sample_condition_leaf.field_address,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
                 "sort_order": 2,
@@ -542,7 +542,10 @@ class TestManualTaskConditionalDependencyConversion:
         assert condition_group.op == "and"
         assert len(condition_group.conditions) == 1
         assert isinstance(condition_group.conditions[0], ConditionLeaf)
-        assert condition_group.conditions[0].field == sample_condition_leaf.field
+        assert (
+            condition_group.conditions[0].field_address
+            == sample_condition_leaf.field_address
+        )
         assert condition_group.conditions[0].operator == sample_condition_leaf.operator
         assert condition_group.conditions[0].value == sample_condition_leaf.value
 
@@ -555,7 +558,7 @@ class TestManualTaskConditionalDependencyConversion:
             data={
                 "manual_task_id": manual_task.id,
                 "condition_type": ManualTaskConditionalDependencyType.leaf,
-                "field_address": sample_condition_leaf.field,
+                "field_address": sample_condition_leaf.field_address,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
                 "sort_order": 1,
@@ -579,7 +582,7 @@ class TestManualTaskConditionalDependencyClassMethods:
             data={
                 "manual_task_id": manual_task.id,
                 "condition_type": ManualTaskConditionalDependencyType.leaf,
-                "field_address": sample_condition_leaf.field,
+                "field_address": sample_condition_leaf.field_address,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
                 "sort_order": 1,
@@ -593,7 +596,7 @@ class TestManualTaskConditionalDependencyClassMethods:
 
         # Verify the result
         assert isinstance(root_condition, ConditionLeaf)
-        assert root_condition.field == sample_condition_leaf.field
+        assert root_condition.field_address == sample_condition_leaf.field_address
         assert root_condition.operator == sample_condition_leaf.operator
         assert root_condition.value == sample_condition_leaf.value
 
@@ -618,7 +621,7 @@ class TestManualTaskConditionalDependencyClassMethods:
             data={
                 "manual_task_id": manual_task.id,
                 "condition_type": ManualTaskConditionalDependencyType.leaf,
-                "field_address": sample_condition_leaf.field,
+                "field_address": sample_condition_leaf.field_address,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
                 "sort_order": 2,
@@ -636,7 +639,10 @@ class TestManualTaskConditionalDependencyClassMethods:
         assert root_condition.op == "and"
         assert len(root_condition.conditions) == 1
         assert isinstance(root_condition.conditions[0], ConditionLeaf)
-        assert root_condition.conditions[0].field == sample_condition_leaf.field
+        assert (
+            root_condition.conditions[0].field_address
+            == sample_condition_leaf.field_address
+        )
         assert root_condition.conditions[0].operator == sample_condition_leaf.operator
         assert root_condition.conditions[0].value == sample_condition_leaf.value
 
