@@ -19,7 +19,12 @@ export const ClassificationIndicator = () => (
 );
 
 export const ChangeIndicator = () => (
-  <CircleIcon color="blue.400" boxSize={2.5} data-testid="change-icon" />
+  <CircleIcon
+    color="blue.400"
+    boxSize={2.5}
+    mb="2px"
+    data-testid="change-icon"
+  />
 );
 
 export const MonitoredIndicator = () => (
