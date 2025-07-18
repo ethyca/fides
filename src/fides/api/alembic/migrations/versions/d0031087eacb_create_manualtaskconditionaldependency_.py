@@ -41,7 +41,7 @@ def upgrade():
             sa.Enum("leaf", "group", name="ManualTaskConditionalDependencyType"),
             nullable=False,
         ),
-        sa.Column("field", sa.String(), nullable=True),
+        sa.Column("field_address", sa.String(), nullable=True),
         sa.Column("operator", sa.String(), nullable=True),
         sa.Column("value", postgresql.JSONB(astext_type=sa.Text()), nullable=True),
         sa.Column("logical_operator", sa.String(), nullable=True),

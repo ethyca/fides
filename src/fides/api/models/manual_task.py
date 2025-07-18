@@ -1024,7 +1024,7 @@ class ManualTaskConditionalDependency(Base):
     condition_type = Column(
         EnumColumn(ManualTaskConditionalDependencyType), nullable=False
     )  # leaf or group
-    field = Column(String, nullable=True)  # For leaf conditions
+    field_address = Column(String, nullable=True)  # For leaf conditions
     operator = Column(String, nullable=True)  # For leaf conditions
     value = Column(JSONB, nullable=True)  # For leaf conditions
     logical_operator = Column(String, nullable=True)  # 'and' or 'or' for groups
@@ -1060,7 +1060,9 @@ class ManualTaskConditionalDependency(Base):
         if self.condition_type != "leaf":
             raise ValueError("Cannot convert group condition to leaf")
 
-        return ConditionLeaf(field=self.field, operator=self.operator, value=self.value)
+        return ConditionLeaf(
+            field_address=self.field_address, operator=self.operator, value=self.value
+        )
 
     def to_condition_group(self) -> "ConditionGroup":
         """Convert to ConditionGroup if this is a group condition"""

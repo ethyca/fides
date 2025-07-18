@@ -24,7 +24,7 @@ class GroupOperator(str, Enum):
 
 # Leaf condition (e.g., "user.name exists", "user.created_at >= 2024-01-01")
 class ConditionLeaf(BaseModel):
-    field: str = Field(
+    field_address: str = Field(
         description="Field path to check (e.g., 'user.name', 'billing.subscription.status')"
     )
     operator: Operator = Field(description="Operator to apply")
