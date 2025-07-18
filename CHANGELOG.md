@@ -21,6 +21,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.66.0...main)
 
+### Added
+- Added the ability to edit more fields for GVL vendors [#6341](https://github.com/ethyca/fides/pull/6341)
+
 ## [2.66.0](https://github.com/ethyca/fides/compare/2.65.2...2.66.0)
 
 ### Added
