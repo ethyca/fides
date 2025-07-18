@@ -21,7 +21,7 @@ from fides.api.task.conditional_dependencies.schemas import (
 @pytest.fixture
 def sample_condition_leaf() -> ConditionLeaf:
     """Create a sample leaf condition"""
-    return ConditionLeaf(field="user.age", operator=Operator.gte, value=18)
+    return ConditionLeaf(field_address="user.age", operator=Operator.gte, value=18)
 
 
 @pytest.fixture
@@ -30,8 +30,10 @@ def sample_condition_group() -> ConditionGroup:
     return ConditionGroup(
         op=GroupOperator.and_,
         conditions=[
-            ConditionLeaf(field="user.age", operator=Operator.gte, value=18),
-            ConditionLeaf(field="user.active", operator=Operator.eq, value=True),
+            ConditionLeaf(field_address="user.age", operator=Operator.gte, value=18),
+            ConditionLeaf(
+                field_address="user.active", operator=Operator.eq, value=True
+            ),
         ],
     )
 
@@ -48,7 +50,7 @@ class TestManualTaskConditionalDependencyCRUD:
             data={
                 "manual_task_id": manual_task.id,
                 "condition_type": ManualTaskConditionalDependencyType.leaf,
-                "field": sample_condition_leaf.field,
+                "field_address": sample_condition_leaf.field,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
                 "sort_order": 1,
@@ -120,7 +122,7 @@ class TestManualTaskConditionalDependencyRelationships:
             data={
                 "manual_task_id": manual_task.id,
                 "condition_type": ManualTaskConditionalDependencyType.leaf,
-                "field": sample_condition_leaf.field,
+                "field_address": sample_condition_leaf.field,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
                 "sort_order": 1,
@@ -148,7 +150,7 @@ class TestManualTaskConditionalDependencyRelationships:
                 data={
                     "manual_task_id": "non_existent_id",
                     "condition_type": ManualTaskConditionalDependencyType.leaf,
-                    "field": sample_condition_leaf.field,
+                    "field_address": sample_condition_leaf.field,
                     "operator": sample_condition_leaf.operator,
                     "value": sample_condition_leaf.value,
                     "sort_order": 1,
@@ -165,7 +167,7 @@ class TestManualTaskConditionalDependencyRelationships:
             data={
                 "manual_task_id": manual_task.id,
                 "condition_type": ManualTaskConditionalDependencyType.leaf,
-                "field": sample_condition_leaf.field,
+                "field_address": sample_condition_leaf.field,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
                 "sort_order": 1,
@@ -181,7 +183,7 @@ class TestManualTaskConditionalDependencyRelationships:
                 data={
                     "manual_task_id": manual_task.id,
                     "condition_type": ManualTaskConditionalDependencyType.leaf,
-                    "field": sample_condition_leaf.field,
+                    "field_address": sample_condition_leaf.field,
                     "operator": sample_condition_leaf.operator,
                     "value": sample_condition_leaf.value,
                     "sort_order": 2,
@@ -203,7 +205,7 @@ class TestManualTaskConditionalDependencyHierarchy:
             data={
                 "manual_task_id": manual_task.id,
                 "condition_type": ManualTaskConditionalDependencyType.leaf,
-                "field": sample_condition_leaf.field,
+                "field_address": sample_condition_leaf.field,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
                 "sort_order": 1,
@@ -216,7 +218,7 @@ class TestManualTaskConditionalDependencyHierarchy:
             data={
                 "manual_task_id": manual_task.id,
                 "condition_type": ManualTaskConditionalDependencyType.leaf,
-                "field": sample_condition_leaf.field,
+                "field_address": sample_condition_leaf.field,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
                 "sort_order": 2,
@@ -243,7 +245,7 @@ class TestManualTaskConditionalDependencyHierarchy:
             data={
                 "manual_task_id": manual_task.id,
                 "condition_type": ManualTaskConditionalDependencyType.leaf,
-                "field": sample_condition_leaf.field,
+                "field_address": sample_condition_leaf.field,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
                 "sort_order": 1,
@@ -258,7 +260,7 @@ class TestManualTaskConditionalDependencyHierarchy:
                 data={
                     "manual_task_id": manual_task.id,
                     "condition_type": ManualTaskConditionalDependencyType.leaf,
-                    "field": sample_condition_leaf.field,
+                    "field_address": sample_condition_leaf.field,
                     "operator": sample_condition_leaf.operator,
                     "value": sample_condition_leaf.value,
                     "sort_order": i + 2,
@@ -275,7 +277,7 @@ class TestManualTaskConditionalDependencyHierarchy:
                 data={
                     "manual_task_id": manual_task.id,
                     "condition_type": ManualTaskConditionalDependencyType.leaf,
-                    "field": sample_condition_leaf.field,
+                    "field_address": sample_condition_leaf.field,
                     "operator": sample_condition_leaf.operator,
                     "value": sample_condition_leaf.value,
                     "sort_order": i + 4,
@@ -310,7 +312,7 @@ class TestManualTaskConditionalDependencyCascadeDeletes:
             data={
                 "manual_task_id": manual_task.id,
                 "condition_type": ManualTaskConditionalDependencyType.leaf,
-                "field": sample_condition_leaf.field,
+                "field_address": sample_condition_leaf.field,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
                 "sort_order": 1,
@@ -347,7 +349,7 @@ class TestManualTaskConditionalDependencyCascadeDeletes:
             data={
                 "manual_task_id": manual_task.id,
                 "condition_type": ManualTaskConditionalDependencyType.leaf,
-                "field": sample_condition_leaf.field,
+                "field_address": sample_condition_leaf.field,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
                 "sort_order": 1,
@@ -360,7 +362,7 @@ class TestManualTaskConditionalDependencyCascadeDeletes:
             data={
                 "manual_task_id": manual_task.id,
                 "condition_type": ManualTaskConditionalDependencyType.leaf,
-                "field": sample_condition_leaf.field,
+                "field_address": sample_condition_leaf.field,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
                 "sort_order": 2,
@@ -416,7 +418,7 @@ class TestManualTaskConditionalDependencyValidation:
                 data={
                     "manual_task_id": manual_task.id,
                     "condition_type": ManualTaskConditionalDependencyType.leaf,
-                    "field": sample_condition_leaf.field,
+                    "field_address": sample_condition_leaf.field,
                     "operator": sample_condition_leaf.operator,
                     "value": sample_condition_leaf.value,
                     "sort_order": i + 1,
@@ -449,7 +451,7 @@ class TestManualTaskConditionalDependencyValidation:
                 data={
                     "manual_task_id": manual_task.id,
                     "condition_type": "invalid_type",
-                    "field": "test_field",
+                    "field_address": "test_field",
                     "operator": "eq",
                     "value": "test_value",
                     "sort_order": 1,
@@ -469,7 +471,7 @@ class TestManualTaskConditionalDependencyConversion:
             data={
                 "manual_task_id": manual_task.id,
                 "condition_type": ManualTaskConditionalDependencyType.leaf,
-                "field": sample_condition_leaf.field,
+                "field_address": sample_condition_leaf.field,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
                 "sort_order": 1,
@@ -524,7 +526,7 @@ class TestManualTaskConditionalDependencyConversion:
             data={
                 "manual_task_id": manual_task.id,
                 "condition_type": ManualTaskConditionalDependencyType.leaf,
-                "field": sample_condition_leaf.field,
+                "field_address": sample_condition_leaf.field,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
                 "sort_order": 2,
@@ -553,7 +555,7 @@ class TestManualTaskConditionalDependencyConversion:
             data={
                 "manual_task_id": manual_task.id,
                 "condition_type": ManualTaskConditionalDependencyType.leaf,
-                "field": sample_condition_leaf.field,
+                "field_address": sample_condition_leaf.field,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
                 "sort_order": 1,
@@ -577,7 +579,7 @@ class TestManualTaskConditionalDependencyClassMethods:
             data={
                 "manual_task_id": manual_task.id,
                 "condition_type": ManualTaskConditionalDependencyType.leaf,
-                "field": sample_condition_leaf.field,
+                "field_address": sample_condition_leaf.field,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
                 "sort_order": 1,
@@ -616,7 +618,7 @@ class TestManualTaskConditionalDependencyClassMethods:
             data={
                 "manual_task_id": manual_task.id,
                 "condition_type": ManualTaskConditionalDependencyType.leaf,
-                "field": sample_condition_leaf.field,
+                "field_address": sample_condition_leaf.field,
                 "operator": sample_condition_leaf.operator,
                 "value": sample_condition_leaf.value,
                 "sort_order": 2,
@@ -682,7 +684,7 @@ class TestManualTaskConditionalDependencyClassMethods:
                 data={
                     "manual_task_id": manual_task.id,
                     "condition_type": ManualTaskConditionalDependencyType.leaf,
-                    "field": f"user.field_{i}",
+                    "field_address": f"user.field_{i}",
                     "operator": "eq",
                     "value": i,
                     "sort_order": i + 3,
