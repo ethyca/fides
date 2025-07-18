@@ -30,7 +30,7 @@ class ConditionEvaluator:
         self, condition: ConditionLeaf, data: Union[dict, Any]
     ) -> bool:
         """Evaluate a leaf condition against input data"""
-        actual_value = self._get_nested_value(data, condition.field.split("."))
+        actual_value = self._get_nested_value(data, condition.field_address.split("."))
         # Apply operator and return result
         return self._apply_operator(actual_value, condition.operator, condition.value)
 
