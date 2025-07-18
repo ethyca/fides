@@ -72,9 +72,14 @@ export const DiscoveredAssetsTable = ({
 
   // Selection state
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-  const [selectedRows, setSelectedRows] = useState<StagedResourceAPIResponse[]>(
-    [],
-  );
+  const [selectedRowsMap, setSelectedRowsMap] = useState<
+    Map<string, StagedResourceAPIResponse>
+  >(new Map());
+
+  const resetSelections = () => {
+    setSelectedRowKeys([]);
+    setSelectedRowsMap(new Map());
+  };
 
   const [isAssignSystemModalOpen, setIsAssignSystemModalOpen] =
     useState<boolean>(false);
@@ -126,6 +131,11 @@ export const DiscoveredAssetsTable = ({
     setPageIndex(1);
   }, [monitorId, searchQuery, activeTab]);
 
+  // Reset selections when filters change
+  useEffect(() => {
+    resetSelections();
+  }, [monitorId, searchQuery, activeTab]);
+
   const { data, isLoading, isFetching } = useGetDiscoveredAssetsQuery({
     key: monitorId,
     page: pageIndex,
@@ -172,7 +182,9 @@ export const DiscoveredAssetsTable = ({
     onShowBreakdown: handleShowBreakdown,
   });
 
-  const selectedUrns = selectedRows.map((row) => row.urn);
+  // Get selected URNs from the map instead of selectedRows
+  const selectedUrns = Array.from(selectedRowsMap.keys());
+  const selectedRows = Array.from(selectedRowsMap.values());
 
   const handleBulkAdd = async () => {
     const result = await addMonitorResultAssetsMutation({
@@ -191,8 +203,6 @@ export const DiscoveredAssetsTable = ({
     if (isErrorResult(result)) {
       toast(errorToastParams(getErrorMessage(result.error)));
     } else {
-      setSelectedRowKeys([]);
-      setSelectedRows([]);
       toast(
         successToastParams(
           SuccessToastContent(
@@ -206,6 +216,7 @@ export const DiscoveredAssetsTable = ({
           ),
         ),
       );
+      resetSelections();
     }
   };
 
@@ -271,8 +282,6 @@ export const DiscoveredAssetsTable = ({
     if (isErrorResult(result)) {
       toast(errorToastParams(getErrorMessage(result.error)));
     } else {
-      setSelectedRowKeys([]);
-      setSelectedRows([]);
       toast(
         successToastParams(
           systemName === UNCATEGORIZED_SEGMENT
@@ -281,6 +290,7 @@ export const DiscoveredAssetsTable = ({
           `Confirmed`,
         ),
       );
+      resetSelections();
     }
   };
 
@@ -291,14 +301,13 @@ export const DiscoveredAssetsTable = ({
     if (isErrorResult(result)) {
       toast(errorToastParams(getErrorMessage(result.error)));
     } else {
-      setSelectedRowKeys([]);
-      setSelectedRows([]);
       toast(
         successToastParams(
           `${selectedUrns.length} assets have been restored and will appear in future scans.`,
           `Confirmed`,
         ),
       );
+      resetSelections();
     }
   };
 
@@ -319,14 +328,24 @@ export const DiscoveredAssetsTable = ({
           `Confirmed`,
         ),
       );
+      resetSelections();
     }
   };
 
   const handleTabChange = (tab: ActionCenterTabHash) => {
     onTabChange(tab);
-    setSelectedRowKeys([]);
-    setSelectedRows([]);
+    resetSelections();
   };
+
+  // Update selectedRowKeys to only show current page selections when data changes
+  useEffect(() => {
+    if (data?.items) {
+      const currentPageSelectedKeys = data.items
+        .filter((item) => selectedRowsMap.has(item.urn))
+        .map((item) => item.urn);
+      setSelectedRowKeys(currentPageSelectedKeys);
+    }
+  }, [data, selectedRowsMap]);
 
   const rowSelection = {
     selectedRowKeys,
@@ -335,7 +354,25 @@ export const DiscoveredAssetsTable = ({
       newSelectedRows: StagedResourceAPIResponse[],
     ) => {
       setSelectedRowKeys(newSelectedRowKeys);
-      setSelectedRows(newSelectedRows);
+
+      // Update the map with current page selections
+      const newMap = new Map(selectedRowsMap);
+
+      // Remove deselected items from current page
+      if (data?.items) {
+        data.items.forEach((item) => {
+          if (!newSelectedRowKeys.includes(item.urn)) {
+            newMap.delete(item.urn);
+          }
+        });
+      }
+
+      // Add newly selected items
+      newSelectedRows.forEach((row) => {
+        newMap.set(row.urn, row);
+      });
+
+      setSelectedRowsMap(newMap);
     },
   };
 

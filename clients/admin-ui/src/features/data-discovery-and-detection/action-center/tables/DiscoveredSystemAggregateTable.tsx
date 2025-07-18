@@ -68,10 +68,21 @@ export const DiscoveredSystemAggregateTable = ({
   const toast = useToast();
 
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Selection state
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-  const [selectedRows, setSelectedRows] = useState<
-    SystemStagedResourcesAggregateRecord[]
-  >([]);
+  const [selectedRowsMap, setSelectedRowsMap] = useState<
+    Map<string, SystemStagedResourcesAggregateRecord>
+  >(new Map());
+
+  const resetSelections = () => {
+    setSelectedRowKeys([]);
+    setSelectedRowsMap(new Map());
+  };
+
+  // Helper function to generate consistent row keys
+  const getRecordKey = (record: SystemStagedResourcesAggregateRecord) =>
+    record.id ?? record.vendor_id ?? record.name ?? UNCATEGORIZED_SEGMENT;
 
   const { filterTabs, activeTab, onTabChange, activeParams, actionsDisabled } =
     useActionCenterTabs();
@@ -80,6 +91,11 @@ export const DiscoveredSystemAggregateTable = ({
   useEffect(() => {
     setPageIndex(1);
   }, [monitorId, searchQuery]);
+
+  // Reset selections when filters change
+  useEffect(() => {
+    resetSelections();
+  }, [monitorId, searchQuery, activeTab]);
 
   const { data, isLoading, isFetching } = useGetDiscoveredSystemAggregateQuery({
     key: monitorId,
@@ -100,11 +116,26 @@ export const DiscoveredSystemAggregateTable = ({
     }
   }, [data, firstPageConsentStatus]);
 
+  // Update selectedRowKeys to only show current page selections when data changes
+  useEffect(() => {
+    if (data?.items) {
+      const currentPageSelectedKeys = data.items
+        .filter((item) => {
+          const key = getRecordKey(item);
+          return selectedRowsMap.has(String(key));
+        })
+        .map((item) => getRecordKey(item));
+      setSelectedRowKeys(currentPageSelectedKeys);
+    }
+  }, [data, selectedRowsMap]);
+
+  // Get selected rows from the map
+  const selectedRows = Array.from(selectedRowsMap.values());
+
   const handleTabChange = (tab: ActionCenterTabHash) => {
     setFirstPageConsentStatus(undefined);
     onTabChange(tab);
-    setSelectedRowKeys([]);
-    setSelectedRows([]);
+    resetSelections();
   };
 
   const rowClickUrl = useCallback(
@@ -146,8 +177,7 @@ export const DiscoveredSystemAggregateTable = ({
           ),
         ),
       );
-      setSelectedRowKeys([]);
-      setSelectedRows([]);
+      resetSelections();
     }
   };
 
@@ -175,8 +205,7 @@ export const DiscoveredSystemAggregateTable = ({
           ),
         ),
       );
-      setSelectedRowKeys([]);
-      setSelectedRows([]);
+      resetSelections();
     }
   };
 
@@ -189,7 +218,27 @@ export const DiscoveredSystemAggregateTable = ({
       newSelectedRows: SystemStagedResourcesAggregateRecord[],
     ) => {
       setSelectedRowKeys(newSelectedRowKeys);
-      setSelectedRows(newSelectedRows);
+
+      // Update the map with current page selections
+      const newMap = new Map(selectedRowsMap);
+
+      // Remove deselected items from current page
+      if (data?.items) {
+        data.items.forEach((item) => {
+          const key = getRecordKey(item);
+          if (!newSelectedRowKeys.includes(key)) {
+            newMap.delete(String(key));
+          }
+        });
+      }
+
+      // Add newly selected items
+      newSelectedRows.forEach((row) => {
+        const key = getRecordKey(row);
+        newMap.set(String(key), row);
+      });
+
+      setSelectedRowsMap(newMap);
     },
   };
 
@@ -212,7 +261,7 @@ export const DiscoveredSystemAggregateTable = ({
         <DebouncedSearchInput value={searchQuery} onChange={setSearchQuery} />
         <Space size="large">
           {!!selectedRowKeys.length && (
-            <SelectedText count={selectedRowKeys.length} />
+            <SelectedText count={selectedRows.length} />
           )}
           <Dropdown
             menu={{
