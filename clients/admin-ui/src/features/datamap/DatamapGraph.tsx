@@ -170,6 +170,7 @@ const DatamapGraph = ({
 }: DatamapGraphProps) => {
   const { nodes: baseNodes, edges } = useDatamapGraph({ data });
   const reactFlowInstance = useReactFlow();
+  const reactFlowRef = useRef<HTMLDivElement>(null);
   const originalViewportRef = useRef<{
     x: number;
     y: number;
@@ -219,18 +220,22 @@ const DatamapGraph = ({
         }
 
         const viewport = reactFlowInstance.getViewport();
-        const reactFlowBounds = document
-          .querySelector('[data-testid="reactflow-graph"]')
-          ?.getBoundingClientRect();
+        const reactFlowBounds = reactFlowRef.current?.getBoundingClientRect();
         const drawerElement = document.querySelector(
           '[data-testid="datamap-drawer"]',
         );
 
         if (!reactFlowBounds) {
+          console.warn(
+            "DatamapGraph: ReactFlow bounds not available for viewport management",
+          );
           return;
         }
 
         if (!drawerElement) {
+          console.warn(
+            "DatamapGraph: Drawer element not found for viewport management",
+          );
           return;
         }
 
@@ -306,7 +311,7 @@ const DatamapGraph = ({
         }
       }, 100);
     }
-  }, [selectedSystemId, nodes, reactFlowInstance]);
+  }, [selectedSystemId, nodes, reactFlowInstance, reactFlowRef]);
 
   // Handle node selection
   const onNodeClick = useCallback(
@@ -317,7 +322,12 @@ const DatamapGraph = ({
   );
 
   return (
-    <Box boxSize="100%" data-testid="reactflow-graph" position="absolute">
+    <Box
+      ref={reactFlowRef}
+      boxSize="100%"
+      data-testid="reactflow-graph"
+      position="absolute"
+    >
       <Box boxSize="100%" bgColor={palette.FIDESUI_BG_CORINTH}>
         <ReactFlow
           nodes={nodes}
