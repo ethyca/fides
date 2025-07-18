@@ -726,7 +726,7 @@ def test_different_seed_alters_traversal() -> None:
     field(t1, "dr_3", "ds_3", "f1").identity = "ssn"
     field(t1, "dr_4", "ds_4", "f1").identity = "email"
     graph = DatasetGraph(*t1)
-    # the number of the start nodes (that is, the children of the virtul
+    # the number of the start nodes (that is, the children of the virtual
     # root traversal_node) in a traversal will = the # of nodes whose identities
     # match an available seed value.
     assert (
