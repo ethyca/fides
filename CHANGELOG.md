@@ -31,6 +31,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Developer Experience
 - Migrated Action Center tables to Ant Design [#6349](https://github.com/ethyca/fides/pull/6349)
 
+### Fixed
+- Fixed an issue where row selections in Action Center tables did not persist across pages [#6357](https://github.com/ethyca/fides/pull/6357)
+
 ## [2.66.0](https://github.com/ethyca/fides/compare/2.65.2...2.66.0)
 
 ### Added
