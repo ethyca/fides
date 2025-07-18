@@ -30,19 +30,26 @@ import ConsentTcfDetailModal from "~/features/consent-reporting/ConsentTcfDetail
 import useConsentReportingTableColumns from "~/features/consent-reporting/hooks/useConsentReportingTableColumns";
 import { ConsentReportingSchema } from "~/types/api";
 
+const safeParseInt = (value: string) => {
+  const parsed = parseInt(value, 10);
+  if (!Number.isNaN(parsed) && Number.isFinite(parsed)) {
+    return parsed;
+  }
+  return 1;
+};
+
 type QueryParam = ReturnType<InstanceType<typeof URLSearchParams>["get"]>;
-function useStatefulQueryParam<
-  InitialValue = QueryParam,
-  TransformedValue = QueryParam,
->(
+function useStatefulQueryParam<InitialValue = string>(
   key: string,
-  fromQueryParam: (value: QueryParam) => TransformedValue,
+  fromQueryParam: (value: string) => InitialValue,
   initialValue: InitialValue,
+  toQueryParam: (value: InitialValue) => string = (value) =>
+    value?.toString() ?? "",
 ) {
   const searchParams = useSearchParams();
   const paramValue = searchParams?.get(key) ?? null;
   const [value, setValue] = useState(
-    fromQueryParam(paramValue) ?? initialValue,
+    paramValue ? fromQueryParam(paramValue) : initialValue,
   );
   const router = useRouter();
 
@@ -51,7 +58,7 @@ function useStatefulQueryParam<
     if (value === initialValue || value === undefined || value === null) {
       nextQueryParams.delete(key);
     } else {
-      nextQueryParams.set(key, value.toString());
+      nextQueryParams.set(key, toQueryParam(value)?.toString());
     }
     router.push({
       query: nextQueryParams.toString(),
@@ -61,10 +68,6 @@ function useStatefulQueryParam<
 
   return [value, setValue] as const;
 }
-
-const safeParseInt = (
-  v: string | null | undefined,
-): number | null | undefined => (typeof v === "string" ? parseInt(v, 10) : v);
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_SIZE = 25;
