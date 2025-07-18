@@ -26,7 +26,7 @@ interface Props<T extends RecordListItem> {
   title: string;
   enabledIds: string[];
   renderDropdownChild?: (item: T, isCustomPurpose?: boolean) => VNode;
-  onToggle: (payload: string[], item: T) => void;
+  onToggle?: (payload: string[], item: T) => void;
   renderBadgeLabel?: (item: T) => string | undefined;
   renderGpcBadge?: (item: T) => VNode | undefined;
   hideToggles?: boolean;
