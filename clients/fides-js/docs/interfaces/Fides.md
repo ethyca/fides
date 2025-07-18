@@ -9,8 +9,6 @@ FidesJS integrations (e.g. `Fides.gtm()`), programmaticaly show the FidesJS
 UI (e.g. `Fides.showModal()`) and more. See the full list of properties below
 for details.
 
-bla bla bla
-
 NOTE: FidesJS will need to be downloaded, executed, and initialized before
 the `Fides` object is available. Therefore, your code should check for the
 existence of Fides *or* subscribe to the global `FidesReady` event (see
