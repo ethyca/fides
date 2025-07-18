@@ -233,7 +233,7 @@ const DatamapGraph = ({
         }
 
         if (!drawerElement) {
-          console.warn(
+          fidesDebugger(
             "DatamapGraph: Drawer element not found for viewport management",
           );
           return;
