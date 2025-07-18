@@ -28,6 +28,7 @@ class CurrentStep(EnumType):
     finalize_consent = "finalize_consent"
     email_post_send = "email_post_send"
     post_webhooks = "post_webhooks"
+    finalization = "finalization"
 
 
 # action types we actively support in policies/requests
