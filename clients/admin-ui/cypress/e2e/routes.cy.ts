@@ -92,7 +92,7 @@ describe("Routes", () => {
       stubPlus(false);
       cy.visit(DATAMAP_ROUTE);
       cy.getByTestId("home-content");
-      cy.getByTestId("cytoscape-graph").should("not.exist");
+      cy.getByTestId("reactflow-graph").should("not.exist");
       cy.visit(PRIVACY_NOTICES_ROUTE);
       cy.getByTestId("home-content");
       // cannot access locations route
@@ -103,7 +103,7 @@ describe("Routes", () => {
     it("plus can access plus routes", () => {
       stubPlus(true);
       cy.visit(DATAMAP_ROUTE);
-      cy.getByTestId("cytoscape-graph");
+      cy.getByTestId("reactflow-graph");
     });
   });
 });
