@@ -23,6 +23,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Added
 - Added the ability to edit more fields for GVL vendors [#6341](https://github.com/ethyca/fides/pull/6341)
+- Added vendor id to the vendors page [#6348](https://github.com/ethyca/fides/pull/6348)
 
 ## [2.66.0](https://github.com/ethyca/fides/compare/2.65.2...2.66.0)
 
