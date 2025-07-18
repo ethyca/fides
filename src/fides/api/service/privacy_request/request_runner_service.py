@@ -667,6 +667,9 @@ def run_privacy_request(
                 request_checkpoint=CurrentStep.finalization,
                 from_checkpoint=resume_step,
             ):
+                privacy_request.cache_failed_checkpoint_details(
+                    CurrentStep.finalization,
+                )
                 if privacy_request.status != PrivacyRequestStatus.error:
                     erasure_rules = policy.get_rules_for_action(
                         action_type=ActionType.erasure
@@ -683,9 +686,7 @@ def run_privacy_request(
                         privacy_request.status = (
                             PrivacyRequestStatus.requires_manual_finalization
                         )
-                        privacy_request.cache_failed_checkpoint_details(
-                            CurrentStep.finalization
-                        )
+                        privacy_request.save(db=session)
                         return
 
                     # Finally, mark the request as complete
