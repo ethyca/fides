@@ -1,5 +1,5 @@
 import {
-  AntFlex as Flex,
+  AntSpace as Space,
   AntTooltip as Tooltip,
   AntTypography as Typography,
 } from "fidesui";
@@ -21,26 +21,24 @@ export const DiscoveredSystemStatusCell = ({
   rowClickUrl,
 }: DiscoveredSystemStatusCellProps) => {
   return (
-    <Flex align="center">
+    <Space className="max-w-[250px] flex-nowrap">
       {!system.system_key && (
         <Tooltip title="New system">
           {/* icon has to be wrapped in a span for the tooltip to work */}
           <span>{STATUS_INDICATOR_MAP.Change}</span>
         </Tooltip>
       )}
-      <Flex align="center" gap={4} className="max-w-[250px] flex-nowrap">
-        <Link
-          size="sm"
-          strong
-          ellipsis
-          href={rowClickUrl?.(system)}
-          onClick={(e) => e.stopPropagation()}
-          data-testid="system-name-link"
-        >
-          {system.name || "Uncategorized assets"}
-        </Link>
-        <DiscoveryStatusIcon consentStatus={system.consent_status} />
-      </Flex>
-    </Flex>
+      <Link
+        size="sm"
+        strong
+        ellipsis
+        href={rowClickUrl?.(system)}
+        onClick={(e) => e.stopPropagation()}
+        data-testid="system-name-link"
+      >
+        {system.name || "Uncategorized assets"}
+      </Link>
+      <DiscoveryStatusIcon consentStatus={system.consent_status} />
+    </Space>
   );
 };
