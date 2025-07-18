@@ -226,7 +226,7 @@ const DatamapGraph = ({
         );
 
         if (!reactFlowBounds) {
-          console.warn(
+          fidesDebugger(
             "DatamapGraph: ReactFlow bounds not available for viewport management",
           );
           return;
