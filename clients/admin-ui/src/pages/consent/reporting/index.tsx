@@ -7,22 +7,18 @@ import {
   AntDropdown as Dropdown,
   AntEmpty as Empty,
   AntFlex as Flex,
-  AntPagination as Pagination,
   AntSelect as Select,
   Icons,
   useToast,
 } from "fidesui";
-import { stat } from "fs";
-import { useParams, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/router";
-import React, { useEffect, useMemo, useReducer, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 
 import FixedLayout from "~/features/common/FixedLayout";
 import PageHeader from "~/features/common/PageHeader";
 import {
   FidesTableV2,
-  PAGE_SIZES,
-  PaginationBar,
   TableActionBar,
   TableSkeletonLoader,
 } from "~/features/common/table/v2";
@@ -34,98 +30,106 @@ import ConsentTcfDetailModal from "~/features/consent-reporting/ConsentTcfDetail
 import useConsentReportingTableColumns from "~/features/consent-reporting/hooks/useConsentReportingTableColumns";
 import { ConsentReportingSchema } from "~/types/api";
 
-const getNextPage = (change: -1 | 1) => (previousPage: number) => {
-  const nextPage = previousPage + change;
-  if (nextPage > 0) {
-    return nextPage;
-  }
-  return 1;
-};
-
-const pageReducer = (
-  state: { page: number; pageSize: number },
-  action:
-    | { type: "NEXT" }
-    | { type: "PREVIOUS" }
-    | { type: "SET_PAGE_SIZE"; payload: number },
-) => {
-  switch (action.type) {
-    case "NEXT":
-      return {
-        ...state,
-        page: getNextPage(+1)(state.page),
-      };
-    case "PREVIOUS":
-      return {
-        ...state,
-        page: getNextPage(-1)(state.page),
-      };
-    case "SET_PAGE_SIZE":
-      return {
-        ...state,
-        page: 1,
-        pageSize: action.payload,
-      };
-    default:
-      return state;
-  }
-};
-
-const Paginator = ({
-  onPaginationChanged,
-}: {
-  onPaginationChanged: ({
-    page,
-    pageSize,
-  }: {
-    page: number;
-    pageSize: number;
-  }) => void;
-}) => {
+type QueryParam = ReturnType<InstanceType<typeof URLSearchParams>["get"]>;
+function useStatefulQueryParam<
+  InitialValue = QueryParam,
+  TransformedValue = QueryParam,
+>(
+  key: string,
+  fromQueryParam: (value: QueryParam) => TransformedValue,
+  initialValue: InitialValue,
+) {
   const searchParams = useSearchParams();
-  const intOrUndefined = (param: string) => {
-    const value = searchParams?.get(param);
-    if (value) {
-      return parseInt(value, 10);
-    }
+  const paramValue = searchParams?.get(key) ?? null;
+  const [value, setValue] = useState(
+    fromQueryParam(paramValue) ?? initialValue,
+  );
+  const router = useRouter();
 
-    return undefined;
+  useEffect(() => {
+    const nextQueryParams = new URLSearchParams(window.location.search);
+    if (value === initialValue || value === undefined || value === null) {
+      nextQueryParams.delete(key);
+    } else {
+      nextQueryParams.set(key, value.toString());
+    }
+    router.push({
+      query: nextQueryParams.toString(),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key, paramValue, value]);
+
+  return [value, setValue] as const;
+}
+
+const safeParseInt = (
+  v: string | null | undefined,
+): number | null | undefined => (typeof v === "string" ? parseInt(v, 10) : v);
+
+const DEFAULT_PAGE = 1;
+const DEFAULT_SIZE = 25;
+
+const usePaginatorState = () => {
+  const [page, setPage] = useStatefulQueryParam(
+    "page",
+    safeParseInt,
+    DEFAULT_PAGE,
+  );
+  const [size, internalSetSize] = useStatefulQueryParam(
+    "size",
+    safeParseInt,
+    DEFAULT_SIZE,
+  );
+
+  const setSize = (nextSize: number) => {
+    internalSetSize(nextSize);
+    setPage(1);
   };
-  const initialPageSize = intOrUndefined("pageSize");
-  const initialPage = intOrUndefined("page");
-  // probably should use a reducer
-  const [{ page, pageSize }, dispatch] = useReducer(pageReducer, {
-    page: initialPage ?? 1,
-    pageSize: initialPageSize ?? 25,
-  });
-  const previous = () => dispatch({ type: "PREVIOUS" });
-  const next = () => dispatch({ type: "NEXT" });
-  const setPageSize = (value: number) =>
-    dispatch({ type: "SET_PAGE_SIZE", payload: value });
-  const { push } = useRouter();
 
-  useEffect(() => {
-    const nextSearchParams: Record<string, string> = {};
-    searchParams?.forEach((value, key) => {
-      nextSearchParams[key] = value;
+  const previous = () =>
+    setPage((previousPage) => {
+      const nextPage = previousPage - 1;
+      if (nextPage < DEFAULT_PAGE) {
+        return DEFAULT_PAGE;
+      }
+      return nextPage;
     });
-    if (page > 1 || initialPage) {
-      nextSearchParams.page = (page ?? 1).toString();
-    }
-    if (pageSize > 25 || initialPageSize) {
-      nextSearchParams.pageSize = (pageSize ?? 25).toString();
-    }
-    push({
-      query: new URLSearchParams(nextSearchParams).toString(),
-    });
+  const next = () => setPage((previousPage) => previousPage + 1);
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, pageSize]);
+  return {
+    previous,
+    next,
+    setSize,
+    page,
+    size,
+  };
+};
 
-  useEffect(() => {
-    onPaginationChanged({ page, pageSize });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, pageSize]);
+const PageContext = React.createContext<
+  ReturnType<typeof usePaginatorState> | undefined
+>(undefined);
+
+const PaginationContext = ({ children }: { children: React.ReactNode }) => {
+  const paginationState = usePaginatorState();
+
+  return (
+    <PageContext.Provider value={paginationState}>
+      {children}
+    </PageContext.Provider>
+  );
+};
+
+const usePagination = () => {
+  const paginationContext = useContext(PageContext);
+  if (paginationContext) {
+    return paginationContext;
+  }
+
+  throw new Error("Pagination Context Provider not found.");
+};
+
+const Paginator = () => {
+  const { next, page, size, previous, setSize } = usePagination();
 
   return (
     <div style={{ display: "flex", columnGap: "10px", alignItems: "center" }}>
@@ -136,18 +140,178 @@ const Paginator = ({
       <Button onClick={next}>Next</Button>
       <Select
         style={{ width: "auto" }}
-        value={pageSize}
-        onChange={setPageSize}
+        value={size}
+        onChange={setSize}
         options={[
           { label: 25, value: 25 },
           { label: 50, value: 50 },
           { label: 100, value: 100 },
         ]}
-        labelRender={(option) => {
-          return <span>{option.label} / page</span>;
+        labelRender={() => {
+          return <span>{size} / page</span>;
         }}
       />
     </div>
+  );
+};
+
+const ConsentReporting = () => {
+  const today = useMemo(() => dayjs(), []);
+  const [startDate, setStartDate] = useState<Dayjs | null>(null);
+  const [endDate, setEndDate] = useState<Dayjs | null>(null);
+  const [isConsentLookupModalOpen, setIsConsentLookupModalOpen] =
+    useState(false);
+  const [isDownloadReportModalOpen, setIsDownloadReportModalOpen] =
+    useState(false);
+  const [isConsentTcfDetailModalOpen, setIsConsentTcfDetailModalOpen] =
+    useState(false);
+  const [currentTcfPreferences, setCurrentTcfPreferences] = useState();
+  const { page, size } = usePagination();
+
+  const toast = useToast();
+
+  const { data, isLoading, isFetching, refetch } =
+    useGetAllHistoricalPrivacyPreferencesQuery({
+      page,
+      size,
+      startDate,
+      endDate,
+      include_total: false,
+    });
+
+  const { items: privacyPreferences } = useMemo(() => {
+    const results = data ?? { items: [] };
+
+    return results;
+  }, [data]);
+
+  const onTcfDetailViewClick = (tcfPreferences: any) => {
+    setIsConsentTcfDetailModalOpen(true);
+    setCurrentTcfPreferences(tcfPreferences);
+  };
+
+  const columns = useConsentReportingTableColumns({ onTcfDetailViewClick });
+  const tableInstance = useReactTable<ConsentReportingSchema>({
+    getCoreRowModel: getCoreRowModel(),
+    data: privacyPreferences,
+    columns,
+    getRowId: (row) => `${row.id}`,
+    manualPagination: true,
+  });
+
+  const handleClickRefresh = async () => {
+    await refetch();
+    toast(
+      successToastParams(
+        "Consent report refreshed successfully.",
+        "Report Refreshed",
+      ),
+    );
+  };
+
+  return (
+    <FixedLayout title="Consent reporting">
+      <PageHeader
+        heading="Consent reporting"
+        rightContent={
+          <Button
+            type="primary"
+            onClick={handleClickRefresh}
+            loading={isFetching}
+          >
+            Refresh
+          </Button>
+        }
+      />
+      <div data-testid="consent-reporting" className="overflow-auto">
+        {isLoading ? (
+          <div className="border p-2">
+            <TableSkeletonLoader rowHeight={26} numRows={10} />
+          </div>
+        ) : (
+          <>
+            <TableActionBar>
+              <DateRangePicker
+                placeholder={["From", "To"]}
+                maxDate={today}
+                data-testid="input-date-range"
+                onChange={(dates: [Dayjs | null, Dayjs | null] | null) => {
+                  setStartDate(dates && dates[0]);
+                  setEndDate(dates && dates[1]);
+                }}
+              />
+              <Flex gap={12}>
+                <Button
+                  icon={<Icons.Download />}
+                  data-testid="download-btn"
+                  onClick={() => setIsDownloadReportModalOpen(true)}
+                  aria-label="Download Consent Report"
+                />
+                <Dropdown
+                  menu={{
+                    items: [
+                      {
+                        key: "1",
+                        label: (
+                          <span data-testid="consent-preference-lookup-btn">
+                            Consent preference lookup
+                          </span>
+                        ),
+                        onClick: () => setIsConsentLookupModalOpen(true),
+                      },
+                    ],
+                  }}
+                  overlayStyle={{ width: "220px" }}
+                  trigger={["click"]}
+                >
+                  <Button
+                    icon={<Icons.OverflowMenuVertical />}
+                    data-testid="consent-reporting-dropdown-btn"
+                  />
+                </Dropdown>
+              </Flex>
+            </TableActionBar>
+            <FidesTableV2<ConsentReportingSchema>
+              tableInstance={tableInstance}
+              emptyTableNotice={
+                <Empty
+                  description="No results."
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                  imageStyle={{ marginBottom: 15 }}
+                />
+              }
+            />
+          </>
+        )}
+      </div>
+      <Paginator />
+      <ConsentLookupModal
+        isOpen={isConsentLookupModalOpen}
+        onClose={() => setIsConsentLookupModalOpen(false)}
+      />
+      <ConsentReportDownloadModal
+        isOpen={isDownloadReportModalOpen}
+        onClose={() => setIsDownloadReportModalOpen(false)}
+        startDate={startDate}
+        endDate={endDate}
+      />
+      <ConsentTcfDetailModal
+        isOpen={isConsentTcfDetailModalOpen}
+        onClose={() => {
+          setIsConsentTcfDetailModalOpen(false);
+          setCurrentTcfPreferences(undefined);
+        }}
+        tcfPreferences={currentTcfPreferences}
+      />
+    </FixedLayout>
+  );
+};
+
+const ConsentReportingPage = () => {
+  return (
+    <PaginationContext>
+      <ConsentReporting />
+    </PaginationContext>
   );
 };
 
