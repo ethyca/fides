@@ -133,7 +133,7 @@ export const PrivacyDeclarationFormComponents = ({
           label="Declaration name (optional)"
           name="name"
           tooltip="Would you like to append anything to the system name?"
-          disabled={isEditing || lockedForGVL}
+          disabled={isEditing}
           variant="stacked"
         />
         <ControlledSelect
@@ -147,7 +147,7 @@ export const PrivacyDeclarationFormComponents = ({
           tooltip="For which business purposes is this data processed?"
           layout="stacked"
           isRequired
-          disabled={isEditing || lockedForGVL}
+          disabled={isEditing}
         />
         <ControlledSelect
           name="data_categories"
@@ -171,7 +171,6 @@ export const PrivacyDeclarationFormComponents = ({
           }))}
           tooltip="Who are the subjects for this personal data?"
           mode="multiple"
-          disabled={lockedForGVL}
           layout="stacked"
         />
         {/* <ControlledSelect
@@ -202,7 +201,6 @@ export const PrivacyDeclarationFormComponents = ({
                 label="Impact assessment location"
                 tooltip="Where is the legitimate interest impact assessment stored?"
                 variant="stacked"
-                disabled={lockedForGVL}
               />
             </Box>
           </Collapse>
@@ -243,7 +241,6 @@ export const PrivacyDeclarationFormComponents = ({
           tooltip="Is there a dataset configured for this system?"
           mode="multiple"
           layout="stacked"
-          disabled={lockedForGVL}
         />
       </SystemFormInputGroup>
       <SystemFormInputGroup heading="Special category data">
@@ -253,7 +250,6 @@ export const PrivacyDeclarationFormComponents = ({
             label="This system processes special category data"
             tooltip="Is this system processing special category data as defined by GDPR Article 9?"
             variant="stacked"
-            isDisabled={lockedForGVL}
           />
           <Collapse
             in={values.processes_special_category_data}
@@ -268,7 +264,6 @@ export const PrivacyDeclarationFormComponents = ({
                 isRequired={values.processes_special_category_data}
                 tooltip="What is the legal basis under which the special category data is processed?"
                 layout="stacked"
-                disabled={lockedForGVL}
               />
             </Box>
           </Collapse>
@@ -281,7 +276,6 @@ export const PrivacyDeclarationFormComponents = ({
             label="This system shares data with 3rd parties for this purpose"
             tooltip="Does this system disclose, sell, or share personal data collected for this business use with 3rd parties?"
             variant="stacked"
-            isDisabled={lockedForGVL}
           />
           <Collapse
             in={values.data_shared_with_third_parties}
@@ -294,7 +288,6 @@ export const PrivacyDeclarationFormComponents = ({
                 label="Third parties"
                 tooltip="Which type of third parties is the data shared with?"
                 variant="stacked"
-                disabled={lockedForGVL}
               />
               <ControlledSelect
                 name="shared_categories"
@@ -306,7 +299,6 @@ export const PrivacyDeclarationFormComponents = ({
                 tooltip="Which categories of personal data does this system share with third parties?"
                 layout="stacked"
                 mode="multiple"
-                disabled={lockedForGVL}
               />
             </Stack>
           </Collapse>
@@ -435,19 +427,15 @@ export const PrivacyDeclarationForm = ({
               <Button onClick={onCancel} data-testid="cancel-btn">
                 Cancel
               </Button>
-              {!lockedForGVL ? (
-                <>
-                  <Spacer />
-                  <Button
-                    type="primary"
-                    htmlType="submit"
-                    disabled={!dirty}
-                    data-testid="save-btn"
-                  >
-                    Save
-                  </Button>
-                </>
-              ) : null}
+              <Spacer />
+              <Button
+                type="primary"
+                htmlType="submit"
+                disabled={!dirty}
+                data-testid="save-btn"
+              >
+                Save
+              </Button>
             </Flex>
           </Stack>
         </Form>

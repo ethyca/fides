@@ -156,12 +156,11 @@ export const PrivacyDeclarationDisplayGroup = ({
   };
 
   const lockedForGVL = useAppSelector(selectLockedForGVL);
-
   return (
     <PrivacyDeclarationTabTable
       heading={heading}
       footerButton={
-        !lockedForGVL ? (
+        !lockedForGVL && (
           <Button
             onClick={handleAdd}
             size="small"
@@ -171,7 +170,7 @@ export const PrivacyDeclarationDisplayGroup = ({
           >
             Add data use
           </Button>
-        ) : null
+        )
       }
     >
       {declarations.map((pd) => (

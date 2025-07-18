@@ -32,6 +32,7 @@ from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.query_configs.query_config import SQLQueryConfig
 from fides.api.util.collection_util import Row
 from fides.config import get_config
+from fides.config.config_proxy import ConfigProxy
 
 from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
     Dataset as CtlDataset,
@@ -57,6 +58,19 @@ class SQLConnector(BaseConnector[Engine]):
                 "SQL Connectors must define their secrets schema class"
             )
         self.ssh_server: sshtunnel._ForwardServer = None
+
+    def get_safe_mode_enabled(self) -> bool:
+        """
+        Get the safe_mode setting from the application configuration.
+
+        Returns:
+            bool: True if safe_mode is enabled, False otherwise
+        """
+        from fides.api.api.deps import get_autoclose_db_session as get_db
+
+        with get_db() as db:
+            config_proxy = ConfigProxy(db)
+            return getattr(config_proxy.execution, "safe_mode", False)
 
     @staticmethod
     def cursor_result_to_rows(results: CursorResult) -> List[Row]:
@@ -184,15 +198,24 @@ class SQLConnector(BaseConnector[Engine]):
         query_config = self.query_config(node)
         update_ct = 0
         client = self.client()
+
+        # Check if safe_mode is enabled
+        safe_mode_enabled = self.get_safe_mode_enabled()
+
         for row in rows:
             update_stmt: Optional[TextClause] = query_config.generate_update_stmt(
                 row, policy, privacy_request
             )
             if update_stmt is not None:
-                with client.connect() as connection:
-                    self.set_schema(connection)
-                    results: LegacyCursorResult = connection.execute(update_stmt)
-                    update_ct = update_ct + results.rowcount
+                if safe_mode_enabled:
+                    # In safe mode, log the SQL statement instead of executing it
+                    logger.warning(f"SAFE MODE - Would execute SQL: {update_stmt}")
+                else:
+                    # Normal mode - execute the SQL statement
+                    with client.connect() as connection:
+                        self.set_schema(connection)
+                        results: LegacyCursorResult = connection.execute(update_stmt)
+                        update_ct = update_ct + results.rowcount
         return update_ct
 
     def close(self) -> None:
