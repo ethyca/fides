@@ -1,4 +1,4 @@
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, List, Optional, Tuple, Any
 
 from celery.app.task import Task
 from loguru import logger
@@ -36,6 +36,8 @@ from fides.api.tasks import DSR_QUEUE_NAME, DatabaseTask, celery_app
 from fides.api.util.cache import cache_task_tracking_key
 from fides.api.util.collection_util import Row
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
+from fides.api.util.memory_watchdog import memory_limiter
+from fides.config import CONFIG
 
 # DSR 3.0 task functions
 
@@ -255,6 +257,7 @@ def queue_downstream_tasks(
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
+@memory_limiter
 @log_context(
     capture_args={
         "privacy_request_id": LoggerContextKeys.privacy_request_id,
@@ -321,10 +324,21 @@ def run_access_node(
         )
     except Exception as e:
         logger.error(f"Error in run_access_node: {e}")
+        # Mark the parent privacy request as errored so it is not re-dispatched.
+        try:
+            with self.get_new_session() as session:
+                pr = PrivacyRequest.get(db=session, object_id=privacy_request_id)
+                if pr:
+                    pr.status = PrivacyRequestStatus.error  # type: ignore[attr-defined]
+                    session.add(pr)
+                    session.commit()
+        except Exception as db_exc:  # pragma: no cover – best effort to not mask original
+            logger.warning("Failed to mark privacy request errored: {}", db_exc)
         raise
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
+@memory_limiter
 @log_context(
     capture_args={
         "privacy_request_id": LoggerContextKeys.privacy_request_id,
@@ -381,6 +395,7 @@ def run_erasure_node(
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
+@memory_limiter
 @log_context(
     capture_args={
         "privacy_request_id": LoggerContextKeys.privacy_request_id,
@@ -498,7 +513,7 @@ def queue_request_task(
     request_task: RequestTask, privacy_request_proceed: bool = True
 ) -> None:
     """Queues the RequestTask in Celery and caches the Celery Task ID"""
-    celery_task_fn: Task = mapping[request_task.action_type]
+    celery_task_fn: Any = mapping[request_task.action_type]
     celery_task = celery_task_fn.apply_async(
         queue=DSR_QUEUE_NAME,
         kwargs={
