@@ -27,7 +27,7 @@ import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   useGetAllSystemsQuery,
   useUpdateSystemMutation,
-} from "~/features/system/system.slice";
+} from "~/features/system";
 import { DataFlow, System } from "~/types/api";
 
 const defaultInitialValues = {
