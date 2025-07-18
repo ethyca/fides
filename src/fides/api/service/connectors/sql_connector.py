@@ -154,6 +154,10 @@ class SQLConnector(BaseConnector[Engine]):
         if query is None:
             return []
 
+        if self.get_sql_dry_run_enabled():
+            logger.warning(f"SQL DRY RUN - Would execute SQL: {query}")
+            return []
+
         with client.connect() as connection:
             self.set_schema(connection)
             results = connection.execute(query)
@@ -172,6 +176,10 @@ class SQLConnector(BaseConnector[Engine]):
         client = self.client()
         stmt: Optional[TextClause] = query_config.generate_query(input_data, policy)
         if stmt is None:
+            return []
+
+        if self.get_sql_dry_run_enabled():
+            logger.warning(f"SQL DRY RUN - Would execute SQL: {stmt}")
             return []
 
         logger.info("Starting data retrieval for {}", node.address)
@@ -199,19 +207,14 @@ class SQLConnector(BaseConnector[Engine]):
         update_ct = 0
         client = self.client()
 
-        # Check if sql_dry_run is enabled
-        sql_dry_run_enabled = self.get_sql_dry_run_enabled()
-
         for row in rows:
             update_stmt: Optional[TextClause] = query_config.generate_update_stmt(
                 row, policy, privacy_request
             )
             if update_stmt is not None:
-                if sql_dry_run_enabled:
-                    # In sql_dry_run mode, log the SQL statement instead of executing it
+                if self.get_sql_dry_run_enabled():
                     logger.warning(f"SQL DRY RUN - Would execute SQL: {update_stmt}")
                 else:
-                    # Normal mode - execute the SQL statement
                     with client.connect() as connection:
                         self.set_schema(connection)
                         results: LegacyCursorResult = connection.execute(update_stmt)

@@ -538,7 +538,6 @@ class TestBigQueryConnector:
         db,
     ):
         """Test that when sql_dry_run is enabled, DELETE statements are logged instead of executed"""
-        # Set up sql_dry_run in the database
         from fides.api.models.application_config import ApplicationConfig
 
         ApplicationConfig.update_api_set(db, {"execution": {"sql_dry_run": True}})
@@ -549,7 +548,6 @@ class TestBigQueryConnector:
         )
         connector = BigQueryConnector(dataset_config.connection_config)
 
-        # Force DELETE masking strategy to exercise the delete path
         execution_node = execution_node_with_namespace_and_partitioning_meta
         execution_node.collection.masking_strategy_override = MaskingStrategyOverride(
             strategy=MaskingStrategies.DELETE
@@ -566,16 +564,10 @@ class TestBigQueryConnector:
             input_data={"email": ["customer-1@example.com"]},
         )
 
-        # In sql_dry_run mode, SQL should NOT be executed
         assert execute_spy.call_count == 0
-
-        # In sql_dry_run mode, no rows are actually affected so count should be 0
         assert update_or_delete_ct == 0
-
-        # Check that the DELETE statements were logged as warnings instead of executed
         assert "SQL DRY RUN - Would execute SQL:" in loguru_caplog.text
 
-        # Clean up: disable sql_dry_run
         ApplicationConfig.update_api_set(db, {"execution": {"sql_dry_run": False}})
         db.commit()
 
@@ -592,7 +584,6 @@ class TestBigQueryConnector:
         db,
     ):
         """Test that when sql_dry_run is disabled, DELETE statements are actually executed"""
-        # Ensure sql_dry_run is disabled in the database
         from fides.api.models.application_config import ApplicationConfig
 
         ApplicationConfig.update_api_set(db, {"execution": {"sql_dry_run": False}})
@@ -603,7 +594,6 @@ class TestBigQueryConnector:
         )
         connector = BigQueryConnector(dataset_config.connection_config)
 
-        # Force DELETE masking strategy to exercise the delete path
         execution_node = execution_node_with_namespace_and_partitioning_meta
         execution_node.collection.masking_strategy_override = MaskingStrategyOverride(
             strategy=MaskingStrategies.DELETE
@@ -620,10 +610,135 @@ class TestBigQueryConnector:
             input_data={"email": ["customer-3@example.com"]},
         )
 
-        # In normal mode, SQL should be executed
+        assert execute_spy.call_count > 0
+        assert update_or_delete_ct >= 0
+        assert "SQL DRY RUN - Would execute SQL:" not in loguru_caplog.text
+
+    @pytest.mark.integration_external
+    @pytest.mark.integration_bigquery
+    def test_sql_dry_run_enabled_comprehensive(
+        self,
+        bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta: DatasetConfig,
+        execution_node_with_namespace_and_partitioning_meta,
+        erasure_policy,
+        privacy_request_with_email_identity,
+        mocker,
+        loguru_caplog,
+        db,
+    ):
+        """Test that when sql_dry_run is enabled, both SELECT and DELETE statements are logged instead of executed"""
+        from fides.api.models.application_config import ApplicationConfig
+
+        ApplicationConfig.update_api_set(db, {"execution": {"sql_dry_run": True}})
+        db.commit()
+
+        dataset_config = (
+            bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta
+        )
+        connector = BigQueryConnector(dataset_config.connection_config)
+
+        execute_spy = mocker.spy(sqlalchemy.engine.Connection, "execute")
+
+        # Test SELECT operations (retrieve_data)
+        results = connector.retrieve_data(
+            node=execution_node_with_namespace_and_partitioning_meta,
+            policy=privacy_request_with_email_identity.policy,
+            privacy_request=privacy_request_with_email_identity,
+            request_task=RequestTask(),
+            input_data={"email": ["customer-1@example.com"]},
+        )
+
+        # In sql_dry_run mode, SELECT should return empty results
+        assert results == []
+        assert "SQL DRY RUN - Would execute SQL:" in loguru_caplog.text
+
+        # Reset log capture for next test
+        loguru_caplog.clear()
+
+        # Test DELETE operations (mask_data)
+        execution_node = execution_node_with_namespace_and_partitioning_meta
+        execution_node.collection.masking_strategy_override = MaskingStrategyOverride(
+            strategy=MaskingStrategies.DELETE
+        )
+
+        update_or_delete_ct = connector.mask_data(
+            node=execution_node,
+            policy=erasure_policy,
+            privacy_request=privacy_request_with_email_identity,
+            request_task=RequestTask(),
+            rows=[{"email": "customer-1@example.com"}],
+            input_data={"email": ["customer-1@example.com"]},
+        )
+
+        # In sql_dry_run mode, DELETE should return 0 affected rows
+        assert update_or_delete_ct == 0
+        assert "SQL DRY RUN - Would execute SQL:" in loguru_caplog.text
+
+        # In sql_dry_run mode, no SQL should actually be executed
+        assert execute_spy.call_count == 0
+
+        # Clean up
+        ApplicationConfig.update_api_set(db, {"execution": {"sql_dry_run": False}})
+        db.commit()
+
+    @pytest.mark.integration_external
+    @pytest.mark.integration_bigquery
+    def test_sql_dry_run_disabled_comprehensive(
+        self,
+        bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta: DatasetConfig,
+        execution_node_with_namespace_and_partitioning_meta,
+        erasure_policy,
+        privacy_request_with_email_identity,
+        mocker,
+        loguru_caplog,
+        db,
+    ):
+        """Test that when sql_dry_run is disabled, both SELECT and DELETE statements are executed normally"""
+        from fides.api.models.application_config import ApplicationConfig
+
+        ApplicationConfig.update_api_set(db, {"execution": {"sql_dry_run": False}})
+        db.commit()
+
+        dataset_config = (
+            bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta
+        )
+        connector = BigQueryConnector(dataset_config.connection_config)
+
+        execute_spy = mocker.spy(sqlalchemy.engine.Connection, "execute")
+
+        # Test SELECT operations (retrieve_data)
+        results = connector.retrieve_data(
+            node=execution_node_with_namespace_and_partitioning_meta,
+            policy=privacy_request_with_email_identity.policy,
+            privacy_request=privacy_request_with_email_identity,
+            request_task=RequestTask(),
+            input_data={"email": ["customer-1@example.com"]},
+        )
+
+        # In normal mode, SELECT should return actual results
+        assert isinstance(results, list)
         assert execute_spy.call_count > 0
 
-        # And we should get a count of actual rows affected
+        # Reset spy count for next test
+        execute_spy.reset_mock()
+
+        # Test DELETE operations (mask_data)
+        execution_node = execution_node_with_namespace_and_partitioning_meta
+        execution_node.collection.masking_strategy_override = MaskingStrategyOverride(
+            strategy=MaskingStrategies.DELETE
+        )
+
+        update_or_delete_ct = connector.mask_data(
+            node=execution_node,
+            policy=erasure_policy,
+            privacy_request=privacy_request_with_email_identity,
+            request_task=RequestTask(),
+            rows=[{"email": "customer-3@example.com"}],
+            input_data={"email": ["customer-3@example.com"]},
+        )
+
+        # In normal mode, operations should execute
+        assert execute_spy.call_count > 0
         assert update_or_delete_ct >= 0
 
         # Check that we don't see sql_dry_run logging

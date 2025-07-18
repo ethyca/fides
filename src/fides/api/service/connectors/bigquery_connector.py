@@ -94,6 +94,16 @@ class BigQueryConnector(SQLConnector):
         logger.info(
             f"Executing {len(partition_clauses)} partition queries for node '{query_config.node.address}' in DSR execution"
         )
+
+        if self.get_sql_dry_run_enabled():
+            for partition_clause in partition_clauses:
+                existing_bind_params = stmt.compile().params
+                partitioned_stmt = text(
+                    f"{stmt} AND ({text(partition_clause)})"
+                ).params(existing_bind_params)
+                logger.warning(f"SQL DRY RUN - Would execute SQL: {partitioned_stmt}")
+            return []
+
         rows = []
         for partition_clause in partition_clauses:
             logger.debug(
@@ -178,13 +188,11 @@ class BigQueryConnector(SQLConnector):
         update_or_delete_ct = 0
         client = self.client()
 
-        sql_dry_run_enabled = self.get_sql_dry_run_enabled()
-
         if query_config.uses_delete_masking_strategy():
             delete_stmts = query_config.generate_delete(client, input_data or {})
             logger.debug(f"Generated {len(delete_stmts)} DELETE statements")
             update_or_delete_ct += self._execute_statements_with_sql_dry_run(
-                delete_stmts, sql_dry_run_enabled, client
+                delete_stmts, self.get_sql_dry_run_enabled(), client
             )
         else:
             for row in rows:
@@ -195,6 +203,6 @@ class BigQueryConnector(SQLConnector):
                     f"Generated {len(update_or_delete_stmts)} UPDATE statements"
                 )
                 update_or_delete_ct += self._execute_statements_with_sql_dry_run(
-                    update_or_delete_stmts, sql_dry_run_enabled, client
+                    update_or_delete_stmts, self.get_sql_dry_run_enabled(), client
                 )
         return update_or_delete_ct
