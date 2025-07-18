@@ -16,7 +16,7 @@ class TestConditionLeaf:
     def test_valid_condition_leaf(self):
         """Test creating a valid condition leaf"""
         condition = ConditionLeaf(
-            field="user.name", operator=Operator.eq, value="john_doe"
+            field_address="user.name", operator=Operator.eq, value="john_doe"
         )
         assert condition.field == "user.name"
         assert condition.operator == Operator.eq
@@ -24,7 +24,7 @@ class TestConditionLeaf:
 
     def test_condition_leaf_without_value(self):
         """Test condition leaf for existence checks without value"""
-        condition = ConditionLeaf(field="user.email", operator=Operator.exists)
+        condition = ConditionLeaf(field_address="user.email", operator=Operator.exists)
         assert condition.field == "user.email"
         assert condition.operator == Operator.exists
         assert condition.value is None
@@ -46,7 +46,7 @@ class TestConditionLeaf:
 
         for operator in operators:
             condition = ConditionLeaf(
-                field="test.field",
+                field_address="test.field",
                 operator=operator,
                 value=(
                     "test_value"
@@ -60,14 +60,16 @@ class TestConditionLeaf:
         """Test list operators with list values"""
         # Test list_contains operator
         condition = ConditionLeaf(
-            field="user.permissions", operator=Operator.list_contains, value="write"
+            field_address="user.permissions",
+            operator=Operator.list_contains,
+            value="write",
         )
         assert condition.operator == Operator.list_contains
         assert condition.value == "write"
 
         # Test not_in_list operator
         condition = ConditionLeaf(
-            field="user.roles",
+            field_address="user.roles",
             operator=Operator.not_in_list,
             value=["banned", "suspended"],
         )
@@ -77,7 +79,7 @@ class TestConditionLeaf:
     def test_list_operators_with_mixed_types(self):
         """Test list operators with mixed data types in lists"""
         condition = ConditionLeaf(
-            field="user.preferences",
+            field_address="user.preferences",
             operator=Operator.not_in_list,
             value=[1, "string", True, 3.14],
         )
@@ -87,7 +89,7 @@ class TestConditionLeaf:
     def test_list_operators_serialization(self):
         """Test serialization of list operators"""
         condition = ConditionLeaf(
-            field="user.roles", operator=Operator.list_contains, value="admin"
+            field_address="user.roles", operator=Operator.list_contains, value="admin"
         )
 
         data = condition.model_dump()
@@ -111,7 +113,7 @@ class TestConditionLeaf:
     def test_nested_field_paths(self):
         """Test condition leaf with deeply nested field paths"""
         condition = ConditionLeaf(
-            field="user.billing.subscription.status",
+            field_address="user.billing.subscription.status",
             operator=Operator.eq,
             value="active",
         )
@@ -121,23 +123,25 @@ class TestConditionLeaf:
         """Test condition leaf with different value types"""
         # String value
         str_condition = ConditionLeaf(
-            field="user.name", operator=Operator.eq, value="john"
+            field_address="user.name", operator=Operator.eq, value="john"
         )
         assert isinstance(str_condition.value, str)
 
         # Integer value
-        int_condition = ConditionLeaf(field="user.age", operator=Operator.gte, value=18)
+        int_condition = ConditionLeaf(
+            field_address="user.age", operator=Operator.gte, value=18
+        )
         assert isinstance(int_condition.value, int)
 
         # Float value
         float_condition = ConditionLeaf(
-            field="user.score", operator=Operator.lt, value=95.5
+            field_address="user.score", operator=Operator.lt, value=95.5
         )
         assert isinstance(float_condition.value, float)
 
         # Boolean value
         bool_condition = ConditionLeaf(
-            field="user.active", operator=Operator.eq, value=True
+            field_address="user.active", operator=Operator.eq, value=True
         )
         assert isinstance(bool_condition.value, bool)
 
@@ -150,8 +154,12 @@ class TestConditionGroup:
         group = ConditionGroup(
             op=GroupOperator.and_,
             conditions=[
-                ConditionLeaf(field="user.age", operator=Operator.gte, value=18),
-                ConditionLeaf(field="user.active", operator=Operator.eq, value=True),
+                ConditionLeaf(
+                    field_address="user.age", operator=Operator.gte, value=18
+                ),
+                ConditionLeaf(
+                    field_address="user.active", operator=Operator.eq, value=True
+                ),
             ],
         )
         assert group.op == GroupOperator.and_
@@ -163,9 +171,11 @@ class TestConditionGroup:
         group = ConditionGroup(
             op=GroupOperator.or_,
             conditions=[
-                ConditionLeaf(field="user.role", operator=Operator.eq, value="admin"),
                 ConditionLeaf(
-                    field="user.role", operator=Operator.eq, value="moderator"
+                    field_address="user.role", operator=Operator.eq, value="admin"
+                ),
+                ConditionLeaf(
+                    field_address="user.role", operator=Operator.eq, value="moderator"
                 ),
             ],
         )
@@ -181,7 +191,9 @@ class TestConditionGroup:
         """Test condition group with single condition"""
         group = ConditionGroup(
             op=GroupOperator.and_,
-            conditions=[ConditionLeaf(field="user.name", operator=Operator.exists)],
+            conditions=[
+                ConditionLeaf(field_address="user.name", operator=Operator.exists)
+            ],
         )
         assert len(group.conditions) == 1
         assert group.conditions[0].field == "user.name"
@@ -191,9 +203,15 @@ class TestConditionGroup:
         group = ConditionGroup(
             op=GroupOperator.or_,
             conditions=[
-                ConditionLeaf(field="user.age", operator=Operator.gte, value=18),
-                ConditionLeaf(field="user.verified", operator=Operator.eq, value=True),
-                ConditionLeaf(field="user.premium", operator=Operator.eq, value=True),
+                ConditionLeaf(
+                    field_address="user.age", operator=Operator.gte, value=18
+                ),
+                ConditionLeaf(
+                    field_address="user.verified", operator=Operator.eq, value=True
+                ),
+                ConditionLeaf(
+                    field_address="user.premium", operator=Operator.eq, value=True
+                ),
             ],
         )
         assert len(group.conditions) == 3
@@ -210,15 +228,21 @@ class TestRecursiveConditions:
         nested_group = ConditionGroup(
             op=GroupOperator.or_,
             conditions=[
-                ConditionLeaf(field="user.role", operator=Operator.eq, value="admin"),
-                ConditionLeaf(field="user.verified", operator=Operator.eq, value=True),
+                ConditionLeaf(
+                    field_address="user.role", operator=Operator.eq, value="admin"
+                ),
+                ConditionLeaf(
+                    field_address="user.verified", operator=Operator.eq, value=True
+                ),
             ],
         )
 
         main_group = ConditionGroup(
             op=GroupOperator.and_,
             conditions=[
-                ConditionLeaf(field="user.age", operator=Operator.gte, value=18),
+                ConditionLeaf(
+                    field_address="user.age", operator=Operator.gte, value=18
+                ),
                 nested_group,
             ],
         )
@@ -234,16 +258,16 @@ class TestRecursiveConditions:
         inner_group_1 = ConditionGroup(
             op=GroupOperator.and_,
             conditions=[
-                ConditionLeaf(field="A", operator=Operator.eq, value=True),
-                ConditionLeaf(field="B", operator=Operator.eq, value=True),
+                ConditionLeaf(field_address="A", operator=Operator.eq, value=True),
+                ConditionLeaf(field_address="B", operator=Operator.eq, value=True),
             ],
         )
 
         inner_group_2 = ConditionGroup(
             op=GroupOperator.and_,
             conditions=[
-                ConditionLeaf(field="C", operator=Operator.eq, value=True),
-                ConditionLeaf(field="D", operator=Operator.eq, value=True),
+                ConditionLeaf(field_address="C", operator=Operator.eq, value=True),
+                ConditionLeaf(field_address="D", operator=Operator.eq, value=True),
             ],
         )
 
@@ -255,7 +279,7 @@ class TestRecursiveConditions:
             op=GroupOperator.and_,
             conditions=[
                 middle_group,
-                ConditionLeaf(field="E", operator=Operator.eq, value=True),
+                ConditionLeaf(field_address="E", operator=Operator.eq, value=True),
             ],
         )
 
@@ -270,8 +294,8 @@ class TestRecursiveConditions:
         deepest = ConditionGroup(
             op=GroupOperator.or_,
             conditions=[
-                ConditionLeaf(field="A", operator=Operator.eq, value=True),
-                ConditionLeaf(field="B", operator=Operator.eq, value=True),
+                ConditionLeaf(field_address="A", operator=Operator.eq, value=True),
+                ConditionLeaf(field_address="B", operator=Operator.eq, value=True),
             ],
         )
 
@@ -279,7 +303,7 @@ class TestRecursiveConditions:
             op=GroupOperator.and_,
             conditions=[
                 deepest,
-                ConditionLeaf(field="C", operator=Operator.eq, value=True),
+                ConditionLeaf(field_address="C", operator=Operator.eq, value=True),
             ],
         )
 
@@ -287,7 +311,7 @@ class TestRecursiveConditions:
             op=GroupOperator.or_,
             conditions=[
                 level_2,
-                ConditionLeaf(field="D", operator=Operator.eq, value=True),
+                ConditionLeaf(field_address="D", operator=Operator.eq, value=True),
             ],
         )
 
@@ -295,7 +319,7 @@ class TestRecursiveConditions:
             op=GroupOperator.and_,
             conditions=[
                 level_3,
-                ConditionLeaf(field="E", operator=Operator.eq, value=True),
+                ConditionLeaf(field_address="E", operator=Operator.eq, value=True),
             ],
         )
 
@@ -313,17 +337,25 @@ class TestRecursiveConditions:
         inner_group = ConditionGroup(
             op=GroupOperator.and_,
             conditions=[
-                ConditionLeaf(field="user.verified", operator=Operator.eq, value=True),
-                ConditionLeaf(field="user.premium", operator=Operator.eq, value=True),
+                ConditionLeaf(
+                    field_address="user.verified", operator=Operator.eq, value=True
+                ),
+                ConditionLeaf(
+                    field_address="user.premium", operator=Operator.eq, value=True
+                ),
             ],
         )
 
         mixed_group = ConditionGroup(
             op=GroupOperator.or_,
             conditions=[
-                ConditionLeaf(field="user.admin", operator=Operator.eq, value=True),
+                ConditionLeaf(
+                    field_address="user.admin", operator=Operator.eq, value=True
+                ),
                 inner_group,
-                ConditionLeaf(field="user.moderator", operator=Operator.eq, value=True),
+                ConditionLeaf(
+                    field_address="user.moderator", operator=Operator.eq, value=True
+                ),
             ],
         )
 
@@ -339,19 +371,23 @@ class TestEdgeCases:
     def test_condition_leaf_with_none_value_for_comparison_operators(self):
         """Test that comparison operators can have None values"""
         # This should be valid - the value can be None for any operator
-        condition = ConditionLeaf(field="user.name", operator=Operator.eq, value=None)
+        condition = ConditionLeaf(
+            field_address="user.name", operator=Operator.eq, value=None
+        )
         assert condition.value is None
 
     def test_very_long_field_path(self):
         """Test condition with very long field path"""
         long_path = "very.deeply.nested.object.with.many.levels.of.properties"
-        condition = ConditionLeaf(field=long_path, operator=Operator.exists)
+        condition = ConditionLeaf(field_address=long_path, operator=Operator.exists)
         assert condition.field == long_path
 
     def test_special_characters_in_field_path(self):
         """Test field paths with special characters"""
         condition = ConditionLeaf(
-            field="user.email_address", operator=Operator.eq, value="test@example.com"
+            field_address="user.email_address",
+            operator=Operator.eq,
+            value="test@example.com",
         )
         assert condition.field == "user.email_address"
 
@@ -359,18 +395,20 @@ class TestEdgeCases:
         """Test various numeric value types"""
         # Large integers
         condition = ConditionLeaf(
-            field="user.id", operator=Operator.eq, value=123456789
+            field_address="user.id", operator=Operator.eq, value=123456789
         )
         assert condition.value == 123456789
 
         # Negative numbers
-        condition = ConditionLeaf(field="user.score", operator=Operator.gt, value=-10.5)
+        condition = ConditionLeaf(
+            field_address="user.score", operator=Operator.gt, value=-10.5
+        )
         assert condition.value == -10.5
 
     def test_boolean_values(self):
         """Test boolean values"""
         condition = ConditionLeaf(
-            field="user.active", operator=Operator.eq, value=False
+            field_address="user.active", operator=Operator.eq, value=False
         )
         assert condition.value is False
 
@@ -380,7 +418,9 @@ class TestSerialization:
 
     def test_condition_leaf_serialization(self):
         """Test that condition leaf can be serialized to dict"""
-        condition = ConditionLeaf(field="user.name", operator=Operator.eq, value="john")
+        condition = ConditionLeaf(
+            field_address="user.name", operator=Operator.eq, value="john"
+        )
 
         data = condition.model_dump()
         assert data["field"] == "user.name"
@@ -392,8 +432,12 @@ class TestSerialization:
         group = ConditionGroup(
             op=GroupOperator.and_,
             conditions=[
-                ConditionLeaf(field="user.age", operator=Operator.gte, value=18),
-                ConditionLeaf(field="user.active", operator=Operator.eq, value=True),
+                ConditionLeaf(
+                    field_address="user.age", operator=Operator.gte, value=18
+                ),
+                ConditionLeaf(
+                    field_address="user.active", operator=Operator.eq, value=True
+                ),
             ],
         )
 
@@ -407,15 +451,21 @@ class TestSerialization:
         nested_group = ConditionGroup(
             op=GroupOperator.or_,
             conditions=[
-                ConditionLeaf(field="user.role", operator=Operator.eq, value="admin"),
-                ConditionLeaf(field="user.verified", operator=Operator.eq, value=True),
+                ConditionLeaf(
+                    field_address="user.role", operator=Operator.eq, value="admin"
+                ),
+                ConditionLeaf(
+                    field_address="user.verified", operator=Operator.eq, value=True
+                ),
             ],
         )
 
         main_group = ConditionGroup(
             op=GroupOperator.and_,
             conditions=[
-                ConditionLeaf(field="user.age", operator=Operator.gte, value=18),
+                ConditionLeaf(
+                    field_address="user.age", operator=Operator.gte, value=18
+                ),
                 nested_group,
             ],
         )
