@@ -1,13 +1,13 @@
-import { AntTag as Tag, Box } from "fidesui";
+import { AntSpace as Space, AntTag as Tag } from "fidesui";
 import { useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
+import styles from "~/features/common/table/cells/Cells.module.scss";
 import { useUpdateAssetsDataUseMutation } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import ConsentCategorySelect from "~/features/data-discovery-and-detection/action-center/ConsentCategorySelect";
 import isConsentCategory from "~/features/data-discovery-and-detection/action-center/utils/isConsentCategory";
-import TaxonomyCellContainer from "~/features/data-discovery-and-detection/tables/cells/TaxonomyCellContainer";
 import { StagedResourceAPIResponse } from "~/types/api/models/StagedResourceAPIResponse";
 import { isErrorResult } from "~/types/errors";
 
@@ -69,20 +69,20 @@ const DiscoveredAssetDataUseCell = ({
 
   if (readonly) {
     return (
-      <TaxonomyCellContainer>
+      <Space direction="vertical">
         {consentUses?.map((d) => (
           <Tag key={d} color="white">
             {getDataUseDisplayName(d)}
           </Tag>
         ))}
-      </TaxonomyCellContainer>
+      </Space>
     );
   }
 
   return (
-    <TaxonomyCellContainer>
+    <>
       {!isAdding && (
-        <>
+        <Space wrap>
           {consentUses?.map((d) => (
             <Tag
               key={d}
@@ -101,19 +101,12 @@ const DiscoveredAssetDataUseCell = ({
             addable
             aria-label="Add data use"
           />
-        </>
+        </Space>
       )}
       {isAdding && (
-        <Box
-          // eslint-disable-next-line tailwindcss/no-custom-classname
-          className="select-wrapper"
-          position="absolute"
-          zIndex={10}
-          top="0"
-          left="0"
-          width="100%"
-          height="max"
-          bgColor="#fff"
+        <div
+          className={styles.cellBleed}
+          style={{ backgroundColor: "var(--fides-color-white)" }}
         >
           <ConsentCategorySelect
             selectedTaxonomies={consentUses || []}
@@ -121,9 +114,9 @@ const DiscoveredAssetDataUseCell = ({
             onBlur={() => setIsAdding(false)}
             open
           />
-        </Box>
+        </div>
       )}
-    </TaxonomyCellContainer>
+    </>
   );
 };
 

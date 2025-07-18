@@ -28,6 +28,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Changed
 - Removes `data-testid` attributes from FidesJS production builds [#6351](https://github.com/ethyca/fides/pull/6351)
 
+### Developer Experience
+- Migrated Action Center tables to Ant Design [#6349](https://github.com/ethyca/fides/pull/6349)
+
 ## [2.66.0](https://github.com/ethyca/fides/compare/2.65.2...2.66.0)
 
 ### Added

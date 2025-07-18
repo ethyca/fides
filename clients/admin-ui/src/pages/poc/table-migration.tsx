@@ -313,8 +313,6 @@ export const TableMigrationPOC = () => {
           current: pageIndex,
           pageSize,
           total: totalRows,
-          showSizeChanger: true,
-          pageSizeOptions: [25, 50, 100],
         }}
         onChange={handleTableChange}
         onRow={(record) => ({

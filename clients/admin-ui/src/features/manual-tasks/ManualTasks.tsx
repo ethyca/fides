@@ -15,7 +15,6 @@ import FidesSpinner from "~/features/common/FidesSpinner";
 import { USER_PROFILE_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
 import { GlobalFilterV2 } from "~/features/common/table/v2/filters/GlobalFilterV2";
-import { PAGE_SIZES } from "~/features/common/table/v2/PaginationBar";
 import { formatUser } from "~/features/common/utils";
 import {
   ManualFieldRequestType,
@@ -243,8 +242,6 @@ export const ManualTasks = () => {
           current: pageIndex,
           pageSize,
           total: totalRows || 0,
-          showSizeChanger: true,
-          pageSizeOptions: PAGE_SIZES,
           showTotal: (total, range) =>
             `${range[0]}-${range[1]} of ${total} items`,
           onChange: (page, size) => {
