@@ -34,7 +34,7 @@ jobs:
 
       - name: Build FidesJS
         working-directory: clients/fides-js
-        run: npm run build
+        run: npm run build:test
 
       - name: Cypress Privacy Center E2E Tests
         uses: cypress-io/github-action@v6

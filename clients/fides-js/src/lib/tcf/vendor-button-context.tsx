@@ -1,4 +1,4 @@
-import { createContext, h } from "preact";
+import { createContext } from "preact";
 import { FC } from "preact/compat";
 import {
   Dispatch,

@@ -1,4 +1,4 @@
-import { ComponentChild, ComponentChildren, h } from "preact";
+import { ComponentChild, ComponentChildren } from "preact";
 
 const InfoBox = ({
   title,
