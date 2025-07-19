@@ -1,5 +1,5 @@
 import {
-  Box,
+  AntSpace as Space,
   Popover,
   PopoverArrow,
   PopoverBody,
@@ -37,24 +37,30 @@ const IconLegendTooltip = () => (
       <PopoverArrow bgColor="gray.800" />
       <PopoverBody border="none">
         <SimpleGrid columns={2} spacing={2}>
-          <Box>
-            <ChangeIndicator /> Change detected
-          </Box>
-          <Box>
-            <ClassificationIndicator /> Data labeled
-          </Box>
-          <Box>
-            <MonitoredIndicator /> Monitoring
-          </Box>
-          <Box>
-            <AdditionIndicator /> Addition detected
-          </Box>
-          <Box>
-            <MutedIndicator /> Unmonitored
-          </Box>
-          <Box>
-            <RemovalIndicator /> Removal detected
-          </Box>
+          <Space>
+            <ChangeIndicator />
+            <div>Change detected</div>
+          </Space>
+          <Space>
+            <ClassificationIndicator />
+            <div>Data labeled</div>
+          </Space>
+          <Space>
+            <MonitoredIndicator />
+            <div>Monitoring</div>
+          </Space>
+          <Space>
+            <AdditionIndicator />
+            <div>Addition detected</div>
+          </Space>
+          <Space>
+            <MutedIndicator />
+            <div>Unmonitored</div>
+          </Space>
+          <Space>
+            <RemovalIndicator />
+            <div>Removal detected</div>
+          </Space>
         </SimpleGrid>
       </PopoverBody>
     </PopoverContent>
