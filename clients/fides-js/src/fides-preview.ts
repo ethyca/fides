@@ -34,6 +34,7 @@ function cleanup(): void {
     // Remove the script from DOM to ensure complete cleanup
     currentScript.remove();
     currentScript = null;
+    window.Fides = undefined as unknown as FidesGlobal;
   }
   currentMode = null;
 }
