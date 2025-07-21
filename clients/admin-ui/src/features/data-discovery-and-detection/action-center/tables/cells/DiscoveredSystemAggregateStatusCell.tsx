@@ -1,16 +1,24 @@
-import { AntFlex as Flex, AntTooltip as Tooltip, Text } from "fidesui";
+import {
+  AntFlex as Flex,
+  AntTooltip as Tooltip,
+  AntTypography as Typography,
+} from "fidesui";
 
 import { STATUS_INDICATOR_MAP } from "~/features/data-discovery-and-detection/statusIndicators";
 import { SystemStagedResourcesAggregateRecord } from "~/types/api";
 
 import { DiscoveryStatusIcon } from "../../DiscoveryStatusIcon";
 
+const { Link } = Typography;
+
 interface DiscoveredSystemStatusCellProps {
   system: SystemStagedResourcesAggregateRecord;
+  rowClickUrl?: (record: SystemStagedResourcesAggregateRecord) => string;
 }
 
 export const DiscoveredSystemStatusCell = ({
   system,
+  rowClickUrl,
 }: DiscoveredSystemStatusCellProps) => {
   return (
     <Flex align="center">
@@ -20,16 +28,17 @@ export const DiscoveredSystemStatusCell = ({
           <span>{STATUS_INDICATOR_MAP.Change}</span>
         </Tooltip>
       )}
-      <Flex align="center" gap={4}>
-        <Text
-          fontSize="xs"
-          fontWeight="semibold"
-          lineHeight={4}
-          overflow="hidden"
-          textOverflow="ellipsis"
+      <Flex align="center" gap={4} className="max-w-[250px] flex-nowrap">
+        <Link
+          size="sm"
+          strong
+          ellipsis
+          href={rowClickUrl?.(system)}
+          onClick={(e) => e.stopPropagation()}
+          data-testid="system-name-link"
         >
           {system.name || "Uncategorized assets"}
-        </Text>
+        </Link>
         <DiscoveryStatusIcon consentStatus={system.consent_status} />
       </Flex>
     </Flex>

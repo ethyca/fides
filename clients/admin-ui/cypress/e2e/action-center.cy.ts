@@ -148,59 +148,76 @@ describe("Action center", () => {
     });
     it("should render the aggregated system results in a table", () => {
       cy.getByTestId("search-bar").should("exist");
-      cy.getByTestId("pagination-btn").should("exist");
-      cy.getByTestId("column-system_name").should("exist");
-      cy.getByTestId("column-total_updates").should("exist");
-      cy.getByTestId("column-data_use").should("exist");
-      cy.getByTestId("column-locations").should("exist");
-      cy.getByTestId("column-domains").should("exist");
-      cy.getByTestId("column-actions").should("exist");
-      cy.getByTestId(`row-${rowIds[0]}-col-system_name`).within(() => {
+
+      // table headers
+      cy.findByRole("columnheader", { name: "System" }).should("exist");
+      cy.findByRole("columnheader", { name: "Assets" }).should("exist");
+      cy.findByRole("columnheader", { name: "Categories of consent" }).should(
+        "exist",
+      );
+      cy.findByRole("columnheader", { name: "Locations" }).should("exist");
+      cy.findByRole("columnheader", { name: "Domains" }).should("exist");
+      cy.findByRole("columnheader", { name: "Actions" }).should("exist");
+
+      cy.getAntTableRow("[undefined]").within(() => {
         cy.getByTestId("change-icon").should("exist");
         cy.contains("Uncategorized assets").should("exist");
       });
-      cy.getByTestId(`row-${rowIds[3]}-col-system_name`).within(() => {
+      cy.getAntTableRow(rowIds[3]).within(() => {
         cy.getByTestId("change-icon").should("exist"); // new system
       });
       // data use column should be empty for uncategorized assets
-      cy.getByTestId(`row-${rowIds[0]}-col-data_use`).should("be.empty");
+      cy.getAntTableRow("[undefined]").within(() => {
+        cy.getByTestId("tag-expandable-cell-empty").should("exist");
+      });
       // cy.getByTestId("row-1-col-system_name").within(() => {
       //   cy.getByTestId("change-icon").should("not.exist"); // existing result
       //   cy.contains("Google Tag Manager").should("exist");
       // });
       // data use column should not be empty for other assets
-      cy.getByTestId(`row-${rowIds[1]}-col-data_use`)
-        .children()
-        .should("have.length", 1);
+      cy.getAntTableRow(rowIds[1]).within(() => {
+        cy.getByTestId("tag-expandable-cell")
+          .first()
+          .children()
+          .should("have.length", 1);
+      });
 
       // multiple locations
-      cy.getByTestId(`row-${rowIds[2]}-col-locations`)
-        .should("contain", "United States")
-        .and("contain", "Canada");
+      cy.getAntTableRow(rowIds[2]).within(() => {
+        cy.getByTestId("tag-expandable-cell")
+          .last()
+          .should("contain", "United States")
+          .and("contain", "Canada");
+      });
       // single location
-      cy.getByTestId(`row-${rowIds[3]}-col-locations`).should(
-        "contain",
-        "United States",
-      );
+      cy.getAntTableRow(rowIds[3]).within(() => {
+        cy.getByTestId("tag-expandable-cell")
+          .last()
+          .should("contain", "United States");
+      });
 
       // multiple domains
-      cy.getByTestId(`row-${rowIds[0]}-col-domains`)
-        .should("contain", "29 domains")
-        .within(() => {
-          cy.get("button").click({ force: true });
-          cy.get("li").should("have.length", 29);
-        });
+      cy.getAntTableRow("[undefined]").within(() => {
+        cy.getByTestId("list-expandable-cell")
+          .should("contain", "29 domains")
+          .within(() => {
+            cy.get("button").click({ force: true });
+            cy.get("li").should("have.length", 29);
+          });
+      });
       // single domain
-      cy.getByTestId(`row-${rowIds[3]}-col-domains`).should(
-        "contain",
-        "analytics.google.com",
-      );
-      cy.getByTestId(`row-${rowIds[0]}-col-actions`).within(() => {
+      cy.getAntTableRow(rowIds[3]).within(() => {
+        cy.getByTestId("list-expandable-cell-single").should(
+          "contain",
+          "analytics.google.com",
+        );
+      });
+      cy.getAntTableRow("[undefined]").within(() => {
         cy.getByTestId("add-btn").should("be.disabled");
       });
     });
     it("should ignore all assets in an uncategorized system", () => {
-      cy.getByTestId(`row-${rowIds[0]}-col-actions`).within(() => {
+      cy.getAntTableRow("[undefined]").within(() => {
         cy.getByTestId("ignore-btn").click({ force: true });
       });
       cy.wait("@ignoreMonitorResultSystem").then((interception) => {
@@ -212,7 +229,7 @@ describe("Action center", () => {
       );
     });
     it("should add all assets in a categorized system", () => {
-      cy.getByTestId(`row-${rowIds[1]}-col-actions`).within(() => {
+      cy.getAntTableRow(rowIds[1]).within(() => {
         cy.getByTestId("add-btn").click({ force: true });
       });
       cy.wait("@addMonitorResultSystem");
@@ -222,7 +239,7 @@ describe("Action center", () => {
       );
     });
     it("should ignore all assets in a categorized system", () => {
-      cy.getByTestId(`row-${rowIds[1]}-col-actions`).within(() => {
+      cy.getAntTableRow(rowIds[1]).within(() => {
         cy.getByTestId("ignore-btn").click({ force: true });
       });
       cy.wait("@ignoreMonitorResultSystem");
@@ -232,7 +249,7 @@ describe("Action center", () => {
       );
     });
     it("shouldn't allow bulk add when uncategorized system is selected", () => {
-      cy.getByTestId(`row-${rowIds[0]}-col-select`).find("label").click();
+      cy.getAntTableRow("[undefined]").findByRole("checkbox").click();
       cy.getByTestId("selected-count").should("contain", "1 selected");
       cy.getByTestId("bulk-actions-menu").click();
       cy.get(".ant-dropdown-menu-item")
@@ -241,8 +258,8 @@ describe("Action center", () => {
     });
     it("should bulk add results from categorized systems", () => {
       cy.getByTestId("bulk-actions-menu").should("be.disabled");
-      cy.getByTestId(`row-${rowIds[1]}-col-select`).find("label").click();
-      cy.getByTestId(`row-${rowIds[2]}-col-select`).find("label").click();
+      cy.getAntTableRow(rowIds[1]).findByRole("checkbox").click();
+      cy.getAntTableRow(rowIds[2]).findByRole("checkbox").click();
       cy.getByTestId("selected-count").should("contain", "2 selected");
       cy.getByTestId("bulk-actions-menu").should("not.be.disabled");
       cy.getByTestId("bulk-actions-menu").click();
@@ -254,9 +271,9 @@ describe("Action center", () => {
       );
     });
     it("should bulk ignore results from all systems", () => {
-      cy.getByTestId(`row-${rowIds[0]}-col-select`).find("label").click();
-      cy.getByTestId(`row-${rowIds[1]}-col-select`).find("label").click();
-      cy.getByTestId(`row-${rowIds[2]}-col-select`).find("label").click();
+      cy.getAntTableRow("[undefined]").findByRole("checkbox").click();
+      cy.getAntTableRow(rowIds[1]).findByRole("checkbox").click();
+      cy.getAntTableRow(rowIds[2]).findByRole("checkbox").click();
       cy.getByTestId("selected-count").should("contain", "3 selected");
       cy.getByTestId("bulk-actions-menu").should("not.be.disabled");
       cy.getByTestId("bulk-actions-menu").click();
@@ -268,15 +285,14 @@ describe("Action center", () => {
       );
     });
     it("should navigate to table view on row click", () => {
-      cy.getByTestId(`row-${rowIds[1]}-col-system_name`).click();
+      cy.getAntTableRow(rowIds[1]).within(() => {
+        cy.getByTestId("system-name-link").click();
+      });
       cy.url().should(
         "contain",
         "system_key-8fe42cdb-af2e-4b9e-9b38-f75673180b88",
       );
-      cy.getByTestId("page-breadcrumb").should(
-        "contain",
-        "system_key-8fe42cdb-af2e-4b9e-9b38-f75673180b88",
-      );
+      cy.getByTestId("page-breadcrumb").should("contain", "Google Tag Manager");
     });
 
     describe("tab navigation", () => {
@@ -284,24 +300,27 @@ describe("Action center", () => {
         cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}#attention-required`);
         cy.location("hash").should("eq", "#attention-required");
 
-        // eslint-disable-next-line cypress/no-unnecessary-waiting
-        cy.wait(500);
         cy.getAntTab("Recent activity").click({ force: true });
         cy.location("hash").should("eq", "#recent-activity");
 
         // "recent activity" tab should be read-only
         cy.getByTestId("bulk-actions-menu").should("be.disabled");
-        cy.getByTestId(`row-${rowIds[0]}-col-select`).should("not.exist");
-        cy.getByTestId(`row-${rowIds[0]}-col-actions`).should("not.exist");
+        cy.get("thead tr")
+          .should("be.visible")
+          .within(() => {
+            cy.get("th [aria-label='Select all']").should("exist");
+            cy.contains("Actions").should("not.exist");
+          });
 
         // eslint-disable-next-line cypress/no-unnecessary-waiting
-        cy.wait(500);
+        cy.wait(300); // route is not immediately updated
         cy.getAntTab("Ignored").click({ force: true });
         cy.location("hash").should("eq", "#ignored");
+
         // "ignore" option should not show in bulk actions menu
-        cy.getByTestId(`row-${rowIds[0]}-col-select`).find("label").click();
-        cy.getByTestId(`row-${rowIds[2]}-col-select`).find("label").click();
-        cy.getByTestId(`row-${rowIds[3]}-col-select`).find("label").click();
+        cy.getAntTableRow("[undefined]").findByRole("checkbox").click();
+        cy.getAntTableRow(rowIds[2]).findByRole("checkbox").click();
+        cy.getAntTableRow(rowIds[3]).findByRole("checkbox").click();
         cy.getByTestId("bulk-actions-menu").click();
         cy.getByTestId("bulk-ignore").should("not.exist");
       });
@@ -309,26 +328,50 @@ describe("Action center", () => {
       it("maintains hash when clicking on a row", () => {
         // no hash
         cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}`);
-        cy.getByTestId(`row-${rowIds[0]}-col-system_name`).click();
-        cy.location("hash").should("eq", "");
+
+        cy.getAntTableRow("[undefined]").within(() => {
+          cy.getByTestId("system-name-link").should(
+            "have.attr",
+            "href",
+            `${ACTION_CENTER_ROUTE}/${webMonitorKey}/[undefined]`,
+          );
+        });
+
+        cy.get("[role='tab']").contains("Recent activity").click();
+        cy.getAntTableRow("[undefined]").within(() => {
+          cy.getByTestId("system-name-link").should(
+            "have.attr",
+            "href",
+            `${ACTION_CENTER_ROUTE}/${webMonitorKey}/[undefined]#recent-activity`,
+          );
+        });
 
         // eslint-disable-next-line cypress/no-unnecessary-waiting
-        cy.wait(500);
-        cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}#attention-required`);
-        cy.getByTestId(`row-${rowIds[0]}-col-system_name`).click();
+        cy.wait(300); // route is not immediately updated
+
+        cy.get("[role='tab']").contains("Ignored").click();
+        cy.getAntTableRow("[undefined]").within(() => {
+          cy.getByTestId("system-name-link").should(
+            "have.attr",
+            "href",
+            `${ACTION_CENTER_ROUTE}/${webMonitorKey}/[undefined]#ignored`,
+          );
+        });
+
+        // eslint-disable-next-line cypress/no-unnecessary-waiting
+        cy.wait(300); // route is not immediately updated
+
+        cy.get("[role='tab']").contains("Attention required").click();
+        cy.getAntTableRow("[undefined]").within(() => {
+          cy.getByTestId("system-name-link")
+            .should(
+              "have.attr",
+              "href",
+              `${ACTION_CENTER_ROUTE}/${webMonitorKey}/[undefined]#attention-required`,
+            )
+            .click();
+        });
         cy.location("hash").should("eq", "#attention-required");
-
-        // eslint-disable-next-line cypress/no-unnecessary-waiting
-        cy.wait(500);
-        cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}#recent-activity`);
-        cy.getByTestId(`row-${rowIds[0]}-col-system_name`).click();
-        cy.location("hash").should("eq", "#recent-activity");
-
-        // eslint-disable-next-line cypress/no-unnecessary-waiting
-        cy.wait(500);
-        cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}#ignored`);
-        cy.getByTestId(`row-${rowIds[0]}-col-system_name`).click();
-        cy.location("hash").should("eq", "#ignored");
       });
     });
   });
@@ -345,27 +388,30 @@ describe("Action center", () => {
     });
     it("should render uncategorized asset results view", () => {
       cy.getByTestId("search-bar").should("exist");
-      cy.getByTestId("pagination-btn").should("exist");
       cy.getByTestId("bulk-actions-menu").should("be.disabled");
       cy.getByTestId("add-all").should("be.disabled");
 
       // table columns
-      cy.getByTestId("column-select").should("exist");
-      cy.getByTestId("column-name").should("exist");
-      cy.getByTestId("column-resource_type").should("exist");
-      cy.getByTestId("column-system").should("exist");
-      cy.getByTestId("column-data_use").should("exist");
-      cy.getByTestId("column-locations").should("exist");
-      cy.getByTestId("column-domain").should("exist");
-      cy.getByTestId("column-consent_aggregated").should("exist");
-      cy.getByTestId("column-actions").should("exist");
-      cy.getByTestId(`row-${firstRowUrn}-col-actions`).within(() => {
+      cy.get("thead tr").within(() => {
+        cy.get("th [aria-label='Select all']").should("exist");
+        cy.contains("Asset").should("exist");
+        cy.contains("Type").should("exist");
+        cy.contains("System").should("exist");
+        cy.contains("Categories of consent").should("exist");
+        cy.contains("Locations").should("exist");
+        cy.contains("Domain").should("exist");
+        cy.contains("Detected on").should("exist");
+        cy.contains("Discovery").should("exist");
+        cy.contains("Actions").should("exist");
+      });
+
+      cy.getAntTableRow(firstRowUrn).within(() => {
         cy.getByTestId("add-btn").should("be.disabled");
-        cy.getByTestId("ignore-btn").should("exist");
+        cy.getByTestId("ignore-btn").should("not.be.disabled");
       });
     });
     it("should allow adding a system on uncategorized assets", () => {
-      cy.getByTestId(`row-${firstRowUrn}-col-system`).within(() => {
+      cy.getAntTableRow(firstRowUrn).within(() => {
         cy.getByTestId("add-system-btn").click();
       });
       cy.wait("@getSystemsPaginated");
@@ -398,41 +444,50 @@ describe("Action center", () => {
     });
     it("should render asset results view", () => {
       cy.getByTestId("search-bar").should("exist");
-      cy.getByTestId("pagination-btn").should("exist");
       cy.getByTestId("bulk-actions-menu").should("be.disabled");
       cy.getByTestId("add-all").should("exist");
 
       // table columns
-      cy.getByTestId("column-select").should("exist");
-      cy.getByTestId("column-name").should("exist");
-      cy.getByTestId("column-resource_type").should("exist");
-      cy.getByTestId("column-system").should("exist");
-      cy.getByTestId("column-data_use").should("exist");
-      cy.getByTestId("column-locations").should("exist");
-      cy.getByTestId("column-domain").should("exist");
-      cy.getByTestId("column-consent_aggregated").should("exist");
-      cy.getByTestId("column-page").should("exist");
-      cy.getByTestId(`row-${rowUrns[0]}-col-page`).should(
-        "contain",
-        "single_page",
-      );
-      cy.getByTestId(`row-${rowUrns[1]}-col-page`).within(() => {
-        cy.get("p").should("contain", "3 pages");
-        cy.get("button").click({ force: true });
-        cy.get("li").should("have.length", 3);
+      cy.get("thead tr").within(() => {
+        cy.get("th [aria-label='Select all']").should("exist");
+        cy.contains("Asset").should("exist");
+        cy.contains("Type").should("exist");
+        cy.contains("System").should("exist");
+        cy.contains("Categories of consent").should("exist");
+        cy.contains("Locations").should("exist");
+        cy.contains("Domain").should("exist");
+        cy.contains("Detected on").should("exist");
+        cy.contains("Discovery").should("exist");
+        cy.contains("Actions").should("exist");
       });
-      // show nothing when page field is undefined or []
-      cy.getByTestId(`row-${rowUrns[2]}-col-page`).should("be.empty");
-      cy.getByTestId(`row-${rowUrns[3]}-col-page`).should("be.empty");
-      cy.getByTestId("column-actions").should("exist");
-      cy.getByTestId(`row-${rowUrns[0]}-col-actions`).within(() => {
+
+      cy.getAntTableRow(rowUrns[0]).within(() => {
+        cy.get("[data-testid='list-expandable-cell-single']").should(
+          "contain",
+          "single_page",
+        );
+      });
+      cy.getAntTableRow(rowUrns[1]).within(() => {
+        cy.get("[data-testid='list-expandable-cell']").within(() => {
+          cy.get("span").should("contain", "3 pages");
+          cy.get("button").click({ force: true });
+          cy.get("li").should("have.length", 3);
+        });
+      });
+      cy.getAntTableRow(rowUrns[2]).within(() => {
+        cy.get("[data-testid='list-expandable-cell']").should("not.exist");
+      });
+      cy.getAntTableRow(rowUrns[3]).within(() => {
+        cy.get("[data-testid='list-expandable-cell']").should("not.exist");
+      });
+      cy.getAntTableRow(rowUrns[4]).within(() => {
         cy.getByTestId("add-btn").should("exist");
         cy.getByTestId("ignore-btn").should("exist");
       });
     });
     it("should allow editing a system on categorized assets", () => {
-      cy.getByTestId(`row-${rowUrns[3]}-col-system`).within(() => {
-        cy.getByTestId("system-badge").click();
+      cy.getAntTableRow(rowUrns[3]).within(() => {
+        cy.getByTestId("system-badge").click({ force: true });
       });
       cy.wait("@getSystemsPaginated");
       cy.getByTestId("system-select").antSelect("Fidesctl System");
@@ -448,7 +503,7 @@ describe("Action center", () => {
       cy.wait(100);
 
       // Now test with search
-      cy.getByTestId(`row-${rowUrns[2]}-col-system`).within(() => {
+      cy.getAntTableRow(rowUrns[2]).within(() => {
         cy.getByTestId("system-badge").click({ force: true });
         cy.getByTestId("system-select").find("input").type("demo m");
         cy.wait("@getSystemsWithSearch").then((interception) => {
@@ -468,8 +523,8 @@ describe("Action center", () => {
     it("should allow creating a new system and assigning an asset to it", () => {
       stubVendorList();
       stubSystemVendors();
-      cy.getByTestId(`row-${rowUrns[4]}-col-system`).within(() => {
-        cy.getByTestId("system-badge").click();
+      cy.getAntTableRow(rowUrns[4]).within(() => {
+        cy.getByTestId("system-badge").click({ force: true });
       });
       cy.wait("@getSystemsPaginated");
       cy.getByTestId("add-new-system").click({ force: true });
@@ -486,7 +541,7 @@ describe("Action center", () => {
       );
     });
     it("should add individual assets", () => {
-      cy.getByTestId(`row-${rowUrns[0]}-col-actions`).within(() => {
+      cy.getAntTableRow(rowUrns[0]).within(() => {
         cy.getByTestId("add-btn").click({ force: true });
       });
       cy.wait("@addAssets");
@@ -496,7 +551,7 @@ describe("Action center", () => {
       );
     });
     it("should ignore individual assets", () => {
-      cy.getByTestId(`row-${rowUrns[0]}-col-actions`).within(() => {
+      cy.getAntTableRow(rowUrns[0]).within(() => {
         cy.getByTestId("ignore-btn").click({ force: true });
       });
       cy.wait("@ignoreAssets");
@@ -507,7 +562,7 @@ describe("Action center", () => {
     });
 
     it("should restore individual ignored assets", () => {
-      cy.getByTestId(`row-${rowUrns[1]}-col-actions`).within(() => {
+      cy.getAntTableRow(rowUrns[1]).within(() => {
         cy.getByTestId("restore-btn").click({ force: true });
       });
       cy.wait("@restoreAssets");
@@ -518,9 +573,9 @@ describe("Action center", () => {
     });
     it("should bulk add assets", () => {
       cy.getByTestId("bulk-actions-menu").should("be.disabled");
-      cy.getByTestId(`row-${rowUrns[0]}-col-select`).find("label").click();
-      cy.getByTestId(`row-${rowUrns[2]}-col-select`).find("label").click();
-      cy.getByTestId(`row-${rowUrns[3]}-col-select`).find("label").click();
+      cy.getAntTableRow(rowUrns[0]).findByRole("checkbox").click();
+      cy.getAntTableRow(rowUrns[2]).findByRole("checkbox").click();
+      cy.getAntTableRow(rowUrns[3]).findByRole("checkbox").click();
       cy.getByTestId("selected-count").should("contain", "3 selected");
       cy.getByTestId("bulk-actions-menu").should("not.be.disabled");
       cy.getByTestId("bulk-actions-menu").click();
@@ -533,9 +588,9 @@ describe("Action center", () => {
     });
     it("should bulk ignore assets", () => {
       cy.getByTestId("bulk-actions-menu").should("be.disabled");
-      cy.getByTestId(`row-${rowUrns[0]}-col-select`).find("label").click();
-      cy.getByTestId(`row-${rowUrns[2]}-col-select`).find("label").click();
-      cy.getByTestId(`row-${rowUrns[3]}-col-select`).find("label").click();
+      cy.getAntTableRow(rowUrns[0]).findByRole("checkbox").click();
+      cy.getAntTableRow(rowUrns[2]).findByRole("checkbox").click();
+      cy.getAntTableRow(rowUrns[3]).findByRole("checkbox").click();
       cy.getByTestId("selected-count").should("contain", "3 selected");
       cy.getByTestId("bulk-actions-menu").should("not.be.disabled");
       cy.getByTestId("bulk-actions-menu").click();
@@ -550,12 +605,12 @@ describe("Action center", () => {
     it("should bulk restore ignored assets", () => {
       cy.getAntTab("Ignored").click({ force: true });
       cy.getByTestId("bulk-actions-menu").should("be.disabled");
-      cy.getByTestId(`row-${rowUrns[0]}-col-select`).find("label").click();
-      cy.getByTestId(`row-${rowUrns[2]}-col-select`).find("label").click();
+      cy.getAntTableRow(rowUrns[0]).findByRole("checkbox").click();
+      cy.getAntTableRow(rowUrns[2]).findByRole("checkbox").click();
       cy.getByTestId("selected-count").should("contain", "2 selected");
       cy.getByTestId("bulk-actions-menu").should("not.be.disabled");
       cy.getByTestId("bulk-actions-menu").click();
-      cy.get(".ant-dropdown-menu-item").contains("Restore").click();
+      cy.findByRole("menuitem", { name: "Restore" }).click();
       cy.wait("@restoreAssets");
       cy.getByTestId("toast-success-msg").should(
         "contain",
@@ -585,9 +640,9 @@ describe("Action center", () => {
 
     it("should bulk assign assets to a system", () => {
       cy.getByTestId("bulk-actions-menu").should("be.disabled");
-      cy.getByTestId(`row-${rowUrns[0]}-col-select`).find("label").click();
-      cy.getByTestId(`row-${rowUrns[2]}-col-select`).find("label").click();
-      cy.getByTestId(`row-${rowUrns[3]}-col-select`).find("label").click();
+      cy.getAntTableRow(rowUrns[0]).findByRole("checkbox").click();
+      cy.getAntTableRow(rowUrns[2]).findByRole("checkbox").click();
+      cy.getAntTableRow(rowUrns[3]).findByRole("checkbox").click();
       cy.getByTestId("selected-count").should("contain", "3 selected");
       cy.getByTestId("bulk-actions-menu").should("not.be.disabled");
       cy.getByTestId("bulk-actions-menu").click();
@@ -605,15 +660,13 @@ describe("Action center", () => {
     it("should bulk add data uses to assets", () => {
       stubTaxonomyEntities();
       cy.getByTestId("bulk-actions-menu").should("be.disabled");
-      cy.getByTestId(`row-${rowUrns[0]}-col-select`).find("label").click();
-      cy.getByTestId(`row-${rowUrns[2]}-col-select`).find("label").click();
-      cy.getByTestId(`row-${rowUrns[3]}-col-select`).find("label").click();
+      cy.getAntTableRow(rowUrns[0]).findByRole("checkbox").click();
+      cy.getAntTableRow(rowUrns[2]).findByRole("checkbox").click();
+      cy.getAntTableRow(rowUrns[3]).findByRole("checkbox").click();
       cy.getByTestId("selected-count").should("contain", "3 selected");
       cy.getByTestId("bulk-actions-menu").should("not.be.disabled");
       cy.getByTestId("bulk-actions-menu").click();
-      cy.get(".ant-dropdown-menu-item")
-        .contains("Add consent category")
-        .click();
+      cy.findByRole("menuitem", { name: "Add consent category" }).click();
       cy.getByTestId("taxonomy-select").antSelect("essential");
       cy.getByTestId("save-btn").click({ force: true });
       cy.wait("@patchAssets");
@@ -621,14 +674,14 @@ describe("Action center", () => {
         "contain",
         "Consent categories added to 3 assets from Google Tag Manager.",
       );
-      cy.getByTestId(`row-${rowUrns[0]}-col-select`).within(() => {
-        cy.get("input").should("have.attr", "checked");
+      cy.getAntTableRow(rowUrns[0]).within(() => {
+        cy.findByRole("checkbox").should("be.checked");
       });
-      cy.getByTestId(`row-${rowUrns[2]}-col-select`).within(() => {
-        cy.get("input").should("have.attr", "checked");
+      cy.getAntTableRow(rowUrns[2]).within(() => {
+        cy.findByRole("checkbox").should("be.checked");
       });
-      cy.getByTestId(`row-${rowUrns[3]}-col-select`).within(() => {
-        cy.get("input").should("have.attr", "checked");
+      cy.getAntTableRow(rowUrns[3]).within(() => {
+        cy.findByRole("checkbox").should("be.checked");
       });
       cy.getByTestId("bulk-actions-menu").should("not.be.disabled");
     });
@@ -641,36 +694,36 @@ describe("Action center", () => {
         cy.location("hash").should("eq", "#attention-required");
 
         // eslint-disable-next-line cypress/no-unnecessary-waiting
-        cy.wait(500);
+        cy.wait(300); // route is not immediately updated
         cy.getAntTab("Recent activity").click({ force: true });
         cy.location("hash").should("eq", "#recent-activity");
 
         // "recent activity" tab should be read-only
         cy.getByTestId("bulk-actions-menu").should("be.disabled");
-        cy.getByTestId(`row-${rowUrns[0]}-col-system`).within(() => {
+        cy.getAntTableRow(rowUrns[0]).within(() => {
           cy.getByTestId("system-badge")
             .should("exist")
             .should("not.have.attr", "onClick");
           cy.getByTestId("add-system-btn").should("not.exist");
         });
-        cy.getByTestId(`row-${rowUrns[0]}-col-data_use`).within(() => {
+        cy.getAntTableRow(rowUrns[0]).within(() => {
           cy.getByTestId("taxonomy-add-btn").should("not.exist");
         });
-        cy.getByTestId(`row-${rowUrns[0]}-col-select`).should("not.exist");
-        cy.getByTestId("col-actions").should("not.exist");
+        cy.findByRole("columnheader", { name: "Select all" }).should(
+          "not.exist",
+        );
+        cy.findByRole("columnheader", { name: "Actions" }).should("not.exist");
 
         // eslint-disable-next-line cypress/no-unnecessary-waiting
-        cy.wait(500);
+        cy.wait(300); // route is not immediately updated
         cy.getAntTab("Ignored").click({ force: true });
         cy.location("hash").should("eq", "#ignored");
         // "ignore" option should not show in bulk actions menu
-        cy.getByTestId(`row-${rowUrns[0]}-col-select`).find("label").click();
-        cy.getByTestId(`row-${rowUrns[2]}-col-select`).find("label").click();
-        cy.getByTestId(`row-${rowUrns[3]}-col-select`).find("label").click();
+        cy.getAntTableRow(rowUrns[0]).findByRole("checkbox").click();
+        cy.getAntTableRow(rowUrns[2]).findByRole("checkbox").click();
+        cy.getAntTableRow(rowUrns[3]).findByRole("checkbox").click();
         cy.getByTestId("bulk-actions-menu").click();
-        cy.get(".ant-dropdown-menu-item")
-          .contains("Ignore")
-          .should("not.exist");
+        cy.findByRole("menuitem", { name: "Ignore" }).should("not.exist");
       });
     });
   });
@@ -728,68 +781,64 @@ describe("Action center", () => {
       });
 
       it("should display discovery column with consent status badges", () => {
-        cy.getByTestId("column-consent_aggregated").should("exist");
-        cy.getByTestId("column-consent_aggregated").should(
-          "contain",
-          "Discovery",
-        );
+        cy.get("thead tr").within(() => {
+          cy.contains("Discovery").should("exist");
+        });
 
         // Check "Without consent" badge
-        cy.getByTestId(`row-${rowUrns[0]}-col-consent_aggregated`).within(
-          () => {
-            cy.contains("Without consent").should("exist");
-            cy.getByTestId("status-badge_without-consent").should(
-              "have.attr",
-              "data-color",
-              "error",
-            );
-          },
-        );
+        cy.getAntTableRow(rowUrns[0]).within(() => {
+          cy.contains("Without consent").should("exist");
+          cy.getByTestId("status-badge_without-consent").should(
+            "have.attr",
+            "data-color",
+            "error",
+          );
+        });
 
         // Check "With consent" badge
-        cy.getByTestId(`row-${rowUrns[1]}-col-consent_aggregated`).within(
-          () => {
-            cy.contains("With consent").should("exist");
-            cy.getByTestId("status-badge_with-consent").should(
-              "have.attr",
-              "data-color",
-              "success",
-            );
-          },
-        );
+        cy.getAntTableRow(rowUrns[1]).within(() => {
+          cy.contains("With consent").should("exist");
+          cy.getByTestId("status-badge_with-consent").should(
+            "have.attr",
+            "data-color",
+            "success",
+          );
+        });
 
         // Check "Without consent" badge for another asset
-        cy.getByTestId(`row-${rowUrns[2]}-col-consent_aggregated`).within(
-          () => {
-            cy.contains("Without consent").should("exist");
-            cy.getByTestId("status-badge_without-consent").should(
-              "have.attr",
-              "data-color",
-              "error",
-            );
-          },
-        );
+        cy.getAntTableRow(rowUrns[2]).within(() => {
+          cy.contains("Without consent").should("exist");
+          cy.getByTestId("status-badge_without-consent").should(
+            "have.attr",
+            "data-color",
+            "error",
+          );
+        });
       });
 
       it("should show warning icon in discovery column header when there are assets without consent", () => {
-        cy.getByTestId("column-consent_aggregated").within(() => {
-          cy.getByTestId("discovery-status-icon-alert").should("exist");
+        cy.findByRole("columnheader", { name: "Discovery" }).within(() => {
+          cy.getByTestId("discovery-status-icon-alert")
+            .should("exist")
+            .scrollIntoView();
           cy.getByTestId("discovery-status-icon-alert").realHover();
         });
-        cy.get(".ant-tooltip-inner").should(
-          "contain",
-          "One or more assets were detected without consent",
-        );
+        cy.findByRole("tooltip")
+          .should("be.visible")
+          .should(
+            "contain",
+            "One or more assets were detected without consent",
+          );
       });
 
       it("should open consent breakdown modal when clicking 'Without consent' badge", () => {
-        cy.getByTestId(`row-${rowUrns[0]}-col-consent_aggregated`).within(
-          () => {
-            cy.contains("Without consent").within(() => {
-              cy.get("button").click();
+        cy.getAntTableRow(rowUrns[0]).within(() => {
+          cy.getByTestId("status-badge_without-consent")
+            .scrollIntoView()
+            .within(() => {
+              cy.findByRole("button").click();
             });
-          },
-        );
+        });
 
         cy.wait("@getConsentBreakdown");
 
@@ -807,21 +856,21 @@ describe("Action center", () => {
           cy.contains("Domain:").should("exist");
 
           // Check table headers
-          cy.get(".ant-table-thead").within(() => {
-            cy.contains("Location").should("exist");
-            cy.contains("Page").should("exist");
-          });
+          cy.findByRole("columnheader", { name: "Location" }).should("exist");
+          cy.findByRole("columnheader", { name: "Page" }).should("exist");
 
           // Check table data
-          cy.getByTestId("consent-breakdown-modal-table").within(() => {
-            cy.get("tbody tr").should("have.length", 3);
-            cy.get("tbody tr")
-              .first()
-              .within(() => {
-                cy.contains("United States").should("exist");
-                cy.get("a[href='https://example.com/page1']").should("exist");
-              });
-          });
+          cy.getByTestId("consent-breakdown-modal-table")
+            .should("be.visible")
+            .within(() => {
+              cy.get("tr[data-row-key]").should("have.length", 3);
+              cy.get("tr[data-row-key]")
+                .first()
+                .within(() => {
+                  cy.contains("United States").should("exist");
+                  cy.get("a[href='https://example.com/page1']").should("exist");
+                });
+            });
         });
 
         // Check modal footer buttons
@@ -837,13 +886,13 @@ describe("Action center", () => {
       });
 
       it("should open external links in new tab from consent breakdown modal", () => {
-        cy.getByTestId(`row-${rowUrns[0]}-col-consent_aggregated`).within(
-          () => {
-            cy.contains("Without consent").within(() => {
-              cy.get("button").click();
+        cy.getAntTableRow(rowUrns[0]).within(() => {
+          cy.getByTestId("status-badge_without-consent")
+            .scrollIntoView()
+            .within(() => {
+              cy.findByRole("button").click({ force: true });
             });
-          },
-        );
+        });
 
         cy.wait("@getConsentBreakdown");
 
@@ -853,7 +902,7 @@ describe("Action center", () => {
             .should("have.attr", "rel", "noopener noreferrer");
         });
 
-        cy.contains("Cancel").click();
+        cy.findByRole("button", { name: "Cancel" }).click();
       });
     });
 
@@ -864,7 +913,7 @@ describe("Action center", () => {
       });
 
       it("should show consent warning icon in system column header", () => {
-        cy.getByTestId("column-system_name").within(() => {
+        cy.findByRole("columnheader", { name: "System" }).within(() => {
           cy.getByTestId("discovery-status-icon-alert").should("exist");
           cy.getByTestId("discovery-status-icon-alert").realHover();
         });

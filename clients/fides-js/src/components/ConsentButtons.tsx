@@ -1,4 +1,4 @@
-import { Fragment, h, VNode } from "preact";
+import { Fragment, VNode } from "preact";
 import { useEffect, useState } from "preact/hooks";
 
 import {

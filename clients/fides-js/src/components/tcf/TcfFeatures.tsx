@@ -1,5 +1,3 @@
-import { h } from "preact";
-
 import { PrivacyExperience } from "../../lib/consent-types";
 import { FidesEventDetailsPreference } from "../../lib/events";
 import { useI18n } from "../../lib/i18n/i18n-context";

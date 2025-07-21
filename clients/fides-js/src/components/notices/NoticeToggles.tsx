@@ -1,5 +1,3 @@
-import { h } from "preact";
-
 import { GpcStatus } from "../../lib/consent-types";
 import { FidesEventDetailsPreference } from "../../lib/events";
 import { DEFAULT_LOCALE, getCurrentLocale } from "../../lib/i18n";

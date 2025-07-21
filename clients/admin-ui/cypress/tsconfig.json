@@ -3,7 +3,12 @@
     "jsx": "react",
     "target": "es5",
     "lib": ["es5", "dom"],
-    "types": ["cypress", "node", "cypress-real-events"],
+    "types": [
+      "cypress",
+      "node",
+      "cypress-real-events",
+      "@testing-library/cypress"
+    ],
     "baseUrl": "..",
     "paths": {
       "~/*": ["src/*"]
