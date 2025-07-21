@@ -60,7 +60,7 @@ class SQLConnector(BaseConnector[Engine]):
             )
         self.ssh_server: sshtunnel._ForwardServer = None
 
-    def should_dry_run(self, mode_to_check) -> bool:
+    def should_dry_run(self, mode_to_check: SqlDryRunMode) -> bool:
         """
         Check if SQL dry run is enabled for the specified mode.
 
