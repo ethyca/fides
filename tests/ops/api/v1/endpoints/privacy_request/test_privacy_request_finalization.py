@@ -77,10 +77,7 @@ class TestFinalizePrivacyRequest:
         )
         print(user.id)
         assert privacy_request_requires_manual_finalization.finalized_by is not None
-        assert (
-            privacy_request_requires_manual_finalization.finalized_by
-            == user.id
-        )
+        assert privacy_request_requires_manual_finalization.finalized_by == user.id
 
     def test_finalize_privacy_request_root_user(
         self,
