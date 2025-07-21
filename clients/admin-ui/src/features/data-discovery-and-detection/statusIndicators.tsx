@@ -1,42 +1,59 @@
-import { CircleIcon } from "~/features/common/Icon/CircleIcon";
-import { RightDownArrowIcon } from "~/features/common/Icon/RightDownArrowIcon";
-import { RightUpArrowIcon } from "~/features/common/Icon/RightUpArrowIcon";
-import { TagIcon } from "~/features/common/Icon/TagIcon";
+import { Icons } from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
+
+import { RightDownArrowIcon } from "~/features/common/Icon/svg/RightDownArrowIcon";
+import { RightUpArrowIcon } from "~/features/common/Icon/svg/RightUpArrowIcon";
+import { TagIcon } from "~/features/common/Icon/svg/TagIcon";
 import { ResourceChangeType } from "~/features/data-discovery-and-detection/types/ResourceChangeType";
 
-// FIXME: [ENG-893] remove all layout styles (margins) from these components and apply those to the wrapper. Layout styles should never be hard coded on a component!
-
 export const AdditionIndicator = () => (
-  <RightUpArrowIcon color="green.400" boxSize={2} data-testid="add-icon" />
-);
-
-export const RemovalIndicator = () => (
-  <RightDownArrowIcon color="red.400" boxSize={2} data-testid="remove-icon" />
-);
-
-export const ClassificationIndicator = () => (
-  <TagIcon color="orange.400" boxSize={3} data-testid="classify-icon" />
-);
-
-export const ChangeIndicator = () => (
-  <CircleIcon
-    color="blue.400"
-    boxSize={2.5}
-    mb="2px"
-    data-testid="change-icon"
+  <RightUpArrowIcon
+    style={{ color: palette.FIDESUI_SUCCESS }}
+    className="size-2"
+    data-testid="add-icon"
   />
 );
 
+export const RemovalIndicator = () => (
+  <RightDownArrowIcon
+    style={{ color: palette.FIDESUI_ERROR }}
+    className="size-2"
+    data-testid="remove-icon"
+  />
+);
+
+export const ClassificationIndicator = () => (
+  <TagIcon
+    style={{ color: palette.FIDESUI_WARNING }}
+    className="size-3"
+    data-testid="classify-icon"
+  />
+);
+
+const CircleIndicator = ({ color }: { color: string }) => (
+  <Icons.CircleSolid style={{ color }} className="size-2" />
+);
+
+export const ChangeIndicator = () => (
+  <CircleIndicator color={palette.FIDESUI_INFO} data-testid="change-icon" />
+);
+
 export const MonitoredIndicator = () => (
-  <CircleIcon color="green.400" boxSize={2} data-testid="monitored-icon" />
+  <CircleIndicator
+    color={palette.FIDESUI_SUCCESS}
+    data-testid="monitored-icon"
+  />
 );
 
 export const MutedIndicator = () => (
-  <CircleIcon color="red.400" boxSize={2} data-testid="muted-icon" />
+  <CircleIndicator color={palette.FIDESUI_ERROR} data-testid="muted-icon" />
 );
 
 export const InProgressIndicator = () => (
-  <CircleIcon color="orange.400" boxSize={2} data-testid="in-progress-icon" />
+  <CircleIndicator
+    color={palette.FIDESUI_WARNING}
+    data-testid="in-progress-icon"
+  />
 );
 
 export const STATUS_INDICATOR_MAP: Record<
