@@ -1,6 +1,7 @@
 import { AntMessage as message } from "fidesui";
 import { useEffect, useMemo } from "react";
 
+import { useFeatures } from "~/features/common/features";
 import { formatUser } from "~/features/common/utils";
 import { useGetTasksQuery } from "~/features/manual-tasks/manual-tasks.slice";
 import {
@@ -10,17 +11,22 @@ import {
 import { ManualFieldListItem, ManualFieldStatus } from "~/types/api";
 
 export const usePrivacyRequestManualTasks = (privacyRequestId: string) => {
+  const { plus: isPlusEnabled } = useFeatures();
+
   const {
     data: tasksData,
     isLoading,
     error,
-  } = useGetTasksQuery({
-    page: 1,
-    size: 100,
-    privacyRequestId,
-    status: undefined, // Get all statuses, we'll filter for completed/skipped
-    includeFullSubmissionDetails: true,
-  });
+  } = useGetTasksQuery(
+    {
+      page: 1,
+      size: 100,
+      privacyRequestId,
+      status: undefined, // Get all statuses, we'll filter for completed/skipped
+      includeFullSubmissionDetails: true,
+    },
+    { skip: !isPlusEnabled },
+  );
 
   useEffect(() => {
     if (error) {
