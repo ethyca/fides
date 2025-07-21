@@ -1335,6 +1335,7 @@ def respondent(db):
     db.add(client)
     db.commit()
     db.refresh(client)
+    db.refresh(user)  # Refresh user to load the client relationship
     yield user
     user.delete(db)
 

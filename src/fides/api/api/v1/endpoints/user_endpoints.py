@@ -111,42 +111,6 @@ def _validate_current_user(user_id: str, user_from_token: FidesUser) -> None:
         )
 
 
-def _verify_user_read_scope(token_data: dict, client: ClientDetail) -> ClientDetail:
-    """
-    Verify that the user has USER_READ scope.
-    Returns the client if authorized, raises HTTPException if not.
-    """
-    security_scopes = SecurityScopes([USER_READ])
-
-    if not has_permissions(
-        token_data=token_data, client=client, endpoint_scopes=security_scopes
-    ):
-        raise HTTPException(
-            status_code=HTTP_403_FORBIDDEN,
-            detail="Not authorized.",
-        )
-
-    return client
-
-
-def _verify_user_read_own_scope(token_data: dict, client: ClientDetail) -> ClientDetail:
-    """
-    Verify that the user has USER_READ_OWN scope.
-    Returns the client if authorized, raises HTTPException if not.
-    """
-    security_scopes = SecurityScopes([USER_READ_OWN])
-
-    if not has_permissions(
-        token_data=token_data, client=client, endpoint_scopes=security_scopes
-    ):
-        raise HTTPException(
-            status_code=HTTP_403_FORBIDDEN,
-            detail="Not authorized.",
-        )
-
-    return client
-
-
 def verify_user_read_scopes(
     authorization: str = Security(oauth2_scheme),
     db: Session = Depends(get_db),
@@ -156,18 +120,26 @@ def verify_user_read_scopes(
     Returns the client if authorized.
     """
     token_data, client = extract_token_and_load_client(authorization, db)
+
     # Try USER_READ first
-    try:
-        return _verify_user_read_scope(token_data, client)
-    except HTTPException:
-        # If USER_READ fails, try USER_READ_OWN
-        try:
-            return _verify_user_read_own_scope(token_data, client)
-        except HTTPException:
-            raise HTTPException(
-                status_code=HTTP_403_FORBIDDEN,
-                detail="Not authorized.",
-            )
+    if has_permissions(
+        token_data=token_data,
+        client=client,
+        endpoint_scopes=SecurityScopes([USER_READ]),
+    ):
+        return client
+
+    if has_permissions(
+        token_data=token_data,
+        client=client,
+        endpoint_scopes=SecurityScopes([USER_READ_OWN]),
+    ):
+        return client
+
+    raise HTTPException(
+        status_code=HTTP_403_FORBIDDEN,
+        detail="Not authorized.",
+    )
 
 
 @router.put(
@@ -568,18 +540,17 @@ def get_user(
     *,
     db: Session = Depends(get_db),
     user_id: str,
-    authorization: str = Security(oauth2_scheme),
+    client: ClientDetail = Security(verify_user_read_scopes),
 ) -> FidesUser:
     """Returns a User based on an Id. Users with USER_READ_OWN scope can only access their own data."""
     user: Optional[FidesUser] = FidesUser.get_by_key_or_id(db, data={"id": user_id})
     if user is None:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="User not found")
 
-    try:
-        # Try to verify USER_READ scope - if this succeeds, user has full access
-        token_data, client = extract_token_and_load_client(authorization, db)
-        _verify_user_read_scope(token_data, client)
-    except HTTPException:
+    # Check if user has USER_READ_OWN scope and is trying to access someone else's data
+    # The verify_user_read_scopes dependency already verified the user has either USER_READ or USER_READ_OWN
+    # We need to check if they have USER_READ_OWN and are accessing their own data
+    if USER_READ not in client.scopes and USER_READ_OWN in client.scopes:
         # User has USER_READ_OWN scope, check if they're accessing their own data
         if user.id != client.user_id:
             raise HTTPException(
@@ -601,20 +572,20 @@ def get_users(
     db: Session = Depends(get_db),
     params: Params = Depends(),
     username: Optional[str] = None,
-    authorization: str = Security(oauth2_scheme),
+    client: ClientDetail = Security(verify_user_read_scopes),
 ) -> AbstractPage[FidesUser]:
     """Returns a paginated list of users. Users with USER_READ_OWN scope only see their own data."""
     query = FidesUser.query(db)
+
     # Check if user has USER_READ_OWN scope and filter accordingly
-    try:
-        token_data, client = extract_token_and_load_client(authorization, db)
-        # Try to verify USER_READ scope - if this succeeds, user has full access
-        _verify_user_read_scope(token_data, client)
-        if username:
-            query = query.filter(FidesUser.username.ilike(f"%{escape_like(username)}%"))
-    except HTTPException:
+    # The verify_user_read_scopes dependency already verified the user has either USER_READ or USER_READ_OWN
+    if USER_READ not in client.scopes and USER_READ_OWN in client.scopes:
         # User has USER_READ_OWN scope, only show their own data
         query = query.filter(FidesUser.id == client.user_id)
+        if username:
+            query = query.filter(FidesUser.username.ilike(f"%{escape_like(username)}%"))
+    else:
+        # User has USER_READ scope, can see all users
         if username:
             query = query.filter(FidesUser.username.ilike(f"%{escape_like(username)}%"))
 
