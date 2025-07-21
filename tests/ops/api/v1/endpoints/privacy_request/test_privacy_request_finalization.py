@@ -56,16 +56,49 @@ class TestFinalizePrivacyRequest:
         enable_erasure_request_finalization_required,
         user,
     ):
-        auth_header = generate_auth_header(
-            scopes=[PRIVACY_REQUEST_REVIEW],
-        )
+        payload = {
+            JWE_PAYLOAD_ROLES: user.client.roles,
+            JWE_PAYLOAD_CLIENT_ID: user.client.id,
+            JWE_ISSUED_AT: datetime.now().isoformat(),
+        }
+        auth_header = {
+            "Authorization": "Bearer "
+            + generate_jwe(json.dumps(payload), CONFIG.security.app_encryption_key)
+        }
         response = api_client.post(url, headers=auth_header)
         assert response.status_code == 200
 
-        privacy_request_requires_manual_finalization.refresh_from_db(db=db)
+        db.refresh(privacy_request_requires_manual_finalization)
         assert privacy_request_requires_manual_finalization.finalized_at is not None
         # This is an e2e test that actually hits the request_runner_service logic, which marks the request as complete
         assert (
             privacy_request_requires_manual_finalization.status
             == PrivacyRequestStatus.complete
         )
+        print(user.id)
+        assert privacy_request_requires_manual_finalization.finalized_by is not None
+        assert (
+            privacy_request_requires_manual_finalization.finalized_by
+            == user.id
+        )
+
+    def test_finalize_privacy_request_root_user(
+        self,
+        db,
+        api_client,
+        url,
+        privacy_request_requires_manual_finalization,
+        enable_erasure_request_finalization_required,
+        root_auth_header,
+    ):
+        response = api_client.post(url, headers=root_auth_header)
+        assert response.status_code == 200
+        db.refresh(privacy_request_requires_manual_finalization)
+
+        assert privacy_request_requires_manual_finalization.finalized_at is not None
+        # This is an e2e test that actually hits the request_runner_service logic, which marks the request as complete
+        assert (
+            privacy_request_requires_manual_finalization.status
+            == PrivacyRequestStatus.complete
+        )
+        assert privacy_request_requires_manual_finalization.finalized_by is None

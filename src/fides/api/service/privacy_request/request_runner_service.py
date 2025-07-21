@@ -691,6 +691,10 @@ def run_privacy_request(
 
                     # Finally, mark the request as complete
                     if privacy_request.finalized_at:
+                        logger.info(
+                            "Marking privacy request '{}' as finalized.",
+                            privacy_request.id,
+                        )
                         privacy_request.add_success_execution_log(
                             session,
                             connection_key=None,

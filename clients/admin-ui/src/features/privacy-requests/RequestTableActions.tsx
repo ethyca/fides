@@ -170,13 +170,13 @@ export const RequestTableActions = ({
         title="Finalize privacy request"
         message={
           <Text>
-            `You are about to finalize this privacy request. The status will be
-            updated to &#34;Complete&#34;$
+            You are about to finalize this privacy request. The status will be
+            updated to &#34;Complete&#34;
             {sendRequestCompletionNotification &&
             activeMessagingProvider?.service_type
               ? " and the requesting user will be notified"
               : ""}
-            . Would you like to continue?`
+            . Would you like to continue?
           </Text>
         }
       />
