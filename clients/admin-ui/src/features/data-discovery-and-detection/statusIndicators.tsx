@@ -30,8 +30,8 @@ export const ClassificationIndicator = () => (
   />
 );
 
-const CircleIndicator = ({ color }: { color: string }) => (
-  <Icons.CircleSolid style={{ color }} className="size-2" />
+const CircleIndicator = ({ color, ...props }: { color: string }) => (
+  <Icons.CircleSolid style={{ color }} className="size-2" {...props} />
 );
 
 export const ChangeIndicator = () => (
