@@ -38,7 +38,7 @@ const safeParseInt = (value: string) => {
   return 1;
 };
 
-type QueryParam = ReturnType<InstanceType<typeof URLSearchParams>["get"]>;
+// type QueryParam = ReturnType<InstanceType<typeof URLSearchParams>["get"]>;
 function useStatefulQueryParam<InitialValue = string>(
   key: string,
   fromQueryParam: (value: string) => InitialValue,
@@ -48,23 +48,29 @@ function useStatefulQueryParam<InitialValue = string>(
 ) {
   const searchParams = useSearchParams();
   const paramValue = searchParams?.get(key) ?? null;
-  const [value, setValue] = useState(
-    paramValue ? fromQueryParam(paramValue) : initialValue,
-  );
+  const initialState =
+    (paramValue ? fromQueryParam(paramValue) : null) ?? initialValue;
+  const [value, setValue] = useState(initialState);
   const router = useRouter();
 
   useEffect(() => {
-    const nextQueryParams = new URLSearchParams(window.location.search);
+    const nextQueryParams = new URLSearchParams(searchParams ?? {});
     if (value === initialValue || value === undefined || value === null) {
       nextQueryParams.delete(key);
     } else {
-      nextQueryParams.set(key, toQueryParam(value)?.toString());
+      nextQueryParams.set(
+        key,
+        toQueryParam ? toQueryParam(value).toString() : value.toString(),
+      );
     }
-    router.push({
-      query: nextQueryParams.toString(),
-    });
+    const nextQueryParamString = nextQueryParams.toString();
+    if (nextQueryParamString !== searchParams?.toString()) {
+      router.push({
+        query: nextQueryParamString,
+      });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key, paramValue, value]);
+  }, [key, paramValue, value, searchParams]);
 
   return [value, setValue] as const;
 }
@@ -160,8 +166,18 @@ const Paginator = () => {
 
 const ConsentReporting = () => {
   const today = useMemo(() => dayjs(), []);
-  const [startDate, setStartDate] = useState<Dayjs | null>(null);
-  const [endDate, setEndDate] = useState<Dayjs | null>(null);
+  const [startDate, setStartDate] = useStatefulQueryParam<Dayjs | null>(
+    "startDate",
+    (v) => dayjs(v),
+    null,
+    (v) => v?.toISOString() ?? "",
+  );
+  const [endDate, setEndDate] = useStatefulQueryParam<Dayjs | null>(
+    "endDate",
+    (v) => dayjs(v),
+    null,
+    (v) => v?.toISOString() ?? "",
+  );
   const [isConsentLookupModalOpen, setIsConsentLookupModalOpen] =
     useState(false);
   const [isDownloadReportModalOpen, setIsDownloadReportModalOpen] =
