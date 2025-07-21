@@ -62,7 +62,7 @@ class TestPatchApplicationConfig:
             "execution": {
                 "subject_identity_verification_required": True,
                 "require_manual_request_approval": True,
-                "sql_dry_run": False,
+                "sql_dry_run": "none",
             },
             "security": {
                 "cors_origins": [
