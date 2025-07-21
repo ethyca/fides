@@ -35,7 +35,9 @@ class ConditionLeaf(BaseModel):
 
 # Nested logical condition (AND, OR)
 class ConditionGroup(BaseModel):
-    op: GroupOperator = Field(description="Logical operator: 'and' or 'or'")
+    logical_operator: GroupOperator = Field(
+        description="Logical operator: 'and' or 'or'"
+    )
     conditions: list["Condition"] = Field(
         description="List of conditions or nested groups"
     )
