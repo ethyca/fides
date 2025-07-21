@@ -12,6 +12,7 @@ from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionTestStatus
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
+from fides.api.schemas.application_config import SqlDryRunMode
 from fides.api.schemas.connection_configuration.connection_secrets_bigquery import (
     BigQuerySchema,
 )
@@ -95,7 +96,7 @@ class BigQueryConnector(SQLConnector):
             f"Executing {len(partition_clauses)} partition queries for node '{query_config.node.address}' in DSR execution"
         )
 
-        if self.get_sql_dry_run_enabled():
+        if self.should_dry_run(SqlDryRunMode.access):
             for partition_clause in partition_clauses:
                 existing_bind_params = stmt.compile().params
                 partitioned_stmt = text(
@@ -192,7 +193,7 @@ class BigQueryConnector(SQLConnector):
             delete_stmts = query_config.generate_delete(client, input_data or {})
             logger.debug(f"Generated {len(delete_stmts)} DELETE statements")
             update_or_delete_ct += self._execute_statements_with_sql_dry_run(
-                delete_stmts, self.get_sql_dry_run_enabled(), client
+                delete_stmts, self.should_dry_run(SqlDryRunMode.erasure), client
             )
         else:
             for row in rows:
@@ -203,6 +204,8 @@ class BigQueryConnector(SQLConnector):
                     f"Generated {len(update_or_delete_stmts)} UPDATE statements"
                 )
                 update_or_delete_ct += self._execute_statements_with_sql_dry_run(
-                    update_or_delete_stmts, self.get_sql_dry_run_enabled(), client
+                    update_or_delete_stmts,
+                    self.should_dry_run(SqlDryRunMode.erasure),
+                    client,
                 )
         return update_or_delete_ct

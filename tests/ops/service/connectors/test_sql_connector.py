@@ -63,6 +63,81 @@ class TestSQLConnectorDryRun:
         """Create a mock request task"""
         return MagicMock(spec=RequestTask)
 
+    def test_should_dry_run_default_never_set(self, mock_connector, db):
+        """Test that should_dry_run returns False for both modes when sql_dry_run has never been set"""
+        from fides.api.schemas.application_config import SqlDryRunMode
+
+        # Don't set any config - use default/unset state
+        # Test that both access and erasure modes return False when config is unset
+        assert mock_connector.should_dry_run(SqlDryRunMode.access) is False
+        assert mock_connector.should_dry_run(SqlDryRunMode.erasure) is False
+
+    def test_should_dry_run_explicit_none(self, mock_connector, db):
+        """Test that should_dry_run returns False for both modes when sql_dry_run is explicitly set to 'none'"""
+        from fides.api.models.application_config import ApplicationConfig
+        from fides.api.schemas.application_config import SqlDryRunMode
+
+        ApplicationConfig.update_api_set(
+            db, {"execution": {"sql_dry_run": SqlDryRunMode.none.value}}
+        )
+        db.commit()
+
+        # Test that both access and erasure modes return False when mode is 'none'
+        assert mock_connector.should_dry_run(SqlDryRunMode.access) is False
+        assert mock_connector.should_dry_run(SqlDryRunMode.erasure) is False
+
+    def test_should_dry_run_null_value(self, mock_connector, db):
+        """Test that should_dry_run returns False for both modes when sql_dry_run is set to null"""
+        from fides.api.models.application_config import ApplicationConfig
+        from fides.api.schemas.application_config import SqlDryRunMode
+
+        ApplicationConfig.update_api_set(db, {"execution": {"sql_dry_run": None}})
+        db.commit()
+
+        # Test that both access and erasure modes return False when mode is null
+        assert mock_connector.should_dry_run(SqlDryRunMode.access) is False
+        assert mock_connector.should_dry_run(SqlDryRunMode.erasure) is False
+
+    def test_should_dry_run_access_mode_only_matches_access(self, mock_connector, db):
+        """Test that when mode is 'access', only access returns True, erasure returns False"""
+        from fides.api.models.application_config import ApplicationConfig
+        from fides.api.schemas.application_config import SqlDryRunMode
+
+        ApplicationConfig.update_api_set(
+            db, {"execution": {"sql_dry_run": SqlDryRunMode.access.value}}
+        )
+        db.commit()
+
+        # Test that only access mode returns True
+        assert mock_connector.should_dry_run(SqlDryRunMode.access) is True
+        assert mock_connector.should_dry_run(SqlDryRunMode.erasure) is False
+
+        # Clean up
+        ApplicationConfig.update_api_set(
+            db, {"execution": {"sql_dry_run": SqlDryRunMode.none.value}}
+        )
+        db.commit()
+
+    def test_should_dry_run_erasure_mode_only_matches_erasure(self, mock_connector, db):
+        """Test that when mode is 'erasure', only erasure returns True, access returns False"""
+        from fides.api.models.application_config import ApplicationConfig
+        from fides.api.schemas.application_config import SqlDryRunMode
+
+        ApplicationConfig.update_api_set(
+            db, {"execution": {"sql_dry_run": SqlDryRunMode.erasure.value}}
+        )
+        db.commit()
+
+        # Test that only erasure mode returns True
+        assert mock_connector.should_dry_run(SqlDryRunMode.access) is False
+        assert mock_connector.should_dry_run(SqlDryRunMode.erasure) is True
+
+        # Clean up
+        ApplicationConfig.update_api_set(
+            db, {"execution": {"sql_dry_run": SqlDryRunMode.none.value}}
+        )
+        db.commit()
+
     def test_retrieve_data_sql_dry_run_enabled(
         self,
         mock_connector,
@@ -74,8 +149,11 @@ class TestSQLConnectorDryRun:
     ):
         """Test that retrieve_data logs SQL instead of executing when sql_dry_run is enabled"""
         from fides.api.models.application_config import ApplicationConfig
+        from fides.api.schemas.application_config import SqlDryRunMode
 
-        ApplicationConfig.update_api_set(db, {"execution": {"sql_dry_run": True}})
+        ApplicationConfig.update_api_set(
+            db, {"execution": {"sql_dry_run": SqlDryRunMode.access.value}}
+        )
         db.commit()
 
         mock_query_config = MagicMock()
@@ -102,7 +180,9 @@ class TestSQLConnectorDryRun:
             assert "SQL DRY RUN - Would execute SQL:" in loguru_caplog.text
             mock_client.return_value.connect.assert_not_called()
 
-        ApplicationConfig.update_api_set(db, {"execution": {"sql_dry_run": False}})
+        ApplicationConfig.update_api_set(
+            db, {"execution": {"sql_dry_run": SqlDryRunMode.none.value}}
+        )
         db.commit()
 
     def test_retrieve_data_sql_dry_run_disabled(
@@ -116,8 +196,11 @@ class TestSQLConnectorDryRun:
     ):
         """Test that retrieve_data executes SQL normally when sql_dry_run is disabled"""
         from fides.api.models.application_config import ApplicationConfig
+        from fides.api.schemas.application_config import SqlDryRunMode
 
-        ApplicationConfig.update_api_set(db, {"execution": {"sql_dry_run": False}})
+        ApplicationConfig.update_api_set(
+            db, {"execution": {"sql_dry_run": SqlDryRunMode.none.value}}
+        )
         db.commit()
 
         mock_query_config = MagicMock()
@@ -166,8 +249,11 @@ class TestSQLConnectorDryRun:
     ):
         """Test that execute_standalone_retrieval_query logs SQL instead of executing when sql_dry_run is enabled"""
         from fides.api.models.application_config import ApplicationConfig
+        from fides.api.schemas.application_config import SqlDryRunMode
 
-        ApplicationConfig.update_api_set(db, {"execution": {"sql_dry_run": True}})
+        ApplicationConfig.update_api_set(
+            db, {"execution": {"sql_dry_run": SqlDryRunMode.access.value}}
+        )
         db.commit()
 
         mock_query_config = MagicMock()
@@ -192,7 +278,9 @@ class TestSQLConnectorDryRun:
             assert "SQL DRY RUN - Would execute SQL:" in loguru_caplog.text
             mock_client.return_value.connect.assert_not_called()
 
-        ApplicationConfig.update_api_set(db, {"execution": {"sql_dry_run": False}})
+        ApplicationConfig.update_api_set(
+            db, {"execution": {"sql_dry_run": SqlDryRunMode.none.value}}
+        )
         db.commit()
 
     def test_mask_data_sql_dry_run_enabled(
@@ -206,8 +294,11 @@ class TestSQLConnectorDryRun:
     ):
         """Test that mask_data logs SQL instead of executing when sql_dry_run is enabled"""
         from fides.api.models.application_config import ApplicationConfig
+        from fides.api.schemas.application_config import SqlDryRunMode
 
-        ApplicationConfig.update_api_set(db, {"execution": {"sql_dry_run": True}})
+        ApplicationConfig.update_api_set(
+            db, {"execution": {"sql_dry_run": SqlDryRunMode.erasure.value}}
+        )
         db.commit()
 
         mock_query_config = MagicMock()
@@ -234,7 +325,9 @@ class TestSQLConnectorDryRun:
             assert "SQL DRY RUN - Would execute SQL:" in loguru_caplog.text
             mock_client.return_value.connect.assert_not_called()
 
-        ApplicationConfig.update_api_set(db, {"execution": {"sql_dry_run": False}})
+        ApplicationConfig.update_api_set(
+            db, {"execution": {"sql_dry_run": SqlDryRunMode.none.value}}
+        )
         db.commit()
 
     def test_mask_data_sql_dry_run_disabled(
@@ -248,8 +341,11 @@ class TestSQLConnectorDryRun:
     ):
         """Test that mask_data executes SQL normally when sql_dry_run is disabled"""
         from fides.api.models.application_config import ApplicationConfig
+        from fides.api.schemas.application_config import SqlDryRunMode
 
-        ApplicationConfig.update_api_set(db, {"execution": {"sql_dry_run": False}})
+        ApplicationConfig.update_api_set(
+            db, {"execution": {"sql_dry_run": SqlDryRunMode.none.value}}
+        )
         db.commit()
 
         mock_query_config = MagicMock()
