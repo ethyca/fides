@@ -6,6 +6,7 @@ from typing import List, Optional
 
 import jose.exceptions
 from fastapi import Depends, HTTPException, Security
+from fastapi.security import SecurityScopes
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
@@ -39,7 +40,9 @@ from fides.api.oauth.roles import APPROVER, VIEWER
 from fides.api.oauth.utils import (
     create_temporary_user_for_login_flow,
     extract_payload,
+    extract_token_and_load_client,
     get_current_user,
+    has_permissions,
     oauth2_scheme,
     verify_oauth_client,
 )
@@ -113,12 +116,6 @@ def _verify_user_read_scope(authorization: str, db: Session) -> ClientDetail:
     Verify that the user has USER_READ scope.
     Returns the client if authorized, raises HTTPException if not.
     """
-    from fides.api.oauth.utils import (
-        SecurityScopes,
-        extract_token_and_load_client,
-        has_permissions,
-    )
-
     token_data, client = extract_token_and_load_client(authorization, db)
     security_scopes = SecurityScopes([USER_READ])
 
@@ -127,7 +124,7 @@ def _verify_user_read_scope(authorization: str, db: Session) -> ClientDetail:
     ):
         raise HTTPException(
             status_code=HTTP_403_FORBIDDEN,
-            detail=f"Not authorized.",
+            detail="Not authorized.",
         )
 
     return client
@@ -138,12 +135,6 @@ def _verify_user_read_own_scope(authorization: str, db: Session) -> ClientDetail
     Verify that the user has USER_READ_OWN scope.
     Returns the client if authorized, raises HTTPException if not.
     """
-    from fides.api.oauth.utils import (
-        SecurityScopes,
-        extract_token_and_load_client,
-        has_permissions,
-    )
-
     token_data, client = extract_token_and_load_client(authorization, db)
     security_scopes = SecurityScopes([USER_READ_OWN])
 
@@ -152,7 +143,7 @@ def _verify_user_read_own_scope(authorization: str, db: Session) -> ClientDetail
     ):
         raise HTTPException(
             status_code=HTTP_403_FORBIDDEN,
-            detail=f"Not authorized.",
+            detail="Not authorized.",
         )
 
     return client
