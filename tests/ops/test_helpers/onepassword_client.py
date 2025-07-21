@@ -1,11 +1,11 @@
-
 import asyncio
 import os
 from typing import Any, Dict, List, Optional
 
-from fides.api.common_exceptions import FidesopsException
 from loguru import logger
 from onepassword.client import Client  # Official SDK import
+
+from fides.api.common_exceptions import FidesopsException
 
 # Parameters for the 1Password client
 params = {
