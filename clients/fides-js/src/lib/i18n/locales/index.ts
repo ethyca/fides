@@ -153,4 +153,9 @@ export const LOCALE_LANGUAGE_MAP: Language[] = [
   { locale: "tr", label_en: "Turkish", label_original: "Türkçe" },
   { locale: "uk", label_en: "Ukrainian", label_original: "українська мова" },
   { locale: "zh", label_en: "Chinese", label_original: "中文" },
+  {
+    locale: "zh-Hant",
+    label_en: "Chinese (Traditional)",
+    label_original: "中文(正體字)",
+  },
 ];
