@@ -32,6 +32,8 @@ services:
       FIDES__USER__ANALYTICS_OPT_OUT: "True"
       FIDES__SECURITY__PARENT_SERVER_USERNAME: parent
       FIDES__SECURITY__PARENT_SERVER_PASSWORD: parentpassword1!
+      SAAS_OP_SERVICE_ACCOUNT_TOKEN: ${SAAS_OP_SERVICE_ACCOUNT_TOKEN-}
+      SAAS_SECRETS_OP_VAULT_ID: ${SAAS_SECRETS_OP_VAULT_ID-}
     volumes:
       - type: bind
         source: .
