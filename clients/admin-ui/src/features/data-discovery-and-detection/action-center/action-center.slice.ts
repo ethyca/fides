@@ -1,12 +1,14 @@
 import { baseApi } from "~/features/common/api.slice";
 import { getQueryParamsFromArray } from "~/features/common/utils";
 import {
+  ConsentStatus,
   DiffStatus,
+  Page_ConsentBreakdown_,
   Page_StagedResourceAPIResponse_,
   Page_SystemStagedResourcesAggregateRecord_,
+  PromoteResourcesResponse,
   StagedResourceAPIResponse,
 } from "~/types/api";
-import { PromotedResourceResponse } from "~/types/api/models/PromotedResourceResponse";
 import { PaginationQueryParams } from "~/types/common/PaginationQueryParams";
 
 import { MonitorSummaryPaginatedResponse } from "./types";
@@ -21,6 +23,8 @@ interface DiscoveredAssetsQueryParams {
   system?: string;
   search?: string;
   diff_status?: DiffStatus[];
+  sort_by?: string | string[];
+  sort_asc?: boolean;
 }
 
 const actionCenterApi = baseApi.injectEndpoints({
@@ -61,21 +65,33 @@ const actionCenterApi = baseApi.injectEndpoints({
       Page_StagedResourceAPIResponse_,
       DiscoveredAssetsQueryParams & PaginationQueryParams
     >({
-      query: ({ key, system, page = 1, size = 20, search, diff_status }) => ({
-        url: `/plus/discovery-monitor/${key}/results`,
+      query: ({
+        key,
+        system,
+        page = 1,
+        size = 20,
+        search,
+        diff_status,
+        sort_by = ["consent_aggregated", "urn"],
+        sort_asc = true,
+      }) => ({
+        url: `/plus/discovery-monitor/${key}/results?${getQueryParamsFromArray(
+          Array.isArray(sort_by) ? sort_by : [sort_by],
+          "sort_by",
+        )}`,
         params: {
           resolved_system_id: system,
           page,
           size,
           search,
           diff_status,
-          sort_by: "urn",
+          sort_asc,
         },
       }),
       providesTags: () => ["Discovery Monitor Results"],
     }),
     addMonitorResultSystems: build.mutation<
-      any,
+      PromoteResourcesResponse,
       MonitorResultSystemQueryParams
     >({
       query: ({ monitor_config_key, resolved_system_ids }) => {
@@ -91,7 +107,7 @@ const actionCenterApi = baseApi.injectEndpoints({
       invalidatesTags: ["Discovery Monitor Results"],
     }),
     ignoreMonitorResultSystems: build.mutation<
-      any,
+      string | null,
       MonitorResultSystemQueryParams
     >({
       query: ({ monitor_config_key, resolved_system_ids }) => {
@@ -107,7 +123,7 @@ const actionCenterApi = baseApi.injectEndpoints({
       invalidatesTags: ["Discovery Monitor Results"],
     }),
     addMonitorResultAssets: build.mutation<
-      PromotedResourceResponse[],
+      PromoteResourcesResponse,
       { urnList?: string[] }
     >({
       query: (params) => {
@@ -197,6 +213,26 @@ const actionCenterApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Discovery Monitor Results"],
     }),
+    getConsentBreakdown: build.query<
+      Page_ConsentBreakdown_,
+      {
+        stagedResourceUrn: string;
+        status: ConsentStatus;
+        page?: number;
+        size?: number;
+      } & PaginationQueryParams
+    >({
+      query: ({ stagedResourceUrn, status, page = 1, size = 20 }) => ({
+        url: `/plus/discovery-monitor/staged_resource/${encodeURIComponent(
+          stagedResourceUrn,
+        )}/consent`,
+        params: {
+          status,
+          page,
+          size,
+        },
+      }),
+    }),
   }),
 });
 
@@ -212,4 +248,5 @@ export const {
   useUpdateAssetsSystemMutation,
   useUpdateAssetsDataUseMutation,
   useUpdateAssetsMutation,
+  useGetConsentBreakdownQuery,
 } = actionCenterApi;

@@ -452,6 +452,18 @@ describe("Privacy Requests", () => {
         .should("contain", "local-document.pdf");
     });
 
+    it("displays the access package attachment icon", () => {
+      cy.get(".ant-upload-list-item-container")
+        .first()
+        .find("[title='User icon']")
+        .should("not.exist");
+
+      cy.get(".ant-upload-list-item-container")
+        .last()
+        .find("[title='User icon']")
+        .should("exist");
+    });
+
     it("downloads attachment when button is clicked for external links", () => {
       // Stub window.open before intercepting, based on
       // https://glebbahmutov.com/cypress-examples/recipes/window-open.html
@@ -634,6 +646,251 @@ describe("Privacy Requests", () => {
 
       // The Add comment button should still be available
       cy.getByTestId("add-comment-button").should("exist");
+    });
+  });
+
+  /**
+   * Tests for privacy request manual tasks functionality
+   */
+  describe("Request Manual Tasks", () => {
+    beforeEach(() => {
+      cy.assumeRole(RoleRegistryEnum.OWNER);
+      stubPlus(true);
+
+      cy.intercept("GET", "/api/v1/plus/manual-fields*", {
+        statusCode: 200,
+        fixture: "privacy-requests/manual-tasks-completed.json",
+      }).as("getManualTasks");
+
+      cy.intercept("GET", "/api/v1/plus/privacy-request/*/comment*", {
+        statusCode: 200,
+        fixture: "privacy-requests/comments/comments-list.json",
+      }).as("getComments");
+
+      cy.intercept("GET", "/api/v1/privacy-request*", {
+        fixture: "privacy-requests/with-logs.json",
+      }).as("getPrivacyRequestWithLogs");
+
+      cy.visit("/privacy-requests/pri_96bb91d3-cdb9-46c3-9546-0c276eb05a5c");
+      cy.wait("@getPrivacyRequestWithLogs");
+      cy.wait("@getComments");
+      cy.wait("@getManualTasks");
+    });
+
+    it("displays completed manual tasks in the activity timeline", () => {
+      // Check that completed manual task appears in timeline
+      cy.getByTestId("activity-timeline-item")
+        .contains("Task completed - Verify customer identity documents")
+        .should("exist");
+
+      // Verify the user who completed the task is displayed
+      cy.getByTestId("activity-timeline-item")
+        .contains("Task completed - Verify customer identity documents")
+        .parents("li")
+        .within(() => {
+          cy.getByTestId("activity-timeline-author").should(
+            "contain",
+            "John Doe:",
+          );
+          cy.getByTestId("activity-timeline-type").should(
+            "contain",
+            "Manual task",
+          );
+        });
+
+      // Verify completion comment is displayed
+      cy.getByTestId("activity-timeline-item")
+        .contains("Task completed - Verify customer identity documents")
+        .parents("li")
+        .within(() => {
+          cy.getByTestId("activity-timeline-description").should(
+            "contain",
+            "Identity verification completed successfully with provided documentation",
+          );
+        });
+
+      // Verify attachment is displayed
+      cy.getByTestId("activity-timeline-item")
+        .contains("Task completed - Verify customer identity documents")
+        .parents("li")
+        .within(() => {
+          cy.getByTestId("activity-timeline-attachments")
+            .should("exist")
+            .should("contain", "identity_verification.pdf");
+        });
+    });
+
+    it("displays skipped manual tasks in the activity timeline", () => {
+      // Check that skipped manual task appears in timeline
+      cy.getByTestId("activity-timeline-item")
+        .contains("Task skipped - Manual data extraction from legacy system")
+        .should("exist");
+
+      // Verify the user who skipped the task is displayed
+      cy.getByTestId("activity-timeline-item")
+        .contains("Task skipped - Manual data extraction from legacy system")
+        .parents("li")
+        .within(() => {
+          cy.getByTestId("activity-timeline-author").should(
+            "contain",
+            "Jane Smith:",
+          );
+          cy.getByTestId("activity-timeline-type").should(
+            "contain",
+            "Manual task",
+          );
+        });
+
+      // Verify skip comment is displayed
+      cy.getByTestId("activity-timeline-item")
+        .contains("Task skipped - Manual data extraction from legacy system")
+        .parents("li")
+        .within(() => {
+          cy.getByTestId("activity-timeline-description").should(
+            "contain",
+            "Task skipped - customer data not found in legacy system",
+          );
+        });
+    });
+
+    it("displays manual tasks with attachments but no comments", () => {
+      // Check the third manual task (completed with attachment but no comment)
+      cy.getByTestId("activity-timeline-item")
+        .contains("Task completed - Review customer purchase history")
+        .should("exist");
+
+      cy.getByTestId("activity-timeline-item")
+        .contains("Task completed - Review customer purchase history")
+        .parents("li")
+        .within(() => {
+          cy.getByTestId("activity-timeline-author").should(
+            "contain",
+            "Bob Johnson:",
+          );
+
+          // Should have attachment
+          cy.getByTestId("activity-timeline-attachments")
+            .should("exist")
+            .should("contain", "purchase_history_export.csv");
+        });
+    });
+
+    it("shows loading state while fetching manual tasks", () => {
+      cy.intercept("GET", "/api/v1/plus/manual-fields*", {
+        statusCode: 200,
+        fixture: "privacy-requests/manual-tasks-empty.json",
+        delay: 1000,
+      }).as("getManualTasksDelayed");
+
+      cy.visit("/privacy-requests/pri_96bb91d3-cdb9-46c3-9546-0c276eb05a5c");
+
+      // Check for skeleton loading state before manual tasks load
+      cy.getByTestId("timeline-skeleton").should("exist");
+
+      cy.wait("@getManualTasksDelayed");
+
+      // Verify skeletons are gone after loading
+      cy.getByTestId("timeline-skeleton").should("not.exist");
+    });
+
+    it("handles empty manual tasks response gracefully", () => {
+      cy.intercept("GET", "/api/v1/plus/manual-fields*", {
+        statusCode: 200,
+        fixture: "privacy-requests/manual-tasks-empty.json",
+      }).as("getEmptyManualTasks");
+
+      cy.visit("/privacy-requests/pri_96bb91d3-cdb9-46c3-9546-0c276eb05a5c");
+      cy.wait("@getPrivacyRequestWithLogs");
+      cy.wait("@getComments");
+      cy.wait("@getEmptyManualTasks");
+
+      // Timeline should still display other entries even with no manual tasks
+      cy.getByTestId("activity-timeline-list").should("exist");
+      cy.getByTestId("activity-timeline-item").should("exist");
+
+      // No manual task entries should be visible
+      cy.getByTestId("activity-timeline-item")
+        .contains("Manual task")
+        .should("not.exist");
+    });
+
+    it("handles 404 errors from manual tasks API gracefully", () => {
+      cy.intercept("GET", "/api/v1/plus/manual-fields*", {
+        statusCode: 404,
+        body: {
+          detail: "Not found",
+        },
+      }).as("manualTasksNotFound");
+
+      cy.visit("/privacy-requests/pri_96bb91d3-cdb9-46c3-9546-0c276eb05a5c");
+      cy.wait("@getPrivacyRequestWithLogs");
+      cy.wait("@getComments");
+      cy.wait("@manualTasksNotFound");
+
+      // Timeline should still display other entries even if manual tasks API fails
+      cy.getByTestId("activity-timeline-list").should("exist");
+      cy.getByTestId("activity-timeline-item").should("exist");
+
+      // No manual task entries should be visible
+      cy.getByTestId("activity-timeline-item")
+        .contains("Manual task")
+        .should("not.exist");
+    });
+
+    it("handles manual tasks API errors with message display", () => {
+      cy.intercept("GET", "/api/v1/plus/manual-fields*", {
+        statusCode: 500,
+        body: {
+          detail: "Internal server error",
+        },
+      }).as("manualTasksError");
+
+      cy.visit("/privacy-requests/pri_96bb91d3-cdb9-46c3-9546-0c276eb05a5c");
+      cy.wait("@getPrivacyRequestWithLogs");
+      cy.wait("@getComments");
+      cy.wait("@manualTasksError");
+
+      // Should display error message for failed manual tasks fetch
+      cy.get(".ant-message-error").should("be.visible");
+      cy.get(".ant-message-error").should(
+        "contain",
+        "Failed to fetch manual tasks",
+      );
+    });
+
+    it("filters out duplicate comments that are part of manual tasks", () => {
+      // The comments fixture includes "comment_001" which is the same ID as
+      // the comment in the first manual task. It should only appear once in the timeline.
+
+      // Count total timeline items
+      cy.getByTestId("activity-timeline-item").should(
+        "have.length.at.least",
+        5,
+      );
+
+      // Verify the task completion comment appears in the manual task entry
+      cy.getByTestId("activity-timeline-item")
+        .contains("Task completed - Verify customer identity documents")
+        .parents("li")
+        .within(() => {
+          cy.getByTestId("activity-timeline-description").should(
+            "contain",
+            "Identity verification completed successfully with provided documentation",
+          );
+        });
+
+      // Verify the same comment text does NOT appear as a standalone comment
+      // (it should be filtered out because it's already part of the manual task)
+      cy.getByTestId("activity-timeline-item")
+        .contains(
+          "Identity verification completed successfully with provided documentation",
+        )
+        .should("have.length", 1); // Should only appear once, in the task entry
+
+      // Verify that the other standalone comment ("This is a test comment") still appears
+      cy.getByTestId("activity-timeline-item")
+        .contains("This is a test comment")
+        .should("exist");
     });
   });
 });

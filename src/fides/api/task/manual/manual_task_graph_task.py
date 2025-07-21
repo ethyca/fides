@@ -7,6 +7,7 @@ from fides.api.common_exceptions import AwaitingAsyncTaskCallback
 from fides.api.models.attachment import AttachmentType
 from fides.api.models.manual_task import (
     ManualTask,
+    ManualTaskConfig,
     ManualTaskConfigurationType,
     ManualTaskEntityType,
     ManualTaskFieldType,
@@ -48,6 +49,29 @@ class ManualTaskGraphTask(GraphTask):
         manual_tasks = get_manual_tasks_for_connection_config(db, connection_key)
 
         if not manual_tasks:
+            return []
+
+        # Check if any manual tasks have ACCESS configs
+        # TODO: This will be changed with Manual Task Dependencies Implementation.
+
+        has_access_configs = [
+            config
+            for manual_task in manual_tasks
+            for config in manual_task.configs
+            if config.is_current
+            and config.config_type == ManualTaskConfigurationType.access_privacy_request
+        ]
+
+        if not has_access_configs:
+            # No access configs - complete immediately
+            self.log_end(ActionType.access)
+            return []
+
+        if not self.resources.request.policy.get_rules_for_action(
+            action_type=ActionType.access
+        ):
+            # TODO: This will be changed with Manual Task Dependencies Implementation.
+            self.log_end(ActionType.access)
             return []
 
         # Check/create manual task instances for ACCESS configs only
@@ -95,28 +119,30 @@ class ManualTaskGraphTask(GraphTask):
 
         for manual_task in manual_tasks:
             # ------------------------------------------------------------------
-            # Short-circuit: if instances already exist for this task & entity
-            # (no matter what config version they were created for) we should reuse
-            # them instead of creating a brand-new one that would result in
-            # duplicates when configurations are versioned after the privacy
-            # request has started.
+            # Check if instances already exist for this task & entity with the SAME config type
+            # This prevents duplicates when configurations are versioned after the privacy
+            # request has started, while allowing different config types (access vs erasure)
+            # to have separate instances.
             # ------------------------------------------------------------------
             existing_task_instance = (
                 db.query(ManualTaskInstance)
+                .join(ManualTaskInstance.config)  # Join to access config information
                 .filter(
                     ManualTaskInstance.task_id == manual_task.id,
                     ManualTaskInstance.entity_id == privacy_request.id,
                     ManualTaskInstance.entity_type
                     == ManualTaskEntityType.privacy_request,
+                    # Only check for instances of the same config type
+                    ManualTaskConfig.config_type == allowed_config_type,
                 )
                 .first()
             )
             if existing_task_instance:
-                # An instance already exists for this privacy request – no need
+                # An instance already exists for this privacy request and config type – no need
                 # to create another one tied to a newer config version.
                 continue
 
-            # Check each active config for instances (now we know none exist yet)
+            # Check each active config for instances (now we know none exist yet for this config type)
             for config in manual_task.configs:
                 if not config.is_current or config.config_type != allowed_config_type:
                     # Skip configs that are not current or not relevant for this request type
@@ -262,6 +288,21 @@ class ManualTaskGraphTask(GraphTask):
         manual_tasks = get_manual_tasks_for_connection_config(db, connection_key)
         if not manual_tasks:
             # No manual tasks defined – nothing to erase
+            self.log_end(ActionType.erasure)
+            return 0
+
+        # Check if any manual tasks have ERASURE configs
+        has_erasure_configs = [
+            config
+            for manual_task in manual_tasks
+            for config in manual_task.configs
+            if config.is_current
+            and config.config_type
+            == ManualTaskConfigurationType.erasure_privacy_request
+        ]
+
+        if not has_erasure_configs:
+            # No erasure configs - complete immediately
             self.log_end(ActionType.erasure)
             return 0
 

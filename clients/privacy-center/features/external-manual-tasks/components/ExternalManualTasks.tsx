@@ -35,9 +35,6 @@ const statusMap: Record<ManualFieldStatus, { color: string; label: string }> = {
   [ManualFieldStatus.SKIPPED]: { color: "marble", label: "Skipped" },
 };
 
-// Page sizes for external users (match admin UI)
-const PAGE_SIZES = ["25", "50", "100"];
-
 // Extract column definitions for external users
 const getExternalColumns = (
   systemFilters: { text: string; value: string }[],
@@ -51,6 +48,7 @@ const getExternalColumns = (
       <Typography.Text
         ellipsis={{ tooltip: name }}
         data-testid="task-details-name"
+        className="!max-w-[350px]"
       >
         {name}
       </Typography.Text>
@@ -83,6 +81,14 @@ const getExternalColumns = (
     width: 200,
     filters: systemFilters,
     filterMultiple: false,
+    render: (systemName: string) => (
+      <Typography.Text
+        ellipsis={{ tooltip: systemName }}
+        className="!max-w-[200px]"
+      >
+        {systemName}
+      </Typography.Text>
+    ),
   },
   {
     title: "Type",
@@ -261,8 +267,6 @@ export const ExternalManualTasks = () => {
           current: pageIndex,
           pageSize,
           total: totalRows || 0,
-          showSizeChanger: true,
-          pageSizeOptions: PAGE_SIZES,
           showTotal: (total, range) =>
             `${range[0]}-${range[1]} of ${total} items`,
           onChange: handlePaginationChange,

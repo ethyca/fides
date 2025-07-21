@@ -320,3 +320,18 @@ Controls when the deprecated FidesInitialized event should be dispatched.
 - "disable" = never fires
 
 Defaults to `"once"`.
+
+***
+
+### fides\_modal\_default\_view?
+
+> `optional` **fides\_modal\_default\_view**: `string`
+
+A URL-like route that determines which view is shown by default when the consent modal is opened.
+Currently only affects TCF.
+
+- "/tcf/purposes" ("purposes" tab will be shown if not set)
+- "/tcf/features"
+- "/tcf/vendors"
+
+Defaults to `undefined`.

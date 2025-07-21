@@ -356,7 +356,6 @@ const SystemInformationForm = ({
                 name="description"
                 label="Description"
                 tooltip="What services does this system perform?"
-                disabled={lockedForGVL}
               />
               <ControlledSelect
                 mode="tags"
@@ -373,7 +372,6 @@ const SystemInformationForm = ({
                 }
                 layout="stacked"
                 tooltip="Are there any tags to associate with this system?"
-                disabled={lockedForGVL}
               />
             </SystemFormInputGroup>
             <SystemFormInputGroup heading="Dataset reference">
@@ -384,7 +382,6 @@ const SystemInformationForm = ({
                 tooltip="Is there a dataset configured for this system?"
                 mode="multiple"
                 layout="stacked"
-                disabled={lockedForGVL}
               />
             </SystemFormInputGroup>
             <SystemFormInputGroup heading="Data processing properties">
@@ -572,14 +569,12 @@ const SystemInformationForm = ({
                   name="legal_name"
                   label="Legal name"
                   tooltip="What is the legal name of the business?"
-                  disabled={lockedForGVL}
                 />
                 <DictSuggestionTextArea
                   id="legal_address"
                   name="legal_address"
                   label="Legal address"
                   tooltip="What is the legal address for the business?"
-                  disabled={lockedForGVL}
                 />
                 <CustomTextInput
                   label="Department"
@@ -588,8 +583,7 @@ const SystemInformationForm = ({
                   variant="stacked"
                   disabled={
                     !values.processes_personal_data ||
-                    values.exempt_from_privacy_regulations ||
-                    lockedForGVL
+                    values.exempt_from_privacy_regulations
                   }
                 />
                 <ControlledSelect
@@ -601,8 +595,7 @@ const SystemInformationForm = ({
                   tooltip="What is the role of the business with regard to data processing?"
                   disabled={
                     !values.processes_personal_data ||
-                    values.exempt_from_privacy_regulations ||
-                    lockedForGVL
+                    values.exempt_from_privacy_regulations
                   }
                 />
                 <DictSuggestionTextInput
@@ -619,8 +612,7 @@ const SystemInformationForm = ({
                   variant="stacked"
                   disabled={
                     !values.processes_personal_data ||
-                    values.exempt_from_privacy_regulations ||
-                    lockedForGVL
+                    values.exempt_from_privacy_regulations
                   }
                 />
                 <DictSuggestionTextInput
@@ -628,7 +620,6 @@ const SystemInformationForm = ({
                   name="data_security_practices"
                   id="data_security_practices"
                   tooltip="Which data security practices are employed to keep the data safe?"
-                  disabled={lockedForGVL}
                 />
                 <DictSuggestionTextInput
                   label="Legitimate interest disclosure URL"

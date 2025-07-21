@@ -20,7 +20,12 @@ export type SingleFieldSubmissionResponse = {
   instance_id: string;
   instance_status: string;
   is_complete: boolean;
+  completed_at?: string | null;
   comment?: CommentResponse | null;
   attachment?: AttachmentResponse | null;
   message: string;
+  user_id?: string | null;
+  user_first_name?: string | null;
+  user_last_name?: string | null;
+  user_email_address?: string | null;
 };

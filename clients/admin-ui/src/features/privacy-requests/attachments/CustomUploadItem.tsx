@@ -3,16 +3,20 @@ import {
   AntFlex as Flex,
   AntMessage as message,
   AntText as Text,
+  AntTooltip as Tooltip,
   Icons,
   UploadFile,
 } from "fidesui";
 import React, { useState } from "react";
+
+import { AttachmentType } from "~/types/api";
 
 import { useLazyGetAttachmentDetailsQuery } from "./privacy-request-attachments.slice";
 
 interface CustomAttachmentData {
   attachment_id: string;
   privacy_request_id: string;
+  attachment_type: AttachmentType;
 }
 
 interface CustomUploadItemProps {
@@ -54,12 +58,21 @@ const CustomUploadItem = ({ file }: CustomUploadItemProps) => {
     }
   };
 
+  const isAttachmentForAccessPackage =
+    file.customData?.attachment_type ===
+    AttachmentType.INCLUDE_WITH_ACCESS_PACKAGE;
+
   return (
     <Flex align="center" gap={8}>
       <Icons.Attachment className="shrink-0" />
       <Text ellipsis={{ tooltip: file.name }} className="grow">
         {file.name}
       </Text>
+      {isAttachmentForAccessPackage && (
+        <Tooltip title="This attachment will be included in the access package.">
+          <Icons.UserFilled className="shrink-0" title="User icon" />
+        </Tooltip>
+      )}
       <Button
         type="text"
         icon={<Icons.Download />}

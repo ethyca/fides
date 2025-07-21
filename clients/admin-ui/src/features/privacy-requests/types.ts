@@ -1,4 +1,9 @@
-import { ActionType, DrpAction, PrivacyRequestStatus } from "~/types/api";
+import {
+  ActionType,
+  AttachmentResponse,
+  DrpAction,
+  PrivacyRequestStatus,
+} from "~/types/api";
 
 export interface DenyPrivacyRequest {
   id: string;
@@ -214,6 +219,7 @@ export interface ConfigMessagingSecretsRequest {
 export enum ActivityTimelineItemTypeEnum {
   REQUEST_UPDATE = "Request update",
   INTERNAL_COMMENT = "Internal comment",
+  MANUAL_TASK = "Manual task",
 }
 
 export const TimelineItemColorMap: Record<
@@ -222,6 +228,7 @@ export const TimelineItemColorMap: Record<
 > = {
   [ActivityTimelineItemTypeEnum.REQUEST_UPDATE]: "sandstone",
   [ActivityTimelineItemTypeEnum.INTERNAL_COMMENT]: "marble",
+  [ActivityTimelineItemTypeEnum.MANUAL_TASK]: "nectar",
 };
 
 export interface ActivityTimelineItem {
@@ -236,4 +243,5 @@ export interface ActivityTimelineItem {
   isSkipped: boolean;
   isAwaitingInput: boolean;
   id: string;
+  attachments?: AttachmentResponse[];
 }

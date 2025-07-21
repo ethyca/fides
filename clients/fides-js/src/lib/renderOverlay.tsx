@@ -1,4 +1,4 @@
-import { h, render } from "preact";
+import { render } from "preact";
 
 import NoticeOverlay from "../components/notices/NoticeOverlay";
 import { RenderOverlayType } from "../components/types";

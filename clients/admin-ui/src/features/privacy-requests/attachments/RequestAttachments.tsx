@@ -68,6 +68,7 @@ const RequestAttachments = ({ subjectRequest }: RequestAttachmentsProps) => {
         customData: {
           attachment_id: attachment.id,
           privacy_request_id: subjectRequest.id,
+          attachment_type: attachment.attachment_type,
         },
       };
     }) || [];

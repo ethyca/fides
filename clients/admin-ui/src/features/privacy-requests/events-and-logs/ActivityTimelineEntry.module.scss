@@ -53,6 +53,21 @@ $horizontal-padding: 20px;
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
+  justify-content: space-between;
+}
+
+.headerLeft {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  flex: 1;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
 }
 
 .author {

@@ -72,6 +72,9 @@ export const defaultAntTheme: ThemeConfig = {
     Table: {
       cellPaddingBlockSM: 8,
       cellPaddingInlineSM: 16,
+      cellFontSizeSM: 12,
+      rowSelectedBg: palette.FIDESUI_NEUTRAL_50,
+      rowSelectedHoverBg: palette.FIDESUI_NEUTRAL_75,
     },
     Tooltip: {
       colorBgSpotlight: palette.FIDESUI_MINOS,

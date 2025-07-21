@@ -232,7 +232,7 @@ def check_redis() -> None:
     """Check that Redis is healthy."""
     logger.info("Running Cache connection test...")
     try:
-        get_cache(should_log=True)
+        get_cache()
     except (RedisConnectionError, RedisError, ResponseError) as e:
         logger.error("Connection to cache failed: {}", str(e))
         return

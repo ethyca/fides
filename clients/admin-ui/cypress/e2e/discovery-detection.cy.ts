@@ -9,10 +9,12 @@ import {
   DATA_DISCOVERY_ROUTE,
   DETECTION_DISCOVERY_ACTIVITY_ROUTE,
 } from "~/features/common/nav/routes";
+import { RoleRegistryEnum } from "~/types/api/models/RoleRegistryEnum";
 
 describe("discovery and detection", () => {
   beforeEach(() => {
     cy.login();
+    cy.assumeRole(RoleRegistryEnum.OWNER);
     stubPlus(true);
     stubStagedResourceActions();
     stubTaxonomyEntities();

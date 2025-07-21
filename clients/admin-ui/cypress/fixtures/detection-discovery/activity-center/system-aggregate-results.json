@@ -51,7 +51,11 @@
         "td.doubleclick.net",
         "www.google.com",
         "www.googletagmanager.com"
-      ]
+      ],
+      "consent_status": {
+        "status": "alert",
+        "message": "One or more assets were detected without consent"
+      }
     },
     {
       "id": "system_key-652c8984-ade7-470b-bce4-7e184621be9d",

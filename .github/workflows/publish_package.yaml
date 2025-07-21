@@ -28,7 +28,7 @@ jobs:
       - name: Install node modules
         run: |
           cd clients
-          npm install
+          npm ci
 
       - name: Build and export frontend files
         run: |

@@ -1,7 +1,7 @@
 import alias from "@rollup/plugin-alias";
 import copy from "rollup-plugin-copy";
 import dts from "rollup-plugin-dts";
-import esbuild from "rollup-plugin-esbuild";
+import esbuild, { minify } from "rollup-plugin-esbuild";
 import filesize from "rollup-plugin-filesize";
 import json from "@rollup/plugin-json";
 import nodeResolve from "@rollup/plugin-node-resolve";
@@ -11,9 +11,12 @@ import { visualizer } from "rollup-plugin-visualizer";
 import strip from "@rollup/plugin-strip";
 import replace from "@rollup/plugin-replace";
 import fs from "fs";
+import jsxRemoveAttributes from "rollup-plugin-jsx-remove-attributes";
+import { importFidesPackageVersion } from "../build-utils.js";
 
 const NAME = "fides";
 const IS_DEV = process.env.NODE_ENV === "development";
+const IS_TEST = process.env.IS_TEST === "true";
 const GZIP_SIZE_ERROR_KB = 50; // fail build if bundle size exceeds this
 const GZIP_SIZE_WARN_KB = 45; // log a warning if bundle size exceeds this
 
@@ -46,17 +49,20 @@ const fidesScriptPlugins = ({ name, gzipWarnSizeKb, gzipErrorSizeKb }) => [
   postcss({
     minimize: !IS_DEV,
   }),
-  esbuild({
-    minify: !IS_DEV,
+  esbuild(),
+  !IS_DEV && !IS_TEST && jsxRemoveAttributes(), // removes `data-testid`
+  !IS_DEV &&
+    strip({
+      include: ["**/*.ts", "**/*.tsx"],
+      functions: ["fidesDebugger"],
+    }),
+  !IS_DEV && minify(),
+  replace({
+    // version.json is created by the docker build process and contains the versioneer version
+    __RELEASE_VERSION__: () => importFidesPackageVersion(),
+    preventAssignment: true,
+    include: ["src/lib/init-utils.ts"],
   }),
-  strip(
-    IS_DEV
-      ? {}
-      : {
-          include: ["**/*.ts", "**/*.tsx"],
-          functions: ["fidesDebugger"],
-        },
-  ),
   copy({
     // Automatically add the built script to the privacy center's and admin ui's static files for bundling:
     targets: [
