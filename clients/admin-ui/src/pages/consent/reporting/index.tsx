@@ -7,16 +7,19 @@ import {
   AntDropdown as Dropdown,
   AntEmpty as Empty,
   AntFlex as Flex,
-  AntSelect as Select,
   Icons,
   useToast,
 } from "fidesui";
-import { useSearchParams } from "next/navigation";
-import { useRouter } from "next/router";
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 
 import FixedLayout from "~/features/common/FixedLayout";
 import PageHeader from "~/features/common/PageHeader";
+import {
+  PaginationContext,
+  Paginator,
+  usePagination,
+} from "~/features/common/pagination/pagination";
+import { useDateQueryParam } from "~/features/common/query-parameters/queryParameters";
 import {
   FidesTableV2,
   TableActionBar,
@@ -30,154 +33,10 @@ import ConsentTcfDetailModal from "~/features/consent-reporting/ConsentTcfDetail
 import useConsentReportingTableColumns from "~/features/consent-reporting/hooks/useConsentReportingTableColumns";
 import { ConsentReportingSchema } from "~/types/api";
 
-const safeParseInt = (value: string) => {
-  const parsed = parseInt(value, 10);
-  if (!Number.isNaN(parsed) && Number.isFinite(parsed)) {
-    return parsed;
-  }
-  return 1;
-};
-
-// type QueryParam = ReturnType<InstanceType<typeof URLSearchParams>["get"]>;
-function useStatefulQueryParam<InitialValue = string>(
-  key: string,
-  fromQueryParam: (value: string) => InitialValue,
-  initialValue: InitialValue,
-  toQueryParam: (value: InitialValue) => string = (value) =>
-    value?.toString() ?? "",
-) {
-  const searchParams = useSearchParams();
-  const paramValue = searchParams?.get(key) ?? null;
-  const initialState =
-    (paramValue ? fromQueryParam(paramValue) : null) ?? initialValue;
-  const [value, setValue] = useState(initialState);
-  const router = useRouter();
-
-  useEffect(() => {
-    const nextQueryParams = new URLSearchParams(searchParams ?? {});
-    if (value === initialValue || value === undefined || value === null) {
-      nextQueryParams.delete(key);
-    } else {
-      nextQueryParams.set(
-        key,
-        toQueryParam ? toQueryParam(value).toString() : value.toString(),
-      );
-    }
-    const nextQueryParamString = nextQueryParams.toString();
-    if (nextQueryParamString !== searchParams?.toString()) {
-      router.push({
-        query: nextQueryParamString,
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key, paramValue, value, searchParams]);
-
-  return [value, setValue] as const;
-}
-
-const DEFAULT_PAGE = 1;
-const DEFAULT_SIZE = 25;
-
-const usePaginatorState = () => {
-  const [page, setPage] = useStatefulQueryParam(
-    "page",
-    safeParseInt,
-    DEFAULT_PAGE,
-  );
-  const [size, internalSetSize] = useStatefulQueryParam(
-    "size",
-    safeParseInt,
-    DEFAULT_SIZE,
-  );
-
-  const setSize = (nextSize: number) => {
-    internalSetSize(nextSize);
-    setPage(1);
-  };
-
-  const previous = () =>
-    setPage((previousPage) => {
-      const nextPage = previousPage - 1;
-      if (nextPage < DEFAULT_PAGE) {
-        return DEFAULT_PAGE;
-      }
-      return nextPage;
-    });
-  const next = () => setPage((previousPage) => previousPage + 1);
-
-  return {
-    previous,
-    next,
-    setSize,
-    page,
-    size,
-  };
-};
-
-const PageContext = React.createContext<
-  ReturnType<typeof usePaginatorState> | undefined
->(undefined);
-
-const PaginationContext = ({ children }: { children: React.ReactNode }) => {
-  const paginationState = usePaginatorState();
-
-  return (
-    <PageContext.Provider value={paginationState}>
-      {children}
-    </PageContext.Provider>
-  );
-};
-
-const usePagination = () => {
-  const paginationContext = useContext(PageContext);
-  if (paginationContext) {
-    return paginationContext;
-  }
-
-  throw new Error("Pagination Context Provider not found.");
-};
-
-const Paginator = () => {
-  const { next, page, size, previous, setSize } = usePagination();
-
-  return (
-    <div style={{ display: "flex", columnGap: "10px", alignItems: "center" }}>
-      <Button onClick={previous} disabled={page === 1}>
-        Previous
-      </Button>
-      <span>{page}</span>
-      <Button onClick={next}>Next</Button>
-      <Select
-        style={{ width: "auto" }}
-        value={size}
-        onChange={setSize}
-        options={[
-          { label: 25, value: 25 },
-          { label: 50, value: 50 },
-          { label: 100, value: 100 },
-        ]}
-        labelRender={() => {
-          return <span>{size} / page</span>;
-        }}
-      />
-    </div>
-  );
-};
-
 const ConsentReporting = () => {
   const today = useMemo(() => dayjs(), []);
-  const [startDate, setStartDate] = useStatefulQueryParam<Dayjs | null>(
-    "startDate",
-    (v) => dayjs(v),
-    null,
-    (v) => v?.toISOString() ?? "",
-  );
-  const [endDate, setEndDate] = useStatefulQueryParam<Dayjs | null>(
-    "endDate",
-    (v) => dayjs(v),
-    null,
-    (v) => v?.toISOString() ?? "",
-  );
+  const [startDate, setStartDate] = useDateQueryParam("startDate");
+  const [endDate, setEndDate] = useDateQueryParam("endDate");
   const [isConsentLookupModalOpen, setIsConsentLookupModalOpen] =
     useState(false);
   const [isDownloadReportModalOpen, setIsDownloadReportModalOpen] =
@@ -258,6 +117,7 @@ const ConsentReporting = () => {
                   setStartDate(dates && dates[0]);
                   setEndDate(dates && dates[1]);
                 }}
+                value={[startDate, endDate]}
               />
               <Flex gap={12}>
                 <Button
