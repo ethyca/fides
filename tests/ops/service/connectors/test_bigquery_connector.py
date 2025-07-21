@@ -18,12 +18,113 @@ from fides.api.schemas.namespace_meta.bigquery_namespace_meta import (
 )
 from fides.api.service.connectors.bigquery_connector import BigQueryConnector
 from tests.fixtures.bigquery_fixtures import seed_bigquery_integration_db
+from unittest.mock import MagicMock, patch
+from sqlalchemy.engine import Engine
 
 
 @pytest.fixture(scope="session", autouse=True)
 def update_bigquery_data(bigquery_test_engine):
     """Refresh the BigQuery data at the start of the test session"""
     seed_bigquery_integration_db(bigquery_test_engine)
+
+
+class TestBigQueryConnectorUnit:
+    """Unit tests for BigQuery connector that don't require external credentials"""
+
+    def test_execute_statements_with_sql_dry_run_enabled(self, loguru_caplog):
+        """Test _execute_statements_with_sql_dry_run when dry run is enabled"""
+        # Create a mock connector
+        mock_connection_config = MagicMock()
+        mock_connection_config.secrets = {"keyfile_creds": "fake_creds"}
+
+        connector = BigQueryConnector(mock_connection_config)
+
+        # Mock statements
+        mock_statements = [
+            text("DELETE FROM table1 WHERE id = 1"),
+            text("DELETE FROM table2 WHERE id = 2"),
+        ]
+
+        # Mock client
+        mock_client = MagicMock(spec=Engine)
+
+        # Call the function with sql_dry_run enabled
+        result = connector._execute_statements_with_sql_dry_run(
+            statements=mock_statements,
+            sql_dry_run_enabled=True,
+            client=mock_client,
+        )
+
+        # Assertions
+        assert result == 0  # Should return 0 affected rows in dry run mode
+        assert "SQL DRY RUN - Would execute SQL:" in loguru_caplog.text
+        assert "DELETE FROM table1 WHERE id = 1" in loguru_caplog.text
+        assert "DELETE FROM table2 WHERE id = 2" in loguru_caplog.text
+
+        # Should not attempt to connect to database
+        mock_client.connect.assert_not_called()
+
+    def test_execute_statements_with_sql_dry_run_disabled(self):
+        """Test _execute_statements_with_sql_dry_run when dry run is disabled"""
+        # Create a mock connector
+        mock_connection_config = MagicMock()
+        mock_connection_config.secrets = {"keyfile_creds": "fake_creds"}
+
+        connector = BigQueryConnector(mock_connection_config)
+
+        # Mock statements
+        mock_statements = [
+            text("DELETE FROM table1 WHERE id = 1"),
+            text("DELETE FROM table2 WHERE id = 2"),
+        ]
+
+        # Mock client and connection
+        mock_client = MagicMock(spec=Engine)
+        mock_connection = MagicMock()
+        mock_client.connect.return_value.__enter__.return_value = mock_connection
+
+        # Mock execute results
+        mock_result1 = MagicMock()
+        mock_result1.rowcount = 3
+        mock_result2 = MagicMock()
+        mock_result2.rowcount = 5
+        mock_connection.execute.side_effect = [mock_result1, mock_result2]
+
+        # Call the function with sql_dry_run disabled
+        result = connector._execute_statements_with_sql_dry_run(
+            statements=mock_statements,
+            sql_dry_run_enabled=False,
+            client=mock_client,
+        )
+
+        # Assertions
+        assert result == 8  # Should return sum of affected rows (3 + 5)
+        mock_client.connect.assert_called_once()
+        assert mock_connection.execute.call_count == 2
+        mock_connection.execute.assert_any_call(mock_statements[0])
+        mock_connection.execute.assert_any_call(mock_statements[1])
+
+    def test_execute_statements_with_sql_dry_run_empty_statements(self):
+        """Test _execute_statements_with_sql_dry_run with empty statements list"""
+        # Create a mock connector
+        mock_connection_config = MagicMock()
+        mock_connection_config.secrets = {"keyfile_creds": "fake_creds"}
+
+        connector = BigQueryConnector(mock_connection_config)
+
+        # Mock client
+        mock_client = MagicMock(spec=Engine)
+
+        # Call the function with empty statements
+        result = connector._execute_statements_with_sql_dry_run(
+            statements=[],
+            sql_dry_run_enabled=False,
+            client=mock_client,
+        )
+
+        # Assertions
+        assert result == 0  # Should return 0 for empty statements
+        mock_client.connect.assert_not_called()
 
 
 @pytest.mark.integration_external
