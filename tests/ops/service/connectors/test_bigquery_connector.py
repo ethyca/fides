@@ -1,11 +1,13 @@
 import logging
 from typing import Generator
+from unittest.mock import MagicMock, patch
 
 import pytest
 import sqlalchemy
 from fideslang.models import Dataset, MaskingStrategies, MaskingStrategyOverride
 from loguru import logger
 from sqlalchemy import text
+from sqlalchemy.engine import Engine
 
 from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph import DatasetGraph
@@ -18,8 +20,6 @@ from fides.api.schemas.namespace_meta.bigquery_namespace_meta import (
 )
 from fides.api.service.connectors.bigquery_connector import BigQueryConnector
 from tests.fixtures.bigquery_fixtures import seed_bigquery_integration_db
-from unittest.mock import MagicMock, patch
-from sqlalchemy.engine import Engine
 
 
 @pytest.fixture(scope="session", autouse=True)
