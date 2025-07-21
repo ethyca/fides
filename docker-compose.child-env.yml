@@ -30,9 +30,6 @@ services:
       FIDES__REDIS__HOST: "redis-child"
       FIDES__TEST_MODE: "True"
       FIDES__USER__ANALYTICS_OPT_OUT: "True"
-      VAULT_ADDR: ${VAULT_ADDR:-}
-      VAULT_NAMESPACE: ${VAULT_NAMESPACE:-}
-      VAULT_TOKEN: ${VAULT_TOKEN:-}
       FIDES__SECURITY__PARENT_SERVER_USERNAME: parent
       FIDES__SECURITY__PARENT_SERVER_PASSWORD: parentpassword1!
     volumes:
