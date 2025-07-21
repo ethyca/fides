@@ -403,7 +403,7 @@ class TestGroupConditionEvaluation(TestConditionEvaluator):
     def test_and_group_all_true(self, evaluator, sample_data):
         """Test AND group with all conditions true"""
         group = ConditionGroup(
-            op=GroupOperator.and_,
+            logical_operator=GroupOperator.and_,
             conditions=[
                 ConditionLeaf(
                     field_address="user.age", operator=Operator.gte, value=18
@@ -421,7 +421,7 @@ class TestGroupConditionEvaluation(TestConditionEvaluator):
     def test_and_group_one_false(self, evaluator, sample_data):
         """Test AND group with one condition false"""
         group = ConditionGroup(
-            op=GroupOperator.and_,
+            logical_operator=GroupOperator.and_,
             conditions=[
                 ConditionLeaf(
                     field_address="user.age", operator=Operator.gte, value=18
@@ -439,7 +439,7 @@ class TestGroupConditionEvaluation(TestConditionEvaluator):
     def test_or_group_one_true(self, evaluator, sample_data):
         """Test OR group with one condition true"""
         group = ConditionGroup(
-            op=GroupOperator.or_,
+            logical_operator=GroupOperator.or_,
             conditions=[
                 ConditionLeaf(
                     field_address="user.age", operator=Operator.lt, value=18
@@ -459,7 +459,7 @@ class TestGroupConditionEvaluation(TestConditionEvaluator):
     def test_or_group_all_false(self, evaluator, sample_data):
         """Test OR group with all conditions false"""
         group = ConditionGroup(
-            op=GroupOperator.or_,
+            logical_operator=GroupOperator.or_,
             conditions=[
                 ConditionLeaf(field_address="user.age", operator=Operator.lt, value=18),
                 ConditionLeaf(
@@ -477,7 +477,7 @@ class TestGroupConditionEvaluation(TestConditionEvaluator):
     def test_single_condition_group(self, evaluator, sample_data):
         """Test group with single condition"""
         group = ConditionGroup(
-            op=GroupOperator.and_,
+            logical_operator=GroupOperator.and_,
             conditions=[
                 ConditionLeaf(
                     field_address="user.name", operator=Operator.eq, value="john_doe"
@@ -496,7 +496,7 @@ class TestNestedGroupEvaluation(TestConditionEvaluator):
         """Test nested AND/OR groups"""
         # Structure: (user.age >= 18 AND (user.role = 'admin' OR user.verified = true))
         inner_group = ConditionGroup(
-            op=GroupOperator.or_,
+            logical_operator=GroupOperator.or_,
             conditions=[
                 ConditionLeaf(
                     field_address="user.role", operator=Operator.eq, value="admin"
@@ -508,7 +508,7 @@ class TestNestedGroupEvaluation(TestConditionEvaluator):
         )
 
         outer_group = ConditionGroup(
-            op=GroupOperator.and_,
+            logical_operator=GroupOperator.and_,
             conditions=[
                 ConditionLeaf(
                     field_address="user.age", operator=Operator.gte, value=18
@@ -527,7 +527,7 @@ class TestNestedGroupEvaluation(TestConditionEvaluator):
         # Where A=user.age>=18, B=user.active=True, C=user.role='admin', D=user.verified=True, E=user.name exists
 
         inner_group_1 = ConditionGroup(
-            op=GroupOperator.and_,
+            logical_operator=GroupOperator.and_,
             conditions=[
                 ConditionLeaf(
                     field_address="user.age", operator=Operator.gte, value=18
@@ -539,7 +539,7 @@ class TestNestedGroupEvaluation(TestConditionEvaluator):
         )
 
         inner_group_2 = ConditionGroup(
-            op=GroupOperator.and_,
+            logical_operator=GroupOperator.and_,
             conditions=[
                 ConditionLeaf(
                     field_address="user.role", operator=Operator.eq, value="admin"
@@ -551,12 +551,12 @@ class TestNestedGroupEvaluation(TestConditionEvaluator):
         )
 
         middle_group = ConditionGroup(
-            op=GroupOperator.or_,
+            logical_operator=GroupOperator.or_,
             conditions=[inner_group_1, inner_group_2],  # True OR False = True
         )
 
         outer_group = ConditionGroup(
-            op=GroupOperator.and_,
+            logical_operator=GroupOperator.and_,
             conditions=[
                 middle_group,  # True
                 ConditionLeaf(
@@ -572,7 +572,7 @@ class TestNestedGroupEvaluation(TestConditionEvaluator):
         """Test very deep nesting"""
         # Create a deeply nested structure: (((A OR B) AND C) OR D) AND E
         deepest = ConditionGroup(
-            op=GroupOperator.or_,
+            logical_operator=GroupOperator.or_,
             conditions=[
                 ConditionLeaf(
                     field_address="user.role", operator=Operator.eq, value="admin"
@@ -584,7 +584,7 @@ class TestNestedGroupEvaluation(TestConditionEvaluator):
         )
 
         level_2 = ConditionGroup(
-            op=GroupOperator.and_,
+            logical_operator=GroupOperator.and_,
             conditions=[
                 deepest,  # True (OR of False and True)
                 ConditionLeaf(
@@ -594,7 +594,7 @@ class TestNestedGroupEvaluation(TestConditionEvaluator):
         )
 
         level_3 = ConditionGroup(
-            op=GroupOperator.or_,
+            logical_operator=GroupOperator.or_,
             conditions=[
                 level_2,  # True (AND of True and True)
                 ConditionLeaf(
@@ -604,7 +604,7 @@ class TestNestedGroupEvaluation(TestConditionEvaluator):
         )
 
         outermost = ConditionGroup(
-            op=GroupOperator.and_,
+            logical_operator=GroupOperator.and_,
             conditions=[
                 level_3,  # True (OR of True and False)
                 ConditionLeaf(
@@ -619,7 +619,7 @@ class TestNestedGroupEvaluation(TestConditionEvaluator):
     def test_mixed_conditions_in_group(self, evaluator, sample_data):
         """Test mixing ConditionLeaf and ConditionGroup in the same group"""
         inner_group = ConditionGroup(
-            op=GroupOperator.and_,
+            logical_operator=GroupOperator.and_,
             conditions=[
                 ConditionLeaf(
                     field_address="user.verified", operator=Operator.eq, value=True
@@ -631,7 +631,7 @@ class TestNestedGroupEvaluation(TestConditionEvaluator):
         )
 
         mixed_group = ConditionGroup(
-            op=GroupOperator.or_,
+            logical_operator=GroupOperator.or_,
             conditions=[
                 ConditionLeaf(
                     field_address="user.admin", operator=Operator.eq, value=True
@@ -722,7 +722,7 @@ class TestIntegration(TestConditionEvaluator):
         # Scenario: User must be 18+, active, and either have admin role OR be verified
         # AND their subscription must be active
         role_or_verified = ConditionGroup(
-            op=GroupOperator.or_,
+            logical_operator=GroupOperator.or_,
             conditions=[
                 ConditionLeaf(
                     field_address="user.role", operator=Operator.eq, value="admin"
@@ -734,7 +734,7 @@ class TestIntegration(TestConditionEvaluator):
         )
 
         user_requirements = ConditionGroup(
-            op=GroupOperator.and_,
+            logical_operator=GroupOperator.and_,
             conditions=[
                 ConditionLeaf(
                     field_address="user.age", operator=Operator.gte, value=18
@@ -753,7 +753,7 @@ class TestIntegration(TestConditionEvaluator):
         )
 
         final_rule = ConditionGroup(
-            op=GroupOperator.and_,
+            logical_operator=GroupOperator.and_,
             conditions=[user_requirements, subscription_requirement],
         )
 
@@ -765,7 +765,7 @@ class TestIntegration(TestConditionEvaluator):
         """Test order processing scenario"""
         # Scenario: Order must be completed AND total > 100 OR user is premium
         order_condition = ConditionGroup(
-            op=GroupOperator.and_,
+            logical_operator=GroupOperator.and_,
             conditions=[
                 ConditionLeaf(
                     field_address="order.status",
@@ -785,7 +785,8 @@ class TestIntegration(TestConditionEvaluator):
         )
 
         final_rule = ConditionGroup(
-            op=GroupOperator.or_, conditions=[order_condition, user_premium]
+            logical_operator=GroupOperator.or_,
+            conditions=[order_condition, user_premium],
         )
 
         result = evaluator.evaluate_rule(final_rule, sample_data)
@@ -873,11 +874,13 @@ class TestIntegration(TestConditionEvaluator):
         )
 
         role_or_permission = ConditionGroup(
-            op=GroupOperator.or_, conditions=[role_condition, permission_condition]
+            logical_operator=GroupOperator.or_,
+            conditions=[role_condition, permission_condition],
         )
 
         final_condition = ConditionGroup(
-            op=GroupOperator.and_, conditions=[role_or_permission, order_condition]
+            logical_operator=GroupOperator.and_,
+            conditions=[role_or_permission, order_condition],
         )
 
         result = evaluator.evaluate_rule(final_condition, data)
@@ -927,7 +930,7 @@ class TestIntegration(TestConditionEvaluator):
         )
 
         combined_condition = ConditionGroup(
-            op=GroupOperator.and_,
+            logical_operator=GroupOperator.and_,
             conditions=[interests_condition, skills_condition, subscription_condition],
         )
 

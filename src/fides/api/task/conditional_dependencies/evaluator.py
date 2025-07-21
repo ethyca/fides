@@ -44,10 +44,10 @@ class ConditionEvaluator:
         ]
 
         logical_operators = {GroupOperator.and_: all, GroupOperator.or_: any}
-        operator_func = logical_operators.get(group.op)
+        operator_func = logical_operators.get(group.logical_operator)
 
         if operator_func is None:
-            logger.warning(f"Unknown logical operator: {group.op}")
+            logger.warning(f"Unknown logical operator: {group.logical_operator}")
             return False
 
         return operator_func(results)

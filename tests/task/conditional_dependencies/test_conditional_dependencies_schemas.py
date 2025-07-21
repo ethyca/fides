@@ -18,14 +18,14 @@ class TestConditionLeaf:
         condition = ConditionLeaf(
             field_address="user.name", operator=Operator.eq, value="john_doe"
         )
-        assert condition.field == "user.name"
+        assert condition.field_address == "user.name"
         assert condition.operator == Operator.eq
         assert condition.value == "john_doe"
 
     def test_condition_leaf_without_value(self):
         """Test condition leaf for existence checks without value"""
         condition = ConditionLeaf(field_address="user.email", operator=Operator.exists)
-        assert condition.field == "user.email"
+        assert condition.field_address == "user.email"
         assert condition.operator == Operator.exists
         assert condition.value is None
 
@@ -46,7 +46,7 @@ class TestConditionLeaf:
 
         for operator in operators:
             condition = ConditionLeaf(
-                field_address="test.field",
+                field_address="test.field_address",
                 operator=operator,
                 value=(
                     "test_value"
@@ -93,20 +93,20 @@ class TestConditionLeaf:
         )
 
         data = condition.model_dump()
-        assert data["field"] == "user.roles"
+        assert data["field_address"] == "user.roles"
         assert data["operator"] == "list_contains"
         assert data["value"] == "admin"
 
     def test_list_operators_deserialization(self):
         """Test deserialization of list operators"""
         data = {
-            "field": "user.permissions",
+            "field_address": "user.permissions",
             "operator": "list_contains",
             "value": "read",
         }
 
         condition = ConditionLeaf.model_validate(data)
-        assert condition.field == "user.permissions"
+        assert condition.field_address == "user.permissions"
         assert condition.operator == Operator.list_contains
         assert condition.value == "read"
 
@@ -117,7 +117,7 @@ class TestConditionLeaf:
             operator=Operator.eq,
             value="active",
         )
-        assert condition.field == "user.billing.subscription.status"
+        assert condition.field_address == "user.billing.subscription.status"
 
     def test_different_value_types(self):
         """Test condition leaf with different value types"""
@@ -152,7 +152,7 @@ class TestConditionGroup:
     def test_valid_condition_group_and(self):
         """Test creating a valid AND condition group"""
         group = ConditionGroup(
-            op=GroupOperator.and_,
+            logical_operator=GroupOperator.and_,
             conditions=[
                 ConditionLeaf(
                     field_address="user.age", operator=Operator.gte, value=18
@@ -162,14 +162,14 @@ class TestConditionGroup:
                 ),
             ],
         )
-        assert group.op == GroupOperator.and_
+        assert group.logical_operator == GroupOperator.and_
         assert len(group.conditions) == 2
         assert all(isinstance(cond, ConditionLeaf) for cond in group.conditions)
 
     def test_valid_condition_group_or(self):
         """Test creating a valid OR condition group"""
         group = ConditionGroup(
-            op=GroupOperator.or_,
+            logical_operator=GroupOperator.or_,
             conditions=[
                 ConditionLeaf(
                     field_address="user.role", operator=Operator.eq, value="admin"
@@ -179,29 +179,29 @@ class TestConditionGroup:
                 ),
             ],
         )
-        assert group.op == GroupOperator.or_
+        assert group.logical_operator == GroupOperator.or_
         assert len(group.conditions) == 2
 
     def test_empty_conditions_validation(self):
         """Test that empty conditions list raises validation error"""
         with pytest.raises(ValidationError, match="conditions list cannot be empty"):
-            ConditionGroup(op=GroupOperator.and_, conditions=[])
+            ConditionGroup(logical_operator=GroupOperator.and_, conditions=[])
 
     def test_single_condition_in_group(self):
         """Test condition group with single condition"""
         group = ConditionGroup(
-            op=GroupOperator.and_,
+            logical_operator=GroupOperator.and_,
             conditions=[
                 ConditionLeaf(field_address="user.name", operator=Operator.exists)
             ],
         )
         assert len(group.conditions) == 1
-        assert group.conditions[0].field == "user.name"
+        assert group.conditions[0].field_address == "user.name"
 
     def test_multiple_conditions_in_group(self):
         """Test condition group with multiple conditions"""
         group = ConditionGroup(
-            op=GroupOperator.or_,
+            logical_operator=GroupOperator.or_,
             conditions=[
                 ConditionLeaf(
                     field_address="user.age", operator=Operator.gte, value=18
@@ -215,7 +215,7 @@ class TestConditionGroup:
             ],
         )
         assert len(group.conditions) == 3
-        assert group.op == GroupOperator.or_
+        assert group.logical_operator == GroupOperator.or_
 
 
 class TestRecursiveConditions:
@@ -226,7 +226,7 @@ class TestRecursiveConditions:
         # Create a complex nested structure:
         # (user.age >= 18 AND (user.role = 'admin' OR user.verified = true))
         nested_group = ConditionGroup(
-            op=GroupOperator.or_,
+            logical_operator=GroupOperator.or_,
             conditions=[
                 ConditionLeaf(
                     field_address="user.role", operator=Operator.eq, value="admin"
@@ -238,7 +238,7 @@ class TestRecursiveConditions:
         )
 
         main_group = ConditionGroup(
-            op=GroupOperator.and_,
+            logical_operator=GroupOperator.and_,
             conditions=[
                 ConditionLeaf(
                     field_address="user.age", operator=Operator.gte, value=18
@@ -247,7 +247,7 @@ class TestRecursiveConditions:
             ],
         )
 
-        assert main_group.op == GroupOperator.and_
+        assert main_group.logical_operator == GroupOperator.and_
         assert len(main_group.conditions) == 2
         assert isinstance(main_group.conditions[0], ConditionLeaf)
         assert isinstance(main_group.conditions[1], ConditionGroup)
@@ -256,7 +256,7 @@ class TestRecursiveConditions:
         """Test a more complex nested structure with multiple levels"""
         # Structure: ((A AND B) OR (C AND D)) AND E
         inner_group_1 = ConditionGroup(
-            op=GroupOperator.and_,
+            logical_operator=GroupOperator.and_,
             conditions=[
                 ConditionLeaf(field_address="A", operator=Operator.eq, value=True),
                 ConditionLeaf(field_address="B", operator=Operator.eq, value=True),
@@ -264,7 +264,7 @@ class TestRecursiveConditions:
         )
 
         inner_group_2 = ConditionGroup(
-            op=GroupOperator.and_,
+            logical_operator=GroupOperator.and_,
             conditions=[
                 ConditionLeaf(field_address="C", operator=Operator.eq, value=True),
                 ConditionLeaf(field_address="D", operator=Operator.eq, value=True),
@@ -272,18 +272,19 @@ class TestRecursiveConditions:
         )
 
         middle_group = ConditionGroup(
-            op=GroupOperator.or_, conditions=[inner_group_1, inner_group_2]
+            logical_operator=GroupOperator.or_,
+            conditions=[inner_group_1, inner_group_2],
         )
 
         outer_group = ConditionGroup(
-            op=GroupOperator.and_,
+            logical_operator=GroupOperator.and_,
             conditions=[
                 middle_group,
                 ConditionLeaf(field_address="E", operator=Operator.eq, value=True),
             ],
         )
 
-        assert outer_group.op == GroupOperator.and_
+        assert outer_group.logical_operator == GroupOperator.and_
         assert len(outer_group.conditions) == 2
         assert isinstance(outer_group.conditions[0], ConditionGroup)
         assert isinstance(outer_group.conditions[1], ConditionLeaf)
@@ -292,7 +293,7 @@ class TestRecursiveConditions:
         """Test very deep nesting of condition groups"""
         # Create a deeply nested structure: (((A OR B) AND C) OR D) AND E
         deepest = ConditionGroup(
-            op=GroupOperator.or_,
+            logical_operator=GroupOperator.or_,
             conditions=[
                 ConditionLeaf(field_address="A", operator=Operator.eq, value=True),
                 ConditionLeaf(field_address="B", operator=Operator.eq, value=True),
@@ -300,7 +301,7 @@ class TestRecursiveConditions:
         )
 
         level_2 = ConditionGroup(
-            op=GroupOperator.and_,
+            logical_operator=GroupOperator.and_,
             conditions=[
                 deepest,
                 ConditionLeaf(field_address="C", operator=Operator.eq, value=True),
@@ -308,7 +309,7 @@ class TestRecursiveConditions:
         )
 
         level_3 = ConditionGroup(
-            op=GroupOperator.or_,
+            logical_operator=GroupOperator.or_,
             conditions=[
                 level_2,
                 ConditionLeaf(field_address="D", operator=Operator.eq, value=True),
@@ -316,7 +317,7 @@ class TestRecursiveConditions:
         )
 
         outermost = ConditionGroup(
-            op=GroupOperator.and_,
+            logical_operator=GroupOperator.and_,
             conditions=[
                 level_3,
                 ConditionLeaf(field_address="E", operator=Operator.eq, value=True),
@@ -335,7 +336,7 @@ class TestRecursiveConditions:
     def test_mixed_conditions_in_group(self):
         """Test mixing ConditionLeaf and ConditionGroup in the same group"""
         inner_group = ConditionGroup(
-            op=GroupOperator.and_,
+            logical_operator=GroupOperator.and_,
             conditions=[
                 ConditionLeaf(
                     field_address="user.verified", operator=Operator.eq, value=True
@@ -347,7 +348,7 @@ class TestRecursiveConditions:
         )
 
         mixed_group = ConditionGroup(
-            op=GroupOperator.or_,
+            logical_operator=GroupOperator.or_,
             conditions=[
                 ConditionLeaf(
                     field_address="user.admin", operator=Operator.eq, value=True
@@ -380,7 +381,7 @@ class TestEdgeCases:
         """Test condition with very long field path"""
         long_path = "very.deeply.nested.object.with.many.levels.of.properties"
         condition = ConditionLeaf(field_address=long_path, operator=Operator.exists)
-        assert condition.field == long_path
+        assert condition.field_address == long_path
 
     def test_special_characters_in_field_path(self):
         """Test field paths with special characters"""
@@ -389,7 +390,7 @@ class TestEdgeCases:
             operator=Operator.eq,
             value="test@example.com",
         )
-        assert condition.field == "user.email_address"
+        assert condition.field_address == "user.email_address"
 
     def test_numeric_values(self):
         """Test various numeric value types"""
@@ -423,14 +424,14 @@ class TestSerialization:
         )
 
         data = condition.model_dump()
-        assert data["field"] == "user.name"
+        assert data["field_address"] == "user.name"
         assert data["operator"] == "eq"
         assert data["value"] == "john"
 
     def test_condition_group_serialization(self):
         """Test that condition group can be serialized to dict"""
         group = ConditionGroup(
-            op=GroupOperator.and_,
+            logical_operator=GroupOperator.and_,
             conditions=[
                 ConditionLeaf(
                     field_address="user.age", operator=Operator.gte, value=18
@@ -442,14 +443,14 @@ class TestSerialization:
         )
 
         data = group.model_dump()
-        assert data["op"] == "and"
+        assert data["logical_operator"] == "and"
         assert len(data["conditions"]) == 2
-        assert data["conditions"][0]["field"] == "user.age"
+        assert data["conditions"][0]["field_address"] == "user.age"
 
     def test_nested_group_serialization(self):
         """Test serialization of nested condition groups"""
         nested_group = ConditionGroup(
-            op=GroupOperator.or_,
+            logical_operator=GroupOperator.or_,
             conditions=[
                 ConditionLeaf(
                     field_address="user.role", operator=Operator.eq, value="admin"
@@ -461,7 +462,7 @@ class TestSerialization:
         )
 
         main_group = ConditionGroup(
-            op=GroupOperator.and_,
+            logical_operator=GroupOperator.and_,
             conditions=[
                 ConditionLeaf(
                     field_address="user.age", operator=Operator.gte, value=18
@@ -471,59 +472,67 @@ class TestSerialization:
         )
 
         data = main_group.model_dump()
-        assert data["op"] == "and"
+        assert data["logical_operator"] == "and"
         assert len(data["conditions"]) == 2
-        assert data["conditions"][0]["field"] == "user.age"
-        assert data["conditions"][1]["op"] == "or"
+        assert data["conditions"][0]["field_address"] == "user.age"
+        assert data["conditions"][1]["logical_operator"] == "or"
         assert len(data["conditions"][1]["conditions"]) == 2
 
     def test_deserialization(self):
         """Test deserialization from dict"""
-        data = {"field": "user.name", "operator": "eq", "value": "john"}
+        data = {"field_address": "user.name", "operator": "eq", "value": "john"}
 
         condition = ConditionLeaf.model_validate(data)
-        assert condition.field == "user.name"
+        assert condition.field_address == "user.name"
         assert condition.operator == Operator.eq
         assert condition.value == "john"
 
     def test_group_deserialization(self):
         """Test deserialization of condition groups"""
         data = {
-            "op": "and",
+            "logical_operator": "and",
             "conditions": [
-                {"field": "user.age", "operator": "gte", "value": 18},
-                {"field": "user.active", "operator": "eq", "value": True},
+                {"field_address": "user.age", "operator": "gte", "value": 18},
+                {"field_address": "user.active", "operator": "eq", "value": True},
             ],
         }
 
         group = ConditionGroup.model_validate(data)
-        assert group.op == GroupOperator.and_
+        assert group.logical_operator == GroupOperator.and_
         assert len(group.conditions) == 2
-        assert group.conditions[0].field == "user.age"
+        assert group.conditions[0].field_address == "user.age"
 
     def test_nested_group_deserialization(self):
         """Test deserialization of nested condition groups"""
         data = {
-            "op": "and",
+            "logical_operator": "and",
             "conditions": [
-                {"field": "user.age", "operator": "gte", "value": 18},
+                {"field_address": "user.age", "operator": "gte", "value": 18},
                 {
-                    "op": "or",
+                    "logical_operator": "or",
                     "conditions": [
-                        {"field": "user.role", "operator": "eq", "value": "admin"},
-                        {"field": "user.verified", "operator": "eq", "value": True},
+                        {
+                            "field_address": "user.role",
+                            "operator": "eq",
+                            "value": "admin",
+                        },
+                        {
+                            "field_address": "user.verified",
+                            "operator": "eq",
+                            "value": True,
+                        },
                     ],
                 },
             ],
         }
 
         group = ConditionGroup.model_validate(data)
-        assert group.op == GroupOperator.and_
+        assert group.logical_operator == GroupOperator.and_
         assert len(group.conditions) == 2
         assert isinstance(group.conditions[0], ConditionLeaf)
         assert isinstance(group.conditions[1], ConditionGroup)
 
         nested_group = group.conditions[1]
-        assert nested_group.op == GroupOperator.or_
+        assert nested_group.logical_operator == GroupOperator.or_
         assert len(nested_group.conditions) == 2
         assert all(isinstance(cond, ConditionLeaf) for cond in nested_group.conditions)

@@ -28,7 +28,7 @@ def sample_condition_leaf() -> ConditionLeaf:
 def sample_condition_group() -> ConditionGroup:
     """Create a sample group condition"""
     return ConditionGroup(
-        op=GroupOperator.and_,
+        logical_operator=GroupOperator.and_,
         conditions=[
             ConditionLeaf(field_address="user.age", operator=Operator.gte, value=18),
             ConditionLeaf(
@@ -539,7 +539,7 @@ class TestManualTaskConditionalDependencyConversion:
 
         # Verify the conversion
         assert isinstance(condition_group, ConditionGroup)
-        assert condition_group.op == "and"
+        assert condition_group.logical_operator == "and"
         assert len(condition_group.conditions) == 1
         assert isinstance(condition_group.conditions[0], ConditionLeaf)
         assert (
@@ -636,7 +636,7 @@ class TestManualTaskConditionalDependencyClassMethods:
 
         # Verify the result
         assert isinstance(root_condition, ConditionGroup)
-        assert root_condition.op == "and"
+        assert root_condition.logical_operator == "and"
         assert len(root_condition.conditions) == 1
         assert isinstance(root_condition.conditions[0], ConditionLeaf)
         assert (
@@ -705,10 +705,10 @@ class TestManualTaskConditionalDependencyClassMethods:
 
         # Verify the result
         assert isinstance(root_condition, ConditionGroup)
-        assert root_condition.op == "and"
+        assert root_condition.logical_operator == "and"
         assert len(root_condition.conditions) == 1
         assert isinstance(root_condition.conditions[0], ConditionGroup)
-        assert root_condition.conditions[0].op == "or"
+        assert root_condition.conditions[0].logical_operator == "or"
         assert len(root_condition.conditions[0].conditions) == 2
         assert all(
             isinstance(cond, ConditionLeaf)

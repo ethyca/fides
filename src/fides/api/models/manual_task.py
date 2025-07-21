@@ -1077,7 +1077,9 @@ class ManualTaskConditionalDependency(Base):
             else:
                 child_conditions.append(child.to_condition_group())
 
-        return ConditionGroup(op=self.logical_operator, conditions=child_conditions)
+        return ConditionGroup(
+            logical_operator=self.logical_operator, conditions=child_conditions
+        )
 
     @classmethod
     def get_root_condition(
