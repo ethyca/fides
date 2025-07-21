@@ -41,6 +41,9 @@ jobs:
 
       - name: Run Static Check
         run: nox -s collect_tests
+        env:
+          SAAS_OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.SAAS_OP_SERVICE_ACCOUNT_TOKEN }}
+          SAAS_SECRETS_OP_VAULT_ID: ${{ secrets.SAAS_SECRETS_OP_VAULT_ID }}
 
   Build:
     needs: Collect-Tests
