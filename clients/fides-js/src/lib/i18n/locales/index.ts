@@ -48,6 +48,7 @@ import sv from "./sv/messages.json";
 import tr from "./tr/messages.json";
 import uk from "./uk/messages.json";
 import zh from "./zh/messages.json";
+import zhHant from "./zh-Hant/messages.json";
 
 export const STATIC_MESSAGES: Record<Locale, Messages> = {
   ar: ar,
@@ -90,6 +91,7 @@ export const STATIC_MESSAGES: Record<Locale, Messages> = {
   tr: tr,
   uk: uk,
   zh: zh,
+  "zh-Hant": zhHant,
 };
 
 export const LOCALE_LANGUAGE_MAP: Language[] = [
