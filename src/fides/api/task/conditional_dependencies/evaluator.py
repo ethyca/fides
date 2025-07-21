@@ -57,8 +57,8 @@ class ConditionEvaluator:
 
         Supports both simple dictionary access and Fides reference structures:
         - Simple dict: data["user"]["name"]
-        - Fides FieldAddress: data.get_field_value(FieldAddress("dataset", "collection", "field"))
-        - Fides Collection: data.get_field_value(FieldPath("field", "subfield"))
+        - Fides FieldAddress: data.get_field_value(FieldAddress("dataset", "collection", "field_address"))
+        - Fides Collection: data.get_field_value(FieldPath("field_address", "subfield"))
         """
         if not keys:
             return data

@@ -94,7 +94,7 @@ class TestNestedValueAccess(TestConditionEvaluator):
             ),
             param(["empty_dict", "any_field"], "empty dict", id="empty dict"),
             param(
-                ["nested_empty", "level1", "level2", "field"],
+                ["nested_empty", "level1", "level2", "field_address"],
                 "nested empty dict",
                 id="nested empty dict",
             ),
@@ -121,7 +121,9 @@ class TestNestedValueAccess(TestConditionEvaluator):
 
     def test_fides_data_access(self, evaluator, mock_fides_data):
         """Test accessing Fides data structure with get_field_value method"""
-        value = evaluator._get_nested_value(mock_fides_data, ["field", "subfield"])
+        value = evaluator._get_nested_value(
+            mock_fides_data, ["field_address", "subfield"]
+        )
         assert value == "test_value"
         mock_fides_data.get_field_value.assert_called_once()
 
@@ -131,7 +133,7 @@ class TestNestedValueAccess(TestConditionEvaluator):
         data.get_field_value.side_effect = AttributeError("No such method")
         data.get.return_value = "fallback_value"
 
-        value = evaluator._get_nested_value(data, ["field"])
+        value = evaluator._get_nested_value(data, ["field_address"])
         assert value == "fallback_value"
 
     def test_empty_keys_returns_data(self, evaluator, sample_data):
@@ -654,14 +656,18 @@ class TestEdgeCases(TestConditionEvaluator):
 
     def test_empty_data(self, evaluator):
         """Test evaluation with empty data"""
-        condition = ConditionLeaf(field_address="any.field", operator=Operator.exists)
+        condition = ConditionLeaf(
+            field_address="any.field_address", operator=Operator.exists
+        )
 
         result = evaluator.evaluate_rule(condition, {})
         assert result is False
 
     def test_none_data(self, evaluator):
         """Test evaluation with None data"""
-        condition = ConditionLeaf(field_address="any.field", operator=Operator.exists)
+        condition = ConditionLeaf(
+            field_address="any.field_address", operator=Operator.exists
+        )
 
         result = evaluator.evaluate_rule(condition, None)
         assert result is False
@@ -705,9 +711,9 @@ class TestEdgeCases(TestConditionEvaluator):
         self, evaluator, field_value, expected_value, description
     ):
         """Test edge case comparisons (empty string, zero, false)"""
-        data = {"field": field_value}
+        data = {"field_address": field_value}
         condition = ConditionLeaf(
-            field_address="field", operator=Operator.eq, value=expected_value
+            field_address="field_address", operator=Operator.eq, value=expected_value
         )
 
         result = evaluator.evaluate_rule(condition, data)
