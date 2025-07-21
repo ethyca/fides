@@ -272,6 +272,7 @@ export function loadMessagesFromExperience(
 
   // Load all the extracted messages into the i18n module
   availableLocales.forEach((locale) => {
+    console.log("loading messages", locale, allMessages[locale]);
     i18n.load(locale, allMessages[locale]);
   });
 }
@@ -497,6 +498,7 @@ export function initializeI18n(
 ): void {
   // Extract & update all the translated messages from both our static files and the experience API
   loadMessagesFromFiles(i18n);
+  console.log("experience", experience);
   const availableLocales: Locale[] = experience.available_locales?.length
     ? experience.available_locales
     : [DEFAULT_LOCALE];
