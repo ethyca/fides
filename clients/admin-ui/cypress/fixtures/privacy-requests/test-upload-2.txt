@@ -1,0 +1,7 @@
+This is a test file for multiple attachment upload testing.
+
+File name: test-upload-2.txt
+Purpose: Testing multiple file attachments in manual tasks
+Content: Sample text data for privacy request processing
+
+This file should be used alongside test-upload.pdf to test multiple file upload functionality in Cypress tests.

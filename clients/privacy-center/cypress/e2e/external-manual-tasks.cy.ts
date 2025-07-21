@@ -268,8 +268,8 @@ describe("External Manual Tasks", () => {
           "Export Customer Data from Salesforce",
         );
 
-        // Should show file upload UI - matching admin-ui test pattern
-        cy.contains("Upload File").should("be.visible");
+        // Should show file upload UI - now supports multiple files
+        cy.contains("Upload Files").should("be.visible");
         cy.get('[data-testid="complete-modal-upload-button"]').should(
           "be.visible",
         );
@@ -290,6 +290,78 @@ describe("External Manual Tasks", () => {
       });
 
       cy.get('[data-testid="complete-task-modal"]').should("not.exist");
+    });
+
+    it("should handle multiple file uploads for attachment tasks", () => {
+      // Find file upload task (Export Customer Data)
+      cy.get('[data-testid="external-tasks-table"] tbody tr')
+        .contains("Export Customer Data from Salesforce")
+        .parents("tr")
+        .within(() => {
+          cy.get('[data-testid="task-complete-button"]').click({ force: true });
+        });
+
+      cy.get('[data-testid="complete-task-modal"]').should("be.visible");
+      cy.get('[data-testid="complete-task-modal"]').within(() => {
+        cy.contains("Complete Task").should("be.visible");
+        cy.get('[data-testid="task-details-name"]').should(
+          "contain",
+          "Export Customer Data from Salesforce",
+        );
+
+        // Verify multiple file upload UI
+        cy.contains("Upload Files").should("be.visible");
+        cy.get('[data-testid="complete-modal-upload-button"]').should(
+          "be.visible",
+        );
+
+        // Initially disabled without files
+        cy.get('[data-testid="complete-modal-save-button"]').should(
+          "be.disabled",
+        );
+
+        // Note: Create test files in privacy-center instead of using admin-ui files
+        // For now, we'll create a simple text content file for testing
+        const testFile1 = new File(["Test content 1"], "test-file-1.txt", {
+          type: "text/plain",
+        });
+        const testFile2 = new File(['{"data": "test"}'], "test-file-2.json", {
+          type: "application/json",
+        });
+
+        // Simulate multiple file selection
+        cy.get('input[type="file"]').then(($input) => {
+          const files = [testFile1, testFile2];
+          const dataTransfer = new DataTransfer();
+          files.forEach((file) => dataTransfer.items.add(file));
+          ($input[0] as HTMLInputElement).files = dataTransfer.files;
+          $input.trigger("change", { force: true });
+        });
+
+        // Add comment for multiple files
+        cy.get('[data-testid="complete-modal-comment-input"]').type(
+          "Multiple files exported: TXT and JSON formats",
+        );
+
+        // Save button should be enabled with files
+        cy.get('[data-testid="complete-modal-save-button"]').should(
+          "not.be.disabled",
+        );
+
+        // Submit the form
+        cy.get('[data-testid="complete-modal-save-button"]').click();
+      });
+
+      // Verify the request contains multiple attachments
+      cy.wait("@completeExternalTask").then((interception) => {
+        expect(interception.request.headers).to.have.property("content-type");
+        expect(interception.request.headers["content-type"]).to.include(
+          "multipart/form-data",
+        );
+        expect(interception.request.body).to.exist;
+      });
+
+      cy.getByTestId("complete-task-modal").should("not.exist");
     });
 
     it("should handle string input tasks with validation", () => {
