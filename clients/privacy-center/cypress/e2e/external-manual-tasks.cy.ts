@@ -320,23 +320,14 @@ describe("External Manual Tasks", () => {
           "be.disabled",
         );
 
-        // Note: Create test files in privacy-center instead of using admin-ui files
-        // For now, we'll create a simple text content file for testing
-        const testFile1 = new File(["Test content 1"], "test-file-1.txt", {
-          type: "text/plain",
-        });
-        const testFile2 = new File(['{"data": "test"}'], "test-file-2.json", {
-          type: "application/json",
-        });
-
-        // Simulate multiple file selection
-        cy.get('input[type="file"]').then(($input) => {
-          const files = [testFile1, testFile2];
-          const dataTransfer = new DataTransfer();
-          files.forEach((file) => dataTransfer.items.add(file));
-          ($input[0] as HTMLInputElement).files = dataTransfer.files;
-          $input.trigger("change", { force: true });
-        });
+        // Upload multiple files using selectFile like admin UI
+        cy.get('input[type="file"]').selectFile(
+          [
+            "cypress/fixtures/privacy-request/test-upload-1.txt",
+            "cypress/fixtures/privacy-request/test-upload-2.json",
+          ],
+          { force: true },
+        );
 
         // Add comment for multiple files
         cy.get('[data-testid="complete-modal-comment-input"]').type(

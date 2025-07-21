@@ -1,0 +1,2 @@
+This is a test file for external manual task file upload testing.
+Multiple attachments feature test.
