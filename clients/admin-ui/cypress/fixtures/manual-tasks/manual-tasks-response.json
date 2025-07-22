@@ -149,9 +149,72 @@
       },
       "created_at": "2024-03-13T08:45:00Z",
       "updated_at": "2024-03-14T10:20:00Z"
+    },
+    {
+      "manual_field_id": "task_006",
+      "name": "Export User Data Package",
+      "description": "Export complete user data package with multiple files",
+      "input_type": "file",
+      "request_type": "access",
+      "status": "completed",
+      "assigned_users": [
+        {
+          "id": "fid_dcf26c27-b992-43e0-9178-2b577720e0c6",
+          "email_address": "john.doe@example.com",
+          "first_name": "John",
+          "last_name": "Doe"
+        }
+      ],
+      "privacy_request": {
+        "id": "pri_completed_001",
+        "days_left": 0,
+        "request_type": "access",
+        "subject_identities": {
+          "email": "completed@example.com"
+        }
+      },
+      "system": {
+        "id": "sys_006",
+        "name": "Data Warehouse"
+      },
+      "created_at": "2024-03-10T10:00:00Z",
+      "updated_at": "2024-03-12T14:30:00Z",
+      "submission_user": {
+        "id": "fid_dcf26c27-b992-43e0-9178-2b577720e0c6",
+        "email_address": "john.doe@example.com",
+        "first_name": "John",
+        "last_name": "Doe"
+      },
+      "attachments": [
+        {
+          "id": "att_001",
+          "file_name": "user_profile_data.json",
+          "file_size": 2048,
+          "created_at": "2024-03-12T14:30:00Z"
+        },
+        {
+          "id": "att_002",
+          "file_name": "transaction_history.csv",
+          "file_size": 5120,
+          "created_at": "2024-03-12T14:30:00Z"
+        },
+        {
+          "id": "att_003",
+          "file_name": "user_preferences.xml",
+          "file_size": 1024,
+          "created_at": "2024-03-12T14:30:00Z"
+        }
+      ],
+      "comments": [
+        {
+          "id": "comment_001",
+          "comment_text": "Multiple files exported successfully including profile, transactions, and preferences",
+          "created_at": "2024-03-12T14:30:00Z"
+        }
+      ]
     }
   ],
-  "total": 5,
+  "total": 6,
   "page": 1,
   "size": 25,
   "pages": 1,
@@ -208,6 +271,10 @@
       {
         "id": "sys_005",
         "name": "HubSpot CRM"
+      },
+      {
+        "id": "sys_006",
+        "name": "Data Warehouse"
       }
     ]
   }
