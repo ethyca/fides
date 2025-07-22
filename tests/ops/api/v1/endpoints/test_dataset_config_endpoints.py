@@ -15,6 +15,9 @@ from sqlalchemy.orm import Session, make_transient
 from sqlalchemy.orm.attributes import flag_modified
 from starlette.testclient import TestClient
 
+from fides.api.api.v1.endpoints.dataset_config_endpoints import (
+    MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM,
+)
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.sql_models import Dataset as CtlDataset
@@ -611,7 +614,7 @@ class TestPatchDatasetConfigs:
     ):
         # Test the new limit of 1000 - should fail with 1001 items
         payload = []
-        for i in range(0, 1001):
+        for i in range(0, MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM + 1):
             payload.append(request_body[0])
 
         auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
@@ -620,7 +623,7 @@ class TestPatchDatasetConfigs:
         assert 422 == response.status_code
         assert (
             json.loads(response.text)["detail"][0]["msg"]
-            == "List should have at most 1000 items after validation, not 1001"
+            == f"List should have at most {MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM} items after validation, not {MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM + 1}"
         )
 
     def test_patch_dataset_configs_bulk_create_more_than_50(
@@ -676,7 +679,7 @@ class TestPatchDatasetConfigs:
         # Test exactly at the 1000 limit
         payload = []
 
-        for i in range(1000):
+        for i in range(MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM):
             payload.append(
                 {
                     "fides_key": f"test_1000_limit_dataset_config_{i}",
@@ -693,7 +696,9 @@ class TestPatchDatasetConfigs:
 
         assert response.status_code == 200
         response_body = json.loads(response.text)
-        assert len(response_body["succeeded"]) == 1000
+        assert (
+            len(response_body["succeeded"]) == MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM
+        )
         assert len(response_body["failed"]) == 0
 
     def test_patch_create_dataset_configs_bulk_create(
@@ -1268,7 +1273,7 @@ class TestPutDatasets:
         self, api_client: TestClient, db: Session, generate_auth_header, datasets_url
     ):
         payload = []
-        for i in range(0, 51):
+        for i in range(0, MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM + 1):
             payload.append({"collections": [{"fields": [], "fides_key": i}]})
 
         auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
@@ -1277,7 +1282,7 @@ class TestPutDatasets:
         assert 422 == response.status_code
         assert (
             json.loads(response.text)["detail"][0]["msg"]
-            == "List should have at most 50 items after validation, not 51"
+            == f"List should have at most {MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM} items after validation, not {MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM + 1}"
         )
 
     def test_patch_datasets_bulk_create(
@@ -2170,11 +2175,14 @@ class TestGetDatasetConfigs:
     ) -> None:
         """Test that the custom DatasetConfigParams allows size=1000 (maximum allowed)"""
         auth_header = generate_auth_header(scopes=[DATASET_READ])
-        response = api_client.get(f"{datasets_url}?size=1000", headers=auth_header)
+        response = api_client.get(
+            f"{datasets_url}?size={MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM}",
+            headers=auth_header,
+        )
         assert response.status_code == 200
 
         response_body = json.loads(response.text)
-        assert response_body["size"] == 1000
+        assert response_body["size"] == MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM
         assert response_body["page"] == 1
 
     def test_get_dataset_configs_rejects_size_over_1000(
@@ -2182,7 +2190,10 @@ class TestGetDatasetConfigs:
     ) -> None:
         """Test that the custom DatasetConfigParams rejects size > 1000"""
         auth_header = generate_auth_header(scopes=[DATASET_READ])
-        response = api_client.get(f"{datasets_url}?size=1001", headers=auth_header)
+        response = api_client.get(
+            f"{datasets_url}?size={MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM + 1}",
+            headers=auth_header,
+        )
         assert response.status_code == 422
 
         response_body = json.loads(response.text)

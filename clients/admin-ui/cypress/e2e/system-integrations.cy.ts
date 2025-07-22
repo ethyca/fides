@@ -70,30 +70,6 @@ describe("System integrations", () => {
     it("should not Request types (enabled-actions) field", () => {
       cy.getByTestId("controlled-select-enabled_actions").should("not.exist");
     });
-
-    it("should render more than 50 dataset configs when available", () => {
-      // Mock response with 60 dataset configs to test that more than 50 can be rendered
-      cy.intercept("GET", "/api/v1/connection/*/datasetconfig*", {
-        fixture: "dataset-configs/many-dataset-configs.json",
-      }).as("getDatasetConfigs");
-
-      // Reload to trigger the API call with our mock
-      cy.reload();
-      cy.getAntTab("Integrations").click({ force: true });
-
-      // Wait for the API call to complete
-      cy.wait("@getDatasetConfigs");
-
-      // Find the datasets dropdown and click it
-      cy.get('[data-testid="input-datasets"]').click();
-
-      // Verify that more than 50 options are available
-      // Count the number of checkbox options in the dropdown
-      cy.get('[role="option"]').should("have.length.at.least", 51);
-
-      // Verify we can see dataset options beyond the 50th
-      cy.get('[role="option"]').should("contain", "Test Dataset 60");
-    });
   });
 
   describe("Loading existing integration", () => {
@@ -138,6 +114,25 @@ describe("System integrations", () => {
         });
         expect(request.body[0].disabled).to.be.undefined;
       });
+    });
+
+    it("should render more than 50 dataset configs when available", () => {
+      // Mock response with 60 dataset configs to test that more than 50 can be rendered
+      cy.intercept("GET", "/api/v1/connection/*/datasetconfig?size=1000", {
+        fixture: "dataset-configs/many-dataset-configs.json",
+      }).as("getDatasetConfigs");
+
+      // Reload to trigger the API call with our mock
+      cy.reload();
+      cy.getAntTab("Integrations").click({ force: true });
+
+      // Wait for the API call to complete
+      cy.wait("@getDatasetConfigs");
+
+      // Verify that we have more than 50 datasets selected
+      cy.get('[data-testid="controlled-select-dataset"]')
+        .find(".ant-select-selection-item")
+        .should("have.length.greaterThan", 50);
     });
   });
 });

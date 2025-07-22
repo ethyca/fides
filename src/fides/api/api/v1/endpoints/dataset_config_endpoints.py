@@ -68,6 +68,7 @@ from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort:
 )
 
 X_YAML = "application/x-yaml"
+MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM = 1000
 
 router = APIRouter(tags=["Dataset Configs"], prefix=V1_URL_PREFIX)
 
@@ -75,8 +76,8 @@ router = APIRouter(tags=["Dataset Configs"], prefix=V1_URL_PREFIX)
 # Custom Params class with higher limit for dataset configs
 class DatasetConfigParams(Params):
     size: int = Query(
-        50, ge=1, le=1000, description="Page size"
-    )  # Allow up to 1000 instead of 100
+        50, ge=1, le=MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM, description="Page size"
+    )
 
 
 # Helper method to inject the parent ConnectionConfig into these child routes
@@ -138,7 +139,7 @@ def validate_dataset(
     response_model=BulkPutDataset,
 )
 def put_dataset_configs(
-    dataset_pairs: Annotated[List[DatasetConfigCtlDataset], Field(max_length=1000)],  # type: ignore
+    dataset_pairs: Annotated[List[DatasetConfigCtlDataset], Field(max_length=MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM)],  # type: ignore
     db: Session = Depends(deps.get_db),
     dataset_config_service: DatasetConfigService = Depends(get_dataset_config_service),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
@@ -188,7 +189,7 @@ def put_dataset_configs(
     response_model=BulkPutDataset,
 )
 def patch_dataset_configs(
-    dataset_pairs: Annotated[List[DatasetConfigCtlDataset], Field(max_length=1000)],  # type: ignore
+    dataset_pairs: Annotated[List[DatasetConfigCtlDataset], Field(max_length=MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM)],  # type: ignore
     dataset_config_service: DatasetConfigService = Depends(get_dataset_config_service),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> BulkPutDataset:
