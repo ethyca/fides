@@ -550,7 +550,7 @@ def get_user(
     # Check if user has USER_READ_OWN scope and is trying to access someone else's data
     # The verify_user_read_scopes dependency already verified the user has either USER_READ or USER_READ_OWN
     # We need to check if they have USER_READ_OWN and are accessing their own data
-    if USER_READ not in client.scopes and USER_READ_OWN in client.scopes:
+    if "respondent" in client.roles:
         # User has USER_READ_OWN scope, check if they're accessing their own data
         if user.id != client.user_id:
             raise HTTPException(
@@ -579,7 +579,7 @@ def get_users(
 
     # Check if user has USER_READ_OWN scope and filter accordingly
     # The verify_user_read_scopes dependency already verified the user has either USER_READ or USER_READ_OWN
-    if USER_READ not in client.scopes and USER_READ_OWN in client.scopes:
+    if "respondent" in client.roles:
         # User has USER_READ_OWN scope, only show their own data
         query = query.filter(FidesUser.id == client.user_id)
         if username:
