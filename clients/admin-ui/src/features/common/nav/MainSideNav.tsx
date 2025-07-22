@@ -38,19 +38,21 @@ export const UnconnectedMainSideNav = ({
     key: group.title,
     icon: group.icon,
     label: <span data-testid={`${group.title}-nav-group`}>{group.title}</span>,
-    children: group.children.map((child) => ({
-      key: child.path,
-      // child label needs left margin/padding to align with group title
-      label: (
-        <NextLink
-          href={child.path}
-          data-testid={`${child.title}-nav-link`}
-          className="ml-4 pl-0.5"
-        >
-          {child.title}
-        </NextLink>
-      ),
-    })),
+    children: group.children
+      .filter((child) => !child.hidden) // Filter out hidden routes from UI
+      .map((child) => ({
+        key: child.path,
+        // child label needs left margin/padding to align with group title
+        label: (
+          <NextLink
+            href={child.path}
+            data-testid={`${child.title}-nav-link`}
+            className="ml-4 pl-0.5"
+          >
+            {child.title}
+          </NextLink>
+        ),
+      })),
   }));
 
   const getActiveKeyFromUrl = () => {
