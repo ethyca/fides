@@ -554,8 +554,11 @@ def get_user(
     if has_permissions(
         token_data=token_data,
         client=client,
-        endpoint_scopes=SecurityScopes([USER_READ_OWN]),
+        endpoint_scopes=SecurityScopes([USER_READ]),
     ):
+        logger.debug("Returning user with id: '{}'.", user_id)
+        return user
+    else:
         # User has USER_READ_OWN scope, check if they're accessing their own data
         if user.id != client.user_id:
             raise HTTPException(
@@ -589,14 +592,14 @@ def get_users(
     if has_permissions(
         token_data=token_data,
         client=client,
-        endpoint_scopes=SecurityScopes([USER_READ_OWN]),
+        endpoint_scopes=SecurityScopes([USER_READ]),
     ):
-        # User has USER_READ_OWN scope, only show their own data
-        query = query.filter(FidesUser.id == client.user_id)
+        # User has USER_READ scope, can see all users
         if username:
             query = query.filter(FidesUser.username.ilike(f"%{escape_like(username)}%"))
     else:
-        # User has USER_READ scope, can see all users
+        # User has USER_READ_OWN scope, only show their own data
+        query = query.filter(FidesUser.id == client.user_id)
         if username:
             query = query.filter(FidesUser.username.ilike(f"%{escape_like(username)}%"))
 
