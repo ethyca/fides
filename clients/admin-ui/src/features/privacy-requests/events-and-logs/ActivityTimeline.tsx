@@ -86,6 +86,14 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
     [onOpen],
   );
 
+  // Flatten all event logs from all groups for total calculation
+  const allEventLogs = useMemo(() => {
+    if (!results) {
+      return [];
+    }
+    return Object.values(results).flat();
+  }, [results]);
+
   // Filter out comments that are already included in manual tasks
   // to avoid showing the same comments twice in the timeline
   const filteredCommentItems = useMemo(() => {
@@ -171,6 +179,7 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
         isOpen={isOpen}
         onClose={closeDrawer}
         currentLogs={currentLogs}
+        allEventLogs={allEventLogs}
         isViewingError={isViewingError}
         errorMessage={errorMessage}
         currentStatus={currentStatus}

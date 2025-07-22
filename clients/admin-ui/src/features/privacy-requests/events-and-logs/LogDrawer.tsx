@@ -24,6 +24,7 @@ type LogDrawerProps = {
   isOpen: boolean;
   onClose: () => void;
   currentLogs: ExecutionLog[];
+  allEventLogs?: ExecutionLog[]; // All event logs from all groups for total calculation
   isViewingError: boolean;
   errorMessage: string;
   currentStatus?: ExecutionLogStatus;
@@ -36,6 +37,7 @@ const LogDrawer = ({
   isOpen,
   onClose,
   currentLogs,
+  allEventLogs,
   isViewingError,
   errorMessage,
   currentStatus = ExecutionLogStatus.ERROR,
@@ -94,6 +96,7 @@ const LogDrawer = ({
           {currentLogs && !isViewingError ? (
             <EventLog
               eventLogs={currentLogs}
+              allEventLogs={allEventLogs}
               onDetailPanel={onOpenErrorPanel}
               privacyRequest={privacyRequest}
             />
