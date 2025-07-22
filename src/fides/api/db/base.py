@@ -34,12 +34,22 @@ from fides.api.models.location_regulation_selections import LocationRegulationSe
 from fides.api.models.manual_task import (
     ManualTask,
     ManualTaskConditionalDependency,
+    ManualTaskConditionalDependencyType,
     ManualTaskConfig,
     ManualTaskConfigField,
+    ManualTaskConfigurationType,
+    ManualTaskEntityType,
+    ManualTaskExecutionTiming,
+    ManualTaskFieldType,
     ManualTaskInstance,
     ManualTaskLog,
+    ManualTaskLogStatus,
+    ManualTaskParentEntityType,
     ManualTaskReference,
+    ManualTaskReferenceType,
     ManualTaskSubmission,
+    ManualTaskType,
+    StatusType,
 )
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.messaging import MessagingConfig
