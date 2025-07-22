@@ -5,6 +5,8 @@ import { automaticallyApplyPreferences } from "./automated-consent";
 import { getConsentContext } from "./consent-context";
 import {
   ComponentType,
+  ConsentFlagType,
+  ConsentMechanism,
   FidesConfig,
   FidesCookie,
   FidesGlobal,
@@ -408,13 +410,36 @@ export const initialize = async ({
   const { fides_meta, identity, fides_string, tcf_consent } = fides.cookie;
 
   // used to set Fides.consent
-  const consent = applyOverridesToConsent(
+  const consentObject = applyOverridesToConsent(
     fides.cookie.consent,
     fides.experience?.non_applicable_privacy_notices,
     fides.experience?.privacy_notices,
     options.fidesConsentFlagType ?? undefined,
     options.fidesConsentNonApplicableFlagMode ?? undefined,
   );
+
+  const hasPrivacyNotices =
+    !!fides.experience?.non_applicable_privacy_notices ||
+    !!fides.experience?.privacy_notices;
+
+  // Any unknown consent values should return falsy values automatically
+  const consent = new Proxy(consentObject, {
+    get(target, prop) {
+      if (target[prop.toString()] === undefined) {
+        // This consent property is unknown, so we want to return a default value
+        const flagTypeConsentMechanism =
+          options.fidesConsentFlagType === ConsentFlagType.CONSENT_MECHANISM;
+        // handle essential
+        if (!hasPrivacyNotices && prop.toString() === "essential") {
+          return flagTypeConsentMechanism ? ConsentMechanism.NOTICE_ONLY : true;
+        }
+        // handle any other unknown consent values.
+        // (eg. `Fides.consent.some_unknown_consent_value` should return falsy)
+        return flagTypeConsentMechanism ? ConsentMechanism.OPT_OUT : false;
+      }
+      return target[prop.toString()];
+    },
+  });
 
   // return an object with the updated Fides values
   return {
