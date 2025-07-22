@@ -10,7 +10,11 @@ import {
   Flex,
   Text,
 } from "fidesui";
-import { ExecutionLog, ExecutionLogStatus } from "privacy-requests/types";
+import {
+  ExecutionLog,
+  ExecutionLogStatus,
+  PrivacyRequestEntity,
+} from "privacy-requests/types";
 import React from "react";
 
 import EventDetail from "./EventDetail";
@@ -25,6 +29,7 @@ type LogDrawerProps = {
   currentStatus?: ExecutionLogStatus;
   onCloseErrorPanel: () => void;
   onOpenErrorPanel: (message: string, status?: ExecutionLogStatus) => void;
+  privacyRequest?: PrivacyRequestEntity;
 };
 
 const LogDrawer = ({
@@ -36,6 +41,7 @@ const LogDrawer = ({
   currentStatus = ExecutionLogStatus.ERROR,
   onCloseErrorPanel,
   onOpenErrorPanel,
+  privacyRequest,
 }: LogDrawerProps) => {
   const headerText = isViewingError ? "Event detail" : "Event log";
 
@@ -89,6 +95,7 @@ const LogDrawer = ({
             <EventLog
               eventLogs={currentLogs}
               onDetailPanel={onOpenErrorPanel}
+              privacyRequest={privacyRequest}
             />
           ) : null}
           {isViewingError ? (

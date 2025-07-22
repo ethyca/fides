@@ -176,6 +176,7 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
         currentStatus={currentStatus}
         onOpenErrorPanel={openErrorPanel}
         onCloseErrorPanel={closeErrorPanel}
+        privacyRequest={subjectRequest}
       />
     </Box>
   );

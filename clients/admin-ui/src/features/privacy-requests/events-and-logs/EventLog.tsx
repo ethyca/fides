@@ -17,6 +17,7 @@ import {
   ExecutionLogStatus,
   ExecutionLogStatusColors,
   ExecutionLogStatusLabels,
+  PrivacyRequestEntity,
 } from "privacy-requests/types";
 import React from "react";
 
@@ -25,6 +26,7 @@ import { ActionType } from "~/types/api";
 type EventDetailsProps = {
   eventLogs: ExecutionLog[];
   onDetailPanel: (message: string, status?: ExecutionLogStatus) => void;
+  privacyRequest?: PrivacyRequestEntity;
 };
 
 const actionTypeToLabel = (actionType: string) => {
@@ -42,7 +44,56 @@ const actionTypeToLabel = (actionType: string) => {
   }
 };
 
-const EventLog = ({ eventLogs, onDetailPanel }: EventDetailsProps) => {
+const extractRecordCount = (detail: ExecutionLog): string => {
+  // Only show record counts for completed operations
+  if (detail.status !== ExecutionLogStatus.COMPLETE) {
+    return "-";
+  }
+
+  // Only show record counts for actual dataset entries that have a collection_name
+  if (!detail.collection_name) {
+    return "-";
+  }
+
+  // Extract record count from standardized message format
+  const message = detail.message || "";
+
+  // Standardized format: "success - retrieved/masked/processed X records"
+  const standardPattern = /(?:retrieved|masked|processed)\s+(\d+)\s+records?$/i;
+  const standardMatch = message.match(standardPattern);
+  if (standardMatch) {
+    return parseInt(standardMatch[1], 10).toLocaleString();
+  }
+
+  return "-";
+};
+
+const EventLog = ({
+  eventLogs,
+  onDetailPanel,
+  privacyRequest,
+}: EventDetailsProps) => {
+  // Check if any logs have collection_name to determine if we should show Records and Collection columns
+  const hasDatasetEntries =
+    eventLogs?.some((log) => log.collection_name) || false;
+
+  // Get the primary action type from the privacy request policy rules
+  const privacyRequestActionType =
+    privacyRequest?.policy?.rules?.[0]?.action_type;
+
+  // Helper function to get action type label with fallback
+  const getActionTypeLabel = (
+    logActionType: string | null | undefined,
+  ): string => {
+    if (logActionType) {
+      return actionTypeToLabel(logActionType);
+    }
+    if (privacyRequestActionType) {
+      return actionTypeToLabel(privacyRequestActionType);
+    }
+    return "-";
+  };
+
   const tableItems = eventLogs?.map((detail) => (
     <Tr
       key={detail.updated_at}
@@ -74,19 +125,51 @@ const EventLog = ({ eventLogs, onDetailPanel }: EventDetailsProps) => {
       </Td>
       <Td>
         <Text color="gray.600" fontSize="xs" lineHeight="4" fontWeight="medium">
-          {actionTypeToLabel(detail.action_type)}
+          {getActionTypeLabel(detail.action_type)}
         </Text>
       </Td>
-      <Td>
-        <AntTag color={ExecutionLogStatusColors[detail.status]}>
-          {ExecutionLogStatusLabels[detail.status]}
-        </AntTag>
-      </Td>
-      <Td>
-        <Text color="gray.600" fontSize="xs" lineHeight="4" fontWeight="medium">
-          {detail.collection_name}
-        </Text>
-      </Td>
+      {hasDatasetEntries && (
+        <Td>
+          {ExecutionLogStatusLabels[detail.status] ? (
+            <AntTag color={ExecutionLogStatusColors[detail.status]}>
+              {ExecutionLogStatusLabels[detail.status]}
+            </AntTag>
+          ) : (
+            <Text
+              color="gray.600"
+              fontSize="xs"
+              lineHeight="4"
+              fontWeight="medium"
+            >
+              {detail.status}
+            </Text>
+          )}
+        </Td>
+      )}
+      {hasDatasetEntries && (
+        <Td>
+          <Text
+            color="gray.600"
+            fontSize="xs"
+            lineHeight="4"
+            fontWeight="medium"
+          >
+            {extractRecordCount(detail)}
+          </Text>
+        </Td>
+      )}
+      {hasDatasetEntries && (
+        <Td>
+          <Text
+            color="gray.600"
+            fontSize="xs"
+            lineHeight="4"
+            fontWeight="medium"
+          >
+            {detail.collection_name}
+          </Text>
+        </Td>
+      )}
     </Tr>
   ));
 
@@ -105,6 +188,7 @@ const EventLog = ({ eventLogs, onDetailPanel }: EventDetailsProps) => {
             position="sticky"
             top="0px"
             backgroundColor="white"
+            zIndex={10}
           >
             <Tr>
               <Th>
@@ -127,26 +211,42 @@ const EventLog = ({ eventLogs, onDetailPanel }: EventDetailsProps) => {
                   Action Type
                 </Text>
               </Th>
-              <Th>
-                <Text
-                  color="black"
-                  fontSize="xs"
-                  lineHeight="4"
-                  fontWeight="medium"
-                >
-                  Status
-                </Text>
-              </Th>
-              <Th>
-                <Text
-                  color="black"
-                  fontSize="xs"
-                  lineHeight="4"
-                  fontWeight="medium"
-                >
-                  Collection
-                </Text>
-              </Th>
+              {hasDatasetEntries && (
+                <Th>
+                  <Text
+                    color="black"
+                    fontSize="xs"
+                    lineHeight="4"
+                    fontWeight="medium"
+                  >
+                    Status
+                  </Text>
+                </Th>
+              )}
+              {hasDatasetEntries && (
+                <Th>
+                  <Text
+                    color="black"
+                    fontSize="xs"
+                    lineHeight="4"
+                    fontWeight="medium"
+                  >
+                    Records
+                  </Text>
+                </Th>
+              )}
+              {hasDatasetEntries && (
+                <Th>
+                  <Text
+                    color="black"
+                    fontSize="xs"
+                    lineHeight="4"
+                    fontWeight="medium"
+                  >
+                    Collection
+                  </Text>
+                </Th>
+              )}
             </Tr>
           </Thead>
 
