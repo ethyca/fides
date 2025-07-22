@@ -254,6 +254,13 @@ class ManualTask(Base):
         viewonly=True,  # No cascade delete - submissions are historical data
     )
 
+    conditional_dependencies = relationship(
+        "ManualTaskConditionalDependency",
+        back_populates="task",
+        uselist=True,
+        cascade="all, delete-orphan",
+    )
+
     # Properties
     @property
     def assigned_users(self) -> list[str]:
