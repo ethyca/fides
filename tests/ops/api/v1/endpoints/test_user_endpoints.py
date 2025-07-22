@@ -756,6 +756,77 @@ class TestGetUsers:
         assert len(response_body["items"]) == 0
         assert response_body["total"] == 0
 
+    def test_get_users_with_root_user_can_see_all_users(
+        self, api_client: TestClient, root_auth_header, url, db, respondent
+    ):
+        """Test that root users can see all users regardless of filtering"""
+        # Create additional users
+        password = str_to_b64_str("Password123!")
+        other_users = [
+            FidesUser.create(
+                db=db,
+                data={
+                    "username": f"other_user{i}",
+                    "password": password,
+                    "email_address": f"other{i}.user@ethyca.com",
+                },
+            )
+            for i in range(3)
+        ]
+
+        # Verify users were created
+        for other_user in other_users:
+            assert other_user.id is not None
+            assert other_user.username.startswith("other_user")
+
+        # Check if users are actually in the database
+        db.refresh(respondent)
+        all_users_in_db = FidesUser.query(db).all()
+        print(f"All users in DB: {[u.username for u in all_users_in_db]}")
+        print(f"Other users created: {[u.username for u in other_users]}")
+
+        # Test without any filter - should see all users
+        resp = api_client.get(url, headers=root_auth_header)
+        assert resp.status_code == HTTP_200_OK
+        response_body = resp.json()
+
+        # Root user should see all users (respondent + 3 other users + any existing users)
+        assert len(response_body["items"]) >= 4  # At least respondent + 3 other users
+        assert response_body["total"] >= 4
+
+        # Verify respondent is included
+        user_ids = [user["id"] for user in response_body["items"]]
+        assert respondent.id in user_ids
+
+        # Verify other users are included
+        for other_user in other_users:
+            assert other_user.id in user_ids
+
+        # Test with filter - should still see all matching users
+        resp = api_client.get(f"{url}?username=other", headers=root_auth_header)
+        assert resp.status_code == HTTP_200_OK
+        response_body = resp.json()
+
+        # Debug: Print the response to see what's happening
+        print(f"Filter response: {response_body}")
+        print(f"Expected usernames: {[u.username for u in other_users]}")
+
+        # Try different filter approaches to debug
+        resp2 = api_client.get(f"{url}?username=other_user", headers=root_auth_header)
+        print(f"Filter 'other_user' response: {resp2.json()}")
+
+        resp3 = api_client.get(f"{url}?username=user", headers=root_auth_header)
+        print(f"Filter 'user' response: {resp3.json()}")
+
+        # Should see all users matching the filter
+        assert len(response_body["items"]) == 3
+        assert response_body["total"] == 3
+
+        # Verify all other users are included
+        user_ids = [user["id"] for user in response_body["items"]]
+        for other_user in other_users:
+            assert other_user.id in user_ids
+
 
 class TestGetUser:
     @pytest.fixture(scope="function")
@@ -882,28 +953,73 @@ class TestGetUser:
         url_no_id: str,
         db,
     ) -> None:
-        """Test that users with USER_READ scope can still access any user data"""
-        # Create another user
+        """Test that users with USER_READ scope can still access any user's data"""
+        # Create a test user
         password = str_to_b64_str("Password123!")
-        other_user = FidesUser.create(
+        test_user = FidesUser.create(
             db=db,
             data={
-                "username": "other_user",
+                "username": "test_user",
                 "password": password,
-                "email_address": "other.user@ethyca.com",
+                "email_address": "test.user@ethyca.com",
             },
         )
 
-        # Test that USER_READ scope can access other users' data
         auth_header = generate_auth_header(scopes=[USER_READ])
         resp = api_client.get(
-            f"{url_no_id}/{other_user.id}",
+            f"{url_no_id}/{test_user.id}",
             headers=auth_header,
         )
         assert resp.status_code == HTTP_200_OK
         user_data = resp.json()
-        assert user_data["username"] == other_user.username
-        assert user_data["id"] == other_user.id
+        assert user_data["username"] == test_user.username
+        assert user_data["id"] == test_user.id
+
+    def test_get_user_with_root_user_can_access_any_user(
+        self,
+        api_client: TestClient,
+        root_auth_header,
+        url_no_id: str,
+        db,
+        respondent,
+    ) -> None:
+        """Test that root users can access any user's data"""
+        # Create additional test users
+        password = str_to_b64_str("Password123!")
+        test_users = [
+            FidesUser.create(
+                db=db,
+                data={
+                    "username": f"test_user{i}",
+                    "password": password,
+                    "email_address": f"test{i}.user@ethyca.com",
+                },
+            )
+            for i in range(3)
+        ]
+
+        # Test that root user can access respondent's data
+        resp = api_client.get(
+            f"{url_no_id}/{respondent.id}",
+            headers=root_auth_header,
+        )
+        assert resp.status_code == HTTP_200_OK
+        user_data = resp.json()
+        assert user_data["username"] == respondent.username
+        assert user_data["id"] == respondent.id
+        assert user_data["created_at"] == stringify_date(respondent.created_at)
+
+        # Test that root user can access other users' data
+        for test_user in test_users:
+            resp = api_client.get(
+                f"{url_no_id}/{test_user.id}",
+                headers=root_auth_header,
+            )
+            assert resp.status_code == HTTP_200_OK
+            user_data = resp.json()
+            assert user_data["username"] == test_user.username
+            assert user_data["id"] == test_user.id
+            assert user_data["created_at"] == stringify_date(test_user.created_at)
 
 
 class TestUpdateUser:
