@@ -1,4 +1,5 @@
-from .fides_api import FidesAPI, generate_dataset, generate_system, generate_connection
-from .qa_test_scenario import QATestScenario
+from .qa_test_scenario import QATestScenario, Argument
+from .fides_api import FidesAPI
+from .rich_helpers import RichFormatter
 
-__all__ = ['FidesAPI', 'QATestScenario', 'generate_dataset', 'generate_system', 'generate_connection']
+__all__ = ["FidesAPI", "QATestScenario", "Argument", "RichFormatter"]

@@ -66,9 +66,20 @@ class FidesAPI:
             response.raise_for_status()
             return response
         except requests.RequestException as e:
-            print(f"API request failed: {method} {url} - {e}")
-            if hasattr(e, 'response') and e.response is not None:
-                print(f"Response: {e.response.text}")
+            # Don't log 404 errors for DELETE operations - they're expected during teardown
+            should_log = True
+            if (
+                method == "DELETE"
+                and hasattr(e, "response")
+                and e.response is not None
+                and e.response.status_code == 404
+            ):
+                should_log = False
+
+            if should_log:
+                print(f"API request failed: {method} {url} - {e}")
+                if hasattr(e, "response") and e.response is not None:
+                    print(f"Response: {e.response.text}")
             raise
 
     def create_dataset(self, dataset_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -156,27 +167,48 @@ class FidesAPI:
         return system
 
     def delete_dataset(self, dataset_key: str) -> bool:
-        """Delete a dataset by key."""
+        """Delete a dataset by key. Returns True if deleted or already doesn't exist."""
         try:
             self._request('DELETE', f'/api/v1/dataset/{dataset_key}')
             return True
-        except requests.RequestException:
+        except requests.RequestException as e:
+            # 404 means already deleted - that's success for our purposes
+            if (
+                hasattr(e, "response")
+                and e.response is not None
+                and e.response.status_code == 404
+            ):
+                return True
             return False
 
     def delete_system(self, system_key: str) -> bool:
-        """Delete a system by key."""
+        """Delete a system by key. Returns True if deleted or already doesn't exist."""
         try:
             self._request('DELETE', f'/api/v1/system/{system_key}')
             return True
-        except requests.RequestException:
+        except requests.RequestException as e:
+            # 404 means already deleted - that's success for our purposes
+            if (
+                hasattr(e, "response")
+                and e.response is not None
+                and e.response.status_code == 404
+            ):
+                return True
             return False
 
     def delete_connection(self, connection_key: str) -> bool:
-        """Delete a connection configuration by key."""
+        """Delete a connection configuration by key. Returns True if deleted or already doesn't exist."""
         try:
             self._request('DELETE', f'/api/v1/connection/{connection_key}')
             return True
-        except requests.RequestException:
+        except requests.RequestException as e:
+            # 404 means already deleted - that's success for our purposes
+            if (
+                hasattr(e, "response")
+                and e.response is not None
+                and e.response.status_code == 404
+            ):
+                return True
             return False
 
     def health_check(self) -> bool:

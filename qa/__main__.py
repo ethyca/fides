@@ -101,38 +101,109 @@ def get_scenario_description(scenario_class: Type[QATestScenario]) -> str:
 
 def list_scenarios():
     """List all available scenarios."""
+    try:
+        from rich.console import Console
+        from rich.table import Table
+
+        use_rich = True
+    except ImportError:
+        use_rich = False
+
     scenarios = discover_scenarios()
 
-    print("\nAvailable QA Scenarios:")
-    print("-" * 50)
+    if use_rich:
+        console = Console()
 
-    if not scenarios:
-        print("  No scenarios found")
-        print("\nTo create a scenario:")
-        print("  1. Create a Python file (e.g., my_scenario.py)")
-        print("  2. Define a class inheriting from QATestScenario")
-        print("  3. The filename becomes the scenario name")
-        return
+        if not scenarios:
+            console.print("[red]❌ No scenarios found![/red]")
+            console.print("\n[dim]To create a scenario:[/dim]")
+            console.print(
+                "  [cyan]1.[/cyan] Create a Python file (e.g., my_scenario.py)"
+            )
+            console.print(
+                "  [cyan]2.[/cyan] Define a class inheriting from QATestScenario"
+            )
+            console.print("  [cyan]3.[/cyan] The filename becomes the scenario name")
+            return
 
-    for name, scenario_class in scenarios.items():
-        description = get_scenario_description(scenario_class)
-        print(f"  {name}")
-        print(f"    {description}")
+        console.print(f"[green]✅ Found {len(scenarios)} scenario(s)[/green]")
 
-        # Show available arguments
-        args = scenario_class.arguments
-        if args:
-            print(f"    Arguments:")
-            for arg_name, arg_spec in args.items():
-                arg_type = arg_spec.type.__name__
-                arg_default = arg_spec.default
-                arg_description = arg_spec.description
-                print(f"      --{arg_name} ({arg_type}, default: {arg_default}): {arg_description}")
-        print()
+        table = Table(
+            title="Available QA Scenarios",
+            show_header=True,
+            header_style="bold magenta",
+        )
+        table.add_column("Scenario", style="cyan", no_wrap=True)
+        table.add_column("Description", style="white")
+        table.add_column("Arguments", style="yellow")
 
-    print("Usage:")
-    print("  python qa <scenario> setup [options]")
-    print("  python qa <scenario> teardown [options]")
+        for name, scenario_class in scenarios.items():
+            description = get_scenario_description(scenario_class)
+
+            # Show available arguments
+            args = scenario_class.arguments
+            if args:
+                arg_list = []
+                for arg_name, arg_spec in args.items():
+                    arg_type = arg_spec.type.__name__
+                    arg_default = arg_spec.default
+                    arg_list.append(
+                        f"--{arg_name} ({arg_type}, default: {arg_default})"
+                    )
+                arguments = "\n".join(arg_list)
+            else:
+                arguments = "None"
+
+            table.add_row(name, description, arguments)
+
+        console.print(table)
+
+        console.print("\n[dim]Usage:[/dim]")
+        console.print("  [cyan]python qa <scenario> setup [OPTIONS][/cyan]")
+        console.print("  [cyan]python qa <scenario> teardown [OPTIONS][/cyan]")
+        console.print("\n[dim]Examples:[/dim]")
+        console.print("  [green]python qa integration_with_many_datasets setup[/green]")
+        console.print(
+            "  [green]python qa integration_with_many_datasets setup --datasets 10[/green]"
+        )
+        console.print(
+            "  [green]python qa integration_with_many_datasets teardown --datasets 10[/green]"
+        )
+
+    else:
+        # Fallback to plain text if Rich is not available
+        print("\nAvailable QA Scenarios:")
+        print("-" * 50)
+
+        if not scenarios:
+            print("  No scenarios found")
+            print("\nTo create a scenario:")
+            print("  1. Create a Python file (e.g., my_scenario.py)")
+            print("  2. Define a class inheriting from QATestScenario")
+            print("  3. The filename becomes the scenario name")
+            return
+
+        for name, scenario_class in scenarios.items():
+            description = get_scenario_description(scenario_class)
+            print(f"  {name}")
+            print(f"    {description}")
+
+            # Show available arguments
+            args = scenario_class.arguments
+            if args:
+                print(f"    Arguments:")
+                for arg_name, arg_spec in args.items():
+                    arg_type = arg_spec.type.__name__
+                    arg_default = arg_spec.default
+                    arg_description = arg_spec.description
+                    print(
+                        f"      --{arg_name} ({arg_type}, default: {arg_default}): {arg_description}"
+                    )
+            print()
+
+        print("Usage:")
+        print("  python qa <scenario> setup [options]")
+        print("  python qa <scenario> teardown [options]")
 
 
 def create_scenario_instance(scenario_class: Type[QATestScenario], **kwargs):
