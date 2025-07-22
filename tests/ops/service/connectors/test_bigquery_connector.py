@@ -1,11 +1,13 @@
 import logging
 from typing import Generator
+from unittest.mock import MagicMock, patch
 
 import pytest
 import sqlalchemy
 from fideslang.models import Dataset, MaskingStrategies, MaskingStrategyOverride
 from loguru import logger
 from sqlalchemy import text
+from sqlalchemy.engine import Engine
 
 from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph import DatasetGraph
@@ -525,9 +527,7 @@ class TestBigQueryConnector:
         assert len(results) == 1
         assert results[0]["email"] == "customer-1@example.com"
 
-    @pytest.mark.integration_external
-    @pytest.mark.integration_bigquery
-    def test_mask_data_safe_mode_enabled(
+    def test_mask_data_sql_dry_run_enabled(
         self,
         bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta: DatasetConfig,
         execution_node_with_namespace_and_partitioning_meta,
@@ -537,11 +537,13 @@ class TestBigQueryConnector:
         loguru_caplog,
         db,
     ):
-        """Test that when safe_mode is enabled, DELETE statements are logged instead of executed"""
-        # Set up safe_mode in the database
+        """Test that when sql_dry_run is enabled, DELETE statements are logged instead of executed"""
         from fides.api.models.application_config import ApplicationConfig
+        from fides.api.schemas.application_config import SqlDryRunMode
 
-        ApplicationConfig.update_api_set(db, {"execution": {"safe_mode": True}})
+        ApplicationConfig.update_api_set(
+            db, {"execution": {"sql_dry_run": SqlDryRunMode.erasure.value}}
+        )
         db.commit()
 
         dataset_config = (
@@ -549,7 +551,6 @@ class TestBigQueryConnector:
         )
         connector = BigQueryConnector(dataset_config.connection_config)
 
-        # Force DELETE masking strategy to exercise the delete path
         execution_node = execution_node_with_namespace_and_partitioning_meta
         execution_node.collection.masking_strategy_override = MaskingStrategyOverride(
             strategy=MaskingStrategies.DELETE
@@ -566,22 +567,16 @@ class TestBigQueryConnector:
             input_data={"email": ["customer-1@example.com"]},
         )
 
-        # In safe mode, SQL should NOT be executed
         assert execute_spy.call_count == 0
-
-        # In safe mode, no rows are actually affected so count should be 0
         assert update_or_delete_ct == 0
+        assert "SQL DRY RUN - Would execute SQL:" in loguru_caplog.text
 
-        # Check that the DELETE statements were logged as warnings instead of executed
-        assert "SAFE MODE - Would execute SQL:" in loguru_caplog.text
-
-        # Clean up: disable safe_mode
-        ApplicationConfig.update_api_set(db, {"execution": {"safe_mode": False}})
+        ApplicationConfig.update_api_set(
+            db, {"execution": {"sql_dry_run": SqlDryRunMode.none.value}}
+        )
         db.commit()
 
-    @pytest.mark.integration_external
-    @pytest.mark.integration_bigquery
-    def test_mask_data_safe_mode_disabled(
+    def test_mask_data_sql_dry_run_disabled(
         self,
         bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta: DatasetConfig,
         execution_node_with_namespace_and_partitioning_meta,
@@ -591,11 +586,13 @@ class TestBigQueryConnector:
         loguru_caplog,
         db,
     ):
-        """Test that when safe_mode is disabled, DELETE statements are actually executed"""
-        # Ensure safe_mode is disabled in the database
+        """Test that when sql_dry_run is disabled, DELETE statements are actually executed"""
         from fides.api.models.application_config import ApplicationConfig
+        from fides.api.schemas.application_config import SqlDryRunMode
 
-        ApplicationConfig.update_api_set(db, {"execution": {"safe_mode": False}})
+        ApplicationConfig.update_api_set(
+            db, {"execution": {"sql_dry_run": SqlDryRunMode.none.value}}
+        )
         db.commit()
 
         dataset_config = (
@@ -603,7 +600,6 @@ class TestBigQueryConnector:
         )
         connector = BigQueryConnector(dataset_config.connection_config)
 
-        # Force DELETE masking strategy to exercise the delete path
         execution_node = execution_node_with_namespace_and_partitioning_meta
         execution_node.collection.masking_strategy_override = MaskingStrategyOverride(
             strategy=MaskingStrategies.DELETE
@@ -620,14 +616,236 @@ class TestBigQueryConnector:
             input_data={"email": ["customer-3@example.com"]},
         )
 
-        # In normal mode, SQL should be executed
+        assert execute_spy.call_count > 0
+        assert update_or_delete_ct >= 0
+        assert "SQL DRY RUN - Would execute SQL:" not in loguru_caplog.text
+
+    def test_sql_dry_run_enabled_comprehensive(
+        self,
+        bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta: DatasetConfig,
+        execution_node_with_namespace_and_partitioning_meta,
+        erasure_policy,
+        privacy_request_with_email_identity,
+        mocker,
+        loguru_caplog,
+        db,
+    ):
+        """Test that when sql_dry_run is enabled, both SELECT and DELETE statements are logged instead of executed"""
+        from fides.api.models.application_config import ApplicationConfig
+        from fides.api.schemas.application_config import SqlDryRunMode
+
+        ApplicationConfig.update_api_set(
+            db, {"execution": {"sql_dry_run": SqlDryRunMode.erasure.value}}
+        )
+        db.commit()
+
+        dataset_config = (
+            bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta
+        )
+        connector = BigQueryConnector(dataset_config.connection_config)
+
+        execute_spy = mocker.spy(sqlalchemy.engine.Connection, "execute")
+
+        # Test SELECT operations (retrieve_data) - in erasure mode, SELECT should execute normally
+        results = connector.retrieve_data(
+            node=execution_node_with_namespace_and_partitioning_meta,
+            policy=privacy_request_with_email_identity.policy,
+            privacy_request=privacy_request_with_email_identity,
+            request_task=RequestTask(),
+            input_data={"email": ["customer-1@example.com"]},
+        )
+
+        # In erasure mode, SELECT should return actual results (not dry run)
+        assert len(results) > 0
+        assert results[0]["email"] == "customer-1@example.com"
+
+        # Test DELETE operations (mask_data) - in erasure mode, DELETE should be dry run
+        execution_node_with_namespace_and_partitioning_meta.collection.masking_strategy_override = MaskingStrategyOverride(
+            strategy=MaskingStrategies.DELETE
+        )
+
+        loguru_caplog.clear()  # Clear previous logs
+        execute_count_before_mask = execute_spy.call_count
+
+        update_or_delete_ct = connector.mask_data(
+            node=execution_node_with_namespace_and_partitioning_meta,
+            policy=erasure_policy,
+            privacy_request=privacy_request_with_email_identity,
+            request_task=RequestTask(),
+            rows=[{"email": "customer-1@example.com"}],
+            input_data={"email": ["customer-1@example.com"]},
+        )
+
+        # In erasure mode, DELETE should be dry run (no actual execution, zero affected rows)
+        assert update_or_delete_ct == 0
+        assert "SQL DRY RUN - Would execute SQL:" in loguru_caplog.text
+        # No additional execute calls should have been made for the DELETE operation
+        assert execute_spy.call_count == execute_count_before_mask
+
+        # Clean up
+        ApplicationConfig.update_api_set(
+            db, {"execution": {"sql_dry_run": SqlDryRunMode.none.value}}
+        )
+        db.commit()
+
+    def test_sql_dry_run_disabled_comprehensive(
+        self,
+        bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta: DatasetConfig,
+        execution_node_with_namespace_and_partitioning_meta,
+        erasure_policy,
+        privacy_request_with_email_identity,
+        mocker,
+        loguru_caplog,
+        db,
+    ):
+        """Test that when sql_dry_run is disabled, both SELECT and DELETE statements are executed normally"""
+        from fides.api.models.application_config import ApplicationConfig
+        from fides.api.schemas.application_config import SqlDryRunMode
+
+        ApplicationConfig.update_api_set(
+            db, {"execution": {"sql_dry_run": SqlDryRunMode.none.value}}
+        )
+        db.commit()
+
+        dataset_config = (
+            bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta
+        )
+        connector = BigQueryConnector(dataset_config.connection_config)
+
+        execute_spy = mocker.spy(sqlalchemy.engine.Connection, "execute")
+
+        # Test SELECT operations (retrieve_data)
+        results = connector.retrieve_data(
+            node=execution_node_with_namespace_and_partitioning_meta,
+            policy=privacy_request_with_email_identity.policy,
+            privacy_request=privacy_request_with_email_identity,
+            request_task=RequestTask(),
+            input_data={"email": ["customer-1@example.com"]},
+        )
+
+        # In normal mode, SELECT should return actual results
+        assert isinstance(results, list)
         assert execute_spy.call_count > 0
 
-        # And we should get a count of actual rows affected
+        # Reset spy count for next test
+        execute_spy.reset_mock()
+
+        # Test DELETE operations (mask_data)
+        execution_node = execution_node_with_namespace_and_partitioning_meta
+        execution_node.collection.masking_strategy_override = MaskingStrategyOverride(
+            strategy=MaskingStrategies.DELETE
+        )
+
+        update_or_delete_ct = connector.mask_data(
+            node=execution_node,
+            policy=erasure_policy,
+            privacy_request=privacy_request_with_email_identity,
+            request_task=RequestTask(),
+            rows=[{"email": "customer-3@example.com"}],
+            input_data={"email": ["customer-3@example.com"]},
+        )
+
+        # In normal mode, operations should execute
+        assert execute_spy.call_count > 0
         assert update_or_delete_ct >= 0
 
-        # Check that we don't see safe mode logging
-        assert "SAFE MODE - Would execute SQL:" not in loguru_caplog.text
+        # Check that we don't see sql_dry_run logging
+        assert "SQL DRY RUN - Would execute SQL:" not in loguru_caplog.text
+
+    def test_execute_statements_with_sql_dry_run_enabled(self, loguru_caplog):
+        """Test _execute_statements_with_sql_dry_run when dry run is enabled"""
+        # Create a mock connector
+        mock_connection_config = MagicMock()
+        mock_connection_config.secrets = {"keyfile_creds": "fake_creds"}
+
+        connector = BigQueryConnector(mock_connection_config)
+
+        # Mock statements
+        mock_statements = [
+            text("DELETE FROM table1 WHERE id = 1"),
+            text("DELETE FROM table2 WHERE id = 2"),
+        ]
+
+        # Mock client
+        mock_client = MagicMock(spec=Engine)
+
+        # Call the function with sql_dry_run enabled
+        result = connector._execute_statements_with_sql_dry_run(
+            statements=mock_statements,
+            sql_dry_run_enabled=True,
+            client=mock_client,
+        )
+
+        # Assertions
+        assert result == 0  # Should return 0 affected rows in dry run mode
+        assert "SQL DRY RUN - Would execute SQL:" in loguru_caplog.text
+        assert "DELETE FROM table1 WHERE id = 1" in loguru_caplog.text
+        assert "DELETE FROM table2 WHERE id = 2" in loguru_caplog.text
+
+        # Should not attempt to connect to database
+        mock_client.connect.assert_not_called()
+
+    def test_execute_statements_with_sql_dry_run_disabled(self):
+        """Test _execute_statements_with_sql_dry_run when dry run is disabled"""
+        # Create a mock connector
+        mock_connection_config = MagicMock()
+        mock_connection_config.secrets = {"keyfile_creds": "fake_creds"}
+
+        connector = BigQueryConnector(mock_connection_config)
+
+        # Mock statements
+        mock_statements = [
+            text("DELETE FROM table1 WHERE id = 1"),
+            text("DELETE FROM table2 WHERE id = 2"),
+        ]
+
+        # Mock client and connection
+        mock_client = MagicMock(spec=Engine)
+        mock_connection = MagicMock()
+        mock_client.connect.return_value.__enter__.return_value = mock_connection
+
+        # Mock execute results
+        mock_result1 = MagicMock()
+        mock_result1.rowcount = 3
+        mock_result2 = MagicMock()
+        mock_result2.rowcount = 5
+        mock_connection.execute.side_effect = [mock_result1, mock_result2]
+
+        # Call the function with sql_dry_run disabled
+        result = connector._execute_statements_with_sql_dry_run(
+            statements=mock_statements,
+            sql_dry_run_enabled=False,
+            client=mock_client,
+        )
+
+        # Assertions
+        assert result == 8  # Should return sum of affected rows (3 + 5)
+        mock_client.connect.assert_called_once()
+        assert mock_connection.execute.call_count == 2
+        mock_connection.execute.assert_any_call(mock_statements[0])
+        mock_connection.execute.assert_any_call(mock_statements[1])
+
+    def test_execute_statements_with_sql_dry_run_empty_statements(self):
+        """Test _execute_statements_with_sql_dry_run with empty statements list"""
+        # Create a mock connector
+        mock_connection_config = MagicMock()
+        mock_connection_config.secrets = {"keyfile_creds": "fake_creds"}
+
+        connector = BigQueryConnector(mock_connection_config)
+
+        # Mock client
+        mock_client = MagicMock(spec=Engine)
+
+        # Call the function with empty statements
+        result = connector._execute_statements_with_sql_dry_run(
+            statements=[],
+            sql_dry_run_enabled=False,
+            client=mock_client,
+        )
+
+        # Assertions
+        assert result == 0  # Should return 0 for empty statements
+        mock_client.connect.assert_not_called()
 
 
 @pytest.mark.integration_external

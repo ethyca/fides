@@ -27,6 +27,7 @@ from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
+from fides.api.schemas.application_config import SqlDryRunMode
 from fides.api.schemas.connection_configuration import ConnectionConfigSecretsSchema
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.query_configs.query_config import SQLQueryConfig
@@ -59,18 +60,22 @@ class SQLConnector(BaseConnector[Engine]):
             )
         self.ssh_server: sshtunnel._ForwardServer = None
 
-    def get_safe_mode_enabled(self) -> bool:
+    def should_dry_run(self, mode_to_check: SqlDryRunMode) -> bool:
         """
-        Get the safe_mode setting from the application configuration.
+        Check if SQL dry run is enabled for the specified mode.
+
+        Args:
+            mode_to_check: The SqlDryRunMode to check for
 
         Returns:
-            bool: True if safe_mode is enabled, False otherwise
+            bool: True if the current mode matches the mode to check
         """
         from fides.api.api.deps import get_autoclose_db_session as get_db
 
         with get_db() as db:
             config_proxy = ConfigProxy(db)
-            return getattr(config_proxy.execution, "safe_mode", False)
+            current_mode = getattr(config_proxy.execution, "sql_dry_run", None)
+            return current_mode == mode_to_check
 
     @staticmethod
     def cursor_result_to_rows(results: CursorResult) -> List[Row]:
@@ -154,6 +159,10 @@ class SQLConnector(BaseConnector[Engine]):
         if query is None:
             return []
 
+        if self.should_dry_run(SqlDryRunMode.access):
+            logger.warning(f"SQL DRY RUN - Would execute SQL: {query}")
+            return []
+
         with client.connect() as connection:
             self.set_schema(connection)
             results = connection.execute(query)
@@ -172,6 +181,10 @@ class SQLConnector(BaseConnector[Engine]):
         client = self.client()
         stmt: Optional[TextClause] = query_config.generate_query(input_data, policy)
         if stmt is None:
+            return []
+
+        if self.should_dry_run(SqlDryRunMode.access):
+            logger.warning(f"SQL DRY RUN - Would execute SQL: {stmt}")
             return []
 
         logger.info("Starting data retrieval for {}", node.address)
@@ -199,19 +212,14 @@ class SQLConnector(BaseConnector[Engine]):
         update_ct = 0
         client = self.client()
 
-        # Check if safe_mode is enabled
-        safe_mode_enabled = self.get_safe_mode_enabled()
-
         for row in rows:
             update_stmt: Optional[TextClause] = query_config.generate_update_stmt(
                 row, policy, privacy_request
             )
             if update_stmt is not None:
-                if safe_mode_enabled:
-                    # In safe mode, log the SQL statement instead of executing it
-                    logger.warning(f"SAFE MODE - Would execute SQL: {update_stmt}")
+                if self.should_dry_run(SqlDryRunMode.erasure):
+                    logger.warning(f"SQL DRY RUN - Would execute SQL: {update_stmt}")
                 else:
-                    # Normal mode - execute the SQL statement
                     with client.connect() as connection:
                         self.set_schema(connection)
                         results: LegacyCursorResult = connection.execute(update_stmt)
