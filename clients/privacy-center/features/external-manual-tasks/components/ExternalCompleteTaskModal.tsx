@@ -71,7 +71,10 @@ export const ExternalCompleteTaskModal = ({
         manual_field_id: task.manual_field_id,
         field_value: getFieldValue(),
         comment_text: comment || undefined,
-        attachment: fileList.length > 0 ? fileList[0].originFileObj : undefined,
+        attachments:
+          fileList.length > 0
+            ? fileList.map((file) => file.originFileObj).filter(Boolean)
+            : undefined,
       }).unwrap();
 
       // Reset form
@@ -160,7 +163,7 @@ export const ExternalCompleteTaskModal = ({
                 fontWeight: "500",
               }}
             >
-              Upload File
+              Upload Files
             </div>
             <div>
               <Upload
@@ -170,7 +173,7 @@ export const ExternalCompleteTaskModal = ({
                 }
                 beforeUpload={() => false} // Prevent auto upload
                 data-testid="complete-modal-file-upload"
-                maxCount={1}
+                multiple
               >
                 <Button data-testid="complete-modal-upload-button">
                   Click to Upload
