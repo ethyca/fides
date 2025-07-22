@@ -29,106 +29,121 @@ const RETAIN_DEFAULT_BORDER = ["corinth", "white"];
  * Higher-order component that adds brand colors support to the Tag component.
  */
 const withCustomProps = (WrappedComponent: typeof Tag) => {
-  const WrappedTag = ({
-    onClick,
-    color = onClick ? "white" : "default",
-    style,
-    className,
-    addable,
-    hasSparkle,
-    closeButtonLabel = "Remove",
-    ...props
-  }: CustomTagProps) => {
-    const tagRef = useRef<HTMLElement>(null);
-    const hasOnlyIcon =
-      React.Children.count(props.children) === 1 &&
-      React.isValidElement(props.children) &&
-      typeof props.children.type === "object";
-
-    const shouldReducePadding = hasOnlyIcon || (addable && !props.children);
-
-    // Update aria-label post-render to override Ant Design's aggresive default "Close"
-    useEffect(() => {
-      if (
-        (props.closable ?? props.onClose) &&
-        closeButtonLabel !== "Remove" &&
-        tagRef.current
-      ) {
-        // Find the close button within the tag
-        const closeButton = tagRef.current.querySelector(".ant-tag-close-icon");
-        if (closeButton) {
-          closeButton.setAttribute("aria-label", closeButtonLabel);
-        }
-      }
-    }, [props.closable, props.onClose, closeButtonLabel]);
-
-    // If it's a brand color, use our palette
-    const brandColor: string | undefined =
-      typeof color === "string" &&
-      `FIDESUI_BG_${color.toUpperCase()}` in palette
-        ? (`FIDESUI_BG_${color.toUpperCase()}` as BgColorKeys)
-        : undefined;
-    const needsLightText = color && DARK_BACKGROUNDS.includes(color);
-    const retainDefaultBorder = color && RETAIN_DEFAULT_BORDER.includes(color);
-    let customStyle = {};
-    if (brandColor) {
-      customStyle = {
-        background: palette[brandColor],
-        color: needsLightText ? palette.FIDESUI_NEUTRAL_100 : undefined,
-      };
-    }
-
-    const customProps: TagProps = {
-      // If not a brand color, pass through to Ant Tag
-      color: brandColor ? undefined : color,
-      style: {
-        ...style,
-        ...customStyle,
-        marginInlineEnd: 0, // allow for flex gap instead of margin
-        paddingInline: shouldReducePadding
-          ? "calc((var(--ant-padding-xs) * 0.5))"
-          : undefined,
+  const WrappedTag = React.forwardRef<HTMLElement, CustomTagProps>(
+    (
+      {
+        onClick,
+        color = onClick ? "white" : "default",
+        style,
+        className,
+        addable,
+        hasSparkle,
+        closeButtonLabel = "Remove",
+        ...props
       },
-      className: `${styles.tag} ${className ?? ""}`.trim(),
-      bordered: retainDefaultBorder,
-      ...props,
-      closeIcon:
-        (props.closable ?? props.onClose) ? (
-          // Ant's own close icon doesn't currently use a button element,
-          // so we need to use our own for accessibility.
-          //
-          // NOTE: Ant Design overrides aria-label with "Close" no matter what,
-          // but we fix this post-render using useEffect above.
-          <button
-            type="button"
-            className={styles.closeButton}
-            aria-label={closeButtonLabel}
-          >
-            {props.closeIcon ?? <Icons.CloseLarge size={12} />}
-          </button>
-        ) : undefined,
-      children: (
-        <>
-          {hasSparkle && <SparkleIcon />}
-          {props.children}
-          {addable && (
-            <Icons.AddLarge
-              size={10}
-              aria-label={props["aria-label"] || "Add"}
-            />
-          )}
-        </>
-      ),
-    };
+      forwardedRef,
+    ) => {
+      const internalRef = useRef<HTMLElement>(null);
+      // Merge internal ref with forwarded ref
+      const tagRef = forwardedRef || internalRef;
 
-    return onClick ? (
-      <button type="button" onClick={onClick} className={styles.buttonTag}>
+      const hasOnlyIcon =
+        React.Children.count(props.children) === 1 &&
+        React.isValidElement(props.children) &&
+        typeof props.children.type === "object";
+
+      const shouldReducePadding = hasOnlyIcon || (addable && !props.children);
+
+      // Update aria-label post-render to override Ant Design's aggresive default "Close"
+      useEffect(() => {
+        if (
+          (props.closable ?? props.onClose) &&
+          closeButtonLabel !== "Remove" &&
+          tagRef &&
+          "current" in tagRef &&
+          tagRef.current
+        ) {
+          // Find the close button within the tag
+          const closeButton = tagRef.current.querySelector(
+            ".ant-tag-close-icon",
+          );
+          if (closeButton) {
+            closeButton.setAttribute("aria-label", closeButtonLabel);
+          }
+        }
+      }, [props.closable, props.onClose, closeButtonLabel, tagRef]);
+
+      // If it's a brand color, use our palette
+      const brandColor: string | undefined =
+        typeof color === "string" &&
+        `FIDESUI_BG_${color.toUpperCase()}` in palette
+          ? (`FIDESUI_BG_${color.toUpperCase()}` as BgColorKeys)
+          : undefined;
+      const needsLightText = color && DARK_BACKGROUNDS.includes(color);
+      const retainDefaultBorder =
+        color && RETAIN_DEFAULT_BORDER.includes(color);
+      let customStyle = {};
+      if (brandColor) {
+        customStyle = {
+          background: palette[brandColor],
+          color: needsLightText ? palette.FIDESUI_NEUTRAL_100 : undefined,
+        };
+      }
+
+      const customProps: TagProps = {
+        // If not a brand color, pass through to Ant Tag
+        color: brandColor ? undefined : color,
+        style: {
+          ...style,
+          ...customStyle,
+          marginInlineEnd: 0, // allow for flex gap instead of margin
+          paddingInline: shouldReducePadding
+            ? "calc((var(--ant-padding-xs) * 0.5))"
+            : undefined,
+        },
+        className: `${styles.tag} ${className ?? ""}`.trim(),
+        bordered: retainDefaultBorder ? true : undefined,
+        ...props,
+        closeIcon:
+          (props.closable ?? props.onClose) ? (
+            // Ant's own close icon doesn't currently use a button element,
+            // so we need to use our own for accessibility.
+            //
+            // NOTE: Ant Design overrides aria-label with "Close" no matter what,
+            // but we fix this post-render using useEffect above.
+            <button
+              type="button"
+              className={styles.closeButton}
+              aria-label={closeButtonLabel}
+            >
+              {props.closeIcon ?? <Icons.CloseLarge size={12} />}
+            </button>
+          ) : undefined,
+        children: (
+          <>
+            {hasSparkle && <SparkleIcon />}
+            {props.children}
+            {addable && (
+              <Icons.AddLarge
+                size={10}
+                aria-label={props["aria-label"] || "Add"}
+              />
+            )}
+          </>
+        ),
+      };
+
+      return onClick ? (
+        <button type="button" onClick={onClick} className={styles.buttonTag}>
+          <WrappedComponent {...customProps} ref={tagRef} data-color={color} />
+        </button>
+      ) : (
         <WrappedComponent {...customProps} ref={tagRef} data-color={color} />
-      </button>
-    ) : (
-      <WrappedComponent {...customProps} ref={tagRef} data-color={color} />
-    );
-  };
+      );
+    },
+  );
+
+  WrappedTag.displayName = "CustomTag";
   return WrappedTag;
 };
 

@@ -1,6 +1,7 @@
 import type { TypographyProps } from "antd/lib";
 import { Typography } from "antd/lib";
 import classNames from "classnames";
+import React from "react";
 
 import styles from "./CustomTypography.module.scss";
 
@@ -62,13 +63,18 @@ const CustomParagraph = ({
   />
 );
 
-const CustomLink = ({
-  size,
-  ...props
-}: React.ComponentProps<typeof Typography.Link> &
-  CustomTypographyTextProps) => (
-  <Typography.Link className={getTextSizeClassName(size)} {...props} />
-);
+const CustomLink = React.forwardRef<
+  HTMLAnchorElement,
+  React.ComponentProps<typeof Typography.Link> & CustomTypographyTextProps
+>(({ size, ...props }, ref) => (
+  <Typography.Link
+    ref={ref}
+    className={getTextSizeClassName(size)}
+    {...props}
+  />
+));
+
+CustomLink.displayName = "CustomLink";
 
 type TypographyType = typeof Typography & {
   Text: typeof CustomText;
