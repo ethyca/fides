@@ -210,6 +210,7 @@ export interface FidesGlobal
   options: FidesInitOptions;
   saved_consent: NoticeValues;
   tcf_consent: TcfOtherConsent;
+  version: string;
   blueconic: typeof blueconic;
   gtm: typeof gtm;
   init: (config?: FidesConfig) => Promise<void>;

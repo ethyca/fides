@@ -180,7 +180,6 @@ const IntegrationListView: NextPage = () => {
     current: page,
     pageSize,
     total: tableData.length,
-    showSizeChanger: true,
     showQuickJumper: false,
     showTotal: (totalItems, range) =>
       `${range[0]}-${range[1]} of ${totalItems} integrations`,
