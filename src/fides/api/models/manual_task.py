@@ -1004,6 +1004,11 @@ class ManualTaskConditionalDependency(Base):
         """Overriding base class method to set the table name."""
         return "manual_task_conditional_dependency"
 
+    # redefined here because there's a minor, unintended discrepancy between
+    # this `id` field and that of the `Base` class, which explicitly sets `index=True`.
+    # In order for the `id` to be referenced by parent_id, we need to redefine it here.
+    id = Column(String(255), primary_key=True, default=FidesBase.generate_uuid)
+
     # Foreign key relationships
     manual_task_id = Column(
         String, ForeignKey("manual_task.id", ondelete="CASCADE"), nullable=False
