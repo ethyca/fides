@@ -35,6 +35,7 @@ from fides.api.models.manual_task import (
     ManualTask,
     ManualTaskConfig,
     ManualTaskConfigField,
+    ManualTaskConditionalDependency,
     ManualTaskInstance,
     ManualTaskLog,
     ManualTaskReference,
