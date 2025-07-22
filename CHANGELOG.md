@@ -24,9 +24,11 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Added
 - Added the ability to edit more fields for GVL vendors [#6341](https://github.com/ethyca/fides/pull/6341)
 - Added `release_version` to the global `window.Fides` object in FidesJS [#6239](https://github.com/ethyca/fides/pull/6239)
+- Added Manual Task Conditional Dependencies table [#6356](https://github.com/ethyca/fides/pull/6356)
 
 ### Changed
 - Removes `data-testid` attributes from FidesJS production builds [#6351](https://github.com/ethyca/fides/pull/6351)
+- Updates the API so respondents will only be able to see their own user info [#6368](https://github.com/ethyca/fides/pull/6368)
 
 ### Developer Experience
 - Migrated Action Center tables to Ant Design [#6349](https://github.com/ethyca/fides/pull/6349)
