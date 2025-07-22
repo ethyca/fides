@@ -47,6 +47,27 @@ def get_memory_watchdog_enabled() -> bool:
         return False
 
 
+def get_memory_watchdog_enabled() -> bool:
+    """
+    Get the memory_watchdog_enabled setting from the application configuration.
+
+    Returns:
+        bool: True if memory_watchdog_enabled is enabled, False otherwise (defaults to False)
+    """
+    try:
+        from fides.api.api.deps import get_autoclose_db_session as get_db
+        from fides.config.config_proxy import ConfigProxy
+
+        with get_db() as db:
+            config_proxy = ConfigProxy(db)
+            # ConfigProxy returns None when no config record exists, so we must handle None explicitly
+            value = getattr(config_proxy.execution, "memory_watchdog_enabled")
+            return value if value is not None else False
+    except Exception:  # pragma: no cover
+        # default to disabled for backward compatibility
+        return False
+
+
 class MemoryLimitExceeded(RuntimeError):
     """Raised when the watchdog detects sustained memory usage above the threshold."""
 
