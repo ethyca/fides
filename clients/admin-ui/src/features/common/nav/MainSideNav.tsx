@@ -26,11 +26,13 @@ export const UnconnectedMainSideNav = ({
   active,
   handleLogout,
   username,
+  userId,
 }: {
   groups: NavGroup[];
   active: ActiveNav | undefined;
   handleLogout: any;
   username: string;
+  userId: string;
 }) => {
   const navMenuItems = groups.map((group) => ({
     key: group.title,
@@ -145,10 +147,11 @@ export const UnconnectedMainSideNav = ({
             className="border-none bg-transparent  hover:!bg-gray-700"
             icon={<Icons.Help />}
           />
-          {username && (
+          {username && userId && (
             <div className="inline-block">
               <AccountDropdownMenu
                 username={username}
+                userId={userId}
                 onLogout={handleLogout}
               />
             </div>
@@ -167,6 +170,7 @@ const MainSideNav = () => {
   const user = useAppSelector(selectUser);
   const plusQuery = useGetHealthQuery();
   const username = user ? user.username : "";
+  const userId = user ? user.id : "";
 
   const handleLogout = async () => {
     await logoutMutation({});
@@ -196,6 +200,7 @@ const MainSideNav = () => {
       {...nav}
       handleLogout={handleLogout}
       username={username}
+      userId={userId}
     />
   );
 };

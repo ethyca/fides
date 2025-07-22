@@ -1,12 +1,17 @@
 import { AntButton as Button, AntDropdown as Dropdown, Icons } from "fidesui";
+import NextLink from "next/link";
+
+import { USER_PROFILE_ROUTE } from "./routes";
 
 interface AccountDropdownMenuProps {
   username: string;
+  userId: string;
   onLogout: () => void;
 }
 
 const AccountDropdownMenu = ({
   username,
+  userId,
   onLogout,
 }: AccountDropdownMenuProps) => {
   return (
@@ -15,7 +20,11 @@ const AccountDropdownMenu = ({
         items: [
           {
             key: "1",
-            label: <span data-testid="header-menu-username">{username}</span>,
+            label: (
+              <NextLink href={USER_PROFILE_ROUTE.replace("[id]", userId)}>
+                <span data-testid="header-menu-username">{username}</span>
+              </NextLink>
+            ),
             type: "group",
           },
           { type: "divider" },
