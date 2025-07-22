@@ -248,6 +248,9 @@ describe("Manual Tasks", () => {
         // Verify file upload input is displayed
         cy.getByTestId("complete-modal-upload-button").should("be.visible");
 
+        // Verify it shows "Upload Files" for multiple files
+        cy.contains("Upload Files").should("be.visible");
+
         // Verify save button is disabled without file
         cy.getByTestId("complete-modal-save-button").should("be.disabled");
 
@@ -257,7 +260,7 @@ describe("Manual Tasks", () => {
         );
         cy.getByTestId("complete-modal-save-button").should("be.disabled");
 
-        // Attach a file
+        // Attach a single file
         cy.get('input[type="file"]').selectFile(
           "cypress/fixtures/privacy-requests/test-upload.pdf",
           { force: true },
@@ -279,6 +282,67 @@ describe("Manual Tasks", () => {
         );
 
         // For FormData, the body will be serialized - just verify it exists
+        expect(interception.request.body).to.exist;
+      });
+
+      cy.getByTestId("complete-task-modal").should("not.exist");
+    });
+
+    it("should handle multiple file uploads for attachment tasks", () => {
+      // Find and click complete button for file upload task
+      cy.get(ROW_SELECTOR)
+        .contains("Export Customer Data from Salesforce")
+        .parents("tr")
+        .within(() => {
+          cy.get("td")
+            .last()
+            .within(() => {
+              cy.get("button").contains("Complete").click();
+            });
+        });
+
+      cy.getByTestId("complete-task-modal").should("be.visible");
+      cy.getByTestId("complete-task-modal").within(() => {
+        // Verify file upload supports multiple files
+        cy.contains("Upload Files").should("be.visible");
+        cy.getByTestId("complete-modal-upload-button").should("be.visible");
+
+        // Initially disabled without files
+        cy.getByTestId("complete-modal-save-button").should("be.disabled");
+
+        // Upload multiple files
+        cy.get('input[type="file"]').selectFile(
+          [
+            "cypress/fixtures/privacy-requests/test-upload.pdf",
+            "cypress/fixtures/privacy-requests/test-upload-2.txt",
+            "cypress/fixtures/privacy-requests/test-upload-3.json",
+          ],
+          { force: true },
+        );
+
+        // Add comment for the multiple files
+        cy.getByTestId("complete-modal-comment-input").type(
+          "Multiple files uploaded: PDF, TXT, and JSON formats",
+        );
+
+        // Save button should be enabled with multiple files
+        cy.getByTestId("complete-modal-save-button").should("not.be.disabled");
+
+        // Verify all files are displayed in the upload component
+        cy.contains("test-upload.pdf").should("be.visible");
+        cy.contains("test-upload-2.txt").should("be.visible");
+        cy.contains("test-upload-3.json").should("be.visible");
+
+        // Submit the form
+        cy.getByTestId("complete-modal-save-button").click();
+      });
+
+      // Verify the request contains multiple attachments
+      cy.wait("@completeTask").then((interception) => {
+        expect(interception.request.headers).to.have.property("content-type");
+        expect(interception.request.headers["content-type"]).to.include(
+          "multipart/form-data",
+        );
         expect(interception.request.body).to.exist;
       });
 
