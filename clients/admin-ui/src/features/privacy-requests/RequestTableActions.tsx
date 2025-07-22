@@ -10,11 +10,14 @@ import {
 
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import Restrict from "~/features/common/Restrict";
+import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import ApprovePrivacyRequestModal from "~/features/privacy-requests/ApprovePrivacyRequestModal";
 import DenyPrivacyRequestModal from "~/features/privacy-requests/DenyPrivacyRequestModal";
 import { useMutations } from "~/features/privacy-requests/hooks/useMutations";
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
-import { ScopeRegistryEnum } from "~/types/api";
+import { PrivacyRequestStatus, ScopeRegistryEnum } from "~/types/api";
+
+import { useGetActiveMessagingProviderQuery } from "./privacy-requests.slice";
 
 interface RequestTableActionsProps extends StackProps {
   subjectRequest: PrivacyRequestEntity;
@@ -27,14 +30,24 @@ export const RequestTableActions = ({
   const approvalModal = useDisclosure();
   const denyModal = useDisclosure();
   const deleteModal = useDisclosure();
+  const finalizeModal = useDisclosure();
   const {
     handleApproveRequest,
     handleDenyRequest,
     handleDeleteRequest,
+    handleFinalizeRequest,
     isLoading,
   } = useMutations({
     subjectRequest,
   });
+
+  const { data: config } = useGetConfigurationSettingsQuery({
+    api_set: false,
+  });
+  const { data: activeMessagingProvider } =
+    useGetActiveMessagingProviderQuery();
+  const sendRequestCompletionNotification =
+    config?.notifications?.send_request_completion_notification;
 
   const renderApproveButton = () => {
     if (subjectRequest.status !== "pending") {
@@ -74,6 +87,29 @@ export const RequestTableActions = ({
     );
   };
 
+  const renderFinalizeButton = () => {
+    if (
+      subjectRequest.status !==
+      PrivacyRequestStatus.REQUIRES_MANUAL_FINALIZATION
+    ) {
+      return null;
+    }
+    return (
+      <Restrict scopes={[ScopeRegistryEnum.PRIVACY_REQUEST_REVIEW]}>
+        <Button
+          title="Finalize"
+          aria-label="Finalize"
+          icon={<Icons.Checkmark />}
+          onClick={finalizeModal.onOpen}
+          loading={isLoading}
+          disabled={isLoading}
+          data-testid="privacy-request-finalize-btn"
+          size="small"
+        />
+      </Restrict>
+    );
+  };
+
   const renderDeleteButton = () => {
     return (
       <Restrict scopes={[ScopeRegistryEnum.PRIVACY_REQUEST_DELETE]}>
@@ -96,6 +132,7 @@ export const RequestTableActions = ({
       <HStack {...props}>
         {renderApproveButton()}
         {renderDenyButton()}
+        {renderFinalizeButton()}
         {renderDeleteButton()}
       </HStack>
 
@@ -123,6 +160,23 @@ export const RequestTableActions = ({
           <Text>
             You are about to permanently delete the privacy request. Are you
             sure you would like to continue?
+          </Text>
+        }
+      />
+      <ConfirmationModal
+        isOpen={finalizeModal.isOpen}
+        onClose={finalizeModal.onClose}
+        onConfirm={handleFinalizeRequest}
+        title="Finalize privacy request"
+        message={
+          <Text>
+            You are about to finalize this privacy request. The status will be
+            updated to &#34;Complete&#34;
+            {sendRequestCompletionNotification &&
+            activeMessagingProvider?.service_type
+              ? " and the requesting user will be notified"
+              : ""}
+            . Would you like to continue?
           </Text>
         }
       />
