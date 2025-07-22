@@ -1069,7 +1069,7 @@ class ManualTaskConditionalDependency(Base):
         foreign_keys=[parent_id],
     )
 
-    def to_condition_leaf(self) -> "ConditionLeaf":
+    def to_condition_leaf(self) -> ConditionLeaf:
         """Convert to ConditionLeaf if this is a leaf condition"""
         if self.condition_type != "leaf":
             raise ValueError("Cannot convert group condition to leaf")
@@ -1078,7 +1078,7 @@ class ManualTaskConditionalDependency(Base):
             field_address=self.field_address, operator=self.operator, value=self.value
         )
 
-    def to_condition_group(self) -> "ConditionGroup":
+    def to_condition_group(self) -> ConditionGroup:
         """Convert to ConditionGroup if this is a group condition"""
         if self.condition_type != "group":
             raise ValueError("Cannot convert leaf condition to group")
