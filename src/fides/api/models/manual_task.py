@@ -253,12 +253,6 @@ class ManualTask(Base):
         uselist=True,
         viewonly=True,  # No cascade delete - submissions are historical data
     )
-    conditional_dependencies = relationship(
-        "ManualTaskConditionalDependency",
-        back_populates="task",
-        uselist=True,
-        cascade="all, delete-orphan",
-    )
 
     # Properties
     @property
