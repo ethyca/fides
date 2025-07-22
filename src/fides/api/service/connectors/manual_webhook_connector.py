@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
@@ -53,6 +53,7 @@ class ManualWebhookConnector(BaseConnector[None]):
         privacy_request: PrivacyRequest,
         request_task: RequestTask,
         rows: List[Row],
+        input_data: Optional[List[List[Row]]] = None,
     ) -> None:
         """
         Not applicable for a manual webhook.  Manual webhooks are not called as part of the traversal.
