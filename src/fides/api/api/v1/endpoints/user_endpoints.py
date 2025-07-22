@@ -6,6 +6,7 @@ from typing import List, Optional
 
 import jose.exceptions
 from fastapi import Depends, HTTPException, Security
+from fastapi.security import SecurityScopes
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
@@ -39,7 +40,9 @@ from fides.api.oauth.roles import APPROVER, VIEWER
 from fides.api.oauth.utils import (
     create_temporary_user_for_login_flow,
     extract_payload,
+    extract_token_and_load_client,
     get_current_user,
+    has_permissions,
     oauth2_scheme,
     verify_oauth_client,
 )
@@ -65,6 +68,7 @@ from fides.common.api.scope_registry import (
     USER_DELETE,
     USER_PASSWORD_RESET,
     USER_READ,
+    USER_READ_OWN,
     USER_UPDATE,
 )
 from fides.common.api.v1 import urn_registry as urls
@@ -105,6 +109,37 @@ def _validate_current_user(user_id: str, user_from_token: FidesUser) -> None:
             status_code=HTTP_401_UNAUTHORIZED,
             detail="You are only authorised to update your own user data.",
         )
+
+
+def verify_user_read_scopes(
+    authorization: str = Security(oauth2_scheme),
+    db: Session = Depends(get_db),
+) -> ClientDetail:
+    """
+    Custom dependency that verifies the user has either USER_READ or USER_READ_OWN scope.
+    Returns the client if authorized.
+    """
+    token_data, client = extract_token_and_load_client(authorization, db)
+
+    # Try USER_READ first
+    if has_permissions(
+        token_data=token_data,
+        client=client,
+        endpoint_scopes=SecurityScopes([USER_READ]),
+    ):
+        return client
+
+    if has_permissions(
+        token_data=token_data,
+        client=client,
+        endpoint_scopes=SecurityScopes([USER_READ_OWN]),
+    ):
+        return client
+
+    raise HTTPException(
+        status_code=HTTP_403_FORBIDDEN,
+        detail="Not authorized.",
+    )
 
 
 @router.put(
@@ -498,14 +533,30 @@ def delete_user(
 
 @router.get(
     urls.USER_DETAIL,
-    dependencies=[Security(verify_oauth_client, scopes=[USER_READ])],
+    dependencies=[Security(verify_user_read_scopes)],
     response_model=UserResponse,
 )
-def get_user(*, db: Session = Depends(get_db), user_id: str) -> FidesUser:
-    """Returns a User based on an Id"""
+def get_user(
+    *,
+    db: Session = Depends(get_db),
+    user_id: str,
+    client: ClientDetail = Security(verify_user_read_scopes),
+) -> FidesUser:
+    """Returns a User based on an Id. Users with USER_READ_OWN scope can only access their own data."""
     user: Optional[FidesUser] = FidesUser.get_by_key_or_id(db, data={"id": user_id})
     if user is None:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="User not found")
+
+    # Check if user has USER_READ_OWN scope and is trying to access someone else's data
+    # The verify_user_read_scopes dependency already verified the user has either USER_READ or USER_READ_OWN
+    # We need to check if they have USER_READ_OWN and are accessing their own data
+    if USER_READ not in client.scopes and USER_READ_OWN in client.scopes:
+        # User has USER_READ_OWN scope, check if they're accessing their own data
+        if user.id != client.user_id:
+            raise HTTPException(
+                status_code=HTTP_403_FORBIDDEN,
+                detail="You can only access your own user data with USER_READ_OWN scope.",
+            )
 
     logger.debug("Returning user with id: '{}'.", user_id)
     return user
@@ -513,7 +564,7 @@ def get_user(*, db: Session = Depends(get_db), user_id: str) -> FidesUser:
 
 @router.get(
     urls.USERS,
-    dependencies=[Security(verify_oauth_client, scopes=[USER_READ])],
+    dependencies=[Security(verify_user_read_scopes)],
     response_model=Page[UserResponse],
 )
 def get_users(
@@ -521,11 +572,22 @@ def get_users(
     db: Session = Depends(get_db),
     params: Params = Depends(),
     username: Optional[str] = None,
+    client: ClientDetail = Security(verify_user_read_scopes),
 ) -> AbstractPage[FidesUser]:
-    """Returns a paginated list of all users"""
+    """Returns a paginated list of users. Users with USER_READ_OWN scope only see their own data."""
     query = FidesUser.query(db)
-    if username:
-        query = query.filter(FidesUser.username.ilike(f"%{escape_like(username)}%"))
+
+    # Check if user has USER_READ_OWN scope and filter accordingly
+    # The verify_user_read_scopes dependency already verified the user has either USER_READ or USER_READ_OWN
+    if USER_READ not in client.scopes and USER_READ_OWN in client.scopes:
+        # User has USER_READ_OWN scope, only show their own data
+        query = query.filter(FidesUser.id == client.user_id)
+        if username:
+            query = query.filter(FidesUser.username.ilike(f"%{escape_like(username)}%"))
+    else:
+        # User has USER_READ scope, can see all users
+        if username:
+            query = query.filter(FidesUser.username.ilike(f"%{escape_like(username)}%"))
 
     logger.debug("Returning a paginated list of users.")
 
