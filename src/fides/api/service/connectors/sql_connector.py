@@ -27,11 +27,13 @@ from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
+from fides.api.schemas.application_config import SqlDryRunMode
 from fides.api.schemas.connection_configuration import ConnectionConfigSecretsSchema
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.query_configs.query_config import SQLQueryConfig
 from fides.api.util.collection_util import Row
 from fides.config import get_config
+from fides.config.config_proxy import ConfigProxy
 
 from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
     Dataset as CtlDataset,
@@ -57,6 +59,23 @@ class SQLConnector(BaseConnector[Engine]):
                 "SQL Connectors must define their secrets schema class"
             )
         self.ssh_server: sshtunnel._ForwardServer = None
+
+    def should_dry_run(self, mode_to_check: SqlDryRunMode) -> bool:
+        """
+        Check if SQL dry run is enabled for the specified mode.
+
+        Args:
+            mode_to_check: The SqlDryRunMode to check for
+
+        Returns:
+            bool: True if the current mode matches the mode to check
+        """
+        from fides.api.api.deps import get_autoclose_db_session as get_db
+
+        with get_db() as db:
+            config_proxy = ConfigProxy(db)
+            current_mode = getattr(config_proxy.execution, "sql_dry_run", None)
+            return current_mode == mode_to_check
 
     @staticmethod
     def cursor_result_to_rows(results: CursorResult) -> List[Row]:
@@ -140,6 +159,10 @@ class SQLConnector(BaseConnector[Engine]):
         if query is None:
             return []
 
+        if self.should_dry_run(SqlDryRunMode.access):
+            logger.warning(f"SQL DRY RUN - Would execute SQL: {query}")
+            return []
+
         with client.connect() as connection:
             self.set_schema(connection)
             results = connection.execute(query)
@@ -160,6 +183,10 @@ class SQLConnector(BaseConnector[Engine]):
         if stmt is None:
             return []
 
+        if self.should_dry_run(SqlDryRunMode.access):
+            logger.warning(f"SQL DRY RUN - Would execute SQL: {stmt}")
+            return []
+
         logger.info("Starting data retrieval for {}", node.address)
         with client.connect() as connection:
             self.set_schema(connection)
@@ -178,20 +205,25 @@ class SQLConnector(BaseConnector[Engine]):
         privacy_request: PrivacyRequest,
         request_task: RequestTask,
         rows: List[Row],
+        input_data: Optional[Dict[str, List[Any]]] = None,
     ) -> int:
         """Execute a masking request. Returns the number of records masked"""
         query_config = self.query_config(node)
         update_ct = 0
         client = self.client()
+
         for row in rows:
             update_stmt: Optional[TextClause] = query_config.generate_update_stmt(
                 row, policy, privacy_request
             )
             if update_stmt is not None:
-                with client.connect() as connection:
-                    self.set_schema(connection)
-                    results: LegacyCursorResult = connection.execute(update_stmt)
-                    update_ct = update_ct + results.rowcount
+                if self.should_dry_run(SqlDryRunMode.erasure):
+                    logger.warning(f"SQL DRY RUN - Would execute SQL: {update_stmt}")
+                else:
+                    with client.connect() as connection:
+                        self.set_schema(connection)
+                        results: LegacyCursorResult = connection.execute(update_stmt)
+                        update_ct = update_ct + results.rowcount
         return update_ct
 
     def close(self) -> None:
