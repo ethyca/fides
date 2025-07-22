@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.65.3b3.post0.dev25"
+    "version": "2.66.1b0.post0.dev1"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -18506,6 +18506,16 @@
               }
             ],
             "title": "Require Manual Request Approval"
+          },
+          "sql_dry_run": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SqlDryRunMode"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,
@@ -25857,6 +25867,16 @@
         ],
         "title": "SpecialCategoryLegalBasisEnum",
         "description": "The model for the legal basis for processing special categories of personal data\non privacy declarations\n\nBased upon article 9 of the GDPR"
+      },
+      "SqlDryRunMode": {
+        "type": "string",
+        "enum": [
+          "none",
+          "access",
+          "erasure"
+        ],
+        "title": "SqlDryRunMode",
+        "description": "SQL dry run mode for controlling execution of SQL statements in privacy requests"
       },
       "StatusEnum": {
         "type": "string",
