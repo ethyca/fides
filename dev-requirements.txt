@@ -15,7 +15,7 @@ pytest-mock==3.14.0
 pytest-rerunfailures==14.0
 pytest-xdist==3.6.1
 pytest==7.2.2
-requests-mock==1.10.0
+requests-mock==1.12.1
 setuptools>=64.0.2
 sqlalchemy-stubs==0.4
 types-paramiko==3.0.0.10
