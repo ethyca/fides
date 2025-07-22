@@ -1,3 +1,4 @@
+import operator as py_operator
 from typing import Any, Union
 
 from loguru import logger
@@ -11,6 +12,19 @@ from fides.api.task.conditional_dependencies.schemas import (
     GroupOperator,
     Operator,
 )
+
+operator_methods = {
+    Operator.exists: lambda a, _: a is not None,
+    Operator.not_exists: lambda a, _: a is None,
+    Operator.eq: py_operator.eq,
+    Operator.neq: py_operator.ne,
+    Operator.lt: lambda a, b: a < b if a is not None else False,
+    Operator.lte: lambda a, b: a <= b if a is not None else False,
+    Operator.gt: lambda a, b: a > b if a is not None else False,
+    Operator.gte: lambda a, b: a >= b if a is not None else False,
+    Operator.list_contains: lambda a, b: b in a if isinstance(a, list) else False,
+    Operator.not_in_list: lambda a, b: a not in b if isinstance(b, list) else True,
+}
 
 
 class ConditionEvaluator:
@@ -87,20 +101,6 @@ class ConditionEvaluator:
     ) -> bool:
         """Apply operator to actual and expected values"""
 
-        # Map operators to their evaluation methods
-        operator_methods = {
-            Operator.exists: self._operator_exists,
-            Operator.not_exists: self._operator_not_exists,
-            Operator.eq: self._operator_eq,
-            Operator.neq: self._operator_neq,
-            Operator.lt: self._operator_lt,
-            Operator.lte: self._operator_lte,
-            Operator.gt: self._operator_gt,
-            Operator.gte: self._operator_gte,
-            Operator.list_contains: self._operator_list_contains,
-            Operator.not_in_list: self._operator_not_in_list,
-        }
-
         # Get the method for the operator and execute it
         operator_method = operator_methods.get(operator)
         if operator_method is None:
@@ -108,49 +108,3 @@ class ConditionEvaluator:
             return False
 
         return operator_method(actual_value, expected_value)
-
-    def _operator_exists(self, actual_value: Any, expected_value: Any) -> bool:
-        """Check if value exists (is not None)"""
-        return actual_value is not None
-
-    def _operator_not_exists(self, actual_value: Any, expected_value: Any) -> bool:
-        """Check if value does not exist (is None)"""
-        return actual_value is None
-
-    def _operator_eq(self, actual_value: Any, expected_value: Any) -> bool:
-        """Check if values are equal"""
-        return actual_value == expected_value
-
-    def _operator_neq(self, actual_value: Any, expected_value: Any) -> bool:
-        """Check if values are not equal"""
-        return actual_value != expected_value
-
-    def _operator_lt(self, actual_value: Any, expected_value: Any) -> bool:
-        """Check if actual value is less than expected value"""
-        return actual_value < expected_value if actual_value is not None else False
-
-    def _operator_lte(self, actual_value: Any, expected_value: Any) -> bool:
-        """Check if actual value is less than or equal to expected value"""
-        return actual_value <= expected_value if actual_value is not None else False
-
-    def _operator_gt(self, actual_value: Any, expected_value: Any) -> bool:
-        """Check if actual value is greater than expected value"""
-        return actual_value > expected_value if actual_value is not None else False
-
-    def _operator_gte(self, actual_value: Any, expected_value: Any) -> bool:
-        """Check if actual value is greater than or equal to expected value"""
-        return actual_value >= expected_value if actual_value is not None else False
-
-    def _operator_list_contains(self, actual_value: Any, expected_value: Any) -> bool:
-        """Check if expected value is in the actual list"""
-        return (
-            expected_value in actual_value if isinstance(actual_value, list) else False
-        )
-
-    def _operator_not_in_list(self, actual_value: Any, expected_value: Any) -> bool:
-        """Check if actual value is not in the expected list"""
-        return (
-            actual_value not in expected_value
-            if isinstance(expected_value, list)
-            else True
-        )
