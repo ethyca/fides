@@ -573,10 +573,10 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         # array elements.  We already iterated over `output` above, so reuse the same
         # loop structure to keep cache locality.
         for row in output:
-            logger.info(
-                "Filtering row in {} for matching array elements.",
-                self.execution_node.address,
-            )
+            # logger.info(
+            #     "Filtering row in {} for matching array elements.",
+            #     self.execution_node.address,
+            # )
             filter_element_match(row, post_processed_node_input_data)
 
         if self.request_task.id:
