@@ -10,10 +10,27 @@
   "files": [
     "dist/**"
   ],
+  "exports": {
+    ".": {
+      "import": "./dist/fides.mjs",
+      "require": "./dist/fides.js",
+      "types": "./dist/fides.d.ts"
+    },
+    "./headless": {
+      "import": "./dist/fides-headless.mjs",
+      "require": "./dist/fides-headless.js",
+      "types": "./dist/fides-headless.d.ts"
+    },
+    "./tcf": {
+      "import": "./dist/fides-tcf.mjs",
+      "require": "./dist/fides-tcf.js",
+      "types": "./dist/fides-tcf.d.ts"
+    }
+  },
   "scripts": {
-    "dev": "NODE_ENV=development rollup --watch -c",
-    "build": "NODE_ENV=production rollup -c",
-    "build:windows": "set NODE_ENV=production && rollup -c",
+    "dev": "rollup --watch -c --environment NODE_ENV:development",
+    "build": "rollup -c --environment NODE_ENV:production",
+    "build:test": "rollup -c --environment NODE_ENV:production,IS_TEST:true",
     "postbuild": "npm run docs:generate",
     "clean": "rm -rf dist .turbo node_modules",
     "docs:generate": "typedoc --tsconfig ./tsconfig.json --out docs src/docs/ ",
@@ -35,7 +52,7 @@
     "@iabtechlabtcf/cmpapi": "1.5.15",
     "@iabtechlabtcf/core": "1.5.15",
     "@rollup/plugin-replace": "^6.0.2",
-    "a11y-dialog": "^7.5.2",
+    "a11y-dialog": "^7.5.3",
     "base-64": "^1.0.0",
     "js-cookie": "^3.0.5",
     "preact": "~10.22.0",
@@ -66,11 +83,12 @@
     "jest-environment-jsdom": "^29.7.0",
     "postcss": "^8.4.31",
     "prettier": "^3.3.3",
-    "rollup": "^3.29.5",
+    "rollup": "^4.44.2",
     "rollup-plugin-copy": "^3.4.0",
     "rollup-plugin-dts": "^5.3.0",
     "rollup-plugin-esbuild": "^5.0.0",
     "rollup-plugin-filesize": "^10.0.0",
+    "rollup-plugin-jsx-remove-attributes": "^3.0.0",
     "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-visualizer": "^5.12.0",
     "ts-jest": "^29.1.5",

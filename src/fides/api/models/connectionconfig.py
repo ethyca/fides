@@ -70,6 +70,8 @@ class ConnectionType(enum.Enum):
     sovrn = "sovrn"
     timescale = "timescale"
     website = "website"
+    # Test connection types, used for testing purposes only
+    test_website = "test_website"  # used for ConfigurableTesteWebsiteMonitor
 
     @property
     def human_readable(self) -> str:
@@ -107,6 +109,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.sovrn.value: "Sovrn",
             ConnectionType.timescale.value: "TimescaleDB",
             ConnectionType.website.value: "Website",
+            ConnectionType.test_website.value: "Test Website Connector -- not for production use",
         }
         try:
             return readable_mapping[self.value]
@@ -152,6 +155,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.sovrn.value: SystemType.email,
             ConnectionType.timescale.value: SystemType.database,
             ConnectionType.website.value: SystemType.website,
+            ConnectionType.test_website.value: SystemType.website,
         }
 
         try:

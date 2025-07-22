@@ -1,8 +1,5 @@
-import {
-  ConsentFlagType,
-  ConsentNonApplicableFlagMode,
-} from "fides-js/src/lib/consent-types";
-import type { FidesEventDetail, FidesEventType } from "fides-js/src/lib/events";
+import type { FidesEventDetail, FidesEventType } from "fides-js";
+import { ConsentFlagType, ConsentNonApplicableFlagMode } from "fides-js";
 
 import { stubConfig, stubTCFExperience } from "../support/stubs";
 

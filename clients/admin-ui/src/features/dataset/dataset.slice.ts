@@ -198,6 +198,7 @@ export const selectAllFilteredDatasets: (state: RootState) => Dataset[] =
       (RootState) => RootState,
       datasetApi.endpoints.getAllFilteredDatasets.select({
         onlyUnlinkedDatasets: false,
+        minimal: true,
       }),
     ],
     (RootState, { data }) => data ?? emptyDatasets,

@@ -19,7 +19,7 @@ from typing import (
 )
 
 import sqlalchemy
-from fastapi import Body, Depends, HTTPException, Security
+from fastapi import BackgroundTasks, Body, Depends, HTTPException, Security
 from fastapi.encoders import jsonable_encoder
 from fastapi.params import Query as FastAPIQuery
 from fastapi_pagination import Page, Params
@@ -82,6 +82,7 @@ from fides.api.oauth.utils import (
     verify_oauth_client,
     verify_request_task_callback,
 )
+from fides.api.schemas.api import ResponseWithMessage
 from fides.api.schemas.dataset import CollectionAddressResponse, DryRunDatasetResponse
 from fides.api.schemas.external_https import PrivacyRequestResumeFormat
 from fides.api.schemas.policy import ActionType
@@ -110,6 +111,7 @@ from fides.api.schemas.privacy_request import (
 )
 from fides.api.service.deps import get_messaging_service, get_privacy_request_service
 from fides.api.service.messaging.message_dispatch_service import EMAIL_JOIN_STRING
+from fides.api.service.privacy_request.email_batch_service import send_email_batch
 from fides.api.task.execute_request_tasks import log_task_queued, queue_request_task
 from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_task import EMPTY_REQUEST, EMPTY_REQUEST_TASK, collect_queries
@@ -125,6 +127,7 @@ from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_CALLBACK_RESUME,
     PRIVACY_REQUEST_CREATE,
     PRIVACY_REQUEST_DELETE,
+    PRIVACY_REQUEST_EMAIL_INTEGRATIONS_SEND,
     PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE,
     PRIVACY_REQUEST_NOTIFICATIONS_READ,
     PRIVACY_REQUEST_READ,
@@ -138,6 +141,7 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_ACCESS_RESULTS,
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_AUTHENTICATED,
+    PRIVACY_REQUEST_BATCH_EMAIL_SEND,
     PRIVACY_REQUEST_BULK_RETRY,
     PRIVACY_REQUEST_BULK_SOFT_DELETE,
     PRIVACY_REQUEST_DENY,
@@ -2277,3 +2281,22 @@ def get_test_privacy_request_logs(
     # Get logs from Redis
     cache = get_cache()
     return cache.get_decoded_list(f"log_{privacy_request_id}") or []
+
+
+@router.post(
+    PRIVACY_REQUEST_BATCH_EMAIL_SEND,
+    dependencies=[
+        Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_EMAIL_INTEGRATIONS_SEND])
+    ],
+    status_code=HTTP_200_OK,
+    response_model=ResponseWithMessage,
+)
+def send_batch_email_integrations(
+    background_tasks: BackgroundTasks,
+) -> ResponseWithMessage:
+    """Send batch email integrations for a privacy request."""
+    background_tasks.add_task(send_email_batch)
+
+    return ResponseWithMessage(
+        message="Email batch job started. This may take a few minutes to complete."
+    )

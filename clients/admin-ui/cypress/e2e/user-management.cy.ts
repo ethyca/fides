@@ -57,7 +57,11 @@ describe("User management", () => {
           expect(body.first_name).to.equal("Cypressedit");
         });
 
-        cy.getByTestId("tab-Permissions").should("be.disabled");
+        cy.getAntTab("Permissions").should(
+          "have.attr",
+          "aria-disabled",
+          "true",
+        );
       });
 
       it("cannot access another user's profile", () => {
@@ -662,7 +666,7 @@ describe("User management", () => {
 
     it("can assign a role to a user", () => {
       cy.visit(`/user-management/profile/${USER_1_ID}`);
-      cy.getByTestId("tab-Permissions").click();
+      cy.getAntTab("Permissions").click({ force: true });
       cy.getByTestId("selected").contains("Owner");
 
       cy.getByTestId("role-option-Viewer").click();
@@ -690,7 +694,7 @@ describe("User management", () => {
           fixture: "user-management/permissions.json",
         }).as("getPermissions");
         cy.visit(`/user-management/profile/${USER_1_ID}`);
-        cy.getByTestId("tab-Permissions").click();
+        cy.getAntTab("Permissions").click({ force: true });
 
         // they should get a message about having insufficient access
         cy.getByTestId("insufficient-access");
@@ -713,7 +717,7 @@ describe("User management", () => {
           });
         });
         cy.visit(`/user-management/profile/${USER_1_ID}`);
-        cy.getByTestId("tab-Permissions").click();
+        cy.getAntTab("Permissions").click({ force: true });
 
         // they should see role options available to click but owner should be disabled
         cy.getByTestId("role-options");
@@ -743,7 +747,7 @@ describe("User management", () => {
       describe("approver cannot have systems", () => {
         beforeEach(() => {
           cy.visit(`/user-management/profile/${USER_1_ID}`);
-          cy.getByTestId("tab-Permissions").click();
+          cy.getAntTab("Permissions").click({ force: true });
           cy.wait("@getUserManagedSystems");
         });
 
@@ -762,7 +766,7 @@ describe("User management", () => {
       describe("in role option", () => {
         beforeEach(() => {
           cy.visit(`/user-management/profile/${USER_1_ID}`);
-          cy.getByTestId("tab-Permissions").click();
+          cy.getAntTab("Permissions").click({ force: true });
           cy.wait("@getUserManagedSystems");
           cy.getByTestId("assign-systems-delete-table");
         });
@@ -791,11 +795,12 @@ describe("User management", () => {
       describe("in modal", () => {
         beforeEach(() => {
           cy.visit(`/user-management/profile/${USER_1_ID}`);
-          cy.getByTestId("tab-Permissions").click();
+          cy.getAntTab("Permissions").click({ force: true });
+          cy.wait("@getUserManagedSystems");
 
+          cy.getByTestId("assign-systems-delete-table").should("exist"); // ensure the data is added to the React state before proceeding
           cy.getByTestId("assign-systems-btn").click();
           cy.wait("@getSystems");
-          cy.wait("@getUserManagedSystems");
         });
 
         it("can toggle one system", () => {

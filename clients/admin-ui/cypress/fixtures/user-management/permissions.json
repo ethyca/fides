@@ -68,6 +68,7 @@
     "dataset:create_or_update",
     "dataset:delete",
     "dataset:read",
+    "discovery_monitor:read",
     "encryption:exec",
     "endpoint_cache:update",
     "evaluation:create",

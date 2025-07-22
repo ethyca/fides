@@ -7,6 +7,8 @@ import { ConnectionConfigurationResponse } from "~/types/api/models/ConnectionCo
 import type { ConnectionStatusData } from "../ConnectionStatusNotice";
 import {
   Step,
+  useAddManualTaskStep,
+  useAssignTasksToUsersStep,
   useAuthorizeIntegrationStep,
   useCreateIntegrationStep,
   useCreateMonitorStep,
@@ -43,6 +45,20 @@ export const IntegrationSetupSteps = ({
     connectionOption,
   });
 
+  const addManualTaskStep = useAddManualTaskStep({
+    testData,
+    testIsLoading,
+    connection,
+    connectionOption,
+  });
+
+  const assignTasksToUsersStep = useAssignTasksToUsersStep({
+    testData,
+    testIsLoading,
+    connection,
+    connectionOption,
+  });
+
   const linkSystemStep = useLinkSystemStep({
     testData,
     testIsLoading,
@@ -56,6 +72,8 @@ export const IntegrationSetupSteps = ({
       addIntegrationStep,
       authorizeIntegrationStep,
       createMonitorStep,
+      addManualTaskStep,
+      assignTasksToUsersStep,
       linkSystemStep,
     ];
 
@@ -65,6 +83,8 @@ export const IntegrationSetupSteps = ({
     addIntegrationStep,
     authorizeIntegrationStep,
     createMonitorStep,
+    addManualTaskStep,
+    assignTasksToUsersStep,
     linkSystemStep,
   ]);
 

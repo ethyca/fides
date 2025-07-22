@@ -231,9 +231,13 @@ div#fides-banner-heading {
 }
 
 .fides-banner-description a,
-.fides-modal-description a {
+.fides-modal-description a,
+.fides-banner-description .fides-link-button,
+.fides-modal-description .fides-link-button {
   /* in case HTML rendering is turned on and customer adds a link */
   color: var(--fides-overlay-primary-color);
+  text-decoration: underline;
+  font-weight: 600;
 }
 
 div#fides-banner-notices {
@@ -347,7 +351,7 @@ div.fides-modal-content {
     var(--fides-overlay-primary-color);
   background-color: var(--fides-overlay-background-color);
   border-radius: var(--fides-overlay-container-border-radius);
-  max-height: 680px;
+  max-height: min(680px, 100vh);
   width: var(--fides-overlay-width);
 
   z-index: 2;
@@ -359,7 +363,8 @@ div.fides-modal-content {
   display: flex;
   flex-direction: column;
   padding: 0px;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .fides-modal-container,
@@ -558,7 +563,7 @@ div#fides-banner .fides-close-button {
 
 .fides-privacy-policy,
 button.fides-banner-button.fides-banner-button-tertiary,
-div.fides-i18n-pseudo-button {
+button.fides-i18n-button {
   margin: 0;
   line-height: 1;
   padding: var(--fides-overlay-link-padding);
@@ -766,6 +771,9 @@ div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
 .fides-notice-toggle-controls {
   white-space: nowrap;
   margin-left: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* GPC */
@@ -862,8 +870,6 @@ div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
   display: inline-flex;
   align-items: center;
   height: 18px;
-  margin-right: 8px;
-  margin-left: 4px;
   text-transform: uppercase;
   padding: 0 4px;
   font-weight: 600;
@@ -936,8 +942,6 @@ div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
   background: none;
   padding: 0;
   cursor: pointer;
-  text-decoration: underline;
-  color: var(--fides-overlay-body-font-color);
 }
 
 .fides-primary-text-color {
@@ -1019,8 +1023,7 @@ div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
   min-height: var(--fides-overlay-modal-secondary-button-group-height);
 }
 
-div.fides-i18n-pseudo-button {
-  /* looks like a button, but for a11y reasons don't actually make it a button (not focusable) */
+button.fides-i18n-button {
   cursor: pointer;
   height: var(--fides-overlay-font-size-body);
   text-transform: uppercase;
@@ -1029,6 +1032,11 @@ div.fides-i18n-pseudo-button {
   align-items: center;
   gap: 2px;
   white-space: nowrap;
+  border: none;
+  background-color: transparent;
+  font-size: var(--fides-overlay-font-size-body);
+  color: var(--fides-overlay-body-font-color);
+  font-family: var(--fides-overlay-font-family);
 }
 
 #fides-i18n-icon {
@@ -1038,7 +1046,7 @@ div.fides-i18n-pseudo-button {
   transform-origin: 50% 50%;
 }
 
-div#fides-overlay-wrapper .fides-i18n-pseudo-button {
+div#fides-overlay-wrapper .fides-i18n-button {
   box-sizing: content-box;
 }
 
@@ -1046,31 +1054,30 @@ div#fides-overlay-wrapper .fides-i18n-pseudo-button {
   position: absolute;
   left: 0;
   bottom: 100%;
-  height: 0px;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
   gap: 1px;
-  max-height: calc(var(--fides-base-font-size) * 7);
-  transition: height 0.5s;
+  background-color: var(--fides-overlay-background-dark-color);
+  border-radius: var(--fides-overlay-component-border-radius);
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.2s ease-in-out;
+  min-width: calc(var(--fides-base-font-size) * 9);
 }
 
-.fides-i18n-menu:hover .fides-i18n-pseudo-button {
+.fides-i18n-menu-open .fides-i18n-popover {
+  max-height: calc(var(--fides-base-font-size) * 7);
+  border: 1px solid var(--fides-overlay-primary-color);
+  overflow: scroll;
+}
+
+.fides-i18n-button:hover {
   background-color: var(--fides-overlay-hover-color);
   border-radius: var(--fides-overlay-language-button-border-radius);
 }
-.fides-i18n-menu:hover .fides-i18n-pseudo-button .fides-i18n-caret {
-  transform: rotate(180deg);
-}
 
-.fides-i18n-menu:hover .fides-i18n-popover,
-.fides-i18n-menu:focus-within .fides-i18n-popover {
-  min-width: calc(var(--fides-base-font-size) * 9);
-  height: auto;
-  border: 1px solid var(--fides-overlay-primary-color);
-  background-color: var(--fides-overlay-background-dark-color);
-  border-radius: var(--fides-overlay-component-border-radius);
-  overflow: scroll;
+.fides-i18n-menu-open .fides-i18n-caret {
+  transform: rotate(180deg);
 }
 
 button.fides-banner-button.fides-menu-item {
@@ -1084,19 +1091,19 @@ button.fides-banner-button.fides-menu-item {
   padding-left: calc(var(--fides-base-font-size) * 1.5);
 }
 
-button.fides-banner-button.fides-menu-item[aria-pressed="true"] {
+button.fides-banner-button.fides-menu-item[aria-checked="true"] {
   background: var(--fides-overlay-primary-button-background-color);
   color: var(--fides-overlay-primary-button-text-color);
 }
 
-button.fides-banner-button.fides-menu-item[aria-pressed="true"]::before {
+button.fides-banner-button.fides-menu-item[aria-checked="true"]::before {
   content: "\2713";
   display: inline-block;
   margin-right: calc(var(--fides-base-font-size) * 0.25);
   margin-left: calc(var(--fides-base-font-size) * -1);
 }
 
-button.fides-banner-button.fides-menu-item:not([aria-pressed="true"]):hover {
+button.fides-banner-button.fides-menu-item:not([aria-checked="true"]):hover {
   background: var(--fides-overlay-secondary-button-background-hover-color);
 }
 

@@ -90,14 +90,15 @@ class TestUpdateFidesUserPassword:
         assert approver.hashed_password != "new_test_password"
         assert not approver.credentials_valid("test_password")
 
-    def test_update_user_password_error_respondent(
-        self, db: Session, respondent: FidesUser
+    def test_update_user_password_external_respondent(
+        self, db: Session, external_respondent: FidesUser
     ) -> None:
 
         with pytest.raises(ValueError) as e:
-            respondent.update_password(db, "new_test_password")
-
-        assert "Password changes are not allowed for respondents" in str(e.value)
+            external_respondent.update_password(db, "new_test_password")
+        assert "Password changes are not allowed for external respondents" in str(
+            e.value
+        )
 
 
 class TestUpdateFidesUserEmailAddress:
@@ -106,13 +107,15 @@ class TestUpdateFidesUserEmailAddress:
 
         assert approver.email_address == "new_test_email@example.com"
 
-    def test_update_user_email_address_error_respondent(
-        self, db: Session, respondent: FidesUser
+    def test_update_user_email_address_error_external_respondent(
+        self, db: Session, external_respondent: FidesUser
     ) -> None:
         with pytest.raises(ValueError) as e:
-            respondent.update_email_address(db, "new_test_email@example.com")
+            external_respondent.update_email_address(db, "new_test_email@example.com")
 
-        assert "Email address changes are not allowed for respondents" in str(e.value)
+        assert "Email address changes are not allowed for external respondents" in str(
+            e.value
+        )
 
 
 class TestUserSystemManager:
@@ -122,13 +125,13 @@ class TestUserSystemManager:
         approver.set_as_system_manager(db, system)
         assert system in approver.systems
 
-    def test_set_as_system_manager_error_respondent(
-        self, db: Session, system: System, respondent: FidesUser
+    def test_set_as_system_manager_error_external_respondent(
+        self, db: Session, system: System, external_respondent: FidesUser
     ) -> None:
         with pytest.raises(SystemManagerException) as e:
-            respondent.set_as_system_manager(db, system)
+            external_respondent.set_as_system_manager(db, system)
 
-        assert "Respondents cannot be system managers." in str(e.value)
+        assert "External respondents cannot be system managers." in str(e.value)
 
     def test_set_as_system_manager_error_system_manager(
         self, db: Session, system: System, system_manager: FidesUser

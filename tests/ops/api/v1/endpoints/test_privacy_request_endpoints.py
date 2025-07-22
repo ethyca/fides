@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from random import randint
 from typing import List
 from unittest import mock
+from unittest.mock import patch
 from uuid import uuid4
 
 import pytest
@@ -86,6 +87,7 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_ACCESS_RESULTS,
     PRIVACY_REQUEST_APPROVE,
     PRIVACY_REQUEST_AUTHENTICATED,
+    PRIVACY_REQUEST_BATCH_EMAIL_SEND,
     PRIVACY_REQUEST_BULK_RETRY,
     PRIVACY_REQUEST_BULK_SOFT_DELETE,
     PRIVACY_REQUEST_DENY,
@@ -8688,3 +8690,55 @@ class TestResubmitPrivacyRequest:
             headers=auth_header,
         )
         assert response.status_code == HTTP_200_OK
+
+
+class TestSendBatchEmailIntegrations:
+    @pytest.fixture(scope="function")
+    def url(self):
+        return V1_URL_PREFIX + PRIVACY_REQUEST_BATCH_EMAIL_SEND
+
+    def test_send_batch_email_integrations_not_authenticated(
+        self,
+        url,
+        api_client: TestClient,
+    ) -> None:
+        response = api_client.post(url, headers={})
+        assert response.status_code == 401
+
+    @pytest.mark.parametrize(
+        "auth_header,expected_status",
+        [
+            ("owner_auth_header", HTTP_200_OK),
+            ("contributor_auth_header", HTTP_403_FORBIDDEN),
+            ("viewer_and_approver_auth_header", HTTP_403_FORBIDDEN),
+            ("viewer_auth_header", HTTP_403_FORBIDDEN),
+            ("approver_auth_header", HTTP_403_FORBIDDEN),
+        ],
+    )
+    def test_send_batch_email_integrations_with_roles(
+        self,
+        url,
+        api_client: TestClient,
+        auth_header,
+        expected_status,
+        request,
+    ) -> None:
+        response = api_client.post(url, headers=request.getfixturevalue(auth_header))
+        assert response.status_code == expected_status
+
+    @patch("fides.api.api.v1.endpoints.privacy_request_endpoints.send_email_batch")
+    def test_send_batch_email_integrations_queues_task(
+        self,
+        mock_send_email_batch,
+        url,
+        api_client: TestClient,
+        owner_auth_header,
+    ) -> None:
+        """Test that calling the endpoint successfully queues the background task."""
+        response = api_client.post(url, headers=owner_auth_header)
+        assert response.status_code == 200
+        assert (
+            response.json()["message"]
+            == "Email batch job started. This may take a few minutes to complete."
+        )
+        mock_send_email_batch.assert_called_once()

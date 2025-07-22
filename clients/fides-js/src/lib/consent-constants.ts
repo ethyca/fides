@@ -111,6 +111,18 @@ export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: FidesOverrideValidatorMap[] =
       overrideKey: "fides_consent_flag_type",
       validationRegex: /^(boolean|consent_mechanism)$/,
     },
+    {
+      overrideName: "fidesInitializedEventMode",
+      overrideType: "string",
+      overrideKey: "fides_initialized_event_mode",
+      validationRegex: /^(multiple|once|disable)$/,
+    },
+    {
+      overrideName: "fidesModalDefaultView",
+      overrideType: "string",
+      overrideKey: "fides_modal_default_view",
+      validationRegex: /^\/tcf\/(purposes|features|vendors)$/,
+    },
   ];
 
 /**
@@ -150,10 +162,12 @@ export const FIDES_I18N_ICON = "fides-i18n-icon";
 
 export const MARKETING_CONSENT_KEYS = [
   "marketing",
+  "data_sales",
   "data_sales_and_sharing",
   "data_sales_sharing_gpp_us_state",
   "data_sharing_gpp_us_state",
   "data_sales_gpp_us_state",
   "targeted_advertising_gpp_us_state",
   "sales_sharing_targeted_advertising_gpp_us_national",
+  "sales_sharing_targeted_advertising",
 ];

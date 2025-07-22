@@ -105,8 +105,7 @@ const ConfigureIntegrationForm = ({
   const [createUnlinkedSassConnectionConfigTrigger] =
     useCreateUnlinkedSassConnectionConfigMutation();
 
-  const hasSecrets =
-    connectionOption.identifier !== ConnectionType.MANUAL_WEBHOOK;
+  const hasSecrets = connectionOption.identifier !== ConnectionType.MANUAL_TASK;
 
   const { data: secrets, isLoading: secretsSchemaIsLoading } =
     useGetConnectionTypeSecretSchemaQuery(connectionOption.identifier, {

@@ -6,6 +6,7 @@ from loguru import logger
 
 from fides.api.graph.config import CollectionAddress, FieldPath
 from fides.api.graph.graph import DatasetGraph
+from fides.api.task.manual.manual_task_utils import ManualTaskAddress
 from fides.api.util.collection_util import Row
 
 
@@ -35,6 +36,11 @@ def filter_data_categories(
     filtered_access_results: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
     for node_address, results in access_request_results.items():
         if not results:
+            continue
+
+        # Skip manual task data - it doesn't need filtering since it's controlled by field definitions
+        if f":{ManualTaskAddress.MANUAL_DATA_COLLECTION}" in node_address:
+            filtered_access_results[node_address].extend(results)
             continue
 
         # Results from fides connectors are a special case:

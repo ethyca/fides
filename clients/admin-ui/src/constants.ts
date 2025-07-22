@@ -20,6 +20,7 @@ export const VERIFY_AUTH_INTERVAL = 10 * 60 * 1000;
 export const INDEX_ROUTE = "/";
 export const LOGIN_ROUTE = "/login";
 export const CONNECTION_ROUTE = "/connection";
+export const PLUS_CONNECTION_API_ROUTE = "/plus/connection";
 export const CONNECTION_TYPE_ROUTE = "/connection_type";
 export const CONNECTOR_TEMPLATE = "/connector_template";
 

@@ -265,12 +265,12 @@ dataset:
       - name: visit_partitioned
         fides_meta:
           partitioning:
-            where_clauses:
-              [
-                "`last_visit` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 500 DAY) AND `last_visit` <= CURRENT_TIMESTAMP()",
-                "`last_visit` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `last_visit` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 500 DAY)",
-                "`last_visit` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)",
-              ]
+            - field: last_visit
+              end: NOW() - 1000 DAYS
+            - field: last_visit
+              start: NOW() - 1000 DAYS
+              end: NOW()
+              interval: 500 DAYS
         fields:
           - name: email
             data_categories: [user.contact.email]

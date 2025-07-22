@@ -48,6 +48,7 @@ PRIVACY_NOTICE = "privacy-notice"
 PRIVACY_PREFERENCE_HISTORY = "privacy-preference-history"
 PRIVACY_REQUEST = "privacy-request"
 PRIVACY_REQUEST_ACCESS_RESULTS = "privacy-request-access-results"
+PRIVACY_REQUEST_EMAIL_INTEGRATIONS = "privacy-request-email-integrations"
 PRIVACY_REQUEST_NOTIFICATIONS = "privacy-request-notifications"
 READ = "read"
 REGISTER = "register"
@@ -58,6 +59,7 @@ REVIEW = "review"
 RULE = "rule"
 SAAS_CONFIG = "saas_config"
 SCOPE = "scope"
+SEND = "send"
 STORAGE = "storage"
 SYSTEM = "system"
 SYSTEM_MANAGER = "system_manager"
@@ -176,6 +178,7 @@ PRIVACY_PREFERENCE_HISTORY_READ = f"{PRIVACY_PREFERENCE_HISTORY}:{READ}"
 PRIVACY_REQUEST_CALLBACK_RESUME = f"{PRIVACY_REQUEST}:{RESUME}"  # User has permission to restart a paused privacy request
 PRIVACY_REQUEST_CREATE = f"{PRIVACY_REQUEST}:{CREATE}"
 PRIVACY_REQUEST_DELETE = f"{PRIVACY_REQUEST}:{DELETE}"
+PRIVACY_REQUEST_EMAIL_INTEGRATIONS_SEND = f"{PRIVACY_REQUEST_EMAIL_INTEGRATIONS}:{SEND}"
 PRIVACY_REQUEST_MANUAL_STEPS_REVIEW = f"{PRIVACY_REQUEST}:{MANUAL_STEPS}:{REVIEW}"
 PRIVACY_REQUEST_MANUAL_STEPS_RESPOND = f"{PRIVACY_REQUEST}:{MANUAL_STEPS}:{RESPOND}"
 PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE = (
@@ -316,6 +319,7 @@ SCOPE_DOCS = {
     PRIVACY_REQUEST_CALLBACK_RESUME: "Restart paused privacy requests",
     PRIVACY_REQUEST_READ_ACCESS_RESULTS: "Download access data for the privacy request",
     PRIVACY_REQUEST_DELETE: "Remove privacy requests",
+    PRIVACY_REQUEST_EMAIL_INTEGRATIONS_SEND: "Send email for email integrations for the privacy request",
     PRIVACY_REQUEST_MANUAL_STEPS_RESPOND: "Respond to manual steps for the privacy request",
     PRIVACY_REQUEST_MANUAL_STEPS_REVIEW: "Review manual steps for the privacy request",
     PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE: "",

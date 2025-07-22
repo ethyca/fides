@@ -23,6 +23,10 @@ h1 {
     color: var(--text-color);
 }
 
+h2 {
+    margin-bottom: 12px;
+}
+
 .container {
     display: flex;
     flex-direction: column;
@@ -109,8 +113,8 @@ h1 {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-    padding-top: 20px;
-    padding-bottom: 100px;
+    padding-top: 0;
+    padding-bottom: 14px;
     font-size: 14px;
 }
 

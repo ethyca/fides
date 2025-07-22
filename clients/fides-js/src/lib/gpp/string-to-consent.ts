@@ -2,31 +2,23 @@ import { CmpApi, SignalStatus, TcfEuV2, TcfEuV2Field } from "@iabgpp/cmpapi";
 
 import {
   ComponentType,
-  ConsentMethod,
+  ConsentMechanism,
   FidesCookie,
   NoticeConsent,
   PrivacyExperience,
   PrivacyExperienceMinimal,
-  SaveConsentPreference,
 } from "../consent-types";
-import {
-  constructFidesRegionString,
-  createConsentPreferencesToSave,
-} from "../consent-utils";
 import { DecodedFidesString, decodeFidesString } from "../fides-string";
 import { areLocalesEqual } from "../i18n/i18n-utils";
-import { updateConsentPreferences } from "../preferences";
+import { updateConsent } from "../preferences";
 import { EMPTY_ENABLED_IDS } from "../tcf/constants";
 import { EnabledIds, TcfSavePreferences } from "../tcf/types";
 import {
-  createTCFConsentPreferencesToSave,
   createTcfSavePayload,
   createTcfSavePayloadFromMinExp,
   updateTCFCookie,
 } from "../tcf/utils";
-import { FIDES_US_REGION_TO_GPP_SECTION } from "./constants";
-import { GPPUSApproach } from "./types";
-import { deriveGppFieldRegion, US_NATIONAL_REGION } from "./us-notices";
+import { getGppSectionAndRegion } from "./gpp-utils";
 
 const FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS = [1, 3, 4, 5, 6];
 
@@ -43,32 +35,13 @@ const getConsentFromGppCmpApi = ({
   experience: PrivacyExperience;
 }): NoticeConsent => {
   const consent: NoticeConsent = {};
-  const {
-    privacy_notices: notices = [],
-    region: experienceRegion,
-    gpp_settings: gppSettings,
-  } = experience;
-  const usApproach = gppSettings?.us_approach;
-  let gppRegion = deriveGppFieldRegion({
-    experienceRegion,
-    usApproach,
-  });
-  let gppSection = FIDES_US_REGION_TO_GPP_SECTION[gppRegion];
+  const { privacy_notices: notices = [] } = experience;
 
-  if (!gppSection && usApproach === GPPUSApproach.ALL) {
-    fidesDebugger(
-      'GPP: current state isn\'t supported, defaulting to USNat since "Both/All" approach is selected',
-    );
-    gppRegion = US_NATIONAL_REGION;
-    gppSection = FIDES_US_REGION_TO_GPP_SECTION[gppRegion];
-  }
+  const { gppRegion, gppSection } = getGppSectionAndRegion(experience);
 
-  if (
-    !gppSection ||
-    (gppRegion === US_NATIONAL_REGION && usApproach === GPPUSApproach.STATE)
-  ) {
+  if (!gppRegion || !gppSection) {
     fidesDebugger(
-      'GPP: current state isn\'t supported, returning empty consent since "US State" approach is selected',
+      "GPP: current state isn't supported, returning empty consent.",
     );
     return consent;
   }
@@ -198,7 +171,7 @@ interface FidesStringToConsentArgs {
  * 3. Maps privacy notices with their translation ID
  * 4. Decodes consent preferences from appropriate CMP API
  * 5. Formats consent preferences to save
- * 6. Calls updateConsentPreferences with the formatted consent preferences
+ * 6. Calls updateConsent with the formatted consent preferences
  *
  * @param {FidesStringToConsentArgs} args - The arguments object
  * @param {string} args.fidesString - The encoded Fides consent string containing GPP data
@@ -214,7 +187,7 @@ export const fidesStringToConsent = ({
     return;
   }
 
-  const { options, cookie, geolocation, locale, config } = window.Fides;
+  const { locale } = window.Fides;
   const experience = window.Fides.experience as
     | PrivacyExperience
     | PrivacyExperienceMinimal;
@@ -229,7 +202,6 @@ export const fidesStringToConsent = ({
   const isTCF =
     experience.experience_config.component === ComponentType.TCF_OVERLAY;
 
-  const fidesRegionString = constructFidesRegionString(geolocation);
   const matchTranslation = experience.experience_config.translations.find((t) =>
     areLocalesEqual(t.language, locale),
   );
@@ -253,7 +225,6 @@ export const fidesStringToConsent = ({
 
   let updateCookie: (oldCookie: FidesCookie) => Promise<FidesCookie>;
   let tcf: TcfSavePreferences | undefined;
-  let consentPreferencesToSave: SaveConsentPreference[];
 
   if (!isTCF) {
     // Handle non-TCF case
@@ -261,36 +232,13 @@ export const fidesStringToConsent = ({
       cmpApi,
       experience: experience as PrivacyExperience,
     });
-
-    const enabledPrivacyNoticeKeys: string[] = Object.entries(consent)
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      .filter(([_, value]) => value)
-      .map(([key]) => key);
-
-    consentPreferencesToSave = createConsentPreferencesToSave(
-      privacyNoticeItems,
-      enabledPrivacyNoticeKeys,
-    );
-
-    fidesDebugger(
-      "GPP: updating consent preferences based on fides_string override",
-      consent,
-    );
-    updateCookie = (oldCookie) => Promise.resolve({ ...oldCookie, consent });
+    updateConsent(window.Fides, { noticeConsent: consent });
   } else {
     // Handle TCF case
     const enabledIds = getTcfPreferencesFromCmpApi({
       cmpApi,
       experience,
     });
-
-    consentPreferencesToSave = createTCFConsentPreferencesToSave(
-      privacyNoticeItems.map(({ notice, bestTranslation }) => ({
-        ...notice,
-        bestTranslation,
-      })),
-      enabledIds.customPurposesConsent,
-    );
 
     tcf = experience.minimal_tcf
       ? createTcfSavePayloadFromMinExp({
@@ -309,20 +257,20 @@ export const fidesStringToConsent = ({
         enabledIds,
         experience,
       );
-  }
 
-  // Update preferences with common parameters
-  updateConsentPreferences({
-    consentPreferencesToSave,
-    privacyExperienceConfigHistoryId:
-      matchTranslation.privacy_experience_config_history_id,
-    experience,
-    consentMethod: ConsentMethod.SCRIPT,
-    options,
-    userLocationString: fidesRegionString || undefined,
-    cookie: cookie as FidesCookie,
-    propertyId: config?.propertyId,
-    tcf,
-    updateCookie,
-  });
+    const noticeConsent: NoticeConsent = {};
+    privacyNoticeItems.forEach((item) => {
+      if (item.notice.consent_mechanism !== ConsentMechanism.NOTICE_ONLY) {
+        noticeConsent[item.notice.notice_key] =
+          enabledIds.purposesConsent.includes(item.notice.id);
+      } else {
+        noticeConsent[item.notice.notice_key] = true;
+      }
+    });
+    updateConsent(window.Fides, {
+      noticeConsent,
+      tcf,
+      updateCookie,
+    });
+  }
 };

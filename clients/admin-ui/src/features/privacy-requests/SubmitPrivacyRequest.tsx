@@ -1,20 +1,24 @@
 import {
-  AntButton as Button,
+  AntDropdown as Dropdown,
+  ChevronDownIcon,
+  LinkIcon,
   Modal,
   ModalBody,
   ModalContent,
   ModalHeader,
   ModalOverlay,
   Stack,
-  useDisclosure,
   useToast,
 } from "fidesui";
+import { useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import InfoBox from "~/features/common/InfoBox";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
+import { useGetFidesCloudConfigQuery } from "~/features/plus/plus.slice";
 import { usePostPrivacyRequestMutation } from "~/features/privacy-requests/privacy-requests.slice";
 import SubmitPrivacyRequestForm, {
+  CopyPrivacyRequestLinkForm,
   PrivacyRequestSubmitFormValues,
 } from "~/features/privacy-requests/SubmitPrivacyRequestForm";
 import { isErrorResult } from "~/types/errors";
@@ -87,14 +91,80 @@ const SubmitPrivacyRequestModal = ({
   );
 };
 
+const PrivacyRequestLinkModal = ({
+  isOpen,
+  onClose,
+  privacyCenterUrl,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  privacyCenterUrl: string;
+}) => {
+  return (
+    <Modal size="md" isOpen={isOpen} onClose={onClose}>
+      <ModalOverlay />
+      <ModalContent>
+        <ModalHeader>Create a Privacy Request Link</ModalHeader>
+        <ModalBody>
+          <Stack spacing={4} />
+          <CopyPrivacyRequestLinkForm
+            privacyCenterUrl={privacyCenterUrl}
+            onSubmit={onClose}
+            onCancel={onClose}
+          />
+        </ModalBody>
+      </ModalContent>
+    </Modal>
+  );
+};
+
 const SubmitPrivacyRequest = () => {
-  const { onOpen, isOpen, onClose } = useDisclosure();
+  const [state, setState] = useState<
+    "closed" | "create-link" | "submit-request"
+  >("closed");
+
+  const createLinkOpen = state === "create-link";
+  const submitRequestOpen = state === "submit-request";
+  const handleSubmitRequestOpen = () => setState("submit-request");
+  const handleCreateLinkOpen = () => setState("create-link");
+  const handleClose = () => setState("closed");
+
+  const { data } = useGetFidesCloudConfigQuery();
+  const privacyCenterUrl = (data?.privacy_center_url ?? "").trim();
+  const hasPrivacyCenterUrl = privacyCenterUrl.length > 0;
+
   return (
     <>
-      <SubmitPrivacyRequestModal isOpen={isOpen} onClose={onClose} />
-      <Button type="primary" onClick={onOpen} data-testid="submit-request-btn">
+      {hasPrivacyCenterUrl ? (
+        <PrivacyRequestLinkModal
+          isOpen={createLinkOpen}
+          onClose={handleClose}
+          privacyCenterUrl={privacyCenterUrl}
+        />
+      ) : null}
+      <SubmitPrivacyRequestModal
+        isOpen={submitRequestOpen}
+        onClose={handleClose}
+      />
+      <Dropdown.Button
+        type="primary"
+        onClick={handleSubmitRequestOpen}
+        data-testid="submit-request-btn"
+        menu={{
+          items: [
+            {
+              label: "Create request link",
+              key: "create-request-link",
+              icon: <LinkIcon />,
+              onClick: handleCreateLinkOpen,
+              disabled: !hasPrivacyCenterUrl,
+            },
+          ],
+        }}
+        icon={<ChevronDownIcon />}
+      >
         Create request
-      </Button>
+      </Dropdown.Button>
     </>
   );
 };

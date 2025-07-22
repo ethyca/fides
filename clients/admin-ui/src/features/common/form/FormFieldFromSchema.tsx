@@ -7,7 +7,7 @@ import {
 } from "~/features/connection-type/types";
 
 import { ControlledSelect } from "./ControlledSelect";
-import { CustomNumberInput, CustomTextInput } from "./inputs";
+import { CustomTextInput } from "./inputs";
 
 export type FormFieldProps = {
   name: string;
@@ -36,7 +36,6 @@ export const FormFieldFromSchema = ({
 
   const isSelect = !!enumDefinition?.enum || fieldSchema.options;
   const isBoolean = fieldSchema.type === "boolean";
-  const isInteger = fieldSchema.type === "integer";
 
   const getPlaceholder = () => {
     if (fieldSchema.allOf?.[0].$ref === FIDES_DATASET_REFERENCE) {
@@ -88,19 +87,6 @@ export const FormFieldFromSchema = ({
                 { label: "False", value: "false" },
                 { label: "True", value: "true" },
               ]}
-            />
-          );
-        }
-
-        if (isInteger) {
-          return (
-            <CustomNumberInput
-              {...field}
-              label={fieldSchema.title}
-              tooltip={fieldSchema.description}
-              isRequired={isRequired}
-              placeholder={getPlaceholder()}
-              variant={layout}
             />
           );
         }

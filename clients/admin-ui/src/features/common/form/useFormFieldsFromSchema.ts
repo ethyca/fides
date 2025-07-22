@@ -33,15 +33,13 @@ export const useFormFieldsFromSchema = (
   };
 
   const isRequiredField = (key: string): boolean =>
-    secretsSchema?.required?.includes(key) ||
-    (secretsSchema?.properties?.[key] !== undefined &&
-      "default" in secretsSchema.properties[key]);
+    secretsSchema?.required?.includes(key) ?? false;
 
   const getFieldValidation = (
     key: string,
     fieldSchema: ConnectionTypeSecretSchemaProperty,
   ) => {
-    if (isRequiredField(key) || fieldSchema.type === "integer") {
+    if (isRequiredField(key)) {
       return (value: string | undefined) =>
         validateField(fieldSchema.title, value, fieldSchema.allOf?.[0].$ref);
     }

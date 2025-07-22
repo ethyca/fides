@@ -24,6 +24,9 @@ def redis_lock(lock_key: str, timeout: int) -> Generator[Lock | None, None, None
     If the lock is acquired, it yields the lock object.
     If the lock is not acquired, it yields None.
     The lock is automatically released on exiting the context.
+
+    Timeout is the maximum number of seconds for the lock to be held,
+    after which the lock will be released.
     """
     lock = get_redis_lock(lock_key, timeout)
 
