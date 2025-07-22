@@ -129,7 +129,24 @@ class StatusType(str, Enum):
 
 
 class ManualTaskConditionalDependencyType(str, Enum):
-    """Enum for manual task conditional dependency types."""
+    """Enum for manual task conditional dependency types.
+
+    This enum defines the two types of nodes in a conditional dependency tree:
+
+    - leaf: A terminal node that represents a single condition (e.g., "user.age >= 18")
+    - group: A non-terminal node that groups multiple conditions with logical operators (AND/OR)
+
+    Examples:
+        leaf: Used for simple field comparisons like:
+            - "user.name exists"
+            - "user.age >= 18"
+            - "billing.subscription.status == 'active'"
+
+        group: Used to combine multiple conditions with logical operators:
+            - AND group: "user.age >= 18 AND user.active == true"
+            - OR group: "user.role == 'admin' OR user.verified == true"
+            - Nested groups: "(user.age >= 18 AND (user.role == 'admin' OR user.verified == true))"
+    """
 
     leaf = "leaf"
     group = "group"
@@ -1004,9 +1021,8 @@ class ManualTaskConditionalDependency(Base):
         """Overriding base class method to set the table name."""
         return "manual_task_conditional_dependency"
 
-    # redefined here because there's a minor, unintended discrepancy between
-    # this `id` field and that of the `Base` class, which explicitly sets `index=True`.
-    # In order for the `id` to be referenced by parent_id, we need to redefine it here.
+    # We need to redefine it here so that self-referential relationships
+    # can properly reference the `id` column instead of the built-in Python function.
     id = Column(String(255), primary_key=True, default=FidesBase.generate_uuid)
 
     # Foreign key relationships
