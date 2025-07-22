@@ -73,4 +73,8 @@ class ExecutionSettings(FidesSettings):
         default="US/Eastern",
         description="The timezone to send batch emails for DSR email integration.",
     )
+    memory_watchdog_enabled: bool = Field(
+        default=False,
+        description="Whether the memory watchdog is enabled to monitor and gracefully terminate tasks that approach memory limits.",
+    )
     model_config = SettingsConfigDict(env_prefix=ENV_PREFIX)

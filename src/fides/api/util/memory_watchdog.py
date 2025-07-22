@@ -23,6 +23,27 @@ from loguru import logger
 from functools import wraps
 
 
+def get_memory_watchdog_enabled() -> bool:
+    """
+    Get the memory_watchdog_enabled setting from the application configuration.
+
+    Returns:
+        bool: True if memory_watchdog_enabled is enabled, False otherwise (defaults to False)
+    """
+    try:
+        from fides.api.api.deps import get_autoclose_db_session as get_db
+        from fides.config.config_proxy import ConfigProxy
+
+        with get_db() as db:
+            config_proxy = ConfigProxy(db)
+            # ConfigProxy returns None when no config record exists, so we must handle None explicitly
+            value = getattr(config_proxy.execution, "memory_watchdog_enabled")
+            return value if value is not None else False
+    except Exception:  # pragma: no cover
+        # default to disabled for backward compatibility
+        return False
+
+
 class MemoryLimitExceeded(RuntimeError):
     """Raised when the watchdog detects sustained memory usage above the threshold."""
 
@@ -150,6 +171,11 @@ def memory_limiter(_func=None, *, threshold: int = 90, check_interval: float = 0
     def decorator(func):  # type: ignore[no-any-unbound]
         @wraps(func)
         def wrapper(*args, **kwargs):  # type: ignore[no-any-unbound]
+            # Check if memory watchdog is enabled
+            if not get_memory_watchdog_enabled():
+                logger.debug("Memory watchdog disabled by configuration - running task without monitoring")
+                return func(*args, **kwargs)
+
             watchdog = MemoryWatchdog(
                 threshold=threshold, check_interval=check_interval, grace_period=grace_period
             )
