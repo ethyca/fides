@@ -2,7 +2,6 @@ from enum import Enum
 from os.path import dirname, join
 from typing import Dict
 
-from loguru import logger
 import yaml
 from pydantic import BaseModel
 
@@ -29,7 +28,6 @@ def _load_supported_languages() -> Dict[str, Language]:
         language_dict = {}
         for language in _languages:
             language_dict[language["id"]] = Language.model_validate(language)
-        logger.debug(f"Loaded languages: {language_dict}")
         return language_dict
 
 

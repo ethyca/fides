@@ -154,10 +154,14 @@ export const LOCALE_LANGUAGE_MAP: Language[] = [
   { locale: "sv", label_en: "Swedish", label_original: "Sverige" },
   { locale: "tr", label_en: "Turkish", label_original: "Türkçe" },
   { locale: "uk", label_en: "Ukrainian", label_original: "українська мова" },
-  { locale: "zh", label_en: "Chinese", label_original: "中文" },
+  {
+    locale: "zh",
+    label_en: "Chinese (Simplified)",
+    label_original: "简体中文",
+  },
   {
     locale: "zh-Hant",
     label_en: "Chinese (Traditional)",
-    label_original: "中文(正體字)",
+    label_original: "繁體中文",
   },
 ];
