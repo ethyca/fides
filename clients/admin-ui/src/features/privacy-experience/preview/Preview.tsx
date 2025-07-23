@@ -118,6 +118,7 @@ const Preview = ({
 
     return () => {
       // cleanup fides.js preview when the component unmounts so it doesn't continue to run on other pages
+      setPreviewMode(undefined);
       window.FidesPreview?.cleanup();
     };
   }, [
