@@ -438,10 +438,10 @@ export const stubSystemIntegrations = () => {
   cy.intercept("GET", "/api/v1/connection_type/*/secret", {
     fixture: "connectors/postgres_secret.json",
   }).as("getPostgresConnectorSecret");
-  cy.intercept("GET", "/api/v1/connection/datasetconfig", {
+  cy.intercept("GET", "/api/v1/connection/datasetconfig?size=1000", {
     fixture: "connectors/datasetconfig.json",
   }).as("getConnectionDatasetConfig");
-  cy.intercept("GET", "/api/v1/connection/*/datasetconfig", {
+  cy.intercept("GET", "/api/v1/connection/*/datasetconfig?size=1000", {
     fixture: "connectors/datasetconfig.json",
   }).as("getConnectionDatasetConfig");
   cy.intercept("GET", "/api/v1/plus/dictionary/system?size=2000", {
