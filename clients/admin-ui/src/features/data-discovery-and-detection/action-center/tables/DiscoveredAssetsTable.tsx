@@ -70,6 +70,9 @@ export const DiscoveredAssetsTable = ({
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(25);
 
+  // Filter state for server-side filtering
+  const [columnFilters, setColumnFilters] = useState<Record<string, any>>({});
+
   // Selection state
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [selectedRowsMap, setSelectedRowsMap] = useState<
@@ -119,29 +122,23 @@ export const DiscoveredAssetsTable = ({
 
   const toast = useToast();
 
-  // Reset pagination when filters change
-  useEffect(() => {
-    setPageIndex(1);
-  }, [monitorId, searchQuery]);
-
   const { filterTabs, activeTab, onTabChange, activeParams, actionsDisabled } =
     useActionCenterTabs(systemId);
 
   useEffect(() => {
     setPageIndex(1);
-  }, [monitorId, searchQuery, activeTab]);
+  }, [monitorId, searchQuery, activeTab, columnFilters]);
 
-  // Reset selections when filters change
   useEffect(() => {
     resetSelections();
-  }, [monitorId, searchQuery, activeTab]);
+  }, [monitorId, activeTab]);
 
   const { data, isLoading, isFetching } = useGetDiscoveredAssetsQuery({
     key: monitorId,
     page: pageIndex,
     size: pageSize,
     search: searchQuery,
-    ...activeParams,
+    diff_status: activeParams?.diff_status,
   });
 
   useEffect(() => {
@@ -180,6 +177,8 @@ export const DiscoveredAssetsTable = ({
     onTabChange,
     aggregatedConsent: firstItemConsentStatus,
     onShowBreakdown: handleShowBreakdown,
+    monitorConfigId: monitorId,
+    diffStatus: activeParams?.diff_status,
   });
 
   // Get selected URNs from the map instead of selectedRows
@@ -376,9 +375,10 @@ export const DiscoveredAssetsTable = ({
     },
   };
 
-  const handleTableChange = (pagination: any) => {
+  const handleTableChange = (pagination: any, filters: any) => {
     setPageIndex(pagination.current);
     setPageSize(pagination.pageSize);
+    setColumnFilters(filters || {});
   };
 
   if (!monitorId || !systemId) {

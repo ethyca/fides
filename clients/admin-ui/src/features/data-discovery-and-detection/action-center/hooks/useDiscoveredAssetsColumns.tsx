@@ -13,13 +13,16 @@ import {
   MenuHeaderCell,
   TagExpandableCell,
 } from "~/features/common/table/cells";
+import { convertToAntFilters } from "~/features/common/utils";
 import {
   AlertLevel,
   ConsentStatus,
+  DiffStatus,
   PrivacyNoticeRegion,
   StagedResourceAPIResponse,
 } from "~/types/api";
 
+import { useGetWebsiteMonitorResourceFiltersQuery } from "../action-center.slice";
 import { DiscoveryStatusIcon } from "../DiscoveryStatusIcon";
 import { DiscoveredAssetActionsCell } from "../tables/cells/DiscoveredAssetActionsCell";
 import DiscoveredAssetDataUseCell from "../tables/cells/DiscoveredAssetDataUseCell";
@@ -32,6 +35,8 @@ export const useDiscoveredAssetsColumns = ({
   aggregatedConsent,
   onTabChange,
   onShowBreakdown,
+  monitorConfigId,
+  diffStatus,
 }: {
   readonly: boolean;
   aggregatedConsent: ConsentStatus | null | undefined;
@@ -40,12 +45,19 @@ export const useDiscoveredAssetsColumns = ({
     stagedResource: StagedResourceAPIResponse,
     status: ConsentStatus,
   ) => void;
+  monitorConfigId: string;
+  diffStatus?: DiffStatus[];
 }) => {
   const { flags } = useFeatures();
   const { assetConsentStatusLabels } = flags;
 
   const [isLocationsExpanded, setIsLocationsExpanded] = useState(false);
   const [isPagesExpanded, setIsPagesExpanded] = useState(false);
+
+  const { data: filterOptions } = useGetWebsiteMonitorResourceFiltersQuery({
+    monitor_config_id: monitorConfigId,
+    diff_status: diffStatus,
+  });
 
   const columns: ColumnsType<StagedResourceAPIResponse> = useMemo(() => {
     const baseColumns: ColumnsType<StagedResourceAPIResponse> = [
@@ -64,6 +76,9 @@ export const useDiscoveredAssetsColumns = ({
         title: "Type",
         dataIndex: "resource_type",
         key: "resource_type",
+        filters: filterOptions?.resource_type
+          ? convertToAntFilters(filterOptions.resource_type)
+          : undefined,
       },
       {
         title: "System",
@@ -83,6 +98,9 @@ export const useDiscoveredAssetsColumns = ({
         title: "Categories of consent",
         key: "data_use",
         width: 400,
+        filters: filterOptions?.data_uses
+          ? convertToAntFilters(filterOptions.data_uses)
+          : undefined,
         render: (_, record) => (
           <DiscoveredAssetDataUseCell asset={record} readonly={readonly} />
         ),
@@ -106,6 +124,14 @@ export const useDiscoveredAssetsColumns = ({
         dataIndex: "locations",
         key: "locations",
         width: 250,
+        filters: filterOptions?.locations
+          ? convertToAntFilters(
+              filterOptions.locations,
+              (location) =>
+                PRIVACY_NOTICE_REGION_RECORD[location as PrivacyNoticeRegion] ??
+                location,
+            )
+          : undefined,
         render: (locations: PrivacyNoticeRegion[]) => (
           <TagExpandableCell
             values={
@@ -125,6 +151,7 @@ export const useDiscoveredAssetsColumns = ({
         title: "Domain",
         dataIndex: "domain",
         key: "domain",
+        // Domain filtering will be handled via search instead of column filters
       },
       {
         title: () => (
@@ -174,6 +201,17 @@ export const useDiscoveredAssetsColumns = ({
         ),
         dataIndex: "consent_aggregated",
         key: "consent_aggregated",
+        filters: filterOptions?.consent_aggregated
+          ? convertToAntFilters(filterOptions.consent_aggregated, (status) => {
+              const statusMap: Record<string, string> = {
+                with_consent: "With consent",
+                without_consent: "Without consent",
+                exempt: "Exempt",
+                unknown: "Unknown",
+              };
+              return statusMap[status] ?? status;
+            })
+          : undefined,
         render: (consentAggregated: ConsentStatus, record) => (
           <DiscoveryStatusBadgeCell
             consentAggregated={consentAggregated ?? ConsentStatus.UNKNOWN}
@@ -208,6 +246,7 @@ export const useDiscoveredAssetsColumns = ({
     onShowBreakdown,
     isLocationsExpanded,
     isPagesExpanded,
+    filterOptions,
   ]);
 
   return { columns };
