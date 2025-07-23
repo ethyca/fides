@@ -71,7 +71,7 @@ const actionCenterApi = baseApi.injectEndpoints({
         page = 1,
         size = 20,
         search,
-        diff_status,
+        diff_status = [DiffStatus.ADDITION],
         sort_by = ["consent_aggregated", "urn"],
         sort_asc = true,
       }) => ({
@@ -233,6 +233,19 @@ const actionCenterApi = baseApi.injectEndpoints({
         },
       }),
     }),
+    getWebsiteMonitorResourceFilters: build.query<
+      Record<string, string[]>,
+      { monitor_config_id: string; diff_status?: DiffStatus[] }
+    >({
+      query: ({ monitor_config_id, diff_status = [DiffStatus.ADDITION] }) => ({
+        url: `/plus/filters/website_monitor_resources`,
+        params: {
+          monitor_config_id,
+          diff_status,
+        },
+      }),
+      providesTags: ["Discovery Monitor Results"],
+    }),
   }),
 });
 
@@ -249,4 +262,5 @@ export const {
   useUpdateAssetsDataUseMutation,
   useUpdateAssetsMutation,
   useGetConsentBreakdownQuery,
+  useGetWebsiteMonitorResourceFiltersQuery,
 } = actionCenterApi;
