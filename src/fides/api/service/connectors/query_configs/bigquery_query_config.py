@@ -262,9 +262,9 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         where_clauses: List[ColumnElement] = []
         for column_name, values in filtered_data.items():
             if len(values) == 1:
-                where_clauses.append(getattr(table.c, column_name) == values[0])
+                where_clauses.append(table.c[column_name] == values[0])
             else:
-                where_clauses.append(getattr(table.c, column_name).in_(values))
+                where_clauses.append(table.c[column_name].in_(values))
 
         # Combine reference clauses with OR instead of AND
         combined_reference_clause = or_(*where_clauses)
