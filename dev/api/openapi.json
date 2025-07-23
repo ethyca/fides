@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.66.1b0.post0.dev1"
+    "version": "2.66.1b0.post0.dev2"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -4681,7 +4681,7 @@
                 "items": {
                   "$ref": "#/components/schemas/DatasetConfigCtlDataset"
                 },
-                "maxItems": 50,
+                "maxItems": 1000,
                 "title": "Dataset Pairs"
               }
             }
@@ -4744,7 +4744,7 @@
                 "items": {
                   "$ref": "#/components/schemas/DatasetConfigCtlDataset"
                 },
-                "maxItems": 50,
+                "maxItems": 1000,
                 "title": "Dataset Pairs"
               }
             }
@@ -4814,7 +4814,7 @@
             "required": false,
             "schema": {
               "type": "integer",
-              "maximum": 100,
+              "maximum": 1000,
               "minimum": 1,
               "default": 50,
               "title": "Size"
@@ -4880,7 +4880,7 @@
                 "items": {
                   "$ref": "#/components/schemas/Dataset"
                 },
-                "maxItems": 50,
+                "maxItems": 1000,
                 "title": "Datasets"
               }
             }
