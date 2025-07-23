@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Set
 
 from sqlalchemy.orm import Session
 
@@ -19,6 +19,10 @@ from fides.api.models.manual_task import (
     ManualTaskConfigurationType,
     ManualTaskEntityType,
     ManualTaskInstance,
+)
+from fides.api.models.manual_task.conditional_dependency import (
+    ManualTaskConditionalDependency,
+    ManualTaskConditionalDependencyType,
 )
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.policy import ActionType
@@ -132,10 +136,22 @@ def create_manual_data_traversal_node(
     # Get manual tasks for this connection to determine fields
     manual_tasks = get_manual_tasks_for_connection_config(db, connection_key)
 
-    # Create fields based on ManualTaskConfigFields
+    # Create fields based on ManualTaskConfigFields and conditional dependencies
     fields: List[Field] = []
+    conditional_field_addresses: Set[str] = set()
+
     for manual_task in manual_tasks:
-        for config in manual_task.configs:
+        # Add fields from manual task configs
+        current_configs = [
+            config for config in manual_task.configs if config.is_current
+        ]
+        for config in current_configs:
+            if config.config_type not in [
+                ManualTaskConfigurationType.access_privacy_request,
+                ManualTaskConfigurationType.erasure_privacy_request,
+            ]:
+                continue
+
             for field in config.field_definitions:
                 # Create a scalar field for each manual task field
                 # Extract data categories from field metadata if available
@@ -148,6 +164,25 @@ def create_manual_data_traversal_node(
                     # Manual task fields don't have complex relationships
                 )
                 fields.append(scalar_field)
+
+        # Add fields from conditional dependencies
+        conditional_field_addresses.update(
+            _extract_field_addresses_from_conditional_dependencies(db, manual_task)
+        )
+
+    # Create scalar fields for conditional dependency field addresses
+    for field_address in conditional_field_addresses:
+        # Extract the field name from the address (e.g., "user.age" -> "age")
+        field_name = (
+            field_address.split(".")[-1] if "." in field_address else field_address
+        )
+
+        scalar_field = ScalarField(
+            name=field_name,
+            data_categories=[],  # Conditional dependency fields don't have predefined data categories
+            # Conditional dependency fields don't have complex relationships
+        )
+        fields.append(scalar_field)
 
     # Create a synthetic Collection
     collection = Collection(
@@ -315,8 +350,9 @@ def create_manual_task_artificial_graphs(
         # Get manual tasks for this connection to determine fields
         manual_tasks = get_manual_tasks_for_connection_config(db, connection_key)
 
-        # Create fields based only on ManualTaskConfigFields
+        # Create fields based on ManualTaskConfigFields and conditional dependencies
         fields: List = []
+        conditional_field_addresses: Set[str] = set()
 
         # Manual task collections act as root nodes - they don't need identity dependencies
         # since they provide manually-entered data rather than consuming identity data.
@@ -342,6 +378,24 @@ def create_manual_task_artificial_graphs(
                     )
                     fields.append(scalar_field)
 
+            # Add fields from conditional dependencies
+            conditional_field_addresses.update(
+                _extract_field_addresses_from_conditional_dependencies(db, manual_task)
+            )
+
+        # Create scalar fields for conditional dependency field addresses
+        for field_address in conditional_field_addresses:
+            # Extract the field name from the address (e.g., "user.age" -> "age")
+            field_name = (
+                field_address.split(".")[-1] if "." in field_address else field_address
+            )
+
+            scalar_field = ScalarField(
+                name=field_name,
+                data_categories=[],  # Conditional dependency fields don't have predefined data categories
+            )
+            fields.append(scalar_field)
+
         if fields:  # Only create graph if there are fields
             # Create a synthetic Collection
             collection = Collection(
@@ -362,3 +416,57 @@ def create_manual_task_artificial_graphs(
             manual_task_graphs.append(graph_dataset)
 
     return manual_task_graphs
+
+
+def _extract_field_addresses_from_conditional_dependencies(
+    db: Session, manual_task: ManualTask
+) -> Set[str]:
+    """
+    Extract all field addresses from conditional dependencies for a manual task.
+
+    Args:
+        db: Database session
+        manual_task: The manual task to extract field addresses from
+
+    Returns:
+        Set of field addresses from all conditional dependency leafs
+    """
+    field_addresses = set()
+
+    # Get all conditional dependencies for this manual task
+    conditional_dependencies = (
+        db.query(ManualTaskConditionalDependency)
+        .filter(ManualTaskConditionalDependency.manual_task_id == manual_task.id)
+        .all()
+    )
+
+    for dependency in conditional_dependencies:
+        if dependency.condition_type == ManualTaskConditionalDependencyType.leaf:
+            # For leaf conditions, extract the field_address directly
+            if dependency.field_address:
+                field_addresses.add(dependency.field_address)
+        elif dependency.condition_type == ManualTaskConditionalDependencyType.group:
+            # For group conditions, recursively check all children
+            _extract_field_addresses_from_group(dependency, field_addresses)
+
+    return field_addresses
+
+
+def _extract_field_addresses_from_group(
+    group_dependency: ManualTaskConditionalDependency, field_addresses: Set[str]
+) -> None:
+    """
+    Recursively extract field addresses from a group conditional dependency.
+
+    Args:
+        group_dependency: The group conditional dependency to process
+        field_addresses: Set to accumulate field addresses
+    """
+    for child in group_dependency.children:
+        if child.condition_type == ManualTaskConditionalDependencyType.leaf:
+            # For leaf conditions, extract the field_address directly
+            if child.field_address:
+                field_addresses.add(child.field_address)
+        elif child.condition_type == ManualTaskConditionalDependencyType.group:
+            # For group conditions, recursively check all children
+            _extract_field_addresses_from_group(child, field_addresses)
