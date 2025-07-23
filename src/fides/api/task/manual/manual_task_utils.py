@@ -462,7 +462,7 @@ def _extract_field_addresses_from_group(
         group_dependency: The group conditional dependency to process
         field_addresses: Set to accumulate field addresses
     """
-    for child in group_dependency.children:
+    for child in group_dependency.children:  # type: ignore[attr-defined]
         if child.condition_type == ManualTaskConditionalDependencyType.leaf:
             # For leaf conditions, extract the field_address directly
             if child.field_address:

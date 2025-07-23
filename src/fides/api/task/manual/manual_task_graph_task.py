@@ -4,7 +4,6 @@ from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import AwaitingAsyncTaskCallback
-from fides.api.graph.config import CollectionAddress
 from fides.api.models.attachment import AttachmentType
 from fides.api.models.manual_task import (
     ManualTask,
@@ -31,8 +30,6 @@ from fides.api.util.collection_util import Row
 
 if TYPE_CHECKING:  # pragma: no cover
     from fides.api.models.manual_task import ManualTaskSubmission  # noqa: F401
-
-from loguru import logger
 
 
 class ManualTaskGraphTask(GraphTask):
@@ -93,7 +90,7 @@ class ManualTaskGraphTask(GraphTask):
         field_addresses: Set[str],
     ) -> None:
         """Recursively extract field addresses from group conditional dependencies."""
-        for child in group_dependency.children:
+        for child in group_dependency.children:  # type: ignore[attr-defined]
             if child.condition_type == ManualTaskConditionalDependencyType.leaf:
                 if child.field_address:
                     field_addresses.add(child.field_address)
