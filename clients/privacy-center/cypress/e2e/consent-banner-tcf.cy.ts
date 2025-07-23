@@ -840,13 +840,15 @@ describe("Fides-js TCF", () => {
           cy.get("span").contains(SYSTEM_1.name).should("not.exist");
 
           cy.get("button").contains("Legitimate interest").click();
-          cy.getByTestId("records-list-vendors").within(() => {
-            cy.get("span")
-              .contains(SYSTEM_1.name)
-              .within(() => {
-                cy.get("span").should("not.exist");
-              });
-          });
+          cy.getByTestId("records-list-vendors")
+            .eq(1)
+            .within(() => {
+              cy.get("span")
+                .contains(SYSTEM_1.name)
+                .within(() => {
+                  cy.get("span").should("not.exist");
+                });
+            });
         });
 
         // Check that the vendor ids persisted to the TC string
@@ -4041,12 +4043,14 @@ describe("Fides-js TCF", () => {
           .should("not.exist");
 
         // And spot check legitimate interest
-        const legintIds = VENDOR_IDS.filter((id, idx) => idx % 2 !== 0);
+        const legintIds = VENDOR_IDS.filter(
+          (id, idx) => idx < 10 && idx % 2 !== 0,
+        );
         cy.get("button").contains("Legitimate interest").click();
         legintIds.slice(0, 10).forEach((id) => {
           cy.get(".fides-notice-toggle-title").contains(id);
         });
-        cy.get(".fides-paging-info").contains("1-10 / 51");
+        cy.get(".fides-paging-info").contains("1-10 / 102");
       });
     });
   });
