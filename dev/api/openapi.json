@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.66.1b0.post0.dev3"
+    "version": "2.66.1b0.post0.dev4"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -12073,13 +12073,11 @@
           "Users"
         ],
         "summary": "Get User",
-        "description": "Returns a User based on an Id",
+        "description": "Returns a User based on an Id. Users with USER_READ_OWN scope can only access their own data.",
         "operationId": "get_user_api_v1_user__user_id__get",
         "security": [
           {
-            "OAuth2ClientCredentialsBearer": [
-              "user:read"
-            ]
+            "OAuth2ClientCredentialsBearer": []
           }
         ],
         "parameters": [
@@ -12533,13 +12531,11 @@
           "Users"
         ],
         "summary": "Get Users",
-        "description": "Returns a paginated list of all users",
+        "description": "Returns a paginated list of users. Users with USER_READ_OWN scope only see their own data.",
         "operationId": "get_users_api_v1_user_get",
         "security": [
           {
-            "OAuth2ClientCredentialsBearer": [
-              "user:read"
-            ]
+            "OAuth2ClientCredentialsBearer": []
           }
         ],
         "parameters": [
@@ -25619,6 +25615,7 @@
           "user:update",
           "user:delete",
           "user:read",
+          "user:read-own",
           "user:password-reset",
           "user-permission:create",
           "user-permission:update",
