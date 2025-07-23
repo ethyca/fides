@@ -1,7 +1,7 @@
 from typing import Annotated, Any, Dict, List, Optional
 
 import yaml
-from fastapi import Depends, HTTPException, Request
+from fastapi import Depends, HTTPException, Query, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.params import Security
 from fastapi_pagination import Page, Params
@@ -68,8 +68,16 @@ from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort:
 )
 
 X_YAML = "application/x-yaml"
+MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM = 1000
 
 router = APIRouter(tags=["Dataset Configs"], prefix=V1_URL_PREFIX)
+
+
+# Custom Params class with higher limit for dataset configs
+class DatasetConfigParams(Params):
+    size: int = Query(
+        50, ge=1, le=MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM, description="Page size"
+    )
 
 
 # Helper method to inject the parent ConnectionConfig into these child routes
@@ -131,7 +139,7 @@ def validate_dataset(
     response_model=BulkPutDataset,
 )
 def put_dataset_configs(
-    dataset_pairs: Annotated[List[DatasetConfigCtlDataset], Field(max_length=50)],  # type: ignore
+    dataset_pairs: Annotated[List[DatasetConfigCtlDataset], Field(max_length=MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM)],  # type: ignore
     db: Session = Depends(deps.get_db),
     dataset_config_service: DatasetConfigService = Depends(get_dataset_config_service),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
@@ -181,7 +189,7 @@ def put_dataset_configs(
     response_model=BulkPutDataset,
 )
 def patch_dataset_configs(
-    dataset_pairs: Annotated[List[DatasetConfigCtlDataset], Field(max_length=50)],  # type: ignore
+    dataset_pairs: Annotated[List[DatasetConfigCtlDataset], Field(max_length=MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM)],  # type: ignore
     dataset_config_service: DatasetConfigService = Depends(get_dataset_config_service),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> BulkPutDataset:
@@ -217,7 +225,7 @@ def patch_dataset_configs(
     response_model=BulkPutDataset,
 )
 def patch_datasets(
-    datasets: Annotated[List[FideslangDataset], Field(max_length=50)],  # type: ignore
+    datasets: Annotated[List[FideslangDataset], Field(max_length=1000)],  # type: ignore
     dataset_config_service: DatasetConfigService = Depends(get_dataset_config_service),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> BulkPutDataset:
@@ -367,7 +375,7 @@ def get_dataset(
 )
 def get_dataset_configs(
     db: Session = Depends(deps.get_db),
-    params: Params = Depends(),
+    params: DatasetConfigParams = Depends(),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> AbstractPage[DatasetConfig]:
     """Returns all Dataset Configs attached to current Connection Config."""
