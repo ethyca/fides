@@ -1,13 +1,8 @@
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from loguru import logger
 from sqlalchemy import text
-from sqlalchemy.engine import (  # type: ignore
-    Connection,
-    Engine,
-    LegacyCursorResult,
-    create_engine,
-)
+from sqlalchemy.engine import Connection, Engine, create_engine  # type: ignore
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import Executable  # type: ignore
 from sqlalchemy.sql.elements import TextClause
@@ -17,6 +12,7 @@ from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionTestStatus
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
+from fides.api.schemas.application_config import SqlDryRunMode
 from fides.api.schemas.connection_configuration.connection_secrets_bigquery import (
     BigQuerySchema,
 )
@@ -99,6 +95,16 @@ class BigQueryConnector(SQLConnector):
         logger.info(
             f"Executing {len(partition_clauses)} partition queries for node '{query_config.node.address}' in DSR execution"
         )
+
+        if self.should_dry_run(SqlDryRunMode.access):
+            for partition_clause in partition_clauses:
+                existing_bind_params = stmt.compile().params
+                partitioned_stmt = text(
+                    f"{stmt} AND ({text(partition_clause)})"
+                ).params(existing_bind_params)
+                logger.warning(f"SQL DRY RUN - Would execute SQL: {partitioned_stmt}")
+            return []
+
         rows = []
         for partition_clause in partition_clauses:
             logger.debug(
@@ -135,6 +141,39 @@ class BigQueryConnector(SQLConnector):
             logger.exception(f"Error testing connection to remote BigQuery {str(e)}")
             raise ConnectionException(f"Connection error: {e}")
 
+    def _execute_statements_with_sql_dry_run(
+        self,
+        statements: List[Executable],
+        sql_dry_run_enabled: bool,
+        client: Engine,
+    ) -> int:
+        """
+        Execute SQL statements with sql_dry_run support.
+
+        Args:
+            statements: List of SQL statements to execute
+            sql_dry_run_enabled: Whether sql_dry_run mode is enabled
+            client: Database engine
+
+        Returns:
+            int: Number of affected rows (0 in sql_dry_run mode)
+        """
+        if not statements:
+            return 0
+
+        if sql_dry_run_enabled:
+            for stmt in statements:
+                logger.warning(f"SQL DRY RUN - Would execute SQL: {stmt}")
+            return 0
+
+        row_count = 0
+        with client.connect() as connection:
+            for stmt in statements:
+                results = connection.execute(stmt)
+                logger.debug(f"Affected {results.rowcount} rows")
+                row_count += results.rowcount
+        return row_count
+
     def mask_data(
         self,
         node: ExecutionNode,
@@ -142,22 +181,31 @@ class BigQueryConnector(SQLConnector):
         privacy_request: PrivacyRequest,
         request_task: RequestTask,
         rows: List[Row],
+        input_data: Optional[Dict[str, List[Any]]] = None,
     ) -> int:
         """Execute a masking request. Returns the number of records updated or deleted"""
+
         query_config = self.query_config(node)
         update_or_delete_ct = 0
         client = self.client()
-        for row in rows:
-            update_or_delete_stmts: List[Executable] = (
-                query_config.generate_masking_stmt(
-                    node, row, policy, privacy_request, client
-                )
+
+        if query_config.uses_delete_masking_strategy():
+            delete_stmts = query_config.generate_delete(client, input_data or {})
+            logger.debug(f"Generated {len(delete_stmts)} DELETE statements")
+            update_or_delete_ct += self._execute_statements_with_sql_dry_run(
+                delete_stmts, self.should_dry_run(SqlDryRunMode.erasure), client
             )
-            if update_or_delete_stmts:
-                with client.connect() as connection:
-                    for update_or_delete_stmt in update_or_delete_stmts:
-                        results: LegacyCursorResult = connection.execute(
-                            update_or_delete_stmt
-                        )
-                        update_or_delete_ct = update_or_delete_ct + results.rowcount
+        else:
+            for row in rows:
+                update_or_delete_stmts: List[Executable] = query_config.generate_update(
+                    row, policy, privacy_request, client
+                )
+                logger.debug(
+                    f"Generated {len(update_or_delete_stmts)} UPDATE statements"
+                )
+                update_or_delete_ct += self._execute_statements_with_sql_dry_run(
+                    update_or_delete_stmts,
+                    self.should_dry_run(SqlDryRunMode.erasure),
+                    client,
+                )
         return update_or_delete_ct

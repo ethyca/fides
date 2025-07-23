@@ -82,6 +82,7 @@ class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
         privacy_request: PrivacyRequest,
         request_task: RequestTask,
         rows: List[Row],
+        input_data: Optional[Dict[str, List[Any]]] = None,
     ) -> int:
         """Execute a masking request. Return the number of rows that have been updated
 

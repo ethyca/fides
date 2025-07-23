@@ -104,6 +104,7 @@ dataset:
           - name: address_id
             data_categories: [system.operations]
             fides_meta:
+              data_type: integer
               references:
                 - dataset: bigquery_example_test_dataset
                   field: address.id
