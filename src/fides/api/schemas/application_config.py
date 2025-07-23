@@ -11,6 +11,14 @@ from fides.api.schemas.messaging.messaging import MessagingServiceType
 from fides.config.admin_ui_settings import ErrorNotificationMode
 
 
+class SqlDryRunMode(str, Enum):
+    """SQL dry run mode for controlling execution of SQL statements in privacy requests"""
+
+    none = "none"
+    access = "access"
+    erasure = "erasure"
+
+
 class StorageTypeApiAccepted(Enum):
     """Enum for storage destination types accepted in API updates"""
 
@@ -63,7 +71,9 @@ class ExecutionApplicationConfig(FidesSchema):
     disable_consent_identity_verification: Optional[bool] = None
     require_manual_request_approval: Optional[bool] = None
     memory_watchdog_enabled: Optional[bool] = None
-    model_config = ConfigDict(extra="forbid")
+    sql_dry_run: Optional[SqlDryRunMode] = None
+
+    model_config = ConfigDict(use_enum_values=True, extra="forbid")
 
 
 class AdminUIConfig(FidesSchema):

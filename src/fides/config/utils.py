@@ -62,6 +62,7 @@ CONFIG_KEY_ALLOWLIST = {
         "require_manual_request_approval",
         "subject_identity_verification_required",
         "memory_watchdog_enabled",
+        "sql_dry_run",
     ],
     "storage": [
         "active_default_storage_type",

@@ -18,7 +18,7 @@ describe("Connectors", () => {
       }).as("getPostgresConnectorSecret");
       cy.intercept(
         "GET",
-        "/api/v1/connection/postgres_connector/datasetconfig",
+        "/api/v1/connection/postgres_connector/datasetconfig?size=1000",
         {
           fixture: "connectors/datasetconfig.json",
         },
@@ -129,7 +129,7 @@ describe("Connectors", () => {
       );
       cy.intercept(
         "GET",
-        "/api/v1/connection/postgres_connector/datasetconfig",
+        "/api/v1/connection/postgres_connector/datasetconfig?size=1000",
         {
           body: {
             items: [],
