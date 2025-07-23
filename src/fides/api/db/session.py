@@ -65,6 +65,8 @@ def get_db_engine(
         engine_args["pool_size"] = pool_size
         engine_args["max_overflow"] = max_overflow
 
+    engine_args["echo"] = True
+
     return create_engine(database_uri, **engine_args)
 
 

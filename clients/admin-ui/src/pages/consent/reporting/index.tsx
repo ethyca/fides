@@ -15,12 +15,15 @@ import React, { useMemo, useState } from "react";
 import FixedLayout from "~/features/common/FixedLayout";
 import PageHeader from "~/features/common/PageHeader";
 import {
+  PaginationContext,
+  Paginator,
+  usePagination,
+} from "~/features/common/pagination/pagination";
+import { useDateQueryParam } from "~/features/common/query-parameters/queryParameters";
+import {
   FidesTableV2,
-  PAGE_SIZES,
-  PaginationBar,
   TableActionBar,
   TableSkeletonLoader,
-  useServerSidePagination,
 } from "~/features/common/table/v2";
 import { successToastParams } from "~/features/common/toast";
 import { useGetAllHistoricalPrivacyPreferencesQuery } from "~/features/consent-reporting/consent-reporting.slice";
@@ -30,11 +33,10 @@ import ConsentTcfDetailModal from "~/features/consent-reporting/ConsentTcfDetail
 import useConsentReportingTableColumns from "~/features/consent-reporting/hooks/useConsentReportingTableColumns";
 import { ConsentReportingSchema } from "~/types/api";
 
-const ConsentReportingPage = () => {
-  const pagination = useServerSidePagination();
+const ConsentReporting = () => {
   const today = useMemo(() => dayjs(), []);
-  const [startDate, setStartDate] = useState<Dayjs | null>(null);
-  const [endDate, setEndDate] = useState<Dayjs | null>(null);
+  const [startDate, setStartDate] = useDateQueryParam("startDate");
+  const [endDate, setEndDate] = useDateQueryParam("endDate");
   const [isConsentLookupModalOpen, setIsConsentLookupModalOpen] =
     useState(false);
   const [isDownloadReportModalOpen, setIsDownloadReportModalOpen] =
@@ -42,23 +44,24 @@ const ConsentReportingPage = () => {
   const [isConsentTcfDetailModalOpen, setIsConsentTcfDetailModalOpen] =
     useState(false);
   const [currentTcfPreferences, setCurrentTcfPreferences] = useState();
+  const { page, size } = usePagination();
 
   const toast = useToast();
 
   const { data, isLoading, isFetching, refetch } =
     useGetAllHistoricalPrivacyPreferencesQuery({
-      page: pagination.pageIndex,
-      size: pagination.pageSize,
+      page,
+      size,
       startDate,
       endDate,
+      include_total: false,
     });
 
-  const { setTotalPages } = pagination;
-  const { items: privacyPreferences, total: totalRows } = useMemo(() => {
-    const results = data || { items: [], total: 0, pages: 0 };
-    setTotalPages(results.pages);
+  const { items: privacyPreferences } = useMemo(() => {
+    const results = data ?? { items: [] };
+
     return results;
-  }, [data, setTotalPages]);
+  }, [data]);
 
   const onTcfDetailViewClick = (tcfPreferences: any) => {
     setIsConsentTcfDetailModalOpen(true);
@@ -75,7 +78,6 @@ const ConsentReportingPage = () => {
   });
 
   const handleClickRefresh = async () => {
-    pagination.resetPageIndexToDefault();
     await refetch();
     toast(
       successToastParams(
@@ -115,6 +117,7 @@ const ConsentReportingPage = () => {
                   setStartDate(dates && dates[0]);
                   setEndDate(dates && dates[1]);
                 }}
+                value={[startDate, endDate]}
               />
               <Flex gap={12}>
                 <Button
@@ -157,22 +160,10 @@ const ConsentReportingPage = () => {
                 />
               }
             />
-            <PaginationBar
-              totalRows={totalRows || 0}
-              pageSizes={PAGE_SIZES}
-              setPageSize={pagination.setPageSize}
-              onPreviousPageClick={pagination.onPreviousPageClick}
-              isPreviousPageDisabled={
-                pagination.isPreviousPageDisabled || isFetching
-              }
-              onNextPageClick={pagination.onNextPageClick}
-              isNextPageDisabled={pagination.isNextPageDisabled || isFetching}
-              startRange={pagination.startRange}
-              endRange={pagination.endRange}
-            />
           </>
         )}
       </div>
+      <Paginator />
       <ConsentLookupModal
         isOpen={isConsentLookupModalOpen}
         onClose={() => setIsConsentLookupModalOpen(false)}
@@ -192,6 +183,14 @@ const ConsentReportingPage = () => {
         tcfPreferences={currentTcfPreferences}
       />
     </FixedLayout>
+  );
+};
+
+const ConsentReportingPage = () => {
+  return (
+    <PaginationContext>
+      <ConsentReporting />
+    </PaginationContext>
   );
 };
 
