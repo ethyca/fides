@@ -4,6 +4,7 @@ Tests for memory watchdog utilities.
 The memory watchdog provides proactive memory monitoring to prevent OOM kills
 in Celery tasks by gracefully terminating when memory usage is high.
 """
+
 import os
 import signal
 import threading
@@ -34,39 +35,37 @@ class TestGetMemoryWatchdogEnabled:
 
         # Verify default setting without any configuration
         result = get_memory_watchdog_enabled()
-        assert result is False, "Memory watchdog should default to False for backward compatibility"
+        assert (
+            result is False
+        ), "Memory watchdog should default to False for backward compatibility"
 
     def test_enabled_when_config_is_true(self, db):
         """Test that get_memory_watchdog_enabled returns True when configured."""
         # Set up application config with memory_watchdog_enabled = True
         config = ApplicationConfig(
-            api_set={
-                "execution": {
-                    "memory_watchdog_enabled": True
-                }
-            }
+            api_set={"execution": {"memory_watchdog_enabled": True}}
         )
         db.add(config)
         db.commit()
 
         result = get_memory_watchdog_enabled()
-        assert result is True, "Should return True when memory_watchdog_enabled is configured as True"
+        assert (
+            result is True
+        ), "Should return True when memory_watchdog_enabled is configured as True"
 
     def test_disabled_when_config_is_false(self, db):
         """Test that get_memory_watchdog_enabled returns False when explicitly disabled."""
         # Set up application config with memory_watchdog_enabled = False
         config = ApplicationConfig(
-            api_set={
-                "execution": {
-                    "memory_watchdog_enabled": False
-                }
-            }
+            api_set={"execution": {"memory_watchdog_enabled": False}}
         )
         db.add(config)
         db.commit()
 
         result = get_memory_watchdog_enabled()
-        assert result is False, "Should return False when memory_watchdog_enabled is configured as False"
+        assert (
+            result is False
+        ), "Should return False when memory_watchdog_enabled is configured as False"
 
     def test_exception_handling_returns_false(self):
         """Test that exceptions in config access return False (default)."""
@@ -85,10 +84,14 @@ class TestMemoryWatchdog:
         watchdog = MemoryWatchdog()
 
         assert watchdog.threshold == 90, "Default threshold should be 90%"
-        assert watchdog.check_interval == 0.5, "Default check interval should be 0.5 seconds"
+        assert (
+            watchdog.check_interval == 0.5
+        ), "Default check interval should be 0.5 seconds"
         assert watchdog.grace_period == 0, "Default grace period should be 0"
         assert watchdog._thread is None, "Thread should be None before starting"
-        assert not watchdog._monitoring.is_set(), "Monitoring event should not be set initially"
+        assert (
+            not watchdog._monitoring.is_set()
+        ), "Monitoring event should not be set initially"
 
     def test_initialization_custom_values(self):
         """Test MemoryWatchdog initializes with custom values."""
@@ -121,17 +124,23 @@ class TestMemoryWatchdog:
 
     def test_context_manager(self):
         """Test MemoryWatchdog as context manager."""
-        with patch("fides.api.util.memory_watchdog._system_memory_percent") as mock_memory_percent:
+        with patch(
+            "fides.api.util.memory_watchdog._system_memory_percent"
+        ) as mock_memory_percent:
             mock_memory_percent.return_value = 50.0
 
             watchdog = MemoryWatchdog(check_interval=0.1)
 
             with watchdog:
-                assert watchdog._monitoring.is_set(), "Should start monitoring in context"
+                assert (
+                    watchdog._monitoring.is_set()
+                ), "Should start monitoring in context"
                 assert watchdog._thread is not None, "Thread should exist in context"
 
             time.sleep(0.2)  # Give thread time to stop
-            assert not watchdog._monitoring.is_set(), "Should stop monitoring after context"
+            assert (
+                not watchdog._monitoring.is_set()
+            ), "Should stop monitoring after context"
 
     @patch("fides.api.util.memory_watchdog.os.kill")
     @patch("fides.api.util.memory_watchdog._system_memory_percent")
@@ -151,7 +160,9 @@ class TestMemoryWatchdog:
 
     def test_signal_handler_raises_exception(self):
         """Test that signal handler raises MemoryLimitExceeded."""
-        with patch("fides.api.util.memory_watchdog._system_memory_percent") as mock_memory_percent:
+        with patch(
+            "fides.api.util.memory_watchdog._system_memory_percent"
+        ) as mock_memory_percent:
             mock_memory_percent.return_value = 95.0
 
             watchdog = MemoryWatchdog()
@@ -170,7 +181,9 @@ class TestMemoryLimiterDecorator:
     def test_decorator_without_arguments(self, db):
         """Test memory_limiter decorator used without arguments."""
         # Setup config to disable watchdog
-        config = ApplicationConfig(api_set={"execution": {"memory_watchdog_enabled": False}})
+        config = ApplicationConfig(
+            api_set={"execution": {"memory_watchdog_enabled": False}}
+        )
         db.add(config)
         db.commit()
 
@@ -179,12 +192,16 @@ class TestMemoryLimiterDecorator:
             return "success"
 
         result = test_function()
-        assert result == "success", "Function should execute normally when watchdog is disabled"
+        assert (
+            result == "success"
+        ), "Function should execute normally when watchdog is disabled"
 
     def test_decorator_with_arguments(self, db):
         """Test memory_limiter decorator used with arguments."""
         # Setup config to disable watchdog
-        config = ApplicationConfig(api_set={"execution": {"memory_watchdog_enabled": False}})
+        config = ApplicationConfig(
+            api_set={"execution": {"memory_watchdog_enabled": False}}
+        )
         db.add(config)
         db.commit()
 
@@ -193,13 +210,17 @@ class TestMemoryLimiterDecorator:
             return "success"
 
         result = test_function()
-        assert result == "success", "Function should execute normally when watchdog is disabled"
+        assert (
+            result == "success"
+        ), "Function should execute normally when watchdog is disabled"
 
     @patch("fides.api.util.memory_watchdog.MemoryWatchdog")
     def test_decorator_when_enabled(self, mock_watchdog_class, db):
         """Test memory_limiter decorator when watchdog is enabled."""
         # Setup config to enable watchdog
-        config = ApplicationConfig(api_set={"execution": {"memory_watchdog_enabled": True}})
+        config = ApplicationConfig(
+            api_set={"execution": {"memory_watchdog_enabled": True}}
+        )
         db.add(config)
         db.commit()
 
@@ -214,7 +235,9 @@ class TestMemoryLimiterDecorator:
         result = test_function()
 
         # Verify watchdog was created with correct parameters
-        mock_watchdog_class.assert_called_once_with(threshold=85, check_interval=0.5, grace_period=0)
+        mock_watchdog_class.assert_called_once_with(
+            threshold=85, check_interval=0.5, grace_period=0
+        )
 
         # Verify watchdog lifecycle
         mock_watchdog.start.assert_called_once()
@@ -226,7 +249,9 @@ class TestMemoryLimiterDecorator:
     def test_decorator_when_disabled_by_config(self, mock_watchdog_class, db):
         """Test that decorator skips watchdog when disabled by configuration."""
         # Setup config to disable watchdog
-        config = ApplicationConfig(api_set={"execution": {"memory_watchdog_enabled": False}})
+        config = ApplicationConfig(
+            api_set={"execution": {"memory_watchdog_enabled": False}}
+        )
         db.add(config)
         db.commit()
 
@@ -244,7 +269,9 @@ class TestMemoryLimiterDecorator:
     def test_decorator_handles_memory_limit_exceeded(self, mock_watchdog_class, db):
         """Test decorator properly handles MemoryLimitExceeded exception."""
         # Setup config to enable watchdog
-        config = ApplicationConfig(api_set={"execution": {"memory_watchdog_enabled": True}})
+        config = ApplicationConfig(
+            api_set={"execution": {"memory_watchdog_enabled": True}}
+        )
         db.add(config)
         db.commit()
 
@@ -269,7 +296,9 @@ class TestMemoryLimiterDecorator:
     def test_decorator_cleanup_on_other_exceptions(self, mock_watchdog_class, db):
         """Test decorator ensures watchdog cleanup on other exceptions."""
         # Setup config to enable watchdog
-        config = ApplicationConfig(api_set={"execution": {"memory_watchdog_enabled": True}})
+        config = ApplicationConfig(
+            api_set={"execution": {"memory_watchdog_enabled": True}}
+        )
         db.add(config)
         db.commit()
 
@@ -297,7 +326,7 @@ class TestMemoryPercentageCalculation:
         # Mock cgroup v2 files
         mock_files = {
             "/sys/fs/cgroup/memory.current": "1073741824",  # 1GB used
-            "/sys/fs/cgroup/memory.max": "2147483648",      # 2GB limit
+            "/sys/fs/cgroup/memory.max": "2147483648",  # 2GB limit
         }
 
         def mock_open_side_effect(path, *args, **kwargs):
@@ -319,8 +348,8 @@ class TestMemoryPercentageCalculation:
         """Test cgroup v1 memory percentage calculation."""
         # Mock cgroup v1 files (v2 files don't exist)
         mock_files = {
-            "/sys/fs/cgroup/memory/memory.usage_in_bytes": "536870912",    # 512MB used
-            "/sys/fs/cgroup/memory/memory.limit_in_bytes": "1073741824",   # 1GB limit
+            "/sys/fs/cgroup/memory/memory.usage_in_bytes": "536870912",  # 512MB used
+            "/sys/fs/cgroup/memory/memory.limit_in_bytes": "1073741824",  # 1GB limit
         }
 
         def mock_open_side_effect(path, *args, **kwargs):

@@ -78,13 +78,13 @@ from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.api.util.collection_util import Row
 from fides.api.util.logger import Pii, _log_exception, _log_warning
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
+from fides.api.util.memory_watchdog import memory_limiter
 from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_TRANSFER_TO_PARENT,
     V1_URL_PREFIX,
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
-from fides.api.util.memory_watchdog import memory_limiter
 
 
 class ManualWebhookResults(FidesSchema):

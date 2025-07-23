@@ -73,7 +73,7 @@ EMPTY_REQUEST_TASK = RequestTask()
 
 def _is_memory_limit_exceeded(exception: BaseException) -> bool:
     """Check if the exception or any exception in its chain is a MemoryLimitExceeded."""
-    current_exception = exception
+    current_exception: Optional[BaseException] = exception
     while current_exception:
         if isinstance(current_exception, MemoryLimitExceeded):
             return True

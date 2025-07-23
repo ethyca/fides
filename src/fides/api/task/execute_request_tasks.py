@@ -1,6 +1,5 @@
-from typing import Callable, List, Optional, Tuple, Any
+from typing import Any, Callable, List, Optional, Tuple
 
-from celery.app.task import Task
 from loguru import logger
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Query, Session
@@ -37,7 +36,6 @@ from fides.api.util.cache import cache_task_tracking_key
 from fides.api.util.collection_util import Row
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
 from fides.api.util.memory_watchdog import memory_limiter
-from fides.config import CONFIG
 
 # DSR 3.0 task functions
 
@@ -326,7 +324,9 @@ def run_access_node(
                     pr.status = PrivacyRequestStatus.error  # type: ignore[attr-defined]
                     session.add(pr)
                     session.commit()
-        except Exception as db_exc:  # pragma: no cover – best effort to not mask original
+        except (
+            Exception
+        ) as db_exc:  # pragma: no cover – best effort to not mask original
             logger.warning("Failed to mark privacy request errored: {}", db_exc)
         raise
 

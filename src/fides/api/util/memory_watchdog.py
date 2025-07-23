@@ -10,17 +10,21 @@ calling code to perform clean-up and let Celery record the task as failed.
 This allows tasks to terminate gracefully with proper error logging, rather than being forcefully
 killed by the system's OOM killer which would result in a WorkerLostError and incomplete cleanup.
 """
+
 from __future__ import annotations
 
 import os
 import signal
 import threading
 import time
-from typing import Optional
+from functools import wraps
+from types import FrameType, TracebackType
+from typing import Any, Callable, Literal, Optional, Type, TypeVar, Union
 
 import psutil  # type: ignore
 from loguru import logger
-from functools import wraps
+
+F = TypeVar("F", bound=Callable[..., Any])
 
 
 def get_memory_watchdog_enabled() -> bool:
@@ -47,9 +51,9 @@ def get_memory_watchdog_enabled() -> bool:
 class MemoryLimitExceeded(RuntimeError):
     """Raised when the watchdog detects sustained memory usage above the threshold."""
 
-    def __init__(self, message: str, *, memory_percent: float | None = None) -> None:
+    def __init__(self, message: str, *, memory_percent: Optional[float] = None) -> None:
         super().__init__(message)
-        self.memory_percent: float | None = memory_percent
+        self.memory_percent: Optional[float] = memory_percent
 
 
 class MemoryWatchdog:
@@ -75,9 +79,11 @@ class MemoryWatchdog:
         self.check_interval = check_interval
         self.grace_period = grace_period
 
-        self._thread: threading.Thread | None = None
+        self._thread: Optional[threading.Thread] = None
         self._monitoring = threading.Event()
-        self._original_handler: signal.Handlers | None = None  # type: ignore[type-var]
+        self._original_handler: Union[
+            Callable[[int, Optional[FrameType]], Any], int, signal.Handlers, None
+        ] = None
 
     # ---------------------------------------------------------------------
     # Public helpers
@@ -89,9 +95,11 @@ class MemoryWatchdog:
             self.threshold,
             self.check_interval,
         )
-        self._original_handler = signal.signal(signal.SIGUSR1, self._signal_handler)  # type: ignore[arg-type]
+        self._original_handler = signal.signal(signal.SIGUSR1, self._signal_handler)
         self._monitoring.set()
-        self._thread = threading.Thread(target=self._run, name="memory-watchdog", daemon=True)
+        self._thread = threading.Thread(
+            target=self._run, name="memory-watchdog", daemon=True
+        )
         self._thread.start()
 
     def stop(self) -> None:
@@ -101,7 +109,7 @@ class MemoryWatchdog:
         if self._thread and self._thread.is_alive():
             self._thread.join(timeout=2)
         if self._original_handler is not None:
-            signal.signal(signal.SIGUSR1, self._original_handler)  # type: ignore[arg-type]
+            signal.signal(signal.SIGUSR1, self._original_handler)
             self._original_handler = None
 
     # ------------------------------------------------------------------
@@ -111,7 +119,12 @@ class MemoryWatchdog:
         self.start()
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> Literal[False]:
         self.stop()
         # Do not suppress exceptions
         return False
@@ -119,12 +132,16 @@ class MemoryWatchdog:
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------
-    def _signal_handler(self, signum, frame):  # noqa: D401 – Celery uses signal handlers
+    def _signal_handler(
+        self, signum: int, frame: Optional[FrameType]
+    ) -> None:  # noqa: D401 – Celery uses signal handlers
         """Convert the signal into an exception on the main thread."""
         current_percent = _system_memory_percent()
         logger.error("Memory limit exceeded: {}%", current_percent)
         self.stop()
-        raise MemoryLimitExceeded("Memory usage exceeded threshold", memory_percent=current_percent)
+        raise MemoryLimitExceeded(
+            "Memory usage exceeded threshold", memory_percent=current_percent
+        )
 
     def _run(self) -> None:
         """Background thread body."""
@@ -136,7 +153,8 @@ class MemoryWatchdog:
                     # Trigger graceful termination before the system OOM killer can intervene
                     logger.error(
                         "Memory usage {}% above threshold {}% - sending SIGUSR1 to terminate task gracefully (prevents OOM kill)",
-                        mem_percent, self.threshold
+                        mem_percent,
+                        self.threshold,
                     )
                     os.kill(os.getpid(), signal.SIGUSR1)
                     return  # stop monitoring after signal
@@ -151,7 +169,14 @@ class MemoryWatchdog:
 # Decorator for Celery tasks (or any function)
 # -----------------------------------------------------------------------------
 
-def memory_limiter(_func=None, *, threshold: int = 90, check_interval: float = 0.5, grace_period: int = 0):
+
+def memory_limiter(
+    _func: Optional[F] = None,
+    *,
+    threshold: int = 90,
+    check_interval: float = 0.5,
+    grace_period: int = 0,
+) -> Union[F, Callable[[F], F]]:
     """Decorator that runs the wrapped callable under a :class:`MemoryWatchdog`.
 
     Enables graceful task termination when memory usage is high, preventing WorkerLostError
@@ -168,27 +193,34 @@ def memory_limiter(_func=None, *, threshold: int = 90, check_interval: float = 0
             ...
     """
 
-    def decorator(func):  # type: ignore[no-any-unbound]
+    def decorator(func: F) -> F:
         @wraps(func)
-        def wrapper(*args, **kwargs):  # type: ignore[no-any-unbound]
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             # Check if memory watchdog is enabled
             if not get_memory_watchdog_enabled():
-                logger.debug("Memory watchdog disabled by configuration - running task without monitoring")
+                logger.debug(
+                    "Memory watchdog disabled by configuration - running task without monitoring"
+                )
                 return func(*args, **kwargs)
 
             watchdog = MemoryWatchdog(
-                threshold=threshold, check_interval=check_interval, grace_period=grace_period
+                threshold=threshold,
+                check_interval=check_interval,
+                grace_period=grace_period,
             )
             watchdog.start()
             try:
                 return func(*args, **kwargs)
             except MemoryLimitExceeded as exc:
-                logger.error("Task terminated gracefully due to memory pressure: {}%", exc.memory_percent)
+                logger.error(
+                    "Task terminated gracefully due to memory pressure: {}%",
+                    exc.memory_percent,
+                )
                 raise
             finally:
                 watchdog.stop()
 
-        return wrapper
+        return wrapper  # type: ignore[return-value]
 
     # If called without arguments, the first positional argument is the function
     if _func is not None and callable(_func):
@@ -207,6 +239,7 @@ def memory_limiter(_func=None, *, threshold: int = 90, check_interval: float = 0
 # relevant cgroup files (v2 first, then v1) and compute the percentage of the *container limit* in
 # use.  When cgroup information is unavailable (e.g. running directly on the host) we return
 # `None` and fall back to `psutil`.
+
 
 def _cgroup_memory_percent() -> Optional[float]:
     """Return container memory usage as *percentage* of the cgroup limit or `None` when not
@@ -231,7 +264,9 @@ def _cgroup_memory_percent() -> Optional[float]:
     # cgroups v1
     usage = _read("/sys/fs/cgroup/memory/memory.usage_in_bytes")
     limit = _read("/sys/fs/cgroup/memory/memory.limit_in_bytes")
-    if usage is not None and limit and 0 < limit < (1 << 60):  # ignore enormous "unlimited" value
+    if (
+        usage is not None and limit and 0 < limit < (1 << 60)
+    ):  # ignore enormous "unlimited" value
         return usage / limit * 100
 
     return None
