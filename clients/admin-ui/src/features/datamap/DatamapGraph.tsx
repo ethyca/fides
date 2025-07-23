@@ -14,7 +14,6 @@ import {
   ReactFlowProvider,
   useReactFlow,
 } from "@xyflow/react";
-import { Box } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
 
@@ -354,8 +353,8 @@ const DatamapGraph = ({
           <MiniMap nodeStrokeWidth={3} pannable />
           <Controls showInteractive={false} />
         </ReactFlow>
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 };
 
