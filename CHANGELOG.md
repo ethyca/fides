@@ -25,6 +25,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added the ability to edit more fields for GVL vendors [#6341](https://github.com/ethyca/fides/pull/6341)
 - Added `release_version` to the global `window.Fides` object in FidesJS [#6239](https://github.com/ethyca/fides/pull/6239)
 - Added new Conditional Dependencies and Evaluator data structures for eventual use with Manual Tasks on DSRs. [#6354](https://github.com/ethyca/fides/pull/6354)
+- Added display of special-purpose-only vendors in a separate list within the FidesJS overlay. [#6358](https://github.com/ethyca/fides/pull/6358)
 - Added Manual Task Conditional Dependencies table [#6356](https://github.com/ethyca/fides/pull/6356)
 
 ### Changed
