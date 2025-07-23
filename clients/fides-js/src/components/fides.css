@@ -1091,19 +1091,19 @@ button.fides-banner-button.fides-menu-item {
   padding-left: calc(var(--fides-base-font-size) * 1.5);
 }
 
-button.fides-banner-button.fides-menu-item[aria-pressed="true"] {
+button.fides-banner-button.fides-menu-item[aria-checked="true"] {
   background: var(--fides-overlay-primary-button-background-color);
   color: var(--fides-overlay-primary-button-text-color);
 }
 
-button.fides-banner-button.fides-menu-item[aria-pressed="true"]::before {
+button.fides-banner-button.fides-menu-item[aria-checked="true"]::before {
   content: "\2713";
   display: inline-block;
   margin-right: calc(var(--fides-base-font-size) * 0.25);
   margin-left: calc(var(--fides-base-font-size) * -1);
 }
 
-button.fides-banner-button.fides-menu-item:not([aria-pressed="true"]):hover {
+button.fides-banner-button.fides-menu-item:not([aria-checked="true"]):hover {
   background: var(--fides-overlay-secondary-button-background-hover-color);
 }
 

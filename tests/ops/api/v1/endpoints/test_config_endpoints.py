@@ -62,7 +62,7 @@ class TestPatchApplicationConfig:
             "execution": {
                 "subject_identity_verification_required": True,
                 "require_manual_request_approval": True,
-                "safe_mode": False,
+                "sql_dry_run": "none",
             },
             "security": {
                 "cors_origins": [
@@ -320,18 +320,20 @@ class TestPatchApplicationConfig:
         )
         assert db_settings.api_set["security"] == security_payload
 
-    def test_patch_application_config_safe_mode(
+    def test_patch_application_config_sql_dry_run(
         self,
         api_client: TestClient,
         generate_auth_header,
         url,
         db: Session,
     ):
-        """Test that safe_mode can be updated individually"""
+        """Test that sql_dry_run can be updated with enum values"""
+        from fides.api.schemas.application_config import SqlDryRunMode
+
         auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
 
-        # Test setting safe_mode to True
-        updated_payload = {"execution": {"safe_mode": True}}
+        # Test setting sql_dry_run to access
+        updated_payload = {"execution": {"sql_dry_run": SqlDryRunMode.access.value}}
         response = api_client.patch(
             url,
             headers=auth_header,
@@ -339,14 +341,14 @@ class TestPatchApplicationConfig:
         )
         assert response.status_code == 200
         response_settings = response.json()
-        assert response_settings["execution"]["safe_mode"] is True
+        assert response_settings["execution"]["sql_dry_run"] == "access"
 
         # Verify it was saved to the database
         db_settings = db.query(ApplicationConfig).first()
-        assert db_settings.api_set["execution"]["safe_mode"] is True
+        assert db_settings.api_set["execution"]["sql_dry_run"] == "access"
 
-        # Test setting safe_mode to False
-        updated_payload = {"execution": {"safe_mode": False}}
+        # Test setting sql_dry_run to erasure
+        updated_payload = {"execution": {"sql_dry_run": SqlDryRunMode.erasure.value}}
         response = api_client.patch(
             url,
             headers=auth_header,
@@ -354,11 +356,26 @@ class TestPatchApplicationConfig:
         )
         assert response.status_code == 200
         response_settings = response.json()
-        assert response_settings["execution"]["safe_mode"] is False
+        assert response_settings["execution"]["sql_dry_run"] == "erasure"
 
         # Verify it was updated in the database
         db.refresh(db_settings)
-        assert db_settings.api_set["execution"]["safe_mode"] is False
+        assert db_settings.api_set["execution"]["sql_dry_run"] == "erasure"
+
+        # Test setting sql_dry_run to none
+        updated_payload = {"execution": {"sql_dry_run": SqlDryRunMode.none.value}}
+        response = api_client.patch(
+            url,
+            headers=auth_header,
+            json=updated_payload,
+        )
+        assert response.status_code == 200
+        response_settings = response.json()
+        assert response_settings["execution"]["sql_dry_run"] == "none"
+
+        # Verify it was updated in the database
+        db.refresh(db_settings)
+        assert db_settings.api_set["execution"]["sql_dry_run"] == "none"
 
     def test_patch_application_config_notifications_properties(
         self,

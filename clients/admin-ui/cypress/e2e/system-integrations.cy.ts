@@ -115,5 +115,24 @@ describe("System integrations", () => {
         expect(request.body[0].disabled).to.be.undefined;
       });
     });
+
+    it("should render more than 50 dataset configs when available", () => {
+      // Mock response with 60 dataset configs to test that more than 50 can be rendered
+      cy.intercept("GET", "/api/v1/connection/*/datasetconfig?size=1000", {
+        fixture: "dataset-configs/many-dataset-configs.json",
+      }).as("getDatasetConfigs");
+
+      // Reload to trigger the API call with our mock
+      cy.reload();
+      cy.getAntTab("Integrations").click({ force: true });
+
+      // Wait for the API call to complete
+      cy.wait("@getDatasetConfigs");
+
+      // Verify that we have more than 50 datasets selected
+      cy.get('[data-testid="controlled-select-dataset"]')
+        .find(".ant-select-selection-item")
+        .should("have.length.greaterThan", 50);
+    });
   });
 });

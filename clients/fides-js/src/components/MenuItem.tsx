@@ -1,4 +1,4 @@
-import { FunctionComponent, h } from "preact";
+import { FunctionComponent } from "preact";
 import { JSXInternal } from "preact/src/jsx";
 
 interface MenuItemProps extends JSXInternal.HTMLAttributes<HTMLButtonElement> {

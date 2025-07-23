@@ -33,6 +33,7 @@ from fides.api.models.identity_salt import IdentitySalt
 from fides.api.models.location_regulation_selections import LocationRegulationSelections
 from fides.api.models.manual_task import (
     ManualTask,
+    ManualTaskConditionalDependency,
     ManualTaskConfig,
     ManualTaskConfigField,
     ManualTaskInstance,

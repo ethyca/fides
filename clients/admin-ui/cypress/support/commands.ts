@@ -1,5 +1,7 @@
 /// <reference types="cypress" />
 
+import "@testing-library/cypress/add-commands";
+
 import { RootState } from "~/app/store";
 import { STORAGE_ROOT_KEY } from "~/constants";
 import { RoleRegistryEnum, ScopeRegistryEnum } from "~/types/api";

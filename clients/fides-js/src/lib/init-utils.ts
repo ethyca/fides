@@ -119,6 +119,7 @@ export const getCoreFides = ({
     identity: {},
     tcf_consent: {},
     saved_consent: {},
+    version: "__RELEASE_VERSION__", // gets replaced by the version.json file during rollup build
     config: undefined,
     initialized: false,
     onFidesEvent,

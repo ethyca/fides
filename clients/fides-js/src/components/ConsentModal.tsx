@@ -1,4 +1,4 @@
-import { ComponentChildren, h, VNode } from "preact";
+import { ComponentChildren, VNode } from "preact";
 import { HTMLAttributes } from "preact/compat";
 
 import { A11yDialogAttributes } from "../lib/a11y-dialog";

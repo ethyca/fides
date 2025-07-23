@@ -1,0 +1,5 @@
+{
+  "test": "external manual task",
+  "type": "multiple_attachments",
+  "description": "Test JSON file for file upload testing"
+}

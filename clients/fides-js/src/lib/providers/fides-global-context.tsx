@@ -1,4 +1,4 @@
-import { createContext, h } from "preact";
+import { createContext } from "preact";
 import { ReactNode } from "preact/compat";
 import { useContext, useMemo, useState } from "preact/hooks";
 
