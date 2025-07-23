@@ -4,6 +4,7 @@ Tests for memory watchdog utilities.
 The memory watchdog provides proactive memory monitoring to prevent OOM kills
 in Celery tasks by gracefully terminating when memory usage is high.
 """
+
 import os
 import signal
 import threading
