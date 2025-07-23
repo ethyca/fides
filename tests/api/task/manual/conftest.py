@@ -354,24 +354,41 @@ def build_request_task():
     """Helper fixture to create a minimal RequestTask for manual_data collection"""
 
     def _build_request_task(
-        db, privacy_request, connection_config, action_type=ActionType.access
+        db,
+        privacy_request,
+        connection_config,
+        action_type=ActionType.access,
+        manual_task=None,
     ):
         """Helper to create a minimal RequestTask for the manual_data collection"""
-        collection_address = f"{connection_config.key}:manual_data"
+        # Use the specific manual task address if manual_task is provided
+        if manual_task:
+            collection_address = f"{connection_config.key}:manual_data_{manual_task.id}"
+        else:
+            collection_address = f"{connection_config.key}:manual_data"
+
         return RequestTask.create(
             db=db,
             data={
                 "privacy_request_id": privacy_request.id,
                 "collection_address": collection_address,
                 "dataset_name": connection_config.key,
-                "collection_name": "manual_data",
+                "collection_name": (
+                    "manual_data"
+                    if not manual_task
+                    else f"manual_data_{manual_task.id}"
+                ),
                 "action_type": action_type.value,
                 "status": ExecutionLogStatus.pending.value,
                 "upstream_tasks": [],
                 "downstream_tasks": [],
                 "all_descendant_tasks": [],
                 "collection": {
-                    "name": "manual_data",
+                    "name": (
+                        "manual_data"
+                        if not manual_task
+                        else f"manual_data_{manual_task.id}"
+                    ),
                     "fields": [],
                     "after": [],
                     "erase_after": [],

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set
+from typing import TYPE_CHECKING, Any, Optional
 
 from loguru import logger
 from sqlalchemy.orm import Session
@@ -36,22 +36,26 @@ class ManualTaskGraphTask(GraphTask):
     """GraphTask implementation for ManualTask execution"""
 
     def _extract_conditional_dependency_data_from_inputs(
-        self, *inputs: List[Row], manual_tasks: List[ManualTask]
-    ) -> Dict[str, Any]:
+        self, *inputs: list[Row], manual_tasks: list[ManualTask]
+    ) -> dict[str, Any]:
         """
         Extract data for conditional dependency field addresses from input data.
 
+        This method processes data from upstream regular tasks that provide fields
+        referenced in manual task conditional dependencies. It extracts the relevant
+        field values and makes them available for conditional dependency evaluation.
+
         Args:
-            *inputs: Input data from upstream nodes
+            *inputs: Input data from upstream nodes (regular tasks)
             manual_tasks: List of manual tasks to extract conditional dependencies from
 
         Returns:
             Dictionary mapping field addresses to their values from input data
         """
-        conditional_data = {}
+        conditional_data: dict[str, Any] = {}
 
         # Get all field addresses from conditional dependencies
-        field_addresses: Set[str] = set()
+        field_addresses: set[str] = set()
         for manual_task in manual_tasks:
             conditional_dependencies = (
                 self.resources.session.query(ManualTaskConditionalDependency)
@@ -76,18 +80,27 @@ class ManualTaskGraphTask(GraphTask):
                         dependency, field_addresses
                     )
 
-        # Extract values from input data for each field address
+        # Extract values from input data for each field address and create nested structure
         for field_address in field_addresses:
             value = self._extract_value_from_inputs(field_address, *inputs)
             if value is not None:
-                conditional_data[field_address] = value
+                # Create nested structure that ConditionEvaluator expects
+                # e.g., "user.profile.age" -> {"user": {"profile": {"age": value}}}
+                self._set_nested_value(
+                    conditional_data, field_address.split("."), value
+                )
+                logger.info(
+                    "Extracted conditional dependency data: {} = {}",
+                    field_address,
+                    value,
+                )
 
         return conditional_data
 
     def _extract_field_addresses_from_group_recursive(
         self,
         group_dependency: ManualTaskConditionalDependency,
-        field_addresses: Set[str],
+        field_addresses: set[str],
     ) -> None:
         """Recursively extract field addresses from group conditional dependencies."""
         for child in group_dependency.children:  # type: ignore[attr-defined]
@@ -99,9 +112,12 @@ class ManualTaskGraphTask(GraphTask):
                     child, field_addresses
                 )
 
-    def _extract_value_from_inputs(self, field_address: str, *inputs: List[Row]) -> Any:
+    def _extract_value_from_inputs(self, field_address: str, *inputs: list[Row]) -> Any:
         """
         Extract a value for a specific field address from input data.
+
+        This method searches through all input data from upstream regular tasks
+        to find values for fields referenced in conditional dependencies.
 
         Args:
             field_address: The field address to extract (e.g., "user.age")
@@ -119,12 +135,18 @@ class ManualTaskGraphTask(GraphTask):
                 if isinstance(row, dict):
                     value = self._get_nested_value(row, path_components)
                     if value is not None:
+                        logger.debug(
+                            "Found value {} for field address {} in input data",
+                            value,
+                            field_address,
+                        )
                         return value
 
+        logger.debug("No value found for field address {} in input data", field_address)
         return None
 
     def _get_nested_value(
-        self, data: Dict[str, Any], path_components: List[str]
+        self, data: dict[str, Any], path_components: list[str]
     ) -> Any:
         """
         Get a nested value from a dictionary using path components.
@@ -144,8 +166,59 @@ class ManualTaskGraphTask(GraphTask):
                 return None
         return current
 
+    def _set_nested_value(
+        self, data: dict[str, Any], path_components: list[str], value: Any
+    ) -> None:
+        """
+        Set a nested value in a dictionary using path components.
+
+        Args:
+            data: The dictionary to modify
+            path_components: List of keys to traverse
+            value: The value to set
+        """
+        current = data
+        for _, component in enumerate(path_components[:-1]):
+            if component not in current:
+                current[component] = {}
+            current = current[component]
+        current[path_components[-1]] = value
+
+    def _evaluate_conditional_dependencies(
+        self, manual_task: ManualTask, conditional_data: dict[str, Any]
+    ) -> bool:
+        """
+        Evaluate conditional dependencies for a manual task using data from regular tasks.
+
+        This method evaluates whether a manual task should be executed based on its
+        conditional dependencies and the data received from upstream regular tasks.
+
+        Args:
+            manual_task: The manual task to evaluate
+            conditional_data: Data from regular tasks for conditional dependency fields
+
+        Returns:
+            True if the manual task should be executed, False otherwise
+        """
+        from fides.api.task.conditional_dependencies.evaluator import ConditionEvaluator
+
+        # Get the root condition for this manual task
+        root_condition = ManualTaskConditionalDependency.get_root_condition(
+            self.resources.session, manual_task.id
+        )
+
+        if not root_condition:
+            # No conditional dependencies - always execute
+            return True
+
+        # Evaluate the condition using the data from regular tasks
+        evaluator = ConditionEvaluator(self.resources.session)
+        return evaluator.evaluate_rule(root_condition, conditional_data)
+
     @retry(action_type=ActionType.access, default_return=[])
-    def access_request(self, *inputs: List[Row]) -> List[Row]:
+    def access_request(  # pylint: disable=too-many-branches
+        self, *inputs: list[Row]
+    ) -> list[Row]:
         """
         Execute manual task logic following the standard GraphTask pattern:
         1. Create ManualTaskInstances if they don't exist
@@ -161,8 +234,18 @@ class ManualTaskGraphTask(GraphTask):
 
         connection_key = ManualTaskAddress.get_connection_key(collection_address)
 
-        # Get manual tasks for this connection
-        manual_tasks = get_manual_tasks_for_connection_config(db, connection_key)
+        # Extract the specific manual task ID from the collection address
+        manual_task_id = ManualTaskAddress.get_manual_task_id(collection_address)
+
+        if not manual_task_id:
+            # Fallback to old behavior for backward compatibility
+            manual_tasks = get_manual_tasks_for_connection_config(db, connection_key)
+        else:
+            # Get the specific manual task for this collection
+            manual_task = (
+                db.query(ManualTask).filter(ManualTask.id == manual_task_id).first()
+            )
+            manual_tasks = [manual_task] if manual_task else []
 
         if not manual_tasks:
             return []
@@ -179,12 +262,35 @@ class ManualTaskGraphTask(GraphTask):
                 conditional_data,
             )
 
-        # Check if any manual tasks have ACCESS configs
-        # TODO: This will be changed with Manual Task Dependencies Implementation.
+        # Filter manual tasks based on conditional dependencies
+        eligible_manual_tasks = []
+        for manual_task in manual_tasks:
+            should_execute = self._evaluate_conditional_dependencies(
+                manual_task, conditional_data
+            )
+            if should_execute:
+                eligible_manual_tasks.append(manual_task)
+                logger.info(
+                    "Manual task {} is eligible for execution based on conditional dependencies",
+                    manual_task.id,
+                )
+            else:
+                logger.info(
+                    "Manual task {} is not eligible for execution based on conditional dependencies",
+                    manual_task.id,
+                )
 
+        if not eligible_manual_tasks:
+            logger.info(
+                "No manual tasks are eligible for execution based on conditional dependencies"
+            )
+            self.log_end(ActionType.access)
+            return []
+
+        # Check if any eligible manual tasks have ACCESS configs
         has_access_configs = [
             config
-            for manual_task in manual_tasks
+            for manual_task in eligible_manual_tasks
             for config in manual_task.configs
             if config.is_current
             and config.config_type == ManualTaskConfigurationType.access_privacy_request
@@ -205,7 +311,7 @@ class ManualTaskGraphTask(GraphTask):
         # Check/create manual task instances for ACCESS configs only
         self._ensure_manual_task_instances(
             db,
-            manual_tasks,
+            eligible_manual_tasks,
             self.resources.request,
             ManualTaskConfigurationType.access_privacy_request,
         )
@@ -213,14 +319,14 @@ class ManualTaskGraphTask(GraphTask):
         # Check if all manual task instances have submissions for ACCESS configs only
         submitted_data = self._get_submitted_data(
             db,
-            manual_tasks,
+            eligible_manual_tasks,
             self.resources.request,
             ManualTaskConfigurationType.access_privacy_request,
             conditional_data=conditional_data,
         )
 
         if submitted_data is not None:
-            result: List[Row] = [submitted_data] if submitted_data else []
+            result: list[Row] = [submitted_data] if submitted_data else []
             self.request_task.access_data = result
 
             # Mark request task as complete and write execution log
@@ -240,7 +346,7 @@ class ManualTaskGraphTask(GraphTask):
     def _ensure_manual_task_instances(
         self,
         db: Session,
-        manual_tasks: List[ManualTask],
+        manual_tasks: list[ManualTask],
         privacy_request: PrivacyRequest,
         allowed_config_type: "ManualTaskConfigurationType",
     ) -> None:
@@ -292,16 +398,16 @@ class ManualTaskGraphTask(GraphTask):
     def _get_submitted_data(
         self,
         db: Session,
-        manual_tasks: List[ManualTask],
+        manual_tasks: list[ManualTask],
         privacy_request: PrivacyRequest,
         allowed_config_type: "ManualTaskConfigurationType",
-        conditional_data: Optional[Dict[str, Any]] = None,
-    ) -> Optional[Dict[str, Any]]:
+        conditional_data: Optional[dict[str, Any]] = None,
+    ) -> Optional[dict[str, Any]]:
         """
         Check if all manual task instances have submissions for ALL fields and return aggregated data
         Returns None if any field submissions are missing (all fields must be completed or skipped)
         """
-        aggregated_data: Dict[str, Any] = {}
+        aggregated_data: dict[str, Any] = {}
 
         def _format_size(size_bytes: int) -> str:
             units = ["B", "KB", "MB", "GB", "TB"]
@@ -354,12 +460,12 @@ class ManualTaskGraphTask(GraphTask):
                     if not isinstance(submission.data, dict):
                         continue
 
-                    data_dict: Dict[str, Any] = submission.data
+                    data_dict: dict[str, Any] = submission.data
 
                     field_type = data_dict.get("field_type")
 
                     if field_type == ManualTaskFieldType.attachment.value:
-                        attachment_map: Dict[str, Dict[str, Any]] = {}
+                        attachment_map: dict[str, dict[str, Any]] = {}
                         for attachment in submission.attachments or []:
                             if (
                                 attachment.attachment_type
@@ -400,9 +506,9 @@ class ManualTaskGraphTask(GraphTask):
     @retry(action_type=ActionType.erasure, default_return=0)
     def erasure_request(
         self,
-        retrieved_data: List[Row],
+        retrieved_data: list[Row],
         *erasure_prereqs: int,  # noqa: D401, pylint: disable=unused-argument
-        inputs: Optional[List[List[Row]]] = None,
+        inputs: Optional[list[list[Row]]] = None,
     ) -> int:
         """Execute manual-task-driven erasure logic.
 
@@ -419,15 +525,26 @@ class ManualTaskGraphTask(GraphTask):
 
         connection_key = ManualTaskAddress.get_connection_key(collection_address)
 
-        # Fetch relevant manual tasks for this connection
-        manual_tasks = get_manual_tasks_for_connection_config(db, connection_key)
+        # Extract the specific manual task ID from the collection address
+        manual_task_id = ManualTaskAddress.get_manual_task_id(collection_address)
+
+        if not manual_task_id:
+            # Fallback to old behavior for backward compatibility
+            manual_tasks = get_manual_tasks_for_connection_config(db, connection_key)
+        else:
+            # Get the specific manual task for this collection
+            manual_task = (
+                db.query(ManualTask).filter(ManualTask.id == manual_task_id).first()
+            )
+            manual_tasks = [manual_task] if manual_task else []
+
         if not manual_tasks:
             # No manual tasks defined – nothing to erase
             self.log_end(ActionType.erasure)
             return 0
 
         # Extract conditional dependency data from inputs
-        conditional_data = {}
+        conditional_data: dict[str, Any] = {}
         if inputs:
             conditional_data = self._extract_conditional_dependency_data_from_inputs(
                 *inputs, manual_tasks=manual_tasks
@@ -440,10 +557,35 @@ class ManualTaskGraphTask(GraphTask):
                     conditional_data,
                 )
 
-        # Check if any manual tasks have ERASURE configs
+        # Filter manual tasks based on conditional dependencies
+        eligible_manual_tasks = []
+        for manual_task in manual_tasks:
+            should_execute = self._evaluate_conditional_dependencies(
+                manual_task, conditional_data
+            )
+            if should_execute:
+                eligible_manual_tasks.append(manual_task)
+                logger.info(
+                    "Manual task {} is eligible for erasure based on conditional dependencies",
+                    manual_task.id,
+                )
+            else:
+                logger.info(
+                    "Manual task {} is not eligible for erasure based on conditional dependencies",
+                    manual_task.id,
+                )
+
+        if not eligible_manual_tasks:
+            logger.info(
+                "No manual tasks are eligible for erasure based on conditional dependencies"
+            )
+            self.log_end(ActionType.erasure)
+            return 0
+
+        # Check if any eligible manual tasks have ERASURE configs
         has_erasure_configs = [
             config
-            for manual_task in manual_tasks
+            for manual_task in eligible_manual_tasks
             for config in manual_task.configs
             if config.is_current
             and config.config_type
@@ -458,7 +600,7 @@ class ManualTaskGraphTask(GraphTask):
         # Create ManualTaskInstances for ERASURE configs only
         self._ensure_manual_task_instances(
             db,
-            manual_tasks,
+            eligible_manual_tasks,
             self.resources.request,
             ManualTaskConfigurationType.erasure_privacy_request,
         )
@@ -466,7 +608,7 @@ class ManualTaskGraphTask(GraphTask):
         # Check for full submissions – reuse helper used by access flow, filtering ERASURE configs
         submissions_complete = self._get_submitted_data(
             db,
-            manual_tasks,
+            eligible_manual_tasks,
             self.resources.request,
             ManualTaskConfigurationType.erasure_privacy_request,
             conditional_data=conditional_data,

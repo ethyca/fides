@@ -107,7 +107,11 @@ class TestManualTaskGraphTaskConditionalDependencies:
     ):
         connection_config, manual_task, _, _ = connection_with_manual_access_task
         request_task = build_request_task(
-            db, access_privacy_request, connection_config, ActionType.access
+            db,
+            access_privacy_request,
+            connection_config,
+            ActionType.access,
+            manual_task,
         )
         resources = build_task_resources(
             db,
@@ -129,7 +133,11 @@ class TestManualTaskGraphTaskConditionalDependencies:
     ):
         connection_config, manual_task, _, _ = connection_with_manual_erasure_task
         request_task = build_request_task(
-            db, erasure_privacy_request, connection_config, ActionType.erasure
+            db,
+            erasure_privacy_request,
+            connection_config,
+            ActionType.erasure,
+            manual_task,
         )
         resources = build_task_resources(
             db,
@@ -156,9 +164,11 @@ class TestManualTaskGraphTaskConditionalDependencies:
             *inputs, manual_tasks=[manual_task]
         )
 
-        # Verify that the field address value was extracted
-        assert "user.profile.age" in conditional_data
-        assert conditional_data["user.profile.age"] == 25
+        # Verify that the field address value was extracted in nested structure
+        assert "user" in conditional_data
+        assert "profile" in conditional_data["user"]
+        assert "age" in conditional_data["user"]["profile"]
+        assert conditional_data["user"]["profile"]["age"] == 25
 
     @pytest.mark.usefixtures("group_condition")
     def test_extract_conditional_dependency_data_from_inputs_group(
@@ -176,11 +186,16 @@ class TestManualTaskGraphTaskConditionalDependencies:
             *inputs, manual_tasks=[manual_task]
         )
 
-        # Verify that both field address values were extracted
-        assert "user.profile.age" in conditional_data
-        assert conditional_data["user.profile.age"] == 25
-        assert "billing.subscription.status" in conditional_data
-        assert conditional_data["billing.subscription.status"] == "active"
+        # Verify that both field address values were extracted in nested structure
+        assert "user" in conditional_data
+        assert "profile" in conditional_data["user"]
+        assert "age" in conditional_data["user"]["profile"]
+        assert conditional_data["user"]["profile"]["age"] == 25
+
+        assert "billing" in conditional_data
+        assert "subscription" in conditional_data["billing"]
+        assert "status" in conditional_data["billing"]["subscription"]
+        assert conditional_data["billing"]["subscription"]["status"] == "active"
 
     def test_extract_value_from_inputs_nested_path(
         self, db: Session, build_graph_task: tuple[ManualTask, ManualTaskGraphTask]
@@ -277,9 +292,11 @@ class TestManualTaskGraphTaskConditionalDependencies:
         assert "user_email" in result_data
         assert result_data["user_email"] == "user@example.com"
 
-        # Should include conditional dependency data
-        assert "user.profile.age" in result_data
-        assert result_data["user.profile.age"] == 25
+        # Should include conditional dependency data in nested structure
+        assert "user" in result_data
+        assert "profile" in result_data["user"]
+        assert "age" in result_data["user"]["profile"]
+        assert result_data["user"]["profile"]["age"] == 25
 
     @pytest.mark.usefixtures("condition_gt_18", "completed_instance_erasure")
     def test_erasure_request_with_conditional_dependency_data(
@@ -339,8 +356,8 @@ class TestManualTaskGraphTaskConditionalDependencies:
 
         # Call _get_submitted_data with conditional data
         conditional_data = {
-            "user.profile.age": 25,
-            "billing.subscription.status": "active",
+            "user": {"profile": {"age": 25}},
+            "billing": {"subscription": {"status": "active"}},
         }
         submitted_data = graph_task._get_submitted_data(
             db,
@@ -354,7 +371,128 @@ class TestManualTaskGraphTaskConditionalDependencies:
         assert submitted_data is not None
         assert "user_email" in submitted_data
         assert submitted_data["user_email"] == "user@example.com"
-        assert "user.profile.age" in submitted_data
-        assert submitted_data["user.profile.age"] == 25
-        assert "billing.subscription.status" in submitted_data
-        assert submitted_data["billing.subscription.status"] == "active"
+        assert "user" in submitted_data
+        assert "profile" in submitted_data["user"]
+        assert "age" in submitted_data["user"]["profile"]
+        assert submitted_data["user"]["profile"]["age"] == 25
+        assert "billing" in submitted_data
+        assert "subscription" in submitted_data["billing"]
+        assert "status" in submitted_data["billing"]["subscription"]
+        assert submitted_data["billing"]["subscription"]["status"] == "active"
+
+    @pytest.mark.usefixtures("condition_gt_18", "completed_instance_access")
+    def test_conditional_dependency_evaluation_with_regular_task_data(
+        self,
+        db: Session,
+        build_graph_task: tuple[ManualTask, ManualTaskGraphTask],
+        access_privacy_request,
+    ):
+        """Test that manual tasks evaluate conditional dependencies using data from regular tasks"""
+        manual_task, graph_task = build_graph_task
+
+        # Debug: Check what conditional dependencies are set up
+        from fides.api.models.manual_task.conditional_dependency import (
+            ManualTaskConditionalDependency,
+        )
+
+        conditional_deps = (
+            db.query(ManualTaskConditionalDependency)
+            .filter(ManualTaskConditionalDependency.manual_task_id == manual_task.id)
+            .all()
+        )
+        print(f"Manual task ID: {manual_task.id}")
+        print(
+            f"Conditional dependencies: {[(d.field_address, d.operator, d.value) for d in conditional_deps]}"
+        )
+
+        # Test with data that satisfies the condition (age >= 18)
+        inputs_satisfying_condition = [
+            [{"user": {"profile": {"age": 25, "name": "John"}}}],
+        ]
+
+        # Extract conditional dependency data
+        conditional_data = graph_task._extract_conditional_dependency_data_from_inputs(
+            *inputs_satisfying_condition, manual_tasks=[manual_task]
+        )
+
+        # Debug: Print the conditional data
+        print(f"Extracted conditional data: {conditional_data}")
+
+        # Evaluate conditional dependencies
+        should_execute = graph_task._evaluate_conditional_dependencies(
+            manual_task, conditional_data
+        )
+
+        # Debug: Print the evaluation result
+        print(f"Should execute: {should_execute}")
+
+        # Debug: Check what the root condition looks like
+        from fides.api.models.manual_task.conditional_dependency import (
+            ManualTaskConditionalDependency,
+        )
+
+        root_condition = ManualTaskConditionalDependency.get_root_condition(
+            db, manual_task.id
+        )
+        print(f"Root condition: {root_condition}")
+        if root_condition:
+            print(f"Root condition type: {type(root_condition)}")
+            if hasattr(root_condition, "field_address"):
+                print(f"Root condition field_address: {root_condition.field_address}")
+                print(f"Root condition operator: {root_condition.operator}")
+                print(f"Root condition value: {root_condition.value}")
+
+        # Should execute because age (25) >= 18
+        assert should_execute is True
+
+        # Test with data that doesn't satisfy the condition (age < 18)
+        inputs_not_satisfying_condition = [
+            [{"user": {"profile": {"age": 15, "name": "John"}}}],
+        ]
+
+        # Extract conditional dependency data
+        conditional_data = graph_task._extract_conditional_dependency_data_from_inputs(
+            *inputs_not_satisfying_condition, manual_tasks=[manual_task]
+        )
+
+        # Evaluate conditional dependencies
+        should_execute = graph_task._evaluate_conditional_dependencies(
+            manual_task, conditional_data
+        )
+
+        # Should not execute because age (15) < 18
+        assert should_execute is False
+
+    @pytest.mark.usefixtures("condition_gt_18", "completed_instance_access")
+    def test_manual_task_execution_with_conditional_dependencies(
+        self,
+        db: Session,
+        build_graph_task: tuple[ManualTask, ManualTaskGraphTask],
+    ):
+        """Test that manual tasks only execute when conditional dependencies are satisfied"""
+        manual_task, graph_task = build_graph_task
+
+        # Test with data that satisfies the condition
+        inputs_satisfying_condition = [
+            [{"user": {"profile": {"age": 25, "name": "John"}}}],
+        ]
+
+        # Call access_request with satisfying data
+        result = graph_task.access_request(*inputs_satisfying_condition)
+
+        # Should return data because condition is satisfied
+        assert len(result) == 1
+        result_data = result[0]
+        assert "user_email" in result_data
+        assert result_data["user_email"] == "user@example.com"
+
+        # Test with data that doesn't satisfy the condition
+        inputs_not_satisfying_condition = [
+            [{"user": {"profile": {"age": 15, "name": "John"}}}],
+        ]
+
+        # Call access_request with non-satisfying data
+        result = graph_task.access_request(*inputs_not_satisfying_condition)
+
+        # Should return empty list because condition is not satisfied
+        assert len(result) == 0

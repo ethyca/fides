@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, List, Set
+from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy.orm import Session
 
@@ -47,14 +47,31 @@ class ManualTaskAddress:
         )
 
     @staticmethod
+    def create_for_task(
+        connection_config_key: str, manual_task_id: str
+    ) -> CollectionAddress:
+        """Create a CollectionAddress for a specific manual task: {connection_key}:manual_data_{task_id}"""
+        return CollectionAddress(
+            dataset=connection_config_key,
+            collection=f"{ManualTaskAddress.MANUAL_DATA_COLLECTION}_{manual_task_id}",
+        )
+
+    @staticmethod
     def is_manual_task_address(address: CollectionAddress) -> bool:
         """Check if address represents manual task data"""
         if isinstance(address, str):
             # Handle string format "connection_key:collection_name"
-            return address.endswith(f":{ManualTaskAddress.MANUAL_DATA_COLLECTION}")
+            return address.endswith(
+                f":{ManualTaskAddress.MANUAL_DATA_COLLECTION}"
+            ) or address.startswith(f":{ManualTaskAddress.MANUAL_DATA_COLLECTION}_")
 
         # Handle CollectionAddress object
-        return address.collection == ManualTaskAddress.MANUAL_DATA_COLLECTION
+        return (
+            address.collection == ManualTaskAddress.MANUAL_DATA_COLLECTION
+            or address.collection.startswith(
+                f"{ManualTaskAddress.MANUAL_DATA_COLLECTION}_"
+            )
+        )
 
     @staticmethod
     def get_connection_key(address: CollectionAddress) -> str:
@@ -69,8 +86,36 @@ class ManualTaskAddress:
         # Handle CollectionAddress object
         return address.dataset
 
+    @staticmethod
+    def get_manual_task_id(address: CollectionAddress) -> Optional[str]:
+        """Extract manual task ID from manual task address if it's a specific task address"""
+        if not ManualTaskAddress.is_manual_task_address(address):
+            return None
 
-def get_connection_configs_with_manual_tasks(db: Session) -> List[ConnectionConfig]:
+        if isinstance(address, str):
+            # Handle string format "connection_key:manual_data_task_id"
+            parts = address.split(":")
+            if len(parts) == 2:
+                collection_part = parts[1]
+                if collection_part.startswith(
+                    f"{ManualTaskAddress.MANUAL_DATA_COLLECTION}_"
+                ):
+                    return collection_part[
+                        len(f"{ManualTaskAddress.MANUAL_DATA_COLLECTION}_") :
+                    ]
+            return None
+
+        # Handle CollectionAddress object
+        if address.collection.startswith(
+            f"{ManualTaskAddress.MANUAL_DATA_COLLECTION}_"
+        ):
+            return address.collection[
+                len(f"{ManualTaskAddress.MANUAL_DATA_COLLECTION}_") :
+            ]
+        return None
+
+
+def get_connection_configs_with_manual_tasks(db: Session) -> list[ConnectionConfig]:
     """
     Get all connection configs that have manual tasks.
     """
@@ -83,7 +128,7 @@ def get_connection_configs_with_manual_tasks(db: Session) -> List[ConnectionConf
     )
 
 
-def get_manual_task_addresses(db: Session) -> List[CollectionAddress]:
+def get_manual_task_addresses(db: Session) -> list[CollectionAddress]:
     """
     Get manual task addresses for all connection configs that have manual tasks.
 
@@ -104,7 +149,7 @@ def get_manual_task_addresses(db: Session) -> List[CollectionAddress]:
 
 def get_manual_tasks_for_connection_config(
     db: Session, connection_config_key: str
-) -> List[ManualTask]:
+) -> list[ManualTask]:
     """Get all ManualTasks for a specific connection config"""
     connection_config = (
         db.query(ConnectionConfig)
@@ -137,8 +182,8 @@ def create_manual_data_traversal_node(
     manual_tasks = get_manual_tasks_for_connection_config(db, connection_key)
 
     # Create fields based on ManualTaskConfigFields and conditional dependencies
-    fields: List[Field] = []
-    conditional_field_addresses: Set[str] = set()
+    fields: list[Field] = []
+    conditional_field_addresses: set[str] = set()
 
     for manual_task in manual_tasks:
         # Add fields from manual task configs
@@ -211,7 +256,7 @@ def create_manual_data_traversal_node(
 
 def create_manual_task_instances_for_privacy_request(
     db: Session, privacy_request: PrivacyRequest
-) -> List[ManualTaskInstance]:
+) -> list[ManualTaskInstance]:
     """Create ManualTaskInstance entries for all active manual tasks relevant to a privacy request."""
     instances = []
 
@@ -307,7 +352,7 @@ def create_manual_task_instances_for_privacy_request(
 
 def get_manual_task_instances_for_privacy_request(
     db: Session, privacy_request: PrivacyRequest
-) -> List[ManualTaskInstance]:
+) -> list[ManualTaskInstance]:
     """Get all manual task instances for a privacy request."""
     return (
         db.query(ManualTaskInstance)
@@ -321,24 +366,21 @@ def get_manual_task_instances_for_privacy_request(
 
 def create_manual_task_artificial_graphs(
     db: Session,
-) -> List:
+) -> list:
     """
     Create artificial GraphDataset objects for manual tasks that can be included
     in the main dataset graph during the dataset configuration phase.
 
-    Manual tasks should be treated as data sources/datasets rather than being
-    appended to the traversal graph later.
-
-    Manual task collections are designed as root nodes that execute immediately when
-    the privacy request starts, in parallel with identity processing. They don't depend
-    on identity data since they provide manually-entered data rather than consuming it.
+    Each manual task gets its own collection with its own dependencies based on
+    its specific conditional dependencies. This allows individual manual tasks
+    to receive only the data they need from regular tasks.
 
     Args:
         db: Database session
         policy: The policy being executed (optional, for filtering manual task configs)
 
     Returns:
-        List of GraphDataset objects representing manual tasks as root nodes
+        List of GraphDataset objects representing manual tasks as individual collections
     """
 
     manual_task_graphs = []
@@ -347,16 +389,19 @@ def create_manual_task_artificial_graphs(
     for address in manual_addresses:
         connection_key = address.dataset
 
-        # Get manual tasks for this connection to determine fields
+        # Get manual tasks for this connection
         manual_tasks = get_manual_tasks_for_connection_config(db, connection_key)
 
-        # Create fields based on ManualTaskConfigFields and conditional dependencies
-        fields: List = []
-        conditional_field_addresses: Set[str] = set()
+        # Create a separate collection for each manual task
+        collections = []
 
-        # Manual task collections act as root nodes - they don't need identity dependencies
-        # since they provide manually-entered data rather than consuming identity data.
         for manual_task in manual_tasks:
+            # Create fields for this specific manual task
+            fields: list = []
+            conditional_field_addresses: set[str] = set()
+            dependency_collections: set[CollectionAddress] = set()
+
+            # Add fields from manual task configs
             current_configs = [
                 config for config in manual_task.configs if config.is_current
             ]
@@ -378,37 +423,51 @@ def create_manual_task_artificial_graphs(
                     )
                     fields.append(scalar_field)
 
-            # Add fields from conditional dependencies
+            # Add fields from conditional dependencies for this specific task
             conditional_field_addresses.update(
                 _extract_field_addresses_from_conditional_dependencies(db, manual_task)
             )
 
-        # Create scalar fields for conditional dependency field addresses
-        for field_address in conditional_field_addresses:
-            # Extract the field name from the address (e.g., "user.age" -> "age")
-            field_name = (
-                field_address.split(".")[-1] if "." in field_address else field_address
+            # Find collections that provide the fields referenced in conditional dependencies for this task
+            dependency_collections.update(
+                _find_collections_for_conditional_dependencies(db, manual_task)
             )
 
-            scalar_field = ScalarField(
-                name=field_name,
-                data_categories=[],  # Conditional dependency fields don't have predefined data categories
-            )
-            fields.append(scalar_field)
+            # Create scalar fields for conditional dependency field addresses
+            for field_address in conditional_field_addresses:
+                # Extract the field name from the address (e.g., "user.age" -> "age")
+                field_name = (
+                    field_address.split(".")[-1]
+                    if "." in field_address
+                    else field_address
+                )
 
-        if fields:  # Only create graph if there are fields
-            # Create a synthetic Collection
-            collection = Collection(
-                name=ManualTaskAddress.MANUAL_DATA_COLLECTION,
-                fields=fields,
-                # Manual tasks have no dependencies - they're root nodes
-                after=set(),
-            )
+                scalar_field = ScalarField(
+                    name=field_name,
+                    data_categories=[],  # Conditional dependency fields don't have predefined data categories
+                )
+                fields.append(scalar_field)
 
-            # Create a synthetic GraphDataset
+            if fields:  # Only create collection if there are fields
+                # Create a unique collection name for this manual task
+                collection_name = (
+                    f"{ManualTaskAddress.MANUAL_DATA_COLLECTION}_{manual_task.id}"
+                )
+
+                # Create a Collection for this specific manual task
+                collection = Collection(
+                    name=collection_name,
+                    fields=fields,
+                    # This manual task has dependencies on regular tasks that provide its conditional dependency fields
+                    after=dependency_collections,
+                )
+                collections.append(collection)
+
+        if collections:  # Only create graph if there are collections
+            # Create a synthetic GraphDataset with all manual task collections
             graph_dataset = GraphDataset(
                 name=connection_key,
-                collections=[collection],
+                collections=collections,
                 connection_key=connection_key,
                 after=set(),
             )
@@ -420,7 +479,7 @@ def create_manual_task_artificial_graphs(
 
 def _extract_field_addresses_from_conditional_dependencies(
     db: Session, manual_task: ManualTask
-) -> Set[str]:
+) -> set[str]:
     """
     Extract all field addresses from conditional dependencies for a manual task.
 
@@ -453,7 +512,7 @@ def _extract_field_addresses_from_conditional_dependencies(
 
 
 def _extract_field_addresses_from_group(
-    group_dependency: ManualTaskConditionalDependency, field_addresses: Set[str]
+    group_dependency: ManualTaskConditionalDependency, field_addresses: set[str]
 ) -> None:
     """
     Recursively extract field addresses from a group conditional dependency.
@@ -470,3 +529,111 @@ def _extract_field_addresses_from_group(
         elif child.condition_type == ManualTaskConditionalDependencyType.group:
             # For group conditions, recursively check all children
             _extract_field_addresses_from_group(child, field_addresses)
+
+
+def _find_collections_for_conditional_dependencies(
+    db: Session, manual_task: ManualTask
+) -> set[CollectionAddress]:
+    """
+    Find collections that provide fields referenced in conditional dependencies.
+
+    This function analyzes the conditional dependencies of a manual task and
+    identifies which regular task collections need to be executed before the
+    manual task to provide the required field data.
+
+    Args:
+        db: Database session
+        manual_task: The manual task to analyze
+
+    Returns:
+        Set of CollectionAddress objects for collections that provide conditional dependency fields
+    """
+    dependency_collections = set()
+
+    # Get all conditional dependencies for this manual task
+    conditional_dependencies = (
+        db.query(ManualTaskConditionalDependency)
+        .filter(ManualTaskConditionalDependency.manual_task_id == manual_task.id)
+        .all()
+    )
+
+    for dependency in conditional_dependencies:
+        if dependency.condition_type == ManualTaskConditionalDependencyType.leaf:
+            if dependency.field_address:
+                # Parse the field address to determine which collection provides this field
+                collection_address = _get_collection_for_field_address(
+                    dependency.field_address
+                )
+                if collection_address:
+                    dependency_collections.add(collection_address)
+        elif dependency.condition_type == ManualTaskConditionalDependencyType.group:
+            # For group conditions, recursively check all children
+            _find_collections_from_group_recursive(dependency, dependency_collections)
+
+    return dependency_collections
+
+
+def _find_collections_from_group_recursive(
+    group_dependency: ManualTaskConditionalDependency,
+    dependency_collections: set[CollectionAddress],
+) -> None:
+    """
+    Recursively find collections from group conditional dependencies.
+
+    Args:
+        group_dependency: The group conditional dependency to process
+        dependency_collections: Set to accumulate collection addresses
+    """
+    for child in group_dependency.children:  # type: ignore[attr-defined]
+        if child.condition_type == ManualTaskConditionalDependencyType.leaf:
+            if child.field_address:
+                collection_address = _get_collection_for_field_address(
+                    child.field_address
+                )
+                if collection_address:
+                    dependency_collections.add(collection_address)
+        elif child.condition_type == ManualTaskConditionalDependencyType.group:
+            # For group conditions, recursively check all children
+            _find_collections_from_group_recursive(child, dependency_collections)
+
+
+def _get_collection_for_field_address(
+    field_address: str,
+) -> Optional[CollectionAddress]:
+    """
+    Determine which collection provides a given field address.
+
+    This function parses field addresses like "user.profile.age" and determines
+    which collection would provide this field. The logic here assumes a standard
+    naming convention where the first part of the field address indicates the
+    collection name.
+
+    Args:
+        field_address: The field address to analyze (e.g., "user.profile.age")
+
+    Returns:
+        CollectionAddress for the collection that provides this field, or None if not found
+    """
+    if not field_address or "." not in field_address:
+        return None
+
+    # Parse the field address to extract collection information
+    # For field addresses like "user.profile.age", we assume "user" is the collection
+    # This is a simplified approach - in a real implementation, you might need
+    # more sophisticated logic to map field addresses to collections
+    parts = field_address.split(".")
+    if len(parts) < 2:
+        return None
+
+    collection_name = parts[0]
+
+    # For now, we'll use a simple mapping approach
+    # In a real implementation, you might query the database to find which collections
+    # actually contain fields that match this pattern
+    collection_mapping = {
+        "user": CollectionAddress("postgres_example", "customer"),
+        "billing": CollectionAddress("postgres_example", "payment_card"),
+        # Add more mappings as needed based on your actual data model
+    }
+
+    return collection_mapping.get(collection_name)
