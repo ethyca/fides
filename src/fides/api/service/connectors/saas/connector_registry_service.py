@@ -1,9 +1,10 @@
 # pylint: disable=protected-access
 import os
 from abc import ABC, abstractmethod
-from typing import Dict, Iterable, List, Optional, Type
+from typing import Dict, Iterable, List, Optional, Type, Tuple
 from zipfile import ZipFile
 
+import yaml
 from fideslang.models import Dataset
 from loguru import logger
 from sqlalchemy.orm import Session
@@ -419,3 +420,28 @@ def update_saas_instance(
     connection_config.update_saas_config(db, SaaSConfig(**config_from_template))
 
     upsert_dataset_config_from_template(db, connection_config, template, template_vals)
+
+
+def create_yaml_configs_from_connection_config(
+    db: Session,
+    connection_config: ConnectionConfig,
+) -> Tuple[str, str]:
+    """Extracts the SaaS config and dataset from a connection config and returns them as YAML strings."""
+
+    saas_config_obj = SaaSConfig(**connection_config.saas_config)
+    original_fides_key = saas_config_obj.fides_key
+
+    # SaaS config
+    saas_config_dict = {"saas_config": dict(connection_config.saas_config)}
+    config_yaml = yaml.dump(saas_config_dict, default_flow_style=False)
+    config_yaml = config_yaml.replace(original_fides_key, "<instance_fides_key>")
+
+    # Dataset
+    dataset_yaml = ""
+    if dataset_configs := connection_config.datasets:
+        dataset = dataset_configs[0]
+        dataset_dict = {"dataset": dict(dataset.ctl_dataset)}
+        dataset_yaml = yaml.dump(dataset_dict, default_flow_style=False)
+        dataset_yaml = dataset_yaml.replace(original_fides_key, "<instance_fides_key>")
+
+    return config_yaml, dataset_yaml
