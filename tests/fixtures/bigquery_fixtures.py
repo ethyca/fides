@@ -907,7 +907,7 @@ def seed_bigquery_integration_db(bigquery_integration_engine) -> None:
             name STRING,
             created TIMESTAMP,
             address_id BIGINT,
-            custom_id STRING,
+            `custom id` STRING,
             extra_address_data STRUCT<
                 city STRING,
                 house STRING,
