@@ -33,7 +33,7 @@ def upgrade():
             server_default=sa.text("now()"),
             nullable=True,
         ),
-        sa.Column("privacy_request_id", sa.String(), nullable=True),
+        sa.Column("privacy_request_id", sa.String(), nullable=False),
         sa.Column(
             "secret",
             sqlalchemy_utils.types.encrypted.encrypted_type.StringEncryptedType(),
