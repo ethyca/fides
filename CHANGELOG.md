@@ -34,6 +34,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Optimized BigQuery deletions by issuing only a single delete statement per partition [#6340](https://github.com/ethyca/fides/pull/6340)
 - Increased the limit for dataset configurations from 50 to 1000 on the integration config page [#6367](https://github.com/ethyca/fides/pull/6367)
 - Updates the API so respondents will only be able to see their own user info [#6368](https://github.com/ethyca/fides/pull/6368)
+- Moved masking secrets from Redis to database [#6002](https://github.com/ethyca/fides/pull/6002)
 
 ### Developer Experience
 - Migrated Action Center tables to Ant Design [#6349](https://github.com/ethyca/fides/pull/6349)
