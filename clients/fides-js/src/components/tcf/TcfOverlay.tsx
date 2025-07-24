@@ -197,6 +197,8 @@ export const TcfOverlay = () => {
    * The full experience is fetched after the component mounts, so we store it
    * in state to trigger a re-render when it arrives.
    */
+  const [isFullExperienceLoading, setIsFullExperienceLoading] = useState(true);
+  const [isFullExperienceError, setIsFullExperienceError] = useState(false);
   const [experienceFull, setExperienceFull] = useState<PrivacyExperience>();
 
   useEffect(() => {
@@ -227,23 +229,33 @@ export const TcfOverlay = () => {
       apiOptions: options.apiOptions,
       propertyId: experienceMinimal.property_id,
       requestMinimalTCF: false,
-    }).then((result) => {
-      if (isPrivacyExperience(result)) {
-        // include user preferences from the cookie
-        const userPrefs = buildUserPrefs(result, cookie);
+    })
+      .then((result) => {
+        // Because we're dealing with TCF, an empty full experience is not valid because we wouldn't be at this point if we didn't have a minimal experience.
+        if (isPrivacyExperience(result) && Object.keys(result).length > 0) {
+          // include user preferences from the cookie
+          const userPrefs = buildUserPrefs(result, cookie);
 
-        if (experienceIsValid(result)) {
-          const fullExperience: PrivacyExperience = { ...result, ...userPrefs };
-          window.Fides.experience = {
-            ...window.Fides.experience,
-            ...fullExperience,
-          };
-          window.Fides.experience.minimal_tcf = false;
-
-          setExperienceFull(fullExperience);
+          if (experienceIsValid(result)) {
+            const fullExperience: PrivacyExperience = {
+              ...result,
+              ...userPrefs,
+            };
+            window.Fides.experience = {
+              ...window.Fides.experience,
+              ...fullExperience,
+            };
+            window.Fides.experience.minimal_tcf = false;
+            setExperienceFull(fullExperience);
+          }
+        } else {
+          setIsFullExperienceError(true);
         }
-      }
-    });
+      })
+      .finally(() => {
+        fidesDebugger("Full TCF experience fetch complete");
+        setIsFullExperienceLoading(false);
+      });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -688,6 +700,8 @@ export const TcfOverlay = () => {
           onChange={handleToggleChange}
           activeTabIndex={activeTabIndex}
           onTabChange={handleTabChange}
+          isFullExperienceLoading={isFullExperienceLoading}
+          isFullExperienceError={isFullExperienceError}
         />
       )}
       renderModalFooter={({ onClose }) => {
@@ -706,23 +720,27 @@ export const TcfOverlay = () => {
               handleRejectAll();
               onClose();
             }}
-            renderFirstButton={() => (
-              <Button
-                buttonType={ButtonType.SECONDARY}
-                label={experienceFull ? i18n.t("exp.save_button_label") : ""}
-                onClick={() => {
-                  setTrigger({
-                    type: FidesEventTargetType.BUTTON,
-                    label: i18n.t("exp.save_button_label"),
-                  });
-                  onSave(ConsentMethod.SAVE, draftIds);
-                }}
-                className="fides-save-button"
-                id="fides-save-button"
-                disabled={!experienceFull}
-                loading={!experienceFull}
-              />
-            )}
+            renderFirstButton={() =>
+              !isFullExperienceError && (
+                <Button
+                  buttonType={ButtonType.SECONDARY}
+                  label={
+                    experienceFull ? i18n.t("exp.save_button_label") : "Save"
+                  }
+                  onClick={() => {
+                    setTrigger({
+                      type: FidesEventTargetType.BUTTON,
+                      label: i18n.t("exp.save_button_label"),
+                    });
+                    onSave(ConsentMethod.SAVE, draftIds);
+                  }}
+                  className="fides-save-button"
+                  id="fides-save-button"
+                  disabled={!experienceFull && !isFullExperienceError}
+                  loading={!experienceFull && !isFullExperienceError}
+                />
+              )
+            }
             isInModal
             options={options}
           />
