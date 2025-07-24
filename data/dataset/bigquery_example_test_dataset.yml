@@ -65,7 +65,7 @@ dataset:
               identity: email
               data_type: string
               read_only: True
-          - name: custom_id
+          - name: custom id
             data_categories: [user.unique_id]
             fides_meta:
               identity: custom_id

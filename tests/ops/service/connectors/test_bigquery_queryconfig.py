@@ -93,12 +93,12 @@ class TestBigQueryQueryConfig:
                 BigQueryNamespaceMeta(
                     project_id="cool_project", dataset_id="first_dataset"
                 ),
-                "SELECT address_id, created, custom_id, email, extra_address_data, id, name, purchase_history, tags FROM `cool_project.first_dataset.customer` WHERE (email = :email)",
+                "SELECT `address_id`, `created`, `custom id`, `email`, `extra_address_data`, `id`, `name`, `purchase_history`, `tags` FROM `cool_project.first_dataset.customer` WHERE (`email` = :email)",
             ),
             # Namespace meta will be a dict / JSON when retrieved from the DB
             (
                 {"project_id": "cool_project", "dataset_id": "first_dataset"},
-                "SELECT address_id, created, custom_id, email, extra_address_data, id, name, purchase_history, tags FROM `cool_project.first_dataset.customer` WHERE (email = :email)",
+                "SELECT `address_id`, `created`, `custom id`, `email`, `extra_address_data`, `id`, `name`, `purchase_history`, `tags` FROM `cool_project.first_dataset.customer` WHERE (`email` = :email)",
             ),
             (
                 {
@@ -106,11 +106,11 @@ class TestBigQueryQueryConfig:
                     "dataset_id": "first_dataset",
                     "connection_type": "bigquery",
                 },
-                "SELECT address_id, created, custom_id, email, extra_address_data, id, name, purchase_history, tags FROM `cool_project.first_dataset.customer` WHERE (email = :email)",
+                "SELECT `address_id`, `created`, `custom id`, `email`, `extra_address_data`, `id`, `name`, `purchase_history`, `tags` FROM `cool_project.first_dataset.customer` WHERE (`email` = :email)",
             ),
             (
                 None,
-                "SELECT address_id, created, custom_id, email, extra_address_data, id, name, purchase_history, tags FROM `customer` WHERE (email = :email)",
+                "SELECT `address_id`, `created`, `custom id`, `email`, `extra_address_data`, `id`, `name`, `purchase_history`, `tags` FROM `customer` WHERE (`email` = :email)",
             ),
         ],
     )
@@ -135,7 +135,7 @@ class TestBigQueryQueryConfig:
                     "email": ["customer-1@example.com", "customer-2@example.com"]
                 }
             ).text
-            == "SELECT address_id, created, custom_id, email, extra_address_data, id, name, purchase_history, tags FROM `customer` WHERE (email IN (:email_in_stmt_generated_0, :email_in_stmt_generated_1))"
+            == "SELECT `address_id`, `created`, `custom id`, `email`, `extra_address_data`, `id`, `name`, `purchase_history`, `tags` FROM `customer` WHERE (`email` IN (:email_in_stmt_generated_0, :email_in_stmt_generated_1))"
         )
 
     def test_generate_query_with_nested_identity(
@@ -151,7 +151,7 @@ class TestBigQueryQueryConfig:
                     ],
                 }
             ).text
-            == "SELECT address, contact_info, id FROM `customer_profile` WHERE (contact_info.primary_email IN (:contact_info_primary_email_in_stmt_generated_0, :contact_info_primary_email_in_stmt_generated_1))"
+            == "SELECT `address`, `contact_info`, `id` FROM `customer_profile` WHERE (`contact_info`.`primary_email` IN (:contact_info_primary_email_in_stmt_generated_0, :contact_info_primary_email_in_stmt_generated_1))"
         )
 
     def test_generate_query_with_invalid_namespace_meta(
@@ -647,7 +647,7 @@ class TestBigQueryQueryConfig:
             "email": "customer-1@example.com",
             "id": "123",
             "name": "John Doe",
-            "custom_id": "cust-123",
+            "custom id": "cust-123",
             "created": "2023-01-01",
             "address_id": "addr-123",
             "extra_address_data": {
@@ -672,7 +672,7 @@ class TestBigQueryQueryConfig:
 
         # BigQuery struct updates require setting the entire struct with new values
         expected_stmts = {
-            "UPDATE `customer` SET `id`=%(id:INT64)s, `name`=%(name:STRING)s, `custom_id`=%(custom_id:STRING)s, `extra_address_data`=%(extra_address_data:STRUCT<city STRING, house STRING, id INT64, state STRING, street STRING, address_id INT64>)s WHERE `customer`.`email` = %(email_1:STRING)s"
+            "UPDATE `customer` SET `id`=%(id:INT64)s, `name`=%(name:STRING)s, `custom id`=%(custom id:STRING)s, `extra_address_data`=%(extra_address_data:STRUCT<city STRING, house STRING, id INT64, state STRING, street STRING, address_id INT64>)s WHERE `customer`.`email` = %(email_1:STRING)s"
         }
 
         assert stmts == expected_stmts
@@ -739,7 +739,7 @@ class TestBigQueryQueryConfig:
             "email": "customer-1@example.com",
             "id": "123",
             "name": "John Doe",
-            "custom_id": "cust-123",
+            "custom id": "cust-123",
             "created": "2023-01-01",
             "address_id": "addr-123",
             "extra_address_data": {
@@ -769,7 +769,7 @@ class TestBigQueryQueryConfig:
 
         # BigQuery namespaced struct updates include the fully qualified project.dataset.table path
         expected_stmts = {
-            "UPDATE `silken-precinct-284918.fidesopstest.customer` SET `id`=%(id:INT64)s, `name`=%(name:STRING)s, `custom_id`=%(custom_id:STRING)s, `extra_address_data`=%(extra_address_data:STRUCT<city STRING, house STRING, id INT64, state STRING, street STRING, address_id INT64>)s WHERE `silken-precinct-284918.fidesopstest.customer`.`email` = %(email_1:STRING)s"
+            "UPDATE `silken-precinct-284918.fidesopstest.customer` SET `id`=%(id:INT64)s, `name`=%(name:STRING)s, `custom id`=%(custom id:STRING)s, `extra_address_data`=%(extra_address_data:STRUCT<city STRING, house STRING, id INT64, state STRING, street STRING, address_id INT64>)s WHERE `silken-precinct-284918.fidesopstest.customer`.`email` = %(email_1:STRING)s"
         }
 
         assert stmts == expected_stmts
