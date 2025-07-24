@@ -223,14 +223,19 @@ export const TcfOverlay = () => {
       });
     }
     fidesDebugger("Fetching full TCF experience...");
-    fetchExperience({
-      userLocationString: fidesRegionString,
-      fidesApiUrl: options.fidesApiUrl,
-      apiOptions: options.apiOptions,
-      propertyId: experienceMinimal.property_id,
-      requestMinimalTCF: false,
-    })
-      .then((result) => {
+
+    const retryFetch = async (attempt = 1): Promise<void> => {
+      const TCF_FULL_MAX_RETRIES = 5;
+      const TCF_FULL_BACKOFF_FACTOR = 1000;
+      try {
+        const result = await fetchExperience({
+          userLocationString: fidesRegionString,
+          fidesApiUrl: options.fidesApiUrl,
+          apiOptions: options.apiOptions,
+          propertyId: experienceMinimal.property_id,
+          requestMinimalTCF: false,
+        });
+
         // Because we're dealing with TCF, an empty full experience is not valid because we wouldn't be at this point if we didn't have a minimal experience.
         if (isPrivacyExperience(result) && Object.keys(result).length > 0) {
           // include user preferences from the cookie
@@ -247,15 +252,31 @@ export const TcfOverlay = () => {
             };
             window.Fides.experience.minimal_tcf = false;
             setExperienceFull(fullExperience);
+            setIsFullExperienceLoading(false);
           }
+        } else if (attempt < TCF_FULL_MAX_RETRIES) {
+          setTimeout(
+            () => retryFetch(attempt + 1),
+            attempt * TCF_FULL_BACKOFF_FACTOR,
+          );
         } else {
           setIsFullExperienceError(true);
+          setIsFullExperienceLoading(false);
         }
-      })
-      .finally(() => {
-        fidesDebugger("Full TCF experience fetch complete");
-        setIsFullExperienceLoading(false);
-      });
+      } catch (error) {
+        if (attempt < TCF_FULL_MAX_RETRIES) {
+          setTimeout(
+            () => retryFetch(attempt + 1),
+            attempt * TCF_FULL_BACKOFF_FACTOR,
+          );
+        } else {
+          setIsFullExperienceError(true);
+          setIsFullExperienceLoading(false);
+        }
+      }
+    };
+
+    retryFetch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

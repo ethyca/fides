@@ -15,6 +15,7 @@
   --fides-overlay-gpc-overridden-text-color: white;
   --fides-overlay-brand-link-logo-color: #2b2e35;
   --fides-overlay-background-dark-color: #e2e8f0;
+  --fides-overlay-background-error-color: #f7c2c2;
   --fides-overlay-skeleton-gradient-from-color: rgba(0, 0, 0, 0.06);
   --fides-overlay-skeleton-gradient-to-color: rgba(0, 0, 0, 0.15);
   /* Buttons */
