@@ -1282,111 +1282,6 @@ def policy_local_storage(
 
 
 @pytest.fixture(scope="function")
-def policy_drp_action(
-    db: Session,
-    oauth_client: ClientDetail,
-    storage_config: StorageConfig,
-    default_data_categories,  # This needs to be explicitly passed in to ensure data categories are available
-) -> Generator:
-
-    access_request_policy = Policy.create(
-        db=db,
-        data={
-            "name": "example access request policy drp",
-            "key": "example_access_request_policy_drp",
-            "drp_action": "access",
-            "client_id": oauth_client.id,
-        },
-    )
-
-    access_request_rule = Rule.create(
-        db=db,
-        data={
-            "action_type": ActionType.access.value,
-            "client_id": oauth_client.id,
-            "name": "Access Request Rule DRP",
-            "policy_id": access_request_policy.id,
-            "storage_destination_id": storage_config.id,
-        },
-    )
-
-    rule_target = RuleTarget.create(
-        db=db,
-        data={
-            "client_id": oauth_client.id,
-            "data_category": DataCategory("user").value,
-            "rule_id": access_request_rule.id,
-        },
-    )
-    yield access_request_policy
-    try:
-        rule_target.delete(db)
-    except ObjectDeletedError:
-        pass
-    try:
-        access_request_rule.delete(db)
-    except ObjectDeletedError:
-        pass
-    try:
-        access_request_policy.delete(db)
-    except ObjectDeletedError:
-        pass
-
-
-@pytest.fixture(scope="function")
-def policy_drp_action_erasure(
-    db: Session,
-    oauth_client: ClientDetail,
-    default_data_categories,  # This needs to be explicitly passed in to ensure data categories are available
-) -> Generator:
-    erasure_request_policy = Policy.create(
-        db=db,
-        data={
-            "name": "example erasure request policy drp",
-            "key": "example_erasure_request_policy_drp",
-            "drp_action": "deletion",
-            "client_id": oauth_client.id,
-        },
-    )
-
-    erasure_request_rule = Rule.create(
-        db=db,
-        data={
-            "action_type": ActionType.erasure.value,
-            "client_id": oauth_client.id,
-            "name": "Erasure Request Rule DRP",
-            "policy_id": erasure_request_policy.id,
-            "masking_strategy": {
-                "strategy": StringRewriteMaskingStrategy.name,
-                "configuration": {"rewrite_value": "MASKED"},
-            },
-        },
-    )
-
-    rule_target = RuleTarget.create(
-        db=db,
-        data={
-            "client_id": oauth_client.id,
-            "data_category": DataCategory("user").value,
-            "rule_id": erasure_request_rule.id,
-        },
-    )
-    yield erasure_request_policy
-    try:
-        rule_target.delete(db)
-    except ObjectDeletedError:
-        pass
-    try:
-        erasure_request_rule.delete(db)
-    except ObjectDeletedError:
-        pass
-    try:
-        erasure_request_policy.delete(db)
-    except ObjectDeletedError:
-        pass
-
-
-@pytest.fixture(scope="function")
 def erasure_policy_string_rewrite(
     db: Session,
     oauth_client: ClientDetail,
@@ -2162,18 +2057,6 @@ def privacy_request_status_canceled(db: Session, policy: Policy) -> PrivacyReque
     )
     privacy_request.started_processing_at = None
     privacy_request.save(db)
-    yield privacy_request
-    privacy_request.delete(db)
-
-
-@pytest.fixture(scope="function")
-def privacy_request_with_drp_action(
-    db: Session, policy_drp_action: Policy
-) -> PrivacyRequest:
-    privacy_request = _create_privacy_request_for_policy(
-        db,
-        policy_drp_action,
-    )
     yield privacy_request
     privacy_request.delete(db)
 
