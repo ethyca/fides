@@ -2,9 +2,9 @@ import { AntSelect as Select, Box, Heading } from "fidesui";
 import { useState } from "react";
 
 import Layout from "~/features/common/Layout";
+import BackButton from "~/features/common/nav/BackButton";
+import { MESSAGING_CONFIGURATION_ROUTE } from "~/features/common/nav/routes";
 
-import BackButton from "../common/nav/v2/BackButton";
-import { MESSAGING_CONFIGURATION_ROUTE } from "../common/nav/v2/routes";
 import { messagingProviderLabels, messagingProviders } from "./constants";
 import MailgunEmailConfiguration from "./MailgunEmailConfiguration";
 import TwilioEmailConfiguration from "./TwilioEmailConfiguration";
@@ -12,7 +12,6 @@ import TwilioSMSConfiguration from "./TwilioSMS";
 
 export const CreateMessagingConfiguration = () => {
   const [messagingValue, setMessagingValue] = useState("");
-
 
   const handleChange = async (value: string) => {
     setMessagingValue(value);

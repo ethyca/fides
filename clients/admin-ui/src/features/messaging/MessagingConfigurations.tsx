@@ -23,6 +23,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 
 import Layout from "~/features/common/Layout";
+import { MESSAGING_CONFIGURATION_ROUTE } from "~/features/common/nav/routes";
 import { usePatchConfigurationSettingsMutation } from "~/features/privacy-requests";
 import {
   MessagingConfigResponse,
@@ -30,7 +31,6 @@ import {
   ScopeRegistryEnum,
 } from "~/types/api";
 
-import { MESSAGING_CONFIGURATION_ROUTE } from "../common/nav/v2/routes";
 import { useHasPermission } from "../common/Restrict";
 import {
   DefaultCell,
