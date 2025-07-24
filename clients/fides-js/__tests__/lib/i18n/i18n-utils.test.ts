@@ -210,7 +210,7 @@ describe("i18n-utils", () => {
       const updatedLocales = loadMessagesFromFiles(mockI18n);
 
       // Check the updated locales list is what we expect
-      const EXPECTED_NUM_STATIC_LOCALES = 40; // NOTE: manually update this as new locales added
+      const EXPECTED_NUM_STATIC_LOCALES = 41; // NOTE: manually update this as new locales added
       expect(updatedLocales).toHaveLength(EXPECTED_NUM_STATIC_LOCALES);
       expect(updatedLocales).toContain("en");
       expect(mockI18n.load).toHaveBeenCalledTimes(EXPECTED_NUM_STATIC_LOCALES);
@@ -244,7 +244,7 @@ describe("i18n-utils", () => {
       const updatedLocales = loadTcfMessagesFromFiles(mockI18n);
 
       // Check the updated locales list is what we expect
-      const EXPECTED_NUM_STATIC_LOCALES = 40; // NOTE: manually update this as new locales added
+      const EXPECTED_NUM_STATIC_LOCALES = 41; // NOTE: manually update this as new locales added
       expect(updatedLocales).toHaveLength(EXPECTED_NUM_STATIC_LOCALES);
       expect(updatedLocales).toContain("en");
       expect(mockI18n.load).toHaveBeenCalledTimes(EXPECTED_NUM_STATIC_LOCALES);
