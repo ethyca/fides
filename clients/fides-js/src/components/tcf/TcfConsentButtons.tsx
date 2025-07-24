@@ -14,7 +14,7 @@ interface TcfConsentButtonProps {
   onManagePreferencesClick?: () => void;
   onRejectAll: () => void;
   onAcceptAll: () => void;
-  renderFirstButton?: () => VNode;
+  renderFirstButton?: () => VNode | false;
   isInModal?: boolean;
 }
 

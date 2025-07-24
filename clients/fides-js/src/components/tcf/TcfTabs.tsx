@@ -14,6 +14,7 @@ import {
 import InfoBox from "../InfoBox";
 import { RecordsListSkeletons } from "./RecordsListSkeletons";
 import TcfFeatures from "./TcfFeatures";
+import { TcfLoadingErrorMessage } from "./TcfLoadingErrorMessage";
 import TcfPurposes from "./TcfPurposes";
 import TcfVendors from "./TcfVendors";
 
@@ -32,6 +33,8 @@ const TcfTabs = ({
   onChange,
   activeTabIndex,
   onTabChange,
+  isFullExperienceLoading,
+  isFullExperienceError,
 }: {
   experience: PrivacyExperience | PrivacyExperienceMinimal;
   customNotices: PrivacyNoticeWithBestTranslation[] | undefined;
@@ -42,6 +45,8 @@ const TcfTabs = ({
   ) => void;
   activeTabIndex: number;
   onTabChange: (tabIndex: number) => void;
+  isFullExperienceLoading: boolean;
+  isFullExperienceError: boolean;
 }) => {
   const { i18n } = useI18n();
   const handleUpdateDraftState = useCallback(
@@ -61,8 +66,16 @@ const TcfTabs = ({
       type: "purposes",
       content: (
         <div>
-          <InfoBox>{i18n.t("static.tcf.purposes.description")}</InfoBox>
-          {experience.minimal_tcf ? (
+          {!isFullExperienceError && (
+            <InfoBox>{i18n.t("static.tcf.purposes.description")}</InfoBox>
+          )}
+          {isFullExperienceError && (
+            <TcfLoadingErrorMessage
+              generalLabel="purposes and special features for which your data is being processed"
+              specificLabel="specific purposes"
+            />
+          )}
+          {isFullExperienceLoading && (
             <RecordsListSkeletons
               rows={
                 ((experience as PrivacyExperienceMinimal)
@@ -70,7 +83,8 @@ const TcfTabs = ({
                 (customNotices?.length ?? 0)
               }
             />
-          ) : (
+          )}
+          {!isFullExperienceLoading && !isFullExperienceError && (
             <TcfPurposes
               allPurposesConsent={
                 (experience as PrivacyExperience).tcf_purpose_consents
@@ -95,8 +109,16 @@ const TcfTabs = ({
       type: "features",
       content: (
         <div>
-          <InfoBox>{i18n.t("static.tcf.features.description")}</InfoBox>
-          {experience.minimal_tcf ? (
+          {!isFullExperienceError && (
+            <InfoBox>{i18n.t("static.tcf.features.description")}</InfoBox>
+          )}
+          {isFullExperienceError && (
+            <TcfLoadingErrorMessage
+              generalLabel="features for which your data is being processed"
+              specificLabel="special features"
+            />
+          )}
+          {isFullExperienceLoading && (
             <RecordsListSkeletons
               rows={
                 ((experience as PrivacyExperienceMinimal).tcf_feature_ids
@@ -105,7 +127,8 @@ const TcfTabs = ({
                   .tcf_special_feature_ids?.length ?? 0)
               }
             />
-          ) : (
+          )}
+          {!isFullExperienceLoading && !isFullExperienceError && (
             <TcfFeatures
               allFeatures={(experience as PrivacyExperience).tcf_features}
               allSpecialFeatures={
@@ -123,8 +146,16 @@ const TcfTabs = ({
       type: "vendors",
       content: (
         <div>
-          <InfoBox>{i18n.t("static.tcf.vendors.description")}</InfoBox>
-          {experience.minimal_tcf ? (
+          {!isFullExperienceError && (
+            <InfoBox>{i18n.t("static.tcf.vendors.description")}</InfoBox>
+          )}
+          {isFullExperienceError && (
+            <TcfLoadingErrorMessage
+              generalLabel="vendors processing your data and the purposes or features of processing they declare"
+              specificLabel="each vendor based on the legal basis they assert"
+            />
+          )}
+          {isFullExperienceLoading && (
             <RecordsListSkeletons
               rows={Math.min(
                 (experience as PrivacyExperienceMinimal).tcf_vendor_consent_ids
@@ -132,7 +163,8 @@ const TcfTabs = ({
                 PAGE_SIZE,
               )}
             />
-          ) : (
+          )}
+          {!isFullExperienceLoading && !isFullExperienceError && (
             <TcfVendors
               experience={experience as PrivacyExperience}
               enabledIds={enabledIds}

@@ -20,7 +20,7 @@ import PrivacyPolicyLink from "./PrivacyPolicyLink";
 interface ConsentButtonsProps {
   availableLocales?: Locale[];
   onManagePreferencesClick?: () => void;
-  renderFirstButton?: () => VNode | null;
+  renderFirstButton?: () => VNode | null | false;
   onAcceptAll: () => void;
   onRejectAll: () => void;
   options: FidesInitOptions;
