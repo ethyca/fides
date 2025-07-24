@@ -72,7 +72,7 @@ def generate_buildx_command(
 
     # Add build arguments
     for arg_name, arg_value in build_args.items():
-        buildx_command += (f"--build-arg", f"{arg_name}={arg_value}")
+        buildx_command += ("--build-arg", f"{arg_name}={arg_value}")
 
     buildx_command += (dockerfile_path,)
 
