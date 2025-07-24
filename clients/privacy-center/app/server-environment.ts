@@ -72,6 +72,7 @@ export type PrivacyCenterClientSettings = Pick<
   | "FIDES_DISABLED_NOTICES"
   | "FIDES_CONSENT_NON_APPLICABLE_FLAG_MODE"
   | "FIDES_CONSENT_FLAG_TYPE"
+  | "FIDES_INITIALIZED_EVENT_MODE"
 >;
 
 export type Styles = string;
@@ -336,6 +337,7 @@ export const getClientSettings = (): PrivacyCenterClientSettings => {
     FIDES_CONSENT_NON_APPLICABLE_FLAG_MODE:
       settings.FIDES_CONSENT_NON_APPLICABLE_FLAG_MODE,
     FIDES_CONSENT_FLAG_TYPE: settings.FIDES_CONSENT_FLAG_TYPE,
+    FIDES_INITIALIZED_EVENT_MODE: settings.FIDES_INITIALIZED_EVENT_MODE,
   };
 
   return clientSettings;

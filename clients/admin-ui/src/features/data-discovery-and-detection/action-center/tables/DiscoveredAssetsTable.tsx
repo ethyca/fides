@@ -1,39 +1,35 @@
 import {
-  getCoreRowModel,
-  RowSelectionState,
-  useReactTable,
-} from "@tanstack/react-table";
-import {
   AntButton as Button,
   AntDefaultOptionType as DefaultOptionType,
   AntDropdown as Dropdown,
   AntEmpty as Empty,
+  AntFlex as Flex,
+  AntSpace as Space,
+  AntTable as Table,
+  AntTabs as Tabs,
   AntTooltip as Tooltip,
-  Flex,
-  HStack,
   Icons,
-  Text,
   useToast,
 } from "fidesui";
 import { uniq } from "lodash";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
-import DataTabsHeader from "~/features/common/DataTabsHeader";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import {
   ACTION_CENTER_ROUTE,
   SYSTEM_ROUTE,
   UNCATEGORIZED_SEGMENT,
 } from "~/features/common/nav/routes";
-import {
-  FidesTableV2,
-  PaginationBar,
-  TableActionBar,
-  TableSkeletonLoader,
-  useServerSidePagination,
-} from "~/features/common/table/v2";
+import { SelectedText } from "~/features/common/table/SelectedText";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
+import {
+  ConsentStatus,
+  DiffStatus,
+  StagedResourceAPIResponse,
+} from "~/types/api";
+
+import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
 import {
   useAddMonitorResultAssetsMutation,
   useAddMonitorResultSystemsMutation,
@@ -42,15 +38,15 @@ import {
   useRestoreMonitorResultAssetsMutation,
   useUpdateAssetsMutation,
   useUpdateAssetsSystemMutation,
-} from "~/features/data-discovery-and-detection/action-center/action-center.slice";
-import AddDataUsesModal from "~/features/data-discovery-and-detection/action-center/AddDataUsesModal";
-import useActionCenterTabs from "~/features/data-discovery-and-detection/action-center/tables/useActionCenterTabs";
-import { successToastContent } from "~/features/data-discovery-and-detection/action-center/utils/successToastContent";
-import { DiffStatus } from "~/types/api";
-
-import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
+} from "../action-center.slice";
+import AddDataUsesModal from "../AddDataUsesModal";
 import { AssignSystemModal } from "../AssignSystemModal";
+import { ConsentBreakdownModal } from "../ConsentBreakdownModal";
+import useActionCenterTabs, {
+  ActionCenterTabHash,
+} from "../hooks/useActionCenterTabs";
 import { useDiscoveredAssetsColumns } from "../hooks/useDiscoveredAssetsColumns";
+import { SuccessToastContent } from "../SuccessToastContent";
 
 interface DiscoveredAssetsTableProps {
   monitorId: string;
@@ -64,14 +60,36 @@ export const DiscoveredAssetsTable = ({
   onSystemName,
 }: DiscoveredAssetsTableProps) => {
   const router = useRouter();
-  const tabHash = router.asPath.split("#")[1];
+  const [firstItemConsentStatus, setFirstItemConsentStatus] = useState<
+    ConsentStatus | null | undefined
+  >();
 
   const [systemName, setSystemName] = useState(systemId);
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+
+  // Pagination state
+  const [pageIndex, setPageIndex] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+
+  // Selection state
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const [selectedRowsMap, setSelectedRowsMap] = useState<
+    Map<string, StagedResourceAPIResponse>
+  >(new Map());
+
+  const resetSelections = () => {
+    setSelectedRowKeys([]);
+    setSelectedRowsMap(new Map());
+  };
+
   const [isAssignSystemModalOpen, setIsAssignSystemModalOpen] =
     useState<boolean>(false);
   const [isAddDataUseModalOpen, setIsAddDataUseModalOpen] =
     useState<boolean>(false);
+  const [consentBreakdownModalData, setConsentBreakdownModalData] = useState<{
+    stagedResource: StagedResourceAPIResponse;
+    status: ConsentStatus;
+  } | null>(null);
+
   const [addMonitorResultAssetsMutation, { isLoading: isAddingResults }] =
     useAddMonitorResultAssetsMutation();
   const [ignoreMonitorResultAssetsMutation, { isLoading: isIgnoringResults }] =
@@ -97,35 +115,26 @@ export const DiscoveredAssetsTable = ({
   const disableAddAll =
     anyBulkActionIsLoading || systemId === UNCATEGORIZED_SEGMENT;
 
-  const {
-    PAGE_SIZES,
-    pageSize,
-    setPageSize,
-    onPreviousPageClick,
-    isPreviousPageDisabled,
-    onNextPageClick,
-    isNextPageDisabled,
-    startRange,
-    endRange,
-    pageIndex,
-    setTotalPages,
-    resetPageIndexToDefault,
-  } = useServerSidePagination();
   const [searchQuery, setSearchQuery] = useState("");
 
   const toast = useToast();
 
+  // Reset pagination when filters change
   useEffect(() => {
-    resetPageIndexToDefault();
-  }, [monitorId, searchQuery, resetPageIndexToDefault]);
+    setPageIndex(1);
+  }, [monitorId, searchQuery]);
 
-  const {
-    filterTabs,
-    filterTabIndex,
-    onTabChange,
-    activeParams,
-    actionsDisabled,
-  } = useActionCenterTabs({ systemId, initialHash: tabHash });
+  const { filterTabs, activeTab, onTabChange, activeParams, actionsDisabled } =
+    useActionCenterTabs(systemId);
+
+  useEffect(() => {
+    setPageIndex(1);
+  }, [monitorId, searchQuery, activeTab]);
+
+  // Reset selections when filters change
+  useEffect(() => {
+    resetSelections();
+  }, [monitorId, searchQuery, activeTab]);
 
   const { data, isLoading, isFetching } = useGetDiscoveredAssetsQuery({
     key: monitorId,
@@ -139,62 +148,64 @@ export const DiscoveredAssetsTable = ({
     if (data) {
       const firstSystemName =
         data.items[0]?.system || systemName || systemId || "";
-      setTotalPages(data.pages || 1);
       setSystemName(firstSystemName);
       onSystemName?.(firstSystemName);
     }
-  }, [data, systemId, onSystemName, setTotalPages, systemName]);
+  }, [data, systemId, onSystemName, systemName]);
+
+  useEffect(() => {
+    if (data?.items && !firstItemConsentStatus) {
+      // this ensures that the column header remembers the consent status
+      // even when the user navigates to a different paginated page
+      const consentStatus = data.items.find(
+        (item) => item.consent_aggregated === ConsentStatus.WITHOUT_CONSENT,
+      )?.consent_aggregated;
+      setFirstItemConsentStatus(consentStatus);
+    }
+  }, [data, firstItemConsentStatus]);
+
+  const handleShowBreakdown = (
+    stagedResource: StagedResourceAPIResponse,
+    status: ConsentStatus,
+  ) => {
+    setConsentBreakdownModalData({ stagedResource, status });
+  };
+
+  const handleCloseBreakdown = () => {
+    setConsentBreakdownModalData(null);
+  };
 
   const { columns } = useDiscoveredAssetsColumns({
-    readonly: actionsDisabled,
+    readonly: actionsDisabled ?? false,
     onTabChange,
+    aggregatedConsent: firstItemConsentStatus,
+    onShowBreakdown: handleShowBreakdown,
   });
 
-  const tableInstance = useReactTable({
-    getCoreRowModel: getCoreRowModel(),
-    columns,
-    manualPagination: true,
-    data: data?.items || [],
-    columnResizeMode: "onChange",
-    onRowSelectionChange: setRowSelection,
-    getRowId: (row) => row.urn,
-    state: {
-      rowSelection,
-    },
-  });
-
-  const selectedUrns = tableInstance
-    .getSelectedRowModel()
-    .rows.map((row) => row.original.urn);
+  // Get selected URNs from the map instead of selectedRows
+  const selectedUrns = Array.from(selectedRowsMap.keys());
+  const selectedRows = Array.from(selectedRowsMap.values());
 
   const handleBulkAdd = async () => {
     const result = await addMonitorResultAssetsMutation({
       urnList: selectedUrns,
     });
-    const selectedAssets =
-      data?.items.filter((asset) => selectedUrns.includes(asset.urn)) ?? [];
 
     const systemKey =
-      selectedAssets[0]?.user_assigned_system_key ||
-      selectedAssets[0]?.system_key;
-    const allAssetsHaveSameSystemKey = selectedAssets.every((a) => {
+      selectedRows[0]?.user_assigned_system_key || selectedRows[0]?.system_key;
+    const allAssetsHaveSameSystemKey = selectedRows.every((a) => {
       const assetKey = a.user_assigned_system_key || a.system_key;
       return assetKey === systemKey;
     });
 
-    const systemKeyFromResult = result.data?.[0]?.promoted_system_key;
-
-    const systemToLink = allAssetsHaveSameSystemKey
-      ? (systemKeyFromResult ?? systemKey)
-      : undefined;
+    const systemToLink = allAssetsHaveSameSystemKey ? systemKey : undefined;
 
     if (isErrorResult(result)) {
       toast(errorToastParams(getErrorMessage(result.error)));
     } else {
-      tableInstance.resetRowSelection();
       toast(
         successToastParams(
-          successToastContent(
+          SuccessToastContent(
             `${selectedUrns.length} assets from ${systemName} have been added to the system inventory.`,
             systemToLink
               ? () =>
@@ -205,6 +216,7 @@ export const DiscoveredAssetsTable = ({
           ),
         ),
       );
+      resetSelections();
     }
   };
 
@@ -230,13 +242,10 @@ export const DiscoveredAssetsTable = ({
   };
 
   const handleBulkAddDataUse = async (newDataUses: string[]) => {
-    const selectedAssets = data?.items.filter((asset) =>
-      selectedUrns.includes(asset.urn),
-    );
-    if (!selectedAssets) {
+    if (!selectedRows.length) {
       return;
     }
-    const assets = selectedAssets.map((asset) => {
+    const assets = selectedRows.map((asset) => {
       // eslint-disable-next-line @typescript-eslint/naming-convention
       const user_assigned_data_uses = uniq([
         ...(asset.user_assigned_data_uses || asset.data_uses || []),
@@ -266,7 +275,6 @@ export const DiscoveredAssetsTable = ({
     setIsAddDataUseModalOpen(false);
   };
 
-  // TODO: add toast link to ignored tab
   const handleBulkIgnore = async () => {
     const result = await ignoreMonitorResultAssetsMutation({
       urnList: selectedUrns,
@@ -274,7 +282,6 @@ export const DiscoveredAssetsTable = ({
     if (isErrorResult(result)) {
       toast(errorToastParams(getErrorMessage(result.error)));
     } else {
-      tableInstance.resetRowSelection();
       toast(
         successToastParams(
           systemName === UNCATEGORIZED_SEGMENT
@@ -283,6 +290,7 @@ export const DiscoveredAssetsTable = ({
           `Confirmed`,
         ),
       );
+      resetSelections();
     }
   };
 
@@ -293,13 +301,13 @@ export const DiscoveredAssetsTable = ({
     if (isErrorResult(result)) {
       toast(errorToastParams(getErrorMessage(result.error)));
     } else {
-      tableInstance.resetRowSelection();
       toast(
         successToastParams(
           `${selectedUrns.length} assets have been restored and will appear in future scans.`,
           `Confirmed`,
         ),
       );
+      resetSelections();
     }
   };
 
@@ -320,49 +328,84 @@ export const DiscoveredAssetsTable = ({
           `Confirmed`,
         ),
       );
+      resetSelections();
     }
   };
 
-  const handleTabChange = (index: number) => {
-    onTabChange(index);
-    setRowSelection({});
+  const handleTabChange = (tab: ActionCenterTabHash) => {
+    onTabChange(tab);
+    resetSelections();
+  };
+
+  // Update selectedRowKeys to only show current page selections when data changes
+  useEffect(() => {
+    if (data?.items) {
+      const currentPageSelectedKeys = data.items
+        .filter((item) => selectedRowsMap.has(item.urn))
+        .map((item) => item.urn);
+      setSelectedRowKeys(currentPageSelectedKeys);
+    }
+  }, [data, selectedRowsMap]);
+
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (
+      newSelectedRowKeys: React.Key[],
+      newSelectedRows: StagedResourceAPIResponse[],
+    ) => {
+      setSelectedRowKeys(newSelectedRowKeys);
+
+      // Update the map with current page selections
+      const newMap = new Map(selectedRowsMap);
+
+      // Remove deselected items from current page
+      if (data?.items) {
+        data.items.forEach((item) => {
+          if (!newSelectedRowKeys.includes(item.urn)) {
+            newMap.delete(item.urn);
+          }
+        });
+      }
+
+      // Add newly selected items
+      newSelectedRows.forEach((row) => {
+        newMap.set(row.urn, row);
+      });
+
+      setSelectedRowsMap(newMap);
+    },
+  };
+
+  const handleTableChange = (pagination: any) => {
+    setPageIndex(pagination.current);
+    setPageSize(pagination.pageSize);
   };
 
   if (!monitorId || !systemId) {
     return null;
   }
 
-  if (isLoading) {
-    return <TableSkeletonLoader rowHeight={36} numRows={36} />;
-  }
-
   return (
     <>
-      <DataTabsHeader
-        data={filterTabs}
-        data-testid="filter-tabs"
-        index={filterTabIndex}
-        isLazy
-        isManual
-        onChange={handleTabChange}
+      <Tabs
+        items={filterTabs.map((tab) => ({
+          key: tab.hash,
+          label: tab.label,
+        }))}
+        activeKey={activeTab}
+        onChange={(tab) => handleTabChange(tab as ActionCenterTabHash)}
       />
-      <TableActionBar>
+      <Flex justify="space-between" align="center" className="mb-4">
         <DebouncedSearchInput
           value={searchQuery}
           onChange={setSearchQuery}
           placeholder="Search by asset name..."
         />
-        <Flex alignItems="center">
+        <Space size="large">
           {!!selectedUrns.length && (
-            <Text
-              fontSize="xs"
-              fontWeight="semibold"
-              minW={16}
-              mr={6}
-              data-testid="selected-count"
-            >{`${selectedUrns.length} selected`}</Text>
+            <SelectedText count={selectedUrns.length} />
           )}
-          <HStack>
+          <Space size="small">
             <Dropdown
               menu={{
                 items: [
@@ -381,7 +424,7 @@ export const DiscoveredAssetsTable = ({
                     label: "Assign system",
                     onClick: () => setIsAssignSystemModalOpen(true),
                   },
-                  ...(activeParams.diff_status.includes(DiffStatus.MUTED)
+                  ...(activeParams?.diff_status?.includes(DiffStatus.MUTED)
                     ? [
                         {
                           key: "restore",
@@ -438,28 +481,33 @@ export const DiscoveredAssetsTable = ({
                 Add all
               </Button>
             </Tooltip>
-          </HStack>
-        </Flex>
-      </TableActionBar>
-      <FidesTableV2
-        tableInstance={tableInstance}
-        emptyTableNotice={
-          <Empty
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-            description="All caught up!"
-          />
+          </Space>
+        </Space>
+      </Flex>
+      <Table
+        dataSource={data?.items || []}
+        columns={columns}
+        loading={isLoading || isFetching}
+        rowKey={(record) => record.urn}
+        rowSelection={
+          activeTab === ActionCenterTabHash.RECENT_ACTIVITY
+            ? undefined
+            : rowSelection
         }
-      />
-      <PaginationBar
-        totalRows={data?.total || 0}
-        pageSizes={PAGE_SIZES}
-        setPageSize={setPageSize}
-        onPreviousPageClick={onPreviousPageClick}
-        isPreviousPageDisabled={isPreviousPageDisabled || isFetching}
-        onNextPageClick={onNextPageClick}
-        isNextPageDisabled={isNextPageDisabled || isFetching}
-        startRange={startRange}
-        endRange={endRange}
+        pagination={{
+          current: pageIndex,
+          pageSize,
+          total: data?.total || 0,
+        }}
+        onChange={handleTableChange}
+        locale={{
+          emptyText: (
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description="All caught up!"
+            />
+          ),
+        }}
       />
       <AssignSystemModal
         isOpen={isAssignSystemModalOpen}
@@ -477,6 +525,16 @@ export const DiscoveredAssetsTable = ({
         onSave={handleBulkAddDataUse}
         isSaving={isBulkAddingDataUses}
       />
+      {consentBreakdownModalData && (
+        <ConsentBreakdownModal
+          isOpen={!!consentBreakdownModalData}
+          stagedResource={consentBreakdownModalData.stagedResource}
+          status={consentBreakdownModalData.status}
+          onCancel={handleCloseBreakdown}
+        />
+      )}
     </>
   );
 };
+
+export default DiscoveredAssetsTable;

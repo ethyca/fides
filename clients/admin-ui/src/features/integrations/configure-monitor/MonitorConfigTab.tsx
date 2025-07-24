@@ -12,6 +12,7 @@ import {
   AntButton as Button,
   Spacer,
   Text,
+  Tooltip,
   useDisclosure,
   VStack,
 } from "fidesui";
@@ -39,9 +40,12 @@ import {
   ConnectionSystemTypeMap,
   ConnectionType,
   MonitorConfig,
+  SystemType,
   WebsiteMonitorParams,
   WebsiteSchema,
 } from "~/types/api";
+
+import SharedConfigModal from "../SharedConfigModal";
 
 const EMPTY_RESPONSE = {
   items: [] as MonitorConfig[],
@@ -64,32 +68,6 @@ const MONITOR_COPIES: Partial<Record<ConnectionType, string>> = {
 
 const columnHelper = createColumnHelper<MonitorConfig>();
 
-const EmptyTableNotice = ({ onAddClick }: { onAddClick: () => void }) => (
-  <VStack
-    mt={6}
-    p={10}
-    spacing={4}
-    borderRadius="base"
-    maxW="70%"
-    data-testid="no-results-notice"
-    alignSelf="center"
-    margin="auto"
-  >
-    <VStack>
-      <Text fontSize="md" fontWeight="600">
-        No monitors
-      </Text>
-      <Text fontSize="sm">
-        You have not configured any data discovery monitors. Click &quot;Add
-        monitor&quot; to configure data discovery now.
-      </Text>
-      <Button onClick={onAddClick} type="primary">
-        Add monitor
-      </Button>
-    </VStack>
-  </VStack>
-);
-
 const MonitorConfigTab = ({
   integration,
   integrationOption,
@@ -99,6 +77,9 @@ const MonitorConfigTab = ({
 }) => {
   const isWebsiteMonitor =
     integrationOption?.identifier === ConnectionType.WEBSITE;
+
+  // Check if this is a SaaS type integration
+  const isSaasIntegration = integrationOption?.type === SystemType.SAAS;
 
   const {
     PAGE_SIZES,
@@ -299,6 +280,29 @@ const MonitorConfigTab = ({
     columnResizeMode: "onChange",
   });
 
+  const EmptyTableNotice = () => (
+    <VStack
+      mt={6}
+      p={10}
+      spacing={4}
+      borderRadius="base"
+      maxW="70%"
+      data-testid="no-results-notice"
+      alignSelf="center"
+      margin="auto"
+    >
+      <VStack>
+        <Text fontSize="md" fontWeight="600">
+          No monitors
+        </Text>
+        <Text fontSize="sm">
+          You have not configured any data discovery monitors. Click &quot;Add
+          monitor&quot; to configure data discovery now.
+        </Text>
+      </VStack>
+    </VStack>
+  );
+
   if (isLoading) {
     return <FidesSpinner />;
   }
@@ -307,21 +311,52 @@ const MonitorConfigTab = ({
     MONITOR_COPIES[integrationOption?.identifier as ConnectionType] ??
     DATA_DISCOVERY_MONITOR_COPY;
 
+  const getMonitorButtonState = () => {
+    if (isSaasIntegration && monitors.length > 0) {
+      return {
+        isDisabled: true,
+        tooltip: "API integrations only use a single monitor",
+      };
+    }
+    const isLegacyConnection =
+      !integration.name && integration.saas_config?.type === "salesforce";
+    if (isLegacyConnection) {
+      return {
+        isDisabled: true,
+        tooltip:
+          "This is a legacy connection and cannot be used to create a monitor. Create a new Salesforce integration to use this feature.",
+      };
+    }
+
+    return { isDisabled: false, tooltip: null };
+  };
+
+  const {
+    isDisabled: isAddMonitorButtonDisabled,
+    tooltip: addMonitorButtonTooltip,
+  } = getMonitorButtonState();
+
   return (
     <>
       <Text maxW="720px" mb={6} fontSize="sm" data-testid="monitor-description">
         {monitorCopy}
       </Text>
       <TableActionBar>
+        <SharedConfigModal />
         <Spacer />
-        <Button
-          onClick={modal.onOpen}
-          icon={<MonitorIcon />}
-          iconPosition="end"
-          data-testid="add-monitor-btn"
-        >
-          Add monitor
-        </Button>
+        <Tooltip label={addMonitorButtonTooltip}>
+          <span>
+            <Button
+              onClick={modal.onOpen}
+              icon={<MonitorIcon />}
+              iconPosition="end"
+              data-testid="add-monitor-btn"
+              disabled={isAddMonitorButtonDisabled}
+            >
+              Add monitor
+            </Button>
+          </span>
+        </Tooltip>
         <ConfigureMonitorModal
           isOpen={modal.isOpen}
           onClose={handleCloseModal}
@@ -337,7 +372,7 @@ const MonitorConfigTab = ({
       <FidesTableV2
         tableInstance={tableInstance}
         onRowClick={handleEditMonitor}
-        emptyTableNotice={<EmptyTableNotice onAddClick={modal.onOpen} />}
+        emptyTableNotice={<EmptyTableNotice />}
       />
       <PaginationBar
         totalRows={totalRows || 0}

@@ -20,7 +20,9 @@ const Layout = async ({ children }: { children: ReactElement }) => {
   return (
     <html lang="en">
       <body>
-        <Providers>{children}</Providers>
+        <Providers version={process.env.version || "unknown"}>
+          {children}
+        </Providers>
       </body>
     </html>
   );

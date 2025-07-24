@@ -39,9 +39,10 @@ from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import Policy, Rule
 from fides.api.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest, RequestTask
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType, CurrentStep
-from fides.api.schemas.privacy_request import ExecutionLogStatus
 from fides.api.service.connectors.base_connector import BaseConnector
+from fides.api.service.execution_context import collect_execution_log_messages
 from fides.api.task.consolidate_query_matches import consolidate_query_matches
 from fides.api.task.filter_element_match import filter_element_match
 from fides.api.task.refine_target_path import FieldPathNodeInput
@@ -109,6 +110,7 @@ def retry(
                         method_name,
                         self.execution_node.address,
                     )
+                    # Log the awaiting processing status and exit without retrying.
                     self.log_awaiting_processing(action_type, ex)
                     # Request Task put in "awaiting_processing" status and exited, awaiting Async Callback
                     return None
@@ -418,7 +420,8 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         self,
         action_type: ActionType,
         ex: Optional[BaseException] = None,
-        success_override_msg: Optional[BaseException] = None,
+        success_override_msg: Optional[str] = None,
+        record_count: Optional[int] = None,
     ) -> None:
         """On completion activities"""
         if ex:
@@ -438,8 +441,23 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 mark_current_and_downstream_nodes_as_failed(request_task, db)
         else:
             logger.info("Ending {}, {}", self.resources.request.id, self.key)
+
+            # Build standardized success message with record count
+            base_message = (
+                str(success_override_msg) if success_override_msg else "success"
+            )
+            if record_count is not None:
+                if action_type == ActionType.access:
+                    message = f"{base_message} - retrieved {record_count} records"
+                elif action_type == ActionType.erasure:
+                    message = f"{base_message} - masked {record_count} records"
+                else:
+                    message = f"{base_message} - processed {record_count} records"
+            else:
+                message = base_message
+
             self.update_status(
-                str(success_override_msg) if success_override_msg else "success",
+                message,
                 build_affected_field_logs(
                     self.execution_node, self.resources.policy, action_type
                 ),
@@ -503,12 +521,20 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             self.post_process_input_data(formatted_input_data)
         )
 
-        # For erasures: cache results with non-matching array elements *replaced* with placeholder text
-        placeholder_output: List[Row] = copy.deepcopy(output)
-        for row in placeholder_output:
+        # For erasures: build placeholder version incrementally to avoid holding two full
+        # copies of the data in memory simultaneously.
+        placeholder_output: List[Row] = []
+        for original_row in output:
+            # Create a deep copy of the *single* row, transform it, then append to
+            # the placeholder list.  Peak memory at any point is one extra row rather
+            # than an entire dataset.
+            row_copy = copy.deepcopy(original_row)
             filter_element_match(
-                row, query_paths=post_processed_node_input_data, delete_elements=False
+                row_copy,
+                query_paths=post_processed_node_input_data,
+                delete_elements=False,
             )
+            placeholder_output.append(row_copy)
 
         # For DSR 3.0, save data to build masking requests directly
         # on the Request Task.
@@ -519,11 +545,14 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         # TODO Remove when we stop support for DSR 2.0
         # Save data to build masking requests for DSR 2.0 in Redis.
         # Results saved with matching array elements preserved
-        self.resources.cache_results_with_placeholders(
-            f"access_request__{self.key}", placeholder_output
-        )
+        if not CONFIG.execution.use_dsr_3_0:
+            self.resources.cache_results_with_placeholders(
+                f"access_request__{self.key}", placeholder_output
+            )
 
-        # For access request results, cache results with non-matching array elements *removed*
+        # For access request results, mutate rows in-place to remove non-matching
+        # array elements.  We already iterated over `output` above, so reuse the same
+        # loop structure to keep cache locality.
         for row in output:
             logger.info(
                 "Filtering row in {} for matching array elements.",
@@ -537,7 +566,8 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
         # TODO Remove when we stop support for DSR 2.0
         # Saves intermediate access results for DSR 2.0 in Redis
-        self.resources.cache_object(f"access_request__{self.key}", output)
+        if not CONFIG.execution.use_dsr_3_0:
+            self.resources.cache_object(f"access_request__{self.key}", output)
 
         # Return filtered rows with non-matched array data removed.
         return output
@@ -602,27 +632,47 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             formatted_input_data: NodeInput = self.pre_process_input_data(
                 *inputs, group_dependent_fields=True
             )
-            output: List[Row] = self.connector.retrieve_data(
-                self.execution_node,
-                self.resources.policy,
-                self.resources.request,
-                self.resources.privacy_request_task,
-                formatted_input_data,
-            )
+
+            # Use execution context to capture postprocessor messages
+            with collect_execution_log_messages() as messages:
+                output: List[Row] = self.connector.retrieve_data(
+                    self.execution_node,
+                    self.resources.policy,
+                    self.resources.request,
+                    self.resources.privacy_request_task,
+                    formatted_input_data,
+                )
+
             filtered_output: List[Row] = self.access_results_post_processing(
                 self.pre_process_input_data(*inputs, group_dependent_fields=False),
                 output,
             )
-            self.log_end(ActionType.access)
-            return filtered_output
+
+        # Include postprocessor messages in success message if available
+        success_message = None
+        if messages:
+            success_message = "\n".join(messages)
+
+        self.log_end(
+            ActionType.access,
+            success_override_msg=success_message,
+            record_count=len(filtered_output),
+        )
+        return filtered_output
 
     @retry(action_type=ActionType.erasure, default_return=0)
     def erasure_request(
         self,
         retrieved_data: List[Row],
         *erasure_prereqs: int,  # TODO Remove when we stop support for DSR 2.0. DSR 3.0 enforces with downstream_tasks.
+        inputs: Optional[
+            List[List[Row]]
+        ] = None,  # Upstream data from corresponding access task
     ) -> int:
         """Run erasure request"""
+
+        if inputs is None:
+            inputs = []
 
         # if there is no primary key specified in the graph node configuration
         # note this in the execution log and perform no erasures on this node
@@ -670,13 +720,21 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             )
             return 0
 
-        output = self.connector.mask_data(
-            self.execution_node,
-            self.resources.policy,
-            self.resources.request,
-            self.resources.privacy_request_task,
-            retrieved_data,
+        formatted_input_data: NodeInput = self.pre_process_input_data(
+            *inputs, group_dependent_fields=True
         )
+
+        # Use execution context to capture postprocessor messages
+        with collect_execution_log_messages() as messages:
+            output = self.connector.mask_data(
+                self.execution_node,
+                self.resources.policy,
+                self.resources.request,
+                self.resources.privacy_request_task,
+                retrieved_data,
+                formatted_input_data,
+            )
+
         if self.request_task.id:
             # For DSR 3.0, largely for testing. DSR 3.0 uses Request Task status
             # instead of presence of cached erasure data to know if we should rerun a node
@@ -687,7 +745,17 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         self.resources.cache_erasure(
             self.key.value, output
         )  # Cache that the erasure was performed in case we need to restart
-        self.log_end(ActionType.erasure)
+
+        # Include postprocessor messages in success message if available
+        success_message = None
+        if messages:
+            success_message = "\n".join(messages)
+
+        self.log_end(
+            ActionType.erasure,
+            success_override_msg=success_message,
+            record_count=output,
+        )
         return output
 
     @retry(action_type=ActionType.consent, default_return=False)

@@ -109,7 +109,13 @@ const DiscoveryItemActionsCell = ({ resource }: DiscoveryItemActionsProps) => {
       staged_resource_urn: resource.urn,
       monitor_config_id: resource.monitor_config_id!,
       start_classification: true,
-      classify_monitored_resources: true,
+      // these are the diff statuses of resources that should be sent to 're-classification'
+      diff_statuses_to_classify: [
+        DiffStatus.CLASSIFICATION_ADDITION,
+        DiffStatus.CLASSIFICATION_UPDATE,
+        DiffStatus.CLASSIFYING,
+        DiffStatus.CLASSIFICATION_QUEUED,
+      ],
     });
     if (isErrorResult(result)) {
       errorAlert(

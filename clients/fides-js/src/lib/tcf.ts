@@ -172,21 +172,14 @@ export const generateFidesString = async ({
 
       // Set legitimate interest for special-purpose only vendors and vendors that
       // have declared only purposes based on consent (no LI) + at least one SP
-      if (experience.gvl?.vendors) {
-        (experience as PrivacyExperience).tcf_vendor_relationships?.forEach(
-          (relationship) => {
-            const { id } = decodeVendorId(relationship.id);
-            const vendor = experience.gvl?.vendors[id];
-            if (
-              vendor &&
-              vendor.specialPurposes?.length &&
-              (!vendor.legIntPurposes || vendor.legIntPurposes.length === 0)
-            ) {
-              tcModel.vendorLegitimateInterests.set(+id);
-            }
-          },
-        );
-      }
+      Object.values(experience.gvl?.vendors ?? {}).forEach((vendor) => {
+        if (
+          !!vendor.specialPurposes?.length &&
+          !vendor.legIntPurposes?.length
+        ) {
+          tcModel.vendorLegitimateInterests.set(vendor.id);
+        }
+      });
 
       // Set purposes on tcModel
       tcStringPreferences.purposesConsent.forEach((purposeId) => {

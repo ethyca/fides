@@ -61,7 +61,7 @@ from fides.api.tasks import celery_app
 from fides.api.tasks.scheduled.scheduler import async_scheduler, scheduler
 from fides.api.util.cache import get_cache
 from fides.api.util.collection_util import Row
-from fides.common.api.scope_registry import SCOPE_REGISTRY
+from fides.common.api.scope_registry import SCOPE_REGISTRY, USER_READ_OWN
 from fides.config import get_config
 from fides.config.config_proxy import ConfigProxy
 from tests.fixtures.application_fixtures import *
@@ -112,6 +112,19 @@ def s3_client(storage_config):
         s3 = session.client("s3")
         s3.create_bucket(Bucket=storage_config.details[StorageDetails.BUCKET.value])
         yield s3
+
+
+@pytest.fixture
+def mock_s3_client(s3_client, monkeypatch):
+    """Fixture to mock the S3 client for attachment tests"""
+
+    def mock_get_s3_client(auth_method, storage_secrets):
+        return s3_client
+
+    monkeypatch.setattr(
+        "fides.api.service.storage.s3.get_s3_client", mock_get_s3_client
+    )
+    return s3_client
 
 
 @pytest.fixture(scope="session")
@@ -1297,6 +1310,37 @@ def contributor_user(db):
 
 
 @pytest.fixture
+def respondent(db):
+    """Create a respondent user with USER_READ_OWN scope"""
+    from fides.api.oauth.roles import RESPONDENT
+
+    user = FidesUser.create(
+        db=db,
+        data={
+            "username": "test_respondent_user",
+            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+            "email_address": "respondent.user@ethyca.com",
+        },
+    )
+    client = ClientDetail(
+        hashed_secret="thisisatest",
+        salt="thisisstillatest",
+        scopes=[USER_READ_OWN],
+        roles=[RESPONDENT],
+        user_id=user.id,
+    )
+
+    FidesUserPermissions.create(db=db, data={"user_id": user.id, "roles": [RESPONDENT]})
+
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+    db.refresh(user)  # Refresh user to load the client relationship
+    yield user
+    user.delete(db)
+
+
+@pytest.fixture
 def viewer_and_approver_user(db):
     user = FidesUser.create(
         db=db,
@@ -2207,6 +2251,16 @@ def mock_gcs_client(
         mock_blob.download_as_bytes = types.MethodType(
             mock_download_as_bytes, mock_blob
         )
+
+        def mock_download_to_file(self, fileobj, *args, **kwargs):
+            """Mock implementation of download_to_file method.
+            Cannot use autospec because it is bound to the mock_blob instance.
+            """
+            fileobj.write(file_content)
+            fileobj.seek(0)
+            return None
+
+        mock_blob.download_to_file = types.MethodType(mock_download_to_file, mock_blob)
 
         def mock_upload_from_file(
             self,

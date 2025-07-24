@@ -423,6 +423,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             response_data,
             identity_data,
             cast(Optional[List[PostProcessorStrategy]], saas_request.postprocessors),
+            response,
         )
 
         logger.info(
@@ -456,6 +457,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         response_data: Union[List[Dict[str, Any]], Dict[str, Any]],
         identity_data: Dict[str, Any],
         postprocessors: Optional[List[PostProcessorStrategy]],
+        response: Optional[Response] = None,
     ) -> List[Row]:
         """
         Runs the raw response through all available postprocessors for the request,
@@ -481,7 +483,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                     processed_data,
                     identity_data,
                     privacy_request,
+                    response,
                 )
+
             except Exception as exc:
                 raise PostProcessingException(
                     f"Exception occurred during the '{postprocessor.strategy}' postprocessor "  # type: ignore
@@ -513,6 +517,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         privacy_request: PrivacyRequest,
         request_task: RequestTask,
         rows: List[Row],
+        input_data: Optional[Dict[str, List[Any]]] = None,
     ) -> int:
         """Execute a masking request. Return the number of rows that have been updated."""
         self.set_privacy_request_state(privacy_request, node, request_task)
@@ -530,11 +535,15 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         session = Session.object_session(privacy_request)
         masking_request = query_config.get_masking_request(session)
+        rows_updated = 0
+
         if not masking_request:
-            raise Exception(
-                f"Either no masking request configured or no valid masking request for {node.address.collection}. "
-                f"Check that MASKING_STRICT env var is appropriately set"
+            logger.info(
+                "No masking request found for the '{}' collection in {}",
+                self.current_collection_name,
+                self.saas_config.fides_key,  # type: ignore
             )
+            return rows_updated
 
         self.set_saas_request_state(masking_request)
 
@@ -563,9 +572,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             rows,
             privacy_request.get_cached_identity_data(),
             cast(Optional[List[PostProcessorStrategy]], masking_request.postprocessors),
+            None,
         )
 
-        rows_updated = 0
         client = self.create_client()
         for row in rows:
             try:
@@ -581,8 +590,45 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                     )
                     continue
                 raise exc
-            client.send(prepared_request, masking_request.ignore_errors)
+            response = client.send(prepared_request, masking_request.ignore_errors)
             rows_updated += 1
+
+            # Run post-processors against the response from the masking request so that
+            # processors such as `extract_for_execution_log` can inspect the API
+            # response body (e.g. confirmation, ticket IDs, etc.).  We ignore the
+            # returned rows because masking responses are not used downstream.
+            try:
+                handled_response = self._handle_errored_response(
+                    masking_request, response
+                )
+                response_data = self._unwrap_response_data(
+                    masking_request, handled_response
+                )
+
+                # Only attempt post-processing if we have post-processors and the response body
+                # is JSON-serializable (dict or list of dicts).
+                if masking_request.postprocessors and isinstance(
+                    response_data, (dict, list)
+                ):
+                    self.process_response_data(
+                        response_data,
+                        privacy_request.get_cached_identity_data(),
+                        cast(
+                            Optional[List[PostProcessorStrategy]],
+                            masking_request.postprocessors,
+                        ),
+                        handled_response,
+                    )
+            except (
+                PostProcessingException,
+                Exception,
+            ) as exc:  # pylint: disable=broad-except
+                # We do not want a post-processing failure to prevent the masking
+                # operation itself from succeeding.
+                logger.warning(
+                    "Post-processing of masking request response failed: {}",
+                    exc,
+                )
 
         self.unset_connector_state()
 

@@ -1,5 +1,8 @@
-import { ComponentChildren, FunctionComponent, h, VNode } from "preact";
+import { ComponentChildren, FunctionComponent, VNode } from "preact";
+import { HTMLAttributes } from "preact/compat";
 import { useEffect } from "preact/hooks";
+
+import { A11yDialogAttributes } from "~/lib/a11y-dialog";
 
 import { getConsentContext } from "../lib/consent-context";
 import {
@@ -7,13 +10,16 @@ import {
   PrivacyExperience,
   PrivacyNoticeWithPreference,
 } from "../lib/consent-types";
+import { FidesEventTargetType } from "../lib/events";
 import { messageExists } from "../lib/i18n";
 import { useI18n } from "../lib/i18n/i18n-context";
+import { useEvent } from "../lib/providers/event-context";
 import CloseButton from "./CloseButton";
 import ExperienceDescription from "./ExperienceDescription";
 import { GpcBadge } from "./GpcBadge";
 
 interface BannerProps {
+  attributes: A11yDialogAttributes;
   dismissable: boolean;
   onOpen: () => void;
   onClose: () => void;
@@ -30,6 +36,7 @@ interface BannerProps {
 }
 
 const ConsentBanner: FunctionComponent<BannerProps> = ({
+  attributes,
   dismissable,
   onOpen,
   onClose,
@@ -40,9 +47,10 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   className,
   isEmbedded,
 }) => {
+  const { container, dialog, title, closeButton } = attributes;
   const { i18n } = useI18n();
   const showGpcBadge = getConsentContext().globalPrivacyControl;
-
+  const { setTrigger } = useEvent();
   useEffect(() => {
     if (bannerIsOpen) {
       onOpen();
@@ -81,24 +89,42 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
   }
 
   return (
-    <div id="fides-banner-container" className={containerClassName}>
-      <div id="fides-banner">
-        <div id="fides-banner-inner">
+    <div
+      className={containerClassName}
+      {...(container as Partial<HTMLAttributes<HTMLDivElement>>)}
+      id={`${container.id}-container`}
+    >
+      <div id={container.id}>
+        <div
+          {...(dialog as Partial<HTMLAttributes<HTMLDivElement>>)}
+          id={`${container.id}-inner`}
+        >
           <CloseButton
             ariaLabel="Close banner"
-            onClick={onClose}
+            onClick={() => {
+              setTrigger({
+                type: FidesEventTargetType.BUTTON,
+                label: "Close banner",
+              });
+              closeButton.onClick();
+              onClose();
+            }}
             hidden={window.Fides?.options?.preventDismissal || !dismissable}
           />
-          <div id="fides-banner-inner-container">
+          <div id={`${container.id}-inner-container`}>
             <div className="fides-banner__col">
               <div id="fides-banner-heading">
-                <h1 id="fides-banner-title" className="fides-banner-title">
+                <h1
+                  className="fides-banner-title"
+                  {...(title as Partial<HTMLAttributes<HTMLHeadingElement>>)}
+                  id={`${container.id}-title`}
+                >
                   {bannerTitle}
                 </h1>
                 {showGpcBadge && <GpcBadge status={GpcStatus.APPLIED} />}
               </div>
               <div
-                id="fides-banner-description"
+                id={`${container.id}-description`}
                 className="fides-banner-description fides-banner__content"
               >
                 <ExperienceDescription
@@ -110,7 +136,7 @@ const ConsentBanner: FunctionComponent<BannerProps> = ({
                 />
                 {!!privacyNotices?.length && (
                   <div
-                    id="fides-banner-notices"
+                    id={`${container.id}-notices`}
                     className="fides-banner-notices"
                   >
                     {privacyNotices.map((notice, i) => (

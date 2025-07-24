@@ -2,6 +2,7 @@ from typing import Any, Dict, List, Optional, Union
 
 import pydash
 from loguru import logger
+from requests import Response
 
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.saas.strategy_configuration import (
@@ -44,6 +45,7 @@ class UnwrapPostProcessorStrategy(PostProcessorStrategy):
         data: Union[List[Dict[str, Any]], Dict[str, Any]],
         identity_data: Optional[Dict[str, Any]] = None,
         privacy_request: Optional[PrivacyRequest] = None,
+        response: Optional[Response] = None,
     ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
         """
         :param data: A list or dict

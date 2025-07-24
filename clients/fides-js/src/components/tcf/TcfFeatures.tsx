@@ -1,10 +1,5 @@
-import { h } from "preact";
-
 import { PrivacyExperience } from "../../lib/consent-types";
-import {
-  FidesEventDetailsPreference,
-  FidesEventDetailsTrigger,
-} from "../../lib/events";
+import { FidesEventDetailsPreference } from "../../lib/events";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { TCFFeatureRecord, TCFSpecialFeatureRecord } from "../../lib/tcf/types";
 import EmbeddedVendorList from "./EmbeddedVendorList";
@@ -43,7 +38,6 @@ const TcfFeatures = ({
   enabledSpecialFeatureIds: string[];
   onChange: (
     payload: UpdateEnabledIds,
-    triggerDetails: FidesEventDetailsTrigger,
     preferenceDetails: FidesEventDetailsPreference,
   ) => void;
 }) => {
@@ -60,7 +54,7 @@ const TcfFeatures = ({
           // The hideToggles prop ensures the UI doesn't show toggle controls,
           // and this no-op handler ensures no events are fired even if somehow triggered.
         }}
-        renderToggleChild={(f) => (
+        renderDropdownChild={(f) => (
           <FeatureChildren type="features" feature={f} />
         )}
         hideToggles
@@ -70,17 +64,16 @@ const TcfFeatures = ({
         title={i18n.t("static.tcf.special_features")}
         items={allSpecialFeatures ?? []}
         enabledIds={enabledSpecialFeatureIds}
-        onToggle={(newEnabledIds, item, triggerDetails) =>
+        onToggle={(newEnabledIds, item) =>
           onChange(
             { newEnabledIds, modelType: "specialFeatures" },
-            triggerDetails,
             {
               key: `tcf_special_feature_${item.id}`,
               type: "tcf_special_feature",
             },
           )
         }
-        renderToggleChild={(f) => (
+        renderDropdownChild={(f) => (
           <FeatureChildren type="specialFeatures" feature={f} />
         )}
       />

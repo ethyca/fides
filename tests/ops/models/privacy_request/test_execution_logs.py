@@ -8,8 +8,8 @@ from fides.api.models.privacy_request.execution_log import (
     ExecutionLog,
     can_run_checkpoint,
 )
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType, CurrentStep
-from fides.api.schemas.privacy_request import ExecutionLogStatus
 
 
 @pytest.fixture

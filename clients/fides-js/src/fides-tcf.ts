@@ -24,7 +24,11 @@ import {
   PrivacyExperience,
 } from "./lib/consent-types";
 import { initializeDebugger } from "./lib/debugger";
-import { dispatchFidesEvent } from "./lib/events";
+import {
+  dispatchConsentLoadedEvents,
+  dispatchFidesEvent,
+  dispatchReadyEvents,
+} from "./lib/events";
 import { DecodedFidesString, decodeFidesString } from "./lib/fides-string";
 import type { GppFunction } from "./lib/gpp/types";
 import { getCoreFides, raise, updateWindowFides } from "./lib/init-utils";
@@ -137,6 +141,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     ...config,
     options: { ...config.options, ...overrides.optionsOverrides },
   };
+  this.config = config;
   this.cookie = {
     ...getInitialCookie(config),
   };
@@ -193,36 +198,24 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     this.experience = initialFides.experience; // pre-fetched experience, if available, with consent applied
 
     // Vendors (GTM, etc.) can use this event to know when the consent is loaded.
-    dispatchFidesEvent("FidesConsentLoaded", this.cookie, {
+    dispatchConsentLoadedEvents(this.cookie, {
       shouldShowExperience: this.shouldShowExperience(),
-    });
-    /** @deprecated - FidesInitialized is used for backwards compatibility only */
-    dispatchFidesEvent("FidesInitialized", this.cookie, {
-      shouldShowExperience: this.shouldShowExperience(),
-      firstInit: true,
     });
   }
 
   const updatedFides = await initialize({
-    ...config,
     fides: this,
     initOverlay,
     renderOverlay,
     updateExperience: updateTCFExperience,
     overrides,
-    propertyId: config.propertyId,
   });
   Object.assign(this, updatedFides);
   updateWindowFides(this);
 
   // The window.Fides object and the Overlay are now fully initialized and ready to be used.
-  dispatchFidesEvent("FidesReady", this.cookie, {
+  dispatchReadyEvents(this.cookie, {
     shouldShowExperience: this.shouldShowExperience(),
-  });
-  /** @deprecated - FidesInitialized is used for backwards compatibility only */
-  dispatchFidesEvent("FidesInitialized", this.cookie, {
-    shouldShowExperience: this.shouldShowExperience(),
-    firstInit: false,
   });
 }
 

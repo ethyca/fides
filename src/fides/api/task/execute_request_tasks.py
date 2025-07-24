@@ -22,12 +22,15 @@ from fides.api.common_exceptions import (
 from fides.api.graph.config import TERMINATOR_ADDRESS, CollectionAddress
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest, RequestTask
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType, CurrentStep
-from fides.api.schemas.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.graph_task import (
     GraphTask,
     mark_current_and_downstream_nodes_as_failed,
 )
+from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
+from fides.api.task.manual.manual_task_utils import ManualTaskAddress
 from fides.api.task.task_resources import TaskResources
 from fides.api.tasks import DSR_QUEUE_NAME, DatabaseTask, celery_app
 from fides.api.util.cache import cache_task_tracking_key
@@ -107,7 +110,14 @@ def create_graph_task(
     to begin with - this may be unrecoverable and a new Privacy Request should be created.
     """
     try:
-        graph_task: GraphTask = GraphTask(resources)
+        collection_address = request_task.request_task_address
+
+        # Check if this is a manual task address
+        graph_task: GraphTask
+        if ManualTaskAddress.is_manual_task_address(collection_address):
+            graph_task = ManualTaskGraphTask(resources)
+        else:
+            graph_task = GraphTask(resources)
 
     except Exception as exc:
         logger.debug(
@@ -145,7 +155,7 @@ def can_run_task_body(
     if request_task.is_terminator_task:
         logger.info(
             "Terminator {} task reached.",
-            request_task.action_type.value,
+            request_task.action_type,
         )
         return False
     if request_task.is_root_task:
@@ -154,7 +164,7 @@ def can_run_task_body(
     if request_task.status != ExecutionLogStatus.pending:
         logger_method(request_task)(
             "Skipping {} task {} with status {}.",
-            request_task.action_type.value,
+            request_task.action_type,
             request_task.collection_address,
             request_task.status.value,
         )
@@ -288,17 +298,11 @@ def run_access_node(
                         )
                         # Currently, upstream tasks and "input keys" (which are built by data dependencies)
                         # are the same, but they may not be the same in the future.
-                        ordered_upstream_tasks: List[Optional[RequestTask]] = (
-                            _order_tasks_by_input_key(
+                        upstream_access_data: List[List[Row]] = (
+                            _build_upstream_access_data(
                                 graph_task.execution_node.input_keys, upstream_results
                             )
                         )
-                        # Pass in access data dependencies in the same order as the input keys.
-                        # If we don't have access data for an upstream node, pass in an empty list
-                        upstream_access_data: List[List[Row]] = [
-                            upstream.get_access_data() if upstream else []
-                            for upstream in ordered_upstream_tasks
-                        ]
                         # Run the main access function
                         graph_task.access_request(*upstream_access_data)
 
@@ -349,7 +353,7 @@ def run_erasure_node(
                     session,
                 ) as resources:
                     # Build GraphTask resource to facilitate execution
-                    graph_task: GraphTask = create_graph_task(
+                    erasure_graph_task: GraphTask = create_graph_task(
                         session, request_task, resources
                     )
                     # Get access data that was saved in the erasure format that was collected from the
@@ -358,8 +362,24 @@ def run_erasure_node(
                         request_task.get_data_for_erasures() or []
                     )
 
-                    # Run the main erasure function!
-                    graph_task.erasure_request(retrieved_data)
+                    upstream_access_data: List[List[Row]] = []
+
+                    try:
+                        upstream_access_data = (
+                            get_upstream_access_data_for_erasure_task(
+                                request_task, session, resources
+                            )
+                        )
+                    except Exception as e:
+                        logger.error(
+                            f"Unable to get upstream access data for erasure task {request_task.collection_address}: {e}"
+                        )
+
+                    # Run the main erasure function, passing along the upstream access data.
+                    # The extra data is currently only needed for generating BigQuery delete statements.
+                    erasure_graph_task.erasure_request(
+                        retrieved_data, inputs=upstream_access_data
+                    )
 
     queue_downstream_tasks_with_retries(
         self,
@@ -449,7 +469,7 @@ def log_task_complete(request_task: RequestTask) -> None:
     """Convenience method for logging task completion"""
     logger.info(
         "{} task {} is {}.",
-        request_task.action_type.value.capitalize(),
+        request_task.action_type.capitalize(),
         request_task.collection_address,
         request_task.status.value,
     )
@@ -477,10 +497,77 @@ def _order_tasks_by_input_key(
     return tasks
 
 
+def get_upstream_access_data_for_erasure_task(
+    erasure_request_task: RequestTask,
+    session: Session,
+    resources: TaskResources,
+) -> List[List[Row]]:
+    """
+    Retrieves upstream access data for a given erasure request task.
+
+    This function finds the corresponding access task for the erasure task,
+    creates a GraphTask to extract input keys, and builds the upstream access data
+    needed for erasure operations (particularly for BigQuery delete statements).
+
+    Args:
+        erasure_request_task: The erasure task that needs upstream access data
+        session: Database session for querying
+        resources: Task resources for creating GraphTask
+
+    Returns:
+        List[List[Row]]: Upstream access data ordered by input keys
+
+    Raises:
+        Exception: If the corresponding access task cannot be found
+    """
+    # Get the corresponding access task for the current erasure task
+    access_request_task = (
+        session.query(RequestTask)
+        .filter(
+            RequestTask.privacy_request_id == erasure_request_task.privacy_request_id,
+            RequestTask.collection_address == erasure_request_task.collection_address,
+            RequestTask.action_type == ActionType.access,
+        )
+        .first()
+    )
+
+    if not access_request_task:
+        raise Exception(
+            f"Unable to find access request task for erasure task {erasure_request_task.collection_address}"
+        )
+
+    # Convert the request task to a GraphTask to get the input_keys
+    access_graph_task: GraphTask = create_graph_task(
+        session, access_request_task, resources
+    )
+
+    # Build and return the upstream access data
+    return _build_upstream_access_data(
+        access_graph_task.execution_node.input_keys,
+        access_request_task.upstream_tasks_objects(session),
+    )
+
+
+def _build_upstream_access_data(
+    input_keys: List[CollectionAddress],
+    upstream_tasks: Query,
+) -> List[List[Row]]:
+    """
+    Helper function to build the access data for the current node.
+    The access data is passed in the same order as the input keys.
+    If we don't have access data for an upstream node, return an empty list.
+    """
+
+    ordered_upstream: List[Optional[RequestTask]] = _order_tasks_by_input_key(
+        input_keys, upstream_tasks
+    )
+    return [task.get_access_data() if task else [] for task in ordered_upstream]
+
+
 mapping = {
-    ActionType.access: run_access_node,
-    ActionType.erasure: run_erasure_node,
-    ActionType.consent: run_consent_node,
+    ActionType.access.value: run_access_node,
+    ActionType.erasure.value: run_erasure_node,
+    ActionType.consent.value: run_consent_node,
 }
 
 
@@ -504,7 +591,7 @@ def log_task_queued(request_task: RequestTask, location: str) -> None:
     """Helper for logging that tasks are queued"""
     logger_method(request_task)(
         "Queuing {} task {} from {}.",
-        request_task.action_type.value,
+        request_task.action_type,
         request_task.collection_address,
         location,
     )

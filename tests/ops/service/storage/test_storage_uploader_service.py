@@ -625,17 +625,9 @@ class TestWriteToInMemoryBuffer:
         with zipfile.open("mongo:foobar.csv") as customer_csv:
             df = pd.read_csv(customer_csv, encoding="utf-8")
 
-            assert list(df.columns) == [
-                "_id",
-                "customer.x",
-                "customer.y",
-            ]
+            assert list(df.columns) == ["_id", "customer"]
 
-            assert list(df.iloc[0]) == [
-                1,
-                1,
-                "[1, 2]",
-            ]
+            assert list(df.iloc[0]) == [1, "{'x': 1, 'y': [1, 2]}"]
 
     def test_html_format(self, data, privacy_request):
         buff = write_to_in_memory_buffer("html", data, privacy_request)
@@ -645,19 +637,13 @@ class TestWriteToInMemoryBuffer:
         assert zipfile.namelist() == [
             "data/main.css",
             "data/back.svg",
-            "data/mongo/address/1.html",
-            "data/mongo/address/2.html",
-            "data/mongo/address/index.html",
-            "data/mongo/foobar/1.html",
-            "data/mongo/foobar/index.html",
-            "data/mongo/index.html",
-            "data/mysql/customer/1.html",
-            "data/mysql/customer/2.html",
-            "data/mysql/customer/index.html",
-            "data/mysql/index.html",
-            "data/manual/filing_cabinet/1.html",
             "data/manual/filing_cabinet/index.html",
             "data/manual/index.html",
+            "data/mongo/address/index.html",
+            "data/mongo/foobar/index.html",
+            "data/mongo/index.html",
+            "data/mysql/customer/index.html",
+            "data/mysql/index.html",
             "welcome.html",
         ]
 
@@ -685,16 +671,23 @@ class TestWriteToInMemoryBuffer:
         assert isinstance(buff, BytesIO)
 
         zipfile = ZipFile(buff)
+        assert zipfile.namelist() == [
+            "mongo:address.csv",
+            "mysql:customer.csv",
+            "mongo:foobar.csv",
+            "filing_cabinet.csv",
+        ]
 
         with zipfile.open("mongo:address.csv", "r") as address_csv:
-            data = address_csv.read().decode(CONFIG.security.encoding)
-
-            decrypted = decrypt_combined_nonce_and_message(
-                data, self.key.encode(CONFIG.security.encoding)
+            encrypted_data = address_csv.read().decode(CONFIG.security.encoding)
+            decrypted_data = decrypt_combined_nonce_and_message(
+                encrypted_data, self.key.encode(CONFIG.security.encoding)
+            )
+            df = pd.read_csv(
+                BytesIO(decrypted_data.encode(CONFIG.security.encoding)),
+                encoding=CONFIG.security.encoding,
             )
 
-            binary_stream = BytesIO(decrypted.encode(CONFIG.security.encoding))
-            df = pd.read_csv(binary_stream, encoding=CONFIG.security.encoding)
             assert list(df.columns) == [
                 "id",
                 "zip",
@@ -705,7 +698,6 @@ class TestWriteToInMemoryBuffer:
                 10024,
                 "Cañon City",
             ]
-
             assert list(df.iloc[1]) == [
                 2,
                 10011,

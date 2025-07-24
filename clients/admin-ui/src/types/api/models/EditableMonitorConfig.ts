@@ -41,4 +41,8 @@ export type EditableMonitorConfig = {
    * Indicates whether the monitor is enabled or not. Disabled monitors won't be executed
    */
   enabled?: boolean | null;
+  /**
+   * Reference to a shared monitor configuration
+   */
+  shared_config_id?: string | null;
 };

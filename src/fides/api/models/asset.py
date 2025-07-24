@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+from enum import Enum
 from typing import Any, Dict, Optional, Type
 
 from sqlalchemy import (
     ARRAY,
-    BOOLEAN,
     Column,
     ForeignKey,
     Index,
@@ -20,7 +20,19 @@ from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import relationship
 
 from fides.api.db.base_class import Base
+from fides.api.db.util import EnumColumn
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
+
+
+class ConsentStatus(str, Enum):
+    """
+    Consent status of the asset
+    """
+
+    with_consent = "with_consent"
+    without_consent = "without_consent"
+    exempt = "exempt"
+    unknown = "unknown"
 
 
 class Asset(Base):
@@ -35,7 +47,12 @@ class Asset(Base):
     parent = Column(ARRAY(String), server_default="{}", nullable=False)
     parent_domain = Column(String)
     locations = Column(ARRAY(String), server_default="{}", nullable=False)
-    with_consent = Column(BOOLEAN, default=False, nullable=False)
+    consent_status = Column(
+        EnumColumn(ConsentStatus, native_enum=True),
+        default=ConsentStatus.unknown,
+        server_default="unknown",
+        nullable=False,
+    )
     data_uses = Column(ARRAY(String), server_default="{}", nullable=False)
     description = Column(String, nullable=True)
     page = Column(ARRAY(String), server_default="{}", nullable=False)

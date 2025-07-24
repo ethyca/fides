@@ -14,7 +14,7 @@ import { debounce } from "../utils";
 
 const OPTIONS_LIMIT = 25;
 
-const dropdownRender = (
+const popupRender = (
   menu: ReactNode,
   onAddSystem: MouseEventHandler<HTMLElement>,
 ) => {
@@ -68,12 +68,17 @@ export const SystemSelect = ({ onAddSystem, ...props }: SystemSelectProps) => {
     <Select
       placeholder="Search..."
       aria-label="Search for a system to select"
-      dropdownStyle={{ minWidth: "500px" }}
-      dropdownRender={
-        onAddSystem ? (menu) => dropdownRender(menu, onAddSystem) : undefined
+      popupRender={
+        onAddSystem ? (menu) => popupRender(menu, onAddSystem) : undefined
       }
       data-testid="system-select"
       {...props}
+      styles={{
+        popup: {
+          root: { minWidth: "500px" },
+        },
+        ...props.styles,
+      }}
       filterOption={false}
       options={options}
       onSearch={onSearch}

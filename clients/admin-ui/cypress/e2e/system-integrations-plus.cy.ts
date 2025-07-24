@@ -24,8 +24,8 @@ describe("System integrations", () => {
       cy.getByTestId("edit-btn").click();
     });
     cy.wait("@getDict");
-    cy.getByTestId("tab-Integrations").click();
-    cy.getByTestId("tab-panel-Integrations").should("exist");
+    cy.getAntTab("Integrations").click({ force: true });
+    cy.get("#rc-tabs-0-panel-integrations").should("be.visible");
   });
 
   describe("Integration search", () => {
@@ -33,7 +33,7 @@ describe("System integrations", () => {
       cy.getByTestId("system-fidesctl_system").within(() => {
         cy.getByTestId("edit-btn").click();
       });
-      cy.getByTestId("tab-Integrations").click();
+      cy.getAntTab("Integrations").click({ force: true });
       cy.getByTestId("select-dropdown-btn").click();
     });
 
@@ -57,7 +57,7 @@ describe("System integrations", () => {
       cy.getByTestId("system-fidesctl_system").within(() => {
         cy.getByTestId("edit-btn").click();
       });
-      cy.getByTestId("tab-Integrations").click();
+      cy.getAntTab("Integrations").click({ force: true });
       cy.getByTestId("select-dropdown-btn").click();
 
       cy.getByTestId("input-search-integrations").type("PostgreSQL");
@@ -68,8 +68,8 @@ describe("System integrations", () => {
 
     // Verify Postgres shows access and erasure by default
     it("should display Request types (enabled-actions) field", () => {
-      cy.getByTestId("enabled-actions").should("exist");
-      cy.getByTestId("enabled-actions").within(() => {
+      cy.getByTestId("controlled-select-enabled_actions").should("exist");
+      cy.getByTestId("controlled-select-enabled_actions").within(() => {
         cy.contains("Access");
         cy.contains("Erasure");
         cy.contains("Consent").should("not.exist");
@@ -94,7 +94,7 @@ describe("System integrations", () => {
       cy.getByTestId("system-fidesctl_system").within(() => {
         cy.getByTestId("edit-btn").click();
       });
-      cy.getByTestId("tab-Integrations").click();
+      cy.getAntTab("Integrations").click({ force: true });
     });
     it("should render the consent automation accordion panel", () => {
       cy.getByTestId("accordion-consent-automation").click();

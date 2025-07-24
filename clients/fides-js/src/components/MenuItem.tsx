@@ -1,4 +1,4 @@
-import { FunctionComponent, h } from "preact";
+import { FunctionComponent } from "preact";
 import { JSXInternal } from "preact/src/jsx";
 
 interface MenuItemProps extends JSXInternal.HTMLAttributes<HTMLButtonElement> {
@@ -13,7 +13,8 @@ const MenuItem: FunctionComponent<MenuItemProps> = ({
 }) => (
   <button
     type="button"
-    aria-pressed={isActive || undefined}
+    role="menuitemradio"
+    aria-checked={isActive || undefined}
     {...props}
     className={`fides-banner-button fides-menu-item ${className || ""}`}
   >

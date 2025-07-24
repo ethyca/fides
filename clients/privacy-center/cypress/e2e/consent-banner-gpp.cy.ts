@@ -202,7 +202,7 @@ describe("Fides-js GPP extension", () => {
             // date-based and changes each day. The first 6 characters are the
             // "Created" date, the next 6 are the "Last Updated" date.
             expect(args[3][0].pingData.gppString).to.match(
-              /DBABMA~[a-zA-Z0-9_]{6}[a-zA-Z0-9_]{6}AGXABBENArEoABaAAEAAAAAAABEAAiAA/,
+              /DBABMA~.{6}.{6}AGXABBENArEoABaAAEAAAAAAABEAAiAA/,
             );
             // the `PurposeConsents` should match the gpp string
             expect(
@@ -472,7 +472,7 @@ describe("Fides-js GPP extension", () => {
       });
 
       cy.waitUntilFidesInitialized().then(() => {
-        cy.get("@FidesInitialized").should("have.been.calledOnce");
+        cy.get("@FidesReady").should("have.been.calledOnce");
 
         cy.window().then((win) => {
           win.__gpp("addEventListener", cy.stub().as("gppListener"));
@@ -580,7 +580,6 @@ describe("Fides-js GPP extension", () => {
           .then((args) => {
             const [data] = args;
             expect(data.pingData.applicableSections).to.eql([8]);
-            // TODO: (HJ-196) as locations and regulations are set, this value may change as it is currently hard coded
             expect(data.pingData.supportedAPIs).to.eql([
               "8:usca",
               "10:usco",
@@ -594,6 +593,7 @@ describe("Fides-js GPP extension", () => {
               "19:usne",
               "20:usnh",
               "21:usnj",
+              "15:usor",
               "22:ustn",
               "16:ustx",
             ]);

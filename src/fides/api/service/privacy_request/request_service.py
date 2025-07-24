@@ -16,10 +16,10 @@ from fides.api.models.privacy_request import (
     PrivacyRequest,
     RequestTask,
 )
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import (
-    ExecutionLogStatus,
     PrivacyRequestResponse,
     PrivacyRequestStatus,
 )
@@ -32,6 +32,7 @@ from fides.api.util.cache import (
     get_async_task_tracking_cache_key,
     get_cache,
 )
+from fides.api.util.lock import redis_lock
 from fides.common.api.v1.urn_registry import PRIVACY_REQUESTS, V1_URL_PREFIX
 from fides.config import CONFIG
 
@@ -411,18 +412,9 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
     """
     redis_conn: FidesopsRedis = get_cache()
 
-    # Create a lock with a timeout of 10 minutes (600 seconds)
-    # This ensures the lock is eventually released even if the process crashes
-    lock = redis_conn.lock(REQUEUE_INTERRUPTED_TASKS_LOCK, timeout=600)
-
-    # Try to acquire the lock without blocking
-    if not lock.acquire(blocking=False):
-        logger.info(
-            "Another instance of requeue_interrupted_tasks is already running. Skipping this execution."
-        )
-        return
-
-    try:
+    with redis_lock(REQUEUE_INTERRUPTED_TASKS_LOCK, 600) as lock:
+        if not lock:
+            return
         with self.get_new_session() as db:
             logger.debug("Starting check for interrupted tasks to requeue")
 
@@ -524,6 +516,3 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                         _requeue_privacy_request(db, privacy_request)
                     except PrivacyRequestError as exc:
                         logger.error(exc.message)
-    finally:
-        # Always release the lock, even if an exception occurs
-        lock.release()

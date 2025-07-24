@@ -137,7 +137,7 @@ class TestStripeConnector:
         "dsr_version",
         ["use_dsr_3_0", "use_dsr_2_0"],
     )
-    async def test_non_strict_erasure_request_with_email(
+    async def test_stripe_erasure_request_with_email(
         self,
         stripe_runner: ConnectorRunner,
         policy: Policy,
@@ -162,7 +162,7 @@ class TestStripeConnector:
         (
             _,
             erasure_results,
-        ) = await stripe_runner.non_strict_erasure_request(
+        ) = await stripe_runner.erasure_request(
             access_policy=policy,
             erasure_policy=erasure_policy_all_categories,
             identities={"email": stripe_identity_email},

@@ -1,4 +1,4 @@
-import { Fragment, h, VNode } from "preact";
+import { Fragment, VNode } from "preact";
 import { useEffect, useState } from "preact/hooks";
 
 import {
@@ -8,15 +8,17 @@ import {
   PrivacyExperience,
   PrivacyNotice,
 } from "../lib/consent-types";
+import { FidesEventTargetType } from "../lib/events";
 import { useMediaQuery } from "../lib/hooks/useMediaQuery";
 import { DEFAULT_LOCALE, Locale, messageExists } from "../lib/i18n";
 import { useI18n } from "../lib/i18n/i18n-context";
+import { useEvent } from "../lib/providers/event-context";
 import BrandLink from "./BrandLink";
 import Button from "./Button";
 import LanguageSelector from "./LanguageSelector";
 import PrivacyPolicyLink from "./PrivacyPolicyLink";
 
-interface ConsentButtonProps {
+interface ConsentButtonsProps {
   availableLocales?: Locale[];
   onManagePreferencesClick?: () => void;
   renderFirstButton?: () => VNode | null;
@@ -43,15 +45,16 @@ export const ConsentButtons = ({
   isTCF,
   isMinimalTCF,
   isGVLLoading,
-}: ConsentButtonProps) => {
+}: ConsentButtonsProps) => {
   const [isLoadingModal, setIsLoadingModal] = useState<boolean>(false);
   const { i18n } = useI18n();
+  const { setTrigger } = useEvent();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const includeLanguageSelector = i18n.availableLanguages?.length > 1;
   const includePrivacyPolicyLink =
     messageExists(i18n, "exp.privacy_policy_link_label") &&
     messageExists(i18n, "exp.privacy_policy_url");
-  const handleManagePreferencesClick = () => {
+  const handleTCFManagePreferencesClick = () => {
     const isReady = !isTCF || !isMinimalTCF;
     setIsLoadingModal(!isReady);
     if (onManagePreferencesClick && isReady) {
@@ -62,7 +65,7 @@ export const ConsentButtons = ({
 
   useEffect(() => {
     if (isLoadingModal && !isMinimalTCF) {
-      handleManagePreferencesClick();
+      handleTCFManagePreferencesClick();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoadingModal, isMinimalTCF]);
@@ -83,8 +86,15 @@ export const ConsentButtons = ({
               <Button
                 buttonType={ButtonType.SECONDARY}
                 label={i18n.t("exp.privacy_preferences_link_label")}
-                onClick={handleManagePreferencesClick}
+                onClick={() => {
+                  setTrigger({
+                    type: FidesEventTargetType.BUTTON,
+                    label: i18n.t("exp.privacy_preferences_link_label"),
+                  });
+                  handleTCFManagePreferencesClick();
+                }}
                 className="fides-manage-preferences-button"
+                id="fides-manage-preferences-button"
                 loading={isLoadingModal}
               />
             )}
@@ -92,16 +102,30 @@ export const ConsentButtons = ({
               <Button
                 buttonType={ButtonType.PRIMARY}
                 label={i18n.t("exp.reject_button_label")}
-                onClick={onRejectAll}
+                onClick={() => {
+                  setTrigger({
+                    type: FidesEventTargetType.BUTTON,
+                    label: i18n.t("exp.reject_button_label"),
+                  });
+                  onRejectAll();
+                }}
                 className="fides-reject-all-button"
+                id="fides-reject-all-button"
                 loading={isGVLLoading}
               />
             )}
             <Button
               buttonType={ButtonType.PRIMARY}
               label={i18n.t("exp.accept_button_label")}
-              onClick={onAcceptAll}
+              onClick={() => {
+                setTrigger({
+                  type: FidesEventTargetType.BUTTON,
+                  label: i18n.t("exp.accept_button_label"),
+                });
+                onAcceptAll();
+              }}
               className="fides-accept-all-button"
+              id="fides-accept-all-button"
               loading={isGVLLoading}
             />
           </Fragment>
@@ -127,8 +151,15 @@ export const ConsentButtons = ({
           <Button
             buttonType={isMobile ? ButtonType.SECONDARY : ButtonType.TERTIARY}
             label={i18n.t("exp.privacy_preferences_link_label")}
-            onClick={onManagePreferencesClick}
+            onClick={() => {
+              setTrigger({
+                type: FidesEventTargetType.BUTTON,
+                label: i18n.t("exp.privacy_preferences_link_label"),
+              });
+              onManagePreferencesClick();
+            }}
             className="fides-manage-preferences-button"
+            id="fides-manage-preferences-button"
           />
         )}
         {includePrivacyPolicyLink && <PrivacyPolicyLink />}
@@ -166,6 +197,7 @@ export const NoticeConsentButtons = ({
   options,
 }: NoticeConsentButtonProps) => {
   const { i18n } = useI18n();
+  const { setTrigger } = useEvent();
   if (!experience.experience_config || !experience.privacy_notices) {
     return null;
   }
@@ -188,7 +220,13 @@ export const NoticeConsentButtons = ({
         <Button
           buttonType={ButtonType.PRIMARY}
           label={i18n.t("exp.acknowledge_button_label")}
-          onClick={handleAcknowledgeNotices}
+          onClick={() => {
+            setTrigger({
+              type: FidesEventTargetType.BUTTON,
+              label: i18n.t("exp.acknowledge_button_label"),
+            });
+            handleAcknowledgeNotices();
+          }}
           className="fides-acknowledge-button"
         />
       );
@@ -198,8 +236,15 @@ export const NoticeConsentButtons = ({
         <Button
           buttonType={hideOptInOut ? ButtonType.PRIMARY : ButtonType.SECONDARY}
           label={i18n.t("exp.save_button_label")}
-          onClick={handleSave}
+          onClick={() => {
+            setTrigger({
+              type: FidesEventTargetType.BUTTON,
+              label: i18n.t("exp.save_button_label"),
+            });
+            handleSave();
+          }}
           className="fides-save-button"
+          id="fides-save-button"
         />
       );
     }

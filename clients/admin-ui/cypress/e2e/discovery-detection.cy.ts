@@ -9,10 +9,12 @@ import {
   DATA_DISCOVERY_ROUTE,
   DETECTION_DISCOVERY_ACTIVITY_ROUTE,
 } from "~/features/common/nav/routes";
+import { RoleRegistryEnum } from "~/types/api/models/RoleRegistryEnum";
 
 describe("discovery and detection", () => {
   beforeEach(() => {
     cy.login();
+    cy.assumeRole(RoleRegistryEnum.OWNER);
     stubPlus(true);
     stubStagedResourceActions();
     stubTaxonomyEntities();
@@ -53,6 +55,10 @@ describe("discovery and detection", () => {
         ).within(() => {
           cy.getByTestId("action-Monitor").click();
           cy.wait("@confirmResource");
+        });
+        cy.getByTestId(
+          "row-my_bigquery_monitor.prj-bigquery-000000.test_dataset_1-col-action",
+        ).within(() => {
           cy.getByTestId("action-Ignore").click();
           cy.wait("@ignoreResource");
         });
@@ -78,12 +84,16 @@ describe("discovery and detection", () => {
         ).should("contain", "Pending review");
       });
 
-      it("should be able to confirm or ignore", () => {
+      it("should be able to monitor or ignore", () => {
         cy.getByTestId(
           "row-my_bigquery_monitor.prj-bigquery-000001.test_dataset_2-col-action",
         ).within(() => {
-          cy.getByTestId("action-Confirm").click();
+          cy.getByTestId("action-Monitor").click();
           cy.wait("@confirmResource");
+        });
+        cy.getByTestId(
+          "row-my_bigquery_monitor.prj-bigquery-000001.test_dataset_2-col-action",
+        ).within(() => {
           cy.getByTestId("action-Ignore").click();
           cy.wait("@ignoreResource");
         });
@@ -146,6 +156,10 @@ describe("discovery and detection", () => {
         ).within(() => {
           cy.getByTestId("action-Confirm").click();
           cy.wait("@promoteResource");
+        });
+        cy.getByTestId(
+          "row-my_bigquery_monitor.prj-bigquery-000002.test_dataset_4-col-action",
+        ).within(() => {
           cy.getByTestId("action-Ignore").click();
           cy.wait("@ignoreResource");
         });
@@ -246,7 +260,7 @@ describe("discovery and detection", () => {
 
       describe("Tab filter views", () => {
         it("should be able to switch to monitored tab", () => {
-          cy.getByTestId("tab-Monitored").click();
+          cy.getAntTab("Monitored").click({ force: true });
           cy.wait("@getAllMonitoredTables");
 
           cy.getByTestId(
@@ -255,7 +269,7 @@ describe("discovery and detection", () => {
         });
 
         it("should allow monitored tables to be muted", () => {
-          cy.getByTestId("tab-Monitored").click();
+          cy.getAntTab("Monitored").click({ force: true });
           cy.getByTestId(
             "row-my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20-col-actions",
           ).within(() => {
@@ -265,7 +279,7 @@ describe("discovery and detection", () => {
         });
 
         it("should be able to switch to unmonitored tab", () => {
-          cy.getByTestId("tab-Unmonitored").click();
+          cy.getAntTab("Unmonitored").click({ force: true });
           cy.wait("@getAllMutedTables");
 
           cy.getByTestId(
@@ -274,7 +288,7 @@ describe("discovery and detection", () => {
         });
 
         it("should allow muted tables to be monitored", () => {
-          cy.getByTestId("tab-Unmonitored").click();
+          cy.getAntTab("Unmonitored").click({ force: true });
           cy.getByTestId(
             "row-my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-21-col-actions",
           ).within(() => {

@@ -4,7 +4,7 @@ from pathlib import Path
 
 import nox
 
-from constants_nox import COMPOSE_FILE_LIST
+from constants_nox import COMPOSE_FILE_LIST, RUN
 from run_infrastructure import run_infrastructure
 
 
@@ -112,3 +112,25 @@ def init_saas_connector(session: nox.Session) -> None:
         session.error(
             f"Files for {session.posargs[0]} already exist, skipping initialization"
         )
+
+
+@nox.session()
+@nox.parametrize(
+    "db_command",
+    [
+        nox.param("init", id="init"),
+        nox.param("reset", id="reset"),
+    ],
+)
+def db(session: nox.Session, db_command: str) -> None:
+    """Run commands against the database."""
+    teardown(session)
+    if db_command == "reset":
+        reset_command = ("docker", "volume", "rm", "-f", "fides_app-db-data")
+        session.run(*reset_command, external=True)
+    init_command = (
+        "python",
+        "-c",
+        "from fides.api.db.database import init_db; from fides.config import get_config; config = get_config(); init_db(config.database.sync_database_uri)",
+    )
+    session.run(*RUN, *init_command, external=True)

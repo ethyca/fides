@@ -258,7 +258,10 @@ describe("Taxonomy management page", () => {
       cy.getByTestId("taxonomy-text-input-node")
         .find("input")
         .clear()
-        .type("My new label{enter}", { delay: 50, waitForAnimations: true });
+        .type("My new label{enter}", {
+          delay: 0,
+          waitForAnimations: true,
+        });
 
       cy.wait("@postDataCategory").then((interception) => {
         const { body } = interception.request;

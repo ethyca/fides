@@ -4,4 +4,6 @@ export enum ConnectionCategory {
   DATABASE = "Database",
   IDENTITY_PROVIDER = "Identity Provider",
   WEBSITE = "Website",
+  CRM = "CRM",
+  MANUAL = "Manual",
 }

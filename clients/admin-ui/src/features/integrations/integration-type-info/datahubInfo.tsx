@@ -7,6 +7,7 @@ import {
 } from "~/features/common/copy/components";
 import ShowMoreContent from "~/features/common/copy/ShowMoreContent";
 import { ConnectionCategory } from "~/features/integrations/ConnectionCategory";
+import { IntegrationFeatureEnum } from "~/features/integrations/IntegrationFeatureEnum";
 import { AccessLevel, ConnectionType } from "~/types/api";
 
 export const DATAHUB_PLACEHOLDER = {
@@ -61,6 +62,7 @@ const DATAHUB_TYPE_INFO = {
   overview: <DatahubOverview />,
   tags: DATAHUB_TAGS,
   description: DATAHUB_DESCRIPTION,
+  enabledFeatures: [IntegrationFeatureEnum.DATA_SYNC],
 };
 
 export default DATAHUB_TYPE_INFO;

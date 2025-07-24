@@ -78,17 +78,17 @@ export const allNoticesAreDefaultOptIn = (
 
 /**
  * Construct user location str to be ingested by Fides API
- * Returns null if geolocation cannot be constructed by provided params, e.g. us_ca
+ * Returns undefined if geolocation cannot be constructed by provided params, e.g. us_ca
  */
 export const constructFidesRegionString = (
-  geoLocation?: UserGeolocation | null,
-): string | null => {
+  geoLocation: UserGeolocation | undefined | null,
+): string | undefined => {
   fidesDebugger("constructing geolocation...");
   if (!geoLocation) {
     fidesDebugger(
       "cannot construct user location since geoLocation is undefined or null",
     );
-    return null;
+    return undefined;
   }
   if (
     geoLocation.location &&
@@ -107,7 +107,7 @@ export const constructFidesRegionString = (
   fidesDebugger(
     "cannot construct user location from provided geoLocation params...",
   );
-  return null;
+  return undefined;
 };
 
 /**
@@ -234,7 +234,7 @@ export const getTcfDefaultPreference = (tcfObject: TcfModelsRecord) =>
  * The banner WILL be shown if:
  * - No prior consent exists
  * - For TCF experiences, when version_hash doesn't match saved hash
- * - Prior consent was only recorded via "dismiss" or "gpc" methods
+ * - Prior consent was only recorded via the "gpc" method
  *
  * @param experience - The privacy experience configuration
  * @param cookie - The current Fides cookie state
@@ -260,15 +260,16 @@ export const shouldResurfaceBanner = (
   if (!isPrivacyExperience(experience)) {
     return false;
   }
-  // Always resurface banner for TCF unless the saved version_hash matches
+  // Always resurface banner for TCF unless consent was set by override
+  // or the saved version_hash matches
   if (
     experience.experience_config?.component === ComponentType.TCF_OVERLAY &&
     !!cookie
   ) {
-    if (
-      experience.meta?.version_hash &&
-      cookie.fides_meta.consentMethod !== ConsentMethod.DISMISS
-    ) {
+    if (!!options && isConsentOverride(options)) {
+      return false;
+    }
+    if (experience.meta?.version_hash) {
       return experience.meta.version_hash !== cookie.tcf_version_hash;
     }
     return true;
@@ -289,15 +290,13 @@ export const shouldResurfaceBanner = (
     return true;
   }
   // Never surface banner if consent was set by override
-  if (options && isConsentOverride(options)) {
+  if (!!options && isConsentOverride(options)) {
     return false;
   }
-
   // resurface in the special case where the saved consent is "gpc"
   if (cookie?.fides_meta.consentMethod === ConsentMethod.GPC) {
     return true;
   }
-
   // Lastly, if we do have a prior consent state, resurface if we find *any*
   // notices that don't have prior consent in that state
   const hasConsentInCookie = (

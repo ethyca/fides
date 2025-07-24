@@ -3,7 +3,10 @@ import {
   Heading,
   Modal,
   ModalBody,
+  ModalCloseButton,
   ModalContent,
+  ModalContentProps,
+  ModalFooter,
   ModalHeader,
   ModalOverlay,
   ModalProps,
@@ -13,6 +16,9 @@ import { ReactNode } from "react";
 interface FormModalProps extends ModalProps {
   title: string;
   children: ReactNode;
+  modalContentProps?: ModalContentProps;
+  showCloseButton?: boolean;
+  footer?: ReactNode;
 }
 
 const FormModal = ({
@@ -20,6 +26,9 @@ const FormModal = ({
   children,
   isOpen,
   onClose,
+  modalContentProps,
+  showCloseButton = false,
+  footer,
   ...props
 }: FormModalProps) => (
   <Modal
@@ -32,7 +41,13 @@ const FormModal = ({
     {...props}
   >
     <ModalOverlay />
-    <ModalContent textAlign="left" p={0} data-testid="add-modal-content">
+    <ModalContent
+      textAlign="left"
+      p={0}
+      data-testid="add-modal-content"
+      {...modalContentProps}
+    >
+      {showCloseButton && <ModalCloseButton />}
       <ModalHeader p={0}>
         <Box
           backgroundColor="gray.50"
@@ -53,6 +68,7 @@ const FormModal = ({
       <ModalBody pb={4} overflow="auto">
         {children}
       </ModalBody>
+      {footer && <ModalFooter>{footer}</ModalFooter>}
     </ModalContent>
   </Modal>
 );

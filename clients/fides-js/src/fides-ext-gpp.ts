@@ -32,10 +32,11 @@ import { formatFidesStringWithGpp } from "./lib/fides-string";
 import {
   CMP_VERSION,
   FIDES_US_REGION_TO_GPP_SECTION,
+  GPPUSApproach,
 } from "./lib/gpp/constants";
 import { fidesStringToConsent } from "./lib/gpp/string-to-consent";
 import { makeStub } from "./lib/gpp/stub";
-import { GppFunction, GPPUSApproach } from "./lib/gpp/types";
+import { GppFunction } from "./lib/gpp/types";
 import {
   setGppNoticesProvidedFromExperience,
   setGppOptOutsFromCookieAndExperience,

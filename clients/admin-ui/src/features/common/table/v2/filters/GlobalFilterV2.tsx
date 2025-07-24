@@ -29,11 +29,12 @@ export const GlobalFilterV2 = ({
     setGlobalFilter(undefined);
   }, [setValue, setGlobalFilter]);
 
+  // Keep local state in sync with the externally-managed `globalFilter`.
   useEffect(() => {
-    if (!value) {
-      onClear();
+    if (!globalFilter) {
+      setValue(undefined);
     }
-  }, [value, onClear]);
+  }, [globalFilter]);
 
   return (
     <Box maxWidth="424px" width="100%">

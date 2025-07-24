@@ -314,6 +314,20 @@ dataset:
             fides_meta:
               data_type: integer
               primary_key: True
+      - name: field_list_example
+        fields:
+          - name: id
+            fides_meta:
+              data_type: integer
+              primary_key: True
+          - name: customer_name
+            data_categories: [user.name]
+            fidesops_meta:
+              data_type: string
+          - name: customer_email
+            data_categories: [user.contact.email]
+            fidesops_meta:
+              data_type: string
 
   - fides_key: saas_connector_external_example
     name: An Example External SaaS Dataset

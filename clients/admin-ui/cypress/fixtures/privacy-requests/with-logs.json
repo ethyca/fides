@@ -140,92 +140,204 @@
             "connection_key": "klavyio_klaviyo_api",
             "collection_name": "profiles",
             "fields_affected": [],
-            "message": "Either no masking request configured or no valid masking request for profiles. Check that MASKING_STRICT env var is appropriately set",
+            "message": "Connector request failed with status code 401",
             "action_type": "erasure",
             "status": "error",
             "updated_at": "2025-04-07T17:47:13.092406Z",
             "user_id": null
           }
         ],
-        "teststest_shopify_api": [
+        "postgres_example_test_dataset": [
           {
-            "connection_key": "teststest_shopify_api",
-            "collection_name": "blog_article_comments",
+            "connection_key": "postgres_example_test_dataset",
+            "collection_name": "customer",
             "fields_affected": [],
             "message": "starting",
             "action_type": "access",
             "status": "in_processing",
-            "updated_at": "2025-04-07T17:47:11.250603Z",
+            "updated_at": "2025-07-22T20:39:32.250603Z",
             "user_id": null
           },
           {
-            "connection_key": "teststest_shopify_api",
-            "collection_name": "blog_article_comments",
+            "connection_key": "postgres_example_test_dataset",
+            "collection_name": "customer",
             "fields_affected": [],
-            "message": "success",
+            "message": "success - retrieved 1 records",
             "action_type": "access",
             "status": "complete",
-            "updated_at": "2025-04-07T17:47:11.664194Z",
+            "updated_at": "2025-07-22T20:39:32.664194Z",
             "user_id": null
           },
           {
-            "connection_key": "teststest_shopify_api",
-            "collection_name": "customers",
+            "connection_key": "postgres_example_test_dataset",
+            "collection_name": "orders",
             "fields_affected": [],
             "message": "starting",
             "action_type": "access",
             "status": "in_processing",
-            "updated_at": "2025-04-07T17:47:11.669987Z",
+            "updated_at": "2025-07-22T20:39:32.669987Z",
             "user_id": null
           },
           {
-            "connection_key": "teststest_shopify_api",
-            "collection_name": "customers",
+            "connection_key": "postgres_example_test_dataset",
+            "collection_name": "orders",
             "fields_affected": [],
-            "message": "success",
+            "message": "success - retrieved 2 records",
             "action_type": "access",
             "status": "complete",
-            "updated_at": "2025-04-07T17:47:12.025101Z",
+            "updated_at": "2025-07-22T20:39:33.025101Z",
             "user_id": null
           },
           {
-            "connection_key": "teststest_shopify_api",
-            "collection_name": "customer_addresses",
+            "connection_key": "postgres_example_test_dataset",
+            "collection_name": "order_item",
             "fields_affected": [],
             "message": "starting",
             "action_type": "access",
             "status": "in_processing",
-            "updated_at": "2025-04-07T17:47:12.030846Z",
+            "updated_at": "2025-07-22T20:39:33.030846Z",
             "user_id": null
           },
           {
-            "connection_key": "teststest_shopify_api",
-            "collection_name": "customer_addresses",
+            "connection_key": "postgres_example_test_dataset",
+            "collection_name": "order_item",
             "fields_affected": [],
-            "message": "success",
+            "message": "success - retrieved 4 records",
             "action_type": "access",
             "status": "complete",
-            "updated_at": "2025-04-07T17:47:12.036650Z",
+            "updated_at": "2025-07-22T20:39:33.036650Z",
             "user_id": null
           },
           {
-            "connection_key": "teststest_shopify_api",
-            "collection_name": "customer_orders",
+            "connection_key": "postgres_example_test_dataset",
+            "collection_name": "product",
             "fields_affected": [],
             "message": "starting",
             "action_type": "access",
             "status": "in_processing",
-            "updated_at": "2025-04-07T17:47:12.040498Z",
+            "updated_at": "2025-07-22T20:39:33.040498Z",
             "user_id": null
           },
           {
-            "connection_key": "teststest_shopify_api",
-            "collection_name": "customer_orders",
+            "connection_key": "postgres_example_test_dataset",
+            "collection_name": "product",
             "fields_affected": [],
-            "message": "success",
+            "message": "success - retrieved 2 records",
             "action_type": "access",
             "status": "complete",
-            "updated_at": "2025-04-07T17:47:12.045719Z",
+            "updated_at": "2025-07-22T20:39:33.045719Z",
+            "user_id": null
+          },
+          {
+            "connection_key": "postgres_example_test_dataset",
+            "collection_name": "payment_card",
+            "fields_affected": [],
+            "message": "starting",
+            "action_type": "access",
+            "status": "in_processing",
+            "updated_at": "2025-07-22T20:39:33.050498Z",
+            "user_id": null
+          },
+          {
+            "connection_key": "postgres_example_test_dataset",
+            "collection_name": "payment_card",
+            "fields_affected": [],
+            "message": "Found 1 rows on postgres_example_test_dataset:payment_card",
+            "action_type": "access",
+            "status": "complete",
+            "updated_at": "2025-07-22T20:39:33.055719Z",
+            "user_id": null
+          },
+          {
+            "connection_key": "postgres_example_test_dataset",
+            "collection_name": "login",
+            "fields_affected": [],
+            "message": "starting",
+            "action_type": "access",
+            "status": "in_processing",
+            "updated_at": "2025-07-22T20:39:33.060498Z",
+            "user_id": null
+          },
+          {
+            "connection_key": "postgres_example_test_dataset",
+            "collection_name": "login",
+            "fields_affected": [],
+            "message": "success - retrieved 1,247 records",
+            "action_type": "access",
+            "status": "complete",
+            "updated_at": "2025-07-22T20:39:33.065719Z",
+            "user_id": null
+          },
+          {
+            "connection_key": "postgres_example_test_dataset",
+            "collection_name": "employee",
+            "fields_affected": [],
+            "message": "starting",
+            "action_type": "access",
+            "status": "in_processing",
+            "updated_at": "2025-07-22T20:39:33.070498Z",
+            "user_id": null
+          },
+          {
+            "connection_key": "postgres_example_test_dataset",
+            "collection_name": "employee",
+            "fields_affected": [],
+            "message": "Data access completed with 1 records",
+            "action_type": "access",
+            "status": "complete",
+            "updated_at": "2025-07-22T20:39:33.075719Z",
+            "user_id": null
+          },
+          {
+            "connection_key": "postgres_example_test_dataset",
+            "collection_name": "service_request",
+            "fields_affected": [],
+            "message": "starting",
+            "action_type": "access",
+            "status": "in_processing",
+            "updated_at": "2025-07-22T20:39:33.080498Z",
+            "user_id": null
+          },
+          {
+            "connection_key": "postgres_example_test_dataset",
+            "collection_name": "service_request",
+            "fields_affected": [],
+            "message": "Found 2 rows on postgres_example_test_dataset:service_request",
+            "action_type": "access",
+            "status": "complete",
+            "updated_at": "2025-07-22T20:39:33.085719Z",
+            "user_id": null
+          },
+          {
+            "connection_key": "postgres_example_test_dataset",
+            "collection_name": "address",
+            "fields_affected": [],
+            "message": "starting",
+            "action_type": "access",
+            "status": "in_processing",
+            "updated_at": "2025-07-22T20:39:34.090498Z",
+            "user_id": null
+          },
+          {
+            "connection_key": "postgres_example_test_dataset",
+            "collection_name": "address",
+            "fields_affected": [],
+            "message": "success - retrieved 1 records",
+            "action_type": "access",
+            "status": "complete",
+            "updated_at": "2025-07-22T20:39:34.095719Z",
+            "user_id": null
+          }
+        ],
+        "Access package upload": [
+          {
+            "connection_key": null,
+            "collection_name": null,
+            "fields_affected": null,
+            "message": "Access package upload successful for privacy request.",
+            "action_type": "access",
+            "status": "complete",
+            "updated_at": "2025-07-22T20:39:34.932124Z",
             "user_id": null
           }
         ]

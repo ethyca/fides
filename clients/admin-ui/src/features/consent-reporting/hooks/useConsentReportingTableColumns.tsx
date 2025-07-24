@@ -1,5 +1,5 @@
 import { createColumnHelper } from "@tanstack/react-table";
-import { AntFlex as Flex, AntTypography as Typography } from "fidesui";
+import { AntTag as Tag, AntTypography as Typography, Icons } from "fidesui";
 import { useMemo } from "react";
 
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
@@ -66,18 +66,19 @@ const useConsentReportingTableColumns = ({
           const hasTcfDetails =
             preference === "tcf" && row.original.tcf_preferences;
 
-          return (
-            <Flex align="center">
-              <BadgeCell
-                color={badgeColor}
-                value={preferenceLabel}
-                onClick={
-                  hasTcfDetails
-                    ? () => onTcfDetailViewClick(row.original.tcf_preferences!)
-                    : undefined
-                }
-              />
-            </Flex>
+          return hasTcfDetails ? (
+            <Tag
+              color={badgeColor}
+              closeIcon={<Icons.Information />}
+              closeButtonLabel="View details"
+              onClose={() =>
+                onTcfDetailViewClick(row.original.tcf_preferences!)
+              }
+            >
+              {preferenceLabel}
+            </Tag>
+          ) : (
+            <BadgeCell color={badgeColor} value={preferenceLabel} />
           );
         },
         header: (props) => <DefaultHeaderCell value="Preference" {...props} />,

@@ -1,1 +1,0 @@
-"use strict";Object.defineProperty(exports,"__esModule",{value:!0}),exports.DecodingError=void 0;class DecodingError extends Error{constructor(r){super(r),this.name="DecodingError"}}exports.DecodingError=DecodingError;

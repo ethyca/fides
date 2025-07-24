@@ -7,10 +7,12 @@ import {
 } from "cypress/support/stubs";
 
 import { DATA_CATALOG_ROUTE } from "~/features/common/nav/routes";
+import { RoleRegistryEnum } from "~/types/api";
 
 describe("data catalog", () => {
   beforeEach(() => {
     cy.login();
+    cy.assumeRole(RoleRegistryEnum.OWNER);
     stubPlus(true);
     stubDataCatalog();
     stubTaxonomyEntities();

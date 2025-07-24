@@ -10,9 +10,11 @@ import {
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { enumToOptions } from "~/features/common/helpers";
+import { SharedConfigSelect } from "~/features/integrations/configure-monitor/SharedConfigSelect";
 import {
   ConnectionSystemTypeMap,
   ConnectionType,
+  EditableMonitorConfig,
   MonitorConfig,
   MonitorFrequency,
 } from "~/types/api";
@@ -21,6 +23,7 @@ interface MonitorConfigFormValues {
   name: string;
   execution_frequency?: MonitorFrequency;
   execution_start_date: string;
+  shared_config_id?: string;
 }
 
 const ConfigureMonitorForm = ({
@@ -42,8 +45,10 @@ const ConfigureMonitorForm = ({
 }) => {
   const isEditing = !!monitor;
 
-  const { query } = useRouter();
-  const integrationId = Array.isArray(query.id) ? query.id[0] : query.id;
+  const router = useRouter();
+  const integrationId = Array.isArray(router.query.id)
+    ? router.query.id[0]
+    : router.query.id;
 
   const validationSchema = Yup.object().shape({
     name: Yup.string().required().label("Name"),
@@ -65,15 +70,17 @@ const ConfigureMonitorForm = ({
             execution_start_date: undefined,
           };
 
-    const payload: MonitorConfig = isEditing
+    const payload: EditableMonitorConfig = isEditing
       ? {
           ...monitor,
           ...executionInfo,
           name: values.name,
+          shared_config_id: values.shared_config_id,
         }
       : {
           ...executionInfo,
           name: values.name,
+          shared_config_id: values.shared_config_id,
           connection_config_key: integrationId!,
           classify_params: {
             num_samples: 25,
@@ -99,6 +106,7 @@ const ConfigureMonitorForm = ({
 
   const initialValues = {
     name: monitor?.name ?? "",
+    shared_config_id: monitor?.shared_config_id ?? undefined,
     execution_start_date: format(initialDate, "yyyy-MM-dd'T'HH:mm"),
     execution_frequency:
       monitor?.execution_frequency ?? MonitorFrequency.MONTHLY,
@@ -131,6 +139,7 @@ const ConfigureMonitorForm = ({
               label="Automatic execution frequency"
               layout="stacked"
             />
+            <SharedConfigSelect name="shared_config_id" id="shared_config_id" />
             <CustomDateTimeInput
               name="execution_start_date"
               label="Automatic execution start time"

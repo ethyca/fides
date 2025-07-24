@@ -11,10 +11,6 @@ ENV_PREFIX = "FIDES__EXECUTION__"
 class ExecutionSettings(FidesSettings):
     """Configuration settings for DSR execution."""
 
-    masking_strict: bool = Field(
-        default=True,
-        description="If set to True, only use UPDATE requests to mask data. If False, Fides will use any defined DELETE or GDPR DELETE endpoints to remove PII, which may extend beyond the specific data categories that configured in your execution policy.",
-    )
     privacy_request_delay_timeout: int = Field(
         default=3600,
         description="The amount of time to wait for actions which delay privacy requests (e.g., pre- and post-processing webhooks).",
@@ -68,5 +64,13 @@ class ExecutionSettings(FidesSettings):
     fuzzy_search_enabled: bool = Field(
         default=True,
         description="Whether fuzzy search is enabled for privacy request lookups.",
+    )
+    email_send_cron_expression: str = Field(
+        default="0 12 * * mon",
+        description="The cron expression to send batch emails for DSR email integration. Defaults to weekly on Mondays at 12pm (noon).",
+    )
+    email_send_timezone: str = Field(
+        default="US/Eastern",
+        description="The timezone to send batch emails for DSR email integration.",
     )
     model_config = SettingsConfigDict(env_prefix=ENV_PREFIX)

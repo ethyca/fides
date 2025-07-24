@@ -1,14 +1,20 @@
-import { ContainerNode, h, render } from "preact";
+import { render } from "preact";
 
 import NoticeOverlay from "../components/notices/NoticeOverlay";
-import { OverlayProps } from "../components/types";
+import { RenderOverlayType } from "../components/types";
 import { I18nProvider } from "./i18n/i18n-context";
+import { EventProvider } from "./providers/event-context";
+import { FidesGlobalProvider } from "./providers/fides-global-context";
 
-export const renderOverlay = (props: OverlayProps, parent: ContainerNode) => {
-  const { i18n } = props;
+export const renderOverlay: RenderOverlayType = (props, parent) => {
+  const { i18n, initializedFides } = props;
   render(
     <I18nProvider i18nInstance={i18n}>
-      <NoticeOverlay {...props} />
+      <FidesGlobalProvider initializedFides={initializedFides}>
+        <EventProvider>
+          <NoticeOverlay />
+        </EventProvider>
+      </FidesGlobalProvider>
     </I18nProvider>,
     parent,
   );

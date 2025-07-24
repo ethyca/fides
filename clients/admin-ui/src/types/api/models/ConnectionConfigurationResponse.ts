@@ -9,8 +9,6 @@ import type { SaaSConfigBase } from "./SaaSConfigBase";
 
 /**
  * Describes the returned schema for a ConnectionConfiguration.
- *
- * The mixin base class ensures that `secrets` sensitive values are masked.
  */
 export type ConnectionConfigurationResponse = {
   connection_type: ConnectionType;

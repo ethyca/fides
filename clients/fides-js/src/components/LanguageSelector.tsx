@@ -1,7 +1,11 @@
-import { h } from "preact";
-import { useContext } from "preact/hooks";
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "preact/hooks";
 
-import { FIDES_OVERLAY_WRAPPER } from "../lib/consent-constants";
 import { FidesInitOptions } from "../lib/consent-types";
 import {
   DEFAULT_LOCALE,
@@ -24,8 +28,16 @@ const LanguageSelector = ({
   options,
   isTCF,
 }: LanguageSelectorProps) => {
+  const [isOpen, setIsOpen] = useState(false);
   const { i18n, currentLocale, setCurrentLocale, setIsLoading } = useI18n();
   const contextGvl = useContext(GVLContext);
+
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  const handleToggle = () => {
+    setIsOpen(!isOpen);
+  };
 
   const handleLocaleSelect = async (locale: string) => {
     if (locale !== i18n.locale) {
@@ -54,12 +66,91 @@ const LanguageSelector = ({
         fidesDebugger(`Fides locale updated to ${locale}`);
       }
     }
-    document.getElementById(FIDES_OVERLAY_WRAPPER)?.focus();
+    setIsOpen(false);
   };
 
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      if (!isOpen) {
+        return;
+      }
+
+      const menuItems =
+        menuRef.current?.querySelectorAll<HTMLButtonElement>(
+          ".fides-menu-item",
+        ) || [];
+      const { key } = event;
+
+      if (key === "Escape" || key === "Tab") {
+        setIsOpen(false);
+        return;
+      }
+
+      if (key === "ArrowUp" || key === "ArrowDown") {
+        event.preventDefault();
+        const focusedIndex = Array.from(menuItems).findIndex(
+          (item) => item === document.activeElement,
+        );
+
+        let newIndex = focusedIndex;
+        if (key === "ArrowDown") {
+          newIndex =
+            focusedIndex === menuItems.length - 1 ? 0 : focusedIndex + 1;
+        } else if (key === "ArrowUp") {
+          newIndex =
+            focusedIndex === 0 ? menuItems.length - 1 : focusedIndex - 1;
+        }
+
+        menuItems[newIndex]?.focus();
+      }
+    },
+    [isOpen],
+  );
+
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleKeyDown]);
+
+  useEffect(() => {
+    if (isOpen) {
+      const menuItems =
+        menuRef.current?.querySelectorAll<HTMLButtonElement>(
+          ".fides-menu-item",
+        );
+      menuItems?.[0]?.focus();
+    } else {
+      buttonRef.current?.focus();
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        isOpen &&
+        menuRef.current &&
+        !menuRef.current.contains(event.target as Node) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
+
   return (
-    <div className="fides-i18n-menu">
-      <div role="group" className="fides-i18n-popover">
+    <div
+      className={`fides-i18n-menu ${isOpen ? "fides-i18n-menu-open" : ""}`}
+      ref={menuRef}
+    >
+      <div role="menu" className="fides-i18n-popover" id="fides-i18n-popover">
         {i18n.availableLanguages.map((lang) => (
           <MenuItem
             key={lang.locale}
@@ -70,12 +161,23 @@ const LanguageSelector = ({
             onClick={() => handleLocaleSelect(lang.locale)}
             isActive={currentLocale === lang.locale}
             title={lang.label_en}
+            aria-label={lang.label_en}
+            tabIndex={-1}
           >
             {lang.label_original}
           </MenuItem>
         ))}
       </div>
-      <div className="fides-i18n-pseudo-button">
+      <button
+        type="button"
+        className="fides-i18n-button"
+        onClick={handleToggle}
+        ref={buttonRef}
+        aria-haspopup="true"
+        aria-expanded={isOpen}
+        aria-controls="fides-i18n-popover"
+        aria-label={`Select language, current language is ${currentLocale}`}
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           height="100%"
@@ -98,7 +200,7 @@ const LanguageSelector = ({
         >
           <path d="M12 13.172L16.95 8.22198L18.364 9.63598L12 16L5.63599 9.63598L7.04999 8.22198L12 13.172Z" />
         </svg>
-      </div>
+      </button>
     </div>
   );
 };

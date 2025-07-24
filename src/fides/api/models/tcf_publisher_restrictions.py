@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
 
-from fides.api.db.base_class import Base
+from fides.api.db.base_class import Base, FidesBase
 
 if TYPE_CHECKING:
     from fides.api.models.privacy_experience import PrivacyExperienceConfig
@@ -83,7 +83,13 @@ class TCFConfiguration(Base):
     def __tablename__(self) -> str:
         return "tcf_configuration"
 
-    name = Column(String, nullable=False, index=True, unique=True)
+    # redefined here because there's a minor, unintended discrepancy between
+    # this `id` field and that of the `Base` class, which explicitly sets `index=True`.
+    # TODO: we likely should _not_ be setting `index=True` on the `id`
+    # attribute of the `Base` class, as `primary_key=True` already specifies a
+    # primary key constraint, which will implicitly create an index for the field.
+    id = Column(String(255), primary_key=True, default=FidesBase.generate_uuid)
+    name = Column(String, nullable=False, unique=True)
 
     privacy_experience_configs = relationship(
         "PrivacyExperienceConfig",
@@ -103,11 +109,17 @@ class TCFPublisherRestriction(Base):
     def __tablename__(self) -> str:
         return "tcf_publisher_restriction"
 
+    # redefined here because there's a minor, unintended discrepancy between
+    # this `id` field and that of the `Base` class, which explicitly sets `index=True`.
+    # TODO: we likely should _not_ be setting `index=True` on the `id`
+    # attribute of the `Base` class, as `primary_key=True` already specifies a
+    # primary key constraint, which will implicitly create an index for the field.
+    id = Column(String(255), primary_key=True, default=FidesBase.generate_uuid)
+
     tcf_configuration_id = Column(
         String(255),
         ForeignKey("tcf_configuration.id", ondelete="CASCADE"),
         nullable=False,
-        index=True,
     )
     purpose_id = Column(Integer, nullable=False)
     restriction_type = Column(EnumColumn(TCFRestrictionType), nullable=False)
@@ -121,7 +133,7 @@ class TCFPublisherRestriction(Base):
     # can be inferred from the presence of the end_vendor_id.
     range_entries = Column(
         ARRAY(JSONB),
-        nullable=True,
+        nullable=False,
         server_default="{}",
         default=list,
     )

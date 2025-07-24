@@ -306,3 +306,32 @@ A comma-separated list of notice_keys to disable their respective Toggle element
 For example: "data_sales,data_sharing,analytics"
 
 Defaults to `undefined`.
+
+***
+
+### fides\_initialized\_event\_mode
+
+> **fides\_initialized\_event\_mode**: `"multiple"` \| `"once"` \| `"disable"`
+
+Controls when the deprecated FidesInitialized event should be dispatched.
+
+- "multiple" = fires alongside both FidesReady and FidesConsentLoaded events
+- "once" = fires alongside FidesReady only
+- "disable" = never fires
+
+Defaults to `"once"`.
+
+***
+
+### fides\_modal\_default\_view?
+
+> `optional` **fides\_modal\_default\_view**: `string`
+
+A URL-like route that determines which view is shown by default when the consent modal is opened.
+Currently only affects TCF.
+
+- "/tcf/purposes" ("purposes" tab will be shown if not set)
+- "/tcf/features"
+- "/tcf/vendors"
+
+Defaults to `undefined`.

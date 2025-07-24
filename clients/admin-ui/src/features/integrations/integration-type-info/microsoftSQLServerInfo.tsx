@@ -7,6 +7,7 @@ import {
 } from "~/features/common/copy/components";
 import ShowMoreContent from "~/features/common/copy/ShowMoreContent";
 import { ConnectionCategory } from "~/features/integrations/ConnectionCategory";
+import { IntegrationFeatureEnum } from "~/features/integrations/IntegrationFeatureEnum";
 import { AccessLevel, ConnectionType } from "~/types/api";
 
 export const MICROSOFT_SQL_SERVER_PLACEHOLDER = {
@@ -61,6 +62,7 @@ const MICROSOFT_SQL_SERVER_TYPE_INFO = {
   category: ConnectionCategory.DATABASE,
   overview: <MicrosoftSQLServerOverview />,
   tags: MICROSOFT_SQL_SERVER_TAGS,
+  enabledFeatures: [IntegrationFeatureEnum.DATA_DISCOVERY],
 };
 
 export default MICROSOFT_SQL_SERVER_TYPE_INFO;

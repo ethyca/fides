@@ -37,6 +37,7 @@ EXEC = "exec"
 FIDES_TAXONOMY = "fides_taxonomy"
 GENERATE = "generate"
 INSTANTIATE = "instantiate"
+MANUAL_STEPS = "manual-steps"
 MASKING = "masking"
 MESSAGING = "messaging"
 ORGANIZATION = "organization"
@@ -47,15 +48,19 @@ PRIVACY_NOTICE = "privacy-notice"
 PRIVACY_PREFERENCE_HISTORY = "privacy-preference-history"
 PRIVACY_REQUEST = "privacy-request"
 PRIVACY_REQUEST_ACCESS_RESULTS = "privacy-request-access-results"
+PRIVACY_REQUEST_EMAIL_INTEGRATIONS = "privacy-request-email-integrations"
 PRIVACY_REQUEST_NOTIFICATIONS = "privacy-request-notifications"
 READ = "read"
+READ_OWN = "read-own"
 REGISTER = "register"
 RESET = "reset"
+RESPOND = "respond"
 RESUME = "resume"
 REVIEW = "review"
 RULE = "rule"
 SAAS_CONFIG = "saas_config"
 SCOPE = "scope"
+SEND = "send"
 STORAGE = "storage"
 SYSTEM = "system"
 SYSTEM_MANAGER = "system_manager"
@@ -174,6 +179,9 @@ PRIVACY_PREFERENCE_HISTORY_READ = f"{PRIVACY_PREFERENCE_HISTORY}:{READ}"
 PRIVACY_REQUEST_CALLBACK_RESUME = f"{PRIVACY_REQUEST}:{RESUME}"  # User has permission to restart a paused privacy request
 PRIVACY_REQUEST_CREATE = f"{PRIVACY_REQUEST}:{CREATE}"
 PRIVACY_REQUEST_DELETE = f"{PRIVACY_REQUEST}:{DELETE}"
+PRIVACY_REQUEST_EMAIL_INTEGRATIONS_SEND = f"{PRIVACY_REQUEST_EMAIL_INTEGRATIONS}:{SEND}"
+PRIVACY_REQUEST_MANUAL_STEPS_REVIEW = f"{PRIVACY_REQUEST}:{MANUAL_STEPS}:{REVIEW}"
+PRIVACY_REQUEST_MANUAL_STEPS_RESPOND = f"{PRIVACY_REQUEST}:{MANUAL_STEPS}:{RESPOND}"
 PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE = (
     f"{PRIVACY_REQUEST_NOTIFICATIONS}:{CREATE_OR_UPDATE}"
 )
@@ -219,6 +227,7 @@ TAXONOMY_DELETE = f"{TAXONOMY}:{DELETE}"
 USER_CREATE = f"{USER}:{CREATE}"
 USER_DELETE = f"{USER}:{DELETE}"
 USER_READ = f"{USER}:{READ}"
+USER_READ_OWN = f"{USER}:{READ_OWN}"
 USER_UPDATE = f"{USER}:{UPDATE}"
 USER_PASSWORD_RESET = f"{USER}:{PASSWORD_RESET}"
 
@@ -312,6 +321,9 @@ SCOPE_DOCS = {
     PRIVACY_REQUEST_CALLBACK_RESUME: "Restart paused privacy requests",
     PRIVACY_REQUEST_READ_ACCESS_RESULTS: "Download access data for the privacy request",
     PRIVACY_REQUEST_DELETE: "Remove privacy requests",
+    PRIVACY_REQUEST_EMAIL_INTEGRATIONS_SEND: "Send email for email integrations for the privacy request",
+    PRIVACY_REQUEST_MANUAL_STEPS_RESPOND: "Respond to manual steps for the privacy request",
+    PRIVACY_REQUEST_MANUAL_STEPS_REVIEW: "Review manual steps for the privacy request",
     PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE: "",
     PRIVACY_REQUEST_NOTIFICATIONS_READ: "",
     PRIVACY_REQUEST_READ: "View privacy requests",
@@ -344,6 +356,7 @@ SCOPE_DOCS = {
     USER_UPDATE: "Update users",
     USER_DELETE: "Remove users",
     USER_READ: "View users",
+    USER_READ_OWN: "View own user",
     USER_PASSWORD_RESET: "Reset another user's password",
     USER_PERMISSION_CREATE: "Create user permissions",
     USER_PERMISSION_UPDATE: "Update user permissions",
