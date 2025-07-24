@@ -82,4 +82,6 @@ languages:
 - id: uk
   name: Ukrainian
 - id: zh
-  name: Chinese
+  name: Chinese (Simplified)
+- id: zh-Hant
+  name: Chinese (Traditional)
