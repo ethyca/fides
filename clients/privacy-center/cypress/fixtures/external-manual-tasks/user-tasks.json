@@ -93,9 +93,68 @@
         "id": "sys_mongo_001",
         "name": "MongoDB"
       }
+    },
+    {
+      "manual_field_id": "task_ext_004",
+      "name": "Export Multi-File Data Package",
+      "description": "Export user data as multiple file formats",
+      "input_type": "file",
+      "request_type": "access",
+      "status": "completed",
+      "assigned_users": [
+        {
+          "id": "ext_user_123",
+          "email_address": "john.doe@example.com",
+          "first_name": "John",
+          "last_name": "Doe"
+        }
+      ],
+      "privacy_request": {
+        "id": "pri_ext_004",
+        "days_left": 0,
+        "request_type": "access",
+        "subject_identities": {
+          "email": "completed.user@example.com"
+        },
+        "custom_fields": {
+          "region": "US, EU",
+          "account_type": "Premium"
+        }
+      },
+      "system": {
+        "id": "sys_dw_001",
+        "name": "Data Warehouse"
+      },
+      "submission_user": {
+        "id": "ext_user_123",
+        "email_address": "john.doe@example.com",
+        "first_name": "John",
+        "last_name": "Doe"
+      },
+      "attachments": [
+        {
+          "id": "att_ext_001",
+          "file_name": "customer_data.json",
+          "file_size": 3072,
+          "created_at": "2024-03-15T16:00:00Z"
+        },
+        {
+          "id": "att_ext_002",
+          "file_name": "order_history.csv",
+          "file_size": 7168,
+          "created_at": "2024-03-15T16:00:00Z"
+        }
+      ],
+      "comments": [
+        {
+          "id": "comment_ext_001",
+          "comment_text": "Data exported in JSON and CSV formats as requested",
+          "created_at": "2024-03-15T16:00:00Z"
+        }
+      ]
     }
   ],
-  "total": 3,
+  "total": 4,
   "page": 1,
   "size": 25,
   "pages": 1,
@@ -103,7 +162,8 @@
     "systems": [
       { "id": "sys_sf_001", "name": "Salesforce" },
       { "id": "sys_ga_001", "name": "Google Analytics" },
-      { "id": "sys_mongo_001", "name": "MongoDB" }
+      { "id": "sys_mongo_001", "name": "MongoDB" },
+      { "id": "sys_dw_001", "name": "Data Warehouse" }
     ],
     "assigned_users": [
       {

@@ -4,12 +4,8 @@
 
 import type { CommentType } from "./CommentType";
 
-export type Body_skip_single_manual_field_api_v1_privacy_request__privacy_request_id__connection__connection_key__manual_field_skip_post =
+export type Body_skip_single_manual_field_api_v1_privacy_request__privacy_request_id__manual_field__manual_field_id__skip_post =
   {
-    /**
-     * The key of the field being skipped
-     */
-    field_key: string;
     /**
      * Required reason for skipping this field
      */

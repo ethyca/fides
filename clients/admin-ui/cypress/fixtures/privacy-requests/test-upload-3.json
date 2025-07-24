@@ -1,0 +1,22 @@
+{
+  "testFile": {
+    "name": "test-upload-3.json",
+    "purpose": "Testing multiple file attachments",
+    "format": "JSON",
+    "content": {
+      "user_data": {
+        "id": "test_user_123",
+        "email": "test@example.com",
+        "preferences": {
+          "notifications": true,
+          "marketing": false
+        }
+      },
+      "metadata": {
+        "created_at": "2024-03-15T10:00:00Z",
+        "file_size": "small",
+        "test_scenario": "multiple_attachments"
+      }
+    }
+  }
+}

@@ -51,6 +51,7 @@ PRIVACY_REQUEST_ACCESS_RESULTS = "privacy-request-access-results"
 PRIVACY_REQUEST_EMAIL_INTEGRATIONS = "privacy-request-email-integrations"
 PRIVACY_REQUEST_NOTIFICATIONS = "privacy-request-notifications"
 READ = "read"
+READ_OWN = "read-own"
 REGISTER = "register"
 RESET = "reset"
 RESPOND = "respond"
@@ -226,6 +227,7 @@ TAXONOMY_DELETE = f"{TAXONOMY}:{DELETE}"
 USER_CREATE = f"{USER}:{CREATE}"
 USER_DELETE = f"{USER}:{DELETE}"
 USER_READ = f"{USER}:{READ}"
+USER_READ_OWN = f"{USER}:{READ_OWN}"
 USER_UPDATE = f"{USER}:{UPDATE}"
 USER_PASSWORD_RESET = f"{USER}:{PASSWORD_RESET}"
 
@@ -354,6 +356,7 @@ SCOPE_DOCS = {
     USER_UPDATE: "Update users",
     USER_DELETE: "Remove users",
     USER_READ: "View users",
+    USER_READ_OWN: "View own user",
     USER_PASSWORD_RESET: "Reset another user's password",
     USER_PERMISSION_CREATE: "Create user permissions",
     USER_PERMISSION_UPDATE: "Update user permissions",
