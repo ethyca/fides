@@ -8,6 +8,7 @@ import { useI18n } from "../../lib/i18n/i18n-context";
 import { LEGAL_BASIS_OPTIONS } from "../../lib/tcf/constants";
 import {
   EmbeddedPurpose,
+  EnabledIds,
   GvlDataCategories,
   GvlDataDeclarations,
   LegalBasisEnum,
@@ -336,18 +337,20 @@ const PagedVendorData = ({
 
 const TcfVendors = ({
   experience,
-  enabledVendorConsentIds,
-  enabledVendorLegintIds,
+  enabledIds,
   onChange,
 }: {
   experience: PrivacyExperience;
-  enabledVendorConsentIds: string[];
-  enabledVendorLegintIds: string[];
+  enabledIds: EnabledIds;
   onChange: (
     payload: UpdateEnabledIds,
     preferenceDetails: FidesEventDetailsPreference,
   ) => void;
 }) => {
+  const {
+    vendorsConsent: enabledVendorConsentIds,
+    vendorsLegint: enabledVendorLegintIds,
+  } = enabledIds;
   // Combine the various vendor objects into one object for convenience
   const vendors = useMemo(
     () => transformExperienceToVendorRecords(experience),

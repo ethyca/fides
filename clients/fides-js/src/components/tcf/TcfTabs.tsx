@@ -1,13 +1,18 @@
 import { useCallback, useRef } from "preact/hooks";
 
-import { PrivacyExperience } from "../../lib/consent-types";
+import {
+  PrivacyExperience,
+  PrivacyExperienceMinimal,
+} from "../../lib/consent-types";
 import { FidesEventDetailsPreference } from "../../lib/events";
 import { useI18n } from "../../lib/i18n/i18n-context";
+import { PAGE_SIZE } from "../../lib/paging";
 import {
   EnabledIds,
   PrivacyNoticeWithBestTranslation,
 } from "../../lib/tcf/types";
 import InfoBox from "../InfoBox";
+import { RecordsListSkeletons } from "./RecordsListSkeletons";
 import TcfFeatures from "./TcfFeatures";
 import TcfPurposes from "./TcfPurposes";
 import TcfVendors from "./TcfVendors";
@@ -28,7 +33,7 @@ const TcfTabs = ({
   activeTabIndex,
   onTabChange,
 }: {
-  experience: PrivacyExperience;
+  experience: PrivacyExperience | PrivacyExperienceMinimal;
   customNotices: PrivacyNoticeWithBestTranslation[] | undefined;
   enabledIds: EnabledIds;
   onChange: (
@@ -57,17 +62,31 @@ const TcfTabs = ({
       content: (
         <div>
           <InfoBox>{i18n.t("static.tcf.purposes.description")}</InfoBox>
-          <TcfPurposes
-            allPurposesConsent={experience.tcf_purpose_consents}
-            allCustomPurposesConsent={customNotices}
-            allPurposesLegint={experience.tcf_purpose_legitimate_interests}
-            allSpecialPurposes={experience.tcf_special_purposes}
-            enabledPurposeConsentIds={enabledIds.purposesConsent}
-            enabledCustomPurposeConsentIds={enabledIds.customPurposesConsent}
-            enabledPurposeLegintIds={enabledIds.purposesLegint}
-            enabledSpecialPurposeIds={enabledIds.specialPurposes}
-            onChange={handleUpdateDraftState}
-          />
+          {experience.minimal_tcf ? (
+            <RecordsListSkeletons
+              rows={
+                ((experience as PrivacyExperienceMinimal)
+                  .tcf_purpose_consent_ids?.length ?? 0) +
+                (customNotices?.length ?? 0)
+              }
+            />
+          ) : (
+            <TcfPurposes
+              allPurposesConsent={
+                (experience as PrivacyExperience).tcf_purpose_consents
+              }
+              allCustomPurposesConsent={customNotices}
+              allPurposesLegint={
+                (experience as PrivacyExperience)
+                  .tcf_purpose_legitimate_interests
+              }
+              allSpecialPurposes={
+                (experience as PrivacyExperience).tcf_special_purposes
+              }
+              enabledIds={enabledIds}
+              onChange={handleUpdateDraftState}
+            />
+          )}
         </div>
       ),
     },
@@ -77,13 +96,25 @@ const TcfTabs = ({
       content: (
         <div>
           <InfoBox>{i18n.t("static.tcf.features.description")}</InfoBox>
-          <TcfFeatures
-            allFeatures={experience.tcf_features}
-            allSpecialFeatures={experience.tcf_special_features}
-            enabledFeatureIds={enabledIds.features}
-            enabledSpecialFeatureIds={enabledIds.specialFeatures}
-            onChange={handleUpdateDraftState}
-          />
+          {experience.minimal_tcf ? (
+            <RecordsListSkeletons
+              rows={
+                ((experience as PrivacyExperienceMinimal).tcf_feature_ids
+                  ?.length ?? 0) +
+                ((experience as PrivacyExperienceMinimal)
+                  .tcf_special_feature_ids?.length ?? 0)
+              }
+            />
+          ) : (
+            <TcfFeatures
+              allFeatures={(experience as PrivacyExperience).tcf_features}
+              allSpecialFeatures={
+                (experience as PrivacyExperience).tcf_special_features
+              }
+              enabledIds={enabledIds}
+              onChange={handleUpdateDraftState}
+            />
+          )}
         </div>
       ),
     },
@@ -93,12 +124,21 @@ const TcfTabs = ({
       content: (
         <div>
           <InfoBox>{i18n.t("static.tcf.vendors.description")}</InfoBox>
-          <TcfVendors
-            experience={experience}
-            enabledVendorConsentIds={enabledIds.vendorsConsent}
-            enabledVendorLegintIds={enabledIds.vendorsLegint}
-            onChange={handleUpdateDraftState}
-          />
+          {experience.minimal_tcf ? (
+            <RecordsListSkeletons
+              rows={Math.min(
+                (experience as PrivacyExperienceMinimal).tcf_vendor_consent_ids
+                  ?.length ?? 0,
+                PAGE_SIZE,
+              )}
+            />
+          ) : (
+            <TcfVendors
+              experience={experience as PrivacyExperience}
+              enabledIds={enabledIds}
+              onChange={handleUpdateDraftState}
+            />
+          )}
         </div>
       ),
     },

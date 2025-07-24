@@ -48,7 +48,6 @@ export const TcfConsentButtons = ({
       }
       options={options}
       isTCF
-      isMinimalTCF={experience.minimal_tcf}
       isGVLLoading={isGVLLoading}
     />
   );
