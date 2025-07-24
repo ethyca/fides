@@ -35,9 +35,6 @@ const statusMap: Record<ManualFieldStatus, { color: string; label: string }> = {
   [ManualFieldStatus.SKIPPED]: { color: "marble", label: "Skipped" },
 };
 
-// Page sizes for external users (match admin UI)
-const PAGE_SIZES = ["25", "50", "100"];
-
 // Extract column definitions for external users
 const getExternalColumns = (
   systemFilters: { text: string; value: string }[],
@@ -270,8 +267,6 @@ export const ExternalManualTasks = () => {
           current: pageIndex,
           pageSize,
           total: totalRows || 0,
-          showSizeChanger: true,
-          pageSizeOptions: PAGE_SIZES,
           showTotal: (total, range) =>
             `${range[0]}-${range[1]} of ${total} items`,
           onChange: handlePaginationChange,

@@ -1,4 +1,5 @@
-@import "../palette/palette.module.scss";
+@use "sass:string";
+@use "../palette/palette.module.scss" as palette;
 
 /**
  * Global Ant Design styles for Fides applications
@@ -23,9 +24,13 @@ h6 {
  * Adds the color variables from the palette to the root element
  */
 :root {
-  @each $color, $value in $colors {
-    #{getPrefixedColor("--fidesui-", unquote($color))}: $value;
+  @each $color, $value in palette.$colors {
+    #{palette.getPrefixedColor("--fidesui-", string.unquote($color))}: $value;
   }
+}
+
+:focus-visible {
+  outline-color: var(--fidesui-minos);
 }
 
 /**
@@ -119,6 +124,13 @@ h6 {
 */
 .ant-table-filter-trigger.active {
   background-color: var(--fidesui-neutral-100);
+}
+
+/*
+  This is to match the font size of the table cells when other Ant components are used in a cell component (eg. Text, Link, List, etc.).
+*/
+.ant-table-cell * {
+  --ant-font-size: var(--ant-table-cell-font-size-sm);
 }
 
 .ant-list {

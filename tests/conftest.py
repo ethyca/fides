@@ -61,7 +61,7 @@ from fides.api.tasks import celery_app
 from fides.api.tasks.scheduled.scheduler import async_scheduler, scheduler
 from fides.api.util.cache import get_cache
 from fides.api.util.collection_util import Row
-from fides.common.api.scope_registry import SCOPE_REGISTRY
+from fides.common.api.scope_registry import SCOPE_REGISTRY, USER_READ_OWN
 from fides.config import get_config
 from fides.config.config_proxy import ConfigProxy
 from tests.fixtures.application_fixtures import *
@@ -1305,6 +1305,37 @@ def contributor_user(db):
     db.add(client)
     db.commit()
     db.refresh(client)
+    yield user
+    user.delete(db)
+
+
+@pytest.fixture
+def respondent(db):
+    """Create a respondent user with USER_READ_OWN scope"""
+    from fides.api.oauth.roles import RESPONDENT
+
+    user = FidesUser.create(
+        db=db,
+        data={
+            "username": "test_respondent_user",
+            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+            "email_address": "respondent.user@ethyca.com",
+        },
+    )
+    client = ClientDetail(
+        hashed_secret="thisisatest",
+        salt="thisisstillatest",
+        scopes=[USER_READ_OWN],
+        roles=[RESPONDENT],
+        user_id=user.id,
+    )
+
+    FidesUserPermissions.create(db=db, data={"user_id": user.id, "roles": [RESPONDENT]})
+
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+    db.refresh(user)  # Refresh user to load the client relationship
     yield user
     user.delete(db)
 

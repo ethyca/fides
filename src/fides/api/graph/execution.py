@@ -1,6 +1,7 @@
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 from fideslang.validation import FidesKey
+from loguru import logger
 
 from fides.api.graph.config import (
     Collection,
@@ -117,6 +118,8 @@ class ExecutionNode(Contextualizable):  # pylint: disable=too-many-instance-attr
         The values are cast based on field types, if those types are specified.
         """
         out = {}
+        failed_conversions: Dict[str, Dict[str, Any]] = {}
+
         for key, values in input_data.items():
             path: FieldPath = FieldPath.parse(key)
             field: Optional[Field] = self.collection.field(path)
@@ -126,4 +129,31 @@ class ExecutionNode(Contextualizable):  # pylint: disable=too-many-instance-attr
                 filtered = list(filter(lambda x: x is not None, cast_values))
                 if filtered:
                     out[key] = filtered
+                elif values:  # Had input values but all failed conversion
+                    # Track conversion failures for logging
+                    failed_conversions[key] = {"field": field, "input_values": values}
+
+        # Log conversion failures if any occurred
+        if failed_conversions:
+            field_details = []
+            for field_name, failure_info in failed_conversions.items():
+                field = failure_info["field"]
+                values = failure_info["input_values"]
+
+                expected_type = field.data_type() if field else "unknown"
+                actual_types = {type(v).__name__ for v in values if v is not None}
+                actual_type_str = (
+                    ", ".join(sorted(actual_types)) if actual_types else "NoneType"
+                )
+
+                field_details.append(
+                    f"{field_name} (expected: {expected_type}, got: {actual_type_str})"
+                )
+
+            logger.warning(
+                "Type conversion failures for {}: {}",
+                self.address,
+                "; ".join(field_details),
+            )
+
         return out

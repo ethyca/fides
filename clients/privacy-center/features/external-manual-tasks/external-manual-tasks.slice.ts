@@ -146,7 +146,7 @@ export const externalManualTasksApi = externalBaseApi.injectEndpoints({
         manual_field_id: string;
         field_value?: string;
         comment_text?: string;
-        attachment?: File;
+        attachments?: File[];
       }
     >({
       query: (payload) => {
@@ -155,7 +155,7 @@ export const externalManualTasksApi = externalBaseApi.injectEndpoints({
           manual_field_id: manualFieldId,
           field_value: fieldValue,
           comment_text: commentText,
-          attachment,
+          attachments,
         } = payload;
 
         const formData = new FormData();
@@ -172,8 +172,12 @@ export const externalManualTasksApi = externalBaseApi.injectEndpoints({
         }
 
         // Append attachment fields if provided
-        if (attachment) {
-          formData.append("attachment", attachment);
+        if (attachments && attachments.length > 0) {
+          attachments.forEach((file: File) => {
+            if (file && typeof file === "object") {
+              formData.append("attachments", file);
+            }
+          });
           formData.append(
             "attachment_type",
             AttachmentType.INCLUDE_WITH_ACCESS_PACKAGE,
