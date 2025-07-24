@@ -199,8 +199,15 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
 
         table = Table(self._generate_table_name(), MetaData(bind=client), autoload=True)
         where_clauses: List[ColumnElement] = [
-            getattr(table.c, k) == v for k, v in non_empty_reference_field_keys.items()
+            table.c[k] == v for k, v in non_empty_reference_field_keys.items()
         ]
+
+        # Create update values using Column objects as keys to handle column names with spaces
+        update_values = {}
+        for column_name, value in final_update_map.items():
+            # Use bracket notation to access columns with spaces in their names
+            column = table.c[column_name]
+            update_values[column] = value
 
         if self.partitioning:
             partition_clauses = self.get_partition_clauses()
@@ -212,12 +219,12 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
                 partitioned_queries.append(
                     table.update()
                     .where(*(where_clauses + [text(partition_clause)]))
-                    .values(**final_update_map)
+                    .values(update_values)
                 )
 
             return partitioned_queries
 
-        return [table.update().where(*where_clauses).values(**final_update_map)]
+        return [table.update().where(*where_clauses).values(update_values)]
 
     def generate_delete(
         self,
@@ -255,9 +262,9 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         where_clauses: List[ColumnElement] = []
         for column_name, values in filtered_data.items():
             if len(values) == 1:
-                where_clauses.append(getattr(table.c, column_name) == values[0])
+                where_clauses.append(table.c[column_name] == values[0])
             else:
-                where_clauses.append(getattr(table.c, column_name).in_(values))
+                where_clauses.append(table.c[column_name].in_(values))
 
         # Combine reference clauses with OR instead of AND
         combined_reference_clause = or_(*where_clauses)
@@ -306,6 +313,25 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
                 formatted_fields.append(field_path.levels[0])
         return formatted_fields
 
+    def format_clause_for_query(
+        self, string_path: str, operator: str, operand: str
+    ) -> str:
+        """
+        Returns clauses with proper BigQuery backtick escaping for column names.
+        Handles column names with spaces and nested fields (dot-separated) by escaping each part individually.
+        """
+        # For nested fields (containing dots), escape each part individually
+        if "." in string_path:
+            parts = string_path.split(".")
+            escaped_field = ".".join(f"`{part}`" for part in parts)
+        else:
+            # For simple fields, wrap the entire name in backticks
+            escaped_field = f"`{string_path}`"
+
+        if operator == "IN":
+            return f"{escaped_field} IN ({operand})"
+        return f"{escaped_field} {operator} :{operand}"
+
     def generate_raw_query_without_tuples(
         self, field_list: List[str], filters: Dict[str, List[Any]]
     ) -> Optional[TextClause]:
@@ -315,27 +341,35 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
 
         This is an override of the base class method that supports nested fields for BigQuery.
 
-        Examples with dot-delimited field names, notice the periods are replaced with underscores in the parameter bindings:
+        Examples with field names containing dots and spaces, notice these are replaced with underscores in the parameter bindings:
 
         1. Single value filter:
            field_list = ["id", "name", "email"]
            filters = {"user.id": [123]}
 
-           Generates: SELECT id, name, email FROM `project_id.dataset_id.table_name` WHERE (user.id = :user_id)
+           Generates: SELECT id, name, email FROM `project_id.dataset_id.table_name` WHERE (`user`.`id` = :user_id)
            With parameter binding: user_id = 123
 
-        2. Multiple value filter:
-           field_list = ["id", "name", "email"]
-           filters = {"user.status": ["active", "pending"]}
+        2. Field with spaces:
+           field_list = ["id", "custom id", "email"]
+           filters = {"custom id": ["abc123"]}
 
-           Generates: SELECT id, name, email FROM `project_id.dataset_id.table_name` WHERE (user.status IN (:user_status_in_stmt_generated_0, :user_status_in_stmt_generated_1))
-           With parameter bindings: user_status_in_stmt_generated_0 = "active", user_status_in_stmt_generated_1 = "pending"
+           Generates: SELECT id, `custom id`, email FROM `project_id.dataset_id.table_name` WHERE (`custom id` = :custom_id)
+           With parameter binding: custom_id = "abc123"
+
+        3. Multiple value filter with nested field:
+           field_list = ["id", "name", "email"]
+           filters = {"contact_info.primary_email": ["active", "pending"]}
+
+           Generates: SELECT id, name, email FROM `project_id.dataset_id.table_name` WHERE (`contact_info`.`primary_email` IN (:contact_info_primary_email_in_stmt_generated_0, :contact_info_primary_email_in_stmt_generated_1))
+           With parameter bindings: contact_info_primary_email_in_stmt_generated_0 = "active", contact_info_primary_email_in_stmt_generated_1 = "pending"
         """
         clauses = []
         query_data = {}
         for field_name, field_value in filters.items():
-            # Replace dots with underscores in field names for parameter binding
-            field_binding_name = field_name.replace(".", "_")
+            # Replace dots and spaces with underscores in field names for parameter binding
+            # SQLAlchemy parameter names cannot contain spaces or special characters
+            field_binding_name = field_name.replace(".", "_").replace(" ", "_")
             data = set(field_value)
             if len(data) == 1:
                 clauses.append(
@@ -358,7 +392,7 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
                 clauses.append(self.format_clause_for_query(field_name, "IN", operand))
 
         if len(clauses) > 0:
-            formatted_fields = ", ".join(field_list)
+            formatted_fields = ", ".join([f"`{field}`" for field in field_list])
             query_str = self.get_formatted_query_string(formatted_fields, clauses)
             return text(query_str).params(query_data)
 
