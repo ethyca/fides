@@ -53,10 +53,12 @@ export const CompleteTaskModal = ({
       await completeTask({
         privacy_request_id: task.privacy_request.id,
         manual_field_id: task.manual_field_id,
-        field_key: task.manual_field_id,
         field_value: getFieldValue(),
         comment_text: comment || undefined,
-        attachment: fileList.length > 0 ? fileList[0].originFileObj : undefined,
+        attachments:
+          fileList.length > 0
+            ? fileList.map((file) => file.originFileObj).filter(Boolean)
+            : undefined,
       }).unwrap();
 
       // Reset form
@@ -125,7 +127,9 @@ export const CompleteTaskModal = ({
         // For file uploads or when input_type is attachment, show file upload
         return (
           <div className="space-y-2">
-            <div className="text-sm font-medium text-gray-700">Upload File</div>
+            <div className="text-sm font-medium text-gray-700">
+              Upload Files
+            </div>
             <div>
               <Upload
                 fileList={fileList}
@@ -134,7 +138,7 @@ export const CompleteTaskModal = ({
                 }
                 beforeUpload={() => false} // Prevent auto upload
                 data-testid="complete-modal-file-upload"
-                maxCount={1}
+                multiple
               >
                 <Button data-testid="complete-modal-upload-button">
                   Click to Upload

@@ -421,6 +421,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         action_type: ActionType,
         ex: Optional[BaseException] = None,
         success_override_msg: Optional[str] = None,
+        record_count: Optional[int] = None,
     ) -> None:
         """On completion activities"""
         if ex:
@@ -440,8 +441,23 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 mark_current_and_downstream_nodes_as_failed(request_task, db)
         else:
             logger.info("Ending {}, {}", self.resources.request.id, self.key)
+
+            # Build standardized success message with record count
+            base_message = (
+                str(success_override_msg) if success_override_msg else "success"
+            )
+            if record_count is not None:
+                if action_type == ActionType.access:
+                    message = f"{base_message} - retrieved {record_count} records"
+                elif action_type == ActionType.erasure:
+                    message = f"{base_message} - masked {record_count} records"
+                else:
+                    message = f"{base_message} - processed {record_count} records"
+            else:
+                message = base_message
+
             self.update_status(
-                str(success_override_msg) if success_override_msg else "success",
+                message,
                 build_affected_field_logs(
                     self.execution_node, self.resources.policy, action_type
                 ),
@@ -637,7 +653,11 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         if messages:
             success_message = "\n".join(messages)
 
-        self.log_end(ActionType.access, success_override_msg=success_message)
+        self.log_end(
+            ActionType.access,
+            success_override_msg=success_message,
+            record_count=len(filtered_output),
+        )
         return filtered_output
 
     @retry(action_type=ActionType.erasure, default_return=0)
@@ -645,8 +665,14 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         self,
         retrieved_data: List[Row],
         *erasure_prereqs: int,  # TODO Remove when we stop support for DSR 2.0. DSR 3.0 enforces with downstream_tasks.
+        inputs: Optional[
+            List[List[Row]]
+        ] = None,  # Upstream data from corresponding access task
     ) -> int:
         """Run erasure request"""
+
+        if inputs is None:
+            inputs = []
 
         # if there is no primary key specified in the graph node configuration
         # note this in the execution log and perform no erasures on this node
@@ -694,6 +720,10 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             )
             return 0
 
+        formatted_input_data: NodeInput = self.pre_process_input_data(
+            *inputs, group_dependent_fields=True
+        )
+
         # Use execution context to capture postprocessor messages
         with collect_execution_log_messages() as messages:
             output = self.connector.mask_data(
@@ -702,6 +732,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 self.resources.request,
                 self.resources.privacy_request_task,
                 retrieved_data,
+                formatted_input_data,
             )
 
         if self.request_task.id:
@@ -720,7 +751,11 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         if messages:
             success_message = "\n".join(messages)
 
-        self.log_end(ActionType.erasure, success_override_msg=success_message)
+        self.log_end(
+            ActionType.erasure,
+            success_override_msg=success_message,
+            record_count=output,
+        )
         return output
 
     @retry(action_type=ActionType.consent, default_return=False)
