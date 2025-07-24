@@ -21,12 +21,11 @@ from fides.api.schemas.messaging.messaging import (
     SMS_MESSAGING_SERVICES,
     MessagingConnectionTestStatus,
     MessagingMethod,
+    MessagingServiceSecretsAWS_SES,
     MessagingServiceType,
 )
 from fides.api.schemas.messaging.shared_schemas import (
     SUPPORTED_MESSAGING_SERVICE_SECRETS,
-    MessagingMethod,
-    MessagingServiceSecretsAWS_SES,
     MessagingServiceSecretsMailchimpTransactional,
     MessagingServiceSecretsMailgun,
     MessagingServiceSecretsTwilioEmail,
