@@ -5,26 +5,32 @@
 
 import { Box, Center, Flex, Spinner } from "fidesui";
 import dynamic from "next/dynamic";
-import { useCallback, useContext, useState } from "react";
+import { useCallback, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { useIsAnyFormDirty } from "~/features/common/hooks/useIsAnyFormDirty";
 import DatamapDrawer from "~/features/datamap/datamap-drawer/DatamapDrawer";
-import { DatamapGraphContext } from "~/features/datamap/datamap-graph/DatamapGraphContext";
 import { useDatamapTable } from "~/features/datamap/datamap-table/hooks/useDatamapTable";
 import SettingsBar from "~/features/datamap/SettingsBar";
 
 import { selectIsGettingStarted } from "./datamap.slice";
 import GetStarted from "./GetStarted";
 
+// Use dynamic import with SSR disabled for ReactFlow
 const SpatialDatamap = dynamic(
   () => import("~/features/datamap/SpatialDatamap"),
-  { ssr: false },
+  {
+    ssr: false,
+    loading: () => (
+      <Center width="100%" flex="1">
+        <Spinner />
+      </Center>
+    ),
+  },
 );
 
 const useHome = () => {
   const isGettingStarted = useAppSelector(selectIsGettingStarted);
-  const datamapGraphRef = useContext(DatamapGraphContext);
 
   const { attemptAction } = useIsAnyFormDirty();
   const [selectedSystemId, setSelectedSystemIdInner] = useState<
@@ -45,13 +51,10 @@ const useHome = () => {
   const resetSelectedSystemId = useCallback(() => {
     attemptAction().then((modalConfirmed: boolean) => {
       if (modalConfirmed && selectedSystemId) {
-        if (datamapGraphRef.current) {
-          datamapGraphRef.current?.$id(selectedSystemId).unselect();
-        }
         setSelectedSystemIdInner(undefined);
       }
     });
-  }, [attemptAction, datamapGraphRef, selectedSystemId]);
+  }, [attemptAction, selectedSystemId]);
 
   return {
     isGettingStarted,
@@ -96,7 +99,10 @@ const Datamap = () => {
         borderColor="gray.200"
       >
         <Box flex={1} minWidth="50%" maxWidth="100%">
-          <SpatialDatamap setSelectedSystemId={setSelectedSystemId} />
+          <SpatialDatamap
+            setSelectedSystemId={setSelectedSystemId}
+            selectedSystemId={selectedSystemId}
+          />
         </Box>
         <DatamapDrawer
           selectedSystemId={selectedSystemId}

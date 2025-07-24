@@ -1,0 +1,66 @@
+@import "fidesui/src/palette/palette.module.scss";
+
+.container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+.button {
+  height: 28px;
+  max-width: 180px;
+  transition:
+    background-color 300ms ease-in 0s,
+    color 300ms ease 0s,
+    border-color 300ms ease 0s,
+    box-shadow 300ms ease 0s;
+
+  // Default state
+  color: map-get($colors, "neutral-800");
+  background-color: map-get($colors, "neutral-50");
+  border: 1px solid map-get($colors, "neutral-100");
+  box-shadow: none;
+
+  // Hover state
+  &:hover {
+    color: white !important;
+    background-color: map-get($colors, "neutral-700") !important;
+    border: 1px solid map-get($colors, "neutral-600") !important;
+    box-shadow:
+      0px 1px 2px 0px rgba(0, 0, 0, 0.06),
+      0px 1px 3px 0px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  // Focus state for accessibility
+  &:focus,
+  &:focus-visible {
+    color: white !important;
+    background-color: map-get($colors, "minos") !important;
+    border: 1px solid map-get($colors, "minos") !important;
+    box-shadow:
+      0px 1px 2px 0px rgba(0, 0, 0, 0.06),
+      0px 1px 3px 0px rgba(0, 0, 0, 0.1) !important;
+    outline: 2px solid map-get($colors, "minos");
+    outline-offset: 2px;
+  }
+
+  // Active/selected state
+  &--selected {
+    color: white !important;
+    background-color: map-get($colors, "minos") !important;
+    border: 1px solid map-get($colors, "minos") !important;
+    box-shadow:
+      0px 1px 2px 0px rgba(0, 0, 0, 0.06),
+      0px 1px 3px 0px rgba(0, 0, 0, 0.1) !important;
+  }
+}
+
+.handle {
+  width: 10px;
+  height: 10px;
+  background: map-get($colors, "neutral-200");
+  border: 1px solid map-get($colors, "neutral-300");
+  opacity: 0;
+  pointer-events: none;
+}
