@@ -558,13 +558,13 @@ def get_user(
     ):
         logger.debug("Returning user with id: '{}'.", user_id)
         return user
-    else:
-        # User has USER_READ_OWN scope, check if they're accessing their own data
-        if user.id != client.user_id:
-            raise HTTPException(
-                status_code=HTTP_403_FORBIDDEN,
-                detail="You can only access your own user data with USER_READ_OWN scope.",
-            )
+
+    # User has USER_READ_OWN scope, check if they're accessing their own data
+    if user.id != client.user_id:
+        raise HTTPException(
+            status_code=HTTP_403_FORBIDDEN,
+            detail="You can only access your own user data with USER_READ_OWN scope.",
+        )
 
     logger.debug("Returning user with id: '{}'.", user_id)
     return user

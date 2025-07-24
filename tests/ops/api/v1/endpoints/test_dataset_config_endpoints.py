@@ -15,6 +15,9 @@ from sqlalchemy.orm import Session, make_transient
 from sqlalchemy.orm.attributes import flag_modified
 from starlette.testclient import TestClient
 
+from fides.api.api.v1.endpoints.dataset_config_endpoints import (
+    MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM,
+)
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.sql_models import Dataset as CtlDataset
@@ -609,8 +612,9 @@ class TestPatchDatasetConfigs:
     def test_patch_dataset_configs_bulk_create_limit_exceeded(
         self, api_client: TestClient, request_body, generate_auth_header, datasets_url
     ):
+        # Test the new limit of 1000 - should fail with 1001 items
         payload = []
-        for i in range(0, 51):
+        for i in range(0, MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM + 1):
             payload.append(request_body[0])
 
         auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
@@ -619,8 +623,83 @@ class TestPatchDatasetConfigs:
         assert 422 == response.status_code
         assert (
             json.loads(response.text)["detail"][0]["msg"]
-            == "List should have at most 50 items after validation, not 51"
+            == f"List should have at most {MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM} items after validation, not {MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM + 1}"
         )
+
+    def test_patch_dataset_configs_bulk_create_more_than_50(
+        self,
+        db: Session,
+        ctl_dataset,
+        generate_auth_header,
+        api_client,
+        datasets_url,
+        request_body,
+    ):
+        """Test that we can successfully save more than 50 dataset configs (testing 60)"""
+        # Create 60 dataset configs to test saving more than the old 50 limit
+        payload = []
+
+        for i in range(60):
+            payload.append(
+                {
+                    "fides_key": f"test_bulk_save_dataset_config_{i}",
+                    "ctl_dataset_fides_key": ctl_dataset.fides_key,
+                }
+            )
+
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        response = api_client.patch(
+            datasets_url,
+            headers=auth_header,
+            json=payload,
+        )
+
+        assert response.status_code == 200
+        response_body = json.loads(response.text)
+        assert len(response_body["succeeded"]) == 60
+        assert len(response_body["failed"]) == 0
+
+        # Verify all configs were actually created in the database
+        for i in range(60):
+            config = DatasetConfig.get_by(
+                db=db, field="fides_key", value=f"test_bulk_save_dataset_config_{i}"
+            )
+            assert config is not None
+
+    def test_patch_dataset_configs_bulk_create_at_1000_limit(
+        self,
+        db: Session,
+        ctl_dataset,
+        generate_auth_header,
+        api_client,
+        datasets_url,
+        request_body,
+    ):
+        """Test that we can successfully save exactly 1000 dataset configs (the maximum)"""
+        # Test exactly at the 1000 limit
+        payload = []
+
+        for i in range(MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM):
+            payload.append(
+                {
+                    "fides_key": f"test_1000_limit_dataset_config_{i}",
+                    "ctl_dataset_fides_key": ctl_dataset.fides_key,
+                }
+            )
+
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        response = api_client.patch(
+            datasets_url,
+            headers=auth_header,
+            json=payload,
+        )
+
+        assert response.status_code == 200
+        response_body = json.loads(response.text)
+        assert (
+            len(response_body["succeeded"]) == MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM
+        )
+        assert len(response_body["failed"]) == 0
 
     def test_patch_create_dataset_configs_bulk_create(
         self,
@@ -1194,7 +1273,7 @@ class TestPutDatasets:
         self, api_client: TestClient, db: Session, generate_auth_header, datasets_url
     ):
         payload = []
-        for i in range(0, 51):
+        for i in range(0, MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM + 1):
             payload.append({"collections": [{"fields": [], "fides_key": i}]})
 
         auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
@@ -1203,7 +1282,7 @@ class TestPutDatasets:
         assert 422 == response.status_code
         assert (
             json.loads(response.text)["detail"][0]["msg"]
-            == "List should have at most 50 items after validation, not 51"
+            == f"List should have at most {MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM} items after validation, not {MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM + 1}"
         )
 
     def test_patch_datasets_bulk_create(
@@ -2090,6 +2169,39 @@ class TestGetDatasetConfigs:
         assert response_body["total"] == 1
         assert response_body["page"] == 1
         assert response_body["size"] == Params().size
+
+    def test_get_dataset_configs_with_max_pagination_size_1000(
+        self, dataset_config, datasets_url, api_client: TestClient, generate_auth_header
+    ) -> None:
+        """Test that the custom DatasetConfigParams allows size=1000 (maximum allowed)"""
+        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        response = api_client.get(
+            f"{datasets_url}?size={MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM}",
+            headers=auth_header,
+        )
+        assert response.status_code == 200
+
+        response_body = json.loads(response.text)
+        assert response_body["size"] == MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM
+        assert response_body["page"] == 1
+
+    def test_get_dataset_configs_rejects_size_over_1000(
+        self, dataset_config, datasets_url, api_client: TestClient, generate_auth_header
+    ) -> None:
+        """Test that the custom DatasetConfigParams rejects size > 1000"""
+        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        response = api_client.get(
+            f"{datasets_url}?size={MAX_DATASET_CONFIGS_FOR_INTEGRATION_FORM + 1}",
+            headers=auth_header,
+        )
+        assert response.status_code == 422
+
+        response_body = json.loads(response.text)
+        assert "detail" in response_body
+        # Check that the error mentions the size validation
+        error_details = response_body["detail"]
+        assert any("size" in str(error).lower() for error in error_details)
+        assert any("1000" in str(error) for error in error_details)
 
 
 def get_connection_dataset_url(

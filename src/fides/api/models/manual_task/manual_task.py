@@ -26,6 +26,9 @@ from fides.api.schemas.base_class import FidesSchema
 if TYPE_CHECKING:
     from fides.api.models.attachment import Attachment
     from fides.api.models.fides_user import FidesUser
+    from fides.api.models.manual_task.conditional_dependency import (
+        ManualTaskConditionalDependency,
+    )
 
 # ------------------------------------------------------------
 # Enums
@@ -240,6 +243,13 @@ class ManualTask(Base):
         back_populates="task",
         uselist=True,
         viewonly=True,  # No cascade delete - submissions are historical data
+    )
+
+    conditional_dependencies = relationship(
+        "ManualTaskConditionalDependency",
+        back_populates="task",
+        uselist=True,
+        cascade="all, delete-orphan",
     )
 
     # Properties
