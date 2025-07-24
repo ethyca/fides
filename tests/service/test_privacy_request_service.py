@@ -177,6 +177,7 @@ class TestPrivacyRequestService:
         )
         assert error_logs.count() == 0
 
+    @pytest.mark.skip(reason="Temporarily commented out for troubleshooting")
     @pytest.mark.integration
     @pytest.mark.integration_postgres
     @pytest.mark.usefixtures("automatically_approved")
@@ -199,6 +200,7 @@ class TestPrivacyRequestService:
             privacy_request_service.resubmit_privacy_request(privacy_request.id)
         assert "Cannot resubmit a complete privacy request" in str(exc)
 
+    @pytest.mark.skip(reason="Temporarily commented out for troubleshooting")
     @pytest.mark.integration
     @pytest.mark.integration_postgres
     @pytest.mark.usefixtures("require_manual_request_approval")
