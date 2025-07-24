@@ -290,7 +290,10 @@ class PrivacyRequest(
     )
 
     masking_secrets: "RelationshipProperty[List[MaskingSecret]]" = relationship(
-        "MaskingSecret", back_populates="privacy_request", uselist=True
+        "MaskingSecret",
+        back_populates="privacy_request",
+        uselist=True,
+        passive_deletes="all",
     )
 
     @property
