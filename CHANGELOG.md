@@ -28,12 +28,14 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added display of special-purpose-only vendors in a separate list within the FidesJS overlay. [#6358](https://github.com/ethyca/fides/pull/6358)
 - Added Manual Task Conditional Dependencies table [#6356](https://github.com/ethyca/fides/pull/6356)
 - Added record counts to the privacy request event log entries in the Admin UI [#6374](https://github.com/ethyca/fides/pull/6374)
+- Added traditional Chinese support to FidesJS [#6372](https://github.com/ethyca/fides/pull/6372)
 
 ### Changed
 - Removes `data-testid` attributes from FidesJS production builds [#6351](https://github.com/ethyca/fides/pull/6351)
 - Optimized BigQuery deletions by issuing only a single delete statement per partition [#6340](https://github.com/ethyca/fides/pull/6340)
 - Increased the limit for dataset configurations from 50 to 1000 on the integration config page [#6367](https://github.com/ethyca/fides/pull/6367)
 - Updates the API so respondents will only be able to see their own user info [#6368](https://github.com/ethyca/fides/pull/6368)
+- Moved masking secrets from Redis to database [#6002](https://github.com/ethyca/fides/pull/6002)
 
 ### Developer Experience
 - Migrated Action Center tables to Ant Design [#6349](https://github.com/ethyca/fides/pull/6349)
