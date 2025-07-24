@@ -680,63 +680,54 @@ export const TcfOverlay = () => {
           </ConsentBanner>
         );
       }}
-      renderModalContent={
-        !experienceFull
-          ? undefined
-          : () => (
-              <TcfTabs
-                experience={experienceFull}
-                customNotices={privacyNoticesWithBestTranslation}
-                enabledIds={draftIds}
-                onChange={handleToggleChange}
-                activeTabIndex={activeTabIndex}
-                onTabChange={handleTabChange}
+      renderModalContent={() => (
+        <TcfTabs
+          experience={experienceFull || experienceMinimal}
+          customNotices={privacyNoticesWithBestTranslation}
+          enabledIds={draftIds}
+          onChange={handleToggleChange}
+          activeTabIndex={activeTabIndex}
+          onTabChange={handleTabChange}
+        />
+      )}
+      renderModalFooter={({ onClose }) => {
+        const onSave = (consentMethod: ConsentMethod, keys: EnabledIds) => {
+          handleUpdateAllPreferences(consentMethod, keys);
+          onClose();
+        };
+        return (
+          <TcfConsentButtons
+            experience={experienceFull || experienceMinimal}
+            onAcceptAll={() => {
+              handleAcceptAll();
+              onClose();
+            }}
+            onRejectAll={() => {
+              handleRejectAll();
+              onClose();
+            }}
+            renderFirstButton={() => (
+              <Button
+                buttonType={ButtonType.SECONDARY}
+                label={experienceFull ? i18n.t("exp.save_button_label") : ""}
+                onClick={() => {
+                  setTrigger({
+                    type: FidesEventTargetType.BUTTON,
+                    label: i18n.t("exp.save_button_label"),
+                  });
+                  onSave(ConsentMethod.SAVE, draftIds);
+                }}
+                className="fides-save-button"
+                id="fides-save-button"
+                disabled={!experienceFull}
+                loading={!experienceFull}
               />
-            )
-      }
-      renderModalFooter={
-        !experienceFull
-          ? undefined
-          : ({ onClose }) => {
-              const onSave = (
-                consentMethod: ConsentMethod,
-                keys: EnabledIds,
-              ) => {
-                handleUpdateAllPreferences(consentMethod, keys);
-                onClose();
-              };
-              return (
-                <TcfConsentButtons
-                  experience={experienceFull}
-                  onAcceptAll={() => {
-                    handleAcceptAll();
-                    onClose();
-                  }}
-                  onRejectAll={() => {
-                    handleRejectAll();
-                    onClose();
-                  }}
-                  renderFirstButton={() => (
-                    <Button
-                      buttonType={ButtonType.SECONDARY}
-                      label={i18n.t("exp.save_button_label")}
-                      onClick={() => {
-                        setTrigger({
-                          type: FidesEventTargetType.BUTTON,
-                          label: i18n.t("exp.save_button_label"),
-                        });
-                        onSave(ConsentMethod.SAVE, draftIds);
-                      }}
-                      className="fides-save-button"
-                      id="fides-save-button"
-                    />
-                  )}
-                  isInModal
-                  options={options}
-                />
-              );
-            }
-      }
+            )}
+            isInModal
+            options={options}
+          />
+        );
+      }}
     />
   );
 };
