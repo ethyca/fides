@@ -20,12 +20,10 @@ from fides.api.graph.execution import ExecutionNode
 from fides.api.graph.graph import DatasetGraph, Edge
 from fides.api.graph.traversal import Traversal
 from fides.api.models.connectionconfig import ConnectionConfig
-from fides.api.models.privacy_request import (
-    ExecutionLogStatus,
-    PrivacyRequestStatus,
-    RequestTask,
-)
+from fides.api.models.privacy_request import RequestTask
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.service.connectors import PostgreSQLConnector
 from fides.api.task.create_request_tasks import (
     collect_tasks_fn,
@@ -34,6 +32,7 @@ from fides.api.task.create_request_tasks import (
 from fides.api.task.execute_request_tasks import (
     can_run_task_body,
     create_graph_task,
+    get_upstream_access_data_for_erasure_task,
     run_prerequisite_task_checks,
 )
 from fides.api.task.graph_runners import use_dsr_3_0_scheduler
@@ -319,12 +318,12 @@ class TestExecutionNode:
             ],
         }
 
-    @pytest.mark.usefixtures("sentry_connection_config_without_secrets")
+    @pytest.mark.usefixtures("saas_external_example_connection_config")
     def test_grouped_fields(
-        self, db, privacy_request, sentry_dataset_config_without_secrets
+        self, db, privacy_request, saas_external_example_dataset_config
     ):
         """Test that a config with grouped inputs (sentry saas connector) has grouped inputs persisted"""
-        merged_graph = sentry_dataset_config_without_secrets.get_graph()
+        merged_graph = saas_external_example_dataset_config.get_graph()
         graph = DatasetGraph(merged_graph)
 
         identity = {"email": "customer-1@example.com"}
@@ -342,7 +341,7 @@ class TestExecutionNode:
         )
 
         issues_task = privacy_request.access_tasks.filter(
-            RequestTask.collection_address == "sentry_dataset:issues"
+            RequestTask.collection_address == "saas_connector_external_example:users"
         ).first()
         execution_node = ExecutionNode(issues_task)
         assert execution_node.grouped_fields == {
@@ -519,3 +518,108 @@ class TestGetDSRVersion:
     def test_use_dsr_3_0_override(self, privacy_request, request_task):
         # Privacy Request already started processing on 3.0, but we allow it to be switched to 2.0
         assert use_dsr_3_0_scheduler(privacy_request, ActionType.access) is False
+
+
+class TestGetUpstreamAccessDataForErasureTask:
+    def test_get_upstream_access_data_success(
+        self,
+        db,
+        privacy_request,
+        connection_config,
+        mocker,
+    ):
+        """Test successful retrieval of upstream access data for an erasure task"""
+
+        RequestTask.create(
+            db=db,
+            data={
+                "privacy_request_id": privacy_request.id,
+                "collection_address": "test_dataset:customer",
+                "dataset_name": "test_dataset",
+                "collection_name": "customer",
+                "action_type": ActionType.access,
+                "status": "complete",
+            },
+        )
+
+        # Create an erasure task that references the same collection
+        erasure_task = RequestTask.create(
+            db=db,
+            data={
+                "privacy_request_id": privacy_request.id,
+                "collection_address": "test_dataset:customer",
+                "dataset_name": "test_dataset",
+                "collection_name": "customer",
+                "action_type": ActionType.erasure,
+                "status": "pending",
+            },
+        )
+
+        # Mock the create_graph_task function to avoid complex graph setup
+        mock_graph_task = mocker.Mock()
+        mock_graph_task.execution_node.input_keys = [
+            CollectionAddress("test_dataset", "users")
+        ]
+        mocker.patch(
+            "fides.api.task.execute_request_tasks.create_graph_task",
+            return_value=mock_graph_task,
+        )
+
+        # Mock the _build_upstream_access_data function
+        mock_upstream_data = [["test_data"]]
+        mocker.patch(
+            "fides.api.task.execute_request_tasks._build_upstream_access_data",
+            return_value=mock_upstream_data,
+        )
+
+        with TaskResources(
+            privacy_request,
+            privacy_request.policy,
+            [connection_config],
+            erasure_task,
+            db,
+        ) as resources:
+
+            result = get_upstream_access_data_for_erasure_task(
+                erasure_task, db, resources
+            )
+
+            # Should return the mocked upstream data
+            assert result == mock_upstream_data
+            assert isinstance(result, list)
+
+    def test_get_upstream_access_data_missing_access_task(
+        self,
+        db,
+        privacy_request,
+        connection_config,
+    ):
+        """Test error handling when corresponding access task is not found"""
+        # Create only an erasure task without a corresponding access task
+        erasure_task = RequestTask.create(
+            db=db,
+            data={
+                "privacy_request_id": privacy_request.id,
+                "collection_address": "test_dataset:customer",
+                "dataset_name": "test_dataset",
+                "collection_name": "customer",
+                "action_type": ActionType.erasure,
+                "status": "pending",
+            },
+        )
+
+        with TaskResources(
+            privacy_request,
+            privacy_request.policy,
+            [connection_config],
+            erasure_task,
+            db,
+        ) as resources:
+
+            with pytest.raises(Exception) as exc_info:
+                get_upstream_access_data_for_erasure_task(erasure_task, db, resources)
+
+            assert "Unable to find access request task for erasure task" in str(
+                exc_info.value
+            )
+            assert "test_dataset:customer" in str(exc_info.value)

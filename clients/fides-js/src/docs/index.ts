@@ -37,7 +37,7 @@
  * comments are then used to generate (via `npm run docs:generate`) living
  * developer documentation that is then imported and hosted on Ethyca's
  * docs site here: [FidesJS SDK Documentation](https://ethyca.com/docs/dev-docs/js)
- * 
+ *
  * Therefore, all the types in src/docs should be considered part of FidesJS'
  * *official* developer API, so treat them with care!
  *
@@ -50,4 +50,6 @@
 // Export all the types from files in src/docs directory
 export * from "./fides";
 export * from "./fides-event";
+export * from "./fides-experience-config";
 export * from "./fides-options";
+export * from "./privacy-notice-region";

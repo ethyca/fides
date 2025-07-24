@@ -19,11 +19,8 @@ from fides.api.service.saas_request.saas_request_override_factory import (
 from fides.api.task.graph_runners import access_runner, erasure_runner
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.api.util.collection_util import Row
-from fides.config import get_config
 from tests.conftest import access_runner_tester, erasure_runner_tester
 from tests.ops.graph.graph_test_util import assert_rows_match
-
-CONFIG = get_config()
 
 
 def erasure_execution_logs(
@@ -114,9 +111,6 @@ async def test_saas_erasure_order_request_task(
         keys=["refunds_to_orders_id"],
     )
 
-    temp_masking = CONFIG.execution.masking_strict
-    CONFIG.execution.masking_strict = False
-
     x = erasure_runner(
         privacy_request,
         erasure_policy_complete_mask,
@@ -154,8 +148,6 @@ async def test_saas_erasure_order_request_task(
         ("labels", "in_processing"),
         ("labels", "complete"),
     ]
-
-    CONFIG.execution.masking_strict = temp_masking
 
 
 @pytest.mark.integration_saas
@@ -216,9 +208,6 @@ async def test_saas_erasure_order_request_task_with_cycle(
         keys=["refunds_to_orders_id"],
     )
 
-    temp_masking = CONFIG.execution.masking_strict
-    CONFIG.execution.masking_strict = False
-
     with pytest.raises(TraversalError) as exc:
         erasure_runner(
             privacy_request,
@@ -234,8 +223,6 @@ async def test_saas_erasure_order_request_task_with_cycle(
         f"The values for the `erase_after` fields caused a cycle in the following collections"
         in str(exc.value)
     )
-
-    CONFIG.execution.masking_strict = temp_masking
 
 
 @pytest.mark.integration_saas
@@ -295,9 +282,6 @@ async def test_saas_erasure_order_request_task_resume_from_error(
         min_size=1,
         keys=["refunds_to_orders_id"],
     )
-
-    temp_masking = CONFIG.execution.masking_strict
-    CONFIG.execution.masking_strict = False
 
     # mock the mask_data function so we can force an exception on the "refunds_to_orders"
     # collection to simulate resuming from error
@@ -411,5 +395,3 @@ async def test_saas_erasure_order_request_task_resume_from_error(
             ("refunds_to_orders", "in_processing"),
             ("refunds_to_orders", "complete"),
         ]
-
-    CONFIG.execution.masking_strict = temp_masking

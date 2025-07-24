@@ -50,7 +50,7 @@ def get_policy_pre_execution_webhooks(
     """
     policy = get_policy_or_error(db, policy_key)
 
-    logger.info(
+    logger.debug(
         "Finding all Pre-Execution Webhooks for Policy '{}' with pagination params '{}'",
         policy.key,
         params,
@@ -76,7 +76,7 @@ def get_policy_post_execution_webhooks(
     """
     policy = get_policy_or_error(db, policy_key)
 
-    logger.info(
+    logger.debug(
         "Finding all Post-Execution Webhooks for Policy '{}' with pagination params '{}'",
         policy.key,
         params,
@@ -218,7 +218,7 @@ def get_policy_webhook_or_error(
 
     Also verifies that the webhook belongs to the given Policy.
     """
-    logger.info(
+    logger.debug(
         "Finding {}-Execution Webhook with key '{}' for Policy '{}'",
         webhook_cls.prefix.capitalize(),
         webhook_key,

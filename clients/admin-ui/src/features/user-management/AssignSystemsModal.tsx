@@ -1,7 +1,7 @@
 import {
   AntButton as Button,
   AntSwitch as Switch,
-  Badge,
+  AntTag as Tag,
   Box,
   Flex,
   FormControl,
@@ -18,7 +18,7 @@ import {
 } from "fidesui";
 import { useMemo, useState } from "react";
 
-import SearchBar from "~/features/common/SearchBar";
+import SearchInput from "~/features/common/SearchInput";
 import { useGetAllSystemsQuery } from "~/features/system";
 import { System } from "~/types/api";
 
@@ -84,9 +84,9 @@ const AssignSystemsModal = ({
           alignItems="center"
         >
           <Text>Assign systems</Text>
-          <Badge bg="green.500" color="white" px={1}>
+          <Tag color="success">
             Assigned to {assignedSystems.length} systems
-          </Badge>
+          </Tag>
         </ModalHeader>
         <ModalBody data-testid="assign-systems-modal-body">
           {emptySystems ? (
@@ -116,8 +116,8 @@ const AssignSystemsModal = ({
                   </FormControl>
                 </Box>
               </Flex>
-              <SearchBar
-                search={searchFilter}
+              <SearchInput
+                value={searchFilter}
                 onChange={setSearchFilter}
                 placeholder="Search for systems"
                 data-testid="system-search"

@@ -1,7 +1,7 @@
 import { AntButton as Button, Box, Stack, Text } from "fidesui";
 import { useRouter } from "next/router";
 
-import { MESSAGING_CONFIGURATION_ROUTE } from "~/features/common/nav/v2/routes";
+import { MESSAGING_CONFIGURATION_ROUTE } from "~/features/common/nav/routes";
 
 const ConfigurationNotificationBanner = () => {
   const router = useRouter();

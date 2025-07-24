@@ -1,5 +1,8 @@
 /// <reference types="cypress" />
 
+import "@testing-library/cypress/add-commands";
+
+import { RootState } from "~/app/store";
 import { STORAGE_ROOT_KEY } from "~/constants";
 import { RoleRegistryEnum, ScopeRegistryEnum } from "~/types/api";
 
@@ -11,7 +14,10 @@ Cypress.Commands.add("getByTestIdPrefix", (prefix, options) =>
   cy.get(`[data-testid^='${prefix}']`, options),
 );
 
-Cypress.Commands.add("login", () => {
+/**
+ * @arg initialStorage - allow an initial storage to be passed both for convenience and simulating real world usage where some state can be retained after logout
+ */
+Cypress.Commands.add("login", (initialStorage?: RootState) => {
   cy.fixture("login.json").then((body) => {
     const authState = {
       user: body.user_data,
@@ -23,6 +29,7 @@ Cypress.Commands.add("login", () => {
         // redux-persist stringifies the root object _and_ the first layer of children.
         // https://github.com/rt2zz/redux-persist/issues/489#issuecomment-336928988
         JSON.stringify({
+          ...initialStorage,
           auth: JSON.stringify(authState),
         }),
       );
@@ -36,10 +43,6 @@ Cypress.Commands.add("login", () => {
 const getSelectOptionList = (selectorId: string) =>
   cy.getByTestId(selectorId).click().find(`.custom-select__menu-list`);
 
-Cypress.Commands.add("getSelectValueContainer", (selectorId) =>
-  cy.getByTestId(selectorId).find(`.custom-select__value-container`),
-);
-
 Cypress.Commands.add("selectOption", (selectorId, optionText) => {
   getSelectOptionList(selectorId).contains(optionText).click();
 });
@@ -48,7 +51,7 @@ Cypress.Commands.add(
   "removeMultiValue",
   (selectorId: string, optionText: string) =>
     cy
-      .getSelectValueContainer(selectorId)
+      .getByTestId(selectorId)
       .contains(optionText)
       .siblings(".custom-select__multi-value__remove")
       .click(),
@@ -119,23 +122,16 @@ declare global {
       /**
        * Programmatically login with a mock user
        */
-      login(): void;
+      login(initialStorage?: RootState): void;
       /**
        * Stub a user with the scopes associated with a role
        * @example cy.assumeRole(RoleRegistryEnum.OWNER)
        */
       assumeRole(role: RoleRegistryEnum): void;
       /**
-       * Get the container of a CustomSelect
-       * @example cy.selectValueContainer("input-allow_list_id")
-       */
-      getSelectValueContainer(
-        selectorId: string,
-      ): Chainable<JQuery<HTMLElement>>;
-      /**
-       * Selects an option from a CustomSelect component
+       * @deprecated Selects an option from a CustomSelect component
        *
-       * @example cy.selectOption("input-allow_list_id", "Prime numbers");
+       * @example cy.getByTestId("input-allow_list_id").antSelect("Prime numbers")
        */
       selectOption(
         selectorId: string,

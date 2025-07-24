@@ -26,6 +26,7 @@ import {
   ClassifySystem,
   CloudConfig,
   ConnectionConfigurationResponse,
+  ConnectionDatahubSyncResponse,
   ConsentableItem,
   CustomAssetType,
   CustomFieldDefinition,
@@ -262,8 +263,17 @@ const plusApi = baseApi.injectEndpoints({
         url: `plus/custom-metadata/custom-field-definition/resource-type/${resource_type}`,
       }),
       providesTags: ["Custom Field Definition"],
-      transformResponse: (list: CustomFieldDefinitionWithId[]) =>
-        list.sort((a, b) => (a.name ?? "").localeCompare(b.name ?? "")),
+      transformResponse: (
+        response: CustomFieldDefinitionWithId[] | { detail: string },
+      ) => {
+        // If the server returns a message (eg. `{detail: "No custom metadata fields found with resource type system"}`) instead of a list of definitions, it means there weren't any found. Return an empty list in that case to prevent unexpected errors in the FE code.
+        if ("detail" in response) {
+          return [];
+        }
+        return response.sort((a, b) =>
+          (a.name ?? "").localeCompare(b.name ?? ""),
+        );
+      },
     }),
     getAllDictionaryEntries: build.query<Page_Vendor_, void>({
       query: () => ({
@@ -465,6 +475,16 @@ const plusApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Consentable Items"],
     }),
+    syncDatahubConnection: build.mutation<
+      ConnectionDatahubSyncResponse,
+      { connectionKey: string; datasetIds: string[] }
+    >({
+      query: ({ connectionKey, datasetIds }) => ({
+        url: `plus/connection/datahub/${connectionKey}/sync`,
+        method: "POST",
+        body: { dataset_ids: datasetIds },
+      }),
+    }),
   }),
 });
 
@@ -506,6 +526,7 @@ export const {
   usePatchTcfPurposeOverridesMutation,
   useGetConsentableItemsQuery,
   useUpdateConsentableItemsMutation,
+  useSyncDatahubConnectionMutation,
 } = plusApi;
 
 export const selectHealth: (state: RootState) => HealthCheck | undefined =

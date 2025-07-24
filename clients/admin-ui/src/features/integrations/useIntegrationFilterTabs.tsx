@@ -1,15 +1,25 @@
 import { useState } from "react";
 
+import { useFlags } from "~/features/common/features/features.slice";
 import { IntegrationTypeInfo } from "~/features/integrations/add-integration/allIntegrationTypes";
 
 export enum IntegrationFilterTabs {
   ALL = "All",
+  CRM = "CRM",
+  DATA_CATALOG = "Data Catalog",
   DATABASE = "Database",
   DATA_WAREHOUSE = "Data Warehouse",
+  IDENTITY_PROVIDER = "Identity Provider",
+  WEBSITE = "Website",
+  MANUAL = "Manual",
 }
 
 const useIntegrationFilterTabs = (integrationTypes?: IntegrationTypeInfo[]) => {
-  const tabs = Object.values(IntegrationFilterTabs);
+  const { flags } = useFlags();
+  const tabs = Object.values(IntegrationFilterTabs).filter(
+    (tab) =>
+      tab !== IntegrationFilterTabs.IDENTITY_PROVIDER || flags.oktaMonitor,
+  );
 
   const [tabIndex, setTabIndex] = useState(0);
   const currentTab = tabs[tabIndex];

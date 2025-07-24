@@ -15,7 +15,7 @@ from starlette.status import (
 )
 
 from fides.api.api import deps
-from fides.api.api.v1.endpoints.dataset_endpoints import _get_connection_config
+from fides.api.api.v1.endpoints.dataset_config_endpoints import _get_connection_config
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.oauth.utils import verify_oauth_client

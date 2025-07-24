@@ -5,9 +5,7 @@ import {
   FormLabel,
   Heading,
   Input,
-  QuestionIcon,
   Stack,
-  Tooltip,
   useToast,
 } from "fidesui";
 import { useFormik } from "formik";
@@ -23,6 +21,7 @@ import {
 } from "~/features/organization";
 import { Organization } from "~/types/api";
 
+import { InfoTooltip } from "../common/InfoTooltip";
 import { changeStep, setOrganization } from "./config-wizard.slice";
 
 const useOrganizationInfoForm = () => {
@@ -160,13 +159,7 @@ const OrganizationInfoForm = () => {
                 w="65%"
                 data-testid="input-name"
               />
-              <Tooltip
-                fontSize="md"
-                label="The legal name of your organization"
-                placement="right"
-              >
-                <QuestionIcon boxSize={5} color="gray.400" />
-              </Tooltip>
+              <InfoTooltip label="The legal name of your organization" />
             </Stack>
             <Stack direction="row" justifyContent="flex-end">
               <FormLabel w="100%">Description</FormLabel>
@@ -183,14 +176,7 @@ const OrganizationInfoForm = () => {
                 w="65%"
                 data-testid="input-description"
               />
-              <Tooltip
-                fontSize="md"
-                label="An explanation of the type of organization and primary activity.
-                  For example “Acme Inc. is an e-commerce company that sells scarves.”"
-                placement="right"
-              >
-                <QuestionIcon boxSize={5} color="gray.400" />
-              </Tooltip>
+              <InfoTooltip label='An explanation of the type of organization and primary activity. For example "Acme Inc. is an e-commerce company that sells scarves."' />
             </Stack>
           </FormControl>
         </Stack>

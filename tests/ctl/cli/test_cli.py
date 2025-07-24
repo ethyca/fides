@@ -4,7 +4,6 @@ from base64 import b64decode
 from json import dump, loads
 from typing import Generator
 
-import click
 import pytest
 import yaml
 from click.testing import CliRunner
@@ -28,8 +27,12 @@ def git_reset(change_dir: str) -> None:
     git_session.checkout("HEAD", change_dir)
 
 
-@pytest.fixture()
-def test_cli_runner() -> Generator:
+@pytest.fixture(scope="function")
+def test_cli_runner(monkeypatch_requests) -> Generator:
+    """
+    We use the `monkeypatch_requests` fixture to make sure all CLI requests
+    use the TestClient and are executed against the test DB.
+    """
     runner = CliRunner()
     yield runner
 
@@ -86,6 +89,15 @@ def test_commands_print_help_text_even_on_invalid(
     assert "Usage: fides user permissions [OPTIONS]" in result.output
 
 
+@pytest.mark.unit
+def test_cli_version(test_cli_runner: CliRunner) -> None:
+    result = test_cli_runner.invoke(cli, ["--version"])
+    import fides
+
+    assert f"fides, version {fides.__version__}" in result.output
+    assert result.exit_code == 0
+
+
 class TestView:
     @pytest.mark.unit
     def test_view_config(self, test_cli_runner: CliRunner) -> None:
@@ -126,6 +138,19 @@ def test_worker() -> None:
     assert True
 
 
+@pytest.fixture(scope="function")
+def demo_resources(test_config_path, test_cli_runner, default_taxonomy):
+    """
+    Push all demo resources before the test session starts.
+    """
+    result = test_cli_runner.invoke(
+        cli, ["-f", test_config_path, "push", "demo_resources/"]
+    )
+    print("Pushing demo resources:")
+    print(result.output)
+    assert result.exit_code == 0, "Failed to push demo resources"
+
+
 @pytest.mark.unit
 def test_parse(test_config_path: str, test_cli_runner: CliRunner) -> None:
     result = test_cli_runner.invoke(
@@ -142,7 +167,7 @@ class TestDB:
             cli, ["-f", test_config_path, "db", "reset", "-y"]
         )
         print(result.output)
-        assert result.exit_code == 0
+        assert result.exit_code == 0, result.output
 
     @pytest.mark.integration
     def test_init_db(self, test_config_path: str, test_cli_runner: CliRunner) -> None:
@@ -159,9 +184,14 @@ class TestDB:
         assert result.exit_code == 0
 
 
+@pytest.mark.integration
 class TestPush:
-    @pytest.mark.integration
-    def test_push(self, test_config_path: str, test_cli_runner: CliRunner) -> None:
+    @pytest.mark.usefixtures("default_taxonomy")
+    def test_push(
+        self,
+        test_config_path: str,
+        test_cli_runner: CliRunner,
+    ) -> None:
         result = test_cli_runner.invoke(
             cli, ["-f", test_config_path, "push", "demo_resources/"]
         )
@@ -177,6 +207,7 @@ class TestPush:
         assert result.exit_code == 0
 
     @pytest.mark.integration
+    @pytest.mark.usefixtures("default_taxonomy")
     def test_diff_push(self, test_config_path: str, test_cli_runner: CliRunner) -> None:
         result = test_cli_runner.invoke(
             cli, ["-f", test_config_path, "push", "--diff", "demo_resources/"]
@@ -196,6 +227,7 @@ class TestPush:
 
 
 @pytest.mark.integration
+@pytest.mark.usefixtures("fideslang_resources")
 class TestPull:
     def test_pull(
         self,
@@ -241,6 +273,33 @@ class TestPull:
         print(result.output)
         assert result.exit_code == 0
 
+    def test_pull_all_separate_files(
+        self,
+        test_cli_runner: CliRunner,
+    ) -> None:
+        """
+        Due to the fact that this command checks the real git status, a pytest
+        tmp_dir can't be used. Consequently a real directory must be tested against
+        and then reset.
+        """
+        test_dir = ".fides"
+
+        result = test_cli_runner.invoke(
+            cli,
+            [
+                "pull",
+                "dataset",
+                "--all-resources",
+                "--separate-files",
+            ],
+        )
+        git_reset(test_dir)
+        os.remove(f"{test_dir}/test_sample_db_dataset.yml")
+
+        print(result.output)
+        assert result.exit_code == 0
+
+    @pytest.mark.usefixtures("default_taxonomy")
     def test_pull_one_resource(
         self,
         test_config_path: str,
@@ -254,6 +313,7 @@ class TestPull:
             cli, ["-f", test_config_path, "pull", "data_category", "system"]
         )
         git_reset(test_dir)
+        os.remove(".fides/system.yml")
         print(result.output)
         assert result.exit_code == 0
         assert "not found" not in result.output
@@ -261,7 +321,7 @@ class TestPull:
 
 @pytest.mark.integration
 class TestAnnotate:
-
+    @pytest.mark.usefixtures("default_data_categories")
     def test_annotate(
         self,
         test_config_path: str,
@@ -313,8 +373,31 @@ class TestAnnotate:
         assert result.exit_code == 0
         print(result.output)
 
+    def test_regression_annotate_dataset(
+        self,
+        test_config_path: str,
+        test_cli_runner: CliRunner,
+    ):
+        test_cli_runner.invoke(
+            cli,
+            [
+                "-f",
+                test_config_path,
+                "annotate",
+                "dataset",
+                "tests/ctl/data/failing_direction.yml",
+            ],
+            input="user\n",
+        )
+        with open("tests/ctl/data/failing_direction.yml", "r") as dataset_yml:
+            try:
+                dataset_yml = yaml.safe_load(dataset_yml)
+            except yaml.constructor.ConstructorError:
+                assert False, "The yaml file is not valid"
+
 
 @pytest.mark.integration
+@pytest.mark.usefixtures("default_taxonomy")
 def test_audit(test_config_path: str, test_cli_runner: CliRunner) -> None:
     result = test_cli_runner.invoke(cli, ["-f", test_config_path, "evaluate", "-a"])
     print(result.output)
@@ -322,6 +405,7 @@ def test_audit(test_config_path: str, test_cli_runner: CliRunner) -> None:
 
 
 @pytest.mark.integration
+@pytest.mark.usefixtures("demo_resources")
 class TestCRUD:
     def test_get(self, test_config_path: str, test_cli_runner: CliRunner) -> None:
         result = test_cli_runner.invoke(
@@ -362,6 +446,7 @@ class TestCRUD:
         assert result.exit_code == 0
 
 
+@pytest.mark.usefixtures("default_taxonomy")
 class TestEvaluate:
     @pytest.mark.integration
     def test_evaluate_with_declaration_pass(
@@ -528,6 +613,7 @@ class TestEvaluate:
         assert result.exit_code == 1
 
 
+@pytest.mark.usefixtures("default_organization")
 class TestScan:
     @pytest.mark.integration
     def test_scan_dataset_db_input_connection_string(
@@ -738,6 +824,7 @@ class TestScan:
         assert result.exit_code == 0
 
 
+@pytest.mark.usefixtures("default_organization")
 class TestGenerate:
     @pytest.mark.integration
     def test_generate_dataset_db_with_connection_string(
@@ -1168,10 +1255,8 @@ class TestUser:
         assert set(total_scopes) == set(SCOPE_REGISTRY)
         assert roles == [OWNER]
 
-    def test_user_permissions_valid(
-        self, test_config_path: str, test_cli_runner: CliRunner, credentials_path: str
-    ) -> None:
-        """Test getting user permissions for the current user."""
+        # This should be in its own test (test_user_permissions_valid)
+        # but we need a fixture to create a user first
         print(credentials_path)
         result = test_cli_runner.invoke(
             cli,

@@ -26,6 +26,11 @@ dataset:
                 data_categories: [user.contact.email]
                 fidesops_meta:
                   data_type: string
+                  masking_strategy_override:
+                    strategy: random_string_rewrite
+                    configuration:
+                      format_preservation:
+                        suffix: "+masked@ethyca.com"
               - name: firstname
                 data_categories: [user.name]
                 fidesops_meta:

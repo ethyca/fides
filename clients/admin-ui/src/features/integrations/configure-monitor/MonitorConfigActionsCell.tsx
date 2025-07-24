@@ -1,8 +1,8 @@
 import {
   AntButton as Button,
+  AntTooltip as Tooltip,
   DeleteIcon,
   EditIcon,
-  Tooltip,
   useDisclosure,
 } from "fidesui";
 
@@ -14,11 +14,16 @@ import {
   useExecuteDiscoveryMonitorMutation,
 } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 
+const WEBSITE_SCAN_SUCCESS_MESSAGE =
+  "Scanning your website now. Once the monitor is finished, results can be found in the action center.";
+
 const MonitorConfigActionsCell = ({
   monitorId,
+  isWebsiteMonitor,
   onEditClick,
 }: {
   monitorId: string;
+  isWebsiteMonitor?: boolean;
   onEditClick: () => void;
 }) => {
   const [deleteMonitor] = useDeleteDiscoveryMonitorMutation();
@@ -31,7 +36,9 @@ const MonitorConfigActionsCell = ({
     useExecuteDiscoveryMonitorMutation();
   const { toastResult: toastExecuteResult } = useQueryResultToast({
     defaultErrorMsg: "A problem occurred initiating monitor execution",
-    defaultSuccessMsg: "Monitor execution successfully started",
+    defaultSuccessMsg: isWebsiteMonitor
+      ? WEBSITE_SCAN_SUCCESS_MESSAGE
+      : "Monitor execution successfully started",
   });
 
   const handleDelete = async () => {
@@ -62,7 +69,7 @@ const MonitorConfigActionsCell = ({
         isCentered
       />
       <div className="flex gap-2">
-        <Tooltip label="Edit">
+        <Tooltip title="Edit">
           <Button
             onClick={onEditClick}
             size="small"
@@ -71,7 +78,7 @@ const MonitorConfigActionsCell = ({
             aria-label="Edit monitor"
           />
         </Tooltip>
-        <Tooltip label="Delete">
+        <Tooltip title="Delete">
           <Button
             onClick={onOpen}
             size="small"

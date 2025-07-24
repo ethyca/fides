@@ -6,12 +6,19 @@
  */
 
 import { CmpApi, TCData } from "@iabtechlabtcf/cmpapi";
-import { GVL, Segment, TCModel, TCString } from "@iabtechlabtcf/core";
+import {
+  GVL,
+  PurposeRestriction,
+  RestrictionType,
+  Segment,
+  TCModel,
+  TCString,
+} from "@iabtechlabtcf/core";
 
 import { PrivacyExperience, PrivacyExperienceMinimal } from "./consent-types";
 import { ETHYCA_CMP_ID, FIDES_SEPARATOR } from "./tcf/constants";
 import { extractTCStringForCmpApi } from "./tcf/events";
-import { EnabledIds } from "./tcf/types";
+import { EnabledIds, TcfPublisherRestriction } from "./tcf/types";
 import {
   decodeVendorId,
   uniqueGvlVendorIds,
@@ -25,35 +32,53 @@ const CMP_VERSION = 1;
 const FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS = [1, 3, 4, 5, 6];
 
 // AC
-const AC_SPECIFICATION_VERSION = 1;
+const AC_SPECIFICATION_VERSION = 2;
 
 /**
- * Generate an AC String based on TCF-related info from privacy experience.
+ * Generates an Additional Consent (AC) string in the format `version~id1.id2.id3~id4.id5.id6` where:
+ * - version: The AC specification version
+ * - id1.id2.id3: A sorted, dot-separated list of user-consented vendor IDs.
+ * - id4.id5.id6: "dv." followed by a sorted, dot-separated list of non-user-consented disclosed
+ *  vendor IDs.
+ *
+ * Vendors included in the user-consented list should not be included in the disclosed vendor list
+ * to reduce the string size.
+ *
+ * The function filters for AC vendors only (those with 'gacp' prefix), extracts their numeric IDs,
+ * and joins them in ascending order.
+ *
+ * @example
+ * generateAcString({
+ *   userConsentedVendorIds: ["gacp.42"],
+ *   disclosedVendorIds: ["gacp.49", "gacp.33", "gvl.12", "gacp.42", "gvl.123"]
+ * })
+ * // Returns "2~42~dv.33.49"
  */
 const generateAcString = ({
-  tcStringPreferences,
+  userConsentedVendorIds,
+  disclosedVendorIds,
 }: {
-  tcStringPreferences: Pick<EnabledIds, "vendorsConsent" | "vendorsLegint">;
+  userConsentedVendorIds: string[];
+  disclosedVendorIds: string[];
 }) => {
-  const uniqueIds = Array.from(
-    new Set(
-      [
-        ...tcStringPreferences.vendorsConsent,
-        ...tcStringPreferences.vendorsLegint,
-      ]
-        .filter((id) => vendorIsAc(id))
-        // Convert gacp.42 --> 42
-        .map((id) => decodeVendorId(id).id),
-    ),
-  );
-  const vendorIds = uniqueIds.sort((a, b) => Number(a) - Number(b)).join(".");
+  const processIds = (ids: string[]) =>
+    ids
+      .filter(vendorIsAc)
+      .map((id) => decodeVendorId(id).id)
+      .sort((a, b) => Number(a) - Number(b))
+      .join(".");
 
-  return `${AC_SPECIFICATION_VERSION}~${vendorIds}`;
+  const consentedIds = processIds(userConsentedVendorIds);
+  const disclosedIds = processIds(
+    disclosedVendorIds.filter((id) => !userConsentedVendorIds.includes(id)),
+  );
+
+  return `${AC_SPECIFICATION_VERSION}~${consentedIds}~dv.${disclosedIds}`;
 };
 
 /**
  * Generate FidesString based on TCF and AC-related info from privacy experience.
- * Called when there is either a FidesInitialized or FidesUpdated event
+ * Called when there is either a FidesConsentLoaded or FidesUpdated event
  */
 export const generateFidesString = async ({
   experience,
@@ -75,6 +100,9 @@ export const generateFidesString = async ({
     tcModel.isServiceSpecific = true;
     tcModel.supportOOB = false;
 
+    if (experience.tcf_publisher_country_code) {
+      tcModel.publisherCountryCode = experience.tcf_publisher_country_code;
+    }
     // Narrow the GVL to say we've only showed these vendors provided by our experience
     const gvlUID = experience.minimal_tcf
       ? uniqueGvlVendorIdsFromMinimal(experience as PrivacyExperienceMinimal)
@@ -87,8 +115,26 @@ export const generateFidesString = async ({
         if (vendorGvlEntry(vendorId, experience.gvl)) {
           const { id } = decodeVendorId(vendorId);
           tcModel.vendorConsents.set(+id);
+
+          if (!experience.tcf_publisher_restrictions?.length) {
+            // Legacy: look up each vendor in the GVL vendors list to see if they have a purpose list.
+            // If they do not it means they have been set in Admin UI as Vendor Overrides to
+            // require consent. In that case we need to set a publisher restriction for the
+            // vendor's flexible purposes.
+            const vendor = experience.gvl?.vendors[id];
+            if (vendor && !vendor?.purposes?.length) {
+              vendor.flexiblePurposes.forEach((purpose) => {
+                const purposeRestriction = new PurposeRestriction();
+                purposeRestriction.purposeId = purpose;
+                purposeRestriction.restrictionType =
+                  RestrictionType.REQUIRE_CONSENT;
+                tcModel.publisherRestrictions.add(+id, purposeRestriction);
+              });
+            }
+          }
         }
       });
+
       tcStringPreferences.vendorsLegint.forEach((vendorId) => {
         if (experience.minimal_tcf) {
           (
@@ -124,6 +170,17 @@ export const generateFidesString = async ({
         }
       });
 
+      // Set legitimate interest for special-purpose only vendors and vendors that
+      // have declared only purposes based on consent (no LI) + at least one SP
+      Object.values(experience.gvl?.vendors ?? {}).forEach((vendor) => {
+        if (
+          !!vendor.specialPurposes?.length &&
+          !vendor.legIntPurposes?.length
+        ) {
+          tcModel.vendorLegitimateInterests.set(vendor.id);
+        }
+      });
+
       // Set purposes on tcModel
       tcStringPreferences.purposesConsent.forEach((purposeId) => {
         tcModel.purposeConsents.set(+purposeId);
@@ -140,18 +197,54 @@ export const generateFidesString = async ({
         tcModel.specialFeatureOptins.set(+id);
       });
 
-      // note that we cannot set consent for special purposes nor features because the IAB policy states
-      // the user is not given choice by a CMP.
-      // See https://iabeurope.eu/iab-europe-transparency-consent-framework-policies/
-      // and https://github.com/InteractiveAdvertisingBureau/iabtcf-es/issues/63#issuecomment-581798996
+      // Process publisher restrictions if available
+      if (
+        experience.tcf_publisher_restrictions &&
+        experience.tcf_publisher_restrictions.length > 0
+      ) {
+        experience.tcf_publisher_restrictions.forEach(
+          (restriction: TcfPublisherRestriction) => {
+            // NOTE: While this documentation https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/TCFv2/TCF-Implementation-Guidelines.md#pubrestrenc
+            // mentions "it might be more efficient to encode a small number of range restriction
+            // segments using a specific encoding scheme," this is referring to the CMP's interface (Admin UI)
+            // providing a mechanism for handling ranges, but the TCModel.publisherRestrictions object does
+            // not support ranges. We must add each vendor id as a separate publisher restriction because
+            // that's what the TCModel we're using for our encoding supports.
+            // See https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/core#setting-publisher-restrictions
+            // for more information about the loop below.
+            restriction.vendors.forEach((vendorId: number) => {
+              const purposeRestriction = new PurposeRestriction();
+              purposeRestriction.purposeId = restriction.purpose_id;
+              purposeRestriction.restrictionType = restriction.restriction_type;
+              tcModel.publisherRestrictions.add(vendorId, purposeRestriction);
+            });
+          },
+        );
+      }
+
       encodedString = TCString.encode(tcModel, {
         // We do not want to include vendors disclosed or publisher tc at the moment
         segments: [Segment.CORE],
       });
 
-      // Attach the AC string
-      const acString = generateAcString({ tcStringPreferences });
+      fidesDebugger(
+        "TC String encoded",
+        `https://iabgpp.com/#${encodedString}`,
+      );
+
+      // Attach the AC string, which only applies to tcf_vendor_consents (no LI exists in AC)
+      const disclosedVendorIds = experience.minimal_tcf
+        ? (experience as PrivacyExperienceMinimal).tcf_vendor_consent_ids
+        : (experience as PrivacyExperience).tcf_vendor_consents?.map(
+            (vendor) => vendor.id,
+          );
+      const acString = generateAcString({
+        userConsentedVendorIds: tcStringPreferences?.vendorsConsent ?? [],
+        disclosedVendorIds: disclosedVendorIds ?? [],
+      });
       encodedString = `${encodedString}${FIDES_SEPARATOR}${acString}`;
+
+      // GPP string portion is handled by the GPP extension
     }
   } catch (e) {
     // eslint-disable-next-line no-console
@@ -184,11 +277,25 @@ export const initializeTcfCmpApi = () => {
     },
   });
 
-  // Initialize api with TC str, we don't yet show UI, so we use false
+  // For rules around when to update the TC string, see
+  // https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/TCFv2/IAB%20Tech%20Lab%20-%20CMP%20API%20v2.md#addeventlistener
+
+  // Initialize api with TC string. We only want to *update*
+  // the TC string if all of the following are true:
+  //   1. TC string was _already set_ on a prior visit.
+  //   2. We are _not_ going to show the banner (i.e. the TCF hash has not changed).
+  //   3. It is the _first_ init (This should only ever happen once per visit).
   // see https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/cmpapi#dont-show-ui--tc-string-does-not-need-an-update
-  window.addEventListener("FidesInitialized", (event) => {
+  window.addEventListener("FidesConsentLoaded", (event) => {
     const tcString = extractTCStringForCmpApi(event);
-    cmpApi.update(tcString, false);
+    if (
+      !!tcString &&
+      !!event.detail.extraDetails &&
+      !event.detail.extraDetails.shouldShowExperience
+    ) {
+      // we are not showing the experience, so we use false
+      cmpApi.update(tcString, false);
+    }
   });
   // UI is visible
   // see https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/cmpapi#show-ui--tc-string-needs-update
@@ -197,12 +304,7 @@ export const initializeTcfCmpApi = () => {
     const tcString = extractTCStringForCmpApi(event);
     cmpApi.update(tcString, true);
   });
-  // UI is no longer visible
-  // see https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/cmpapi#dont-show-ui--tc-string-does-not-need-an-update
-  window.addEventListener("FidesModalClosed", (event) => {
-    const tcString = extractTCStringForCmpApi(event);
-    cmpApi.update(tcString, false);
-  });
+
   // User preference collected
   // see https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/cmpapi#show-ui--tc-string-needs-update
   window.addEventListener("FidesUpdated", (event) => {

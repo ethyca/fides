@@ -26,6 +26,10 @@ from fides.common.api.scope_registry import (
     PRIVACY_EXPERIENCE_READ,
     PRIVACY_NOTICE_READ,
     PRIVACY_REQUEST_CALLBACK_RESUME,
+    PRIVACY_REQUEST_DELETE,
+    PRIVACY_REQUEST_EMAIL_INTEGRATIONS_SEND,
+    PRIVACY_REQUEST_MANUAL_STEPS_RESPOND,
+    PRIVACY_REQUEST_MANUAL_STEPS_REVIEW,
     PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE,
     PRIVACY_REQUEST_NOTIFICATIONS_READ,
     PRIVACY_REQUEST_READ,
@@ -43,6 +47,7 @@ from fides.common.api.scope_registry import (
     SYSTEM_READ,
     USER_PERMISSION_ASSIGN_OWNERS,
     USER_READ,
+    USER_READ_OWN,
     WEBHOOK_READ,
 )
 
@@ -51,6 +56,8 @@ CONTRIBUTOR = "contributor"
 OWNER = "owner"
 VIEWER = "viewer"
 VIEWER_AND_APPROVER = "viewer_and_approver"
+RESPONDENT = "respondent"
+EXTERNAL_RESPONDENT = "external_respondent"
 
 
 class RoleRegistryEnum(Enum):
@@ -61,6 +68,8 @@ class RoleRegistryEnum(Enum):
     Approver - Limited viewer but can approve Privacy Requests
     Viewer + Approver = Full View and can approve Privacy Requests
     Contributor - Can't configure storage and messaging
+    Respondent - Internal user who can respond to manual steps
+    External Respondent - External user who can only respond to assigned manual steps
     """
 
     owner = OWNER
@@ -68,6 +77,8 @@ class RoleRegistryEnum(Enum):
     viewer = VIEWER
     approver = APPROVER
     contributor = CONTRIBUTOR
+    respondent = RESPONDENT
+    external_respondent = EXTERNAL_RESPONDENT
 
 
 approver_scopes = [
@@ -76,7 +87,9 @@ approver_scopes = [
     PRIVACY_REQUEST_CALLBACK_RESUME,
     PRIVACY_REQUEST_UPLOAD_DATA,
     PRIVACY_REQUEST_VIEW_DATA,
+    PRIVACY_REQUEST_DELETE,
     USER_READ,  # allows approver to view user management table and update their own password
+    PRIVACY_REQUEST_MANUAL_STEPS_REVIEW,  # allows approvers to see all manual steps
 ]
 
 
@@ -112,6 +125,15 @@ viewer_scopes = [  # Intentionally omitted USER_PERMISSION_READ and PRIVACY_REQU
     USER_READ,
 ]
 
+respondent_scopes = [
+    PRIVACY_REQUEST_MANUAL_STEPS_RESPOND,  # allows respondents to respond to assigned manual steps
+    USER_READ_OWN,
+]
+
+external_respondent_scopes = [
+    PRIVACY_REQUEST_MANUAL_STEPS_RESPOND,  # allows external respondents to respond to assigned manual steps
+]
+
 not_contributor_scopes = [
     CONNECTOR_TEMPLATE_REGISTER,
     STORAGE_CREATE_OR_UPDATE,
@@ -119,6 +141,7 @@ not_contributor_scopes = [
     MESSAGING_CREATE_OR_UPDATE,
     MESSAGING_DELETE,
     PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE,
+    PRIVACY_REQUEST_EMAIL_INTEGRATIONS_SEND,
     USER_PERMISSION_ASSIGN_OWNERS,
 ]
 
@@ -128,6 +151,8 @@ ROLES_TO_SCOPES_MAPPING: Dict[str, List] = {
     VIEWER: sorted(viewer_scopes),
     APPROVER: sorted(approver_scopes),
     CONTRIBUTOR: sorted(list(set(SCOPE_REGISTRY) - set(not_contributor_scopes))),
+    RESPONDENT: sorted(respondent_scopes),
+    EXTERNAL_RESPONDENT: sorted(external_respondent_scopes),
 }
 
 

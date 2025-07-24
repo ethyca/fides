@@ -16,13 +16,7 @@ const CustomAssetUploadButton = ({
 
   return (
     <>
-      <Button
-        size="small"
-        className="ml-2"
-        onClick={uploadCustomAssetModal.onOpen}
-      >
-        Upload stylesheet
-      </Button>
+      <Button onClick={uploadCustomAssetModal.onOpen}>Upload stylesheet</Button>
       <CustomAssetUploadModal
         isOpen={uploadCustomAssetModal.isOpen}
         onClose={uploadCustomAssetModal.onClose}

@@ -1,5 +1,6 @@
 """Contains the nox sessions for docker-related tasks."""
 
+import os
 from typing import Callable, Dict, List, Optional, Tuple
 
 import nox
@@ -17,7 +18,8 @@ from constants_nox import (
 )
 from git_nox import get_current_tag, recognized_tag
 
-DOCKER_PLATFORMS = "linux/amd64,linux/arm64"
+DOCKER_PLATFORMS = os.getenv("DOCKER_PLATFORMS", "linux/amd64,linux/arm64")
+IMAGE_SUFFIX = os.getenv("IMAGE_SUFFIX", "")  # Empty by default for local builds
 
 
 def verify_git_tag(session: nox.Session) -> Optional[str]:
@@ -59,6 +61,7 @@ def generate_buildx_command(
         "buildx",
         "build",
         "--push",
+        "--provenance=false",
         f"--target={docker_build_target}",
         "--platform",
         DOCKER_PLATFORMS,
@@ -66,7 +69,7 @@ def generate_buildx_command(
     )
 
     for tag in image_tags:
-        buildx_command += ("--tag", tag)
+        buildx_command += ("--tag", f"{tag}{IMAGE_SUFFIX}")
 
     return buildx_command
 
@@ -261,8 +264,7 @@ def push(session: nox.Session, tag: str, app: str) -> None:
         f"{app_info['image']}:{tag_suffix}" for tag_suffix in tag_suffixes
     ]
 
-    # Parallel build the various images
-
+    # Build and push using buildx
     buildx_command: Tuple[str, ...] = generate_buildx_command(
         image_tags=full_tags,
         docker_build_target=app_info["target"],

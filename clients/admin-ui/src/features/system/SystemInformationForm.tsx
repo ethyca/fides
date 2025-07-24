@@ -1,5 +1,5 @@
 import { SerializedError } from "@reduxjs/toolkit";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
   AntButton as Button,
   Box,
@@ -19,11 +19,7 @@ import {
   useCustomFields,
 } from "~/features/common/custom-fields";
 import { useFeatures } from "~/features/common/features/features.slice";
-import {
-  CustomSelect,
-  CustomSwitch,
-  CustomTextInput,
-} from "~/features/common/form/inputs";
+import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import {
   extractVendorSource,
   getErrorMessage,
@@ -32,6 +28,7 @@ import {
   VendorSources,
 } from "~/features/common/helpers";
 import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
+import { errorToastParams } from "~/features/common/toast";
 import {
   selectAllDictEntries,
   useGetAllDictionaryEntriesQuery,
@@ -43,9 +40,7 @@ import {
   setSuggestions,
 } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import {
-  DictSuggestionCreatableSelect,
   DictSuggestionNumberInput,
-  DictSuggestionSelect,
   DictSuggestionSwitch,
   DictSuggestionTextArea,
   DictSuggestionTextInput,
@@ -63,10 +58,12 @@ import {
   useLazyGetSystemsQuery,
   useUpdateSystemMutation,
 } from "~/features/system/system.slice";
+import { usePopulateSystemAssetsMutation } from "~/features/system/system-assets.slice";
 import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
 import VendorSelector from "~/features/system/VendorSelector";
 import { ResourceTypes, SystemResponse } from "~/types/api";
 
+import { ControlledSelect } from "../common/form/ControlledSelect";
 import { usePrivacyDeclarationData } from "./privacy-declarations/hooks";
 import {
   legalBasisForProfilingOptions,
@@ -160,6 +157,7 @@ const SystemInformationForm = ({
     useCreateSystemMutation();
   const [updateSystemMutationTrigger, updateSystemMutationResult] =
     useUpdateSystemMutation();
+  const [populateSystemAssets] = usePopulateSystemAssetsMutation();
   useGetAllDictionaryEntriesQuery(undefined, {
     skip: !features.dictionaryService,
   });
@@ -208,7 +206,7 @@ const SystemInformationForm = ({
             dataUseQueryResult.error,
             `A problem occurred while fetching data uses from Fides Compass for your system.  Please try again.`,
           );
-          toast({ status: "error", description: dataUseErrorMsg });
+          toast(errorToastParams(dataUseErrorMsg));
         }
       } else if (
         dataUseQueryResult.data &&
@@ -261,6 +259,19 @@ const SystemInformationForm = ({
     }
 
     await customFields.upsertCustomFields(values);
+
+    if (!isEditing && values.vendor_id && result.data?.fides_key) {
+      const assetResult = await populateSystemAssets({
+        systemKey: result.data.fides_key,
+      });
+      if (isErrorResult(assetResult)) {
+        toast(
+          errorToastParams(
+            "An unexpected error occurred while populating the system assets from Compass. Please try again.",
+          ),
+        );
+      }
+    }
 
     handleResult(result);
   };
@@ -345,9 +356,9 @@ const SystemInformationForm = ({
                 name="description"
                 label="Description"
                 tooltip="What services does this system perform?"
-                disabled={lockedForGVL}
               />
-              <DictSuggestionCreatableSelect
+              <ControlledSelect
+                mode="tags"
                 id="tags"
                 name="tags"
                 label="System Tags"
@@ -359,20 +370,18 @@ const SystemInformationForm = ({
                       }))
                     : []
                 }
+                layout="stacked"
                 tooltip="Are there any tags to associate with this system?"
-                isMulti
-                disabled={lockedForGVL}
               />
             </SystemFormInputGroup>
             <SystemFormInputGroup heading="Dataset reference">
-              <CustomSelect
+              <ControlledSelect
                 name="dataset_references"
                 label="Dataset references"
                 options={datasetSelectOptions}
                 tooltip="Is there a dataset configured for this system?"
-                isMulti
-                variant="stacked"
-                isDisabled={lockedForGVL}
+                mode="multiple"
+                layout="stacked"
               />
             </SystemFormInputGroup>
             <SystemFormInputGroup heading="Data processing properties">
@@ -436,12 +445,13 @@ const SystemInformationForm = ({
                         }}
                       >
                         <Box mt={4}>
-                          <DictSuggestionSelect
+                          <ControlledSelect
+                            mode="multiple"
+                            layout="stacked"
                             name="legal_basis_for_profiling"
                             label="Legal basis for profiling"
                             options={legalBasisForProfilingOptions}
                             tooltip="What is the legal basis under which profiling is performed?"
-                            isMulti
                             disabled={lockedForGVL}
                             isRequired={values.uses_profiling}
                           />
@@ -463,12 +473,13 @@ const SystemInformationForm = ({
                         }}
                       >
                         <Box mt={4}>
-                          <DictSuggestionSelect
+                          <ControlledSelect
+                            mode="multiple"
+                            layout="stacked"
                             name="legal_basis_for_transfers"
                             label="Legal basis for transfer"
                             options={legalBasisForTransferOptions}
                             tooltip="What is the legal basis under which the data is transferred?"
-                            isMulti
                             isRequired={values.does_international_transfers}
                             disabled={lockedForGVL}
                           />
@@ -558,14 +569,12 @@ const SystemInformationForm = ({
                   name="legal_name"
                   label="Legal name"
                   tooltip="What is the legal name of the business?"
-                  disabled={lockedForGVL}
                 />
                 <DictSuggestionTextArea
                   id="legal_address"
                   name="legal_address"
                   label="Legal address"
                   tooltip="What is the legal address for the business?"
-                  disabled={lockedForGVL}
                 />
                 <CustomTextInput
                   label="Department"
@@ -574,20 +583,19 @@ const SystemInformationForm = ({
                   variant="stacked"
                   disabled={
                     !values.processes_personal_data ||
-                    values.exempt_from_privacy_regulations ||
-                    lockedForGVL
+                    values.exempt_from_privacy_regulations
                   }
                 />
-                <DictSuggestionSelect
+                <ControlledSelect
+                  mode="multiple"
+                  layout="stacked"
                   label="Responsibility"
                   name="responsibility"
                   options={responsibilityOptions}
                   tooltip="What is the role of the business with regard to data processing?"
-                  isMulti
                   disabled={
                     !values.processes_personal_data ||
-                    values.exempt_from_privacy_regulations ||
-                    lockedForGVL
+                    values.exempt_from_privacy_regulations
                   }
                 />
                 <DictSuggestionTextInput
@@ -604,8 +612,7 @@ const SystemInformationForm = ({
                   variant="stacked"
                   disabled={
                     !values.processes_personal_data ||
-                    values.exempt_from_privacy_regulations ||
-                    lockedForGVL
+                    values.exempt_from_privacy_regulations
                   }
                 />
                 <DictSuggestionTextInput
@@ -613,7 +620,6 @@ const SystemInformationForm = ({
                   name="data_security_practices"
                   id="data_security_practices"
                   tooltip="Which data security practices are employed to keep the data safe?"
-                  disabled={lockedForGVL}
                 />
                 <DictSuggestionTextInput
                   label="Legitimate interest disclosure URL"

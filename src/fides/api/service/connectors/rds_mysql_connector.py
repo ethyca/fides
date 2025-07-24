@@ -14,7 +14,10 @@ from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.connection_configuration.connection_secrets_rds_mysql import (
     RDSMySQLSchema,
 )
-from fides.api.service.connectors.query_config import MySQLQueryConfig, SQLQueryConfig
+from fides.api.service.connectors.query_configs.mysql_query_config import (
+    MySQLQueryConfig,
+)
+from fides.api.service.connectors.query_configs.query_config import SQLQueryConfig
 from fides.api.service.connectors.rds_connector_mixin import RDSConnectorMixin
 from fides.api.service.connectors.sql_connector import SQLConnector
 from fides.api.util.collection_util import Row
@@ -55,6 +58,17 @@ class RDSMySQLConnector(RDSConnectorMixin, SQLConnector):
         Returns the AWS engines supported by the connector.
         """
         return ["mysql", "aurora-mysql"]
+
+    def get_connect_args(self) -> Dict:
+        """
+        Returns the connection arguments for the Engine.
+        """
+        connect_args = {
+            "ssl": {
+                "ca": self.global_bundle_uri,
+            }
+        }
+        return connect_args
 
     def pre_client_creation_hook(self, node: ExecutionNode) -> None:
         """
@@ -144,6 +158,7 @@ class RDSMySQLConnector(RDSConnectorMixin, SQLConnector):
         privacy_request: PrivacyRequest,
         request_task: RequestTask,
         rows: List[Row],
+        input_data: Optional[Dict[str, List[Any]]] = None,
     ) -> int:
         """DSR execution not yet supported for RDS MySQL"""
         return 0

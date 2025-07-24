@@ -5,12 +5,7 @@ import FixedLayout from "~/features/common/FixedLayout";
 import { PrivacyExperiencesTable } from "~/features/privacy-experience/PrivacyExperiencesTable";
 
 const PrivacyExperiencePage = () => (
-  <FixedLayout
-    title="Privacy experiences"
-    mainProps={{
-      padding: "24px 40px",
-    }}
-  >
+  <FixedLayout title="Privacy experiences">
     <Box mb={4} data-testid="privacy-experience-page">
       <Heading fontSize="2xl" fontWeight="semibold" mb={2} data-testid="header">
         Privacy experience

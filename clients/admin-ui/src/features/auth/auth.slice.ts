@@ -7,6 +7,7 @@ import { User } from "~/features/user-management/types";
 import { RoleRegistryEnum, ScopeRegistryEnum } from "~/types/api";
 
 import {
+  AuthenticationMethods,
   LoginRequest,
   LoginResponse,
   LoginWithOIDCRequest,
@@ -88,6 +89,12 @@ const authApi = baseApi.injectEndpoints({
         body: { new_password: password },
       }),
     }),
+    getAuthenticationMethods: build.query<AuthenticationMethods, void>({
+      query: () => ({
+        url: "plus/authentication-methods",
+        method: "GET",
+      }),
+    }),
   }),
 });
 
@@ -97,5 +104,6 @@ export const {
   useLogoutMutation,
   useAcceptInviteMutation,
   useGetRolesToScopesMappingQuery,
+  useGetAuthenticationMethodsQuery,
 } = authApi;
 export const { reducer } = authSlice;

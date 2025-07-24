@@ -10,7 +10,7 @@ import {
 } from "~/features/common/form/inputs";
 import InfoBox from "~/features/common/InfoBox";
 import WarningModal from "~/features/common/modals/WarningModal";
-import { BackButtonNonLink } from "~/features/common/nav/v2/BackButton";
+import { BackButtonNonLink } from "~/features/common/nav/BackButton";
 import {
   getTranslationFormFields,
   TranslationWithLanguageName,

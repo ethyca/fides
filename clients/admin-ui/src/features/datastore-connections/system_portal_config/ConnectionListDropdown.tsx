@@ -1,6 +1,7 @@
 import { debounce } from "common/utils";
 import {
   AntButton as Button,
+  AntTooltip as Tooltip,
   ArrowDownLineIcon,
   Box,
   Flex,
@@ -13,7 +14,6 @@ import {
   MenuList,
   SearchLineIcon,
   Text,
-  Tooltip,
 } from "fidesui";
 import { useCallback, useMemo, useRef, useState } from "react";
 
@@ -198,10 +198,9 @@ const ConnectionListDropdown = ({
         disabled={disabled}
         icon={<ArrowDownLineIcon />}
         iconPosition="end"
-        className="!bg-transparent hover:bg-transparent active:bg-transparent"
+        className="!bg-transparent text-left hover:bg-transparent active:bg-transparent"
         data-testid="select-dropdown-btn"
         width="272px"
-        textAlign="left"
       >
         <Text noOfLines={1} style={{ wordBreak: "break-all" }}>
           {selectedText ?? label}
@@ -252,13 +251,10 @@ const ConnectionListDropdown = ({
           <Box overflowY="auto" maxHeight="272px">
             {filteredListItems.map(([key, option]) => (
               <Tooltip
-                aria-label={option.toolTip}
-                hasArrow
-                label={option.toolTip}
+                title={option.toolTip}
                 key={key}
-                placement="auto-start"
-                openDelay={500}
-                shouldWrapChildren
+                placement="rightTop"
+                mouseEnterDelay={0.5}
               >
                 <MenuItem
                   color={

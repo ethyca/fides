@@ -18,9 +18,11 @@ export type CustomPrivacyRequestFields = Record<
   {
     label: string;
     required?: boolean;
-    default_value?: string;
+    default_value?: string | string[];
     query_param_key?: string;
     hidden?: boolean;
+    field_type?: "text" | "multiselect" | "select";
+    options?: string[];
   }
 >;
 
@@ -95,3 +97,13 @@ export type PrivacyRequestOption = {
   identity_inputs?: IdentityInputs;
   custom_privacy_request_fields?: CustomPrivacyRequestFields;
 };
+
+export enum ConsentNonApplicableFlagMode {
+  OMIT = "omit",
+  INCLUDE = "include",
+}
+
+export enum ConsentFlagType {
+  BOOLEAN = "boolean",
+  CONSENT_MECHANISM = "consent_mechanism",
+}

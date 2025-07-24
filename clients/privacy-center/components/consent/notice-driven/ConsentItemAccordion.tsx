@@ -38,16 +38,16 @@ const ConsentItemAccordion = ({
   <AccordionItem
     data-testid={`consent-item-${id}`}
     width="full"
-    _hover={{ bgColor: "gray.100" }}
+    _hover={{ bgColor: "gray.75" }}
   >
-    <AccordionButton pl={2} py={2.5} _hover={{ bgColor: "gray.100" }}>
+    <AccordionButton pl={2} py={2.5} _hover={{ bgColor: "gray.75" }}>
       <Flex justifyContent="space-between" alignItems="center" width="full">
         <Flex alignItems="center">
           <AccordionIcon fontSize={26} />
           <Text
             fontSize="lg"
             fontWeight="medium"
-            color="gray.600"
+            color="gray.800"
             ml={1}
             mb="4px"
           >
@@ -85,7 +85,7 @@ const ConsentItemAccordion = ({
         <Text
           fontSize="sm"
           fontWeight="medium"
-          color="gray.600"
+          color="gray.800"
           mb="2px"
           pr={[0, 8]}
           pl={6}

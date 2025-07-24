@@ -25,12 +25,12 @@ import { useEffect, useMemo, useState } from "react";
 import FixedLayout from "~/features/common/FixedLayout";
 import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
 import InfoBox from "~/features/common/InfoBox";
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 import {
   MESSAGING_ADD_TEMPLATE_ROUTE,
   MESSAGING_EDIT_ROUTE,
-} from "~/features/common/nav/v2/routes";
+} from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
-import QuestionTooltip from "~/features/common/QuestionTooltip";
 import {
   DefaultCell,
   DefaultHeaderCell,
@@ -41,12 +41,12 @@ import {
   useServerSidePagination,
 } from "~/features/common/table/v2";
 import { PaginationBar } from "~/features/common/table/v2/PaginationBar";
+import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import AddMessagingTemplateModal from "~/features/messaging-templates/AddMessagingTemplateModal";
 import { CustomizableMessagingTemplatesEnum } from "~/features/messaging-templates/CustomizableMessagingTemplatesEnum";
 import CustomizableMessagingTemplatesLabelEnum from "~/features/messaging-templates/CustomizableMessagingTemplatesLabelEnum";
 import { useGetSummaryMessagingTemplatesQuery } from "~/features/messaging-templates/messaging-templates.slice.plus";
 import useMessagingTemplateToggle from "~/features/messaging-templates/useMessagingTemplateToggle";
-import { useGetConfigurationSettingsQuery } from "~/features/privacy-requests";
 import { useGetAllPropertiesQuery } from "~/features/properties";
 import { MessagingTemplateWithPropertiesSummary } from "~/types/api";
 
@@ -132,7 +132,6 @@ const MessagingPage: NextPage = () => {
             <DefaultHeaderCell value="Properties" {...props} />
           ),
           meta: {
-            displayText: "Properties",
             showHeaderMenu: true,
           },
           size: 250,
@@ -174,17 +173,8 @@ const MessagingPage: NextPage = () => {
   });
 
   return (
-    <FixedLayout
-      title="Messaging"
-      mainProps={{
-        padding: "0 40px 10px",
-      }}
-    >
-      <PageHeader breadcrumbs={[{ title: "Messaging" }]}>
-        <Text fontWeight={500} color="gray.700">
-          Configure Fides messaging.
-        </Text>
-      </PageHeader>
+    <FixedLayout title="Messaging">
+      <PageHeader heading="Messaging" />
 
       <FeatureNotEnabledInfoBox />
       <MissingMessagesInfoBox />
@@ -192,7 +182,6 @@ const MessagingPage: NextPage = () => {
       <TableActionBar>
         <HStack alignItems="center" spacing={4} marginLeft="auto">
           <Button
-            size="small"
             type="primary"
             data-testid="add-message-btn"
             onClick={() => setIsAddTemplateModalOpen(true)}
@@ -317,7 +306,7 @@ const MissingMessagesInfoBox = () => {
             submit privacy requests for these properties may not receive the
             necessary emails regarding their requests.{" "}
             <Box as="span">
-              <QuestionTooltip
+              <InfoTooltip
                 label={propertiesWithoutMessagingTemplates
                   ?.map((p) => p.name)
                   .join(", ")}

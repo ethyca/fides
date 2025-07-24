@@ -2,6 +2,7 @@ import {
   stubDatasetCrud,
   stubPlus,
   stubSystemCrud,
+  stubSystemIntegrations,
   stubTaxonomyEntities,
 } from "cypress/support/stubs";
 
@@ -10,25 +11,17 @@ import {
   ADD_SYSTEMS_ROUTE,
   INTEGRATION_MANAGEMENT_ROUTE,
   SYSTEM_ROUTE,
-} from "~/features/common/nav/v2/routes";
+} from "~/features/common/nav/routes";
 import { RoleRegistryEnum } from "~/types/api";
 
 describe("System management page", () => {
   beforeEach(() => {
     cy.login();
-    cy.intercept("GET", "/api/v1/system", {
-      fixture: "systems/systems.json",
-    }).as("getSystems");
-
-    cy.intercept("GET", "/api/v1/system?*", {
-      fixture: "systems/systems_paginated.json",
-    }).as("getSystems");
-
-    cy.intercept("GET", "/api/v1/system?page=1&size=25&search=demo+m", {
-      fixture: "systems/systems_paginated_search.json",
-    }).as("getSystemsWithSearch");
-
+    stubSystemCrud();
     stubPlus(false);
+    stubSystemIntegrations();
+    stubTaxonomyEntities();
+    stubDatasetCrud();
   });
 
   describe("plus features", () => {
@@ -43,8 +36,9 @@ describe("System management page", () => {
 
   it("Can navigate to the system management page", () => {
     cy.visit("/");
+    cy.getByTestId("Data inventory-nav-group").click();
     cy.getByTestId("System inventory-nav-link").click();
-    cy.wait("@getSystems");
+    cy.wait("@getSystemsPaginated");
     cy.getByTestId("system-management");
   });
 
@@ -90,9 +84,6 @@ describe("System management page", () => {
 
     describe("Create a system manually", () => {
       beforeEach(() => {
-        stubTaxonomyEntities();
-        stubSystemCrud();
-        stubDatasetCrud();
         cy.intercept("GET", "/api/v1/connection_type*", {
           fixture: "connectors/connection_types.json",
         }).as("getConnectionTypes");
@@ -114,7 +105,7 @@ describe("System management page", () => {
           cy.visit(ADD_SYSTEMS_ROUTE);
           cy.getByTestId("manual-btn").click();
           cy.url().should("contain", ADD_SYSTEMS_MANUAL_ROUTE);
-          cy.wait("@getSystems");
+          cy.wait("@getSystemsPaginated");
           cy.getByTestId("input-name").type(system.name);
           cy.getByTestId("input-description").type(system.description);
 
@@ -145,13 +136,13 @@ describe("System management page", () => {
           });
 
           // Fill in the privacy declaration form
-          cy.getByTestId("tab-Data uses").click();
+          cy.getAntTab("Data uses").click({ force: true });
           cy.getByTestId("add-btn").click();
           cy.wait([
             "@getDataCategories",
             "@getDataSubjects",
             "@getDataUses",
-            "@getFilteredDatasets",
+            "@getMinimalUnlinkedDatasets",
             "@getDemoSystem",
           ]);
           cy.getByTestId("declaration-form");
@@ -198,7 +189,7 @@ describe("System management page", () => {
             body: { ...system, privacy_declarations: [] },
           }).as("getDemoSystem");
           cy.visit(ADD_SYSTEMS_MANUAL_ROUTE);
-          cy.wait("@getSystems");
+          cy.wait("@getSystemsPaginated");
           cy.getByTestId("input-name").type(system.name);
           cy.getByTestId("input-description").type(system.description);
           cy.getByTestId("save-btn").click();
@@ -208,18 +199,18 @@ describe("System management page", () => {
           const description = "half formed thought";
           cy.getByTestId("input-description").clear().type(description);
           // then try navigating to the privacy declarations tab
-          cy.getByTestId("tab-Data uses").click();
+          cy.getAntTab("Data uses").click({ force: true });
           cy.getByTestId("confirmation-modal");
           // make sure canceling works
           cy.getByTestId("cancel-btn").click();
           cy.getByTestId("input-description").should("have.value", description);
           // now actually discard
-          cy.getByTestId("tab-Data uses").click();
+          cy.getAntTab("Data uses").click({ force: true });
           cy.getByTestId("continue-btn").click();
           // should load the privacy declarations page
           cy.getByTestId("privacy-declaration-step");
           // navigate back and make sure description has the original description
-          cy.getByTestId("tab-System information").click();
+          cy.getAntTab("System information").click({ force: true });
           cy.getByTestId("input-description").should(
             "have.value",
             system.description,
@@ -280,8 +271,6 @@ describe("System management page", () => {
 
   describe("Can edit a system", () => {
     beforeEach(() => {
-      stubSystemCrud();
-      stubTaxonomyEntities();
       cy.fixture("systems/systems.json").then((systems) => {
         cy.intercept("GET", "/api/v1/system/*", {
           body: systems[0],
@@ -310,28 +299,12 @@ describe("System management page", () => {
       cy.url().should("contain", "/systems/configure/fidesctl_system");
     });
 
-    it("Can access integration management page from system edit page", () => {
-      cy.visit("/systems/configure/fidesctl_system");
-      cy.wait("@getFidesctlSystem");
-      cy.getByTestId("integration-page-btn").click();
-      cy.url().should("contain", INTEGRATION_MANAGEMENT_ROUTE);
-    });
-
     it("Can persist fields not directly in the form", () => {
       cy.visit("/systems/configure/fidesctl_system");
       cy.wait("@getFidesctlSystem");
       cy.getByTestId("input-name").type("edit");
       cy.getByTestId("save-btn").click();
-      cy.wait("@putSystem").then((interception) => {
-        const { body } = interception.request;
-        expect(body.cookies).to.eql([
-          {
-            name: "test_cookie",
-            path: "/",
-            domain: "https://www.example.com",
-          },
-        ]);
-      });
+      cy.wait("@putSystem");
     });
 
     it.skip("Can go through the edit flow", () => {
@@ -356,11 +329,11 @@ describe("System management page", () => {
       cy.wait("@getFidesctlSystem");
 
       // Switch to the Data Uses tab
-      cy.getByTestId("tab-Data uses").click();
+      cy.getAntTab("Data uses").click({ force: true });
 
       // add another privacy declaration
       const secondDataUse = "advertising";
-      cy.getByTestId("tab-Data uses").click();
+      cy.getAntTab("Data uses").click({ force: true });
       cy.getByTestId("add-btn").click();
       cy.wait(["@getDataCategories", "@getDataSubjects", "@getDataUses"]);
       cy.getByTestId("new-declaration-form").within(() => {
@@ -394,9 +367,9 @@ describe("System management page", () => {
     });
 
     it.skip("Can render and edit extended form fields", () => {
-      cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
-        "getDatasets",
-      );
+      cy.intercept("GET", "/api/v1/dataset?minimal=true", {
+        fixture: "connectors/minimal_datasets.json",
+      }).as("getDatasets");
       const system = {
         fides_key: "fidesctl_system",
         system_type: "cool system",
@@ -446,7 +419,7 @@ describe("System management page", () => {
         );
       });
 
-      cy.getByTestId("tab-Data uses").click();
+      cy.getAntTab("Data uses").click({ force: true });
     });
 
     it("shows data uses in the data use tab", () => {
@@ -459,7 +432,7 @@ describe("System management page", () => {
         cy.getByTestId("edit-btn").click();
       });
       // "functional.service.improve" and "Store system data." are already being used
-      cy.getByTestId("tab-Data uses").click();
+      cy.getAntTab("Data uses").click({ force: true });
       cy.getByTestId("add-btn").click();
       cy.wait(["@getDataCategories", "@getDataSubjects", "@getDataUses"]);
       cy.getByTestId("new-declaration-form").within(() => {
@@ -491,7 +464,7 @@ describe("System management page", () => {
       cy.visit(`${SYSTEM_ROUTE}/configure/fidesctl_system`);
       cy.wait("@getFidesctlSystemWithDataUses");
 
-      cy.getByTestId("tab-Data uses").click();
+      cy.getAntTab("Data uses").click({ force: true });
       cy.getByTestId("add-btn").click();
       cy.wait(["@getDataCategories", "@getDataSubjects", "@getDataUses"]);
 
@@ -516,7 +489,7 @@ describe("System management page", () => {
       });
       // "functional.service.improve" and "Store system data." are already being used
       // use "functional.service.improve" again but a different name
-      cy.getByTestId("tab-Data uses").click();
+      cy.getAntTab("Data uses").click({ force: true });
       cy.getByTestId("add-btn").click();
       cy.wait(["@getDataCategories", "@getDataSubjects", "@getDataUses"]);
       cy.getByTestId("new-declaration-form").within(() => {
@@ -533,7 +506,7 @@ describe("System management page", () => {
 
     it.skip("can edit an accordion data use while persisting a newly added data use", () => {
       cy.visit(`${SYSTEM_ROUTE}/configure/fidesctl_system`);
-      cy.getByTestId("tab-Data uses").click();
+      cy.getAntTab("Data uses").click({ force: true });
       cy.getByTestId("add-btn").click();
       cy.wait(["@getDataCategories", "@getDataSubjects", "@getDataUses"]);
 
@@ -597,7 +570,7 @@ describe("System management page", () => {
 
     describe("delete privacy declaration", () => {
       beforeEach(() => {
-        cy.intercept("/api/v1/system/*", {
+        cy.intercept("GET", "/api/v1/system/*", {
           fixture: "systems/system.json",
         }).as("getDemoAnalyticsSystem");
         cy.visit(`/${SYSTEM_ROUTE}/configure/demo_analytics_system`);
@@ -609,7 +582,7 @@ describe("System management page", () => {
           );
         });
 
-        cy.getByTestId("tab-Data uses").click();
+        cy.getAntTab("Data uses").click({ force: true });
       });
 
       it("can visit the privacy declaration tab", () => {
@@ -677,7 +650,7 @@ describe("System management page", () => {
       cy.getByTestId("system-fidesctl_system").within(() => {
         cy.getByTestId("edit-btn").click();
       });
-      cy.getByTestId("tab-Data flow").click();
+      cy.getAntTab("Data flow").click({ force: true });
     });
 
     it("Can navigate to the data flow tab", () => {

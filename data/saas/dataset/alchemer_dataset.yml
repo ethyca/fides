@@ -1,9 +1,0 @@
-dataset:
-  - fides_key: <instance_fides_key>
-    name: Alchemer_erasure_only
-    description:
-      A sample dataset representing the Alchemer erasure only connector for
-      Fides
-    collections:
-      - name: user
-        fields: []

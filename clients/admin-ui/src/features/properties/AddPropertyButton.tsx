@@ -1,7 +1,7 @@
 import { AntButton as Button, AntButtonProps as ButtonProps } from "fidesui";
 import { useRouter } from "next/router";
 
-import { ADD_PROPERTY_ROUTE } from "~/features/common/nav/v2/routes";
+import { ADD_PROPERTY_ROUTE } from "~/features/common/nav/routes";
 
 const AddPropertyButton = ({
   buttonLabel,

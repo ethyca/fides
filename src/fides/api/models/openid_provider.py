@@ -16,6 +16,7 @@ from fides.config import CONFIG
 class ProviderEnum(enum.Enum):
     google = "google"
     okta = "okta"
+    azure = "azure"
     custom = "custom"
 
 

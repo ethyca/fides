@@ -31,7 +31,13 @@ class PostgreSQLSchema(ConnectionConfigSecretsSchema):
         description="The password used to authenticate and access the database.",
         json_schema_extra={"sensitive": True},
     )
-    dbname: str = Field(
+    ssh_required: bool = Field(
+        False,
+        title="SSH required",
+        description="Indicates whether an SSH tunnel is required for the connection. Enable this option if your PostgreSQL server is behind a firewall and requires SSH tunneling for remote connections.",
+    )
+    dbname: Optional[str] = Field(
+        default=None,
         title="Database",
         description="The name of the specific database within the database server that you want to connect to.",
     )
@@ -40,15 +46,13 @@ class PostgreSQLSchema(ConnectionConfigSecretsSchema):
         title="Schema",
         description="The default schema to be used for the database connection (defaults to public).",
     )
-    ssh_required: bool = Field(
-        False,
-        title="SSH required",
-        description="Indicates whether an SSH tunnel is required for the connection. Enable this option if your PostgreSQL server is behind a firewall and requires SSH tunneling for remote connections.",
+    ssl_mode: Optional[str] = Field(
+        default=None,
+        title="SSL Mode",
     )
 
     _required_components: ClassVar[List[str]] = [
         "host",
-        "dbname",
     ]
 
 

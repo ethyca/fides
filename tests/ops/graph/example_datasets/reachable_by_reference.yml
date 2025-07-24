@@ -1,0 +1,36 @@
+dataset:
+  - fides_key: reachable_by_reference
+    name: Reachable by reference
+    description: A dataset with a collection that is reachable by reference
+    collections:
+      - name: customer
+        fields:
+          - name: id
+            data_categories: [user.unique_id]
+            fides_meta:
+              identity: user_id
+              data_type: string
+          - name: name
+            data_categories: [user.name]
+            fides_meta:
+              data_type: string
+              length: 40
+          - name: address_id
+            data_categories: [system.operations]
+            fides_meta:
+              references:
+                - dataset: reachable_by_reference
+                  field: address.id
+                  direction: to
+      - name: address
+        fields:
+          - name: id
+            data_categories: [system.operations]
+          - name: email
+            data_categories: [user.contact.email]
+            fides_meta:
+              data_type: string  # No identity field but referenced by customer.address_id
+          - name: street
+            data_categories: [user.contact.address.street]
+            fides_meta:
+              data_type: string

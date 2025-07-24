@@ -22,7 +22,7 @@
     {
       "urn": "my_bigquery_monitor.prj-bigquery-000001.test_dataset_2",
       "user_assigned_data_categories": [],
-      "name": "test_dataset_4",
+      "name": "test_dataset_2",
       "description": null,
       "monitor_config_id": "my_bigquery_monitor",
       "updated_at": null,
@@ -58,7 +58,7 @@
     {
       "urn": "my_bigquery_monitor.prj-bigquery-000002.test_dataset_4",
       "user_assigned_data_categories": [],
-      "name": "test_dataset_2",
+      "name": "test_dataset_4",
       "description": null,
       "monitor_config_id": "my_bigquery_monitor",
       "updated_at": null,

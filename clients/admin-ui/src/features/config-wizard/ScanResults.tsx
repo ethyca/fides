@@ -1,7 +1,6 @@
 import {
   AntButton as Button,
   Box,
-  Heading,
   HStack,
   Stack,
   Text,
@@ -22,6 +21,7 @@ import { SystemsCheckboxTable } from "~/features/common/SystemsCheckboxTable";
 import { useUpsertSystemsMutation } from "~/features/system";
 import { System } from "~/types/api";
 
+import { NextBreadcrumb } from "../common/nav/NextBreadcrumb";
 import {
   changeStep,
   reset,
@@ -95,10 +95,22 @@ const ScanResults = () => {
 
   return (
     <Box maxW="full">
-      <Stack spacing={10}>
-        <Heading as="h3" size="lg" data-testid="scan-results">
-          Scan results
-        </Heading>
+      <Stack spacing={10} data-testid="scan-results">
+        <NextBreadcrumb
+          className="mb-4"
+          items={[
+            {
+              title: "Add systems",
+              href: "",
+              onClick: (e) => {
+                e.preventDefault();
+                handleCancel();
+              },
+            },
+            { title: "Authenticate" },
+            { title: "Scan results" },
+          ]}
+        />
 
         {systems.length === 0 ? (
           <>

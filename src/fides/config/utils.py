@@ -61,10 +61,11 @@ CONFIG_KEY_ALLOWLIST = {
         "task_retry_backoff",
         "require_manual_request_approval",
         "subject_identity_verification_required",
+        "sql_dry_run",
     ],
     "storage": [
         "active_default_storage_type",
     ],
     "consent": ["override_vendor_purposes"],
-    "admin_ui": ["enabled", "url"],
+    "admin_ui": ["enabled", "url", "error_notification_mode"],
 }

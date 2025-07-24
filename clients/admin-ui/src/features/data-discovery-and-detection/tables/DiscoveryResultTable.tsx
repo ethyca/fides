@@ -8,8 +8,7 @@ import {
   RowSelectionState,
   useReactTable,
 } from "@tanstack/react-table";
-import { Box, Flex, Text, VStack } from "fidesui";
-import { useRouter } from "next/router";
+import { AntTabs as Tabs, Box, Flex, Text, VStack } from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 
 import {
@@ -19,23 +18,25 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
-import DetectionResultFilterTabs from "~/features/data-discovery-and-detection/DetectionResultFilterTabs";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import useDiscoveryResultColumns from "~/features/data-discovery-and-detection/hooks/useDiscoveryResultColumns";
 import useDiscoveryResultsFilterTabs, {
-  DiscoveryResultsFilterTabsIndexEnum,
+  DiscoveryResultFilterTabs,
 } from "~/features/data-discovery-and-detection/hooks/useDiscoveryResultsFilterTabs";
 import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/useDiscoveryRoutes";
 import IconLegendTooltip from "~/features/data-discovery-and-detection/IndicatorLegend";
 import DiscoveryFieldBulkActions from "~/features/data-discovery-and-detection/tables/DiscoveryFieldBulkActions";
 import DiscoveryTableBulkActions from "~/features/data-discovery-and-detection/tables/DiscoveryTableBulkActions";
-import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
 import getResourceRowName from "~/features/data-discovery-and-detection/utils/getResourceRowName";
 import isNestedField from "~/features/data-discovery-and-detection/utils/isNestedField";
-import { StagedResource, StagedResourceAPIResponse } from "~/types/api";
+import {
+  StagedResource,
+  StagedResourceAPIResponse,
+  StagedResourceTypeValue,
+} from "~/types/api";
 
-import { SearchInput } from "../SearchInput";
+import { DebouncedSearchInput } from "../../common/DebouncedSearchInput";
 
 const EMPTY_RESPONSE = {
   items: [],
@@ -70,20 +71,15 @@ interface MonitorResultTableProps {
 }
 
 const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
-  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
 
   const {
     filterTabs,
-    setFilterTabIndex,
-    filterTabIndex,
+    activeTab,
+    onTabChange,
     activeDiffFilters,
     activeChildDiffFilters,
-  } = useDiscoveryResultsFilterTabs({
-    initialFilterTabIndex: router.query?.filterTabIndex
-      ? Number(router.query?.filterTabIndex)
-      : undefined,
-  });
+  } = useDiscoveryResultsFilterTabs();
 
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
@@ -147,10 +143,13 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
   const { navigateToDiscoveryResults } = useDiscoveryRoutes();
 
   const handleRowClicked = (row: StagedResource) =>
-    navigateToDiscoveryResults({ resourceUrn: row.urn, filterTabIndex });
+    navigateToDiscoveryResults({
+      resourceUrn: row.urn,
+      filterTab: activeTab,
+    });
 
   const getRowIsClickable = (row: StagedResource) =>
-    resourceType !== StagedResourceType.FIELD || isNestedField(row);
+    resourceType !== StagedResourceTypeValue.FIELD || isNestedField(row);
 
   const tableInstance = useReactTable<StagedResourceAPIResponse>({
     getCoreRowModel: getCoreRowModel(),
@@ -175,24 +174,30 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
 
   return (
     <>
-      <DetectionResultFilterTabs
-        filterTabs={filterTabs}
-        filterTabIndex={filterTabIndex}
-        onChange={setFilterTabIndex}
+      <Tabs
+        items={filterTabs.map((tab) => ({
+          key: tab.key,
+          label: tab.label,
+        }))}
+        activeKey={activeTab}
+        onChange={(tab) => onTabChange(tab as DiscoveryResultFilterTabs)}
       />
       <TableActionBar>
         <Flex gap={6} align="center">
-          <Box w={400} flexShrink={0}>
-            <SearchInput value={searchQuery} onChange={setSearchQuery} />
+          <Box flexShrink={0}>
+            <DebouncedSearchInput
+              value={searchQuery}
+              onChange={setSearchQuery}
+            />
           </Box>
           <IconLegendTooltip />
         </Flex>
-        {resourceType === StagedResourceType.TABLE && !!selectedUrns.length && (
-          <DiscoveryTableBulkActions selectedUrns={selectedUrns} />
-        )}
-        {resourceType === StagedResourceType.FIELD &&
-          filterTabIndex !==
-            DiscoveryResultsFilterTabsIndexEnum.UNMONITORED && (
+        {resourceType === StagedResourceTypeValue.TABLE &&
+          !!selectedUrns.length && (
+            <DiscoveryTableBulkActions selectedUrns={selectedUrns} />
+          )}
+        {resourceType === StagedResourceTypeValue.FIELD &&
+          activeTab !== "unmonitored" && (
             <DiscoveryFieldBulkActions resourceUrn={resourceUrn!} />
           )}
       </TableActionBar>

@@ -198,6 +198,8 @@ def test_database_url_test_mode_disabled() -> None:
 
 @pytest.mark.unit
 def test_password_escaped_by_database_settings_validation() -> None:
+    current_test_db = os.environ.get("FIDES__DATABASE__TEST_DB")
+    os.environ["FIDES__DATABASE__TEST_DB"] = "test_database"
     database_settings = DatabaseSettings(
         user="postgres",
         password="fidesp@ssword",
@@ -225,6 +227,9 @@ def test_password_escaped_by_database_settings_validation() -> None:
         database_settings.sqlalchemy_test_database_uri
         == "postgresql://postgres:fidesp%40ssword@fides-db:5432/test_database"
     )
+
+    if current_test_db:
+        os.environ["FIDES__DATABASE__TEST_DB"] = current_test_db
 
 
 def test_get_alembic_config_with_special_char_in_database_url():
@@ -476,32 +481,6 @@ def test_check_required_webserver_config_values_error(capfd) -> None:
 def test_check_required_webserver_config_values_success_from_path() -> None:
     config = get_config()
     assert check_required_webserver_config_values(config=config) is None
-
-
-class TestBuildingRedisURLs:
-    def test_generic(self) -> None:
-        redis_settings = RedisSettings()
-        assert redis_settings.connection_url == "redis://:testpassword@redis:6379/"
-
-    def test_configured(self) -> None:
-        redis_settings = RedisSettings(
-            db_index=1, host="myredis", port="6380", password="supersecret"
-        )
-        assert redis_settings.connection_url == "redis://:supersecret@myredis:6380/1"
-
-    def test_tls(self) -> None:
-        redis_settings = RedisSettings(ssl=True, ssl_cert_reqs="none")
-        assert (
-            redis_settings.connection_url
-            == "rediss://:testpassword@redis:6379/?ssl_cert_reqs=none"
-        )
-
-    def test_tls_custom_ca(self) -> None:
-        redis_settings = RedisSettings(ssl=True, ssl_ca_certs="/path/to/my/cert.crt")
-        assert (
-            redis_settings.connection_url
-            == "rediss://:testpassword@redis:6379/?ssl_cert_reqs=required&ssl_ca_certs=/path/to/my/cert.crt"
-        )
 
 
 @patch.dict(

@@ -21,7 +21,7 @@ import { AntButton as Button, Flex, HStack, Text, VStack } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useMemo } from "react";
 
-import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
+import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/routes";
 import Restrict, { useHasPermission } from "~/features/common/Restrict";
 import CustomAssetUploadButton from "~/features/custom-assets/CustomAssetUploadButton";
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
@@ -82,8 +82,8 @@ const EmptyTableExperience = () => {
 const columnHelper = createColumnHelper<ExperienceConfigListViewResponse>();
 
 export const PrivacyExperiencesTable = () => {
-  const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
   const router = useRouter();
+  const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
 
   // Permissions
   const userCanUpdate = useHasPermission([
@@ -150,7 +150,6 @@ export const PrivacyExperiencesTable = () => {
           ),
           header: (props) => <DefaultHeaderCell value="Locations" {...props} />,
           meta: {
-            displayText: "Locations",
             showHeaderMenu: true,
           },
         }),
@@ -169,7 +168,6 @@ export const PrivacyExperiencesTable = () => {
               <DefaultHeaderCell value="Properties" {...props} />
             ),
             meta: {
-              displayText: "Properties",
               showHeaderMenu: true,
             },
           },
@@ -221,7 +219,7 @@ export const PrivacyExperiencesTable = () => {
       <Flex flex={1} direction="column" overflow="auto">
         {userCanUpdate && (
           <TableActionBar>
-            <HStack alignItems="center" spacing={4}>
+            <HStack alignItems="center" spacing={2}>
               <JavaScriptTag />
               <Restrict scopes={[ScopeRegistryEnum.CUSTOM_ASSET_UPDATE]}>
                 <CustomAssetUploadButton
@@ -231,7 +229,6 @@ export const PrivacyExperiencesTable = () => {
             </HStack>
             <Button
               onClick={() => router.push(`${PRIVACY_EXPERIENCE_ROUTE}/new`)}
-              size="small"
               type="primary"
               data-testid="add-privacy-experience-btn"
             >

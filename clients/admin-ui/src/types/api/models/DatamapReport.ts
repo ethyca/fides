@@ -6,7 +6,6 @@ export type DatamapReport = {
   administrating_department?: string | null;
   cookie_max_age_seconds?: number | null;
   cookie_refresh: boolean;
-  cookies?: Array<string> | null;
   data_categories?: string | Array<string> | null;
   system_undeclared_data_categories?: Array<string> | null;
   data_use_undeclared_data_categories?: Array<string> | null;
@@ -43,9 +42,7 @@ export type DatamapReport = {
   retention_period?: string | null;
   shared_categories?: Array<string> | null;
   special_category_legal_basis?: string | null;
-  system_dependencies?: string | null;
   system_name: string;
-  third_country_safeguards?: string | null;
   third_parties?: string | null;
   uses_cookies: boolean;
   uses_non_cookie_access: boolean;

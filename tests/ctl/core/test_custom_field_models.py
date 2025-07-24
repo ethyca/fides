@@ -7,7 +7,7 @@ from fides.api.common_exceptions import KeyOrNameAlreadyExists
 from fides.api.models.sql_models import CustomFieldDefinition
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture(scope="function")
 def clear_custom_metadata_resources(db):
     """
     Fixture run on each test to clear custom field DB tables,

@@ -87,7 +87,7 @@ const SubgroupModal = ({
         <Header title="Select locations" />
         <ModalBody p={6} maxHeight="70vh" overflowY="auto">
           <HeaderCheckboxRow
-            title={continentName}
+            title={continentName as string}
             allSelected={allSelected}
             onToggleAll={handleToggleAll}
             numSelected={numSelected}

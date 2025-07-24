@@ -79,6 +79,7 @@ def create_policy_rule_with_keys(
 
 
 @pytest.mark.integration
+@pytest.mark.usefixtures("monkeypatch_requests", "fideslang_resources")
 def test_get_all_server_policies(test_config: FidesConfig) -> None:
     result = evaluate.get_all_server_policies(
         url=test_config.cli.server_url, headers=test_config.user.auth_header
@@ -87,6 +88,7 @@ def test_get_all_server_policies(test_config: FidesConfig) -> None:
 
 
 @pytest.mark.integration
+@pytest.mark.usefixtures("fideslang_resources")
 def test_populate_referenced_keys_recursively(test_config: FidesConfig) -> None:
     """
     Test that populate_referenced_keys works recursively. It should be able to
@@ -165,6 +167,7 @@ def test_populate_referenced_keys_fails_missing_keys(
 
 
 @pytest.mark.integration
+@pytest.mark.usefixtures("fideslang_resources")
 def test_hydrate_missing_resources(test_config: FidesConfig) -> None:
     dehydrated_taxonomy = Taxonomy(
         data_category=[

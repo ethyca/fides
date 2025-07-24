@@ -5,6 +5,7 @@ import {
   AccordionItem,
   AccordionPanel,
   AntButton as Button,
+  AntSelect as Select,
   ArrowDownRightIcon,
   Box,
   BoxProps,
@@ -15,11 +16,11 @@ import {
   Text,
   useToast,
 } from "fidesui";
-import { Form, Formik, FormikValues } from "formik";
+import { Form, Formik, FormikValues, useField } from "formik";
 import { Fragment, useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import { Option, SelectInput } from "~/features/common/form/inputs";
+import { Option } from "~/features/common/form/inputs";
 import { errorToastParams } from "~/features/common/toast";
 import {
   useGetConsentableItemsQuery,
@@ -51,12 +52,20 @@ const ConsentableItemField = ({
 }: ConsentableItemFieldProps) => {
   const { external_id: id, name } = item;
   const fieldName = `${id}-notice_id`;
+  const [field, , helpers] = useField(fieldName);
+  const { setValue } = helpers;
+  const handleChange = (option?: string) => {
+    setValue(option);
+    // eslint-disable-next-line no-param-reassign
+    item = { ...item, notice_id: option };
+    onNoticeChange(item);
+  };
   return (
     <>
       <HStack flexGrow={1}>
         {isChild && <ArrowDownRightIcon />}
         <FormLabel
-          id={`${id}-label`}
+          htmlFor={fieldName}
           data-testid={`consentable-item-label${isChild ? "-child" : ""}`}
           m={0}
           fontSize="14px"
@@ -65,23 +74,16 @@ const ConsentableItemField = ({
           {name}
         </FormLabel>
       </HStack>
-      <Box data-testid="consentable-item-select">
-        <SelectInput
-          placeholder="None"
-          size="sm"
-          fieldName={fieldName}
-          options={options}
-          ariaLabel="Notices"
-          ariaDescribedby={`${id}-label`}
-          isClearable
-          onChange={(option: Option | undefined) => {
-            const value = option?.value;
-            // eslint-disable-next-line no-param-reassign
-            item = { ...item, notice_id: value };
-            onNoticeChange(item);
-          }}
-        />
-      </Box>
+      <Select<string, Option>
+        {...field}
+        id={fieldName}
+        allowClear
+        placeholder="None"
+        options={options}
+        onChange={handleChange}
+        className="w-full"
+        data-testid="consentable-item-select"
+      />
     </>
   );
 };

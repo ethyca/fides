@@ -1,7 +1,0 @@
-dataset:
-  - fides_key: <instance_fides_key>
-    name: Ada Chatbot Dataset
-    description: A sample dataset representing the Ada Chatbot connector for Fides
-    collections:
-      - name: chatter
-        fields: []

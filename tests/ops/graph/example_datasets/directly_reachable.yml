@@ -1,0 +1,42 @@
+dataset:
+  - fides_key: directly_reachable
+    name: Directly reachable
+    description: A fully reachable dataset
+    collections:
+      - name: customer
+        fields:
+          - name: address_id
+            data_categories: [system.operations]
+          - name: created
+            data_categories: [system.operations]
+          - name: email
+            data_categories: [user.contact.email]
+            fides_meta:
+              identity: email
+              data_type: string
+          - name: id
+            data_categories: [user.unique_id]
+          - name: name
+            data_categories: [user.name]
+            fides_meta:
+              data_type: string
+              length: 40
+      - name: address
+        fields:
+          - name: city
+            data_categories: [user.contact.address.city]
+          - name: house
+            data_categories: [user.contact.address.street]
+          - name: id
+            data_categories: [system.operations]
+            fides_meta:
+              references:
+                - dataset: directly_reachable
+                  field: customer.address_id
+                  direction: from
+          - name: state
+            data_categories: [user.contact.address.state]
+          - name: street
+            data_categories: [user.contact.address.street]
+          - name: zip
+            data_categories: [user.contact.address.postal_code]

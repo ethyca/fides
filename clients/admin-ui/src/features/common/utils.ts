@@ -32,7 +32,7 @@ export const debounce = (fn: (props?: any) => void, ms = 0) => {
 };
 
 export const formatDate = (value: string | number | Date): string =>
-  format(new Date(value), "MMMM d, Y, KK:mm:ss z");
+  format(new Date(value), "MMMM d, y, KK:mm:ss aaa z");
 
 export const utf8ToB64 = (str: string): string =>
   window.btoa(unescape(encodeURIComponent(str)));
@@ -116,3 +116,38 @@ export const getOptionsFromMap = <T = string>(
     label: value,
     value: key,
   }));
+
+export const getWebsiteIconUrl = (domain: string, size = 24) => {
+  return `https://cdn.brandfetch.io/${domain}/icon/theme/light/fallback/404/h/${size}/w/${size}?c=1idbRjELpikqQ1PLiqb`;
+};
+
+export const getDomain = (urlOrDomain: string): string => {
+  try {
+    // Try to parse as URL first
+    const url = new URL(
+      urlOrDomain.startsWith("http") ? urlOrDomain : `https://${urlOrDomain}`,
+    );
+    return url.hostname;
+  } catch {
+    // If URL parsing fails, assume it's already a domain
+    return urlOrDomain.replace(/^(https?:\/\/)?(www\.)?/, "");
+  }
+};
+
+export const stripHashFromUrl = (url: string) => {
+  return url.split("#")[0];
+};
+
+/**
+ * Formats a user object for display by combining first name, last name, and email
+ * @param user - A partial user object with optional first_name, last_name, and email_address
+ * @returns A formatted display name string
+ */
+export const formatUser = (user: {
+  first_name?: string | null;
+  last_name?: string | null;
+  email_address?: string | null;
+}): string => {
+  const fullName = `${user.first_name || ""} ${user.last_name || ""}`.trim();
+  return fullName || user.email_address || "Unknown User";
+};

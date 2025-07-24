@@ -603,11 +603,21 @@ def test_variant_traversals() -> None:
     }
     assert terminators2 == [CollectionAddress("mysql", "user")]
 
-    with pytest.raises(TraversalError):
-        Traversal(
-            graph,
-            {"ssn": "Y"},
-        ).traversal_map()
+    # Traverse shouldn't error because we support optional identities
+    traversal_map3, terminators3 = Traversal(
+        graph,
+        {"ssn": "Y"},
+    ).traversal_map()
+    assert traversal_map3 == {
+        "__ROOT__:__ROOT__": {"from": {}, "to": {"mysql:user": {"ssn -> ssn"}}},
+        "mysql:user": {
+            "from": {
+                "__ROOT__:__ROOT__": {"ssn -> ssn"},
+            },
+            "to": {},
+        },
+    }
+    assert terminators3 == [CollectionAddress("mysql", "user")]
 
 
 def test_tree_linear() -> None:

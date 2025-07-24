@@ -76,11 +76,13 @@ describe("Privacy notice driven consent", () => {
     beforeEach(() => {
       cy.clearAllCookies();
       cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
-      cy.visit("/consent");
-      cy.getByTestId("consent");
-      cy.overrideSettings(SETTINGS);
-      cy.getByTestId("consent");
-      cy.wait("@getVerificationConfig");
+      cy.visitConsent({
+        settingsOverride: {
+          IS_OVERLAY_ENABLED: true,
+          IS_GEOLOCATION_ENABLED: true,
+          GEOLOCATION_API_URL,
+        },
+      });
     });
 
     it("populates its header from the experience config", () => {
@@ -314,7 +316,7 @@ describe("Privacy notice driven consent", () => {
   });
 
   describe("when user has consented before", () => {
-    it("renders from privacy notices when user has consented before", () => {
+    beforeEach(() => {
       const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
       const createdAt = "2023-04-28T12:00:00.000Z";
       const updatedAt = "2023-04-29T12:00:00.000Z";
@@ -328,10 +330,11 @@ describe("Privacy notice driven consent", () => {
         },
       };
       cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
+    });
+    it("renders from privacy notices when user has consented before", () => {
       // Visit the consent page with notices enabled
-      cy.visit("/consent");
+      cy.visitConsent({ settingsOverride: SETTINGS });
       cy.getByTestId("consent");
-      cy.overrideSettings(SETTINGS);
       // Should follow state of consent cookie
       cy.wait("@getExperience").then(() => {
         cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_1}`).within(() => {
@@ -354,13 +357,26 @@ describe("Privacy notice driven consent", () => {
         ).to.eql(["opt_in", "opt_out", "acknowledge"]);
       });
     });
+
+    it("applies FIDES_DISABLED_NOTICES override", () => {
+      const overrides = {
+        FIDES_DISABLED_NOTICES: "analytics_opt_out",
+        ...SETTINGS,
+      };
+      cy.visitConsent({ settingsOverride: overrides });
+      cy.getByTestId("consent");
+      cy.overrideSettings(overrides);
+      cy.wait("@getExperience");
+      cy.getByTestId("toggle-Analytics").find("input").should("be.disabled"); // disabled by override
+    });
   });
 
   describe("consent reporting", () => {
     beforeEach(() => {
-      cy.visit("/consent");
+      cy.visitConsent({
+        settingsOverride: SETTINGS,
+      });
       cy.getByTestId("consent");
-      cy.overrideSettings(SETTINGS);
     });
 
     it("can make calls to consent reporting endpoints", () => {
@@ -391,8 +407,7 @@ describe("Privacy notice driven consent", () => {
     });
 
     it("renders hierarchical notices correctly", () => {
-      cy.visit("/consent");
-      cy.getByTestId("consent");
+      cy.visitConsent({ settingsOverride: SETTINGS });
       cy.overrideSettings(SETTINGS);
       cy.wait("@getExperience");
 
@@ -407,9 +422,7 @@ describe("Privacy notice driven consent", () => {
     });
 
     it("parent toggle should toggle all children", () => {
-      cy.visit("/consent");
-      cy.getByTestId("consent");
-      cy.overrideSettings(SETTINGS);
+      cy.visitConsent({ settingsOverride: SETTINGS });
       cy.wait("@getExperience");
 
       cy.getByTestId("consent-item-pri_notice-advertising-000")
@@ -442,9 +455,7 @@ describe("Privacy notice driven consent", () => {
     });
 
     it("toggle all children should toggle parent", () => {
-      cy.visit("/consent");
-      cy.getByTestId("consent");
-      cy.overrideSettings(SETTINGS);
+      cy.visitConsent({ settingsOverride: SETTINGS });
       cy.wait("@getExperience");
 
       cy.getByTestId("consent-item-pri_notice-advertising-000")
@@ -468,13 +479,13 @@ describe("Privacy notice driven consent", () => {
     });
 
     it("can save hierarchical notices", () => {
-      cy.visit("/consent");
-      cy.getByTestId("consent");
-      cy.overrideSettings(SETTINGS);
+      cy.visitConsent({ settingsOverride: SETTINGS });
       cy.wait("@getExperience");
 
       cy.getByTestId("consent-item-pri_notice-advertising-000").click();
+      cy.getByTestId("toggle-Weekly Newsletter").should("be.visible");
       cy.getByTestId("toggle-Weekly Newsletter").getToggle().check();
+      cy.getByTestId("toggle-Monthly Newsletter").should("be.visible");
       cy.getByTestId("toggle-Monthly Newsletter").getToggle().check();
 
       cy.getByTestId("save-btn").click();

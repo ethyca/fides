@@ -32,7 +32,11 @@ const useTestConnection = (
     } else if (result.data?.test_status === "succeeded") {
       toast({ status: "success", description: "Connected successfully" });
     } else if (result.data?.test_status === "failed") {
-      toast({ status: "warning", description: "Connection test failed" });
+      let description = "Connection test failed.";
+      if (result.data?.failure_reason) {
+        description += ` ${result.data?.failure_reason}`;
+      }
+      toast({ status: "warning", description });
     }
   };
 
@@ -43,6 +47,8 @@ const useTestConnection = (
     succeeded: data
       ? data.test_status === "succeeded"
       : Boolean(integration?.last_test_succeeded),
+    authorized: Boolean(integration?.authorized),
+    connectionKey: integration?.key,
   };
 
   const isLoading = queryIsLoading || isFetching;

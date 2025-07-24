@@ -1,0 +1,59 @@
+saas_config:
+  fides_key: saas_connector_consent_preferences_example
+  name: SaaS Example Consent Preferences Config
+  type: custom
+  description: A sample schema representing a SaaS for Fides
+  version: 0.0.1
+
+  connector_params:
+    - name: domain
+      default_value: localhost
+    - name: username
+    - name: api_key
+
+  client_config:
+    protocol: https
+    host: <domain>
+    authentication:
+      strategy: basic
+      configuration:
+        username: <username>
+        password: <api_key>
+
+  test_request:
+    method: GET
+    path: /3.0/lists
+
+  consent_requests:
+    opt_in:
+      method: POST
+      path: /allowlists/add
+      param_values:
+        - name: email
+          identity: email
+      body: |
+        {
+          "email": "<email>"
+        }
+
+    opt_out:
+      - method: POST
+        path: /allowlists/delete
+        param_values:
+          - name: email
+            identity: email
+        body: |
+          {
+            "email": "<email>"
+          }
+      - method: POST
+        path: /rejects/add
+        param_values:
+          - name: email
+            identity: email
+        body: |
+          {
+            "email": "<email>"
+          }
+
+  endpoints: []

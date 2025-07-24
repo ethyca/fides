@@ -37,6 +37,7 @@ EXEC = "exec"
 FIDES_TAXONOMY = "fides_taxonomy"
 GENERATE = "generate"
 INSTANTIATE = "instantiate"
+MANUAL_STEPS = "manual-steps"
 MASKING = "masking"
 MESSAGING = "messaging"
 ORGANIZATION = "organization"
@@ -46,19 +47,25 @@ PRIVACY_EXPERIENCE = "privacy-experience"
 PRIVACY_NOTICE = "privacy-notice"
 PRIVACY_PREFERENCE_HISTORY = "privacy-preference-history"
 PRIVACY_REQUEST = "privacy-request"
+PRIVACY_REQUEST_ACCESS_RESULTS = "privacy-request-access-results"
+PRIVACY_REQUEST_EMAIL_INTEGRATIONS = "privacy-request-email-integrations"
 PRIVACY_REQUEST_NOTIFICATIONS = "privacy-request-notifications"
 READ = "read"
+READ_OWN = "read-own"
 REGISTER = "register"
 RESET = "reset"
+RESPOND = "respond"
 RESUME = "resume"
 REVIEW = "review"
 RULE = "rule"
 SAAS_CONFIG = "saas_config"
 SCOPE = "scope"
+SEND = "send"
 STORAGE = "storage"
 SYSTEM = "system"
 SYSTEM_MANAGER = "system_manager"
 TAXONOMY = "taxonomy"
+TEST = "test"
 TRANSFER = "transfer"
 UPDATE = "update"
 UPLOAD_DATA = "upload_data"
@@ -67,6 +74,7 @@ USER_PERMISSION = "user-permission"
 VALIDATE = "validate"
 VIEW_DATA = "view_data"
 WEBHOOK = "webhook"
+WORKER_STATS = "worker-stats"
 
 ASSIGN_OWNERS = "assign_owners"
 
@@ -128,6 +136,7 @@ DATA_USE_DELETE = f"{DATA_USE}:{DELETE}"
 DATASET_CREATE_OR_UPDATE = f"{DATASET}:{CREATE_OR_UPDATE}"
 DATASET_DELETE = f"{DATASET}:{DELETE}"
 DATASET_READ = f"{DATASET}:{READ}"
+DATASET_TEST = f"{DATASET}:{TEST}"
 
 ENCRYPTION_EXEC = f"{ENCRYPTION}:{EXEC}"
 
@@ -170,6 +179,9 @@ PRIVACY_PREFERENCE_HISTORY_READ = f"{PRIVACY_PREFERENCE_HISTORY}:{READ}"
 PRIVACY_REQUEST_CALLBACK_RESUME = f"{PRIVACY_REQUEST}:{RESUME}"  # User has permission to restart a paused privacy request
 PRIVACY_REQUEST_CREATE = f"{PRIVACY_REQUEST}:{CREATE}"
 PRIVACY_REQUEST_DELETE = f"{PRIVACY_REQUEST}:{DELETE}"
+PRIVACY_REQUEST_EMAIL_INTEGRATIONS_SEND = f"{PRIVACY_REQUEST_EMAIL_INTEGRATIONS}:{SEND}"
+PRIVACY_REQUEST_MANUAL_STEPS_REVIEW = f"{PRIVACY_REQUEST}:{MANUAL_STEPS}:{REVIEW}"
+PRIVACY_REQUEST_MANUAL_STEPS_RESPOND = f"{PRIVACY_REQUEST}:{MANUAL_STEPS}:{RESPOND}"
 PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE = (
     f"{PRIVACY_REQUEST_NOTIFICATIONS}:{CREATE_OR_UPDATE}"
 )
@@ -179,6 +191,7 @@ PRIVACY_REQUEST_REVIEW = f"{PRIVACY_REQUEST}:{REVIEW}"
 PRIVACY_REQUEST_TRANSFER = f"{PRIVACY_REQUEST}:{TRANSFER}"
 PRIVACY_REQUEST_UPLOAD_DATA = f"{PRIVACY_REQUEST}:{UPLOAD_DATA}"
 PRIVACY_REQUEST_VIEW_DATA = f"{PRIVACY_REQUEST}:{VIEW_DATA}"
+PRIVACY_REQUEST_READ_ACCESS_RESULTS = f"{PRIVACY_REQUEST_ACCESS_RESULTS}:{READ}"
 
 RULE_CREATE_OR_UPDATE = f"{RULE}:{CREATE_OR_UPDATE}"
 RULE_DELETE = f"{RULE}:{DELETE}"
@@ -214,6 +227,7 @@ TAXONOMY_DELETE = f"{TAXONOMY}:{DELETE}"
 USER_CREATE = f"{USER}:{CREATE}"
 USER_DELETE = f"{USER}:{DELETE}"
 USER_READ = f"{USER}:{READ}"
+USER_READ_OWN = f"{USER}:{READ_OWN}"
 USER_UPDATE = f"{USER}:{UPDATE}"
 USER_PASSWORD_RESET = f"{USER}:{PASSWORD_RESET}"
 
@@ -227,6 +241,8 @@ VALIDATE_EXEC = f"{VALIDATE}:{EXEC}"
 WEBHOOK_CREATE_OR_UPDATE = f"{WEBHOOK}:{CREATE_OR_UPDATE}"
 WEBHOOK_DELETE = f"{WEBHOOK}:{DELETE}"
 WEBHOOK_READ = f"{WEBHOOK}:{READ}"
+
+WORKER_STATS_READ = f"{WORKER_STATS}:{READ}"
 
 SCOPE_DOCS = {
     CONFIG_READ: "View the configuration",
@@ -273,6 +289,7 @@ SCOPE_DOCS = {
     DATASET_CREATE_OR_UPDATE: "Create or modify datasets",
     DATASET_DELETE: "Delete datasets",
     DATASET_READ: "View datasets",
+    DATASET_TEST: "Run a standalone privacy request test for a dataset",
     ENCRYPTION_EXEC: "Encrypt data",
     MESSAGING_TEMPLATE_UPDATE: "Update messaging templates",
     EVALUATION_CREATE: "Create evaluation",
@@ -302,7 +319,11 @@ SCOPE_DOCS = {
     PRIVACY_PREFERENCE_HISTORY_READ: "Read the history of all saved privacy preferences",
     PRIVACY_REQUEST_CREATE: "",
     PRIVACY_REQUEST_CALLBACK_RESUME: "Restart paused privacy requests",
+    PRIVACY_REQUEST_READ_ACCESS_RESULTS: "Download access data for the privacy request",
     PRIVACY_REQUEST_DELETE: "Remove privacy requests",
+    PRIVACY_REQUEST_EMAIL_INTEGRATIONS_SEND: "Send email for email integrations for the privacy request",
+    PRIVACY_REQUEST_MANUAL_STEPS_RESPOND: "Respond to manual steps for the privacy request",
+    PRIVACY_REQUEST_MANUAL_STEPS_REVIEW: "Review manual steps for the privacy request",
     PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE: "",
     PRIVACY_REQUEST_NOTIFICATIONS_READ: "",
     PRIVACY_REQUEST_READ: "View privacy requests",
@@ -335,6 +356,7 @@ SCOPE_DOCS = {
     USER_UPDATE: "Update users",
     USER_DELETE: "Remove users",
     USER_READ: "View users",
+    USER_READ_OWN: "View own user",
     USER_PASSWORD_RESET: "Reset another user's password",
     USER_PERMISSION_CREATE: "Create user permissions",
     USER_PERMISSION_UPDATE: "Update user permissions",
@@ -344,6 +366,7 @@ SCOPE_DOCS = {
     WEBHOOK_CREATE_OR_UPDATE: "Create or update web hooks",
     WEBHOOK_DELETE: "Remove web hooks",
     WEBHOOK_READ: "View web hooks",
+    WORKER_STATS_READ: "View worker statistics",
 }
 
 SCOPE_REGISTRY = list(SCOPE_DOCS.keys())

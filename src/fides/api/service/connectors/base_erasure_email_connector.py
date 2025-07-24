@@ -1,14 +1,11 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Query, Session
 
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.policy import Rule
-from fides.api.models.privacy_request import (
-    ExecutionLog,
-    ExecutionLogStatus,
-    PrivacyRequest,
-)
+from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.connection_configuration.connection_secrets_email import (
     AdvancedSettings,
     BaseEmailSchema,
@@ -19,13 +16,16 @@ from fides.api.schemas.messaging.messaging import (
     MessagingActionType,
 )
 from fides.api.schemas.policy import ActionType
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors.base_email_connector import (
     BaseEmailConnector,
-    get_email_messaging_config_service_type,
     get_org_name,
 )
-from fides.api.service.messaging.message_dispatch_service import dispatch_message
+from fides.api.service.messaging.message_dispatch_service import (
+    dispatch_message,
+    get_email_messaging_config_service_type,
+)
 from fides.config import get_config
 
 CONFIG = get_config()
@@ -81,6 +81,42 @@ class BaseErasureEmailConnector(BaseEmailConnector):
                 "message": f"Erasure email skipped for '{self.configuration.name_or_key}'",
             },
         )
+
+    def error_privacy_request(
+        self,
+        db: Session,
+        privacy_request: PrivacyRequest,
+        failure_reason: Optional[str],
+    ) -> None:
+        """
+        Creates an ExecutionLog with status error for the privacy request, using the failure_reason
+        as the message, and sets the privacy request status to error.
+        """
+        ExecutionLog.create(
+            db=db,
+            data={
+                "connection_key": self.configuration.key,
+                "dataset_name": self.configuration.name_or_key,
+                "collection_name": self.configuration.name_or_key,
+                "privacy_request_id": privacy_request.id,
+                "action_type": ActionType.erasure,
+                "status": ExecutionLogStatus.error,
+                "message": failure_reason
+                or "An error occurred when trying to send the erasure email",
+            },
+        )
+        privacy_request.status = PrivacyRequestStatus.error
+        privacy_request.save(db)
+
+    def error_all_privacy_requests(
+        self, db: Session, privacy_requests: Query, failure_reason: str
+    ) -> None:
+        """
+        Creates an ExecutionLog with status error for each privacy request in the batch, and sets the
+        privacy request status to error.
+        """
+        for privacy_request in privacy_requests:
+            self.error_privacy_request(db, privacy_request, failure_reason)
 
 
 def get_identity_types_for_connector(

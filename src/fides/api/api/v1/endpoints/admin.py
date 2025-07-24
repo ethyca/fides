@@ -16,6 +16,7 @@ ADMIN_ROUTER = APIRouter(prefix=API_PREFIX, tags=["Admin"])
 
 class DBActions(str, Enum):
     "The available path parameters for the `/admin/db/{action}` endpoint."
+
     upgrade = "upgrade"
     reset = "reset"
     downgrade = "downgrade"
@@ -29,7 +30,7 @@ class DBActions(str, Enum):
     ],
     status_code=status.HTTP_200_OK,
 )
-async def db_action(action: DBActions, revision: Optional[str] = "head") -> Dict:
+def db_action(action: DBActions, revision: Optional[str] = "head") -> Dict:
     """
     Initiate one of the enumerated DBActions.
 
@@ -40,7 +41,7 @@ async def db_action(action: DBActions, revision: Optional[str] = "head") -> Dict
 
     if action == DBActions.downgrade:
         try:
-            await migrate_db(database_url=CONFIG.database.sync_database_uri, revision=revision, downgrade=True)  # type: ignore[arg-type]
+            migrate_db(database_url=CONFIG.database.sync_database_uri, revision=revision, downgrade=True)  # type: ignore[arg-type]
             action_text = "downgrade"
         except Exception as e:
             logger.exception("Database downgrade failed")
@@ -66,7 +67,15 @@ async def db_action(action: DBActions, revision: Optional[str] = "head") -> Dict
             reset_db(CONFIG.database.sync_database_uri)
             action_text = "reset"
 
-        await configure_db(CONFIG.database.sync_database_uri, revision=revision)
+        try:
+            logger.info("Database being configured...")
+            configure_db(CONFIG.database.sync_database_uri, revision=revision)
+        except Exception as e:
+            logger.exception("Database configuration failed: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Database configuration failed: {e}. Check server logs for more details",
+            )
 
     return {
         "data": {

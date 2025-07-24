@@ -1,7 +1,9 @@
 import { ContainerNode, render } from "preact";
 
-import { OverlayProps } from "../components/types";
+import { RenderOverlayType } from "../components/types";
 import { ComponentType } from "./consent-types";
+import type { I18n } from "./i18n";
+import { InitializedFidesGlobal } from "./providers/fides-global-context";
 import { ColorFormat, generateLighterColor } from "./style-utils";
 
 const FIDES_EMBED_CONTAINER_ID = "fides-embed-container";
@@ -14,27 +16,26 @@ const FIDES_OVERLAY_DEFAULT_ID = "fides-overlay";
  */
 let renderedParentElem: ContainerNode | undefined;
 
+export interface InitOverlayProps {
+  initializedFides: InitializedFidesGlobal;
+  i18n: I18n;
+  renderOverlay?: RenderOverlayType;
+}
+
 /**
  * Initialize the Fides Consent overlay components.
  *
  * (see the type definition of FidesOptions for what options are available)
  */
 export const initOverlay = async ({
-  options,
-  experience,
+  initializedFides,
   i18n,
-  fidesRegionString,
-  cookie,
-  savedConsent,
   renderOverlay,
-  propertyId,
-  translationOverrides,
-}: OverlayProps & {
-  renderOverlay: (props: OverlayProps, parent: ContainerNode) => void;
-}): Promise<void> => {
+}: InitOverlayProps): Promise<void> => {
+  const { options, experience } = initializedFides;
   fidesDebugger("Initializing Fides consent overlays...");
 
-  async function renderFidesOverlay(): Promise<void> {
+  const renderFidesOverlay = async (): Promise<void> => {
     try {
       fidesDebugger("Injecting Fides overlay CSS & HTML into the DOM...");
 
@@ -63,6 +64,7 @@ export const initOverlay = async ({
 
       // update CSS variables based on configured primary color
       if (options.fidesPrimaryColor) {
+        fidesDebugger("setting primary color to", options.fidesPrimaryColor);
         document.documentElement.style.setProperty(
           "--fides-overlay-primary-color",
           options.fidesPrimaryColor,
@@ -131,22 +133,17 @@ export const initOverlay = async ({
       }
 
       if (
-        experience.experience_config?.component === ComponentType.MODAL ||
-        experience.experience_config?.component ===
-          ComponentType.BANNER_AND_MODAL ||
-        experience.experience_config?.component === ComponentType.TCF_OVERLAY
+        !!renderOverlay &&
+        (experience.experience_config?.component === ComponentType.MODAL ||
+          experience.experience_config?.component ===
+            ComponentType.BANNER_AND_MODAL ||
+          experience.experience_config?.component === ComponentType.TCF_OVERLAY)
       ) {
         // Render the Overlay to the DOM!
         renderOverlay(
           {
-            options,
-            experience,
+            initializedFides,
             i18n,
-            fidesRegionString,
-            cookie,
-            savedConsent,
-            propertyId,
-            translationOverrides,
           },
           parentElem,
         );
@@ -158,7 +155,7 @@ export const initOverlay = async ({
       fidesDebugger(e);
       return Promise.reject(e);
     }
-  }
+  };
 
   // Ensure we only render the overlay to the document once it's interactive
   // NOTE: do not wait for "complete" state, as this can delay rendering on sites with heavy assets

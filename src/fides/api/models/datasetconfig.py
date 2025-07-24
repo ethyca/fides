@@ -19,6 +19,7 @@ from fides.api.graph.config import (
 )
 from fides.api.graph.data_type import parse_data_type_string
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.util.saas_util import merge_datasets
 
 from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
@@ -54,92 +55,71 @@ class DatasetConfig(Base):
     )
 
     @classmethod
-    def upsert_with_ctl_dataset(
-        cls, db: Session, *, data: Dict[str, Any]
-    ) -> "DatasetConfig":
-        """
-        Create or update the DatasetConfig AND the corresponding CTL Dataset
-
-        If the DatasetConfig exists with the supplied FidesKey, update the linked CtlDataset with the dataset contents.
-        If the DatasetConfig *does not exist*, upsert a CtlDataset on fides_key, and then link to the DatasetConfig on creation.
-
-        """
-
-        def upsert_ctl_dataset(ctl_dataset_obj: Optional[CtlDataset]) -> CtlDataset:
-            """
-            If ctl_dataset_obj specified, update that resource directly, otherwise
-            create a new resource.
-            """
-            ctl_dataset_data = data.copy()
-            validated_data = Dataset(**ctl_dataset_data.get("dataset", {}))
-            if ctl_dataset_obj:
-                # It's possible this updates the ctl_dataset.fides_key and this causes a conflict
-                # with another ctl_dataset, if we fetched the datasetconfig.ctl_dataset.
-                for key, val in validated_data.model_dump(mode="json").items():
-                    setattr(
-                        ctl_dataset_obj, key, val
-                    )  # Just update the existing ctl_dataset with the new values
-            else:
-                ctl_dataset_obj = CtlDataset(
-                    **validated_data.model_dump(mode="json")
-                )  # Validate the values if creating a new CtlDataset
-
-            db.add(ctl_dataset_obj)
-            db.commit()
-            db.refresh(ctl_dataset_obj)
-            return ctl_dataset_obj
-
-        dataset = DatasetConfig.filter(
-            db=db,
-            conditions=(
-                (DatasetConfig.connection_config_id == data["connection_config_id"])
-                & (DatasetConfig.fides_key == data["fides_key"])
-            ),
-        ).first()
-
-        if dataset:
-            upsert_ctl_dataset(
-                dataset.ctl_dataset
-            )  # Update existing ctl_dataset first.
-            data.pop("dataset", None)
-            dataset.update(db=db, data=data)
-        else:
-            fetched_ctl_dataset = (
-                db.query(CtlDataset)
-                .filter(
-                    CtlDataset.fides_key == data.get("dataset", {}).get("fides_key")
-                )
-                .first()
-            )
-            ctl_dataset = upsert_ctl_dataset(
-                fetched_ctl_dataset
-            )  # Create/update existing ctl_dataset first
-            data["ctl_dataset_id"] = ctl_dataset.id
-            data.pop("dataset", None)
-            dataset = cls.create(db=db, data=data)
-
-        return dataset
-
-    @classmethod
     def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> "DatasetConfig":  # type: ignore[override]
         """
-        Look up dataset by config and fides_key. If found, update this dataset, otherwise
-        create a new one.
+        Create or update both DatasetConfig and CTL Dataset.
+        Updates existing CTL Dataset if found by ID or fides_key, otherwise creates new one.
         """
-        dataset = DatasetConfig.filter(
+
+        def upsert_ctl_dataset(
+            dataset_contents: Dict[str, Any],
+            existing_ctl_dataset_id: Optional[str] = None,
+        ) -> CtlDataset:
+            """Create new or update existing CTL dataset."""
+            validated_data = Dataset(**dataset_contents).model_dump(mode="json")
+
+            if existing_ctl_dataset_id:
+                ctl_dataset = (
+                    db.query(CtlDataset)
+                    .filter(CtlDataset.id == existing_ctl_dataset_id)
+                    .first()
+                )
+            else:
+                ctl_dataset = (
+                    db.query(CtlDataset)
+                    .filter(CtlDataset.fides_key == dataset_contents.get("fides_key"))
+                    .first()
+                )
+
+            if ctl_dataset:
+                for key, val in validated_data.items():
+                    setattr(ctl_dataset, key, val)
+            else:
+                ctl_dataset = CtlDataset(**validated_data)
+
+            db.add(ctl_dataset)
+            db.commit()
+            db.refresh(ctl_dataset)
+            return ctl_dataset
+
+        # Make a copy of data to avoid modifications
+        data_copy = data.copy()
+        dataset_contents = data_copy.pop("dataset", None)
+
+        # Check for existing dataset config
+        dataset_config = cls.filter(
             db=db,
             conditions=(
-                (DatasetConfig.connection_config_id == data["connection_config_id"])
-                & (DatasetConfig.fides_key == data["fides_key"])
+                (cls.connection_config_id == data_copy["connection_config_id"])
+                & (cls.fides_key == data_copy["fides_key"])
             ),
         ).first()
+        existing_ctl_dataset_id = (
+            dataset_config.ctl_dataset_id if dataset_config else None
+        )
 
-        if dataset:
-            dataset.update(db=db, data=data)
+        # Handle CTL dataset if dataset data is provided
+        if dataset_contents:
+            ctl_dataset = upsert_ctl_dataset(dataset_contents, existing_ctl_dataset_id)
+            data_copy["ctl_dataset_id"] = ctl_dataset.id
+
+        # Create or update DatasetConfig
+        if dataset_config:
+            dataset_config.update(db=db, data=data_copy)
         else:
-            dataset = cls.create(db=db, data=data)
+            dataset_config = cls.create(db=db, data=data_copy)
 
-        return dataset
+        return dataset_config
 
     def get_graph(self) -> GraphDataset:
         """
@@ -185,6 +165,24 @@ class DatasetConfig(Base):
         dataset_graph.collections = [stubbed_collection]
         return dataset_graph
 
+    def get_identities_and_references(self) -> Set[str]:
+        """
+        Returns all identity and dataset references in the dataset.
+        If a field has multiple references only the first reference will be considered.
+        """
+        result: Set[str] = set()
+        dataset: GraphDataset = self.get_graph()
+        for collection in dataset.collections:
+            # Process the identities in the collection
+            result.update(collection.identities().values())
+            for _, field_refs in collection.references().items():
+                # Take first reference only, we only care that this collection is reachable,
+                # how we get there doesn't matter for our current use case
+                ref, edge_direction = field_refs[0]
+                if edge_direction == "from" and ref.dataset != self.fides_key:
+                    result.add(ref.value)
+        return result
+
 
 def to_graph_field(
     field: DatasetField, return_all_elements: Optional[bool] = None
@@ -205,6 +203,7 @@ def to_graph_field(
     data_type_name = None
     read_only = None
     custom_request_field = None
+    masking_strategy_override = None
 
     if meta_section:
         identity = meta_section.identity
@@ -252,6 +251,9 @@ def to_graph_field(
             # here in case we decide to allow it in the future.
             length = meta_section.length
 
+        if meta_section.masking_strategy_override:
+            masking_strategy_override = meta_section.masking_strategy_override
+
         (data_type_name, is_array) = parse_data_type_string(meta_section.data_type)
 
         if meta_section.return_all_elements:
@@ -277,6 +279,7 @@ def to_graph_field(
         return_all_elements=return_all_elements,
         read_only=read_only,
         custom_request_field=custom_request_field,
+        masking_strategy_override=masking_strategy_override,
     )
 
 
@@ -284,7 +287,7 @@ def convert_dataset_to_graph(
     dataset: Dataset, connection_key: FidesKey
 ) -> GraphDataset:
     """
-    Converts the given Fides dataset dataset into the concrete graph
+    Converts the given Fides dataset into the concrete graph
     representation needed for query execution
     """
 
@@ -403,3 +406,33 @@ def validate_dataset_reference(
         raise ValidationError(
             f"Unknown field '{dataset_reference.field}' in dataset '{dataset_config.fides_key}' referenced by external reference"
         )
+
+
+def validate_masking_strategy_override(dataset: Dataset) -> None:
+    """
+    Validates that field-level masking overrides do not require secret keys.
+    When handling a privacy request, we use the `cache_data` function to review the policies and identify which masking strategies need secret keys generated and cached.
+    Currently, we are avoiding the additional complexity of scanning datasets for masking overrides.
+    """
+
+    def validate_field(dataset_field: DatasetField) -> None:
+        if dataset_field.fields:
+            for subfield in dataset_field.fields:
+                validate_field(subfield)
+        else:
+            if (
+                dataset_field.fides_meta
+                and dataset_field.fides_meta.masking_strategy_override
+            ):
+                strategy: MaskingStrategy = MaskingStrategy.get_strategy(
+                    dataset_field.fides_meta.masking_strategy_override.strategy,
+                    dataset_field.fides_meta.masking_strategy_override.configuration,  # type: ignore[arg-type]
+                )
+                if strategy.secrets_required():
+                    raise ValidationError(
+                        f"Masking strategy '{strategy.name}' with required secrets not allowed as an override."
+                    )
+
+    for collection in dataset.collections:
+        for field in collection.fields:
+            validate_field(field)

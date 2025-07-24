@@ -3,7 +3,6 @@ from typing import Dict, List, Literal, Optional
 from pydantic import BaseModel, Field
 
 from fides.api.models.consent_automation import ConsentableItem as ConsentableItemModel
-from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.schemas.base_class import FidesSchema
 
 
@@ -85,10 +84,8 @@ class ConsentWebhookResult(BaseModel):
 
     identity_map: Dict[
         Literal["email", "phone_number", "fides_user_device", "external_id"], str
-    ] = {}
-    notice_map: Dict[str, UserConsentPreference] = {}
-
-    @property
-    def success(self) -> bool:
-        """Returns true if both the identity map and notice map are not empty."""
-        return bool(self.identity_map) and bool(self.notice_map)
+    ] = Field(default_factory=dict, description="The identity of the user.")
+    notice_id_map: Dict[str, str] = Field(
+        default_factory=dict,
+        description="A map of privacy notice IDs to user consent preferences.",
+    )

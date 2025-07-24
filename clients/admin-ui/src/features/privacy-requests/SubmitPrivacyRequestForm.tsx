@@ -1,12 +1,15 @@
-import { AntButton as Button, Stack } from "fidesui";
+import {
+  AntButton as Button,
+  LinkIcon,
+  Stack,
+  useClipboard,
+  useToast,
+} from "fidesui";
 import { Form, Formik } from "formik";
 import { lazy } from "yup";
+import * as Yup from "yup";
 
-import {
-  CustomCheckbox,
-  CustomSelect,
-  CustomTextInput,
-} from "~/features/common/form/inputs";
+import { CustomCheckbox, CustomTextInput } from "~/features/common/form/inputs";
 import {
   findActionFromPolicyKey,
   generateValidationSchemaFromAction,
@@ -18,6 +21,8 @@ import {
   PrivacyRequestCreate,
   PrivacyRequestOption,
 } from "~/types/api";
+
+import { ControlledSelect } from "../common/form/ControlledSelect";
 
 export type PrivacyRequestSubmitFormValues = PrivacyRequestCreate & {
   is_verified: boolean;
@@ -113,10 +118,10 @@ const SubmitPrivacyRequestForm = ({
           config?.actions,
         );
 
-        const handleResetCustomFields = (e: any) => {
+        const handleResetCustomFields = (value: string) => {
           // when selecting a new request type, populate the Formik state with
           // labels and default values for the corresponding custom fields
-          const newAction = findActionFromPolicyKey(e.value, config?.actions);
+          const newAction = findActionFromPolicyKey(value, config?.actions);
           if (!newAction?.custom_privacy_request_fields) {
             setFieldValue(`custom_privacy_request_fields`, undefined);
             return;
@@ -137,7 +142,7 @@ const SubmitPrivacyRequestForm = ({
         return (
           <Form>
             <Stack spacing={6} mb={2}>
-              <CustomSelect
+              <ControlledSelect
                 name="policy_key"
                 label="Request type"
                 options={
@@ -146,8 +151,8 @@ const SubmitPrivacyRequestForm = ({
                     value: action.policy_key,
                   })) ?? []
                 }
-                onChange={(e: any) => handleResetCustomFields(e)}
-                variant="stacked"
+                onChange={handleResetCustomFields}
+                layout="stacked"
                 isRequired
               />
               <IdentityFields identityInputs={currentAction?.identity_inputs} />
@@ -168,6 +173,60 @@ const SubmitPrivacyRequestForm = ({
                   data-testid="submit-btn"
                 >
                   Create
+                </Button>
+              </div>
+            </Stack>
+          </Form>
+        );
+      }}
+    </Formik>
+  );
+};
+
+export const CopyPrivacyRequestLinkForm = ({
+  onSubmit,
+  onCancel,
+  privacyCenterUrl,
+}: {
+  onSubmit: (values: { identity: { email: string } }) => void;
+  onCancel: () => void;
+  privacyCenterUrl: string;
+}) => {
+  const { onCopy } = useClipboard("");
+  const toast = useToast();
+  return (
+    <Formik
+      initialValues={{ identity: { email: "" } }}
+      onSubmit={(values) => {
+        onCopy(
+          `${privacyCenterUrl}?email=${encodeURIComponent(values.identity.email)}`,
+        );
+        onSubmit(values);
+        toast({ status: "success", description: "DSR Link Copied!" });
+      }}
+      validationSchema={() => {
+        return Yup.object().shape({
+          identity: Yup.object().shape({
+            email: Yup.string().email().required().label("Email Address"),
+          }),
+        });
+      }}
+    >
+      {({ dirty, isValid }) => {
+        return (
+          <Form>
+            <Stack spacing={6} mb={2}>
+              <IdentityFields identityInputs={{ email: "required" }} />
+              <div className="flex gap-4 self-end">
+                <Button onClick={onCancel}>Cancel</Button>
+                <Button
+                  htmlType="submit"
+                  type="primary"
+                  disabled={!dirty || !isValid}
+                  data-testid="submit-btn"
+                  icon={<LinkIcon />}
+                >
+                  Copy
                 </Button>
               </div>
             </Stack>

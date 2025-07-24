@@ -25,6 +25,12 @@
       "encoded_icon": null
     },
     {
+      "identifier": "rds_postgres",
+      "type": "database",
+      "human_readable": "RDS Postgres",
+      "encoded_icon": null
+    },
+    {
       "identifier": "mariadb",
       "type": "database",
       "human_readable": "MariaDB",
@@ -74,7 +80,7 @@
       "encoded_icon": null
     },
     {
-      "identifier": "manual_webhook",
+      "identifier": "manual_task",
       "type": "manual",
       "human_readable": "Manual Process",
       "encoded_icon": null
@@ -84,6 +90,15 @@
       "type": "email",
       "human_readable": "Sovrn",
       "encoded_icon": null
+    },
+    {
+      "identifier": "salesforce",
+      "type": "saas",
+      "human_readable": "Salesforce",
+      "encoded_icon": null,
+      "authorization_required": true,
+      "user_guide": "https://docs.ethyca.com/user-guides/integrations/saas-integrations/salesforce",
+      "supported_actions": ["access", "erasure"]
     },
     {
       "identifier": "shopify",
@@ -99,6 +114,12 @@
       "authorization_required": false,
       "user_guide": "https://docs.ethyca.com/user-guides/integrations/saas-integrations/iterable",
       "supported_actions": ["erasure", "consent"]
+    },
+    {
+      "identifier": "website",
+      "type": "website",
+      "human_readable": "Website",
+      "encoded_icon": null
     }
   ],
   "total": 10,

@@ -67,7 +67,9 @@ describe("Smoke test", () => {
         numCompletedRequests = items.filter(
           (i) => i.status === "complete",
         ).length;
-        mostRecentPrivacyRequestId = Cypress._.maxBy(items, "created_at").id;
+        mostRecentPrivacyRequestId = (
+          Cypress._.maxBy(items, "created_at") as any
+        ).id;
       });
 
       cy.get(`tr[data-testid^='row-pending-']`)
@@ -90,26 +92,36 @@ describe("Smoke test", () => {
     });
   });
 
-  it("can access Mongo and Postgres connectors from the Admin UI", () => {
-    cy.visit(ADMIN_UI_URL);
-    cy.login();
-
-    // Postgres
-    cy.getByTestId("System inventory-nav-link").click();
-    cy.getByTestId("system-cookie_house_postgresql_database").within(() => {
-      cy.getByTestId("edit-btn").click();
+  describe("can access Mongo and Postgres connectors from the Admin UI", () => {
+    beforeEach(() => {
+      cy.visit(ADMIN_UI_URL);
+      cy.login();
     });
 
-    cy.getByTestId("tab-Integrations").click();
-    cy.get("button").contains("Test").click();
+    it("can access Postgres connectors from the Admin UI", () => {
+      // Postgres
+      cy.getByTestId("Data inventory-nav-group").click();
+      cy.getByTestId("System inventory-nav-link").click();
+      cy.getByTestId("system-cookie_house_postgresql_database").within(() => {
+        cy.getByTestId("edit-btn").click();
+      });
 
-    // Mongo
-    cy.getByTestId("System inventory-nav-link").click();
-    cy.getByTestId("system-cookie_house_customer_database").within(() => {
-      cy.getByTestId("edit-btn").click();
+      cy.get(`.ant-tabs-tab-btn`).filter(`:contains("Integrations")`).click();
+      cy.getByTestId("test-connection-button").click();
+      cy.getByTestId("toast-success-msg").should("be.visible");
     });
-    cy.getByTestId("tab-Integrations").click();
-    cy.get("button").contains("Test").click();
+
+    it("can access Mongo connectors from the Admin UI", () => {
+      // Mongo
+      cy.getByTestId("Data inventory-nav-group").click();
+      cy.getByTestId("System inventory-nav-link").click();
+      cy.getByTestId("system-cookie_house_customer_database").within(() => {
+        cy.getByTestId("edit-btn").click();
+      });
+      cy.get(`.ant-tabs-tab-btn`).filter(`:contains("Integrations")`).click();
+      cy.getByTestId("test-connection-button").click();
+      cy.getByTestId("toast-success-msg").should("be.visible");
+    });
   });
 
   it("can manage consent preferences from the Privacy Center", () => {
@@ -173,6 +185,10 @@ describe("Smoke test", () => {
         cy.wrap(win)
           .should("to.have.nested.property", "Fides.fides_meta.version")
           .should("eql", "0.9.0");
+        cy.wrap(win)
+          .should("to.have.nested.property", "Fides.version")
+          .should("not.eql", "0.0.0")
+          .should("not.eql", "unknown");
         cy.wrap(win)
           .should("to.have.nested.property", "Fides.consent")
           .should("eql", {

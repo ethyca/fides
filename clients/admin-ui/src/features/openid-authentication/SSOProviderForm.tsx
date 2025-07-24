@@ -5,7 +5,7 @@ import { Form, Formik, FormikHelpers } from "formik";
 import { useMemo } from "react";
 import * as Yup from "yup";
 
-import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
+import { CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
@@ -17,6 +17,8 @@ import {
   OpenIDProviderCreate,
   ProviderEnum,
 } from "~/types/api";
+
+import { ControlledSelect } from "../common/form/ControlledSelect";
 
 interface SSOProviderFormProps {
   openIDProvider?: OpenIDProvider;
@@ -105,10 +107,32 @@ const SSOProviderForm = ({
   };
 
   const PROVIDER_OPTIONS = [
+    { label: "Azure", value: "azure" },
     { label: "Google", value: "google" },
     { label: "Okta", value: "okta" },
     { label: "Custom", value: "custom" },
   ];
+
+  const renderAzureProviderExtraFields = () => (
+    <>
+      <CustomTextInput
+        id="authorization_url"
+        name="authorization_url"
+        label="Authorization URL"
+        tooltip="Authorization URL for your provider"
+        variant="stacked"
+        isRequired
+      />
+      <CustomTextInput
+        id="token_url"
+        name="token_url"
+        label="Token URL"
+        tooltip="Token URL for your provider"
+        variant="stacked"
+        isRequired
+      />
+    </>
+  );
 
   const renderOktaProviderExtraFields = () => (
     <CustomTextInput
@@ -160,11 +184,11 @@ const SSOProviderForm = ({
       {({ dirty, isValid, values }) => (
         <Form data-testid="openIDProvider-form">
           <Stack spacing={4}>
-            <CustomSelect
+            <ControlledSelect
               name="provider"
               label="Provider"
               options={PROVIDER_OPTIONS}
-              variant="stacked"
+              layout="stacked"
               isRequired
             />
             <CustomTextInput
@@ -202,6 +226,7 @@ const SSOProviderForm = ({
               variant="stacked"
               isRequired
             />
+            {values.provider === "azure" && renderAzureProviderExtraFields()}
             {values.provider === "okta" && renderOktaProviderExtraFields()}
             {values.provider === "custom" && renderCustomProviderExtraFields()}
             <Box textAlign="right">

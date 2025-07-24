@@ -1,0 +1,13 @@
+{
+  "name": "test website integration",
+  "key": "test_website_integration",
+  "connection_type": "website",
+  "access": "write",
+  "disabled": false,
+  "saas_config": null,
+  "secrets": {
+    "url": "http://example.com"
+  },
+  "authorized": false,
+  "enabled_actions": null
+}

@@ -15,6 +15,7 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 
 import { useAppSelector } from "~/app/hooks";
+import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
 import {
   AccessLevel,
   ConnectionType,
@@ -22,7 +23,6 @@ import {
 } from "~/types/api";
 
 import ConnectorParametersForm from "../forms/ConnectorParametersForm";
-import { formatKey } from "../helpers";
 import {
   BaseConnectorParametersFields,
   DatabaseConnectorParametersFormFields,

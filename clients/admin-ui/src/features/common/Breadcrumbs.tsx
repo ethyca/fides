@@ -54,6 +54,10 @@ const Breadcrumbs = ({
     {breadcrumbs.map((breadcumbItem, index) => {
       const isLast = index + 1 === breadcrumbs.length;
 
+      if (!breadcumbItem.title) {
+        return null;
+      }
+
       return (
         <BreadcrumbItem
           {...normalItemStyles}

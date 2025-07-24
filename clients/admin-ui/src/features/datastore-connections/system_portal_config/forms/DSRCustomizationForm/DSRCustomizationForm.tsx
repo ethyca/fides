@@ -5,7 +5,7 @@ import React from "react";
 import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
-import { CustomSelect } from "~/features/common/form/inputs";
+import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { useGetAllDataCategoriesQuery } from "~/features/taxonomy";
 import { selectDataCategories } from "~/features/taxonomy/taxonomy.slice";
 
@@ -119,20 +119,18 @@ const DSRCustomizationForm = ({
                               <Box minH="57px" w="416px">
                                 <CustomInput
                                   autoFocus={index === 0}
-                                  displayHelpIcon={false}
                                   isRequired
                                   name={`fields.${index}.pii_field`}
                                 />
                               </Box>
                               <Box minH="57px" w="416px">
                                 <CustomInput
-                                  displayHelpIcon={false}
                                   isRequired
                                   name={`fields.${index}.dsr_package_label`}
                                 />
                               </Box>
                               <Box minH="57px" w="416px">
-                                <CustomSelect
+                                <ControlledSelect
                                   name={`fields.${index}.data_categories`}
                                   options={allDataCategories.map(
                                     (data_category) => ({
@@ -141,7 +139,7 @@ const DSRCustomizationForm = ({
                                     }),
                                   )}
                                   isRequired
-                                  isMulti
+                                  mode="multiple"
                                 />
                               </Box>
                               <Box

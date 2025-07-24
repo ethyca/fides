@@ -17,12 +17,9 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.datasetconfig import convert_dataset_to_graph
-from fides.api.models.policy import CurrentStep
-from fides.api.models.privacy_request import (
-    CheckpointActionRequired,
-    ExecutionLog,
-    PrivacyRequest,
-)
+from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest
+from fides.api.schemas.policy import CurrentStep
+from fides.api.schemas.privacy_request import CheckpointActionRequired
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.config import CONFIG
 from tests.fixtures.application_fixtures import integration_secrets
@@ -33,10 +30,22 @@ from ..service.privacy_request.test_request_runner_service import (
 )
 
 
+def get_collection_identifier(log) -> str:
+    """
+    Get a standardized identifier for a collection from an execution log.
+    """
+
+    # This is necessary because the log for a complete "Dataset traversal" does not have a collection.
+    # The better approach in the long-term is to support more general execution data in the execution logs.
+    if log.collection_name:
+        return CollectionAddress(log.dataset_name, log.collection_name or "").value
+    return log.dataset_name
+
+
 def get_sorted_execution_logs(db, privacy_request: PrivacyRequest):
     return [
         (
-            CollectionAddress(log.dataset_name, log.collection_name).value,
+            get_collection_identifier(log),
             log.status.value,
         )
         for log in db.query(ExecutionLog)
@@ -96,7 +105,11 @@ class TestDeleteCollection:
             run_privacy_request_task,
             data,
         )
-        assert pr.get_results() != {}
+        # Use get_raw_access_results for DSR 3.0, get_results for DSR 2.0
+        if dsr_version == "use_dsr_3_0":
+            assert pr.get_raw_access_results() != {}
+        else:
+            assert pr.get_results() != {}
 
         read_connection_config.delete(db)
         pr = get_privacy_request_results(
@@ -105,7 +118,11 @@ class TestDeleteCollection:
             run_privacy_request_task,
             data,
         )
-        assert pr.get_results() == {}
+        # Use get_raw_access_results for DSR 3.0, get_results for DSR 2.0
+        if dsr_version == "use_dsr_3_0":
+            assert pr.get_raw_access_results() == {}
+        else:
+            assert pr.get_results() == {}
 
     @mock.patch("fides.api.task.graph_task.GraphTask.log_start")
     @pytest.mark.parametrize(
@@ -238,6 +255,7 @@ class TestDeleteCollection:
 
             execution_logs = get_sorted_execution_logs(db, privacy_request)
             assert execution_logs == [
+                ("Dataset traversal", "complete"),
                 ("postgres_example_test_dataset:customer", "in_processing"),
                 ("postgres_example_test_dataset:customer", "complete"),
                 ("postgres_example_test_dataset:payment_card", "in_processing"),
@@ -301,6 +319,7 @@ class TestDeleteCollection:
         if "use_dsr_2_0" == dsr_version:
             execution_logs = get_sorted_execution_logs(db, privacy_request)
             assert execution_logs == [
+                ("Dataset traversal", "complete"),
                 ("postgres_example_test_dataset:customer", "in_processing"),
                 ("postgres_example_test_dataset:customer", "complete"),
                 ("postgres_example_test_dataset:payment_card", "in_processing"),
@@ -313,6 +332,7 @@ class TestDeleteCollection:
                 ("postgres_example_test_dataset:product", "complete"),
                 ("mongo_test:customer_details", "in_processing"),
                 ("mongo_test:customer_details", "error"),
+                ("Dataset traversal", "complete"),
                 ("postgres_example_test_dataset:employee", "in_processing"),
                 ("postgres_example_test_dataset:employee", "complete"),
                 ("postgres_example_test_dataset:service_request", "in_processing"),
@@ -385,13 +405,21 @@ class TestDeleteCollection:
             run_privacy_request_task,
             data,
         )
-        assert pr.get_results() != {}
+
+        # DSR 3.0 has an extra Dataset reference validation from re-entering the run_privacy_request function
+        expected_log_count = 26 if dsr_version == "use_dsr_3_0" else 25
+
+        # Use get_raw_access_results for DSR 3.0, get_results for DSR 2.0
+        if dsr_version == "use_dsr_3_0":
+            assert pr.get_raw_access_results() != {}
+        else:
+            assert pr.get_results() != {}
         logs = get_sorted_execution_logs(db, pr)
-        assert len(logs) == 22
+        assert len(logs) == expected_log_count
 
         read_connection_config.delete(db)
         logs = get_sorted_execution_logs(db, pr)
-        assert len(logs) == 22
+        assert len(logs) == expected_log_count
 
 
 @pytest.mark.integration
@@ -574,6 +602,7 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
 
             execution_logs = get_sorted_execution_logs(db, privacy_request)
             assert execution_logs == [
+                ("Dataset traversal", "complete"),
                 ("postgres_example_test_dataset:customer", "in_processing"),
                 ("postgres_example_test_dataset:customer", "complete"),
                 ("postgres_example_test_dataset:payment_card", "in_processing"),
@@ -634,6 +663,7 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
         if dsr_version == "use_dsr_2_0":
             execution_logs = get_sorted_execution_logs(db, privacy_request)
             assert execution_logs == [
+                ("Dataset traversal", "complete"),
                 ("postgres_example_test_dataset:customer", "in_processing"),
                 ("postgres_example_test_dataset:customer", "complete"),
                 ("postgres_example_test_dataset:payment_card", "in_processing"),
@@ -646,6 +676,7 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
                 ("postgres_example_test_dataset:product", "complete"),
                 ("mongo_test:customer_details", "in_processing"),
                 ("mongo_test:customer_details", "error"),
+                ("Dataset traversal", "complete"),
                 ("postgres_example_test_dataset:employee", "in_processing"),
                 ("postgres_example_test_dataset:employee", "complete"),
                 ("postgres_example_test_dataset:service_request", "in_processing"),
@@ -726,14 +757,22 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
             run_privacy_request_task,
             data,
         )
-        assert pr.get_results() != {}
+
+        # DSR 3.0 has an extra Dataset reference validation from re-entering the run_privacy_request function
+        expected_log_count = 26 if dsr_version == "use_dsr_3_0" else 25
+
+        # Use get_raw_access_results for DSR 3.0, get_results for DSR 2.0
+        if dsr_version == "use_dsr_3_0":
+            assert pr.get_raw_access_results() != {}
+        else:
+            assert pr.get_results() != {}
         logs = get_sorted_execution_logs(db, pr)
-        assert len(logs) == 22
+        assert len(logs) == expected_log_count
 
         read_connection_config.disabled = True
         read_connection_config.save(db)
         logs = get_sorted_execution_logs(db, pr)
-        assert len(logs) == 22
+        assert len(logs) == expected_log_count
 
 
 @pytest.mark.integration
@@ -857,14 +896,12 @@ class TestSkipMarkedCollections:
             )
 
             access_runner_tester(
-                (
-                    privacy_request,
-                    policy,
-                    postgres_graph,
-                    [integration_postgres_config],
-                    {"email": "customer-4@example.com"},
-                    db,
-                )
+                privacy_request,
+                policy,
+                postgres_graph,
+                [integration_postgres_config],
+                {"email": "customer-4@example.com"},
+                db,
             )
 
 
@@ -914,6 +951,7 @@ async def test_restart_graph_from_failure(
         execution_logs = get_sorted_execution_logs(db, privacy_request)
         # Assert execution logs failed at mongo node
         assert execution_logs == [
+            ("Dataset traversal", "complete"),
             ("postgres_example_test_dataset:customer", "in_processing"),
             ("postgres_example_test_dataset:customer", "complete"),
             ("postgres_example_test_dataset:payment_card", "in_processing"),
@@ -992,7 +1030,7 @@ async def test_restart_graph_from_failure(
 
     customer_detail_logs = [
         (
-            CollectionAddress(log.dataset_name, log.collection_name).value,
+            get_collection_identifier(log),
             log.status.value,
         )
         for log in db.query(ExecutionLog)
@@ -1089,6 +1127,15 @@ async def test_restart_graph_from_failure_on_different_scheduler(
     else:
         assert privacy_request.access_tasks.count()
 
+    # This test switches DSR versions mid-request during restart-from-failure:
+    # - When dsr_version="use_dsr_3_0": starts with DSR 3.0 → switches to DSR 2.0 for restart
+    # - When dsr_version="use_dsr_2_0": starts with DSR 2.0 → switches to DSR 3.0 for restart
+    #
+    # The key difference: DSR 2.0 caches results (Redis), DSR 3.0 doesn't cache (stores in RequestTask models)
+    #
+    # Result: DSR 3.0 expects 4 executions vs DSR 2.0's 2 executions because when starting with
+    # DSR 3.0 (no caching), switching to DSR 2.0 for restart can't benefit from cached results
+    expected_customer_executions = 4 if dsr_version == "use_dsr_3_0" else 2
     assert (
         db.query(ExecutionLog)
         .filter_by(
@@ -1097,8 +1144,8 @@ async def test_restart_graph_from_failure_on_different_scheduler(
             collection_name="customer",
         )
         .count()
-        == 2
-    ), "Postgres customer collection does not re-run"
+        == expected_customer_executions
+    ), f"Postgres customer collection execution count mismatch for {dsr_version}"
 
     assert db.query(ExecutionLog).filter_by(
         privacy_request_id=privacy_request.id,
@@ -1108,7 +1155,7 @@ async def test_restart_graph_from_failure_on_different_scheduler(
 
     customer_detail_logs = [
         (
-            CollectionAddress(log.dataset_name, log.collection_name).value,
+            get_collection_identifier(log),
             log.status.value,
         )
         for log in db.query(ExecutionLog)
@@ -1250,7 +1297,7 @@ async def test_restart_graph_from_failure_during_erasure(
 
     address_logs = [
         (
-            CollectionAddress(log.dataset_name, log.collection_name).value,
+            get_collection_identifier(log),
             log.action_type.value,
             log.status.value,
         )

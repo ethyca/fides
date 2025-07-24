@@ -19,11 +19,8 @@ import { Form, Formik, FormikHelpers } from "formik";
 import { useMemo, useState } from "react";
 import * as Yup from "yup";
 
-import {
-  CustomCreatableSelect,
-  CustomSelect,
-  CustomTextInput,
-} from "~/features/common/form/inputs";
+import { ControlledSelect } from "~/features/common/form/ControlledSelect";
+import { CustomTextInput } from "~/features/common/form/inputs";
 import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
 import {
   DataCategory,
@@ -44,9 +41,8 @@ export const ValidationSchema = Yup.object().shape({
     .label("Data subjects"),
 });
 
-export type FormValues = Omit<PrivacyDeclarationResponse, "cookies"> & {
+export type FormValues = PrivacyDeclarationResponse & {
   customFieldValues: CustomFieldValues;
-  cookies: string[];
 };
 
 const defaultInitialValues: FormValues = {
@@ -56,7 +52,6 @@ const defaultInitialValues: FormValues = {
   dataset_references: [],
   customFieldValues: {},
   id: "",
-  cookies: [],
 };
 
 const transformFormValueToDeclaration = (values: FormValues) => {
@@ -66,8 +61,6 @@ const transformFormValueToDeclaration = (values: FormValues) => {
     ...declaration,
     // Fill in an empty string for name because of https://github.com/ethyca/fideslang/issues/98
     name: values.name ?? "",
-    // Transform cookies from string back to an object with default values
-    cookies: declaration.cookies.map((name) => ({ name, path: "/" })),
   };
 };
 
@@ -84,12 +77,10 @@ export const PrivacyDeclarationFormComponents = ({
   allDataSubjects,
   allDatasets,
   privacyDeclarationId,
-  includeCookies,
   includeCustomFields,
 }: DataProps &
   Pick<Props, "onDelete"> & {
     privacyDeclarationId?: string;
-    includeCookies?: boolean;
     includeCustomFields?: boolean;
   }) => {
   const datasetOptions = allDatasets
@@ -101,7 +92,7 @@ export const PrivacyDeclarationFormComponents = ({
 
   return (
     <Stack spacing={4}>
-      <CustomSelect
+      <ControlledSelect
         id="data_use"
         label="Data use"
         name="data_use"
@@ -110,9 +101,8 @@ export const PrivacyDeclarationFormComponents = ({
           label: data.fides_key,
         }))}
         tooltip="What is the system using the data for. For example, is it for third party advertising or perhaps simply providing system operations."
-        variant="stacked"
-        singleValueBlock
-        isDisabled={!!privacyDeclarationId}
+        layout="stacked"
+        disabled={!!privacyDeclarationId}
       />
       <CustomTextInput
         id="name"
@@ -122,7 +112,7 @@ export const PrivacyDeclarationFormComponents = ({
         tooltip="The personal data processing activity or activities associated with this data use."
         disabled={!!privacyDeclarationId}
       />
-      <CustomSelect
+      <ControlledSelect
         name="data_categories"
         label="Data categories"
         options={allDataCategories.map((data) => ({
@@ -130,11 +120,11 @@ export const PrivacyDeclarationFormComponents = ({
           label: data.fides_key,
         }))}
         tooltip="What type of data is your system processing? This could be various types of user or system data."
-        isMulti
-        variant="stacked"
-        isDisabled
+        mode="multiple"
+        layout="stacked"
+        disabled
       />
-      <CustomSelect
+      <ControlledSelect
         name="data_subjects"
         label="Data subjects"
         options={allDataSubjects.map((data) => ({
@@ -142,28 +132,18 @@ export const PrivacyDeclarationFormComponents = ({
           label: data.fides_key,
         }))}
         tooltip="Whose data are you processing? This could be customers, employees or any other type of user in your system."
-        isMulti
-        variant="stacked"
-        isDisabled
+        mode="multiple"
+        layout="stacked"
+        disabled
       />
-      {includeCookies ? (
-        <CustomCreatableSelect
-          name="cookies"
-          label="Cookies"
-          options={[]}
-          isMulti
-          variant="stacked"
-          isClearable={false}
-        />
-      ) : null}
       {allDatasets ? (
-        <CustomSelect
+        <ControlledSelect
           name="dataset_references"
           label="Dataset references"
           options={datasetOptions}
           tooltip="Referenced Dataset fides keys used by the system."
-          isMulti
-          variant="stacked"
+          mode="multiple"
+          layout="stacked"
         />
       ) : null}
       {includeCustomFields ? (
@@ -184,7 +164,6 @@ export const transformPrivacyDeclarationToFormValues = (
     ? {
         ...privacyDeclaration,
         customFieldValues: customFieldValues || {},
-        cookies: privacyDeclaration.cookies?.map((cookie) => cookie.name) ?? [],
       }
     : defaultInitialValues;
 
@@ -298,7 +277,6 @@ interface Props {
   initialValues?: PrivacyDeclarationResponse;
   privacyDeclarationId?: string;
   includeCustomFields?: boolean;
-  includeCookies?: boolean;
 }
 
 export const PrivacyDeclarationForm = ({

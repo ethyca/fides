@@ -5,10 +5,9 @@
 import type { ConsentMechanism } from "./ConsentMechanism";
 import type { PrivacyNoticeFramework } from "./PrivacyNoticeFramework";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
-import type { PrivacyNoticeResponse } from "./PrivacyNoticeResponse";
 
 /**
- * Limited Privacy Notice Schema for List View in Admin UI
+ * Limited Privacy Notice Schema for list View in Admin UI
  * For performance, only returns a subset of available fields for this view.
  */
 export type LimitedPrivacyNoticeResponseSchema = {
@@ -24,5 +23,5 @@ export type LimitedPrivacyNoticeResponseSchema = {
   systems_applicable?: boolean;
   disabled: boolean;
   framework?: PrivacyNoticeFramework | null;
-  children?: Array<PrivacyNoticeResponse> | null;
+  children?: Array<LimitedPrivacyNoticeResponseSchema>;
 };

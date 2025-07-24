@@ -4,6 +4,7 @@ from json import JSONDecodeError
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
 import pydash
+from fideslang.validation import FidesKey
 from loguru import logger
 from requests import Response
 from sqlalchemy.orm import Session
@@ -18,7 +19,6 @@ from fides.api.common_exceptions import (
 from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.policy import Policy
-from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.consentable_item import (
     ConsentableItem,
@@ -39,8 +39,8 @@ from fides.api.schemas.saas.shared_schemas import (
     SaaSRequestParams,
 )
 from fides.api.service.connectors.base_connector import BaseConnector
+from fides.api.service.connectors.query_configs.saas_query_config import SaaSQueryConfig
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
-from fides.api.service.connectors.saas_query_config import SaaSQueryConfig
 from fides.api.service.pagination.pagination_strategy import PaginationStrategy
 from fides.api.service.processors.post_processor_strategy.post_processor_strategy import (
     PostProcessorStrategy,
@@ -423,6 +423,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             response_data,
             identity_data,
             cast(Optional[List[PostProcessorStrategy]], saas_request.postprocessors),
+            response,
         )
 
         logger.info(
@@ -456,6 +457,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         response_data: Union[List[Dict[str, Any]], Dict[str, Any]],
         identity_data: Dict[str, Any],
         postprocessors: Optional[List[PostProcessorStrategy]],
+        response: Optional[Response] = None,
     ) -> List[Row]:
         """
         Runs the raw response through all available postprocessors for the request,
@@ -481,7 +483,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                     processed_data,
                     identity_data,
                     privacy_request,
+                    response,
                 )
+
             except Exception as exc:
                 raise PostProcessingException(
                     f"Exception occurred during the '{postprocessor.strategy}' postprocessor "  # type: ignore
@@ -513,6 +517,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         privacy_request: PrivacyRequest,
         request_task: RequestTask,
         rows: List[Row],
+        input_data: Optional[Dict[str, List[Any]]] = None,
     ) -> int:
         """Execute a masking request. Return the number of rows that have been updated."""
         self.set_privacy_request_state(privacy_request, node, request_task)
@@ -527,12 +532,18 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         self.set_privacy_request_state(privacy_request, node, request_task)
         query_config = self.query_config(node)
-        masking_request = query_config.get_masking_request()
+
+        session = Session.object_session(privacy_request)
+        masking_request = query_config.get_masking_request(session)
+        rows_updated = 0
+
         if not masking_request:
-            raise Exception(
-                f"Either no masking request configured or no valid masking request for {node.address.collection}. "
-                f"Check that MASKING_STRICT env var is appropriately set"
+            logger.info(
+                "No masking request found for the '{}' collection in {}",
+                self.current_collection_name,
+                self.saas_config.fides_key,  # type: ignore
             )
+            return rows_updated
 
         self.set_saas_request_state(masking_request)
 
@@ -561,9 +572,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
             rows,
             privacy_request.get_cached_identity_data(),
             cast(Optional[List[PostProcessorStrategy]], masking_request.postprocessors),
+            None,
         )
 
-        rows_updated = 0
         client = self.create_client()
         for row in rows:
             try:
@@ -579,8 +590,45 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                     )
                     continue
                 raise exc
-            client.send(prepared_request, masking_request.ignore_errors)
+            response = client.send(prepared_request, masking_request.ignore_errors)
             rows_updated += 1
+
+            # Run post-processors against the response from the masking request so that
+            # processors such as `extract_for_execution_log` can inspect the API
+            # response body (e.g. confirmation, ticket IDs, etc.).  We ignore the
+            # returned rows because masking responses are not used downstream.
+            try:
+                handled_response = self._handle_errored_response(
+                    masking_request, response
+                )
+                response_data = self._unwrap_response_data(
+                    masking_request, handled_response
+                )
+
+                # Only attempt post-processing if we have post-processors and the response body
+                # is JSON-serializable (dict or list of dicts).
+                if masking_request.postprocessors and isinstance(
+                    response_data, (dict, list)
+                ):
+                    self.process_response_data(
+                        response_data,
+                        privacy_request.get_cached_identity_data(),
+                        cast(
+                            Optional[List[PostProcessorStrategy]],
+                            masking_request.postprocessors,
+                        ),
+                        handled_response,
+                    )
+            except (
+                PostProcessingException,
+                Exception,
+            ) as exc:  # pylint: disable=broad-except
+                # We do not want a post-processing failure to prevent the masking
+                # operation itself from succeeding.
+                logger.warning(
+                    "Post-processing of masking request response failed: {}",
+                    exc,
+                )
 
         self.unset_connector_state()
 
@@ -685,15 +733,16 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         if notice_based_override_function:
             # follow the notice-based SaaS consent flow
-            notice_id_to_preference_map, filtered_preferences = (
-                build_user_consent_and_filtered_preferences_for_service(
-                    self.configuration.system,
-                    privacy_request,
-                    session,
-                    True,
-                )
+            (
+                notice_preference_map,
+                filtered_preferences,
+            ) = build_user_consent_and_filtered_preferences_for_service(
+                self.configuration.system,
+                privacy_request,
+                session,
+                True,
             )
-            if not notice_id_to_preference_map:
+            if not notice_preference_map:
                 logger.info(
                     "Skipping consent requests on node {}: No actionable consent preferences to propagate",
                     node.address.value,
@@ -721,12 +770,13 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 )
             consent_propagation_status = self._invoke_consent_request_override(
                 notice_based_override_function,
+                self.configuration.key,
                 self.create_client(),
                 policy,
                 privacy_request,
                 self.secrets,
                 identity_data,
-                notice_id_to_preference_map,  # type: ignore[arg-type]
+                notice_preference_map,  # type: ignore[arg-type]
                 notice_based_consentable_item_hierarchy,
             )
             if consent_propagation_status == ConsentPropagationStatus.no_update_needed:
@@ -798,6 +848,7 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                     )
                     consent_propagation_status = self._invoke_consent_request_override(
                         override_function,
+                        self.configuration.key,
                         self.create_client(),
                         policy,
                         privacy_request,
@@ -995,12 +1046,13 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
     @staticmethod
     def _invoke_consent_request_override(
         override_function: RequestOverrideFunction,
+        connection_key: FidesKey,
         client: AuthenticatedClient,
         policy: Policy,
         privacy_request: PrivacyRequest,
         secrets: Any,
         identity_data: Optional[Dict[str, Any]] = None,
-        notice_id_to_preference_map: Optional[Dict[str, UserConsentPreference]] = None,
+        notice_preference_map: Optional[Dict[str, Dict[str, Any]]] = None,
         consentable_items_hierarchy: Optional[List[ConsentableItem]] = None,
     ) -> ConsentPropagationStatus:
         """
@@ -1009,13 +1061,14 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
         """
         try:
             logger.info("Invoking consent request override function...")
-            if notice_id_to_preference_map:
+            if notice_preference_map:
                 # At this point, we've already validated the override function signature to take these params
                 return override_function(
+                    connection_key,
                     client,
                     secrets,
                     identity_data,
-                    notice_id_to_preference_map,
+                    notice_preference_map,
                     consentable_items_hierarchy,
                 )  # type: ignore
             return override_function(

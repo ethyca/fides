@@ -1,38 +1,31 @@
 /* eslint-disable no-nested-ternary */
 import "./fides.css";
 
-import { FunctionComponent, h, VNode } from "preact";
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "preact/hooks";
+import { FunctionComponent, VNode } from "preact";
+import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 
-import { useA11yDialog } from "../lib/a11y-dialog";
+import { A11yDialogAttributes, useA11yDialog } from "../lib/a11y-dialog";
 import { FIDES_OVERLAY_WRAPPER } from "../lib/consent-constants";
 import {
-  ComponentType,
   FidesCookie,
   FidesInitOptions,
   NoticeConsent,
   PrivacyExperience,
   PrivacyExperienceMinimal,
 } from "../lib/consent-types";
-import { defaultShowModal, shouldResurfaceConsent } from "../lib/consent-utils";
-import { dispatchFidesEvent } from "../lib/events";
-import { useHasMounted } from "../lib/hooks";
-import { useI18n } from "../lib/i18n/i18n-context";
+import { defaultShowModal, shouldResurfaceBanner } from "../lib/consent-utils";
+import { FidesEventOrigin } from "../lib/events";
+import { useElementById, useHasMounted } from "../lib/hooks";
+import { useEvent } from "../lib/providers/event-context";
 import { blockPageScrolling, unblockPageScrolling } from "../lib/ui-utils";
 import ConsentContent from "./ConsentContent";
 import ConsentModal from "./ConsentModal";
 
 interface RenderBannerProps {
+  attributes: A11yDialogAttributes;
   isOpen: boolean;
   isEmbedded: boolean;
   onClose: () => void;
-  onSave: () => void;
   onManagePreferencesClick: () => void;
 }
 
@@ -46,7 +39,7 @@ interface Props {
   experience: PrivacyExperience | PrivacyExperienceMinimal;
   cookie: FidesCookie;
   savedConsent: NoticeConsent;
-  onOpen: () => void;
+  onOpen: (origin?: string) => void;
   onDismiss: () => void;
   renderBanner: (props: RenderBannerProps) => VNode | null;
   renderModalContent?: () => VNode | null;
@@ -68,23 +61,34 @@ const Overlay: FunctionComponent<Props> = ({
   onVendorPageClick,
   isUiBlocking,
 }) => {
-  const { i18n } = useI18n();
+  const { setServingComponent, dispatchFidesEventAndClearTrigger } = useEvent();
   const delayBannerMilliseconds = 100;
-  const delayModalLinkMilliseconds = 200;
   const hasMounted = useHasMounted();
-
-  const showBanner = useMemo(
-    () =>
-      !options.fidesDisableBanner &&
-      experience.experience_config?.component !== ComponentType.MODAL &&
-      shouldResurfaceConsent(experience, cookie, savedConsent),
-    [cookie, savedConsent, experience, options],
-  );
-
-  const [bannerIsOpen, setBannerIsOpen] = useState(
-    options.fidesEmbed ? showBanner : false,
-  );
+  const modalLinkId = options.modalLinkId || "fides-modal-link";
+  const modalLinkIsDisabled =
+    !experience || !!options.fidesEmbed || options.modalLinkId === "";
+  const modalLink = useElementById(modalLinkId, modalLinkIsDisabled);
   const modalLinkRef = useRef<HTMLElement | null>(null);
+  const [disableBanner, setDisableBanner] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    if (disableBanner === null) {
+      // We check for disableBanner being `null` so that this only ever gets set
+      // during initialization and not with every change to the cookie/consent.
+      // This is also why exaustive-deps is being ignored below.
+      setDisableBanner(
+        !shouldResurfaceBanner(experience, cookie, savedConsent, options),
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disableBanner]);
+
+  // When fidesEmbed is enabled, this should be set immediately (don't wait for css animation support)
+  const [bannerIsOpen, setBannerIsOpen] = useState(
+    options.fidesEmbed
+      ? shouldResurfaceBanner(experience, cookie, savedConsent, options)
+      : false,
+  );
 
   useEffect(() => {
     if (isUiBlocking && bannerIsOpen) {
@@ -100,39 +104,62 @@ const Overlay: FunctionComponent<Props> = ({
 
   const dispatchCloseEvent = useCallback(
     ({ saved = false }: { saved?: boolean }) => {
-      dispatchFidesEvent("FidesModalClosed", cookie, options.debug, { saved });
       if (!saved) {
         onDismiss();
       }
+      dispatchFidesEventAndClearTrigger("FidesModalClosed", cookie, { saved });
+      setServingComponent(undefined);
     },
-    [cookie, onDismiss, options.debug],
+    [dispatchFidesEventAndClearTrigger, cookie, onDismiss, setServingComponent],
   );
 
-  const { instance, attributes } = useA11yDialog({
-    id: "fides-modal",
-    role: "alertdialog",
-    title: i18n.t("exp.title"),
+  const { instance: modalDialogInstance, attributes: modalDialogAttributes } =
+    useA11yDialog({
+      id: "fides-modal",
+      onClose: () => {
+        dispatchCloseEvent({ saved: false });
+      },
+    });
+
+  useEffect(() => {
+    if (modalDialogInstance) {
+      modalDialogInstance
+        .on("show", () => {
+          document.documentElement.style.overflowY = "hidden";
+        })
+        .on("hide", () => {
+          document.documentElement.style.overflowY = "";
+        });
+    }
+  }, [modalDialogInstance]);
+
+  const { attributes: bannerDialogAttributes } = useA11yDialog({
+    id: "fides-banner",
+    ariaHidden: !bannerIsOpen && !options.fidesEmbed,
     onClose: () => {
-      dispatchCloseEvent({ saved: false });
+      setBannerIsOpen(false);
     },
   });
 
-  const handleOpenModal = useCallback(() => {
-    if (options.fidesEmbed) {
-      setBannerIsOpen(false);
-    } else if (instance) {
-      setBannerIsOpen(false);
-      instance.show();
-      onOpen();
-    }
-  }, [instance, onOpen, options]);
+  const handleOpenModal = useCallback(
+    (origin = FidesEventOrigin.FIDES) => {
+      if (options.fidesEmbed) {
+        setBannerIsOpen(false);
+      } else if (modalDialogInstance) {
+        setBannerIsOpen(false);
+        modalDialogInstance.show();
+        onOpen(origin);
+      }
+    },
+    [modalDialogInstance, onOpen, options],
+  );
 
   const handleCloseModalAfterSave = useCallback(() => {
-    if (instance && !options.fidesEmbed) {
-      instance.hide();
+    if (modalDialogInstance && !options.fidesEmbed) {
+      modalDialogInstance.hide();
       dispatchCloseEvent({ saved: true });
     }
-  }, [instance, dispatchCloseEvent, options.fidesEmbed]);
+  }, [modalDialogInstance, dispatchCloseEvent, options.fidesEmbed]);
 
   useEffect(() => {
     if (options.fidesEmbed && !bannerIsOpen) {
@@ -143,73 +170,52 @@ const Overlay: FunctionComponent<Props> = ({
   // The delay is needed for the banner CSS animation
   useEffect(() => {
     const delayBanner = setTimeout(() => {
-      if (showBanner) {
+      if (!disableBanner) {
         setBannerIsOpen(true);
       }
     }, delayBannerMilliseconds);
     return () => clearTimeout(delayBanner);
-  }, [showBanner, setBannerIsOpen]);
+  }, [disableBanner, setBannerIsOpen]);
 
   useEffect(() => {
-    if (!experience || options.modalLinkId === "") {
-      // If empty string is explicitly set, do not attempt to bind the modal link to the click handler.
-      // developers using `Fides.showModal();` can use this to prevent polling for the modal link.
-      return () => {};
+    if (!!experience && !options.fidesEmbed) {
+      window.Fides.showModal = () => {
+        handleOpenModal(FidesEventOrigin.EXTERNAL);
+      };
     }
-    window.Fides.showModal = handleOpenModal;
+    return () => {
+      window.Fides.showModal = defaultShowModal;
+    };
+  }, [experience, handleOpenModal, options.fidesEmbed]);
+
+  useEffect(() => {
     document.body.classList.add("fides-overlay-modal-link-shown");
-    // use a short delay to give basic page a chance to render the modal link element
-    const delayModalLinkBinding = setTimeout(() => {
-      const modalLinkId = options.modalLinkId || "fides-modal-link";
-      fidesDebugger("Searching for modal link element...");
-      const bindModalLink = (modalLinkEl: HTMLElement) => {
+    // If empty string is explicitly set, do not attempt to bind the modal link to the click handler.
+    // developers using `Fides.showModal();` can use this to prevent polling for the modal link. Developers should always be able to rely on the .fides-overlay-modal-link-shown classname to show their custom modal link.
+    if (!modalLinkIsDisabled) {
+      if (modalLink) {
         fidesDebugger(
           "Modal link element found, updating it to show and trigger modal on click.",
         );
-        modalLinkRef.current = modalLinkEl;
+        modalLinkRef.current = modalLink;
         modalLinkRef.current.addEventListener("click", window.Fides.showModal);
-        // Update to show the pre-existing modal link in the DOM
+        // show the modal link in the DOM
         modalLinkRef.current.classList.add("fides-modal-link-shown");
-      };
-      const checkModalLink = () => {
-        let modalLinkEl = document.getElementById(modalLinkId);
-        if (!modalLinkEl) {
-          // Wait until the hosting page's link element is available before attempting to bind to the click handler. This is useful for dynamic (SPA) pages and pages that load the modal link element after the Fides script has loaded.
-          fidesDebugger(
-            `Modal link element not found (#${modalLinkId}), waiting for it to be added to the DOM...`,
-          );
-          let attempts = 0;
-          let interval = 200;
-          const checkInterval = setInterval(() => {
-            modalLinkEl = document.getElementById(modalLinkId);
-            if (modalLinkEl) {
-              clearInterval(checkInterval);
-              bindModalLink(modalLinkEl);
-            } else {
-              attempts += 1;
-              // if the container is not found after 5 attempts, increase the interval to reduce the polling frequency
-              if (attempts >= 5 && interval < 1000) {
-                interval += 200;
-              }
-            }
-          }, interval);
-        } else {
-          bindModalLink(modalLinkEl);
-        }
-      };
-      checkModalLink();
-    }, delayModalLinkMilliseconds);
+      } else {
+        fidesDebugger(`Searching for Modal link element #${modalLinkId}...`);
+      }
+    } else {
+      fidesDebugger("Modal Link is disabled for this experience.");
+    }
     return () => {
-      clearTimeout(delayModalLinkBinding);
       if (modalLinkRef.current) {
         modalLinkRef.current.removeEventListener(
           "click",
           window.Fides.showModal,
         );
       }
-      window.Fides.showModal = defaultShowModal;
     };
-  }, [options.modalLinkId, options.debug, handleOpenModal, experience]);
+  }, [modalLink, modalLinkIsDisabled, modalLinkId]);
 
   const handleManagePreferencesClick = (): void => {
     handleOpenModal();
@@ -226,33 +232,20 @@ const Overlay: FunctionComponent<Props> = ({
 
   return (
     <div id={FIDES_OVERLAY_WRAPPER} tabIndex={-1}>
-      {showBanner && bannerIsOpen && isUiBlocking && (
+      {!disableBanner && bannerIsOpen && isUiBlocking && (
         <div className="fides-modal-overlay" />
       )}
-
-      {showBanner
-        ? renderBanner({
-            isOpen: bannerIsOpen,
-            isEmbedded: options.fidesEmbed,
-            onClose: () => {
-              setBannerIsOpen(false);
-            },
-            onSave: () => {
-              setBannerIsOpen(false);
-            },
-            onManagePreferencesClick: handleManagePreferencesClick,
-          })
-        : null}
       {options.fidesEmbed ? (
         bannerIsOpen || !renderModalContent || !renderModalFooter ? null : (
           <ConsentContent
-            titleProps={attributes.title}
+            titleProps={modalDialogAttributes.title}
             renderModalFooter={() =>
               renderModalFooter({
                 onClose: handleCloseModalAfterSave,
                 isMobile: false,
               })
             }
+            onVendorPageClick={onVendorPageClick}
           >
             {renderModalContent()}
           </ConsentContent>
@@ -266,7 +259,7 @@ const Overlay: FunctionComponent<Props> = ({
          * full experience (and therefore the modal) is ready.
          */
         <ConsentModal
-          attributes={attributes}
+          attributes={modalDialogAttributes}
           dismissable={experience.experience_config.dismissable}
           onVendorPageClick={onVendorPageClick}
           renderModalFooter={() =>
@@ -281,6 +274,16 @@ const Overlay: FunctionComponent<Props> = ({
           {renderModalContent && renderModalContent()}
         </ConsentModal>
       )}
+      {!disableBanner &&
+        renderBanner({
+          attributes: bannerDialogAttributes,
+          isOpen: bannerIsOpen,
+          isEmbedded: options.fidesEmbed,
+          onClose: () => {
+            setBannerIsOpen(false);
+          },
+          onManagePreferencesClick: handleManagePreferencesClick,
+        })}
     </div>
   );
 };

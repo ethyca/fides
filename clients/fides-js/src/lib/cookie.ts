@@ -11,9 +11,11 @@ import {
   PrivacyExperience,
   PrivacyNoticeWithPreference,
   SaveConsentPreference,
+  UserConsentPreference,
 } from "./consent-types";
 import { resolveLegacyConsentValue } from "./consent-value";
 import {
+  processExternalConsentValue,
   transformConsentToFidesUserPreference,
   transformUserPreferenceToBoolean,
 } from "./shared-consent-utils";
@@ -50,7 +52,7 @@ export const consentCookieObjHasSomeConsentSet = (
     return false;
   }
   return Object.values(consent).some(
-    (val: boolean | undefined) => val !== undefined,
+    (val: boolean | UserConsentPreference | undefined) => val !== undefined,
   );
 };
 
@@ -144,10 +146,18 @@ export const getOrMakeFidesCookie = (
 
   // Check for an existing cookie for this device
   let parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
+
+  // If the cookie is saved using consent mechanism because of the fidesConsentFlagType override, we need to convert it to boolean for internal use
+  if (parsedCookie?.consent) {
+    const { consent } = parsedCookie;
+    Object.entries(consent).forEach(([key, value]) => {
+      consent[key] = processExternalConsentValue(value);
+    });
+  }
+
   if (!parsedCookie) {
     fidesDebugger(
       `No existing Fides consent cookie found, returning defaults.`,
-      parsedCookie,
     );
     return defaultCookie;
   }
@@ -270,11 +280,16 @@ export const updateExperienceFromCookieConsentNotices = ({
       return { ...notice, current_preference: preference };
     });
 
+  const updatedPrefetchedExperience = {
+    ...experience,
+    privacy_notices: noticesWithConsent,
+  };
+
   fidesDebugger(
     `Returning updated pre-fetched experience with user consent.`,
-    experience,
+    updatedPrefetchedExperience,
   );
-  return { ...experience, privacy_notices: noticesWithConsent };
+  return updatedPrefetchedExperience;
 };
 
 export const transformTcfPreferencesToCookieKeys = (
@@ -331,14 +346,34 @@ export const makeConsentDefaultsLegacy = (
 
 /**
  * Given a list of cookies, deletes them from the browser
+ * Optionally removes subdomain cookies as well
  */
-export const removeCookiesFromBrowser = (cookiesToRemove: CookiesType[]) => {
+export const removeCookiesFromBrowser = (
+  cookiesToRemove: CookiesType[],
+  removeSubdomainCookies: boolean = true,
+) => {
   cookiesToRemove.forEach((cookie) => {
     cookies.remove(cookie.name, {
       path: cookie.path ?? "/",
       domain: cookie.domain,
     });
+    if (removeSubdomainCookies) {
+      const { hostname } = window.location;
+      cookies.remove(cookie.name, { domain: `.${hostname}` });
+    }
   });
+};
+
+export const buildCookieConsentFromConsentPreferences = (
+  consentPreferencesToSave: SaveConsentPreference[],
+): NoticeConsent => {
+  const noticeMap = new Map<string, boolean>(
+    consentPreferencesToSave.map(({ notice, consentPreference }) => [
+      notice.notice_key,
+      transformUserPreferenceToBoolean(consentPreference),
+    ]),
+  );
+  return Object.fromEntries(noticeMap);
 };
 
 /**
@@ -348,16 +383,9 @@ export const updateCookieFromNoticePreferences = async (
   oldCookie: FidesCookie,
   consentPreferencesToSave: SaveConsentPreference[],
 ): Promise<FidesCookie> => {
-  const noticeMap = new Map<string, boolean>(
-    consentPreferencesToSave.map(({ notice, consentPreference }) => [
-      notice.notice_key,
-      transformUserPreferenceToBoolean(consentPreference),
-    ]),
-  );
-  const consentCookieKey: NoticeConsent = Object.fromEntries(noticeMap);
   return {
     ...oldCookie,
-    consent: consentCookieKey,
+    consent: buildCookieConsentFromConsentPreferences(consentPreferencesToSave),
   };
 };
 
@@ -367,7 +395,7 @@ export const updateCookieFromNoticePreferences = async (
  * default values). This is used during initialization to override saved cookie
  * values with newer values from the experience.
  */
-export const getConsentStateFromExperience = (
+const getConsentStateFromExperience = (
   experience: PrivacyExperience,
 ): NoticeConsent => {
   const consent: NoticeConsent = {};

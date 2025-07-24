@@ -1,0 +1,32 @@
+{
+  "items": [
+    {
+      "urn": "bigquery_monitor.prj-bigquery-111111",
+      "name": "prj-bigquery-111111",
+      "diff_status": "addition",
+      "child_diff_status": { "addition": true }
+    },
+    {
+      "urn": "bigquery_monitor.prj-bigquery-222222",
+      "name": "prj-bigquery-222222",
+      "diff_status": "classifying",
+      "child_diff_status": { "classifying": true }
+    },
+    {
+      "urn": "bigquery_monitor.prj-bigquery-333333",
+      "name": "prj-bigquery-333333",
+      "diff_status": "classification_addition",
+      "child_diff_status": { "classification_addition": true }
+    },
+    {
+      "urn": "bigquery_monitor.prj-bigquery-444444",
+      "name": "prj-bigquery-444444",
+      "diff_status": "monitored",
+      "child_diff_status": {}
+    }
+  ],
+  "total": 2,
+  "page": 1,
+  "size": 25,
+  "pages": 1
+}

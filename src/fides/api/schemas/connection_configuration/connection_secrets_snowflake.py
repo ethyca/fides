@@ -49,13 +49,15 @@ class SnowflakeSchema(ConnectionConfigSecretsSchema):
         title="Warehouse",
         description="The name of the Snowflake warehouse where your queries will be executed.",
     )
-    database_name: str = Field(
+    database_name: Optional[str] = Field(
+        default=None,
         title="Database",
-        description="The name of the Snowflake database you want to connect to.",
+        description="Only provide a database name to scope discovery monitors and privacy request automation to a specific database. In most cases, this can be left blank.",
     )
-    schema_name: str = Field(
+    schema_name: Optional[str] = Field(
+        default=None,
         title="Schema",
-        description="The name of the Snowflake schema within the selected database.",
+        description="Only provide a schema to scope discovery monitors and privacy request automation to a specific schema. In most cases, this can be left blank.",
     )
     role_name: Optional[str] = Field(
         title="Role",
@@ -67,8 +69,6 @@ class SnowflakeSchema(ConnectionConfigSecretsSchema):
         "account_identifier",
         "user_login_name",
         "warehouse_name",
-        "database_name",
-        "schema_name",
     ]
 
     @model_validator(mode="after")

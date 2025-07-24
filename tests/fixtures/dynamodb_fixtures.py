@@ -63,8 +63,17 @@ def dynamodb_connection_config(
         "aws_assume_role_arn"
     ) or os.environ.get("DYNAMODB_ASSUME_ROLE_ARN")
 
-    if not aws_access_key_id or not aws_secret_access_key or not region:
-        raise RuntimeError("DynamoDB env vars must be set!")
+    if not aws_access_key_id:
+        raise RuntimeError("DynamoDB access key ID must be set!")
+
+    if not aws_secret_access_key:
+        raise RuntimeError("DynamoDB secret access key must be set!")
+
+    if not region:
+        raise RuntimeError("DynamoDB region must be set!")
+
+    if not aws_assume_role_arn:
+        raise RuntimeError("DynamoDB assume role ARN must be set!")
 
     if region is not None:
         schema = DynamoDBSchema(

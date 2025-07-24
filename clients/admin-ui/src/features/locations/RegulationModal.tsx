@@ -49,7 +49,7 @@ const RegulationModal = ({
         <Header title="Select regulations" />
         <ModalBody p={6} maxHeight="70vh" overflowY="auto">
           <HeaderCheckboxRow
-            title={continentName}
+            title={continentName as string}
             allSelected={allSelected}
             onToggleAll={handleToggleAll}
             numSelected={numSelected}

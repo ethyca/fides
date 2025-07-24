@@ -20,10 +20,9 @@ from fides.api.models import (
     dry_update_data,
     update_if_modified,
 )
+from fides.api.models.asset import Asset
 from fides.api.models.location_regulation_selections import DeprecatedNoticeRegion
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
-    Cookies,
-    PrivacyDeclaration,
     System,
     get_system_data_uses,
 )
@@ -191,24 +190,20 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         raise Exception("Invalid notice consent mechanism.")
 
     @property
-    def cookies(self) -> List[Cookies]:
-        """Return relevant cookie names (via the data use)"""
+    def cookies(self) -> List[Asset]:
+        """Return relevant assets of type 'cookie' (via the data use)"""
         db = Session.object_session(self)
-        return (
-            db.query(Cookies)
-            .join(
-                PrivacyDeclaration,
-                PrivacyDeclaration.id == Cookies.privacy_declaration_id,
-            )
-            .filter(
-                or_(
-                    *[
-                        PrivacyDeclaration.data_use.like(f"{notice_use}%")
-                        for notice_use in self.data_uses
-                    ]
-                )
-            )
-        ).all()
+        or_queries = [
+            f"array_to_string(data_uses, ',') ILIKE '{data_use}%'"
+            for data_use in self.data_uses
+        ]
+
+        query = db.query(Asset).filter(
+            Asset.asset_type == "Cookie",
+            or_(*[text(query) for query in or_queries]),
+        )
+
+        return query.all()
 
     @property
     def calculated_systems_applicable(self) -> bool:

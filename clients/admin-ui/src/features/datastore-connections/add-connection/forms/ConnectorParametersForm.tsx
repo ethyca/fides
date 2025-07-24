@@ -7,7 +7,6 @@ import {
 import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
 import {
   AntButton as Button,
-  CircleHelpIcon,
   Flex,
   FormControl,
   FormErrorMessage,
@@ -20,13 +19,14 @@ import {
   NumberInputField,
   NumberInputStepper,
   Textarea,
-  Tooltip,
   VStack,
 } from "fidesui";
 import { Field, FieldInputProps, Form, Formik, FormikProps } from "formik";
 import React, { useEffect, useRef } from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import { FIDES_DATASET_REFERENCE } from "~/features/common/form/useFormFieldsFromSchema";
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { ConnectionType } from "~/types/api";
 
 import {
@@ -34,8 +34,6 @@ import {
   SaasConnectorParametersFormFields,
 } from "../types";
 import { fillInDefaults } from "./helpers";
-
-const FIDES_DATASET_REFERENCE = "#/definitions/FidesDatasetReference";
 
 type ConnectorParametersFormProps = {
   data: ConnectionTypeSecretSchemaResponse;
@@ -63,7 +61,7 @@ const ConnectorParametersForm = ({
   isSubmitting = false,
   onSaveClick,
   onTestConnectionClick,
-  testButtonLabel = "Test connection",
+  testButtonLabel = "Test integration",
 }: ConnectorParametersFormProps) => {
   const mounted = useRef(false);
   const { handleError } = useAPIHelper();
@@ -172,21 +170,9 @@ const ConnectorParametersForm = ({
             )}
             <FormErrorMessage>{form.errors[key]}</FormErrorMessage>
           </VStack>
-          <Tooltip
-            aria-label={item.description}
-            hasArrow
-            label={item.description}
-            placement="right-start"
-            openDelay={500}
-          >
-            <Flex
-              alignItems="center"
-              h="32px"
-              visibility={item.description ? "visible" : "hidden"}
-            >
-              <CircleHelpIcon marginLeft="8px" _hover={{ cursor: "pointer" }} />
-            </Flex>
-          </Tooltip>
+          <Flex alignItems="center" h={8} ml={2}>
+            <InfoTooltip label={item.description} />
+          </Flex>
         </FormControl>
       )}
     </Field>
@@ -265,7 +251,7 @@ const ConnectorParametersForm = ({
                   isInvalid={props.errors.name && props.touched.name}
                 >
                   {getFormLabel("name", "Name")}
-                  <VStack align="flex-start" w="inherit">
+                  <VStack align="flex-start" w="inherit" mr="6">
                     <Input
                       {...field}
                       autoComplete="off"
@@ -279,9 +265,6 @@ const ConnectorParametersForm = ({
                     />
                     <FormErrorMessage>{props.errors.name}</FormErrorMessage>
                   </VStack>
-                  <Flex alignItems="center" h="32px" visibility="hidden">
-                    <CircleHelpIcon marginLeft="8px" />
-                  </Flex>
                 </FormControl>
               )}
             </Field>
@@ -299,10 +282,8 @@ const ConnectorParametersForm = ({
                     resize="none"
                     size="sm"
                     value={field.value || ""}
+                    mr="6"
                   />
-                  <Flex alignItems="center" h="32px" visibility="hidden">
-                    <CircleHelpIcon marginLeft="8px" />
-                  </Flex>
                 </FormControl>
               )}
             </Field>
@@ -336,20 +317,9 @@ const ConnectorParametersForm = ({
                       {props.errors.instance_key}
                     </FormErrorMessage>
                   </VStack>
-                  <Tooltip
-                    aria-label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this connection."
-                    hasArrow
-                    label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this connection."
-                    placement="right-start"
-                    openDelay={500}
-                  >
-                    <Flex alignItems="center" h="32px">
-                      <CircleHelpIcon
-                        marginLeft="8px"
-                        _hover={{ cursor: "pointer" }}
-                      />
-                    </Flex>
-                  </Tooltip>
+                  <Flex alignItems="center" h={8} ml={2}>
+                    <InfoTooltip label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this connection." />
+                  </Flex>
                 </FormControl>
               )}
             </Field>
@@ -361,11 +331,12 @@ const ConnectorParametersForm = ({
               }
               return getFormField(key, item);
             })}
-            <div className="flex gap-2">
+            <Flex gap={2}>
               <Button
                 disabled={!connection?.key}
                 loading={result.isLoading || result.isFetching}
                 onClick={handleTestConnectionClick}
+                data-testid="test-connection-button"
               >
                 {testButtonLabel}
               </Button>
@@ -377,7 +348,7 @@ const ConnectorParametersForm = ({
               >
                 Save
               </Button>
-            </div>
+            </Flex>
           </VStack>
         </Form>
       )}

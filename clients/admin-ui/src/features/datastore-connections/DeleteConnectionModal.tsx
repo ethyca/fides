@@ -15,7 +15,7 @@ import {
 import { useRouter } from "next/router";
 import React from "react";
 
-import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
+import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 
 import { useDeleteDatastoreConnectionMutation } from "./datastore-connection.slice";
 

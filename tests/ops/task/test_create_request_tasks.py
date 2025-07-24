@@ -10,13 +10,10 @@ from fides.api.graph.config import ROOT_COLLECTION_ADDRESS, TERMINATOR_ADDRESS
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal, TraversalNode
 from fides.api.models.datasetconfig import convert_dataset_to_graph
-from fides.api.models.privacy_request import (
-    ExecutionLog,
-    ExecutionLogStatus,
-    PrivacyRequestStatus,
-    RequestTask,
-)
+from fides.api.models.privacy_request import ExecutionLog, RequestTask
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.create_request_tasks import (
     collect_tasks_fn,
     get_existing_ready_tasks,
@@ -54,6 +51,7 @@ payment_card_serialized_collection = {
             "data_type_converter": "None",
             "return_all_elements": None,
             "custom_request_field": None,
+            "masking_strategy_override": None,
         },
         {
             "name": "ccn",
@@ -67,6 +65,7 @@ payment_card_serialized_collection = {
             "data_type_converter": "None",
             "return_all_elements": None,
             "custom_request_field": None,
+            "masking_strategy_override": None,
         },
         {
             "name": "code",
@@ -80,6 +79,7 @@ payment_card_serialized_collection = {
             "data_type_converter": "None",
             "return_all_elements": None,
             "custom_request_field": None,
+            "masking_strategy_override": None,
         },
         {
             "name": "customer_id",
@@ -93,6 +93,7 @@ payment_card_serialized_collection = {
             "data_type_converter": "None",
             "return_all_elements": None,
             "custom_request_field": None,
+            "masking_strategy_override": None,
         },
         {
             "name": "id",
@@ -106,6 +107,7 @@ payment_card_serialized_collection = {
             "data_type_converter": "None",
             "return_all_elements": None,
             "custom_request_field": None,
+            "masking_strategy_override": None,
         },
         {
             "name": "name",
@@ -119,6 +121,7 @@ payment_card_serialized_collection = {
             "data_type_converter": "None",
             "return_all_elements": None,
             "custom_request_field": None,
+            "masking_strategy_override": None,
         },
         {
             "name": "preferred",
@@ -132,6 +135,7 @@ payment_card_serialized_collection = {
             "data_type_converter": "None",
             "return_all_elements": None,
             "custom_request_field": None,
+            "masking_strategy_override": None,
         },
     ],
     "erase_after": [],
@@ -155,6 +159,7 @@ payment_card_serialized_traversal_details = {
         ]
     ],
     "dataset_connection_key": "my_postgres_db_1",
+    "skipped_nodes": None,
 }
 
 
@@ -305,6 +310,7 @@ class TestPersistAccessRequestTasks:
                     "data_type_converter": "object_id",
                     "return_all_elements": None,
                     "custom_request_field": None,
+                    "masking_strategy_override": None,
                 },
                 {
                     "name": "customer_identifiers",
@@ -326,6 +332,7 @@ class TestPersistAccessRequestTasks:
                             "data_type_converter": "string",
                             "return_all_elements": None,
                             "custom_request_field": None,
+                            "masking_strategy_override": None,
                         },
                         "derived_phone": {
                             "name": "derived_phone",
@@ -339,6 +346,7 @@ class TestPersistAccessRequestTasks:
                             "data_type_converter": "string",
                             "return_all_elements": True,
                             "custom_request_field": None,
+                            "masking_strategy_override": None,
                         },
                         "derived_emails": {
                             "name": "derived_emails",
@@ -352,6 +360,7 @@ class TestPersistAccessRequestTasks:
                             "data_type_converter": "string",
                             "return_all_elements": None,
                             "custom_request_field": None,
+                            "masking_strategy_override": None,
                         },
                     },
                     "length": None,
@@ -364,6 +373,7 @@ class TestPersistAccessRequestTasks:
                     "data_type_converter": "object",
                     "return_all_elements": None,
                     "custom_request_field": None,
+                    "masking_strategy_override": None,
                 },
                 {
                     "name": "derived_interests",
@@ -377,6 +387,7 @@ class TestPersistAccessRequestTasks:
                     "data_type_converter": "string",
                     "return_all_elements": None,
                     "custom_request_field": None,
+                    "masking_strategy_override": None,
                 },
             ],
             "erase_after": [],
@@ -495,7 +506,7 @@ class TestPersistAccessRequestTasks:
         assert "dataset_with_unreachable_collections:report" in str(err.value)
 
         db.refresh(privacy_request)
-        privacy_request.status == PrivacyRequestStatus.error
+        assert privacy_request.status == PrivacyRequestStatus.error
 
         # We expect two error logs, one per unreachable collection
         error_logs = privacy_request.execution_logs.filter(
@@ -505,14 +516,20 @@ class TestPersistAccessRequestTasks:
         error_logs = sorted(
             error_logs, key=lambda execution_log: execution_log.collection_name
         )
-        assert error_logs[0].dataset_name == "dataset_with_unreachable_collections"
-        assert error_logs[0].collection_name == "login"
+        assert error_logs[0].dataset_name == "Dataset traversal"
+        assert (
+            error_logs[0].collection_name
+            == "dataset_with_unreachable_collections.login"
+        )
         assert (
             error_logs[0].message
             == "Node dataset_with_unreachable_collections:login is not reachable"
         )
-        assert error_logs[1].dataset_name == "dataset_with_unreachable_collections"
-        assert error_logs[1].collection_name == "report"
+        assert error_logs[1].dataset_name == "Dataset traversal"
+        assert (
+            error_logs[1].collection_name
+            == "dataset_with_unreachable_collections.report"
+        )
         assert (
             error_logs[1].message
             == "Node dataset_with_unreachable_collections:report is not reachable"
@@ -913,6 +930,7 @@ class TestPersistErasureRequestTasks:
                 "data_type_converter": "integer",
                 "return_all_elements": None,
                 "custom_request_field": None,
+                "masking_strategy_override": None,
             },
             {
                 "name": "email",
@@ -926,6 +944,7 @@ class TestPersistErasureRequestTasks:
                 "data_type_converter": "None",
                 "return_all_elements": None,
                 "custom_request_field": None,
+                "masking_strategy_override": None,
             },
         ]
         assert not serialized_collection["skip_processing"]
@@ -1110,11 +1129,9 @@ class TestPersistConsentRequestTasks:
         self,
         db,
         privacy_request,
-        google_analytics_dataset_config_no_secrets,
+        saas_example_dataset_config,
     ):
-        graph = build_consent_dataset_graph(
-            [google_analytics_dataset_config_no_secrets]
-        )
+        graph = build_consent_dataset_graph([saas_example_dataset_config])
 
         traversal_nodes = {}
         # Unlike erasure and access graphs, we don't call traversal.traverse, but build a simpler
@@ -1133,11 +1150,11 @@ class TestPersistConsentRequestTasks:
         assert root_task.action_type == ActionType.consent
         assert root_task.upstream_tasks == []
         assert root_task.downstream_tasks == [
-            "google_analytics_instance:google_analytics_instance"
+            "saas_connector_example:saas_connector_example"
         ]
         assert root_task.all_descendant_tasks == [
             "__TERMINATE__:__TERMINATE__",
-            "google_analytics_instance:google_analytics_instance",
+            "saas_connector_example:saas_connector_example",
         ]
         assert root_task.status == ExecutionLogStatus.complete
         assert root_task.access_data == [{"ga_client_id": "test_id"}]
@@ -1149,7 +1166,7 @@ class TestPersistConsentRequestTasks:
         assert terminator_task.is_terminator_task
         assert terminator_task.action_type == ActionType.consent
         assert terminator_task.upstream_tasks == [
-            "google_analytics_instance:google_analytics_instance"
+            "saas_connector_example:saas_connector_example"
         ]
         assert terminator_task.downstream_tasks == []
         assert terminator_task.all_descendant_tasks == []
@@ -1157,7 +1174,7 @@ class TestPersistConsentRequestTasks:
 
         ga_task = privacy_request.consent_tasks.filter(
             RequestTask.collection_address
-            == "google_analytics_instance:google_analytics_instance",
+            == "saas_connector_example:saas_connector_example",
         ).first()
         assert not ga_task.is_root_task
         assert not ga_task.is_terminator_task
@@ -1171,21 +1188,22 @@ class TestPersistConsentRequestTasks:
 
         # The collection is a fake one for Consent, since requests happen at the dataset level
         assert ga_task.collection == {
-            "name": "google_analytics_instance",
+            "name": "saas_connector_example",
             "after": [],
             "fields": [],
             "erase_after": [],
-            "grouped_inputs": [],
-            "skip_processing": False,
-            "data_categories": [],
-            "masking_strategy_override": None,
             "partitioning": None,
+            "grouped_inputs": [],
+            "data_categories": [],
+            "skip_processing": False,
+            "masking_strategy_override": None,
         }
         assert ga_task.traversal_details == {
             "input_keys": [],
             "incoming_edges": [],
             "outgoing_edges": [],
-            "dataset_connection_key": "google_analytics_instance",
+            "dataset_connection_key": "saas_connector_example",
+            "skipped_nodes": None,
         }
 
     @mock.patch(

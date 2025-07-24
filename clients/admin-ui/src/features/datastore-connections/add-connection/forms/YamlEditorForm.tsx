@@ -3,6 +3,7 @@ import {
   AntButton as Button,
   ConfirmationModal,
   Flex,
+  HStack,
   Text,
   useDisclosure,
   VStack,
@@ -12,7 +13,7 @@ import React, { Fragment, useRef, useState } from "react";
 
 import { Editor, isYamlException } from "~/features/common/yaml/helpers";
 import YamlError from "~/features/common/yaml/YamlError";
-import { useGetAllDatasetsQuery } from "~/features/dataset";
+import { useGetAllFilteredDatasetsQuery } from "~/features/dataset";
 import { Dataset } from "~/types/api";
 
 type YamlEditorFormProps = {
@@ -39,7 +40,9 @@ const YamlEditorForm = ({
   const [isTouched, setIsTouched] = useState(false);
   const [isEmptyState, setIsEmptyState] = useState(!yamlData);
   const warningDisclosure = useDisclosure();
-  const { data: allDatasets } = useGetAllDatasetsQuery();
+  const { data: allDatasets } = useGetAllFilteredDatasetsQuery({
+    minimal: true,
+  });
   const [overWrittenKeys, setOverWrittenKeys] = useState<string[]>([]);
 
   const validate = (value: string) => {
@@ -112,7 +115,7 @@ const YamlEditorForm = ({
           }}
           theme="light"
         />
-        <div>
+        <HStack justifyContent="flex-end" pr={6}>
           {onCancel && <Button onClick={onCancel}>Cancel</Button>}
           <Button
             type="primary"
@@ -124,7 +127,7 @@ const YamlEditorForm = ({
           >
             Save
           </Button>
-        </div>
+        </HStack>
       </VStack>
       {isTouched && (isEmptyState || yamlError) && (
         <YamlError isEmptyState={isEmptyState} yamlError={yamlError} />

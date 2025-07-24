@@ -1,0 +1,51 @@
+dataset:
+  - fides_key: unvisited_edge
+    name: Dataset with unvisited edge
+    description: A dataset with three collections where one has an email identity, and the other two are linked to each other but not to the identity collection
+    collections:
+      - name: customer_profiles
+        fields:
+          - name: id
+            data_categories: [user.unique_id]
+          - name: email
+            data_categories: [user.contact.email]
+            fides_meta:
+              identity: email
+              data_type: string
+          - name: name
+            data_categories: [user.name]
+      - name: customer_accounts
+        fields:
+          - name: account_id
+            data_categories: [user.unique_id]
+            fides_meta:
+              identity: user_id
+              data_type: string
+          - name: status
+            data_categories: [system.operations]
+      - name: customer_addresses
+        fields:
+          - name: id
+            data_categories: [system.operations]
+          - name: customer_id
+            data_categories: [user.unique_id]
+            fides_meta:
+              references:
+                - dataset: unvisited_edge
+                  field: customer_profiles.id
+                  direction: from
+          - name: address
+            data_categories: [user.contact.address.street]
+      - name: purchase_history
+        fields:
+          - name: id
+            data_categories: [system.operations]
+          - name: account_id
+            data_categories: [user.unique_id]
+            fides_meta:
+              references:
+                - dataset: unvisited_edge
+                  field: customer_accounts.account_id
+                  direction: from
+          - name: total
+            data_categories: [system.operations]

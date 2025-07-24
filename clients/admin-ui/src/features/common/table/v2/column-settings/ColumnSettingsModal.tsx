@@ -1,6 +1,7 @@
 import { Table as TableInstance } from "@tanstack/react-table";
 import {
   AntButton as Button,
+  AntFlex,
   Box,
   Modal,
   ModalBody,
@@ -9,15 +10,11 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  Tab,
-  TabList,
-  TabPanel,
-  TabPanels,
-  Tabs,
   Text,
 } from "fidesui";
 import { useCallback, useMemo } from "react";
 
+import { getColumnHeaderText } from "../util";
 import {
   DraggableColumn,
   DraggableColumnList,
@@ -28,6 +25,7 @@ type ColumnSettingsModalProps<T> = {
   isOpen: boolean;
   onClose: () => void;
   headerText: string;
+  columnNameMap: Record<string, string>;
   prefixColumns: string[];
   tableInstance: TableInstance<T>;
   savedCustomReportId: string;
@@ -40,6 +38,7 @@ export const ColumnSettingsModal = <T,>({
   onClose,
   headerText,
   tableInstance,
+  columnNameMap,
   prefixColumns,
   savedCustomReportId,
   onColumnOrderChange,
@@ -52,7 +51,10 @@ export const ColumnSettingsModal = <T,>({
         .filter((c) => !prefixColumns.includes(c.id))
         .map((c) => ({
           id: c.id,
-          displayText: c.columnDef?.meta?.displayText || c.id,
+          displayText: getColumnHeaderText({
+            columnNameMap,
+            columnId: c.id,
+          }),
           isVisible:
             tableInstance.getState().columnVisibility[c.id] ?? c.getIsVisible(),
         }))
@@ -74,7 +76,7 @@ export const ColumnSettingsModal = <T,>({
         }),
     // watch savedCustomReportId so that when a saved report is loaded, we can update these column definitions to match
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [savedCustomReportId],
+    [savedCustomReportId, columnNameMap],
   );
   const columnEditor = useEditableColumns({
     columns: initialColumns,
@@ -111,23 +113,16 @@ export const ColumnSettingsModal = <T,>({
         <ModalHeader pb={0}>{headerText}</ModalHeader>
         <ModalCloseButton data-testid="column-settings-close-button" />
         <ModalBody>
-          <Text fontSize="sm" color="gray.500" mb={2}>
+          <Text fontSize="sm" color="gray.500" mb={4}>
             You can toggle columns on and off to hide or show them in the table.
             Additionally, you can drag columns up or down to change the order
           </Text>
-          <Tabs colorScheme="complimentary">
-            <TabList>
-              <Tab color="complimentary.500">Columns</Tab>
-            </TabList>
-            <TabPanels>
-              <TabPanel p={0} pt={4} maxHeight="270px" overflowY="scroll">
-                <DraggableColumnList
-                  columns={columnEditor.columns}
-                  columnEditor={columnEditor}
-                />
-              </TabPanel>
-            </TabPanels>
-          </Tabs>
+          <AntFlex className="max-h-96 overflow-y-auto">
+            <DraggableColumnList
+              columns={columnEditor.columns}
+              columnEditor={columnEditor}
+            />
+          </AntFlex>
         </ModalBody>
         <ModalFooter>
           <Box display="flex" justifyContent="space-between" width="100%">

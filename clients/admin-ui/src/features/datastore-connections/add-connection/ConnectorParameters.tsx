@@ -7,7 +7,7 @@ import { useRouter } from "next/router";
 import React, { useCallback, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/v2/routes";
+import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/routes";
 import { SystemType } from "~/types/api";
 
 import { ConnectorParameters as DatabaseConnectorParameters } from "./database/ConnectorParameters";

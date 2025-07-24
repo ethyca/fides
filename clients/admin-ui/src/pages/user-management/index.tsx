@@ -1,16 +1,21 @@
-import { Heading } from "fidesui";
 import type { NextPage } from "next";
 import React from "react";
 import UserManagementTable from "user-management/UserManagementTable";
 import UserManagementTableActions from "user-management/UserManagementTableActions";
 
 import Layout from "~/features/common/Layout";
+import PageHeader from "~/features/common/PageHeader";
 
 const UserManagement: NextPage = () => (
   <Layout title="User Management">
-    <Heading fontSize="2xl" fontWeight="semibold" mb={4}>
-      User Management
-    </Heading>
+    <PageHeader
+      heading="Users"
+      breadcrumbItems={[
+        {
+          title: "All users",
+        },
+      ]}
+    />
     <UserManagementTableActions />
     <UserManagementTable />
   </Layout>

@@ -17,10 +17,12 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.detection_discovery.core import MonitorConfig
+from fides.api.models.manual_task import ManualTask
 from fides.api.models.manual_webhook import AccessManualWebhook
-from fides.api.models.privacy_request import PrivacyRequestStatus
 from fides.api.models.sql_models import Dataset
 from fides.api.oauth.roles import APPROVER, OWNER, VIEWER
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
@@ -769,6 +771,101 @@ class TestPatchConnections:
         ).first()
         assert connection_config.enabled_actions is None
 
+    def test_patch_connection_manual_task_auto_creation(
+        self, url, api_client, db: Session, generate_auth_header
+    ):
+        """Test that creating a manual_task connection config automatically creates a ManualTask"""
+
+        payload = [
+            {
+                "name": "My Manual Task Connection",
+                "key": "manual_task_key",
+                "connection_type": "manual_task",
+                "access": "write",
+            }
+        ]
+
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert 200 == response.status_code
+        body = json.loads(response.text)
+        assert body["succeeded"][0]["connection_type"] == "manual_task"
+
+        # Verify the connection config was created
+        connection_config = ConnectionConfig.get_by(
+            db, field="key", value="manual_task_key"
+        )
+        assert connection_config is not None
+        assert connection_config.connection_type == ConnectionType.manual_task
+
+        # Verify a ManualTask was automatically created and associated
+        manual_task = (
+            db.query(ManualTask)
+            .filter(
+                ManualTask.parent_entity_id == connection_config.id,
+                ManualTask.parent_entity_type == "connection_config",
+            )
+            .first()
+        )
+        assert manual_task is not None
+
+        # Verify the relationship works both ways
+        assert connection_config.manual_task == manual_task
+
+    def test_delete_connection_manual_task_cascades(
+        self, url, api_client, db: Session, generate_auth_header
+    ):
+        """Test that deleting a manual_task connection config also deletes the associated ManualTask"""
+
+        # First create a manual task connection config
+        payload = [
+            {
+                "name": "Manual Task Connection To Delete",
+                "key": "manual_task_delete_key",
+                "connection_type": "manual_task",
+                "access": "write",
+            }
+        ]
+
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert 200 == response.status_code
+
+        # Verify the connection config and manual task were created
+        connection_config = ConnectionConfig.get_by(
+            db, field="key", value="manual_task_delete_key"
+        )
+        assert connection_config is not None
+
+        manual_task = (
+            db.query(ManualTask)
+            .filter(
+                ManualTask.parent_entity_id == connection_config.id,
+                ManualTask.parent_entity_type == "connection_config",
+            )
+            .first()
+        )
+        assert manual_task is not None
+        manual_task_id = manual_task.id
+
+        # Now delete the connection config (need DELETE scope)
+        delete_auth_header = generate_auth_header(scopes=[CONNECTION_DELETE])
+        delete_response = api_client.delete(
+            f"{url}/{connection_config.key}",
+            headers=delete_auth_header,
+        )
+        assert delete_response.status_code == 204
+
+        # Verify the connection config is deleted
+        deleted_connection_config = ConnectionConfig.get_by(
+            db, field="key", value="manual_task_delete_key"
+        )
+        assert deleted_connection_config is None
+
+        # Verify the manual task is also deleted due to cascade
+        deleted_manual_task = ManualTask.get_by(db, field="id", value=manual_task_id)
+        assert deleted_manual_task is None
+
 
 class TestGetConnections:
     @pytest.fixture(scope="function")
@@ -1226,6 +1323,7 @@ class TestGetConnection:
             "secrets",
             "authorized",
             "enabled_actions",
+            "system_key",
         }
 
         assert response_body["key"] == "my_postgres_db_1"
@@ -1341,14 +1439,14 @@ class TestDeleteConnection:
         generate_auth_header,
     ) -> None:
         secrets = {
-            "domain": "test_sendgrid_domain",
-            "api_key": "test_sendgrid_api_key",
+            "domain": "test_hubspot_domain",
+            "private_app_token": "test_hubspot_api_key",
         }
         connection_config, dataset_config = instantiate_connector(
             db,
-            "sendgrid",
-            "secondary_sendgrid_instance",
-            "Sendgrid ConnectionConfig description",
+            "hubspot",
+            "secondary_hubspot_instance",
+            "hubspot ConnectionConfig description",
             secrets,
         )
         dataset = dataset_config.ctl_dataset
@@ -1364,6 +1462,33 @@ class TestDeleteConnection:
         )
         assert db.query(DatasetConfig).filter_by(id=dataset_config.id).first() is None
         assert db.query(Dataset).filter_by(id=dataset.id).first() is None
+
+    def test_delete_connection_config_with_related_monitors(
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_role_header,
+        connection_config: ConnectionConfig,
+        monitor_config: MonitorConfig,
+        monitor_config_2: MonitorConfig,
+    ):
+        auth_header = generate_role_header(roles=[OWNER])
+
+        # Save ids of monitor configs before deletion to use in query
+        id_monitor_config_1 = monitor_config.id
+        id_monitor_config_2 = monitor_config_2.id
+
+        response = api_client.delete(
+            f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config.key}", headers=auth_header
+        )
+
+        assert response.status_code == 204
+        assert (
+            db.query(ConnectionConfig).filter_by(key=connection_config.key).first()
+        ) is None
+
+        assert db.query(MonitorConfig).filter_by(id=id_monitor_config_1).first() is None
+        assert db.query(MonitorConfig).filter_by(id=id_monitor_config_2).first() is None
 
 
 class TestPutConnectionConfigSecrets:
@@ -1423,7 +1548,7 @@ class TestPutConnectionConfigSecrets:
         assert resp.status_code == 422
         assert (
             resp.json()["detail"][0]["msg"]
-            == "Value error, PostgreSQLSchema must be supplied all of: ['host', 'dbname']."
+            == "Value error, PostgreSQLSchema must be supplied all of: ['host']."
         )
 
         payload = {
@@ -1481,6 +1606,7 @@ class TestPutConnectionConfigSecrets:
             "password": None,
             "db_schema": None,
             "ssh_required": False,
+            "ssl_mode": None,
         }
         assert connection_config.last_test_timestamp is None
         assert connection_config.last_test_succeeded is None
@@ -1975,6 +2101,189 @@ class TestPutConnectionConfigSecrets:
         assert https_connection_config.last_test_timestamp is None
         assert https_connection_config.last_test_succeeded is None
 
+    def test_put_datahub_connection_config_secrets(
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        datahub_connection_config_no_secrets,
+    ):
+        """
+        Note: this test does not call DataHub, via use of verify query param.
+        """
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{datahub_connection_config_no_secrets.key}/secret"
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        payload = {
+            "datahub_server_url": "https://datahub.example.com",
+            "datahub_token": "test",
+            "frequency": "weekly",
+            "glossary_node": "FidesDataCategories",
+        }
+        resp = api_client.put(
+            url + "?verify=False",
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 200
+        assert (
+            json.loads(resp.text)["msg"]
+            == f"Secrets updated for ConnectionConfig with key: {datahub_connection_config_no_secrets.key}."
+        )
+
+        db.refresh(datahub_connection_config_no_secrets)
+        assert datahub_connection_config_no_secrets.secrets == {
+            "datahub_server_url": "https://datahub.example.com",
+            "datahub_token": "test",
+            "frequency": "weekly",
+            "glossary_node": "FidesDataCategories",
+        }
+        assert datahub_connection_config_no_secrets.last_test_timestamp is None
+        assert datahub_connection_config_no_secrets.last_test_succeeded is None
+
+    def test_put_datahub_connection_config_secrets_default_frequency(
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        datahub_connection_config_no_secrets,
+    ):
+        """
+        Note: this test does not call DataHub, via use of verify query param.
+        """
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{datahub_connection_config_no_secrets.key}/secret"
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        payload = {
+            "datahub_server_url": "https://datahub.example.com",
+            "datahub_token": "test",
+            "frequency": "daily",
+            "glossary_node": "FidesDataCategories",
+        }
+        resp = api_client.put(
+            url + "?verify=False",
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 200
+        assert (
+            json.loads(resp.text)["msg"]
+            == f"Secrets updated for ConnectionConfig with key: {datahub_connection_config_no_secrets.key}."
+        )
+
+        db.refresh(datahub_connection_config_no_secrets)
+        assert datahub_connection_config_no_secrets.secrets == {
+            "datahub_server_url": "https://datahub.example.com",
+            "datahub_token": "test",
+            "frequency": "daily",
+            "glossary_node": "FidesDataCategories",
+        }
+        assert datahub_connection_config_no_secrets.last_test_timestamp is None
+        assert datahub_connection_config_no_secrets.last_test_succeeded is None
+
+    def test_put_datahub_connection_config_secrets_missing_url(
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        datahub_connection_config_no_secrets,
+    ):
+        """
+        Note: this test does not call DataHub, via use of verify query param.
+        """
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{datahub_connection_config_no_secrets.key}/secret"
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        payload = {"datahub_token": "test", "frequency": "weekly"}
+        resp = api_client.put(
+            url + "?verify=False",
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 422
+        assert (
+            resp.json()["detail"][0]["msg"]
+            == "Value error, DatahubSchema must be supplied all of: ['datahub_server_url', 'datahub_token']."
+        )
+
+    def test_put_datahub_connection_config_secrets_missing_token(
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        datahub_connection_config_no_secrets,
+    ):
+        """
+        Note: this test does not call DataHub, via use of verify query param.
+        """
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{datahub_connection_config_no_secrets.key}/secret"
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        payload = {
+            "datahub_server_url": "https://datahub.example.com",
+            "frequency": "weekly",
+        }
+        resp = api_client.put(
+            url + "?verify=False",
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 422
+        assert (
+            resp.json()["detail"][0]["msg"]
+            == "Value error, DatahubSchema must be supplied all of: ['datahub_server_url', 'datahub_token']."
+        )
+
+    def test_put_datahub_connection_config_secrets_missing_frequency(
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        datahub_connection_config_no_secrets,
+    ):
+        """
+        Note: this test does not call DataHub, via use of verify query param.
+        """
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{datahub_connection_config_no_secrets.key}/secret"
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        payload = {
+            "datahub_server_url": "https://datahub.example.com",
+            "datahub_token": "test",
+            "glossary_node": "FidesDataCategories",
+        }
+        resp = api_client.put(
+            url + "?verify=False",
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 422
+        error_detail = json.loads(resp.text)["detail"][0]
+        assert error_detail["type"] == "missing"
+        assert error_detail["loc"] == ["frequency"]
+
+    def test_put_datahub_connection_config_secrets_missing_glossary_node(
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        datahub_connection_config_no_secrets,
+    ):
+        """
+        Note: this test does not call DataHub, via use of verify query param.
+        """
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{datahub_connection_config_no_secrets.key}/secret"
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        payload = {
+            "datahub_server_url": "https://datahub.example.com",
+            "datahub_token": "test",
+            "frequency": "weekly",
+        }
+        resp = api_client.put(
+            url + "?verify=False",
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 422
+        error_detail = json.loads(resp.text)["detail"][0]
+        assert error_detail["type"] == "missing"
+        assert error_detail["loc"] == ["glossary_node"]
+
     @pytest.mark.unit_saas
     def test_put_saas_example_connection_config_secrets(
         self,
@@ -2126,6 +2435,7 @@ class TestPatchConnectionConfigSecrets:
             "password": previous_secrets["password"],
             "db_schema": None,  # Was not set in the payload nor in the fixture
             "ssh_required": False,  # Was not set in the payload nor in the fixture
+            "ssl_mode": None,  # Was not set in the payload nor in the fixture
         }
         assert connection_config.last_test_timestamp is None
         assert connection_config.last_test_succeeded is None

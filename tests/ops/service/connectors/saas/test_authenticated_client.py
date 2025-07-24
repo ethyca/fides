@@ -4,6 +4,7 @@ import unittest.mock as mock
 from email.utils import formatdate
 from typing import Any, Dict, Generator
 
+import certifi
 import pytest
 from loguru import logger
 from requests import ConnectionError, Response, Session
@@ -24,7 +25,7 @@ from fides.api.util.saas_util import load_config_with_replacement
 @pytest.fixture
 def test_saas_config() -> Dict[str, Any]:
     return load_config_with_replacement(
-        "data/saas/config/segment_config.yml",
+        "data/saas/config/hubspot_config.yml",
         "<instance_fides_key>",
         "test_config",
     )
@@ -36,7 +37,7 @@ def test_connection_config(test_saas_config) -> ConnectionConfig:
         key="test_config",
         connection_type=ConnectionType.saas,
         saas_config=test_saas_config,
-        secrets={"access_token": "test_token"},
+        secrets={"private_app_token": "test_token"},
     )
 
 
@@ -188,6 +189,11 @@ class TestAuthenticatedClient:
 
         test_authenticated_client.uri = test_http_server
         test_authenticated_client.send(request_params)
+
+    def test_clients_append_certifi_path(
+        self, test_authenticated_client, test_http_server
+    ):
+        assert test_authenticated_client.session.verify == certifi.where()
 
 
 @pytest.mark.unit_saas

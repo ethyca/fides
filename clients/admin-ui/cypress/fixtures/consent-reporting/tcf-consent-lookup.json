@@ -1,0 +1,40 @@
+{
+  "purpose_consent_preferences": [
+    {
+      "id": 1,
+      "preference": "opt_in"
+    },
+    {
+      "id": 3,
+      "preference": "opt_in"
+    }
+  ],
+  "purpose_legitimate_interests_preferences": [
+    {
+      "id": 1,
+      "preference": "opt_in"
+    }
+  ],
+  "vendor_consent_preferences": [],
+  "vendor_legitimate_interests_preferences": [],
+  "special_feature_preferences": [],
+  "special_purpose_preferences": [],
+  "feature_preferences": [],
+  "system_consent_preferences": [
+    {
+      "id": "ctl_73e94702-0f81-43ff-924b-f5e21f311e0d",
+      "preference": "opt_in"
+    },
+    {
+      "id": "ctl_62e293f1-c87a-4415-87ca-03dcea7922f0",
+      "preference": "opt_in"
+    }
+  ],
+  "system_legitimate_interests_preferences": [
+    {
+      "id": "ctl_62e293f1-c87a-4415-87ca-03dcea7922f0",
+      "preference": "opt_in"
+    }
+  ],
+  "preferences": []
+}

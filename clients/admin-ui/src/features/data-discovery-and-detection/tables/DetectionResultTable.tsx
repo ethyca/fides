@@ -7,8 +7,7 @@ import {
   getGroupedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Box, Flex, Text, VStack } from "fidesui";
-import { useRouter } from "next/router";
+import { AntTabs as Tabs, Box, Flex, Text, VStack } from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 
 import {
@@ -18,19 +17,19 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
-import DetectionResultFilterTabs from "~/features/data-discovery-and-detection/DetectionResultFilterTabs";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import useDetectionResultColumns from "~/features/data-discovery-and-detection/hooks/useDetectionResultColumns";
-import useDetectionResultFilterTabs from "~/features/data-discovery-and-detection/hooks/useDetectionResultsFilterTabs";
+import useDetectionResultFilterTabs, {
+  DetectionResultFilterTabs,
+} from "~/features/data-discovery-and-detection/hooks/useDetectionResultsFilterTabs";
 import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/useDiscoveryRoutes";
 import IconLegendTooltip from "~/features/data-discovery-and-detection/IndicatorLegend";
-import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
 import getResourceRowName from "~/features/data-discovery-and-detection/utils/getResourceRowName";
 import isNestedField from "~/features/data-discovery-and-detection/utils/isNestedField";
-import { StagedResource } from "~/types/api";
+import { StagedResource, StagedResourceTypeValue } from "~/types/api";
 
-import { SearchInput } from "../SearchInput";
+import { DebouncedSearchInput } from "../../common/DebouncedSearchInput";
 
 const EMPTY_RESPONSE = {
   items: [],
@@ -65,21 +64,16 @@ interface MonitorResultTableProps {
 }
 
 const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
-  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
 
   const {
     filterTabs,
-    setFilterTabIndex,
-    filterTabIndex,
+    activeTabKey,
+    onTabChange,
     activeDiffFilters,
     activeChildDiffFilters,
     activeChangeTypeOverride,
-  } = useDetectionResultFilterTabs({
-    initialFilterTabIndex: router.query?.filterTabIndex
-      ? Number(router.query?.filterTabIndex)
-      : undefined,
-  });
+  } = useDetectionResultFilterTabs();
 
   const {
     PAGE_SIZES,
@@ -146,11 +140,11 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
   const handleRowClicked = (row: StagedResource) =>
     navigateToDetectionResults({
       resourceUrn: row.urn,
-      filterTabIndex,
+      filterTab: activeTabKey,
     });
 
   const getRowIsClickable = (row: StagedResource) =>
-    resourceType !== StagedResourceType.FIELD || isNestedField(row);
+    resourceType !== StagedResourceTypeValue.FIELD || isNestedField(row);
 
   const tableInstance = useReactTable<StagedResource>({
     getCoreRowModel: getCoreRowModel(),
@@ -169,10 +163,13 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
 
   return (
     <>
-      <DetectionResultFilterTabs
-        filterTabs={filterTabs}
-        filterTabIndex={filterTabIndex}
-        onChange={setFilterTabIndex}
+      <Tabs
+        items={filterTabs.map((tab) => ({
+          key: tab.key,
+          label: tab.label,
+        }))}
+        activeKey={activeTabKey}
+        onChange={(tab) => onTabChange(tab as DetectionResultFilterTabs)}
       />
       <TableActionBar>
         <Flex
@@ -182,8 +179,11 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
           width="full"
         >
           <Flex gap={6} align="center">
-            <Box w={400} flexShrink={0}>
-              <SearchInput value={searchQuery} onChange={setSearchQuery} />
+            <Box flexShrink={0}>
+              <DebouncedSearchInput
+                value={searchQuery}
+                onChange={setSearchQuery}
+              />
             </Box>
             <IconLegendTooltip />
           </Flex>

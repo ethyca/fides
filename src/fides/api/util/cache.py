@@ -1,4 +1,5 @@
 import json
+import os
 from typing import Any, Dict, List, Optional, Union
 from urllib.parse import unquote_to_bytes
 
@@ -11,6 +12,10 @@ from redis.exceptions import DataError
 from fides.api import common_exceptions
 from fides.api.schemas.masking.masking_secrets import SecretType
 from fides.api.tasks import (
+    DISCOVERY_MONITORS_CLASSIFICATION_QUEUE_NAME,
+    DISCOVERY_MONITORS_DETECTION_QUEUE_NAME,
+    DISCOVERY_MONITORS_PROMOTION_QUEUE_NAME,
+    DSR_QUEUE_NAME,
     MESSAGING_QUEUE_NAME,
     PRIVACY_PREFERENCES_QUEUE_NAME,
     celery_app,
@@ -23,6 +28,7 @@ from fides.config import CONFIG
 RedisValue = Union[bytes, float, int, str]
 
 _connection = None
+_read_only_connection = None
 
 
 class FidesopsRedis(Redis):
@@ -89,6 +95,22 @@ class FidesopsRedis(Redis):
             for key, value in encoded_object_dict.items()
         }
 
+    def get_decoded_list(self, key: str) -> List[Dict[str, Any]]:
+        """Get and decode all items in a Redis list.
+
+        Args:
+            key: The Redis key for the list
+
+        Returns:
+            List of decoded items stored under the key. Empty list if key doesn't exist.
+        """
+        items = self.lrange(key, 0, -1)
+        decoded_items = []
+        for item in items:
+            if item and (decoded := self.decode_obj(item)):
+                decoded_items.append(decoded)
+        return decoded_items
+
     @staticmethod
     def encode_obj(obj: Any) -> bytes:
         """Encode an object to a JSON string that can be stored in Redis"""
@@ -118,44 +140,127 @@ class FidesopsRedis(Redis):
             return result
         return None
 
+    def push_encoded_object(
+        self, key: str, obj: Any, expire_time: int = CONFIG.redis.default_ttl_seconds
+    ) -> int:
+        """Encode an object and append it to a list in Redis.
 
-def get_cache(should_log: Optional[bool] = False) -> FidesopsRedis:
+        Args:
+            key: The Redis key for the list
+            obj: The object to encode and append
+            expire_time: Time in seconds after which the key will expire. Defaults to CONFIG.redis.default_ttl_seconds.
+
+        Returns:
+            The length of the list after the push operation
+        """
+        encoded_entry = self.encode_obj(obj)
+        list_length = self.rpush(key, encoded_entry)
+        self.expire(key, expire_time)
+        return list_length
+
+
+# FIXME: Ideally we don't want our code to be aware of the way tests are run,
+# e.g that we run them in parallel with pytest-xdist. We need to find a way
+# to change the pytest_configure_node hook to set the correct environment variable
+# like we do for the readonly database. It wasn't working so we're using this workaround for now.
+def _determine_redis_db_index(
+    read_only: Optional[bool] = False,
+) -> int:  # pragma: no cover
+    """Return the Redis DB index that should be used for the current process.
+
+    Behavior:
+    1. Test mode:
+       - If running under xdist, map `gwN` → DB `N + 1` (reserve DB 0).
+       - If *not* running under xdist, always use DB 1.
+
+    2. Non-test mode: return the value already present in `CONFIG.redis.db_index`
+    (or CONFIG.redis.read_only_db_index` if read_only is True)
+    """
+
+    # 1. Test mode logic
+    if CONFIG.test_mode:
+        worker_id = os.getenv("PYTEST_XDIST_WORKER")
+        if worker_id and worker_id.startswith("gw"):
+            suffix = worker_id[2:]
+            if suffix.isdigit():
+                return int(suffix) + 1  # gw0 -> 1, gw1 -> 2, etc.
+        return CONFIG.redis.test_db_index
+
+    # 2. Non-test mode
+    return CONFIG.redis.read_only_db_index if read_only else CONFIG.redis.db_index
+
+
+def get_cache() -> FidesopsRedis:
     """Return a singleton connection to our Redis cache"""
+
+    if not CONFIG.redis.enabled:
+        raise common_exceptions.RedisNotConfigured(
+            "Application Redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a Redis cache."
+        )
+
     global _connection  # pylint: disable=W0603
     if _connection is None:
-        logger.debug("Creating new Redis connection...")
         _connection = FidesopsRedis(  # type: ignore[call-overload]
             charset=CONFIG.redis.charset,
             decode_responses=CONFIG.redis.decode_responses,
             host=CONFIG.redis.host,
             port=CONFIG.redis.port,
-            db=CONFIG.redis.db_index,
+            db=_determine_redis_db_index(),
             username=CONFIG.redis.user,
             password=CONFIG.redis.password,
             ssl=CONFIG.redis.ssl,
             ssl_ca_certs=CONFIG.redis.ssl_ca_certs,
             ssl_cert_reqs=CONFIG.redis.ssl_cert_reqs,
         )
-        if should_log:
-            logger.debug("New Redis connection created.")
 
-    if should_log:
-        logger.debug("Testing Redis connection...")
     try:
         connected = _connection.ping()
     except ConnectionErrorFromRedis:
         connected = False
-    else:
-        if should_log:
-            logger.debug("Redis connection succeeded.")
 
     if not connected:
-        logger.debug("Redis connection failed.")
         raise common_exceptions.RedisConnectionError(
             "Unable to establish Redis connection. Fidesops is unable to accept PrivacyRequsts."
         )
 
     return _connection
+
+
+def get_read_only_cache() -> FidesopsRedis:
+    """
+    Return a singleton connection to the read-only Redis cache.
+    If read-only is not enabled, return the regular cache.
+    """
+    # If read-only is not enabled, return the regular cache
+    if not CONFIG.redis.read_only_enabled:
+        return get_cache()
+
+    global _read_only_connection  # pylint: disable=W0603
+    if _read_only_connection is None:
+        _read_only_connection = FidesopsRedis(  # type: ignore[call-overload]
+            charset=CONFIG.redis.charset,
+            decode_responses=CONFIG.redis.decode_responses,
+            host=CONFIG.redis.read_only_host,
+            port=CONFIG.redis.read_only_port,
+            db=_determine_redis_db_index(read_only=True),
+            username=CONFIG.redis.read_only_user,
+            password=CONFIG.redis.read_only_password,
+            ssl=CONFIG.redis.read_only_ssl,
+            ssl_ca_certs=CONFIG.redis.read_only_ssl_ca_certs,
+            ssl_cert_reqs=CONFIG.redis.read_only_ssl_cert_reqs,
+        )
+
+    try:
+        # Test the connection by attempting to ping the Redis server
+        connected = _read_only_connection.ping()
+    except Exception:
+        connected = False
+
+    if not connected:
+        # If we can't connect to the read-only cache, fall back to the regular cache
+        return get_cache()
+
+    return _read_only_connection
 
 
 def get_identity_cache_key(privacy_request_id: str, identity_attribute: str) -> str:
@@ -195,9 +300,7 @@ def get_masking_secret_cache_key(
 def get_all_cache_keys_for_privacy_request(privacy_request_id: str) -> List[Any]:
     """Returns all cache keys related to this privacy request's cached identities"""
     cache: FidesopsRedis = get_cache()
-    return cache.keys(f"{privacy_request_id}-*") + cache.keys(
-        f"id-{privacy_request_id}-*"
-    )
+    return cache.keys(f"*{privacy_request_id}*")
 
 
 def get_async_task_tracking_cache_key(privacy_request_id: str) -> str:
@@ -273,6 +376,10 @@ def get_queue_counts() -> Dict[str, int]:
         for queue in [
             MESSAGING_QUEUE_NAME,
             PRIVACY_PREFERENCES_QUEUE_NAME,
+            DSR_QUEUE_NAME,
+            DISCOVERY_MONITORS_DETECTION_QUEUE_NAME,
+            DISCOVERY_MONITORS_CLASSIFICATION_QUEUE_NAME,
+            DISCOVERY_MONITORS_PROMOTION_QUEUE_NAME,
             default_queue_name,
         ]:
             queue_counts[queue] = redis_conn.llen(queue)

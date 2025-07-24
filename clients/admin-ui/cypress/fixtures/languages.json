@@ -5,8 +5,16 @@
       "id": "en"
     },
     {
+      "name": "English (UK)",
+      "id": "en-GB"
+    },
+    {
       "name": "French",
       "id": "fr"
+    },
+    {
+      "name": "French (Canada)",
+      "id": "fr-CA"
     }
   ]
 }

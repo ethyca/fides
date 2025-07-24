@@ -1,0 +1,24 @@
+[
+  {
+    "fides_key": "unlinked_demo_dataset",
+    "organization_fides_key": "default_organization",
+    "tags": null,
+    "name": "Unlinked Demo Dataset",
+    "description": "An unlinked dataset for testing purposes.",
+    "meta": null,
+    "data_categories": null,
+    "fides_meta": null,
+    "collections": null
+  },
+  {
+    "fides_key": "test_missing_data_categories",
+    "organization_fides_key": "default_organization",
+    "tags": null,
+    "name": "Sample Dataset",
+    "description": "Sample dataset to be annotated",
+    "meta": null,
+    "data_categories": null,
+    "fides_meta": null,
+    "collections": null
+  }
+]

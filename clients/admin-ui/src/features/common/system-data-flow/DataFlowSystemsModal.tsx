@@ -1,8 +1,7 @@
-import SearchBar from "common/SearchBar";
 import {
   AntButton as Button,
   AntSwitch as Switch,
-  Badge,
+  AntTag as Tag,
   Box,
   Flex,
   FormControl,
@@ -20,6 +19,7 @@ import {
 import { useFormikContext } from "formik";
 import { useMemo, useState } from "react";
 
+import SearchInput from "~/features/common/SearchInput";
 import { DataFlow, System } from "~/types/api";
 
 import DataFlowSystemsTable from "./DataFlowSystemsTable";
@@ -99,9 +99,9 @@ const DataFlowSystemsModal = ({
           <Text fontSize="2xl" lineHeight={8} fontWeight="semibold">
             Configure {flowType.toLocaleLowerCase()} systems
           </Text>
-          <Badge bg="green.500" color="white" px={1}>
+          <Tag color="success">
             Assigned to {selectedDataFlows.length} systems
-          </Badge>
+          </Tag>
         </ModalHeader>
         <ModalBody data-testid="assign-systems-modal-body">
           {emptySystems ? (
@@ -131,8 +131,8 @@ const DataFlowSystemsModal = ({
                   </FormControl>
                 </Box>
               </Flex>
-              <SearchBar
-                search={searchFilter}
+              <SearchInput
+                value={searchFilter}
                 onChange={setSearchFilter}
                 placeholder="Search for systems"
                 data-testid="system-search"

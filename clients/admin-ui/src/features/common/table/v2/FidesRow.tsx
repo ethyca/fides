@@ -1,5 +1,5 @@
 import { Row } from "@tanstack/react-table";
-import { Tooltip, Tr } from "fidesui";
+import { AntTooltip as Tooltip, Tr } from "fidesui";
 
 import {
   FidesCell,
@@ -58,8 +58,7 @@ export const FidesRow = <T,>({
   if (renderRowTooltipLabel) {
     return (
       <Tooltip
-        label={renderRowTooltipLabel ? renderRowTooltipLabel(row) : undefined}
-        hasArrow
+        title={renderRowTooltipLabel ? renderRowTooltipLabel(row) : undefined}
         placement="top"
       >
         {rowEl}

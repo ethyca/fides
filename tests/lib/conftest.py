@@ -11,7 +11,7 @@ from fides.api.db.session import get_db_engine, get_db_session
 from tests.conftest import create_citext_extension
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session")
 def setup_db(api_client, config):
     """Apply migrations at beginning and end of testing session"""
     assert config.test_mode
@@ -19,28 +19,7 @@ def setup_db(api_client, config):
     yield api_client.post(url=f"{config.cli.server_url}/v1/admin/db/reset")
 
 
-@pytest.fixture(scope="session")
-def db(api_client, config):
-    """Return a connection to the test DB"""
-    # Create the test DB engine
-    assert config.test_mode
-    assert requests.post != api_client.post
-    engine = get_db_engine(
-        database_uri=config.database.sqlalchemy_test_database_uri,
-    )
-
-    create_citext_extension(engine)
-
-    SessionLocal = get_db_session(config, engine=engine)
-    the_session = SessionLocal()
-
-    yield the_session
-
-    the_session.close()
-    engine.dispose()
-
-
-@pytest.fixture(autouse=True)
+@pytest.fixture
 def clear_db_tables(db):
     """Clear data from tables between tests.
 

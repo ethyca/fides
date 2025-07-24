@@ -1,5 +1,6 @@
 import { errorToastParams, successToastParams } from "common/toast";
 import { ConfirmationModal, Text, useDisclosure, useToast } from "fidesui";
+import { useMemo } from "react";
 
 import EditDrawer, {
   EditDrawerFooter,
@@ -19,8 +20,8 @@ import {
 const DESCRIPTION =
   "Collections are an array of objects that describe the Dataset's collections. Provide additional context to this collection by filling out the fields below.";
 interface Props {
-  dataset?: Dataset;
-  collection?: DatasetCollection;
+  dataset: Dataset;
+  collection: DatasetCollection;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -30,7 +31,11 @@ const EditCollectionDrawer = ({
   isOpen,
   onClose,
 }: Props) => {
-  const collectionIndex = dataset?.collections.indexOf(collection!);
+  const collectionIndex = useMemo(
+    () => dataset?.collections.indexOf(collection),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
   const [updateDataset] = useUpdateDatasetMutation();
   const toast = useToast();
   const {
@@ -42,7 +47,7 @@ const EditCollectionDrawer = ({
   const handleSubmit = async (
     values: Pick<DatasetCollection, "description" | "data_categories">,
   ) => {
-    const updatedCollection = { ...collection!, ...values };
+    const updatedCollection = { ...collection, ...values };
     const updatedDataset = getUpdatedDatasetFromCollection(
       dataset!,
       updatedCollection,
@@ -92,7 +97,7 @@ const EditCollectionDrawer = ({
         }
       >
         <EditCollectionOrFieldForm
-          values={collection!}
+          values={collection}
           onSubmit={handleSubmit}
           dataType="collection"
           showDataCategories={false}

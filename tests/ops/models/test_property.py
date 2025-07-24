@@ -4,7 +4,12 @@ from typing import Any, Dict
 import pytest
 from sqlalchemy.orm import Session
 
-from fides.api.models.property import Property, PropertyPath
+from fides.api.models.property import (
+    MessagingTemplateToProperty,
+    PrivacyExperienceConfigProperty,
+    Property,
+    PropertyPath,
+)
 from fides.api.schemas.privacy_center_config import PrivacyCenterConfig
 from fides.api.schemas.property import Property as PropertySchema
 from fides.api.schemas.property import PropertyType
@@ -31,6 +36,14 @@ class TestProperty:
         return {"id": experience_config.id, "name": experience_config.name}
 
     def test_create_property(self, db, minimal_experience, privacy_center_config):
+        # Delete any properties that might have been created from
+        # the database migration on server startup.
+        # Delete related models first.
+        db.query(MessagingTemplateToProperty).delete()
+        db.query(PropertyPath).delete()
+        db.query(Property).delete()
+        db.commit()
+
         prop = Property.create(
             db=db,
             data=PropertySchema(

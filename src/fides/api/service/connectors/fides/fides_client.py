@@ -6,10 +6,10 @@ import httpx
 from httpx import AsyncClient, Client, HTTPStatusError, Request, RequestError, Timeout
 from loguru import logger
 
-from fides.api.models.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.privacy_request import (
     PrivacyRequestCreate,
     PrivacyRequestResponse,
+    PrivacyRequestStatus,
 )
 from fides.api.schemas.redis_cache import Identity
 from fides.api.schemas.user import UserLogin

@@ -67,6 +67,8 @@ class FidesUserInvite(Base):
 
     def invite_code_valid(self, invite_code: str, encoding: str = "UTF-8") -> bool:
         """Verifies that the provided invite code is correct."""
+        if self.salt is None:
+            return False
 
         invite_code_hash = hash_credential_with_salt(
             invite_code.encode(encoding),

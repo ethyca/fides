@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, ConfigDict, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from fides.api.schemas.saas.saas_config import Header, QueryParam, SaaSRequest
 from fides.api.schemas.saas.shared_schemas import (
@@ -28,6 +28,12 @@ class FilterPostProcessorConfiguration(StrategyConfiguration):
     value: Union[str, DatasetRef, IdentityParamRef]
     exact: bool = True
     case_sensitive: bool = True
+
+
+class ExtractForExecutionLogPostProcessorConfiguration(StrategyConfiguration):
+    """Configuration for extracting data from response body and adding to execution log messages"""
+
+    path: Optional[str] = None
 
 
 class OffsetPaginationConfiguration(StrategyConfiguration):
@@ -63,6 +69,7 @@ class LinkPaginationConfiguration(StrategyConfiguration):
     source: LinkSource
     rel: Optional[str] = None
     path: Optional[str] = None
+    has_next: Optional[str] = None
 
     @model_validator(mode="before")
     @classmethod
@@ -88,6 +95,7 @@ class CursorPaginationConfiguration(StrategyConfiguration):
 
     cursor_param: str
     field: str
+    has_next: Optional[str] = None
 
 
 class ApiKeyAuthenticationConfiguration(StrategyConfiguration):
@@ -154,8 +162,19 @@ class OAuth2BaseConfiguration(StrategyConfiguration):
 
 class OAuth2AuthorizationCodeConfiguration(OAuth2BaseConfiguration):
     """
+    Oauth Authorization that requires manual user interaction to get authorization
     The standard OAuth2 configuration but with an additional property to configure
     the authorization request for the Authorization Code flow.
     """
 
     authorization_request: SaaSRequest
+
+
+class OAuth2ClientCredentialsConfiguration(OAuth2BaseConfiguration):
+    """
+    Ouath authorization that does not require manual user interation to get authorization
+    The standard OAuth2 configuration, but excluding the refresh token during logging
+    since the client credentials flow does not require a refresh token.
+    """
+
+    refresh_request: Optional[SaaSRequest] = Field(exclude=True)

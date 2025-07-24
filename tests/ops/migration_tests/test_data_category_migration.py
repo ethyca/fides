@@ -15,7 +15,7 @@ class TestDataCategoryMigrationFunctions:
     def test_remove_conflicting_rule_targets(self, db):
         # prep the default erasure rule for testing by inserting a conflicting data category
         # directly into the database and bypassing the checks on RuleTarget.create
-        seed.load_default_dsr_policies()
+        seed.load_default_dsr_policies(db)
         erasure_rule = Rule.get_by(db, field="key", value=DEFAULT_ERASURE_POLICY_RULE)
         erasure_rule_id = erasure_rule.id
         db.execute(

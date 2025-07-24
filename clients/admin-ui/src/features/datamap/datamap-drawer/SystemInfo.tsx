@@ -1,5 +1,4 @@
 import {
-  AntButton as Button,
   Box,
   ExternalLinkIcon,
   Flex,
@@ -102,7 +101,7 @@ const SystemInfo = ({ system }: SystemInfoProps) => {
           validationSchema={validationSchema}
           onSubmit={handleUpsertSystem}
         >
-          {({ isSubmitting, dirty, isValid }) => (
+          {() => (
             <Form>
               <FormGuard id="SystemInfoDrawer" name="System Info" />
               <Box marginTop={3}>
@@ -110,25 +109,17 @@ const SystemInfo = ({ system }: SystemInfoProps) => {
                   label="System name"
                   name="name"
                   variant="stacked"
+                  disabled
                 />
               </Box>
               <Box marginTop={3}>
                 <CustomTextArea
-                  label="System Description"
+                  label="System description"
                   name="description"
                   variant="stacked"
+                  disabled
                 />
               </Box>
-              <Flex marginTop={6} justifyContent="flex-end">
-                <Button
-                  htmlType="submit"
-                  disabled={!dirty || !isValid}
-                  loading={isSubmitting}
-                  type="primary"
-                >
-                  Save
-                </Button>
-              </Flex>
             </Form>
           )}
         </Formik>

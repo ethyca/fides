@@ -8,12 +8,9 @@ from fides.api.graph.traversal import TraversalNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import (
-    PrivacyRequest,
-    PrivacyRequestStatus,
-    RequestTask,
-)
+from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.policy import ActionType
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.service.connectors.fides.fides_client import FidesClient
 from fides.api.service.connectors.fides_connector import (
     DEFAULT_POLLING_INTERVAL,

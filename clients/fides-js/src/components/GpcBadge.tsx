@@ -1,5 +1,3 @@
-import { h } from "preact";
-
 import { GpcStatus } from "../lib/consent-types";
 import { useI18n } from "../lib/i18n/i18n-context";
 

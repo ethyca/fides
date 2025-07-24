@@ -1,9 +1,10 @@
 import {
   AntButton as Button,
+  AntFlex as Flex,
+  AntRadio as Radio,
   ChevronDownIcon,
   ConfirmationModal,
   HStack,
-  IconButton,
   Input,
   InputGroup,
   Popover,
@@ -15,8 +16,6 @@ import {
   PopoverHeader,
   PopoverTrigger,
   Portal,
-  Radio,
-  RadioGroup,
   Skeleton,
   Text,
   theme,
@@ -24,7 +23,7 @@ import {
   useToast,
   VStack,
 } from "fidesui";
-import { Form, Formik } from "formik";
+import { Form, Formik, FormikState, useFormikContext } from "formik";
 import { useEffect, useMemo, useState } from "react";
 
 import { AddIcon } from "~/features/common/custom-fields/icons/AddIcon";
@@ -54,8 +53,13 @@ interface CustomReportTemplatesProps {
   reportType: ReportType;
   savedReportId: string; // from local storage
   tableStateToSave: CustomReportTableState | undefined;
-  currentColumnMap?: Record<string, string> | undefined;
-  onCustomReportSaved: (customReport: CustomReportResponse | null) => void;
+  currentColumnMap?: Record<string, string>;
+  onCustomReportSaved: (
+    customReport: CustomReportResponse | null,
+    resetForm: (
+      nextState?: Partial<FormikState<Record<string, string>>> | undefined,
+    ) => void,
+  ) => void;
   onSavedReportDeleted: () => void;
 }
 
@@ -67,9 +71,6 @@ export const CustomReportTemplates = ({
   onCustomReportSaved,
   onSavedReportDeleted,
 }: CustomReportTemplatesProps) => {
-  const userCanSeeReports = useHasPermission([
-    ScopeRegistryEnum.CUSTOM_REPORT_READ,
-  ]);
   const userCanCreateReports = useHasPermission([
     ScopeRegistryEnum.CUSTOM_REPORT_CREATE,
   ]);
@@ -107,6 +108,7 @@ export const CustomReportTemplates = ({
   const [reportToDelete, setReportToDelete] =
     useState<CustomReportResponseMinimal>();
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
+  const { resetForm } = useFormikContext();
 
   const buttonLabel = useMemo(() => {
     const reportName = customReportsList?.items.find(
@@ -160,7 +162,7 @@ export const CustomReportTemplates = ({
     if (fetchedReport) {
       setShowSpinner(false);
       if (fetchedReport.id !== savedReportId) {
-        onCustomReportSaved(fetchedReport);
+        onCustomReportSaved(fetchedReport, resetForm);
       }
       popoverOnClose();
     } else if (selectedReportId) {
@@ -168,7 +170,7 @@ export const CustomReportTemplates = ({
       setShowSpinner(true);
     } else {
       // form was reset, apply the reset
-      onCustomReportSaved(null);
+      onCustomReportSaved(null, resetForm);
       popoverOnClose();
     }
   };
@@ -223,10 +225,6 @@ export const CustomReportTemplates = ({
   const applyDisabled =
     (!fetchedReport && !savedReportId) || fetchedReport?.id === savedReportId;
 
-  if (!userCanSeeReports) {
-    return null;
-  }
-
   return (
     <>
       <Popover
@@ -237,7 +235,6 @@ export const CustomReportTemplates = ({
       >
         <PopoverTrigger>
           <Button
-            size="small"
             className="max-w-40"
             icon={<ChevronDownIcon />}
             iconPosition="end"
@@ -283,7 +280,7 @@ export const CustomReportTemplates = ({
                   onClick={handleCancel}
                   data-testid="custom-report-popover-cancel"
                 />
-                <PopoverBody px={6} pt={3} pb={1}>
+                <PopoverBody px={6} pt={5} pb={1}>
                   {isEmpty && (
                     <VStack
                       px={2}
@@ -291,20 +288,19 @@ export const CustomReportTemplates = ({
                       pb={3}
                       data-testid="custom-reports-empty-state"
                     >
-                      <IconButton
-                        variant="primary"
-                        backgroundColor="gray.500"
-                        isRound
-                        size="xs"
+                      <Button
+                        type="primary"
+                        size="small"
                         aria-label={`add ${CUSTOM_REPORT_TITLE}`}
                         icon={<AddIcon />}
                         onClick={modalOnOpen}
+                        className="rounded-full"
                         data-testid="add-report-button"
                       />
                       <Text fontSize="sm" textAlign="center" color="gray.500">
                         No {CUSTOM_REPORTS_TITLE.toLowerCase()} have been
                         created. Start by applying your preferred filter and
-                        column settings, then create a
+                        column settings, then create a{" "}
                         {CUSTOM_REPORT_TITLE.toLowerCase()} for easy access
                         later.
                       </Text>
@@ -318,45 +314,42 @@ export const CustomReportTemplates = ({
                         <Skeleton width="100%" height={theme.space[4]} />
                       </VStack>
                     ) : (
-                      <RadioGroup
-                        onChange={handleSelection}
+                      <Radio.Group
+                        onChange={(e) => handleSelection(e.target.value)}
                         value={selectedReportId}
+                        className="flex flex-col gap-2"
                       >
                         {searchResults?.map((customReport) => (
-                          <HStack
+                          <Flex
                             key={customReport.id}
-                            justifyContent={
+                            className={
                               userCanDeleteReports
-                                ? "space-between"
-                                : "flex-start"
+                                ? "justify-between"
+                                : "justify-start"
                             }
-                            min-height={theme.space[6]}
                           >
                             <Radio
-                              name="custom-report-id"
                               value={customReport.id}
+                              name="custom-report-id"
                               data-testid="custom-report-item"
                             >
-                              <Text fontSize="xs">{customReport.name}</Text>
+                              <Text fontSize="sm">{customReport.name}</Text>
                             </Radio>
                             {userCanDeleteReports && (
-                              <IconButton
-                                variant="ghost"
-                                size="xs"
-                                aria-label={`delete ${CUSTOM_REPORT_TITLE}`}
+                              <Button
+                                type="text"
+                                size="small"
                                 icon={<TrashCanOutlineIcon fontSize={16} />}
-                                onClick={() => {
-                                  setReportToDelete(customReport);
-                                }}
+                                onClick={() => setReportToDelete(customReport)}
                                 data-testid="delete-report-button"
                               />
                             )}
-                          </HStack>
+                          </Flex>
                         ))}
-                      </RadioGroup>
+                      </Radio.Group>
                     ))}
                 </PopoverBody>
-                <PopoverFooter border="none" px={6}>
+                <PopoverFooter border="none" px={6} pb={4} pt={4}>
                   <HStack>
                     {userCanCreateReports && tableStateToSave && (
                       <Button
@@ -395,7 +388,9 @@ export const CustomReportTemplates = ({
         unavailableNames={customReportsList?.items.map((customReport) => {
           return customReport.name;
         })}
-        onCreateCustomReport={onCustomReportSaved}
+        onCreateCustomReport={(customReport) =>
+          onCustomReportSaved(customReport, resetForm)
+        }
       />
       <ConfirmationModal
         isOpen={deleteIsOpen}

@@ -140,6 +140,20 @@ describe("Banner and modal dismissal", () => {
               cy.get("#fides-banner").should("be.visible");
               cy.get("@FidesUpdated").should("not.have.been.called");
             });
+
+            it("should not resurface the banner if dismissed without consent", () => {
+              cy.get("#fides-banner").should("be.visible");
+              cy.get("#fides-banner .fides-close-button").click();
+              cy.reload();
+              cy.get("#fides-banner").should("not.be.visible");
+            });
+
+            it("should not resurface the banner if consented without dismissing", () => {
+              cy.get("#fides-banner").should("be.visible");
+              cy.get("#fides-banner .fides-reject-all-button").click();
+              cy.reload();
+              cy.get("#fides-banner").should("not.be.visible");
+            });
           });
 
           describe("when using the modal", () => {

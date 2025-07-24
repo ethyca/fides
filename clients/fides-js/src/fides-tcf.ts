@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 /**
  * FidesJS: JavaScript SDK for Fides (https://github.com/ethyca/fides)
  *
@@ -10,39 +11,35 @@
 import type { TCData } from "@iabtechlabtcf/cmpapi";
 import { TCString } from "@iabtechlabtcf/core";
 
-import {
-  defaultShowModal,
-  FidesCookie,
-  isPrivacyExperience,
-  shouldResurfaceConsent,
-} from "./fides";
-import { gtm } from "./integrations/gtm";
-import { meta } from "./integrations/meta";
-import { shopify } from "./integrations/shopify";
-import { raise } from "./lib/common-utils";
+import { FidesCookie, isNewFidesCookie } from "./fides";
 import {
   FidesConfig,
   FidesExperienceTranslationOverrides,
   FidesGlobal,
   FidesInitOptionsOverrides,
-  FidesOptions,
   FidesOverrides,
   GetPreferencesFnResp,
+  NoticeValues,
   OverrideType,
   PrivacyExperience,
 } from "./lib/consent-types";
 import { initializeDebugger } from "./lib/debugger";
-import { dispatchFidesEvent, onFidesEvent } from "./lib/events";
+import {
+  dispatchConsentLoadedEvents,
+  dispatchFidesEvent,
+  dispatchReadyEvents,
+} from "./lib/events";
+import { DecodedFidesString, decodeFidesString } from "./lib/fides-string";
 import type { GppFunction } from "./lib/gpp/types";
-import { DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
+import { getCoreFides, raise, updateWindowFides } from "./lib/init-utils";
 import {
   getInitialCookie,
-  getInitialFides,
+  getInitialFidesFromConsentCookie,
   getOverridesByType,
   initialize,
 } from "./lib/initialize";
+import { initOverlay } from "./lib/initOverlay";
 import { initializeTcfCmpApi } from "./lib/tcf";
-import { decodeFidesString } from "./lib/tcf/fidesString";
 import { renderOverlay } from "./lib/tcf/renderOverlay";
 import { makeStub } from "./lib/tcf/stub";
 import {
@@ -53,8 +50,6 @@ import { customGetConsentPreferences } from "./services/external/preferences";
 
 declare global {
   interface Window {
-    Fides: FidesGlobal;
-    fides_overrides: FidesOptions;
     __tcfapiLocator?: Window;
     __tcfapi?: (
       command: string,
@@ -67,27 +62,14 @@ declare global {
   }
 }
 
-const updateWindowFides = (fidesGlobal: FidesGlobal) => {
-  if (typeof window !== "undefined") {
-    window.Fides = fidesGlobal;
-  }
-};
-
-const updateExperience = ({
-  cookie,
-  experience,
-  isExperienceClientSideFetched,
-}: {
+export interface UpdateTCFExperienceProps {
   cookie: FidesCookie;
   experience: PrivacyExperience;
-  isExperienceClientSideFetched: boolean;
-}): Partial<PrivacyExperience> => {
-  if (!isExperienceClientSideFetched) {
-    // If it's not client side fetched, we don't update anything since the cookie has already
-    // been updated earlier.
-    return experience;
-  }
-
+}
+const updateTCFExperience = ({
+  cookie,
+  experience,
+}: UpdateTCFExperienceProps): Partial<PrivacyExperience> => {
   // We need the cookie.fides_string to attach user preference to an experience.
   // If this does not exist, we should assume no user preference has been given and leave the experience as is.
   if (cookie.fides_string) {
@@ -122,17 +104,12 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   this.config = config; // no matter how the config is set, we want to store it on the global object
   updateWindowFides(this);
 
-  dispatchFidesEvent(
-    "FidesInitializing",
-    undefined,
-    this.config.options.debug,
-    {
-      gppEnabled:
-        this.config.options.gppEnabled ||
-        this.config.experience?.gpp_settings?.enabled,
-      tcfEnabled: this.config.options.tcfEnabled,
-    },
-  );
+  dispatchFidesEvent("FidesInitializing", undefined, {
+    gppEnabled:
+      this.config.options.gppEnabled ||
+      this.config.experience?.gpp_settings?.enabled,
+    tcfEnabled: this.config.options.tcfEnabled,
+  });
 
   const optionsOverrides: Partial<FidesInitOptionsOverrides> =
     getOverridesByType<Partial<FidesInitOptionsOverrides>>(
@@ -142,6 +119,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   makeStub({
     gdprAppliesDefault: optionsOverrides?.fidesTcfGdprApplies,
   });
+
   const experienceTranslationOverrides: Partial<FidesExperienceTranslationOverrides> =
     getOverridesByType<Partial<FidesExperienceTranslationOverrides>>(
       OverrideType.EXPERIENCE_TRANSLATION,
@@ -163,30 +141,33 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     ...config,
     options: { ...config.options, ...overrides.optionsOverrides },
   };
+  this.config = config;
   this.cookie = {
     ...getInitialCookie(config),
-    ...overrides.consentPrefsOverrides?.consent,
   };
 
   // Keep a copy of saved consent from the cookie, since we update the "cookie"
   // value during initialization based on overrides, experience, etc.
   this.saved_consent = {
-    ...this.cookie.consent,
+    ...(this.cookie.consent as NoticeValues),
   };
 
   // Update the fidesString if we have an override and the TC portion is valid
   const { fidesString } = config.options;
+  let hasValidTCString = false;
   if (fidesString) {
     try {
       // Make sure TC string is valid before we assign it
-      const { tc: tcString } = decodeFidesString(fidesString);
-      TCString.decode(tcString);
+      const { tc: tcString }: DecodedFidesString =
+        decodeFidesString(fidesString);
+      hasValidTCString = !!TCString.decode(tcString);
       const updatedCookie: Partial<FidesCookie> = {
         fides_string: fidesString,
         tcf_version_hash:
           overrides.consentPrefsOverrides?.version_hash ??
           this.cookie.tcf_version_hash,
       };
+      // this could be a new cookie or an update to an existing cookie
       this.cookie = { ...this.cookie, ...updatedCookie };
     } catch (error) {
       fidesDebugger(
@@ -194,105 +175,56 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
       );
     }
   }
-  const initialFides = getInitialFides({
-    ...config,
-    cookie: this.cookie,
-    savedConsent: this.saved_consent,
-    updateExperienceFromCookieConsent: updateExperienceFromCookieConsentTcf,
-  });
-  // Initialize the CMP API early so that listeners are established
+
+  this.experience = config.experience; // pre-fetched experience if available
+  const hasExistingCookie = !isNewFidesCookie(this.cookie);
+  // Initialize the TCF CMP API early so that listeners are established
   initializeTcfCmpApi();
-  if (initialFides) {
+  if (hasExistingCookie || hasValidTCString) {
+    /*
+     * We have enough information to initialize the Fides object before we have a valid experience.
+     * In this case, the experience is less important because the user has already consented to something.
+     * The earlier we can communicate consent to the vendor, the better.
+     */
+    // TCF String gets applied to the cookie consent object in updateExperienceFromCookieConsentTcf
+    const initialFides = getInitialFidesFromConsentCookie({
+      ...config,
+      cookie: this.cookie,
+      savedConsent: this.saved_consent,
+      updateExperienceFromCookieConsent: updateExperienceFromCookieConsentTcf,
+    });
     Object.assign(this, initialFides);
     updateWindowFides(this);
-    dispatchFidesEvent("FidesInitialized", this.cookie, config.options.debug, {
+    this.experience = initialFides.experience; // pre-fetched experience, if available, with consent applied
+
+    // Vendors (GTM, etc.) can use this event to know when the consent is loaded.
+    dispatchConsentLoadedEvents(this.cookie, {
       shouldShowExperience: this.shouldShowExperience(),
     });
   }
-  this.experience = initialFides?.experience ?? config.experience;
+
   const updatedFides = await initialize({
-    ...config,
     fides: this,
+    initOverlay,
     renderOverlay,
-    updateExperience,
+    updateExperience: updateTCFExperience,
     overrides,
-    propertyId: config.propertyId,
   });
   Object.assign(this, updatedFides);
   updateWindowFides(this);
 
-  // Dispatch the "FidesInitialized" event to update listeners with the initial state.
-  dispatchFidesEvent("FidesInitialized", this.cookie, config.options.debug, {
+  // The window.Fides object and the Overlay are now fully initialized and ready to be used.
+  dispatchReadyEvents(this.cookie, {
     shouldShowExperience: this.shouldShowExperience(),
   });
 }
 
+const initialFides = getCoreFides({ tcfEnabled: true });
 // The global Fides object; this is bound to window.Fides if available
 // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
 const _Fides: FidesGlobal = {
-  consent: {},
-  experience: undefined,
-  geolocation: {},
-  options: {
-    debug: true,
-    isOverlayEnabled: false,
-    isPrefetchEnabled: false,
-    isGeolocationEnabled: false,
-    geolocationApiUrl: "",
-    overlayParentId: null,
-    modalLinkId: null,
-    privacyCenterUrl: "",
-    fidesApiUrl: "",
-    tcfEnabled: true,
-    gppEnabled: false,
-    fidesEmbed: false,
-    fidesDisableSaveApi: false,
-    fidesDisableNoticesServedApi: false,
-    fidesDisableBanner: false,
-    fidesString: null,
-    apiOptions: null,
-    fidesTcfGdprApplies: true,
-    fidesJsBaseUrl: "",
-    customOptionsPath: null,
-    preventDismissal: false,
-    allowHTMLDescription: null,
-    base64Cookie: false,
-    fidesPrimaryColor: null,
-    fidesClearCookie: false,
-  },
-  fides_meta: {},
-  identity: {},
-  tcf_consent: {},
-  saved_consent: {},
-  gtm,
+  ...initialFides,
   init,
-  config: undefined,
-  reinitialize() {
-    if (!this.config || !this.initialized) {
-      throw new Error("Fides must be initialized before reinitializing");
-    }
-    return this.init();
-  },
-  shouldShowExperience() {
-    if (!isPrivacyExperience(this.experience)) {
-      // Nothing to show if there's no experience
-      return false;
-    }
-    if (!this.cookie) {
-      throw new Error("Should have a cookie");
-    }
-    return shouldResurfaceConsent(
-      this.experience,
-      this.cookie,
-      this.saved_consent,
-    );
-  },
-  initialized: false,
-  onFidesEvent,
-  meta,
-  shopify,
-  showModal: defaultShowModal,
-  getModalLinkLabel: () => DEFAULT_MODAL_LINK_LABEL,
 };
 
 if (typeof window !== "undefined") {
@@ -306,5 +238,6 @@ export * from "./lib/consent-utils";
 export * from "./lib/consent-value";
 export * from "./lib/cookie";
 export * from "./lib/events";
+export * from "./lib/init-utils";
 export * from "./lib/initOverlay";
 export * from "./lib/shared-consent-utils";

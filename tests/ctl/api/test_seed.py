@@ -5,10 +5,12 @@ from typing import Generator
 from unittest.mock import patch
 
 import pytest
+import yaml
 from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from fideslang.models import DataCategory, Organization
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import Session
 
 from fides.api.db import samples, seed
 from fides.api.models.connectionconfig import ConnectionConfig
@@ -16,11 +18,13 @@ from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.policy import ActionType, DrpAction, Policy, Rule, RuleTarget
 from fides.api.models.sql_models import Dataset, PolicyCtl, System
+from fides.api.util.data_category import filter_data_categories
 from fides.config import CONFIG, FidesConfig
 from fides.core import api as _api
 
 
 @pytest.fixture(scope="function", name="data_category")
+@pytest.mark.usefixtures("monkeypatch_requests")
 def fixture_data_category(test_config: FidesConfig) -> Generator:
     """
     Fixture that yields a data category and then deletes it for each test run.
@@ -104,7 +108,7 @@ class TestFilterDataCategories:
             "user.name",
             "user.test",
         ]
-        assert seed.filter_data_categories(
+        assert filter_data_categories(
             all_data_categories, excluded_data_categories
         ) == sorted(expected_result)
 
@@ -130,7 +134,7 @@ class TestFilterDataCategories:
             "user.name",
             "user.test",
         ]
-        assert seed.filter_data_categories(
+        assert filter_data_categories(
             all_data_categories, excluded_data_categories
         ) == sorted(expected_result)
 
@@ -145,7 +149,7 @@ class TestFilterDataCategories:
             "user.name",
             "user.test",
         ]
-        assert seed.filter_data_categories(all_data_categories, []) == expected_result
+        assert filter_data_categories(all_data_categories, []) == expected_result
 
     def test_filter_data_categories_empty_excluded(self) -> None:
         """Test that the filter method works as intended"""
@@ -155,7 +159,7 @@ class TestFilterDataCategories:
             "user.authorization",
             "user.financial",
         ]
-        assert seed.filter_data_categories(all_data_categories, []) == sorted(
+        assert filter_data_categories(all_data_categories, []) == sorted(
             all_data_categories
         )
 
@@ -167,7 +171,7 @@ class TestFilterDataCategories:
             "user.authorization",
             "user.financial",
         ]
-        assert seed.filter_data_categories(
+        assert filter_data_categories(
             all_data_categories, excluded_data_categories
         ) == sorted(all_data_categories)
 
@@ -186,21 +190,21 @@ class TestFilterDataCategories:
             "user.authorization",
             "user.financial",
         ]
-        assert seed.filter_data_categories(all_data_categories, []) == sorted(
+        assert filter_data_categories(all_data_categories, []) == sorted(
             expected_categories
         )
 
 
 @pytest.mark.integration
+@pytest.mark.usefixtures("monkeypatch_requests")
 class TestLoadDefaultTaxonomy:
     """Tests related to load_default_taxonomy"""
 
-    async def test_add_to_default_taxonomy(
+    def test_add_to_default_taxonomy(
         self,
-        monkeypatch: pytest.MonkeyPatch,
         test_config: FidesConfig,
         data_category: DataCategory,
-        async_session: AsyncSession,
+        db: Session,
     ) -> None:
         """Should be able to add to the existing default taxonomy"""
         result = _api.get(
@@ -214,8 +218,8 @@ class TestLoadDefaultTaxonomy:
         updated_default_taxonomy = DEFAULT_TAXONOMY.model_copy()
         updated_default_taxonomy.data_category.append(data_category)
 
-        monkeypatch.setattr(seed, "DEFAULT_TAXONOMY", updated_default_taxonomy)
-        await seed.load_default_resources(async_session)
+        with patch("fides.api.db.seed.DEFAULT_TAXONOMY", updated_default_taxonomy):
+            seed.load_default_resources(db)
 
         result = _api.get(
             test_config.cli.server_url,
@@ -225,8 +229,9 @@ class TestLoadDefaultTaxonomy:
         )
         assert result.status_code == 200
 
-    async def test_does_not_override_user_changes(
-        self, test_config: FidesConfig, async_session: AsyncSession
+    @pytest.mark.usefixtures("default_data_categories")
+    def test_does_not_override_user_changes(
+        self, test_config: FidesConfig, db: Session
     ) -> None:
         """
         Loading the default taxonomy should not override user changes
@@ -243,7 +248,7 @@ class TestLoadDefaultTaxonomy:
         )
         assert result.status_code == 200
 
-        await seed.load_default_resources(async_session)
+        seed.load_default_resources(db)
         result = _api.get(
             test_config.cli.server_url,
             "data_category",
@@ -252,11 +257,11 @@ class TestLoadDefaultTaxonomy:
         )
         assert result.json()["description"] == new_description
 
-    async def test_does_not_remove_user_added_taxonomies(
+    def test_does_not_remove_user_added_taxonomies(
         self,
         test_config: FidesConfig,
         data_category: DataCategory,
-        async_session: AsyncSession,
+        db: Session,
     ) -> None:
         """
         Loading the default taxonomy should not delete user additions
@@ -269,7 +274,7 @@ class TestLoadDefaultTaxonomy:
             headers=CONFIG.user.auth_header,
         )
 
-        await seed.load_default_resources(async_session)
+        seed.load_default_resources(db)
 
         result = _api.get(
             test_config.cli.server_url,
@@ -351,11 +356,10 @@ def test_create_or_update_parent_user_password_only():
         seed.create_or_update_parent_user()
 
 
-async def test_load_default_dsr_policies(
-    db,
-):
+@pytest.mark.usefixtures("default_data_categories")
+async def test_load_default_dsr_policies(db):
     # seed the default dsr policies and its artifacts
-    seed.load_default_dsr_policies()
+    seed.load_default_dsr_policies(db)
 
     # run some basic checks on its artifacts to make sure they're populated as we expect
     access_policy: Policy = Policy.get_by(
@@ -415,7 +419,7 @@ async def test_load_default_dsr_policies(
     # now test that re-running `load_default_dsr_policies()` does not
     # overwrite any of the manual changed that have been made to the artifacts
 
-    seed.load_default_dsr_policies()
+    seed.load_default_dsr_policies(db)
 
     access_policy: Policy = Policy.get_by(
         db, field="key", value=seed.DEFAULT_ACCESS_POLICY
@@ -433,15 +437,16 @@ async def test_load_default_dsr_policies(
     assert len(access_rule.targets) == num_rule_targets - 1
 
 
-async def test_load_organizations(loguru_caplog, async_session, monkeypatch):
+@pytest.mark.usefixtures("default_organization")
+def test_load_organizations(loguru_caplog, db: Session):
     updated_default_taxonomy = DEFAULT_TAXONOMY.model_copy()
     current_orgs = len(updated_default_taxonomy.organization)
     updated_default_taxonomy.organization.append(
         Organization(fides_key="new_organization")
     )
 
-    monkeypatch.setattr(seed, "DEFAULT_TAXONOMY", updated_default_taxonomy)
-    await seed.load_default_organization(async_session)
+    with patch("fides.api.db.seed.DEFAULT_TAXONOMY", updated_default_taxonomy):
+        seed.load_default_organization(db)
 
     assert "INSERTED 1" in loguru_caplog.text
     assert f"SKIPPED {current_orgs}" in loguru_caplog.text
@@ -457,18 +462,19 @@ class TestLoadSamples:
         "FIDES_DEPLOY__CONNECTORS__POSTGRES__PORT": "9090",
         "FIDES_DEPLOY__CONNECTORS__POSTGRES__DBNAME": "test-var-db",
         "FIDES_DEPLOY__CONNECTORS__POSTGRES__USERNAME": "test-var-user",
-        "FIDES_DEPLOY__CONNECTORS__POSTGRES__PASSWORD": "test-var-password",
-        "FIDES_DEPLOY__CONNECTORS__POSTGRES__SSH_REQUIRED": "True",
+        "FIDES_DEPLOY__CONNECTORS__POSTGRES__PASSWORD": "&anchor!-test-password",
+        "FIDES_DEPLOY__CONNECTORS__POSTGRES__SSH_REQUIRED": "false",
         "FIDES_DEPLOY__CONNECTORS__STRIPE__DOMAIN": "test-stripe-domain",
         "FIDES_DEPLOY__CONNECTORS__STRIPE__API_KEY": "test-stripe-api-key",
         "FIDES_DEPLOY__CONNECTORS__MONGO_HOST": "test-var-expansion",
         "FIDES_DEPLOY__CONNECTORS__MONGO_PORT": "9090",
         "FIDES_DEPLOY__CONNECTORS__MONGO_DEFAULTAUTHDB": "test-var-db",
         "FIDES_DEPLOY__CONNECTORS__MONGO_USERNAME": "test-var-user",
-        "FIDES_DEPLOY__CONNECTORS__MONGO_PASSWORD": "test-var-password",
+        "FIDES_DEPLOY__CONNECTORS__MONGO_PASSWORD": "&anchor!-test-password",
     }
 
     @patch.dict(os.environ, SAMPLE_ENV_VARS, clear=True)
+    @pytest.mark.usefixtures("default_taxonomy")
     async def test_load_samples(
         self,
         async_session: AsyncSession,
@@ -611,7 +617,8 @@ class TestLoadSamples:
             0
         ].model_dump(mode="json")
         assert postgres["secrets"]["host"] == "test-var-expansion"
-        assert postgres["secrets"]["port"] == 9090
+        assert postgres["secrets"]["port"] == "9090"
+        assert postgres["secrets"]["password"] == "&anchor!-test-password"
 
     @patch.dict(
         os.environ,
@@ -655,3 +662,47 @@ class TestLoadSamples:
         assert sample_connection["secrets"]["dbname"] == "var-2"
         assert sample_connection["secrets"]["username"] == "user-var-2"
         assert sample_connection["secrets"]["password"] == "var-1-var-2"
+
+    @patch.dict(
+        os.environ,
+        {
+            "TEST_PASSWORD": "&anchor!'quote'!@#$%^&*",
+        },
+        clear=True,
+    )
+    async def test_load_sample_yaml_with_special_chars(self):
+        """Test that YAML parsing requires proper quoting for environment variables with special characters"""
+        # Test safe usage with quotes
+        safe_yaml = dedent(
+            """\
+            connection:
+              - key: test_connection
+                name: Test Connection
+                connection_type: postgres
+                access: write
+                secrets:
+                  password: "$TEST_PASSWORD"
+            """
+        )
+        sample_file = io.StringIO(safe_yaml)
+        sample_dict = samples.load_sample_yaml_file(sample_file)
+        assert (
+            sample_dict["connection"][0]["secrets"]["password"]
+            == "&anchor!'quote'!@#$%^&*"
+        )
+
+        # Test unsafe usage without quotes - should raise YAML parsing error
+        unsafe_yaml = dedent(
+            """\
+            connection:
+              - key: test_connection
+                name: Test Connection
+                connection_type: postgres
+                access: write
+                secrets:
+                  password: $TEST_PASSWORD
+            """
+        )
+        sample_file = io.StringIO(unsafe_yaml)
+        with pytest.raises(yaml.scanner.ScannerError):
+            samples.load_sample_yaml_file(sample_file)

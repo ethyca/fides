@@ -1,7 +1,8 @@
-import SearchBar from "common/SearchBar";
 import { debounce } from "common/utils";
 import { Box } from "fidesui";
 import { useCallback, useEffect, useMemo, useState } from "react";
+
+import SearchInput from "~/features/common/SearchInput";
 
 type GlobalFilterProps = {
   globalFilter: any;
@@ -28,21 +29,22 @@ export const GlobalFilterV2 = ({
     setGlobalFilter(undefined);
   }, [setValue, setGlobalFilter]);
 
+  // Keep local state in sync with the externally-managed `globalFilter`.
   useEffect(() => {
-    if (!value) {
-      onClear();
+    if (!globalFilter) {
+      setValue(undefined);
     }
-  }, [value, onClear]);
+  }, [globalFilter]);
 
   return (
-    <Box maxWidth="510px" width="100%">
-      <SearchBar
+    <Box maxWidth="424px" width="100%">
+      <SearchInput
         onChange={(changeValue) => {
           setValue(changeValue);
           onChange(changeValue);
         }}
         onClear={onClear}
-        search={value || ""}
+        value={value || ""}
         placeholder={placeholder}
         data-testid={testid}
       />

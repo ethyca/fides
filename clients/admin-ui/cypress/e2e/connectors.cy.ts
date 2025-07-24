@@ -18,7 +18,7 @@ describe("Connectors", () => {
       }).as("getPostgresConnectorSecret");
       cy.intercept(
         "GET",
-        "/api/v1/connection/postgres_connector/datasetconfig",
+        "/api/v1/connection/postgres_connector/datasetconfig?size=1000",
         {
           fixture: "connectors/datasetconfig.json",
         },
@@ -32,9 +32,9 @@ describe("Connectors", () => {
         "/api/v1/connection/postgres_connector/datasetconfig",
         { body: {} },
       ).as("patchDatasetconfig");
-      cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
-        "getDatasets",
-      );
+      cy.intercept("GET", "/api/v1/dataset?minimal=true", {
+        fixture: "connectors/minimal_datasets.json",
+      }).as("getDatasets");
     });
 
     it("Should show data store connections and view configuration", () => {
@@ -57,7 +57,7 @@ describe("Connectors", () => {
       cy.getByTestId("connection-menu-postgres_connector").within(() => {
         cy.getByTestId("configure-btn").click();
       });
-      cy.getByTestId("tab-Dataset configuration").click();
+      cy.getAntTab("Dataset configuration").click({ force: true });
       cy.wait("@getPostgresConnectorDatasetconfig");
 
       // The yaml editor will start off disabled
@@ -65,12 +65,13 @@ describe("Connectors", () => {
       // The dataset dropdown selector should have the value of the existing connected dataset
       cy.getByTestId("save-dataset-link-btn").should("be.enabled");
       cy.getByTestId("dataset-selector").should(
-        "have.value",
+        "have.text",
         "postgres_example_test_dataset",
       );
 
       // Change the linked dataset
-      cy.getByTestId("dataset-selector").select("demo_users_dataset_2");
+      cy.getByTestId("dataset-selector").antSelect("demo_users_dataset_2");
+
       cy.getByTestId("save-dataset-link-btn").click();
 
       cy.wait("@patchDatasetconfig").then((interception) => {
@@ -91,11 +92,11 @@ describe("Connectors", () => {
       cy.getByTestId("connection-menu-postgres_connector").within(() => {
         cy.getByTestId("configure-btn").click();
       });
-      cy.getByTestId("tab-Dataset configuration").click();
+      cy.getAntTab("Dataset configuration").click({ force: true });
       cy.wait("@getPostgresConnectorDatasetconfig");
 
       // Unset the linked dataset, which should switch the save button enable-ness
-      cy.getByTestId("dataset-selector").select("Select");
+      cy.getByTestId("dataset-selector").antClearSelect();
       cy.getByTestId("save-dataset-link-btn").should("be.disabled");
       // The monaco yaml editor takes a bit to load
       // eslint-disable-next-line cypress/no-unnecessary-waiting
@@ -123,10 +124,12 @@ describe("Connectors", () => {
     });
 
     it("Should not show the dataset selector if no datasets exist", () => {
-      cy.intercept("GET", "/api/v1/dataset", { body: [] }).as("getDatasets");
+      cy.intercept("GET", "/api/v1/dataset?minimal=true", { body: [] }).as(
+        "getDatasets",
+      );
       cy.intercept(
         "GET",
-        "/api/v1/connection/postgres_connector/datasetconfig",
+        "/api/v1/connection/postgres_connector/datasetconfig?size=1000",
         {
           body: {
             items: [],
@@ -141,9 +144,31 @@ describe("Connectors", () => {
       cy.getByTestId("connection-menu-postgres_connector").within(() => {
         cy.getByTestId("configure-btn").click();
       });
-      cy.getByTestId("tab-Dataset configuration").click();
+      cy.getAntTab("Dataset configuration").click({ force: true });
       cy.wait("@getEmptyPostgresConnectorDatasetconfig");
       cy.getByTestId("dataset-selector-section").should("not.exist");
+    });
+
+    it("Should fetch datasets with minimal=true parameter for performance", () => {
+      // Override the existing intercept to verify the minimal parameter is used
+      cy.intercept("GET", "/api/v1/dataset?minimal=true", {
+        fixture: "connectors/minimal_datasets.json",
+      }).as("getMinimalDatasets");
+
+      cy.visit("/datastore-connection");
+      cy.getByTestId("connection-grid-item-postgres_connector").within(() => {
+        cy.getByTestId("connection-menu-btn").click();
+      });
+      cy.getByTestId("connection-menu-postgres_connector").within(() => {
+        cy.getByTestId("configure-btn").click();
+      });
+      cy.getAntTab("Dataset configuration").click({ force: true });
+      cy.wait("@getPostgresConnectorDatasetconfig");
+
+      // Verify that the minimal datasets API was called
+      cy.wait("@getMinimalDatasets").then((interception) => {
+        expect(interception.request.url).to.contain("minimal=true");
+      });
     });
   });
 
@@ -162,9 +187,7 @@ describe("Connectors", () => {
 
     it("allows the user to add an email connector", () => {
       cy.visit("/datastore-connection/new");
-      cy.getByTestId("select-dropdown-btn").click();
-      cy.getByTestId("select-dropdown-list").contains("Email connectors");
-      cy.getByTestId("select-dropdown-btn").click();
+      cy.getByTestId("connection-type-filter").antSelect("Email connectors");
       cy.getByTestId("sovrn-item").click();
       cy.url().should("contain", "/new?step=2");
 

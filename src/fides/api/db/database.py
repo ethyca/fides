@@ -14,10 +14,9 @@ from sqlalchemy_utils.functions import create_database, database_exists
 from sqlalchemy_utils.types.encrypted.encrypted_type import InvalidCiphertextError
 
 from fides.api.db.base import Base  # type: ignore[attr-defined]
-from fides.api.db.ctl_session import async_session
-from fides.api.db.seed import load_default_resources, load_samples
+from fides.api.db.seed import load_default_resources
+from fides.api.db.session import get_db_engine
 from fides.api.util.errors import get_full_exception_name
-from fides.core.utils import get_db_engine
 
 DatabaseHealth = Literal["healthy", "unhealthy", "needs migration"]
 
@@ -42,15 +41,22 @@ def upgrade_db(alembic_config: Config, revision: str = "head") -> None:
     command.upgrade(alembic_config, revision)
 
 
+def init_db(database_url: str) -> None:
+    """
+    Runs the migrations and creates all of the database objects.
+    """
+    alembic_config = get_alembic_config(database_url)
+    upgrade_db(alembic_config)
+
+
 def downgrade_db(alembic_config: Config, revision: str = "head") -> None:
     """Downgrade the database to the specified migration revision."""
     log.info(f"Running database downgrade to revision {revision}")
     command.downgrade(alembic_config, revision)
 
 
-async def migrate_db(
+def migrate_db(
     database_url: str,
-    samples: bool = False,
     revision: str = "head",
     downgrade: bool = False,
 ) -> None:
@@ -66,11 +72,6 @@ async def migrate_db(
     else:
         upgrade_db(alembic_config, revision)
 
-        async with async_session() as session:
-            await load_default_resources(session)
-            if samples:
-                await load_samples(session)
-
 
 def create_db_if_not_exists(database_url: str) -> None:
     """
@@ -85,7 +86,7 @@ def reset_db(database_url: str) -> None:
     Drops all tables/metadata from the database.
     """
     log.info("Resetting database...")
-    engine = get_db_engine(database_url)
+    engine = get_db_engine(database_uri=database_url)
     with engine.connect() as connection:
         log.info("Dropping tables...")
         Base.metadata.drop_all(connection)
@@ -121,13 +122,17 @@ def get_db_health(
         return ("unhealthy", None)
 
 
-async def configure_db(
-    database_url: str, samples: bool = False, revision: Optional[str] = "head"
-) -> None:
-    """Set up the db to be used by the app."""
+def seed_db(session: Session) -> None:
+    """Load default resources into the database, and optionally load samples."""
+    load_default_resources(session)
+
+
+def configure_db(database_url: str, revision: Optional[str] = "head") -> None:
+    """Set up the db to be used by the app. Creates db if needed and runs migrations."""
     try:
         create_db_if_not_exists(database_url)
-        await migrate_db(database_url, samples=samples, revision=revision)  # type: ignore[arg-type]
+        migrate_db(database_url, revision=revision)  # type: ignore[arg-type]
+
     except InvalidCiphertextError as cipher_error:
         log.error(
             "Unable to configure database due to a decryption error! Check to ensure your `app_encryption_key` has not changed."
@@ -138,3 +143,21 @@ async def configure_db(
         error_type = get_full_exception_name(error)
         log.error("Unable to configure database: {}: {}", error_type, error)
         log.opt(exception=True).error(error)
+        raise
+
+
+def check_missing_migrations(database_url: str) -> None:
+    """
+    Tries to autogenerate migrations, returns True if a migration
+    was generated.
+    """
+
+    engine = get_db_engine(database_uri=database_url)
+    connection = engine.connect()
+
+    migration_context = migration.MigrationContext.configure(connection)
+    result = command.autogen.compare_metadata(migration_context, Base.metadata)  # type: ignore[attr-defined]
+
+    if result:
+        raise SystemExit("Migrations needs to be generated!")
+    print("No migrations need to be generated.")

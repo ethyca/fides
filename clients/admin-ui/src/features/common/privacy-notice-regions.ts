@@ -101,7 +101,7 @@ export const PRIVACY_NOTICE_REGION_RECORD: Record<PrivacyNoticeRegion, string> =
     [PrivacyNoticeRegion.KH]: "Cambodia",
     [PrivacyNoticeRegion.AE]: "United Arab Emirates",
     [PrivacyNoticeRegion.HK]: "Hong Kong",
-    [PrivacyNoticeRegion.GE]: "Georgia",
+    [PrivacyNoticeRegion.GE]: "Georgia (Country)",
     [PrivacyNoticeRegion.BD]: "Bangladesh",
     [PrivacyNoticeRegion.KW]: "Kuwait",
     [PrivacyNoticeRegion.TM]: "Turkmenistan",
@@ -290,13 +290,13 @@ export const PRIVACY_NOTICE_REGION_RECORD: Record<PrivacyNoticeRegion, string> =
     [PrivacyNoticeRegion.US_PR]: "Puerto Rico",
     [PrivacyNoticeRegion.US_RI]: "Rhode Island",
     [PrivacyNoticeRegion.US_SC]: "South Carolina",
-    [PrivacyNoticeRegion.US_SD]: "San Diego",
+    [PrivacyNoticeRegion.US_SD]: "South Dakota",
     [PrivacyNoticeRegion.US_TN]: "Tennessee",
     [PrivacyNoticeRegion.US_TX]: "Texas",
     [PrivacyNoticeRegion.US_UT]: "Utah",
     [PrivacyNoticeRegion.US_VA]: "Virginia",
     [PrivacyNoticeRegion.US_VI]: "United States Virgin Islands",
-    [PrivacyNoticeRegion.US_VT]: "Vermon",
+    [PrivacyNoticeRegion.US_VT]: "Vermont",
     [PrivacyNoticeRegion.US_WA]: "Washington",
     [PrivacyNoticeRegion.US_WV]: "West Virginia",
     [PrivacyNoticeRegion.US_WI]: "Wisconsin",
@@ -320,6 +320,7 @@ export const PRIVACY_NOTICE_REGION_RECORD: Record<PrivacyNoticeRegion, string> =
     [PrivacyNoticeRegion.CARIBBEAN]: "Caribbean",
     [PrivacyNoticeRegion.EEA]: "European Economic Area (EEA)",
     [PrivacyNoticeRegion.NON_EEA]: "Non European Economic Area",
+    [PrivacyNoticeRegion.GLOBAL]: "Global",
   };
 
 export const PRIVACY_NOTICE_REGION_MAP = new Map(

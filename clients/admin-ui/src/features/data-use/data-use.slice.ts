@@ -27,7 +27,7 @@ const dataUseApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Data Uses"],
     }),
-    createDataUse: build.mutation<DataUse, DataUse>({
+    createDataUse: build.mutation<DataUse, Partial<DataUse>>({
       query: (dataUse) => ({
         url: `data_use`,
         method: "POST",
@@ -48,6 +48,7 @@ const dataUseApi = baseApi.injectEndpoints({
 
 export const {
   useGetAllDataUsesQuery,
+  useLazyGetAllDataUsesQuery,
   useGetDataUseByKeyQuery,
   useUpdateDataUseMutation,
   useCreateDataUseMutation,

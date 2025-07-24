@@ -171,6 +171,7 @@ export const DataFlowAccordionForm = ({
                   </Button>
                   <Button
                     type="primary"
+                    htmlType="submit"
                     loading={isSubmitting}
                     disabled={!dirty && assignedDataFlow === initialDataFlows}
                     data-testid="save-btn"

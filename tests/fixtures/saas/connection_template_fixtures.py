@@ -19,20 +19,20 @@ from fides.api.util.connection_util import validate_secrets
 
 
 @pytest.fixture(scope="function")
-def secondary_sendgrid_instance(db):
+def secondary_hubspot_instance(db):
     """
-    Instantiate a `sendgrid` SaaS connector instance
+    Instantiate a `hubspot` SaaS connector instance
     Yields a tuple of the `ConnectionConfig` and `DatasetConfig`
     """
     secrets = {
-        "domain": "test_sendgrid_domain",
-        "api_key": "test_sendgrid_api_key",
+        "domain": "test_hubspot_domain",
+        "private_app_token": "test_hubspot_api_key",
     }
     connection_config, dataset_config = instantiate_connector(
         db,
-        "sendgrid",
-        "secondary_sendgrid_instance",
-        "Sendgrid ConnectionConfig description",
+        "hubspot",
+        "secondary_hubspot_instance",
+        "Hubspot ConnectionConfig description",
         secrets,
     )
     yield connection_config, dataset_config

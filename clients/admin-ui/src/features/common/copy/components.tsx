@@ -1,6 +1,7 @@
 import {
   Code,
   Heading,
+  HeadingProps,
   Link,
   OrderedList,
   Table,
@@ -15,8 +16,11 @@ import {
 } from "fidesui";
 import { ReactNode } from "react";
 
-export const InfoHeading = ({ text }: { text: string }) => (
-  <Heading fontSize="sm" mt={4} mb={1}>
+export const InfoHeading = ({
+  text,
+  ...props
+}: { text: string } & HeadingProps) => (
+  <Heading fontSize="sm" mt={4} mb={1} {...props}>
     {text}
   </Heading>
 );

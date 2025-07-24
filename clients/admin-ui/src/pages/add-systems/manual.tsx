@@ -1,13 +1,12 @@
-import { Box, Heading, Text } from "fidesui";
+import { AntTabs as Tabs, Box, Heading, Text } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import React, { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import DataTabs from "~/features/common/DataTabs";
 import Layout from "~/features/common/Layout";
-import BackButton from "~/features/common/nav/v2/BackButton";
-import { ADD_SYSTEMS_ROUTE } from "~/features/common/nav/v2/routes";
+import { ADD_SYSTEMS_ROUTE } from "~/features/common/nav/routes";
+import PageHeader from "~/features/common/PageHeader";
 import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
 import { selectLockedForGVL } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import GVLNotice from "~/features/system/GVLNotice";
@@ -20,7 +19,7 @@ const DESCRIBE_SYSTEM_COPY =
 const Header = ({ connector }: { connector?: ConnectionSystemTypeMap }) => (
   <Box display="flex" mb={4} alignItems="center" data-testid="header">
     <ConnectionTypeLogo data={connector ?? "ethyca"} mr={2} />
-    <Heading fontSize="2xl" fontWeight="semibold">
+    <Heading fontSize="md">
       Describe your {connector ? connector.human_readable : "new"} system
     </Heading>
   </Box>
@@ -30,7 +29,7 @@ const NewManualSystem: NextPage = () => {
   const router = useRouter();
   const { connectorType } = router.query;
 
-  const { tabData, tabIndex, onTabChange } = useSystemFormTabs({
+  const { tabData, activeKey, onTabChange } = useSystemFormTabs({
     isCreate: true,
   });
 
@@ -49,7 +48,16 @@ const NewManualSystem: NextPage = () => {
 
   return (
     <Layout title="Describe your system">
-      <BackButton backPath={ADD_SYSTEMS_ROUTE} />
+      <PageHeader
+        heading="Add systems"
+        breadcrumbItems={[
+          {
+            title: "Add systems",
+            href: ADD_SYSTEMS_ROUTE,
+          },
+          { title: "New system" },
+        ]}
+      />
       <Header connector={connector} />
 
       {lockedForGVL ? <GVLNotice /> : null}
@@ -57,14 +65,7 @@ const NewManualSystem: NextPage = () => {
         <Text fontSize="sm" mb={8}>
           {DESCRIBE_SYSTEM_COPY}
         </Text>
-        <DataTabs
-          data={tabData}
-          data-testid="system-tabs"
-          index={tabIndex}
-          isLazy
-          isManual
-          onChange={onTabChange}
-        />
+        <Tabs items={tabData} activeKey={activeKey} onChange={onTabChange} />
       </Box>
     </Layout>
   );

@@ -3,6 +3,7 @@ import React, { useMemo } from "react";
 
 import { DirtyFormConfirmationModal } from "~/features/common/hooks/useIsAnyFormDirty";
 import Layout from "~/features/common/Layout";
+import PageHeader from "~/features/common/PageHeader";
 import Datamap from "~/features/datamap/Datamap";
 import DatamapGraphStore from "~/features/datamap/datamap-graph/DatamapGraphContext";
 import DatamapTableContext, {
@@ -17,11 +18,12 @@ const Home: NextPage = () => {
 
   return (
     <Layout
-      title="View Map"
+      title="Data lineage"
       mainProps={{
-        padding: "40px 0 0 40px",
+        padding: "24px 0 0 40px",
       }}
     >
+      <PageHeader style={{ paddingLeft: 0 }} heading="Data lineage" />
       <DatamapTableContext.Provider value={datamapTableContextValue}>
         <DatamapGraphStore>
           <Datamap />

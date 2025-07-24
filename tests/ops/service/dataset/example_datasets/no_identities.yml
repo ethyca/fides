@@ -1,0 +1,20 @@
+dataset:
+  - fides_key: no_identities
+    name: No identities
+    description: A dataset with a single collection with missing identities
+    collections:
+      - name: customer
+        fields:
+          - name: address_id
+            data_categories: [system.operations]
+          - name: created
+            data_categories: [system.operations]
+          - name: email
+            data_categories: [user.contact.email]
+          - name: id
+            data_categories: [user.unique_id]
+          - name: name
+            data_categories: [user.name]
+            fides_meta:
+              data_type: string
+              length: 40

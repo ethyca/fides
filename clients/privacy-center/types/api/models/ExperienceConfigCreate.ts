@@ -21,6 +21,7 @@ export type ExperienceConfigCreate = {
   layer1_button_options?: Layer1ButtonOption | null;
   allow_language_selection?: boolean | null;
   auto_detect_language?: boolean | null;
+  auto_subdomain_cookie_deletion?: boolean | null;
   regions?: Array<PrivacyNoticeRegion>;
   component: ComponentType;
   privacy_notice_ids?: Array<string>;

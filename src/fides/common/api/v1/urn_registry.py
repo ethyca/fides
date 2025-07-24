@@ -77,6 +77,9 @@ POLICY_DETAIL = "/dsr/policy/{policy_key}"
 # Privacy request URLs
 PRIVACY_REQUESTS = "/privacy-request"
 PRIVACY_REQUEST_APPROVE = "/privacy-request/administrate/approve"
+PRIVACY_REQUEST_BATCH_EMAIL_SEND = (
+    "/privacy-request/administrate/process-awaiting-email-send"
+)
 PRIVACY_REQUEST_AUTHENTICATED = "/privacy-request/authenticated"
 PRIVACY_REQUEST_BULK_RETRY = "/privacy-request/bulk/retry"
 PRIVACY_REQUEST_BULK_SOFT_DELETE = "/privacy-request/bulk/soft-delete"
@@ -85,8 +88,12 @@ PRIVACY_REQUEST_SOFT_DELETE = "/privacy-request/{privacy_request_id}/soft-delete
 REQUEST_STATUS_LOGS = "/privacy-request/{privacy_request_id}/log"
 REQUEST_TASKS = "/privacy-request/{privacy_request_id}/tasks"
 PRIVACY_REQUEST_REQUEUE = "/privacy-request/{privacy_request_id}/requeue"
+PRIVACY_REQUEST_RESUBMIT = "/privacy-request/{privacy_request_id}/resubmit"
 REQUEST_TASK_CALLBACK = "/request-task/callback"
-
+PRIVACY_REQUEST_ACCESS_RESULTS = "/privacy-request/{privacy_request_id}/access-results"
+PRIVACY_REQUEST_FILTERED_RESULTS = (
+    "/privacy-request/{privacy_request_id}/filtered-results"
+)
 
 PRIVACY_REQUEST_VERIFY_IDENTITY = "/privacy-request/{privacy_request_id}/verify"
 PRIVACY_REQUEST_RESUME = "/privacy-request/{privacy_request_id}/resume"
@@ -152,14 +159,22 @@ AUTHORIZE = "/connection/{connection_key}/authorize"
 ACCESS_MANUAL_WEBHOOKS = "/access_manual_webhook"
 ACCESS_MANUAL_WEBHOOK = CONNECTION_BY_KEY + "/access_manual_webhook"
 
+# Manual Tasks
+MANUAL_TASKS = "/manual-tasks"
+MANUAL_TASK = CONNECTION_BY_KEY + "/manual-task"
+
 # Collection URLs
 DATASETS = "/dataset"
 DATASET_CONFIG = "/datasetconfig"
 DATASET_VALIDATE = CONNECTION_BY_KEY + "/validate_dataset"
 CONNECTION_DATASETS = CONNECTION_BY_KEY + DATASETS
 DATASET_CONFIGS = CONNECTION_BY_KEY + DATASET_CONFIG
-DATASET_BY_KEY = CONNECTION_BY_KEY + DATASETS + "/{fides_key}"
-DATASETCONFIG_BY_KEY = CONNECTION_BY_KEY + DATASET_CONFIG + "/{fides_key}"
+DATASET_BY_KEY = CONNECTION_BY_KEY + DATASETS + "/{dataset_key}"
+DATASET_CONFIG_BY_KEY = CONNECTION_BY_KEY + DATASET_CONFIG + "/{dataset_key}"
+DATASET_INPUTS = DATASET_BY_KEY + "/inputs"
+DATASET_REACHABILITY = DATASET_BY_KEY + "/reachability"
+TEST_DATASET = DATASET_BY_KEY + "/test"
+DATASETS_CLEAN = DATASETS + "/clean"
 
 # YAML Collection URLs
 YAML_DATASETS = YAML + CONNECTION_DATASETS

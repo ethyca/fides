@@ -28,7 +28,6 @@ interface AccordionProps extends DataProps {
     declaration: PrivacyDeclarationResponse,
   ) => Promise<PrivacyDeclarationResponse[] | undefined>;
   includeCustomFields?: boolean;
-  includeCookies?: boolean;
 }
 
 const PrivacyDeclarationAccordionItem = ({
@@ -36,7 +35,6 @@ const PrivacyDeclarationAccordionItem = ({
   onEdit,
   onDelete,
   includeCustomFields,
-  includeCookies,
   ...dataProps
 }: { privacyDeclaration: PrivacyDeclarationResponse } & Omit<
   AccordionProps,
@@ -87,7 +85,6 @@ const PrivacyDeclarationAccordionItem = ({
                     privacyDeclarationId={privacyDeclaration.id}
                     onDelete={onDelete}
                     includeCustomFields={includeCustomFields}
-                    includeCookies={includeCookies}
                     {...dataProps}
                   />
                 </Stack>

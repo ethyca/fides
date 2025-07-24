@@ -22,6 +22,7 @@ export enum ConnectionType {
   MONGODB = "mongodb",
   MSSQL = "mssql",
   MYSQL = "mysql",
+  OKTA = "okta",
   POSTGRES = "postgres",
   REDSHIFT = "redshift",
   S3 = "s3",

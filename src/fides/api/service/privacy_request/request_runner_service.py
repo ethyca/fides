@@ -1,10 +1,12 @@
-import secrets
+# pylint: disable=too-many-lines
+import time
+from copy import deepcopy
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Optional, Tuple
 
 import requests
 from loguru import logger
-from pydantic import ValidationError
+from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy.orm import Query, Session
 
 from fides.api import common_exceptions
@@ -16,24 +18,25 @@ from fides.api.common_exceptions import (
     NoCachedManualWebhookEntry,
     PrivacyRequestExit,
     PrivacyRequestPaused,
+    ValidationError,
 )
 from fides.api.db.session import get_db_session
 from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph import DatasetGraph
+from fides.api.models.attachment import Attachment, AttachmentReferenceType
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.connectionconfig import AccessLevel, ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.policy import (
-    CurrentStep,
     Policy,
     PolicyPostWebhook,
     PolicyPreWebhook,
+    Rule,
     WebhookTypes,
 )
 from fides.api.models.privacy_request import (
     PrivacyRequest,
-    PrivacyRequestStatus,
     ProvidedIdentityType,
     can_run_checkpoint,
 )
@@ -42,7 +45,8 @@ from fides.api.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
     MessagingActionType,
 )
-from fides.api.schemas.policy import ActionType
+from fides.api.schemas.policy import ActionType, CurrentStep
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import FidesConnector, get_connector
 from fides.api.service.connectors.consent_email_connector import (
@@ -56,6 +60,10 @@ from fides.api.service.messaging.message_dispatch_service import (
     dispatch_message,
     message_send_enabled,
 )
+from fides.api.service.privacy_request.attachment_handling import (
+    get_attachments_content,
+    process_attachments_for_upload,
+)
 from fides.api.service.storage.storage_uploader_service import upload
 from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_runners import access_runner, consent_runner, erasure_runner
@@ -64,11 +72,12 @@ from fides.api.task.graph_task import (
     filter_by_enabled_actions,
     get_cached_data_for_erasures,
 )
+from fides.api.task.manual.manual_task_utils import create_manual_task_artificial_graphs
 from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
-from fides.api.util.cache import cache_task_tracking_key
 from fides.api.util.collection_util import Row
 from fides.api.util.logger import Pii, _log_exception, _log_warning
+from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
 from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_TRANSFER_TO_PARENT,
     V1_URL_PREFIX,
@@ -80,7 +89,8 @@ from fides.config.config_proxy import ConfigProxy
 class ManualWebhookResults(FidesSchema):
     """Represents manual webhook data retrieved from the cache and whether privacy request execution should continue"""
 
-    manual_data: Dict[str, List[Dict[str, Optional[Any]]]]
+    manual_data_for_upload: dict[str, list[dict[str, Optional[Any]]]]
+    manual_data_for_storage: dict[str, list[dict[str, Optional[Any]]]]
     proceed: bool
 
 
@@ -92,17 +102,52 @@ def get_manual_webhook_access_inputs(
 
     This data will be uploaded to the user as-is, without filtering.
     """
-    manual_inputs: Dict[str, List[Dict[str, Optional[Any]]]] = {}
+    manual_inputs_for_upload: dict[str, list[dict[str, Optional[Any]]]] = {}
+    manual_inputs_for_storage: dict[str, list[dict[str, Optional[Any]]]] = {}
 
     if not policy.get_rules_for_action(action_type=ActionType.access):
         # Don't fetch manual inputs unless this policy has an access rule
-        return ManualWebhookResults(manual_data=manual_inputs, proceed=True)
+        return ManualWebhookResults(
+            manual_data_for_upload=manual_inputs_for_upload,
+            manual_data_for_storage=manual_inputs_for_storage,
+            proceed=True,
+        )
 
     try:
         for manual_webhook in AccessManualWebhook.get_enabled(db, ActionType.access):
-            manual_inputs[manual_webhook.connection_config.key] = [
+            # Get the manual webhook input data
+            webhook_data_for_storage = (
                 privacy_request.get_manual_webhook_access_input_strict(manual_webhook)
+            )
+            # Add the system name to the webhook data for display purposes
+            webhook_data_for_storage["system_name"] = (
+                manual_webhook.connection_config.system.name
+            )
+            webhook_data_for_upload = deepcopy(webhook_data_for_storage)
+
+            # Get any attachments for this webhook, load from db to ensure they have their configs
+            webhook_attachments = privacy_request.get_access_manual_webhook_attachments(
+                db, manual_webhook.id
+            )
+            if webhook_attachments:
+                attachment_ids = [wa.id for wa in webhook_attachments]
+                loaded_attachments = (
+                    db.query(Attachment).filter(Attachment.id.in_(attachment_ids)).all()
+                )
+                (
+                    webhook_data_for_upload["attachments"],
+                    webhook_data_for_storage["attachments"],
+                ) = process_attachments_for_upload(
+                    get_attachments_content(loaded_attachments)
+                )
+
+            manual_inputs_for_upload[manual_webhook.connection_config.key] = [
+                webhook_data_for_upload
             ]
+            manual_inputs_for_storage[manual_webhook.connection_config.key] = [  # type: ignore[assignment]
+                webhook_data_for_storage
+            ]
+
     except (
         NoCachedManualWebhookEntry,
         ValidationError,
@@ -111,19 +156,31 @@ def get_manual_webhook_access_inputs(
         logger.info(exc)
         privacy_request.status = PrivacyRequestStatus.requires_input
         privacy_request.save(db)
-        return ManualWebhookResults(manual_data=manual_inputs, proceed=False)
+        return ManualWebhookResults(
+            manual_data_for_upload=manual_inputs_for_upload,
+            manual_data_for_storage=manual_inputs_for_storage,
+            proceed=False,
+        )
 
-    return ManualWebhookResults(manual_data=manual_inputs, proceed=True)
+    return ManualWebhookResults(
+        manual_data_for_upload=manual_inputs_for_upload,
+        manual_data_for_storage=manual_inputs_for_storage,
+        proceed=True,
+    )
 
 
 def get_manual_webhook_erasure_inputs(
     db: Session, privacy_request: PrivacyRequest, policy: Policy
 ) -> ManualWebhookResults:
-    manual_inputs: Dict[str, List[Dict[str, Optional[Any]]]] = {}
+    manual_inputs: dict[str, list[dict[str, Optional[Any]]]] = {}
 
     if not policy.get_rules_for_action(action_type=ActionType.erasure):
         # Don't fetch manual inputs unless this policy has an access rule
-        return ManualWebhookResults(manual_data=manual_inputs, proceed=True)
+        return ManualWebhookResults(
+            manual_data_for_upload=manual_inputs,
+            manual_data_for_storage=manual_inputs,
+            proceed=True,
+        )
     try:
         for manual_webhook in AccessManualWebhook().get_enabled(db, ActionType.erasure):
             manual_inputs[manual_webhook.connection_config.key] = [
@@ -137,93 +194,134 @@ def get_manual_webhook_erasure_inputs(
         logger.info(exc)
         privacy_request.status = PrivacyRequestStatus.requires_input
         privacy_request.save(db)
-        return ManualWebhookResults(manual_data=manual_inputs, proceed=False)
-
-    return ManualWebhookResults(manual_data=manual_inputs, proceed=True)
-
-
-def run_webhooks_and_report_status(
-    db: Session,
-    privacy_request: PrivacyRequest,
-    webhook_cls: WebhookTypes,
-    after_webhook_id: Optional[str] = None,
-) -> bool:
-    """
-    Runs a series of webhooks either pre- or post- privacy request execution, if any are configured.
-    Updates privacy request status if execution is paused/errored.
-    Returns True if execution should proceed.
-    """
-    webhooks = db.query(webhook_cls).filter_by(policy_id=privacy_request.policy.id)  # type: ignore
-
-    if after_webhook_id:
-        # Only run webhooks configured to run after this Pre-Execution webhook
-        pre_webhook = PolicyPreWebhook.get(db=db, object_id=after_webhook_id)
-        webhooks = webhooks.filter(  # type: ignore[call-arg]
-            webhook_cls.order > pre_webhook.order,  # type: ignore[union-attr]
+        return ManualWebhookResults(
+            manual_data_for_upload=manual_inputs,
+            manual_data_for_storage=manual_inputs,
+            proceed=False,
         )
 
-    current_step = CurrentStep[f"{webhook_cls.prefix}_webhooks"]
-
-    for webhook in webhooks.order_by(webhook_cls.order):  # type: ignore[union-attr]
-        try:
-            privacy_request.trigger_policy_webhook(
-                webhook=webhook,
-                policy_action=privacy_request.policy.get_action_type(),
-            )
-        except PrivacyRequestPaused:
-            logger.info(
-                "Pausing execution of privacy request {}. Halt instruction received from webhook {}.",
-                privacy_request.id,
-                webhook.key,
-            )
-            privacy_request.pause_processing(db)
-            initiate_paused_privacy_request_followup(privacy_request)
-            return False
-        except ClientUnsuccessfulException as exc:
-            logger.error(
-                "Privacy Request '{}' exited after response from webhook '{}': {}.",
-                privacy_request.id,
-                webhook.key,
-                Pii(str(exc.args[0])),
-            )
-            privacy_request.error_processing(db)
-            privacy_request.cache_failed_checkpoint_details(current_step)
-            return False
-        except ValidationError:
-            logger.error(
-                "Privacy Request '{}' errored due to response validation error from webhook '{}'.",
-                privacy_request.id,
-                webhook.key,
-            )
-            privacy_request.error_processing(db)
-            privacy_request.cache_failed_checkpoint_details(current_step)
-            return False
-
-    return True
+    return ManualWebhookResults(
+        manual_data_for_upload=manual_inputs,
+        manual_data_for_storage=manual_inputs,
+        proceed=True,
+    )
 
 
-def upload_access_results(  # pylint: disable=R0912
+@log_context(capture_args={"privacy_request_id": LoggerContextKeys.privacy_request_id})
+def upload_access_results(
     session: Session,
     policy: Policy,
-    access_result: Dict[str, List[Row]],
+    rule: Rule,
+    results_to_upload: dict[str, list[dict[str, Optional[Any]]]],
     dataset_graph: DatasetGraph,
     privacy_request: PrivacyRequest,
-    manual_data: Dict[str, List[Dict[str, Optional[Any]]]],
-    fides_connector_datasets: Set[str],
-) -> List[str]:
-    """Process the data uploads after the access portion of the privacy request has completed"""
-    download_urls: List[str] = []
-    if not access_result:
-        logger.info("No results returned for access request {}", privacy_request.id)
+    upload_attachments: list[dict[str, Any]],
+) -> list[str]:
+    """Upload results for a single rule and return download URLs and modified results."""
+    start_time = time.time()
+    download_urls: list[str] = []
+    storage_destination = rule.get_storage_destination(session)
 
-    rule_filtered_results: Dict[str, Dict[str, List[Row]]] = {}
+    if upload_attachments:
+        results_to_upload["attachments"] = upload_attachments
+
+    logger.info("Starting access request upload for rule {}", rule.key)
+    try:
+        download_url: Optional[str] = upload(
+            db=session,
+            privacy_request=privacy_request,
+            data=results_to_upload,
+            storage_key=storage_destination.key,  # type: ignore
+            data_category_field_mapping=dataset_graph.data_category_field_mapping,
+            data_use_map=privacy_request.get_cached_data_use_map(),
+        )
+        if download_url:
+            download_urls.append(download_url)
+            logger.bind(
+                time_taken=time.time() - start_time,
+            ).info("Access package upload successful for privacy request.")
+            privacy_request.add_success_execution_log(
+                session,
+                connection_key=None,
+                dataset_name="Access package upload",
+                collection_name=None,
+                message="Access package upload successful for privacy request.",
+                action_type=ActionType.access,
+            )
+    except common_exceptions.StorageUploadError as exc:
+        logger.error(
+            "Error uploading subject access data for rule {} on policy {}: {}",
+            rule.key,
+            policy.key,
+            Pii(str(exc)),
+        )
+        privacy_request.add_error_execution_log(
+            session,
+            connection_key=None,
+            dataset_name="Access package upload",
+            collection_name=None,
+            message="Access package upload failed for privacy request.",
+            action_type=ActionType.access,
+        )
+        privacy_request.status = PrivacyRequestStatus.error
+
+    return download_urls
+
+
+def save_access_results(
+    session: Session,
+    privacy_request: PrivacyRequest,
+    download_urls: list[str],
+    rule_filtered_results: dict[str, dict[str, list[dict[str, Optional[Any]]]]],
+) -> None:
+    """Save the results we uploaded to the user for later retrieval"""
+    # Save the results we uploaded to the user for later retrieval
+    privacy_request.save_filtered_access_results(session, rule_filtered_results)
+    # Saving access request URL's on the privacy request in case DSR 3.0
+    # exits processing before the email is sent
+    privacy_request.access_result_urls = {"access_result_urls": download_urls}
+    privacy_request.save(session)
+
+
+@log_context(
+    capture_args={
+        "privacy_request_id": LoggerContextKeys.privacy_request_id,
+    }
+)
+def upload_and_save_access_results(  # pylint: disable=R0912
+    session: Session,
+    policy: Policy,
+    access_result: dict[str, list[Row]],
+    dataset_graph: DatasetGraph,
+    privacy_request: PrivacyRequest,
+    manual_data_access_results: ManualWebhookResults,
+    fides_connector_datasets: set[str],
+) -> list[str]:
+    """Process the data uploads after the access portion of the privacy request has completed"""
+    download_urls: list[str] = []
+    # Remove manual webhook attachments from the list of attachments
+    # This is done because the manual webhook attachments are already included in the manual_data
+    loaded_attachments = [
+        attachment
+        for attachment in privacy_request.attachments
+        if AttachmentReferenceType.access_manual_webhook
+        not in [ref.reference_type for ref in attachment.references]
+    ]
+    attachments = get_attachments_content(loaded_attachments)
+    # Process attachments once for both upload and storage
+    upload_attachments, storage_attachments = process_attachments_for_upload(
+        attachments
+    )
+
+    if not access_result:
+        logger.info("No results returned for access request")
+
+    rule_filtered_results: dict[str, dict[str, list[dict[str, Optional[Any]]]]] = {}
     for rule in policy.get_rules_for_action(  # pylint: disable=R1702
         action_type=ActionType.access
     ):
-        storage_destination = rule.get_storage_destination(session)
-
-        target_categories: Set[str] = {target.data_category for target in rule.targets}  # type: ignore[attr-defined]
-        filtered_results: Dict[str, List[Dict[str, Optional[Any]]]] = (
+        target_categories: set[str] = {target.data_category for target in rule.targets}  # type: ignore[attr-defined]
+        filtered_results: dict[str, list[dict[str, Optional[Any]]]] = (
             filter_data_categories(
                 access_result,
                 target_categories,
@@ -232,65 +330,34 @@ def upload_access_results(  # pylint: disable=R0912
                 fides_connector_datasets,
             )
         )
+        # Create a copy of filtered results to modify for upload
+        results_to_upload = deepcopy(filtered_results)
+        results_to_upload.update(manual_data_access_results.manual_data_for_upload)
 
-        filtered_results.update(
-            manual_data
-        )  # Add manual data directly to each upload packet
+        rule_download_urls = upload_access_results(
+            session,
+            policy,
+            rule,
+            results_to_upload,
+            dataset_graph,
+            privacy_request,
+            upload_attachments,
+        )
+        download_urls.extend(rule_download_urls)
+
+        # Create results for storage
+        filtered_results.update(manual_data_access_results.manual_data_for_storage)
+        if storage_attachments:
+            filtered_results["attachments"] = storage_attachments
         rule_filtered_results[rule.key] = filtered_results
 
-        logger.info(
-            "Starting access request upload for rule {} for privacy request {}",
-            rule.key,
-            privacy_request.id,
-        )
-        try:
-            download_url: Optional[str] = upload(
-                db=session,
-                privacy_request=privacy_request,
-                data=filtered_results,
-                storage_key=storage_destination.key,  # type: ignore
-                data_category_field_mapping=dataset_graph.data_category_field_mapping,
-                data_use_map=privacy_request.get_cached_data_use_map(),
-            )
-            if download_url:
-                download_urls.append(download_url)
-        except common_exceptions.StorageUploadError as exc:
-            logger.error(
-                "Error uploading subject access data for rule {} on policy {} and privacy request {} : {}",
-                rule.key,
-                policy.key,
-                privacy_request.id,
-                Pii(str(exc)),
-            )
-            privacy_request.status = PrivacyRequestStatus.error
-    # Save the results we uploaded to the user for later retrieval
-    privacy_request.save_filtered_access_results(session, rule_filtered_results)
-    # Saving access request URL's on the privacy request in case DSR 3.0
-    # exits processing before the email is sent
-    privacy_request.access_result_urls = {"access_result_urls": download_urls}
-    privacy_request.save(session)
+    save_access_results(session, privacy_request, download_urls, rule_filtered_results)
     return download_urls
 
 
-def queue_privacy_request(
-    privacy_request_id: str,
-    from_webhook_id: Optional[str] = None,
-    from_step: Optional[str] = None,
-) -> str:
-    logger.info(
-        "Queueing privacy request {} from step {}", privacy_request_id, from_step
-    )
-    task = run_privacy_request.delay(
-        privacy_request_id=privacy_request_id,
-        from_webhook_id=from_webhook_id,
-        from_step=from_step,
-    )
-    cache_task_tracking_key(privacy_request_id, task.task_id)
-
-    return task.task_id
-
-
 @celery_app.task(base=DatabaseTask, bind=True)
+# TODO: Add log_context back in, this is just for some temporary testing
+# @log_context(capture_args={"privacy_request_id": LoggerContextKeys.privacy_request_id})
 def run_privacy_request(
     self: DatabaseTask,
     privacy_request_id: str,
@@ -310,7 +377,10 @@ def run_privacy_request(
     """
     resume_step: Optional[CurrentStep] = CurrentStep(from_step) if from_step else None  # type: ignore
     if from_step:
-        logger.info("Resuming privacy request from checkpoint: '{}'", from_step)
+        with logger.contextualize(
+            privacy_request_id=privacy_request_id,
+        ):
+            logger.info("Resuming privacy request from checkpoint: '{}'", from_step)
 
     with self.get_new_session() as session:
         privacy_request = PrivacyRequest.get(db=session, object_id=privacy_request_id)
@@ -319,286 +389,328 @@ def run_privacy_request(
                 f"Privacy request with id {privacy_request_id} not found"
             )
 
-        if privacy_request.status == PrivacyRequestStatus.canceled:
-            logger.info(
-                "Terminating privacy request {}: request canceled.", privacy_request.id
-            )
-            return
-
-        if privacy_request.deleted_at is not None:
-            logger.info(
-                "Terminating privacy request {}: request deleted.", privacy_request.id
-            )
-            return
-
-        logger.info("Dispatching privacy request {}", privacy_request.id)
-        privacy_request.start_processing(session)
-
-        policy = privacy_request.policy
-
-        # check manual access results and pause if needed
-        manual_webhook_access_results: ManualWebhookResults = (
-            get_manual_webhook_access_inputs(session, privacy_request, policy)
-        )
-        if not manual_webhook_access_results.proceed:
-            return
-
-        # check manual erasure results and pause if needed
-        manual_webhook_erasure_results: ManualWebhookResults = (
-            get_manual_webhook_erasure_inputs(session, privacy_request, policy)
-        )
-        if not manual_webhook_erasure_results.proceed:
-            return
-
-        # Pre-Webhooks CHECKPOINT
-        if can_run_checkpoint(
-            request_checkpoint=CurrentStep.pre_webhooks, from_checkpoint=resume_step
+        with logger.contextualize(
+            privacy_request_source=(
+                privacy_request.source.value if privacy_request.source else None
+            ),
+            privacy_request_id=privacy_request.id,
         ):
-            privacy_request.cache_failed_checkpoint_details(CurrentStep.pre_webhooks)
-            # Run pre-execution webhooks
-            proceed = run_webhooks_and_report_status(
-                session,
-                privacy_request=privacy_request,
-                webhook_cls=PolicyPreWebhook,  # type: ignore
-                after_webhook_id=from_webhook_id,
-            )
-            if not proceed:
+            if privacy_request.status == PrivacyRequestStatus.canceled:
+                logger.info("Terminating privacy request: request canceled.")
                 return
-        try:
-            policy.rules[0]  # type: ignore[attr-defined]
-        except IndexError:
-            raise common_exceptions.MisconfiguredPolicyException(
-                f"Policy with key {policy.key} must contain at least one Rule."
+
+            if privacy_request.deleted_at is not None:
+                logger.info("Terminating privacy request: request deleted.")
+                return
+
+            logger.info("Dispatching privacy request")
+            privacy_request.start_processing(session)
+
+            policy = privacy_request.policy
+
+            # check manual access results and pause if needed
+            manual_webhook_access_results: ManualWebhookResults = (
+                get_manual_webhook_access_inputs(session, privacy_request, policy)
             )
+            if not manual_webhook_access_results.proceed:
+                return
 
-        try:
-            datasets = DatasetConfig.all(db=session)
-            dataset_graphs = [dataset_config.get_graph() for dataset_config in datasets]
-            dataset_graph = DatasetGraph(*dataset_graphs)
-            identity_data = {
-                key: value["value"] if isinstance(value, dict) else value
-                for key, value in privacy_request.get_cached_identity_data().items()
-            }
-            connection_configs = ConnectionConfig.all(db=session)
-            fides_connector_datasets: Set[str] = filter_fides_connector_datasets(
-                connection_configs
+            # check manual erasure results and pause if needed
+            manual_webhook_erasure_results: ManualWebhookResults = (
+                get_manual_webhook_erasure_inputs(session, privacy_request, policy)
             )
+            if not manual_webhook_erasure_results.proceed:
+                return
 
-            # Access CHECKPOINT
-            if (
-                policy.get_rules_for_action(action_type=ActionType.access)
-                or policy.get_rules_for_action(action_type=ActionType.erasure)
-            ) and can_run_checkpoint(
-                request_checkpoint=CurrentStep.access, from_checkpoint=resume_step
-            ):
-                privacy_request.cache_failed_checkpoint_details(CurrentStep.access)
-                access_runner(
-                    privacy_request=privacy_request,
-                    policy=policy,
-                    graph=dataset_graph,
-                    connection_configs=connection_configs,
-                    identity=identity_data,
-                    session=session,
-                    privacy_request_proceed=True,  # Should always be True unless we're testing
-                )
-
-            # Upload Access Results CHECKPOINT
-            access_result_urls: List[str] = []
-            raw_access_results: Dict = privacy_request.get_raw_access_results()
-            if (
-                policy.get_rules_for_action(action_type=ActionType.access)
-                or policy.get_rules_for_action(
-                    action_type=ActionType.erasure
-                )  # Intentional to support requeuing the Privacy Request after the Access step for DSR 3.0 for both access/erasure requests
-            ) and can_run_checkpoint(
-                request_checkpoint=CurrentStep.upload_access,
-                from_checkpoint=resume_step,
+            # Pre-Webhooks CHECKPOINT
+            if can_run_checkpoint(
+                request_checkpoint=CurrentStep.pre_webhooks, from_checkpoint=resume_step
             ):
                 privacy_request.cache_failed_checkpoint_details(
-                    CurrentStep.upload_access
+                    CurrentStep.pre_webhooks
                 )
-                filtered_access_results = filter_by_enabled_actions(
-                    raw_access_results, connection_configs
-                )
-                access_result_urls = upload_access_results(
+                # Run pre-execution webhooks
+                proceed = run_webhooks_and_report_status(
                     session,
-                    policy,
-                    filtered_access_results,
-                    dataset_graph,
-                    privacy_request,
-                    manual_webhook_access_results.manual_data,
-                    fides_connector_datasets,
-                )
-
-            # Erasure CHECKPOINT
-            if policy.get_rules_for_action(
-                action_type=ActionType.erasure
-            ) and can_run_checkpoint(
-                request_checkpoint=CurrentStep.erasure, from_checkpoint=resume_step
-            ):
-                privacy_request.cache_failed_checkpoint_details(CurrentStep.erasure)
-                # We only need to run the erasure once until masking strategies are handled
-                erasure_runner(
                     privacy_request=privacy_request,
-                    policy=policy,
-                    graph=dataset_graph,
-                    connection_configs=connection_configs,
-                    identity=identity_data,
-                    access_request_data=get_cached_data_for_erasures(
-                        privacy_request.id
-                    ),
-                    session=session,
-                    privacy_request_proceed=True,  # Should always be True unless we're testing
+                    webhook_cls=PolicyPreWebhook,  # type: ignore
+                    after_webhook_id=from_webhook_id,
                 )
-
-            # Finalize Erasure CHECKPOINT
-            if can_run_checkpoint(
-                request_checkpoint=CurrentStep.finalize_erasure,
-                from_checkpoint=resume_step,
-            ):
-                # This checkpoint allows a Privacy Request to be re-queued
-                # after the Erasure Step is complete for DSR 3.0
-                privacy_request.cache_failed_checkpoint_details(
-                    CurrentStep.finalize_erasure
-                )
-
-            if policy.get_rules_for_action(
-                action_type=ActionType.consent
-            ) and can_run_checkpoint(
-                request_checkpoint=CurrentStep.consent,
-                from_checkpoint=resume_step,
-            ):
-                privacy_request.cache_failed_checkpoint_details(CurrentStep.consent)
-                consent_runner(
-                    privacy_request=privacy_request,
-                    policy=policy,
-                    graph=build_consent_dataset_graph(datasets),
-                    connection_configs=connection_configs,
-                    identity=identity_data,
-                    session=session,
-                    privacy_request_proceed=True,  # Should always be True unless we're testing
-                )
-
-            # Finalize Consent CHECKPOINT
-            if can_run_checkpoint(
-                request_checkpoint=CurrentStep.finalize_consent,
-                from_checkpoint=resume_step,
-            ):
-                # This checkpoint allows a Privacy Request to be re-queued
-                # after the Consent Step is complete for DSR 3.0
-                privacy_request.cache_failed_checkpoint_details(
-                    CurrentStep.finalize_consent
-                )
-
-        except PrivacyRequestPaused as exc:
-            privacy_request.pause_processing(session)
-            _log_warning(exc, CONFIG.dev_mode)
-            return
-
-        except PrivacyRequestExit:
-            # Privacy Request Exiting awaiting sub task processing (Request Tasks)
-            # The access, consent, and erasure runners for DSR 3.0 throw this exception after its
-            # Request Tasks have been built.  The Privacy Request will be requeued from
-            # the appropriate checkpoint when all the Request Tasks have run.
-            return
-
-        except BaseException as exc:  # pylint: disable=broad-except
-            privacy_request.error_processing(db=session)
-            # If dev mode, log traceback
-            _log_exception(exc, CONFIG.dev_mode)
-            return
-
-        # Check if privacy request needs erasure or consent emails sent
-        # Email post-send CHECKPOINT
-        if (
-            (
-                policy.get_rules_for_action(action_type=ActionType.erasure)
-                or policy.get_rules_for_action(action_type=ActionType.consent)
-            )
-            and can_run_checkpoint(
-                request_checkpoint=CurrentStep.email_post_send,
-                from_checkpoint=resume_step,
-            )
-            and needs_batch_email_send(session, identity_data, privacy_request)
-        ):
-            privacy_request.cache_failed_checkpoint_details(CurrentStep.email_post_send)
-            privacy_request.pause_processing_for_email_send(session)
-            logger.info(
-                "Privacy request '{}' exiting: awaiting email send.",
-                privacy_request.id,
-            )
-            return
-
-        # Post Webhooks CHECKPOINT
-        if can_run_checkpoint(
-            request_checkpoint=CurrentStep.post_webhooks,
-            from_checkpoint=resume_step,
-        ):
-            privacy_request.cache_failed_checkpoint_details(CurrentStep.post_webhooks)
-            proceed = run_webhooks_and_report_status(
-                db=session,
-                privacy_request=privacy_request,
-                webhook_cls=PolicyPostWebhook,  # type: ignore
-            )
-            if not proceed:
-                return
-
-        legacy_request_completion_enabled = ConfigProxy(
-            session
-        ).notifications.send_request_completion_notification
-
-        action_type = (
-            MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS
-            if policy.get_rules_for_action(action_type=ActionType.access)
-            else MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION
-        )
-
-        if message_send_enabled(
-            session,
-            privacy_request.property_id,
-            action_type,
-            legacy_request_completion_enabled,
-        ) and not policy.get_rules_for_action(action_type=ActionType.consent):
+                if not proceed:
+                    return
             try:
-                if not access_result_urls:
-                    # For DSR 3.0, if the request had both access and erasure rules, this needs to be fetched
-                    # from the database because the Privacy Request would have exited
-                    # processing and lost access to the access_result_urls in memory
-                    access_result_urls = (privacy_request.access_result_urls or {}).get(
-                        "access_result_urls", []
-                    )
-                initiate_privacy_request_completion_email(
-                    session,
-                    policy,
-                    access_result_urls,
-                    identity_data,
-                    privacy_request.property_id,
+                policy.rules[0]  # type: ignore[attr-defined]
+            except IndexError:
+                raise common_exceptions.MisconfiguredPolicyException(
+                    f"Policy with key {policy.key} must contain at least one Rule."
                 )
-            except (IdentityNotFoundException, MessageDispatchException) as e:
+
+            try:
+                datasets = DatasetConfig.all(db=session)
+                dataset_graphs = [
+                    dataset_config.get_graph()
+                    for dataset_config in datasets
+                    if not dataset_config.connection_config.disabled
+                ]
+
+                # Add manual task artificial graphs to dataset graphs
+                manual_task_graphs = create_manual_task_artificial_graphs(session)
+                dataset_graphs.extend(manual_task_graphs)
+
+                dataset_graph = DatasetGraph(*dataset_graphs)
+
+                # Add success log for dataset configuration
+                privacy_request.add_success_execution_log(
+                    session,
+                    connection_key=None,
+                    dataset_name="Dataset reference validation",
+                    collection_name=None,
+                    message=f"Dataset reference validation successful for privacy request: {privacy_request.id}",
+                    action_type=privacy_request.policy.get_action_type(),  # type: ignore
+                )
+
+                identity_data = {
+                    key: value["value"] if isinstance(value, dict) else value
+                    for key, value in privacy_request.get_cached_identity_data().items()
+                }
+                connection_configs = ConnectionConfig.all(db=session)
+                fides_connector_datasets: set[str] = filter_fides_connector_datasets(
+                    connection_configs
+                )
+
+                # Access CHECKPOINT
+                if (
+                    policy.get_rules_for_action(action_type=ActionType.access)
+                    or policy.get_rules_for_action(action_type=ActionType.erasure)
+                ) and can_run_checkpoint(
+                    request_checkpoint=CurrentStep.access, from_checkpoint=resume_step
+                ):
+                    privacy_request.cache_failed_checkpoint_details(CurrentStep.access)
+                    access_runner(
+                        privacy_request=privacy_request,
+                        policy=policy,
+                        graph=dataset_graph,
+                        connection_configs=connection_configs,
+                        identity=identity_data,
+                        session=session,
+                        privacy_request_proceed=True,  # Should always be True unless we're testing
+                    )
+
+                # Upload Access Results CHECKPOINT
+                access_result_urls: list[str] = []
+                raw_access_results: dict = privacy_request.get_raw_access_results()
+                if (
+                    policy.get_rules_for_action(action_type=ActionType.access)
+                    or policy.get_rules_for_action(
+                        action_type=ActionType.erasure
+                    )  # Intentional to support requeuing the Privacy Request after the Access step for DSR 3.0 for both access/erasure requests
+                ) and can_run_checkpoint(
+                    request_checkpoint=CurrentStep.upload_access,
+                    from_checkpoint=resume_step,
+                ):
+                    privacy_request.cache_failed_checkpoint_details(
+                        CurrentStep.upload_access
+                    )
+                    filtered_access_results = filter_by_enabled_actions(
+                        raw_access_results, connection_configs
+                    )
+                    access_result_urls = upload_and_save_access_results(
+                        session,
+                        policy,
+                        filtered_access_results,
+                        dataset_graph,
+                        privacy_request,
+                        manual_webhook_access_results,
+                        fides_connector_datasets,
+                    )
+
+                # Erasure CHECKPOINT
+                if policy.get_rules_for_action(
+                    action_type=ActionType.erasure
+                ) and can_run_checkpoint(
+                    request_checkpoint=CurrentStep.erasure, from_checkpoint=resume_step
+                ):
+                    privacy_request.cache_failed_checkpoint_details(CurrentStep.erasure)
+                    # We only need to run the erasure once until masking strategies are handled
+                    erasure_runner(
+                        privacy_request=privacy_request,
+                        policy=policy,
+                        graph=dataset_graph,
+                        connection_configs=connection_configs,
+                        identity=identity_data,
+                        access_request_data=get_cached_data_for_erasures(
+                            privacy_request.id
+                        ),
+                        session=session,
+                        privacy_request_proceed=True,  # Should always be True unless we're testing
+                    )
+
+                # Finalize Erasure CHECKPOINT
+                if can_run_checkpoint(
+                    request_checkpoint=CurrentStep.finalize_erasure,
+                    from_checkpoint=resume_step,
+                ):
+                    # This checkpoint allows a Privacy Request to be re-queued
+                    # after the Erasure Step is complete for DSR 3.0
+                    privacy_request.cache_failed_checkpoint_details(
+                        CurrentStep.finalize_erasure
+                    )
+
+                if policy.get_rules_for_action(
+                    action_type=ActionType.consent
+                ) and can_run_checkpoint(
+                    request_checkpoint=CurrentStep.consent,
+                    from_checkpoint=resume_step,
+                ):
+                    privacy_request.cache_failed_checkpoint_details(CurrentStep.consent)
+                    consent_runner(
+                        privacy_request=privacy_request,
+                        policy=policy,
+                        graph=build_consent_dataset_graph(datasets),
+                        connection_configs=connection_configs,
+                        identity=identity_data,
+                        session=session,
+                        privacy_request_proceed=True,  # Should always be True unless we're testing
+                    )
+
+                # Finalize Consent CHECKPOINT
+                if can_run_checkpoint(
+                    request_checkpoint=CurrentStep.finalize_consent,
+                    from_checkpoint=resume_step,
+                ):
+                    # This checkpoint allows a Privacy Request to be re-queued
+                    # after the Consent Step is complete for DSR 3.0
+                    privacy_request.cache_failed_checkpoint_details(
+                        CurrentStep.finalize_consent
+                    )
+
+            except PrivacyRequestPaused as exc:
+                privacy_request.pause_processing(session)
+                _log_warning(exc, CONFIG.dev_mode)
+                return
+
+            except PrivacyRequestExit:
+                # Privacy Request Exiting awaiting sub task processing (Request Tasks)
+                # The access, consent, and erasure runners for DSR 3.0 throw this exception after its
+                # Request Tasks have been built.  The Privacy Request will be requeued from
+                # the appropriate checkpoint when all the Request Tasks have run.
+                return
+
+            except ValidationError as exc:
+                # Handle validation errors from dataset graph creation
+                logger.error(f"Error validating dataset references: {str(exc)}")
+                privacy_request.add_error_execution_log(
+                    session,
+                    connection_key=None,
+                    dataset_name="Dataset reference validation",
+                    collection_name=None,
+                    message=str(exc),
+                    action_type=privacy_request.policy.get_action_type(),  # type: ignore
+                )
+                privacy_request.error_processing(db=session)
+                return
+
+            except BaseException as exc:  # pylint: disable=broad-except
                 privacy_request.error_processing(db=session)
                 # If dev mode, log traceback
-                _log_exception(e, CONFIG.dev_mode)
+                _log_exception(exc, CONFIG.dev_mode)
                 return
-        privacy_request.finished_processing_at = datetime.utcnow()
-        AuditLog.create(
-            db=session,
-            data={
-                "user_id": "system",
-                "privacy_request_id": privacy_request.id,
-                "action": AuditLogAction.finished,
-                "message": "",
-            },
-        )
-        privacy_request.status = PrivacyRequestStatus.complete
-        logger.info("Privacy request {} run completed.", privacy_request.id)
-        privacy_request.save(db=session)
+
+            # Check if privacy request needs erasure or consent emails sent
+            # Email post-send CHECKPOINT
+            if (
+                (
+                    policy.get_rules_for_action(action_type=ActionType.erasure)
+                    or policy.get_rules_for_action(action_type=ActionType.consent)
+                )
+                and can_run_checkpoint(
+                    request_checkpoint=CurrentStep.email_post_send,
+                    from_checkpoint=resume_step,
+                )
+                and needs_batch_email_send(session, identity_data, privacy_request)
+            ):
+                privacy_request.cache_failed_checkpoint_details(
+                    CurrentStep.email_post_send
+                )
+                privacy_request.pause_processing_for_email_send(session)
+                logger.info("Privacy request exiting: awaiting email send.")
+                return
+
+            # Post Webhooks CHECKPOINT
+            if can_run_checkpoint(
+                request_checkpoint=CurrentStep.post_webhooks,
+                from_checkpoint=resume_step,
+            ):
+                privacy_request.cache_failed_checkpoint_details(
+                    CurrentStep.post_webhooks
+                )
+                proceed = run_webhooks_and_report_status(
+                    db=session,
+                    privacy_request=privacy_request,
+                    webhook_cls=PolicyPostWebhook,  # type: ignore
+                )
+                if not proceed:
+                    return
+
+            legacy_request_completion_enabled = ConfigProxy(
+                session
+            ).notifications.send_request_completion_notification
+
+            action_type = (
+                MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS
+                if policy.get_rules_for_action(action_type=ActionType.access)
+                else MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION
+            )
+
+            if message_send_enabled(
+                session,
+                privacy_request.property_id,
+                action_type,
+                legacy_request_completion_enabled,
+            ) and not policy.get_rules_for_action(action_type=ActionType.consent):
+                try:
+                    if not access_result_urls:
+                        # For DSR 3.0, if the request had both access and erasure rules, this needs to be fetched
+                        # from the database because the Privacy Request would have exited
+                        # processing and lost access to the access_result_urls in memory
+                        access_result_urls = (
+                            privacy_request.access_result_urls or {}
+                        ).get("access_result_urls", [])
+                    initiate_privacy_request_completion_email(
+                        session,
+                        policy,
+                        access_result_urls,
+                        identity_data,
+                        privacy_request.property_id,
+                    )
+                except (IdentityNotFoundException, MessageDispatchException) as e:
+                    privacy_request.error_processing(db=session)
+                    # If dev mode, log traceback
+                    _log_exception(e, CONFIG.dev_mode)
+                    return
+
+            # Only mark as complete if not in error state
+            if privacy_request.status != PrivacyRequestStatus.error:
+                privacy_request.finished_processing_at = datetime.utcnow()
+                AuditLog.create(
+                    db=session,
+                    data={
+                        "user_id": "system",
+                        "privacy_request_id": privacy_request.id,
+                        "action": AuditLogAction.finished,
+                        "message": "",
+                    },
+                )
+                privacy_request.status = PrivacyRequestStatus.complete
+                logger.info("Privacy request run completed.")
+                privacy_request.save(db=session)
 
 
 def initiate_privacy_request_completion_email(
     session: Session,
     policy: Policy,
-    access_result_urls: List[str],
-    identity_data: Dict[str, Any],
+    access_result_urls: list[str],
+    identity_data: dict[str, Any],
     property_id: Optional[str],
 ) -> None:
     """
@@ -678,18 +790,11 @@ def mark_paused_privacy_request_as_expired(privacy_request_id: str) -> None:
     db.close()
 
 
-def generate_id_verification_code() -> str:
-    """
-    Generate one-time identity verification code
-    """
-    return str(secrets.choice(range(100000, 999999)))
-
-
 def _retrieve_child_results(  # pylint: disable=R0911
     fides_connector: Tuple[str, ConnectionConfig],
     rule_key: str,
-    access_result: Dict[str, List[Row]],
-) -> Optional[List[Dict[str, Optional[List[Row]]]]]:
+    access_result: dict[str, list[Row]],
+) -> Optional[list[dict[str, Optional[list[Row]]]]]:
     """Get child access request results to add to upload."""
     try:
         connector = FidesConnector(fides_connector[1])
@@ -776,7 +881,7 @@ def get_erasure_email_connection_configs(db: Session) -> Query:
 
 
 def needs_batch_email_send(
-    db: Session, user_identities: Dict[str, Any], privacy_request: PrivacyRequest
+    db: Session, user_identities: dict[str, Any], privacy_request: PrivacyRequest
 ) -> bool:
     """
     Delegates the "needs email" check to each configured email or
@@ -786,8 +891,8 @@ def needs_batch_email_send(
     If we don't need to send any emails, add skipped logs for any
     relevant erasure and consent email connectors.
     """
-    can_skip_erasure_email: List[ConnectionConfig] = []
-    can_skip_consent_email: List[ConnectionConfig] = []
+    can_skip_erasure_email: list[ConnectionConfig] = []
+    can_skip_consent_email: list[ConnectionConfig] = []
 
     needs_email_send: bool = False
 
@@ -818,8 +923,8 @@ def needs_batch_email_send(
 def _create_execution_logs_for_skipped_email_send(
     db: Session,
     privacy_request: PrivacyRequest,
-    can_skip_erasure_email: List[ConnectionConfig],
-    can_skip_consent_email: List[ConnectionConfig],
+    can_skip_erasure_email: list[ConnectionConfig],
+    can_skip_consent_email: list[ConnectionConfig],
 ) -> None:
     """Create skipped execution logs for relevant connectors
     if this privacy request does not need an email send at all.  For consent requests,
@@ -835,3 +940,63 @@ def _create_execution_logs_for_skipped_email_send(
     for connection_config in can_skip_consent_email:
         connector = get_connector(connection_config)
         connector.add_skipped_log(db, privacy_request)  # type: ignore[attr-defined]
+
+
+def run_webhooks_and_report_status(
+    db: Session,
+    privacy_request: PrivacyRequest,
+    webhook_cls: WebhookTypes,
+    after_webhook_id: Optional[str] = None,
+) -> bool:
+    """
+    Runs a series of webhooks either pre- or post- privacy request execution, if any are configured.
+    Updates privacy request status if execution is paused/errored.
+    Returns True if execution should proceed.
+    """
+    webhooks = db.query(webhook_cls).filter_by(policy_id=privacy_request.policy.id)  # type: ignore
+
+    if after_webhook_id:
+        # Only run webhooks configured to run after this Pre-Execution webhook
+        pre_webhook = PolicyPreWebhook.get(db=db, object_id=after_webhook_id)
+        webhooks = webhooks.filter(  # type: ignore[call-arg]
+            webhook_cls.order > pre_webhook.order,  # type: ignore[union-attr]
+        )
+
+    current_step = CurrentStep[f"{webhook_cls.prefix}_webhooks"]
+
+    for webhook in webhooks.order_by(webhook_cls.order):  # type: ignore[union-attr]
+        try:
+            privacy_request.trigger_policy_webhook(
+                webhook=webhook,
+                policy_action=privacy_request.policy.get_action_type(),
+            )
+        except PrivacyRequestPaused:
+            logger.info(
+                "Pausing execution of privacy request {}. Halt instruction received from webhook {}.",
+                privacy_request.id,
+                webhook.key,
+            )
+            privacy_request.pause_processing(db)
+            initiate_paused_privacy_request_followup(privacy_request)
+            return False
+        except ClientUnsuccessfulException as exc:
+            logger.error(
+                "Privacy Request '{}' exited after response from webhook '{}': {}.",
+                privacy_request.id,
+                webhook.key,
+                Pii(str(exc.args[0])),
+            )
+            privacy_request.error_processing(db)
+            privacy_request.cache_failed_checkpoint_details(current_step)
+            return False
+        except PydanticValidationError:
+            logger.error(
+                "Privacy Request '{}' errored due to response validation error from webhook '{}'.",
+                privacy_request.id,
+                webhook.key,
+            )
+            privacy_request.error_processing(db)
+            privacy_request.cache_failed_checkpoint_details(current_step)
+            return False
+
+    return True

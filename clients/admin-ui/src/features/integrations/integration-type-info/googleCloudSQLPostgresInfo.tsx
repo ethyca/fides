@@ -7,22 +7,18 @@ import {
 } from "~/features/common/copy/components";
 import ShowMoreContent from "~/features/common/copy/ShowMoreContent";
 import { ConnectionCategory } from "~/features/integrations/ConnectionCategory";
+import { IntegrationFeatureEnum } from "~/features/integrations/IntegrationFeatureEnum";
 import { AccessLevel, ConnectionType } from "~/types/api";
 
 export const GOOGLE_CLOUD_SQL_POSTGRES_PLACEHOLDER = {
-  name: "Google Cloud SQL for Postgres",
+  name: "Cloud SQL - Postgres",
   key: "google_cloud_sql_for_postgres_placeholder",
   connection_type: ConnectionType.GOOGLE_CLOUD_SQL_POSTGRES,
   access: AccessLevel.READ,
   created_at: "",
 };
 
-export const GOOGLE_CLOUD_SQL_POSTGRES_TAGS = [
-  "Database",
-  "Detection",
-  "Discovery",
-  "DSR automation",
-];
+export const GOOGLE_CLOUD_SQL_POSTGRES_TAGS = ["Discovery", "Detection"];
 
 export const GoogleCloudSQLPostgresOverview = () => (
   <>
@@ -75,6 +71,7 @@ const GOOGLE_CLOUD_SQL_POSTGRES_TYPE_INFO = {
   category: ConnectionCategory.DATABASE,
   overview: <GoogleCloudSQLPostgresOverview />,
   tags: GOOGLE_CLOUD_SQL_POSTGRES_TAGS,
+  enabledFeatures: [IntegrationFeatureEnum.DATA_DISCOVERY],
 };
 
 export default GOOGLE_CLOUD_SQL_POSTGRES_TYPE_INFO;

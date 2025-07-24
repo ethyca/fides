@@ -4,10 +4,10 @@ import { render as rtlRender, RenderOptions } from "@testing-library/react";
 import React, { ReactNode } from "react";
 import { Provider } from "react-redux";
 
-import { makeStore, RootState } from "~/app/store";
+import { makeStore, persistedReducer } from "~/app/store";
 
 type CustomRenderOptions = {
-  preloadedState?: Partial<RootState>;
+  preloadedState?: Parameters<typeof persistedReducer>[0];
   customStore?: Store;
 } & RenderOptions;
 

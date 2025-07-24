@@ -1,73 +1,79 @@
 import "../fides.css";
 
-import { FunctionComponent, h } from "preact";
 import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 
+import { FidesEvent } from "../../docs/fides-event";
 import { getConsentContext } from "../../lib/consent-context";
 import {
   ConsentMechanism,
   ConsentMethod,
   FidesCookie,
   Layer1ButtonOption,
+  NoticeConsent,
+  PrivacyExperience,
   PrivacyNotice,
-  PrivacyNoticeTranslation,
-  PrivacyNoticeWithPreference,
-  SaveConsentPreference,
+  PrivacyNoticeItem,
   ServingComponent,
 } from "../../lib/consent-types";
-import { getGpcStatusFromNotice } from "../../lib/consent-utils";
+import {
+  getGpcStatusFromNotice,
+  isConsentOverride,
+} from "../../lib/consent-utils";
 import { resolveConsentValue } from "../../lib/consent-value";
 import {
+  consentCookieObjHasSomeConsentSet,
   getFidesConsentCookie,
-  updateCookieFromNoticePreferences,
 } from "../../lib/cookie";
-import { dispatchFidesEvent } from "../../lib/events";
+import {
+  FidesEventDetailsPreference,
+  FidesEventDetailsServingComponent,
+} from "../../lib/events";
 import { useNoticesServed } from "../../lib/hooks";
 import {
   selectBestExperienceConfigTranslation,
   selectBestNoticeTranslation,
 } from "../../lib/i18n";
 import { useI18n } from "../../lib/i18n/i18n-context";
-import { updateConsentPreferences } from "../../lib/preferences";
-import { transformConsentToFidesUserPreference } from "../../lib/shared-consent-utils";
+import { updateConsent } from "../../lib/preferences";
+import { useEvent } from "../../lib/providers/event-context";
+import {
+  InitializedFidesGlobal,
+  useFidesGlobal,
+} from "../../lib/providers/fides-global-context";
+import { processExternalConsentValue } from "../../lib/shared-consent-utils";
 import ConsentBanner from "../ConsentBanner";
 import { NoticeConsentButtons } from "../ConsentButtons";
 import Overlay from "../Overlay";
-import { OverlayProps } from "../types";
 import { NoticeToggleProps, NoticeToggles } from "./NoticeToggles";
 
-/**
- * Define a special PrivacyNoticeItem, where we've narrowed the list of
- * available translations to the singular "best" translation that should be
- * displayed, and paired that with the source notice itself.
- */
-type PrivacyNoticeItem = {
-  notice: PrivacyNoticeWithPreference;
-  bestTranslation: PrivacyNoticeTranslation | null;
-};
-
-const NoticeOverlay: FunctionComponent<OverlayProps> = ({
-  options,
-  experience,
-  fidesRegionString,
-  cookie,
-  savedConsent,
-  propertyId,
-}) => {
+const NoticeOverlay = () => {
+  const { fidesGlobal, setFidesGlobal } = useFidesGlobal();
+  const {
+    fidesRegionString,
+    cookie,
+    options,
+    saved_consent: savedConsent,
+  } = fidesGlobal;
+  const experience = fidesGlobal.experience as PrivacyExperience;
   const { i18n, currentLocale, setCurrentLocale } = useI18n();
+  const {
+    triggerRef,
+    setTrigger,
+    servingComponentRef,
+    setServingComponent,
+    dispatchFidesEventAndClearTrigger,
+  } = useEvent();
+  const parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
 
   // TODO (PROD-1792): restore useMemo here but ensure that saved changes are respected
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const initialEnabledNoticeKeys = () => {
+  const initialEnabledNoticeKeys = (consent?: NoticeConsent) => {
     if (experience.privacy_notices) {
-      // ensure we have most up-to-date cookie vals
-      // TODO (PROD-1792): we should be able to replace parsedCookie with savedConsent
-      const parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
+      // ensure we have most up-to-date cookie vals. If we don't have any consent, use the savedConsent which will be the default values that haven't been passed through the privacy_notices yet so it's perfect to use here.
       return experience.privacy_notices.map((notice) => {
         const val = resolveConsentValue(
           notice,
-          getConsentContext(),
-          parsedCookie?.consent,
+          consent || savedConsent || parsedCookie?.consent,
         );
         return val ? (notice.notice_key as PrivacyNotice["notice_key"]) : "";
       });
@@ -88,41 +94,73 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   const privacyExperienceConfigHistoryId: string | undefined = useMemo(() => {
     if (experience.experience_config) {
       const bestTranslation = selectBestExperienceConfigTranslation(
-        i18n,
+        currentLocale,
+        i18n.getDefaultLocale(),
         experience.experience_config,
       );
       return bestTranslation?.privacy_experience_config_history_id;
     }
     return undefined;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [experience, i18n, currentLocale]);
+  }, [experience, currentLocale]);
 
   /**
    * Collect the given PrivacyNotices into a list of "items" for rendering.
    *
    * Each "item" includes both:
    * 1) notice: The PrivacyNotice itself with it's properties like keys,
-   *    preferences, etc.
+   *    preferences, etc. We also check if the notice needs to be disabled
+   *    based on the fidesDisabledNotices option or if the notice is a
+   *    notice-only notice.
    * 2) bestTranslation: The "best" translation for the notice based on the
    *    current locale
    *
-   * We memoize these together to avoid repeatedly figuring out the "best"
-   * translation on every render, since it will only change if the overall
-   * locale changes!
+   * We memoize these together to avoid repeatedly figuring out disabled status and the "best"
+   * translation on every render.
    */
   const privacyNoticeItems: PrivacyNoticeItem[] = useMemo(
-    () =>
-      (experience.privacy_notices || []).map((notice) => {
-        const bestTranslation = selectBestNoticeTranslation(i18n, notice);
-        return { notice, bestTranslation };
-      }),
+    () => {
+      const privacyNotices = experience.privacy_notices ?? [];
+      const items = privacyNotices.map((notice) => {
+        const disabled =
+          notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY ||
+          (options.fidesDisabledNotices?.includes(notice.notice_key) ??
+            false) ||
+          notice.disabled;
+        const bestTranslation = selectBestNoticeTranslation(
+          currentLocale,
+          i18n.getDefaultLocale(),
+          notice,
+        );
+        return { notice: { ...notice, disabled }, bestTranslation };
+      });
+
+      const noticeOnly = items.filter(
+        (item) =>
+          item.notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY,
+      );
+      const others = items.filter(
+        (item) =>
+          item.notice.consent_mechanism !== ConsentMechanism.NOTICE_ONLY,
+      );
+      return [...noticeOnly, ...others];
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [experience.privacy_notices, i18n, currentLocale],
+    [experience.privacy_notices, currentLocale, options.fidesDisabledNotices],
   );
 
   const [draftEnabledNoticeKeys, setDraftEnabledNoticeKeys] = useState<
     Array<string>
   >(initialEnabledNoticeKeys());
+
+  window.addEventListener("FidesUpdating", (event) => {
+    // If GPC is being applied after initialization, we need to update the initial overlay to reflect the new state. This is especially important for Firefox browsers (Gecko) because GPC gets applied rather late due to how it handles queuing the `setTimeout` on the last step of our `initialize` function.
+    const { consent } = event.detail;
+    Object.entries(consent).forEach(([key, value]) => {
+      consent[key] = processExternalConsentValue(value);
+    });
+    setDraftEnabledNoticeKeys(initialEnabledNoticeKeys(consent));
+  });
 
   const isAllNoticeOnly = privacyNoticeItems.every(
     (n) => n.notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY,
@@ -145,12 +183,12 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       description: item.bestTranslation?.description,
       checked,
       consentMechanism: item.notice.consent_mechanism,
-      disabled: item.notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY,
+      disabled: item.notice.disabled,
       gpcStatus,
     };
   });
 
-  const { servedNoticeHistoryId } = useNoticesServed({
+  useNoticesServed({
     privacyExperienceConfigHistoryId,
     privacyNoticeHistoryIds: privacyNoticeItems.reduce((ids, e) => {
       const id = e.bestTranslation?.privacy_notice_history_id;
@@ -163,81 +201,154 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     userGeography: fidesRegionString,
     acknowledgeMode: isAllNoticeOnly,
     privacyExperience: experience,
-    propertyId,
   });
-
-  const createConsentPreferencesToSave = (
-    privacyNoticeList: PrivacyNoticeItem[],
-    enabledPrivacyNoticeKeys: string[],
-  ): SaveConsentPreference[] =>
-    privacyNoticeList.map((item) => {
-      const userPreference = transformConsentToFidesUserPreference(
-        enabledPrivacyNoticeKeys.includes(item.notice.notice_key),
-        item.notice.consent_mechanism,
-      );
-      return new SaveConsentPreference(
-        item.notice,
-        userPreference,
-        item.bestTranslation?.privacy_notice_history_id,
-      );
-    });
 
   const handleUpdatePreferences = useCallback(
     (
       consentMethod: ConsentMethod,
       enabledPrivacyNoticeKeys: Array<PrivacyNotice["notice_key"]>,
     ) => {
-      const consentPreferencesToSave = createConsentPreferencesToSave(
-        privacyNoticeItems,
-        enabledPrivacyNoticeKeys,
-      );
-
-      updateConsentPreferences({
-        consentPreferencesToSave,
-        privacyExperienceConfigHistoryId,
-        experience,
+      const noticeConsent: NoticeConsent = {};
+      privacyNoticeItems.forEach((item) => {
+        if (item.notice.consent_mechanism !== ConsentMechanism.NOTICE_ONLY) {
+          noticeConsent[item.notice.notice_key] =
+            enabledPrivacyNoticeKeys.includes(item.notice.notice_key);
+        } else {
+          // always set notice-only notices to true
+          noticeConsent[item.notice.notice_key] = true;
+        }
+      });
+      updateConsent(fidesGlobal, {
+        noticeConsent,
         consentMethod,
-        options,
-        userLocationString: fidesRegionString,
-        cookie,
-        servedNoticeHistoryId,
-        propertyId,
-        updateCookie: (oldCookie) =>
-          updateCookieFromNoticePreferences(
-            oldCookie,
-            consentPreferencesToSave,
-          ),
+        eventExtraDetails: {
+          servingComponent: servingComponentRef.current,
+          trigger: triggerRef.current,
+        },
+      }).finally(() => {
+        if (window.Fides) {
+          // apply any updates to the fidesGlobal
+          setFidesGlobal(window.Fides as InitializedFidesGlobal);
+        }
+        setTrigger(undefined);
       });
       // Make sure our draft state also updates
       setDraftEnabledNoticeKeys(enabledPrivacyNoticeKeys);
     },
     [
-      cookie,
-      fidesRegionString,
-      experience,
-      options,
-      privacyExperienceConfigHistoryId,
       privacyNoticeItems,
-      servedNoticeHistoryId,
-      propertyId,
+      fidesGlobal,
+      servingComponentRef,
+      triggerRef,
+      setTrigger,
+      setFidesGlobal,
     ],
   );
 
-  const dispatchOpenBannerEvent = useCallback(() => {
-    dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
-      servingComponent: ServingComponent.BANNER,
-    });
-  }, [cookie, options.debug]);
+  const handleAcceptAll = useCallback(
+    (wasAutomated?: boolean) => {
+      handleUpdatePreferences(
+        wasAutomated ? ConsentMethod.SCRIPT : ConsentMethod.ACCEPT,
+        privacyNoticeItems
+          .filter((n) => {
+            return (
+              !n.notice.disabled ||
+              draftEnabledNoticeKeys.includes(n.notice.notice_key)
+            );
+          })
+          .map((n) => n.notice.notice_key),
+      );
+    },
+    [draftEnabledNoticeKeys, handleUpdatePreferences, privacyNoticeItems],
+  );
 
-  const dispatchOpenOverlayEvent = useCallback(() => {
-    dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
-      servingComponent: ServingComponent.MODAL,
-    });
-  }, [cookie, options.debug]);
+  const handleRejectAll = useCallback(
+    (wasAutomated?: boolean) => {
+      handleUpdatePreferences(
+        wasAutomated ? ConsentMethod.SCRIPT : ConsentMethod.REJECT,
+        privacyNoticeItems
+          .filter((n) => {
+            return (
+              n.notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY ||
+              (n.notice.disabled &&
+                draftEnabledNoticeKeys.includes(n.notice.notice_key))
+            );
+          })
+          .map((n) => n.notice.notice_key),
+      );
+    },
+    [draftEnabledNoticeKeys, handleUpdatePreferences, privacyNoticeItems],
+  );
+
+  useEffect(() => {
+    if (isConsentOverride(options) && experience.privacy_notices) {
+      if (options.fidesConsentOverride === ConsentMethod.ACCEPT) {
+        fidesDebugger(
+          "Consent automatically accepted by fides_consent_override!",
+        );
+        handleAcceptAll(true);
+      } else if (options.fidesConsentOverride === ConsentMethod.REJECT) {
+        fidesDebugger(
+          "Consent automatically rejected by fides_consent_override!",
+        );
+        handleRejectAll(true);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [experience.privacy_notices, options.fidesConsentOverride]);
+
+  const dispatchOpenBannerEvent = useCallback(() => {
+    setServingComponent(ServingComponent.BANNER);
+    dispatchFidesEventAndClearTrigger("FidesUIShown", cookie);
+  }, [cookie, dispatchFidesEventAndClearTrigger, setServingComponent]);
+
+  const dispatchOpenOverlayEvent = useCallback(
+    (origin?: string) => {
+      setServingComponent(ServingComponent.MODAL);
+      dispatchFidesEventAndClearTrigger("FidesUIShown", cookie, {
+        trigger: {
+          origin,
+        },
+      });
+    },
+    [cookie, dispatchFidesEventAndClearTrigger, setServingComponent],
+  );
 
   const handleDismiss = useCallback(() => {
-    handleUpdatePreferences(ConsentMethod.DISMISS, initialEnabledNoticeKeys());
-  }, [handleUpdatePreferences, initialEnabledNoticeKeys]);
+    if (!consentCookieObjHasSomeConsentSet(parsedCookie?.consent)) {
+      handleUpdatePreferences(
+        ConsentMethod.DISMISS,
+        initialEnabledNoticeKeys(),
+      );
+    }
+  }, [
+    handleUpdatePreferences,
+    initialEnabledNoticeKeys,
+    parsedCookie?.consent,
+  ]);
+
+  const handleToggleChange = useCallback(
+    (updatedKeys: Array<string>, preference: FidesEventDetailsPreference) => {
+      const eventExtraDetails: FidesEvent["detail"]["extraDetails"] = {
+        servingComponent:
+          servingComponentRef.current as FidesEventDetailsServingComponent,
+        trigger: triggerRef.current,
+        preference,
+      };
+      setDraftEnabledNoticeKeys(updatedKeys);
+      dispatchFidesEventAndClearTrigger(
+        "FidesUIChanged",
+        cookie,
+        eventExtraDetails,
+      );
+    },
+    [
+      triggerRef,
+      dispatchFidesEventAndClearTrigger,
+      cookie,
+      servingComponentRef,
+    ],
+  );
 
   const experienceConfig = experience.experience_config;
   if (!experienceConfig) {
@@ -259,10 +370,10 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       onOpen={dispatchOpenOverlayEvent}
       onDismiss={handleDismiss}
       renderBanner={({
+        attributes,
         isEmbedded,
         isOpen,
         onClose,
-        onSave,
         onManagePreferencesClick,
       }) => {
         const isAcknowledge =
@@ -271,6 +382,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
             Layer1ButtonOption.ACKNOWLEDGE;
         return (
           <ConsentBanner
+            attributes={attributes}
             bannerIsOpen={isOpen}
             dismissable={isDismissable}
             onOpen={dispatchOpenBannerEvent}
@@ -284,12 +396,20 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
                 experience={experience}
                 onManagePreferencesClick={onManagePreferencesClick}
                 enabledKeys={draftEnabledNoticeKeys}
+                onAcceptAll={() => {
+                  handleAcceptAll();
+                  onClose();
+                }}
+                onRejectAll={() => {
+                  handleRejectAll();
+                  onClose();
+                }}
                 onSave={(
                   consentMethod: ConsentMethod,
                   keys: Array<PrivacyNotice["notice_key"]>,
                 ) => {
                   handleUpdatePreferences(consentMethod, keys);
-                  onSave();
+                  onClose();
                 }}
                 isAcknowledge={isAcknowledge}
                 hideOptInOut={isAcknowledge}
@@ -305,10 +425,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
             <NoticeToggles
               noticeToggles={noticeToggles}
               enabledNoticeKeys={draftEnabledNoticeKeys}
-              onChange={(updatedKeys) => {
-                setDraftEnabledNoticeKeys(updatedKeys);
-                dispatchFidesEvent("FidesUIChanged", cookie, options.debug);
-              }}
+              onChange={handleToggleChange}
             />
           </div>
         </div>
@@ -317,6 +434,14 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         <NoticeConsentButtons
           experience={experience}
           enabledKeys={draftEnabledNoticeKeys}
+          onAcceptAll={() => {
+            handleAcceptAll();
+            onClose();
+          }}
+          onRejectAll={() => {
+            handleRejectAll();
+            onClose();
+          }}
           onSave={(
             consentMethod: ConsentMethod,
             keys: Array<PrivacyNotice["notice_key"]>,

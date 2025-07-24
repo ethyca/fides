@@ -7,5 +7,6 @@
  */
 export enum StorageTypeApiAccepted {
   S3 = "s3",
+  GCS = "gcs",
   LOCAL = "local",
 }

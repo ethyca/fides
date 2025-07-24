@@ -1,0 +1,14 @@
+[
+  {
+    "identifier": "asd",
+    "name": "asd",
+    "provider": "azure",
+    "authorization_url": "https://login.microsoftonline.com/111/oauth2/v2.0/authorize",
+    "token_url": "https://login.microsoftonline.com/111/oauth2/v2.0/token",
+    "user_info_url": null,
+    "domain": null,
+    "id": "ope_89ffcd09-ae35-4f58-b2b5-01c57e5ca0dd",
+    "created_at": "2024-11-01T18:30:43.255344Z",
+    "updated_at": "2024-11-01T18:30:43.255344Z"
+  }
+]

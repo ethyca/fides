@@ -1,6 +1,4 @@
 import {
-  CircleHelpIcon,
-  Flex,
   FormControl,
   FormErrorMessage,
   FormLabel,
@@ -36,8 +34,6 @@ export const CUSTOM_LABEL_STYLES: FormLabelProps = {
 type CustomInputProps = {
   customLabelProps?: FormLabelProps;
   disabled?: boolean;
-  displayHelpIcon?: boolean;
-  helpIconVisibility?: boolean;
   isRequired?: boolean;
   label?: string;
   type?: InputType;
@@ -47,8 +43,6 @@ type CustomInputProps = {
 const CustomInput = ({
   customLabelProps,
   disabled = false,
-  displayHelpIcon = true,
-  helpIconVisibility = false,
   isRequired = false,
   label,
   type = "text",
@@ -122,15 +116,6 @@ const CustomInput = ({
         )}
         <FormErrorMessage>{meta.error}</FormErrorMessage>
       </VStack>
-      {displayHelpIcon && (
-        <Flex
-          alignContent="center"
-          h="32px"
-          visibility={helpIconVisibility ? "visible" : "hidden"}
-        >
-          <CircleHelpIcon marginLeft="8px" _hover={{ cursor: "pointer" }} />
-        </Flex>
-      )}
     </FormControl>
   );
 };

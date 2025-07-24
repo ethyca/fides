@@ -2,9 +2,12 @@ from typing import Dict
 
 from loguru import logger
 
-from fides.api.models.privacy_request import PrivacyRequestStatus, ProvidedIdentityType
+from fides.api.models.privacy_request import ProvidedIdentityType
 from fides.api.schemas.drp_privacy_request import DrpIdentity
-from fides.api.schemas.privacy_request import PrivacyRequestDRPStatus
+from fides.api.schemas.privacy_request import (
+    PrivacyRequestDRPStatus,
+    PrivacyRequestStatus,
+)
 from fides.api.schemas.redis_cache import Identity
 
 

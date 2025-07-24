@@ -6,16 +6,12 @@ from fideslang.validation import FidesKey
 from pydantic import ConfigDict, Field, field_serializer, field_validator
 
 from fides.api.custom_types import SafeStr
+from fides.api.graph.config import CollectionAddress
 from fides.api.models.audit_log import AuditLogAction
-from fides.api.models.privacy_request import (
-    CheckpointActionRequired,
-    ExecutionLogStatus,
-    PrivacyRequestSource,
-    PrivacyRequestStatus,
-)
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.base_class import FidesSchema
-from fides.api.schemas.policy import ActionType
+from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.policy import PolicyResponse as PolicySchema
 from fides.api.schemas.redis_cache import CustomPrivacyRequestField, Identity
 from fides.api.schemas.user import PrivacyRequestReviewer
@@ -72,6 +68,26 @@ class ConsentReport(Consent):
     updated_at: datetime
 
 
+class PrivacyRequestSource(str, EnumType):
+    """
+    The source where the privacy request originated from
+
+    - Privacy Center: Request created from the Privacy Center
+    - Request Manager: Request submitted from the Admin UI's Request manager page
+    - Consent Webhook: Request created as a side-effect of a consent webhook request (bidirectional consent)
+    - Fides.js: Request created as a side-effect of a privacy preference update from Fides.js
+    - Dataset Test: Standalone dataset test
+    - Janus SDK: Request created from the Mobile SDK
+    """
+
+    privacy_center = "Privacy Center"
+    request_manager = "Request Manager"
+    consent_webhook = "Consent Webhook"
+    fides_js = "Fides.js"
+    dataset_test = "Dataset Test"
+    janus_sdk = "Janus SDK"
+
+
 class PrivacyRequestCreate(FidesSchema):
     """Data required to create a PrivacyRequest"""
 
@@ -97,6 +113,17 @@ class PrivacyRequestCreate(FidesSchema):
         if value:
             verify_encryption_key(value.encode(CONFIG.security.encoding))
         return value
+
+
+class PrivacyRequestResubmit(PrivacyRequestCreate):
+    """Schema used to copy a privacy request for resubmission"""
+
+    id: str
+    reviewed_at: Optional[datetime] = None
+    reviewed_by: Optional[str] = None
+    identity_verified_at: Optional[datetime] = None
+    custom_privacy_request_fields_approved_at: Optional[datetime] = None
+    custom_privacy_request_fields_approved_by: Optional[str] = None
 
 
 class ConsentRequestCreate(FidesSchema):
@@ -198,6 +225,34 @@ class RowCountRequest(FidesSchema):
     row_count: int
 
 
+class ManualAction(FidesSchema):
+    """
+    Surface how to retrieve or mask data in a database-agnostic way
+
+    - 'locators' are similar to the SQL "WHERE" information.
+    - 'get' contains a list of fields that should be retrieved from the source
+    - 'update' is a dictionary of fields and the replacement value/masking strategy
+    """
+
+    locators: Dict[str, Any]
+    get: Optional[List[str]]
+    update: Optional[Dict[str, Any]]
+
+
+class CheckpointActionRequired(FidesSchema):
+    """Describes actions needed on a particular checkpoint.
+
+    Examples are a paused collection that needs manual input, a failed collection that
+    needs to be restarted, or a collection where instructions need to be emailed to a third
+    party to complete the request.
+    """
+
+    step: CurrentStep
+    collection: Optional[CollectionAddress] = None
+    action_needed: Optional[List[ManualAction]] = None
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+
 class CheckpointActionRequiredDetails(CheckpointActionRequired):
     collection: Optional[str] = None  # type: ignore
 
@@ -216,6 +271,24 @@ class ManualWebhookData(FidesSchema):
 class PrivacyRequestNotificationInfo(FidesSchema):
     email_addresses: List[str]
     notify_after_failures: int
+
+
+class PrivacyRequestStatus(str, EnumType):
+    """Enum for privacy request statuses, reflecting where they are in the Privacy Request Lifecycle"""
+
+    identity_unverified = "identity_unverified"
+    requires_input = "requires_input"
+    pending = (
+        "pending"  # Privacy Request likely awaiting approval, if hanging in this state.
+    )
+    approved = "approved"
+    denied = "denied"
+    in_processing = "in_processing"
+    complete = "complete"
+    paused = "paused"
+    awaiting_email_send = "awaiting_email_send"
+    canceled = "canceled"
+    error = "error"
 
 
 class PrivacyRequestResponse(FidesSchema):
@@ -382,3 +455,40 @@ class PrivacyRequestFilter(FidesSchema):
         if isinstance(field_value, PrivacyRequestStatus):
             return [field_value]
         return field_value
+
+
+class PrivacyRequestAccessResults(FidesSchema):
+    """Schema for the access results of a PrivacyRequest"""
+
+    access_result_urls: List[str]
+
+
+class TestPrivacyRequest(FidesSchema):
+    """Schema containing the data for a test privacy request"""
+
+    privacy_request_id: str
+
+
+class FilteredPrivacyRequestResults(FidesSchema):
+    """Schema representing the status and results of a test privacy request"""
+
+    privacy_request_id: str
+    status: PrivacyRequestStatus
+    results: Union[Dict[str, Any], str]
+
+
+class LogEntry(FidesSchema):
+    """Schema representing a single log entry"""
+
+    timestamp: str
+    level: str
+    module_info: str
+    message: str
+
+
+class TestPrivacyRequestLogs(FidesSchema):
+    """Schema representing the logs of a test privacy request"""
+
+    privacy_request_id: str
+    status: PrivacyRequestStatus
+    logs: Union[List[LogEntry], str]

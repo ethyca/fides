@@ -1,6 +1,6 @@
 {
   "title": "Take control of your data",
-  "description": "When you use our services, you’re trusting us with your information. We understand this is a big responsibility and work hard to protect your information and put you in control.",
+  "description": "When you use our services, you're trusting us with your information. We understand this is a big responsibility and work hard to protect your information and put you in control.",
   "description_subtext": [],
   "addendum": [],
   "logo_path": "/logo.svg",
@@ -18,6 +18,38 @@
       "identity_inputs": {
         "email": "required"
       },
+      "custom_privacy_request_fields": {
+        "preferred_format": {
+          "label": "Preferred format",
+          "field_type": "select",
+          "required": true,
+          "options": [
+            "JSON",
+            "CSV",
+            "PDF",
+            "XML",
+            "HTML",
+            "TXT",
+            "DOCX",
+            "XLSX",
+            "PPTX",
+            "ZIP",
+            "PNG",
+            "JPEG",
+            "GIF",
+            "SVG",
+            "MP4",
+            "MP3",
+            "WAV",
+            "SQL",
+            "YAML",
+            "MD",
+            "RTF",
+            "EPUB",
+            "PSD"
+          ]
+        }
+      },
       "confirmButtonText": "Continue",
       "cancelButtonText": "Cancel"
     },
@@ -29,6 +61,19 @@
       "description_subtext": [],
       "identity_inputs": {
         "email": "required"
+      },
+      "custom_privacy_request_fields": {
+        "data_categories": {
+          "label": "Select data categories to erase",
+          "field_type": "multiselect",
+          "required": false,
+          "options": [
+            "Profile Information",
+            "User Preferences",
+            "Activity History",
+            "Analytics Data"
+          ]
+        }
       },
       "confirmButtonText": "Continue",
       "cancelButtonText": "Cancel"
@@ -44,6 +89,14 @@
       "icon_path": "/consent.svg",
       "identity_inputs": {
         "email": "optional"
+      },
+      "custom_privacy_request_fields": {
+        "communication_preference": {
+          "label": "How would you like to be contacted?",
+          "field_type": "select",
+          "required": false,
+          "options": ["Email", "Phone", "Physical Mail", "Do not contact me"]
+        }
       },
       "title": "Manage your consent",
       "modalTitle": "Manage your consent",

@@ -1,4 +1,5 @@
-import { h } from "preact";
+import { FidesEventTargetType } from "../lib/events";
+import { useEvent } from "../lib/providers/event-context";
 
 const Toggle = ({
   label,
@@ -19,6 +20,7 @@ const Toggle = ({
   onLabel?: string;
   offLabel?: string;
 }) => {
+  const { setTrigger } = useEvent();
   const labelText = checked ? onLabel : offLabel;
   return (
     <div className="fides-toggle" data-testid={`toggle-${label}`}>
@@ -28,6 +30,11 @@ const Toggle = ({
         aria-label={label}
         className="fides-toggle-input"
         onChange={() => {
+          setTrigger({
+            type: FidesEventTargetType.TOGGLE,
+            label,
+            checked: !checked,
+          });
           onChange(id);
         }}
         checked={checked}

@@ -43,6 +43,7 @@ from fides.common.api.scope_registry import (
     USER_DELETE,
     USER_PASSWORD_RESET,
     USER_READ,
+    USER_READ_OWN,
     USER_UPDATE,
 )
 from fides.common.api.v1.urn_registry import (
@@ -597,7 +598,9 @@ class TestGetUsers:
         assert response_body["page"] == 1
         assert response_body["size"] == page_size
 
-    def test_get_users(self, api_client: TestClient, generate_auth_header, url, db):
+    def test_get_users_user_read_scope(
+        self, api_client: TestClient, generate_auth_header, url, db
+    ):
         total_users = 25
         password = str_to_b64_str("Password123!")
         [
@@ -675,6 +678,155 @@ class TestGetUsers:
         assert response_body["page"] == 1
         assert response_body["size"] == page_size
 
+    def test_get_users_with_user_read_own_scope(
+        self, api_client: TestClient, generate_auth_header, url, db, respondent
+    ):
+        """Test that users with USER_READ_OWN scope only see their own data"""
+        # Create additional users
+        total_users = 5
+        password = str_to_b64_str("Password123!")
+        other_users = [
+            FidesUser.create(
+                db=db,
+                data={
+                    "username": f"other_user{i}",
+                    "password": password,
+                    "email_address": f"other{i}.user@ethyca.com",
+                },
+            )
+            for i in range(total_users)
+        ]
+
+        # Create auth header for respondent (has USER_READ_OWN scope)
+        auth_header = generate_auth_header_for_user(respondent, scopes=[USER_READ_OWN])
+
+        resp = api_client.get(url, headers=auth_header)
+        assert resp.status_code == HTTP_200_OK
+        response_body = resp.json()
+
+        # Should only see the respondent's own data
+        assert len(response_body["items"]) == 1
+        assert response_body["total"] == 1
+        assert response_body["page"] == 1
+        assert response_body["size"] == page_size
+
+        # Verify it's the respondent's data
+        user_data = response_body["items"][0]
+        assert user_data["id"] == respondent.id
+        assert user_data["username"] == respondent.username
+
+    def test_get_users_with_user_read_own_scope_and_filter(
+        self, api_client: TestClient, generate_auth_header, url, db, respondent
+    ):
+        """Test that users with USER_READ_OWN scope can filter their own data"""
+        # Create additional users
+        password = str_to_b64_str("Password123!")
+        other_users = [
+            FidesUser.create(
+                db=db,
+                data={
+                    "username": f"other_user{i}",
+                    "password": password,
+                    "email_address": f"other{i}.user@ethyca.com",
+                },
+            )
+            for i in range(3)
+        ]
+
+        # Create auth header for respondent (has USER_READ_OWN scope)
+        auth_header = generate_auth_header_for_user(respondent, scopes=[USER_READ_OWN])
+
+        # Filter by username that matches respondent
+        resp = api_client.get(f"{url}?username=respondent", headers=auth_header)
+        assert resp.status_code == HTTP_200_OK
+        response_body = resp.json()
+
+        # Should only see the respondent's own data
+        assert len(response_body["items"]) == 1
+        assert response_body["total"] == 1
+        user_data = response_body["items"][0]
+        assert user_data["id"] == respondent.id
+
+        # Filter by username that doesn't match respondent
+        resp = api_client.get(f"{url}?username=other_user", headers=auth_header)
+        assert resp.status_code == HTTP_200_OK
+        response_body = resp.json()
+
+        # Should see no results since other users don't match the filter
+        assert len(response_body["items"]) == 0
+        assert response_body["total"] == 0
+
+    def test_get_users_with_root_user_can_see_all_users(
+        self, api_client: TestClient, root_auth_header, url, db, respondent
+    ):
+        """Test that root users can see all users regardless of filtering"""
+        # Create additional users
+        password = str_to_b64_str("Password123!")
+        other_users = [
+            FidesUser.create(
+                db=db,
+                data={
+                    "username": f"other_user{i}",
+                    "password": password,
+                    "email_address": f"other{i}.user@ethyca.com",
+                },
+            )
+            for i in range(3)
+        ]
+
+        # Verify users were created
+        for other_user in other_users:
+            assert other_user.id is not None
+            assert other_user.username.startswith("other_user")
+
+        # Check if users are actually in the database
+        db.refresh(respondent)
+        all_users_in_db = FidesUser.query(db).all()
+        print(f"All users in DB: {[u.username for u in all_users_in_db]}")
+        print(f"Other users created: {[u.username for u in other_users]}")
+
+        # Test without any filter - should see all users
+        resp = api_client.get(url, headers=root_auth_header)
+        assert resp.status_code == HTTP_200_OK
+        response_body = resp.json()
+
+        # Root user should see all users (respondent + 3 other users + any existing users)
+        assert len(response_body["items"]) >= 4  # At least respondent + 3 other users
+        assert response_body["total"] >= 4
+
+        # Verify respondent is included
+        user_ids = [user["id"] for user in response_body["items"]]
+        assert respondent.id in user_ids
+
+        # Verify other users are included
+        for other_user in other_users:
+            assert other_user.id in user_ids
+
+        # Test with filter - should still see all matching users
+        resp = api_client.get(f"{url}?username=other", headers=root_auth_header)
+        assert resp.status_code == HTTP_200_OK
+        response_body = resp.json()
+
+        # Debug: Print the response to see what's happening
+        print(f"Filter response: {response_body}")
+        print(f"Expected usernames: {[u.username for u in other_users]}")
+
+        # Try different filter approaches to debug
+        resp2 = api_client.get(f"{url}?username=other_user", headers=root_auth_header)
+        print(f"Filter 'other_user' response: {resp2.json()}")
+
+        resp3 = api_client.get(f"{url}?username=user", headers=root_auth_header)
+        print(f"Filter 'user' response: {resp3.json()}")
+
+        # Should see all users matching the filter
+        assert len(response_body["items"]) == 3
+        assert response_body["total"] == 3
+
+        # Verify all other users are included
+        user_ids = [user["id"] for user in response_body["items"]]
+        for other_user in other_users:
+            assert other_user.id in user_ids
+
 
 class TestGetUser:
     @pytest.fixture(scope="function")
@@ -706,7 +858,7 @@ class TestGetUser:
         )
         assert resp.status_code == HTTP_404_NOT_FOUND
 
-    def test_get_user(
+    def test_get_user_user_read_scope(
         self,
         api_client: TestClient,
         generate_auth_header,
@@ -725,6 +877,149 @@ class TestGetUser:
         assert user_data["created_at"] == stringify_date(application_user.created_at)
         assert user_data["first_name"] == application_user.first_name
         assert user_data["last_name"] == application_user.last_name
+
+    def test_get_user_with_user_read_own_scope_own_data(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url_no_id: str,
+        respondent,
+    ) -> None:
+        """Test that users with USER_READ_OWN scope can access their own data"""
+        auth_header = generate_auth_header_for_user(respondent, scopes=[USER_READ_OWN])
+        resp = api_client.get(
+            f"{url_no_id}/{respondent.id}",
+            headers=auth_header,
+        )
+        assert resp.status_code == HTTP_200_OK
+        user_data = resp.json()
+        assert user_data["username"] == respondent.username
+        assert user_data["id"] == respondent.id
+        assert user_data["created_at"] == stringify_date(respondent.created_at)
+
+    def test_get_user_with_user_read_own_scope_other_user_data(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url_no_id: str,
+        respondent,
+        db,
+    ) -> None:
+        """Test that users with USER_READ_OWN scope cannot access other users' data"""
+        # Create another user
+        password = str_to_b64_str("Password123!")
+        other_user = FidesUser.create(
+            db=db,
+            data={
+                "username": "other_user",
+                "password": password,
+                "email_address": "other.user@ethyca.com",
+            },
+        )
+
+        auth_header = generate_auth_header_for_user(respondent, scopes=[USER_READ_OWN])
+        resp = api_client.get(
+            f"{url_no_id}/{other_user.id}",
+            headers=auth_header,
+        )
+        assert resp.status_code == HTTP_403_FORBIDDEN
+        response_body = resp.json()
+        assert (
+            "You can only access your own user data with USER_READ_OWN scope"
+            in response_body["detail"]
+        )
+
+    def test_get_user_with_user_read_own_scope_nonexistent_user(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url_no_id: str,
+        respondent,
+    ) -> None:
+        """Test that users with USER_READ_OWN scope get 404 for nonexistent users"""
+        auth_header = generate_auth_header_for_user(respondent, scopes=[USER_READ_OWN])
+        resp = api_client.get(
+            f"{url_no_id}/nonexistent_user_id",
+            headers=auth_header,
+        )
+        assert resp.status_code == HTTP_404_NOT_FOUND
+        response_body = resp.json()
+        assert "User not found" in response_body["detail"]
+
+    def test_get_user_with_user_read_scope_still_works(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url_no_id: str,
+        db,
+    ) -> None:
+        """Test that users with USER_READ scope can still access any user's data"""
+        # Create a test user
+        password = str_to_b64_str("Password123!")
+        test_user = FidesUser.create(
+            db=db,
+            data={
+                "username": "test_user",
+                "password": password,
+                "email_address": "test.user@ethyca.com",
+            },
+        )
+
+        auth_header = generate_auth_header(scopes=[USER_READ])
+        resp = api_client.get(
+            f"{url_no_id}/{test_user.id}",
+            headers=auth_header,
+        )
+        assert resp.status_code == HTTP_200_OK
+        user_data = resp.json()
+        assert user_data["username"] == test_user.username
+        assert user_data["id"] == test_user.id
+
+    def test_get_user_with_root_user_can_access_any_user(
+        self,
+        api_client: TestClient,
+        root_auth_header,
+        url_no_id: str,
+        db,
+        respondent,
+    ) -> None:
+        """Test that root users can access any user's data"""
+        # Create additional test users
+        password = str_to_b64_str("Password123!")
+        test_users = [
+            FidesUser.create(
+                db=db,
+                data={
+                    "username": f"test_user{i}",
+                    "password": password,
+                    "email_address": f"test{i}.user@ethyca.com",
+                },
+            )
+            for i in range(3)
+        ]
+
+        # Test that root user can access respondent's data
+        resp = api_client.get(
+            f"{url_no_id}/{respondent.id}",
+            headers=root_auth_header,
+        )
+        assert resp.status_code == HTTP_200_OK
+        user_data = resp.json()
+        assert user_data["username"] == respondent.username
+        assert user_data["id"] == respondent.id
+        assert user_data["created_at"] == stringify_date(respondent.created_at)
+
+        # Test that root user can access other users' data
+        for test_user in test_users:
+            resp = api_client.get(
+                f"{url_no_id}/{test_user.id}",
+                headers=root_auth_header,
+            )
+            assert resp.status_code == HTTP_200_OK
+            user_data = resp.json()
+            assert user_data["username"] == test_user.username
+            assert user_data["id"] == test_user.id
+            assert user_data["created_at"] == stringify_date(test_user.created_at)
 
 
 class TestUpdateUser:
@@ -852,7 +1147,7 @@ class TestUpdateUserPassword:
         application_user,
     ) -> None:
         OLD_PASSWORD = "oldpassword"
-        NEW_PASSWORD = "newpassword"
+        NEW_PASSWORD = "Newpassword1!"
         application_user.update_password(db=db, new_password=OLD_PASSWORD)
 
         auth_header = generate_auth_header_for_user(user=application_user, scopes=[])
@@ -874,7 +1169,7 @@ class TestUpdateUserPassword:
         application_user = application_user.refresh_from_db(db=db)
         assert application_user.credentials_valid(password=OLD_PASSWORD)
 
-    def test_update_user_password_invalid(
+    def test_update_user_password_invalid_old_password(
         self,
         api_client,
         db,
@@ -882,7 +1177,7 @@ class TestUpdateUserPassword:
         application_user,
     ) -> None:
         OLD_PASSWORD = "oldpassword"
-        NEW_PASSWORD = "newpassword"
+        NEW_PASSWORD = "Newpassword1!"
         application_user.update_password(db=db, new_password=OLD_PASSWORD)
 
         auth_header = generate_auth_header_for_user(user=application_user, scopes=[])
@@ -909,7 +1204,7 @@ class TestUpdateUserPassword:
         application_user,
     ) -> None:
         OLD_PASSWORD = "oldpassword"
-        NEW_PASSWORD = "newpassword"
+        NEW_PASSWORD = "Newpassword1!"
         application_user.update_password(db=db, new_password=OLD_PASSWORD)
         auth_header = generate_auth_header_for_user(user=application_user, scopes=[])
         resp = api_client.post(
@@ -934,7 +1229,7 @@ class TestUpdateUserPassword:
         application_user,
     ) -> None:
         """A user without the proper scope cannot change another user's password"""
-        NEW_PASSWORD = "newpassword"
+        NEW_PASSWORD = "Newpassword1!"
         old_hashed_password = user.hashed_password
 
         auth_header = generate_auth_header_for_user(user=application_user, scopes=[])
@@ -965,7 +1260,7 @@ class TestUpdateUserPassword:
         A user with the right scope should be able to set a new password
         for another user.
         """
-        NEW_PASSWORD = "newpassword"
+        NEW_PASSWORD = "Newpassword1!"
         auth_header = generate_auth_header_for_user(
             user=application_user, scopes=[USER_PASSWORD_RESET]
         )
@@ -982,6 +1277,55 @@ class TestUpdateUserPassword:
         user = user.refresh_from_db(db=db)
         assert user.credentials_valid(password=NEW_PASSWORD)
 
+    @pytest.mark.parametrize(
+        "new_password, expected_error",
+        [
+            ("short", "Value error, Password must have at least eight characters."),
+            ("longerpassword", "Value error, Password must have at least one number."),
+            (
+                "longer55password",
+                "Value error, Password must have at least one capital letter.",
+            ),
+            (
+                "LONGER55PASSWORD",
+                "Value error, Password must have at least one lowercase letter.",
+            ),
+            (
+                "LoNgEr55paSSworD",
+                "Value error, Password must have at least one symbol.",
+            ),
+        ],
+    )
+    def test_force_update_bad_password(
+        self,
+        api_client,
+        db,
+        url_no_id,
+        user,
+        application_user,
+        new_password,
+        expected_error,
+    ) -> None:
+        """
+        A user with the right scope should be able to set a new password
+        for another user.
+        """
+        auth_header = generate_auth_header_for_user(
+            user=application_user, scopes=[USER_PASSWORD_RESET]
+        )
+
+        resp = api_client.post(
+            f"{url_no_id}/{user.id}/force-reset-password",
+            headers=auth_header,
+            json={
+                "new_password": str_to_b64_str(new_password),
+            },
+        )
+
+        assert resp.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+        assert expected_error in resp.json()["detail"][0]["msg"]
+        db.expunge(user)
+
     def test_force_update_non_existent_user(
         self,
         api_client,
@@ -991,7 +1335,7 @@ class TestUpdateUserPassword:
         """
         Resetting on a user that does not exist should 404
         """
-        NEW_PASSWORD = "newpassword"
+        NEW_PASSWORD = "Newpassword1!"
         auth_header = generate_auth_header_for_user(
             user=application_user, scopes=[USER_PASSWORD_RESET]
         )
@@ -1568,7 +1912,7 @@ class TestUpdateSystemsManagedByUser:
         assert viewer_user.systems == [system]
 
     @pytest.mark.usefixtures(
-        "load_default_data_uses"
+        "default_data_uses"
     )  # privacy declaration requires data uses to be present
     def test_update_system_manager_existing_system_not_in_request_which_removes_system(
         self, api_client: TestClient, generate_auth_header, url, system, viewer_user, db
@@ -1902,7 +2246,7 @@ class TestAcceptUserInvite:
         response = api_client.post(
             url,
             params={"username": "valid_user", "invite_code": "valid_code"},
-            json={"username": "valid_user", "new_password": "pass"},
+            json={"username": "valid_user", "new_password": "Testpassword1!"},
         )
 
         assert response.status_code == HTTP_200_OK
@@ -1925,7 +2269,7 @@ class TestAcceptUserInvite:
         response = api_client.post(
             url,
             params={"username": "valid_user", "invite_code": "invalid_code"},
-            json={"username": "valid_user", "new_password": "pass"},
+            json={"username": "valid_user", "new_password": "Testpassword1!"},
         )
         assert response.status_code == HTTP_400_BAD_REQUEST
         assert response.json()["detail"] == "Invite code is invalid."
@@ -1943,7 +2287,7 @@ class TestAcceptUserInvite:
         response = api_client.post(
             url,
             params={"username": "valid_user", "invite_code": "expired_code"},
-            json={"username": "valid_user", "new_password": "pass"},
+            json={"username": "valid_user", "new_password": "Testpassword1!"},
         )
         assert response.status_code == HTTP_400_BAD_REQUEST
         assert response.json()["detail"] == "Invite code has expired."
@@ -1954,7 +2298,7 @@ class TestAcceptUserInvite:
             params={"username": "nonexistent_user", "invite_code": "some_code"},
             json={
                 "username": "nonexistent_user",
-                "new_password": "pass",
+                "new_password": "Testpassword1!",
             },
         )
         assert response.status_code == HTTP_404_NOT_FOUND

@@ -19,13 +19,11 @@ import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
-import { DatabaseIcon } from "~/features/common/Icon/database/DatabaseIcon";
-import { DatasetIcon } from "~/features/common/Icon/database/DatasetIcon";
 import Layout from "~/features/common/Layout";
 import {
   DATASET_COLLECTION_DETAIL_ROUTE,
   DATASET_ROUTE,
-} from "~/features/common/nav/v2/routes";
+} from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
   DefaultCell,
@@ -35,8 +33,8 @@ import {
   TableActionBar,
   TableSkeletonLoader,
 } from "~/features/common/table/v2";
+import { DATA_BREADCRUMB_ICONS } from "~/features/data-discovery-and-detection/DiscoveryMonitorBreadcrumbs";
 import { useGetDatasetByKeyQuery } from "~/features/dataset";
-import DatasetBreadcrumbs from "~/features/dataset/DatasetBreadcrumbs";
 import EditCollectionDrawer from "~/features/dataset/EditCollectionDrawer";
 import { DatasetCollection } from "~/types/api";
 
@@ -44,7 +42,7 @@ const columnHelper = createColumnHelper<DatasetCollection>();
 
 const DatasetDetailPage: NextPage = () => {
   const router = useRouter();
-  const datasetId = router.query.datasetId as string;
+  const datasetId = decodeURIComponent(router.query.datasetId as string);
 
   const { isLoading, data: dataset } = useGetDatasetByKeyQuery(datasetId);
   const collections = useMemo(() => dataset?.collections || [], [dataset]);
@@ -130,29 +128,28 @@ const DatasetDetailPage: NextPage = () => {
     router.push({
       pathname: DATASET_COLLECTION_DETAIL_ROUTE,
       query: {
-        datasetId,
-        collectionName: collection.name,
+        datasetId: encodeURIComponent(datasetId),
+        collectionName: encodeURIComponent(collection.name),
       },
     });
   };
 
+  const breadcrumbs = useMemo(() => {
+    return [
+      {
+        title: "All datasets",
+        href: DATASET_ROUTE,
+      },
+      {
+        title: datasetId,
+        icon: DATA_BREADCRUMB_ICONS[1],
+      },
+    ];
+  }, [datasetId]);
+
   return (
-    <Layout title={`Dataset - ${datasetId}`} mainProps={{ paddingTop: 0 }}>
-      <PageHeader breadcrumbs={[{ title: "Datasets" }]}>
-        <DatasetBreadcrumbs
-          breadcrumbs={[
-            {
-              title: "All datasets",
-              icon: <DatabaseIcon boxSize={4} />,
-              link: DATASET_ROUTE,
-            },
-            {
-              title: datasetId,
-              icon: <DatasetIcon boxSize={5} />,
-            },
-          ]}
-        />
-      </PageHeader>
+    <Layout title={`Dataset - ${datasetId}`}>
+      <PageHeader heading="Datasets" breadcrumbItems={breadcrumbs} />
 
       {isLoading ? (
         <TableSkeletonLoader rowHeight={36} numRows={15} />
@@ -174,12 +171,14 @@ const DatasetDetailPage: NextPage = () => {
         </Box>
       )}
 
-      <EditCollectionDrawer
-        dataset={dataset!}
-        collection={selectedCollectionForEditing}
-        isOpen={isEditingCollection}
-        onClose={() => setIsEditingCollection(false)}
-      />
+      {dataset && selectedCollectionForEditing && (
+        <EditCollectionDrawer
+          dataset={dataset}
+          collection={selectedCollectionForEditing}
+          isOpen={isEditingCollection}
+          onClose={() => setIsEditingCollection(false)}
+        />
+      )}
     </Layout>
   );
 };

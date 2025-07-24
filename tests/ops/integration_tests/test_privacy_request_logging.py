@@ -11,6 +11,7 @@ from fides.common.api.v1.urn_registry import PRIVACY_REQUESTS, V1_URL_PREFIX
 from fides.config import CONFIG
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 class TestPrivacyRequestLogging:
     """
@@ -103,9 +104,6 @@ class TestPrivacyRequestLogging:
     ):
         request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-        masking_strict = CONFIG.execution.masking_strict
-        CONFIG.execution.masking_strict = False
-
         response = api_client.post(
             url,
             headers=generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE]),
@@ -135,8 +133,6 @@ class TestPrivacyRequestLogging:
             f"Connector request failed with status code 401. | {str(extra)}"
             in loguru_caplog.text
         )
-
-        CONFIG.execution.masking_strict = masking_strict
 
     @pytest.mark.usefixtures("klaviyo_runner")
     @pytest.mark.parametrize(

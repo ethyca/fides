@@ -14,9 +14,21 @@ export const useMediaQuery = (query: string) => {
     function handleChange(e: MediaQueryListEvent) {
       setMatches(e.matches);
     }
-    matchQueryList.addEventListener("change", handleChange);
+
+    if (matchQueryList.addEventListener) {
+      matchQueryList.addEventListener("change", handleChange);
+    } else {
+      // Older browser and test automation supportSafari < 14
+      matchQueryList.addListener(handleChange);
+    }
+
     return () => {
-      matchQueryList.removeEventListener("change", handleChange);
+      if (matchQueryList.removeEventListener) {
+        matchQueryList.removeEventListener("change", handleChange);
+      } else {
+        // Older browser and test automation support
+        matchQueryList.removeListener(handleChange);
+      }
     };
   }, [query]);
   return matches;

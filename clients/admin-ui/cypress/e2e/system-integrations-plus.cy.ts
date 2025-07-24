@@ -1,24 +1,21 @@
-import { stubPlus, stubSystemCrud } from "cypress/support/stubs";
+import {
+  stubDatasetCrud,
+  stubPlus,
+  stubSystemCrud,
+  stubSystemIntegrations,
+  stubTaxonomyEntities,
+} from "cypress/support/stubs";
 
-import { SYSTEM_ROUTE } from "~/features/common/nav/v2/routes";
+import { SYSTEM_ROUTE } from "~/features/common/nav/routes";
 
 describe("System integrations", () => {
   beforeEach(() => {
     cy.login();
-    cy.intercept("GET", "/api/v1/system*", {
-      fixture: "systems/systems_paginated.json",
-    }).as("getSystems");
-    cy.intercept("GET", "/api/v1/connection_type*", {
-      fixture: "connectors/connection_types.json",
-    }).as("getConnectionTypes");
-    cy.intercept("GET", "/api/v1/connection_type/postgres/secret", {
-      fixture: "connectors/postgres_secret.json",
-    }).as("getPostgresConnectorSecret");
-    cy.intercept("GET", "/api/v1/plus/dictionary/system?size=2000", {
-      fixture: "dictionary-entries.json",
-    }).as("getDict");
     stubPlus(true);
+    stubSystemIntegrations();
     stubSystemCrud();
+    stubTaxonomyEntities();
+    stubDatasetCrud();
     cy.visit(SYSTEM_ROUTE);
   });
 
@@ -27,8 +24,8 @@ describe("System integrations", () => {
       cy.getByTestId("edit-btn").click();
     });
     cy.wait("@getDict");
-    cy.getByTestId("tab-Integrations").click();
-    cy.getByTestId("tab-panel-Integrations").should("exist");
+    cy.getAntTab("Integrations").click({ force: true });
+    cy.get("#rc-tabs-0-panel-integrations").should("be.visible");
   });
 
   describe("Integration search", () => {
@@ -36,7 +33,7 @@ describe("System integrations", () => {
       cy.getByTestId("system-fidesctl_system").within(() => {
         cy.getByTestId("edit-btn").click();
       });
-      cy.getByTestId("tab-Integrations").click();
+      cy.getAntTab("Integrations").click({ force: true });
       cy.getByTestId("select-dropdown-btn").click();
     });
 
@@ -60,7 +57,7 @@ describe("System integrations", () => {
       cy.getByTestId("system-fidesctl_system").within(() => {
         cy.getByTestId("edit-btn").click();
       });
-      cy.getByTestId("tab-Integrations").click();
+      cy.getAntTab("Integrations").click({ force: true });
       cy.getByTestId("select-dropdown-btn").click();
 
       cy.getByTestId("input-search-integrations").type("PostgreSQL");
@@ -71,8 +68,8 @@ describe("System integrations", () => {
 
     // Verify Postgres shows access and erasure by default
     it("should display Request types (enabled-actions) field", () => {
-      cy.getByTestId("enabled-actions").should("exist");
-      cy.getByTestId("enabled-actions").within(() => {
+      cy.getByTestId("controlled-select-enabled_actions").should("exist");
+      cy.getByTestId("controlled-select-enabled_actions").within(() => {
         cy.contains("Access");
         cy.contains("Erasure");
         cy.contains("Consent").should("not.exist");
@@ -97,7 +94,7 @@ describe("System integrations", () => {
       cy.getByTestId("system-fidesctl_system").within(() => {
         cy.getByTestId("edit-btn").click();
       });
-      cy.getByTestId("tab-Integrations").click();
+      cy.getAntTab("Integrations").click({ force: true });
     });
     it("should render the consent automation accordion panel", () => {
       cy.getByTestId("accordion-consent-automation").click();
@@ -105,30 +102,10 @@ describe("System integrations", () => {
       cy.getByTestId("consentable-item-label").should("have.length", 5);
       cy.getByTestId("consentable-item-label-child").should("have.length", 6);
       cy.getByTestId("consentable-item-select").should("have.length", 11);
-      cy.getByTestId("consentable-item-select")
-        .first()
-        .within(() => {
-          cy.get(".custom-select__input").focus().realPress(" ");
-        });
-      cy.get(".custom-select__menu").first().should("exist");
-      cy.get(".custom-select__menu")
-        .first()
-        .within(() => {
-          cy.get(".custom-select__option").should("have.length", 5);
-        });
     });
     it("should save the consent automation settings", () => {
       cy.getByTestId("accordion-consent-automation").click();
-      cy.getByTestId("consentable-item-select")
-        .first()
-        .within(() => {
-          cy.get(".custom-select__input").focus().realPress(" ");
-        });
-      cy.get(".custom-select__menu")
-        .first()
-        .within(() => {
-          cy.get(".custom-select__option").first().click();
-        });
+      cy.getByTestId("consentable-item-select").antSelect(0);
       cy.getByTestId("save-consent-automation").click();
       cy.wait("@putConsentableItems").then((interception) => {
         cy.fixture("connectors/consentable_items.json").then((expected) => {

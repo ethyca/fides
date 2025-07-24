@@ -58,8 +58,10 @@ def patch_settings(
     Only keys provided will be updated, others will be unaffected,
     i.e. true PATCH behavior.
     """
-
-    pruned_data = data.model_dump(exclude_none=True)
+    # We use exclude_unset=True to ensure that only the provided keys are updated.
+    # This is particularly useful for allowing setting a specific key to None, while
+    # keeping the existing values for other keys that aren't provided in the payload data.
+    pruned_data = data.model_dump(exclude_unset=True)
     logger.info("PATCHing application settings")
     update_config: ApplicationConfig = ApplicationConfig.update_api_set(db, pruned_data)
 

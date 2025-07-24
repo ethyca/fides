@@ -8,6 +8,7 @@ from time import sleep
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
 from urllib.parse import urlparse
 
+import certifi
 from loguru import logger
 from requests import PreparedRequest, Request, Response, Session
 
@@ -49,6 +50,7 @@ class AuthenticatedClient:
         rate_limit_config: Optional[RateLimitConfig] = None,
     ):
         self.session = Session()
+        self.session.verify = certifi.where()
         self.uri = uri
         self.configuration = configuration
         self.client_config = client_config
@@ -225,7 +227,6 @@ class AuthenticatedClient:
             prepared_request.body = prepared_request.body.encode("utf-8")
 
         response = self.session.send(prepared_request)
-
         ignore_error = self._should_ignore_error(
             status_code=response.status_code, errors_to_ignore=ignore_errors
         )

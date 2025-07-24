@@ -85,6 +85,7 @@ EXPECTED_FAILURE_MESSAGES = {
         ("datasets", "dynamodb"),
     ],
 )
+@pytest.mark.usefixtures("default_organization")
 def test_generate(
     test_config: FidesConfig,
     generate_type: str,
@@ -121,6 +122,7 @@ def test_generate(
         ("datasets", "dynamodb"),
     ],
 )
+@pytest.mark.usefixtures("default_organization")
 def test_generate_failure(
     test_config: FidesConfig,
     generate_type: str,

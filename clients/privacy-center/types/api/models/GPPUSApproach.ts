@@ -5,4 +5,5 @@
 export enum GPPUSApproach {
   NATIONAL = "national",
   STATE = "state",
+  ALL = "all",
 }

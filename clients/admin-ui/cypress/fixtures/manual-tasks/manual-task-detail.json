@@ -1,0 +1,39 @@
+{
+  "task_id": "task_001",
+  "name": "Export Customer Data from Salesforce",
+  "description": "Export all customer data from Salesforce for privacy request",
+  "input_type": "file",
+  "request_type": "access",
+  "status": "new",
+  "assigned_users": [
+    {
+      "id": "fid_dcf26c27-b992-43e0-9178-2b577720e0c6",
+      "email_address": "john.doe@example.com",
+      "first_name": "John",
+      "last_name": "Doe"
+    },
+    {
+      "id": "fid_833b42df-ed8b-456b-a2f3-8f19322ec5a2",
+      "email_address": "jane.doe@example.com",
+      "first_name": "Jane",
+      "last_name": "Doe"
+    }
+  ],
+  "privacy_request": {
+    "id": "pri_5005c923-474c-4168-8c9e-2670fd40dc19",
+    "days_left": 15,
+    "request_type": "access",
+    "subject_identity": {
+      "email": {
+        "label": "Email",
+        "value": "customer@email.com"
+      }
+    }
+  },
+  "system": {
+    "id": "sys_001",
+    "name": "Salesforce"
+  },
+  "created_at": "2024-03-15T10:00:00Z",
+  "updated_at": "2024-03-15T10:00:00Z"
+}

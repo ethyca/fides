@@ -25,6 +25,8 @@ from fides.api.schemas.messaging.messaging import (
 )
 from fides.api.schemas.messaging.shared_schemas import (
     SUPPORTED_MESSAGING_SERVICE_SECRETS,
+    MessagingMethod,
+    MessagingServiceSecretsAWS_SES,
     MessagingServiceSecretsMailchimpTransactional,
     MessagingServiceSecretsMailgun,
     MessagingServiceSecretsTwilioEmail,
@@ -60,6 +62,7 @@ def get_schema_for_secrets(
         Type[MessagingServiceSecretsTwilioSMS],
         Type[MessagingServiceSecretsTwilioEmail],
         Type[MessagingServiceSecretsMailchimpTransactional],
+        Type[MessagingServiceSecretsAWS_SES],
     ]
     try:
         schema_mapping: Dict[MessagingServiceType, messaging_secret_schema_type] = {
@@ -67,6 +70,7 @@ def get_schema_for_secrets(
             MessagingServiceType.twilio_text: MessagingServiceSecretsTwilioSMS,
             MessagingServiceType.twilio_email: MessagingServiceSecretsTwilioEmail,
             MessagingServiceType.mailchimp_transactional: MessagingServiceSecretsMailchimpTransactional,
+            MessagingServiceType.aws_ses: MessagingServiceSecretsAWS_SES,
         }
         schema: messaging_secret_schema_type = schema_mapping[service_type]
     except KeyError:

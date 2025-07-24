@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import { useEffect } from "react";
 
 import Layout from "~/features/common/Layout";
-import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/v2/routes";
+import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/routes";
 
 const ConsentPage = () => {
   const router = useRouter();

@@ -1,9 +1,12 @@
-import { h } from "preact";
 import { useCallback, useRef } from "preact/hooks";
 
 import { PrivacyExperience } from "../../lib/consent-types";
+import { FidesEventDetailsPreference } from "../../lib/events";
 import { useI18n } from "../../lib/i18n/i18n-context";
-import { EnabledIds } from "../../lib/tcf/types";
+import {
+  EnabledIds,
+  PrivacyNoticeWithBestTranslation,
+} from "../../lib/tcf/types";
 import InfoBox from "../InfoBox";
 import TcfFeatures from "./TcfFeatures";
 import TcfPurposes from "./TcfPurposes";
@@ -19,22 +22,30 @@ export interface UpdateEnabledIds {
 
 const TcfTabs = ({
   experience,
+  customNotices,
   enabledIds,
   onChange,
   activeTabIndex,
   onTabChange,
 }: {
   experience: PrivacyExperience;
+  customNotices: PrivacyNoticeWithBestTranslation[] | undefined;
   enabledIds: EnabledIds;
-  onChange: (payload: EnabledIds) => void;
+  onChange: (
+    payload: EnabledIds,
+    preferenceDetails: FidesEventDetailsPreference,
+  ) => void;
   activeTabIndex: number;
   onTabChange: (tabIndex: number) => void;
 }) => {
   const { i18n } = useI18n();
   const handleUpdateDraftState = useCallback(
-    ({ newEnabledIds, modelType }: UpdateEnabledIds) => {
+    (
+      { newEnabledIds, modelType }: UpdateEnabledIds,
+      preferenceDetails: FidesEventDetailsPreference,
+    ) => {
       const updated = { ...enabledIds, [modelType]: newEnabledIds };
-      onChange(updated);
+      onChange(updated, preferenceDetails);
     },
     [enabledIds, onChange],
   );
@@ -48,9 +59,11 @@ const TcfTabs = ({
           <InfoBox>{i18n.t("static.tcf.purposes.description")}</InfoBox>
           <TcfPurposes
             allPurposesConsent={experience.tcf_purpose_consents}
+            allCustomPurposesConsent={customNotices}
             allPurposesLegint={experience.tcf_purpose_legitimate_interests}
             allSpecialPurposes={experience.tcf_special_purposes}
             enabledPurposeConsentIds={enabledIds.purposesConsent}
+            enabledCustomPurposeConsentIds={enabledIds.customPurposesConsent}
             enabledPurposeLegintIds={enabledIds.purposesLegint}
             enabledSpecialPurposeIds={enabledIds.specialPurposes}
             onChange={handleUpdateDraftState}

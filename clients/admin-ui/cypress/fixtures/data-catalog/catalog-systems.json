@@ -1,0 +1,33 @@
+{
+  "items": [
+    {
+      "fides_key": "bigquery_system",
+      "name": "BigQuery System",
+      "description": "A system used for storing and analyzing large datasets.",
+      "monitor_config_keys": ["bigquery_monitor"],
+      "connection_configs": {
+        "key": "bq_integration"
+      }
+    },
+    {
+      "fides_key": "dynamo_system",
+      "name": "Dynamo System",
+      "description": "A system used for storing and analyzing large datasets.",
+      "monitor_config_keys": ["dynamo_monitor"],
+      "connection_configs": {
+        "key": "dynamo_integration"
+      }
+    },
+    {
+      "fides_key": "system_with_dataset",
+      "name": "System with Dataset",
+      "description": "A system with a dataset.",
+      "monitor_config_keys": [],
+      "dataset_references": ["demo_dataset"]
+    }
+  ],
+  "total": 3,
+  "page": 1,
+  "size": 25,
+  "pages": 1
+}

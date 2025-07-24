@@ -8,6 +8,7 @@ from fides.api.cryptography import cryptographic_util
 from fides.api.graph.config import CollectionAddress, GraphDataset
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal, TraversalNode
+from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -22,14 +23,14 @@ from fides.api.models.privacy_notice import (
 )
 from fides.api.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import (
-    ExecutionLogStatus,
     PrivacyRequest,
-    PrivacyRequestStatus,
     ProvidedIdentity,
     RequestTask,
 )
 from fides.api.models.sql_models import Dataset as CtlDataset
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity
 from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.api.service.connectors import get_connector
@@ -152,7 +153,7 @@ class ConnectorRunner:
                 ), f"No rows returned for collection '{collection['name']}'"
         return access_results
 
-    async def strict_erasure_request(
+    async def erasure_request(
         self,
         access_policy: Policy,
         erasure_policy: Policy,
@@ -161,40 +162,8 @@ class ConnectorRunner:
         skip_access_results_check: Optional[bool] = False,
     ) -> Tuple[Dict, Dict]:
         """
-        Erasure request with masking_strict set to true,
-        meaning we will only update data, not delete it
+        Erasure request for a given access policy and erasure policy and identities
         """
-
-        # store the existing masking_strict value so we can reset it at the end of the test
-        masking_strict = CONFIG.execution.masking_strict
-        CONFIG.execution.masking_strict = True
-
-        access_results, erasure_results = await self._base_erasure_request(
-            access_policy, erasure_policy, identities, privacy_request_id
-        )
-
-        # reset masking_strict value
-        CONFIG.execution.masking_strict = masking_strict
-        return access_results, erasure_results
-
-    async def non_strict_erasure_request(
-        self,
-        access_policy: Policy,
-        erasure_policy: Policy,
-        identities: Dict[str, Any],
-        privacy_request_id: Optional[str] = None,
-        skip_access_results_check: Optional[bool] = False,
-    ) -> Tuple[Dict, Dict]:
-        """
-        Erasure request with masking_strict set to false,
-        meaning we will use deletes to mask data if an update
-        is not available
-        """
-
-        # store the existing masking_strict value so we can reset it at the end of the test
-        masking_strict = CONFIG.execution.masking_strict
-        CONFIG.execution.masking_strict = False
-
         access_results, erasure_results = await self._base_erasure_request(
             access_policy,
             erasure_policy,
@@ -203,8 +172,6 @@ class ConnectorRunner:
             skip_access_results_check,
         )
 
-        # reset masking_strict value
-        CONFIG.execution.masking_strict = masking_strict
         return access_results, erasure_results
 
     async def old_consent_request(

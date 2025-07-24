@@ -28,6 +28,11 @@ class ScyllaConnectorMissingKeyspace(Exception):
 class ScyllaConnector(BaseConnector[Cluster]):
     """Scylla Connector"""
 
+    @property
+    def requires_primary_keys(self) -> bool:
+        """ScyllaDB requires primary keys for erasures."""
+        return True
+
     def build_uri(self) -> str:
         """
         Builds URI - Not yet implemented
@@ -145,6 +150,7 @@ class ScyllaConnector(BaseConnector[Cluster]):
         privacy_request: PrivacyRequest,
         request_task: RequestTask,
         rows: List[Row],
+        input_data: Optional[Dict[str, List[Any]]] = None,
     ) -> int:
         """Execute a masking request"""
         query_config = self.query_config(node)

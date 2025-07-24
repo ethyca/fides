@@ -1,3 +1,4 @@
+from collections import deque
 from functools import reduce
 from typing import Any, Callable, Dict, Iterable, List, Optional, TypeVar, Union
 
@@ -119,3 +120,183 @@ def extract_key_for_address(
     request_id_dataset, collection = full_request_id.split(":")
     dataset = request_id_dataset.split("__", number_of_leading_strings_to_exclude)[-1]
     return f"{dataset}:{collection}"
+
+
+# pylint: disable=too-many-branches
+def unflatten_dict(flat_dict: Dict[str, Any], separator: str = ".") -> Dict[str, Any]:
+    """
+    Converts a dictionary of paths/values into a nested dictionary
+
+    example:
+
+    {"A.B": "1", "A.C": "2"}
+
+    becomes
+
+    {
+        "A": {
+            "B": "1",
+            "C": "2"
+        }
+    }
+    """
+    output: Dict[Any, Any] = {}
+    queue = deque(flat_dict.items())
+
+    while queue:
+        path, value = queue.popleft()
+        keys = path.split(separator)
+        target = output
+        for i, current_key in enumerate(keys[:-1]):
+            next_key = keys[i + 1]
+            if next_key.isdigit():
+                if isinstance(target, dict):  # Only call setdefault on dictionaries
+                    target = target.setdefault(current_key, [])
+                elif isinstance(
+                    target, list
+                ):  # If target is a list, handle differently
+                    idx = int(current_key)
+                    while len(target) <= idx:
+                        target.append([])  # Add a list since next_key is a digit
+                    target = target[idx]
+            else:
+                if isinstance(target, dict):
+                    target = target.setdefault(current_key, {})
+                elif isinstance(target, list):
+                    idx = int(current_key)
+                    while len(target) <= idx:
+                        target.append({})
+                    target = target[idx]
+        try:
+            if isinstance(target, list):
+                idx = int(keys[-1]) if keys[-1].isdigit() else len(target)
+                while len(target) <= idx:
+                    target.append(None)
+                target[idx] = value
+            else:
+                # If the value is a dictionary, add its components to the queue for processing
+                if isinstance(value, dict):
+                    target = target.setdefault(keys[-1], {})
+                    for inner_key, inner_value in value.items():
+                        new_key = f"{path}{separator}{inner_key}"
+                        queue.append((new_key, inner_value))
+                else:
+                    target[keys[-1]] = value
+        except TypeError as exc:
+            raise ValueError(
+                f"Error unflattening dictionary, conflicting levels detected: {exc}"
+            )
+    return output
+
+
+# pylint: disable=too-many-branches
+def flatten_dict(data: Any, prefix: str = "", separator: str = ".") -> Dict[str, Any]:
+    """
+    Recursively flatten a dictionary or list into a flat dictionary with dot-notation keys.
+    Handles nested dictionaries and arrays with proper indices.
+    Preserves empty lists and dictionaries.
+
+    example:
+
+    {
+        "A": {
+            "B": "1",
+            "C": "2"
+        },
+        "D": [
+            {"E": "3"},
+            {"E": "4"}
+        ],
+        "E": [],
+        "F": {}
+    }
+
+    becomes
+
+    {
+        "A.B": "1",
+        "A.C": "2",
+        "D.0.E": "3",
+        "D.1.E": "4",
+        "E": [],
+        "F": {}
+    }
+
+    Args:
+        data: The data to flatten (dict, list, or scalar value)
+        prefix: The current key prefix (used in recursion)
+        separator: The separator to use between key segments (default: ".")
+
+    Returns:
+        A flattened dictionary with dot-notation keys
+    """
+    items: Dict[str, Any] = {}
+
+    if isinstance(data, dict):
+        # Handle top-level empty dictionary case
+        if not data and not prefix:
+            return {}
+
+        # If the dictionary is empty but has a prefix, store it as is
+        if not data:
+            items[prefix] = {}
+            return items
+
+        for k, v in data.items():
+            new_key = f"{prefix}{separator}{k}" if prefix else k
+            if isinstance(v, (dict, list)):
+                if not v:  # Handle empty dict or list
+                    items[new_key] = v
+                else:
+                    items.update(flatten_dict(v, new_key, separator))
+            else:
+                items[new_key] = v
+    elif isinstance(data, list):
+        # If the list is empty, store it as is
+        if not data:
+            items[prefix] = []
+            return items
+
+        for i, v in enumerate(data):
+            new_key = f"{prefix}{separator}{i}"
+            if isinstance(v, (dict, list)):
+                if not v:  # Handle empty dict or list
+                    items[new_key] = v
+                else:
+                    items.update(flatten_dict(v, new_key, separator))
+            else:
+                items[new_key] = v
+    else:
+        raise ValueError(
+            f"Input to flatten_dict must be a dict or list, got {type(data).__name__}"
+        )
+
+    return items
+
+
+def replace_none_arrays(
+    data: Any,
+) -> Any:
+    """
+    Recursively replace any arrays containing only None values with empty arrays.
+
+    Args:
+        data: Any Python object (dict, list, etc.)
+
+    Returns:
+        The transformed data structure with None-only arrays replaced by empty arrays
+    """
+    if isinstance(data, dict):
+        # Process each key-value pair in dictionaries
+        return {k: replace_none_arrays(v) for k, v in data.items()}
+
+    if isinstance(data, list):
+        # Check if list contains only None values
+        if all(item is None for item in data):
+            return []
+
+        # Otherwise process each item in the list
+        return [replace_none_arrays(item) for item in data]
+
+    # Return other data types unchanged
+    return data

@@ -7,11 +7,10 @@ import { useAppSelector } from "~/app/hooks";
 import FormSection from "~/features/common/form/FormSection";
 import {
   CustomClipboardCopy,
-  CustomSelect,
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { enumToOptions } from "~/features/common/helpers";
-import { PROPERTIES_ROUTE } from "~/features/common/nav/v2/routes";
+import { PROPERTIES_ROUTE } from "~/features/common/nav/routes";
 import ScrollableList from "~/features/common/ScrollableList";
 import {
   selectAllExperienceConfigs,
@@ -26,6 +25,7 @@ import {
   PropertyType,
 } from "~/types/api";
 
+import { ControlledSelect } from "../common/form/ControlledSelect";
 import DeletePropertyModal from "./DeletePropertyModal";
 
 interface Props {
@@ -111,12 +111,12 @@ const PropertyForm = ({ property, handleSubmit }: Props) => {
                 tooltip="Unique name to identify this property"
                 variant="stacked"
               />
-              <CustomSelect
+              <ControlledSelect
                 isRequired
                 label="Type"
                 name="type"
                 options={enumToOptions(PropertyType)}
-                variant="stacked"
+                layout="stacked"
               />
             </FormSection>
           </Box>

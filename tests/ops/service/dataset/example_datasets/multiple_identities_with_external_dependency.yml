@@ -1,0 +1,36 @@
+dataset:
+  - fides_key: multiple_identities_with_external_dependency
+    name: Multiple identities with external dependency
+    description: A dataset with one collection that relies on an identity, and another collection that relies on an external dataset reference tied to a different identity
+    collections:
+      - name: loyalty
+        fields:
+          - name: id
+            data_categories: [user.unique_id]
+            fides_meta:
+              identity: loyalty_id
+          - name: name
+            data_categories: [user.name]
+            fides_meta:
+              data_type: string
+          - name: points
+            data_categories: [user.content]
+            fides_meta:
+              data_type: integer
+          - name: tier
+            data_categories: [system.operations]
+            fides_meta:
+              data_type: string
+      - name: orders
+        fields:
+          - name: customer_id
+            data_categories: [user.unique_id]
+            fides_meta:
+              references:
+                - dataset: single_identity
+                  field: customer.id
+                  direction: from
+          - name: id
+            data_categories: [system.operations]
+          - name: shipping_address_id
+            data_categories: [system.operations]

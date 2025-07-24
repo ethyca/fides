@@ -1,6 +1,6 @@
 {
   "extends": ["//"],
-  "pipeline": {
+  "tasks": {
     "chrome:debug": {
       "dependsOn": ["build"]
     },

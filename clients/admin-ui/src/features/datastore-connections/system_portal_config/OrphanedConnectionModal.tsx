@@ -150,8 +150,12 @@ const OrphanedConnectionModal = ({
                     onClick={() => {
                       setSelectedConnectionConfig(connectionConfig);
                     }}
+                    className="mb-2"
                   >
-                    <ConnectionTypeLogo data={connectionConfig} />
+                    <ConnectionTypeLogo
+                      data={connectionConfig}
+                      className="mr-2"
+                    />
                     <Text>{connectionConfig.name}</Text>
                   </Flex>
                 ))}

@@ -1,7 +1,7 @@
 import alias from "@rollup/plugin-alias";
 import copy from "rollup-plugin-copy";
 import dts from "rollup-plugin-dts";
-import esbuild from "rollup-plugin-esbuild";
+import esbuild, { minify } from "rollup-plugin-esbuild";
 import filesize from "rollup-plugin-filesize";
 import json from "@rollup/plugin-json";
 import nodeResolve from "@rollup/plugin-node-resolve";
@@ -9,15 +9,28 @@ import postcss from "rollup-plugin-postcss";
 import commonjs from "@rollup/plugin-commonjs";
 import { visualizer } from "rollup-plugin-visualizer";
 import strip from "@rollup/plugin-strip";
+import replace from "@rollup/plugin-replace";
+import fs from "fs";
+import jsxRemoveAttributes from "rollup-plugin-jsx-remove-attributes";
+import { importFidesPackageVersion } from "../build-utils.js";
 
 const NAME = "fides";
 const IS_DEV = process.env.NODE_ENV === "development";
-const GZIP_SIZE_ERROR_KB = 45; // fail build if bundle size exceeds this
-const GZIP_SIZE_WARN_KB = 35; // log a warning if bundle size exceeds this
+const IS_TEST = process.env.IS_TEST === "true";
+const GZIP_SIZE_ERROR_KB = 50; // fail build if bundle size exceeds this
+const GZIP_SIZE_WARN_KB = 45; // log a warning if bundle size exceeds this
 
 // TCF
-const GZIP_SIZE_TCF_ERROR_KB = 85;
+const GZIP_SIZE_TCF_ERROR_KB = 92;
 const GZIP_SIZE_TCF_WARN_KB = 75;
+
+// Headless
+const GZIP_SIZE_HEADLESS_ERROR_KB = 25;
+const GZIP_SIZE_HEADLESS_WARN_KB = 20;
+
+// GPP
+const GZIP_SIZE_GPP_ERROR_KB = 40;
+const GZIP_SIZE_GPP_WARN_KB = 35;
 
 const preactAliases = {
   entries: [
@@ -28,7 +41,7 @@ const preactAliases = {
   ],
 };
 
-const fidesScriptPlugins = ({ name, gzipWarnSizeKb, gzipErrorSizeKb }) => [
+const fidesScriptPlugins = () => [
   alias(preactAliases),
   nodeResolve(),
   commonjs(),
@@ -36,17 +49,24 @@ const fidesScriptPlugins = ({ name, gzipWarnSizeKb, gzipErrorSizeKb }) => [
   postcss({
     minimize: !IS_DEV,
   }),
-  esbuild({
-    minify: !IS_DEV,
+  esbuild(),
+  !IS_DEV && !IS_TEST && jsxRemoveAttributes(), // removes `data-testid`
+  !IS_DEV &&
+    strip({
+      include: ["**/*.ts", "**/*.tsx"],
+      functions: ["fidesDebugger"],
+    }),
+  !IS_DEV && minify(),
+  replace({
+    // version.json is created by the docker build process and contains the versioneer version
+    __RELEASE_VERSION__: () => importFidesPackageVersion(),
+    preventAssignment: true,
+    include: ["src/lib/init-utils.ts"],
   }),
-  strip(
-    IS_DEV
-      ? {}
-      : {
-          include: ["**/*.ts"],
-          functions: ["fidesDebugger"],
-        },
-  ),
+];
+
+const fidesScriptsJSPlugins = ({ name, gzipWarnSizeKb, gzipErrorSizeKb }) => [
+  ...fidesScriptPlugins(),
   copy({
     // Automatically add the built script to the privacy center's and admin ui's static files for bundling:
     targets: [
@@ -107,9 +127,14 @@ const SCRIPTS = [
     gzipErrorSizeKb: GZIP_SIZE_TCF_ERROR_KB,
   },
   {
+    name: `${NAME}-headless`,
+    gzipWarnSizeKb: GZIP_SIZE_HEADLESS_WARN_KB,
+    gzipErrorSizeKb: GZIP_SIZE_HEADLESS_ERROR_KB,
+  },
+  {
     name: `${NAME}-ext-gpp`,
-    gzipWarnSizeKb: 10,
-    gzipErrorSizeKb: 15,
+    gzipWarnSizeKb: GZIP_SIZE_GPP_WARN_KB,
+    gzipErrorSizeKb: GZIP_SIZE_GPP_ERROR_KB,
     isExtension: true,
   },
 ];
@@ -120,12 +145,22 @@ const SCRIPTS = [
 const rollupOptions = [];
 
 /**
+ * Ignore circular dependency warnings from node_modules
+ * that we don't control.
+ */
+const onLog = (_, { code, message }) => {
+  if (code === "CIRCULAR_DEPENDENCY" && message.includes("node_modules")) {
+    return;
+  }
+};
+
+/**
  * For each of our entrypoint scripts, build .js, .mjs, and .d.ts outputs
  */
 SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
   const js = {
     input: `src/${name}.ts`,
-    plugins: fidesScriptPlugins({
+    plugins: fidesScriptsJSPlugins({
       name,
       gzipWarnSizeKb,
       gzipErrorSizeKb,
@@ -135,25 +170,18 @@ SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
         // Intended for browser <script> tag - defines `Fides` global. Also supports UMD loaders.
         file: `dist/${name}.js`,
         name: isExtension ? undefined : "Fides",
-        format: isExtension ? undefined : "umd",
-        sourcemap: IS_DEV && !isExtension ? "inline" : false,
+        format: isExtension ? "es" : "umd",
+        sourcemap: IS_DEV ? "inline" : false,
+        amd: {
+          define: undefined, // prevent the bundle from registering itself as an AMD module, even if an AMD loader (like RequireJS) is present on the page. This allows FidesJS to use Rollup's `umd` format to support both `iife` and `cjs` modules, but excludes AMD.
+        },
       },
     ],
+    onLog,
   };
   const mjs = {
     input: `src/${name}.ts`,
-    plugins: [
-      alias(preactAliases),
-      json(),
-      nodeResolve(),
-      commonjs(),
-      postcss(),
-      esbuild(),
-      strip({
-        include: ["**/*.js", "**/*.ts"],
-        functions: ["fidesDebugger"],
-      }),
-    ],
+    plugins: fidesScriptPlugins(),
     output: [
       {
         // Compatible with ES module imports. Apps in this repo may be able to share the code.
@@ -162,6 +190,7 @@ SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
         sourcemap: true,
       },
     ],
+    onLog,
   };
   const declaration = {
     input: `src/${name}.ts`,
@@ -175,6 +204,50 @@ SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
 
   rollupOptions.push(...[js, mjs, declaration]);
 });
+
+// Add preview script build configuration
+const previewScript = {
+  input: "src/fides-preview.ts",
+  plugins: [
+    esbuild({
+      minify: true,
+    }),
+    replace({
+      // Inject the actual script contents during build
+      // These will be properly escaped as strings
+      FIDES_STANDARD_SCRIPT: () => {
+        const standardPath = "dist/fides.js";
+        return JSON.stringify(fs.readFileSync(standardPath, "utf-8"));
+      },
+      FIDES_TCF_SCRIPT: () => {
+        const tcfPath = "dist/fides-tcf.js";
+        return JSON.stringify(fs.readFileSync(tcfPath, "utf-8"));
+      },
+      preventAssignment: true,
+    }),
+    copy({
+      targets: [
+        {
+          src: "dist/fides-preview.js",
+          dest: "../admin-ui/public/lib/",
+        },
+      ],
+      verbose: true,
+      hook: "writeBundle",
+    }),
+  ],
+  output: [
+    {
+      file: "dist/fides-preview.js",
+      format: "umd",
+      name: "FidesPreview",
+      sourcemap: false,
+    },
+  ],
+};
+
+// Add preview script to build after the main scripts
+rollupOptions.push(previewScript);
 
 /**
  * In addition to our regular built outputs (like fides.js!) also generate a

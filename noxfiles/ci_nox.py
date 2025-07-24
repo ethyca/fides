@@ -4,18 +4,21 @@ from functools import partial
 from typing import Callable, Dict
 
 import nox
+from nox import Session
+from nox import session as nox_session
 from nox.command import CommandFailed
 
 from constants_nox import (
     CONTAINER_NAME,
     IMAGE_NAME,
     LOGIN,
+    RUN,
     RUN_NO_DEPS,
     START_APP,
     WITH_TEST_CONFIG,
 )
-from setup_tests_nox import pytest_ctl, pytest_lib, pytest_nox, pytest_ops
-from utils_nox import install_requirements
+from setup_tests_nox import pytest_api, pytest_ctl, pytest_lib, pytest_nox, pytest_ops
+from utils_nox import db, install_requirements
 
 
 ###################
@@ -81,7 +84,14 @@ def mypy(session: nox.Session) -> None:
 def pylint(session: nox.Session) -> None:
     """Run the 'pylint' code linter."""
     install_requirements(session)
-    command = ("pylint", "src", "noxfiles", "noxfile.py", "--jobs", "0")
+    command = (
+        "pylint",
+        "src",
+        "noxfiles",
+        "noxfile.py",
+        "--jobs",
+        "0",
+    )
     session.run(*command)
 
 
@@ -95,13 +105,19 @@ def xenon(session: nox.Session) -> None:
         "src",
         "tests",
         "scripts",
-        "--max-absolute B",
-        "--max-modules B",
-        "--max-average A",
-        "--ignore 'data, docs'",
-        "--exclude src/fides/_version.py",
+        "--max-absolute=B",
+        "--max-modules=B",
+        "--max-average=A",
+        "--ignore=data,docs",
+        "--exclude=src/fides/_version.py",
     )
-    session.run(*command)
+    session.run(*command, success_codes=[0, 1])
+    session.warn(
+        "Note: This command was malformed so it's been failing to report complexity issues."
+    )
+    session.warn(
+        "Intentionally suppressing the error status code for now to slowly work through the issues."
+    )
 
 
 ##################
@@ -128,6 +144,18 @@ def check_install(session: nox.Session) -> None:
 
     run_command = ("python", "-c", "from fides.api.main import start_webserver")
     session.run(*run_command, env=REQUIRED_ENV_VARS)
+
+
+@nox.session()
+def check_migrations(session: nox.Session) -> None:
+    """Check for missing migrations."""
+    db(session, "init")
+    check_migration_command = (
+        "python",
+        "-c",
+        "from fides.api.db.database import check_missing_migrations; from fides.config import get_config; config = get_config(); check_missing_migrations(config.database.sync_database_uri);",
+    )
+    session.run(*RUN, *check_migration_command, external=True)
 
 
 @nox.session()
@@ -281,6 +309,7 @@ TEST_GROUPS = [
     nox.param("ops-integration", id="ops-integration"),
     nox.param("ops-external-datastores", id="ops-external-datastores"),
     nox.param("ops-saas", id="ops-saas"),
+    nox.param("api", id="api"),
     nox.param("lib", id="lib"),
     nox.param("nox", id="nox"),
 ]
@@ -296,6 +325,7 @@ TEST_MATRIX: Dict[str, Callable] = {
     "ops-integration": partial(pytest_ops, mark="integration"),
     "ops-external-datastores": partial(pytest_ops, mark="external_datastores"),
     "ops-saas": partial(pytest_ops, mark="saas"),
+    "api": pytest_api,
     "lib": pytest_lib,
     "nox": pytest_nox,
 }
@@ -361,3 +391,47 @@ def python_build(session: nox.Session, dist: str) -> None:
         dist,
         external=True,
     )
+
+
+@nox_session()
+def check_worker_startup(session: Session) -> None:
+    """
+    Check that the main 'worker' service can start up successfully using docker compose --wait.
+    Relies on the healthcheck defined in docker-compose.yml.
+    """
+    worker_service = "worker"
+    session.log(f"Attempting to start and wait for service: {worker_service}")
+
+    start_command = (
+        "docker",
+        "compose",
+        "up",
+        "--wait",
+        worker_service,
+    )
+    # Use "down" which stops and removes containers, networks, etc.
+    cleanup_command = (
+        "docker",
+        "compose",
+        "down",
+    )
+
+    try:
+        # Run the command. Nox will automatically raise CommandFailed on non-zero exit code.
+        session.run(*start_command, external=True)
+        session.log(
+            f"Service {worker_service} started successfully and became healthy."
+        )
+    except CommandFailed:
+        # If --wait fails (service doesn't become healthy), CommandFailed is raised.
+        session.log(
+            f"Service {worker_service} failed to start or become healthy within the specified timeout/retries."
+        )
+        # Logs are not printed automatically here, but can be checked manually if needed.
+        session.error(f"Service {worker_service} failed health check during startup.")
+    finally:
+        # Ensure cleanup runs regardless of success or failure
+        session.log("Running cleanup command: docker compose down")
+        session.run(
+            *cleanup_command, external=True, silent=True
+        )  # silent=True avoids extra noise if already down

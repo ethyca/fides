@@ -3,6 +3,7 @@
 /* eslint-disable */
 
 import type { fides__api__schemas__privacy_center_config__ConsentConfig } from "./fides__api__schemas__privacy_center_config__ConsentConfig";
+import type { PolicyUnavailableMessages } from "./PolicyUnavailableMessages";
 import type { PrivacyRequestOption } from "./PrivacyRequestOption";
 
 /**
@@ -26,4 +27,5 @@ export type PrivacyCenterConfig = {
   consent: fides__api__schemas__privacy_center_config__ConsentConfig;
   privacy_policy_url?: string | null;
   privacy_policy_url_text?: string | null;
+  policy_unavailable_messages?: PolicyUnavailableMessages | null;
 };

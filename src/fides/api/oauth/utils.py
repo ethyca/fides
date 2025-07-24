@@ -31,6 +31,7 @@ from fides.api.models.policy import PolicyPreWebhook
 from fides.api.models.pre_approval_webhook import PreApprovalWebhook
 from fides.api.models.privacy_request import RequestTask
 from fides.api.oauth.roles import get_scopes_from_roles
+from fides.api.request_context import set_user_id
 from fides.api.schemas.external_https import RequestTaskJWE, WebhookJWE
 from fides.api.schemas.oauth import OAuth2ClientCredentialsBearer
 from fides.common.api.v1.urn_registry import TOKEN, V1_URL_PREFIX
@@ -325,6 +326,16 @@ def extract_token_and_load_client(
         logger.debug("Auth token belongs to an invalid client_id.")
         raise AuthorizationError(detail="Not Authorized for this action")
 
+    # Populate request-scoped context with the authenticated user identifier.
+    # Prefer the linked user_id; fall back to the client id when this is the
+    # special root client (which has no associated FidesUser row).
+    ctx_user_id = client.user_id
+    if not ctx_user_id and client.id == CONFIG.security.oauth_root_client_id:
+        ctx_user_id = CONFIG.security.oauth_root_client_id
+
+    if ctx_user_id:
+        set_user_id(ctx_user_id)
+
     return token_data, client
 
 
@@ -339,7 +350,16 @@ def has_permissions(
     has_role: bool = _has_scope_via_role(
         token_data=token_data, client=client, endpoint_scopes=endpoint_scopes
     )
-    return has_direct_scope or has_role
+
+    has_required_permissions = has_direct_scope or has_role
+    if not has_required_permissions:
+        scopes_required = ",".join(endpoint_scopes.scopes)
+        logger.debug(
+            "Authorization failed. Missing required scopes: {}. Neither direct scopes nor role-derived scopes were sufficient.",
+            scopes_required,
+        )
+
+    return has_required_permissions
 
 
 def _has_scope_via_role(
@@ -385,16 +405,7 @@ def _has_direct_scopes(
 
 def has_scope_subset(user_scopes: List[str], endpoint_scopes: SecurityScopes) -> bool:
     """Are the required scopes a subset of the scopes belonging to the user?"""
-    if not set(endpoint_scopes.scopes).issubset(user_scopes):
-        scopes_required = ",".join(endpoint_scopes.scopes)
-        scopes_provided = ",".join(user_scopes)
-        logger.debug(
-            "Auth token missing required scopes: {}. Scopes provided: {}.",
-            scopes_required,
-            scopes_provided,
-        )
-        return False
-    return True
+    return set(endpoint_scopes.scopes).issubset(user_scopes)
 
 
 def create_temporary_user_for_login_flow(config: FidesConfig) -> FidesUser:

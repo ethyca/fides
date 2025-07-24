@@ -85,7 +85,7 @@ from dataclasses import dataclass
 from re import match, search
 from typing import Any, Callable, Dict, List, Literal, Optional, Set, Tuple, Union
 
-from fideslang.models import MaskingStrategyOverride
+from fideslang.models import FieldMaskingStrategyOverride, MaskingStrategyOverride
 from fideslang.validation import FidesKey
 from pydantic import BaseModel, ConfigDict, field_serializer, field_validator
 
@@ -94,6 +94,10 @@ from fides.api.graph.data_type import (
     DataType,
     DataTypeConverter,
     get_data_type_converter,
+)
+from fides.api.schemas.partitioning import TimeBasedPartitioning
+from fides.api.schemas.partitioning.time_based_partitioning import (
+    validate_partitioning_list,
 )
 from fides.api.util.collection_util import merge_dicts
 from fides.api.util.querytoken import QueryToken
@@ -262,8 +266,8 @@ class Field(BaseModel, ABC):
     data_categories: Optional[List[FidesKey]] = None
     data_type_converter: DataTypeConverter = DataType.no_op.value
     return_all_elements: Optional[bool] = None
+    masking_strategy_override: Optional[FieldMaskingStrategyOverride] = None
     # Should field be returned by query if it is in an entrypoint array field, or just if it matches query?
-
     custom_request_field: Optional[str] = None
 
     """Known type of held data"""
@@ -338,22 +342,6 @@ class ObjectField(Field):
 
     fields: Dict[str, Field]
 
-    @field_validator("data_categories")
-    @classmethod
-    def validate_data_categories(
-        cls, value: Optional[List[FidesKey]]
-    ) -> Optional[List[FidesKey]]:
-        """To prevent mismatches between data categories on an ObjectField and a nested ScalarField, only
-        allow data categories to be defined on the individual fields.
-
-        This shouldn't be hit unless an ObjectField is declared directly.
-        """
-        if value:
-            raise ValueError(
-                "ObjectFields cannot be given data_categories; annotate the sub-fields instead."
-            )
-        return value
-
     def cast(self, value: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Cast the input value into the form represented by data_type."""
 
@@ -409,6 +397,7 @@ def generate_field(
     return_all_elements: Optional[bool],
     read_only: Optional[bool],
     custom_request_field: Optional[str],
+    masking_strategy_override: Optional[FieldMaskingStrategyOverride],
 ) -> Field:
     """Generate a graph field."""
 
@@ -433,19 +422,20 @@ def generate_field(
         return_all_elements=return_all_elements,
         read_only=read_only,
         custom_request_field=custom_request_field,
+        masking_strategy_override=masking_strategy_override,
     )
 
 
 @dataclass
-class MaskingOverride:
-    """Data class to store override params related to data masking"""
+class MaskingTruncation:
+    """Data class to store truncation params related to data masking"""
 
     data_type_converter: Optional[DataTypeConverter]
     length: Optional[int]
 
 
 # for now, we only support BQ partitioning, so the clause pattern we expect is BQ-specific
-BIGQUERY_PARTITION_CLAUSE_PATTERN = r"^`(?P<field_1>[a-zA-Z0-9_]*)` ([<|>][=]?) (?P<operand_1>[a-zA-Z0-9_\s(),\.\"\']*)(\sAND `(?P<field_2>[a-zA-Z0-9_]*)` ([<|>][=]?) (?P<operand_2>[a-zA-Z0-9_\s(),\.\"\']*))?$"
+BIGQUERY_PARTITION_CLAUSE_PATTERN = r"^`(?P<field_1>[a-zA-Z0-9_]*)` ([<|>][=]?) (?P<operand_1>[a-zA-Z0-9_\s(),\.\"\'\-]*)(\sAND `(?P<field_2>[a-zA-Z0-9_]*)` ([<|>][=]?) (?P<operand_2>[a-zA-Z0-9_\s(),\.\"\'\-]*))?$"
 # protected keywords that are _not_ allowed in the operands, to avoid any potential malicious execution.
 PROHIBITED_KEYWORDS = [
     "UNION",
@@ -473,7 +463,7 @@ class Collection(BaseModel):
     grouped_inputs: Set[str] = set()
     data_categories: Set[FidesKey] = set()
     masking_strategy_override: Optional[MaskingStrategyOverride] = None
-    partitioning: Optional[Dict] = None
+    partitioning: Optional[Union[List[TimeBasedPartitioning], Dict[str, Any]]] = None
 
     @property
     def field_dict(self) -> Dict[FieldPath, Field]:
@@ -669,14 +659,12 @@ class Collection(BaseModel):
     @field_validator("partitioning")
     @classmethod
     def validate_partitioning(
-        cls, partitioning: Optional[Dict[str, Any]]
-    ) -> Optional[Dict[str, Any]]:
+        cls, partitioning: Optional[Union[List[TimeBasedPartitioning], Dict[str, Any]]]
+    ) -> Optional[Union[List[TimeBasedPartitioning], Dict[str, Any]]]:
         """
-        Validates the `partitioning` dict field.
-
-        The `partitioning` dict field is untyped in Fideslang, but here we enforce
-        that it has the required and expected `where_clauses` key, whose value must be
-        a list of strings.
+        Validates the `partitioning` field, which may be either a single dict
+        or a list of dicts.  Each dict must describe either legacy
+        `where_clauses` or the required keys for time-based partitioning.
 
         The string values are validated to ensure they match the expected syntax, which
         is strictly prescribed. The string values MUST be a valid SQL clause that defines
@@ -697,7 +685,12 @@ class Collection(BaseModel):
         in its conditional
 
         """
-        if not partitioning:
+
+        if partitioning is None:
+            return partitioning
+
+        if isinstance(partitioning, list):
+            validate_partitioning_list(partitioning)
             return partitioning
 
         # NOTE: when we deprecate `where_clause` partitioning in favor of a more proper partitioning DSL,

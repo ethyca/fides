@@ -3,8 +3,11 @@ import "@fontsource/inter/500.css";
 import "@fontsource/inter/600.css";
 import "@fontsource/inter/700.css";
 import "../theme/tailwind.css";
+import "fidesui/src/ant-theme/global.scss";
 
-import { FidesUIProvider, Flex } from "fidesui";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import { defaultAntTheme, FidesUIProvider, Flex } from "fidesui";
 import type { AppProps } from "next/app";
 import React, { ReactNode } from "react";
 import { DndProvider } from "react-dnd";
@@ -14,13 +17,14 @@ import { PersistGate } from "redux-persist/integration/react";
 
 import ProtectedRoute from "~/features/auth/ProtectedRoute";
 import CommonSubscriptions from "~/features/common/CommonSubscriptions";
-import MainSideNav from "~/features/common/nav/v2/MainSideNav";
-import { antTheme } from "~/theme/ant";
+import MainSideNav from "~/features/common/nav/MainSideNav";
 
 import store, { persistor } from "../app/store";
 import theme from "../theme";
 import Login from "./login";
 import LoginWithOIDC from "./login/[provider]";
+
+dayjs.extend(utc);
 
 if (process.env.NEXT_PUBLIC_MOCK_API) {
   // eslint-disable-next-line global-require
@@ -37,7 +41,7 @@ const MyApp = ({ Component, pageProps }: AppProps) => (
   <SafeHydrate>
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        <FidesUIProvider theme={theme} antTheme={antTheme}>
+        <FidesUIProvider theme={theme} antTheme={defaultAntTheme}>
           <DndProvider backend={HTML5Backend}>
             {Component === Login || Component === LoginWithOIDC ? (
               // Only the login page is accessible while logged out. If there is

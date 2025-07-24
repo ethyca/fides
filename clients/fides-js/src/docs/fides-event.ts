@@ -6,11 +6,16 @@
  * {@link FidesEvent} provides a good reference. But when coding, it's still
  * useful to have this union type around!
  *
+ * `FidesInitialized` is deprecated and will be removed in a future release.
+ * Use `FidesConsentLoaded` or `FidesReady` instead.
+ *
  * @private
  */
 export type FidesEventType =
   | "FidesInitializing"
   | "FidesInitialized"
+  | "FidesConsentLoaded"
+  | "FidesReady"
   | "FidesUpdating"
   | "FidesUpdated"
   | "FidesUIShown"
@@ -46,9 +51,20 @@ export type FidesEventType =
  * immediately once the FidesJS script is loaded. If `Fides.init()` is called
  * multiple times, this event will also be dispatched each time.
  *
- * - `FidesInitialized`: Dispatched when initialization is complete and the
+ * - `FidesConsentLoaded`: If previously saved consent was found during initialization,
+ * we immediately set it on the `Fides` global object and dispatch this event.
+ * This event will only be dispatched if consent was found.
+ *
+ * - `FidesReady`: Dispatched when initialization is complete and the
  * current user's consent preferences - either previously saved or applicable
  * defaults - have been set on the `Fides` global object.
+ * This event will always be dispatched, even if no previous consent was found.
+ *
+ * - `FidesInitialized`: This event is dispatched based on the `fidesInitializedEventMode` setting:
+ *   - "once" (default): fires alongside `FidesReady` only
+ *   - "multiple": fires alongside both `FidesReady` and `FidesConsentLoaded` events
+ *   - "disable": never fires
+ * For new projects, we strongly encourage using `FidesReady` and `FidesConsentLoaded` instead.
  *
  * - `FidesUpdating`: Dispatched when a user action (e.g. accepting all, saving
  * changes, applying GPC) has started updating the user's consent preferences.
@@ -74,6 +90,8 @@ export type FidesEventType =
  * "dirty").
  *
  * - `FidesModalClosed`: Dispatched whenever the FidesJS modal is closed.
+ *
+ * **Note**: The events `FidesUIShown`, `FidesUIChanged`, and `FidesModalClosed` are not available in a Headless experience, as they are specific to the FidesJS UI components.
  *
  */
 export interface FidesEvent extends CustomEvent {
@@ -101,6 +119,14 @@ export interface FidesEvent extends CustomEvent {
     fides_string?: string;
 
     /**
+     * High-precision timestamp from {@link https://developer.mozilla.org/en-US/docs/Web/API/Performance/mark performance.mark()}
+     * representing when this event was created. The timestamp is measured in milliseconds since page load.
+     *
+     * May be undefined if the Performance API is not available.
+     */
+    timestamp?: number;
+
+    /**
      * Extra event properties, for additional context.
      */
     extraDetails?: {
@@ -110,14 +136,120 @@ export interface FidesEvent extends CustomEvent {
       servingComponent?: "banner" | "modal" | "tcf_banner" | "tcf_overlay";
 
       /**
-       * Whether the user should be shown the consent experience. Only available on FidesInitialized events.
+       * Whether the user should be shown the consent experience. Only available on FidesConsentLoaded and FidesReady events.
        */
       shouldShowExperience?: boolean;
 
       /**
        * What consent method (if any) caused this event.
        */
-      consentMethod?: "accept" | "reject" | "save" | "dismiss" | "gpc";
+      consentMethod?:
+        | "accept"
+        | "reject"
+        | "save"
+        | "dismiss"
+        | "acknowledge"
+        | "gpc"
+        | "script"
+        | "ot_migration";
+
+      /**
+       * What UI element (if any) triggered this event, as well as the origin of
+       * the event.
+       */
+      trigger?: {
+        /**
+         * Where the event originated from. If the event was triggered using an
+         * SDK script, for example, this will be "external", meaning the event
+         * was triggered by something other than a FidesJS UI element.
+         */
+        origin?: "fides" | "external";
+
+        /**
+         * The type of element that triggered the event. Additional types may be
+         * added over time, so expect this type to grow.
+         * Only present when origin is "fides".
+         */
+        type?: "toggle" | "button" | "link";
+
+        /**
+         * The UI label of the element that triggered the event.
+         */
+        label?: string;
+
+        /**
+         * The checked state of the element that triggered the event.
+         * Only present when type is "toggle".
+         */
+        checked?: boolean;
+      };
+
+      /**
+       * Information about the specific preference being changed, if this event
+       * was triggered by a preference change.
+       *
+       * @example
+       * ```ts
+       * // For a notice toggle:
+       * preference: {
+       *   key: "advertising",
+       *   type: "notice"
+       * }
+       *
+       * // For a TCF purpose toggle:
+       * preference: {
+       *   key: "tcf_purpose_consent_4",
+       *   type: "tcf_purpose_consent"
+       * }
+       *
+       * // For a TCF vendor toggle:
+       * preference: {
+       *   key: "gvl.2",
+       *   type: "tcf_vendor_consent",
+       *   vendor_id: "gvl.2",
+       *   vendor_list: "gvl",
+       *   vendor_list_id: "2",
+       *   vendor_name: "Captify"
+       * }
+       * ```
+       */
+      preference?: {
+        /**
+         * The unique key identifying this preference
+         */
+        key: string;
+
+        /**
+         * The type of preference being changed
+         */
+        type:
+          | "notice"
+          | "tcf_purpose_consent"
+          | "tcf_purpose_legitimate_interest"
+          | "tcf_special_feature"
+          | "tcf_vendor_consent"
+          | "tcf_vendor_legitimate_interest";
+
+        /**
+         * The vendor ID if this is a vendor-related preference
+         */
+        vendor_id?: string;
+
+        /**
+         * The vendor list type if this is a vendor-related preference
+         */
+        vendor_list?: "gvl" | "gacp" | "fds";
+
+        /**
+         * The vendor list ID if this is a vendor-related preference
+         */
+        vendor_list_id?: string;
+
+        /**
+         * The vendor name if this is a vendor-related preference
+         */
+        vendor_name?: string;
+      };
     };
   };
 }

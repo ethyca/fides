@@ -1,0 +1,11 @@
+.toastLink {
+  text-decoration: underline;
+  font-size: var(--fidesui-font-size-md);
+  padding-left: 0;
+  padding-right: 0;
+  color: var(--fidesui-minos);
+  &:hover,
+  &:focus-visible {
+    color: var(--fidesui-neutral-500);
+  }
+}

@@ -227,7 +227,7 @@ def test_skip_processing(
 
     assert (
         exc.value.message
-        == "Referred to object saas_connector_example:skipped_collection:id does not exist"
+        == "Referenced object saas_connector_example:skipped_collection:id from dataset saas_connector_example does not exist"
     )
 
 

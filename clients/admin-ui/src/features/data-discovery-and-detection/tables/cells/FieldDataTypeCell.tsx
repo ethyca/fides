@@ -1,12 +1,8 @@
-import { Badge, Flex } from "fidesui";
+import { AntTag as Tag, Flex } from "fidesui";
 
 const FieldDataTypeCell = ({ type }: { type?: string | null }) => (
   <Flex align="center" h="full">
-    {!!type && (
-      <Badge fontSize="xs" fontWeight="normal">
-        {type}
-      </Badge>
-    )}
+    {!!type && <Tag>{type}</Tag>}
   </Flex>
 );
 

@@ -1,4 +1,4 @@
-import { Center, Spinner, Text } from "fidesui";
+import { Center, Flex, Spinner, Text } from "fidesui";
 import { useRouter } from "next/router";
 
 import Layout from "~/features/common/Layout";
@@ -25,9 +25,11 @@ const PrivacyExperienceDetailPage = () => {
   if (isLoading || isTranslationsLoading) {
     return (
       <Layout title="Privacy experience">
-        <Center>
-          <Spinner />
-        </Center>
+        <Flex className="size-full items-center justify-center overflow-scroll">
+          <Center>
+            <Spinner />
+          </Center>
+        </Flex>
       </Layout>
     );
   }

@@ -74,3 +74,7 @@ export const useConfig = (): Config | PrivacyCenterConfig => {
   }
   return config;
 };
+export const useHasConfig = (): boolean => {
+  const { config } = useAppSelector(selectConfig);
+  return !!config;
+};

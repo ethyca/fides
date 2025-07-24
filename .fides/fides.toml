@@ -44,7 +44,6 @@ drp_jwt_secret = "secret"
 env = "prod"
 
 [execution]
-masking_strict = true
 require_manual_request_approval = false
 task_retry_backoff = 1
 subject_identity_verification_required = false

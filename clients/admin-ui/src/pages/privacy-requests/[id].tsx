@@ -1,51 +1,55 @@
-import { Center, Heading, Spinner, Text } from "fidesui";
+import { Center, Spinner, Text } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import { ReactNode } from "react";
 
 import Layout from "~/features/common/Layout";
-import BackButton from "~/features/common/nav/v2/BackButton";
-import { PRIVACY_REQUESTS_ROUTE } from "~/features/common/nav/v2/routes";
+import { PRIVACY_REQUESTS_ROUTE } from "~/features/common/nav/routes";
+import PageHeader from "~/features/common/PageHeader";
 import { useGetAllPrivacyRequestsQuery } from "~/features/privacy-requests";
 import PrivacyRequest from "~/features/privacy-requests/PrivacyRequest";
+import PrivacyRequestActionsDropdown from "~/features/privacy-requests/PrivacyRequestActionsDropdown";
 
 const PrivacyRequests: NextPage = () => {
   const router = useRouter();
-  const { id = "" } = router.query;
-  const { data, isLoading, isUninitialized } = useGetAllPrivacyRequestsQuery(
+  const privacyRequestId = router.query.id as string;
+
+  const { data, isLoading } = useGetAllPrivacyRequestsQuery(
     {
-      id: Array.isArray(id) ? id[0] : id,
+      id: privacyRequestId,
       verbose: true,
     },
     {
-      skip: id === "",
+      skip: !privacyRequestId,
     },
   );
 
-  let content: ReactNode;
-  if (isUninitialized || isLoading) {
-    content = (
-      <Center>
-        <Spinner />
-      </Center>
-    );
-  } else {
-    content =
-      !data || data?.items.length === 0 ? (
-        <Text>404 no privacy request found</Text>
-      ) : (
-        <PrivacyRequest data={data?.items[0]!} />
-      );
-  }
+  const privacyRequest = data?.items[0] || null;
 
   return (
-    <Layout title={`Privacy Requests - ${id}`}>
-      <BackButton backPath={PRIVACY_REQUESTS_ROUTE} />
-      <Heading fontSize="2xl" fontWeight="semibold">
-        Privacy Request
-      </Heading>
-      {content}
+    <Layout title={`Privacy Request - ${privacyRequestId}`}>
+      <PageHeader
+        heading="Privacy Requests"
+        breadcrumbItems={[
+          { title: "All requests", href: PRIVACY_REQUESTS_ROUTE },
+          { title: "Request details" },
+        ]}
+        rightContent={
+          !!privacyRequest && (
+            <PrivacyRequestActionsDropdown privacyRequest={privacyRequest} />
+          )
+        }
+      />
+      {isLoading && (
+        <Center>
+          <Spinner />
+        </Center>
+      )}
+      {!isLoading && !privacyRequest && (
+        <Text>404 no privacy request found</Text>
+      )}
+      {!isLoading && privacyRequest && <PrivacyRequest data={privacyRequest} />}
     </Layout>
   );
 };
+
 export default PrivacyRequests;

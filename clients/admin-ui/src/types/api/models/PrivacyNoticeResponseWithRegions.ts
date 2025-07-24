@@ -4,7 +4,6 @@
 
 import type { ConsentMechanism } from "./ConsentMechanism";
 import type { EnforcementLevel } from "./EnforcementLevel";
-import { MinimalPrivacyNotice } from "./MinimalPrivacyNotice";
 import type { NoticeTranslationResponse } from "./NoticeTranslationResponse";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 import type { UserConsentPreference } from "./UserConsentPreference";
@@ -32,5 +31,5 @@ export type PrivacyNoticeResponseWithRegions = {
   enforcement_level: EnforcementLevel;
   has_gpc_flag: boolean;
   translations?: Array<NoticeTranslationResponse>;
-  children: Array<MinimalPrivacyNotice>;
+  children?: Array<PrivacyNoticeResponseWithRegions>;
 };

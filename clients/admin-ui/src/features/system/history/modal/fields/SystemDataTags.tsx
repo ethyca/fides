@@ -1,10 +1,10 @@
-import { Flex, FormControl, Tag, VStack } from "fidesui";
+import { AntTag as Tag, Flex, FormControl, VStack } from "fidesui";
 import { useField } from "formik";
 import _ from "lodash";
 import React, { useEffect, useRef, useState } from "react";
 
 import { Label } from "~/features/common/form/inputs";
-import QuestionTooltip from "~/features/common/QuestionTooltip";
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 
 import { useSelectedHistory } from "../SelectedHistoryContext";
 
@@ -79,7 +79,7 @@ const SystemDataTags = ({
           <Label htmlFor={props.name} fontSize="xs" my={0} mr={1}>
             {label}
           </Label>
-          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+          <InfoTooltip label={tooltip} />
         </Flex>
         <Flex
           wrap="wrap"
@@ -90,7 +90,7 @@ const SystemDataTags = ({
           {(height ? field.value : longestValue).map(
             (value: any, index: number) => (
               // eslint-disable-next-line react/no-array-index-key
-              <Tag key={index} colorScheme="gray" size="md" m={1}>
+              <Tag key={index} color="marble" className="m-1">
                 {typeof value === "object" ? value.fides_key : value}
               </Tag>
             ),

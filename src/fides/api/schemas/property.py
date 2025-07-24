@@ -47,6 +47,16 @@ class MinimalProperty(FidesSchema):
     name: str
 
 
+class PropertyCreate(FidesSchema):
+    name: str
+    type: PropertyType
+    id: Optional[str] = None
+    experiences: List[MinimalPrivacyExperienceConfig]
+    privacy_center_config: Optional[PrivacyCenterConfig] = None
+    stylesheet: Optional[CssStr] = None
+    paths: List[str]
+
+
 class PublicPropertyResponse(FidesSchema):
     """
     Schema that represents a `Property` as returned in the

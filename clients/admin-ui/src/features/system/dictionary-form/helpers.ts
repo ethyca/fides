@@ -16,10 +16,5 @@ export const transformDictDataUseToDeclaration = (
     flexible_legal_basis_for_processing:
       dataUse.flexible_legal_basis_for_processing,
     retention_period: dataUse.retention_period ? dataUse.retention_period : "",
-    cookies: dataUse.cookies?.map((c) => ({
-      name: c.name,
-      domain: c.domain,
-      path: c.path,
-    })),
   };
 };

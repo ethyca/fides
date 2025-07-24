@@ -1,0 +1,31 @@
+dataset:
+  - fides_key: unreachable_collection
+    name: Unreachable Collection
+    description: A dataset with an unreachable collection (no identity field)
+    collections:
+      - name: customer
+        fields:
+          - name: id
+            data_categories: [user.unique_id]
+            fides_meta:
+              identity: user_id
+              data_type: string
+          - name: name
+            data_categories: [user.name]
+            fides_meta:
+              data_type: string
+              length: 40
+          - name: address_id
+            data_categories: [system.operations]
+      - name: address
+        fields:
+          - name: id
+            data_categories: [system.operations]
+          - name: email
+            data_categories: [user.contact.email]
+            fides_meta:
+              data_type: string  # No identity field
+          - name: street
+            data_categories: [user.contact.address.street]
+            fides_meta:
+              data_type: string

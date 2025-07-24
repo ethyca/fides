@@ -10,6 +10,7 @@ import {
 } from "datastore-connections/types";
 import {
   AntButton as Button,
+  AntTooltip as Tooltip,
   Box,
   Center,
   Modal,
@@ -19,7 +20,6 @@ import {
   ModalHeader,
   ModalOverlay,
   Spinner,
-  Tooltip,
   useDisclosure,
   VStack,
 } from "fidesui";
@@ -100,9 +100,8 @@ const DSRCustomizationModal = ({ connectionConfig }: Props) => {
     <>
       {!connectionConfig ? (
         <Tooltip
-          label="Save an Integration first to customize the DSR"
+          title="Save an Integration first to customize the DSR"
           placement="top"
-          shouldWrapChildren
         >
           {DSRButton}
         </Tooltip>
@@ -118,8 +117,8 @@ const DSRCustomizationModal = ({ connectionConfig }: Props) => {
             <VStack align="stretch" gap="16px">
               <Box color="gray.700" fontSize="14px">
                 Customize your PII fields to create a friendly label name for
-                your privacy request packages. This “Package Label” is the label
-                your user will see in their downloaded package.
+                your privacy request packages. This &quot;Package Label&quot; is
+                the label your user will see in their downloaded package.
               </Box>
               {(isFetching || isLoading) && (
                 <Center>

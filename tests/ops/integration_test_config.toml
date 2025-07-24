@@ -42,6 +42,14 @@ db_instance=""
 db_name=""
 region=""
 
+[rds_postgres_example]
+aws_access_key_id=""
+aws_secret_access_key=""
+db_username=""
+db_instance=""
+db_name=""
+region=""
+
 [redshift]
 host=""
 port=""
@@ -64,6 +72,8 @@ schema_name=""
 dataset=""
 
 [bigquery.keyfile_creds]
+
+[bigquery_enterprise]
 
 [mssql_example]
 server="mssql_example"

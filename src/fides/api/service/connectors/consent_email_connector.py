@@ -15,11 +15,8 @@ from fides.api.models.privacy_notice import (
     UserConsentPreference,
 )
 from fides.api.models.privacy_preference import PrivacyPreferenceHistory
-from fides.api.models.privacy_request import (
-    ExecutionLog,
-    ExecutionLogStatus,
-    PrivacyRequest,
-)
+from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest
+from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.connection_configuration.connection_secrets_email import (
     AdvancedSettingsWithExtendedIdentityTypes,
     ExtendedEmailSchema,
@@ -37,10 +34,12 @@ from fides.api.schemas.privacy_request import Consent
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors.base_email_connector import (
     BaseEmailConnector,
-    get_email_messaging_config_service_type,
     get_org_name,
 )
-from fides.api.service.messaging.message_dispatch_service import dispatch_message
+from fides.api.service.messaging.message_dispatch_service import (
+    dispatch_message,
+    get_email_messaging_config_service_type,
+)
 from fides.api.util.consent_util import (
     add_complete_system_status_for_consent_reporting,
     add_errored_system_status_for_consent_reporting,
@@ -213,7 +212,7 @@ class GenericConsentEmailConnector(BaseEmailConnector):
             db, privacy_request, self.configuration
         )
 
-    def batch_email_send(self, privacy_requests: Query) -> None:
+    def batch_email_send(self, privacy_requests: Query, batch_id: str) -> None:
         db = Session.object_session(self.configuration)
 
         skipped_privacy_requests: List[str] = []

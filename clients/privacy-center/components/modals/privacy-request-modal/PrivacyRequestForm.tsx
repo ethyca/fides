@@ -13,12 +13,13 @@ import {
 } from "fidesui";
 import { useFormik } from "formik";
 import { Headers } from "headers-polyfill";
-import { useRouter } from "next/router";
+import { useSearchParams } from "next/navigation";
 import React, { useEffect } from "react";
 import * as Yup from "yup";
 
 import { addCommonHeaders } from "~/common/CommonHeaders";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
+import CustomFieldRenderer from "~/components/common/CustomFieldRenderer";
 import { FormErrorMessage } from "~/components/FormErrorMessage";
 import { ModalViews } from "~/components/modals/types";
 import {
@@ -31,20 +32,22 @@ import { defaultIdentityInput } from "~/constants";
 import { useConfig } from "~/features/common/config.slice";
 import { useProperty } from "~/features/common/property.slice";
 import { useSettings } from "~/features/common/settings.slice";
+import { useCustomFieldsForm } from "~/hooks/useCustomFieldsForm";
 import { PrivacyRequestStatus } from "~/types";
+import { PrivacyRequestOption as ApiPrivacyRequestOption } from "~/types/api";
 import { PrivacyRequestSource } from "~/types/api/models/PrivacyRequestSource";
-import { CustomIdentity, PrivacyRequestOption } from "~/types/config";
-
-type FormValues = {
-  [key: string]: any;
-};
+import {
+  CustomIdentity,
+  PrivacyRequestOption as ConfigPrivacyRequestOption,
+} from "~/types/config";
+import { FormValues, MultiselectFieldValue } from "~/types/forms";
 
 /**
  *
  * @param value
  * @returns Default to null if the value is undefined or an empty string
  */
-const fallbackNull = (value: any) =>
+const fallbackNull = (value: string | MultiselectFieldValue) =>
   value === undefined || value === "" ? null : value;
 
 const usePrivacyRequestForm = ({
@@ -55,7 +58,7 @@ const usePrivacyRequestForm = ({
   isVerificationRequired,
 }: {
   onClose: () => void;
-  action?: PrivacyRequestOption | null;
+  action?: ConfigPrivacyRequestOption | ApiPrivacyRequestOption | null;
   setCurrentView: (view: ModalViews) => void;
   setPrivacyRequestId: (id: string) => void;
   isVerificationRequired: boolean;
@@ -65,8 +68,16 @@ const usePrivacyRequestForm = ({
   const customPrivacyRequestFields =
     action?.custom_privacy_request_fields ?? {};
   const toast = useToast();
-  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const property = useProperty();
+  const params = useSearchParams();
+
+  // Use our custom hook for form field logic
+  const { getInitialValues, getValidationSchema } = useCustomFieldsForm({
+    customPrivacyRequestFields,
+    searchParams,
+  });
 
   const formik = useFormik<FormValues>({
     initialValues: {
@@ -81,17 +92,12 @@ const usePrivacyRequestForm = ({
           )
           .map(([key]) => [key, ""]),
       ),
+      ...getInitialValues(),
       ...Object.fromEntries(
-        Object.entries(customPrivacyRequestFields)
-          .filter(([, field]) => !field.hidden)
-          .map(([key, field]) => {
-            const valueFromQueryParam =
-              field.query_param_key && router.query[field.query_param_key];
-
-            const value = valueFromQueryParam || field.default_value || "";
-
-            return [key, value];
-          }),
+        Object.entries(identityInputs).map(([key]) => {
+          const value = params?.get(key) ?? "";
+          return [key, value];
+        }),
       ),
     },
     onSubmit: async (values) => {
@@ -105,7 +111,7 @@ const usePrivacyRequestForm = ({
         Object.entries(action.identity_inputs ?? {})
           // we have to support name as an identity_input for legacy purposes
           // but we ignore it since it's not unique enough to be treated as an identity
-          .filter(([key]) => key !== "name")
+          .filter(([key, field]) => key !== "name" && !!field)
           .map(([key, field]) => {
             const value = fallbackNull(values[key]);
             if (typeof field === "string") {
@@ -134,7 +140,7 @@ const usePrivacyRequestForm = ({
             }
 
             const valueFromQueryParam =
-              field.query_param_key && router.query[field.query_param_key];
+              field.query_param_key && searchParams?.get(field.query_param_key);
 
             const value = valueFromQueryParam || field.default_value || null;
 
@@ -274,19 +280,7 @@ const usePrivacyRequestForm = ({
             ];
           }),
       ),
-      ...Object.fromEntries(
-        Object.entries(customPrivacyRequestFields)
-          .filter(([, field]) => !field.hidden)
-          .map(([key, { label, required }]) => {
-            const isRequired = required !== false;
-            return [
-              key,
-              isRequired
-                ? Yup.string().required(`${label} is required`)
-                : Yup.string().notRequired(),
-            ];
-          }),
-      ),
+      ...getValidationSchema().fields,
     }),
   });
 
@@ -296,7 +290,7 @@ const usePrivacyRequestForm = ({
 type PrivacyRequestFormProps = {
   isOpen: boolean;
   onClose: () => void;
-  openAction: string | null;
+  openAction: number | null;
   setCurrentView: (view: ModalViews) => void;
   setPrivacyRequestId: (id: string) => void;
   isVerificationRequired: boolean;
@@ -312,11 +306,8 @@ const PrivacyRequestForm = ({
 }: PrivacyRequestFormProps) => {
   const config = useConfig();
 
-  const action = openAction
-    ? (config.actions as PrivacyRequestOption[]).find(
-        ({ policy_key }) => policy_key === openAction,
-      )
-    : null;
+  const action =
+    typeof openAction === "number" ? config.actions[openAction] : undefined;
 
   const {
     errors,
@@ -326,9 +317,7 @@ const PrivacyRequestForm = ({
     setFieldValue,
     touched,
     values,
-    isValid,
     isSubmitting,
-    dirty,
     resetForm,
     identityInputs,
     customPrivacyRequestFields,
@@ -351,14 +340,14 @@ const PrivacyRequestForm = ({
       <ModalHeader pt={6} pb={0}>
         {action.title}
       </ModalHeader>
-      <Text fontSize="sm" color="gray.600" mb={4} ml={6}>
+      <Text fontSize="sm" color="gray.800" mb={4} ml={6}>
         {action.description}
       </Text>
       <chakra.form onSubmit={handleSubmit} data-testid="privacy-request-form">
         <ModalBody maxHeight={400} overflowY="auto">
           {action.description_subtext?.map((paragraph, index) => (
             // eslint-disable-next-line react/no-array-index-key
-            <Text fontSize="sm" color="gray.600" mb={4} key={index}>
+            <Text fontSize="sm" color="gray.800" mb={4} key={index}>
               {paragraph}
             </Text>
           ))}
@@ -379,9 +368,7 @@ const PrivacyRequestForm = ({
                   onBlur={handleBlur}
                   value={values.name}
                 />
-                <FormErrorMessage>
-                  {JSON.stringify(errors.name)}
-                </FormErrorMessage>
+                <FormErrorMessage>{errors.name}</FormErrorMessage>
               </FormControl>
             ) : null}
             {identityInputs.email ? (
@@ -401,9 +388,7 @@ const PrivacyRequestForm = ({
                   onBlur={handleBlur}
                   value={values.email}
                 />
-                <FormErrorMessage>
-                  {JSON.stringify(errors.email)}
-                </FormErrorMessage>
+                <FormErrorMessage>{errors.email}</FormErrorMessage>
               </FormControl>
             ) : null}
             {identityInputs.phone ? (
@@ -422,9 +407,7 @@ const PrivacyRequestForm = ({
                   onBlur={handleBlur}
                   value={values.phone}
                 />
-                <FormErrorMessage>
-                  {JSON.stringify(errors.phone)}
-                </FormErrorMessage>
+                <FormErrorMessage>{errors.phone}</FormErrorMessage>
               </FormControl>
             ) : null}
             {Object.entries(identityInputs)
@@ -453,9 +436,7 @@ const PrivacyRequestForm = ({
                     onBlur={handleBlur}
                     value={values[key]}
                   />
-                  <FormErrorMessage>
-                    {JSON.stringify(errors[key])}
-                  </FormErrorMessage>
+                  <FormErrorMessage>{errors[key]}</FormErrorMessage>
                 </FormControl>
               ))}
             {Object.entries(customPrivacyRequestFields)
@@ -468,17 +449,16 @@ const PrivacyRequestForm = ({
                   isRequired={item.required !== false}
                 >
                   <FormLabel fontSize="sm">{item.label}</FormLabel>
-                  <Input
-                    id={key}
-                    name={key}
-                    focusBorderColor="primary.500"
-                    onChange={handleChange}
-                    onBlur={handleBlur}
+                  <CustomFieldRenderer
+                    field={item}
+                    fieldKey={key}
                     value={values[key]}
+                    onChange={(value) => setFieldValue(key, value)}
+                    onBlur={() => handleBlur({ target: { name: key } })}
+                    error={
+                      touched[key] && errors[key] ? errors[key] : undefined
+                    }
                   />
-                  <FormErrorMessage>
-                    {JSON.stringify(errors[key])}
-                  </FormErrorMessage>
                 </FormControl>
               ))}
           </Stack>
@@ -496,7 +476,7 @@ const PrivacyRequestForm = ({
             _active={{ bg: "primary.500" }}
             colorScheme="primary"
             isLoading={isSubmitting}
-            isDisabled={isSubmitting || !(isValid && dirty)}
+            isDisabled={isSubmitting}
             size="sm"
           >
             {action.confirmButtonText || "Continue"}

@@ -20,21 +20,23 @@ PARAM_MODEL_LIST = [
 
 
 # Fixtures
-@pytest.fixture
+@pytest.fixture(scope="function")
+@pytest.mark.usefixtures("monkeypatch_requests")
 def created_resources(
     test_config: FidesConfig, resources_dict: Dict, request: FixtureRequest
 ) -> Generator:
     """
-    Fixture that creates and tears down a set of resources for each test run.
+    Creates a set of resources for testing and cleans them up after the test.
     Only creates resources for a given type based on test parameter
     """
     created_keys = []
     resource_type = request.param
     for _ in range(RESOURCE_CREATION_COUNT):
         base_resource = resources_dict[resource_type].model_copy()
-        base_resource.fides_key = "{}_{}".format(
-            base_resource.fides_key, str(uuid.uuid4())[:6]
-        )
+        uuid_suffix = str(uuid.uuid4())[:6]
+        base_resource.fides_key = "{}_{}".format(base_resource.fides_key, uuid_suffix)
+        if hasattr(base_resource, "name"):
+            base_resource.name = "{} {}".format(base_resource.name, uuid_suffix)
         _api.create(
             url=test_config.cli.server_url,
             resource_type=resource_type,
@@ -76,10 +78,13 @@ def delete_resource_type(test_config: FidesConfig, resource_type: str) -> None:
 
 
 @pytest.mark.integration
+@pytest.mark.usefixtures("monkeypatch_requests")
 class TestGetServerResource:
+
     @pytest.mark.parametrize(
         "created_resources", PARAM_MODEL_LIST, indirect=["created_resources"]
     )
+    @pytest.mark.usefixtures("fideslang_resources")
     def test_get_server_resource_found_resource(
         self, test_config: FidesConfig, created_resources: List
     ) -> None:
@@ -115,10 +120,10 @@ class TestGetServerResource:
 
 @pytest.mark.integration
 class TestGetServerResources:
-    @pytest.mark.integration
     @pytest.mark.parametrize(
         "created_resources", PARAM_MODEL_LIST, indirect=["created_resources"]
     )
+    @pytest.mark.usefixtures("monkeypatch_requests", "fideslang_resources")
     def test_get_server_resources_found_resources(
         self, test_config: FidesConfig, created_resources: List
     ) -> None:
@@ -155,6 +160,7 @@ class TestGetServerResources:
 
 @pytest.mark.integration
 class TestListServerResources:
+    @pytest.mark.usefixtures("monkeypatch_requests", "fideslang_resources")
     def test_list_server_resources_passing(self, test_config: FidesConfig) -> None:
         resource_type = "data_category"
         result = _api_helpers.list_server_resources(

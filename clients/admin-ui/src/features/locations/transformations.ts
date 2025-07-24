@@ -18,7 +18,7 @@ export const groupLocationsByContinent = (
   > = {};
   const allContinents = new Set(locations.map((l) => l.continent).sort());
   allContinents.forEach((continent) => {
-    byContinent[continent] = {
+    byContinent[continent as string] = {
       locationGroups: locationGroups
         .filter((l) => l.continent === continent)
         .sort((a, b) => a.name.localeCompare(b.name)),
@@ -37,7 +37,7 @@ export const groupRegulationsByContinent = (
   const byContinent: Record<string, LocationRegulationBase[]> = {};
   const allContinents = new Set(regulations.map((r) => r.continent).sort());
   allContinents.forEach((continent) => {
-    byContinent[continent] = regulations
+    byContinent[continent as string] = regulations
       .filter((r) => r.continent === continent)
       .sort((a, b) => a.name.localeCompare(b.name));
   });

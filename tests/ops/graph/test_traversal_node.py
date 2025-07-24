@@ -1,4 +1,6 @@
-from fides.api.graph.traversal import *
+from fides.api.graph.config import CollectionAddress, FieldAddress, FieldPath
+from fides.api.graph.graph import Edge
+from fides.api.graph.traversal import TraversalNode
 
 from .test_graph_traversal import generate_node
 

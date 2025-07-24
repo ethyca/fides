@@ -25,8 +25,13 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.manual_task import (
+    ManualTask,
+    ManualTaskParentEntityType,
+    ManualTaskType,
+)
 from fides.api.models.manual_webhook import AccessManualWebhook
-from fides.api.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
+from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.sql_models import Dataset as CtlDataset  # type: ignore
 from fides.api.models.sql_models import System  # type: ignore
 from fides.api.schemas.api import BulkUpdateFailed
@@ -52,16 +57,15 @@ from fides.api.schemas.connection_configuration.connection_secrets_saas import (
 from fides.api.schemas.connection_configuration.saas_config_template_values import (
     SaasConnectionTemplateValues,
 )
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.service.connectors import get_connector
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
     create_connection_config_from_template_no_save,
 )
-from fides.api.service.privacy_request.request_runner_service import (
-    queue_privacy_request,
-)
 from fides.api.util.logger import Pii
 from fides.common.api.v1.urn_registry import CONNECTION_TYPES, SAAS_CONFIG
+from fides.service.privacy_request.privacy_request_service import queue_privacy_request
 
 # pylint: disable=too-many-nested-blocks,too-many-branches,too-many-statements
 
@@ -244,7 +248,9 @@ def patch_connection_configs(
                     ).model_dump(mode="json")
                     connection_config.save(db=db)
                     created_or_updated.append(
-                        ConnectionConfigurationResponse(**connection_config.__dict__)
+                        ConnectionConfigurationResponse.model_validate(
+                            connection_config
+                        )
                     )
                     continue
 
@@ -269,8 +275,24 @@ def patch_connection_configs(
             connection_config = ConnectionConfig.create_or_update(
                 db, data=config_dict, check_name=False
             )
+
+            # Automatically create a ManualTask if this is a connection config of type manual_task
+            # and it doesn't already have one
+            if (
+                connection_config.connection_type == ConnectionType.manual_task
+                and not connection_config.manual_task
+            ):
+                ManualTask.create(
+                    db=db,
+                    data={
+                        "task_type": ManualTaskType.privacy_request,
+                        "parent_entity_id": connection_config.id,
+                        "parent_entity_type": ManualTaskParentEntityType.connection_config,
+                    },
+                )
+
             created_or_updated.append(
-                ConnectionConfigurationResponse(**connection_config.__dict__)
+                ConnectionConfigurationResponse.model_validate(connection_config)
             )
         except KeyOrNameAlreadyExists as exc:
             logger.warning(

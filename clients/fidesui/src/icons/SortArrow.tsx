@@ -1,4 +1,4 @@
-import { Icon } from "@chakra-ui/icon";
+import { Icon } from "@chakra-ui/icons";
 import React from "react";
 
 type SortArrowProps = {

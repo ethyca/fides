@@ -1,9 +1,15 @@
 import { Text, UseToastOptions } from "fidesui";
 import { ReactNode } from "react";
 
-const SuccessMessage = ({ children }: { children: ReactNode }) => (
+const SuccessMessage = ({
+  children,
+  title = "Success",
+}: {
+  children: ReactNode;
+  title?: string;
+}) => (
   <Text data-testid="toast-success-msg">
-    <strong>Success:</strong> {children}
+    <strong>{title}:</strong> {children}
   </Text>
 );
 
@@ -22,8 +28,11 @@ export const DEFAULT_TOAST_PARAMS: UseToastOptions = {
   isClosable: true,
 };
 
-export const successToastParams = (message: ReactNode): UseToastOptions => {
-  const description = <SuccessMessage>{message}</SuccessMessage>;
+export const successToastParams = (
+  message: ReactNode,
+  title?: string,
+): UseToastOptions => {
+  const description = <SuccessMessage title={title}>{message}</SuccessMessage>;
   return { ...DEFAULT_TOAST_PARAMS, ...{ description } };
 };
 

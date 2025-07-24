@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Sequence
 
-from fideslang.models import Cookies, PrivacyDeclaration, System
+from fideslang.models import PrivacyDeclaration, System
 from pydantic import ConfigDict, Field
 from pydantic.main import BaseModel
 
@@ -17,7 +17,6 @@ class PrivacyDeclarationResponse(PrivacyDeclaration):
     id: str = Field(
         description="The database-assigned ID of the privacy declaration on the system. This is meant to be a read-only field, returned only in API responses"
     )
-    cookies: Optional[List[Cookies]] = []
 
 
 class BasicSystemResponse(System):
