@@ -272,6 +272,7 @@ const actionCenterApi = baseApi.injectEndpoints({
       {
         monitor_config_id: string;
         diff_status?: DiffStatus[];
+        search?: string;
         resource_type?: string[];
         data_uses?: string[];
         locations?: string[];
@@ -281,6 +282,7 @@ const actionCenterApi = baseApi.injectEndpoints({
       query: ({
         monitor_config_id,
         diff_status = [DiffStatus.ADDITION],
+        search,
         resource_type,
         data_uses,
         locations,
@@ -290,6 +292,11 @@ const actionCenterApi = baseApi.injectEndpoints({
           monitor_config_id,
           diff_status,
         };
+
+        // Add search parameter if it exists
+        if (search) {
+          params.search = search;
+        }
 
         // Build URL query params for array parameters
         const urlParams = new URLSearchParams();

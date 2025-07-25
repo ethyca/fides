@@ -82,6 +82,9 @@ export const MenuHeaderCell = ({
           // Use the filter button class name to match other button styles in the table header
           // eslint-disable-next-line tailwindcss/no-custom-classname
           className="ant-table-filter-trigger"
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
         />
       </Dropdown>
     </Flex>
