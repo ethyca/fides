@@ -101,7 +101,7 @@ export const useDiscoveredAssetsColumns = ({
         key: "data_use",
         width: 400,
         filters: convertToAntFilters(filterOptions?.data_uses),
-        filteredValue: columnFilters?.data_use || null,
+        filteredValue: columnFilters?.data_uses || null,
         render: (_, record) => (
           <DiscoveredAssetDataUseCell asset={record} readonly={readonly} />
         ),
@@ -241,14 +241,15 @@ export const useDiscoveredAssetsColumns = ({
 
     return baseColumns;
   }, [
-    readonly,
+    filterOptions,
+    columnFilters,
     assetConsentStatusLabels,
-    aggregatedConsent,
-    onTabChange,
-    onShowBreakdown,
+    readonly,
     isLocationsExpanded,
     isPagesExpanded,
-    filterOptions,
+    aggregatedConsent,
+    onShowBreakdown,
+    onTabChange,
   ]);
 
   return { columns };
