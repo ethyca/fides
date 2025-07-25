@@ -1,6 +1,7 @@
 import uuid
 
 import pytest
+from pytest import param
 from sqlalchemy.orm import Session
 
 from fides.api.graph.config import CollectionAddress
@@ -14,8 +15,8 @@ from fides.api.models.manual_task.conditional_dependency import (
     ManualTaskConditionalDependency,
     ManualTaskConditionalDependencyType,
 )
+from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.task.manual.manual_task_utils import (
-    ManualTaskAddress,
     create_manual_data_traversal_node,
     create_manual_task_artificial_graphs,
 )
@@ -50,13 +51,13 @@ class TestManualTaskUtilsConditionalDependencies:
 
     @pytest.mark.usefixtures("connection_with_manual_access_task", "condition_gt_18")
     def test_manual_task_dependencies_on_regular_tasks(
-        self, db: Session, connection_with_manual_access_task
+        self, db: Session, connection_with_manual_access_task, mock_dataset_graph
     ):
         """Test that manual tasks establish dependencies on regular tasks when conditional dependencies reference their fields"""
         connection_config, manual_task, _, _ = connection_with_manual_access_task
 
-        # Create artificial graphs
-        graphs = create_manual_task_artificial_graphs(db)
+        # Create artificial graphs with the mock dataset graph
+        graphs = create_manual_task_artificial_graphs(db, mock_dataset_graph)
 
         # Should have one graph for the manual task
         assert len(graphs) == 1
@@ -77,19 +78,19 @@ class TestManualTaskUtilsConditionalDependencies:
         expected_dependency = CollectionAddress("postgres_example", "customer")
         assert expected_dependency in collection.after
 
-        # Verify the collection name includes the manual task ID
-        expected_collection_name = f"manual_data_{manual_task.id}"
+        # Verify the collection name uses the standard manual data collection name
+        expected_collection_name = "manual_data"
         assert collection.name == expected_collection_name
 
     @pytest.mark.usefixtures("connection_with_manual_access_task", "group_condition")
     def test_manual_task_dependencies_from_group_conditions(
-        self, db: Session, connection_with_manual_access_task
+        self, db: Session, connection_with_manual_access_task, mock_dataset_graph
     ):
         """Test that manual tasks establish dependencies from group conditional dependencies"""
         connection_config, manual_task, _, _ = connection_with_manual_access_task
 
-        # Create artificial graphs
-        graphs = create_manual_task_artificial_graphs(db)
+        # Create artificial graphs with the mock dataset graph
+        graphs = create_manual_task_artificial_graphs(db, mock_dataset_graph)
 
         # Should have one graph for the manual task
         assert len(graphs) == 1
@@ -113,8 +114,8 @@ class TestManualTaskUtilsConditionalDependencies:
         }
         assert expected_dependencies.issubset(collection.after)
 
-        # Verify the collection name includes the manual task ID
-        expected_collection_name = f"manual_data_{manual_task.id}"
+        # Verify the collection name uses the standard manual data collection name
+        expected_collection_name = "manual_data"
         assert collection.name == expected_collection_name
 
     @pytest.mark.usefixtures(
@@ -123,11 +124,12 @@ class TestManualTaskUtilsConditionalDependencies:
     def test_conditional_dependency_nested_group_fields_extraction(
         self,
         db: Session,
+        mock_dataset_graph,
     ):
         """Test that field addresses are extracted from nested group conditional dependencies"""
 
-        # Create artificial graphs
-        graphs = create_manual_task_artificial_graphs(db)
+        # Create artificial graphs with the mock dataset graph
+        graphs = create_manual_task_artificial_graphs(db, mock_dataset_graph)
 
         # Should have one graph for the manual task
         assert len(graphs) == 1
@@ -168,7 +170,7 @@ class TestManualTaskUtilsConditionalDependencies:
 
     @pytest.mark.usefixtures("connection_with_manual_access_task")
     def test_multiple_manual_tasks_get_separate_collections(
-        self, db: Session, connection_with_manual_access_task
+        self, db: Session, connection_with_manual_access_task, mock_dataset_graph
     ):
         """Test that multiple manual tasks get separate collections with their own dependencies"""
         connection_config, manual_task, _, _ = connection_with_manual_access_task
@@ -208,8 +210,8 @@ class TestManualTaskUtilsConditionalDependencies:
         )
 
         try:
-            # Create artificial graphs
-            graphs = create_manual_task_artificial_graphs(db)
+            # Create artificial graphs with the mock dataset graph
+            graphs = create_manual_task_artificial_graphs(db, mock_dataset_graph)
 
             # Should have two graphs (one for each connection config)
             assert len(graphs) == 2
@@ -228,11 +230,11 @@ class TestManualTaskUtilsConditionalDependencies:
             first_collection = first_graph.collections[0]
             second_collection = second_graph.collections[0]
 
-            expected_first_name = f"manual_data_{manual_task.id}"
-            expected_second_name = f"manual_data_{second_manual_task.id}"
+            # Since we use 1:1 relationship, both collections use the same standard name
+            expected_collection_name = "manual_data"
 
-            assert first_collection.name == expected_first_name
-            assert second_collection.name == expected_second_name
+            assert first_collection.name == expected_collection_name
+            assert second_collection.name == expected_collection_name
 
             # First task has no conditional dependencies, so no dependencies
             assert len(first_collection.after) == 0

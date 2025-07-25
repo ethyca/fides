@@ -31,61 +31,33 @@ from fides.api.models.privacy_request import (
     TraversalDetails,
 )
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
+from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
 from fides.api.task.manual.manual_task_utils import (
-    ManualTaskAddress,
     create_manual_data_traversal_node,
     create_manual_task_artificial_graphs,
     create_manual_task_instances_for_privacy_request,
     get_manual_task_addresses,
+    get_manual_task_for_connection_config,
     get_manual_task_instances_for_privacy_request,
-    get_manual_tasks_for_connection_config,
 )
 from fides.api.task.task_resources import TaskResources
 
 
-class TestManualTaskAddress:
-    def test_create_manual_task_address(self):
-        """Test creating manual task addresses"""
-        address = ManualTaskAddress.create("postgres_connection")
-        assert address.dataset == "postgres_connection"
-        assert address.collection == "manual_data"
-
-    def test_is_manual_task_address(self):
-        """Test detecting manual task addresses"""
-        manual_address = CollectionAddress("postgres_connection", "manual_data")
-        regular_address = CollectionAddress("postgres_connection", "users")
-
-        assert ManualTaskAddress.is_manual_task_address(manual_address) == True
-        assert ManualTaskAddress.is_manual_task_address(regular_address) == False
-
-    def test_get_connection_key(self):
-        """Test extracting connection key from manual task address"""
-        address = CollectionAddress("postgres_connection", "manual_data")
-        key = ManualTaskAddress.get_connection_key(address)
-        assert key == "postgres_connection"
-
-        # Test error case
-        bad_address = CollectionAddress("postgres_connection", "users")
-        with pytest.raises(ValueError, match="Not a manual task address"):
-            ManualTaskAddress.get_connection_key(bad_address)
-
-
 class TestManualTaskTraversalNode:
 
-    def test_get_manual_tasks_for_connection_config(
+    def test_get_manual_task_for_connection_config(
         self, db, connection_with_manual_access_task
     ):
         """Test retrieving manual tasks for a connection config"""
         connection_config, manual_task, _, _ = connection_with_manual_access_task
 
-        tasks = get_manual_tasks_for_connection_config(db, connection_config.key)
-        assert len(tasks) == 1
-        assert tasks[0].id == manual_task.id
+        task = get_manual_task_for_connection_config(db, connection_config.key)
+        assert task.id == manual_task.id
 
         # Test non-existent connection
-        tasks = get_manual_tasks_for_connection_config(db, "non_existent")
-        assert len(tasks) == 0
+        task = get_manual_task_for_connection_config(db, "non_existent")
+        assert task is None
 
     def test_create_manual_data_traversal_node(
         self, db, connection_with_manual_access_task
@@ -215,9 +187,8 @@ class TestManualTaskSimulatedEndToEnd:
         manual_instance.save(db)
 
         # 7. Test that we can now get the submitted data using the utility functions
-        manual_tasks = get_manual_tasks_for_connection_config(db, connection_config.key)
-        assert len(manual_tasks) == 1
-        assert manual_tasks[0].id == manual_task.id
+        manual_task = get_manual_task_for_connection_config(db, connection_config.key)
+        assert manual_task.id == manual_task.id
 
         # 8. Verify manual task instance is completed
         db.refresh(manual_instance)

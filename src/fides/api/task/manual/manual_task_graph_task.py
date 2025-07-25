@@ -22,9 +22,9 @@ from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.graph_task import GraphTask, retry
+from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.task.manual.manual_task_utils import (
-    ManualTaskAddress,
-    get_manual_tasks_for_connection_config,
+    get_manual_task_for_connection_config,
 )
 from fides.api.util.collection_util import Row
 
@@ -234,25 +234,15 @@ class ManualTaskGraphTask(GraphTask):
 
         connection_key = ManualTaskAddress.get_connection_key(collection_address)
 
-        # Extract the specific manual task ID from the collection address
-        manual_task_id = ManualTaskAddress.get_manual_task_id(collection_address)
+        # Get the manual task for this connection config (1:1 relationship)
+        manual_task = get_manual_task_for_connection_config(db, connection_key)
 
-        if not manual_task_id:
-            # Fallback to old behavior for backward compatibility
-            manual_tasks = get_manual_tasks_for_connection_config(db, connection_key)
-        else:
-            # Get the specific manual task for this collection
-            manual_task = (
-                db.query(ManualTask).filter(ManualTask.id == manual_task_id).first()
-            )
-            manual_tasks = [manual_task] if manual_task else []
-
-        if not manual_tasks:
+        if not manual_task:
             return []
 
         # Extract conditional dependency data from inputs
         conditional_data = self._extract_conditional_dependency_data_from_inputs(
-            *inputs, manual_tasks=manual_tasks
+            *inputs, manual_tasks=[manual_task]
         )
 
         # Log the conditional data for debugging
@@ -264,21 +254,20 @@ class ManualTaskGraphTask(GraphTask):
 
         # Filter manual tasks based on conditional dependencies
         eligible_manual_tasks = []
-        for manual_task in manual_tasks:
-            should_execute = self._evaluate_conditional_dependencies(
-                manual_task, conditional_data
+        should_execute = self._evaluate_conditional_dependencies(
+            manual_task, conditional_data
+        )
+        if should_execute:
+            eligible_manual_tasks.append(manual_task)
+            logger.info(
+                "Manual task {} is eligible for execution based on conditional dependencies",
+                manual_task.id,
             )
-            if should_execute:
-                eligible_manual_tasks.append(manual_task)
-                logger.info(
-                    "Manual task {} is eligible for execution based on conditional dependencies",
-                    manual_task.id,
-                )
-            else:
-                logger.info(
-                    "Manual task {} is not eligible for execution based on conditional dependencies",
-                    manual_task.id,
-                )
+        else:
+            logger.info(
+                "Manual task {} is not eligible for execution based on conditional dependencies",
+                manual_task.id,
+            )
 
         if not eligible_manual_tasks:
             logger.info(
@@ -525,20 +514,10 @@ class ManualTaskGraphTask(GraphTask):
 
         connection_key = ManualTaskAddress.get_connection_key(collection_address)
 
-        # Extract the specific manual task ID from the collection address
-        manual_task_id = ManualTaskAddress.get_manual_task_id(collection_address)
+        # Get the manual task for this connection config (1:1 relationship)
+        manual_task = get_manual_task_for_connection_config(db, connection_key)
 
-        if not manual_task_id:
-            # Fallback to old behavior for backward compatibility
-            manual_tasks = get_manual_tasks_for_connection_config(db, connection_key)
-        else:
-            # Get the specific manual task for this collection
-            manual_task = (
-                db.query(ManualTask).filter(ManualTask.id == manual_task_id).first()
-            )
-            manual_tasks = [manual_task] if manual_task else []
-
-        if not manual_tasks:
+        if not manual_task:
             # No manual tasks defined – nothing to erase
             self.log_end(ActionType.erasure)
             return 0
@@ -547,7 +526,7 @@ class ManualTaskGraphTask(GraphTask):
         conditional_data: dict[str, Any] = {}
         if inputs:
             conditional_data = self._extract_conditional_dependency_data_from_inputs(
-                *inputs, manual_tasks=manual_tasks
+                *inputs, manual_tasks=[manual_task]
             )
 
             # Log the conditional data for debugging
@@ -559,21 +538,20 @@ class ManualTaskGraphTask(GraphTask):
 
         # Filter manual tasks based on conditional dependencies
         eligible_manual_tasks = []
-        for manual_task in manual_tasks:
-            should_execute = self._evaluate_conditional_dependencies(
-                manual_task, conditional_data
+        should_execute = self._evaluate_conditional_dependencies(
+            manual_task, conditional_data
+        )
+        if should_execute:
+            eligible_manual_tasks.append(manual_task)
+            logger.info(
+                "Manual task {} is eligible for erasure based on conditional dependencies",
+                manual_task.id,
             )
-            if should_execute:
-                eligible_manual_tasks.append(manual_task)
-                logger.info(
-                    "Manual task {} is eligible for erasure based on conditional dependencies",
-                    manual_task.id,
-                )
-            else:
-                logger.info(
-                    "Manual task {} is not eligible for erasure based on conditional dependencies",
-                    manual_task.id,
-                )
+        else:
+            logger.info(
+                "Manual task {} is not eligible for erasure based on conditional dependencies",
+                manual_task.id,
+            )
 
         if not eligible_manual_tasks:
             logger.info(

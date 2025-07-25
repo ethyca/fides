@@ -361,11 +361,8 @@ def build_request_task():
         manual_task=None,
     ):
         """Helper to create a minimal RequestTask for the manual_data collection"""
-        # Use the specific manual task address if manual_task is provided
-        if manual_task:
-            collection_address = f"{connection_config.key}:manual_data_{manual_task.id}"
-        else:
-            collection_address = f"{connection_config.key}:manual_data"
+        # Use the standard manual data collection address
+        collection_address = f"{connection_config.key}:manual_data"
 
         return RequestTask.create(
             db=db,
@@ -373,22 +370,14 @@ def build_request_task():
                 "privacy_request_id": privacy_request.id,
                 "collection_address": collection_address,
                 "dataset_name": connection_config.key,
-                "collection_name": (
-                    "manual_data"
-                    if not manual_task
-                    else f"manual_data_{manual_task.id}"
-                ),
+                "collection_name": "manual_data",
                 "action_type": action_type.value,
                 "status": ExecutionLogStatus.pending.value,
                 "upstream_tasks": [],
                 "downstream_tasks": [],
                 "all_descendant_tasks": [],
                 "collection": {
-                    "name": (
-                        "manual_data"
-                        if not manual_task
-                        else f"manual_data_{manual_task.id}"
-                    ),
+                    "name": "manual_data",
                     "fields": [],
                     "after": [],
                     "erase_after": [],
@@ -429,6 +418,43 @@ def build_task_resources():
 # =============================================================================
 # Manual Task Conditional Dependency Fixtures
 # =============================================================================
+
+
+@pytest.fixture
+def mock_dataset_graph():
+    """Create a mock dataset graph with collections and fields that match conditional dependencies"""
+    from fides.api.graph.config import Collection, GraphDataset, ScalarField
+    from fides.api.graph.graph import DatasetGraph
+
+    # Create collections with fields that match the conditional dependencies
+    customer_collection = Collection(
+        name="customer",
+        fields=[
+            ScalarField(name="profile.age"),  # matches "user.profile.age"
+            ScalarField(name="age"),  # also matches "user.profile.age"
+            ScalarField(name="role"),  # matches "user.role"
+        ],
+    )
+
+    payment_card_collection = Collection(
+        name="payment_card",
+        fields=[
+            ScalarField(
+                name="subscription.status"
+            ),  # matches "billing.subscription.status"
+            ScalarField(name="status"),  # also matches "billing.subscription.status"
+        ],
+    )
+
+    # Create dataset graphs
+    postgres_dataset = GraphDataset(
+        name="postgres_example",
+        collections=[customer_collection, payment_card_collection],
+        connection_key="postgres_example",
+    )
+
+    # Create the mock dataset graph
+    return DatasetGraph(postgres_dataset)
 
 
 def create_condition_gt_18(

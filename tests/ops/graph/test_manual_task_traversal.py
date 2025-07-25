@@ -10,7 +10,7 @@ from fides.api.graph.config import (
 )
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal
-from fides.api.task.manual.manual_task_utils import ManualTaskAddress
+from fides.api.task.manual.manual_task_address import ManualTaskAddress
 
 
 @pytest.fixture
