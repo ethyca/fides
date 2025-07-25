@@ -71,7 +71,7 @@ const TcfTabs = ({
           )}
           {isFullExperienceError && (
             <TcfLoadingErrorMessage
-              generalLabel="purposes and special features for which your data is being processed"
+              generalLabel="purposes and special features for which your data can be processed"
               specificLabel="specific purposes"
             />
           )}
@@ -114,7 +114,7 @@ const TcfTabs = ({
           )}
           {isFullExperienceError && (
             <TcfLoadingErrorMessage
-              generalLabel="features for which your data is being processed"
+              generalLabel="features for which your data can be processed"
               specificLabel="special features"
             />
           )}
@@ -151,7 +151,7 @@ const TcfTabs = ({
           )}
           {isFullExperienceError && (
             <TcfLoadingErrorMessage
-              generalLabel="vendors processing your data and the purposes or features of processing they declare"
+              generalLabel="vendors who can process your data and the purposes or features of processing they declare"
               specificLabel="each vendor based on the legal basis they assert"
             />
           )}
