@@ -29,6 +29,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added Manual Task Conditional Dependencies table [#6356](https://github.com/ethyca/fides/pull/6356)
 - Added record counts to the privacy request event log entries in the Admin UI [#6374](https://github.com/ethyca/fides/pull/6374)
 - Added traditional Chinese support to FidesJS [#6372](https://github.com/ethyca/fides/pull/6372)
+- Added support for Internal Respondent users to manage their own profile and change password [#6377] (https://github.com/ethyca/fides/pull/6377)
+
 
 ### Changed
 - Removes `data-testid` attributes from FidesJS production builds [#6351](https://github.com/ethyca/fides/pull/6351)
@@ -37,6 +39,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Updates the API so respondents will only be able to see their own user info [#6368](https://github.com/ethyca/fides/pull/6368)
 - Moved masking secrets from Redis to database [#6002](https://github.com/ethyca/fides/pull/6002)
 - Pass `IS_TEST` build parameter to Dockfile for dev builds to preserve dev `data-testid` attributes [#6382] (https://github.com/ethyca/fides/pull/6382)
+
 
 ### Developer Experience
 - Migrated Action Center tables to Ant Design [#6349](https://github.com/ethyca/fides/pull/6349)
