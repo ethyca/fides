@@ -1,27 +1,31 @@
 import { AntButton as Button, AntDropdown as Dropdown, Icons } from "fidesui";
 import NextLink from "next/link";
 
+import { useAppSelector } from "~/app/hooks";
+import { selectUser } from "~/features/auth/auth.slice";
+
 import { USER_DETAIL_ROUTE } from "./routes";
 
 interface AccountDropdownMenuProps {
-  username: string;
-  userId: string;
   onLogout: () => void;
 }
 
-const AccountDropdownMenu = ({
-  username,
-  userId,
-  onLogout,
-}: AccountDropdownMenuProps) => {
+const AccountDropdownMenu = ({ onLogout }: AccountDropdownMenuProps) => {
+  const user = useAppSelector(selectUser);
+  const userId = user?.id;
+  const username = user?.username;
+  const isRootUser = userId?.startsWith("fid_");
+
   return (
     <Dropdown
       menu={{
         items: [
           {
             key: "1",
-            label: (
-              <NextLink href={USER_DETAIL_ROUTE.replace("[id]", userId)}>
+            label: isRootUser ? (
+              <span data-testid="header-menu-username">{username}</span>
+            ) : (
+              <NextLink href={USER_DETAIL_ROUTE.replace("[id]", userId!)}>
                 <span data-testid="header-menu-username">{username}</span>
               </NextLink>
             ),

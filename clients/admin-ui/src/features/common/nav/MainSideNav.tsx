@@ -4,9 +4,9 @@ import NextLink from "next/link";
 import { useRouter } from "next/router";
 
 import logoImage from "~/../public/logo-white.svg";
-import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { useAppDispatch } from "~/app/hooks";
 import { LOGIN_ROUTE } from "~/constants";
-import { logout, selectUser, useLogoutMutation } from "~/features/auth";
+import { logout, useLogoutMutation } from "~/features/auth";
 import Image from "~/features/common/Image";
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
 
@@ -25,14 +25,10 @@ export const UnconnectedMainSideNav = ({
   groups,
   active,
   handleLogout,
-  username,
-  userId,
 }: {
   groups: NavGroup[];
   active: ActiveNav | undefined;
   handleLogout: any;
-  username: string;
-  userId: string;
 }) => {
   const navMenuItems = groups.map((group) => ({
     key: group.title,
@@ -149,15 +145,9 @@ export const UnconnectedMainSideNav = ({
             className="border-none bg-transparent  hover:!bg-gray-700"
             icon={<Icons.Help />}
           />
-          {username && userId && (
-            <div className="inline-block">
-              <AccountDropdownMenu
-                username={username}
-                userId={userId}
-                onLogout={handleLogout}
-              />
-            </div>
-          )}
+          <div className="inline-block">
+            <AccountDropdownMenu onLogout={handleLogout} />
+          </div>
         </Box>
       </VStack>
     </Box>
@@ -169,10 +159,7 @@ const MainSideNav = () => {
   const nav = useNav({ path: router.pathname });
   const [logoutMutation] = useLogoutMutation();
   const dispatch = useAppDispatch();
-  const user = useAppSelector(selectUser);
   const plusQuery = useGetHealthQuery();
-  const username = user ? user.username : "";
-  const userId = user ? user.id : "";
 
   const handleLogout = async () => {
     await logoutMutation({});
@@ -197,14 +184,7 @@ const MainSideNav = () => {
     );
   }
 
-  return (
-    <UnconnectedMainSideNav
-      {...nav}
-      handleLogout={handleLogout}
-      username={username}
-      userId={userId}
-    />
-  );
+  return <UnconnectedMainSideNav {...nav} handleLogout={handleLogout} />;
 };
 
 export default MainSideNav;
