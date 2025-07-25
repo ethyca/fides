@@ -6,7 +6,7 @@ from loguru import logger
 
 from fides.api.graph.config import CollectionAddress, FieldPath
 from fides.api.graph.graph import DatasetGraph
-from fides.api.task.manual.manual_task_utils import ManualTaskAddress
+from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.util.collection_util import Row
 
 
