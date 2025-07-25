@@ -1,9 +1,15 @@
 import uuid
 from datetime import datetime
+from io import BytesIO
 
 import pytest
 from sqlalchemy.orm import Session
 
+from fides.api.models.attachment import (
+    Attachment,
+    AttachmentReference,
+    AttachmentReferenceType,
+)
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -14,15 +20,20 @@ from fides.api.models.manual_task import (
     ManualTaskConfig,
     ManualTaskConfigField,
     ManualTaskConfigurationType,
+    ManualTaskEntityType,
     ManualTaskFieldType,
+    ManualTaskInstance,
     ManualTaskParentEntityType,
+    ManualTaskSubmission,
     ManualTaskType,
+    StatusType,
 )
 from fides.api.models.policy import Policy, Rule
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
+from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
 from fides.api.task.task_resources import TaskResources
 
 # =============================================================================
@@ -347,67 +358,384 @@ def erasure_privacy_request(db: Session, erasure_policy):
 # =============================================================================
 
 
+def _build_request_task(
+    db,
+    privacy_request,
+    connection_config,
+    action_type=ActionType.access,
+):
+    """Helper to create a minimal RequestTask for the manual_data collection"""
+    # Use the standard manual data collection address
+    collection_address = f"{connection_config.key}:manual_data"
+
+    return RequestTask.create(
+        db=db,
+        data={
+            "privacy_request_id": privacy_request.id,
+            "collection_address": collection_address,
+            "dataset_name": connection_config.key,
+            "collection_name": "manual_data",
+            "action_type": action_type.value,
+            "status": ExecutionLogStatus.pending.value,
+            "upstream_tasks": [],
+            "downstream_tasks": [],
+            "all_descendant_tasks": [],
+            "collection": {
+                "name": "manual_data",
+                "fields": [],
+                "after": [],
+                "erase_after": [],
+                "grouped_inputs": [],
+                "data_categories": [],
+            },
+            "traversal_details": {
+                "dataset_connection_key": connection_config.key,
+                "incoming_edges": [],
+                "outgoing_edges": [],
+                "input_keys": [],
+            },
+        },
+    )
+
+
+def _build_task_resources(db, privacy_request, policy, connection_config, request_task):
+    """Helper to build TaskResources object"""
+    return TaskResources(
+        request=privacy_request,
+        policy=policy,
+        connection_configs=[connection_config],
+        privacy_request_task=request_task,
+        session=db,
+    )
+
+
 @pytest.fixture()
-def build_request_task():
+@pytest.mark.usefixtures("manual_task")
+def request_task(db, privacy_request, connection_config):
     """Helper fixture to create a minimal RequestTask for manual_data collection"""
+    return _build_request_task(
+        db, privacy_request, connection_config, action_type=ActionType.access
+    )
 
-    def _build_request_task(
-        db,
-        privacy_request,
-        connection_config,
-        action_type=ActionType.access,
-        manual_task=None,
-    ):
-        """Helper to create a minimal RequestTask for the manual_data collection"""
-        # Use the standard manual data collection address
-        collection_address = f"{connection_config.key}:manual_data"
 
-        return RequestTask.create(
+@pytest.fixture()
+def task_resources(db, privacy_request, policy, connection_config, request_task):
+    """Helper fixture to build TaskResources object"""
+    return _build_task_resources(
+        db, privacy_request, policy, connection_config, request_task
+    )
+
+
+# =============================================================================
+# Manual Task Instance Fixtures
+# =============================================================================
+
+
+@pytest.fixture()
+def manual_task_instance(
+    db: Session, manual_task_access_config, access_privacy_request
+):
+    """Create a manual task instance for testing."""
+    return ManualTaskInstance.create(
+        db=db,
+        data={
+            "task_id": manual_task_access_config.task_id,
+            "config_id": manual_task_access_config.id,
+            "entity_id": access_privacy_request.id,
+            "entity_type": ManualTaskEntityType.privacy_request.value,
+            "status": StatusType.pending.value,
+        },
+    )
+
+
+# =============================================================================
+# Manual Task Submission Fixtures
+# =============================================================================
+
+
+@pytest.fixture()
+def manual_task_submission_text(
+    db: Session, manual_task_instance, connection_with_manual_access_task
+):
+    """Create a manual task submission with text field data."""
+    # Get the field from the connection setup
+    _, _, _, field = connection_with_manual_access_task
+
+    return ManualTaskSubmission.create(
+        db=db,
+        data={
+            "task_id": field.task_id,
+            "config_id": field.config_id,
+            "field_id": field.id,
+            "instance_id": manual_task_instance.id,
+            "submitted_by": None,  # System submission
+            "data": {
+                "field_type": ManualTaskFieldType.text.value,
+                "value": "user@example.com",
+            },
+        },
+    )
+
+
+@pytest.fixture()
+def manual_task_submission_checkbox(
+    db: Session, manual_task_instance, connection_with_manual_access_task
+):
+    """Create a manual task submission with checkbox field data."""
+    # Get the field from the connection setup
+    _, _, _, field = connection_with_manual_access_task
+
+    return ManualTaskSubmission.create(
+        db=db,
+        data={
+            "task_id": field.task_id,
+            "config_id": field.config_id,
+            "field_id": field.id,
+            "instance_id": manual_task_instance.id,
+            "submitted_by": None,  # System submission
+            "data": {"field_type": ManualTaskFieldType.checkbox.value, "value": True},
+        },
+    )
+
+
+@pytest.fixture()
+def manual_task_submission_attachment(
+    db: Session, manual_task_instance, connection_with_manual_access_task
+):
+    """Create a manual task submission with attachment field data."""
+    # Get the field from the connection setup
+    _, _, _, field = connection_with_manual_access_task
+
+    return ManualTaskSubmission.create(
+        db=db,
+        data={
+            "task_id": field.task_id,
+            "config_id": field.config_id,
+            "field_id": field.id,
+            "instance_id": manual_task_instance.id,
+            "submitted_by": None,  # System submission
+            "data": {
+                "field_type": ManualTaskFieldType.attachment.value,
+                "value": None,  # Attachments are handled separately
+            },
+        },
+    )
+
+
+# =============================================================================
+# Attachment Fixtures
+# =============================================================================
+
+
+@pytest.fixture()
+def attachment_for_access_package(
+    db: Session, manual_task_submission_attachment, storage_config, mock_s3_client
+):
+    """Create an attachment for access package inclusion."""
+
+    # Create attachment with proper upload
+    attachment = Attachment.create_and_upload(
+        db=db,
+        data={
+            "file_name": "test_document.pdf",
+            "attachment_type": "include_with_access_package",
+            "storage_key": storage_config.key,
+        },
+        attachment_file=BytesIO(b"test document content"),
+    )
+
+    # Create attachment reference
+    AttachmentReference.create(
+        db=db,
+        data={
+            "attachment_id": attachment.id,
+            "reference_id": manual_task_submission_attachment.id,
+            "reference_type": AttachmentReferenceType.manual_task_submission.value,
+        },
+    )
+
+    yield attachment
+
+    # Cleanup
+    try:
+        attachment.delete(db)
+    except Exception as e:
+        print(f"Error deleting attachment: {e}")
+
+
+@pytest.fixture()
+def attachment_for_erasure_package(
+    db: Session, manual_task_submission_attachment, storage_config, mock_s3_client
+):
+    """Create an attachment for erasure package inclusion."""
+
+    # Create attachment with proper upload
+    attachment = Attachment.create_and_upload(
+        db=db,
+        data={
+            "file_name": "erasure_document.pdf",
+            "attachment_type": "internal_use_only",  # Use valid enum value
+            "storage_key": storage_config.key,
+        },
+        attachment_file=BytesIO(b"erasure document content"),
+    )
+
+    # Create attachment reference
+    AttachmentReference.create(
+        db=db,
+        data={
+            "attachment_id": attachment.id,
+            "reference_id": manual_task_submission_attachment.id,
+            "reference_type": AttachmentReferenceType.manual_task_submission.value,
+        },
+    )
+
+    yield attachment
+
+    # Cleanup
+    try:
+        attachment.delete(db)
+    except Exception as e:
+        print(f"Error deleting attachment: {e}")
+
+
+@pytest.fixture()
+def multiple_attachments_for_access(
+    db: Session, manual_task_submission_attachment, storage_config, mock_s3_client
+):
+    """Create multiple attachments for access package inclusion."""
+
+    attachments = []
+
+    # Create first attachment
+    attachment1 = Attachment.create_and_upload(
+        db=db,
+        data={
+            "file_name": "document1.pdf",
+            "attachment_type": "include_with_access_package",
+            "storage_key": storage_config.key,
+        },
+        attachment_file=BytesIO(b"document 1 content"),
+    )
+
+    # Create second attachment
+    attachment2 = Attachment.create_and_upload(
+        db=db,
+        data={
+            "file_name": "document2.pdf",
+            "attachment_type": "include_with_access_package",
+            "storage_key": storage_config.key,
+        },
+        attachment_file=BytesIO(b"document 2 content"),
+    )
+
+    # Create attachment references
+    for attachment in [attachment1, attachment2]:
+        AttachmentReference.create(
             db=db,
             data={
-                "privacy_request_id": privacy_request.id,
-                "collection_address": collection_address,
-                "dataset_name": connection_config.key,
-                "collection_name": "manual_data",
-                "action_type": action_type.value,
-                "status": ExecutionLogStatus.pending.value,
-                "upstream_tasks": [],
-                "downstream_tasks": [],
-                "all_descendant_tasks": [],
-                "collection": {
-                    "name": "manual_data",
-                    "fields": [],
-                    "after": [],
-                    "erase_after": [],
-                    "grouped_inputs": [],
-                    "data_categories": [],
-                },
-                "traversal_details": {
-                    "dataset_connection_key": connection_config.key,
-                    "incoming_edges": [],
-                    "outgoing_edges": [],
-                    "input_keys": [],
-                },
+                "attachment_id": attachment.id,
+                "reference_id": manual_task_submission_attachment.id,
+                "reference_type": AttachmentReferenceType.manual_task_submission.value,
             },
         )
+        attachments.append(attachment)
 
-    return _build_request_task
+    yield attachments
+
+    # Cleanup
+    for attachment in attachments:
+        try:
+            attachment.delete(db)
+        except Exception as e:
+            print(f"Error deleting attachment: {e}")
 
 
 @pytest.fixture()
-def build_task_resources():
-    """Helper fixture to build TaskResources object"""
+def attachment_with_retrieval_error(
+    db: Session, manual_task_submission_attachment, storage_config, mock_s3_client
+):
+    """Create an attachment that will fail retrieval for testing error handling."""
 
-    def _build_task_resources(
-        db, privacy_request, policy, connection_config, request_task
-    ):
-        """Helper to build TaskResources object"""
-        return TaskResources(
-            request=privacy_request,
-            policy=policy,
-            connection_configs=[connection_config],
-            privacy_request_task=request_task,
-            session=db,
-        )
+    # Create attachment with proper upload
+    attachment = Attachment.create_and_upload(
+        db=db,
+        data={
+            "file_name": "error_document.pdf",
+            "attachment_type": "include_with_access_package",
+            "storage_key": storage_config.key,
+        },
+        attachment_file=BytesIO(b"error document content"),
+    )
 
-    return _build_task_resources
+    # Create attachment reference
+    AttachmentReference.create(
+        db=db,
+        data={
+            "attachment_id": attachment.id,
+            "reference_id": manual_task_submission_attachment.id,
+            "reference_type": AttachmentReferenceType.manual_task_submission.value,
+        },
+    )
+
+    yield attachment
+
+    # Cleanup
+    try:
+        attachment.delete(db)
+    except Exception as e:
+        print(f"Error deleting attachment: {e}")
+
+
+# =============================================================================
+# Complete Setup Fixtures
+# =============================================================================
+
+
+@pytest.fixture()
+def manual_task_graph_task(task_resources):
+    """Helper fixture to create a ManualTaskGraphTask instance for testing"""
+    # Create ManualTaskGraphTask with proper resources
+    return ManualTaskGraphTask(task_resources)
+
+
+@pytest.fixture()
+def complete_manual_task_setup(
+    db: Session,
+    connection_with_manual_access_task,
+    manual_task_instance,
+    manual_task_submission_text,
+):
+    """Create a complete manual task setup with instance and submission."""
+    connection_config, manual_task, config, field = connection_with_manual_access_task
+
+    return {
+        "connection_config": connection_config,
+        "manual_task": manual_task,
+        "config": config,
+        "field": field,
+        "instance": manual_task_instance,
+        "submission": manual_task_submission_text,
+    }
+
+
+@pytest.fixture()
+def complete_manual_task_setup_with_attachment(
+    db: Session,
+    connection_with_manual_access_task,
+    manual_task_instance,
+    manual_task_submission_attachment,
+    attachment_for_access_package,
+):
+    """Create a complete manual task setup with instance, submission, and attachment."""
+    connection_config, manual_task, config, field = connection_with_manual_access_task
+
+    return {
+        "connection_config": connection_config,
+        "manual_task": manual_task,
+        "config": config,
+        "field": field,
+        "instance": manual_task_instance,
+        "submission": manual_task_submission_attachment,
+        "attachment": attachment_for_access_package,
+    }

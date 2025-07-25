@@ -12,6 +12,7 @@ from fides.api.models.manual_task import (
     ManualTaskEntityType,
     ManualTaskFieldType,
     ManualTaskInstance,
+    ManualTaskSubmission,
     StatusType,
 )
 from fides.api.models.privacy_request import PrivacyRequest
@@ -23,6 +24,7 @@ from fides.api.task.manual.manual_task_utils import (
     get_manual_task_for_connection_config,
 )
 from fides.api.util.collection_util import Row
+from fides.api.util.storage_util import format_size
 
 
 class ManualTaskGraphTask(GraphTask):
@@ -156,7 +158,6 @@ class ManualTaskGraphTask(GraphTask):
                 },
             )
 
-    # pylint: disable=too-many-branches,too-many-nested-blocks
     def _get_submitted_data(
         self,
         db: Session,
@@ -168,23 +169,15 @@ class ManualTaskGraphTask(GraphTask):
         Check if all manual task instances have submissions for ALL fields and return aggregated data
         Returns None if any field submissions are missing (all fields must be completed or skipped)
         """
-        aggregated_data: dict[str, Any] = {}
-
-        def _format_size(size_bytes: int) -> str:
-            units = ["B", "KB", "MB", "GB", "TB"]
-            size = float(size_bytes)
-            for unit in units:
-                if size < 1024.0:
-                    return f"{size:.1f} {unit}"
-                size /= 1024.0
-            return f"{size:.1f} PB"
-
         candidate_instances: list[ManualTaskInstance] = (
             db.query(ManualTaskInstance)
+            .join(ManualTaskInstance.config)  # Join to access config information
             .filter(
                 ManualTaskInstance.task_id == manual_task.id,
                 ManualTaskInstance.entity_id == privacy_request.id,
                 ManualTaskInstance.entity_type == ManualTaskEntityType.privacy_request,
+                ManualTaskConfig.config_type
+                == allowed_config_type,  # Filter at DB level
             )
             .all()
         )
@@ -192,69 +185,81 @@ class ManualTaskGraphTask(GraphTask):
         if not candidate_instances:
             return None  # No instance yet for this manual task
 
+        # Check for incomplete fields and update status in single pass
         for inst in candidate_instances:
-            # Skip instances tied to other request types
-            if not inst.config or inst.config.config_type != allowed_config_type:
-                continue
-
-            all_fields = inst.config.field_definitions or []
-
-            # Every field must have a submission
-            if not all(inst.get_submission_for_field(f.id) for f in all_fields):
+            if inst.incomplete_fields:
                 return None  # At least one instance still incomplete
 
-            # Ensure status set
+            # Update status if needed
             if inst.status != StatusType.completed:
                 inst.status = StatusType.completed
                 inst.save(db)
 
-            # Aggregate submission data from this instance
-            for submission in inst.submissions:
-                if not submission.field or not submission.field.field_key:
-                    continue
+        # Aggregate submission data from all instances
+        aggregated_data = self._aggregate_submission_data(candidate_instances)
+        return aggregated_data or None
 
+    def _aggregate_submission_data(
+        self, instances: list[ManualTaskInstance]
+    ) -> dict[str, Any]:
+        """Aggregate submission data from all instances into a single dictionary."""
+        aggregated_data: dict[str, Any] = {}
+
+        for inst in instances:
+            # Filter valid submissions and process them
+            valid_submissions = (
+                submission
+                for submission in inst.submissions
+                if (
+                    submission.field
+                    and submission.field.field_key
+                    and isinstance(submission.data, dict)
+                )
+            )
+
+            for submission in valid_submissions:
                 field_key = submission.field.field_key
-
-                if not isinstance(submission.data, dict):
-                    continue
-
-                data_dict: dict[str, Any] = submission.data
-
+                # We already checked isinstance(submission.data, dict) in valid_submissions
+                data_dict: dict[str, Any] = submission.data  # type: ignore[assignment]
                 field_type = data_dict.get("field_type")
 
-                if field_type == ManualTaskFieldType.attachment.value:
-                    attachment_map: dict[str, dict[str, Any]] = {}
-                    for attachment in submission.attachments or []:
-                        if (
-                            attachment.attachment_type
-                            == AttachmentType.include_with_access_package
-                        ):
-                            try:
-                                size, url = attachment.retrieve_attachment()
-                                attachment_map[attachment.file_name] = {
-                                    "url": str(url) if url else None,
-                                    "size": (_format_size(size) if size else "Unknown"),
-                                }
-                            except (
-                                Exception
-                            ) as exc:  # pylint: disable=broad-exception-caught
-                                logger.warning(
-                                    "Error retrieving attachment {}: {}",
-                                    attachment.file_name,
-                                    str(exc),
-                                )
+                # Process field data based on type
+                aggregated_data[field_key] = (
+                    self._process_attachment_field(submission)
+                    if field_type == ManualTaskFieldType.attachment.value
+                    else data_dict.get("value")
+                )
 
-                    aggregated_data[field_key] = attachment_map or None
-                else:
-                    aggregated_data[field_key] = data_dict.get("value")
+        return aggregated_data
 
-        return aggregated_data if aggregated_data else None
+    def _process_attachment_field(
+        self, submission: ManualTaskSubmission
+    ) -> Optional[dict[str, dict[str, Any]]]:
+        """Process attachment field and return attachment map or None."""
+        attachment_map: dict[str, dict[str, Any]] = {}
+
+        for attachment in submission.attachments or []:
+            if attachment.attachment_type == AttachmentType.include_with_access_package:
+                try:
+                    size, url = attachment.retrieve_attachment()
+                    attachment_map[attachment.file_name] = {
+                        "url": str(url) if url else None,
+                        "size": (format_size(size) if size else "Unknown"),
+                    }
+                except Exception as exc:  # pylint: disable=broad-exception-caught
+                    logger.warning(
+                        "Error retrieving attachment {}: {}",
+                        attachment.file_name,
+                        str(exc),
+                    )
+
+        return attachment_map or None
 
     def dry_run_task(self) -> int:
         """Return estimated row count for dry run - manual tasks don't have predictable counts"""
         return 1  # Placeholder - manual tasks generate variable data
 
-    # NEW METHOD: Provide erasure support for manual tasks
+    # Provide erasure support for manual tasks
     @retry(action_type=ActionType.erasure, default_return=0)
     def erasure_request(
         self,
