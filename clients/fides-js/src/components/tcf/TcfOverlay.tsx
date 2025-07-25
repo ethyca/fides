@@ -79,8 +79,8 @@ import { TCFBannerSupplemental } from "./TCFBannerSupplemental";
 import { TcfConsentButtons } from "./TcfConsentButtons";
 import TcfTabs from "./TcfTabs";
 
-const TCF_FULL_MAX_RETRIES = 5;
-const TCF_FULL_BACKOFF_FACTOR = 1000;
+const TCF_FULL_MAX_ATTEMPTS = 4; // initial attempt + 3 retries
+const TCF_FULL_BACKOFF_FACTOR = 1000; // exponential backoff
 
 const getAllIds = (
   modelList: TcfModels | Array<PrivacyNoticeWithPreference>,
@@ -255,20 +255,20 @@ export const TcfOverlay = () => {
             setExperienceFull(fullExperience);
             setIsFullExperienceLoading(false);
           }
-        } else if (attempt < TCF_FULL_MAX_RETRIES) {
+        } else if (attempt < TCF_FULL_MAX_ATTEMPTS) {
           setTimeout(
             () => retryFetch(attempt + 1),
-            attempt * TCF_FULL_BACKOFF_FACTOR,
+            TCF_FULL_BACKOFF_FACTOR * 2 ** (attempt - 1),
           );
         } else {
           setIsFullExperienceError(true);
           setIsFullExperienceLoading(false);
         }
       } catch (error) {
-        if (attempt < TCF_FULL_MAX_RETRIES) {
+        if (attempt < TCF_FULL_MAX_ATTEMPTS) {
           setTimeout(
             () => retryFetch(attempt + 1),
-            attempt * TCF_FULL_BACKOFF_FACTOR,
+            TCF_FULL_BACKOFF_FACTOR * 2 ** (attempt - 1),
           );
         } else {
           setIsFullExperienceError(true);
