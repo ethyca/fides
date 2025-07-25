@@ -251,33 +251,24 @@ class ManualTaskGraphTask(GraphTask):
             )
 
         # Filter manual tasks based on conditional dependencies
-        eligible_manual_tasks = []
         should_execute = self._evaluate_conditional_dependencies(
             manual_task, conditional_data
         )
-        if should_execute:
-            eligible_manual_tasks.append(manual_task)
-            logger.info(
-                "Manual task {} is eligible for execution based on conditional dependencies",
-                manual_task.id,
-            )
-        else:
-            logger.info(
-                "Manual task {} is not eligible for execution based on conditional dependencies",
-                manual_task.id,
-            )
-
-        if not eligible_manual_tasks:
+        if not should_execute:
             logger.info(
                 "No manual tasks are eligible for execution based on conditional dependencies"
             )
             self.log_end(ActionType.access)
             return []
 
+        logger.info(
+            "Manual task {} is not eligible for execution based on conditional dependencies",
+            manual_task.id,
+        )
+
         # Check if any eligible manual tasks have ACCESS configs
         has_access_configs = [
             config
-            for manual_task in eligible_manual_tasks
             for config in manual_task.configs
             if config.is_current
             and config.config_type == ManualTaskConfigurationType.access_privacy_request
@@ -298,7 +289,7 @@ class ManualTaskGraphTask(GraphTask):
         # Check/create manual task instances for ACCESS configs only
         self._ensure_manual_task_instances(
             db,
-            eligible_manual_tasks,
+            manual_task,
             self.resources.request,
             ManualTaskConfigurationType.access_privacy_request,
         )
@@ -306,7 +297,7 @@ class ManualTaskGraphTask(GraphTask):
         # Check if all manual task instances have submissions for ACCESS configs only
         submitted_data = self._get_submitted_data(
             db,
-            eligible_manual_tasks,
+            manual_task,
             self.resources.request,
             ManualTaskConfigurationType.access_privacy_request,
             conditional_data=conditional_data,
@@ -383,7 +374,7 @@ class ManualTaskGraphTask(GraphTask):
     def _get_submitted_data(
         self,
         db: Session,
-        manual_tasks: ManualTask,
+        manual_task: ManualTask,
         privacy_request: PrivacyRequest,
         allowed_config_type: "ManualTaskConfigurationType",
         conditional_data: Optional[dict[str, Any]] = None,
@@ -551,33 +542,24 @@ class ManualTaskGraphTask(GraphTask):
                 )
 
         # Filter manual tasks based on conditional dependencies
-        eligible_manual_tasks = []
         should_execute = self._evaluate_conditional_dependencies(
             manual_task, conditional_data
         )
-        if should_execute:
-            eligible_manual_tasks.append(manual_task)
-            logger.info(
-                "Manual task {} is eligible for erasure based on conditional dependencies",
-                manual_task.id,
-            )
-        else:
-            logger.info(
-                "Manual task {} is not eligible for erasure based on conditional dependencies",
-                manual_task.id,
-            )
-
-        if not eligible_manual_tasks:
+        if not should_execute:
             logger.info(
                 "No manual tasks are eligible for erasure based on conditional dependencies"
             )
             self.log_end(ActionType.erasure)
             return 0
 
+        logger.info(
+            "Manual task {} is not eligible for erasure based on conditional dependencies",
+            manual_task.id,
+        )
+
         # Check if any eligible manual tasks have ERASURE configs
         has_erasure_configs = [
             config
-            for manual_task in eligible_manual_tasks
             for config in manual_task.configs
             if config.is_current
             and config.config_type
@@ -592,7 +574,7 @@ class ManualTaskGraphTask(GraphTask):
         # Create ManualTaskInstances for ERASURE configs only
         self._ensure_manual_task_instances(
             db,
-            eligible_manual_task,
+            manual_task,
             self.resources.request,
             ManualTaskConfigurationType.erasure_privacy_request,
         )
@@ -600,7 +582,7 @@ class ManualTaskGraphTask(GraphTask):
         # Check for full submissions – reuse helper used by access flow, filtering ERASURE configs
         submissions_complete = self._get_submitted_data(
             db,
-            eligible_manual_task,
+            manual_task,
             self.resources.request,
             ManualTaskConfigurationType.erasure_privacy_request,
             conditional_data=conditional_data,
