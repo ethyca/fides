@@ -73,6 +73,12 @@ export const DiscoveredAssetsTable = ({
   // Filter state for server-side filtering
   const [columnFilters, setColumnFilters] = useState<Record<string, any>>({});
 
+  // Sorting state
+  const [sortField, setSortField] = useState<string | undefined>();
+  const [sortOrder, setSortOrder] = useState<
+    "ascend" | "descend" | undefined
+  >();
+
   // Selection state
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [selectedRowsMap, setSelectedRowsMap] = useState<
@@ -127,7 +133,7 @@ export const DiscoveredAssetsTable = ({
 
   useEffect(() => {
     setPageIndex(1);
-  }, [monitorId, searchQuery, activeTab, columnFilters]);
+  }, [monitorId, searchQuery, activeTab, columnFilters, sortField, sortOrder]);
 
   useEffect(() => {
     resetSelections();
@@ -139,6 +145,8 @@ export const DiscoveredAssetsTable = ({
     size: pageSize,
     search: searchQuery,
     diff_status: activeParams?.diff_status,
+    sort_by: sortField ? [sortField] : ["consent_aggregated", "urn"],
+    sort_asc: sortOrder !== "descend",
     ...columnFilters,
   });
 
@@ -181,6 +189,9 @@ export const DiscoveredAssetsTable = ({
     monitorConfigId: monitorId,
     diffStatus: activeParams?.diff_status,
     columnFilters,
+    sortField,
+    sortOrder,
+    searchQuery,
   });
 
   // Get selected URNs from the map instead of selectedRows
@@ -377,10 +388,19 @@ export const DiscoveredAssetsTable = ({
     },
   };
 
-  const handleTableChange = (pagination: any, filters: any) => {
+  const handleTableChange = (pagination: any, filters: any, sorter: any) => {
     setPageIndex(pagination.current);
     setPageSize(pagination.pageSize);
     setColumnFilters(filters || {});
+
+    // Handle sorting
+    if (sorter && !Array.isArray(sorter)) {
+      setSortField(sorter.field);
+      setSortOrder(sorter.order);
+    } else {
+      setSortField(undefined);
+      setSortOrder(undefined);
+    }
   };
 
   if (!monitorId || !systemId) {
@@ -408,7 +428,16 @@ export const DiscoveredAssetsTable = ({
             <SelectedText count={selectedUrns.length} />
           )}
           <Space size="small">
-            <Button onClick={() => setColumnFilters({})}>Clear filters</Button>
+            <Button
+              onClick={() => {
+                setColumnFilters({});
+                setSearchQuery("");
+                setSortField(undefined);
+                setSortOrder(undefined);
+              }}
+            >
+              Clear filters
+            </Button>
             <Dropdown
               menu={{
                 items: [

@@ -38,6 +38,9 @@ export const useDiscoveredAssetsColumns = ({
   monitorConfigId,
   diffStatus,
   columnFilters,
+  sortField,
+  sortOrder,
+  searchQuery,
 }: {
   readonly: boolean;
   aggregatedConsent: ConsentStatus | null | undefined;
@@ -49,6 +52,9 @@ export const useDiscoveredAssetsColumns = ({
   monitorConfigId: string;
   diffStatus?: DiffStatus[];
   columnFilters?: Record<string, any>;
+  sortField?: string;
+  sortOrder?: "ascend" | "descend";
+  searchQuery?: string;
 }) => {
   const { flags } = useFeatures();
   const { assetConsentStatusLabels } = flags;
@@ -59,6 +65,7 @@ export const useDiscoveredAssetsColumns = ({
   const { data: filterOptions } = useGetWebsiteMonitorResourceFiltersQuery({
     monitor_config_id: monitorConfigId,
     diff_status: diffStatus,
+    search: searchQuery,
     ...columnFilters,
   });
 
@@ -68,6 +75,8 @@ export const useDiscoveredAssetsColumns = ({
         title: "Asset",
         dataIndex: "name",
         key: "name",
+        sorter: true,
+        sortOrder: sortField === "name" ? sortOrder : null,
         render: (name) => (
           <Text ellipsis={{ tooltip: true }} style={{ maxWidth: 300 }}>
             {name}
@@ -79,6 +88,8 @@ export const useDiscoveredAssetsColumns = ({
         title: "Type",
         dataIndex: "resource_type",
         key: "resource_type",
+        sorter: true,
+        sortOrder: sortField === "resource_type" ? sortOrder : null,
         filters: convertToAntFilters(filterOptions?.resource_type),
         filteredValue: columnFilters?.resource_type || null,
       },
@@ -87,6 +98,8 @@ export const useDiscoveredAssetsColumns = ({
         dataIndex: "system",
         key: "system",
         width: 200,
+        sorter: true,
+        sortOrder: sortField === "system" ? sortOrder : null,
         render: (_, record) =>
           !!record.monitor_config_id && (
             <SystemCell
@@ -102,6 +115,8 @@ export const useDiscoveredAssetsColumns = ({
         width: 400,
         filters: convertToAntFilters(filterOptions?.data_uses),
         filteredValue: columnFilters?.data_uses || null,
+        sorter: true,
+        sortOrder: sortField === "data_use" ? sortOrder : null,
         render: (_, record) => (
           <DiscoveredAssetDataUseCell asset={record} readonly={readonly} />
         ),
@@ -113,6 +128,7 @@ export const useDiscoveredAssetsColumns = ({
             menu={{
               items: expandCollapseAllMenuItems,
               onClick: (e) => {
+                e.domEvent.stopPropagation();
                 if (e.key === "expand-all") {
                   setIsLocationsExpanded(true);
                 } else if (e.key === "collapse-all") {
@@ -125,6 +141,8 @@ export const useDiscoveredAssetsColumns = ({
         dataIndex: "locations",
         key: "locations",
         width: 250,
+        sorter: true,
+        sortOrder: sortField === "locations" ? sortOrder : null,
         filters: convertToAntFilters(
           filterOptions?.locations,
           (location) =>
@@ -151,6 +169,8 @@ export const useDiscoveredAssetsColumns = ({
         title: "Domain",
         dataIndex: "domain",
         key: "domain",
+        sorter: true,
+        sortOrder: sortField === "domain" ? sortOrder : null,
         // Domain filtering will be handled via search instead of column filters
       },
       {
@@ -160,6 +180,7 @@ export const useDiscoveredAssetsColumns = ({
             menu={{
               items: expandCollapseAllMenuItems,
               onClick: (e) => {
+                e.domEvent.stopPropagation();
                 if (e.key === "expand-all") {
                   setIsPagesExpanded(true);
                 } else if (e.key === "collapse-all") {
@@ -171,6 +192,8 @@ export const useDiscoveredAssetsColumns = ({
         ),
         dataIndex: "page",
         key: "page",
+        sorter: true,
+        sortOrder: sortField === "page" ? sortOrder : null,
         render: (pages: string[]) => (
           <ListExpandableCell
             values={pages}
@@ -201,6 +224,8 @@ export const useDiscoveredAssetsColumns = ({
         ),
         dataIndex: "consent_aggregated",
         key: "consent_aggregated",
+        sorter: true,
+        sortOrder: sortField === "consent_aggregated" ? sortOrder : null,
         filters: convertToAntFilters(
           filterOptions?.consent_aggregated,
           (status) => {
@@ -243,6 +268,9 @@ export const useDiscoveredAssetsColumns = ({
   }, [
     filterOptions,
     columnFilters,
+    sortField,
+    sortOrder,
+    searchQuery,
     assetConsentStatusLabels,
     readonly,
     isLocationsExpanded,
