@@ -1,5 +1,3 @@
-from typing import TYPE_CHECKING
-
 from sqlalchemy.orm import Session
 
 from fides.api.graph.config import (
@@ -10,6 +8,7 @@ from fides.api.graph.config import (
     ScalarField,
 )
 from fides.api.graph.graph import Node
+from fides.api.graph.traversal import TraversalNode
 from fides.api.models.connectionconfig import ConnectionConfig
 
 # Import application models
@@ -23,11 +22,6 @@ from fides.api.models.manual_task import (
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.policy import ActionType
 from fides.api.task.manual.manual_task_address import ManualTaskAddress
-
-# TYPE_CHECKING import placed after all runtime imports to avoid lint issues
-if TYPE_CHECKING:  # pragma: no cover
-    from fides.api.graph.traversal import TraversalNode  # noqa: F401
-    from fides.api.models.policy import Policy  # noqa: F401
 
 
 def get_connection_configs_with_manual_tasks(db: Session) -> list[ConnectionConfig]:
@@ -121,9 +115,6 @@ def create_manual_data_traversal_node(
         connection_key=connection_key,
         after=set(),
     )
-
-    # Create Node and TraversalNode (import locally to avoid cyclic import)
-    from fides.api.graph.traversal import TraversalNode  # local import
 
     node = Node(dataset, collection)
     traversal_node = TraversalNode(node)
