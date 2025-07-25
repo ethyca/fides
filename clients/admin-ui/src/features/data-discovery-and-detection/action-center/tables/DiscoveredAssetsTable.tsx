@@ -139,6 +139,7 @@ export const DiscoveredAssetsTable = ({
     size: pageSize,
     search: searchQuery,
     diff_status: activeParams?.diff_status,
+    ...columnFilters,
   });
 
   useEffect(() => {

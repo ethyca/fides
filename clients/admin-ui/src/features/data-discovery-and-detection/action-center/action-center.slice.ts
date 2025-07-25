@@ -25,6 +25,10 @@ interface DiscoveredAssetsQueryParams {
   diff_status?: DiffStatus[];
   sort_by?: string | string[];
   sort_asc?: boolean;
+  resource_type?: string[];
+  data_uses?: string[];
+  locations?: string[];
+  consent_aggregated?: string[];
 }
 
 const actionCenterApi = baseApi.injectEndpoints({
@@ -74,20 +78,50 @@ const actionCenterApi = baseApi.injectEndpoints({
         diff_status = [DiffStatus.ADDITION],
         sort_by = ["consent_aggregated", "urn"],
         sort_asc = true,
-      }) => ({
-        url: `/plus/discovery-monitor/${key}/results?${getQueryParamsFromArray(
-          Array.isArray(sort_by) ? sort_by : [sort_by],
-          "sort_by",
-        )}`,
-        params: {
+        resource_type,
+        data_uses,
+        locations,
+        consent_aggregated,
+      }) => {
+        const params: Record<string, any> = {
           resolved_system_id: system,
           page,
           size,
           search,
           diff_status,
           sort_asc,
-        },
-      }),
+        };
+
+        // Build URL query params for array parameters
+        const urlParams = new URLSearchParams();
+
+        // Add sort_by parameters
+        const sortByArray = Array.isArray(sort_by) ? sort_by : [sort_by];
+        sortByArray.forEach((param) => urlParams.append("sort_by", param));
+
+        // Add filter array parameters
+        if (resource_type && resource_type.length > 0) {
+          resource_type.forEach((param) =>
+            urlParams.append("resource_type", param),
+          );
+        }
+        if (data_uses && data_uses.length > 0) {
+          data_uses.forEach((param) => urlParams.append("data_uses", param));
+        }
+        if (locations && locations.length > 0) {
+          locations.forEach((param) => urlParams.append("locations", param));
+        }
+        if (consent_aggregated && consent_aggregated.length > 0) {
+          consent_aggregated.forEach((param) =>
+            urlParams.append("consent_aggregated", param),
+          );
+        }
+
+        return {
+          url: `/plus/discovery-monitor/${key}/results?${urlParams.toString()}`,
+          params,
+        };
+      },
       providesTags: () => ["Discovery Monitor Results"],
     }),
     addMonitorResultSystems: build.mutation<
@@ -257,22 +291,34 @@ const actionCenterApi = baseApi.injectEndpoints({
           diff_status,
         };
 
-        // Add filter parameters if they exist
+        // Build URL query params for array parameters
+        const urlParams = new URLSearchParams();
+
+        // Add filter array parameters
         if (resource_type && resource_type.length > 0) {
-          params.resource_type = resource_type;
+          resource_type.forEach((param) =>
+            urlParams.append("resource_type", param),
+          );
         }
         if (data_uses && data_uses.length > 0) {
-          params.data_uses = data_uses;
+          data_uses.forEach((param) => urlParams.append("data_uses", param));
         }
         if (locations && locations.length > 0) {
-          params.locations = locations;
+          locations.forEach((param) => urlParams.append("locations", param));
         }
         if (consent_aggregated && consent_aggregated.length > 0) {
-          params.consent_aggregated = consent_aggregated;
+          consent_aggregated.forEach((param) =>
+            urlParams.append("consent_aggregated", param),
+          );
         }
 
+        const queryString = urlParams.toString();
+        const url = queryString
+          ? `/plus/filters/website_monitor_resources?${queryString}`
+          : `/plus/filters/website_monitor_resources`;
+
         return {
-          url: `/plus/filters/website_monitor_resources`,
+          url,
           params,
         };
       },
