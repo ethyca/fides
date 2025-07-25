@@ -1,6 +1,6 @@
 import logging
 from typing import Generator
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 import sqlalchemy
@@ -508,7 +508,7 @@ class TestBigQueryConnector:
                 request_task=RequestTask(),
                 input_data={
                     "email": ["customer-1@example.com"],
-                    "custom_id": ["123"],
+                    "custom id": ["123"],
                 },
             )
             # Check that the correct SQL queries were executed and logged by sqlalchemy.engine.Engine
@@ -516,11 +516,11 @@ class TestBigQueryConnector:
             # without modifying the BigQueryConnector class to allow for a SQL queries generation
             # that's decoupled from the actual execution of the queries.
             assert (
-                "INFO     sqlalchemy.engine.Engine:log.py:117 SELECT address_id, created, custom_id, email, extra_address_data, id, name, purchase_history, tags FROM `silken-precinct-284918.fidesopstest.customer` WHERE (email = %(email)s OR custom_id = %(custom_id)s) AND (`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `created` <= CURRENT_TIMESTAMP())"
+                "INFO     sqlalchemy.engine.Engine:log.py:117 SELECT `address_id`, `created`, `custom id`, `email`, `extra_address_data`, `id`, `name`, `purchase_history`, `tags` FROM `silken-precinct-284918.fidesopstest.customer` WHERE (`email` = %(email)s OR `custom id` = %(custom_id)s) AND (`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `created` <= CURRENT_TIMESTAMP())"
                 in loguru_caplog.text
             )
             assert (
-                "INFO     sqlalchemy.engine.Engine:log.py:117 SELECT address_id, created, custom_id, email, extra_address_data, id, name, purchase_history, tags FROM `silken-precinct-284918.fidesopstest.customer` WHERE (email = %(email)s OR custom_id = %(custom_id)s) AND (`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2000 DAY) AND `created` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY))"
+                "INFO     sqlalchemy.engine.Engine:log.py:117 SELECT `address_id`, `created`, `custom id`, `email`, `extra_address_data`, `id`, `name`, `purchase_history`, `tags` FROM `silken-precinct-284918.fidesopstest.customer` WHERE (`email` = %(email)s OR `custom id` = %(custom_id)s) AND (`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2000 DAY) AND `created` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY))"
                 in loguru_caplog.text
             )
 
@@ -974,7 +974,7 @@ class TestBigQueryConnectorTimeBasedPartitioning:
                 request_task=RequestTask(),
                 input_data={
                     "email": ["customer-1@example.com"],
-                    "custom_id": ["123"],
+                    "custom id": ["123"],
                 },
             )
             # Check that the correct SQL queries were executed and logged by sqlalchemy.engine.Engine
@@ -982,11 +982,11 @@ class TestBigQueryConnectorTimeBasedPartitioning:
             # without modifying the BigQueryConnector class to allow for a SQL queries generation
             # that's decoupled from the actual execution of the queries.
             assert (
-                "INFO     sqlalchemy.engine.Engine:log.py:117 SELECT address_id, created, custom_id, email, extra_address_data, id, name, purchase_history, tags FROM `silken-precinct-284918.fidesopstest.customer` WHERE (email = %(email)s OR custom_id = %(custom_id)s) AND (`created` >= CURRENT_TIMESTAMP - INTERVAL 2000 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 1000 DAY)"
+                "INFO     sqlalchemy.engine.Engine:log.py:117 SELECT `address_id`, `created`, `custom id`, `email`, `extra_address_data`, `id`, `name`, `purchase_history`, `tags` FROM `silken-precinct-284918.fidesopstest.customer` WHERE (`email` = %(email)s OR `custom id` = %(custom_id)s) AND (`created` >= CURRENT_TIMESTAMP - INTERVAL 2000 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 1000 DAY)"
                 in loguru_caplog.text
             )
             assert (
-                "INFO     sqlalchemy.engine.Engine:log.py:117 SELECT address_id, created, custom_id, email, extra_address_data, id, name, purchase_history, tags FROM `silken-precinct-284918.fidesopstest.customer` WHERE (email = %(email)s OR custom_id = %(custom_id)s) AND (`created` >= CURRENT_TIMESTAMP - INTERVAL 2000 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 1000 DAY)"
+                "INFO     sqlalchemy.engine.Engine:log.py:117 SELECT `address_id`, `created`, `custom id`, `email`, `extra_address_data`, `id`, `name`, `purchase_history`, `tags` FROM `silken-precinct-284918.fidesopstest.customer` WHERE (`email` = %(email)s OR `custom id` = %(custom_id)s) AND (`created` >= CURRENT_TIMESTAMP - INTERVAL 2000 DAY AND `created` <= CURRENT_TIMESTAMP - INTERVAL 1000 DAY)"
                 in loguru_caplog.text
             )
 

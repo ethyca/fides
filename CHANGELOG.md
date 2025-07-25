@@ -36,6 +36,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Increased the limit for dataset configurations from 50 to 1000 on the integration config page [#6367](https://github.com/ethyca/fides/pull/6367)
 - Updates the API so respondents will only be able to see their own user info [#6368](https://github.com/ethyca/fides/pull/6368)
 - Moved masking secrets from Redis to database [#6002](https://github.com/ethyca/fides/pull/6002)
+- Pass `IS_TEST` build parameter to Dockfile for dev builds to preserve dev `data-testid` attributes [#6382] (https://github.com/ethyca/fides/pull/6382)
 
 ### Developer Experience
 - Migrated Action Center tables to Ant Design [#6349](https://github.com/ethyca/fides/pull/6349)
@@ -43,7 +44,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Fixed
 - Fixed an issue where row selections in Action Center tables did not persist across pages [#6357](https://github.com/ethyca/fides/pull/6357)
 - Fixed bug where an error toast appeared in a privacy request page when running Fides OSS [#6364](https://github.com/ethyca/fides/pull/6364)
-
+- Escaping column names with spaces for BigQuery [#6380](https://github.com/ethyca/fides/pull/6380)
 
 ## [2.66.0](https://github.com/ethyca/fides/compare/2.65.2...2.66.0)
 
