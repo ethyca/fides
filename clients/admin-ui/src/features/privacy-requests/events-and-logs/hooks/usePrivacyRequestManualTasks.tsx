@@ -1,6 +1,7 @@
 import { AntMessage as message } from "fidesui";
 import { useEffect, useMemo } from "react";
 
+import { isRootUserId } from "~/features/auth";
 import { useFeatures } from "~/features/common/features";
 import { formatUser } from "~/features/common/utils";
 import { useGetTasksQuery } from "~/features/manual-tasks/manual-tasks.slice";
@@ -49,9 +50,7 @@ export const usePrivacyRequestManualTasks = (privacyRequestId: string) => {
             ? formatUser(task.submission_user)
             : "Unknown User";
 
-          const isRootUser =
-            task.submission_user?.id &&
-            !task.submission_user?.id.startsWith("fid_");
+          const isRootUser = isRootUserId(task.submission_user?.id);
           if (isRootUser) {
             author = task.submission_user?.id || "Unknown User";
           }
