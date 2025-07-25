@@ -361,7 +361,7 @@ class TestManualTaskGraphTaskConditionalDependencies:
         }
         submitted_data = graph_task._get_submitted_data(
             db,
-            [manual_task],
+            manual_task,
             access_privacy_request,
             ManualTaskConfigurationType.access_privacy_request,
             conditional_data=conditional_data,
