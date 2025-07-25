@@ -517,8 +517,8 @@ export const configureNavGroups = ({
       }
     });
 
-    // Add navgroup if it has routes available
-    if (navGroup.children.length) {
+    // Add navgroup if it has non-hidden routes available
+    if (navGroup.children.filter((child) => !child.hidden).length) {
       navGroups.push(navGroup);
     }
   });
