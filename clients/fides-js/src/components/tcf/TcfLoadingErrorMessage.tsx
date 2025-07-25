@@ -10,7 +10,12 @@ export const TcfLoadingErrorMessage = ({
 }) => {
   const { i18n } = useI18n();
   return (
-    <InfoBox isError>
+    <InfoBox
+      style={{
+        backgroundColor: "var(--fides-overlay-background-error-color)",
+      }}
+      data-testid="tcf-loading-error-message"
+    >
       There was an error loading the {generalLabel}. You may{" "}
       <strong>{i18n.t("exp.accept_button_label").toLocaleLowerCase()}</strong>{" "}
       or{" "}
