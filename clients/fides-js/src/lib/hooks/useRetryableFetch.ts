@@ -1,5 +1,10 @@
 import { useEffect, useState } from "preact/hooks";
 
+import {
+  TCF_FULL_BACKOFF_FACTOR,
+  TCF_FULL_MAX_ATTEMPTS,
+} from "../tcf/constants";
+
 export interface RetryConfig {
   maxAttempts?: number;
   backoffFactor?: number;
@@ -22,8 +27,8 @@ interface UseRetryableFetchResult<T> {
 }
 
 const DEFAULT_CONFIG: Required<RetryConfig> = {
-  maxAttempts: 4,
-  backoffFactor: 1000,
+  maxAttempts: TCF_FULL_MAX_ATTEMPTS,
+  backoffFactor: TCF_FULL_BACKOFF_FACTOR,
   shouldRetry: () => true,
 };
 

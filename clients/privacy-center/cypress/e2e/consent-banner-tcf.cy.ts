@@ -12,7 +12,10 @@ import {
   RejectAllMechanism,
 } from "fides-js";
 
-import { FIDES_SEPARATOR } from "../../../fides-js/src/lib/tcf/constants";
+import {
+  FIDES_SEPARATOR,
+  TCF_FULL_MAX_ATTEMPTS,
+} from "../../../fides-js/src/lib/tcf/constants";
 import {
   API_URL,
   TCF_VERSION_HASH,
@@ -1140,41 +1143,39 @@ describe("Fides-js TCF", () => {
         cy.get("#fides-save-button .fides-spinner").should("be.visible");
 
         // Wait for multiple retries to occur and then check for error state
-        cy.wait("@getPrivacyExperienceError");
-        cy.wait("@getPrivacyExperienceError");
-        cy.wait("@getPrivacyExperienceError");
-        cy.wait("@getPrivacyExperienceError");
-        cy.wait("@getPrivacyExperienceError");
+        Array.from({ length: TCF_FULL_MAX_ATTEMPTS }).forEach(() => {
+          cy.wait("@getPrivacyExperienceError");
+        });
 
         // Check that error messages are displayed in each tab
         cy.get("#fides-tab-purposes").click();
-        cy.getByTestId("tcf-loading-error-message").should(
-          "contain",
-          "There was an error loading",
-        );
+        cy.getByTestId("tcf-loading-error-message")
+          .eq(0)
+          .should("be.visible")
+          .should("contain", "There was an error loading");
         cy.getByTestId("tcf-loading-error-message").should(
           "contain",
           "purposes and special features",
         );
 
         cy.get("#fides-tab-features").click();
-        cy.getByTestId("tcf-loading-error-message").should(
-          "contain",
-          "There was an error loading",
-        );
+        cy.getByTestId("tcf-loading-error-message")
+          .eq(1)
+          .should("be.visible")
+          .should("contain", "There was an error loading");
         cy.getByTestId("tcf-loading-error-message").should(
           "contain",
           "features for which your data",
         );
 
         cy.get("#fides-tab-vendors").click();
+        cy.getByTestId("tcf-loading-error-message")
+          .eq(2)
+          .should("be.visible")
+          .should("contain", "There was an error loading");
         cy.getByTestId("tcf-loading-error-message").should(
           "contain",
-          "There was an error loading",
-        );
-        cy.getByTestId("tcf-loading-error-message").should(
-          "contain",
-          "vendors processing your data",
+          "vendors who can process your data",
         );
 
         cy.get("#fides-save-button").should("not.exist");
