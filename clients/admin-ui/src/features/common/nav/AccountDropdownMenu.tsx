@@ -1,4 +1,9 @@
-import { AntButton as Button, AntDropdown as Dropdown, Icons } from "fidesui";
+import {
+  AntButton as Button,
+  AntDropdown as Dropdown,
+  AntTypography as Typography,
+  Icons,
+} from "fidesui";
 import NextLink from "next/link";
 
 import { useAppSelector } from "~/app/hooks";
@@ -23,10 +28,14 @@ const AccountDropdownMenu = ({ onLogout }: AccountDropdownMenuProps) => {
           {
             key: "1",
             label: isRootUser ? (
-              <span data-testid="header-menu-username">{username}</span>
+              <Typography.Text data-testid="header-menu-username">
+                {username}
+              </Typography.Text>
             ) : (
               <NextLink href={USER_DETAIL_ROUTE.replace("[id]", userId!)}>
-                <span data-testid="header-menu-username">{username}</span>
+                <Typography.Link data-testid="header-menu-username">
+                  {username}
+                </Typography.Link>
               </NextLink>
             ),
             type: "group",
