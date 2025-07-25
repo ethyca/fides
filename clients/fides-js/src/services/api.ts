@@ -270,13 +270,18 @@ export const patchNoticesServed = async ({
     ...PATCH_FETCH_OPTIONS,
     body: JSON.stringify(request),
   };
-  const response = await fetch(
-    `${options.fidesApiUrl}${FidesEndpointPaths.NOTICES_SERVED}`,
-    fetchOptions,
-  );
-  if (!response.ok) {
-    fidesDebugger("Error patching notices served. Response:", response);
+  try {
+    const response = await fetch(
+      `${options.fidesApiUrl}${FidesEndpointPaths.NOTICES_SERVED}`,
+      fetchOptions,
+    );
+    if (!response.ok) {
+      fidesDebugger("Error patching notices served. Response:", response);
+      return null;
+    }
+    return await response.json();
+  } catch (error) {
+    fidesDebugger("Error patching notices served. Error:", error);
     return null;
   }
-  return response.json();
 };

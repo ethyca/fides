@@ -1,14 +1,15 @@
-import { ComponentChild, ComponentChildren } from "preact";
+import { ComponentChild, ComponentChildren, ComponentProps } from "preact";
 
 const InfoBox = ({
   title,
   children,
+  ...props
 }: {
   title?: ComponentChild;
   children: ComponentChildren;
-}) => (
-  <div className="fides-info-box">
-    {title ? <p className="fides-gpc-header">{title}</p> : null}
+} & ComponentProps<"div">) => (
+  <div className="fides-info-box" {...props}>
+    {!!title && <p className="fides-gpc-header">{title}</p>}
     {children}
   </div>
 );

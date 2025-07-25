@@ -12,7 +12,7 @@ import {
   PrivacyExperience,
   PrivacyExperienceMinimal,
   UserGeolocation,
-} from "fides-js"; // NOTE: these import from the mjs file so a prod FidesJS build is needed to test changes
+} from "fides-js"; // NOTE: these import from the mjs file
 import { promises as fsPromises } from "fs";
 import type { NextApiRequest, NextApiResponse } from "next";
 import pRetry from "p-retry";
@@ -229,8 +229,9 @@ export default async function handler(
       try {
         /*
          * Since we don't know what the experience will be when the initial call is made,
-         * we supply the minimal request to the api endpoint with the understanding that if
-         * TCF is being returned, we want the minimal version. It will be ignored otherwise.
+         * we supply the minimal request (requestMinimalTCF) to the api endpoint with the
+         * understanding that if TCF is being returned, we want the minimal version. It will
+         * be ignored otherwise.
          */
         experience = await pRetry(
           () =>
