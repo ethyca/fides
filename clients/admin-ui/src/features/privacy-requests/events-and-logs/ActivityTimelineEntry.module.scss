@@ -50,24 +50,17 @@ $horizontal-padding: 20px;
 .header {
   width: 100%;
   display: flex;
-  flex-wrap: wrap;
   gap: 8px;
   align-items: center;
-  justify-content: space-between;
-}
+  justify-content: flex-start;
 
-.headerLeft {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-  flex: 1;
-}
-
-.headerRight {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
+  // For the header, we want to show all components
+  // in a single line, without wrapping or shrinking.
+  // (except for the title, which can shrink and will show ellipsis)
+  flex-wrap: nowrap;
+  & > * {
+    flex-shrink: 0;
+  }
 }
 
 .author {
@@ -75,6 +68,7 @@ $horizontal-padding: 20px;
 
 .title {
   font-weight: 600;
+  flex-shrink: 1;
 
   &--error {
     color: var(--fidesui-error);
