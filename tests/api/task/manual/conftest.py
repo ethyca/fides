@@ -11,8 +11,6 @@ from fides.api.models.connectionconfig import (
 )
 from fides.api.models.manual_task import (
     ManualTask,
-    ManualTaskConditionalDependency,
-    ManualTaskConditionalDependencyType,
     ManualTaskConfig,
     ManualTaskConfigField,
     ManualTaskConfigurationType,
