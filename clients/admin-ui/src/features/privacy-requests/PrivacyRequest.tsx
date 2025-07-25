@@ -65,7 +65,7 @@ const PrivacyRequest = ({ data: initialData }: PrivacyRequestProps) => {
 
   return (
     <div className="flex gap-8">
-      <div className="w-2/3 grow 2xl:w-0">
+      <div className="w-0 grow">
         <Tabs
           items={items}
           activeKey={activeTabKey}
