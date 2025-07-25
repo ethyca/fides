@@ -14,7 +14,7 @@ const AccountDropdownMenu = ({ onLogout }: AccountDropdownMenuProps) => {
   const user = useAppSelector(selectUser);
   const userId = user?.id;
   const username = user?.username;
-  const isRootUser = userId?.startsWith("fid_");
+  const isRootUser = user?.isRootUser;
 
   return (
     <Dropdown
