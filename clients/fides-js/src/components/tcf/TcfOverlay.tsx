@@ -79,6 +79,9 @@ import { TCFBannerSupplemental } from "./TCFBannerSupplemental";
 import { TcfConsentButtons } from "./TcfConsentButtons";
 import TcfTabs from "./TcfTabs";
 
+const TCF_FULL_MAX_RETRIES = 5;
+const TCF_FULL_BACKOFF_FACTOR = 1000;
+
 const getAllIds = (
   modelList: TcfModels | Array<PrivacyNoticeWithPreference>,
 ) => {
@@ -225,8 +228,6 @@ export const TcfOverlay = () => {
     fidesDebugger("Fetching full TCF experience...");
 
     const retryFetch = async (attempt = 1): Promise<void> => {
-      const TCF_FULL_MAX_RETRIES = 5;
-      const TCF_FULL_BACKOFF_FACTOR = 1000;
       try {
         const result = await fetchExperience({
           userLocationString: fidesRegionString,
