@@ -126,6 +126,10 @@ COPY clients/ .
 ####################
 FROM frontend AS built_frontend
 
+# IS_TEST enables test IDs in fides-js
+ARG IS_TEST=false
+ENV IS_TEST=$IS_TEST
+
 # Imports the Fides package version from the backend
 COPY --from=backend /fides/version.json ./version.json
 
