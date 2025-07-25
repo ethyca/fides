@@ -53,11 +53,6 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
             data-testid="activity-timeline-title"
           >
             {title}
-            {title}
-            {title}
-            {title}
-            {title}
-
             {isError && " failed"}
           </Typography.Text>
         )}
