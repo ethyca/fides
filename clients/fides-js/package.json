@@ -29,7 +29,7 @@
   },
   "scripts": {
     "dev": "rollup --watch -c --environment NODE_ENV:development",
-    "build": "rollup -c --environment NODE_ENV:production${IS_TEST:+,IS_TEST:true}",
+    "build": "rollup -c --environment NODE_ENV:production$(test \"$IS_TEST\" = \"true\" && echo \",IS_TEST:true\")",
     "build:test": "rollup -c --environment NODE_ENV:production,IS_TEST:true",
     "postbuild": "npm run docs:generate",
     "clean": "rm -rf dist .turbo node_modules",
