@@ -45,4 +45,5 @@ export enum SupportedLanguage {
   TR = "tr",
   UK = "uk",
   ZH = "zh",
+  ZH_HANS = "zh-Hant",
 }

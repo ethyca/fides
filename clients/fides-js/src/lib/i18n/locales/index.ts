@@ -48,6 +48,7 @@ import sv from "./sv/messages.json";
 import tr from "./tr/messages.json";
 import uk from "./uk/messages.json";
 import zh from "./zh/messages.json";
+import zhHant from "./zh-Hant/messages.json";
 
 export const STATIC_MESSAGES: Record<Locale, Messages> = {
   ar: ar,
@@ -90,6 +91,7 @@ export const STATIC_MESSAGES: Record<Locale, Messages> = {
   tr: tr,
   uk: uk,
   zh: zh,
+  "zh-Hant": zhHant,
 };
 
 export const LOCALE_LANGUAGE_MAP: Language[] = [
@@ -152,5 +154,14 @@ export const LOCALE_LANGUAGE_MAP: Language[] = [
   { locale: "sv", label_en: "Swedish", label_original: "Sverige" },
   { locale: "tr", label_en: "Turkish", label_original: "Türkçe" },
   { locale: "uk", label_en: "Ukrainian", label_original: "українська мова" },
-  { locale: "zh", label_en: "Chinese", label_original: "中文" },
+  {
+    locale: "zh",
+    label_en: "Chinese (Simplified)",
+    label_original: "简体中文",
+  },
+  {
+    locale: "zh-Hant",
+    label_en: "Chinese (Traditional)",
+    label_original: "繁體中文",
+  },
 ];
