@@ -216,9 +216,7 @@ class ManualTaskGraphTask(GraphTask):
         return evaluator.evaluate_rule(root_condition, conditional_data)
 
     @retry(action_type=ActionType.access, default_return=[])
-    def access_request(  # pylint: disable=too-many-branches
-        self, *inputs: list[Row]
-    ) -> list[Row]:
+    def access_request(self, *inputs: list[Row]) -> list[Row]:
         """
         Execute manual task logic following the standard GraphTask pattern:
         1. Create ManualTaskInstances if they don't exist
@@ -335,59 +333,57 @@ class ManualTaskGraphTask(GraphTask):
     def _ensure_manual_task_instances(
         self,
         db: Session,
-        manual_tasks: list[ManualTask],
+        manual_task: ManualTask,
         privacy_request: PrivacyRequest,
         allowed_config_type: "ManualTaskConfigurationType",
     ) -> None:
         """Create ManualTaskInstances for configs matching `allowed_config_type` if they don't exist."""
 
-        for manual_task in manual_tasks:
-            # ------------------------------------------------------------------
-            # Check if instances already exist for this task & entity with the SAME config type
-            # This prevents duplicates when configurations are versioned after the privacy
-            # request has started, while allowing different config types (access vs erasure)
-            # to have separate instances.
-            # ------------------------------------------------------------------
-            existing_task_instance = (
-                db.query(ManualTaskInstance)
-                .join(ManualTaskInstance.config)  # Join to access config information
-                .filter(
-                    ManualTaskInstance.task_id == manual_task.id,
-                    ManualTaskInstance.entity_id == privacy_request.id,
-                    ManualTaskInstance.entity_type
-                    == ManualTaskEntityType.privacy_request,
-                    # Only check for instances of the same config type
-                    ManualTaskConfig.config_type == allowed_config_type,
-                )
-                .first()
+        # ------------------------------------------------------------------
+        # Check if instances already exist for this task & entity with the SAME config type
+        # This prevents duplicates when configurations are versioned after the privacy
+        # request has started, while allowing different config types (access vs erasure)
+        # to have separate instances.
+        # ------------------------------------------------------------------
+        existing_task_instance = (
+            db.query(ManualTaskInstance)
+            .join(ManualTaskInstance.config)  # Join to access config information
+            .filter(
+                ManualTaskInstance.task_id == manual_task.id,
+                ManualTaskInstance.entity_id == privacy_request.id,
+                ManualTaskInstance.entity_type == ManualTaskEntityType.privacy_request,
+                # Only check for instances of the same config type
+                ManualTaskConfig.config_type == allowed_config_type,
             )
-            if existing_task_instance:
-                # An instance already exists for this privacy request and config type – no need
-                # to create another one tied to a newer config version.
+            .first()
+        )
+        if existing_task_instance:
+            # An instance already exists for this privacy request and config type – no need
+            # to create another one tied to a newer config version.
+            return
+
+        # Check each active config for instances (now we know none exist yet for this config type)
+        for config in manual_task.configs:
+            if not config.is_current or config.config_type != allowed_config_type:
+                # Skip configs that are not current or not relevant for this request type
                 continue
 
-            # Check each active config for instances (now we know none exist yet for this config type)
-            for config in manual_task.configs:
-                if not config.is_current or config.config_type != allowed_config_type:
-                    # Skip configs that are not current or not relevant for this request type
-                    continue
-
-                ManualTaskInstance.create(
-                    db=db,
-                    data={
-                        "task_id": manual_task.id,
-                        "config_id": config.id,
-                        "entity_id": privacy_request.id,
-                        "entity_type": ManualTaskEntityType.privacy_request.value,
-                        "status": StatusType.pending.value,
-                    },
-                )
+            ManualTaskInstance.create(
+                db=db,
+                data={
+                    "task_id": manual_task.id,
+                    "config_id": config.id,
+                    "entity_id": privacy_request.id,
+                    "entity_type": ManualTaskEntityType.privacy_request.value,
+                    "status": StatusType.pending.value,
+                },
+            )
 
     # pylint: disable=too-many-branches,too-many-nested-blocks
     def _get_submitted_data(
         self,
         db: Session,
-        manual_tasks: list[ManualTask],
+        manual_tasks: ManualTask,
         privacy_request: PrivacyRequest,
         allowed_config_type: "ManualTaskConfigurationType",
         conditional_data: Optional[dict[str, Any]] = None,
@@ -407,25 +403,43 @@ class ManualTaskGraphTask(GraphTask):
                 size /= 1024.0
             return f"{size:.1f} PB"
 
-        for manual_task in manual_tasks:
-
-            candidate_instances: list[ManualTaskInstance] = (
-                db.query(ManualTaskInstance)
-                .filter(
-                    ManualTaskInstance.task_id == manual_task.id,
-                    ManualTaskInstance.entity_id == privacy_request.id,
-                    ManualTaskInstance.entity_type
-                    == ManualTaskEntityType.privacy_request,
-                )
-                .all()
+        candidate_instances: list[ManualTaskInstance] = (
+            db.query(ManualTaskInstance)
+            .filter(
+                ManualTaskInstance.task_id == manual_task.id,
+                ManualTaskInstance.entity_id == privacy_request.id,
+                ManualTaskInstance.entity_type == ManualTaskEntityType.privacy_request,
             )
+            .all()
+        )
 
-            if not candidate_instances:
-                return None  # No instance yet for this manual task
+        if not candidate_instances:
+            return None  # No instance yet for this manual task
 
-            for inst in candidate_instances:
-                # Skip instances tied to other request types
-                if not inst.config or inst.config.config_type != allowed_config_type:
+        for inst in candidate_instances:
+            # Skip instances tied to other request types
+            if not inst.config or inst.config.config_type != allowed_config_type:
+                continue
+
+            all_fields = inst.config.field_definitions or []
+
+            # Every field must have a submission
+            if not all(inst.get_submission_for_field(f.id) for f in all_fields):
+                return None  # At least one instance still incomplete
+
+            # Ensure status set
+            if inst.status != StatusType.completed:
+                inst.status = StatusType.completed
+                inst.save(db)
+
+            # Aggregate submission data from this instance
+            for submission in inst.submissions:
+                if not submission.field or not submission.field.field_key:
+                    continue
+
+                field_key = submission.field.field_key
+
+                if not isinstance(submission.data, dict):
                     continue
 
                 all_fields = inst.config.field_definitions or []
@@ -578,7 +592,7 @@ class ManualTaskGraphTask(GraphTask):
         # Create ManualTaskInstances for ERASURE configs only
         self._ensure_manual_task_instances(
             db,
-            eligible_manual_tasks,
+            eligible_manual_task,
             self.resources.request,
             ManualTaskConfigurationType.erasure_privacy_request,
         )
@@ -586,7 +600,7 @@ class ManualTaskGraphTask(GraphTask):
         # Check for full submissions – reuse helper used by access flow, filtering ERASURE configs
         submissions_complete = self._get_submitted_data(
             db,
-            eligible_manual_tasks,
+            eligible_manual_task,
             self.resources.request,
             ManualTaskConfigurationType.erasure_privacy_request,
             conditional_data=conditional_data,

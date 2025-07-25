@@ -53,6 +53,8 @@ interface Props {
 const EditUserForm = ({ user }: Props) => {
   const { handleSubmit, canUpdateUser, initialValues } = useUserForm(user);
 
+  const canViewAllUsers = useHasPermission([ScopeRegistryEnum.USER_READ]);
+
   return (
     <div>
       <PageHeader
@@ -60,7 +62,7 @@ const EditUserForm = ({ user }: Props) => {
         breadcrumbItems={[
           {
             title: "All users",
-            href: USER_MANAGEMENT_ROUTE,
+            href: canViewAllUsers ? USER_MANAGEMENT_ROUTE : undefined,
           },
           { title: initialValues.username },
         ]}

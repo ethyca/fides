@@ -257,7 +257,7 @@ class TestManualTaskInstanceFiltering:
         graph_task = object.__new__(ManualTaskGraphTask)
         graph_task._ensure_manual_task_instances(
             db,
-            [manual_task],
+            manual_task,
             privacy_request,
             ManualTaskConfigurationType.access_privacy_request,
         )
@@ -289,7 +289,7 @@ class TestManualTaskInstanceFiltering:
         graph_task = object.__new__(ManualTaskGraphTask)
         graph_task._ensure_manual_task_instances(
             db,
-            [manual_task],
+            manual_task,
             privacy_request,
             ManualTaskConfigurationType.erasure_privacy_request,
         )

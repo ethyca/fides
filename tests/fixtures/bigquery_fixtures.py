@@ -433,7 +433,7 @@ def bigquery_resources(
         connection.execute(stmt)
 
         stmt = f"""
-            insert into customer (id, email, name, address_id, custom_id, extra_address_data, tags, purchase_history)
+            insert into customer (id, email, name, address_id, `custom id`, extra_address_data, tags, purchase_history)
             values ({customer_id}, '{customer_email}', '{customer_name}', {address_id}, 'custom_{customer_id}', STRUCT('{city}' as city, '111' as house, {customer_id} as id, '{state}' as state, 'Test Street' as street, {address_id} as address_id), ['VIP', 'Rewards', 'Premium'], [STRUCT('ITEM-1' as item_id, 29.99 as price, '2023-01-15' as purchase_date, ['electronics', 'gadgets'] as item_tags), STRUCT('ITEM-2' as item_id, 49.99 as price, '2023-02-20' as purchase_date, ['clothing', 'accessories'] as item_tags)]);
         """
 
@@ -528,7 +528,7 @@ def bigquery_resources_with_namespace_meta(
         connection.execute(stmt)
 
         stmt = f"""
-            insert into fidesopstest.customer (id, email, name, address_id, custom_id, extra_address_data, tags, purchase_history, created)
+            insert into fidesopstest.customer (id, email, name, address_id, `custom id`, extra_address_data, tags, purchase_history, created)
             values ({customer_id}, '{customer_email}', '{customer_name}', {address_id}, 'custom_{customer_id}', STRUCT('{city}' as city, '111' as house, {customer_id} as id, '{state}' as state, 'Test Street' as street, {address_id} as address_id), ['VIP', 'Rewards', 'Premium'], [STRUCT('ITEM-1' as item_id, 29.99 as price, '2023-01-15' as purchase_date, ['electronics', 'gadgets'] as item_tags), STRUCT('ITEM-2' as item_id, 49.99 as price, '2023-02-20' as purchase_date, ['clothing', 'accessories'] as item_tags)], CURRENT_TIMESTAMP);
         """
 
@@ -907,7 +907,7 @@ def seed_bigquery_integration_db(bigquery_integration_engine) -> None:
             name STRING,
             created TIMESTAMP,
             address_id BIGINT,
-            custom_id STRING,
+            `custom id` STRING,
             extra_address_data STRUCT<
                 city STRING,
                 house STRING,
