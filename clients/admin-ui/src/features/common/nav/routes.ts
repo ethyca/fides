@@ -69,7 +69,8 @@ export const GLOBAL_CONSENT_CONFIG_ROUTE = "/settings/consent";
 export const MESSAGING_ROUTE = "/messaging";
 export const MESSAGING_ADD_TEMPLATE_ROUTE = "/messaging/add-template";
 export const MESSAGING_EDIT_ROUTE = "/messaging/[id]";
-export const MESSAGING_CONFIGURATION_ROUTE = `/settings/messaging-config`;
+export const MESSAGING_PROVIDERS_ROUTE = `/settings/messaging-providers`;
+export const MESSAGING_PROVIDERS_EDIT_ROUTE = `/settings/messaging-providers/[key]`;
 
 // OpenID Authentication group
 export const OPENID_AUTHENTICATION_ROUTE = "/settings/openid-authentication";

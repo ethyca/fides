@@ -207,12 +207,12 @@ def patch_config_by_key(
     except Exception as exc:
         logger.warning(
             "Patch failed for messaging config {}: {}",
-            messaging_config.key,
-            Pii(str(exc)),
+            config_key,
+            str(exc),
         )
         raise HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Config with key {messaging_config.key} failed to be added",
+            detail=f"Config with key {config_key} failed to be added",
         )
 
 

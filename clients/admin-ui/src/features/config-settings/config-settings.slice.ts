@@ -2,11 +2,9 @@ import { createSelector } from "@reduxjs/toolkit";
 
 import { baseApi } from "~/features/common/api.slice";
 // Import the types needed for the patchConfigurationSettings mutation
+import { StorageConfigResponse } from "~/features/privacy-requests/types";
 import {
   MessagingConfigResponse,
-  StorageConfigResponse,
-} from "~/features/privacy-requests/types";
-import {
   PlusApplicationConfig as ApplicationConfig,
   PrivacyExperienceGPPSettings,
   SecurityApplicationConfig,

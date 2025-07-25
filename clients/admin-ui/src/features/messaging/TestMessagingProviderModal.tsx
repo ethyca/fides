@@ -28,6 +28,7 @@ export const TestMessagingProviderModal = ({
           <TestMessagingProviderConnectionButton
             serviceType={serviceType}
             isModal
+            onClose={onClose}
           />
         </ModalBody>
       </ModalContent>

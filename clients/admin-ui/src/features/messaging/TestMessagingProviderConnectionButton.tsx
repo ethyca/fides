@@ -1,9 +1,17 @@
-import { AntButton as Button, Box, Divider, Heading, Stack } from "fidesui";
+import {
+  AntButton as Button,
+  Box,
+  Divider,
+  Heading,
+  Stack,
+  useToast,
+} from "fidesui";
 import { Form, Formik } from "formik";
 
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { isErrorResult } from "~/features/common/helpers";
-import { useAlert, useAPIHelper } from "~/features/common/hooks";
+import { useAPIHelper } from "~/features/common/hooks";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { messagingProviders } from "~/features/messaging/constants";
 
 import { useCreateTestConnectionMessageMutation } from "./messaging.slice";
@@ -11,13 +19,15 @@ import { useCreateTestConnectionMessageMutation } from "./messaging.slice";
 export interface TestMessagingProviderConnectionButtonProps {
   serviceType: string | undefined;
   isModal?: boolean;
+  onClose?: () => void;
 }
 
 const TestMessagingProviderConnectionButton = ({
   serviceType,
   isModal,
+  onClose,
 }: TestMessagingProviderConnectionButtonProps) => {
-  const { successAlert } = useAlert();
+  const toast = useToast();
   const { handleError } = useAPIHelper();
   const [createTestConnectionMessage] =
     useCreateTestConnectionMessageMutation();
@@ -54,7 +64,10 @@ const TestMessagingProviderConnectionButton = ({
     if (isErrorResult(result)) {
       handleError(result.error);
     } else {
-      successAlert(`Test message successfully sent.`);
+      toast(successToastParams("Test message successfully sent."));
+      if (onClose) {
+        onClose();
+      }
     }
   };
 

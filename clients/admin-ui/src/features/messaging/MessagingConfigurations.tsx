@@ -20,11 +20,15 @@ import {
   useToast,
   VStack,
 } from "fidesui";
+import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
 import Layout from "~/features/common/Layout";
-import { MESSAGING_CONFIGURATION_ROUTE } from "~/features/common/nav/routes";
-import { usePatchConfigurationSettingsMutation } from "~/features/privacy-requests";
+import {
+  MESSAGING_PROVIDERS_EDIT_ROUTE,
+  MESSAGING_PROVIDERS_ROUTE,
+} from "~/features/common/nav/routes";
+import { usePatchConfigurationSettingsMutation } from "~/features/config-settings/config-settings.slice";
 import {
   MessagingConfigResponse,
   MessagingServiceType,
@@ -42,6 +46,7 @@ import { RelativeTimestampCell } from "../common/table/v2/cells";
 import { successToastParams } from "../common/toast";
 import MailgunIcon from "./MailgunIcon";
 import {
+  useDeleteMessagingConfigurationByKeyMutation,
   useGetActiveMessagingProviderQuery,
   useGetMessagingConfigurationsQuery,
 } from "./messaging.slice";
@@ -64,11 +69,11 @@ const EmptyTableNotice = () => {
     >
       <VStack>
         <Text fontSize="md" fontWeight="600">
-          No messaging configs found.
+          No messaging providers found.
         </Text>
         <Text fontSize="sm">
-          Click &quot;Add a messaging config&quot; to add your first messaing
-          config to Fides.
+          Click &quot;Add a messaging provider&quot; to add your first messaging
+          provider to Fides.
         </Text>
       </VStack>
     </VStack>
@@ -84,10 +89,13 @@ const ResultStatusBadge = ({ children, ...props }: BadgeProps) => {
 };
 
 export const MessagingConfigurations = () => {
+  const router = useRouter();
   const toast = useToast();
   const { handleError } = useAPIHelper();
   const [messagingValue, setMessagingValue] = useState("");
   const [saveActiveConfiguration] = usePatchConfigurationSettingsMutation();
+  const [deleteMessagingConfiguration] =
+    useDeleteMessagingConfigurationByKeyMutation();
   const { data: activeMessagingProvider } =
     useGetActiveMessagingProviderQuery();
 
@@ -119,6 +127,35 @@ export const MessagingConfigurations = () => {
     } else {
       setMessagingValue(serviceType);
       toast(successToastParams("Updated active messaging config"));
+    }
+  };
+
+  const handleRowClick = (messagingConfig: MessagingConfigResponse) => {
+    const editPath = MESSAGING_PROVIDERS_EDIT_ROUTE.replace(
+      "[key]",
+      messagingConfig.key,
+    );
+    router.push(editPath);
+  };
+
+  const handleDeleteConfiguration = async (key: string, name: string) => {
+    if (
+      window.confirm(
+        `Are you sure you want to delete "${name}" messaging configuration? This action cannot be undone.`,
+      )
+    ) {
+      try {
+        const result = await deleteMessagingConfiguration({ key });
+        if (isErrorResult(result)) {
+          handleError(result.error);
+        } else {
+          toast(
+            successToastParams("Messaging configuration successfully deleted"),
+          );
+        }
+      } catch (error) {
+        handleError(error);
+      }
     }
   };
 
@@ -174,22 +211,39 @@ export const MessagingConfigurations = () => {
           cell: (props) => (
             <HStack>
               <Button
-                onClick={() =>
-                  setSelectedServiceType(props.row.original.service_type)
-                }
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedServiceType(props.row.original.service_type);
+                }}
                 size="small"
               >
                 Test config
               </Button>
               <Button
-                onClick={() =>
-                  setActiveServiceType(props.row.original.service_type)
-                }
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveServiceType(props.row.original.service_type);
+                }}
                 disabled={props.row.original.service_type === messagingValue}
                 size="small"
               >
-                Set Active
+                Set active
               </Button>
+              {userCanUpdate && (
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteConfiguration(
+                      props.row.original.key,
+                      props.row.original.name,
+                    );
+                  }}
+                  size="small"
+                  variant="outlined"
+                >
+                  Delete
+                </Button>
+              )}
             </HStack>
           ),
           header: "Actions",
@@ -213,9 +267,9 @@ export const MessagingConfigurations = () => {
   });
 
   return (
-    <Layout title="Messaging Configurations">
+    <Layout title="Messaging providers">
       <Heading mb={5} fontSize="2xl" fontWeight="semibold">
-        Manage messaging configurations
+        Manage messaging providers
       </Heading>
       <Text fontSize="sm" mb={8} width={{ base: "100%", lg: "50%" }}>
         Fides requires a messaging provider for sending processing notices to
@@ -233,13 +287,13 @@ export const MessagingConfigurations = () => {
           <TableActionBar>
             <HStack alignItems="center" spacing={4} marginLeft="auto">
               <Button
-                href={`${MESSAGING_CONFIGURATION_ROUTE}/new`}
+                href={`${MESSAGING_PROVIDERS_ROUTE}/new`}
                 role="link"
                 size="small"
                 type="primary"
                 data-testid="add-privacy-notice-btn"
               >
-                Add a messaging config +
+                Add a messaging provider +
               </Button>
             </HStack>
           </TableActionBar>
@@ -247,6 +301,7 @@ export const MessagingConfigurations = () => {
         <FidesTableV2
           tableInstance={tableInstance}
           emptyTableNotice={<EmptyTableNotice />}
+          onRowClick={handleRowClick}
         />
       </Flex>
       {!!selectedServiceType && (

@@ -3,7 +3,6 @@ import {
   AntRadio as Radio,
   Box,
   Heading,
-  RadioChangeEvent,
   Text,
 } from "fidesui";
 import { useEffect, useState } from "react";
@@ -126,7 +125,7 @@ const StorageConfiguration = () => {
         </Heading>
         <Radio.Group
           disabled={isLoading}
-          onChange={handleChange}
+          onChange={(e) => handleChange(e.target.value)}
           value={storageValue}
           data-testid="privacy-requests-storage-selection"
           className="p-3"
