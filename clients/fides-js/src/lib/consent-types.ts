@@ -176,6 +176,9 @@ export interface FidesInitOptions {
    * Defaults to `undefined`.
    */
   fidesModalDefaultView?: FidesModalDefaultView;
+
+  // Whether to show the consent modal immediately upon initialization
+  fidesDefaultShowModal?: boolean;
 }
 
 /**
@@ -828,6 +831,7 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesConsentFlagType"
   | "fidesInitializedEventMode"
   | "fidesModalDefaultView"
+  | "fidesDefaultShowModal"
 >;
 
 export type FidesExperienceTranslationOverrides = {

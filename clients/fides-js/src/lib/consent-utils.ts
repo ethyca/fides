@@ -230,6 +230,7 @@ export const getTcfDefaultPreference = (tcfObject: TcfModelsRecord) =>
  * - Experience is modal-only or headless component type
  * - No privacy notices exist in the experience
  * - Consent was previously set via override
+ * - Modal is set to open via fides_default_show_modal option
  *
  * The banner WILL be shown if:
  * - No prior consent exists
@@ -258,6 +259,10 @@ export const shouldResurfaceBanner = (
   }
   // Never surface banner if there's no experience
   if (!isPrivacyExperience(experience)) {
+    return false;
+  }
+  // Never surface banner if modal is set to show
+  if (options.fidesDefaultShowModal) {
     return false;
   }
   // Always resurface banner for TCF unless consent was set by override

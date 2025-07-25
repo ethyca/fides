@@ -297,4 +297,7 @@ export interface FidesOptions {
    * Defaults to `undefined`.
    */
   fides_modal_default_view?: string;
+
+  // Whether to show the consent modal immediately upon initialization
+  fides_default_show_modal?: boolean;
 }

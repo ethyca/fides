@@ -335,3 +335,9 @@ Currently only affects TCF.
 - "/tcf/vendors"
 
 Defaults to `undefined`.
+
+***
+
+### fides\_default\_show\_modal?
+
+> `optional` **fides\_default\_show\_modal**: `boolean`
