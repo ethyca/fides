@@ -34,7 +34,7 @@ import {
   FidesEventDetailsServingComponent,
   FidesEventTargetType,
 } from "../../lib/events";
-import { useNoticesServed } from "../../lib/hooks";
+import { useNoticesServed, useRetryableFetch } from "../../lib/hooks";
 import {
   DEFAULT_LOCALE,
   detectUserLocale,
@@ -79,7 +79,6 @@ import Overlay from "../Overlay";
 import { TCFBannerSupplemental } from "./TCFBannerSupplemental";
 import { TcfConsentButtons } from "./TcfConsentButtons";
 import TcfTabs from "./TcfTabs";
-import { useRetryableFetch } from "../../lib/hooks";
 
 const getAllIds = (
   modelList: TcfModels | Array<PrivacyNoticeWithPreference>,
@@ -201,44 +200,37 @@ export const TcfOverlay = () => {
    */
   const [experienceFull, setExperienceFull] = useState<PrivacyExperience>();
 
-  const {
-    data: fetchedExperience,
-    loading: isFullExperienceLoading,
-    error: isFullExperienceError,
-  } = useRetryableFetch<PrivacyExperience | EmptyExperience>({
-    fetcher: () =>
-      fetchExperience({
-        userLocationString: fidesRegionString,
-        fidesApiUrl: options.fidesApiUrl,
-        apiOptions: options.apiOptions,
-        propertyId: experienceMinimal.property_id,
-        requestMinimalTCF: false,
-      }),
-    validator: (result) =>
-      isPrivacyExperience(result) &&
-      Object.keys(result).length > 0 &&
-      experienceIsValid(result),
-    onSuccess: (result) => {
-      if (isPrivacyExperience(result)) {
-        // include user preferences from the cookie
-        const userPrefs = buildUserPrefs(result, cookie);
-        const fullExperience: PrivacyExperience = {
-          ...result,
-          ...userPrefs,
-        };
-        window.Fides.experience = {
-          ...window.Fides.experience,
-          ...fullExperience,
-        };
-        window.Fides.experience.minimal_tcf = false;
-        setExperienceFull(fullExperience);
-      }
-    },
-    config: {
-      maxAttempts: 4, // initial attempt + 3 retries
-      backoffFactor: 1000, // exponential backoff
-    },
-  });
+  const { loading: isFullExperienceLoading, error: isFullExperienceError } =
+    useRetryableFetch<PrivacyExperience | EmptyExperience>({
+      fetcher: () =>
+        fetchExperience({
+          userLocationString: fidesRegionString,
+          fidesApiUrl: options.fidesApiUrl,
+          apiOptions: options.apiOptions,
+          propertyId: experienceMinimal.property_id,
+          requestMinimalTCF: false,
+        }),
+      validator: (result) =>
+        isPrivacyExperience(result) &&
+        Object.keys(result).length > 0 &&
+        experienceIsValid(result),
+      onSuccess: (result) => {
+        if (isPrivacyExperience(result)) {
+          // include user preferences from the cookie
+          const userPrefs = buildUserPrefs(result, cookie);
+          const fullExperience: PrivacyExperience = {
+            ...result,
+            ...userPrefs,
+          };
+          window.Fides.experience = {
+            ...window.Fides.experience,
+            ...fullExperience,
+          };
+          window.Fides.experience.minimal_tcf = false;
+          setExperienceFull(fullExperience);
+        }
+      },
+    });
 
   useEffect(() => {
     if (!!userlocale && bestLocale !== minExperienceLocale) {
