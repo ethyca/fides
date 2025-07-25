@@ -37,6 +37,7 @@ export const useDiscoveredAssetsColumns = ({
   onShowBreakdown,
   monitorConfigId,
   diffStatus,
+  columnFilters,
 }: {
   readonly: boolean;
   aggregatedConsent: ConsentStatus | null | undefined;
@@ -47,6 +48,7 @@ export const useDiscoveredAssetsColumns = ({
   ) => void;
   monitorConfigId: string;
   diffStatus?: DiffStatus[];
+  columnFilters?: Record<string, any>;
 }) => {
   const { flags } = useFeatures();
   const { assetConsentStatusLabels } = flags;
@@ -57,6 +59,7 @@ export const useDiscoveredAssetsColumns = ({
   const { data: filterOptions } = useGetWebsiteMonitorResourceFiltersQuery({
     monitor_config_id: monitorConfigId,
     diff_status: diffStatus,
+    ...columnFilters,
   });
 
   const columns: ColumnsType<StagedResourceAPIResponse> = useMemo(() => {
@@ -76,9 +79,8 @@ export const useDiscoveredAssetsColumns = ({
         title: "Type",
         dataIndex: "resource_type",
         key: "resource_type",
-        filters: filterOptions?.resource_type
-          ? convertToAntFilters(filterOptions.resource_type)
-          : undefined,
+        filters: convertToAntFilters(filterOptions?.resource_type),
+        filteredValue: columnFilters?.resource_type || null,
       },
       {
         title: "System",
@@ -98,9 +100,8 @@ export const useDiscoveredAssetsColumns = ({
         title: "Categories of consent",
         key: "data_use",
         width: 400,
-        filters: filterOptions?.data_uses
-          ? convertToAntFilters(filterOptions.data_uses)
-          : undefined,
+        filters: convertToAntFilters(filterOptions?.data_uses),
+        filteredValue: columnFilters?.data_use || null,
         render: (_, record) => (
           <DiscoveredAssetDataUseCell asset={record} readonly={readonly} />
         ),
@@ -124,14 +125,13 @@ export const useDiscoveredAssetsColumns = ({
         dataIndex: "locations",
         key: "locations",
         width: 250,
-        filters: filterOptions?.locations
-          ? convertToAntFilters(
-              filterOptions.locations,
-              (location) =>
-                PRIVACY_NOTICE_REGION_RECORD[location as PrivacyNoticeRegion] ??
-                location,
-            )
-          : undefined,
+        filters: convertToAntFilters(
+          filterOptions?.locations,
+          (location) =>
+            PRIVACY_NOTICE_REGION_RECORD[location as PrivacyNoticeRegion] ??
+            location,
+        ),
+        filteredValue: columnFilters?.locations || null,
         render: (locations: PrivacyNoticeRegion[]) => (
           <TagExpandableCell
             values={
@@ -201,17 +201,19 @@ export const useDiscoveredAssetsColumns = ({
         ),
         dataIndex: "consent_aggregated",
         key: "consent_aggregated",
-        filters: filterOptions?.consent_aggregated
-          ? convertToAntFilters(filterOptions.consent_aggregated, (status) => {
-              const statusMap: Record<string, string> = {
-                with_consent: "With consent",
-                without_consent: "Without consent",
-                exempt: "Exempt",
-                unknown: "Unknown",
-              };
-              return statusMap[status] ?? status;
-            })
-          : undefined,
+        filters: convertToAntFilters(
+          filterOptions?.consent_aggregated,
+          (status) => {
+            const statusMap: Record<string, string> = {
+              with_consent: "With consent",
+              without_consent: "Without consent",
+              exempt: "Exempt",
+              unknown: "Unknown",
+            };
+            return statusMap[status] ?? status;
+          },
+        ),
+        filteredValue: columnFilters?.consent_aggregated || null,
         render: (consentAggregated: ConsentStatus, record) => (
           <DiscoveryStatusBadgeCell
             consentAggregated={consentAggregated ?? ConsentStatus.UNKNOWN}

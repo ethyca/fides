@@ -179,6 +179,7 @@ export const DiscoveredAssetsTable = ({
     onShowBreakdown: handleShowBreakdown,
     monitorConfigId: monitorId,
     diffStatus: activeParams?.diff_status,
+    columnFilters,
   });
 
   // Get selected URNs from the map instead of selectedRows
@@ -406,6 +407,7 @@ export const DiscoveredAssetsTable = ({
             <SelectedText count={selectedUrns.length} />
           )}
           <Space size="small">
+            <Button onClick={() => setColumnFilters({})}>Clear filters</Button>
             <Dropdown
               menu={{
                 items: [
