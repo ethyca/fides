@@ -21,8 +21,8 @@ from tests.ops.integration_tests.saas.connector_runner import (
     ConnectorRunner,
     generate_random_email,
 )
+from tests.ops.test_helpers.onepassword_client import get_secrets
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
-from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("hubspot")
 
