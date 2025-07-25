@@ -8,6 +8,7 @@ import {
   ButtonType,
   ConsentMechanism,
   ConsentMethod,
+  EmptyExperience,
   FidesCookie,
   FidesExperienceTranslationOverrides,
   FidesModalDefaultView,
@@ -78,9 +79,7 @@ import Overlay from "../Overlay";
 import { TCFBannerSupplemental } from "./TCFBannerSupplemental";
 import { TcfConsentButtons } from "./TcfConsentButtons";
 import TcfTabs from "./TcfTabs";
-
-const TCF_FULL_MAX_ATTEMPTS = 4; // initial attempt + 3 retries
-const TCF_FULL_BACKOFF_FACTOR = 1000; // exponential backoff
+import { useRetryableFetch } from "../../lib/hooks";
 
 const getAllIds = (
   modelList: TcfModels | Array<PrivacyNoticeWithPreference>,
@@ -200,9 +199,46 @@ export const TcfOverlay = () => {
    * The full experience is fetched after the component mounts, so we store it
    * in state to trigger a re-render when it arrives.
    */
-  const [isFullExperienceLoading, setIsFullExperienceLoading] = useState(true);
-  const [isFullExperienceError, setIsFullExperienceError] = useState(false);
   const [experienceFull, setExperienceFull] = useState<PrivacyExperience>();
+
+  const {
+    data: fetchedExperience,
+    loading: isFullExperienceLoading,
+    error: isFullExperienceError,
+  } = useRetryableFetch<PrivacyExperience | EmptyExperience>({
+    fetcher: () =>
+      fetchExperience({
+        userLocationString: fidesRegionString,
+        fidesApiUrl: options.fidesApiUrl,
+        apiOptions: options.apiOptions,
+        propertyId: experienceMinimal.property_id,
+        requestMinimalTCF: false,
+      }),
+    validator: (result) =>
+      isPrivacyExperience(result) &&
+      Object.keys(result).length > 0 &&
+      experienceIsValid(result),
+    onSuccess: (result) => {
+      if (isPrivacyExperience(result)) {
+        // include user preferences from the cookie
+        const userPrefs = buildUserPrefs(result, cookie);
+        const fullExperience: PrivacyExperience = {
+          ...result,
+          ...userPrefs,
+        };
+        window.Fides.experience = {
+          ...window.Fides.experience,
+          ...fullExperience,
+        };
+        window.Fides.experience.minimal_tcf = false;
+        setExperienceFull(fullExperience);
+      }
+    },
+    config: {
+      maxAttempts: 4, // initial attempt + 3 retries
+      backoffFactor: 1000, // exponential backoff
+    },
+  });
 
   useEffect(() => {
     if (!!userlocale && bestLocale !== minExperienceLocale) {
@@ -226,58 +262,6 @@ export const TcfOverlay = () => {
       });
     }
     fidesDebugger("Fetching full TCF experience...");
-
-    const retryFetch = async (attempt = 1): Promise<void> => {
-      try {
-        const result = await fetchExperience({
-          userLocationString: fidesRegionString,
-          fidesApiUrl: options.fidesApiUrl,
-          apiOptions: options.apiOptions,
-          propertyId: experienceMinimal.property_id,
-          requestMinimalTCF: false,
-        });
-
-        // Because we're dealing with TCF, an empty full experience is not valid because we wouldn't be at this point if we didn't have a minimal experience.
-        if (isPrivacyExperience(result) && Object.keys(result).length > 0) {
-          // include user preferences from the cookie
-          const userPrefs = buildUserPrefs(result, cookie);
-
-          if (experienceIsValid(result)) {
-            const fullExperience: PrivacyExperience = {
-              ...result,
-              ...userPrefs,
-            };
-            window.Fides.experience = {
-              ...window.Fides.experience,
-              ...fullExperience,
-            };
-            window.Fides.experience.minimal_tcf = false;
-            setExperienceFull(fullExperience);
-            setIsFullExperienceLoading(false);
-          }
-        } else if (attempt < TCF_FULL_MAX_ATTEMPTS) {
-          setTimeout(
-            () => retryFetch(attempt + 1),
-            TCF_FULL_BACKOFF_FACTOR * 2 ** (attempt - 1),
-          );
-        } else {
-          setIsFullExperienceError(true);
-          setIsFullExperienceLoading(false);
-        }
-      } catch (error) {
-        if (attempt < TCF_FULL_MAX_ATTEMPTS) {
-          setTimeout(
-            () => retryFetch(attempt + 1),
-            TCF_FULL_BACKOFF_FACTOR * 2 ** (attempt - 1),
-          );
-        } else {
-          setIsFullExperienceError(true);
-          setIsFullExperienceLoading(false);
-        }
-      }
-    };
-
-    retryFetch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
