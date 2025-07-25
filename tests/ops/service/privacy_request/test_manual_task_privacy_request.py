@@ -22,7 +22,7 @@ from fides.api.models.manual_task import (
 )
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
-from fides.api.task.manual.manual_task_utils import ManualTaskAddress
+from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from tests.ops.service.privacy_request.test_request_runner_service import (
     PRIVACY_REQUEST_TASK_TIMEOUT,
     get_privacy_request_results,
