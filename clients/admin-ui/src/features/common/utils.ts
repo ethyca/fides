@@ -159,9 +159,12 @@ export const formatUser = (user: {
  * @returns an array of Ant Design filter objects.
  */
 export const convertToAntFilters = (
-  values: string[],
+  values?: string[],
   getDisplayName?: (value: string) => string,
 ) => {
+  if (!values || values.length === 0) {
+    return undefined;
+  }
   return values.map((value) => ({
     text: getDisplayName ? getDisplayName(value) : value,
     value,
