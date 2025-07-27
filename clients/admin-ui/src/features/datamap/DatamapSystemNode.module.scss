@@ -27,9 +27,7 @@
     color: white !important;
     background-color: map-get($colors, "neutral-700") !important;
     border: 1px solid map-get($colors, "neutral-600") !important;
-    box-shadow:
-      0px 1px 2px 0px rgba(0, 0, 0, 0.06),
-      0px 1px 3px 0px rgba(0, 0, 0, 0.1) !important;
+
   }
 
   // Focus state for accessibility
@@ -38,11 +36,6 @@
     color: white !important;
     background-color: map-get($colors, "minos") !important;
     border: 1px solid map-get($colors, "minos") !important;
-    box-shadow:
-      0px 1px 2px 0px rgba(0, 0, 0, 0.06),
-      0px 1px 3px 0px rgba(0, 0, 0, 0.1) !important;
-    outline: 2px solid map-get($colors, "minos");
-    outline-offset: 2px;
   }
 
   // Active/selected state
@@ -50,9 +43,6 @@
     color: white !important;
     background-color: map-get($colors, "minos") !important;
     border: 1px solid map-get($colors, "minos") !important;
-    box-shadow:
-      0px 1px 2px 0px rgba(0, 0, 0, 0.06),
-      0px 1px 3px 0px rgba(0, 0, 0, 0.1) !important;
   }
 }
 
