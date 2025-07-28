@@ -22,7 +22,6 @@ from fides.api.util.collection_util import Row
 from tests.conftest import access_runner_tester, erasure_runner_tester
 from tests.ops.graph.graph_test_util import assert_rows_match
 
-from loguru import logger
 
 def erasure_execution_logs(
     db: Session, privacy_request: PrivacyRequest
