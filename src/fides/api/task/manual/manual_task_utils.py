@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Optional
+from typing import Optional
 
 from loguru import logger
 from sqlalchemy.orm import Session
@@ -21,10 +21,6 @@ from fides.api.models.manual_task import (
     ManualTaskConfigurationType,
 )
 from fides.api.task.manual.manual_task_address import ManualTaskAddress
-
-# TYPE_CHECKING import placed after all runtime imports to avoid lint issues
-if TYPE_CHECKING:  # pragma: no cover
-    from fides.api.models.policy import Policy  # noqa: F401
 
 
 PRIVACY_REQUEST_CONFIG_TYPES = {
