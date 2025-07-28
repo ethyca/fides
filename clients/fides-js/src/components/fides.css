@@ -1224,6 +1224,13 @@ button.fides-banner-button.fides-menu-item:not([aria-checked="true"]):hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding-inline: 12px;
+  border-bottom: 1px solid var(--fides-overlay-row-divider-color);
+}
+
+.fides-notice-toggle .fides-skeleton__container:hover {
+  cursor: default;
+  background-color: unset;
 }
 
 .fides-skeleton__component {

@@ -723,33 +723,31 @@ export const TcfOverlay = () => {
               handleRejectAll();
               onClose();
             }}
-            renderFirstButton={() =>
-              fullExperienceState !== FetchState.Error && (
-                <Button
-                  buttonType={ButtonType.SECONDARY}
-                  label={
-                    experienceFull ? i18n.t("exp.save_button_label") : "Save"
-                  }
-                  onClick={() => {
-                    setTrigger({
-                      type: FidesEventTargetType.BUTTON,
-                      label: i18n.t("exp.save_button_label"),
-                    });
-                    onSave(ConsentMethod.SAVE, draftIds);
-                  }}
-                  className="fides-save-button"
-                  id="fides-save-button"
-                  disabled={
-                    !experienceFull &&
-                    fullExperienceState === FetchState.Loading
-                  }
-                  loading={
-                    !experienceFull &&
-                    fullExperienceState === FetchState.Loading
-                  }
-                />
-              )
-            }
+            renderFirstButton={() => (
+              <Button
+                buttonType={ButtonType.SECONDARY}
+                label={
+                  experienceFull ? i18n.t("exp.save_button_label") : "Save"
+                }
+                onClick={() => {
+                  setTrigger({
+                    type: FidesEventTargetType.BUTTON,
+                    label: i18n.t("exp.save_button_label"),
+                  });
+                  onSave(ConsentMethod.SAVE, draftIds);
+                }}
+                className="fides-save-button"
+                id="fides-save-button"
+                disabled={
+                  (!experienceFull &&
+                    fullExperienceState === FetchState.Loading) ||
+                  fullExperienceState === FetchState.Error
+                }
+                loading={
+                  !experienceFull && fullExperienceState === FetchState.Loading
+                }
+              />
+            )}
             isInModal
             options={options}
           />
