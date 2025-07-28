@@ -357,7 +357,6 @@ def erasure_privacy_request(db: Session, erasure_policy):
 # Test Helper Fixtures
 # =============================================================================
 
-
 def _build_request_task(
     db,
     privacy_request,
