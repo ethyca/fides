@@ -24,6 +24,8 @@ import { createRequestLogger } from "~/app/server-utils/requestLogger";
 import { LOCATION_HEADERS, lookupGeolocation } from "~/common/geolocation";
 import { safeLookupPropertyId } from "~/common/property-id";
 
+const isDebugMode = process.env.FIDES_PRIVACY_CENTER__DEBUG === "true";
+
 // one hour, how long until the custom-fides.css is refreshed
 const CUSTOM_FIDES_CSS_TTL_MS = 3600 * 1000;
 
@@ -130,6 +132,10 @@ export default async function handler(
 ) {
   const log = createRequestLogger(req);
   const serverSettings = loadServerSettings();
+  // initialize the fides.js debugger, since api.ts is shared and uses it
+  globalThis.fidesDebugger = isDebugMode // eslint-disable-next-line no-console
+    ? (...args) => console.log(`\x1b[33m=>\x1b[0m`, ...args)
+    : () => {};
 
   // Load the configured consent options (data uses, defaults, etc.) from environment
   const environment = await getPrivacyCenterEnvironmentCached({
