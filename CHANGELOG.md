@@ -30,7 +30,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added record counts to the privacy request event log entries in the Admin UI [#6374](https://github.com/ethyca/fides/pull/6374)
 - Added traditional Chinese support to FidesJS [#6372](https://github.com/ethyca/fides/pull/6372)
 - Added support for Internal Respondent users to manage their own profile and change password [#6377] (https://github.com/ethyca/fides/pull/6377)
-
+- Introduce manual finalization step in privacy request lifecycle [#6301](https://github.com/ethyca/fides/pull/6301) https://github.com/ethyca/fides/labels/db-migration
 
 ### Changed
 - Removes `data-testid` attributes from FidesJS production builds [#6351](https://github.com/ethyca/fides/pull/6351)
