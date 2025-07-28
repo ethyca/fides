@@ -56,6 +56,79 @@ PRIVACY_REQUEST_TASK_TIMEOUT = 5
 PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 100
 
 
+class TestManualFinalization:
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
+    )
+    def test_mark_as_requires_manual_finalization_if_config_true(
+        self,
+        db: Session,
+        run_privacy_request_task,
+        dsr_version,
+        request,
+        enable_erasure_request_finalization_required,
+        privacy_request_erasure_pending,
+    ) -> None:
+        """Assert marking privacy request as requires_manual_finalization"""
+        request.getfixturevalue(dsr_version)
+        privacy_request = privacy_request_erasure_pending
+        run_privacy_request_task.delay(privacy_request.id).get(
+            timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+        )
+        db.refresh(privacy_request)
+        assert (
+            privacy_request.status == PrivacyRequestStatus.requires_manual_finalization
+        )
+
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
+    )
+    def test_no_manual_finalization_if_config_false(
+        self,
+        db: Session,
+        run_privacy_request_task,
+        dsr_version,
+        request,
+        disable_erasure_request_finalization_required,
+        privacy_request_erasure_pending,
+    ) -> None:
+        """Assert marking pending privacy request as complete"""
+        request.getfixturevalue(dsr_version)
+        privacy_request = privacy_request_erasure_pending
+        run_privacy_request_task.delay(privacy_request.id).get(
+            timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+        )
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.complete
+
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
+    )
+    def test_mark_as_complete_when_finalized_at_exists(
+        self,
+        db: Session,
+        run_privacy_request_task,
+        dsr_version,
+        request,
+        enable_erasure_request_finalization_required,
+        privacy_request_requires_manual_finalization,
+    ) -> None:
+        """Ensures that if finalized_at exists, we mark it as complete"""
+        request.getfixturevalue(dsr_version)
+        privacy_request = privacy_request_requires_manual_finalization
+        privacy_request.finalized_at = "2021-08-30T16:09:37.359Z"
+        privacy_request.save(db)
+
+        run_privacy_request_task.delay(privacy_request.id).get(
+            timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+        )
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.complete
+
+
 @pytest.fixture(scope="function")
 def privacy_request_complete_email_notification_enabled(db):
     """Enable request completion email"""

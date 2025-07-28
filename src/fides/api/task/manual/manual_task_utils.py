@@ -24,6 +24,7 @@ from fides.api.schemas.policy import ActionType
 from fides.api.task.manual.manual_task_address import ManualTaskAddress
 
 
+
 def get_connection_configs_with_manual_tasks(db: Session) -> list[ConnectionConfig]:
     """
     Get all connection configs that have manual tasks.
@@ -69,7 +70,7 @@ def get_manual_task_for_connection_config(
             ConnectionConfig.key == connection_config_key,
             ManualTask.parent_entity_type == "connection_config",
         )
-        .first()
+        .one_or_none()
     )
 
 
