@@ -4,9 +4,9 @@ import NextLink from "next/link";
 import { useRouter } from "next/router";
 
 import logoImage from "~/../public/logo-white.svg";
-import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { useAppDispatch } from "~/app/hooks";
 import { LOGIN_ROUTE } from "~/constants";
-import { logout, selectUser, useLogoutMutation } from "~/features/auth";
+import { logout, useLogoutMutation } from "~/features/auth";
 import Image from "~/features/common/Image";
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
 
@@ -25,31 +25,35 @@ export const UnconnectedMainSideNav = ({
   groups,
   active,
   handleLogout,
-  username,
 }: {
   groups: NavGroup[];
   active: ActiveNav | undefined;
   handleLogout: any;
-  username: string;
 }) => {
-  const navMenuItems = groups.map((group) => ({
-    key: group.title,
-    icon: group.icon,
-    label: <span data-testid={`${group.title}-nav-group`}>{group.title}</span>,
-    children: group.children.map((child) => ({
-      key: child.path,
-      // child label needs left margin/padding to align with group title
+  const navMenuItems = groups
+    .filter((group) => group.children.some((child) => !child.hidden)) // Only include groups with visible children
+    .map((group) => ({
+      key: group.title,
+      icon: group.icon,
       label: (
-        <NextLink
-          href={child.path}
-          data-testid={`${child.title}-nav-link`}
-          className="ml-4 pl-0.5"
-        >
-          {child.title}
-        </NextLink>
+        <span data-testid={`${group.title}-nav-group`}>{group.title}</span>
       ),
-    })),
-  }));
+      children: group.children
+        .filter((child) => !child.hidden) // Filter out hidden routes from UI
+        .map((child) => ({
+          key: child.path,
+          // child label needs left margin/padding to align with group title
+          label: (
+            <NextLink
+              href={child.path}
+              data-testid={`${child.title}-nav-link`}
+              className="ml-4 pl-0.5"
+            >
+              {child.title}
+            </NextLink>
+          ),
+        })),
+    }));
 
   const getActiveKeyFromUrl = () => {
     if (!active) {
@@ -145,14 +149,9 @@ export const UnconnectedMainSideNav = ({
             className="border-none bg-transparent  hover:!bg-gray-700"
             icon={<Icons.Help />}
           />
-          {username && (
-            <div className="inline-block">
-              <AccountDropdownMenu
-                username={username}
-                onLogout={handleLogout}
-              />
-            </div>
-          )}
+          <div className="inline-block">
+            <AccountDropdownMenu onLogout={handleLogout} />
+          </div>
         </Box>
       </VStack>
     </Box>
@@ -164,9 +163,7 @@ const MainSideNav = () => {
   const nav = useNav({ path: router.pathname });
   const [logoutMutation] = useLogoutMutation();
   const dispatch = useAppDispatch();
-  const user = useAppSelector(selectUser);
   const plusQuery = useGetHealthQuery();
-  const username = user ? user.username : "";
 
   const handleLogout = async () => {
     await logoutMutation({});
@@ -191,13 +188,7 @@ const MainSideNav = () => {
     );
   }
 
-  return (
-    <UnconnectedMainSideNav
-      {...nav}
-      handleLogout={handleLogout}
-      username={username}
-    />
-  );
+  return <UnconnectedMainSideNav {...nav} handleLogout={handleLogout} />;
 };
 
 export default MainSideNav;

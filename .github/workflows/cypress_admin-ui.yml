@@ -109,5 +109,5 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: cypress-videos-admin-ui
+          name: cypress-videos-admin-ui-${{ strategy.job-index }}
           path: /home/runner/work/fides/fides/clients/admin-ui/cypress/videos/*.mp4
