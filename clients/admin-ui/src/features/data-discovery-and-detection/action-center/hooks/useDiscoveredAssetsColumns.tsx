@@ -111,12 +111,12 @@ export const useDiscoveredAssetsColumns = ({
       },
       {
         title: "Categories of consent",
-        key: "data_use",
+        key: "data_uses",
         width: 400,
         filters: convertToAntFilters(filterOptions?.data_uses),
         filteredValue: columnFilters?.data_uses || null,
         sorter: true,
-        sortOrder: sortField === "data_use" ? sortOrder : null,
+        sortOrder: sortField === "data_uses" ? sortOrder : null,
         render: (_, record) => (
           <DiscoveredAssetDataUseCell asset={record} readonly={readonly} />
         ),
