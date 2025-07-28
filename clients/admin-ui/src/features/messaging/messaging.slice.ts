@@ -79,20 +79,7 @@ const messagingApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Messaging Config"],
     }),
-    updateDefaultMessagingConfiguration: build.mutation<
-      any,
-      { service_type: string; details: any }
-    >({
-      query: (params) => ({
-        url: `messaging/default`,
-        method: "PUT",
-        body: {
-          service_type: params.service_type,
-          details: params.details,
-        },
-      }),
-      invalidatesTags: ["Messaging Config"],
-    }),
+
     updateMessagingConfigurationSecretsByKey: build.mutation<
       any,
       { key: string; secrets: any }
@@ -123,7 +110,6 @@ export const {
   useGetMessagingConfigurationsQuery,
   useGetMessagingConfigurationByKeyQuery,
   useUpdateMessagingConfigurationByKeyMutation,
-  useUpdateDefaultMessagingConfigurationMutation,
   useUpdateMessagingConfigurationSecretsByKeyMutation,
   useCreateTestConnectionMessageMutation,
   useDeleteMessagingConfigurationByKeyMutation,

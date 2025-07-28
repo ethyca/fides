@@ -1,20 +1,30 @@
-import { AntButton as Button, Box, Heading, HStack, useToast } from "fidesui";
-import { Form, Formik } from "formik";
+import {
+  AntButton as Button,
+  AntForm as Form,
+  AntInput as Input,
+  AntMessage as message,
+  Box,
+  Heading,
+  HStack,
+} from "fidesui";
 import { isEmpty, isUndefined, mapValues, omitBy } from "lodash";
 import { useRouter } from "next/router";
+import { useState } from "react";
 
-import { CustomTextInput } from "~/features/common/form/inputs";
 import { isErrorResult } from "~/features/common/helpers";
 import { useAPIHelper } from "~/features/common/hooks";
-import { MESSAGING_PROVIDERS_ROUTE } from "~/features/common/nav/routes";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
+import {
+  MESSAGING_PROVIDERS_EDIT_ROUTE,
+  MESSAGING_PROVIDERS_ROUTE,
+} from "~/features/common/nav/routes";
+import { TestMessagingProviderModal } from "~/features/messaging/TestMessagingProviderModal";
 import TwilioIcon from "~/features/messaging/TwilioIcon";
 
 import { messagingProviders } from "./constants";
 import {
   useCreateMessagingConfigurationMutation,
   useGetMessagingConfigurationByKeyQuery,
-  useUpdateDefaultMessagingConfigurationMutation,
+  useUpdateMessagingConfigurationByKeyMutation,
   useUpdateMessagingConfigurationSecretsByKeyMutation,
 } from "./messaging.slice";
 
@@ -26,13 +36,14 @@ const TwilioEmailMessagingForm = ({
   configKey,
 }: TwilioEmailMessagingFormProps) => {
   const router = useRouter();
-  const toast = useToast();
   const { handleError } = useAPIHelper();
+  const [isTestModalOpen, setIsTestModalOpen] = useState(false);
+  const [form] = Form.useForm();
 
   const [createMessagingConfiguration] =
     useCreateMessagingConfigurationMutation();
-  const [updateDefaultMessagingConfiguration] =
-    useUpdateDefaultMessagingConfigurationMutation();
+  const [updateMessagingConfiguration] =
+    useUpdateMessagingConfigurationByKeyMutation();
   const [updateMessagingSecrets] =
     useUpdateMessagingConfigurationSecretsByKeyMutation();
 
@@ -67,10 +78,18 @@ const TwilioEmailMessagingForm = ({
         const currentEmail = existingConfig?.details?.twilio_email_from || "";
         if (values.email !== currentEmail && values.email.trim() !== "") {
           promises.push(
-            updateDefaultMessagingConfiguration({
-              service_type: messagingProviders.twilio_email,
-              details: {
-                twilio_email_from: values.email,
+            updateMessagingConfiguration({
+              key: configKey,
+              config: {
+                key: existingConfig?.key || configKey,
+                name: existingConfig?.name,
+                service_type:
+                  existingConfig?.service_type ||
+                  messagingProviders.twilio_email,
+                details: {
+                  ...existingConfig?.details,
+                  twilio_email_from: values.email,
+                },
               },
             }),
           );
@@ -90,7 +109,7 @@ const TwilioEmailMessagingForm = ({
         }
 
         if (promises.length === 0) {
-          toast(successToastParams("No changes to save."));
+          message.info("No changes to save.");
           return;
         }
 
@@ -101,12 +120,7 @@ const TwilioEmailMessagingForm = ({
           const errorResult = results.find((result) => isErrorResult(result));
           handleError(errorResult?.error);
         } else {
-          toast(
-            successToastParams(
-              "Twilio email configuration successfully updated.",
-            ),
-          );
-          router.push(MESSAGING_PROVIDERS_ROUTE);
+          message.success("Twilio email configuration successfully updated.");
         }
       } else {
         // Create mode
@@ -125,12 +139,18 @@ const TwilioEmailMessagingForm = ({
         if (isErrorResult(result)) {
           handleError(result.error);
         } else {
-          toast(
-            successToastParams(
-              "Twilio email configuration successfully created.",
-            ),
-          );
-          router.push(MESSAGING_PROVIDERS_ROUTE);
+          message.success("Twilio email configuration successfully created.");
+          // Redirect to edit page with the created config key
+          const createdConfigKey = result.data?.key;
+          if (createdConfigKey) {
+            const editPath = MESSAGING_PROVIDERS_EDIT_ROUTE.replace(
+              "[key]",
+              createdConfigKey,
+            );
+            router.push(editPath);
+          } else {
+            router.push(MESSAGING_PROVIDERS_ROUTE);
+          }
         }
       }
     } catch (error) {
@@ -143,101 +163,101 @@ const TwilioEmailMessagingForm = ({
     twilio_api_key: isEditMode ? "**********" : "",
   };
 
-  const hasChanges = (values: typeof initialValues) => {
-    if (!isEditMode) {
-      return true; // Always allow save in create mode
-    }
-
-    const currentEmail = existingConfig?.details?.twilio_email_from || "";
-    const emailChanged = values.email !== currentEmail;
-    const apiKeyChanged =
-      values.twilio_api_key !== "**********" &&
-      values.twilio_api_key.trim() !== "";
-    return emailChanged || apiKeyChanged;
-  };
-
   return (
     <Box>
-      <Formik
+      <Form
+        form={form}
+        layout="vertical"
         initialValues={initialValues}
-        onSubmit={handleTwilioEmailConfiguration}
-        enableReinitialize
+        onFinish={handleTwilioEmailConfiguration}
       >
-        {({ isSubmitting, values }) => (
-          <Form>
-            <Box>
-              <Box
-                maxWidth="720px"
-                border="1px"
-                borderColor="gray.200"
-                borderRadius={6}
-                overflow="visible"
-                mt={6}
-              >
-                <Box
-                  backgroundColor="gray.50"
-                  px={6}
-                  py={4}
-                  display="flex"
-                  flexDirection="row"
-                  alignItems="center"
-                  borderBottom="1px"
-                  borderColor="gray.200"
-                  borderTopRadius={6}
+        <Box
+          maxWidth="720px"
+          border="1px"
+          borderColor="gray.200"
+          borderRadius={6}
+          overflow="visible"
+          mt={6}
+        >
+          <Box
+            backgroundColor="gray.50"
+            px={6}
+            py={4}
+            display="flex"
+            flexDirection="row"
+            alignItems="center"
+            borderBottom="1px"
+            borderColor="gray.200"
+            borderTopRadius={6}
+          >
+            <HStack>
+              <TwilioIcon />
+              <Heading as="h3" size="xs">
+                Twilio email messaging configuration
+              </Heading>
+            </HStack>
+          </Box>
+
+          <Box px={6} py={6}>
+            <Form.Item
+              name="email"
+              label="Email"
+              rules={[
+                { required: true, message: "Email is required" },
+                { type: "email", message: "Please enter a valid email" },
+              ]}
+              style={{ marginBottom: 24 }}
+            >
+              <Input
+                placeholder={isEditMode ? "Enter new email" : "Enter email"}
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="twilio_api_key"
+              label="API key"
+              rules={[
+                { required: true, message: "API key is required" },
+                { type: "string", min: 1, message: "API key cannot be empty" },
+              ]}
+            >
+              <Input.Password
+                placeholder={isEditMode ? "Enter new API key" : "Enter API key"}
+              />
+            </Form.Item>
+
+            <Box mt={6}>
+              {isEditMode ? (
+                <Button
+                  onClick={() => setIsTestModalOpen(true)}
+                  className="mr-2"
+                  data-testid="test-btn"
                 >
-                  <HStack>
-                    <TwilioIcon />
-                    <Heading as="h3" size="xs">
-                      Twilio email messaging configuration
-                    </Heading>
-                  </HStack>
-                </Box>
-
-                <Box px={6} py={6}>
-                  <Box mb={4}>
-                    <CustomTextInput
-                      name="email"
-                      label="Email"
-                      placeholder={
-                        isEditMode ? "Enter new email" : "Enter email"
-                      }
-                      variant="stacked"
-                      isRequired
-                    />
-                  </Box>
-                  <CustomTextInput
-                    name="twilio_api_key"
-                    label="API key"
-                    placeholder={
-                      isEditMode ? "Enter new API key" : "Enter API key"
-                    }
-                    type="password"
-                    variant="stacked"
-                    isRequired
-                  />
-
-                  <Box mt={6}>
-                    <Button
-                      onClick={() => router.push(MESSAGING_PROVIDERS_ROUTE)}
-                      className="mr-2"
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      disabled={isSubmitting || !hasChanges(values)}
-                      htmlType="submit"
-                      type="primary"
-                      data-testid="save-btn"
-                    >
-                      Save
-                    </Button>
-                  </Box>
-                </Box>
-              </Box>
+                  Test configuration
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => router.push(MESSAGING_PROVIDERS_ROUTE)}
+                  className="mr-2"
+                >
+                  Cancel
+                </Button>
+              )}
+              <Button htmlType="submit" type="primary" data-testid="save-btn">
+                Save
+              </Button>
             </Box>
-          </Form>
-        )}
-      </Formik>
+          </Box>
+        </Box>
+      </Form>
+
+      {isEditMode && (
+        <TestMessagingProviderModal
+          serviceType={messagingProviders.twilio_email}
+          isOpen={isTestModalOpen}
+          onClose={() => setIsTestModalOpen(false)}
+        />
+      )}
     </Box>
   );
 };

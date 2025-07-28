@@ -1,13 +1,21 @@
-import { Box, Heading, Spinner, Text } from "fidesui";
-import { Form, Formik } from "formik";
-import { useEffect, useState } from "react";
+import {
+  AntForm as Form,
+  AntSelect as Select,
+  Box,
+  Heading,
+  Spinner,
+  Text,
+} from "fidesui";
+import { useEffect, useMemo, useState } from "react";
 
-import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { useAPIHelper } from "~/features/common/hooks";
 
 import { messagingProviderLabels, messagingProviders } from "./constants";
 import MailgunMessagingForm from "./MailgunMessagingForm";
-import { useGetMessagingConfigurationByKeyQuery } from "./messaging.slice";
+import {
+  useGetMessagingConfigurationByKeyQuery,
+  useGetMessagingConfigurationsQuery,
+} from "./messaging.slice";
 import TwilioEmailMessagingForm from "./TwilioEmailMessagingForm";
 import TwilioSMSMessagingForm from "./TwilioSMSMessagingForm";
 
@@ -18,10 +26,11 @@ interface MessagingConfigurationProps {
 
 const MessagingConfiguration = ({
   configKey,
-  initialProviderType = messagingProviders.mailgun,
+  initialProviderType,
 }: MessagingConfigurationProps) => {
-  const [selectedProviderType, setSelectedProviderType] =
-    useState(initialProviderType);
+  const [selectedProviderType, setSelectedProviderType] = useState(
+    initialProviderType || "",
+  );
 
   const isEditMode = !!configKey;
   const { handleError } = useAPIHelper();
@@ -36,6 +45,9 @@ const MessagingConfiguration = ({
     { skip: !configKey },
   );
 
+  // Get existing configurations to determine which types are already in use
+  const { data: existingConfigurations } = useGetMessagingConfigurationsQuery();
+
   // Update selected provider type when config is loaded in edit mode
   useEffect(() => {
     if (isEditMode && messagingConfig?.service_type) {
@@ -48,6 +60,49 @@ const MessagingConfiguration = ({
       handleError(error);
     }
   }, [error, handleError]);
+
+  // Provider options for the dropdown
+  const providerOptions = useMemo(() => {
+    const usedServiceTypes = new Set(
+      existingConfigurations?.items?.map((config) => config.service_type) || [],
+    );
+
+    const isMailgunUsed =
+      !isEditMode && usedServiceTypes.has(messagingProviders.mailgun as any);
+    const isTwilioEmailUsed =
+      !isEditMode &&
+      usedServiceTypes.has(messagingProviders.twilio_email as any);
+    const isTwilioTextUsed =
+      !isEditMode &&
+      usedServiceTypes.has(messagingProviders.twilio_text as any);
+
+    return [
+      {
+        value: messagingProviders.mailgun,
+        label: messagingProviderLabels.mailgun,
+        disabled: isMailgunUsed,
+        title: isMailgunUsed
+          ? "Only one messaging provider of each type can be created"
+          : undefined,
+      },
+      {
+        value: messagingProviders.twilio_email,
+        label: messagingProviderLabels.twilio_email,
+        disabled: isTwilioEmailUsed,
+        title: isTwilioEmailUsed
+          ? "Only one messaging provider of each type can be created"
+          : undefined,
+      },
+      {
+        value: messagingProviders.twilio_text,
+        label: messagingProviderLabels.twilio_text,
+        disabled: isTwilioTextUsed,
+        title: isTwilioTextUsed
+          ? "Only one messaging provider of each type can be created"
+          : undefined,
+      },
+    ];
+  }, [existingConfigurations, isEditMode]);
 
   // Show loading state in edit mode
   if (isEditMode && isLoading) {
@@ -74,22 +129,6 @@ const MessagingConfiguration = ({
     );
   }
 
-  // Provider options for the dropdown
-  const providerOptions = [
-    {
-      value: messagingProviders.mailgun,
-      label: messagingProviderLabels.mailgun,
-    },
-    {
-      value: messagingProviders.twilio_email,
-      label: messagingProviderLabels.twilio_email,
-    },
-    {
-      value: messagingProviders.twilio_text,
-      label: messagingProviderLabels.twilio_text,
-    },
-  ];
-
   const renderProviderForm = () => {
     switch (selectedProviderType) {
       case messagingProviders.mailgun:
@@ -99,7 +138,7 @@ const MessagingConfiguration = ({
       case messagingProviders.twilio_text:
         return <TwilioSMSMessagingForm configKey={configKey} />;
       default:
-        return <TwilioSMSMessagingForm configKey={configKey} />;
+        return null;
     }
   };
 
@@ -132,29 +171,28 @@ const MessagingConfiguration = ({
             </Heading>
           </Box>
           <Box px={6} py={6}>
-            <Formik
-              initialValues={{ provider_type: selectedProviderType }}
-              onSubmit={() => {}}
-              enableReinitialize
-            >
-              <Form>
-                <ControlledSelect
-                  name="provider_type"
-                  label="Provider type"
-                  options={providerOptions}
-                  layout="stacked"
-                  isRequired
-                  value={selectedProviderType}
+            <Form layout="vertical">
+              <Form.Item
+                label="Provider type"
+                name="provider_type"
+                rules={[
+                  { required: true, message: "Please select a provider type" },
+                ]}
+              >
+                <Select
+                  placeholder="Choose a messaging provider..."
+                  value={selectedProviderType || undefined}
                   onChange={(value) => setSelectedProviderType(value)}
+                  options={providerOptions}
                 />
-              </Form>
-            </Formik>
+              </Form.Item>
+            </Form>
           </Box>
         </Box>
       )}
 
-      {/* Render the appropriate form based on selected provider */}
-      {renderProviderForm()}
+      {/* Render the appropriate form based on selected provider - only if a provider is selected */}
+      {selectedProviderType && renderProviderForm()}
     </Box>
   );
 };

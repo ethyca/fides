@@ -11,7 +11,7 @@ import { Form, Formik } from "formik";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { isErrorResult } from "~/features/common/helpers";
 import { useAPIHelper } from "~/features/common/hooks";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
+import { successToastParams } from "~/features/common/toast";
 import { messagingProviders } from "~/features/messaging/constants";
 
 import { useCreateTestConnectionMessageMutation } from "./messaging.slice";
@@ -99,7 +99,7 @@ const TestMessagingProviderConnectionButton = ({
                   isRequired
                 />
               )}
-              <Box mt={10}>
+              <Box mt={8}>
                 <Button htmlType="reset" className="mr-2">
                   Reset
                 </Button>

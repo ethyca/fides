@@ -1,4 +1,4 @@
-import { Box, Heading } from "fidesui";
+import { Heading } from "fidesui";
 
 import Layout from "~/features/common/Layout";
 import BackButton from "~/features/common/nav/BackButton";
@@ -11,13 +11,10 @@ export const CreateMessagingConfiguration = () => {
     <Layout title="Create Messaging Configuration">
       <BackButton backPath={MESSAGING_PROVIDERS_ROUTE} />
 
-      <Heading fontSize="2xl" fontWeight="semibold">
+      <Heading fontSize="2xl" fontWeight="semibold" mb={6}>
         Configure your messaging provider
       </Heading>
-
-      <Box display="flex" flexDirection="column" width="50%">
-        <MessagingConfiguration />
-      </Box>
+      <MessagingConfiguration />
     </Layout>
   );
 };

@@ -1,11 +1,12 @@
-import { Box, Heading, Spinner, Text } from "fidesui";
-import { useEffect } from "react";
+import { AntCard as Card, Box, Heading, Spinner, Text } from "fidesui";
+import { useEffect, useState } from "react";
 
 import { useAPIHelper } from "~/features/common/hooks";
 
 import { messagingProviders } from "./constants";
 import { useGetMessagingConfigurationByKeyQuery } from "./messaging.slice";
 import MessagingConfiguration from "./MessagingConfiguration";
+import { TestMessagingProviderModal } from "./TestMessagingProviderModal";
 
 interface EditMessagingConfigurationProps {
   configKey: string;
@@ -15,6 +16,7 @@ export const EditMessagingConfiguration = ({
   configKey,
 }: EditMessagingConfigurationProps) => {
   const { handleError } = useAPIHelper();
+  const [isTestModalOpen, setIsTestModalOpen] = useState(false);
 
   const {
     data: messagingConfig,
@@ -43,11 +45,11 @@ export const EditMessagingConfiguration = ({
 
   if (!messagingConfig) {
     return (
-      <Box>
+      <Card>
         <Text color="red.500">
           Messaging configuration not found for key: {configKey}
         </Text>
-      </Box>
+      </Card>
     );
   }
 
@@ -55,20 +57,24 @@ export const EditMessagingConfiguration = ({
 
   return (
     <Box>
-      <Heading fontSize="2xl" fontWeight="semibold">
+      <Heading fontSize="2xl" fontWeight="semibold" mb={6}>
         Edit messaging provider
       </Heading>
 
-      <Box display="flex" flexDirection="column" width="50%">
-        {Object.values(messagingProviders).includes(serviceType) ? (
-          <MessagingConfiguration
-            configKey={configKey}
-            initialProviderType={serviceType}
-          />
-        ) : (
-          <Text color="red.500">Unsupported service type: {serviceType}</Text>
-        )}
-      </Box>
+      {Object.values(messagingProviders).includes(serviceType) ? (
+        <MessagingConfiguration
+          configKey={configKey}
+          initialProviderType={serviceType}
+        />
+      ) : (
+        <Text color="red.500">Unsupported service type: {serviceType}</Text>
+      )}
+
+      <TestMessagingProviderModal
+        serviceType={messagingConfig?.service_type}
+        isOpen={isTestModalOpen}
+        onClose={() => setIsTestModalOpen(false)}
+      />
     </Box>
   );
 };

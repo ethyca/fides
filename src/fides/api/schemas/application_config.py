@@ -53,8 +53,11 @@ class NotificationApplicationConfig(FidesSchema):
 
     @field_validator("notification_service_type", mode="before")
     @classmethod
-    def validate_notification_service_type(cls, value: str) -> Optional[str]:
+    def validate_notification_service_type(cls, value: Optional[str]) -> Optional[str]:
         """Ensure the provided type is a valid value."""
+        if value is None:
+            return None  # Allow None values for disabling messaging
+
         value = value.lower()  # force lowercase for safety
         try:
             MessagingServiceType[value]
