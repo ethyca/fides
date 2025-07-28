@@ -319,9 +319,6 @@ async def test_saas_erasure_order_request_task_resume_from_error(
 
     # "fix" the refunds_to_orders collection and resume the erasure
     def side_effect(node, policy, privacy_request, request_task, rows, input_data):
-        logger.info(
-            f"side_effect fixed called with node: {node}, policy: {policy}, privacy_request: {privacy_request}, request_task: {request_task}, rows: {rows}"
-        )
         request_task.rows_masked = 1
         if request_task.id:
             session = Session.object_session(request_task)
