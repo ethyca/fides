@@ -7,7 +7,6 @@ from fides.api.common_exceptions import AwaitingAsyncTaskCallback
 from fides.api.models.attachment import AttachmentType
 from fides.api.models.manual_task import (
     ManualTask,
-    ManualTaskConfig,
     ManualTaskConfigurationType,
     ManualTaskEntityType,
     ManualTaskFieldType,
@@ -124,17 +123,14 @@ class ManualTaskGraphTask(GraphTask):
         # request has started, while allowing different config types (access vs erasure)
         # to have separate instances.
         # ------------------------------------------------------------------
-        existing_task_instance = (
-            db.query(ManualTaskInstance)
-            .join(ManualTaskInstance.config)  # Join to access config information
-            .filter(
-                ManualTaskInstance.task_id == manual_task.id,
-                ManualTaskInstance.entity_id == privacy_request.id,
-                ManualTaskInstance.entity_type == ManualTaskEntityType.privacy_request,
-                # Only check for instances of the same config type
-                ManualTaskConfig.config_type == allowed_config_type,
-            )
-            .first()
+        existing_task_instance = next(
+            (
+                instance
+                for instance in privacy_request.manual_task_instances
+                if instance.task_id == manual_task.id
+                and instance.config.config_type == allowed_config_type
+            ),
+            None,
         )
         if existing_task_instance:
             # An instance already exists for this privacy request and config type – no need
@@ -143,20 +139,17 @@ class ManualTaskGraphTask(GraphTask):
 
         # Check each active config for instances (now we know none exist yet for this config type)
         for config in manual_task.configs:
-            if not config.is_current or config.config_type != allowed_config_type:
-                # Skip configs that are not current or not relevant for this request type
-                continue
-
-            ManualTaskInstance.create(
-                db=db,
-                data={
-                    "task_id": manual_task.id,
-                    "config_id": config.id,
-                    "entity_id": privacy_request.id,
-                    "entity_type": ManualTaskEntityType.privacy_request.value,
-                    "status": StatusType.pending.value,
-                },
-            )
+            if config.is_current and config.config_type == allowed_config_type:
+                ManualTaskInstance.create(
+                    db=db,
+                    data={
+                        "task_id": manual_task.id,
+                        "config_id": config.id,
+                        "entity_id": privacy_request.id,
+                        "entity_type": ManualTaskEntityType.privacy_request.value,
+                        "status": StatusType.pending.value,
+                    },
+                )
 
     def _get_submitted_data(
         self,
@@ -169,17 +162,12 @@ class ManualTaskGraphTask(GraphTask):
         Check if all manual task instances have submissions for ALL fields and return aggregated data
         Returns None if any field submissions are missing (all fields must be completed or skipped)
         """
-        candidate_instances: list[ManualTaskInstance] = (
-            db.query(ManualTaskInstance)
-            .join(ManualTaskInstance.config)  # Join to access config information
-            .filter(
-                ManualTaskInstance.task_id == manual_task.id,
-                ManualTaskInstance.entity_id == privacy_request.id,
-                ManualTaskInstance.entity_type == ManualTaskEntityType.privacy_request,
-                ManualTaskConfig.config_type == allowed_config_type,
-            )
-            .all()
-        )
+        candidate_instances: list[ManualTaskInstance] = [
+            instance
+            for instance in privacy_request.manual_task_instances
+            if instance.task_id == manual_task.id
+            and instance.config.config_type == allowed_config_type
+        ]
 
         if not candidate_instances:
             return None  # No instance yet for this manual task
