@@ -12,15 +12,7 @@ from fides.api.graph.traversal import TraversalNode
 from fides.api.models.connectionconfig import ConnectionConfig
 
 # Import application models
-from fides.api.models.manual_task import (
-    ManualTask,
-    ManualTaskConfig,
-    ManualTaskConfigurationType,
-    ManualTaskEntityType,
-    ManualTaskInstance,
-)
-from fides.api.models.privacy_request import PrivacyRequest
-from fides.api.schemas.policy import ActionType
+from fides.api.models.manual_task import ManualTask, ManualTaskConfigurationType
 from fides.api.task.manual.manual_task_address import ManualTaskAddress
 
 
@@ -120,116 +112,6 @@ def create_manual_data_traversal_node(
     traversal_node = TraversalNode(node)
 
     return traversal_node
-
-
-def create_manual_task_instances_for_privacy_request(
-    db: Session, privacy_request: PrivacyRequest
-) -> list[ManualTaskInstance]:
-    """Create ManualTaskInstance entries for all active manual tasks relevant to a privacy request."""
-    instances = []
-
-    # Get all connection configs that have manual tasks (excluding disabled ones)
-    connection_configs_with_manual_tasks = get_connection_configs_with_manual_tasks(db)
-
-    # Determine the privacy request type based on policy rules
-    has_access_rules = bool(
-        privacy_request.policy.get_rules_for_action(action_type=ActionType.access)
-    )
-    has_erasure_rules = bool(
-        privacy_request.policy.get_rules_for_action(action_type=ActionType.erasure)
-    )
-
-    for connection_config in connection_configs_with_manual_tasks:
-        manual_tasks = (
-            db.query(ManualTask)
-            .filter(
-                ManualTask.parent_entity_id == connection_config.id,
-                ManualTask.parent_entity_type == "connection_config",
-            )
-            .all()
-        )
-
-        for manual_task in manual_tasks:
-            # Get the active config for this manual task, filtered by request type
-            active_config_query = db.query(ManualTaskConfig).filter(
-                ManualTaskConfig.task_id == manual_task.id,
-                ManualTaskConfig.is_current.is_(True),
-            )
-
-            # Filter by configuration type based on privacy request type
-            if has_access_rules and has_erasure_rules:
-                # If both access and erasure rules exist, include both types
-                active_config_query = active_config_query.filter(
-                    ManualTaskConfig.config_type.in_(
-                        [
-                            ManualTaskConfigurationType.access_privacy_request,
-                            ManualTaskConfigurationType.erasure_privacy_request,
-                        ]
-                    )
-                )
-            elif has_access_rules:
-                # Only access rules - only include access configurations
-                active_config_query = active_config_query.filter(
-                    ManualTaskConfig.config_type
-                    == ManualTaskConfigurationType.access_privacy_request
-                )
-            elif has_erasure_rules:
-                # Only erasure rules - only include erasure configurations
-                active_config_query = active_config_query.filter(
-                    ManualTaskConfig.config_type
-                    == ManualTaskConfigurationType.erasure_privacy_request
-                )
-            else:
-                # No relevant rules - skip this manual task
-                continue
-
-            active_configs = active_config_query.all()
-
-            if not active_configs:
-                continue  # Skip if no active configs
-
-            # Create instances for each active config
-            for active_config in active_configs:
-                # Check if instance already exists for this config
-                existing_instance = (
-                    db.query(ManualTaskInstance)
-                    .filter(
-                        ManualTaskInstance.entity_id == privacy_request.id,
-                        ManualTaskInstance.entity_type == "privacy_request",
-                        ManualTaskInstance.task_id == manual_task.id,
-                        ManualTaskInstance.config_id == active_config.id,
-                    )
-                    .first()
-                )
-
-                if not existing_instance:
-                    instance = ManualTaskInstance(
-                        entity_id=privacy_request.id,
-                        entity_type=ManualTaskEntityType.privacy_request,
-                        task_id=manual_task.id,
-                        config_id=active_config.id,
-                    )
-                    db.add(instance)
-                    instances.append(instance)
-
-    if instances:
-        db.commit()
-
-    return instances
-
-
-def get_manual_task_instances_for_privacy_request(
-    db: Session, privacy_request: PrivacyRequest
-) -> list[ManualTaskInstance]:
-    """Get all manual task instances for a privacy request."""
-    return (
-        db.query(ManualTaskInstance)
-        .filter(
-            ManualTaskInstance.entity_id == privacy_request.id,
-            ManualTaskInstance.entity_type == "privacy_request",
-        )
-        .all()
-    )
 
 
 def create_manual_task_artificial_graphs(

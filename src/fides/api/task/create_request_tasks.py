@@ -33,9 +33,8 @@ from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.task.deprecated_graph_task import format_data_use_map_for_caching
 from fides.api.task.execute_request_tasks import log_task_queued, queue_request_task
-from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.task.manual.manual_task_utils import (
-    create_manual_task_instances_for_privacy_request,
+    get_connection_configs_with_manual_tasks,
 )
 from fides.api.util.logger_context_utils import log_context
 
@@ -464,7 +463,12 @@ def run_access_request(
             )
 
             # Snapshot manual task field instances for this privacy request
-            create_manual_task_instances_for_privacy_request(session, privacy_request)
+            connection_configs_with_manual_tasks = (
+                get_connection_configs_with_manual_tasks(session)
+            )
+            privacy_request.create_manual_task_instances(
+                session, connection_configs_with_manual_tasks
+            )
 
             # Save Access Request Tasks to the database
             ready_tasks = persist_new_access_request_tasks(
