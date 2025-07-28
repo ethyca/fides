@@ -13,7 +13,7 @@ from loguru import logger
 
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.policy import ActionType
-from fides.api.util.storage_util import StorageJSONEncoder
+from fides.api.util.storage_util import StorageJSONEncoder, format_size
 
 DSR_DIRECTORY = Path(__file__).parent.resolve()
 
@@ -204,7 +204,7 @@ class DsrReportBuilder:
 
             file_size = attachment.get("file_size")
             if isinstance(file_size, (int, float)):
-                file_size = self._format_size(float(file_size))
+                file_size = format_size(float(file_size))
             else:
                 file_size = "Unknown"
 
@@ -321,22 +321,6 @@ class DsrReportBuilder:
 
         return datasets
 
-    def _format_size(self, size_bytes: float) -> str:
-        """
-        Format size in bytes to human readable format.
-
-        Args:
-            size_bytes: Size in bytes
-
-        Returns:
-            Formatted string with appropriate unit (B, KB, MB, GB)
-        """
-        for unit in ["B", "KB", "MB", "GB"]:
-            if size_bytes < 1024.0:
-                return f"{size_bytes:.1f} {unit}"
-            size_bytes /= 1024.0
-        return f"{size_bytes:.1f} TB"
-
     def generate(self) -> BytesIO:
         """
         Processes the request and DSR data to build zip file containing the DSR report.
@@ -395,7 +379,7 @@ class DsrReportBuilder:
 
         # Calculate time taken and file size
         time_taken = time_module.time() - start_time
-        file_size = self._format_size(float(len(self.baos.getvalue())))
+        file_size = format_size(float(len(self.baos.getvalue())))
 
         logger.bind(time_to_generate=time_taken, dsr_package_size=file_size).info(
             "DSR report generation complete."

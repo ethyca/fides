@@ -47,8 +47,16 @@ from fides.api.models.attachment import (
 from fides.api.models.audit_log import AuditLog
 from fides.api.models.client import ClientDetail
 from fides.api.models.comment import Comment, CommentReference, CommentReferenceType
+from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.field_types import EncryptedLargeDataDescriptor
+from fides.api.models.manual_task import (
+    ManualTask,
+    ManualTaskConfig,
+    ManualTaskConfigurationType,
+    ManualTaskEntityType,
+    ManualTaskInstance,
+)
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.masking_secret import MaskingSecret
 from fides.api.models.policy import (
@@ -198,6 +206,14 @@ class PrivacyRequest(
         secondaryjoin="Comment.id == CommentReference.comment_id",
         order_by="Comment.created_at",
         viewonly=True,
+        uselist=True,
+    )
+    manual_task_instances = relationship(
+        "ManualTaskInstance",
+        lazy="select",
+        passive_deletes="all",
+        primaryjoin="and_(ManualTaskInstance.entity_id==foreign(PrivacyRequest.id), "
+        "ManualTaskInstance.entity_type=='privacy_request')",
         uselist=True,
     )
     property_id = Column(String, nullable=True)
@@ -1154,6 +1170,68 @@ class PrivacyRequest(
         return self._get_manual_webhook_attachments(
             db, manual_webhook_id, "erasure_manual_webhook"
         )
+
+    def create_manual_task_instances(
+        self, db: Session, connection_configs_with_manual_tasks: list[ConnectionConfig]
+    ) -> list[ManualTaskInstance]:
+        """Create ManualTaskInstance entries for all active manual tasks relevant to a privacy request."""
+        # Early return if no relevant policy rules
+        policy_rules = {
+            ActionType.access: bool(
+                self.policy.get_rules_for_action(action_type=ActionType.access)
+            ),
+            ActionType.erasure: bool(
+                self.policy.get_rules_for_action(action_type=ActionType.erasure)
+            ),
+        }
+
+        if not any(policy_rules.values()):
+            return []
+
+        # Build configuration types using list comprehension
+        config_types = [
+            (
+                ManualTaskConfigurationType.access_privacy_request
+                if action_type == ActionType.access
+                else ManualTaskConfigurationType.erasure_privacy_request
+            )
+            for action_type, has_rules in policy_rules.items()
+            if has_rules
+        ]
+
+        # Get all relevant manual tasks and configs in one query
+        connection_config_ids = [cc.id for cc in connection_configs_with_manual_tasks]
+        manual_tasks_with_configs = (
+            db.query(ManualTask, ManualTaskConfig)
+            .join(ManualTaskConfig, ManualTask.id == ManualTaskConfig.task_id)
+            .filter(
+                ManualTask.parent_entity_id.in_(connection_config_ids),
+                ManualTask.parent_entity_type == "connection_config",
+                ManualTaskConfig.is_current.is_(True),
+                ManualTaskConfig.config_type.in_(config_types),
+            )
+            .all()
+        )
+
+        # Get existing config IDs to avoid duplicates
+        existing_config_ids = {
+            instance.config_id for instance in self.manual_task_instances
+        }
+
+        # Create instances using list comprehension and filter out existing ones
+        return [
+            ManualTaskInstance.create(
+                db=db,
+                data={
+                    "entity_id": self.id,
+                    "entity_type": ManualTaskEntityType.privacy_request,
+                    "task_id": manual_task.id,
+                    "config_id": config.id,
+                },
+            )
+            for manual_task, config in manual_tasks_with_configs
+            if config.id not in existing_config_ids
+        ]
 
     def get_existing_request_task(
         self,
