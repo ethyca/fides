@@ -47,6 +47,7 @@ import sv from "./sv/messages-tcf.json";
 import tr from "./tr/messages-tcf.json";
 import uk from "./uk/messages-tcf.json";
 import zh from "./zh/messages-tcf.json";
+import zhHant from "./zh-Hant/messages-tcf.json";
 
 export const STATIC_MESSAGES_TCF: Record<Locale, Messages> = {
   ar: ar,
@@ -89,4 +90,5 @@ export const STATIC_MESSAGES_TCF: Record<Locale, Messages> = {
   tr: tr,
   uk: uk,
   zh: zh,
+  "zh-Hant": zhHant,
 };

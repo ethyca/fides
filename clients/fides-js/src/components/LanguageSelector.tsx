@@ -67,6 +67,7 @@ const LanguageSelector = ({
       }
     }
     setIsOpen(false);
+    buttonRef.current?.focus();
   };
 
   const handleKeyDown = useCallback(
@@ -83,6 +84,7 @@ const LanguageSelector = ({
 
       if (key === "Escape" || key === "Tab") {
         setIsOpen(false);
+        buttonRef.current?.focus();
         return;
       }
 
@@ -121,8 +123,6 @@ const LanguageSelector = ({
           ".fides-menu-item",
         );
       menuItems?.[0]?.focus();
-    } else {
-      buttonRef.current?.focus();
     }
   }, [isOpen]);
 

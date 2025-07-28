@@ -13,7 +13,7 @@ export type SingleFieldSubmissionResponse = {
   connection_key: string;
   field_key: string;
   /**
-   * The field value (may be empty if attachment was provided)
+   * The field value (may be empty if attachments were provided)
    */
   field_value: string;
   submission_id: string;
@@ -22,7 +22,10 @@ export type SingleFieldSubmissionResponse = {
   is_complete: boolean;
   completed_at?: string | null;
   comment?: CommentResponse | null;
-  attachment?: AttachmentResponse | null;
+  /**
+   * List of attachments for this field submission
+   */
+  attachments?: Array<AttachmentResponse>;
   message: string;
   user_id?: string | null;
   user_first_name?: string | null;

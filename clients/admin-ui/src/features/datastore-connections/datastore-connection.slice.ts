@@ -263,6 +263,9 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
     >({
       query: (key) => ({
         url: `${CONNECTION_ROUTE}/${key}/datasetconfig`,
+        params: {
+          size: 1000, // TODO: remove this once we have a better way to handle large datasets
+        },
       }),
       providesTags: () => ["Datastore Connection"],
     }),
