@@ -39,6 +39,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Updates the API so respondents will only be able to see their own user info [#6368](https://github.com/ethyca/fides/pull/6368)
 - Moved masking secrets from Redis to database [#6002](https://github.com/ethyca/fides/pull/6002)
 - Pass `IS_TEST` build parameter to Dockfile for dev builds to preserve dev `data-testid` attributes [#6382] (https://github.com/ethyca/fides/pull/6382)
+- Migrated datamap lineage visualization from Cytoscape.js to ReactFlow with Dagre layout engine [#6381](https://github.com/ethyca/fides/pull/6381)
 
 
 ### Developer Experience
