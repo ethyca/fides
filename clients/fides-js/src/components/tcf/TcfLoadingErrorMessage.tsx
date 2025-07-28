@@ -8,7 +8,7 @@ export const TcfLoadingErrorMessage = ({
   generalLabel: string;
   specificLabel: string;
 }) => {
-  // TODO: add translations for the error messages
+  // TODO: [ENG-1050] add translations for the error messages
   const { i18n } = useI18n();
   return (
     <InfoBox
