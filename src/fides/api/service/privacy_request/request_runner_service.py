@@ -84,6 +84,8 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
+from fides.api.models.worker_task import ExecutionLogStatus
+from fides.api.models.privacy_request import EXITED_EXECUTION_LOG_STATUSES
 
 
 class ManualWebhookResults(FidesSchema):
@@ -356,8 +358,7 @@ def upload_and_save_access_results(  # pylint: disable=R0912
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
-# TODO: Add log_context back in, this is just for some temporary testing
-# @log_context(capture_args={"privacy_request_id": LoggerContextKeys.privacy_request_id})
+@log_context(capture_args={"privacy_request_id": LoggerContextKeys.privacy_request_id})
 def run_privacy_request(
     self: DatabaseTask,
     privacy_request_id: str,
@@ -705,6 +706,10 @@ def run_privacy_request(
                 logger.info("Privacy request run completed.")
                 privacy_request.save(db=session)
 
+            # # Only mark as complete if not in error state and all Request Tasks are complete
+            # # Replace the old broken logic with robust validation
+            # _validate_and_complete_privacy_request(session, privacy_request)
+
 
 def initiate_privacy_request_completion_email(
     session: Session,
@@ -999,4 +1004,83 @@ def run_webhooks_and_report_status(
             privacy_request.cache_failed_checkpoint_details(current_step)
             return False
 
+    return True
+
+
+def _validate_and_complete_privacy_request(
+    session: Session, privacy_request: PrivacyRequest
+) -> bool:
+    """
+    Validates that all Request Tasks are complete before marking privacy request as complete.
+
+    This prevents race conditions where a privacy request gets marked as complete
+    before all its subtasks actually finish, which can happen during worker crashes.
+
+    Returns:
+        True if privacy request was marked as complete
+        False if validation failed or request was marked as error
+    """
+    # Don't override existing error states
+    if privacy_request.status == PrivacyRequestStatus.error:
+        return False
+
+    # Get all request tasks for validation
+    all_request_tasks = list(privacy_request.request_tasks)
+
+    if not all_request_tasks:
+        # No Request Tasks means this is a simple privacy request that completed inline
+        logger.debug(f"No Request Tasks found for privacy request {privacy_request.id}, marking as complete")
+        privacy_request.finished_processing_at = datetime.utcnow()
+        AuditLog.create(
+            db=session,
+            data={
+                "user_id": "system",
+                "privacy_request_id": privacy_request.id,
+                "action": AuditLogAction.finished,
+                "message": "",
+            },
+        )
+        privacy_request.status = PrivacyRequestStatus.complete
+        privacy_request.save(db=session)
+        logger.info("Privacy request run completed.")
+        return True
+
+    # Check all Request Tasks are in final states
+    all_statuses = [task.status for task in all_request_tasks]
+    all_completed = all(status in EXITED_EXECUTION_LOG_STATUSES for status in all_statuses)
+
+    if not all_completed:
+        # Some tasks are still pending/in-processing - this indicates a race condition
+        pending_statuses = [status for status in all_statuses if status not in EXITED_EXECUTION_LOG_STATUSES]
+        logger.warning(
+            f"Privacy request {privacy_request.id} reached completion logic but has incomplete Request Tasks. "
+            f"Pending statuses: {pending_statuses}. This indicates a race condition - marking as error."
+        )
+        privacy_request.error_processing(db=session)
+        return False
+
+    # Check if any tasks errored
+    has_errors = ExecutionLogStatus.error in all_statuses
+    if has_errors:
+        logger.info(f"Privacy request {privacy_request.id} has errored Request Tasks, marking as error")
+        privacy_request.error_processing(db=session)
+        return False
+
+    # All tasks completed successfully - safe to mark as complete
+    logger.info(
+        f"Privacy request {privacy_request.id} validated: {len(all_request_tasks)} Request Tasks all completed successfully"
+    )
+    privacy_request.finished_processing_at = datetime.utcnow()
+    AuditLog.create(
+        db=session,
+        data={
+            "user_id": "system",
+            "privacy_request_id": privacy_request.id,
+            "action": AuditLogAction.finished,
+            "message": "",
+        },
+    )
+    privacy_request.status = PrivacyRequestStatus.complete
+    privacy_request.save(db=session)
+    logger.info("Privacy request run completed.")
     return True

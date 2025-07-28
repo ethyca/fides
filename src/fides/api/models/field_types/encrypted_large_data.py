@@ -90,18 +90,18 @@ class EncryptedLargeDataDescriptor:
         except Exception:  # pylint: disable=broad-except
             pass
 
-        data_size = calculate_data_size(value)
-        if data_size > self.threshold_bytes:
-            logger.info(
-                f"{self.model_class}.{self.field_name}: Data size ({data_size:,} bytes) "
-                f"exceeds threshold ({self.threshold_bytes:,} bytes), storing externally"
-            )
-            self._cleanup_external_data(instance)
-            metadata = self._store_external_data(instance, value)
-            setattr(instance, self.private_field, metadata.model_dump())
-        else:
-            self._cleanup_external_data(instance)
-            setattr(instance, self.private_field, value)
+        # data_size = calculate_data_size(value)
+        # if data_size > self.threshold_bytes:
+        #     logger.info(
+        #         f"{self.model_class}.{self.field_name}: Data size ({data_size:,} bytes) "
+        #         f"exceeds threshold ({self.threshold_bytes:,} bytes), storing externally"
+        #     )
+        #     self._cleanup_external_data(instance)
+        #     metadata = self._store_external_data(instance, value)
+        #     setattr(instance, self.private_field, metadata.model_dump())
+        # else:
+        self._cleanup_external_data(instance)
+        setattr(instance, self.private_field, value)
 
     # External storage helpers
 
