@@ -216,18 +216,18 @@ class ManualTaskGraphTask(GraphTask):
                 )
             )
 
-        for submission in valid_submissions:
-            field_key = submission.field.field_key
-            # We already checked isinstance(submission.data, dict) in valid_submissions
-            data_dict: dict[str, Any] = submission.data  # type: ignore[assignment]
-            field_type = data_dict.get("field_type")
+            for submission in valid_submissions:
+                field_key = submission.field.field_key
+                # We already checked isinstance(submission.data, dict) in valid_submissions
+                data_dict: dict[str, Any] = submission.data  # type: ignore[assignment]
+                field_type = data_dict.get("field_type")
 
-            # Process field data based on type
-            aggregated_data[field_key] = (
-                self._process_attachment_field(submission)
-                if field_type == ManualTaskFieldType.attachment.value
-                else data_dict.get("value")
-            )
+                # Process field data based on type
+                aggregated_data[field_key] = (
+                    self._process_attachment_field(submission)
+                    if field_type == ManualTaskFieldType.attachment.value
+                    else data_dict.get("value")
+                )
 
         return aggregated_data
 
