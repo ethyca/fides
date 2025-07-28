@@ -3,7 +3,6 @@ from unittest.mock import Mock, patch
 import pytest
 from sqlalchemy.orm import Session
 
-from fides.api.models.attachment import AttachmentType
 from fides.api.models.manual_task import (
     ManualTask,
     ManualTaskConfigurationType,
@@ -98,58 +97,6 @@ def completed_instance_erasure(
 
 class TestManualTaskGraphTaskConditionalDependencies:
     """Test ManualTaskGraphTask functionality with conditional dependencies"""
-
-    @pytest.fixture()
-    def build_graph_task(
-        self,
-        db: Session,
-        connection_with_manual_access_task,
-        access_privacy_request,
-        build_request_task,
-        build_task_resources,
-    ):
-        connection_config, manual_task, _, _ = connection_with_manual_access_task
-        request_task = build_request_task(
-            db,
-            access_privacy_request,
-            connection_config,
-            ActionType.access,
-            manual_task,
-        )
-        resources = build_task_resources(
-            db,
-            access_privacy_request,
-            access_privacy_request.policy,
-            connection_config,
-            request_task,
-        )
-        return manual_task, ManualTaskGraphTask(resources)
-
-    @pytest.fixture()
-    def build_erasure_graph_task(
-        self,
-        db: Session,
-        connection_with_manual_erasure_task,
-        erasure_privacy_request,
-        build_request_task,
-        build_task_resources,
-    ):
-        connection_config, manual_task, _, _ = connection_with_manual_erasure_task
-        request_task = build_request_task(
-            db,
-            erasure_privacy_request,
-            connection_config,
-            ActionType.erasure,
-            manual_task,
-        )
-        resources = build_task_resources(
-            db,
-            erasure_privacy_request,
-            erasure_privacy_request.policy,
-            connection_config,
-            request_task,
-        )
-        return manual_task, ManualTaskGraphTask(resources)
 
     @pytest.mark.usefixtures("condition_gt_18")
     def test_extract_conditional_dependency_data_from_inputs_leaf(

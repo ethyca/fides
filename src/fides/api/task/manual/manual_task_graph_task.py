@@ -404,6 +404,11 @@ class ManualTaskGraphTask(GraphTask):
 
         # Aggregate submission data from all instances
         aggregated_data = self._aggregate_submission_data(candidate_instances)
+
+        # Merge conditional data with aggregated submission data
+        if conditional_data:
+            aggregated_data.update(conditional_data)
+
         return aggregated_data or None
 
     def _aggregate_submission_data(

@@ -28,6 +28,10 @@ from fides.api.models.manual_task import (
     ManualTaskType,
     StatusType,
 )
+from fides.api.models.manual_task.conditional_dependency import (
+    ManualTaskConditionalDependency,
+    ManualTaskConditionalDependencyType,
+)
 from fides.api.models.policy import Policy, Rule
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.models.worker_task import ExecutionLogStatus
@@ -424,6 +428,52 @@ def task_resources(db, privacy_request, policy, connection_config, request_task)
     return _build_task_resources(
         db, privacy_request, policy, connection_config, request_task
     )
+
+
+@pytest.fixture()
+def build_graph_task(
+    db: Session,
+    connection_with_manual_access_task,
+    access_privacy_request,
+):
+    connection_config, manual_task, _, _ = connection_with_manual_access_task
+    request_task = _build_request_task(
+        db,
+        access_privacy_request,
+        connection_config,
+        ActionType.access,
+    )
+    resources = _build_task_resources(
+        db,
+        access_privacy_request,
+        access_privacy_request.policy,
+        connection_config,
+        request_task,
+    )
+    return manual_task, ManualTaskGraphTask(resources)
+
+
+@pytest.fixture()
+def build_erasure_graph_task(
+    db: Session,
+    connection_with_manual_erasure_task,
+    erasure_privacy_request,
+):
+    connection_config, manual_task, _, _ = connection_with_manual_erasure_task
+    request_task = _build_request_task(
+        db,
+        erasure_privacy_request,
+        connection_config,
+        ActionType.erasure,
+    )
+    resources = _build_task_resources(
+        db,
+        erasure_privacy_request,
+        erasure_privacy_request.policy,
+        connection_config,
+        request_task,
+    )
+    return manual_task, ManualTaskGraphTask(resources)
 
 
 # =============================================================================
