@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Optional
+from typing import Any, Optional
 
 from loguru import logger
 from sqlalchemy.orm import Session
@@ -28,9 +28,6 @@ from fides.api.task.manual.manual_task_utils import (
 )
 from fides.api.util.collection_util import Row
 from fides.api.util.storage_util import format_size
-
-if TYPE_CHECKING:  # pragma: no cover
-    from fides.api.models.manual_task import ManualTaskSubmission  # noqa: F401
 
 
 class ManualTaskGraphTask(GraphTask):

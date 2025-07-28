@@ -14,7 +14,12 @@ from fides.api.graph.traversal import TraversalNode
 from fides.api.models.connectionconfig import ConnectionConfig
 
 # Import application models
-from fides.api.models.manual_task import ManualTask, ManualTaskConfigurationType
+from fides.api.models.manual_task import (
+    ManualTask,
+    ManualTaskConditionalDependency,
+    ManualTaskConditionalDependencyType,
+    ManualTaskConfigurationType,
+)
 from fides.api.task.manual.manual_task_address import ManualTaskAddress
 
 # TYPE_CHECKING import placed after all runtime imports to avoid lint issues
@@ -373,8 +378,6 @@ def _find_collections_for_conditional_dependencies(
     Returns:
         Set of CollectionAddress objects for collections that provide conditional dependency fields
     """
-    from loguru import logger
-
     dependency_collections = set()
 
     # Get all conditional dependencies for this manual task
@@ -463,8 +466,6 @@ def _get_collection_for_field_address(
     Returns:
         CollectionAddress for the collection that provides this field, or None if not found
     """
-    from loguru import logger
-
     logger.info(f"🔍 Looking for field address: {field_address}")
     logger.info(f"📊 Dataset graph provided: {dataset_graph is not None}")
 

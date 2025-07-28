@@ -698,6 +698,7 @@ def manual_task_graph_task(task_resources):
     # Create ManualTaskGraphTask with proper resources
     return ManualTaskGraphTask(task_resources)
 
+
 @pytest.fixture()
 def complete_manual_task_setup(
     db: Session,
@@ -738,7 +739,7 @@ def complete_manual_task_setup_with_attachment(
         "submission": manual_task_submission_attachment,
         "attachment": attachment_for_access_package,
     }
-  
+
 
 # =============================================================================
 # Manual Task Conditional Dependency Fixtures
