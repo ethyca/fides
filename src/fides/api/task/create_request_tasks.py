@@ -89,14 +89,6 @@ def build_access_networkx_digraph(
         # Connect the end nodes, those that have no downstream dependencies, to the terminator node
         networkx_graph.add_edge(node, TERMINATOR_ADDRESS)
 
-    manual_nodes = [
-        addr
-        for addr in traversal_nodes.keys()
-        if addr.collection == ManualTaskAddress.MANUAL_DATA_COLLECTION
-    ]
-    for manual_node in manual_nodes:
-        networkx_graph.add_edge(ROOT_COLLECTION_ADDRESS, manual_node)
-
     _add_edge_if_no_nodes(traversal_nodes, networkx_graph)
     return networkx_graph
 
