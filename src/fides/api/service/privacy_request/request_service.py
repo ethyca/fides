@@ -401,10 +401,9 @@ def _cancel_interrupted_tasks_and_error_privacy_request(
     Cancel all tasks associated with an interrupted privacy request and set the privacy request to error state.
 
     This function:
-    1. Revokes the main privacy request task
-    2. Revokes all associated request tasks
-    3. Sets the privacy request status to error
-    4. Creates an error log entry
+    1. Revokes the main privacy request task and all associated request tasks
+    2. Sets the privacy request status to error
+    3. Creates an error log entry
 
     Args:
         db: Database session
@@ -414,44 +413,12 @@ def _cancel_interrupted_tasks_and_error_privacy_request(
         f"Canceling interrupted tasks and marking privacy request {privacy_request.id} as error"
     )
 
-    # Get all task IDs that need to be canceled
-    task_ids: List[str] = []
+    # Cancel all associated Celery tasks
+    privacy_request.cancel_celery_tasks()
 
-    # Add the main privacy request task ID
-    parent_task_id = privacy_request.get_cached_task_id()
-    if parent_task_id:
-        task_ids.append(parent_task_id)
-
-    # Add all request task IDs
-    request_task_celery_ids = privacy_request.get_request_task_celery_task_ids()
-    task_ids.extend(request_task_celery_ids)
-
-    # Revoke all Celery tasks
-    for celery_task_id in task_ids:
-        logger.info(f"Revoking interrupted task {celery_task_id} for request {privacy_request.id}")
-        try:
-            # Use terminate=False to allow graceful shutdown if already running
-            celery_app.control.revoke(celery_task_id, terminate=False)
-        except Exception as exc:
-            logger.warning(f"Failed to revoke task {celery_task_id}: {exc}")
-
-    # Set privacy request to error state - override even if currently marked as complete
+    # Set privacy request to error state using the existing method
     try:
-        # Force status change even if currently complete (to handle race conditions)
-        privacy_request.status = PrivacyRequestStatus.error
-        privacy_request.finished_processing_at = datetime.utcnow()
-        privacy_request.save(db)
-
-        # Create error record for tracking
-        from fides.api.models.privacy_request import PrivacyRequestError
-        existing_error = db.query(PrivacyRequestError).filter(
-            PrivacyRequestError.privacy_request_id == privacy_request.id
-        ).first()
-        if not existing_error:
-            PrivacyRequestError.create(
-                db=db, data={"message_sent": False, "privacy_request_id": privacy_request.id}
-            )
-
+        privacy_request.error_processing(db)
         logger.info(f"Privacy request {privacy_request.id} marked as error due to task interruption")
     except Exception as exc:
         logger.error(f"Failed to mark privacy request {privacy_request.id} as error: {exc}")
