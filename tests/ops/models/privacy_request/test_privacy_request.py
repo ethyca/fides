@@ -1633,14 +1633,17 @@ class TestCancelCeleryTasks:
         privacy_request.delete(db)
 
     @pytest.mark.unit
-    def test_cancel_celery_tasks_with_main_and_sub_tasks(self, privacy_request_with_cached_tasks):
+    def test_cancel_celery_tasks_with_main_and_sub_tasks(
+        self, privacy_request_with_cached_tasks
+    ):
         """Test canceling celery tasks when main and sub-tasks exist."""
         from unittest import mock
+
         from fides.api.tasks import celery_app
 
         privacy_request = privacy_request_with_cached_tasks
 
-        with mock.patch.object(celery_app.control, 'revoke') as mock_revoke:
+        with mock.patch.object(celery_app.control, "revoke") as mock_revoke:
             privacy_request.cancel_celery_tasks()
 
             # Should revoke all 3 tasks: main + 2 sub-tasks
@@ -1654,12 +1657,15 @@ class TestCancelCeleryTasks:
 
             # Verify terminate=False for graceful shutdown
             for call in mock_revoke.call_args_list:
-                assert call.kwargs.get('terminate') is False
+                assert call.kwargs.get("terminate") is False
 
     @pytest.mark.unit
-    def test_cancel_celery_tasks_with_only_main_task(self, privacy_request_no_cached_tasks):
+    def test_cancel_celery_tasks_with_only_main_task(
+        self, privacy_request_no_cached_tasks
+    ):
         """Test canceling celery tasks when only main task exists."""
         from unittest import mock
+
         from fides.api.tasks import celery_app
         from fides.api.util.cache import cache_task_tracking_key
 
@@ -1668,7 +1674,7 @@ class TestCancelCeleryTasks:
         # Cache only the main task
         cache_task_tracking_key(privacy_request.id, "only_main_task_123")
 
-        with mock.patch.object(celery_app.control, 'revoke') as mock_revoke:
+        with mock.patch.object(celery_app.control, "revoke") as mock_revoke:
             privacy_request.cancel_celery_tasks()
 
             # Should revoke only 1 task
@@ -1679,20 +1685,24 @@ class TestCancelCeleryTasks:
     def test_cancel_celery_tasks_no_cached_tasks(self, privacy_request_no_cached_tasks):
         """Test canceling celery tasks when no cached tasks exist."""
         from unittest import mock
+
         from fides.api.tasks import celery_app
 
         privacy_request = privacy_request_no_cached_tasks
 
-        with mock.patch.object(celery_app.control, 'revoke') as mock_revoke:
+        with mock.patch.object(celery_app.control, "revoke") as mock_revoke:
             privacy_request.cancel_celery_tasks()
 
             # Should not revoke any tasks
             assert mock_revoke.call_count == 0
 
     @pytest.mark.unit
-    def test_cancel_celery_tasks_with_revoke_failures(self, privacy_request_with_cached_tasks):
+    def test_cancel_celery_tasks_with_revoke_failures(
+        self, privacy_request_with_cached_tasks
+    ):
         """Test that revoke failures are handled gracefully."""
         from unittest import mock
+
         from fides.api.tasks import celery_app
 
         privacy_request = privacy_request_with_cached_tasks
@@ -1703,8 +1713,10 @@ class TestCancelCeleryTasks:
                 raise Exception("Revoke failed")
             return None
 
-        with mock.patch.object(celery_app.control, 'revoke', side_effect=side_effect):
-            with mock.patch("fides.api.models.privacy_request.privacy_request.logger") as mock_logger:
+        with mock.patch.object(celery_app.control, "revoke", side_effect=side_effect):
+            with mock.patch(
+                "fides.api.models.privacy_request.privacy_request.logger"
+            ) as mock_logger:
                 privacy_request.cancel_celery_tasks()
 
                 # Should log warning for failed revoke
@@ -1716,12 +1728,15 @@ class TestCancelCeleryTasks:
     def test_cancel_celery_tasks_logging(self, privacy_request_with_cached_tasks):
         """Test that cancel_celery_tasks logs task revocations."""
         from unittest import mock
+
         from fides.api.tasks import celery_app
 
         privacy_request = privacy_request_with_cached_tasks
 
-        with mock.patch.object(celery_app.control, 'revoke'):
-            with mock.patch("fides.api.models.privacy_request.privacy_request.logger") as mock_logger:
+        with mock.patch.object(celery_app.control, "revoke"):
+            with mock.patch(
+                "fides.api.models.privacy_request.privacy_request.logger"
+            ) as mock_logger:
                 privacy_request.cancel_celery_tasks()
 
                 # Should log info for each revoked task
@@ -1746,7 +1761,9 @@ class TestCancelCeleryTasks:
         assert "sub_task_ghi789" in task_ids
 
     @pytest.mark.unit
-    def test_get_request_task_celery_task_ids_no_tasks(self, privacy_request_no_cached_tasks):
+    def test_get_request_task_celery_task_ids_no_tasks(
+        self, privacy_request_no_cached_tasks
+    ):
         """Test that get_request_task_celery_task_ids returns empty list when no tasks exist."""
         privacy_request = privacy_request_no_cached_tasks
 
@@ -1756,14 +1773,18 @@ class TestCancelCeleryTasks:
         assert task_ids == []
 
     @pytest.mark.unit
-    def test_cancel_celery_tasks_integration_with_cancel_processing(self, privacy_request_no_cached_tasks):
+    def test_cancel_celery_tasks_integration_with_cancel_processing(
+        self, privacy_request_no_cached_tasks
+    ):
         """Test that cancel_celery_tasks is called when cancel_processing is invoked."""
         from unittest import mock
 
         privacy_request = privacy_request_no_cached_tasks
 
-        with mock.patch.object(privacy_request, 'cancel_celery_tasks') as mock_cancel_tasks:
-            with mock.patch.object(privacy_request, 'save'):
+        with mock.patch.object(
+            privacy_request, "cancel_celery_tasks"
+        ) as mock_cancel_tasks:
+            with mock.patch.object(privacy_request, "save"):
                 privacy_request.cancel_processing(mock.Mock(), "Test cancellation")
 
                 # cancel_celery_tasks should be called as part of cancel_processing

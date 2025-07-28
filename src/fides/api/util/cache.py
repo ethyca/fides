@@ -349,7 +349,9 @@ def get_privacy_request_retry_count(privacy_request_id: str) -> int:
         retry_count = cache.get(get_privacy_request_retry_cache_key(privacy_request_id))
         return int(retry_count) if retry_count else 0
     except Exception as exc:
-        logger.error(f"Failed to get retry count for privacy request {privacy_request_id}: {exc}")
+        logger.error(
+            f"Failed to get retry count for privacy request {privacy_request_id}: {exc}"
+        )
         raise
 
 
@@ -368,7 +370,9 @@ def increment_privacy_request_retry_count(privacy_request_id: str) -> int:
         cache.expire(cache_key, 86400)
         return new_count
     except Exception as exc:
-        logger.error(f"Failed to increment retry count for privacy request {privacy_request_id}: {exc}")
+        logger.error(
+            f"Failed to increment retry count for privacy request {privacy_request_id}: {exc}"
+        )
         raise
 
 
@@ -381,7 +385,9 @@ def reset_privacy_request_retry_count(privacy_request_id: str) -> None:
     try:
         cache.delete(get_privacy_request_retry_cache_key(privacy_request_id))
     except Exception as exc:
-        logger.debug(f"Failed to reset retry count for privacy request {privacy_request_id}: {exc}")
+        logger.debug(
+            f"Failed to reset retry count for privacy request {privacy_request_id}: {exc}"
+        )
 
 
 def celery_tasks_in_flight(celery_task_ids: List[str]) -> bool:

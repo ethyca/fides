@@ -3,13 +3,13 @@ from __future__ import annotations
 import json
 from asyncio import sleep
 from datetime import datetime, timedelta
-from typing import Any, Dict, Optional, Set
+from typing import Any, Dict, List, Optional, Set
 
 from httpx import AsyncClient
 from loguru import logger
 from sqlalchemy import text
-from sqlalchemy.sql.elements import TextClause
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.elements import TextClause
 
 from fides.api.common_exceptions import PrivacyRequestNotFound
 from fides.api.models.privacy_request import (
@@ -429,12 +429,18 @@ def _cancel_interrupted_tasks_and_error_privacy_request(
     # Set privacy request to error state using the existing method
     try:
         privacy_request.error_processing(db)
-        logger.info(f"Privacy request {privacy_request.id} marked as error due to task interruption")
+        logger.info(
+            f"Privacy request {privacy_request.id} marked as error due to task interruption"
+        )
     except Exception as exc:
-        logger.error(f"Failed to mark privacy request {privacy_request.id} as error: {exc}")
+        logger.error(
+            f"Failed to mark privacy request {privacy_request.id} as error: {exc}"
+        )
 
 
-def _detect_false_completions(db: Session, redis_conn: FidesopsRedis) -> List[PrivacyRequest]:
+def _detect_false_completions(
+    db: Session, redis_conn: FidesopsRedis
+) -> List[PrivacyRequest]:
     """
     Detect privacy requests that were marked as complete but may have had worker crashes.
 
@@ -444,7 +450,10 @@ def _detect_false_completions(db: Session, redis_conn: FidesopsRedis) -> List[Pr
     recent_completed = (
         db.query(PrivacyRequest)
         .filter(PrivacyRequest.status == PrivacyRequestStatus.complete)
-        .filter(PrivacyRequest.finished_processing_at >= datetime.utcnow() - timedelta(minutes=10))
+        .filter(
+            PrivacyRequest.finished_processing_at
+            >= datetime.utcnow() - timedelta(minutes=10)
+        )
         .filter(PrivacyRequest.deleted_at.is_(None))
     ).all()
 
@@ -477,15 +486,21 @@ def _detect_false_completions(db: Session, redis_conn: FidesopsRedis) -> List[Pr
         if task_id:
             # If main task is not in queue and not running, but request is marked complete,
             # this could indicate a race condition where completion was saved before worker crash
-            if task_id not in queued_tasks_ids and not celery_tasks_in_flight([task_id]):
+            if task_id not in queued_tasks_ids and not celery_tasks_in_flight(
+                [task_id]
+            ):
                 # Additional check: look for incomplete request tasks
                 incomplete_tasks = (
                     db.query(RequestTask)
                     .filter(RequestTask.privacy_request_id == privacy_request.id)
-                    .filter(RequestTask.status.in_([
-                        ExecutionLogStatus.in_processing,
-                        ExecutionLogStatus.pending
-                    ]))
+                    .filter(
+                        RequestTask.status.in_(
+                            [
+                                ExecutionLogStatus.in_processing,
+                                ExecutionLogStatus.pending,
+                            ]
+                        )
+                    )
                     .count()
                 )
 
@@ -558,7 +573,9 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                     f"Failing safe by canceling all in-progress privacy requests: {queue_exc}"
                 )
                 for privacy_request in in_progress_requests:
-                    _cancel_interrupted_tasks_and_error_privacy_request(db, privacy_request)
+                    _cancel_interrupted_tasks_and_error_privacy_request(
+                        db, privacy_request
+                    )
                 return
 
             # Check each privacy request
@@ -574,7 +591,9 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                         f"Cache failure when getting task ID for privacy request {privacy_request.id}, "
                         f"failing safe by canceling tasks: {cache_exc}"
                     )
-                    _cancel_interrupted_tasks_and_error_privacy_request(db, privacy_request)
+                    _cancel_interrupted_tasks_and_error_privacy_request(
+                        db, privacy_request
+                    )
                     continue
 
                 # If the task ID is not cached, we can't check if it's running
@@ -584,7 +603,9 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                         f"No task ID found for privacy request {privacy_request.id}, "
                         f"request is stuck without a running task - canceling"
                     )
-                    _cancel_interrupted_tasks_and_error_privacy_request(db, privacy_request)
+                    _cancel_interrupted_tasks_and_error_privacy_request(
+                        db, privacy_request
+                    )
                     continue
 
                 # Check if the main privacy request task is active
@@ -629,8 +650,12 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                                 f"Cache failure when getting subtask ID for request task {request_task_id} "
                                 f"(privacy request {privacy_request.id}), failing safe by canceling tasks: {cache_exc}"
                             )
-                            _cancel_interrupted_tasks_and_error_privacy_request(db, privacy_request)
-                            should_requeue = False  # Don't attempt requeue since we're canceling
+                            _cancel_interrupted_tasks_and_error_privacy_request(
+                                db, privacy_request
+                            )
+                            should_requeue = (
+                                False  # Don't attempt requeue since we're canceling
+                            )
                             break
 
                         # If the task ID is not cached, we can't check if it's running
@@ -640,8 +665,12 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                                 f"No task ID found for request task {request_task_id} "
                                 f"(privacy request {privacy_request.id}), subtask is stuck - canceling privacy request"
                             )
-                            _cancel_interrupted_tasks_and_error_privacy_request(db, privacy_request)
-                            should_requeue = False  # Don't attempt requeue since we're canceling
+                            _cancel_interrupted_tasks_and_error_privacy_request(
+                                db, privacy_request
+                            )
+                            should_requeue = (
+                                False  # Don't attempt requeue since we're canceling
+                            )
                             break
 
                         if (
@@ -657,18 +686,26 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                 # Check for false completions from recent worker crashes
                 false_completions = _detect_false_completions(db, redis_conn)
                 for privacy_request in false_completions:
-                    _cancel_interrupted_tasks_and_error_privacy_request(db, privacy_request)
+                    _cancel_interrupted_tasks_and_error_privacy_request(
+                        db, privacy_request
+                    )
 
                 # Requeue the privacy request if needed
                 if should_requeue:
                     try:
                         # Check retry count and either requeue or cancel based on limit
-                        current_retry_count = get_privacy_request_retry_count(privacy_request.id)
-                        max_retries = CONFIG.execution.privacy_request_requeue_retry_count
+                        current_retry_count = get_privacy_request_retry_count(
+                            privacy_request.id
+                        )
+                        max_retries = (
+                            CONFIG.execution.privacy_request_requeue_retry_count
+                        )
 
                         if current_retry_count < max_retries:
                             # Increment retry count and attempt requeue
-                            new_retry_count = increment_privacy_request_retry_count(privacy_request.id)
+                            new_retry_count = increment_privacy_request_retry_count(
+                                privacy_request.id
+                            )
                             logger.info(
                                 f"Requeuing privacy request {privacy_request.id} "
                                 f"(attempt {new_retry_count}/{max_retries})"
@@ -684,19 +721,25 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                             except PrivacyRequestError as exc:
                                 logger.error(exc.message)
                                 # If requeue fails, cancel tasks and set to error state
-                                _cancel_interrupted_tasks_and_error_privacy_request(db, privacy_request)
+                                _cancel_interrupted_tasks_and_error_privacy_request(
+                                    db, privacy_request
+                                )
                         else:
                             # Exceeded retry limit, cancel tasks and set to error state
                             logger.warning(
                                 f"Privacy request {privacy_request.id} exceeded max retry attempts "
                                 f"({max_retries}), canceling tasks and setting to error state"
                             )
-                            _cancel_interrupted_tasks_and_error_privacy_request(db, privacy_request)
+                            _cancel_interrupted_tasks_and_error_privacy_request(
+                                db, privacy_request
+                            )
                             # Reset retry count since we're giving up (ignore errors here as it's cleanup)
                             try:
                                 reset_privacy_request_retry_count(privacy_request.id)
                             except Exception as reset_exc:
-                                logger.debug(f"Failed to reset retry count for {privacy_request.id}: {reset_exc}")
+                                logger.debug(
+                                    f"Failed to reset retry count for {privacy_request.id}: {reset_exc}"
+                                )
 
                     except Exception as cache_exc:
                         # If cache operations fail (Redis down, network issues, etc.), fail safe by canceling
@@ -704,4 +747,6 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                             f"Cache operation failed for privacy request {privacy_request.id}, "
                             f"failing safe by canceling tasks: {cache_exc}"
                         )
-                        _cancel_interrupted_tasks_and_error_privacy_request(db, privacy_request)
+                        _cancel_interrupted_tasks_and_error_privacy_request(
+                            db, privacy_request
+                        )
