@@ -33,6 +33,7 @@ from fides.api.models.worker_task import ExecutionLogStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.task.deprecated_graph_task import format_data_use_map_for_caching
 from fides.api.task.execute_request_tasks import log_task_queued, queue_request_task
+from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.task.manual.manual_task_utils import (
     get_connection_configs_with_manual_tasks,
 )
@@ -87,6 +88,14 @@ def build_access_networkx_digraph(
     for node in end_nodes:
         # Connect the end nodes, those that have no downstream dependencies, to the terminator node
         networkx_graph.add_edge(node, TERMINATOR_ADDRESS)
+
+    manual_nodes = [
+        addr
+        for addr in traversal_nodes.keys()
+        if ManualTaskAddress.is_manual_task_address(addr)
+    ]
+    for manual_node in manual_nodes:
+        networkx_graph.add_edge(ROOT_COLLECTION_ADDRESS, manual_node)
 
     _add_edge_if_no_nodes(traversal_nodes, networkx_graph)
     return networkx_graph

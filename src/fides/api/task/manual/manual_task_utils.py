@@ -1,3 +1,4 @@
+from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.graph.config import (
@@ -20,13 +21,18 @@ def get_connection_configs_with_manual_tasks(db: Session) -> list[ConnectionConf
     """
     Get all connection configs that have manual tasks.
     """
-    return (
+    logger.info("Querying for connection configs with manual tasks")
+    connection_configs = (
         db.query(ConnectionConfig)
         .join(ManualTask, ConnectionConfig.id == ManualTask.parent_entity_id)
         .filter(ManualTask.parent_entity_type == "connection_config")
         .filter(ConnectionConfig.disabled.is_(False))
         .all()
     )
+    logger.info(
+        f"Found {len(connection_configs)} connection configs with manual tasks: {[cc.key for cc in connection_configs]}"
+    )
+    return connection_configs
 
 
 def get_manual_task_addresses(db: Session) -> list[CollectionAddress]:
@@ -39,12 +45,19 @@ def get_manual_task_addresses(db: Session) -> list[CollectionAddress]:
     """
     # Get all connection configs that have manual tasks (excluding disabled ones)
     connection_configs_with_manual_tasks = get_connection_configs_with_manual_tasks(db)
+    logger.info(
+        f"Found {len(connection_configs_with_manual_tasks)} connection configs with manual tasks"
+    )
 
     # Create addresses for all connections that have manual tasks
     manual_task_addresses = []
     for config in connection_configs_with_manual_tasks:
+        logger.info(f"Creating manual task address for connection config: {config.key}")
         manual_task_addresses.append(ManualTaskAddress.create(config.key))
 
+    logger.info(
+        f"Created {len(manual_task_addresses)} manual task addresses: {manual_task_addresses}"
+    )
     return manual_task_addresses
 
 
@@ -54,7 +67,11 @@ def get_manual_task_for_connection_config(
     """Get the ManualTask for a specific connection config,
     the manual task/connection config relationship is 1:1.
     """
-    return (
+    logger.info(
+        f"Looking for manual task for connection config: {connection_config_key}"
+    )
+
+    manual_task = (
         db.query(ManualTask)
         .join(ConnectionConfig, ManualTask.parent_entity_id == ConnectionConfig.id)
         .filter(
@@ -63,6 +80,17 @@ def get_manual_task_for_connection_config(
         )
         .one_or_none()
     )
+
+    if manual_task:
+        logger.info(
+            f"Found manual task {manual_task.id} for connection {connection_config_key}"
+        )
+    else:
+        logger.warning(
+            f"No manual task found for connection config: {connection_config_key}"
+        )
+
+    return manual_task
 
 
 def create_manual_data_traversal_node(
@@ -136,11 +164,18 @@ def create_manual_task_artificial_graphs(
         List of GraphDataset objects representing manual tasks as root nodes
     """
 
+    logger.info("Creating manual task artificial graphs")
     manual_task_graphs = []
     manual_addresses = get_manual_task_addresses(db)
+    logger.info(
+        f"Found {len(manual_addresses)} manual task addresses: {manual_addresses}"
+    )
 
     for address in manual_addresses:
         connection_key = address.dataset
+        logger.info(
+            f"Processing manual task address: {address} for connection: {connection_key}"
+        )
 
         # Get manual tasks for this connection to determine fields
         manual_task = get_manual_task_for_connection_config(db, connection_key)
@@ -150,30 +185,47 @@ def create_manual_task_artificial_graphs(
 
         # Manual task collections act as root nodes - they don't need identity dependencies
         # since they provide manually-entered data rather than consuming identity data.
-        current_configs = [
-            config
-            for config in manual_task.configs
-            if config.is_current
-            and config.config_type
-            in [
-                ManualTaskConfigurationType.access_privacy_request,
-                ManualTaskConfigurationType.erasure_privacy_request,
+        if manual_task:
+            logger.info(
+                f"Processing manual task {manual_task.id} with {len(manual_task.configs)} configs"
+            )
+            current_configs = [
+                config
+                for config in manual_task.configs
+                if config.is_current
+                and config.config_type
+                in [
+                    ManualTaskConfigurationType.access_privacy_request,
+                    ManualTaskConfigurationType.erasure_privacy_request,
+                ]
             ]
-        ]
+            logger.info(
+                f"Found {len(current_configs)} current configs for manual task {manual_task.id}"
+            )
 
-        for config in current_configs:
-            for field in config.field_definitions:
-                # Create a scalar field for each manual task field
-                field_metadata = field.field_metadata or {}
-                data_categories = field_metadata.get("data_categories", [])
-
-                scalar_field = ScalarField(
-                    name=field.field_key,
-                    data_categories=data_categories,
+            for config in current_configs:
+                logger.info(
+                    f"Processing config {config.id} with {len(config.field_definitions)} fields"
                 )
-                fields.append(scalar_field)
+                for field in config.field_definitions:
+                    # Create a scalar field for each manual task field
+                    field_metadata = field.field_metadata or {}
+                    data_categories = field_metadata.get("data_categories", [])
+
+                    scalar_field = ScalarField(
+                        name=field.field_key,
+                        data_categories=data_categories,
+                    )
+                    fields.append(scalar_field)
+        else:
+            logger.warning(
+                f"No manual task found for connection {connection_key}, skipping"
+            )
 
         if fields:  # Only create graph if there are fields
+            logger.info(
+                f"Creating graph for connection {connection_key} with {len(fields)} fields"
+            )
             # Create a synthetic Collection
             collection = Collection(
                 name=ManualTaskAddress.MANUAL_DATA_COLLECTION,
@@ -191,5 +243,13 @@ def create_manual_task_artificial_graphs(
             )
 
             manual_task_graphs.append(graph_dataset)
+            logger.info(
+                f"Successfully created manual task graph for connection {connection_key}"
+            )
+        else:
+            logger.warning(
+                f"No fields found for connection {connection_key}, skipping graph creation"
+            )
 
+    logger.info(f"Created {len(manual_task_graphs)} manual task graphs")
     return manual_task_graphs

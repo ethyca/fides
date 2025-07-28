@@ -235,11 +235,8 @@ class ManualTaskGraphTask(GraphTask):
                     }
                 except Exception as exc:  # pylint: disable=broad-exception-caught
                     logger.warning(
-                        "Error retrieving attachment {}: {}",
-                        attachment.file_name,
-                        str(exc),
+                        f"Error retrieving attachment {attachment.file_name}: {str(exc)}"
                     )
-
         return attachment_map or None
 
     def dry_run_task(self) -> int:
