@@ -283,3 +283,169 @@ def test_push_encoded_object_default_expiration(cache: FidesopsRedis) -> None:
 
     # Clean up
     cache.delete(key)
+
+
+class TestPrivacyRequestRetryCache:
+    """Test the privacy request retry count cache functionality."""
+
+    def test_get_privacy_request_retry_cache_key(self):
+        """Test that retry cache key is generated correctly."""
+        from fides.api.util.cache import get_privacy_request_retry_cache_key
+
+        privacy_request_id = "test-privacy-request-123"
+        expected_key = "id-test-privacy-request-123-privacy-request-retry-count"
+
+        actual_key = get_privacy_request_retry_cache_key(privacy_request_id)
+        assert actual_key == expected_key
+
+    def test_get_privacy_request_retry_count_new_request(self, cache):
+        """Test getting retry count for a new privacy request (should be 0)."""
+        from fides.api.util.cache import get_privacy_request_retry_count
+
+        privacy_request_id = "new-request-123"
+
+        # Should return 0 for new request
+        retry_count = get_privacy_request_retry_count(privacy_request_id)
+        assert retry_count == 0
+
+    def test_get_privacy_request_retry_count_existing(self, cache):
+        """Test getting retry count for a privacy request with existing count."""
+        from fides.api.util.cache import (
+            get_privacy_request_retry_count,
+            get_privacy_request_retry_cache_key
+        )
+
+        privacy_request_id = "existing-request-456"
+        expected_count = 3
+
+        # Set up existing count in cache
+        cache.set(get_privacy_request_retry_cache_key(privacy_request_id), expected_count)
+
+        # Should return the existing count
+        retry_count = get_privacy_request_retry_count(privacy_request_id)
+        assert retry_count == expected_count
+
+        # Clean up
+        cache.delete(get_privacy_request_retry_cache_key(privacy_request_id))
+
+    def test_get_privacy_request_retry_count_cache_failure(self, cache):
+        """Test that cache failures in get_privacy_request_retry_count are raised."""
+        from fides.api.util.cache import get_privacy_request_retry_count
+
+        with mock.patch.object(cache, 'get', side_effect=Exception("Cache error")):
+            with pytest.raises(Exception) as exc_info:
+                get_privacy_request_retry_count("test-request")
+            assert "Cache error" in str(exc_info.value)
+
+    def test_increment_privacy_request_retry_count_first_time(self, cache):
+        """Test incrementing retry count for the first time."""
+        from fides.api.util.cache import (
+            increment_privacy_request_retry_count,
+            get_privacy_request_retry_cache_key
+        )
+
+        privacy_request_id = "first-increment-789"
+
+        # First increment should return 1
+        new_count = increment_privacy_request_retry_count(privacy_request_id)
+        assert new_count == 1
+
+        # Verify it's stored in cache
+        cache_key = get_privacy_request_retry_cache_key(privacy_request_id)
+        stored_count = cache.get(cache_key)
+        assert int(stored_count) == 1
+
+        # Verify expiration is set
+        ttl = cache.ttl(cache_key)
+        assert 0 < ttl <= 86400  # Should be set to 24 hours
+
+        # Clean up
+        cache.delete(cache_key)
+
+    def test_increment_privacy_request_retry_count_multiple_times(self, cache):
+        """Test incrementing retry count multiple times."""
+        from fides.api.util.cache import (
+            increment_privacy_request_retry_count,
+            get_privacy_request_retry_cache_key
+        )
+
+        privacy_request_id = "multi-increment-101112"
+        cache_key = get_privacy_request_retry_cache_key(privacy_request_id)
+
+        # Set initial count
+        cache.set(cache_key, 2)
+
+        # Increment should return 3
+        new_count = increment_privacy_request_retry_count(privacy_request_id)
+        assert new_count == 3
+
+        # Increment again should return 4
+        new_count = increment_privacy_request_retry_count(privacy_request_id)
+        assert new_count == 4
+
+        # Clean up
+        cache.delete(cache_key)
+
+    def test_increment_privacy_request_retry_count_cache_failure(self, cache):
+        """Test that cache failures in increment_privacy_request_retry_count are raised."""
+        from fides.api.util.cache import increment_privacy_request_retry_count
+
+        with mock.patch.object(cache, 'incr', side_effect=Exception("Cache error")):
+            with pytest.raises(Exception) as exc_info:
+                increment_privacy_request_retry_count("test-request")
+            assert "Cache error" in str(exc_info.value)
+
+    def test_reset_privacy_request_retry_count(self, cache):
+        """Test resetting retry count."""
+        from fides.api.util.cache import (
+            reset_privacy_request_retry_count,
+            get_privacy_request_retry_cache_key,
+            get_privacy_request_retry_count
+        )
+
+        privacy_request_id = "reset-test-131415"
+        cache_key = get_privacy_request_retry_cache_key(privacy_request_id)
+
+        # Set initial count
+        cache.set(cache_key, 5)
+        assert get_privacy_request_retry_count(privacy_request_id) == 5
+
+        # Reset should remove the key
+        reset_privacy_request_retry_count(privacy_request_id)
+
+        # Count should now be 0 (key doesn't exist)
+        assert get_privacy_request_retry_count(privacy_request_id) == 0
+
+    def test_reset_privacy_request_retry_count_cache_failure(self, cache):
+        """Test that cache failures in reset_privacy_request_retry_count are silently handled."""
+        from fides.api.util.cache import reset_privacy_request_retry_count
+
+        # This should not raise an exception even if cache fails
+        with mock.patch.object(cache, 'delete', side_effect=Exception("Cache error")):
+            # Should complete without raising
+            reset_privacy_request_retry_count("test-request")
+
+    def test_retry_count_workflow_integration(self, cache):
+        """Test the complete workflow of getting, incrementing, and resetting retry count."""
+        from fides.api.util.cache import (
+            get_privacy_request_retry_count,
+            increment_privacy_request_retry_count,
+            reset_privacy_request_retry_count
+        )
+
+        privacy_request_id = "workflow-test-161718"
+
+        # Start with 0
+        assert get_privacy_request_retry_count(privacy_request_id) == 0
+
+        # Increment several times
+        assert increment_privacy_request_retry_count(privacy_request_id) == 1
+        assert increment_privacy_request_retry_count(privacy_request_id) == 2
+        assert increment_privacy_request_retry_count(privacy_request_id) == 3
+
+        # Verify current count
+        assert get_privacy_request_retry_count(privacy_request_id) == 3
+
+        # Reset and verify
+        reset_privacy_request_retry_count(privacy_request_id)
+        assert get_privacy_request_retry_count(privacy_request_id) == 0

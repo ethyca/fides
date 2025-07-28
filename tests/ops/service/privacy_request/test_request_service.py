@@ -1,5 +1,6 @@
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
+import uuid
 
 import pytest
 from httpx import HTTPStatusError
@@ -18,6 +19,7 @@ from fides.api.service.privacy_request.request_service import (
 )
 from fides.common.api.v1.urn_registry import LOGIN, V1_URL_PREFIX
 from fides.config import CONFIG
+from unittest import mock
 
 
 @pytest.fixture
@@ -375,3 +377,285 @@ class TestBuildPrivacyRequestRequiredKwargs:
         assert resp["requested_at"] is not None
         assert resp["policy_id"] == "test_id"
         assert resp["status"] == PrivacyRequestStatus.pending
+
+
+class TestCancelInterruptedTasksAndErrorPrivacyRequest:
+    """Test the _cancel_interrupted_tasks_and_error_privacy_request function."""
+
+    @pytest.fixture
+    def privacy_request_with_tasks(self, db, policy):
+        """Create a privacy request with associated request tasks."""
+        from fides.api.models.privacy_request import PrivacyRequest, RequestTask
+        from fides.api.models.worker_task import ExecutionLogStatus
+        from fides.api.schemas.policy import ActionType
+        from fides.api.util.cache import cache_task_tracking_key
+
+        # Create the privacy request
+        privacy_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "external_id": f"ext-{str(uuid.uuid4())}",
+                "started_processing_at": datetime.utcnow(),
+                "requested_at": datetime.utcnow() - timedelta(days=1),
+                "status": PrivacyRequestStatus.in_processing,
+                "origin": "https://example.com/testing",
+                "policy_id": policy.id,
+                "client_id": policy.client_id,
+            },
+        )
+
+        # Create request tasks
+        request_task = RequestTask.create(
+            db,
+            data={
+                "action_type": ActionType.access,
+                "status": ExecutionLogStatus.in_processing,
+                "privacy_request_id": privacy_request.id,
+                "collection_address": "test_dataset:customer",
+                "dataset_name": "test_dataset",
+                "collection_name": "customer",
+                "upstream_tasks": [],
+                "downstream_tasks": [],
+            },
+        )
+
+        # Cache task IDs
+        cache_task_tracking_key(privacy_request.id, "main_task_123")
+        cache_task_tracking_key(request_task.id, "sub_task_456")
+
+        yield privacy_request
+
+        # Clean up
+        request_task.delete(db)
+        privacy_request.delete(db)
+
+    @mock.patch("fides.api.service.privacy_request.request_service.logger")
+    def test_cancel_interrupted_tasks_and_error_privacy_request_success(
+        self, mock_logger, db, privacy_request_with_tasks
+    ):
+        """Test successful cancellation and error state setting."""
+        from fides.api.service.privacy_request.request_service import _cancel_interrupted_tasks_and_error_privacy_request
+
+        privacy_request = privacy_request_with_tasks
+
+        # Mock the cancel_celery_tasks method
+        with mock.patch.object(privacy_request, 'cancel_celery_tasks') as mock_cancel:
+            with mock.patch.object(privacy_request, 'error_processing') as mock_error:
+                _cancel_interrupted_tasks_and_error_privacy_request(db, privacy_request)
+
+                # Verify cancel_celery_tasks was called
+                mock_cancel.assert_called_once()
+
+                # Verify error_processing was called with db
+                mock_error.assert_called_once_with(db)
+
+                # Verify logging
+                mock_logger.warning.assert_called_once()
+                mock_logger.info.assert_called_once()
+
+    @mock.patch("fides.api.service.privacy_request.request_service.logger")
+    def test_cancel_interrupted_tasks_and_error_privacy_request_error_processing_fails(
+        self, mock_logger, db, privacy_request_with_tasks
+    ):
+        """Test handling when error_processing fails."""
+        from fides.api.service.privacy_request.request_service import _cancel_interrupted_tasks_and_error_privacy_request
+
+        privacy_request = privacy_request_with_tasks
+
+        # Mock the cancel_celery_tasks method and error_processing to raise exception
+        with mock.patch.object(privacy_request, 'cancel_celery_tasks'):
+            with mock.patch.object(privacy_request, 'error_processing', side_effect=Exception("DB Error")):
+                _cancel_interrupted_tasks_and_error_privacy_request(db, privacy_request)
+
+                # Verify error logging
+                mock_logger.error.assert_called_once()
+                assert "Failed to mark privacy request" in str(mock_logger.error.call_args[0][0])
+
+
+class TestDetectFalseCompletions:
+    """Test the _detect_false_completions function."""
+
+    @pytest.fixture
+    def recently_completed_privacy_request(self, db, policy):
+        """Create a recently completed privacy request."""
+        from fides.api.models.privacy_request import PrivacyRequest
+        from fides.api.util.cache import cache_task_tracking_key
+
+        privacy_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "external_id": f"ext-{str(uuid.uuid4())}",
+                "started_processing_at": datetime.utcnow() - timedelta(minutes=15),
+                "finished_processing_at": datetime.utcnow() - timedelta(minutes=5),
+                "requested_at": datetime.utcnow() - timedelta(days=1),
+                "status": PrivacyRequestStatus.complete,
+                "origin": "https://example.com/testing",
+                "policy_id": policy.id,
+                "client_id": policy.client_id,
+            },
+        )
+
+        # Cache task ID
+        cache_task_tracking_key(privacy_request.id, "completed_task_789")
+
+        yield privacy_request
+
+        # Clean up
+        privacy_request.delete(db)
+
+    @pytest.fixture
+    def completed_privacy_request_with_incomplete_tasks(self, db, policy):
+        """Create a completed privacy request that has incomplete request tasks."""
+        from fides.api.models.privacy_request import PrivacyRequest, RequestTask
+        from fides.api.models.worker_task import ExecutionLogStatus
+        from fides.api.schemas.policy import ActionType
+        from fides.api.util.cache import cache_task_tracking_key
+
+        privacy_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "external_id": f"ext-{str(uuid.uuid4())}",
+                "started_processing_at": datetime.utcnow() - timedelta(minutes=15),
+                "finished_processing_at": datetime.utcnow() - timedelta(minutes=5),
+                "requested_at": datetime.utcnow() - timedelta(days=1),
+                "status": PrivacyRequestStatus.complete,
+                "origin": "https://example.com/testing",
+                "policy_id": policy.id,
+                "client_id": policy.client_id,
+            },
+        )
+
+        # Create incomplete request task
+        request_task = RequestTask.create(
+            db,
+            data={
+                "action_type": ActionType.access,
+                "status": ExecutionLogStatus.in_processing,  # Still in processing
+                "privacy_request_id": privacy_request.id,
+                "collection_address": "test_dataset:customer",
+                "dataset_name": "test_dataset",
+                "collection_name": "customer",
+                "upstream_tasks": [],
+                "downstream_tasks": [],
+            },
+        )
+
+        # Cache task ID
+        cache_task_tracking_key(privacy_request.id, "false_complete_task_101")
+
+        yield privacy_request
+
+        # Clean up
+        request_task.delete(db)
+        privacy_request.delete(db)
+
+    @mock.patch("fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue")
+    @mock.patch("fides.api.service.privacy_request.request_service.celery_tasks_in_flight")
+    @mock.patch("fides.api.service.privacy_request.request_service.get_cached_task_id")
+    def test_detect_false_completions_no_false_completions(
+        self, mock_get_cached_task_id, mock_celery_tasks_in_flight, mock_get_task_ids,
+        db, recently_completed_privacy_request
+    ):
+        """Test detection when there are no false completions."""
+        from fides.api.service.privacy_request.request_service import _detect_false_completions
+        from fides.api.util.cache import get_cache
+
+        # Mock task is running or in queue
+        mock_get_task_ids.return_value = ["completed_task_789"]  # Task in queue
+        mock_celery_tasks_in_flight.return_value = False
+        mock_get_cached_task_id.return_value = "completed_task_789"
+
+        redis_conn = get_cache()
+        false_completions = _detect_false_completions(db, redis_conn)
+
+        # Should find no false completions
+        assert len(false_completions) == 0
+
+    @mock.patch("fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue")
+    @mock.patch("fides.api.service.privacy_request.request_service.celery_tasks_in_flight")
+    @mock.patch("fides.api.service.privacy_request.request_service.get_cached_task_id")
+    def test_detect_false_completions_detects_false_completion(
+        self, mock_get_cached_task_id, mock_celery_tasks_in_flight, mock_get_task_ids,
+        db, completed_privacy_request_with_incomplete_tasks
+    ):
+        """Test detection of false completions."""
+        from fides.api.service.privacy_request.request_service import _detect_false_completions
+        from fides.api.util.cache import get_cache
+
+        # Mock task is not in queue and not running, but request has incomplete tasks
+        mock_get_task_ids.return_value = []  # Task not in queue
+        mock_celery_tasks_in_flight.return_value = False  # Task not running
+        mock_get_cached_task_id.return_value = "false_complete_task_101"
+
+        redis_conn = get_cache()
+        false_completions = _detect_false_completions(db, redis_conn)
+
+        # Should find one false completion
+        assert len(false_completions) == 1
+        assert false_completions[0].id == completed_privacy_request_with_incomplete_tasks.id
+
+    @mock.patch("fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue")
+    @mock.patch("fides.api.service.privacy_request.request_service.logger")
+    def test_detect_false_completions_queue_error_returns_all(
+        self, mock_logger, mock_get_task_ids, db, recently_completed_privacy_request
+    ):
+        """Test that queue errors cause all recent completions to be treated as false."""
+        from fides.api.service.privacy_request.request_service import _detect_false_completions
+        from fides.api.util.cache import get_cache
+
+        # Mock queue error
+        mock_get_task_ids.side_effect = Exception("Queue error")
+
+        redis_conn = get_cache()
+        false_completions = _detect_false_completions(db, redis_conn)
+
+        # Should return all recent completions as false completions
+        assert len(false_completions) == 1
+        assert false_completions[0].id == recently_completed_privacy_request.id
+
+        # Should log error
+        mock_logger.error.assert_called_once()
+
+    @mock.patch("fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue")
+    @mock.patch("fides.api.service.privacy_request.request_service.get_cached_task_id")
+    @mock.patch("fides.api.service.privacy_request.request_service.logger")
+    def test_detect_false_completions_cache_error_treats_as_false(
+        self, mock_logger, mock_get_cached_task_id, mock_get_task_ids,
+        db, recently_completed_privacy_request
+    ):
+        """Test that cache errors cause requests to be treated as false completions."""
+        from fides.api.service.privacy_request.request_service import _detect_false_completions
+        from fides.api.util.cache import get_cache
+
+        # Mock queue working but cache error
+        mock_get_task_ids.return_value = []
+        mock_get_cached_task_id.side_effect = Exception("Cache error")
+
+        redis_conn = get_cache()
+        false_completions = _detect_false_completions(db, redis_conn)
+
+        # Should treat as false completion due to cache error
+        assert len(false_completions) == 1
+        assert false_completions[0].id == recently_completed_privacy_request.id
+
+        # Should log error
+        mock_logger.error.assert_called_once()
+
+    @mock.patch("fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue")
+    @mock.patch("fides.api.service.privacy_request.request_service.get_cached_task_id")
+    def test_detect_false_completions_no_cached_task_id(
+        self, mock_get_cached_task_id, mock_get_task_ids, db, recently_completed_privacy_request
+    ):
+        """Test handling when there's no cached task ID."""
+        from fides.api.service.privacy_request.request_service import _detect_false_completions
+        from fides.api.util.cache import get_cache
+
+        # Mock no cached task ID
+        mock_get_task_ids.return_value = []
+        mock_get_cached_task_id.return_value = None
+
+        redis_conn = get_cache()
+        false_completions = _detect_false_completions(db, redis_conn)
+
+        # Should find no false completions since we can't verify without task ID
+        assert len(false_completions) == 0
