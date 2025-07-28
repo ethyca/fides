@@ -698,7 +698,6 @@ def manual_task_graph_task(task_resources):
     # Create ManualTaskGraphTask with proper resources
     return ManualTaskGraphTask(task_resources)
 
-  
 @pytest.fixture()
 def complete_manual_task_setup(
     db: Session,
