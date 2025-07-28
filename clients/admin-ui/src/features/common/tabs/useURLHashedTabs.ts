@@ -25,11 +25,8 @@ const useURLHashedTabs = ({ tabKeys, initialTab }: UseURLHashedTabsProps) => {
   useEffect(() => {
     if (initialTab && tabKeys.includes(initialTab)) {
       setActiveTab(initialTab);
-    } else if (!initialKey && tabKeys.length > 0) {
-      // Ensure we default to first tab if no hash is present
-      setActiveTab(tabKeys[0]);
     }
-  }, [initialTab, tabKeys, router.isReady, initialKey]);
+  }, [initialTab, tabKeys, router.isReady]);
 
   const onTabChange = useCallback(
     async (tab: string) => {
