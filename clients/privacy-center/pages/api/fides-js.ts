@@ -24,6 +24,14 @@ import { createRequestLogger } from "~/app/server-utils/requestLogger";
 import { LOCATION_HEADERS, lookupGeolocation } from "~/common/geolocation";
 import { safeLookupPropertyId } from "~/common/property-id";
 
+declare module globalThis {
+  /**
+   * Wrapper for console.log that only logs if debug mode is enabled
+   * while also preserving the stack trace.
+   */
+  let fidesDebugger: (...args: unknown[]) => void;
+}
+
 const isDebugMode = process.env.FIDES_PRIVACY_CENTER__DEBUG === "true";
 
 // one hour, how long until the custom-fides.css is refreshed
