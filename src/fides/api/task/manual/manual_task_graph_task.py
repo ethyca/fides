@@ -176,8 +176,7 @@ class ManualTaskGraphTask(GraphTask):
                 ManualTaskInstance.task_id == manual_task.id,
                 ManualTaskInstance.entity_id == privacy_request.id,
                 ManualTaskInstance.entity_type == ManualTaskEntityType.privacy_request,
-                ManualTaskConfig.config_type
-                == allowed_config_type,  # Filter at DB level
+                ManualTaskConfig.config_type == allowed_config_type,
             )
             .all()
         )
