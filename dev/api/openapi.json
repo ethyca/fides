@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.66.1b1.post0.dev10"
+    "version": "2.66.2b0.post0.dev1"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -9437,6 +9437,56 @@
         }
       }
     },
+    "/api/v1/privacy-request/{privacy_request_id}/finalize": {
+      "post": {
+        "tags": [
+          "Privacy Requests"
+        ],
+        "summary": "Finalize Privacy Request",
+        "description": "Finalizes a privacy request, moving it from the 'requires_finalization' state to 'complete'.\nThis is done by re-queueing the request, which will then hit the finalization logic in the\nrequest runner service. This logic marks the privacy request as complete\nand sends out any configured messaging to the user.",
+        "operationId": "finalize_privacy_request_api_v1_privacy_request__privacy_request_id__finalize_post",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-request:review"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "privacy_request_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Privacy Request Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrivacyRequestResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/privacy-request/{privacy_request_id}/tasks": {
       "get": {
         "tags": [
@@ -16389,7 +16439,8 @@
           "consent",
           "finalize_consent",
           "email_post_send",
-          "post_webhooks"
+          "post_webhooks",
+          "finalization"
         ],
         "title": "CurrentStep"
       },
@@ -23589,6 +23640,29 @@
               }
             ],
             "title": "Deleted By"
+          },
+          "finalized_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finalized At"
+          },
+          "finalized_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finalized By"
           }
         },
         "type": "object",
@@ -23662,6 +23736,7 @@
           "complete",
           "paused",
           "awaiting_email_send",
+          "requires_manual_finalization",
           "canceled",
           "error"
         ],
@@ -23961,6 +24036,29 @@
               }
             ],
             "title": "Deleted By"
+          },
+          "finalized_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finalized At"
+          },
+          "finalized_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finalized By"
           },
           "results": {
             "additionalProperties": {
