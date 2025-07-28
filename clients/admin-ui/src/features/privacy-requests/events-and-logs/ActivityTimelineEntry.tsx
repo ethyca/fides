@@ -53,13 +53,13 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
             data-testid="activity-timeline-title"
           >
             {title}
+
             {isError && " failed"}
           </Typography.Text>
         )}
         <Typography.Text
           className={styles.timestamp}
           data-testid="activity-timeline-timestamp"
-          ellipsis={{ tooltip: true }}
         >
           {formattedDate}
         </Typography.Text>
