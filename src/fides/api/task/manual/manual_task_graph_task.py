@@ -216,45 +216,19 @@ class ManualTaskGraphTask(GraphTask):
                     and isinstance(submission.data, dict)
                 )
             )
-            .all()
-        )
 
-        if not candidate_instances:
-            return None  # No instance yet for this manual task
+        for submission in valid_submissions:
+            field_key = submission.field.field_key
+            # We already checked isinstance(submission.data, dict) in valid_submissions
+            data_dict: dict[str, Any] = submission.data  # type: ignore[assignment]
+            field_type = data_dict.get("field_type")
 
-        for inst in candidate_instances:
-            # Skip instances tied to other request types
-            if not inst.config or inst.config.config_type != allowed_config_type:
-                continue
-
-            all_fields = inst.config.field_definitions or []
-
-            # Every field must have a submission
-            if not all(inst.get_submission_for_field(f.id) for f in all_fields):
-                return None  # At least one instance still incomplete
-
-            # Ensure status set
-            if inst.status != StatusType.completed:
-                inst.status = StatusType.completed
-                inst.save(db)
-
-            # Aggregate submission data from this instance
-            for submission in inst.submissions:
-                if not submission.field or not submission.field.field_key:
-                    continue
-
-            for submission in valid_submissions:
-                field_key = submission.field.field_key
-                # We already checked isinstance(submission.data, dict) in valid_submissions
-                data_dict: dict[str, Any] = submission.data  # type: ignore[assignment]
-                field_type = data_dict.get("field_type")
-
-                # Process field data based on type
-                aggregated_data[field_key] = (
-                    self._process_attachment_field(submission)
-                    if field_type == ManualTaskFieldType.attachment.value
-                    else data_dict.get("value")
-                )
+            # Process field data based on type
+            aggregated_data[field_key] = (
+                self._process_attachment_field(submission)
+                if field_type == ManualTaskFieldType.attachment.value
+                else data_dict.get("value")
+            )
 
         return aggregated_data
 
