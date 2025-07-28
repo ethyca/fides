@@ -3917,3 +3917,21 @@ def comment(db, comment_data):
     comment = Comment.create(db, data=comment_data)
     yield comment
     comment.delete(db)
+
+
+@pytest.fixture(scope="function")
+def enable_erasure_request_finalization_required(db):
+    """Enable erasure finalization via config"""
+    original_value = CONFIG.execution.erasure_request_finalization_required
+    CONFIG.execution.erasure_request_finalization_required = True
+    yield
+    CONFIG.execution.erasure_request_finalization_required = original_value
+
+
+@pytest.fixture(scope="function")
+def disable_erasure_request_finalization_required(db):
+    """Disable erasure finalization via config"""
+    original_value = CONFIG.execution.erasure_request_finalization_required
+    CONFIG.execution.erasure_request_finalization_required = False
+    yield
+    CONFIG.execution.erasure_request_finalization_required = original_value
