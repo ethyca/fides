@@ -48,6 +48,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed an issue where row selections in Action Center tables did not persist across pages [#6357](https://github.com/ethyca/fides/pull/6357)
 - Fixed bug where an error toast appeared in a privacy request page when running Fides OSS [#6364](https://github.com/ethyca/fides/pull/6364)
 - Escaping column names with spaces for BigQuery [#6380](https://github.com/ethyca/fides/pull/6380)
+- Fixing SaaS Integration tests on CI[#6363](https://github.com/ethyca/fides/pull/6363)
 
 ## [2.66.1](https://github.com/ethyca/fides/compare/2.66.0...2.66.1)
 
