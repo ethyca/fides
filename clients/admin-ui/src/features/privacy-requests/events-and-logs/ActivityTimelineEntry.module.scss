@@ -56,7 +56,7 @@ $horizontal-padding: 20px;
 
   // For the header, we want to show all components
   // in a single line, without wrapping or shrinking.
-  // (except for the title, which can shrink and will show ellipsis)
+  // (except for the title and timestamp, which can shrink and will show ellipsis)
   flex-wrap: nowrap;
   & > * {
     flex-shrink: 0;
@@ -81,6 +81,11 @@ $horizontal-padding: 20px;
 
 .timestamp {
   color: var(--fidesui-neutral-700);
+  flex-shrink: 1;
+
+  @media (min-width: 1280px) {
+    flex-shrink: 0;
+  }
 }
 
 .type {

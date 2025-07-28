@@ -56,12 +56,13 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
             {isError && " failed"}
           </Typography.Text>
         )}
-        <span
+        <Typography.Text
           className={styles.timestamp}
           data-testid="activity-timeline-timestamp"
+          ellipsis={{ tooltip: true }}
         >
           {formattedDate}
-        </span>
+        </Typography.Text>
         <Tag
           className={styles.type}
           color={TimelineItemColorMap[type]}
