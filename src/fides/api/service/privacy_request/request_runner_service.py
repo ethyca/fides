@@ -485,12 +485,21 @@ def run_privacy_request(
                     connection_configs
                 )
 
+                # If the privacy request requires manual finalization and has not yet been finalized, we exit here
+                if (
+                    privacy_request.status
+                    == PrivacyRequestStatus.requires_manual_finalization
+                    and privacy_request.finalized_at is None
+                ):
+                    return
+
                 # Access CHECKPOINT
                 if (
                     policy.get_rules_for_action(action_type=ActionType.access)
                     or policy.get_rules_for_action(action_type=ActionType.erasure)
                 ) and can_run_checkpoint(
-                    request_checkpoint=CurrentStep.access, from_checkpoint=resume_step
+                    request_checkpoint=CurrentStep.access,
+                    from_checkpoint=resume_step,
                 ):
                     privacy_request.cache_failed_checkpoint_details(CurrentStep.access)
                     access_runner(
@@ -535,7 +544,8 @@ def run_privacy_request(
                 if policy.get_rules_for_action(
                     action_type=ActionType.erasure
                 ) and can_run_checkpoint(
-                    request_checkpoint=CurrentStep.erasure, from_checkpoint=resume_step
+                    request_checkpoint=CurrentStep.erasure,
+                    from_checkpoint=resume_step,
                 ):
                     privacy_request.cache_failed_checkpoint_details(CurrentStep.erasure)
                     _verify_masking_secrets(policy, privacy_request, resume_step)
@@ -661,58 +671,111 @@ def run_privacy_request(
                 if not proceed:
                     return
 
-            legacy_request_completion_enabled = ConfigProxy(
-                session
-            ).notifications.send_request_completion_notification
-
-            action_type = (
-                MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS
-                if policy.get_rules_for_action(action_type=ActionType.access)
-                else MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION
-            )
-
-            if message_send_enabled(
-                session,
-                privacy_request.property_id,
-                action_type,
-                legacy_request_completion_enabled,
-            ) and not policy.get_rules_for_action(action_type=ActionType.consent):
-                try:
-                    if not access_result_urls:
-                        # For DSR 3.0, if the request had both access and erasure rules, this needs to be fetched
-                        # from the database because the Privacy Request would have exited
-                        # processing and lost access to the access_result_urls in memory
-                        access_result_urls = (
-                            privacy_request.access_result_urls or {}
-                        ).get("access_result_urls", [])
-                    initiate_privacy_request_completion_email(
-                        session,
-                        policy,
-                        access_result_urls,
-                        identity_data,
-                        privacy_request.property_id,
-                    )
-                except (IdentityNotFoundException, MessageDispatchException) as e:
-                    privacy_request.error_processing(db=session)
-                    # If dev mode, log traceback
-                    _log_exception(e, CONFIG.dev_mode)
-                    return
-
-            # Only mark as complete if not in error state
-            if privacy_request.status != PrivacyRequestStatus.error:
-                privacy_request.finished_processing_at = datetime.utcnow()
-                AuditLog.create(
-                    db=session,
-                    data={
-                        "user_id": "system",
-                        "privacy_request_id": privacy_request.id,
-                        "action": AuditLogAction.finished,
-                        "message": "",
-                    },
+            # Request finalization CHECKPOINT
+            if can_run_checkpoint(
+                request_checkpoint=CurrentStep.finalization,
+                from_checkpoint=resume_step,
+            ):
+                privacy_request.cache_failed_checkpoint_details(
+                    CurrentStep.finalization,
                 )
-                privacy_request.status = PrivacyRequestStatus.complete
-                logger.info("Privacy request run completed.")
-                privacy_request.save(db=session)
+                if privacy_request.status != PrivacyRequestStatus.error:
+                    erasure_rules = policy.get_rules_for_action(
+                        action_type=ActionType.erasure
+                    )
+                    if (
+                        privacy_request.finalized_at is None
+                        and erasure_rules
+                        and CONFIG.execution.erasure_request_finalization_required
+                    ):
+                        logger.info(
+                            "Marking privacy request '{}' as requires manual finalization.",
+                            privacy_request.id,
+                        )
+                        privacy_request.status = (
+                            PrivacyRequestStatus.requires_manual_finalization
+                        )
+                        privacy_request.save(db=session)
+                        return
+
+                    # Finally, mark the request as complete
+                    if privacy_request.finalized_at:
+                        logger.info(
+                            "Marking privacy request '{}' as finalized.",
+                            privacy_request.id,
+                        )
+                        privacy_request.add_success_execution_log(
+                            session,
+                            connection_key=None,
+                            dataset_name="Request finalized",
+                            collection_name=None,
+                            message=f"Request finalized for privacy request: {privacy_request.id}",
+                            action_type=privacy_request.policy.get_action_type(),  # type: ignore
+                        )
+
+                    logger.info(
+                        "Marking privacy request '{}' as complete.",
+                        privacy_request.id,
+                    )
+                    AuditLog.create(
+                        db=session,
+                        data={
+                            "user_id": "system",
+                            "privacy_request_id": privacy_request.id,
+                            "action": AuditLogAction.finished,
+                            "message": "",
+                        },
+                    )
+                    privacy_request.status = PrivacyRequestStatus.complete
+                    privacy_request.finished_processing_at = datetime.utcnow()
+                    privacy_request.save(db=session)
+
+                    # Send a final email to the user confirming request completion
+                    if privacy_request.status == PrivacyRequestStatus.complete:
+                        legacy_request_completion_enabled = ConfigProxy(
+                            session
+                        ).notifications.send_request_completion_notification
+
+                        action_type = (
+                            MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS
+                            if policy.get_rules_for_action(
+                                action_type=ActionType.access
+                            )
+                            else MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION
+                        )
+
+                        if message_send_enabled(
+                            session,
+                            privacy_request.property_id,
+                            action_type,
+                            legacy_request_completion_enabled,
+                        ) and not policy.get_rules_for_action(
+                            action_type=ActionType.consent
+                        ):
+                            if not access_result_urls:
+                                # For DSR 3.0, if the request had both access and erasure rules, this needs to be fetched
+                                # from the database because the Privacy Request would have exited
+                                # processing and lost access to the access_result_urls in memory
+                                access_result_urls = (
+                                    privacy_request.access_result_urls or {}
+                                ).get("access_result_urls", [])
+
+                            try:
+                                initiate_privacy_request_completion_email(
+                                    session,
+                                    policy,
+                                    access_result_urls,
+                                    identity_data,
+                                    privacy_request.property_id,
+                                )
+                            except (
+                                IdentityNotFoundException,
+                                MessageDispatchException,
+                            ) as e:
+                                privacy_request.error_processing(db=session)
+                                # If dev mode, log traceback
+                                _log_exception(e, CONFIG.dev_mode)
+                                return
 
 
 def initiate_privacy_request_completion_email(

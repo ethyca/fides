@@ -24,6 +24,7 @@ EXECUTION_CHECKPOINTS = [
     CurrentStep.finalize_consent,
     CurrentStep.email_post_send,
     CurrentStep.post_webhooks,
+    CurrentStep.finalization,
 ]
 
 COMPLETED_EXECUTION_LOG_STATUSES = [
