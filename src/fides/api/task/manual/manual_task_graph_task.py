@@ -137,19 +137,27 @@ class ManualTaskGraphTask(GraphTask):
             # to create another one tied to a newer config version.
             return
 
-        # Check each active config for instances (now we know none exist yet for this config type)
-        for config in manual_task.configs:
-            if config.is_current and config.config_type == allowed_config_type:
-                ManualTaskInstance.create(
-                    db=db,
-                    data={
-                        "task_id": manual_task.id,
-                        "config_id": config.id,
-                        "entity_id": privacy_request.id,
-                        "entity_type": ManualTaskEntityType.privacy_request.value,
-                        "status": StatusType.pending.value,
-                    },
-                )
+        # If no existing instances, create a new one for the current config
+        # There will only be one config of each type per manual task
+        config = next(
+            (
+                config
+                for config in manual_task.configs
+                if config.is_current and config.config_type == allowed_config_type
+            ),
+            None,
+        )
+        if config:
+            ManualTaskInstance.create(
+                db=db,
+                data={
+                    "task_id": manual_task.id,
+                    "config_id": config.id,
+                    "entity_id": privacy_request.id,
+                    "entity_type": ManualTaskEntityType.privacy_request.value,
+                    "status": StatusType.pending.value,
+                },
+            )
 
     def _get_submitted_data(
         self,

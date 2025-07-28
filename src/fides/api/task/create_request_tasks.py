@@ -472,11 +472,8 @@ def run_access_request(
             )
 
             # Snapshot manual task field instances for this privacy request
-            connection_configs_with_manual_tasks = (
-                get_connection_configs_with_manual_tasks(session)
-            )
             privacy_request.create_manual_task_instances(
-                session, connection_configs_with_manual_tasks
+                session, get_connection_configs_with_manual_tasks(session)
             )
 
             # Save Access Request Tasks to the database
