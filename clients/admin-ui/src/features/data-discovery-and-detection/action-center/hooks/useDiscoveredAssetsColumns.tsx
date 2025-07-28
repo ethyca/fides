@@ -270,7 +270,6 @@ export const useDiscoveredAssetsColumns = ({
     columnFilters,
     sortField,
     sortOrder,
-    searchQuery,
     assetConsentStatusLabels,
     readonly,
     isLocationsExpanded,

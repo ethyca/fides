@@ -133,7 +133,7 @@ export const DiscoveredAssetsTable = ({
 
   useEffect(() => {
     setPageIndex(1);
-  }, [monitorId, searchQuery, activeTab, columnFilters, sortField, sortOrder]);
+  }, [monitorId, searchQuery, activeTab]);
 
   useEffect(() => {
     resetSelections();
@@ -389,18 +389,27 @@ export const DiscoveredAssetsTable = ({
   };
 
   const handleTableChange = (pagination: any, filters: any, sorter: any) => {
-    setPageIndex(pagination.current);
+    // Check if this is just a pagination change (page or pageSize changed)
+    const isPaginationChange =
+      pagination.current !== pageIndex || pagination.pageSize !== pageSize;
+
+    // If it's a pagination change, use the new page; otherwise reset to page 1
+    if (isPaginationChange) {
+      setPageIndex(pagination.current);
+    } else {
+      setPageIndex(1);
+    }
+
     setPageSize(pagination.pageSize);
     setColumnFilters(filters || {});
 
     // Handle sorting
-    if (sorter && !Array.isArray(sorter)) {
-      setSortField(sorter.field);
-      setSortOrder(sorter.order);
-    } else {
-      setSortField(undefined);
-      setSortOrder(undefined);
-    }
+    const newSortField =
+      sorter && !Array.isArray(sorter) ? sorter.field : undefined;
+    const newSortOrder =
+      sorter && !Array.isArray(sorter) ? sorter.order : undefined;
+    setSortField(newSortField);
+    setSortOrder(newSortOrder);
   };
 
   if (!monitorId || !systemId) {
