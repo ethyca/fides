@@ -1178,7 +1178,7 @@ describe("Fides-js TCF", () => {
           "vendors who can process your data",
         );
 
-        cy.get("#fides-save-button").should("not.exist");
+        cy.get("#fides-save-button").should("be.disabled");
         cy.get("button").contains("Opt in to all").should("be.visible");
         cy.get("button").contains("Opt out of all").should("be.visible");
       });
