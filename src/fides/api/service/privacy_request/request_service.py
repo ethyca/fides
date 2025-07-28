@@ -9,6 +9,7 @@ from httpx import AsyncClient
 from loguru import logger
 from sqlalchemy import text
 from sqlalchemy.sql.elements import TextClause
+from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import PrivacyRequestNotFound
 from fides.api.models.privacy_request import (
@@ -393,6 +394,114 @@ def _get_task_ids_from_dsr_queue(
     return queued_tasks_ids
 
 
+def _cancel_interrupted_tasks_and_error_privacy_request(
+    db: Session, privacy_request: PrivacyRequest
+) -> None:
+    """
+    Cancel all tasks associated with an interrupted privacy request and set the privacy request to error state.
+
+    This function:
+    1. Revokes the main privacy request task
+    2. Revokes all associated request tasks
+    3. Sets the privacy request status to error
+    4. Creates an error log entry
+
+    Args:
+        db: Database session
+        privacy_request: The privacy request to cancel and error
+    """
+    logger.warning(
+        f"Canceling interrupted tasks and marking privacy request {privacy_request.id} as error"
+    )
+
+    # Get all task IDs that need to be canceled
+    task_ids: List[str] = []
+
+    # Add the main privacy request task ID
+    parent_task_id = privacy_request.get_cached_task_id()
+    if parent_task_id:
+        task_ids.append(parent_task_id)
+
+    # Add all request task IDs
+    request_task_celery_ids = privacy_request.get_request_task_celery_task_ids()
+    task_ids.extend(request_task_celery_ids)
+
+    # Revoke all Celery tasks
+    for celery_task_id in task_ids:
+        logger.info(f"Revoking interrupted task {celery_task_id} for request {privacy_request.id}")
+        try:
+            # Use terminate=False to allow graceful shutdown if already running
+            celery_app.control.revoke(celery_task_id, terminate=False)
+        except Exception as exc:
+            logger.warning(f"Failed to revoke task {celery_task_id}: {exc}")
+
+    # Set privacy request to error state - override even if currently marked as complete
+    try:
+        # Force status change even if currently complete (to handle race conditions)
+        privacy_request.status = PrivacyRequestStatus.error
+        privacy_request.finished_processing_at = datetime.utcnow()
+        privacy_request.save(db)
+
+        # Create error record for tracking
+        from fides.api.models.privacy_request import PrivacyRequestError
+        existing_error = db.query(PrivacyRequestError).filter(
+            PrivacyRequestError.privacy_request_id == privacy_request.id
+        ).first()
+        if not existing_error:
+            PrivacyRequestError.create(
+                db=db, data={"message_sent": False, "privacy_request_id": privacy_request.id}
+            )
+
+        logger.info(f"Privacy request {privacy_request.id} marked as error due to task interruption")
+    except Exception as exc:
+        logger.error(f"Failed to mark privacy request {privacy_request.id} as error: {exc}")
+
+
+def _detect_false_completions(db: Session, redis_conn: FidesopsRedis) -> List[PrivacyRequest]:
+    """
+    Detect privacy requests that were marked as complete but may have had worker crashes.
+
+    Returns privacy requests that were recently completed but have signs of worker interruption.
+    """
+    # Look for recently completed requests (last 10 minutes)
+    recent_completed = (
+        db.query(PrivacyRequest)
+        .filter(PrivacyRequest.status == PrivacyRequestStatus.complete)
+        .filter(PrivacyRequest.finished_processing_at >= datetime.utcnow() - timedelta(minutes=10))
+        .filter(PrivacyRequest.deleted_at.is_(None))
+    ).all()
+
+    false_completions = []
+    queued_tasks_ids = _get_task_ids_from_dsr_queue(redis_conn)
+
+    for privacy_request in recent_completed:
+        # Check if this request has task IDs that suggest worker interruption
+        task_id = get_cached_task_id(privacy_request.id)
+        if task_id:
+            # If main task is not in queue and not running, but request is marked complete,
+            # this could indicate a race condition where completion was saved before worker crash
+            if task_id not in queued_tasks_ids and not celery_tasks_in_flight([task_id]):
+                # Additional check: look for incomplete request tasks
+                incomplete_tasks = (
+                    db.query(RequestTask)
+                    .filter(RequestTask.privacy_request_id == privacy_request.id)
+                    .filter(RequestTask.status.in_([
+                        ExecutionLogStatus.in_processing,
+                        ExecutionLogStatus.pending
+                    ]))
+                    .count()
+                )
+
+                if incomplete_tasks > 0:
+                    logger.warning(
+                        f"Detected false completion: Privacy request {privacy_request.id} "
+                        f"marked complete but has {incomplete_tasks} incomplete tasks"
+                    )
+                    false_completions.append(privacy_request)
+
+    return false_completions
+
+
 # pylint: disable=too-many-branches
 @celery_app.task(base=DatabaseTask, bind=True)
 def requeue_interrupted_tasks(self: DatabaseTask) -> None:
@@ -453,6 +562,9 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
 
                 # If the task ID is not cached, we can't check if it's running
                 if not task_id:
+                    logger.warning(
+                        f"No task ID found for privacy request {privacy_request.id}"
+                    )
                     continue
 
                 # Check if the main privacy request task is active
@@ -505,14 +617,23 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                             should_requeue = True
                             break
 
+                # Check for false completions from recent worker crashes
+                false_completions = _detect_false_completions(db, redis_conn)
+                for privacy_request in false_completions:
+                    _cancel_interrupted_tasks_and_error_privacy_request(db, privacy_request)
+
                 # Requeue the privacy request if needed
                 if should_requeue:
-                    from fides.service.privacy_request.privacy_request_service import (  # pylint: disable=cyclic-import
-                        PrivacyRequestError,
-                        _requeue_privacy_request,
-                    )
+                    # Instead of requeuing, cancel tasks and set to error state
+                    _cancel_interrupted_tasks_and_error_privacy_request(db, privacy_request)
 
-                    try:
-                        _requeue_privacy_request(db, privacy_request)
-                    except PrivacyRequestError as exc:
-                        logger.error(exc.message)
+                    # Original requeue logic - commented out
+                    # from fides.service.privacy_request.privacy_request_service import (  # pylint: disable=cyclic-import
+                    #     PrivacyRequestError,
+                    #     _requeue_privacy_request,
+                    # )
+                    #
+                    # try:
+                    #     _requeue_privacy_request(db, privacy_request)
+                    # except PrivacyRequestError as exc:
+                    #     logger.error(exc.message)
