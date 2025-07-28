@@ -11,6 +11,13 @@ export interface RetryConfig {
   shouldRetry?: (attempt: number, result: any, error?: Error) => boolean;
 }
 
+export enum FetchState {
+  Idle = "idle",
+  Loading = "loading",
+  Success = "success",
+  Error = "error",
+}
+
 interface UseRetryableFetchOptions<T> {
   fetcher: () => Promise<T>;
   validator?: (result: T) => boolean;
@@ -21,8 +28,9 @@ interface UseRetryableFetchOptions<T> {
 
 interface UseRetryableFetchResult<T> {
   data: T | undefined;
-  loading: boolean;
-  error: boolean;
+  fetchState: FetchState;
+  isLoading: boolean;
+  isError: boolean;
   retry: () => void;
 }
 
@@ -40,8 +48,7 @@ export const useRetryableFetch = <T>({
   enabled = true,
 }: UseRetryableFetchOptions<T>): UseRetryableFetchResult<T> => {
   const [data, setData] = useState<T | undefined>(undefined);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
+  const [fetchState, setFetchState] = useState<FetchState>(FetchState.Idle);
 
   const finalConfig = { ...DEFAULT_CONFIG, ...config };
 
@@ -51,8 +58,7 @@ export const useRetryableFetch = <T>({
 
       if (validator(result)) {
         setData(result);
-        setLoading(false);
-        setError(false);
+        setFetchState(FetchState.Success);
         onSuccess?.(result);
       } else if (
         attempt < finalConfig.maxAttempts &&
@@ -63,8 +69,7 @@ export const useRetryableFetch = <T>({
           finalConfig.backoffFactor * 2 ** (attempt - 1),
         );
       } else {
-        setError(true);
-        setLoading(false);
+        setFetchState(FetchState.Error);
       }
     } catch (err) {
       if (
@@ -76,23 +81,20 @@ export const useRetryableFetch = <T>({
           finalConfig.backoffFactor * 2 ** (attempt - 1),
         );
       } else {
-        setError(true);
-        setLoading(false);
+        setFetchState(FetchState.Error);
       }
     }
   };
 
   const retry = () => {
-    setLoading(true);
-    setError(false);
+    setFetchState(FetchState.Loading);
     setData(undefined);
     executeWithRetry();
   };
 
   useEffect(() => {
     if (enabled) {
-      setLoading(true);
-      setError(false);
+      setFetchState(FetchState.Loading);
       executeWithRetry();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -100,8 +102,9 @@ export const useRetryableFetch = <T>({
 
   return {
     data,
-    loading,
-    error,
+    fetchState,
+    isLoading: fetchState === FetchState.Loading,
+    isError: fetchState === FetchState.Error,
     retry,
   };
 };

@@ -34,7 +34,11 @@ import {
   FidesEventDetailsServingComponent,
   FidesEventTargetType,
 } from "../../lib/events";
-import { useNoticesServed, useRetryableFetch } from "../../lib/hooks";
+import {
+  FetchState,
+  useNoticesServed,
+  useRetryableFetch,
+} from "../../lib/hooks";
 import {
   DEFAULT_LOCALE,
   detectUserLocale,
@@ -200,37 +204,39 @@ export const TcfOverlay = () => {
    */
   const [experienceFull, setExperienceFull] = useState<PrivacyExperience>();
 
-  const { loading: isFullExperienceLoading, error: isFullExperienceError } =
-    useRetryableFetch<PrivacyExperience | EmptyExperience>({
-      fetcher: () =>
-        fetchExperience({
-          userLocationString: fidesRegionString,
-          fidesApiUrl: options.fidesApiUrl,
-          apiOptions: options.apiOptions,
-          propertyId: experienceMinimal.property_id,
-          requestMinimalTCF: false,
-        }),
-      validator: (result) =>
-        isPrivacyExperience(result) &&
-        Object.keys(result).length > 0 &&
-        experienceIsValid(result),
-      onSuccess: (result) => {
-        if (isPrivacyExperience(result)) {
-          // include user preferences from the cookie
-          const userPrefs = buildUserPrefs(result, cookie);
-          const fullExperience: PrivacyExperience = {
-            ...result,
-            ...userPrefs,
-          };
-          window.Fides.experience = {
-            ...window.Fides.experience,
-            ...fullExperience,
-          };
-          window.Fides.experience.minimal_tcf = false;
-          setExperienceFull(fullExperience);
-        }
-      },
-    });
+  const { fetchState: fullExperienceState } = useRetryableFetch<
+    PrivacyExperience | EmptyExperience
+  >({
+    fetcher: () =>
+      fetchExperience({
+        userLocationString: fidesRegionString,
+        fidesApiUrl: options.fidesApiUrl,
+        apiOptions: options.apiOptions,
+        propertyId: experienceMinimal.property_id,
+        requestMinimalTCF: false,
+      }),
+    validator: (result) =>
+      isPrivacyExperience(result) &&
+      Object.keys(result).length > 0 &&
+      experienceIsValid(result),
+    onSuccess: (result) => {
+      if (isPrivacyExperience(result)) {
+        // include user preferences from the cookie
+        const userPrefs = buildUserPrefs(result, cookie);
+        const fullExperience: PrivacyExperience = {
+          ...result,
+          ...userPrefs,
+        };
+        fullExperience.minimal_tcf = false;
+        window.Fides.experience = {
+          ...window.Fides.experience,
+          ...fullExperience,
+        };
+        setFidesGlobal(window.Fides as InitializedFidesGlobal);
+        setExperienceFull(fullExperience);
+      }
+    },
+  });
 
   useEffect(() => {
     if (!!userlocale && bestLocale !== minExperienceLocale) {
@@ -698,8 +704,7 @@ export const TcfOverlay = () => {
           onChange={handleToggleChange}
           activeTabIndex={activeTabIndex}
           onTabChange={handleTabChange}
-          isFullExperienceLoading={isFullExperienceLoading}
-          isFullExperienceError={isFullExperienceError}
+          fullExperienceState={fullExperienceState}
         />
       )}
       renderModalFooter={({ onClose }) => {
@@ -719,7 +724,7 @@ export const TcfOverlay = () => {
               onClose();
             }}
             renderFirstButton={() =>
-              !isFullExperienceError && (
+              fullExperienceState !== FetchState.Error && (
                 <Button
                   buttonType={ButtonType.SECONDARY}
                   label={
@@ -734,8 +739,14 @@ export const TcfOverlay = () => {
                   }}
                   className="fides-save-button"
                   id="fides-save-button"
-                  disabled={!experienceFull && !isFullExperienceError}
-                  loading={!experienceFull && !isFullExperienceError}
+                  disabled={
+                    !experienceFull &&
+                    fullExperienceState === FetchState.Loading
+                  }
+                  loading={
+                    !experienceFull &&
+                    fullExperienceState === FetchState.Loading
+                  }
                 />
               )
             }

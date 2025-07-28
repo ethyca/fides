@@ -31,7 +31,8 @@ export const TCFBannerSupplemental = ({
             </h2>
           </div>
         )}
-      {/* adding tabindex because the content is scrollable so a11y requires it to be focusable */}
+      {/* adding tabindex because the content is scrollable so a11y requires it to be focusable
+          see https://accessibilityinsights.io/info-examples/web/scrollable-region-focusable/ */}
       {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
       <div className="fides-banner__content" tabIndex={0}>
         <ul className="fides-banner__purpose-list">

@@ -5,6 +5,7 @@ import {
   PrivacyExperienceMinimal,
 } from "../../lib/consent-types";
 import { FidesEventDetailsPreference } from "../../lib/events";
+import { FetchState } from "../../lib/hooks";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { PAGE_SIZE } from "../../lib/paging";
 import {
@@ -33,8 +34,7 @@ const TcfTabs = ({
   onChange,
   activeTabIndex,
   onTabChange,
-  isFullExperienceLoading,
-  isFullExperienceError,
+  fullExperienceState,
 }: {
   experience: PrivacyExperience | PrivacyExperienceMinimal;
   customNotices: PrivacyNoticeWithBestTranslation[] | undefined;
@@ -45,8 +45,7 @@ const TcfTabs = ({
   ) => void;
   activeTabIndex: number;
   onTabChange: (tabIndex: number) => void;
-  isFullExperienceLoading: boolean;
-  isFullExperienceError: boolean;
+  fullExperienceState: FetchState;
 }) => {
   const { i18n } = useI18n();
   const handleUpdateDraftState = useCallback(
@@ -66,16 +65,16 @@ const TcfTabs = ({
       type: "purposes",
       content: (
         <div>
-          {!isFullExperienceError && (
+          {fullExperienceState !== FetchState.Error && (
             <InfoBox>{i18n.t("static.tcf.purposes.description")}</InfoBox>
           )}
-          {isFullExperienceError && (
+          {fullExperienceState === FetchState.Error && (
             <TcfLoadingErrorMessage
               generalLabel="purposes and special features for which your data can be processed"
               specificLabel="specific purposes"
             />
           )}
-          {isFullExperienceLoading && (
+          {fullExperienceState === FetchState.Loading && (
             <RecordsListSkeletons
               rows={
                 ((experience as PrivacyExperienceMinimal)
@@ -84,7 +83,7 @@ const TcfTabs = ({
               }
             />
           )}
-          {!isFullExperienceLoading && !isFullExperienceError && (
+          {fullExperienceState === FetchState.Success && (
             <TcfPurposes
               allPurposesConsent={
                 (experience as PrivacyExperience).tcf_purpose_consents
@@ -109,16 +108,16 @@ const TcfTabs = ({
       type: "features",
       content: (
         <div>
-          {!isFullExperienceError && (
+          {fullExperienceState !== FetchState.Error && (
             <InfoBox>{i18n.t("static.tcf.features.description")}</InfoBox>
           )}
-          {isFullExperienceError && (
+          {fullExperienceState === FetchState.Error && (
             <TcfLoadingErrorMessage
               generalLabel="features for which your data can be processed"
               specificLabel="special features"
             />
           )}
-          {isFullExperienceLoading && (
+          {fullExperienceState === FetchState.Loading && (
             <RecordsListSkeletons
               rows={
                 ((experience as PrivacyExperienceMinimal).tcf_feature_ids
@@ -128,7 +127,7 @@ const TcfTabs = ({
               }
             />
           )}
-          {!isFullExperienceLoading && !isFullExperienceError && (
+          {fullExperienceState === FetchState.Success && (
             <TcfFeatures
               allFeatures={(experience as PrivacyExperience).tcf_features}
               allSpecialFeatures={
@@ -146,16 +145,16 @@ const TcfTabs = ({
       type: "vendors",
       content: (
         <div>
-          {!isFullExperienceError && (
+          {fullExperienceState !== FetchState.Error && (
             <InfoBox>{i18n.t("static.tcf.vendors.description")}</InfoBox>
           )}
-          {isFullExperienceError && (
+          {fullExperienceState === FetchState.Error && (
             <TcfLoadingErrorMessage
               generalLabel="vendors who can process your data and the purposes or features of processing they declare"
               specificLabel="each vendor based on the legal basis they assert"
             />
           )}
-          {isFullExperienceLoading && (
+          {fullExperienceState === FetchState.Loading && (
             <RecordsListSkeletons
               rows={Math.min(
                 (experience as PrivacyExperienceMinimal).tcf_vendor_consent_ids
@@ -164,7 +163,7 @@ const TcfTabs = ({
               )}
             />
           )}
-          {!isFullExperienceLoading && !isFullExperienceError && (
+          {fullExperienceState === FetchState.Success && (
             <TcfVendors
               experience={experience as PrivacyExperience}
               enabledIds={enabledIds}
