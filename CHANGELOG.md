@@ -19,7 +19,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.66.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.66.1...main)
 
 ### Added
 - Added the ability to edit more fields for GVL vendors [#6341](https://github.com/ethyca/fides/pull/6341)
@@ -29,6 +29,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added Manual Task Conditional Dependencies table [#6356](https://github.com/ethyca/fides/pull/6356)
 - Added record counts to the privacy request event log entries in the Admin UI [#6374](https://github.com/ethyca/fides/pull/6374)
 - Added traditional Chinese support to FidesJS [#6372](https://github.com/ethyca/fides/pull/6372)
+- Added support for Internal Respondent users to manage their own profile and change password [#6377] (https://github.com/ethyca/fides/pull/6377)
+- Introduce manual finalization step in privacy request lifecycle [#6301](https://github.com/ethyca/fides/pull/6301) https://github.com/ethyca/fides/labels/db-migration
 
 ### Changed
 - Removes `data-testid` attributes from FidesJS production builds [#6351](https://github.com/ethyca/fides/pull/6351)
@@ -36,6 +38,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Increased the limit for dataset configurations from 50 to 1000 on the integration config page [#6367](https://github.com/ethyca/fides/pull/6367)
 - Updates the API so respondents will only be able to see their own user info [#6368](https://github.com/ethyca/fides/pull/6368)
 - Moved masking secrets from Redis to database [#6002](https://github.com/ethyca/fides/pull/6002)
+- Pass `IS_TEST` build parameter to Dockfile for dev builds to preserve dev `data-testid` attributes [#6382] (https://github.com/ethyca/fides/pull/6382)
+- Created new module for ManualTaskAddress and updated ManualTaskGraphTask functionality using unique constraints on ManualTask parent_entity. [#6383](https://github.com/ethyca/fides/pull/6383)
+
 
 ### Developer Experience
 - Migrated Action Center tables to Ant Design [#6349](https://github.com/ethyca/fides/pull/6349)
@@ -43,7 +48,12 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Fixed
 - Fixed an issue where row selections in Action Center tables did not persist across pages [#6357](https://github.com/ethyca/fides/pull/6357)
 - Fixed bug where an error toast appeared in a privacy request page when running Fides OSS [#6364](https://github.com/ethyca/fides/pull/6364)
+- Escaping column names with spaces for BigQuery [#6380](https://github.com/ethyca/fides/pull/6380)
 
+## [2.66.1](https://github.com/ethyca/fides/compare/2.66.0...2.66.1)
+
+### Added
+- Added traditional Chinese support to FidesJS [#6372](https://github.com/ethyca/fides/pull/6372)
 
 ## [2.66.0](https://github.com/ethyca/fides/compare/2.65.2...2.66.0)
 

@@ -138,7 +138,7 @@ export const ManualTasks = () => {
 
     // If it's a root user, it's not going to be in the list of users from the API
     // so we need to add it to the list of users for it to be a valid option in the dropdown
-    const isRootUser = currentUser?.id && !currentUser?.id.startsWith("fid_");
+    const isRootUser = currentUser?.isRootUser;
     if (isRootUser) {
       users.push({
         text: currentUser?.username || currentUser?.id,
@@ -146,7 +146,12 @@ export const ManualTasks = () => {
       });
     }
     return users;
-  }, [filterOptions?.assigned_users, currentUser?.id, currentUser?.username]);
+  }, [
+    filterOptions?.assigned_users,
+    currentUser?.id,
+    currentUser?.username,
+    currentUser?.isRootUser,
+  ]);
 
   const handleTableChange = (
     _pagination: TablePaginationConfig,

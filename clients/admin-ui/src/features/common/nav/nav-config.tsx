@@ -14,6 +14,8 @@ export type NavConfigRoute = {
   requiresOss?: boolean;
   requiresFlag?: FlagNames;
   requiresFidesCloud?: boolean;
+  /** Hide this route from the navigation UI but still allow access */
+  hidden?: boolean;
   /** This route is only available if the user has ANY of these scopes */
   scopes: ScopeRegistryEnum[];
   /** Child routes which will be rendered in the side nav */
@@ -192,6 +194,12 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         ],
       },
       {
+        title: "User Detail",
+        path: routes.USER_DETAIL_ROUTE,
+        hidden: true, // Don't show in nav but allow access
+        scopes: [], // Any authenticated user can access their own profile
+      },
+      {
         title: "Integrations",
         path: routes.INTEGRATION_MANAGEMENT_ROUTE,
         requiresPlus: true,
@@ -328,6 +336,7 @@ export type NavGroupChild = {
   title: string;
   path: string;
   exact?: boolean;
+  hidden?: boolean;
   children: Array<NavGroupChild>;
 };
 
@@ -466,6 +475,7 @@ const configureNavRoute = ({
     title: route.title ?? navGroupTitle,
     path: route.path,
     exact: route.exact,
+    hidden: route.hidden,
     children,
   };
 

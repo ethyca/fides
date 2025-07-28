@@ -50,12 +50,15 @@ def generate_buildx_command(
     image_tags: List[str],
     docker_build_target: str,
     dockerfile_path: str = ".",
+    build_args: Dict[str, str] = None,
 ) -> Tuple[str, ...]:
     """
     Generate the command for building and publishing an image.
 
     See tests for example usage in `test_docker_nox.py`
     """
+    build_args = build_args or {}
+
     buildx_command: Tuple[str, ...] = (
         "docker",
         "buildx",
@@ -65,8 +68,13 @@ def generate_buildx_command(
         f"--target={docker_build_target}",
         "--platform",
         DOCKER_PLATFORMS,
-        dockerfile_path,
     )
+
+    # Add build arguments
+    for arg_name, arg_value in build_args.items():
+        buildx_command += ("--build-arg", f"{arg_name}={arg_value}")
+
+    buildx_command += (dockerfile_path,)
 
     for tag in image_tags:
         buildx_command += ("--tag", f"{tag}{IMAGE_SUFFIX}")
@@ -238,11 +246,17 @@ def push(session: nox.Session, tag: str, app: str) -> None:
     }
 
     app_info_map = {
-        "fides": {"image": IMAGE, "target": "prod", "path": "."},
+        "fides": {
+            "image": IMAGE,
+            "target": "prod",
+            "path": ".",
+            "build_args": {"IS_TEST": "true"} if tag == "dev" else {},
+        },
         "privacy_center": {
             "image": PRIVACY_CENTER_IMAGE,
             "target": "prod_pc",
             "path": ".",
+            "build_args": {"IS_TEST": "true"} if tag == "dev" else {},
         },
         "sample_app": {
             "image": SAMPLE_APP_IMAGE,
@@ -269,6 +283,7 @@ def push(session: nox.Session, tag: str, app: str) -> None:
         image_tags=full_tags,
         docker_build_target=app_info["target"],
         dockerfile_path=app_info["path"],
+        build_args=app_info.get("build_args", {}),
     )
 
     session.run(*buildx_command, external=True)

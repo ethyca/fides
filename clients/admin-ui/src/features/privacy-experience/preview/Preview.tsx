@@ -118,6 +118,7 @@ const Preview = ({
 
     return () => {
       // cleanup fides.js preview when the component unmounts so it doesn't continue to run on other pages
+      setPreviewMode(undefined);
       window.FidesPreview?.cleanup();
     };
   }, [
@@ -411,7 +412,13 @@ const Preview = ({
           setFidesScriptLoaded(true);
         }}
       />
-      <div id={PREVIEW_CONTAINER_ID} key={values.component} />
+      <div
+        id={PREVIEW_CONTAINER_ID}
+        key={values.component}
+        data-a11y-dialog-ignore-focus-trap="" // tells a11y-dialog to ignore focus trap
+        // @ts-expect-error - React 18 doesn't support inert attribute
+        inert=""
+      />
     </Flex>
   );
 };
