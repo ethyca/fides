@@ -69,7 +69,7 @@ def get_manual_task_for_connection_config(
             ConnectionConfig.key == connection_config_key,
             ManualTask.parent_entity_type == "connection_config",
         )
-        .first()
+        .one_or_none()
     )
 
 
