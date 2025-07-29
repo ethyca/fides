@@ -57,6 +57,10 @@ class ExecutionSettings(FidesSettings):
         default=300,
         description="Seconds between polling for interrupted tasks to requeue",
     )
+    async_tasks_status_polling_interval: int = Field(
+        default=3600,
+        description="Seconds between polling for async tasks to requeue",
+    )
     use_dsr_3_0: bool = Field(
         default=False,
         description="Temporary flag to switch to using DSR 3.0 to process your tasks.",
