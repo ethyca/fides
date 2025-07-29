@@ -451,8 +451,8 @@ class TestCancelInterruptedTasksAndErrorPrivacyRequest:
                 # Verify error_processing was called with db
                 mock_error.assert_called_once_with(db)
 
-                # Verify logging
-                mock_logger.warning.assert_called_once()
+                # Verify logging - now uses error level instead of warning
+                mock_logger.error.assert_called_once()
                 mock_logger.info.assert_called_once()
 
     @mock.patch("fides.api.service.privacy_request.request_service.logger")
@@ -473,11 +473,22 @@ class TestCancelInterruptedTasksAndErrorPrivacyRequest:
             ):
                 _cancel_interrupted_tasks_and_error_privacy_request(db, privacy_request)
 
-                # Verify error logging
-                mock_logger.error.assert_called_once()
-                assert "Failed to mark privacy request" in str(
-                    mock_logger.error.call_args[0][0]
+                # Verify error logging - now called twice:
+                # 1. For the default error message
+                # 2. For the error_processing failure
+                assert mock_logger.error.call_count == 2
+
+                # First call: default cancellation message
+                first_call = mock_logger.error.call_args_list[0][0][0]
+                assert (
+                    "Canceling interrupted tasks and marking privacy request"
+                    in first_call
                 )
+
+                # Second call: error_processing failure
+                second_call = mock_logger.error.call_args_list[1][0][0]
+                assert "Failed to mark privacy request" in second_call
+                assert "DB Error" in second_call
 
 
 class TestDetectFalseCompletions:
