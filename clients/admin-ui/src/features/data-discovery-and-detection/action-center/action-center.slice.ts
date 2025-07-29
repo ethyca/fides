@@ -13,9 +13,11 @@ import {
   Schema,
   StagedResourceAPIResponse,
 } from "~/types/api";
-import { PaginationQueryParams } from "~/types/common/PaginationQueryParams";
-import { SearchQueryParams } from "~/types/common/SearchQueryParams";
-import { SortQueryParams } from "~/types/common/SortQueryParams";
+import {
+  PaginationQueryParams,
+  SearchQueryParams,
+  SortQueryParams,
+} from "~/types/query-params";
 
 import { DiscoveredAssetsColumnKeys } from "./constants";
 import { MonitorSummaryPaginatedResponse } from "./types";

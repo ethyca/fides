@@ -1,7 +1,7 @@
 import { baseApi } from "~/features/common/api.slice";
 import { getQueryParamsFromArray } from "~/features/common/utils";
 import { Asset, AssetUpdate, Page_Asset_ } from "~/types/api";
-import { PaginationQueryParams } from "~/types/common/PaginationQueryParams";
+import { PaginationQueryParams } from "~/types/query-params";
 
 interface AddSystemAssetRequest {
   systemKey: string;
