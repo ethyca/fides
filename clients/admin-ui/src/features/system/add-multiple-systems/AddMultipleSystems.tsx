@@ -108,8 +108,9 @@ const EmptyTableNotice = () => (
   </VStack>
 );
 
+const SYSTEM_TEXT = "Vendor";
+
 export const AddMultipleSystems = ({ redirectRoute }: Props) => {
-  const systemText = "Vendor";
   const toast = useToast();
   const { dictionaryService, tcf: isTcfEnabled } = useFeatures();
   const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
@@ -177,20 +178,26 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
           />
         ),
       }),
+      columnHelper.accessor((row) => row.vendor_id, {
+        id: "id",
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => <DefaultHeaderCell value="ID" {...props} />,
+        enableColumnFilter: isTcfEnabled,
+      }),
       columnHelper.accessor((row) => row.name, {
         id: "name",
         cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => <DefaultHeaderCell value={systemText} {...props} />,
+        header: (props) => <DefaultHeaderCell value="Name" {...props} />,
       }),
       columnHelper.accessor((row) => row.vendor_id, {
-        id: "vendor_id",
+        id: "source",
         cell: (props) => <VendorSourceCell value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Source" {...props} />,
         enableColumnFilter: isTcfEnabled,
         filterFn: "arrIncludesSome",
       }),
     ],
-    [allRowsLinkedToSystem, systemText, isTcfEnabled],
+    [allRowsLinkedToSystem, isTcfEnabled],
   );
 
   const tableInstance = useReactTable<MultipleSystemTable>({
@@ -207,7 +214,8 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
     state: {
       globalFilter,
       columnVisibility: {
-        vendor_id: isTcfEnabled,
+        id: isTcfEnabled,
+        source: isTcfEnabled,
       },
     },
     initialState: {
@@ -216,7 +224,9 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
       },
       columnSizing: {
         select: 0,
-        vendor_id: 0,
+        id: 0,
+        source: 0,
+        name: 0,
       },
     },
     enableColumnResizing: true,
@@ -262,7 +272,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
           successToastParams(
             `Successfully added ${
               vendorIds.length
-            } ${systemText.toLocaleLowerCase()}${vendorIds.length > 1 ? "s" : ""}`,
+            } ${SYSTEM_TEXT.toLocaleLowerCase()}${vendorIds.length > 1 ? "s" : ""}`,
           ),
         );
       }
@@ -291,8 +301,8 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
   }
 
   const toolTipText = allRowsLinkedToSystem
-    ? `All ${systemText.toLocaleLowerCase()} have already been added`
-    : `Select a ${systemText.toLocaleLowerCase()} `;
+    ? `All ${SYSTEM_TEXT.toLocaleLowerCase()}s have already been added`
+    : `Select a ${SYSTEM_TEXT.toLocaleLowerCase()} `;
 
   const totalSelectSystemsLength = tableInstance
     .getSelectedRowModel()
@@ -322,7 +332,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
         title="Confirmation"
         message={`You are about to add ${totalSelectSystemsLength.toLocaleString(
           "en",
-        )} ${systemText.toLocaleLowerCase()}${
+        )} ${SYSTEM_TEXT.toLocaleLowerCase()}${
           totalSelectSystemsLength > 1 ? "s" : ""
         }`}
       />
