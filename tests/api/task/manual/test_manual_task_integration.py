@@ -24,7 +24,7 @@ from fides.api.models.manual_task import (
     ManualTaskType,
     StatusType,
 )
-from fides.api.models.policy import ActionType, Policy
+from fides.api.models.policy import ActionType
 from fides.api.models.privacy_request import (
     PrivacyRequest,
     RequestTask,
@@ -41,6 +41,23 @@ from fides.api.task.manual.manual_task_utils import (
     get_manual_task_for_connection_config,
 )
 from fides.api.task.task_resources import TaskResources
+
+
+def get_mock_execution_node(address, connection_key):
+    class MockExecutionNode:
+        def __init__(self, address, connection_key):
+            self.address = CollectionAddress.from_string(address)
+            self.connection_key = connection_key
+            self.input_keys = []  # Add missing input_keys attribute
+            self.incoming_edges = set()  # Add missing incoming_edges attribute
+            self.outgoing_edges = set()  # Add missing outgoing_edges attribute
+            self.collection = None  # Add missing collection attribute
+
+        def build_incoming_field_path_maps(self, group_dependent_fields: bool = False):
+            """Mock implementation that returns empty field path maps"""
+            return {}, {}
+
+    return MockExecutionNode(address, connection_key)
 
 
 class TestManualTaskTraversalNode:
@@ -312,13 +329,9 @@ class TestManualTaskInstanceCreation:
 
 
 @pytest.fixture
-def mock_execution_node():
-    class MockExecutionNode:
-        def __init__(self, address):
-            self.address = CollectionAddress.from_string(address)
-            self.connection_key = "test_connection"
-
-    return MockExecutionNode("test_connection:manual_data")
+def mock_execution_node(connection_with_manual_access_task):
+    connection_config, _, _, _ = connection_with_manual_access_task
+    return get_mock_execution_node(f"{connection_config.key}", connection_config.key)
 
 
 def build_mock_request_task(
@@ -388,12 +401,9 @@ class TestManualTaskGraphTaskInstanceCreation:
         connection_config = manual_setup["connection_config"]
 
         # Create execution node with the actual connection key
-        class MockExecutionNode:
-            def __init__(self, address):
-                self.address = CollectionAddress.from_string(address)
-                self.connection_key = connection_config.key
-
-        mock_execution_node = MockExecutionNode(f"{connection_config.key}:manual_data")
+        mock_execution_node = get_mock_execution_node(
+            f"{connection_config.key}:manual_data", connection_config.key
+        )
 
         task_resources = build_task_resources(
             access_privacy_request, ActionType.access, connection_config.key
@@ -456,12 +466,9 @@ class TestManualTaskGraphTaskInstanceCreation:
         connection_config = manual_setup["connection_config"]
 
         # Create execution node with the actual connection key
-        class MockExecutionNode:
-            def __init__(self, address):
-                self.address = CollectionAddress.from_string(address)
-                self.connection_key = connection_config.key
-
-        mock_execution_node = MockExecutionNode(f"{connection_config.key}:manual_data")
+        mock_execution_node = get_mock_execution_node(
+            f"{connection_config.key}:manual_data", connection_config.key
+        )
 
         task_resources = build_task_resources(
             erasure_privacy_request, ActionType.erasure, connection_config.key
@@ -524,12 +531,9 @@ class TestManualTaskGraphTaskInstanceCreation:
         db.commit()
 
         # Create execution node with the actual connection key
-        class MockExecutionNode:
-            def __init__(self, address):
-                self.address = CollectionAddress.from_string(address)
-                self.connection_key = connection_config.key
-
-        mock_execution_node = MockExecutionNode(f"{connection_config.key}:manual_data")
+        mock_execution_node = get_mock_execution_node(
+            f"{connection_config.key}:manual_data", connection_config.key
+        )
 
         task_resources = build_task_resources(
             access_privacy_request, ActionType.access, connection_config.key
@@ -563,12 +567,9 @@ class TestManualTaskGraphTaskInstanceCreation:
         db.commit()
 
         # Create execution node with the actual connection key
-        class MockExecutionNode:
-            def __init__(self, address):
-                self.address = CollectionAddress.from_string(address)
-                self.connection_key = connection_config.key
-
-        mock_execution_node = MockExecutionNode(f"{connection_config.key}:manual_data")
+        mock_execution_node = get_mock_execution_node(
+            f"{connection_config.key}:manual_data", connection_config.key
+        )
 
         task_resources = build_task_resources(
             erasure_privacy_request, ActionType.erasure, connection_config.key
@@ -602,12 +603,9 @@ class TestManualTaskGraphTaskInstanceCreation:
         connection_config = manual_setup["connection_config"]
 
         # Create execution node with the actual connection key
-        class MockExecutionNode:
-            def __init__(self, address):
-                self.address = CollectionAddress.from_string(address)
-                self.connection_key = connection_config.key
-
-        mock_execution_node = MockExecutionNode(f"{connection_config.key}:manual_data")
+        mock_execution_node = get_mock_execution_node(
+            f"{connection_config.key}:manual_data", connection_config.key
+        )
 
         # Access instance
         access_task_resources = build_task_resources(

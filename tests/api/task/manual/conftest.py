@@ -372,6 +372,63 @@ def _build_request_task(
     # Use the standard manual data collection address
     collection_address = f"{connection_config.key}:manual_data"
 
+    # Get the manual task for this connection config to determine input keys and edges
+    from fides.api.task.manual.manual_task_utils import (
+        get_manual_task_for_connection_config,
+    )
+
+    manual_task = get_manual_task_for_connection_config(db, connection_config.key)
+
+    # Determine input keys and incoming edges based on conditional dependencies
+    input_keys = []
+    incoming_edges = []
+
+    if manual_task:
+        # Get conditional dependency field addresses
+        from fides.api.task.manual.manual_task_utils import (
+            _extract_field_addresses_from_conditional_dependencies,
+        )
+
+        field_addresses = _extract_field_addresses_from_conditional_dependencies(
+            db, manual_task
+        )
+
+        # For testing, we'll create input keys and edges based on the field addresses
+        # In a real scenario, these would be determined by the graph traversal
+        if field_addresses:
+            for field_address in field_addresses:
+                # Parse field address to determine collection and create edges
+                # The incoming edges map from source field addresses to target field addresses
+                # e.g., "postgres_example:customer:profile.age" -> "manual_data:manual_data:profile.age"
+                # e.g., "postgres_example:payment_card:subscription.status" -> "manual_data:manual_data:subscription.status"
+                if "profile.age" in field_address:
+                    input_keys.append("postgres_example:customer")
+                    incoming_edges.append(
+                        [
+                            "postgres_example:customer:profile.age",
+                            f"{connection_config.key}:manual_data:profile.age",
+                        ]
+                    )
+                elif "subscription.status" in field_address:
+                    input_keys.append("postgres_example:payment_card")
+                    incoming_edges.append(
+                        [
+                            "postgres_example:payment_card:subscription.status",
+                            f"{connection_config.key}:manual_data:subscription.status",
+                        ]
+                    )
+                elif "role" in field_address:
+                    input_keys.append("postgres_example:customer")
+                    incoming_edges.append(
+                        [
+                            "postgres_example:customer:role",
+                            f"{connection_config.key}:manual_data:role",
+                        ]
+                    )
+
+            # Remove duplicates and sort for consistency
+            input_keys = sorted(list(set(input_keys)))
+
     return RequestTask.create(
         db=db,
         data={
@@ -394,9 +451,9 @@ def _build_request_task(
             },
             "traversal_details": {
                 "dataset_connection_key": connection_config.key,
-                "incoming_edges": [],
+                "incoming_edges": incoming_edges,
                 "outgoing_edges": [],
-                "input_keys": [],
+                "input_keys": input_keys,
             },
         },
     )
@@ -842,7 +899,7 @@ def create_condition_gt_18(
             "manual_task_id": manual_task.id,
             "condition_type": ManualTaskConditionalDependencyType.leaf,
             "parent_id": parent_id,
-            "field_address": "user.profile.age",
+            "field_address": "profile.age",
             "operator": "gte",
             "value": 18,
             "sort_order": sort_order,
@@ -859,7 +916,7 @@ def create_condition_age_lt_65(
             "manual_task_id": manual_task.id,
             "condition_type": ManualTaskConditionalDependencyType.leaf,
             "parent_id": parent_id,
-            "field_address": "user.profile.age",
+            "field_address": "profile.age",
             "operator": "lt",
             "value": 65,
             "sort_order": sort_order,
@@ -876,7 +933,7 @@ def create_condition_eq_active(
             "manual_task_id": manual_task.id,
             "condition_type": ManualTaskConditionalDependencyType.leaf,
             "parent_id": parent_id,
-            "field_address": "billing.subscription.status",
+            "field_address": "subscription.status",
             "operator": "eq",
             "value": "active",
             "sort_order": sort_order,
@@ -892,7 +949,7 @@ def create_condition_eq_admin(
         data={
             "manual_task_id": manual_task.id,
             "condition_type": ManualTaskConditionalDependencyType.leaf,
-            "field_address": "user.role",
+            "field_address": "role",
             "operator": "eq",
             "value": "admin",
             "sort_order": sort_order,
