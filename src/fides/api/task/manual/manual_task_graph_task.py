@@ -70,20 +70,21 @@ class ManualTaskGraphTask(GraphTask):
             if dependency.field_address
         ]
 
-        # Only extract data if the field exists in processed inputs
+        # Extract data for all conditional dependency field addresses
+        # Include all fields with their values (or None if not found)
         for field_address in field_addresses:
             value = self._extract_value_from_inputs(field_address, *inputs)
 
-            if value:
-                # Convert dot-separated field address to nested dictionary structure
-                nested_data = self._set_nested_value(field_address, value)
-                conditional_data = deep_update(conditional_data, nested_data)
+            # Always include the field in conditional_data, even if value is None
+            # This allows conditional dependencies to evaluate existence, non-existence, and falsy values
+            nested_data = self._set_nested_value(field_address, value)
+            conditional_data = deep_update(conditional_data, nested_data)
 
-                logger.info(
-                    "Extracted conditional dependency data: {} = {}",
-                    field_address,
-                    value,
-                )
+            logger.info(
+                "Extracted conditional dependency data: {} = {}",
+                field_address,
+                value,
+            )
 
         return conditional_data
 

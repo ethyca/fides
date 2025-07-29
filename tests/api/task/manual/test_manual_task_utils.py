@@ -1,7 +1,6 @@
 import uuid
 
 import pytest
-from pytest import param
 from sqlalchemy.orm import Session
 
 from fides.api.graph.config import CollectionAddress

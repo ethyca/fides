@@ -366,7 +366,6 @@ def build_mock_request_task(
 @pytest.fixture
 def build_task_resources(db):
     def _build(privacy_request, action_type, connection_key="test_connection"):
-        from fides.api.task.task_resources import TaskResources
 
         connection_configs = db.query(ConnectionConfig).all()
         mock_request_task = build_mock_request_task(

@@ -1,22 +1,15 @@
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import pytest
-from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import AwaitingAsyncTaskCallback
 from fides.api.models.manual_task import (
-    ManualTask,
     ManualTaskConfigurationType,
     ManualTaskFieldType,
     ManualTaskInstance,
     ManualTaskSubmission,
     StatusType,
 )
-from fides.api.models.manual_task.conditional_dependency import (
-    ManualTaskConditionalDependencyType,
-)
-from fides.api.models.privacy_request import PrivacyRequest
-from fides.api.models.privacy_request.request_task import RequestTask
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
