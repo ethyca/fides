@@ -175,8 +175,8 @@ class RequestTaskNotFound(BaseException):
     """Privacy Request Task Not Found"""
 
 
-class AwaitingAsyncTaskCallback(BaseException):
-    """Request Task is Awaiting Processing - Awaiting Async Task Callback"""
+class AwaitingAsyncTask(BaseException):
+    """Request Task is Awaiting Processing - Awaiting Async Task"""
 
 
 class UpstreamTasksNotReady(BaseException):

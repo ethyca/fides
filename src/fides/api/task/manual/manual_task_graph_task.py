@@ -3,7 +3,7 @@ from typing import Any, Optional
 from loguru import logger
 from sqlalchemy.orm import Session
 
-from fides.api.common_exceptions import AwaitingAsyncTaskCallback
+from fides.api.common_exceptions import AwaitingAsyncTask
 from fides.api.models.attachment import AttachmentType
 from fides.api.models.manual_task import (
     ManualTask,
@@ -35,7 +35,7 @@ class ManualTaskGraphTask(GraphTask):
         Execute manual task logic following the standard GraphTask pattern:
         1. Create ManualTaskInstances if they don't exist
         2. Check for submissions
-        3. Return data if submitted, raise AwaitingAsyncTaskCallback if not
+        3. Return data if submitted, raise AwaitingAsyncTask if not
         """
         db = self.resources.session
         collection_address = self.execution_node.address
@@ -104,7 +104,7 @@ class ManualTaskGraphTask(GraphTask):
             self.resources.request.save(db)
 
         # This should trigger log_awaiting_processing via the @retry decorator
-        raise AwaitingAsyncTaskCallback(
+        raise AwaitingAsyncTask(
             f"Manual task for {connection_key} requires user input"
         )
 
@@ -323,7 +323,7 @@ class ManualTaskGraphTask(GraphTask):
             if self.resources.request.status != PrivacyRequestStatus.requires_input:
                 self.resources.request.status = PrivacyRequestStatus.requires_input
                 self.resources.request.save(db)
-            raise AwaitingAsyncTaskCallback(
+            raise AwaitingAsyncTask(
                 f"Manual erasure task for {connection_key} requires user input"
             )
 
