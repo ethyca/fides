@@ -326,14 +326,14 @@ describe("Action center", () => {
       });
 
       it("maintains hash when clicking on a row", () => {
-        // no hash
+        // no hash (default tab)
         cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}`);
 
         cy.getAntTableRow("[undefined]").within(() => {
           cy.getByTestId("system-name-link").should(
             "have.attr",
             "href",
-            `${ACTION_CENTER_ROUTE}/${webMonitorKey}/[undefined]`,
+            `${ACTION_CENTER_ROUTE}/${webMonitorKey}/[undefined]#attention-required`,
           );
         });
 

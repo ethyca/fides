@@ -148,7 +148,7 @@ class BaseTraversal:
             self.edges_by_node[start_field_address.collection_address()].append(edge)
 
         # Ensure manual_task collections execute right after ROOT
-        from fides.api.task.manual.manual_task_utils import ManualTaskAddress
+        from fides.api.task.manual.manual_task_address import ManualTaskAddress
 
         for addr in self.traversal_node_dict.keys():
             if ManualTaskAddress.is_manual_task_address(addr):
