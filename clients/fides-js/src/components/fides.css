@@ -18,6 +18,7 @@
   --fides-overlay-background-error-color: #f7c2c2;
   --fides-overlay-skeleton-gradient-from-color: rgba(0, 0, 0, 0.06);
   --fides-overlay-skeleton-gradient-to-color: rgba(0, 0, 0, 0.15);
+  --fides-overlay-inactive-font-color: #a0aec0;
   /* Buttons */
   --fides-overlay-primary-button-background-color: var(
     --fides-overlay-primary-color
@@ -36,6 +37,7 @@
   --fides-overlay-secondary-button-border-color: var(
     --fides-overlay-primary-color
   );
+  --fides-overlay-secondary-button-border-color-disabled: #a0aec0;
   /* Text */
   --fides-overlay-title-font-color: var(--fides-overlay-font-color);
   --fides-overlay-body-font-color: var(--fides-overlay-font-color);
@@ -44,7 +46,6 @@
   /* Switches */
   --fides-overlay-primary-active-color: var(--fides-overlay-primary-color);
   --fides-overlay-inactive-color: #e2e8f0;
-  --fides-overlay-inactive-font-color: #a0aec0;
   --fides-overlay-disabled-color: #e1e7ee;
   /* Dividers */
   --fides-overlay-row-divider-color: #e2e8f0;
@@ -309,6 +310,10 @@ button.fides-banner-button.fides-banner-button-secondary[disabled] {
 
 button.fides-banner-button[disabled] {
   color: var(--fides-overlay-inactive-font-color);
+}
+
+button.fides-banner-button.fides-banner-button-secondary[disabled] {
+  border-color: var(--fides-overlay-secondary-button-border-color-disabled);
 }
 
 button.fides-banner-button.fides-banner-button-tertiary {
