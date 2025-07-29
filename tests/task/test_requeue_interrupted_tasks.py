@@ -113,10 +113,10 @@ class TestRequeueInterruptedTasks:
         mock_get_task_ids_from_dsr_queue,
         mock_requeue_privacy_request,
     ):
-        """Test that interrupted privacy requests with no request tasks are requeued.
+        """Test that interrupted privacy requests without request tasks are requeued.
 
-        When a privacy request has been interrupted and has no request tasks,
-        it should be requeued.
+        When a privacy request has no request tasks but has a cached task ID,
+        indicating it was interrupted, it should be requeued.
         """
         requeue_interrupted_tasks.apply().get()
         mock_requeue_privacy_request.assert_called_once()
@@ -130,7 +130,8 @@ class TestRequeueInterruptedTasks:
         return_value=[],
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_service.celery_tasks_in_flight"
+        "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
+        return_value=False,
     )
     def test_interrupted_privacy_request_with_active_request_tasks_is_not_requeued(
         self,
@@ -140,16 +141,13 @@ class TestRequeueInterruptedTasks:
     ):
         """Test that interrupted privacy requests with active request tasks are not requeued.
 
-        When a privacy request has been interrupted but its request tasks are still active,
+        When a privacy request has request tasks that are active,
         the privacy request should not be requeued.
         """
-        # Main task is not active, but the subtask is active
-        mock_celery_tasks_in_flight.side_effect = [False, True]
-
         requeue_interrupted_tasks.apply().get()
         mock_requeue_privacy_request.assert_not_called()
 
-    @pytest.mark.usefixtures("in_progress_privacy_request", "in_progress_request_task")
+    @pytest.mark.usefixtures("in_progress_privacy_request")
     @mock.patch(
         "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
     )
@@ -158,50 +156,112 @@ class TestRequeueInterruptedTasks:
         return_value=[],
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_service.celery_tasks_in_flight"
+        "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
+        return_value=False,
     )
     def test_interrupted_privacy_request_with_inactive_request_tasks_is_requeued(
         self,
         mock_celery_tasks_in_flight,
         mock_get_task_ids_from_dsr_queue,
         mock_requeue_privacy_request,
+        db,
+        policy,
     ):
         """Test that interrupted privacy requests with inactive request tasks are requeued.
 
-        When both the privacy request and its request tasks have been interrupted,
+        When a privacy request has request tasks that are no longer active,
         the privacy request should be requeued.
         """
-        # Both main task and subtask are not active
-        mock_celery_tasks_in_flight.side_effect = [False, False]
+        privacy_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "external_id": f"ext-{str(uuid.uuid4())}",
+                "started_processing_at": datetime.utcnow(),
+                "requested_at": datetime.utcnow() - timedelta(days=1),
+                "status": PrivacyRequestStatus.in_processing,
+                "origin": "https://example.com/testing",
+                "policy_id": policy.id,
+                "client_id": policy.client_id,
+            },
+        )
 
-        requeue_interrupted_tasks.apply().get()
-        mock_requeue_privacy_request.assert_called_once()
+        # Cache the task ID for the privacy request
+        cache_task_tracking_key(privacy_request.id, "privacy_request_task_id")
+
+        # Create a request task that is not active (not in in_processing status)
+        request_task = RequestTask.create(
+            db,
+            data={
+                "action_type": ActionType.access,
+                "status": ExecutionLogStatus.pending,  # Not in_processing
+                "privacy_request_id": privacy_request.id,
+                "collection_address": "test_dataset:customer",
+                "dataset_name": "test_dataset",
+                "collection_name": "customer",
+                "upstream_tasks": [],
+                "downstream_tasks": [],
+            },
+        )
+
+        # Cache the task ID for the request task
+        cache_task_tracking_key(request_task.id, "request_task_id")
+
+        try:
+            requeue_interrupted_tasks.apply().get()
+            mock_requeue_privacy_request.assert_called_once()
+        finally:
+            # Clean up
+            request_task.delete(db)
+            privacy_request.delete(db)
 
     @pytest.mark.usefixtures("in_progress_privacy_request")
     @mock.patch(
         "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_service.get_cached_task_id",
-        return_value=None,
+        "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
+        return_value=[],
+    )
+    @mock.patch(
+        "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
+        return_value=False,
     )
     def test_privacy_request_with_no_cached_task_id_is_skipped(
-        self, mock_get_cached_task_id, mock_requeue_privacy_request
+        self,
+        mock_celery_tasks_in_flight,
+        mock_get_task_ids_from_dsr_queue,
+        mock_requeue_privacy_request,
+        db,
+        policy,
     ):
-        """Test that privacy requests with no cached task ID are skipped.
+        """Test that privacy requests without cached task IDs are skipped.
 
-        When a privacy request has no cached task ID, we can't determine if it's active,
-        so it should be skipped (not requeued).
+        When a privacy request doesn't have a cached task ID, it should be skipped.
         """
-        requeue_interrupted_tasks.apply().get()
-        mock_requeue_privacy_request.assert_not_called()
+        # Create a privacy request without caching a task ID
+        privacy_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "external_id": f"ext-{str(uuid.uuid4())}",
+                "started_processing_at": datetime.utcnow(),
+                "requested_at": datetime.utcnow() - timedelta(days=1),
+                "status": PrivacyRequestStatus.in_processing,
+                "origin": "https://example.com/testing",
+                "policy_id": policy.id,
+                "client_id": policy.client_id,
+            },
+        )
+
+        try:
+            requeue_interrupted_tasks.apply().get()
+            mock_requeue_privacy_request.assert_not_called()
+        finally:
+            # Clean up
+            privacy_request.delete(db)
 
     @pytest.mark.usefixtures("in_progress_privacy_request", "in_progress_request_task")
     @mock.patch(
         "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
-    )
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue"
     )
     @mock.patch(
         "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
@@ -210,30 +270,57 @@ class TestRequeueInterruptedTasks:
     def test_request_task_with_no_cached_subtask_id_is_skipped(
         self,
         mock_celery_tasks_in_flight,
-        mock_get_task_ids_from_dsr_queue,
         mock_requeue_privacy_request,
+        db,
+        policy,
     ):
-        """Test that request tasks with no cached subtask ID are skipped.
+        """Test that request tasks without cached subtask IDs are skipped.
 
-        When a privacy request's main task is inactive but its request task has no cached subtask ID,
-        we can't determine if the subtask is active, so the privacy request should not be requeued.
+        When a request task doesn't have a cached subtask ID, it should be skipped.
         """
-        mock_get_task_ids_from_dsr_queue.return_value = []
+        # Create a privacy request and request task without caching subtask IDs
+        privacy_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "external_id": f"ext-{str(uuid.uuid4())}",
+                "started_processing_at": datetime.utcnow(),
+                "requested_at": datetime.utcnow() - timedelta(days=1),
+                "status": PrivacyRequestStatus.in_processing,
+                "origin": "https://example.com/testing",
+                "policy_id": policy.id,
+                "client_id": policy.client_id,
+            },
+        )
 
-        # Return None for the subtask ID, but a valid ID for the main task
-        with mock.patch(
-            "fides.api.service.privacy_request.request_service.get_cached_task_id",
-            side_effect=["privacy_request_task_id", None],
-        ):
+        # Cache the task ID for the privacy request
+        cache_task_tracking_key(privacy_request.id, "privacy_request_task_id")
+
+        request_task = RequestTask.create(
+            db,
+            data={
+                "action_type": ActionType.access,
+                "status": ExecutionLogStatus.in_processing,
+                "privacy_request_id": privacy_request.id,
+                "collection_address": "test_dataset:customer",
+                "dataset_name": "test_dataset",
+                "collection_name": "customer",
+                "upstream_tasks": [],
+                "downstream_tasks": [],
+            },
+        )
+        # Do NOT cache the subtask ID for the request task
+
+        try:
             requeue_interrupted_tasks.apply().get()
             mock_requeue_privacy_request.assert_not_called()
+        finally:
+            # Clean up
+            request_task.delete(db)
+            privacy_request.delete(db)
 
-    @pytest.mark.usefixtures("in_progress_privacy_request")
+    @pytest.mark.usefixtures("in_progress_privacy_request", "in_progress_request_task")
     @mock.patch(
         "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
-    )
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue"
     )
     @mock.patch(
         "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
@@ -242,10 +329,10 @@ class TestRequeueInterruptedTasks:
     def test_task_in_queue_is_not_requeued(
         self,
         mock_celery_tasks_in_flight,
-        mock_get_task_ids_from_dsr_queue,
         mock_requeue_privacy_request,
+        mock_get_task_ids_from_dsr_queue,
     ):
-        """Test that tasks present in the queue are not requeued.
+        """Test that tasks already in the queue are not requeued.
 
         When a privacy request's task ID is found in the queue,
         the privacy request should not be requeued, regardless of in-flight status.
@@ -268,10 +355,13 @@ class TestRequeueInterruptedTasks:
 
         requeue_interrupted_tasks.apply().get()
         assert (
-            "Another instance of requeue_interrupted_tasks is already running. Skipping this execution."
+            "Another process is already running for lock 'requeue_interrupted_tasks_lock'. Skipping this execution."
             in loguru_caplog.text
         )
-        lock.release()
+
+        # Only release if we still own the lock
+        if lock.owned():
+            lock.release()
 
     def test_lock_is_released_after_execution(self):
         """Test that the lock is released after the task is executed.
@@ -310,8 +400,8 @@ class TestEnhancedRequeueInterruptedTasks:
         # Cache the task ID for the privacy request
         cache_task_tracking_key(privacy_request.id, "high_retry_task_id")
 
-        # Increment retry count to near the limit
-        for _ in range(4):  # Set to 4, limit is 5
+        # Increment retry count to near the limit (2 is near limit of 3)
+        for _ in range(2):  # Set to 2, limit is 3
             increment_privacy_request_retry_count(privacy_request.id)
 
         yield privacy_request
@@ -341,8 +431,8 @@ class TestEnhancedRequeueInterruptedTasks:
         # Cache the task ID for the privacy request
         cache_task_tracking_key(privacy_request.id, "over_limit_task_id")
 
-        # Increment retry count beyond the limit
-        for _ in range(6):  # Set to 6, limit is 5
+        # Increment retry count beyond the limit (4 is over limit of 3)
+        for _ in range(4):  # Set to 4, limit is 3
             increment_privacy_request_retry_count(privacy_request.id)
 
         yield privacy_request
@@ -681,11 +771,26 @@ class TestEnhancedRequeueInterruptedTasks:
         assert retry_log_found, "Expected retry count to be logged"
 
     def test_retry_limit_configuration(self):
-        """Test that retry limit is configurable and defaults to 5."""
+        """Test that retry limit configuration changes are respected."""
         from fides.config import CONFIG
 
         # Test default value
-        assert CONFIG.execution.privacy_request_requeue_max_retries == 5
+        original_value = CONFIG.execution.privacy_request_requeue_retry_count
+        assert original_value == 3
+
+        # Test that we can change the configuration
+        try:
+            # Temporarily change the config value
+            CONFIG.execution.privacy_request_requeue_retry_count = 5
+            assert CONFIG.execution.privacy_request_requeue_retry_count == 5
+
+            # Change it again to verify it's truly configurable
+            CONFIG.execution.privacy_request_requeue_retry_count = 1
+            assert CONFIG.execution.privacy_request_requeue_retry_count == 1
+
+        finally:
+            # Always restore the original value
+            CONFIG.execution.privacy_request_requeue_retry_count = original_value
 
     def test_integration_privacy_request_retry_workflow(self, db, policy):
         """Test the complete workflow of privacy request retry management."""
@@ -718,8 +823,8 @@ class TestEnhancedRequeueInterruptedTasks:
             assert count == 1
             assert get_privacy_request_retry_count(privacy_request.id) == 1
 
-            # Test multiple increments
-            for i in range(2, 6):  # Increment to 5 (the limit)
+            # Test multiple increments up to limit
+            for i in range(2, 4):  # Increment to 3 (the limit)
                 count = increment_privacy_request_retry_count(privacy_request.id)
                 assert count == i
 

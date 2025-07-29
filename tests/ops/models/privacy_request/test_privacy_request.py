@@ -1743,10 +1743,14 @@ class TestCancelCeleryTasks:
                 assert mock_logger.info.call_count == 3
 
                 # Verify logging messages contain task IDs and privacy request ID
-                info_calls = [call.args[0] for call in mock_logger.info.call_args_list]
+                info_calls = mock_logger.info.call_args_list
                 for call in info_calls:
-                    assert "Revoking task" in call
-                    assert str(privacy_request.id) in call
+                    # call.args[0] is the format string, call.args[1:] are the arguments
+                    format_string = call.args[0]
+                    args = call.args[1:]
+                    assert "Revoking task" in format_string
+                    # Check that privacy request ID is in the arguments
+                    assert str(privacy_request.id) in [str(arg) for arg in args]
 
     @pytest.mark.unit
     def test_get_request_task_celery_task_ids(self, privacy_request_with_cached_tasks):
