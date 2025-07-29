@@ -43,6 +43,7 @@ from fides.config import CONFIG
 PRIVACY_REQUEST_STATUS_CHANGE_POLL = "privacy_request_status_change_poll"
 DSR_DATA_REMOVAL = "dsr_data_removal"
 INTERRUPTED_TASK_REQUEUE_POLL = "interrupted_task_requeue_poll"
+ASYNC_TASKS_STATUS_POLLING = "async_tasks_status_polling"
 
 
 def build_required_privacy_request_kwargs(
@@ -352,6 +353,27 @@ def initiate_interrupted_task_requeue_poll() -> None:
         seconds=CONFIG.execution.interrupted_task_requeue_interval,
     )
 
+def initiate_async_tasks_status_polling() -> None:
+    """Initiates scheduler to check for and requeue pending polling async tasks"""
+
+    if CONFIG.test_mode or not CONFIG.execution.use_dsr_3_0:
+        return
+
+    assert (
+        scheduler.running
+    ), "Scheduler is not running! Cannot add async tasks status polling job."
+
+    logger.info("Initiating scheduler for async tasks status polling")
+    scheduler.add_job(
+        func=poll_async_tasks_status, # TODO: Finish this function
+        trigger="interval",
+        kwargs={},
+        id=ASYNC_TASKS_STATUS_POLLING,
+        coalesce=True,
+        replace_existing=True,
+        seconds=CONFIG.execution.async_tasks_status_polling_interval, # TODO: Implement this interval
+    )
+
 
 def get_cached_task_id(entity_id: str) -> Optional[str]:
     """Gets the cached task ID for a privacy request or request task by ID.
@@ -657,3 +679,21 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                 # Requeue the privacy request if needed
                 if should_requeue:
                     _handle_privacy_request_requeue(db, privacy_request)
+
+
+@celery_app.task(base=DatabaseTask, bind=True)
+def poll_async_tasks_status(self: DatabaseTask) -> None:
+    """
+    Poll the status of async tasks that are awaiting processing.
+    """
+    with self.get_new_session() as db:
+        logger.debug("Polling for async tasks status")
+
+        # Get all async tasks that are awaiting processing and are from polling async tasks
+        async_tasks = db.query(RequestTask).filter(RequestTask.status == ExecutionLogStatus.awaiting_processing).all()
+        # TODO: Model update, so we can actually filter by async_config.strategy == polling
+
+        # For each async task, poll the status of the task
+        for async_task in async_tasks:
+            # TODO: Implement the polling logic
+            pass
