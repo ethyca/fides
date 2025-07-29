@@ -23,25 +23,16 @@ import {
 } from "~/types/api";
 
 import { useGetWebsiteMonitorResourceFiltersQuery } from "../action-center.slice";
-import { DiscoveryStatusDisplayNames } from "../constants";
+import {
+  DiscoveredAssetsColumnKeys,
+  DiscoveryStatusDisplayNames,
+} from "../constants";
 import { DiscoveryStatusIcon } from "../DiscoveryStatusIcon";
 import { DiscoveredAssetActionsCell } from "../tables/cells/DiscoveredAssetActionsCell";
 import DiscoveredAssetDataUseCell from "../tables/cells/DiscoveredAssetDataUseCell";
 import { DiscoveryStatusBadgeCell } from "../tables/cells/DiscoveryStatusBadgeCell";
 import { SystemCell } from "../tables/cells/SystemCell";
 import { ActionCenterTabHash } from "./useActionCenterTabs";
-
-export enum DiscoveredAssetsColumnKeys {
-  NAME = "name",
-  RESOURCE_TYPE = "resource_type",
-  SYSTEM = "system",
-  DATA_USES = "data_uses",
-  LOCATIONS = "locations",
-  DOMAIN = "domain",
-  PAGE = "page",
-  CONSENT_AGGREGATED = "consent_aggregated",
-  ACTIONS = "actions",
-}
 
 export const useDiscoveredAssetsColumns = ({
   readonly,

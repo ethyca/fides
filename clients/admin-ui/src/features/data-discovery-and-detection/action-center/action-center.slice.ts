@@ -17,7 +17,7 @@ import { PaginationQueryParams } from "~/types/common/PaginationQueryParams";
 import { SearchQueryParams } from "~/types/common/SearchQueryParams";
 import { SortQueryParams } from "~/types/common/SortQueryParams";
 
-import { DiscoveredAssetsColumnKeys } from "./hooks/useDiscoveredAssetsColumns";
+import { DiscoveredAssetsColumnKeys } from "./constants";
 import { MonitorSummaryPaginatedResponse } from "./types";
 
 interface MonitorResultSystemQueryParams {
