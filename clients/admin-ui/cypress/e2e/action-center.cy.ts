@@ -307,7 +307,7 @@ describe("Action center", () => {
       });
 
       it("maintains hash when clicking on a row", () => {
-        // no hash
+        // no hash (default tab)
         cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}`);
         cy.getByTestId(`row-${rowIds[0]}-col-system_name`).click();
         cy.location("hash").should("eq", "");
