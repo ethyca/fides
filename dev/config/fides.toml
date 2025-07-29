@@ -39,7 +39,7 @@ task_always_eager = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "dde98a1b8ef2cd486d2ee3809fd0a906" # string
+analytics_id = "8101c247ab43bcd2d3d3c561dc81dbc2" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -199,6 +199,10 @@ interrupted_task_requeue_interval = 300 # integer
 
 # Temporary flag to switch to using DSR 3.0 to process your tasks.
 use_dsr_3_0 = false # boolean
+
+# Whether erasure requests require an additional finalization step
+# after all collections have been executed.
+erasure_request_finalization_required = false # boolean
 
 # Whether fuzzy search is enabled for privacy request lookups.
 fuzzy_search_enabled = true # boolean

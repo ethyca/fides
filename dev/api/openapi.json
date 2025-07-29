@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.66.2"
+    "version": "2.66.3b0.post0.dev2"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -4681,7 +4681,7 @@
                 "items": {
                   "$ref": "#/components/schemas/DatasetConfigCtlDataset"
                 },
-                "maxItems": 50,
+                "maxItems": 1000,
                 "title": "Dataset Pairs"
               }
             }
@@ -4744,7 +4744,7 @@
                 "items": {
                   "$ref": "#/components/schemas/DatasetConfigCtlDataset"
                 },
-                "maxItems": 50,
+                "maxItems": 1000,
                 "title": "Dataset Pairs"
               }
             }
@@ -4814,7 +4814,7 @@
             "required": false,
             "schema": {
               "type": "integer",
-              "maximum": 100,
+              "maximum": 1000,
               "minimum": 1,
               "default": 50,
               "title": "Size"
@@ -4880,7 +4880,7 @@
                 "items": {
                   "$ref": "#/components/schemas/Dataset"
                 },
-                "maxItems": 50,
+                "maxItems": 1000,
                 "title": "Datasets"
               }
             }
@@ -9437,6 +9437,56 @@
         }
       }
     },
+    "/api/v1/privacy-request/{privacy_request_id}/finalize": {
+      "post": {
+        "tags": [
+          "Privacy Requests"
+        ],
+        "summary": "Finalize Privacy Request",
+        "description": "Finalizes a privacy request, moving it from the 'requires_finalization' state to 'complete'.\nThis is done by re-queueing the request, which will then hit the finalization logic in the\nrequest runner service. This logic marks the privacy request as complete\nand sends out any configured messaging to the user.",
+        "operationId": "finalize_privacy_request_api_v1_privacy_request__privacy_request_id__finalize_post",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-request:review"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "privacy_request_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Privacy Request Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrivacyRequestResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/privacy-request/{privacy_request_id}/tasks": {
       "get": {
         "tags": [
@@ -12073,13 +12123,11 @@
           "Users"
         ],
         "summary": "Get User",
-        "description": "Returns a User based on an Id",
+        "description": "Returns a User based on an Id. Users with USER_READ_OWN scope can only access their own data.",
         "operationId": "get_user_api_v1_user__user_id__get",
         "security": [
           {
-            "OAuth2ClientCredentialsBearer": [
-              "user:read"
-            ]
+            "OAuth2ClientCredentialsBearer": []
           }
         ],
         "parameters": [
@@ -12533,13 +12581,11 @@
           "Users"
         ],
         "summary": "Get Users",
-        "description": "Returns a paginated list of all users",
+        "description": "Returns a paginated list of users. Users with USER_READ_OWN scope only see their own data.",
         "operationId": "get_users_api_v1_user_get",
         "security": [
           {
-            "OAuth2ClientCredentialsBearer": [
-              "user:read"
-            ]
+            "OAuth2ClientCredentialsBearer": []
           }
         ],
         "parameters": [
@@ -16393,7 +16439,8 @@
           "consent",
           "finalize_consent",
           "email_post_send",
-          "post_webhooks"
+          "post_webhooks",
+          "finalization"
         ],
         "title": "CurrentStep"
       },
@@ -18506,6 +18553,16 @@
               }
             ],
             "title": "Require Manual Request Approval"
+          },
+          "sql_dry_run": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SqlDryRunMode"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,
@@ -23583,6 +23640,29 @@
               }
             ],
             "title": "Deleted By"
+          },
+          "finalized_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finalized At"
+          },
+          "finalized_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finalized By"
           }
         },
         "type": "object",
@@ -23656,6 +23736,7 @@
           "complete",
           "paused",
           "awaiting_email_send",
+          "requires_manual_finalization",
           "canceled",
           "error"
         ],
@@ -23955,6 +24036,29 @@
               }
             ],
             "title": "Deleted By"
+          },
+          "finalized_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finalized At"
+          },
+          "finalized_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finalized By"
           },
           "results": {
             "additionalProperties": {
@@ -25609,6 +25713,7 @@
           "user:update",
           "user:delete",
           "user:read",
+          "user:read-own",
           "user:password-reset",
           "user-permission:create",
           "user-permission:update",
@@ -25857,6 +25962,16 @@
         ],
         "title": "SpecialCategoryLegalBasisEnum",
         "description": "The model for the legal basis for processing special categories of personal data\non privacy declarations\n\nBased upon article 9 of the GDPR"
+      },
+      "SqlDryRunMode": {
+        "type": "string",
+        "enum": [
+          "none",
+          "access",
+          "erasure"
+        ],
+        "title": "SqlDryRunMode",
+        "description": "SQL dry run mode for controlling execution of SQL statements in privacy requests"
       },
       "StatusEnum": {
         "type": "string",
