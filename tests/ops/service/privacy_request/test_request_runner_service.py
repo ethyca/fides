@@ -1961,6 +1961,12 @@ class TestAsyncCallbacks:
         )
         db.refresh(pr)
 
+        if dsr_version == "use_dsr_2_0":
+            # Async Access Requests not supported for DSR 2.0 - the given
+            # node cannot be paused
+            assert pr.status == PrivacyRequestStatus.complete
+            return
+
         if dsr_version == "use_dsr_3_0":
             assert pr.status == PrivacyRequestStatus.in_processing
 
@@ -1995,10 +2001,6 @@ class TestAsyncCallbacks:
                     "saas_async_config:user": [{"state": "VA", "id": 1}]
                 }
             }
-        else:
-            # Async Access Requests not supported for DSR 2.0 - the given
-            # node cannot be paused
-            assert pr.status == PrivacyRequestStatus.complete
 
     @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     @pytest.mark.parametrize(
@@ -2029,6 +2031,12 @@ class TestAsyncCallbacks:
             {"identity": {"email": "customer-1@example.com"}},
             task_timeout=120,
         )
+        if dsr_version == "use_dsr_2_0":
+            # Async Access Requests not supported for DSR 2.0 - the given
+            # node cannot be paused
+            db.refresh(pr)
+            assert pr.status == PrivacyRequestStatus.complete
+            return
 
         if dsr_version == "use_dsr_3_0":
             # Access async task fired first
@@ -2063,11 +2071,74 @@ class TestAsyncCallbacks:
             assert pr.erasure_tasks[1].rows_masked == 2
             assert pr.erasure_tasks[1].status == ExecutionLogStatus.complete
 
-        else:
-            # Async Erasure Requests not supported for DSR 2.0 - the given
+
+    # TODO: Add Fixture class for async mockups
+    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
+    )
+    def test_async_polling_access_request(
+        self,
+        mock_send_polling,
+        saas_example_async_dataset_config,
+        saas_async_example_connection_config: Dict[str, str],
+        db,
+        policy,
+        dsr_version,
+        request,
+        run_privacy_request_task,
+    ):
+        """Demonstrate end-to-end support for tasks expecting async polling for DSR 3.0"""
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+        mock_send_polling().json.return_value = {"id": "123"}
+        pr = get_privacy_request_results(
+            db,
+            policy,
+            run_privacy_request_task,
+            {"identity": {"email": "customer-1@example.com"}},
+            task_timeout=120,
+        )
+        db.refresh(pr)
+
+        if dsr_version == "use_dsr_2_0":
+            # Async Access Requests not supported for DSR 2.0 - the given
             # node cannot be paused
+            assert pr.status == PrivacyRequestStatus.complete
+            return
+
+        if dsr_version == "use_dsr_3_0":
+            request_tasks = pr.access_tasks
+            assert request_tasks[0].status == ExecutionLogStatus.complete
+            # TODO: Assertions could be made a common method
+            # SaaS Request was marked as needing async results, so the Request
+            # Task was put in a paused state
+            assert request_tasks[1].status == ExecutionLogStatus.awaiting_processing
+            assert request_tasks[1].collection_address == "saas_async_config:user"
+
+            # Terminator task is downstream so it is still in a pending state
+            assert request_tasks[2].status == ExecutionLogStatus.pending
+
+            # TODO: Assert that the queue contains the polling job
+
+            # TODO: Set up polling mockup with some data response
+
+            # TODO: Manually trigger the polling task
+
+            # TODO: Clean and adapt code from above
             db.refresh(pr)
             assert pr.status == PrivacyRequestStatus.complete
+            assert pr.get_raw_access_results() == {
+                "saas_async_config:user": [{"id": 1, "user_id": "abcde", "state": "VA"}]
+            }
+            # User data supplied async was filtered before being returned to the end user
+            assert pr.get_filtered_final_upload() == {
+                "access_request_rule": {
+                    "saas_async_config:user": [{"state": "VA", "id": 1}]
+                }
+            }
+            # TODO: Assert that the queue is empty
+
 
 
 class TestDatasetReferenceValidation:
