@@ -1,5 +1,6 @@
 import {
   buildArrayQueryParams,
+  convertToAntFilters,
   getFileNameFromContentDisposition,
   getQueryParamsFromArray,
 } from "~/features/common/utils";
@@ -105,6 +106,83 @@ describe("common utils", () => {
         single_value: ["only_one"],
       });
       expect(result.toString()).toBe("single_value=only_one");
+    });
+  });
+
+  describe(convertToAntFilters.name, () => {
+    it("should return undefined when values is undefined", () => {
+      expect(convertToAntFilters(undefined)).toBeUndefined();
+    });
+
+    it("should return undefined when values is an empty array", () => {
+      expect(convertToAntFilters([])).toBeUndefined();
+    });
+
+    it("should convert array of strings to Ant Design filter objects", () => {
+      const values = ["option1", "option2", "option3"];
+      const result = convertToAntFilters(values);
+
+      expect(result).toEqual([
+        { text: "option1", value: "option1" },
+        { text: "option2", value: "option2" },
+        { text: "option3", value: "option3" },
+      ]);
+    });
+
+    it("should handle single value array", () => {
+      const values = ["single"];
+      const result = convertToAntFilters(values);
+
+      expect(result).toEqual([{ text: "single", value: "single" }]);
+    });
+
+    it("should use custom getDisplayName function when provided", () => {
+      const values = ["option1", "option2"];
+      const getDisplayName = (value: string) =>
+        `Display: ${value.toUpperCase()}`;
+      const result = convertToAntFilters(values, getDisplayName);
+
+      expect(result).toEqual([
+        { text: "Display: OPTION1", value: "option1" },
+        { text: "Display: OPTION2", value: "option2" },
+      ]);
+    });
+
+    it("should handle special characters in values", () => {
+      const values = [
+        "option with spaces",
+        "option&with&ampersands",
+        "option=with=equals",
+      ];
+      const result = convertToAntFilters(values);
+
+      expect(result).toEqual([
+        { text: "option with spaces", value: "option with spaces" },
+        { text: "option&with&ampersands", value: "option&with&ampersands" },
+        { text: "option=with=equals", value: "option=with=equals" },
+      ]);
+    });
+
+    it("should work with getDisplayName that returns the same value", () => {
+      const values = ["test1", "test2"];
+      const getDisplayName = (value: string) => value;
+      const result = convertToAntFilters(values, getDisplayName);
+
+      expect(result).toEqual([
+        { text: "test1", value: "test1" },
+        { text: "test2", value: "test2" },
+      ]);
+    });
+
+    it("should handle empty strings in values array", () => {
+      const values = ["", "non-empty", ""];
+      const result = convertToAntFilters(values);
+
+      expect(result).toEqual([
+        { text: "", value: "" },
+        { text: "non-empty", value: "non-empty" },
+        { text: "", value: "" },
+      ]);
     });
   });
 });
