@@ -191,7 +191,7 @@ describe("Action center system aggregate results", () => {
       cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}#attention-required`);
       cy.location("hash").should("eq", "#attention-required");
 
-      cy.getAntTab("Recent activity").click({ force: true });
+      cy.getAntTab("Recent activity").click();
       cy.location("hash").should("eq", "#recent-activity");
 
       // "recent activity" tab should be read-only
@@ -203,9 +203,9 @@ describe("Action center system aggregate results", () => {
           cy.contains("Actions").should("not.exist");
         });
 
-      // eslint-disable-next-line cypress/no-unnecessary-waiting
-      cy.wait(300); // route is not immediately updated
-      cy.getAntTab("Ignored").click({ force: true });
+      cy.get(".ant-spin-spinning").should("not.exist");
+
+      cy.getAntTab("Ignored").click();
       cy.location("hash").should("eq", "#ignored");
 
       // "ignore" option should not show in bulk actions menu
@@ -237,9 +237,6 @@ describe("Action center system aggregate results", () => {
         );
       });
 
-      // eslint-disable-next-line cypress/no-unnecessary-waiting
-      cy.wait(500); // route is not immediately updated
-
       cy.get("[role='tab']").contains("Ignored").click();
       cy.getAntTableRow("[undefined]").within(() => {
         cy.getByTestId("system-name-link").should(
@@ -248,9 +245,6 @@ describe("Action center system aggregate results", () => {
           `${ACTION_CENTER_ROUTE}/${webMonitorKey}/[undefined]#ignored`,
         );
       });
-
-      // eslint-disable-next-line cypress/no-unnecessary-waiting
-      cy.wait(500); // route is not immediately updated
 
       cy.get("[role='tab']").contains("Attention required").click();
       cy.getAntTableRow("[undefined]").within(() => {
