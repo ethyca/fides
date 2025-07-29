@@ -46,6 +46,7 @@ from fides.api.service.privacy_request.request_service import (
     initiate_interrupted_task_requeue_poll,
     initiate_poll_for_exited_privacy_request_tasks,
     initiate_scheduled_dsr_data_removal,
+    initiate_async_tasks_status_polling,
 )
 
 # pylint: disable=wildcard-import, unused-wildcard-import
@@ -99,6 +100,7 @@ async def lifespan(wrapped_app: FastAPI) -> AsyncGenerator[None, None]:
     initiate_poll_for_exited_privacy_request_tasks()
     initiate_scheduled_dsr_data_removal()
     initiate_interrupted_task_requeue_poll()
+    #initiate_async_tasks_status_polling() # TODO: Uncomment this when polling is ready to be tested
     initiate_bcrypt_migration_task()
     initiate_post_upgrade_index_creation()
 
