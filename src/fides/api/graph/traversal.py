@@ -102,13 +102,13 @@ class BaseTraversal:
         self.edges: Set[Edge] = graph.edges.copy()
         self.root_node = artificial_traversal_node(ROOT_COLLECTION_ADDRESS)
 
-        # OPTIMIZATION: Pre-index edges by node address for O(1) lookup
+        # Pre-index edges by node address for O(1) lookup
         self.edges_by_node: Dict[CollectionAddress, List[Edge]] = defaultdict(list)
         for edge in self.edges:
             self.edges_by_node[edge.f1.collection_address()].append(edge)
             self.edges_by_node[edge.f2.collection_address()].append(edge)
 
-        # OPTIMIZATION: Pre-compute string versions of node dependencies
+        # Pre-compute string versions of node dependencies
         # This avoids expensive hash operations during traversal
         self.node_after_str: Dict[str, Set[str]] = {}
         self.dataset_after_str: Dict[str, Set[str]] = {}
@@ -240,7 +240,7 @@ class BaseTraversal:
                 "Starting traversal",
             )
 
-        # OPTIMIZATION: Use string sets instead of CollectionAddress sets
+        # Use string sets instead of CollectionAddress sets
         # This avoids expensive hash operations
         remaining_node_keys_str: Set[str] = {
             addr.value for addr in self.traversal_node_dict.keys()
@@ -248,7 +248,7 @@ class BaseTraversal:
         finished_nodes: dict[CollectionAddress, TraversalNode] = {}
         running_node_queue: MatchingQueue[TraversalNode] = MatchingQueue(self.root_node)
 
-        # OPTIMIZATION: Instead of copying entire edge set, use a more efficient approach
+        # Instead of copying entire edge set, use a more efficient approach
         # We'll simulate Edge.delete_edges behavior without the expensive set operations
         deleted_edges_tracker: Dict[Edge, bool] = {}
 
@@ -299,7 +299,7 @@ class BaseTraversal:
                 # next edges = take all edges including n that are _not_ in edges_from_completed_nodes
                 # in the form (field_address_this, field_address_foreign)
 
-                # OPTIMIZATION: Use pre-indexed edges instead of iterating through all edges
+                # Use pre-indexed edges instead of iterating through all edges
                 edges_to_children = pydash.collections.filter_(
                     [
                         e.split_by_address(cast(TraversalNode, n).address)  # type: ignore[redundant-cast]
