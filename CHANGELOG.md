@@ -41,11 +41,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Fixed
 - Fixed an issue where row selections in Action Center tables did not persist across pages [#6357](https://github.com/ethyca/fides/pull/6357)
 - Fixed bug where an error toast appeared in a privacy request page when running Fides OSS [#6364](https://github.com/ethyca/fides/pull/6364)
-<<<<<<< HEAD
-=======
-- Escaping column names with spaces for BigQuery [#6380](https://github.com/ethyca/fides/pull/6380)
-- Fixed horizontal scroll appearing in the privacy request detail page when datasets with very long names are used [#6389](https://github.com/ethyca/fides/pull/6389)
->>>>>>> e33e6783e9 (update changelog for release 2.66.2 (#6400))
 
 ## [2.66.2](https://github.com/ethyca/fides/compare/2.66.1...2.66.2)
 
