@@ -514,6 +514,70 @@ def _detect_false_completions(
     return false_completions
 
 
+def _handle_privacy_request_requeue(
+    db: Session, privacy_request: PrivacyRequest
+) -> None:
+    """Handle retry logic for a privacy request - either requeue or cancel based on retry count."""
+    try:
+        # Check retry count and either requeue or cancel based on limit
+        current_retry_count = get_privacy_request_retry_count(
+            privacy_request.id
+        )
+        max_retries = (
+            CONFIG.execution.privacy_request_requeue_retry_count
+        )
+
+        if current_retry_count < max_retries:
+            # Increment retry count and attempt requeue
+            new_retry_count = increment_privacy_request_retry_count(
+                privacy_request.id
+            )
+            logger.info(
+                f"Requeuing privacy request {privacy_request.id} "
+                f"(attempt {new_retry_count}/{max_retries})"
+            )
+
+            from fides.service.privacy_request.privacy_request_service import (  # pylint: disable=cyclic-import
+                PrivacyRequestError,
+                _requeue_privacy_request,
+            )
+
+            try:
+                _requeue_privacy_request(db, privacy_request)
+            except PrivacyRequestError as exc:
+                logger.error(exc.message)
+                # If requeue fails, cancel tasks and set to error state
+                _cancel_interrupted_tasks_and_error_privacy_request(
+                    db, privacy_request
+                )
+        else:
+            # Exceeded retry limit, cancel tasks and set to error state
+            logger.warning(
+                f"Privacy request {privacy_request.id} exceeded max retry attempts "
+                f"({max_retries}), canceling tasks and setting to error state"
+            )
+            _cancel_interrupted_tasks_and_error_privacy_request(
+                db, privacy_request
+            )
+            # Reset retry count since we're giving up (ignore errors here as it's cleanup)
+            try:
+                reset_privacy_request_retry_count(privacy_request.id)
+            except Exception as reset_exc:
+                logger.debug(
+                    f"Failed to reset retry count for {privacy_request.id}: {reset_exc}"
+                )
+
+    except Exception as cache_exc:
+        # If cache operations fail (Redis down, network issues, etc.), fail safe by canceling
+        logger.error(
+            f"Cache operation failed for privacy request {privacy_request.id}, "
+            f"failing safe by canceling tasks: {cache_exc}"
+        )
+        _cancel_interrupted_tasks_and_error_privacy_request(
+            db, privacy_request
+        )
+
+
 # pylint: disable=too-many-branches
 @celery_app.task(base=DatabaseTask, bind=True)
 def requeue_interrupted_tasks(self: DatabaseTask) -> None:
@@ -692,61 +756,4 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
 
                 # Requeue the privacy request if needed
                 if should_requeue:
-                    try:
-                        # Check retry count and either requeue or cancel based on limit
-                        current_retry_count = get_privacy_request_retry_count(
-                            privacy_request.id
-                        )
-                        max_retries = (
-                            CONFIG.execution.privacy_request_requeue_retry_count
-                        )
-
-                        if current_retry_count < max_retries:
-                            # Increment retry count and attempt requeue
-                            new_retry_count = increment_privacy_request_retry_count(
-                                privacy_request.id
-                            )
-                            logger.info(
-                                f"Requeuing privacy request {privacy_request.id} "
-                                f"(attempt {new_retry_count}/{max_retries})"
-                            )
-
-                            from fides.service.privacy_request.privacy_request_service import (  # pylint: disable=cyclic-import
-                                PrivacyRequestError,
-                                _requeue_privacy_request,
-                            )
-
-                            try:
-                                _requeue_privacy_request(db, privacy_request)
-                            except PrivacyRequestError as exc:
-                                logger.error(exc.message)
-                                # If requeue fails, cancel tasks and set to error state
-                                _cancel_interrupted_tasks_and_error_privacy_request(
-                                    db, privacy_request
-                                )
-                        else:
-                            # Exceeded retry limit, cancel tasks and set to error state
-                            logger.warning(
-                                f"Privacy request {privacy_request.id} exceeded max retry attempts "
-                                f"({max_retries}), canceling tasks and setting to error state"
-                            )
-                            _cancel_interrupted_tasks_and_error_privacy_request(
-                                db, privacy_request
-                            )
-                            # Reset retry count since we're giving up (ignore errors here as it's cleanup)
-                            try:
-                                reset_privacy_request_retry_count(privacy_request.id)
-                            except Exception as reset_exc:
-                                logger.debug(
-                                    f"Failed to reset retry count for {privacy_request.id}: {reset_exc}"
-                                )
-
-                    except Exception as cache_exc:
-                        # If cache operations fail (Redis down, network issues, etc.), fail safe by canceling
-                        logger.error(
-                            f"Cache operation failed for privacy request {privacy_request.id}, "
-                            f"failing safe by canceling tasks: {cache_exc}"
-                        )
-                        _cancel_interrupted_tasks_and_error_privacy_request(
-                            db, privacy_request
-                        )
+                    _handle_privacy_request_requeue(db, privacy_request)
