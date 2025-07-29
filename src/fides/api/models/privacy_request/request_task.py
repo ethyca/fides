@@ -145,6 +145,8 @@ class RequestTask(WorkerTask, Base):
 
     # For async tasks awaiting callback
     callback_succeeded = Column(Boolean)
+    # to recognize Polling async task
+    polling_async_task = Column(Boolean)
 
     # Stores a serialized collection that can be transformed back into a Collection to help
     # execute the current task

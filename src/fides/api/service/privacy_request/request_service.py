@@ -692,8 +692,23 @@ def poll_async_tasks_status(self: DatabaseTask) -> None:
         # Get all async tasks that are awaiting processing and are from polling async tasks
         async_tasks = db.query(RequestTask).filter(RequestTask.status == ExecutionLogStatus.awaiting_processing).all()
         # TODO: Model update, so we can actually filter by async_config.strategy == polling
-
+        logger.info(f"Async tasks: {async_tasks}")
         # For each async task, poll the status of the task
         for async_task in async_tasks:
             # TODO: Implement the polling logic
+            privacy_request = async_task.privacy_request
+            if privacy_request.status != PrivacyRequestStatus.in_processing:
+                logger.info(f"Privacy request {privacy_request.id} is not in processing,  should beskipping")
+                #continue
+
+            # TODO: Implement our own polling logic instead of leveragint the requee privacy request
+            from fides.service.privacy_request.privacy_request_service import (  # pylint: disable=cyclic-import
+                PrivacyRequestError,
+                _requeue_privacy_request,
+            )
+
+            try:
+                _requeue_privacy_request(db, privacy_request)
+            except PrivacyRequestError as exc:
+                logger.error(exc.message)
             pass
