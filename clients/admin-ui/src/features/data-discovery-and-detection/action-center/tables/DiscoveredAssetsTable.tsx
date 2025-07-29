@@ -45,6 +45,7 @@ import {
 import AddDataUsesModal from "../AddDataUsesModal";
 import { AssignSystemModal } from "../AssignSystemModal";
 import { ConsentBreakdownModal } from "../ConsentBreakdownModal";
+import { DiscoveredAssetsColumnKeys } from "../constants";
 import useActionCenterTabs, {
   ActionCenterTabHash,
 } from "../hooks/useActionCenterTabs";
@@ -79,7 +80,9 @@ export const DiscoveredAssetsTable = ({
   >({});
 
   // Sorting state
-  const [sortField, setSortField] = useState<string | undefined>();
+  const [sortField, setSortField] = useState<
+    DiscoveredAssetsColumnKeys | undefined
+  >();
   const [sortOrder, setSortOrder] = useState<
     "ascend" | "descend" | undefined
   >();
@@ -149,7 +152,9 @@ export const DiscoveredAssetsTable = ({
     page: pageIndex,
     size: pageSize,
     search: searchQuery,
-    sort_by: sortField ? [sortField] : ["consent_aggregated", "urn"],
+    sort_by: sortField
+      ? [sortField]
+      : [DiscoveredAssetsColumnKeys.CONSENT_AGGREGATED, "urn"],
     sort_asc: sortOrder !== "descend",
     ...activeParams,
     ...columnFilters,
@@ -416,7 +421,9 @@ export const DiscoveredAssetsTable = ({
 
     // Handle sorting
     const newSortField =
-      sorter && !Array.isArray(sorter) ? (sorter.field as string) : undefined;
+      sorter && !Array.isArray(sorter)
+        ? (sorter.field as DiscoveredAssetsColumnKeys)
+        : undefined;
     const newSortOrder =
       sorter && !Array.isArray(sorter) && sorter.order !== null
         ? sorter.order

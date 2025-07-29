@@ -68,7 +68,7 @@ const actionCenterApi = baseApi.injectEndpoints({
       Page_StagedResourceAPIResponse_,
       SearchQueryParams &
         PaginationQueryParams &
-        SortQueryParams<DiscoveredAssetsColumnKeys> &
+        SortQueryParams<DiscoveredAssetsColumnKeys | "urn"> &
         DiscoveredAssetsFilterValues & {
           key: string;
           system?: string;
@@ -91,7 +91,7 @@ const actionCenterApi = baseApi.injectEndpoints({
       }) => {
         const params: SearchQueryParams &
           PaginationQueryParams &
-          SortQueryParams<DiscoveredAssetsColumnKeys> & {
+          SortQueryParams<DiscoveredAssetsColumnKeys | "urn"> & {
             resolved_system_id?: string;
             diff_status?: DiffStatus[];
           } = {
