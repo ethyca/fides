@@ -1,4 +1,4 @@
-from typing import Any, Dict, Union
+from typing import Any, Dict, Union, cast
 
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
@@ -69,7 +69,7 @@ class SnowflakeConnector(SQLConnector):
                 connect_args["private_key"] = private_key
         return connect_args
 
-    def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
+    def query_config(self, node: ExecutionNode) -> SnowflakeQueryConfig:
         """Query wrapper corresponding to the input execution_node."""
 
         db: Session = Session.object_session(self.configuration)

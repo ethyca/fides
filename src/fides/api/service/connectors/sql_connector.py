@@ -380,10 +380,10 @@ class SQLConnector(BaseConnector[Engine]):
             if original_exception:
                 raise ConnectionException(error_msg) from original_exception
             raise ConnectionException(error_msg)
-        else:
-            # Safe to skip - raise TableNotFound for @retry decorator to catch
-            skip_msg = f"Table '{table_name}' did not exist during {operation_context}."
-            if original_exception:
-                raise TableNotFound(skip_msg) from original_exception
-            else:
-                raise TableNotFound(skip_msg)
+
+        # Safe to skip - raise TableNotFound for @retry decorator to catch
+        skip_msg = f"Table '{table_name}' did not exist during {operation_context}."
+        if original_exception:
+            raise TableNotFound(skip_msg) from original_exception
+
+        raise TableNotFound(skip_msg)
