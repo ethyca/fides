@@ -19,7 +19,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.66.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.66.2...main)
 
 ### Added
 - Added the ability to edit more fields for GVL vendors [#6341](https://github.com/ethyca/fides/pull/6341)
@@ -41,6 +41,11 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Fixed
 - Fixed an issue where row selections in Action Center tables did not persist across pages [#6357](https://github.com/ethyca/fides/pull/6357)
 - Fixed bug where an error toast appeared in a privacy request page when running Fides OSS [#6364](https://github.com/ethyca/fides/pull/6364)
+
+## [2.66.2](https://github.com/ethyca/fides/compare/2.66.1...2.66.2)
+
+### Fixed
+- Fixed an issue where the Data Detection & Discovery pages were missing some filter parameters for the results [#6394](https://github.com/ethyca/fides/pull/6394)
 
 ## [2.66.1](https://github.com/ethyca/fides/compare/2.66.0...2.66.1)
 
