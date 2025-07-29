@@ -76,3 +76,8 @@ class SnowflakeConnector(SQLConnector):
         return SnowflakeQueryConfig(
             node, SQLConnector.get_namespace_meta(db, node.address.dataset)
         )
+
+    def get_qualified_table_name(self, node: ExecutionNode) -> str:
+        """Get fully qualified Snowflake table name using existing query config logic"""
+        query_config = self.query_config(node)
+        return query_config.generate_table_name()
