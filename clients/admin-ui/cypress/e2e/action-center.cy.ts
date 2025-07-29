@@ -388,6 +388,7 @@ describe("Action center", () => {
     });
     it("should render uncategorized asset results view", () => {
       cy.getByTestId("search-bar").should("exist");
+      cy.getByTestId("clear-filters").should("exist");
       cy.getByTestId("bulk-actions-menu").should("be.disabled");
       cy.getByTestId("add-all").should("be.disabled");
 
@@ -820,15 +821,13 @@ describe("Action center", () => {
         cy.findByRole("columnheader", { name: "Discovery" }).within(() => {
           cy.getByTestId("discovery-status-icon-alert")
             .should("exist")
-            .scrollIntoView();
-          cy.getByTestId("discovery-status-icon-alert").realHover();
+            .scrollIntoView()
+            .should("be.visible");
         });
-        cy.findByRole("tooltip")
-          .should("be.visible")
-          .should(
-            "contain",
-            "One or more assets were detected without consent",
-          );
+        cy.getByTestId("discovery-status-icon-alert").realHover();
+        cy.contains("One or more assets were detected without consent").should(
+          "be.visible",
+        );
       });
 
       it("should open consent breakdown modal when clicking 'Without consent' badge", () => {
