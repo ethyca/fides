@@ -38,6 +38,7 @@ from fides.api.models.privacy_request import (
     TraversalDetails,
 )
 from fides.api.schemas.policy import ActionType
+from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.util.collection_util import Row, append, partition
 from fides.api.util.logger_context_utils import Contextualizable, LoggerContextKeys
 from fides.api.util.matching_queue import MatchingQueue
@@ -115,10 +116,9 @@ class BaseTraversal:
             )
 
         # Ensure manual_task collections execute right after ROOT
-        from fides.api.task.manual.manual_task_address import ManualTaskAddress
-
         for addr in self.traversal_node_dict.keys():
             if ManualTaskAddress.is_manual_task_address(addr):
+                logger.info(f"Processing manual task address: {addr}")
                 # Add a simple synthetic edge ROOT.id -> manual_data.id
                 self.edges.add(
                     Edge(
@@ -130,6 +130,42 @@ class BaseTraversal:
                         addr.field_address(FieldPath("id")),
                     )
                 )
+
+                # Create edges from ROOT to dependency nodes so they can be executed
+                # The 'after' dependencies in the collection configuration will handle execution order
+                manual_node = self.traversal_node_dict[addr]
+                logger.info(
+                    f"Manual node after dependencies: {manual_node.node.collection.after}"
+                )
+                for dependency_addr in manual_node.node.collection.after:
+                    logger.info(f"Processing dependency: {dependency_addr}")
+                    if dependency_addr in self.traversal_node_dict:
+                        # Check if dependency node is already connected through seed data
+                        dependency_has_seed_connection = any(
+                            edge.f2.collection_address() == dependency_addr
+                            for edge in self.edges
+                            if edge.f1.collection_address() == ROOT_COLLECTION_ADDRESS
+                        )
+                        if not dependency_has_seed_connection:
+                            logger.info(f"Creating edge from ROOT to {dependency_addr}")
+                            self.edges.add(
+                                Edge(
+                                    FieldAddress(
+                                        ROOT_COLLECTION_ADDRESS.dataset,
+                                        ROOT_COLLECTION_ADDRESS.collection,
+                                        "id",
+                                    ),
+                                    FieldAddress(
+                                        dependency_addr.dataset,
+                                        dependency_addr.collection,
+                                        "id",
+                                    ),
+                                )
+                            )
+                    else:
+                        logger.warning(
+                            f"Dependency {dependency_addr} not found in traversal_node_dict"
+                        )
 
         self._verify_traversal()
 

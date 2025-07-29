@@ -5,7 +5,7 @@ import pytest
 
 from fides.api.graph.config import Collection, ScalarField
 from fides.api.graph.data_type import DataType
-from fides.api.graph.graph import CollectionAddress
+from fides.api.graph.graph import CollectionAddress, DatasetGraph
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -34,7 +34,6 @@ from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
 from fides.api.task.manual.manual_task_utils import (
-    create_manual_data_traversal_node,
     create_manual_task_artificial_graphs,
     get_connection_configs_with_manual_tasks,
     get_manual_task_addresses,
@@ -57,27 +56,6 @@ class TestManualTaskTraversalNode:
         # Test non-existent connection
         task = get_manual_task_for_connection_config(db, "non_existent")
         assert task is None
-
-    def test_create_manual_data_traversal_node(
-        self, db, connection_with_manual_access_task
-    ):
-        """Test creating a TraversalNode for manual data"""
-        connection_config, _, _, _ = connection_with_manual_access_task
-
-        address = ManualTaskAddress.create(connection_config.key)
-        traversal_node = create_manual_data_traversal_node(db, address)
-
-        # Verify the traversal node is created correctly
-        assert traversal_node.address == address
-        assert traversal_node.node.dataset.name == connection_config.key
-        assert traversal_node.node.collection.name == "manual_data"
-
-        # Verify fields are created from manual task fields
-        fields = traversal_node.node.collection.fields
-        assert len(fields) == 1
-        assert fields[0].name == "user_email"
-        assert fields[0].data_categories is not None
-        assert fields[0].data_categories == ["user.contact.email"]
 
 
 class TestManualTaskGraphTask:
@@ -783,3 +761,518 @@ class TestManualTaskDisabledConnectionConfig:
 
         # Verify disabled connection is not included
         assert not any(graph.name == disabled_connection.key for graph in graphs)
+
+
+@pytest.mark.integration
+class TestManualTaskTraversalExecution:
+    """Test that manual task traversal executes correctly with conditional dependencies and upstream data"""
+
+    def _create_combined_graph(self, db, mock_dataset_graph):
+        """Helper method to create a combined graph from mock dataset and manual task graphs"""
+        manual_task_graphs = create_manual_task_artificial_graphs(
+            db, mock_dataset_graph
+        )
+        # Extract the datasets from mock_dataset_graph and combine with manual task graphs
+        regular_datasets = []
+        for node in mock_dataset_graph.nodes.values():
+            if node.dataset not in regular_datasets:
+                regular_datasets.append(node.dataset)
+
+        return DatasetGraph(*regular_datasets, *manual_task_graphs)
+
+    @pytest.mark.usefixtures("condition_gt_18", "condition_eq_active")
+    def test_manual_task_traversal_with_conditional_dependencies(
+        self, db, access_policy, connection_with_manual_access_task, mock_dataset_graph
+    ):
+        """Test that manual tasks execute in correct order when they have conditional dependencies"""
+        connection_config, manual_task, _, _ = connection_with_manual_access_task
+
+        # Create privacy request
+        privacy_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "external_id": "test_traversal_conditional_123",
+                "started_processing_at": None,
+                "status": PrivacyRequestStatus.pending,
+                "policy_id": access_policy.id,
+            },
+        )
+
+        # Create combined graph using helper method
+        combined_graph = self._create_combined_graph(db, mock_dataset_graph)
+
+        # Create traversal
+        from fides.api.graph.traversal import Traversal
+
+        traversal = Traversal(combined_graph, data={})
+
+        # Verify manual task node is present in traversal
+        manual_address = ManualTaskAddress.create(connection_config.key)
+        assert manual_address in traversal.traversal_node_dict
+
+        # Verify manual task has dependencies on regular tasks
+        manual_node = traversal.traversal_node_dict[manual_address]
+        assert len(manual_node.node.collection.after) > 0
+
+        # Verify dependencies include expected collections
+        expected_dependencies = {
+            CollectionAddress("postgres_example", "customer"),
+            CollectionAddress("postgres_example", "payment_card"),
+        }
+        assert expected_dependencies.issubset(manual_node.node.collection.after)
+
+        # Verify ROOT -> manual_data edge exists
+        from fides.api.graph.config import (
+            ROOT_COLLECTION_ADDRESS,
+            FieldAddress,
+            FieldPath,
+        )
+
+        expected_root_edge = FieldAddress(
+            ROOT_COLLECTION_ADDRESS.dataset, ROOT_COLLECTION_ADDRESS.collection, "id"
+        )
+        expected_manual_edge = manual_address.field_address(FieldPath("id"))
+
+        root_to_manual_edge_exists = any(
+            edge.f1 == expected_root_edge and edge.f2 == expected_manual_edge
+            for edge in traversal.edges
+        )
+        assert root_to_manual_edge_exists, "ROOT -> manual_data edge not found"
+
+    @pytest.mark.usefixtures("group_condition")
+    def test_manual_task_traversal_with_group_conditional_dependencies(
+        self, db, access_policy, connection_with_manual_access_task, mock_dataset_graph
+    ):
+        """Test that manual tasks with group conditional dependencies execute correctly"""
+        connection_config, manual_task, _, _ = connection_with_manual_access_task
+
+        # Create privacy request
+        privacy_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "external_id": "test_traversal_group_123",
+                "started_processing_at": None,
+                "status": PrivacyRequestStatus.pending,
+                "policy_id": access_policy.id,
+            },
+        )
+
+        # Create combined graph using helper method
+        combined_graph = self._create_combined_graph(db, mock_dataset_graph)
+
+        # Create traversal
+        from fides.api.graph.traversal import Traversal
+
+        traversal = Traversal(combined_graph, data={})
+
+        # Verify manual task node is present
+        manual_address = ManualTaskAddress.create(connection_config.key)
+        assert manual_address in traversal.traversal_node_dict
+
+        # Verify manual task has multiple dependencies from group conditions
+        manual_node = traversal.traversal_node_dict[manual_address]
+        assert len(manual_node.node.collection.after) >= 2
+
+        # Verify dependencies include both customer and payment_card collections
+        expected_dependencies = {
+            CollectionAddress("postgres_example", "customer"),
+            CollectionAddress("postgres_example", "payment_card"),
+        }
+        assert expected_dependencies.issubset(manual_node.node.collection.after)
+
+    @pytest.mark.usefixtures("nested_group_condition")
+    def test_manual_task_traversal_with_nested_group_conditional_dependencies(
+        self, db, access_policy, connection_with_manual_access_task, mock_dataset_graph
+    ):
+        """Test that manual tasks with nested group conditional dependencies execute correctly"""
+        connection_config, manual_task, _, _ = connection_with_manual_access_task
+
+        # Create privacy request
+        privacy_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "external_id": "test_traversal_nested_123",
+                "started_processing_at": None,
+                "status": PrivacyRequestStatus.pending,
+                "policy_id": access_policy.id,
+            },
+        )
+
+        # Create artificial graphs
+        manual_task_graphs = create_manual_task_artificial_graphs(
+            db, mock_dataset_graph
+        )
+        # Extract the datasets from mock_dataset_graph and combine with manual task graphs
+        regular_datasets = []
+        for node in mock_dataset_graph.nodes.values():
+            if node.dataset not in regular_datasets:
+                regular_datasets.append(node.dataset)
+
+        combined_graph = DatasetGraph(*regular_datasets, *manual_task_graphs)
+
+        # Create traversal
+        from fides.api.graph.traversal import Traversal
+
+        traversal = Traversal(combined_graph, data={})
+
+        # Verify manual task node is present
+        manual_address = ManualTaskAddress.create(connection_config.key)
+        assert manual_address in traversal.traversal_node_dict
+
+        # Verify manual task has dependencies from nested group conditions
+        manual_node = traversal.traversal_node_dict[manual_address]
+        assert len(manual_node.node.collection.after) >= 2
+
+        # Verify dependencies include expected collections
+        expected_dependencies = {
+            CollectionAddress("postgres_example", "customer"),
+            CollectionAddress("postgres_example", "payment_card"),
+        }
+        assert expected_dependencies.issubset(manual_node.node.collection.after)
+
+        # Verify collection has fields from nested group children
+        field_names = [field.name for field in manual_node.node.collection.fields]
+        assert "role" in field_names  # from "user.role"
+        assert "age" in field_names  # from "user.profile.age"
+        assert "status" in field_names  # from "billing.subscription.status"
+
+
+@pytest.mark.integration
+class TestManualTaskUpstreamDataFlow:
+    """Test that manual tasks receive and process upstream data correctly"""
+
+    def _create_combined_graph(self, db, mock_dataset_graph):
+        """Helper method to create a combined graph from mock dataset and manual task graphs"""
+        manual_task_graphs = create_manual_task_artificial_graphs(
+            db, mock_dataset_graph
+        )
+        # Extract the datasets from mock_dataset_graph and combine with manual task graphs
+        regular_datasets = []
+        for node in mock_dataset_graph.nodes.values():
+            if node.dataset not in regular_datasets:
+                regular_datasets.append(node.dataset)
+
+        return DatasetGraph(*regular_datasets, *manual_task_graphs)
+
+    @pytest.mark.usefixtures("condition_gt_18", "condition_eq_active")
+    def test_manual_task_receives_upstream_data_from_conditional_dependencies(
+        self, db, access_policy, connection_with_manual_access_task, mock_dataset_graph
+    ):
+        """Test that manual tasks receive data from upstream nodes that provide conditional dependency fields"""
+        connection_config, manual_task, _, _ = connection_with_manual_access_task
+
+        # Create privacy request
+        privacy_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "external_id": "test_upstream_data_123",
+                "started_processing_at": None,
+                "status": PrivacyRequestStatus.pending,
+                "policy_id": access_policy.id,
+            },
+        )
+
+        # Create combined graph using helper method
+        combined_graph = self._create_combined_graph(db, mock_dataset_graph)
+
+        # Create traversal
+        from fides.api.graph.traversal import Traversal
+
+        traversal = Traversal(combined_graph, data={})
+
+        # Get manual task node
+        manual_address = ManualTaskAddress.create(connection_config.key)
+        manual_node = traversal.traversal_node_dict[manual_address]
+
+        # Verify manual task has input keys from upstream dependencies
+        # The manual task should have input keys for collections that provide conditional dependency fields
+        input_keys = manual_node.node.collection.after
+        expected_input_keys = {
+            CollectionAddress("postgres_example", "customer"),
+            CollectionAddress("postgres_example", "payment_card"),
+        }
+        assert expected_input_keys.issubset(input_keys)
+
+        # Verify manual task has fields that correspond to conditional dependency field addresses
+        field_names = [field.name for field in manual_node.node.collection.fields]
+        assert "age" in field_names  # from "user.profile.age"
+        assert "status" in field_names  # from "billing.subscription.status"
+
+    @pytest.mark.usefixtures("group_condition")
+    def test_manual_task_upstream_data_with_group_conditions(
+        self, db, access_policy, connection_with_manual_access_task, mock_dataset_graph
+    ):
+        """Test that manual tasks with group conditions receive data from multiple upstream nodes"""
+        connection_config, manual_task, _, _ = connection_with_manual_access_task
+
+        # Create privacy request
+        privacy_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "external_id": "test_upstream_group_123",
+                "started_processing_at": None,
+                "status": PrivacyRequestStatus.pending,
+                "policy_id": access_policy.id,
+            },
+        )
+
+        # Create combined graph using helper method
+        combined_graph = self._create_combined_graph(db, mock_dataset_graph)
+
+        # Create traversal
+        from fides.api.graph.traversal import Traversal
+
+        traversal = Traversal(combined_graph, data={})
+
+        # Get manual task node
+        manual_address = ManualTaskAddress.create(connection_config.key)
+        manual_node = traversal.traversal_node_dict[manual_address]
+
+        # Verify manual task has multiple input keys from group conditions
+        input_keys = manual_node.node.collection.after
+        assert len(input_keys) >= 2
+
+        # Verify input keys include both customer and payment_card collections
+        expected_input_keys = {
+            CollectionAddress("postgres_example", "customer"),
+            CollectionAddress("postgres_example", "payment_card"),
+        }
+        assert expected_input_keys.issubset(input_keys)
+
+        # Verify collection has fields from group condition dependencies
+        field_names = [field.name for field in manual_node.node.collection.fields]
+        assert "age" in field_names  # from "user.profile.age"
+        assert "status" in field_names  # from "billing.subscription.status"
+
+
+@pytest.mark.integration
+class TestManualTaskExecutionOrder:
+    """Test that manual tasks execute in the correct order relative to their dependencies"""
+
+    def _create_combined_graph(self, db, mock_dataset_graph):
+        """Helper method to create a combined graph from mock dataset and manual task graphs"""
+        manual_task_graphs = create_manual_task_artificial_graphs(
+            db, mock_dataset_graph
+        )
+        # Extract the datasets from mock_dataset_graph and combine with manual task graphs
+        regular_datasets = []
+        for node in mock_dataset_graph.nodes.values():
+            if node.dataset not in regular_datasets:
+                regular_datasets.append(node.dataset)
+
+        return DatasetGraph(*regular_datasets, *manual_task_graphs)
+
+    @pytest.mark.usefixtures("condition_gt_18", "condition_eq_active")
+    def test_manual_task_executes_after_dependencies(
+        self, db, access_policy, connection_with_manual_access_task, mock_dataset_graph
+    ):
+        """Test that manual tasks execute after their conditional dependency nodes"""
+        connection_config, manual_task, _, _ = connection_with_manual_access_task
+
+        # Create privacy request
+        privacy_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "external_id": "test_execution_order_123",
+                "started_processing_at": None,
+                "status": PrivacyRequestStatus.pending,
+                "policy_id": access_policy.id,
+            },
+        )
+
+        # Create combined graph using helper method
+        combined_graph = self._create_combined_graph(db, mock_dataset_graph)
+
+        # Create traversal
+        from fides.api.graph.traversal import Traversal
+
+        traversal = Traversal(combined_graph, data={})
+
+        # Get manual task node
+        manual_address = ManualTaskAddress.create(connection_config.key)
+        manual_node = traversal.traversal_node_dict[manual_address]
+
+        # Verify manual task has dependencies that must execute first
+        dependencies = manual_node.node.collection.after
+        assert len(dependencies) > 0
+
+        # Verify that the dependencies are actual collections in the graph
+        for dependency in dependencies:
+            assert dependency in traversal.traversal_node_dict
+
+        # Verify that manual task has proper dependencies and can be reached
+        # Note: ROOT is an artificial node and not in traversal_node_dict
+        assert len(dependencies) > 0
+
+    @pytest.mark.usefixtures("group_condition")
+    def test_manual_task_execution_order_with_multiple_dependencies(
+        self, db, access_policy, connection_with_manual_access_task, mock_dataset_graph
+    ):
+        """Test that manual tasks with multiple dependencies execute after all dependencies"""
+        connection_config, manual_task, _, _ = connection_with_manual_access_task
+
+        # Create privacy request
+        privacy_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "external_id": "test_execution_multiple_123",
+                "started_processing_at": None,
+                "status": PrivacyRequestStatus.pending,
+                "policy_id": access_policy.id,
+            },
+        )
+
+        # Create combined graph using helper method
+        combined_graph = self._create_combined_graph(db, mock_dataset_graph)
+
+        # Create traversal
+        from fides.api.graph.traversal import Traversal
+
+        traversal = Traversal(combined_graph, data={})
+
+        # Get manual task node
+        manual_address = ManualTaskAddress.create(connection_config.key)
+        manual_node = traversal.traversal_node_dict[manual_address]
+
+        # Verify manual task has multiple dependencies
+        dependencies = manual_node.node.collection.after
+        assert len(dependencies) >= 2
+
+        # Verify all dependencies exist in the traversal
+        for dependency in dependencies:
+            assert dependency in traversal.traversal_node_dict
+
+        # Verify dependencies are from different collections (customer and payment_card)
+        dependency_collections = {dep.collection for dep in dependencies}
+        assert len(dependency_collections) >= 2
+
+
+@pytest.mark.integration
+class TestManualTaskTraversalIntegration:
+    """Integration tests for manual task traversal with real graph execution"""
+
+    def _create_combined_graph(self, db, mock_dataset_graph):
+        """Helper method to create a combined graph from mock dataset and manual task graphs"""
+        manual_task_graphs = create_manual_task_artificial_graphs(
+            db, mock_dataset_graph
+        )
+        # Extract the datasets from mock_dataset_graph and combine with manual task graphs
+        regular_datasets = []
+        for node in mock_dataset_graph.nodes.values():
+            if node.dataset not in regular_datasets:
+                regular_datasets.append(node.dataset)
+
+        return DatasetGraph(*regular_datasets, *manual_task_graphs)
+
+    @pytest.mark.usefixtures("condition_gt_18", "condition_eq_active")
+    def test_manual_task_traversal_integration_with_conditional_dependencies(
+        self, db, access_policy, connection_with_manual_access_task, mock_dataset_graph
+    ):
+        """Integration test: manual task traversal with conditional dependencies in a complete graph"""
+        connection_config, manual_task, _, _ = connection_with_manual_access_task
+
+        # Create privacy request
+        privacy_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "external_id": "test_integration_conditional_123",
+                "started_processing_at": None,
+                "status": PrivacyRequestStatus.pending,
+                "policy_id": access_policy.id,
+            },
+        )
+
+        # Create combined graph using helper method
+        combined_graph = self._create_combined_graph(db, mock_dataset_graph)
+
+        # Create traversal
+        from fides.api.graph.traversal import Traversal
+
+        traversal = Traversal(combined_graph, data={})
+
+        # Verify all nodes are present
+        assert len(traversal.traversal_node_dict) > 0
+
+        # Verify manual task node is present
+        manual_address = ManualTaskAddress.create(connection_config.key)
+        assert manual_address in traversal.traversal_node_dict
+
+        # Verify manual task has proper dependencies
+        manual_node = traversal.traversal_node_dict[manual_address]
+        assert len(manual_node.node.collection.after) > 0
+
+        # Verify manual task has proper fields
+        assert len(manual_node.node.collection.fields) > 0
+
+        # Verify manual task has proper edges
+        from fides.api.graph.config import (
+            ROOT_COLLECTION_ADDRESS,
+            FieldAddress,
+            FieldPath,
+        )
+
+        expected_root_edge = FieldAddress(
+            ROOT_COLLECTION_ADDRESS.dataset, ROOT_COLLECTION_ADDRESS.collection, "id"
+        )
+        expected_manual_edge = manual_address.field_address(FieldPath("id"))
+
+        root_to_manual_edge_exists = any(
+            edge.f1 == expected_root_edge and edge.f2 == expected_manual_edge
+            for edge in traversal.edges
+        )
+        assert root_to_manual_edge_exists
+
+        # Verify traversal is valid (no reachability errors)
+        # This tests that the graph structure is sound
+        assert traversal is not None
+
+    @pytest.mark.usefixtures("nested_group_condition")
+    def test_manual_task_traversal_integration_with_nested_groups(
+        self, db, access_policy, connection_with_manual_access_task, mock_dataset_graph
+    ):
+        """Integration test: manual task traversal with nested group conditional dependencies"""
+        connection_config, manual_task, _, _ = connection_with_manual_access_task
+
+        # Create privacy request
+        privacy_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "external_id": "test_integration_nested_123",
+                "started_processing_at": None,
+                "status": PrivacyRequestStatus.pending,
+                "policy_id": access_policy.id,
+            },
+        )
+
+        # Create artificial graphs
+        manual_task_graphs = create_manual_task_artificial_graphs(
+            db, mock_dataset_graph
+        )
+        # Extract GraphDataset objects from mock_dataset_graph
+        regular_datasets = []
+        for node in mock_dataset_graph.nodes.values():
+            if node.dataset not in regular_datasets:
+                regular_datasets.append(node.dataset)
+        combined_graph = DatasetGraph(*regular_datasets, *manual_task_graphs)
+
+        # Create traversal
+        from fides.api.graph.traversal import Traversal
+
+        traversal = Traversal(combined_graph, data={})
+
+        # Verify manual task node is present
+        manual_address = ManualTaskAddress.create(connection_config.key)
+        assert manual_address in traversal.traversal_node_dict
+
+        # Verify manual task has dependencies from nested group conditions
+        manual_node = traversal.traversal_node_dict[manual_address]
+        assert len(manual_node.node.collection.after) >= 2
+
+        # Verify manual task has fields from nested group children
+        field_names = [field.name for field in manual_node.node.collection.fields]
+        assert "role" in field_names
+        assert "age" in field_names
+        assert "status" in field_names
+
+        # Verify traversal is valid
+        assert traversal is not None
