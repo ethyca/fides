@@ -25,6 +25,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added the ability to edit more fields for GVL vendors [#6341](https://github.com/ethyca/fides/pull/6341)
 - Added `release_version` to the global `window.Fides` object in FidesJS [#6239](https://github.com/ethyca/fides/pull/6239)
 - Added new Conditional Dependencies and Evaluator data structures for eventual use with Manual Tasks on DSRs. [#6354](https://github.com/ethyca/fides/pull/6354)
+- Added a memory watcher for Celery tasks on Privacy Requests and a configuration to enable (memory_watchdog_enabled) [#6375](https://github.com/ethyca/fides/pull/6375)
 
 ### Changed
 - Removes `data-testid` attributes from FidesJS production builds [#6351](https://github.com/ethyca/fides/pull/6351)
