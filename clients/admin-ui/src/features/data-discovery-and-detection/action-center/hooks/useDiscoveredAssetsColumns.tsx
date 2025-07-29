@@ -23,6 +23,7 @@ import {
 } from "~/types/api";
 
 import { useGetWebsiteMonitorResourceFiltersQuery } from "../action-center.slice";
+import { DiscoveryStatusDisplayNames } from "../constants";
 import { DiscoveryStatusIcon } from "../DiscoveryStatusIcon";
 import { DiscoveredAssetActionsCell } from "../tables/cells/DiscoveredAssetActionsCell";
 import DiscoveredAssetDataUseCell from "../tables/cells/DiscoveredAssetDataUseCell";
@@ -255,10 +256,10 @@ export const useDiscoveredAssetsColumns = ({
           filterOptions?.[DiscoveredAssetsColumnKeys.CONSENT_AGGREGATED],
           (status) => {
             const statusMap: Record<string, string> = {
-              with_consent: "With consent",
-              without_consent: "Without consent",
-              exempt: "Exempt",
-              unknown: "Unknown",
+              with_consent: DiscoveryStatusDisplayNames.WITH_CONSENT,
+              without_consent: DiscoveryStatusDisplayNames.WITHOUT_CONSENT,
+              exempt: DiscoveryStatusDisplayNames.EXEMPT,
+              unknown: DiscoveryStatusDisplayNames.UNKNOWN,
             };
             return statusMap[status] ?? status;
           },
