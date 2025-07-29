@@ -405,7 +405,7 @@ def _get_task_ids_from_dsr_queue(
 
 
 def _cancel_interrupted_tasks_and_error_privacy_request(
-    db: Session, privacy_request: PrivacyRequest, error_message: str = None
+    db: Session, privacy_request: PrivacyRequest, error_message: Optional[str] = None
 ) -> None:
     """
     Cancel all tasks associated with an interrupted privacy request and set the privacy request to error state.
