@@ -1,4 +1,4 @@
-from typing import Any, Dict, Union, cast
+from typing import Any, Dict, Union
 
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session
 
 from fides.api.graph.execution import ExecutionNode
 from fides.api.schemas.connection_configuration import SnowflakeSchema
-from fides.api.service.connectors.query_configs.query_config import SQLQueryConfig
 from fides.api.service.connectors.query_configs.snowflake_query_config import (
     SnowflakeQueryConfig,
 )

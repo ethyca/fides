@@ -201,9 +201,9 @@ class SQLConnector(BaseConnector[Engine]):
                 return self.cursor_result_to_rows(results)
             except Exception as exc:
                 # Check if table exists using qualified table name
-                if not self.table_exists(connection, node):
+                qualified_table_name = self.get_qualified_table_name(node)
+                if not self.table_exists(qualified_table_name):
                     # Central decision point - will raise TableNotFound or ConnectionException
-                    qualified_table_name = self.get_qualified_table_name(node)
                     self.handle_table_not_found(
                         node=node,
                         table_name=qualified_table_name,
@@ -315,7 +315,7 @@ class SQLConnector(BaseConnector[Engine]):
         """
         return node.collection.name
 
-    def table_exists(self, connection: Connection, node: ExecutionNode) -> bool:
+    def table_exists(self, qualified_table_name: str) -> bool:
         """
         Check if table exists using SQLAlchemy introspection.
 
@@ -323,33 +323,34 @@ class SQLConnector(BaseConnector[Engine]):
         Override: Connectors can implement database-specific table existence checking
         """
         try:
-            qualified_table_name = self.get_qualified_table_name(node)
-            inspector = inspect(connection)
+            client = self.create_client()
+            with client.connect() as connection:
+                inspector = inspect(connection)
 
-            # For simple table names
-            if "." not in qualified_table_name:
+                # For simple table names
+                if "." not in qualified_table_name:
+                    return inspector.has_table(qualified_table_name)
+
+                # For qualified names like schema.table or database.schema.table
+                parts = qualified_table_name.split(".")
+
+                if len(parts) == 2:
+                    # schema.table format
+                    schema_name, table_name = parts
+                    return inspector.has_table(table_name, schema=schema_name)
+
+                if len(parts) >= 3:
+                    # database.schema.table format (use schema.table)
+                    schema_name, table_name = parts[-2], parts[-1]
+                    return inspector.has_table(table_name, schema=schema_name)
+
+                # Fallback for unexpected format
                 return inspector.has_table(qualified_table_name)
 
-            # For qualified names like schema.table or database.schema.table
-            parts = qualified_table_name.split(".")
-
-            if len(parts) == 2:
-                # schema.table format
-                schema_name, table_name = parts
-                return inspector.has_table(table_name, schema=schema_name)
-
-            if len(parts) >= 3:
-                # database.schema.table format (use schema.table)
-                schema_name, table_name = parts[-2], parts[-1]
-                return inspector.has_table(table_name, schema=schema_name)
-
-            # Fallback for unexpected format
-            return inspector.has_table(qualified_table_name)
-
-        except Exception:
+        except Exception as exc:
             # Graceful fallback - if we can't check, assume table exists
             # to preserve existing behavior for connectors that don't implement this
-            logger.debug("Unable to check if table exists, assuming it does")
+            logger.error("Unable to check if table exists, assuming it does: {}", exc)
             return True
 
     def handle_table_not_found(
