@@ -787,7 +787,7 @@ class TestS3PresignedUrlAndFileSize:
             assert "NoSuchKey" in str(e.value)
 
 
-@pytest.mark.integration
+@pytest.mark.integration_external
 def test_s3_signature_version_4(
     aws_credentials, kms_encrypted_s3_bucket, test_object_key
 ):

@@ -36,8 +36,8 @@ def storage_config_local(db: Session) -> Generator:
 @pytest.fixture(scope="function")
 def aws_credentials():
     """Fixture that provides AWS credentials from environment variables."""
-    aws_access_key_id = os.environ.get("AWS_ACCESS_KEY_ID")
-    aws_secret_access_key = os.environ.get("AWS_SECRET_ACCESS_KEY")
+    aws_access_key_id = os.environ.get("S3_AWS_ACCESS_KEY_ID")
+    aws_secret_access_key = os.environ.get("S3_AWS_SECRET_ACCESS_KEY")
     region = os.environ.get("AWS_DEFAULT_REGION", "us-east-1")
 
     if not aws_access_key_id or not aws_secret_access_key:
