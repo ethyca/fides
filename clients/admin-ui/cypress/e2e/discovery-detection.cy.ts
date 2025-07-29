@@ -28,6 +28,44 @@ describe("discovery and detection", () => {
     });
   });
 
+  describe("default tab behavior without hash", () => {
+    it("should default to action-required tab for detection results", () => {
+      cy.intercept(
+        "GET",
+        "/api/v1/plus/discovery-monitor/results?*diff_status=addition&diff_status=removal*",
+        {
+          fixture: "detection-discovery/results/detection/dataset-list.json",
+        },
+      ).as("getDetectionResultsWithActionRequiredFilters");
+
+      cy.visit(DATA_DETECTION_ROUTE);
+      cy.wait("@getDetectionResultsWithActionRequiredFilters");
+
+      // Verify the action-required tab is active (check parent div)
+      cy.getAntTab("Action Required")
+        .parent()
+        .should("have.class", "ant-tabs-tab-active");
+    });
+
+    it("should default to action-required tab for discovery results", () => {
+      cy.intercept(
+        "GET",
+        "/api/v1/plus/discovery-monitor/results?*diff_status=classification_addition&diff_status=classification_update*",
+        {
+          fixture: "detection-discovery/results/discovery/dataset-list.json",
+        },
+      ).as("getDiscoveryResultsWithActionRequiredFilters");
+
+      cy.visit(DATA_DISCOVERY_ROUTE);
+      cy.wait("@getDiscoveryResultsWithActionRequiredFilters");
+
+      // Verify the action-required tab is active (check parent div)
+      cy.getAntTab("Action Required")
+        .parent()
+        .should("have.class", "ant-tabs-tab-active");
+    });
+  });
+
   describe("activity table", () => {
     beforeEach(() => {
       cy.intercept("GET", "/api/v1/plus/discovery-monitor/results?*", {

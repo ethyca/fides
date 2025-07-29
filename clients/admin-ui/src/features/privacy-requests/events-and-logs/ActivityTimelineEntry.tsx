@@ -40,49 +40,44 @@ const ActivityTimelineEntry = ({ item }: ActivityTimelineEntryProps) => {
   const content = (
     <>
       <div className={styles.header}>
-        <div className={styles.headerLeft}>
+        <span className={styles.author} data-testid="activity-timeline-author">
+          {author}:
+        </span>
+        {title && (
+          <Typography.Text
+            className={classNames(styles.title, {
+              [styles["title--error"]]: isError,
+              [styles["title--awaiting-input"]]: isAwaitingInput,
+            })}
+            ellipsis={{ tooltip: true }}
+            data-testid="activity-timeline-title"
+          >
+            {title}
+
+            {isError && " failed"}
+          </Typography.Text>
+        )}
+        <Typography.Text
+          className={styles.timestamp}
+          data-testid="activity-timeline-timestamp"
+        >
+          {formattedDate}
+        </Typography.Text>
+        <Tag
+          className={styles.type}
+          color={TimelineItemColorMap[type]}
+          data-testid="activity-timeline-type"
+        >
+          {type}
+        </Tag>
+        {showViewLog && (
           <span
-            className={styles.author}
-            data-testid="activity-timeline-author"
+            className={styles.viewLogs}
+            data-testid="activity-timeline-view-logs"
           >
-            {author}:
+            View Log
           </span>
-          {title && (
-            <Typography.Text
-              className={classNames(styles.title, {
-                [styles["title--error"]]: isError,
-                [styles["title--awaiting-input"]]: isAwaitingInput,
-              })}
-              ellipsis={{ tooltip: true }}
-              style={{ maxWidth: "33%" }}
-              data-testid="activity-timeline-title"
-            >
-              {title}
-              {isError && " failed"}
-            </Typography.Text>
-          )}
-          <span
-            className={styles.timestamp}
-            data-testid="activity-timeline-timestamp"
-          >
-            {formattedDate}
-          </span>
-          <Tag
-            className={styles.type}
-            color={TimelineItemColorMap[type]}
-            data-testid="activity-timeline-type"
-          >
-            {type}
-          </Tag>
-          {showViewLog && (
-            <span
-              className={styles.viewLogs}
-              data-testid="activity-timeline-view-logs"
-            >
-              View Log
-            </span>
-          )}
-        </div>
+        )}
       </div>
       {(description || hasAttachments) && (
         <div className="mt-2 flex justify-between pl-2.5 align-top">

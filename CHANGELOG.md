@@ -40,6 +40,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Moved masking secrets from Redis to database [#6002](https://github.com/ethyca/fides/pull/6002)
 - Pass `IS_TEST` build parameter to Dockfile for dev builds to preserve dev `data-testid` attributes [#6382] (https://github.com/ethyca/fides/pull/6382)
 - Migrated datamap lineage visualization from Cytoscape.js to ReactFlow with Dagre layout engine [#6381](https://github.com/ethyca/fides/pull/6381)
+- Created new module for ManualTaskAddress and updated ManualTaskGraphTask functionality using unique constraints on ManualTask parent_entity. [#6383](https://github.com/ethyca/fides/pull/6383)
 
 
 ### Developer Experience
@@ -49,6 +50,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed an issue where row selections in Action Center tables did not persist across pages [#6357](https://github.com/ethyca/fides/pull/6357)
 - Fixed bug where an error toast appeared in a privacy request page when running Fides OSS [#6364](https://github.com/ethyca/fides/pull/6364)
 - Escaping column names with spaces for BigQuery [#6380](https://github.com/ethyca/fides/pull/6380)
+- Fixed an issue where the Data Detection & Discovery pages were missing some filter parameters for the results [#6394](https://github.com/ethyca/fides/pull/6394)
+- Fixed horizontal scroll appearing in the privacy request detail page when datasets with very long names are used [#6389](https://github.com/ethyca/fides/pull/6389)
 
 ## [2.66.1](https://github.com/ethyca/fides/compare/2.66.0...2.66.1)
 
