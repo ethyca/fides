@@ -170,3 +170,22 @@ export const convertToAntFilters = (
     value,
   }));
 };
+
+/**
+ * Builds URLSearchParams from an object containing array-based query parameters.
+ * @param arrayParams - Object where keys are parameter names and values are arrays of strings
+ * @returns URLSearchParams instance with all array values properly appended
+ */
+export const buildArrayQueryParams = (
+  arrayParams: Record<string, string[] | undefined>,
+): URLSearchParams => {
+  const urlParams = new URLSearchParams();
+
+  Object.entries(arrayParams).forEach(([key, values]) => {
+    if (values && values.length > 0) {
+      values.forEach((value) => urlParams.append(key, value));
+    }
+  });
+
+  return urlParams;
+};

@@ -3,9 +3,12 @@ import {
   AntDefaultOptionType as DefaultOptionType,
   AntDropdown as Dropdown,
   AntEmpty as Empty,
+  AntFilterValue as FilterValue,
   AntFlex as Flex,
+  AntSorterResult as SorterResult,
   AntSpace as Space,
   AntTable as Table,
+  AntTablePaginationConfig as TablePaginationConfig,
   AntTabs as Tabs,
   AntTooltip as Tooltip,
   Icons,
@@ -71,7 +74,9 @@ export const DiscoveredAssetsTable = ({
   const [pageSize, setPageSize] = useState(25);
 
   // Filter state for server-side filtering
-  const [columnFilters, setColumnFilters] = useState<Record<string, any>>({});
+  const [columnFilters, setColumnFilters] = useState<
+    Record<string, FilterValue | null>
+  >({});
 
   // Sorting state
   const [sortField, setSortField] = useState<string | undefined>();
@@ -144,9 +149,9 @@ export const DiscoveredAssetsTable = ({
     page: pageIndex,
     size: pageSize,
     search: searchQuery,
-    diff_status: activeParams?.diff_status,
     sort_by: sortField ? [sortField] : ["consent_aggregated", "urn"],
     sort_asc: sortOrder !== "descend",
+    ...activeParams,
     ...columnFilters,
   });
 
@@ -388,26 +393,34 @@ export const DiscoveredAssetsTable = ({
     },
   };
 
-  const handleTableChange = (pagination: any, filters: any, sorter: any) => {
+  const handleTableChange = (
+    pagination: TablePaginationConfig,
+    filters: Record<string, FilterValue | null>,
+    sorter:
+      | SorterResult<StagedResourceAPIResponse>
+      | SorterResult<StagedResourceAPIResponse>[],
+  ) => {
     // Check if this is just a pagination change (page or pageSize changed)
     const isPaginationChange =
       pagination.current !== pageIndex || pagination.pageSize !== pageSize;
 
     // If it's a pagination change, use the new page; otherwise reset to page 1
     if (isPaginationChange) {
-      setPageIndex(pagination.current);
+      setPageIndex(pagination.current || 1);
     } else {
       setPageIndex(1);
     }
 
-    setPageSize(pagination.pageSize);
+    setPageSize(pagination.pageSize || 25);
     setColumnFilters(filters || {});
 
     // Handle sorting
     const newSortField =
-      sorter && !Array.isArray(sorter) ? sorter.field : undefined;
+      sorter && !Array.isArray(sorter) ? (sorter.field as string) : undefined;
     const newSortOrder =
-      sorter && !Array.isArray(sorter) ? sorter.order : undefined;
+      sorter && !Array.isArray(sorter) && sorter.order !== null
+        ? sorter.order
+        : undefined;
     setSortField(newSortField);
     setSortOrder(newSortOrder);
   };
@@ -444,6 +457,7 @@ export const DiscoveredAssetsTable = ({
                 setSortField(undefined);
                 setSortOrder(undefined);
               }}
+              data-testid="clear-filters"
             >
               Clear filters
             </Button>

@@ -30,6 +30,18 @@ import { DiscoveryStatusBadgeCell } from "../tables/cells/DiscoveryStatusBadgeCe
 import { SystemCell } from "../tables/cells/SystemCell";
 import { ActionCenterTabHash } from "./useActionCenterTabs";
 
+export enum DiscoveredAssetsColumnKeys {
+  NAME = "name",
+  RESOURCE_TYPE = "resource_type",
+  SYSTEM = "system",
+  DATA_USES = "data_uses",
+  LOCATIONS = "locations",
+  DOMAIN = "domain",
+  PAGE = "page",
+  CONSENT_AGGREGATED = "consent_aggregated",
+  ACTIONS = "actions",
+}
+
 export const useDiscoveredAssetsColumns = ({
   readonly,
   aggregatedConsent,
@@ -62,6 +74,7 @@ export const useDiscoveredAssetsColumns = ({
   const [isLocationsExpanded, setIsLocationsExpanded] = useState(false);
   const [isPagesExpanded, setIsPagesExpanded] = useState(false);
 
+  // if there's an error here it won't matter because the filters just won't show up
   const { data: filterOptions } = useGetWebsiteMonitorResourceFiltersQuery({
     monitor_config_id: monitorConfigId,
     diff_status: diffStatus,
@@ -73,10 +86,11 @@ export const useDiscoveredAssetsColumns = ({
     const baseColumns: ColumnsType<StagedResourceAPIResponse> = [
       {
         title: "Asset",
-        dataIndex: "name",
-        key: "name",
+        dataIndex: DiscoveredAssetsColumnKeys.NAME,
+        key: DiscoveredAssetsColumnKeys.NAME,
         sorter: true,
-        sortOrder: sortField === "name" ? sortOrder : null,
+        sortOrder:
+          sortField === DiscoveredAssetsColumnKeys.NAME ? sortOrder : null,
         render: (name) => (
           <Text ellipsis={{ tooltip: true }} style={{ maxWidth: 300 }}>
             {name}
@@ -86,20 +100,24 @@ export const useDiscoveredAssetsColumns = ({
       },
       {
         title: "Type",
-        dataIndex: "resource_type",
-        key: "resource_type",
+        dataIndex: DiscoveredAssetsColumnKeys.RESOURCE_TYPE,
+        key: DiscoveredAssetsColumnKeys.RESOURCE_TYPE,
         sorter: true,
-        sortOrder: sortField === "resource_type" ? sortOrder : null,
+        sortOrder:
+          sortField === DiscoveredAssetsColumnKeys.RESOURCE_TYPE
+            ? sortOrder
+            : null,
         filters: convertToAntFilters(filterOptions?.resource_type),
         filteredValue: columnFilters?.resource_type || null,
       },
       {
         title: "System",
-        dataIndex: "system",
-        key: "system",
+        dataIndex: DiscoveredAssetsColumnKeys.SYSTEM,
+        key: DiscoveredAssetsColumnKeys.SYSTEM,
         width: 200,
         sorter: true,
-        sortOrder: sortField === "system" ? sortOrder : null,
+        sortOrder:
+          sortField === DiscoveredAssetsColumnKeys.SYSTEM ? sortOrder : null,
         render: (_, record) =>
           !!record.monitor_config_id && (
             <SystemCell
@@ -111,12 +129,13 @@ export const useDiscoveredAssetsColumns = ({
       },
       {
         title: "Categories of consent",
-        key: "data_uses",
+        key: DiscoveredAssetsColumnKeys.DATA_USES,
         width: 400,
         filters: convertToAntFilters(filterOptions?.data_uses),
         filteredValue: columnFilters?.data_uses || null,
         sorter: true,
-        sortOrder: sortField === "data_uses" ? sortOrder : null,
+        sortOrder:
+          sortField === DiscoveredAssetsColumnKeys.DATA_USES ? sortOrder : null,
         render: (_, record) => (
           <DiscoveredAssetDataUseCell asset={record} readonly={readonly} />
         ),
@@ -138,11 +157,12 @@ export const useDiscoveredAssetsColumns = ({
             }}
           />
         ),
-        dataIndex: "locations",
-        key: "locations",
+        dataIndex: DiscoveredAssetsColumnKeys.LOCATIONS,
+        key: DiscoveredAssetsColumnKeys.LOCATIONS,
         width: 250,
         sorter: true,
-        sortOrder: sortField === "locations" ? sortOrder : null,
+        sortOrder:
+          sortField === DiscoveredAssetsColumnKeys.LOCATIONS ? sortOrder : null,
         filters: convertToAntFilters(
           filterOptions?.locations,
           (location) =>
@@ -167,10 +187,11 @@ export const useDiscoveredAssetsColumns = ({
       },
       {
         title: "Domain",
-        dataIndex: "domain",
-        key: "domain",
+        dataIndex: DiscoveredAssetsColumnKeys.DOMAIN,
+        key: DiscoveredAssetsColumnKeys.DOMAIN,
         sorter: true,
-        sortOrder: sortField === "domain" ? sortOrder : null,
+        sortOrder:
+          sortField === DiscoveredAssetsColumnKeys.DOMAIN ? sortOrder : null,
         // Domain filtering will be handled via search instead of column filters
       },
       {
@@ -190,10 +211,11 @@ export const useDiscoveredAssetsColumns = ({
             }}
           />
         ),
-        dataIndex: "page",
-        key: "page",
+        dataIndex: DiscoveredAssetsColumnKeys.PAGE,
+        key: DiscoveredAssetsColumnKeys.PAGE,
         sorter: true,
-        sortOrder: sortField === "page" ? sortOrder : null,
+        sortOrder:
+          sortField === DiscoveredAssetsColumnKeys.PAGE ? sortOrder : null,
         render: (pages: string[]) => (
           <ListExpandableCell
             values={pages}
@@ -222,12 +244,15 @@ export const useDiscoveredAssetsColumns = ({
             )}
           </Space>
         ),
-        dataIndex: "consent_aggregated",
-        key: "consent_aggregated",
+        dataIndex: DiscoveredAssetsColumnKeys.CONSENT_AGGREGATED,
+        key: DiscoveredAssetsColumnKeys.CONSENT_AGGREGATED,
         sorter: true,
-        sortOrder: sortField === "consent_aggregated" ? sortOrder : null,
+        sortOrder:
+          sortField === DiscoveredAssetsColumnKeys.CONSENT_AGGREGATED
+            ? sortOrder
+            : null,
         filters: convertToAntFilters(
-          filterOptions?.consent_aggregated,
+          filterOptions?.[DiscoveredAssetsColumnKeys.CONSENT_AGGREGATED],
           (status) => {
             const statusMap: Record<string, string> = {
               with_consent: "With consent",
@@ -238,7 +263,9 @@ export const useDiscoveredAssetsColumns = ({
             return statusMap[status] ?? status;
           },
         ),
-        filteredValue: columnFilters?.consent_aggregated || null,
+        filteredValue:
+          columnFilters?.[DiscoveredAssetsColumnKeys.CONSENT_AGGREGATED] ||
+          null,
         render: (consentAggregated: ConsentStatus, record) => (
           <DiscoveryStatusBadgeCell
             consentAggregated={consentAggregated ?? ConsentStatus.UNKNOWN}
@@ -253,7 +280,7 @@ export const useDiscoveredAssetsColumns = ({
     if (!readonly) {
       baseColumns.push({
         title: "Actions",
-        key: "actions",
+        key: DiscoveredAssetsColumnKeys.ACTIONS,
         fixed: "right",
         render: (_, record) => (
           <DiscoveredAssetActionsCell
