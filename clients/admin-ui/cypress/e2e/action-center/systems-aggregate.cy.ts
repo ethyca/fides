@@ -238,7 +238,7 @@ describe("Action center system aggregate results", () => {
       });
 
       // eslint-disable-next-line cypress/no-unnecessary-waiting
-      cy.wait(300); // route is not immediately updated
+      cy.wait(500); // route is not immediately updated
 
       cy.get("[role='tab']").contains("Ignored").click();
       cy.getAntTableRow("[undefined]").within(() => {
@@ -250,7 +250,7 @@ describe("Action center system aggregate results", () => {
       });
 
       // eslint-disable-next-line cypress/no-unnecessary-waiting
-      cy.wait(300); // route is not immediately updated
+      cy.wait(500); // route is not immediately updated
 
       cy.get("[role='tab']").contains("Attention required").click();
       cy.getAntTableRow("[undefined]").within(() => {
