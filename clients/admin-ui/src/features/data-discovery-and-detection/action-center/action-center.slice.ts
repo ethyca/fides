@@ -268,12 +268,14 @@ const actionCenterApi = baseApi.injectEndpoints({
       Record<string, string[]>,
       {
         monitor_config_id: string;
+        resolved_system_id: string;
         diff_status?: DiffStatus[];
       } & SearchQueryParams &
         DiscoveredAssetsFilterValues
     >({
       query: ({
         monitor_config_id,
+        resolved_system_id,
         diff_status = [DiffStatus.ADDITION],
         search,
         resource_type,
@@ -284,8 +286,10 @@ const actionCenterApi = baseApi.injectEndpoints({
         const params: SearchQueryParams & {
           monitor_config_id: string;
           diff_status?: DiffStatus[];
+          resolved_system_id?: string;
         } = {
           monitor_config_id,
+          resolved_system_id,
           diff_status,
         };
 

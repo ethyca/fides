@@ -163,7 +163,7 @@ export const convertToAntFilters = (
   getDisplayName?: (value: string) => string,
 ) => {
   if (!values || values.length === 0) {
-    return undefined;
+    return [];
   }
   return values.map((value) => ({
     text: getDisplayName ? getDisplayName(value) : value,

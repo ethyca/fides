@@ -197,6 +197,7 @@ export const DiscoveredAssetsTable = ({
     aggregatedConsent: firstItemConsentStatus,
     onShowBreakdown: handleShowBreakdown,
     monitorConfigId: monitorId,
+    resolvedSystemId: systemId,
     diffStatus: activeParams?.diff_status,
     columnFilters,
     sortField,

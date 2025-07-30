@@ -40,6 +40,7 @@ export const useDiscoveredAssetsColumns = ({
   onTabChange,
   onShowBreakdown,
   monitorConfigId,
+  resolvedSystemId,
   diffStatus,
   columnFilters,
   sortField,
@@ -54,6 +55,7 @@ export const useDiscoveredAssetsColumns = ({
     status: ConsentStatus,
   ) => void;
   monitorConfigId: string;
+  resolvedSystemId: string;
   diffStatus?: DiffStatus[];
   columnFilters?: Record<string, any>;
   sortField?: string;
@@ -69,6 +71,7 @@ export const useDiscoveredAssetsColumns = ({
   // if there's an error here it won't matter because the filters just won't show up
   const { data: filterOptions } = useGetWebsiteMonitorResourceFiltersQuery({
     monitor_config_id: monitorConfigId,
+    resolved_system_id: resolvedSystemId,
     diff_status: diffStatus,
     search: searchQuery,
     ...columnFilters,
