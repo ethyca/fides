@@ -46,12 +46,12 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Developer Experience
 - Migrated Action Center tables to Ant Design [#6349](https://github.com/ethyca/fides/pull/6349)
+- Switching from Vault to 1password for SaaS test credentials [#6363](https://github.com/ethyca/fides/pull/6363)
 
 ### Fixed
 - Fixed an issue where row selections in Action Center tables did not persist across pages [#6357](https://github.com/ethyca/fides/pull/6357)
 - Fixed bug where an error toast appeared in a privacy request page when running Fides OSS [#6364](https://github.com/ethyca/fides/pull/6364)
 - Escaping column names with spaces for BigQuery [#6380](https://github.com/ethyca/fides/pull/6380)
-- Fixing SaaS Integration tests on CI[#6363](https://github.com/ethyca/fides/pull/6363)
 - Fixed horizontal scroll appearing in the privacy request detail page when datasets with very long names are used [#6389](https://github.com/ethyca/fides/pull/6389)
 - Fixed performance issues with large dataset traversals [#6353](https://github.com/ethyca/fides/pull/6353)
 - Fixing S3 KMS presigned URLs by configuring signature version 4 for all S3 client connections [#6365](https://github.com/ethyca/fides/pull/6365)
