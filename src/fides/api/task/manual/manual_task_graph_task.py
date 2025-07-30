@@ -139,14 +139,7 @@ class ManualTaskGraphTask(GraphTask):
 
         # If no existing instances, create a new one for the current config
         # There will only be one config of each type per manual task
-        config = next(
-            (
-                config
-                for config in manual_task.configs
-                if config.is_current and config.config_type == allowed_config_type
-            ),
-            None,
-        )
+        config = manual_task.configs.filter(ManualTaskConfig.is_current == True, ManualTaskConfig.config_type == config_type).first()
         if config:
             ManualTaskInstance.create(
                 db=db,
