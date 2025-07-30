@@ -39,7 +39,7 @@ task_always_eager = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "755695c5a1405aa623b7b506398de5ec" # string
+analytics_id = "b1f66caa07f6c6813ab4dbaa3f6e64c0" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -217,6 +217,10 @@ email_send_cron_expression = "0 12 * * mon" # string
 
 # The timezone to send batch emails for DSR email integration.
 email_send_timezone = "US/Eastern" # string
+
+# Whether the memory watchdog is enabled to monitor and gracefully
+# terminate tasks that approach memory limits.
+memory_watchdog_enabled = false # boolean
 
 #-------------#
 #-- LOGGING --#

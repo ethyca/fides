@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.66.3b0.post0.dev11"
+    "version": "2.66.3b0.post0.dev12"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -18553,6 +18553,17 @@
               }
             ],
             "title": "Require Manual Request Approval"
+          },
+          "memory_watchdog_enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Memory Watchdog Enabled"
           },
           "sql_dry_run": {
             "anyOf": [
