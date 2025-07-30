@@ -338,6 +338,122 @@ def create_connection_config_from_template_no_save(
     return connection_config
 
 
+def merge_dataset_dicts(
+    existing_dataset: Dict,
+    template_dataset: Dict,
+    preserved_properties: Optional[List[str]] = None,
+) -> Dict:
+    """
+    Merges an existing dataset with a template dataset, preserving specific properties
+    from the existing dataset while adopting the structure and other properties from the template.
+
+    Args:
+        existing_dataset: The current dataset configuration
+        template_dataset: The new template dataset configuration
+        preserved_properties: List of properties to preserve from existing dataset. Defaults to ['data_categories'] but can be extended.
+
+    Returns:
+        A merged dataset with template structure and preserved properties from existing dataset
+    """
+    if preserved_properties is None:
+        preserved_properties = ["data_categories"]
+
+    # Start with the template dataset as the base (adopts new structure)
+    merged_dataset = template_dataset.copy()
+
+    def merge_collections(
+        existing_collections: List[Dict], template_collections: List[Dict]
+    ) -> List[Dict]:
+        """Merge collections, preserving specified properties from existing collections."""
+        # Create a mapping of existing collections by name for fast lookup
+        existing_collections_map = {
+            coll.get("name"): coll for coll in existing_collections
+        }
+
+        merged_collections = []
+        for template_coll in template_collections:
+            template_coll_name = template_coll.get("name")
+            existing_coll = existing_collections_map.get(template_coll_name)
+
+            if existing_coll:
+                # Collection exists - merge it
+                merged_coll = template_coll.copy()
+
+                # Preserve collection-level properties
+                for prop in preserved_properties:
+                    if prop in existing_coll:
+                        merged_coll[prop] = existing_coll[prop]
+
+                # Merge fields if they exist
+                if "fields" in template_coll and "fields" in existing_coll:
+                    merged_coll["fields"] = merge_fields(
+                        existing_coll["fields"], template_coll["fields"]
+                    )
+
+                merged_collections.append(merged_coll)
+            else:
+                # New collection from template - keep as is
+                merged_collections.append(template_coll)
+
+        return merged_collections
+
+    def merge_fields(
+        existing_fields: List[Dict], template_fields: List[Dict]
+    ) -> List[Dict]:
+        """Merge fields, preserving specified properties from existing fields."""
+        # Create a mapping of existing fields by name for fast lookup
+        existing_fields_map = {field.get("name"): field for field in existing_fields}
+
+        merged_fields = []
+        for template_field in template_fields:
+            template_field_name = template_field.get("name")
+            existing_field = existing_fields_map.get(template_field_name)
+
+            if existing_field:
+                # Field exists - merge it
+                merged_field = template_field.copy()
+
+                # Preserve field-level properties
+                for prop in preserved_properties:
+                    if prop in existing_field:
+                        merged_field[prop] = existing_field[prop]
+
+                # Preserve fides_meta properties
+                if (
+                    "fides_meta" in existing_field
+                    and existing_field["fides_meta"] is not None
+                ):
+                    if "fides_meta" not in merged_field:
+                        merged_field["fides_meta"] = {}
+
+                    for prop in preserved_properties:
+                        if prop in existing_field["fides_meta"]:
+                            merged_field["fides_meta"][prop] = existing_field[
+                                "fides_meta"
+                            ][prop]
+
+                # Handle nested fields recursively
+                if "fields" in template_field and "fields" in existing_field:
+                    merged_field["fields"] = merge_fields(
+                        existing_field["fields"], template_field["fields"]
+                    )
+
+                merged_fields.append(merged_field)
+            else:
+                # New field from template - keep as is
+                merged_fields.append(template_field)
+
+        return merged_fields
+
+    # Merge the collections
+    if "collections" in existing_dataset and "collections" in template_dataset:
+        merged_dataset["collections"] = merge_collections(
+            existing_dataset["collections"], template_dataset["collections"]
+        )
+
+    return merged_dataset
+
+
 def upsert_dataset_config_from_template(
     db: Session,
     connection_config: ConnectionConfig,
@@ -355,10 +471,36 @@ def upsert_dataset_config_from_template(
     dataset_from_template: Dict = replace_dataset_placeholders(
         template.dataset, "<instance_fides_key>", template_values.instance_key
     )
+
+    # Check if there's an existing dataset to merge with
+    existing_dataset_config = DatasetConfig.filter(
+        db=db,
+        conditions=(
+            (DatasetConfig.connection_config_id == connection_config.id)
+            & (DatasetConfig.fides_key == template_values.instance_key)
+        ),
+    ).first()
+
+    final_dataset = dataset_from_template
+    if existing_dataset_config and existing_dataset_config.ctl_dataset:
+        # Get the existing dataset structure
+        # Convert SQLAlchemy model to dict for merging
+        ctl_dataset = existing_dataset_config.ctl_dataset
+        existing_dataset = {
+            "fides_key": ctl_dataset.fides_key,
+            "name": ctl_dataset.name,
+            "description": ctl_dataset.description,
+            "data_categories": ctl_dataset.data_categories,
+            "collections": ctl_dataset.collections,
+            "fides_meta": ctl_dataset.fides_meta,
+        }
+        # Merge datasets, preserving data_categories from existing dataset
+        final_dataset = merge_dataset_dicts(existing_dataset, dataset_from_template)
+
     data = {
         "connection_config_id": connection_config.id,
         "fides_key": template_values.instance_key,
-        "dataset": dataset_from_template,  # Currently used for upserting a CTL Dataset
+        "dataset": final_dataset,  # Use merged dataset that preserves data_categories
     }
     dataset_config = DatasetConfig.create_or_update(db, data=data)
     return dataset_config
