@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from typing import Any, Callable, Dict, List, Optional, Union
+from urllib.parse import quote_plus
 
 import requests
 import sendgrid
@@ -460,7 +461,7 @@ def _build_email(  # pylint: disable=too-many-return-statements, too-many-branch
             body=base_template.render(
                 {
                     "admin_ui_url": config_proxy.admin_ui.url,
-                    "username": body_params.username,
+                    "username": quote_plus(body_params.username),
                     "invite_code": body_params.invite_code,
                 }
             ),

@@ -49,9 +49,9 @@ export const consentReportingApi = baseApi.injectEndpoints({
     }),
     getAllHistoricalPrivacyPreferences: build.query<
       Page_ConsentReportingSchema_,
-      PaginationQueryParams & DateRange
+      PaginationQueryParams & DateRange & { include_total?: boolean }
     >({
-      query: ({ page, size, startDate, endDate }) => {
+      query: ({ page, size, startDate, endDate, include_total = true }) => {
         return {
           url: "historical-privacy-preferences",
           params: {
@@ -59,6 +59,7 @@ export const consentReportingApi = baseApi.injectEndpoints({
             size,
             request_timestamp_gt: startOfDayIso(startDate),
             request_timestamp_lt: endOfDayIso(endDate),
+            include_total,
           },
         };
       },
