@@ -139,7 +139,19 @@ class ManualTaskGraphTask(GraphTask):
 
         # If no existing instances, create a new one for the current config
         # There will only be one config of each type per manual task
-        config = manual_task.configs.filter(ManualTaskConfig.is_current == True, ManualTaskConfig.config_type == config_type).first()
+        config = next(
+            (
+                config
+                for config in sorted(
+                    manual_task.configs,
+                    key=lambda c: c.version if hasattr(c, "version") else 0,
+                    reverse=True,
+                )
+                if config.is_current and config.config_type == allowed_config_type
+            ),
+            None,
+        )
+
         if config:
             ManualTaskInstance.create(
                 db=db,
@@ -226,17 +238,20 @@ class ManualTaskGraphTask(GraphTask):
         """Process attachment field and return attachment map or None."""
         attachment_map: dict[str, dict[str, Any]] = {}
 
-        for attachment in submission.attachments.filter(ManualTaskAttachment.attachment_type == AttachmentType.include_with_access_package):
-                try:
-                    size, url = attachment.retrieve_attachment()
-                    attachment_map[attachment.file_name] = {
-                        "url": str(url) if url else None,
-                        "size": (format_size(size) if size else "Unknown"),
-                    }
-                except Exception as exc:  # pylint: disable=broad-exception-caught
-                    logger.warning(
-                        f"Error retrieving attachment {attachment.file_name}: {str(exc)}"
-                    )
+        for attachment in filter(
+            lambda a: a.attachment_type == AttachmentType.include_with_access_package,
+            submission.attachments,
+        ):
+            try:
+                size, url = attachment.retrieve_attachment()
+                attachment_map[attachment.file_name] = {
+                    "url": str(url) if url else None,
+                    "size": (format_size(size) if size else "Unknown"),
+                }
+            except Exception as exc:  # pylint: disable=broad-exception-caught
+                logger.warning(
+                    f"Error retrieving attachment {attachment.file_name}: {str(exc)}"
+                )
         return attachment_map or None
 
     def dry_run_task(self) -> int:
