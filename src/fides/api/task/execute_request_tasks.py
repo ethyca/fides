@@ -1,5 +1,6 @@
-from typing import Any, Callable, List, Optional, Tuple
+from typing import Callable, List, Optional, Tuple
 
+from celery.app.task import Task
 from loguru import logger
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Query, Session
@@ -578,7 +579,7 @@ def queue_request_task(
     request_task: RequestTask, privacy_request_proceed: bool = True
 ) -> None:
     """Queues the RequestTask in Celery and caches the Celery Task ID"""
-    celery_task_fn: Any = mapping[request_task.action_type]
+    celery_task_fn: Task = mapping[request_task.action_type]
     celery_task = celery_task_fn.apply_async(
         queue=DSR_QUEUE_NAME,
         kwargs={
