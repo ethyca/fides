@@ -1,9 +1,4 @@
-import {
-  ActionType,
-  AttachmentResponse,
-  DrpAction,
-  PrivacyRequestStatus,
-} from "~/types/api";
+import { ActionType, DrpAction, PrivacyRequestStatus } from "~/types/api";
 
 export interface DenyPrivacyRequest {
   id: string;
@@ -105,6 +100,8 @@ export interface PrivacyRequestEntity {
   };
   created_at: string;
   reviewed_by: string;
+  finalized_at?: string;
+  finalized_by?: string;
   id: string;
   days_left?: number;
   source?: string;
@@ -243,5 +240,5 @@ export interface ActivityTimelineItem {
   isSkipped: boolean;
   isAwaitingInput: boolean;
   id: string;
-  attachments?: AttachmentResponse[];
+  attachments?: { id: string; file_name: string }[];
 }

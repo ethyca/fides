@@ -61,6 +61,10 @@ class ExecutionSettings(FidesSettings):
         default=False,
         description="Temporary flag to switch to using DSR 3.0 to process your tasks.",
     )
+    erasure_request_finalization_required: bool = Field(
+        default=False,
+        description="Whether erasure requests require an additional finalization step after all collections have been executed.",
+    )
     fuzzy_search_enabled: bool = Field(
         default=True,
         description="Whether fuzzy search is enabled for privacy request lookups.",
