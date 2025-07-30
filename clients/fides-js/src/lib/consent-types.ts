@@ -176,6 +176,15 @@ export interface FidesInitOptions {
    * Defaults to `undefined`.
    */
   fidesModalDefaultView?: FidesModalDefaultView;
+
+  /**
+   * Whether to show the modal immediately on page load.
+   *
+   * - "immediate" = skips banner and shows the modal immediately on page load
+   * - "default" = shows the modal when the "manage preferences" link is clicked (default behavior)
+   *
+   */
+  fidesModalDisplay?: "immediate" | "default";
 }
 
 /**
@@ -828,6 +837,7 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesConsentFlagType"
   | "fidesInitializedEventMode"
   | "fidesModalDefaultView"
+  | "fidesModalDisplay"
 >;
 
 export type FidesExperienceTranslationOverrides = {
