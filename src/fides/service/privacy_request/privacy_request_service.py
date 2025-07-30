@@ -674,6 +674,35 @@ def _requeue_privacy_request(
         db,
     )
 
+def _requeue_polling_request(
+    db: Session,
+    privacy_request: PrivacyRequest,
+    async_task: RequestTask,
+) -> None:
+    """Re-queue a Privacy request that polling async tasks for a given privacy request"""
+    # Check that the privacy request is approved or in processing
+    # TODO Extract into method
+    if privacy_request.status not in [
+        PrivacyRequestStatus.approved,
+        PrivacyRequestStatus.in_processing,
+    ]:
+        raise PrivacyRequestError(
+            f"Cannot re-queue privacy request {privacy_request.id} with status {privacy_request.status.value}"
+        )
+    elif async_task.action_type == ActionType.erasure:
+        resume_step = CurrentStep.erasure
+    elif async_task.action_type == ActionType.access:
+        resume_step = CurrentStep.access
+    else:
+        raise PrivacyRequestError(
+            f"Cannot run polling request for {privacy_request.id} with action type {async_task.action_type}. Only Access and erasure are supported."
+        )
+
+    return _process_privacy_request_restart(
+        privacy_request,
+        resume_step,
+        db,
+    )
 
 def _process_privacy_request_restart(
     privacy_request: PrivacyRequest,
