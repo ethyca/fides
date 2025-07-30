@@ -76,7 +76,7 @@ class TestSnowflakeConnector:
         )
 
 
-@pytest.mark.integration_external
+@pytest.mark.integration
 @pytest.mark.integration_snowflake
 class TestSnowflakeConnectorTableExists:
     def test_table_exists(
