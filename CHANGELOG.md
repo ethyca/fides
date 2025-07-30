@@ -52,6 +52,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed bug where an error toast appeared in a privacy request page when running Fides OSS [#6364](https://github.com/ethyca/fides/pull/6364)
 - Escaping column names with spaces for BigQuery [#6380](https://github.com/ethyca/fides/pull/6380)
 - Fixed horizontal scroll appearing in the privacy request detail page when datasets with very long names are used [#6389](https://github.com/ethyca/fides/pull/6389)
+- Fixed performance issues with large dataset traverals [#6353](https://github.com/ethyca/fides/pull/6353)
 
 ## [2.66.2](https://github.com/ethyca/fides/compare/2.66.1...2.66.2)
 
