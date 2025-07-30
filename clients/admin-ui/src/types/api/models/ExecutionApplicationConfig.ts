@@ -2,14 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-/**
- * SQL dry run mode for controlling execution of SQL statements in privacy requests
- */
-export enum SqlDryRunMode {
-  NONE = "none",
-  ACCESS = "access",
-  ERASURE = "erasure",
-}
+import type { SqlDryRunMode } from "./SqlDryRunMode";
 
 export type ExecutionApplicationConfig = {
   subject_identity_verification_required?: boolean | null;
