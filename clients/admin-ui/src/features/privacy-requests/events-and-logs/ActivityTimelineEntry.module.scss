@@ -50,24 +50,20 @@ $horizontal-padding: 20px;
 .header {
   width: 100%;
   display: flex;
-  flex-wrap: wrap;
   gap: 8px;
   align-items: center;
-  justify-content: space-between;
-}
-
-.headerLeft {
-  display: flex;
+  justify-content: flex-start;
   flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-  flex: 1;
-}
 
-.headerRight {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
+  // In large enough screens, we want to show all components
+  // in a single line, without wrapping or shrinking.
+  // (except for the title and timestamp, which can shrink and will show ellipsis)
+  @media (min-width: 1280px) {
+    flex-wrap: nowrap;
+  }
+  & > * {
+    flex-shrink: 0;
+  }
 }
 
 .author {
@@ -75,6 +71,7 @@ $horizontal-padding: 20px;
 
 .title {
   font-weight: 600;
+  flex-shrink: 1;
 
   &--error {
     color: var(--fidesui-error);
@@ -82,6 +79,15 @@ $horizontal-padding: 20px;
 
   &--awaiting-input {
     color: var(--fidesui-minos);
+  }
+
+  // In small screens, the entire entry will not fit in a single line.
+  // By making the title 100% width, we ensure it will wrap and display the entry as 3 separate lines.
+  width: 100%;
+
+  // In large enough screens, we want to show the whole entry in a single line.
+  @media (min-width: 1280px) {
+    width: auto;
   }
 }
 
