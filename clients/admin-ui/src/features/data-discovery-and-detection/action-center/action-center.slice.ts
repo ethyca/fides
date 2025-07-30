@@ -12,6 +12,7 @@ import {
   PromoteResourcesResponse,
   Schema,
   StagedResourceAPIResponse,
+  WebsiteMonitorResourcesFilters,
 } from "~/types/api";
 import {
   PaginationQueryParams,
@@ -265,7 +266,7 @@ const actionCenterApi = baseApi.injectEndpoints({
       }),
     }),
     getWebsiteMonitorResourceFilters: build.query<
-      Record<string, string[]>,
+      WebsiteMonitorResourcesFilters,
       {
         monitor_config_id: string;
         resolved_system_id: string;
