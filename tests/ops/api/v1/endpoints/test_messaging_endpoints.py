@@ -11,9 +11,7 @@ from starlette.testclient import TestClient
 from fides.api.common_exceptions import MessageDispatchException
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.messaging import MessagingConfig
-from fides.api.models.messaging_template import (
-    MessagingTemplate,
-)
+from fides.api.models.messaging_template import MessagingTemplate
 from fides.api.schemas.messaging.messaging import (
     BasicMessagingTemplateResponse,
     MessagingActionType,
@@ -424,7 +422,7 @@ class TestPostMessagingConfig:
                 "aws_region": "us-east-1",
                 "email_from": "test@test.com",
                 "domain": "example.com",
-            }
+            },
         }
 
         auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
@@ -432,7 +430,18 @@ class TestPostMessagingConfig:
         response = api_client.post(url, headers=auth_header, json=aws_ses_payload)
         assert 200 == response.status_code
         response_body = json.loads(response.text)
-        assert response_body == {'service_type': 'aws_ses', 'details': {'email_from': 'test@test.com', 'domain': 'example.com', 'aws_region': 'us-east-1'}, 'name': 'aws_ses_email', 'key': 'my_aws_ses_email_config', 'last_test_timestamp': None, 'last_test_succeeded': None}
+        assert response_body == {
+            "service_type": "aws_ses",
+            "details": {
+                "email_from": "test@test.com",
+                "domain": "example.com",
+                "aws_region": "us-east-1",
+            },
+            "name": "aws_ses_email",
+            "key": "my_aws_ses_email_config",
+            "last_test_timestamp": None,
+            "last_test_succeeded": None,
+        }
 
         email_config = db.query(MessagingConfig).filter_by(
             key="my_aws_ses_email_config"
@@ -454,7 +463,7 @@ class TestPostMessagingConfig:
             "details": {
                 "aws_region": "us-east-1",
                 "email_from": "test@test.com",
-            }
+            },
         }
 
         auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
@@ -462,12 +471,27 @@ class TestPostMessagingConfig:
         response = api_client.post(url, headers=auth_header, json=aws_ses_payload)
         assert 200 == response.status_code
         response_body = json.loads(response.text)
-        assert response_body == {'service_type': 'aws_ses', 'details': {'email_from': 'test@test.com', 'domain': None, 'aws_region': 'us-east-1'}, 'name': 'aws_ses_email', 'key': 'my_aws_ses_email_config', 'last_test_timestamp': None, 'last_test_succeeded': None}
+        assert response_body == {
+            "service_type": "aws_ses",
+            "details": {
+                "email_from": "test@test.com",
+                "domain": None,
+                "aws_region": "us-east-1",
+            },
+            "name": "aws_ses_email",
+            "key": "my_aws_ses_email_config",
+            "last_test_timestamp": None,
+            "last_test_succeeded": None,
+        }
 
         email_config = db.query(MessagingConfig).filter_by(
             key="my_aws_ses_email_config"
         )[0]
-        assert email_config.details == {'aws_region': 'us-east-1', 'domain': None, 'email_from': 'test@test.com'}
+        assert email_config.details == {
+            "aws_region": "us-east-1",
+            "domain": None,
+            "email_from": "test@test.com",
+        }
         email_config.delete(db)
 
     def test_post_aws_ses_email_config_email_from_not_present(
@@ -484,7 +508,7 @@ class TestPostMessagingConfig:
             "details": {
                 "aws_region": "us-east-1",
                 "domain": "example.com",
-            }
+            },
         }
 
         auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
@@ -496,7 +520,11 @@ class TestPostMessagingConfig:
             "key": "my_aws_ses_email_config",
             "name": "aws_ses_email",
             "service_type": MessagingServiceType.aws_ses.value,
-            "details": {'email_from': None, 'domain': 'example.com', 'aws_region': 'us-east-1'},
+            "details": {
+                "email_from": None,
+                "domain": "example.com",
+                "aws_region": "us-east-1",
+            },
             "last_test_timestamp": None,
             "last_test_succeeded": None,
         }
@@ -504,7 +532,11 @@ class TestPostMessagingConfig:
         email_config = db.query(MessagingConfig).filter_by(
             key="my_aws_ses_email_config"
         )[0]
-        assert email_config.details == {'domain': 'example.com', 'aws_region': 'us-east-1', 'email_from': None}
+        assert email_config.details == {
+            "domain": "example.com",
+            "aws_region": "us-east-1",
+            "email_from": None,
+        }
         email_config.delete(db)
 
     def test_post_aws_ses_email_config_missing_details_data(
@@ -520,7 +552,7 @@ class TestPostMessagingConfig:
             "service_type": MessagingServiceType.aws_ses.value,
             "details": {
                 "aws_region": "us-east-1",
-            }
+            },
         }
 
         auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])

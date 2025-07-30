@@ -439,14 +439,6 @@ class MessagingConfigResponse(MessagingConfigBase):
     key: FidesKey
     last_test_timestamp: Optional[datetime] = None
     last_test_succeeded: Optional[bool] = None
-    # Exclude nullable fields from the serialized response if they are None so that
-    # downstream clients/tests that rely on a minimal payload are unaffected.
-    model_config = ConfigDict(
-        from_attributes=True,
-        use_enum_values=True,
-        populate_by_name=True,
-        exclude_none=True,
-    )
 
 
 class MessagingConnectionTestStatus(Enum):
