@@ -78,6 +78,7 @@ export const useDiscoveredSystemAggregateColumns = ({
               menu={{
                 items: expandCollapseAllMenuItems,
                 onClick: (e) => {
+                  e.domEvent.stopPropagation();
                   if (e.key === "expand-all") {
                     setIsLocationsExpanded(true);
                   } else if (e.key === "collapse-all") {
@@ -115,6 +116,7 @@ export const useDiscoveredSystemAggregateColumns = ({
               menu={{
                 items: expandCollapseAllMenuItems,
                 onClick: (e) => {
+                  e.domEvent.stopPropagation();
                   if (e.key === "expand-all") {
                     setIsDomainsExpanded(true);
                   } else if (e.key === "collapse-all") {

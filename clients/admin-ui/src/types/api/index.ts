@@ -630,6 +630,7 @@ export type { ViolationAttributes } from "./models/ViolationAttributes";
 export { WebhookDirection } from "./models/WebhookDirection";
 export type { WebhookOrder } from "./models/WebhookOrder";
 export type { WebsiteMonitorParams } from "./models/WebsiteMonitorParams";
+export type { WebsiteMonitorResourcesFilters } from "./models/WebsiteMonitorResourcesFilters";
 export type { WebsiteSchema } from "./models/WebsiteSchema";
 export type { WorkerHealthCheck } from "./models/WorkerHealthCheck";
 export type { WorkerInfo } from "./models/WorkerInfo";
