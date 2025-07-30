@@ -456,8 +456,6 @@ class TestEnhancedRequeueInterruptedTasks:
         # Clean up
         privacy_request.delete(db)
 
-
-
     @pytest.mark.usefixtures("privacy_request_with_high_retry_count")
     @mock.patch(
         "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
@@ -510,7 +508,6 @@ class TestEnhancedRequeueInterruptedTasks:
 
         # Should cancel the tasks and error the request
         mock_cancel_interrupted_tasks.assert_called_once()
-
 
     @mock.patch("fides.api.service.privacy_request.request_service.logger")
     @mock.patch(
