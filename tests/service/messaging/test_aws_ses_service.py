@@ -5,8 +5,8 @@ import pytest
 from fides.api.models.messaging import MessagingConfig
 from fides.api.schemas.messaging.messaging import (
     MessagingServiceDetailsAWS_SES,
-    MessagingServiceSecretsAWS_SES,
 )
+from fides.api.schemas.messaging.shared_schemas import MessagingServiceSecretsAWS_SES
 from fides.service.messaging.aws_ses_service import AWS_SES_Service, AWS_SESException
 
 
