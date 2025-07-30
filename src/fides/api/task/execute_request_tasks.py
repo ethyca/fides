@@ -316,16 +316,6 @@ def run_access_node(
         )
     except Exception as e:
         logger.error(f"Error in run_access_node: {e}")
-        # Mark the parent privacy request as errored so it is not re-dispatched.
-        try:
-            with self.get_new_session() as session:
-                pr = PrivacyRequest.get(db=session, object_id=privacy_request_id)
-                if pr:
-                    pr.error_processing(db=session)
-        except (
-            Exception
-        ) as db_exc:  # pragma: no cover – best effort to not mask original
-            logger.warning("Failed to mark privacy request errored: {}", db_exc)
         raise
 
 
