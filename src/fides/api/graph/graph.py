@@ -180,8 +180,19 @@ class DatasetGraph:
         this is a destructive operation on the input datasets, as it
         will alter references within them"""
 
-        # build nodes
-        nodes = [Node(dr, ds) for dr in datasets for ds in dr.collections]
+        # build nodes, filtering out collections with skip_processing=True
+        nodes = []
+        for dr in datasets:
+            for ds in dr.collections:
+                if ds.skip_processing:
+                    logger.debug(
+                        "Skipping collection {} on dataset {} marked with skip_processing",
+                        ds.name,
+                        dr.name,
+                    )
+                    continue
+                nodes.append(Node(dr, ds))
+
         self.nodes: dict[CollectionAddress, Node] = {
             node.address: node for node in nodes
         }

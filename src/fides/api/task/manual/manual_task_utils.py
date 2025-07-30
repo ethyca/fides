@@ -54,7 +54,7 @@ def get_manual_task_addresses(db: Session) -> list[CollectionAddress]:
     """
     # Get all connection configs that have manual tasks (excluding disabled ones)
     connection_configs_with_manual_tasks = get_connection_configs_with_manual_tasks(db)
-    logger.info(
+    logger.debug(
         f"Found {len(connection_configs_with_manual_tasks)} connection configs with manual tasks"
     )
 
@@ -214,16 +214,16 @@ def create_manual_task_artificial_graphs(
         List of GraphDataset objects representing manual tasks as individual collections
     """
 
-    logger.info("Creating manual task artificial graphs")
+    logger.debug("Creating manual task artificial graphs")
     manual_task_graphs = []
     manual_addresses = get_manual_task_addresses(db)
-    logger.info(
+    logger.debug(
         f"Found {len(manual_addresses)} manual task addresses: {manual_addresses}"
     )
 
     for address in manual_addresses:
         connection_key = address.dataset
-        logger.info(
+        logger.debug(
             f"Processing manual task address: {address} for connection: {connection_key}"
         )
 
@@ -245,8 +245,8 @@ def create_manual_task_artificial_graphs(
             )
 
             manual_task_graphs.append(graph_dataset)
-            logger.info(
-                f"Created manual task graph for {connection_key} with {len(collection.after)} dependencies"
+            logger.debug(
+                f"Successfully created manual task graph for connection {connection_key}"
             )
 
     logger.info(f"Created {len(manual_task_graphs)} manual task graphs")
