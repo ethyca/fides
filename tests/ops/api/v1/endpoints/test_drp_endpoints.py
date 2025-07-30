@@ -685,15 +685,18 @@ class TestDrpRevoke:
         assert privacy_request.status == PrivacyRequestStatus.canceled
 
         assert revoke_task_mock.called
-        assert revoke_task_mock._mock_call_count == 2
+        assert revoke_task_mock._mock_call_count == 1
 
-        # Revokes privacy request and request task celery task
-        assert {
-            revoke_task_mock._mock_call_args_list[0][0][0],
-            revoke_task_mock._mock_call_args_list[1][0][0],
-        } == {
+        # Revokes privacy request and request task celery task in batch
+        revoked_task_ids = revoke_task_mock.call_args[0][
+            0
+        ]  # First argument is the list of task IDs
+        assert isinstance(revoked_task_ids, list)
+        assert len(revoked_task_ids) == 2
+        assert set(revoked_task_ids) == {
             "mock_celery_task_id_for_request_task",
             "mock_celery_task_id_for_privacy_request",
         }
 
-        revoke_task_mock._mock_call_args_list[0][1] == {"terminate": False}
+        # Verify terminate=False for graceful shutdown
+        assert revoke_task_mock.call_args.kwargs.get("terminate") is False

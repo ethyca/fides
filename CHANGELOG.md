@@ -27,6 +27,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added the ability to edit more fields for GVL vendors [#6341](https://github.com/ethyca/fides/pull/6341)
 - Added `release_version` to the global `window.Fides` object in FidesJS [#6239](https://github.com/ethyca/fides/pull/6239)
 - Added new Conditional Dependencies and Evaluator data structures for eventual use with Manual Tasks on DSRs. [#6354](https://github.com/ethyca/fides/pull/6354)
+- Added a memory watcher for Celery tasks on Privacy Requests and a configuration to enable (memory_watchdog_enabled) [#6375](https://github.com/ethyca/fides/pull/6375)
 - Added display of special-purpose-only vendors in a separate list within the FidesJS overlay. [#6358](https://github.com/ethyca/fides/pull/6358)
 - Added Manual Task Conditional Dependencies table [#6356](https://github.com/ethyca/fides/pull/6356)
 - Added record counts to the privacy request event log entries in the Admin UI [#6374](https://github.com/ethyca/fides/pull/6374)
@@ -45,6 +46,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Pass `IS_TEST` build parameter to Dockfile for dev builds to preserve dev `data-testid` attributes [#6382] (https://github.com/ethyca/fides/pull/6382)
 - Migrated datamap lineage visualization from Cytoscape.js to ReactFlow with Dagre layout engine [#6381](https://github.com/ethyca/fides/pull/6381)
 - Created new module for ManualTaskAddress and updated ManualTaskGraphTask functionality using unique constraints on ManualTask parent_entity. [#6383](https://github.com/ethyca/fides/pull/6383)
+- Enhanced privacy request handling with retry limits and cancellation logic for interrupted tasks [#6396](https://github.com/ethyca/fides/pull/6396)
 
 
 ### Developer Experience
@@ -53,6 +55,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Fixed
 - Fixed an issue where row selections in Action Center tables did not persist across pages [#6357](https://github.com/ethyca/fides/pull/6357)
 - Fixed bug where an error toast appeared in a privacy request page when running Fides OSS [#6364](https://github.com/ethyca/fides/pull/6364)
+- Enhanced TCF API loading and failure handling [#6387](https://github.com/ethyca/fides/pull/6387)
 - Escaping column names with spaces for BigQuery [#6380](https://github.com/ethyca/fides/pull/6380)
 - Fixed horizontal scroll appearing in the privacy request detail page when datasets with very long names are used [#6389](https://github.com/ethyca/fides/pull/6389)
 - Fixed performance issues with large dataset traversals [#6353](https://github.com/ethyca/fides/pull/6353)
