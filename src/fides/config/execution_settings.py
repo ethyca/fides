@@ -57,6 +57,10 @@ class ExecutionSettings(FidesSettings):
         default=300,
         description="Seconds between polling for interrupted tasks to requeue",
     )
+    privacy_request_requeue_retry_count: int = Field(
+        default=3,
+        description="The number of times a privacy request will be requeued when its tasks are interrupted before being marked as error",
+    )
     use_dsr_3_0: bool = Field(
         default=False,
         description="Temporary flag to switch to using DSR 3.0 to process your tasks.",

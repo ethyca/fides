@@ -588,12 +588,21 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         # For access request results, mutate rows in-place to remove non-matching
         # array elements.  We already iterated over `output` above, so reuse the same
         # loop structure to keep cache locality.
+        logger.info(
+            "Filtering {} rows in {} for matching array elements.",
+            len(output),
+            self.execution_node.address,
+        )
         for row in output:
-            logger.info(
-                "Filtering row in {} for matching array elements.",
-                self.execution_node.address,
-            )
             filter_element_match(row, post_processed_node_input_data)
+
+        if len(output) > 0:
+            logger.info(
+                "Filtering completed for {} rows in {}. Post-processed node size: {}",
+                len(output),
+                self.execution_node.address,
+                len(post_processed_node_input_data),
+            )
 
         if self.request_task.id:
             # Saves intermediate access results for DSR 3.0 directly on the Request Task
