@@ -7,8 +7,8 @@ import {
   Wrap,
 } from "fidesui";
 
+import { useConnectionLogo } from "~/features/common/hooks";
 import useClickOutside from "~/features/common/hooks/useClickOutside";
-import { useGetAllConnectionTypesQuery } from "~/features/connection-type";
 import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
 import getIntegrationTypeInfo from "~/features/integrations/add-integration/allIntegrationTypes";
 import { ConnectionConfigurationResponse } from "~/types/api";
@@ -26,14 +26,12 @@ const SelectableIntegrationBox = ({
   onDetailsClick?: () => void;
   onUnfocus?: () => void;
 }) => {
-  // Fetch connection types for SAAS integration generation
-  const { data: connectionTypesData } = useGetAllConnectionTypesQuery({});
-  const connectionTypes = connectionTypesData?.items || [];
+  // Get logo data using the custom hook
+  const logoData = useConnectionLogo(integration);
 
   const integrationTypeInfo = getIntegrationTypeInfo(
     integration?.connection_type,
     integration?.saas_config?.type,
-    connectionTypes,
   );
 
   // Handle click outside to unfocus when selected
@@ -59,7 +57,7 @@ const SelectableIntegrationBox = ({
     >
       <Flex justifyContent="space-between" alignItems="flex-start">
         <Flex flexGrow={1}>
-          <ConnectionTypeLogo data={integration ?? ""} boxSize="40px" />
+          <ConnectionTypeLogo data={logoData ?? ""} boxSize="40px" />
           <Flex
             direction="column"
             flexGrow={1}

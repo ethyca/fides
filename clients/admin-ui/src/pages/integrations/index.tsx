@@ -14,6 +14,7 @@ import React, { useCallback, useMemo, useState } from "react";
 
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import FidesSpinner from "~/features/common/FidesSpinner";
+import { useConnectionLogo } from "~/features/common/hooks";
 import Layout from "~/features/common/Layout";
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
@@ -33,6 +34,16 @@ const DEFAULT_PAGE_SIZE = 50;
 interface IntegrationTableData extends ConnectionConfigurationResponse {
   integrationTypeInfo: ReturnType<typeof getIntegrationTypeInfo>;
 }
+
+// Component to render logo for each integration row
+const IntegrationLogo = ({
+  integration,
+}: {
+  integration: ConnectionConfigurationResponse;
+}) => {
+  const logoData = useConnectionLogo(integration);
+  return <ConnectionTypeLogo data={logoData} boxSize="20px" />;
+};
 
 const IntegrationListView: NextPage = () => {
   const [page, setPage] = useState(1);
@@ -99,7 +110,7 @@ const IntegrationListView: NextPage = () => {
       width: 250,
       render: (name: string | null, record) => (
         <div className="flex items-center gap-3">
-          <ConnectionTypeLogo data={record} boxSize="20px" />
+          <IntegrationLogo integration={record} />
           <Typography.Text
             ellipsis={{ tooltip: name || "(No name)" }}
             className="font-semibold"

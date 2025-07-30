@@ -8,7 +8,7 @@ import {
 } from "fidesui";
 import { ReactNode } from "react";
 
-import { useGetAllConnectionTypesQuery } from "~/features/connection-type";
+import { useConnectionLogo } from "~/features/common/hooks";
 import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
 import DeleteConnectionModal from "~/features/datastore-connections/DeleteConnectionModal";
 import useTestConnection from "~/features/datastore-connections/useTestConnection";
@@ -37,14 +37,12 @@ const IntegrationBox = ({
   const { testConnection, isLoading, testData } =
     useTestConnection(integration);
 
-  // Fetch connection types for SAAS integration generation
-  const { data: connectionTypesData } = useGetAllConnectionTypesQuery({});
-  const connectionTypes = connectionTypesData?.items || [];
+  // Get logo data using the custom hook
+  const logoData = useConnectionLogo(integration);
 
   const integrationTypeInfo = getIntegrationTypeInfo(
     integration?.connection_type,
     integration?.saas_config?.type,
-    connectionTypes,
   );
 
   // Only pass the saas type if it's a valid SaasConnectionTypes value
@@ -74,7 +72,7 @@ const IntegrationBox = ({
       data-testid={`integration-info-${integration?.key}`}
     >
       <Flex>
-        <ConnectionTypeLogo data={integration ?? ""} boxSize="50px" />
+        <ConnectionTypeLogo data={logoData ?? ""} boxSize="50px" />
         <Flex direction="column" flexGrow={1} marginLeft="16px">
           <Text color="gray.700" fontWeight="semibold">
             {integration?.name || "(No name)"}
