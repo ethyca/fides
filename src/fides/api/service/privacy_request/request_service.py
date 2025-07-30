@@ -443,82 +443,6 @@ def _cancel_interrupted_tasks_and_error_privacy_request(
         )
 
 
-def _detect_false_completions(
-    db: Session, redis_conn: FidesopsRedis
-) -> List[PrivacyRequest]:
-    """
-    Detect privacy requests that were marked as complete but may have had worker crashes.
-
-    Returns privacy requests that were recently completed but have signs of worker interruption.
-    """
-    # Look for recently completed requests (last 10 minutes)
-    recent_completed = (
-        db.query(PrivacyRequest)
-        .filter(PrivacyRequest.status == PrivacyRequestStatus.complete)
-        .filter(
-            PrivacyRequest.finished_processing_at
-            >= datetime.utcnow() - timedelta(minutes=10)
-        )
-        .filter(PrivacyRequest.deleted_at.is_(None))
-    ).all()
-
-    false_completions = []
-
-    try:
-        queued_tasks_ids = _get_task_ids_from_dsr_queue(redis_conn)
-    except Exception as queue_exc:
-        # If we can't get the queue contents, we can't verify completion states
-        # Fail safe by treating all recent completions as false completions
-        logger.error(
-            f"Failed to get task IDs from queue when checking for false completions. "
-            f"Failing safe by treating all recent completions as false completions: {queue_exc}"
-        )
-        return recent_completed  # Return all as false completions
-
-    for privacy_request in recent_completed:
-        # Check if this request has task IDs that suggest worker interruption
-        try:
-            task_id = get_cached_task_id(privacy_request.id)
-        except Exception as cache_exc:
-            # If we can't get the task ID due to cache failure, treat as false completion
-            logger.error(
-                f"Cache failure when checking completed privacy request {privacy_request.id} "
-                f"for false completion, treating as false completion: {cache_exc}"
-            )
-            false_completions.append(privacy_request)
-            continue
-
-        if task_id:
-            # If main task is not in queue and not running, but request is marked complete,
-            # this could indicate a race condition where completion was saved before worker crash
-            if task_id not in queued_tasks_ids and not celery_tasks_in_flight(
-                [task_id]
-            ):
-                # Additional check: look for incomplete request tasks
-                incomplete_tasks = (
-                    db.query(RequestTask)
-                    .filter(RequestTask.privacy_request_id == privacy_request.id)
-                    .filter(
-                        RequestTask.status.in_(
-                            [
-                                ExecutionLogStatus.in_processing,
-                                ExecutionLogStatus.pending,
-                            ]
-                        )
-                    )
-                    .count()
-                )
-
-                if incomplete_tasks > 0:
-                    logger.warning(
-                        f"Detected false completion: Privacy request {privacy_request.id} "
-                        f"marked complete but has {incomplete_tasks} incomplete tasks"
-                    )
-                    false_completions.append(privacy_request)
-
-    return false_completions
-
-
 def _handle_privacy_request_requeue(
     db: Session, privacy_request: PrivacyRequest
 ) -> None:
@@ -735,13 +659,6 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                             )
                             should_requeue = True
                             break
-
-                # Check for false completions from recent worker crashes
-                false_completions = _detect_false_completions(db, redis_conn)
-                for privacy_request in false_completions:
-                    _cancel_interrupted_tasks_and_error_privacy_request(
-                        db, privacy_request
-                    )
 
                 # Requeue the privacy request if needed
                 if should_requeue:

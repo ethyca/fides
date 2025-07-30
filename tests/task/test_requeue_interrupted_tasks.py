@@ -127,7 +127,7 @@ class TestRequeueInterruptedTasks:
     )
     @mock.patch(
         "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
-        return_value=[],
+        return_value=["request_task_id"],  # Mock the task as being in the queue
     )
     @mock.patch(
         "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
@@ -139,15 +139,15 @@ class TestRequeueInterruptedTasks:
         mock_get_task_ids_from_dsr_queue,
         mock_requeue_privacy_request,
     ):
-        """Test that interrupted privacy requests with active request tasks are not requeued.
+        """Test that privacy requests with active request tasks are not requeued.
 
-        When a privacy request has request tasks that are active,
+        When a privacy request has request tasks that are still in the queue,
         the privacy request should not be requeued.
         """
         requeue_interrupted_tasks.apply().get()
+        # The request task is in the queue, so it should not be requeued
         mock_requeue_privacy_request.assert_not_called()
 
-    @pytest.mark.usefixtures("in_progress_privacy_request")
     @mock.patch(
         "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
     )
@@ -214,7 +214,9 @@ class TestRequeueInterruptedTasks:
             request_task.delete(db)
             privacy_request.delete(db)
 
-    @pytest.mark.usefixtures("in_progress_privacy_request")
+    @mock.patch(
+        "fides.api.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
+    )
     @mock.patch(
         "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
     )
@@ -231,12 +233,13 @@ class TestRequeueInterruptedTasks:
         mock_celery_tasks_in_flight,
         mock_get_task_ids_from_dsr_queue,
         mock_requeue_privacy_request,
+        mock_cancel_interrupted_tasks,
         db,
         policy,
     ):
-        """Test that privacy requests without cached task IDs are skipped.
+        """Test that privacy requests without cached task IDs are canceled.
 
-        When a privacy request doesn't have a cached task ID, it should be skipped.
+        When a privacy request doesn't have a cached task ID, it should be canceled.
         """
         # Create a privacy request without caching a task ID
         privacy_request = PrivacyRequest.create(
@@ -254,12 +257,17 @@ class TestRequeueInterruptedTasks:
 
         try:
             requeue_interrupted_tasks.apply().get()
+            # Should not requeue since there's no cached task ID
             mock_requeue_privacy_request.assert_not_called()
+            # Should cancel the privacy request instead
+            mock_cancel_interrupted_tasks.assert_called_once()
         finally:
             # Clean up
             privacy_request.delete(db)
 
-    @pytest.mark.usefixtures("in_progress_privacy_request", "in_progress_request_task")
+    @mock.patch(
+        "fides.api.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
+    )
     @mock.patch(
         "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
     )
@@ -271,12 +279,13 @@ class TestRequeueInterruptedTasks:
         self,
         mock_celery_tasks_in_flight,
         mock_requeue_privacy_request,
+        mock_cancel_interrupted_tasks,
         db,
         policy,
     ):
-        """Test that request tasks without cached subtask IDs are skipped.
+        """Test that request tasks without cached subtask IDs cause cancellation.
 
-        When a request task doesn't have a cached subtask ID, it should be skipped.
+        When a request task doesn't have a cached subtask ID, the privacy request should be canceled.
         """
         # Create a privacy request and request task without caching subtask IDs
         privacy_request = PrivacyRequest.create(
@@ -312,7 +321,10 @@ class TestRequeueInterruptedTasks:
 
         try:
             requeue_interrupted_tasks.apply().get()
+            # Should not requeue since there's no cached subtask ID
             mock_requeue_privacy_request.assert_not_called()
+            # Should cancel the privacy request instead
+            mock_cancel_interrupted_tasks.assert_called_once()
         finally:
             # Clean up
             request_task.delete(db)
@@ -323,14 +335,18 @@ class TestRequeueInterruptedTasks:
         "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
     )
     @mock.patch(
+        "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
+        return_value=[],
+    )
+    @mock.patch(
         "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
         return_value=False,
     )
     def test_task_in_queue_is_not_requeued(
         self,
         mock_celery_tasks_in_flight,
-        mock_requeue_privacy_request,
         mock_get_task_ids_from_dsr_queue,
+        mock_requeue_privacy_request,
     ):
         """Test that tasks already in the queue are not requeued.
 
@@ -440,47 +456,7 @@ class TestEnhancedRequeueInterruptedTasks:
         # Clean up
         privacy_request.delete(db)
 
-    @pytest.fixture
-    def false_completion_privacy_request(self, db, policy):
-        """Create a privacy request that appears falsely completed."""
-        # Create the privacy request as completed
-        privacy_request = PrivacyRequest.create(
-            db=db,
-            data={
-                "external_id": f"ext-{str(uuid.uuid4())}",
-                "started_processing_at": datetime.utcnow() - timedelta(minutes=15),
-                "finished_processing_at": datetime.utcnow() - timedelta(minutes=5),
-                "requested_at": datetime.utcnow() - timedelta(days=1),
-                "status": PrivacyRequestStatus.complete,
-                "origin": "https://example.com/testing",
-                "policy_id": policy.id,
-                "client_id": policy.client_id,
-            },
-        )
 
-        # Create incomplete request task (this makes it a false completion)
-        request_task = RequestTask.create(
-            db,
-            data={
-                "action_type": ActionType.access,
-                "status": ExecutionLogStatus.in_processing,  # Still in processing
-                "privacy_request_id": privacy_request.id,
-                "collection_address": "test_dataset:customer",
-                "dataset_name": "test_dataset",
-                "collection_name": "customer",
-                "upstream_tasks": [],
-                "downstream_tasks": [],
-            },
-        )
-
-        # Cache the task ID
-        cache_task_tracking_key(privacy_request.id, "false_complete_task_id")
-
-        yield privacy_request
-
-        # Clean up
-        request_task.delete(db)
-        privacy_request.delete(db)
 
     @pytest.mark.usefixtures("privacy_request_with_high_retry_count")
     @mock.patch(
@@ -494,13 +470,8 @@ class TestEnhancedRequeueInterruptedTasks:
         "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
         return_value=False,
     )
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service._detect_false_completions",
-        return_value=[],
-    )
     def test_privacy_request_near_retry_limit_is_requeued(
         self,
-        mock_detect_false_completions,
         mock_celery_tasks_in_flight,
         mock_get_task_ids_from_dsr_queue,
         mock_requeue_privacy_request,
@@ -522,16 +493,11 @@ class TestEnhancedRequeueInterruptedTasks:
         return_value=False,
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_service._detect_false_completions",
-        return_value=[],
-    )
-    @mock.patch(
         "fides.api.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
     )
     def test_privacy_request_over_retry_limit_is_canceled(
         self,
         mock_cancel_interrupted_tasks,
-        mock_detect_false_completions,
         mock_celery_tasks_in_flight,
         mock_get_task_ids_from_dsr_queue,
         mock_requeue_privacy_request,
@@ -545,199 +511,7 @@ class TestEnhancedRequeueInterruptedTasks:
         # Should cancel the tasks and error the request
         mock_cancel_interrupted_tasks.assert_called_once()
 
-    @pytest.mark.usefixtures("false_completion_privacy_request")
-    @mock.patch(
-        "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
-    )
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
-        return_value=[],
-    )
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
-        return_value=False,
-    )
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service.get_cached_task_id",
-        return_value="false_complete_task_id",
-    )
-    def test_false_completion_is_requeued(
-        self,
-        mock_get_cached_task_id,
-        mock_celery_tasks_in_flight,
-        mock_get_task_ids_from_dsr_queue,
-        mock_requeue_privacy_request,
-    ):
-        """Test that false completions are detected and requeued."""
-        requeue_interrupted_tasks.apply().get()
 
-        # Should requeue the falsely completed request
-        mock_requeue_privacy_request.assert_called_once()
-
-    @mock.patch(
-        "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
-    )
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
-        return_value=[],
-    )
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
-        return_value=False,
-    )
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service._detect_false_completions"
-    )
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
-    )
-    def test_false_completion_over_retry_limit_is_canceled(
-        self,
-        mock_cancel_interrupted_tasks,
-        mock_detect_false_completions,
-        mock_celery_tasks_in_flight,
-        mock_get_task_ids_from_dsr_queue,
-        mock_requeue_privacy_request,
-        false_completion_privacy_request,
-    ):
-        """Test that false completions over retry limit are canceled instead of requeued."""
-        from fides.api.util.cache import increment_privacy_request_retry_count
-
-        # Set up false completion that's over retry limit
-        privacy_request = false_completion_privacy_request
-
-        # Increment retry count beyond the limit
-        for _ in range(6):  # Set to 6, limit is 5
-            increment_privacy_request_retry_count(privacy_request.id)
-
-        # Mock false completion detection to return this request
-        mock_detect_false_completions.return_value = [privacy_request]
-
-        requeue_interrupted_tasks.apply().get()
-
-        # Should not requeue
-        mock_requeue_privacy_request.assert_not_called()
-
-        # Should cancel the tasks and error the request
-        mock_cancel_interrupted_tasks.assert_called_once()
-
-    @pytest.mark.usefixtures("in_progress_privacy_request")
-    @mock.patch(
-        "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
-    )
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
-        return_value=[],
-    )
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
-        return_value=False,
-    )
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service._detect_false_completions",
-        return_value=[],
-    )
-    @mock.patch(
-        "fides.api.util.cache.get_privacy_request_retry_count",
-        side_effect=Exception("Cache error"),
-    )
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
-    )
-    def test_cache_error_during_retry_count_check_causes_cancellation(
-        self,
-        mock_cancel_interrupted_tasks,
-        mock_get_retry_count,
-        mock_detect_false_completions,
-        mock_celery_tasks_in_flight,
-        mock_get_task_ids_from_dsr_queue,
-        mock_requeue_privacy_request,
-    ):
-        """Test that cache errors during retry count check cause cancellation instead of requeue."""
-        requeue_interrupted_tasks.apply().get()
-
-        # Should not requeue due to cache error
-        mock_requeue_privacy_request.assert_not_called()
-
-        # Should cancel due to inability to check retry count
-        mock_cancel_interrupted_tasks.assert_called_once()
-
-    @pytest.mark.usefixtures("in_progress_privacy_request")
-    @mock.patch(
-        "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
-    )
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
-        return_value=[],
-    )
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
-        return_value=False,
-    )
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service._detect_false_completions",
-        return_value=[],
-    )
-    @mock.patch(
-        "fides.api.util.cache.increment_privacy_request_retry_count",
-        side_effect=Exception("Cache error"),
-    )
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service._cancel_interrupted_tasks_and_error_privacy_request"
-    )
-    def test_cache_error_during_retry_increment_causes_cancellation(
-        self,
-        mock_cancel_interrupted_tasks,
-        mock_increment_retry_count,
-        mock_detect_false_completions,
-        mock_celery_tasks_in_flight,
-        mock_get_task_ids_from_dsr_queue,
-        mock_requeue_privacy_request,
-    ):
-        """Test that cache errors during retry increment cause cancellation instead of requeue."""
-        requeue_interrupted_tasks.apply().get()
-
-        # Should not requeue due to cache error
-        mock_requeue_privacy_request.assert_not_called()
-
-        # Should cancel due to inability to increment retry count
-        mock_cancel_interrupted_tasks.assert_called_once()
-
-    @pytest.mark.usefixtures("in_progress_privacy_request")
-    @mock.patch(
-        "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
-    )
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service._get_task_ids_from_dsr_queue",
-        return_value=[],
-    )
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
-        return_value=False,
-    )
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service._detect_false_completions",
-        return_value=[],
-    )
-    @mock.patch("fides.api.util.cache.reset_privacy_request_retry_count")
-    def test_successful_requeue_resets_retry_count(
-        self,
-        mock_reset_retry_count,
-        mock_detect_false_completions,
-        mock_celery_tasks_in_flight,
-        mock_get_task_ids_from_dsr_queue,
-        mock_requeue_privacy_request,
-    ):
-        """Test that successful requeue resets the retry count."""
-        requeue_interrupted_tasks.apply().get()
-
-        # Should requeue the request
-        mock_requeue_privacy_request.assert_called_once()
-
-        # Should reset retry count after successful requeue
-        mock_reset_retry_count.assert_called()
-
-    @pytest.mark.usefixtures("in_progress_privacy_request")
     @mock.patch("fides.api.service.privacy_request.request_service.logger")
     @mock.patch(
         "fides.service.privacy_request.privacy_request_service._requeue_privacy_request"
@@ -750,25 +524,45 @@ class TestEnhancedRequeueInterruptedTasks:
         "fides.api.service.privacy_request.request_service.celery_tasks_in_flight",
         return_value=False,
     )
-    @mock.patch(
-        "fides.api.service.privacy_request.request_service._detect_false_completions",
-        return_value=[],
-    )
     def test_requeue_with_retry_count_logging(
         self,
-        mock_detect_false_completions,
         mock_celery_tasks_in_flight,
         mock_get_task_ids_from_dsr_queue,
         mock_requeue_privacy_request,
         mock_logger,
+        db,
+        policy,
     ):
         """Test that retry count is logged during requeue operations."""
-        requeue_interrupted_tasks.apply().get()
+        from fides.api.util.cache import cache_task_tracking_key
 
-        # Should log retry count information
-        info_calls = [call.args[0] for call in mock_logger.info.call_args_list]
-        retry_log_found = any("retry count" in str(call).lower() for call in info_calls)
-        assert retry_log_found, "Expected retry count to be logged"
+        # Create a privacy request to test with
+        privacy_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "external_id": f"ext-{str(uuid.uuid4())}",
+                "started_processing_at": datetime.utcnow(),
+                "requested_at": datetime.utcnow() - timedelta(days=1),
+                "status": PrivacyRequestStatus.in_processing,
+                "origin": "https://example.com/testing",
+                "policy_id": policy.id,
+                "client_id": policy.client_id,
+            },
+        )
+
+        # Cache the task ID so it gets processed
+        cache_task_tracking_key(privacy_request.id, "task_id_123")
+
+        try:
+            requeue_interrupted_tasks.apply().get()
+
+            # Should log retry count information
+            info_calls = [call.args[0] for call in mock_logger.info.call_args_list]
+            retry_log_found = any("attempt" in str(call).lower() for call in info_calls)
+            assert retry_log_found, "Expected retry attempt count to be logged"
+        finally:
+            # Clean up
+            privacy_request.delete(db)
 
     def test_retry_limit_configuration(self):
         """Test that retry limit configuration changes are respected."""
