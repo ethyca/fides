@@ -5,7 +5,7 @@ import {
   Page_StagedResourceAPIResponse_,
   Page_SystemWithMonitorKeys_,
 } from "~/types/api";
-import { PaginationQueryParams } from "~/types/common/PaginationQueryParams";
+import { PaginationQueryParams } from "~/types/query-params";
 
 const initialState = {
   page: 1,

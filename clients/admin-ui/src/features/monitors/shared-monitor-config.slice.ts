@@ -1,7 +1,7 @@
 import { baseApi } from "~/features/common/api.slice";
 import { Page_SharedMonitorConfig_ } from "~/types/api/models/Page_SharedMonitorConfig_";
 import { SharedMonitorConfig } from "~/types/api/models/SharedMonitorConfig";
-import { PaginationQueryParams } from "~/types/common/PaginationQueryParams";
+import { PaginationQueryParams } from "~/types/query-params";
 
 interface SharedMonitorConfigQueryParams extends PaginationQueryParams {}
 
