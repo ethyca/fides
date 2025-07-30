@@ -39,7 +39,7 @@ task_always_eager = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "2ddd9f196df4999be4967a55dacff90c" # string
+analytics_id = "755695c5a1405aa623b7b506398de5ec" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -196,6 +196,10 @@ state_polling_interval = 30 # integer
 
 # Seconds between polling for interrupted tasks to requeue
 interrupted_task_requeue_interval = 300 # integer
+
+# The number of times a privacy request will be requeued when its tasks
+# are interrupted before being marked as error
+privacy_request_requeue_retry_count = 3 # integer
 
 # Temporary flag to switch to using DSR 3.0 to process your tasks.
 use_dsr_3_0 = false # boolean
