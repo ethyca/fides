@@ -20,6 +20,7 @@ import {
 import {
   applyOverridesToConsent,
   constructFidesRegionString,
+  createConsentProxy,
   decodeNoticeConsentString,
 } from "./consent-utils";
 import {
@@ -165,7 +166,14 @@ export const updateConsentPreferences = async ({
     window.Fides?.experience?.non_applicable_privacy_notices,
     window.Fides?.experience?.privacy_notices,
   );
-  window.Fides.consent = normalizedConsent;
+  const hasPrivacyNotices =
+    !!window.Fides?.experience?.non_applicable_privacy_notices ||
+    !!window.Fides?.experience?.privacy_notices;
+  window.Fides.consent = createConsentProxy(
+    normalizedConsent,
+    options,
+    hasPrivacyNotices,
+  );
   window.Fides.fides_string = cookie.fides_string;
   window.Fides.tcf_consent = cookie.tcf_consent;
 
