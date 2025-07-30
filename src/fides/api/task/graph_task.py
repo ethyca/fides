@@ -18,6 +18,7 @@ from fides.api.common_exceptions import (
     NotSupportedForCollection,
     PrivacyRequestErasureEmailSendRequired,
     SkippingConsentPropagation,
+    TableNotFound,
 )
 from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
@@ -126,6 +127,7 @@ def retry(
                     CollectionDisabled,
                     ActionDisabled,
                     NotSupportedForCollection,
+                    TableNotFound,
                 ) as exc:
                     logger.warning(
                         "{} - Skipping collection {} for privacy_request: {}",

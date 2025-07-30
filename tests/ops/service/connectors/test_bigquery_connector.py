@@ -992,3 +992,18 @@ class TestBigQueryConnectorTimeBasedPartitioning:
 
         assert len(results) == 1
         assert results[0]["email"] == "customer-1@example.com"
+
+
+@pytest.mark.integration_external
+@pytest.mark.integration_bigquery
+class TestBigQueryConnectorTableExists:
+    def test_table_exists(
+        self, bigquery_example_test_dataset_config_with_namespace_meta: DatasetConfig
+    ):
+        # Test with actual connection
+        dataset_config = bigquery_example_test_dataset_config_with_namespace_meta
+        connector = BigQueryConnector(dataset_config.connection_config)
+        assert connector.table_exists("silken-precinct-284918.fidesopstest.customer")
+        assert not connector.table_exists(
+            "silken-precinct-284918.fidesopstest.nonexistent_table"
+        )

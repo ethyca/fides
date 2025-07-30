@@ -144,3 +144,17 @@ class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
         # Defaulting to true for now so we can keep the default behavior and
         # incrementally determine the need for primary keys across all connectors
         return True
+
+    def get_qualified_table_name(self, node: ExecutionNode) -> str:
+        """
+        Get the fully qualified table name for the given execution node.
+        """
+        raise NotImplementedError(
+            "get_qualified_table_name is not implemented by this connector"
+        )
+
+    def table_exists(self, qualified_table_name: str) -> bool:
+        """
+        Check if a table exists in the datastore.
+        """
+        raise NotImplementedError("table_exists is not implemented by this connector")
