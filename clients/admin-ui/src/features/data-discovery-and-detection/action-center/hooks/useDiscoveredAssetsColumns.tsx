@@ -223,12 +223,12 @@ export const useDiscoveredAssetsColumns = ({
       },
     ];
 
-    // Add discovery column if flag is enabled
+    // Add compliance column if flag is enabled
     if (assetConsentStatusLabels) {
       baseColumns.push({
         title: () => (
           <Space>
-            <div>Discovery</div>
+            <div>Compliance</div>
             {aggregatedConsent === ConsentStatus.WITHOUT_CONSENT && (
               <DiscoveryStatusIcon
                 consentStatus={{
