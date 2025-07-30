@@ -5,8 +5,7 @@ import {
   Page_ConsentReportingSchema_,
   PreferencesSavedExtended,
 } from "~/types/api";
-import { DateRange } from "~/types/common/DateRange";
-import { PaginationQueryParams } from "~/types/common/PaginationQueryParams";
+import { DateRangeParams, PaginationQueryParams } from "~/types/query-params";
 
 const startOfDayIso = (date?: Dayjs | null) =>
   date?.utc()?.startOf("day").toISOString();
@@ -32,7 +31,7 @@ export const consentReportingApi = baseApi.injectEndpoints({
       providesTags: ["Current Privacy Preferences"],
     }),
 
-    downloadReport: build.query<any, DateRange>({
+    downloadReport: build.query<any, DateRangeParams>({
       query: ({ startDate, endDate }) => {
         const params = {
           created_gt: startOfDayIso(startDate),
@@ -49,7 +48,7 @@ export const consentReportingApi = baseApi.injectEndpoints({
     }),
     getAllHistoricalPrivacyPreferences: build.query<
       Page_ConsentReportingSchema_,
-      PaginationQueryParams & DateRange
+      PaginationQueryParams & DateRangeParams
     >({
       query: ({ page, size, startDate, endDate }) => {
         return {

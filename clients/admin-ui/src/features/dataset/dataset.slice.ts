@@ -10,8 +10,7 @@ import {
   GenerateResponse,
   Page_Dataset_,
 } from "~/types/api";
-import { PaginationQueryParams } from "~/types/common/PaginationQueryParams";
-import { SearchQueryParams } from "~/types/common/SearchQueryParams";
+import { PaginationQueryParams, SearchQueryParams } from "~/types/query-params";
 
 export interface State {
   activeDatasetFidesKey?: string;
