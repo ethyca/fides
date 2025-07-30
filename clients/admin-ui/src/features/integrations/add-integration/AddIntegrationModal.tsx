@@ -2,6 +2,7 @@ import { AntButton as Button, UseDisclosureReturn } from "fidesui";
 import { useState } from "react";
 
 import FormModal from "~/features/common/modals/FormModal";
+import { useGetAllConnectionTypesQuery } from "~/features/connection-type";
 import getIntegrationTypeInfo, {
   IntegrationTypeInfo,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
@@ -36,6 +37,10 @@ const AddIntegrationModal = ({
     loading: boolean;
   } | null>(null);
 
+  // Fetch connection types for SAAS integration generation
+  const { data: connectionTypesData } = useGetAllConnectionTypesQuery({});
+  const connectionTypes = connectionTypesData?.items || [];
+
   const connectionOption = useIntegrationOption(
     integrationType?.placeholder.connection_type,
     integrationType?.placeholder?.saas_config?.type as SaasConnectionTypes,
@@ -44,6 +49,7 @@ const AddIntegrationModal = ({
   const { description } = getIntegrationTypeInfo(
     integrationType?.placeholder.connection_type,
     integrationType?.placeholder.saas_config?.type,
+    connectionTypes,
   );
 
   const handleCancel = () => {

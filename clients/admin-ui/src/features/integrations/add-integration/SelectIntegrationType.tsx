@@ -3,12 +3,14 @@ import { useMemo, useState } from "react";
 
 import { useFlags } from "~/features/common/features";
 import FidesSpinner from "~/features/common/FidesSpinner";
-import {
+import { useGetAllConnectionTypesQuery } from "~/features/connection-type";
+import getIntegrationTypeInfo, {
   INTEGRATION_TYPE_LIST,
   IntegrationTypeInfo,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
 import { ConnectionCategory } from "~/features/integrations/ConnectionCategory";
 import SelectableIntegrationBox from "~/features/integrations/SelectableIntegrationBox";
+import { ConnectionType } from "~/types/api";
 
 enum IntegrationCategoryFilter {
   ALL = "All",
@@ -19,6 +21,11 @@ enum IntegrationCategoryFilter {
   WEBSITE = "Website",
   CRM = "CRM",
   MANUAL = "Manual",
+  MARKETING = "Marketing",
+  ANALYTICS = "Analytics",
+  ECOMMERCE = "E-commerce",
+  COMMUNICATION = "Communication",
+  PAYMENTS = "Payments",
 }
 
 type Props = {
@@ -41,6 +48,42 @@ const SelectIntegrationType = ({
     flags: { oktaMonitor },
   } = useFlags();
 
+  // Fetch connection types for SAAS integration generation
+  const { data: connectionTypesData } = useGetAllConnectionTypesQuery({});
+  const connectionTypes = useMemo(
+    () => connectionTypesData?.items || [],
+    [connectionTypesData],
+  );
+
+  // Generate dynamic integration list including all SAAS integrations
+  const allIntegrationTypes = useMemo(() => {
+    const staticIntegrations = INTEGRATION_TYPE_LIST;
+
+    // Generate SAAS integrations from connection types (excluding those already in static list)
+    const existingSaasTypes = new Set(
+      staticIntegrations
+        .filter(
+          (integration) =>
+            integration.placeholder.connection_type === ConnectionType.SAAS,
+        )
+        .map((integration) => integration.placeholder.saas_config?.type),
+    );
+
+    const dynamicSaasIntegrations = connectionTypes
+      .filter(
+        (ct) => ct.type === "saas" && !existingSaasTypes.has(ct.identifier),
+      )
+      .map((ct) =>
+        getIntegrationTypeInfo(
+          ConnectionType.SAAS,
+          ct.identifier,
+          connectionTypes,
+        ),
+      );
+
+    return [...staticIntegrations, ...dynamicSaasIntegrations];
+  }, [connectionTypes]);
+
   // Get available categories based on flags
   const availableCategories = useMemo(() => {
     return Object.values(IntegrationCategoryFilter).filter(
@@ -51,7 +94,7 @@ const SelectIntegrationType = ({
 
   // Filter integrations based on search and category
   const filteredTypes = useMemo(() => {
-    let filtered = INTEGRATION_TYPE_LIST;
+    let filtered = allIntegrationTypes;
 
     // Filter by category
     if (selectedCategory !== IntegrationCategoryFilter.ALL) {
@@ -77,7 +120,7 @@ const SelectIntegrationType = ({
       }
       return true;
     });
-  }, [searchTerm, selectedCategory, oktaMonitor]);
+  }, [searchTerm, selectedCategory, oktaMonitor, allIntegrationTypes]);
 
   const handleCategoryChange = (value: IntegrationCategoryFilter) => {
     setIsFiltering(true);

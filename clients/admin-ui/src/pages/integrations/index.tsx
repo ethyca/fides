@@ -18,6 +18,7 @@ import Layout from "~/features/common/Layout";
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { formatDate } from "~/features/common/utils";
+import { useGetAllConnectionTypesQuery } from "~/features/connection-type";
 import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
 import { useGetAllDatastoreConnectionsQuery } from "~/features/datastore-connections/datastore-connection.slice";
 import AddIntegrationModal from "~/features/integrations/add-integration/AddIntegrationModal";
@@ -56,6 +57,13 @@ const IntegrationListView: NextPage = () => {
     [page, pageSize],
   );
 
+  // Fetch connection types for SAAS integration generation
+  const { data: connectionTypesData } = useGetAllConnectionTypesQuery({});
+  const connectionTypes = useMemo(
+    () => connectionTypesData?.items || [],
+    [connectionTypesData],
+  );
+
   const { data, isLoading } = useGetAllDatastoreConnectionsQuery({
     connection_type: SUPPORTED_INTEGRATIONS,
     size: pageSize,
@@ -73,9 +81,10 @@ const IntegrationListView: NextPage = () => {
         integrationTypeInfo: getIntegrationTypeInfo(
           integration.connection_type,
           integration.saas_config?.type,
+          connectionTypes,
         ),
       })) ?? [],
-    [items],
+    [items, connectionTypes],
   );
 
   const handleManageClick = (integration: ConnectionConfigurationResponse) => {
@@ -105,11 +114,11 @@ const IntegrationListView: NextPage = () => {
       dataIndex: "connection_type",
       key: "connection_type",
       width: 150,
-      render: (connectionType) => {
+      render: (connectionType, record) => {
         const typeInfo = getIntegrationTypeInfo(
           connectionType,
-          items?.find((item) => item.connection_type === connectionType)
-            ?.saas_config?.type,
+          record.saas_config?.type,
+          connectionTypes,
         );
         return typeInfo.placeholder.name || connectionType;
       },

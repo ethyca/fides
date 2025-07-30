@@ -22,6 +22,7 @@ import { IntegrationFeatureEnum } from "~/features/integrations/IntegrationFeatu
 import {
   AccessLevel,
   ConnectionConfigurationResponse,
+  ConnectionSystemTypeMap,
   ConnectionType,
 } from "~/types/api";
 
@@ -65,8 +66,180 @@ export const INTEGRATION_TYPE_LIST: IntegrationTypeInfo[] = [
 
 export const SUPPORTED_INTEGRATIONS = [
   ...Object.keys(INTEGRATION_TYPE_MAP),
-  // ConnectionType.SAAS, // DEFER(ENG-801) Add back once we're ready to show all SAAS integrations
+  ConnectionType.SAAS, // Enable SAAS integrations for Phase 1
 ];
+
+/**
+ * Infer category from SAAS integration identifier/type
+ */
+const inferCategoryFromType = (identifier: string): ConnectionCategory => {
+  const type = identifier.toLowerCase();
+
+  // CRM systems
+  if (
+    type.includes("salesforce") ||
+    type.includes("hubspot") ||
+    type.includes("pipedrive") ||
+    type.includes("zendesk") ||
+    type.includes("intercom") ||
+    type.includes("freshworks") ||
+    type.includes("kustomer") ||
+    type.includes("gorgias") ||
+    type.includes("gladly") ||
+    type.includes("outreach") ||
+    type.includes("greenhouse")
+  ) {
+    return ConnectionCategory.CRM;
+  }
+
+  // E-commerce platforms
+  if (
+    type.includes("shopify") ||
+    type.includes("stripe") ||
+    type.includes("square") ||
+    type.includes("braintree") ||
+    type.includes("adyen") ||
+    type.includes("recurly") ||
+    type.includes("recharge") ||
+    type.includes("saleor") ||
+    type.includes("aftership") ||
+    type.includes("shipstation") ||
+    type.includes("vend") ||
+    type.includes("doordash")
+  ) {
+    return ConnectionCategory.ECOMMERCE;
+  }
+
+  // Marketing/Email platforms
+  if (
+    type.includes("mailchimp") ||
+    type.includes("sendgrid") ||
+    type.includes("klaviyo") ||
+    type.includes("braze") ||
+    type.includes("iterable") ||
+    type.includes("attentive") ||
+    type.includes("sparkpost") ||
+    type.includes("oracle_responsys") ||
+    type.includes("marigold") ||
+    type.includes("mailchimp_transactional") ||
+    type.includes("friendbuy") ||
+    type.includes("talkable") ||
+    type.includes("yotpo") ||
+    type.includes("powerreviews") ||
+    type.includes("unbounce") ||
+    type.includes("digioh") ||
+    type.includes("wunderkind") ||
+    type.includes("snap")
+  ) {
+    return ConnectionCategory.MARKETING;
+  }
+
+  // Analytics platforms
+  if (
+    type.includes("analytics") ||
+    type.includes("amplitude") ||
+    type.includes("heap") ||
+    type.includes("segment") ||
+    type.includes("datadog") ||
+    type.includes("sentry") ||
+    type.includes("fullstory") ||
+    type.includes("statsig") ||
+    type.includes("google_analytics") ||
+    type.includes("universal_analytics") ||
+    type.includes("rollbar") ||
+    type.includes("domo") ||
+    type.includes("appsflyer") ||
+    type.includes("simon_data") ||
+    type.includes("splash")
+  ) {
+    return ConnectionCategory.ANALYTICS;
+  }
+
+  // Communication platforms
+  if (
+    type.includes("slack") ||
+    type.includes("twilio") ||
+    type.includes("aircall") ||
+    type.includes("gong") ||
+    type.includes("ada_chatbot") ||
+    type.includes("sprig") ||
+    type.includes("typeform") ||
+    type.includes("surveymonkey") ||
+    type.includes("alchemer") ||
+    type.includes("qualtrics") ||
+    type.includes("delighted") ||
+    type.includes("iterate")
+  ) {
+    return ConnectionCategory.COMMUNICATION;
+  }
+
+  // Payment platforms
+  if (
+    type.includes("stripe") ||
+    type.includes("square") ||
+    type.includes("braintree") ||
+    type.includes("adyen") ||
+    type.includes("recurly") ||
+    type.includes("boostr")
+  ) {
+    return ConnectionCategory.PAYMENTS;
+  }
+
+  // Data warehouse/storage
+  if (
+    type.includes("warehouse") ||
+    type.includes("domo") ||
+    type.includes("bigquery")
+  ) {
+    return ConnectionCategory.DATA_WAREHOUSE;
+  }
+
+  // Website/tracking
+  if (
+    type.includes("website") ||
+    type.includes("tracking") ||
+    type.includes("web")
+  ) {
+    return ConnectionCategory.WEBSITE;
+  }
+
+  // Identity providers
+  if (
+    type.includes("auth0") ||
+    type.includes("firebase_auth") ||
+    type.includes("stytch")
+  ) {
+    return ConnectionCategory.IDENTITY_PROVIDER;
+  }
+
+  // Default to CRM for business applications that don't fit other categories
+  return ConnectionCategory.CRM;
+};
+
+/**
+ * Generate IntegrationTypeInfo from ConnectionSystemTypeMap data
+ */
+const generateSaasIntegrationInfo = (
+  connectionType: ConnectionSystemTypeMap,
+): IntegrationTypeInfo => {
+  return {
+    placeholder: {
+      name: connectionType.human_readable,
+      key: `${connectionType.identifier}_placeholder`,
+      connection_type: ConnectionType.SAAS,
+      saas_config: {
+        fides_key: connectionType.identifier,
+        name: connectionType.human_readable,
+        type: connectionType.identifier,
+      },
+      access: AccessLevel.WRITE,
+      created_at: "",
+    },
+    category: inferCategoryFromType(connectionType.identifier),
+    tags: ["API", "Integration"], // Basic default tags
+    enabledFeatures: [IntegrationFeatureEnum.DATA_DISCOVERY], // All SAAS get data discovery like Salesforce
+  };
+};
 
 const EMPTY_TYPE = {
   placeholder: {
@@ -84,17 +257,29 @@ const EMPTY_TYPE = {
 const getIntegrationTypeInfo = (
   type: ConnectionType | undefined,
   saasType?: string,
+  connectionTypes?: ConnectionSystemTypeMap[],
 ): IntegrationTypeInfo => {
   if (!type) {
     return EMPTY_TYPE;
   }
 
   if (type === ConnectionType.SAAS && saasType) {
+    // First, check if there's a hardcoded integration (like Salesforce)
     const saasIntegration = SAAS_INTEGRATIONS.find(
       (integration) => integration.placeholder.saas_config?.type === saasType,
     );
     if (saasIntegration) {
       return saasIntegration;
+    }
+
+    // If not found in hardcoded integrations, generate from connection types data
+    if (connectionTypes) {
+      const connectionType = connectionTypes.find(
+        (ct) => ct.identifier === saasType,
+      );
+      if (connectionType) {
+        return generateSaasIntegrationInfo(connectionType);
+      }
     }
   }
 

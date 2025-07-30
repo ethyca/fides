@@ -8,6 +8,7 @@ import {
 } from "fidesui";
 
 import useClickOutside from "~/features/common/hooks/useClickOutside";
+import { useGetAllConnectionTypesQuery } from "~/features/connection-type";
 import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
 import getIntegrationTypeInfo from "~/features/integrations/add-integration/allIntegrationTypes";
 import { ConnectionConfigurationResponse } from "~/types/api";
@@ -25,9 +26,14 @@ const SelectableIntegrationBox = ({
   onDetailsClick?: () => void;
   onUnfocus?: () => void;
 }) => {
+  // Fetch connection types for SAAS integration generation
+  const { data: connectionTypesData } = useGetAllConnectionTypesQuery({});
+  const connectionTypes = connectionTypesData?.items || [];
+
   const integrationTypeInfo = getIntegrationTypeInfo(
     integration?.connection_type,
     integration?.saas_config?.type,
+    connectionTypes,
   );
 
   // Handle click outside to unfocus when selected
