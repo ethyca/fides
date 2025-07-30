@@ -3,8 +3,8 @@ import { createSlice } from "@reduxjs/toolkit";
 import { baseApi } from "~/features/common/api.slice";
 import {
   AttachmentType,
-  Body_skip_single_manual_field_api_v1_privacy_request__privacy_request_id__connection__connection_key__manual_field_skip_post,
-  Body_submit_single_manual_field_api_v1_privacy_request__privacy_request_id__connection__connection_key__manual_field_complete_post,
+  Body_skip_single_manual_field_api_v1_privacy_request__privacy_request_id__manual_field__manual_field_id__skip_post,
+  Body_submit_single_manual_field_api_v1_privacy_request__privacy_request_id__manual_field__manual_field_id__complete_post,
   CommentType,
   ManualFieldListItem,
   ManualFieldRequestType,
@@ -72,7 +72,7 @@ export const manualTasksApi = baseApi.injectEndpoints({
       {
         privacy_request_id: string;
         manual_field_id: string;
-      } & Body_submit_single_manual_field_api_v1_privacy_request__privacy_request_id__connection__connection_key__manual_field_complete_post
+      } & Body_submit_single_manual_field_api_v1_privacy_request__privacy_request_id__manual_field__manual_field_id__complete_post
     >({
       query: (payload) => {
         const {
@@ -80,7 +80,7 @@ export const manualTasksApi = baseApi.injectEndpoints({
           manual_field_id: manualFieldId,
           field_value: fieldValue,
           comment_text: commentText,
-          attachment,
+          attachments,
           ...rest
         } = payload;
 
@@ -98,8 +98,12 @@ export const manualTasksApi = baseApi.injectEndpoints({
         }
 
         // Append attachment fields if provided
-        if (attachment) {
-          formData.append("attachment", attachment);
+        if (attachments && attachments.length > 0) {
+          attachments.forEach((file: Blob) => {
+            if (file && typeof file === "object") {
+              formData.append("attachments", file);
+            }
+          });
           formData.append(
             "attachment_type",
             AttachmentType.INCLUDE_WITH_ACCESS_PACKAGE,
@@ -127,7 +131,7 @@ export const manualTasksApi = baseApi.injectEndpoints({
       {
         privacy_request_id: string;
         manual_field_id: string;
-      } & Body_skip_single_manual_field_api_v1_privacy_request__privacy_request_id__connection__connection_key__manual_field_skip_post
+      } & Body_skip_single_manual_field_api_v1_privacy_request__privacy_request_id__manual_field__manual_field_id__skip_post
     >({
       query: (payload) => {
         const {

@@ -1,4 +1,5 @@
-@import "../palette/palette.module.scss";
+@use "sass:string";
+@use "../palette/palette.module.scss" as palette;
 
 /**
  * Global Ant Design styles for Fides applications
@@ -23,8 +24,8 @@ h6 {
  * Adds the color variables from the palette to the root element
  */
 :root {
-  @each $color, $value in $colors {
-    #{getPrefixedColor("--fidesui-", unquote($color))}: $value;
+  @each $color, $value in palette.$colors {
+    #{palette.getPrefixedColor("--fidesui-", string.unquote($color))}: $value;
   }
 }
 

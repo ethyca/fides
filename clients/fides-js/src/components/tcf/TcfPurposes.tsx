@@ -100,8 +100,9 @@ const TcfPurposes = ({
       getUniquePurposeRecords({
         consentPurposes: allPurposesConsent,
         legintPurposes: allPurposesLegint,
+        specialPurposes: allSpecialPurposes,
       }),
-    [allPurposesConsent, allPurposesLegint],
+    [allPurposesConsent, allPurposesLegint, allSpecialPurposes],
   );
 
   const consentContext = getConsentContext();
@@ -266,7 +267,7 @@ const TcfPurposes = ({
 
           handleToggle(modelType, filteredEnabledIds, item);
         }}
-        renderToggleChild={(p, isCustomPurpose) => (
+        renderDropdownChild={(p, isCustomPurpose) => (
           <PurposeDetails
             type="purposes"
             purpose={p}
@@ -309,7 +310,7 @@ const TcfPurposes = ({
         onToggle={(newEnabledIds, item) =>
           handleToggle("specialPurposes", newEnabledIds, item)
         }
-        renderToggleChild={(p) => (
+        renderDropdownChild={(p) => (
           <PurposeDetails type="specialPurposes" purpose={p} />
         )}
         hideToggles

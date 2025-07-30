@@ -65,7 +65,7 @@ dataset:
               identity: email
               data_type: string
               read_only: True
-          - name: custom_id
+          - name: custom id
             data_categories: [user.unique_id]
             fides_meta:
               identity: custom_id
@@ -104,6 +104,7 @@ dataset:
           - name: address_id
             data_categories: [system.operations]
             fides_meta:
+              data_type: integer
               references:
                 - dataset: bigquery_example_test_dataset
                   field: address.id

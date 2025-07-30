@@ -21,7 +21,7 @@ const GZIP_SIZE_ERROR_KB = 50; // fail build if bundle size exceeds this
 const GZIP_SIZE_WARN_KB = 45; // log a warning if bundle size exceeds this
 
 // TCF
-const GZIP_SIZE_TCF_ERROR_KB = 92;
+const GZIP_SIZE_TCF_ERROR_KB = 93;
 const GZIP_SIZE_TCF_WARN_KB = 75;
 
 // Headless
@@ -41,7 +41,7 @@ const preactAliases = {
   ],
 };
 
-const fidesScriptPlugins = ({ name, gzipWarnSizeKb, gzipErrorSizeKb }) => [
+const fidesScriptPlugins = () => [
   alias(preactAliases),
   nodeResolve(),
   commonjs(),
@@ -63,6 +63,10 @@ const fidesScriptPlugins = ({ name, gzipWarnSizeKb, gzipErrorSizeKb }) => [
     preventAssignment: true,
     include: ["src/lib/init-utils.ts"],
   }),
+];
+
+const fidesScriptsJSPlugins = ({ name, gzipWarnSizeKb, gzipErrorSizeKb }) => [
+  ...fidesScriptPlugins(),
   copy({
     // Automatically add the built script to the privacy center's and admin ui's static files for bundling:
     targets: [
@@ -156,7 +160,7 @@ const onLog = (_, { code, message }) => {
 SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
   const js = {
     input: `src/${name}.ts`,
-    plugins: fidesScriptPlugins({
+    plugins: fidesScriptsJSPlugins({
       name,
       gzipWarnSizeKb,
       gzipErrorSizeKb,
@@ -177,18 +181,7 @@ SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
   };
   const mjs = {
     input: `src/${name}.ts`,
-    plugins: [
-      alias(preactAliases),
-      json(),
-      nodeResolve(),
-      commonjs(),
-      postcss(),
-      esbuild(),
-      strip({
-        include: ["**/*.js", "**/*.ts"],
-        functions: ["fidesDebugger"],
-      }),
-    ],
+    plugins: fidesScriptPlugins(),
     output: [
       {
         // Compatible with ES module imports. Apps in this repo may be able to share the code.
@@ -209,11 +202,7 @@ SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
     ],
   };
 
-  if (IS_DEV) {
-    rollupOptions.push(...[js, declaration]);
-  } else {
-    rollupOptions.push(...[js, mjs, declaration]);
-  }
+  rollupOptions.push(...[js, mjs, declaration]);
 });
 
 // Add preview script build configuration

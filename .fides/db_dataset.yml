@@ -854,6 +854,24 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
+  - name: masking_secret
+    description: 'Fides Generated Description for Table: masking_secret'
+    data_categories: []
+    fields:
+    - name: created_at
+      data_categories: [system.operations]
+    - name: id
+      data_categories: [system.operations]
+    - name: masking_strategy
+      data_categories: [system.operations]
+    - name: privacy_request_id
+      data_categories: [system.operations]
+    - name: secret
+      data_categories: [system.operations]
+    - name: secret_type
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
   - name: authenticationrequest
     data_categories: []
     fields:
@@ -1155,6 +1173,30 @@ dataset:
     - name: field_id
       data_categories: [system.operations]
     - name: data
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
+  - name: manual_task_conditional_dependency
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: manual_task_id
+      data_categories: [system.operations]
+    - name: parent_id
+      data_categories: [system.operations]
+    - name: condition_type
+      data_categories: [system.operations]
+    - name: field_address
+      data_categories: [system.operations]
+    - name: operator
+      data_categories: [system.operations]
+    - name: value
+      data_categories: [system.operations]
+    - name: logical_operator
+      data_categories: [system.operations]
+    - name: sort_order
       data_categories: [system.operations]
     - name: created_at
       data_categories: [system.operations]
@@ -1570,6 +1612,10 @@ dataset:
       data_categories: [system.operations]
     - name: reviewed_by
       data_categories: [user.name]
+    - name: finalized_at
+      data_categories: [ system.operations ]
+    - name: finalized_by
+      data_categories: [ user.name ]
     - name: started_processing_at
       data_categories: [system.operations]
     - name: status
