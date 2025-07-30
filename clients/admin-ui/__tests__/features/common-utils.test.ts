@@ -110,12 +110,12 @@ describe("common utils", () => {
   });
 
   describe(convertToAntFilters.name, () => {
-    it("should return undefined when values is undefined", () => {
-      expect(convertToAntFilters(undefined)).toBeUndefined();
+    it("should return an empty array when values is undefined", () => {
+      expect(convertToAntFilters(undefined)).toEqual([]);
     });
 
-    it("should return undefined when values is an empty array", () => {
-      expect(convertToAntFilters([])).toBeUndefined();
+    it("should return an empty array when values is an empty array", () => {
+      expect(convertToAntFilters([])).toEqual([]);
     });
 
     it("should convert array of strings to Ant Design filter objects", () => {
