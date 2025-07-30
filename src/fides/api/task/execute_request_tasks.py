@@ -321,9 +321,7 @@ def run_access_node(
             with self.get_new_session() as session:
                 pr = PrivacyRequest.get(db=session, object_id=privacy_request_id)
                 if pr:
-                    pr.status = PrivacyRequestStatus.error  # type: ignore[attr-defined]
-                    session.add(pr)
-                    session.commit()
+                    pr.error_processing(db=session)
         except (
             Exception
         ) as db_exc:  # pragma: no cover – best effort to not mask original
