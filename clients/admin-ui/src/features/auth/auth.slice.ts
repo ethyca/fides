@@ -15,6 +15,15 @@ import {
   LogoutResponse,
 } from "./types";
 
+// Currently, the BE response doesn't include whether the user is a root user,
+// so we need to check if the id matches a db user id.
+export const isRootUserId = (userId?: string): boolean => {
+  if (!userId) {
+    return false;
+  }
+  return !userId.toLowerCase().startsWith("fid_");
+};
+
 export interface AuthState {
   user: User | null;
   token: string | null;
@@ -42,7 +51,24 @@ export const authSlice = createSlice({
 });
 
 export const selectAuth = (state: RootState) => state.auth;
-export const selectUser = (state: RootState) => selectAuth(state).user;
+
+// Enhanced user selector that includes isRootUser property
+export const selectUser = (state: RootState) => {
+  const { user } = selectAuth(state);
+  if (!user) {
+    return null;
+  }
+
+  // Currently, the BE response doesn't include whether the user is a root user,
+  // so we need to check if the id matches a db user id.
+  const isRootUser = isRootUserId(user.id);
+
+  return {
+    ...user,
+    isRootUser,
+  };
+};
+
 export const selectToken = (state: RootState) => selectAuth(state).token;
 
 export const { login, logout } = authSlice.actions;

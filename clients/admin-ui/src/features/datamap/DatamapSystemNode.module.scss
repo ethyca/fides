@@ -1,0 +1,55 @@
+@import "fidesui/src/palette/palette.module.scss";
+
+.container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+.button {
+  height: 28px;
+  max-width: 180px;
+  transition:
+    background-color 300ms ease-in 0s,
+    color 300ms ease 0s,
+    border-color 300ms ease 0s,
+    box-shadow 300ms ease 0s;
+
+  // Default state
+  color: map-get($colors, "neutral-800");
+  background-color: map-get($colors, "neutral-50");
+  border: 1px solid map-get($colors, "neutral-100");
+  box-shadow: none;
+
+  // Hover state
+  &:hover {
+    color: white !important;
+    background-color: map-get($colors, "neutral-700") !important;
+    border: 1px solid map-get($colors, "neutral-600") !important;
+  }
+
+  // Focus state for accessibility
+  &:focus,
+  &:focus-visible {
+    color: white !important;
+    background-color: map-get($colors, "minos") !important;
+    border: 1px solid map-get($colors, "minos") !important;
+  }
+
+  // Active/selected state
+  &--selected {
+    color: white !important;
+    background-color: map-get($colors, "minos") !important;
+    border: 1px solid map-get($colors, "minos") !important;
+  }
+}
+
+.handle {
+  width: 10px;
+  height: 10px;
+  background: map-get($colors, "neutral-200");
+  border: 1px solid map-get($colors, "neutral-300");
+  opacity: 0;
+  pointer-events: none;
+}

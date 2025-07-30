@@ -257,7 +257,7 @@ class TestManualTaskInstanceFiltering:
         graph_task = object.__new__(ManualTaskGraphTask)
         graph_task._ensure_manual_task_instances(
             db,
-            [manual_task],
+            manual_task,
             privacy_request,
             ManualTaskConfigurationType.access_privacy_request,
         )
@@ -289,7 +289,7 @@ class TestManualTaskInstanceFiltering:
         graph_task = object.__new__(ManualTaskGraphTask)
         graph_task._ensure_manual_task_instances(
             db,
-            [manual_task],
+            manual_task,
             privacy_request,
             ManualTaskConfigurationType.erasure_privacy_request,
         )
@@ -357,36 +357,46 @@ class TestManualTaskInstanceFiltering:
         assert len(access_instances) == 0
 
     @pytest.mark.parametrize(
-        "policy_fixture,expected_fields,excluded_fields",
+        "policy_fixture,expected_fields",
         [
             (
                 "access_privacy_request",
-                ["access_field"],
-                ["erasure_field"],
+                [
+                    "access_field",
+                    "erasure_field",
+                ],  # Artificial graphs include ALL fields
             ),
             (
                 "erasure_privacy_request",
-                ["erasure_field"],
-                ["access_field"],
+                [
+                    "access_field",
+                    "erasure_field",
+                ],  # Artificial graphs include ALL fields
             ),
             (
-                "privacy_request",
-                ["access_field", "erasure_field"],
-                [],
+                "mixed_privacy_request",
+                [
+                    "access_field",
+                    "erasure_field",
+                ],  # Artificial graphs include ALL fields
             ),
         ],
     )
-    def test_artificial_graphs_filter_by_policy_type(
+    @pytest.mark.usefixtures("manual_setup")
+    def test_artificial_graphs_include_all_fields(
         self,
         db: Session,
-        manual_setup,
         policy_fixture,
         expected_fields,
-        excluded_fields,
         request,
     ):
-        """Test that create_manual_task_artificial_graphs correctly filters fields based on policy type."""
-        # Get the privacy request from the fixture
+        """Test that create_manual_task_artificial_graphs includes all fields from all configs.
+
+        Artificial graphs represent the complete capability of manual tasks and include
+        all possible fields regardless of policy type. The actual filtering happens
+        during execution in ManualTaskGraphTask.
+        """
+        # Get the privacy request from the fixture (not used in artificial graph creation)
         privacy_request = request.getfixturevalue(policy_fixture)
 
         # Create artificial graphs using the utility function
@@ -399,14 +409,8 @@ class TestManualTaskInstanceFiltering:
         # Get field names from the graph
         field_names = [field.name for field in graph.collections[0].fields]
 
-        # Verify expected fields are included
+        # Verify ALL expected fields are included (no filtering at graph creation time)
         for field_name in expected_fields:
             assert (
                 field_name in field_names
             ), f"Expected field {field_name} not found in graph"
-
-        # Verify excluded fields are not included
-        for field_name in excluded_fields:
-            assert (
-                field_name not in field_names
-            ), f"Unexpected field {field_name} found in graph"
