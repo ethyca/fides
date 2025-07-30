@@ -20,7 +20,7 @@ from fides.api.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
-from tests.ops.test_helpers.vault_client import get_secrets
+from tests.ops.test_helpers.onepassword_client import get_secrets
 
 secrets = get_secrets("mailchimp")
 
