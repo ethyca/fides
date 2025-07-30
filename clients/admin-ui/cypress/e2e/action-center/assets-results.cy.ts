@@ -245,8 +245,11 @@ describe("Action center Asset Results", () => {
 
     it("should bulk restore ignored assets", () => {
       // eslint-disable-next-line cypress/no-unnecessary-waiting
-      cy.wait(500); // wait for the router to update
+      cy.wait(500); // wait for the original router to update
       cy.getAntTab("Ignored").click({ force: true });
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(500); // wait for the router to update
+      cy.getAntTab("Ignored").should("have.attr", "aria-selected", "true");
       cy.getByTestId("bulk-actions-menu").should("be.disabled");
       cy.getAntTableRow(rowUrns[0]).findByRole("checkbox").click();
       cy.getAntTableRow(rowUrns[2]).findByRole("checkbox").click();
