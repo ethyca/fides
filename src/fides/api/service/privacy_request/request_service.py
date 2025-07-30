@@ -565,15 +565,9 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
             try:
                 queued_tasks_ids = _get_task_ids_from_dsr_queue(redis_conn)
             except Exception as queue_exc:
-                # If we can't get the queue contents, we can't reliably determine task states
-                # Fail safe by canceling all in-progress privacy requests
-                for privacy_request in in_progress_requests:
-                    _cancel_interrupted_tasks_and_error_privacy_request(
-                        db,
-                        privacy_request,
-                        f"Failed to get task IDs from queue, cannot reliably determine task states. "
-                        f"Failing safe by canceling all in-progress privacy requests: {queue_exc}",
-                    )
+                logger.warning(
+                    f"Failed to get task IDs from queue, skipping queue state checks: {queue_exc}"
+                )
                 return
 
             # Check each privacy request
