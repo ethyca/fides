@@ -42,7 +42,7 @@ describe("Action center Asset Results", () => {
         cy.contains("Locations").should("exist");
         cy.contains("Domain").should("exist");
         cy.contains("Detected on").should("exist");
-        cy.contains("Discovery").should("exist");
+        cy.contains("Compliance").should("exist");
         cy.contains("Actions").should("exist");
       });
 
@@ -98,7 +98,7 @@ describe("Action center Asset Results", () => {
         cy.contains("Locations").should("exist");
         cy.contains("Domain").should("exist");
         cy.contains("Detected on").should("exist");
-        cy.contains("Discovery").should("exist");
+        cy.contains("Compliance").should("exist");
         cy.contains("Actions").should("exist");
       });
 
@@ -411,15 +411,15 @@ describe("Action center Asset Results", () => {
       });
     });
 
-    describe("Discovery column in assets table", () => {
+    describe("Compliance column in assets table", () => {
       beforeEach(() => {
         cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}/${systemId}`);
         cy.wait("@getSystemAssetResultsWithConsent");
       });
 
-      it("should display discovery column with consent status badges", () => {
+      it("should display compliance column with consent status badges", () => {
         cy.get("thead tr").within(() => {
-          cy.contains("Discovery").should("exist");
+          cy.contains("Compliance").should("exist");
         });
 
         // Check "Without consent" badge
@@ -453,8 +453,8 @@ describe("Action center Asset Results", () => {
         });
       });
 
-      it("should show warning icon in discovery column header when there are assets without consent", () => {
-        cy.findByRole("columnheader", { name: "Discovery" }).within(() => {
+      it("should show warning icon in compliance column header when there are assets without consent", () => {
+        cy.findByRole("columnheader", { name: "Compliance" }).within(() => {
           cy.getByTestId("discovery-status-icon-alert")
             .should("exist")
             .scrollIntoView()
