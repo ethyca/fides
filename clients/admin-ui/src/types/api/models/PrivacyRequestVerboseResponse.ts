@@ -36,5 +36,7 @@ export type PrivacyRequestVerboseResponse = {
   source?: PrivacyRequestSource | null;
   deleted_at?: string | null;
   deleted_by?: string | null;
+  finalized_at?: string | null;
+  finalized_by?: string | null;
   results: Record<string, Array<ExecutionAndAuditLogResponse>>;
 };
