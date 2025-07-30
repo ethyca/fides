@@ -556,13 +556,8 @@ def _handle_privacy_request_requeue(
                 f"Privacy request {privacy_request.id} exceeded max retry attempts "
                 f"({max_retries}), canceling tasks and setting to error state",
             )
-            # Reset retry count since we're giving up (ignore errors here as it's cleanup)
-            try:
-                reset_privacy_request_retry_count(privacy_request.id)
-            except Exception as reset_exc:
-                logger.debug(
-                    f"Failed to reset retry count for {privacy_request.id}: {reset_exc}"
-                )
+            # Reset retry count since we're giving up
+            reset_privacy_request_retry_count(privacy_request.id)
 
     except Exception as cache_exc:
         # If cache operations fail (Redis down, network issues, etc.), fail safe by canceling
@@ -716,9 +711,7 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                                 f"Cache failure when getting subtask ID for request task {request_task_id} "
                                 f"(privacy request {privacy_request.id}), failing safe by canceling tasks: {cache_exc}",
                             )
-                            should_requeue = (
-                                False  # Don't attempt requeue since we're canceling
-                            )
+                            should_requeue = False
                             break
 
                         # If the task ID is not cached, we can't check if it's running
@@ -730,9 +723,7 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                                 f"No task ID found for request task {request_task_id} "
                                 f"(privacy request {privacy_request.id}), subtask is stuck - canceling privacy request",
                             )
-                            should_requeue = (
-                                False  # Don't attempt requeue since we're canceling
-                            )
+                            should_requeue = False
                             break
 
                         if (

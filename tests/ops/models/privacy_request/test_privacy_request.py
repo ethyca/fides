@@ -1646,18 +1646,21 @@ class TestCancelCeleryTasks:
         with mock.patch.object(celery_app.control, "revoke") as mock_revoke:
             privacy_request.cancel_celery_tasks()
 
-            # Should revoke all 3 tasks: main + 2 sub-tasks
-            assert mock_revoke.call_count == 3
+            # Should make a single batch revoke call for all 3 tasks
+            assert mock_revoke.call_count == 1
 
-            # Verify the task IDs that were revoked
-            revoked_task_ids = [call.args[0] for call in mock_revoke.call_args_list]
+            # Verify the task IDs that were revoked in batch
+            revoked_task_ids = mock_revoke.call_args[0][
+                0
+            ]  # First argument is the list of task IDs
+            assert isinstance(revoked_task_ids, list)
+            assert len(revoked_task_ids) == 3
             assert "main_task_abc123" in revoked_task_ids
             assert "sub_task_def456" in revoked_task_ids
             assert "sub_task_ghi789" in revoked_task_ids
 
             # Verify terminate=False for graceful shutdown
-            for call in mock_revoke.call_args_list:
-                assert call.kwargs.get("terminate") is False
+            assert mock_revoke.call_args.kwargs.get("terminate") is False
 
     @pytest.mark.unit
     def test_cancel_celery_tasks_with_only_main_task(
@@ -1677,9 +1680,9 @@ class TestCancelCeleryTasks:
         with mock.patch.object(celery_app.control, "revoke") as mock_revoke:
             privacy_request.cancel_celery_tasks()
 
-            # Should revoke only 1 task
+            # Should make a single batch revoke call for 1 task
             assert mock_revoke.call_count == 1
-            mock_revoke.assert_called_with("only_main_task_123", terminate=False)
+            mock_revoke.assert_called_with(["only_main_task_123"], terminate=False)
 
     @pytest.mark.unit
     def test_cancel_celery_tasks_no_cached_tasks(self, privacy_request_no_cached_tasks):
@@ -1707,11 +1710,9 @@ class TestCancelCeleryTasks:
 
         privacy_request = privacy_request_with_cached_tasks
 
-        # Mock revoke to raise exception for specific task
-        def side_effect(task_id, **kwargs):
-            if task_id == "main_task_abc123":
-                raise Exception("Revoke failed")
-            return None
+        # Mock revoke to raise exception for the batch
+        def side_effect(task_ids, **kwargs):
+            raise Exception("Batch revoke failed")
 
         with mock.patch.object(celery_app.control, "revoke", side_effect=side_effect):
             with mock.patch(
@@ -1719,10 +1720,11 @@ class TestCancelCeleryTasks:
             ) as mock_logger:
                 privacy_request.cancel_celery_tasks()
 
-                # Should log warning for failed revoke
+                # Should log warning for failed batch revoke
                 mock_logger.warning.assert_called()
                 warning_call = mock_logger.warning.call_args[0][0]
-                assert "Failed to revoke task main_task_abc123" in warning_call
+                assert "Failed to revoke 3 tasks for privacy request" in warning_call
+                assert "Batch revoke failed" in warning_call
 
     @pytest.mark.unit
     def test_cancel_celery_tasks_logging(self, privacy_request_with_cached_tasks):
@@ -1739,18 +1741,17 @@ class TestCancelCeleryTasks:
             ) as mock_logger:
                 privacy_request.cancel_celery_tasks()
 
-                # Should log info for each revoked task
-                assert mock_logger.info.call_count == 3
+                # Should log info twice: before and success
+                assert mock_logger.info.call_count == 2
 
-                # Verify logging messages contain task IDs and privacy request ID
-                info_calls = mock_logger.info.call_args_list
-                for call in info_calls:
-                    # call.args[0] is the format string, call.args[1:] are the arguments
-                    format_string = call.args[0]
-                    args = call.args[1:]
-                    assert "Revoking task" in format_string
-                    # Check that privacy request ID is in the arguments
-                    assert str(privacy_request.id) in [str(arg) for arg in args]
+                # Verify logging messages contain task count and privacy request ID
+                first_call = mock_logger.info.call_args_list[0][0][0]
+                second_call = mock_logger.info.call_args_list[1][0][0]
+
+                assert "Revoking 3 tasks for privacy request" in first_call
+                assert "Successfully revoked 3 tasks for privacy request" in second_call
+                assert str(privacy_request.id) in first_call
+                assert str(privacy_request.id) in second_call
 
     @pytest.mark.unit
     def test_get_request_task_celery_task_ids(self, privacy_request_with_cached_tasks):

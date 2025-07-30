@@ -1025,14 +1025,21 @@ class PrivacyRequest(
         request_task_celery_ids = self.get_request_task_celery_task_ids()
         task_ids.extend(request_task_celery_ids)
 
-        # Revoke all Celery tasks
-        for celery_task_id in task_ids:
-            logger.info("Revoking task {} for request {}", celery_task_id, self.id)
-            try:
-                # Use terminate=False to allow graceful shutdown if already running
-                celery_app.control.revoke(celery_task_id, terminate=False)
-            except Exception as exc:
-                logger.warning(f"Failed to revoke task {celery_task_id}: {exc}")
+        if not task_ids:
+            return
+
+        # Revoke all Celery tasks in batch
+        logger.info(f"Revoking {len(task_ids)} tasks for privacy request {self.id}")
+        try:
+            # Use terminate=False to allow graceful shutdown if already running
+            celery_app.control.revoke(task_ids, terminate=False)
+            logger.info(
+                f"Successfully revoked {len(task_ids)} tasks for privacy request {self.id}"
+            )
+        except Exception as exc:
+            logger.warning(
+                f"Failed to revoke {len(task_ids)} tasks for privacy request {self.id}: {exc}"
+            )
 
     def cancel_processing(self, db: Session, cancel_reason: Optional[str]) -> None:
         """Cancels a privacy request.  Currently should only cancel 'pending' tasks

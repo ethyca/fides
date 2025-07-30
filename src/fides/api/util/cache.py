@@ -385,7 +385,7 @@ def reset_privacy_request_retry_count(privacy_request_id: str) -> None:
     try:
         cache.delete(get_privacy_request_retry_cache_key(privacy_request_id))
     except Exception as exc:
-        logger.debug(
+        logger.warning(
             f"Failed to reset retry count for privacy request {privacy_request_id}: {exc}"
         )
 
