@@ -32,6 +32,7 @@ import { DiscoveredAssetActionsCell } from "../tables/cells/DiscoveredAssetActio
 import DiscoveredAssetDataUseCell from "../tables/cells/DiscoveredAssetDataUseCell";
 import { DiscoveryStatusBadgeCell } from "../tables/cells/DiscoveryStatusBadgeCell";
 import { SystemCell } from "../tables/cells/SystemCell";
+import isConsentCategory from "../utils/isConsentCategory";
 import { ActionCenterTabHash } from "./useActionCenterTabs";
 
 export const useDiscoveredAssetsColumns = ({
@@ -126,7 +127,9 @@ export const useDiscoveredAssetsColumns = ({
         title: "Categories of consent",
         key: DiscoveredAssetsColumnKeys.DATA_USES,
         width: 400,
-        filters: convertToAntFilters(filterOptions?.data_uses),
+        filters: convertToAntFilters(
+          filterOptions?.data_uses?.filter((use) => isConsentCategory(use)),
+        ),
         filteredValue: columnFilters?.data_uses || null,
         sorter: true,
         sortOrder:
