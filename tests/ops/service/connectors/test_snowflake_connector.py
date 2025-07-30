@@ -13,6 +13,23 @@ from fides.api.schemas.namespace_meta.snowflake_namespace_meta import (
 from fides.api.service.connectors.snowflake_connector import SnowflakeConnector
 
 
+@pytest.fixture
+def execution_node_with_namespace_meta(
+    snowflake_example_test_dataset_config_with_namespace_meta: DatasetConfig,
+) -> Generator:
+    dataset_config = snowflake_example_test_dataset_config_with_namespace_meta
+    graph_dataset = convert_dataset_to_graph(
+        Dataset.model_validate(dataset_config.ctl_dataset),
+        dataset_config.connection_config.key,
+    )
+    dataset_graph = DatasetGraph(graph_dataset)
+    traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
+
+    yield traversal.traversal_node_dict[
+        CollectionAddress("snowflake_example_test_dataset", "customer")
+    ].to_mock_execution_node()
+
+
 @pytest.mark.integration_external
 @pytest.mark.integration_snowflake
 class TestSnowflakeConnector:
@@ -26,22 +43,6 @@ class TestSnowflakeConnector:
         self, snowflake_example_test_dataset_config: DatasetConfig
     ) -> Generator:
         dataset_config = snowflake_example_test_dataset_config
-        graph_dataset = convert_dataset_to_graph(
-            Dataset.model_validate(dataset_config.ctl_dataset),
-            dataset_config.connection_config.key,
-        )
-        dataset_graph = DatasetGraph(graph_dataset)
-        traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
-
-        yield traversal.traversal_node_dict[
-            CollectionAddress("snowflake_example_test_dataset", "customer")
-        ].to_mock_execution_node()
-
-    @pytest.fixture
-    def execution_node_with_namespace_meta(
-        self, snowflake_example_test_dataset_config_with_namespace_meta: DatasetConfig
-    ) -> Generator:
-        dataset_config = snowflake_example_test_dataset_config_with_namespace_meta
         graph_dataset = convert_dataset_to_graph(
             Dataset.model_validate(dataset_config.ctl_dataset),
             dataset_config.connection_config.key,
@@ -76,14 +77,24 @@ class TestSnowflakeConnector:
         )
 
 
-@pytest.mark.integration
+@pytest.mark.integration_external
 @pytest.mark.integration_snowflake
 class TestSnowflakeConnectorTableExists:
+
     def test_table_exists(
-        self, snowflake_example_test_dataset_config_with_namespace_meta: DatasetConfig
+        self,
+        snowflake_example_test_dataset_config_with_namespace_meta: DatasetConfig,
+        execution_node_with_namespace_meta,
     ):
-        # Test with actual connection
+        # Test with actual connection using proper qualified table names
         dataset_config = snowflake_example_test_dataset_config_with_namespace_meta
         connector = SnowflakeConnector(dataset_config.connection_config)
-        assert connector.table_exists("FIDESOPS_TEST.TEST.customer")
-        assert not connector.table_exists("FIDESOPS_TEST.TEST.nonexistent_table")
+
+        # Use the connector's method to get the proper qualified table name
+        qualified_table_name = connector.get_qualified_table_name(
+            execution_node_with_namespace_meta
+        )
+        assert connector.table_exists(qualified_table_name)
+
+        # Test with a nonexistent table using the same schema but different table name
+        assert not connector.table_exists('"FIDESOPS_TEST"."TEST"."nonexistent_table"')

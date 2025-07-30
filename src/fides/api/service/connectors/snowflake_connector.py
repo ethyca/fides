@@ -3,6 +3,7 @@ from typing import Any, Dict, Union
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from snowflake.sqlalchemy import URL as Snowflake_URL
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from fides.api.graph.execution import ExecutionNode
@@ -80,3 +81,51 @@ class SnowflakeConnector(SQLConnector):
         """Get fully qualified Snowflake table name using existing query config logic"""
         query_config = self.query_config(node)
         return query_config.generate_table_name()
+
+    def table_exists(self, qualified_table_name: str) -> bool:
+        """
+        Check if table exists in Snowflake using the proper three-part naming convention.
+
+        Snowflake supports database.schema.table naming, and the generic SQLConnector
+        table_exists method doesn't handle quoted identifiers properly.
+        """
+        try:
+            client = self.create_client()
+            with client.connect() as connection:
+                # Remove quotes and split the parts
+                clean_name = qualified_table_name.replace('"', "")
+                parts = clean_name.split(".")
+
+                if len(parts) == 1:
+                    # Simple table name - use current schema
+                    table_name = parts[0]
+                    result = connection.execute(text(f'DESC TABLE "{table_name}"'))
+                elif len(parts) == 2:
+                    # schema.table format
+                    schema_name, table_name = parts
+                    result = connection.execute(
+                        text(f'DESC TABLE "{schema_name}"."{table_name}"')
+                    )
+                elif len(parts) >= 3:
+                    # database.schema.table format
+                    database_name, schema_name, table_name = (
+                        parts[-3],
+                        parts[-2],
+                        parts[-1],
+                    )
+                    # Use the database.schema.table format
+                    result = connection.execute(
+                        text(
+                            f'DESC TABLE "{database_name}"."{schema_name}"."{table_name}"'
+                        )
+                    )
+                else:
+                    return False
+
+                # If we get here without an exception, the table exists
+                result.close()
+                return True
+
+        except Exception:
+            # Table doesn't exist or other error
+            return False
