@@ -299,9 +299,11 @@ export interface FidesOptions {
   fides_modal_default_view?: string;
 
   /**
-   * Whether to show the consent modal immediately upon initialization or when the banner is clicked.
+   * Whether to show the modal immediately on page load.
    *
-   * Defaults to `"banner_click"`.
+   * - "immediate" = skips banner and shows the modal immediately on page load
+   * - "default" = shows the modal when the "manage preferences" link is clicked (default behavior)
+   *
    */
-  fides_modal_display?: "immediate" | "banner_click";
+  fides_modal_display?: "immediate" | "default";
 }

@@ -340,8 +340,9 @@ Defaults to `undefined`.
 
 ### fides\_modal\_display?
 
-> `optional` **fides\_modal\_display**: `"immediate"` \| `"banner_click"`
+> `optional` **fides\_modal\_display**: `"immediate"` \| `"default"`
 
-Whether to show the consent modal immediately upon initialization or when the banner is clicked.
+Whether to show the modal immediately on page load.
 
-Defaults to `"banner_click"`.
+- "immediate" = skips banner and shows the modal immediately on page load
+- "default" = shows the modal when the "manage preferences" link is clicked (default behavior)

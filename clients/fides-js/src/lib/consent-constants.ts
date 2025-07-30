@@ -127,7 +127,7 @@ export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: FidesOverrideValidatorMap[] =
       overrideName: "fidesModalDisplay",
       overrideType: "string",
       overrideKey: "fides_modal_display",
-      validationRegex: /^(immediate|banner_click)$/,
+      validationRegex: /^(immediate|default)$/,
     },
   ];
 
