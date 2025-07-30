@@ -74,3 +74,16 @@ class TestSnowflakeConnector:
         assert query_config.namespace_meta == SnowflakeNamespaceMeta(
             **dataset_config.ctl_dataset.fides_meta["namespace"]
         )
+
+
+@pytest.mark.integration_external
+@pytest.mark.integration_snowflake
+class TestSnowflakeConnectorTableExists:
+    def test_table_exists(
+        self, snowflake_example_test_dataset_config_with_namespace_meta: DatasetConfig
+    ):
+        # Test with actual connection
+        dataset_config = snowflake_example_test_dataset_config_with_namespace_meta
+        connector = SnowflakeConnector(dataset_config.connection_config)
+        assert connector.table_exists("FIDESOPS_TEST.TEST.customer")
+        assert not connector.table_exists("FIDESOPS_TEST.TEST.nonexistent_table")

@@ -193,16 +193,3 @@ class TestSnowflakeQueryConfig:
             str(update_stmt)
             == 'UPDATE "FIDESOPS_TEST"."TEST"."address" SET "city" = :masked_city, "house" = :masked_house, "state" = :masked_state, "street" = :masked_street, "zip" = :masked_zip WHERE "id" = :id'
         )
-
-
-@pytest.mark.integration_external
-@pytest.mark.integration_snowflake
-class TestSnowflakeConnectorTableExists:
-    def test_table_exists(
-        self, snowflake_example_test_dataset_config_with_namespace_meta: DatasetConfig
-    ):
-        # Test with actual connection
-        dataset_config = snowflake_example_test_dataset_config_with_namespace_meta
-        connector = SnowflakeConnector(dataset_config.connection_config)
-        assert connector.table_exists("FIDESOPS_TEST.TEST.customer")
-        assert not connector.table_exists("FIDESOPS_TEST.TEST.nonexistent_table")
