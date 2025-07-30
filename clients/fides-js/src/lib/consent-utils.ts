@@ -261,8 +261,8 @@ export const shouldResurfaceBanner = (
   if (!isPrivacyExperience(experience)) {
     return false;
   }
-  // Never surface banner if modal is set to show
-  if (options.fidesDefaultShowModal) {
+  // Never surface banner if modal is set to show immediately
+  if (options.fidesModalDisplay === "immediate") {
     return false;
   }
   // Always resurface banner for TCF unless consent was set by override

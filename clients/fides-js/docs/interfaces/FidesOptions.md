@@ -338,6 +338,10 @@ Defaults to `undefined`.
 
 ***
 
-### fides\_default\_show\_modal?
+### fides\_modal\_display?
 
-> `optional` **fides\_default\_show\_modal**: `boolean`
+> `optional` **fides\_modal\_display**: `"immediate"` \| `"banner_click"`
+
+Whether to show the consent modal immediately upon initialization or when the banner is clicked.
+
+Defaults to `"banner_click"`.

@@ -189,10 +189,10 @@ const Overlay: FunctionComponent<Props> = ({
   }, [experience, handleOpenModal, options.fidesEmbed]);
 
   useEffect(() => {
-    if (options.fidesDefaultShowModal) {
+    if (options.fidesModalDisplay === "immediate") {
       handleOpenModal();
     }
-  }, [options.fidesDefaultShowModal, handleOpenModal]);
+  }, [options.fidesModalDisplay, handleOpenModal]);
 
   useEffect(() => {
     document.body.classList.add("fides-overlay-modal-link-shown");

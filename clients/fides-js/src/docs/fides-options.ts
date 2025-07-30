@@ -298,6 +298,10 @@ export interface FidesOptions {
    */
   fides_modal_default_view?: string;
 
-  // Whether to show the consent modal immediately upon initialization
-  fides_default_show_modal?: boolean;
+  /**
+   * Whether to show the consent modal immediately upon initialization or when the banner is clicked.
+   *
+   * Defaults to `"banner_click"`.
+   */
+  fides_modal_display?: "immediate" | "banner_click";
 }

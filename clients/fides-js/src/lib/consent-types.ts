@@ -177,8 +177,12 @@ export interface FidesInitOptions {
    */
   fidesModalDefaultView?: FidesModalDefaultView;
 
-  // Whether to show the consent modal immediately upon initialization
-  fidesDefaultShowModal?: boolean;
+  /**
+   * Whether to show the consent modal immediately upon initialization or when the banner is clicked.
+   *
+   * Defaults to `"banner_click"`.
+   */
+  fidesModalDisplay?: "immediate" | "banner_click";
 }
 
 /**
@@ -831,7 +835,7 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesConsentFlagType"
   | "fidesInitializedEventMode"
   | "fidesModalDefaultView"
-  | "fidesDefaultShowModal"
+  | "fidesModalDisplay"
 >;
 
 export type FidesExperienceTranslationOverrides = {
