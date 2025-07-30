@@ -1,4 +1,3 @@
-import { TrashCanSolidIcon } from "common/Icon/TrashCanSolidIcon";
 import {
   AntButton as Button,
   Table,
@@ -12,6 +11,7 @@ import {
 import { useFormikContext } from "formik";
 import React from "react";
 
+import { TrashCanSolidIcon } from "~/features/common/Icon/TrashCanSolidIcon";
 import { DataFlow, System } from "~/types/api";
 
 type Props = {
