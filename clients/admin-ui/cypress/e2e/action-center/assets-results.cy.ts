@@ -251,7 +251,7 @@ describe("Action center Asset Results", () => {
       cy.getByTestId("selected-count").should("contain", "2 selected");
       cy.getByTestId("bulk-actions-menu").should("not.be.disabled");
       cy.getByTestId("bulk-actions-menu").click();
-      cy.findByRole("menuitem", { name: "Restore" }).click();
+      cy.findByRole("menuitem", { name: "Restore" }).click({ force: true });
       cy.wait("@restoreAssets");
       cy.getByTestId("toast-success-msg").should(
         "contain",
