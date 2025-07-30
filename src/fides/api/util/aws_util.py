@@ -1,6 +1,7 @@
 from typing import Any, Dict, Optional
 
 from boto3 import Session
+from botocore.config import Config
 from botocore.exceptions import ClientError
 from loguru import logger
 
@@ -99,4 +100,7 @@ def get_s3_client(
         storage_secrets=storage_secrets,
         assume_role_arn=assume_role_arn,
     )
-    return session.client("s3")
+
+    # Configure S3 client to use signature version 4 for KMS compatibility
+    s3_config = Config(signature_version="s3v4")
+    return session.client("s3", config=s3_config)
