@@ -547,7 +547,7 @@ class TestUploadToS3:
 
         mock_write_to_in_memory_buffer.assert_not_called()
         assert result.startswith(
-            "https://s3.amazonaws.com/test_bucket/test-file.txt?AWSAccessKeyId"
+            "https://s3.amazonaws.com/test_bucket/test-file.txt?X-Amz-Algorithm=AWS4-HMAC-SHA256"
         )
 
     def test_upload_to_s3_missing_privacy_request(
