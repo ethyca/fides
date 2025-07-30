@@ -21,11 +21,11 @@ from fides.api.schemas.messaging.messaging import (
     SMS_MESSAGING_SERVICES,
     MessagingConnectionTestStatus,
     MessagingMethod,
-    MessagingServiceSecretsAWS_SES,
     MessagingServiceType,
 )
 from fides.api.schemas.messaging.shared_schemas import (
     SUPPORTED_MESSAGING_SERVICE_SECRETS,
+    MessagingServiceSecretsAWS_SES,
     MessagingServiceSecretsMailchimpTransactional,
     MessagingServiceSecretsMailgun,
     MessagingServiceSecretsTwilioEmail,
@@ -217,4 +217,8 @@ def default_messaging_config_key(service_type: str) -> str:
 
     Returns a key to be used in a default messaging config for the given type.
     """
-    return f"default_messaging_config_{service_type.lower()}"
+    # Historically, when a key was not supplied, the service type string itself
+    # was used as the key (e.g. "mailgun").  Reverting to that behaviour keeps
+    # backward-compatibility with existing tests and API consumers that may rely
+    # on this convention.
+    return service_type.lower()

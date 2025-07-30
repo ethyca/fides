@@ -153,24 +153,26 @@ def post_config(
             details=messaging_config.details,
         )
     except ValueError as e:
+        failed_key = messaging_config_request.key
         logger.warning(
             "Create failed for messaging config {}: {}",
-            messaging_config.key,
+            failed_key,
             Pii(str(e)),
         )
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Config with key {messaging_config.key} failed to be added: {e}",
+            detail=f"Config with key {failed_key} failed to be added: {e}",
         )
     except Exception as exc:
+        failed_key = messaging_config_request.key
         logger.warning(
             "Create failed for messaging config {}: {}",
-            messaging_config.key,
+            failed_key,
             Pii(str(exc)),
         )
         raise HTTPException(
             status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Config with key {messaging_config.key} failed to be added: {exc}",
+            detail=f"Config with key {failed_key} failed to be added: {exc}",
         )
 
 

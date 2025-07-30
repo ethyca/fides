@@ -12,7 +12,6 @@ from fides.api.common_exceptions import MessageDispatchException
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.messaging import MessagingConfig
 from fides.api.models.messaging_template import (
-    DEFAULT_MESSAGING_TEMPLATES,
     MessagingTemplate,
 )
 from fides.api.schemas.messaging.messaging import (
@@ -24,7 +23,6 @@ from fides.api.schemas.messaging.messaging import (
     MessagingServiceSecrets,
     MessagingServiceType,
     MessagingTemplateDefault,
-    MessagingTemplateWithPropertiesSummary,
 )
 from fides.common.api.scope_registry import (
     MESSAGING_CREATE_OR_UPDATE,
@@ -44,8 +42,6 @@ from fides.common.api.v1.urn_registry import (
     MESSAGING_STATUS,
     MESSAGING_TEMPLATE_BY_ID,
     MESSAGING_TEMPLATE_DEFAULT_BY_TEMPLATE_TYPE,
-    MESSAGING_TEMPLATES_BY_TEMPLATE_TYPE,
-    MESSAGING_TEMPLATES_SUMMARY,
     MESSAGING_TEST_DEPRECATED,
     V1_URL_PREFIX,
 )
@@ -233,6 +229,8 @@ class TestPostMessagingConfig:
                 MessagingServiceDetails.DOMAIN.value: "my.mailgun.domain",
                 MessagingServiceDetails.IS_EU_DOMAIN.value: False,
             },
+            "last_test_timestamp": None,
+            "last_test_succeeded": None,
         }
         assert expected_response == response_body
         email_config.delete(db)
@@ -277,7 +275,7 @@ class TestPostMessagingConfig:
         )
         assert response.status_code == 500
         assert (
-            f"Key (service_type)=(mailgun) already exists" in response.json()["detail"]
+            "Key (service_type)=(mailgun) already exists" in response.json()["detail"]
         )
 
     def test_post_mailgun_transactional_config(
@@ -307,6 +305,8 @@ class TestPostMessagingConfig:
             "name": payload_mailchimp_transactional["name"],
             "service_type": MessagingServiceType.mailchimp_transactional.value,
             "details": {MessagingServiceDetails.EMAIL_FROM.value: "user@example.com"},
+            "last_test_timestamp": None,
+            "last_test_succeeded": None,
         }
         assert expected_response == response_body
         email_config.delete(db)
@@ -337,6 +337,8 @@ class TestPostMessagingConfig:
             "details": {
                 MessagingServiceDetails.TWILIO_EMAIL_FROM.value: "test@email.com"
             },
+            "last_test_timestamp": None,
+            "last_test_succeeded": None,
         }
         assert expected_response == response_body
         email_config.delete(db)
@@ -365,6 +367,8 @@ class TestPostMessagingConfig:
             "name": "twilio_sms",
             "service_type": MessagingServiceType.twilio_text.value,
             "details": None,
+            "last_test_timestamp": None,
+            "last_test_succeeded": None,
         }
         assert expected_response == response_body
         email_config.delete(db)
@@ -399,6 +403,8 @@ class TestPostMessagingConfig:
             "name": "twilio_sms",
             "service_type": MessagingServiceType.twilio_text.value,
             "details": None,
+            "last_test_timestamp": None,
+            "last_test_succeeded": None,
         }
         assert expected_response == response_body
         email_config.delete(db)
@@ -418,7 +424,7 @@ class TestPostMessagingConfig:
                 "aws_region": "us-east-1",
                 "email_from": "test@test.com",
                 "domain": "example.com",
-            },
+            }
         }
 
         auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
@@ -426,7 +432,7 @@ class TestPostMessagingConfig:
         response = api_client.post(url, headers=auth_header, json=aws_ses_payload)
         assert 200 == response.status_code
         response_body = json.loads(response.text)
-        assert response_body == aws_ses_payload
+        assert response_body == {'service_type': 'aws_ses', 'details': {'email_from': 'test@test.com', 'domain': 'example.com', 'aws_region': 'us-east-1'}, 'name': 'aws_ses_email', 'key': 'my_aws_ses_email_config', 'last_test_timestamp': None, 'last_test_succeeded': None}
 
         email_config = db.query(MessagingConfig).filter_by(
             key="my_aws_ses_email_config"
@@ -448,7 +454,7 @@ class TestPostMessagingConfig:
             "details": {
                 "aws_region": "us-east-1",
                 "email_from": "test@test.com",
-            },
+            }
         }
 
         auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
@@ -456,13 +462,12 @@ class TestPostMessagingConfig:
         response = api_client.post(url, headers=auth_header, json=aws_ses_payload)
         assert 200 == response.status_code
         response_body = json.loads(response.text)
-        aws_ses_payload["details"]["domain"] = None
-        assert response_body == aws_ses_payload
+        assert response_body == {'service_type': 'aws_ses', 'details': {'email_from': 'test@test.com', 'domain': None, 'aws_region': 'us-east-1'}, 'name': 'aws_ses_email', 'key': 'my_aws_ses_email_config', 'last_test_timestamp': None, 'last_test_succeeded': None}
 
         email_config = db.query(MessagingConfig).filter_by(
             key="my_aws_ses_email_config"
         )[0]
-        assert email_config.details == aws_ses_payload["details"]
+        assert email_config.details == {'aws_region': 'us-east-1', 'domain': None, 'email_from': 'test@test.com'}
         email_config.delete(db)
 
     def test_post_aws_ses_email_config_email_from_not_present(
@@ -479,7 +484,7 @@ class TestPostMessagingConfig:
             "details": {
                 "aws_region": "us-east-1",
                 "domain": "example.com",
-            },
+            }
         }
 
         auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
@@ -487,13 +492,19 @@ class TestPostMessagingConfig:
         response = api_client.post(url, headers=auth_header, json=aws_ses_payload)
         assert 200 == response.status_code
         response_body = json.loads(response.text)
-        aws_ses_payload["details"]["email_from"] = None
-        assert response_body == aws_ses_payload
+        assert response_body == {
+            "key": "my_aws_ses_email_config",
+            "name": "aws_ses_email",
+            "service_type": MessagingServiceType.aws_ses.value,
+            "details": {'email_from': None, 'domain': 'example.com', 'aws_region': 'us-east-1'},
+            "last_test_timestamp": None,
+            "last_test_succeeded": None,
+        }
 
         email_config = db.query(MessagingConfig).filter_by(
             key="my_aws_ses_email_config"
         )[0]
-        assert email_config.details == aws_ses_payload["details"]
+        assert email_config.details == {'domain': 'example.com', 'aws_region': 'us-east-1', 'email_from': None}
         email_config.delete(db)
 
     def test_post_aws_ses_email_config_missing_details_data(
@@ -509,7 +520,7 @@ class TestPostMessagingConfig:
             "service_type": MessagingServiceType.aws_ses.value,
             "details": {
                 "aws_region": "us-east-1",
-            },
+            }
         }
 
         auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
@@ -602,6 +613,8 @@ class TestPatchMessagingConfig:
                 MessagingServiceDetails.DOMAIN.value: "my.mailgun.domain",
                 MessagingServiceDetails.IS_EU_DOMAIN.value: False,
             },
+            "last_test_timestamp": None,
+            "last_test_succeeded": None,
         }
         assert expected_response == response_body
         email_config.delete(db)
@@ -1045,6 +1058,8 @@ class TestGetMessagingConfigs:
                         MessagingServiceDetails.DOMAIN.value: "some.domain",
                         MessagingServiceDetails.IS_EU_DOMAIN.value: False,
                     },
+                    "last_test_timestamp": None,
+                    "last_test_succeeded": None,
                 }
             ],
             "page": 1,
@@ -1106,6 +1121,8 @@ class TestGetMessagingConfig:
                 MessagingServiceDetails.DOMAIN.value: "some.domain",
                 MessagingServiceDetails.IS_EU_DOMAIN.value: False,
             },
+            "last_test_timestamp": None,
+            "last_test_succeeded": None,
         }
 
 
@@ -1236,6 +1253,8 @@ class TestGetDefaultMessagingConfig:
                 MessagingServiceDetails.DOMAIN.value: "some.domain",
                 MessagingServiceDetails.IS_EU_DOMAIN.value: False,
             },
+            "last_test_timestamp": None,
+            "last_test_succeeded": None,
         }
 
     def test_get_default_config_uppered_url(
@@ -1264,6 +1283,8 @@ class TestGetDefaultMessagingConfig:
                 MessagingServiceDetails.DOMAIN.value: "some.domain",
                 MessagingServiceDetails.IS_EU_DOMAIN.value: False,
             },
+            "last_test_timestamp": None,
+            "last_test_succeeded": None,
         }
 
 
@@ -1746,6 +1767,8 @@ class TestGetActiveDefaultMessagingConfig:
                 MessagingServiceDetails.DOMAIN.value: "some.domain",
                 MessagingServiceDetails.IS_EU_DOMAIN.value: False,
             },
+            "last_test_timestamp": None,
+            "last_test_succeeded": None,
         }
 
 

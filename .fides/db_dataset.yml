@@ -854,6 +854,10 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
+    - name: last_test_succeeded
+      data_categories: [system.operations]
+    - name: last_test_timestamp
+      data_categories: [system.operations]
   - name: masking_secret
     description: 'Fides Generated Description for Table: masking_secret'
     data_categories: []

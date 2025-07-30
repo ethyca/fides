@@ -12,9 +12,6 @@ from fides.api.custom_types import SafeStr
 from fides.api.schemas import Msg
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.messaging.shared_schemas import PossibleMessagingSecrets
-from fides.api.schemas.connection_configuration.connection_secrets_base_aws import (
-    BaseAWSSchema,
-)
 from fides.api.schemas.privacy_preference import MinimalPrivacyPreferenceHistorySchema
 from fides.api.schemas.privacy_request import Consent
 from fides.api.schemas.property import MinimalProperty
@@ -366,56 +363,6 @@ class MessagingServiceSecrets(Enum):
     AWS_ASSUME_ROLE_ARN = "aws_assume_role_arn"
 
 
-class MessagingServiceSecretsMailchimpTransactional(BaseModel):
-    """The secrets required to connect to Mailchimp Transactional."""
-
-    mailchimp_transactional_api_key: str
-    model_config = ConfigDict(extra="forbid")
-
-
-class MessagingServiceSecretsMailgun(BaseModel):
-    """The secrets required to connect to Mailgun."""
-
-    mailgun_api_key: str
-    model_config = ConfigDict(extra="forbid")
-
-
-class MessagingServiceSecretsTwilioSMS(BaseModel):
-    """The secrets required to connect to Twilio SMS."""
-
-    twilio_account_sid: str
-    twilio_auth_token: str
-    twilio_messaging_service_sid: Optional[str] = None
-    twilio_sender_phone_number: Optional[PhoneNumber] = None
-    model_config = ConfigDict(extra="forbid")
-
-    @model_validator(mode="before")
-    @classmethod
-    def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        sender_phone = values.get("twilio_sender_phone_number")
-        if not values.get("twilio_messaging_service_sid") and not sender_phone:
-            raise ValueError(
-                "Either the twilio_messaging_service_sid or the twilio_sender_phone_number should be supplied."
-            )
-        return values
-
-
-class MessagingServiceSecretsTwilioEmail(BaseModel):
-    """The secrets required to connect to twilio email."""
-
-    twilio_api_key: str
-    model_config = ConfigDict(extra="forbid")
-
-
-class MessagingServiceSecretsAWS_SES(BaseAWSSchema):
-    """
-    The secrets required to connect to AWS SES.
-    Inherits basic AWS authentication schema.
-    """
-
-    model_config = ConfigDict(extra="forbid")
-
-
 class MessagingConfigBase(BaseModel):
     """Base model shared by messaging config related models"""
 
@@ -492,16 +439,14 @@ class MessagingConfigResponse(MessagingConfigBase):
     key: FidesKey
     last_test_timestamp: Optional[datetime] = None
     last_test_succeeded: Optional[bool] = None
-    model_config = ConfigDict(from_attributes=True, use_enum_values=True)
-
-
-SUPPORTED_MESSAGING_SERVICE_SECRETS = Union[
-    MessagingServiceSecretsMailgun,
-    MessagingServiceSecretsTwilioSMS,
-    MessagingServiceSecretsTwilioEmail,
-    MessagingServiceSecretsMailchimpTransactional,
-    MessagingServiceSecretsAWS_SES,
-]
+    # Exclude nullable fields from the serialized response if they are None so that
+    # downstream clients/tests that rely on a minimal payload are unaffected.
+    model_config = ConfigDict(
+        from_attributes=True,
+        use_enum_values=True,
+        populate_by_name=True,
+        exclude_none=True,
+    )
 
 
 class MessagingConnectionTestStatus(Enum):

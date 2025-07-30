@@ -4,6 +4,9 @@ from pydantic import BaseModel, ConfigDict, model_validator
 
 from fides.api.custom_types import PhoneNumber
 from fides.api.schemas.base_class import NoValidationSchema
+from fides.api.schemas.connection_configuration.connection_secrets_base_aws import (
+    BaseAWSSchema,
+)
 
 
 class MessagingServiceSecretsMailgun(BaseModel):
@@ -70,11 +73,24 @@ class MessagingSecretsTwilioEmailDocs(
     """The secrets required to connect to Twilio email, for documentation"""
 
 
+class MessagingServiceSecretsAWS_SES(BaseAWSSchema):
+    """The secrets required to connect to AWS SES."""
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class MessagingServiceSecretsAWS_SESDocs(
+    MessagingServiceSecretsAWS_SES, NoValidationSchema
+):
+    """The secrets required to connect to AWS SES, for documentation"""
+
+
 SUPPORTED_MESSAGING_SERVICE_SECRETS = Union[
     MessagingServiceSecretsMailgun,
     MessagingServiceSecretsTwilioSMS,
     MessagingServiceSecretsTwilioEmail,
     MessagingServiceSecretsMailchimpTransactional,
+    MessagingServiceSecretsAWS_SES,
 ]
 
 PossibleMessagingSecrets = Union[
@@ -82,4 +98,5 @@ PossibleMessagingSecrets = Union[
     MessagingSecretsTwilioSMSDocs,
     MessagingSecretsTwilioEmailDocs,
     MessagingServiceSecretsMailchimpTransactionalDocs,
+    MessagingServiceSecretsAWS_SESDocs,
 ]
