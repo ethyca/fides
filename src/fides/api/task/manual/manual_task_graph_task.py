@@ -226,8 +226,7 @@ class ManualTaskGraphTask(GraphTask):
         """Process attachment field and return attachment map or None."""
         attachment_map: dict[str, dict[str, Any]] = {}
 
-        for attachment in submission.attachments or []:
-            if attachment.attachment_type == AttachmentType.include_with_access_package:
+        for attachment in submission.attachments.filter(ManualTaskAttachment.attachment_type == AttachmentType.include_with_access_package):
                 try:
                     size, url = attachment.retrieve_attachment()
                     attachment_map[attachment.file_name] = {
