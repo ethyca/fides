@@ -175,7 +175,7 @@ describe("Consent FidesEvents", () => {
       });
 
       // Save current preference selections
-      cy.get("#fides-modal .fides-save-button").click();
+      cy.get("#fides-modal #fides-save-button").click();
       expectedEvents.push(
         { type: "FidesModalClosed", detail: {} },
         {
@@ -824,7 +824,7 @@ describe("Consent FidesEvents", () => {
       });
 
       // Save preferences - this should trigger FidesUpdating and FidesUpdated events
-      cy.get("#fides-modal .fides-save-button").click();
+      cy.get("#fides-modal #fides-save-button").click();
       expectedEvents.push(
         { type: "FidesModalClosed", detail: {} },
         {
