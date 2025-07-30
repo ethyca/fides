@@ -1,4 +1,3 @@
-from tests.ops.graph.conftest import create_dataset_config_fixture
 from typing import Dict, Generator, List
 
 import pytest
@@ -8,6 +7,7 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.sql_models import Dataset as CtlDataset
 from tests.fixtures.application_fixtures import load_dataset
+from tests.ops.graph.conftest import create_dataset_config_fixture
 
 optional_identities_dataset_config = create_dataset_config_fixture(
     "optional_identities.yml"
