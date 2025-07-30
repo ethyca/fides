@@ -53,6 +53,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Escaping column names with spaces for BigQuery [#6380](https://github.com/ethyca/fides/pull/6380)
 - Fixed horizontal scroll appearing in the privacy request detail page when datasets with very long names are used [#6389](https://github.com/ethyca/fides/pull/6389)
 - Fixed performance issues with large dataset traversals [#6353](https://github.com/ethyca/fides/pull/6353)
+- Fixing S3 KMS presigned URLs by configuring signature version 4 for all S3 client connections [#6365](https://github.com/ethyca/fides/pull/6365)
 
 ## [2.66.2](https://github.com/ethyca/fides/compare/2.66.1...2.66.2)
 
