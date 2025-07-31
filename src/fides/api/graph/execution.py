@@ -4,6 +4,7 @@ from fideslang.validation import FidesKey
 from loguru import logger
 
 from fides.api.graph.config import (
+    TERMINATOR_ADDRESS,
     Collection,
     CollectionAddress,
     Field,
@@ -157,3 +158,18 @@ class ExecutionNode(Contextualizable):  # pylint: disable=too-many-instance-attr
             )
 
         return out
+
+    def has_outgoing_dependencies(self) -> bool:
+        """
+        Check if this node has outgoing edges to collections other than the terminal node.
+
+        Returns:
+            bool: True if the node has dependencies on other collections, False otherwise
+        """
+
+        for edge in self.outgoing_edges:
+            # Check if the outgoing edge points to a collection other than the terminal node
+            target_collection = edge.f2.collection_address()
+            if target_collection != TERMINATOR_ADDRESS:
+                return True
+        return False
