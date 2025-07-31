@@ -36,6 +36,7 @@ from fides.api.tasks import DSR_QUEUE_NAME, DatabaseTask, celery_app
 from fides.api.util.cache import cache_task_tracking_key
 from fides.api.util.collection_util import Row
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
+from fides.api.util.memory_watchdog import memory_limiter
 
 # DSR 3.0 task functions
 
@@ -255,6 +256,7 @@ def queue_downstream_tasks(
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
+@memory_limiter
 @log_context(
     capture_args={
         "privacy_request_id": LoggerContextKeys.privacy_request_id,
@@ -319,6 +321,7 @@ def run_access_node(
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
+@memory_limiter
 @log_context(
     capture_args={
         "privacy_request_id": LoggerContextKeys.privacy_request_id,
@@ -391,6 +394,7 @@ def run_erasure_node(
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
+@memory_limiter
 @log_context(
     capture_args={
         "privacy_request_id": LoggerContextKeys.privacy_request_id,

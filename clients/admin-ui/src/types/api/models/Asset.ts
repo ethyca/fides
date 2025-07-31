@@ -19,7 +19,6 @@ export type Asset = {
   system_id: string;
   parent?: Array<string>;
   parent_domain?: string | null;
-  with_consent?: boolean | null;
   consent_status?: ConsentStatus;
   page?: Array<string>;
 };

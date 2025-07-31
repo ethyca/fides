@@ -591,6 +591,9 @@ export const stubWebsiteMonitor = () => {
       fixture: "detection-discovery/activity-center/consent-breakdown",
     },
   ).as("getConsentBreakdown");
+  cy.intercept("GET", "/api/v1/plus/filters/website_monitor_resources*", {
+    response: 200,
+  }).as("getWebsiteMonitorResourcesFilters");
 };
 
 export const stubSystemAssets = () => {

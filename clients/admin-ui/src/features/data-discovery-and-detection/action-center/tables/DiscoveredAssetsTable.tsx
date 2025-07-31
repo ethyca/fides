@@ -3,9 +3,12 @@ import {
   AntDefaultOptionType as DefaultOptionType,
   AntDropdown as Dropdown,
   AntEmpty as Empty,
+  AntFilterValue as FilterValue,
   AntFlex as Flex,
+  AntSorterResult as SorterResult,
   AntSpace as Space,
   AntTable as Table,
+  AntTablePaginationConfig as TablePaginationConfig,
   AntTabs as Tabs,
   AntTooltip as Tooltip,
   Icons,
@@ -42,6 +45,7 @@ import {
 import AddDataUsesModal from "../AddDataUsesModal";
 import { AssignSystemModal } from "../AssignSystemModal";
 import { ConsentBreakdownModal } from "../ConsentBreakdownModal";
+import { DiscoveredAssetsColumnKeys } from "../constants";
 import useActionCenterTabs, {
   ActionCenterTabHash,
 } from "../hooks/useActionCenterTabs";
@@ -69,6 +73,19 @@ export const DiscoveredAssetsTable = ({
   // Pagination state
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(25);
+
+  // Filter state for server-side filtering
+  const [columnFilters, setColumnFilters] = useState<
+    Record<string, FilterValue | null>
+  >({});
+
+  // Sorting state
+  const [sortField, setSortField] = useState<
+    DiscoveredAssetsColumnKeys | undefined
+  >();
+  const [sortOrder, setSortOrder] = useState<
+    "ascend" | "descend" | undefined
+  >();
 
   // Selection state
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
@@ -119,11 +136,6 @@ export const DiscoveredAssetsTable = ({
 
   const toast = useToast();
 
-  // Reset pagination when filters change
-  useEffect(() => {
-    setPageIndex(1);
-  }, [monitorId, searchQuery]);
-
   const { filterTabs, activeTab, onTabChange, activeParams, actionsDisabled } =
     useActionCenterTabs(systemId);
 
@@ -131,17 +143,21 @@ export const DiscoveredAssetsTable = ({
     setPageIndex(1);
   }, [monitorId, searchQuery, activeTab]);
 
-  // Reset selections when filters change
   useEffect(() => {
     resetSelections();
-  }, [monitorId, searchQuery, activeTab]);
+  }, [monitorId, activeTab]);
 
   const { data, isLoading, isFetching } = useGetDiscoveredAssetsQuery({
     key: monitorId,
     page: pageIndex,
     size: pageSize,
     search: searchQuery,
+    sort_by: sortField
+      ? [sortField]
+      : [DiscoveredAssetsColumnKeys.CONSENT_AGGREGATED, "urn"],
+    sort_asc: sortOrder !== "descend",
     ...activeParams,
+    ...columnFilters,
   });
 
   useEffect(() => {
@@ -180,6 +196,13 @@ export const DiscoveredAssetsTable = ({
     onTabChange,
     aggregatedConsent: firstItemConsentStatus,
     onShowBreakdown: handleShowBreakdown,
+    monitorConfigId: monitorId,
+    resolvedSystemId: systemId,
+    diffStatus: activeParams?.diff_status,
+    columnFilters,
+    sortField,
+    sortOrder,
+    searchQuery,
   });
 
   // Get selected URNs from the map instead of selectedRows
@@ -376,9 +399,38 @@ export const DiscoveredAssetsTable = ({
     },
   };
 
-  const handleTableChange = (pagination: any) => {
-    setPageIndex(pagination.current);
-    setPageSize(pagination.pageSize);
+  const handleTableChange = (
+    pagination: TablePaginationConfig,
+    filters: Record<string, FilterValue | null>,
+    sorter:
+      | SorterResult<StagedResourceAPIResponse>
+      | SorterResult<StagedResourceAPIResponse>[],
+  ) => {
+    // Check if this is just a pagination change (page or pageSize changed)
+    const isPaginationChange =
+      pagination.current !== pageIndex || pagination.pageSize !== pageSize;
+
+    // If it's a pagination change, use the new page; otherwise reset to page 1
+    if (isPaginationChange) {
+      setPageIndex(pagination.current || 1);
+    } else {
+      setPageIndex(1);
+    }
+
+    setPageSize(pagination.pageSize || 25);
+    setColumnFilters(filters || {});
+
+    // Handle sorting
+    const newSortField =
+      sorter && !Array.isArray(sorter)
+        ? (sorter.field as DiscoveredAssetsColumnKeys)
+        : undefined;
+    const newSortOrder =
+      sorter && !Array.isArray(sorter) && sorter.order !== null
+        ? sorter.order
+        : undefined;
+    setSortField(newSortField);
+    setSortOrder(newSortOrder);
   };
 
   if (!monitorId || !systemId) {
@@ -406,6 +458,17 @@ export const DiscoveredAssetsTable = ({
             <SelectedText count={selectedUrns.length} />
           )}
           <Space size="small">
+            <Button
+              onClick={() => {
+                setColumnFilters({});
+                setSearchQuery("");
+                setSortField(undefined);
+                setSortOrder(undefined);
+              }}
+              data-testid="clear-filters"
+            >
+              Clear filters
+            </Button>
             <Dropdown
               menu={{
                 items: [
