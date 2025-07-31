@@ -1,5 +1,8 @@
 import pytest
 
+from fides.api.models.privacy_request import ExecutionLog
+from fides.api.models.privacy_request.privacy_request import PrivacyRequest
+from fides.api.models.worker_task import ExecutionLogStatus
 from tests.ops.service.privacy_request.test_request_runner_service import (
     PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     get_privacy_request_results,
@@ -192,3 +195,79 @@ def test_create_and_process_erasure_request_bigquery(
         assert res == []
 
     pr.delete(db=db)
+
+
+@pytest.mark.integration_external
+@pytest.mark.integration_bigquery
+@pytest.mark.parametrize("dsr_version", ["use_dsr_2_0", "use_dsr_3_0"])
+@pytest.mark.parametrize(
+    "scenario,expected_status",
+    [
+        ("customer_profile", ExecutionLogStatus.skipped),  # Leaf collection
+        ("customer", ExecutionLogStatus.error),  # Has dependencies
+    ],
+)
+def test_bigquery_missing_tables_handling(
+    db,
+    policy,
+    dsr_version,
+    request,
+    scenario,
+    expected_status,
+    bigquery_missing_table_resources,
+    run_privacy_request_task,
+):
+    """
+    Test BigQuery missing table handling:
+    - Missing leaf collections should be skipped gracefully
+    - Missing collections with dependencies should cause errors
+    """
+    request.getfixturevalue(dsr_version)
+
+    # Get dataset config and collection key
+    dataset_config = request.getfixturevalue(f"bigquery_missing_{scenario}_config")
+    missing_collection_key = f"{dataset_config.fides_key}:{scenario}_missing"
+
+    # Create privacy request
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": policy.key,
+        "identity": {"email": bigquery_missing_table_resources["email"]},
+    }
+
+    # Execute request (allow errors for dependency failures)
+    try:
+        pr = get_privacy_request_results(
+            db,
+            policy,
+            run_privacy_request_task,
+            data,
+            task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
+        )
+    except Exception:
+        # For dependency errors, get the most recent privacy request
+        pr = db.query(PrivacyRequest).order_by(PrivacyRequest.created_at.desc()).first()
+
+    # Verify execution logs
+    execution_logs = db.query(ExecutionLog).filter_by(privacy_request_id=pr.id).all()
+
+    # Find logs for the missing collection
+    missing_collection_logs = [
+        log
+        for log in execution_logs
+        if f"{log.dataset_name}:{log.collection_name}" == missing_collection_key
+    ]
+
+    # Verify expected status
+    assert missing_collection_logs, f"No logs found for {missing_collection_key}"
+
+    status_logs = [
+        log for log in missing_collection_logs if log.status == expected_status
+    ]
+    assert status_logs, f"Expected status {expected_status} not found"
+
+    # Verify error/skip message mentions missing table
+    log = status_logs[0]
+    assert log.message and any(
+        keyword in log.message.lower() for keyword in ["not found", "missing", scenario]
+    ), f"Expected message about missing table, got: {log.message}"

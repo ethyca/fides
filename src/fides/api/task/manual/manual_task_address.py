@@ -1,3 +1,5 @@
+from typing import Union
+
 from fides.api.graph.config import CollectionAddress
 
 
@@ -20,7 +22,7 @@ class ManualTaskAddress:
         return collection_name == ManualTaskAddress.MANUAL_DATA_COLLECTION
 
     @staticmethod
-    def is_manual_task_address(address: CollectionAddress) -> bool:
+    def is_manual_task_address(address: Union[str, CollectionAddress]) -> bool:
         """Check if address represents manual task data"""
         if isinstance(address, str):
             # Handle string format "connection_key:collection_name"
@@ -33,7 +35,7 @@ class ManualTaskAddress:
         return ManualTaskAddress._is_manual_data_collection(address.collection)
 
     @staticmethod
-    def get_connection_key(address: CollectionAddress) -> str:
+    def get_connection_key(address: Union[str, CollectionAddress]) -> str:
         """Extract connection config key from manual task address"""
         if not ManualTaskAddress.is_manual_task_address(address):
             raise ValueError(f"Not a manual task address: {address}")

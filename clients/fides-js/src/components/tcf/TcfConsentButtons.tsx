@@ -14,7 +14,7 @@ interface TcfConsentButtonProps {
   onManagePreferencesClick?: () => void;
   onRejectAll: () => void;
   onAcceptAll: () => void;
-  renderFirstButton?: () => VNode;
+  renderFirstButton?: () => VNode | false;
   isInModal?: boolean;
 }
 
@@ -48,7 +48,6 @@ export const TcfConsentButtons = ({
       }
       options={options}
       isTCF
-      isMinimalTCF={experience.minimal_tcf}
       isGVLLoading={isGVLLoading}
     />
   );

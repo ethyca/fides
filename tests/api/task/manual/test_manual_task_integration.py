@@ -36,10 +36,9 @@ from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
 from fides.api.task.manual.manual_task_utils import (
     create_manual_data_traversal_node,
     create_manual_task_artificial_graphs,
-    create_manual_task_instances_for_privacy_request,
+    get_connection_configs_with_manual_tasks,
     get_manual_task_addresses,
     get_manual_task_for_connection_config,
-    get_manual_task_instances_for_privacy_request,
 )
 from fides.api.task.task_resources import TaskResources
 
@@ -258,14 +257,15 @@ class TestManualTaskInstanceCreation:
         _, manual_task, _, _ = connection_with_manual_access_task
 
         # Verify no instances exist initially
-        initial_instances = get_manual_task_instances_for_privacy_request(
-            db, access_privacy_request
-        )
+        initial_instances = access_privacy_request.manual_task_instances
         assert len(initial_instances) == 0
 
         # Create manual task instances (this should happen during privacy request processing)
-        created_instances = create_manual_task_instances_for_privacy_request(
-            db, access_privacy_request
+        connection_configs_with_manual_tasks = get_connection_configs_with_manual_tasks(
+            db
+        )
+        created_instances = access_privacy_request.create_manual_task_instances(
+            db, connection_configs_with_manual_tasks
         )
 
         # Verify instances were created
@@ -274,9 +274,7 @@ class TestManualTaskInstanceCreation:
         assert created_instances[0].task_id == manual_task.id
 
         # Verify we can retrieve the instances
-        retrieved_instances = get_manual_task_instances_for_privacy_request(
-            db, access_privacy_request
-        )
+        retrieved_instances = access_privacy_request.manual_task_instances
         assert len(retrieved_instances) == 1
         assert retrieved_instances[0].id == created_instances[0].id
 
@@ -291,21 +289,25 @@ class TestManualTaskInstanceCreation:
         _, manual_task, _, _ = connection_with_manual_access_task
 
         # Create instances first time
-        first_instances = create_manual_task_instances_for_privacy_request(
-            db, access_privacy_request
+        connection_configs_with_manual_tasks = get_connection_configs_with_manual_tasks(
+            db
+        )
+        first_instances = access_privacy_request.create_manual_task_instances(
+            db, connection_configs_with_manual_tasks
         )
         assert len(first_instances) == 1
 
         # Try to create instances again
-        second_instances = create_manual_task_instances_for_privacy_request(
-            db, access_privacy_request
+        connection_configs_with_manual_tasks = get_connection_configs_with_manual_tasks(
+            db
+        )
+        second_instances = access_privacy_request.create_manual_task_instances(
+            db, connection_configs_with_manual_tasks
         )
         assert len(second_instances) == 0  # No new instances should be created
 
         # Verify total count is still 1
-        all_instances = get_manual_task_instances_for_privacy_request(
-            db, access_privacy_request
-        )
+        all_instances = access_privacy_request.manual_task_instances
         assert len(all_instances) == 1
 
 
@@ -743,8 +745,11 @@ class TestManualTaskDisabledConnectionConfig:
         """Test that disabled connection configs are filtered out from manual task instance creation"""
 
         # Create manual task instances
-        created_instances = create_manual_task_instances_for_privacy_request(
-            db, access_privacy_request
+        connection_configs_with_manual_tasks = get_connection_configs_with_manual_tasks(
+            db
+        )
+        created_instances = access_privacy_request.create_manual_task_instances(
+            db, connection_configs_with_manual_tasks
         )
 
         # Should only create instances for enabled connection configs
@@ -756,9 +761,7 @@ class TestManualTaskDisabledConnectionConfig:
 
         # Verify no instances were created for disabled connection
         _, disabled_task = disabled_connection_config
-        all_instances = get_manual_task_instances_for_privacy_request(
-            db, access_privacy_request
-        )
+        all_instances = access_privacy_request.manual_task_instances
         assert not any(
             instance.task_id == disabled_task.id for instance in all_instances
         )

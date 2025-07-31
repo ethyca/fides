@@ -962,7 +962,7 @@ describe("Consent overlay", () => {
           cy.get(
             "#fides-modal .fides-modal-notices .fides-toggle-input:first",
           ).click();
-          cy.get("#fides-modal .fides-save-button").click();
+          cy.get("#fides-modal #fides-save-button").click();
           cy.wait("@patchPrivacyPreference").then((interception) => {
             const { method, preferences } = interception.request.body;
             expect(method).to.eq("save");
@@ -979,12 +979,12 @@ describe("Consent overlay", () => {
           cy.get(
             "#fides-modal .fides-modal-notices .fides-toggle-input:first",
           ).should("be.checked");
-          cy.get("#fides-modal .fides-save-button").click();
+          cy.get("#fides-modal #fides-save-button").click();
           cy.get("#fides-modal-link").click();
           cy.get(
             "#fides-modal .fides-modal-notices .fides-toggle-input:first",
           ).should("be.checked");
-          cy.get("#fides-modal .fides-save-button").click();
+          cy.get("#fides-modal #fides-save-button").click();
           // We still should not fire any FidesUpdated events
           cy.get("@FidesUpdated").should("have.been.calledTwice");
         });

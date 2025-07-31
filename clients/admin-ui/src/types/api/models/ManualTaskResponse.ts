@@ -38,4 +38,8 @@ export type ManualTaskResponse = {
    * Users assigned to the manual task
    */
   assigned_users?: Array<AssignedUserSummary> | null;
+  /**
+   * Dependency conditions
+   */
+  dependency_conditions?: null;
 };

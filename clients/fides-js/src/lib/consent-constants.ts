@@ -123,6 +123,12 @@ export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: FidesOverrideValidatorMap[] =
       overrideKey: "fides_modal_default_view",
       validationRegex: /^\/tcf\/(purposes|features|vendors)$/,
     },
+    {
+      overrideName: "fidesModalDisplay",
+      overrideType: "string",
+      overrideKey: "fides_modal_display",
+      validationRegex: /^(immediate|default)$/,
+    },
   ];
 
 /**
