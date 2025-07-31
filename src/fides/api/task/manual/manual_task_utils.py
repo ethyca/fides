@@ -164,13 +164,12 @@ def create_collection_for_connection_key(
         )
 
     # Get conditional dependency field addresses - raw field data
-    conditional_field_addresses: set[str] = set(
-        [
-            dependency.field_address
-            for dependency in manual_task.conditional_dependencies
-            if dependency.condition_type == ManualTaskConditionalDependencyType.leaf
-        ]
-    )
+    conditional_field_addresses: set[str] = {
+        dependency.field_address
+        for dependency in manual_task.conditional_dependencies
+        if dependency.condition_type == ManualTaskConditionalDependencyType.leaf
+        and dependency.field_address is not None
+    }
 
     # Find collections that provide the fields referenced in conditional dependencies - determines execution order
     dependency_collections: set[CollectionAddress] = (
@@ -286,6 +285,10 @@ def _find_collections_for_conditional_dependencies(
         logger.info(f"📋 Processing dependency: {dependency.field_address}")
 
         # Parse the field address to determine which collection provides this field
+        # if the field address is None, skip it (Groups do not have field addresses)
+        if dependency.field_address is None:
+            continue
+
         collection_address = _get_collection_for_field_address(
             dependency.field_address, dataset_graph
         )
