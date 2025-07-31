@@ -585,6 +585,46 @@ class TestPatchApplicationConfig:
             is True
         )
 
+    def test_patch_application_config_memory_watchdog_enabled(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        db: Session,
+    ):
+        """Test that memory_watchdog_enabled can be updated individually"""
+        auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
+
+        # Test setting memory_watchdog_enabled to False
+        updated_payload = {"execution": {"memory_watchdog_enabled": False}}
+        response = api_client.patch(
+            url,
+            headers=auth_header,
+            json=updated_payload,
+        )
+        assert response.status_code == 200
+        response_settings = response.json()
+        assert response_settings["execution"]["memory_watchdog_enabled"] is False
+
+        # Verify it was saved to the database
+        db_settings = db.query(ApplicationConfig).first()
+        assert db_settings.api_set["execution"]["memory_watchdog_enabled"] is False
+
+        # Test setting memory_watchdog_enabled to True
+        updated_payload = {"execution": {"memory_watchdog_enabled": True}}
+        response = api_client.patch(
+            url,
+            headers=auth_header,
+            json=updated_payload,
+        )
+        assert response.status_code == 200
+        response_settings = response.json()
+        assert response_settings["execution"]["memory_watchdog_enabled"] is True
+
+        # Verify it was updated in the database
+        db.refresh(db_settings)
+        assert db_settings.api_set["execution"]["memory_watchdog_enabled"] is True
+
 
 @pytest.mark.usefixtures("original_cors_middleware_origins")
 class TestPutApplicationConfig:
@@ -1371,6 +1411,7 @@ class TestGetConfig:
                             "task_retry_backoff",
                             "require_manual_request_approval",
                             "subject_identity_verification_required",
+                            "memory_watchdog_enabled",
                         ]
                     )
                 )

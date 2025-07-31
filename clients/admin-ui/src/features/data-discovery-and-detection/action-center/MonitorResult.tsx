@@ -1,4 +1,4 @@
-import { formatDistance } from "date-fns";
+import { formatDistanceStrict } from "date-fns";
 import {
   AntAvatar as Avatar,
   AntCol as Col,
@@ -7,7 +7,6 @@ import {
   AntListItemProps as ListItemProps,
   AntRow as Row,
   AntSkeleton as Skeleton,
-  AntTooltip as Tooltip,
   AntTypography as Typography,
   Icons,
 } from "fidesui";
@@ -65,7 +64,9 @@ export const MonitorResult = ({
     : undefined;
 
   const lastMonitoredDistance = lastMonitored
-    ? formatDistance(new Date(lastMonitored), new Date())
+    ? formatDistanceStrict(new Date(lastMonitored), new Date(), {
+        addSuffix: true,
+      })
     : undefined;
 
   return (
@@ -105,14 +106,12 @@ export const MonitorResult = ({
           </Col>
           <Col span={3} className="flex items-center justify-end">
             {!!lastMonitoredDistance && (
-              <Tooltip title={formattedLastMonitored}>
-                <Text
-                  data-testid="monitor-date"
-                  ellipsis={{ tooltip: formattedLastMonitored }}
-                >
-                  {lastMonitoredDistance} ago
-                </Text>
-              </Tooltip>
+              <Text
+                data-testid="monitor-date"
+                ellipsis={{ tooltip: formattedLastMonitored }}
+              >
+                {lastMonitoredDistance}
+              </Text>
             )}
           </Col>
         </Row>

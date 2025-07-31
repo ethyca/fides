@@ -2,7 +2,6 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { AttachmentResponse } from "./AttachmentResponse";
 import type { CommentResponse } from "./CommentResponse";
 import type { ManualFieldPrivacyRequest } from "./ManualFieldPrivacyRequest";
 import type { ManualFieldRequestType } from "./ManualFieldRequestType";
@@ -29,7 +28,7 @@ export type ManualFieldListItem = {
   system?: ManualFieldSystem | null;
   submission_user?: ManualFieldUser | null;
   comments?: Array<CommentResponse>;
-  attachments?: Array<AttachmentResponse>;
+  attachments?: Array<Record<string, string>>;
   created_at: string;
   updated_at: string;
 };

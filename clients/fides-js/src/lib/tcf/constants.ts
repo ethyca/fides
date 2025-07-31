@@ -104,3 +104,6 @@ export const EMPTY_ENABLED_IDS: EnabledIds = {
   vendorsConsent: [],
   vendorsLegint: [],
 };
+
+export const TCF_FULL_MAX_ATTEMPTS = 4; // initial attempt + 3 retries
+export const TCF_FULL_BACKOFF_FACTOR = 1000; // exponential backoff
