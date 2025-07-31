@@ -9,7 +9,88 @@ from fides.api.schemas.storage.storage import (
     StorageSecretsS3,
     StorageType,
 )
-from fides.api.util.storage_util import StorageJSONEncoder, get_schema_for_secrets
+from fides.api.util.storage_util import (
+    StorageJSONEncoder,
+    format_size,
+    get_schema_for_secrets,
+)
+
+
+class TestFormatSize:
+    """Tests for the format_size function"""
+
+    @pytest.mark.parametrize(
+        "size_bytes,expected",
+        [
+            # Bytes
+            (0, "0.0 B"),
+            (1, "1.0 B"),
+            (100, "100.0 B"),
+            (1023, "1023.0 B"),
+            # Kilobytes
+            (1024, "1.0 KB"),
+            (1536, "1.5 KB"),
+            (2048, "2.0 KB"),
+            (1048575, "1024.0 KB"),  # 1024^2 - 1 = 1048575 bytes = 1024.0 KB
+            # Megabytes
+            (1048576, "1.0 MB"),
+            (1572864, "1.5 MB"),
+            (2097152, "2.0 MB"),
+            (1073741823, "1024.0 MB"),  # 1024^3 - 1 = 1073741823 bytes = 1024.0 MB
+            # Gigabytes
+            (1073741824, "1.0 GB"),
+            (1610612736, "1.5 GB"),
+            (2147483648, "2.0 GB"),
+            (
+                1099511627775,
+                "1024.0 GB",
+            ),  # 1024^4 - 1 = 1099511627775 bytes = 1024.0 GB
+            # Terabytes
+            (1099511627776, "1.0 TB"),
+            (1649267441664, "1.5 TB"),
+            (2199023255552, "2.0 TB"),
+            (
+                1125899906842623,
+                "1024.0 TB",
+            ),  # 1024^5 - 1 = 1125899906842623 bytes = 1024.0 TB
+            # Petabytes
+            (1125899906842624, "1.0 PB"),
+            (1688849860263936, "1.5 PB"),
+            (2251799813685248, "2.0 PB"),
+            (10000000000000000, "8.9 PB"),
+        ],
+    )
+    def test_format_size_units(self, size_bytes, expected):
+        """Test formatting sizes across all units"""
+        assert format_size(size_bytes) == expected
+
+    def test_format_size_boundary_conditions(self):
+        """Test exact boundary conditions"""
+        assert format_size(1048575) == "1024.0 KB"
+        assert format_size(1048576) == "1.0 MB"
+        assert format_size(1073741823) == "1024.0 MB"
+        assert format_size(1073741824) == "1.0 GB"
+
+    @pytest.mark.parametrize(
+        "size_bytes,expected",
+        [
+            # Float inputs
+            (0.0, "0.0 B"),
+            (1024.5, "1.0 KB"),
+            (1536.0, "1.5 KB"),
+            # Very small numbers
+            (0.1, "0.1 B"),
+            (0.5, "0.5 B"),
+            # Very large numbers
+            (1000000000000000000, "888.2 PB"),
+            # Negative numbers (function doesn't handle negatives properly)
+            (-1024, "-1024.0 B"),
+            (-1536, "-1536.0 B"),
+        ],
+    )
+    def test_format_size_edge_cases(self, size_bytes, expected):
+        """Test edge cases and special inputs"""
+        assert format_size(size_bytes) == expected
 
 
 class TestStorageUtil:

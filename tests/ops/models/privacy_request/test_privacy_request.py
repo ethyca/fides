@@ -9,7 +9,7 @@ import pytest
 import requests_mock
 from pydantic import ValidationError
 from sqlalchemy import exc as sa_exc
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import (
     ClientUnsuccessfulException,
@@ -22,14 +22,8 @@ from fides.api.models.attachment import (
     Attachment,
     AttachmentReference,
     AttachmentReferenceType,
-    AttachmentType,
 )
-from fides.api.models.comment import (
-    Comment,
-    CommentReference,
-    CommentReferenceType,
-    CommentType,
-)
+from fides.api.models.comment import Comment, CommentReference, CommentReferenceType
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import (
     PrivacyRequest,
