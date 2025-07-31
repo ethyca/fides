@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.66.3b0.post0.dev13"
+    "version": "2.66.3b0.post0.dev14"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -17426,7 +17426,7 @@
               }
             ],
             "title": "Frequency",
-            "description": "The frequency at which the integration should run. Available options are daily, weekly, and monthly."
+            "description": "The frequency at which the integration should run. Available options are daily, weekly, monthly, and not scheduled."
           },
           "glossary_node": {
             "type": "string",
@@ -22019,7 +22019,8 @@
         "enum": [
           "daily",
           "weekly",
-          "monthly"
+          "monthly",
+          "not scheduled"
         ],
         "title": "PeriodicIntegrationFrequency",
         "description": "Enum for periodic integration frequency"
