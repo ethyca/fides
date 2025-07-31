@@ -26,7 +26,7 @@ from tests.ops.integration_tests.saas.connector_runner import (
     generate_random_email,
     generate_random_phone_number,
 )
-from tests.ops.test_helpers.vault_client import get_secrets
+from tests.ops.test_helpers.onepassword_client import get_secrets
 
 secrets = get_secrets("stripe")
 
