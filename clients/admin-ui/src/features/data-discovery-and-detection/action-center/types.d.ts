@@ -1,5 +1,5 @@
 import { MonitorConfigStagedResourcesAggregateRecord } from "~/types/api";
-import { PaginatedResponse } from "~/types/common/PaginationQueryParams";
+import { PaginatedResponse } from "~/types/query-params";
 
 export interface MonitorAggregatedResults
   extends Omit<MonitorConfigStagedResourcesAggregateRecord, "secrets"> {

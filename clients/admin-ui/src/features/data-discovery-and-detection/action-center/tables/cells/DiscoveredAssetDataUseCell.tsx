@@ -25,8 +25,12 @@ const DiscoveredAssetDataUseCell = ({
 
   const { getDataUseDisplayName } = useTaxonomies();
 
-  const currentDataUses =
-    asset.user_assigned_data_uses || asset.data_uses || [];
+  // eslint-disable-next-line no-nested-ternary
+  const currentDataUses = asset.user_assigned_data_uses?.length
+    ? asset.user_assigned_data_uses
+    : asset.data_uses?.length
+      ? asset.data_uses
+      : [];
 
   const handleAddDataUse = async (newDataUse: string) => {
     const result = await updateAssetsDataUseMutation({

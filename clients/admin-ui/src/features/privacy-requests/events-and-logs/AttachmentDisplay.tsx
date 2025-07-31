@@ -4,10 +4,14 @@ import {
   Icons,
 } from "fidesui";
 
-import { AttachmentResponse } from "~/types/api";
+// Simple attachment interface with only the properties we actually use
+interface SimpleAttachment {
+  id: string;
+  file_name: string;
+}
 
 interface AttachmentDisplayProps {
-  attachments: AttachmentResponse[];
+  attachments: SimpleAttachment[];
 }
 
 export const AttachmentDisplay = ({ attachments }: AttachmentDisplayProps) => {

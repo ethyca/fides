@@ -1,5 +1,4 @@
 import { Fragment, VNode } from "preact";
-import { useEffect, useState } from "preact/hooks";
 
 import {
   ButtonType,
@@ -21,7 +20,7 @@ import PrivacyPolicyLink from "./PrivacyPolicyLink";
 interface ConsentButtonsProps {
   availableLocales?: Locale[];
   onManagePreferencesClick?: () => void;
-  renderFirstButton?: () => VNode | null;
+  renderFirstButton?: () => VNode | null | false;
   onAcceptAll: () => void;
   onRejectAll: () => void;
   options: FidesInitOptions;
@@ -29,7 +28,6 @@ interface ConsentButtonsProps {
   hideRejectAll?: boolean;
   isInModal?: boolean;
   isTCF?: boolean;
-  isMinimalTCF?: boolean;
   isGVLLoading?: boolean;
 }
 export const ConsentButtons = ({
@@ -43,10 +41,8 @@ export const ConsentButtons = ({
   options,
   isInModal,
   isTCF,
-  isMinimalTCF,
   isGVLLoading,
 }: ConsentButtonsProps) => {
-  const [isLoadingModal, setIsLoadingModal] = useState<boolean>(false);
   const { i18n } = useI18n();
   const { setTrigger } = useEvent();
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -54,21 +50,7 @@ export const ConsentButtons = ({
   const includePrivacyPolicyLink =
     messageExists(i18n, "exp.privacy_policy_link_label") &&
     messageExists(i18n, "exp.privacy_policy_url");
-  const handleTCFManagePreferencesClick = () => {
-    const isReady = !isTCF || !isMinimalTCF;
-    setIsLoadingModal(!isReady);
-    if (onManagePreferencesClick && isReady) {
-      onManagePreferencesClick();
-    }
-  };
   const includeBrandLink = isInModal && options.showFidesBrandLink;
-
-  useEffect(() => {
-    if (isLoadingModal && !isMinimalTCF) {
-      handleTCFManagePreferencesClick();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoadingModal, isMinimalTCF]);
 
   return (
     <div id="fides-button-group">
@@ -91,11 +73,10 @@ export const ConsentButtons = ({
                     type: FidesEventTargetType.BUTTON,
                     label: i18n.t("exp.privacy_preferences_link_label"),
                   });
-                  handleTCFManagePreferencesClick();
+                  onManagePreferencesClick();
                 }}
                 className="fides-manage-preferences-button"
                 id="fides-manage-preferences-button"
-                loading={isLoadingModal}
               />
             )}
             {!hideRejectAll && (

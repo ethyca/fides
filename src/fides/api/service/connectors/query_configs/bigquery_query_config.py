@@ -93,7 +93,7 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
 
         return where_clauses
 
-    def _generate_table_name(self) -> str:
+    def generate_table_name(self) -> str:
         """
         Prepends the dataset ID and project ID to the base table name
         if the BigQuery namespace meta is provided.
@@ -116,7 +116,7 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         Returns a query string with backtick formatting for tables that have the same names as
         BigQuery reserved words.
         """
-        return f'SELECT {field_list} FROM `{self._generate_table_name()}` WHERE ({" OR ".join(clauses)})'
+        return f'SELECT {field_list} FROM `{self.generate_table_name()}` WHERE ({" OR ".join(clauses)})'
 
     def generate_masking_stmt(
         self,
@@ -197,7 +197,7 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
             )
             return []
 
-        table = Table(self._generate_table_name(), MetaData(bind=client), autoload=True)
+        table = Table(self.generate_table_name(), MetaData(bind=client), autoload=True)
         where_clauses: List[ColumnElement] = [
             table.c[k] == v for k, v in non_empty_reference_field_keys.items()
         ]
@@ -256,7 +256,7 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
             )
             return []
 
-        table = Table(self._generate_table_name(), MetaData(bind=client), autoload=True)
+        table = Table(self.generate_table_name(), MetaData(bind=client), autoload=True)
 
         # Build individual reference clauses
         where_clauses: List[ColumnElement] = []

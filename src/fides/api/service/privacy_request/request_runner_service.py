@@ -80,6 +80,7 @@ from fides.api.util.cache import get_all_masking_secret_keys
 from fides.api.util.collection_util import Row
 from fides.api.util.logger import Pii, _log_exception, _log_warning
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
+from fides.api.util.memory_watchdog import memory_limiter
 from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_TRANSFER_TO_PARENT,
     V1_URL_PREFIX,
@@ -358,8 +359,8 @@ def upload_and_save_access_results(  # pylint: disable=R0912
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
-# TODO: Add log_context back in, this is just for some temporary testing
-# @log_context(capture_args={"privacy_request_id": LoggerContextKeys.privacy_request_id})
+@memory_limiter
+@log_context(capture_args={"privacy_request_id": LoggerContextKeys.privacy_request_id})
 def run_privacy_request(
     self: DatabaseTask,
     privacy_request_id: str,

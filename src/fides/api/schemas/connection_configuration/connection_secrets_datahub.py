@@ -16,6 +16,15 @@ class PeriodicIntegrationFrequency(Enum):
     daily = "daily"
     weekly = "weekly"
     monthly = "monthly"
+    not_scheduled = "not scheduled"
+
+
+PERIODIC_INTEGRATION_FREQUENCY_TO_DAYS = {
+    PeriodicIntegrationFrequency.daily.value: 1,
+    PeriodicIntegrationFrequency.weekly.value: 7,
+    PeriodicIntegrationFrequency.monthly.value: 30,
+    PeriodicIntegrationFrequency.not_scheduled.value: -1,  # negative value to indicate that the integration is not scheduled
+}
 
 
 class DatahubSchema(ConnectionConfigSecretsSchema):
@@ -30,7 +39,7 @@ class DatahubSchema(ConnectionConfigSecretsSchema):
     )
     frequency: PeriodicIntegrationFrequency = Field(
         title="Frequency",
-        description="The frequency at which the integration should run. Available options are daily, weekly, and monthly.",
+        description="The frequency at which the integration should run. Available options are daily, weekly, monthly, and not scheduled.",
     )
     glossary_node: str = Field(
         title="Glossary node",
