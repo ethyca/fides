@@ -12,7 +12,10 @@ import {
   RejectAllMechanism,
 } from "fides-js";
 
-import { FIDES_SEPARATOR } from "../../../fides-js/src/lib/tcf/constants";
+import {
+  FIDES_SEPARATOR,
+  TCF_FULL_MAX_ATTEMPTS,
+} from "../../../fides-js/src/lib/tcf/constants";
 import {
   API_URL,
   TCF_VERSION_HASH,
@@ -1097,6 +1100,87 @@ describe("Fides-js TCF", () => {
             cy.get("@FidesUIChanged").should("have.been.calledOnce");
           });
         });
+      });
+
+      it("can render the loading state and error message when full tcf fails to load", () => {
+        cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+        stubTCFExperience({});
+
+        // Intercept and fail the full experience API call to simulate network error
+        cy.intercept(
+          "GET",
+          `${API_URL}${FidesEndpointPaths.PRIVACY_EXPERIENCE}*`,
+          (req) => {
+            // Only fail the non-minimal TCF request (full experience)
+            if (!req.url.includes("minimal_tcf=true")) {
+              req.reply({
+                statusCode: 500,
+                body: "Internal Server Error",
+              });
+            } else {
+              req.reply({ fixture: "consent/experience_tcf_minimal.json" });
+            }
+          },
+        ).as("getPrivacyExperienceError");
+
+        cy.waitUntilFidesInitialized();
+
+        cy.get("div#fides-banner").within(() => {
+          cy.get("#fides-button-group").within(() => {
+            cy.get("button").contains("Manage preferences").click();
+          });
+        });
+        cy.getByTestId("records-list-skeletons").should("exist");
+        cy.get("#fides-tab-features").click();
+        cy.getByTestId("records-list-skeletons").should("exist");
+
+        // Check the vendors tab also shows skeletons
+        cy.get("#fides-tab-vendors").click();
+        cy.getByTestId("records-list-skeletons").should("exist");
+
+        // Check that the Save button is disabled and shows loading state
+        cy.get("#fides-save-button").should("be.disabled");
+        cy.get("#fides-save-button .fides-spinner").should("be.visible");
+
+        // Wait for multiple retries to occur and then check for error state
+        Array.from({ length: TCF_FULL_MAX_ATTEMPTS }).forEach(() => {
+          cy.wait("@getPrivacyExperienceError");
+        });
+
+        // Check that error messages are displayed in each tab
+        cy.get("#fides-tab-purposes").click();
+        cy.getByTestId("tcf-loading-error-message")
+          .eq(0)
+          .should("be.visible")
+          .should("contain", "There was an error loading");
+        cy.getByTestId("tcf-loading-error-message").should(
+          "contain",
+          "purposes and special features",
+        );
+
+        cy.get("#fides-tab-features").click();
+        cy.getByTestId("tcf-loading-error-message")
+          .eq(1)
+          .should("be.visible")
+          .should("contain", "There was an error loading");
+        cy.getByTestId("tcf-loading-error-message").should(
+          "contain",
+          "features for which your data",
+        );
+
+        cy.get("#fides-tab-vendors").click();
+        cy.getByTestId("tcf-loading-error-message")
+          .eq(2)
+          .should("be.visible")
+          .should("contain", "There was an error loading");
+        cy.getByTestId("tcf-loading-error-message").should(
+          "contain",
+          "vendors who can process your data",
+        );
+
+        cy.get("#fides-save-button").should("be.disabled");
+        cy.get("button").contains("Opt in to all").should("be.visible");
+        cy.get("button").contains("Opt out of all").should("be.visible");
       });
     });
 

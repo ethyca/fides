@@ -2,6 +2,8 @@ import { AntTag as Tag, AntTooltip as Tooltip, Icons } from "fidesui";
 
 import { ConsentStatus, StagedResourceAPIResponse } from "~/types/api";
 
+import { DiscoveryStatusDisplayNames } from "../../constants";
+
 interface DiscoveryStatusBadgeCellProps {
   consentAggregated: ConsentStatus;
   stagedResource: StagedResourceAPIResponse;
@@ -31,25 +33,29 @@ export const DiscoveryStatusBadgeCell = ({
             onClose={handleClick}
             data-testid="status-badge_without-consent"
           >
-            Without consent
+            {DiscoveryStatusDisplayNames.WITHOUT_CONSENT}
           </Tag>
         </Tooltip>
       )}
       {consentAggregated === ConsentStatus.WITH_CONSENT && (
         <Tooltip title="Asset was detected after the user gave consent">
           <Tag color="success" data-testid="status-badge_with-consent">
-            With consent
+            {DiscoveryStatusDisplayNames.WITH_CONSENT}
           </Tag>
         </Tooltip>
       )}
       {consentAggregated === ConsentStatus.EXEMPT && (
         <Tooltip title="Asset is valid regardless of consent">
-          <Tag data-testid="status-badge_consent-exempt">Consent exempt</Tag>
+          <Tag data-testid="status-badge_consent-exempt">
+            {DiscoveryStatusDisplayNames.EXEMPT}
+          </Tag>
         </Tooltip>
       )}
       {consentAggregated === ConsentStatus.UNKNOWN && (
         <Tooltip title="Did not find consent information for this asset. You may need to re-run the monitor.">
-          <Tag data-testid="status-badge_unknown">Unknown</Tag>
+          <Tag data-testid="status-badge_unknown">
+            {DiscoveryStatusDisplayNames.UNKNOWN}
+          </Tag>
         </Tooltip>
       )}
     </>

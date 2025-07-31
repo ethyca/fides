@@ -1,7 +1,11 @@
 import { PrivacyExperience } from "../../lib/consent-types";
 import { FidesEventDetailsPreference } from "../../lib/events";
 import { useI18n } from "../../lib/i18n/i18n-context";
-import { TCFFeatureRecord, TCFSpecialFeatureRecord } from "../../lib/tcf/types";
+import {
+  EnabledIds,
+  TCFFeatureRecord,
+  TCFSpecialFeatureRecord,
+} from "../../lib/tcf/types";
 import EmbeddedVendorList from "./EmbeddedVendorList";
 import RecordsList, { RecordListType } from "./RecordsList";
 import { UpdateEnabledIds } from "./TcfTabs";
@@ -28,20 +32,22 @@ const FeatureChildren = ({
 const TcfFeatures = ({
   allFeatures,
   allSpecialFeatures,
-  enabledFeatureIds,
-  enabledSpecialFeatureIds,
+  enabledIds,
   onChange,
 }: {
   allFeatures: PrivacyExperience["tcf_features"];
   allSpecialFeatures: PrivacyExperience["tcf_special_features"];
-  enabledFeatureIds: string[];
-  enabledSpecialFeatureIds: string[];
+  enabledIds: EnabledIds;
   onChange: (
     payload: UpdateEnabledIds,
     preferenceDetails: FidesEventDetailsPreference,
   ) => void;
 }) => {
   const { i18n } = useI18n();
+  const {
+    features: enabledFeatureIds,
+    specialFeatures: enabledSpecialFeatureIds,
+  } = enabledIds;
   return (
     <div>
       <RecordsList<TCFFeatureRecord>

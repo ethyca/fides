@@ -21,7 +21,7 @@ const GZIP_SIZE_ERROR_KB = 50; // fail build if bundle size exceeds this
 const GZIP_SIZE_WARN_KB = 45; // log a warning if bundle size exceeds this
 
 // TCF
-const GZIP_SIZE_TCF_ERROR_KB = 93;
+const GZIP_SIZE_TCF_ERROR_KB = 95;
 const GZIP_SIZE_TCF_WARN_KB = 75;
 
 // Headless
@@ -41,7 +41,7 @@ const preactAliases = {
   ],
 };
 
-const fidesScriptPlugins = () => [
+const fidesScriptPlugins = (stripDebugger = false) => [
   alias(preactAliases),
   nodeResolve(),
   commonjs(),
@@ -51,7 +51,7 @@ const fidesScriptPlugins = () => [
   }),
   esbuild(),
   !IS_DEV && !IS_TEST && jsxRemoveAttributes(), // removes `data-testid`
-  !IS_DEV &&
+  (!IS_DEV || stripDebugger) &&
     strip({
       include: ["**/*.ts", "**/*.tsx"],
       functions: ["fidesDebugger"],
@@ -181,7 +181,7 @@ SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
   };
   const mjs = {
     input: `src/${name}.ts`,
-    plugins: fidesScriptPlugins(),
+    plugins: fidesScriptPlugins(true),
     output: [
       {
         // Compatible with ES module imports. Apps in this repo may be able to share the code.

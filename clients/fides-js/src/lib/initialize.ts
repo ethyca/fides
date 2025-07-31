@@ -19,6 +19,7 @@ import {
 import {
   applyOverridesToConsent,
   constructFidesRegionString,
+  createConsentProxy,
   experienceIsValid,
   getOverrideValidatorMapByType,
   getWindowObjFromPath,
@@ -408,13 +409,20 @@ export const initialize = async ({
   const { fides_meta, identity, fides_string, tcf_consent } = fides.cookie;
 
   // used to set Fides.consent
-  const consent = applyOverridesToConsent(
+  const consentObject = applyOverridesToConsent(
     fides.cookie.consent,
     fides.experience?.non_applicable_privacy_notices,
     fides.experience?.privacy_notices,
     options.fidesConsentFlagType ?? undefined,
     options.fidesConsentNonApplicableFlagMode ?? undefined,
   );
+
+  const hasPrivacyNotices =
+    !!fides.experience?.non_applicable_privacy_notices ||
+    !!fides.experience?.privacy_notices;
+
+  // Any unknown consent values should return falsy values automatically
+  const consent = createConsentProxy(consentObject, options, hasPrivacyNotices);
 
   // return an object with the updated Fides values
   return {

@@ -335,3 +335,14 @@ Currently only affects TCF.
 - "/tcf/vendors"
 
 Defaults to `undefined`.
+
+***
+
+### fides\_modal\_display?
+
+> `optional` **fides\_modal\_display**: `"immediate"` \| `"default"`
+
+Whether to show the modal immediately on page load.
+
+- "immediate" = skips banner and shows the modal immediately on page load
+- "default" = shows the modal when the "manage preferences" link is clicked (default behavior)

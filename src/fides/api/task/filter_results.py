@@ -39,7 +39,7 @@ def filter_data_categories(
             continue
 
         # Skip manual task data - it doesn't need filtering since it's controlled by field definitions
-        if f":{ManualTaskAddress.MANUAL_DATA_COLLECTION}" in node_address:
+        if ManualTaskAddress.is_manual_task_address(node_address):
             filtered_access_results[node_address].extend(results)
             continue
 
