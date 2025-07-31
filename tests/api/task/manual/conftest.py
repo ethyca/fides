@@ -28,6 +28,10 @@ from fides.api.models.manual_task import (
     ManualTaskType,
     StatusType,
 )
+from fides.api.models.manual_task.conditional_dependency import (
+    ManualTaskConditionalDependency,
+    ManualTaskConditionalDependencyType,
+)
 from fides.api.models.policy import Policy, Rule
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.models.worker_task import ExecutionLogStatus
@@ -368,6 +372,63 @@ def _build_request_task(
     # Use the standard manual data collection address
     collection_address = f"{connection_config.key}:manual_data"
 
+    # Get the manual task for this connection config to determine input keys and edges
+    from fides.api.task.manual.manual_task_utils import (
+        get_manual_task_for_connection_config,
+    )
+
+    manual_task = get_manual_task_for_connection_config(db, connection_config.key)
+
+    # Determine input keys and incoming edges based on conditional dependencies
+    input_keys = []
+    incoming_edges = []
+
+    if manual_task:
+        # Get conditional dependency field addresses
+        from fides.api.task.manual.manual_task_utils import (
+            _extract_field_addresses_from_conditional_dependencies,
+        )
+
+        field_addresses = _extract_field_addresses_from_conditional_dependencies(
+            db, manual_task
+        )
+
+        # For testing, we'll create input keys and edges based on the field addresses
+        # In a real scenario, these would be determined by the graph traversal
+        if field_addresses:
+            for field_address in field_addresses:
+                # Parse field address to determine collection and create edges
+                # The incoming edges map from source field addresses to target field addresses
+                # e.g., "postgres_example:customer:profile.age" -> "manual_data:manual_data:profile.age"
+                # e.g., "postgres_example:payment_card:subscription.status" -> "manual_data:manual_data:subscription.status"
+                if "profile.age" in field_address:
+                    input_keys.append("postgres_example:customer")
+                    incoming_edges.append(
+                        [
+                            "postgres_example:customer:profile.age",
+                            f"{connection_config.key}:manual_data:profile.age",
+                        ]
+                    )
+                elif "subscription.status" in field_address:
+                    input_keys.append("postgres_example:payment_card")
+                    incoming_edges.append(
+                        [
+                            "postgres_example:payment_card:subscription.status",
+                            f"{connection_config.key}:manual_data:subscription.status",
+                        ]
+                    )
+                elif "role" in field_address:
+                    input_keys.append("postgres_example:customer")
+                    incoming_edges.append(
+                        [
+                            "postgres_example:customer:role",
+                            f"{connection_config.key}:manual_data:role",
+                        ]
+                    )
+
+            # Remove duplicates and sort for consistency
+            input_keys = sorted(list(set(input_keys)))
+
     return RequestTask.create(
         db=db,
         data={
@@ -390,9 +451,9 @@ def _build_request_task(
             },
             "traversal_details": {
                 "dataset_connection_key": connection_config.key,
-                "incoming_edges": [],
+                "incoming_edges": incoming_edges,
                 "outgoing_edges": [],
-                "input_keys": [],
+                "input_keys": input_keys,
             },
         },
     )
@@ -424,6 +485,52 @@ def task_resources(db, privacy_request, policy, connection_config, request_task)
     return _build_task_resources(
         db, privacy_request, policy, connection_config, request_task
     )
+
+
+@pytest.fixture()
+def build_graph_task(
+    db: Session,
+    connection_with_manual_access_task,
+    access_privacy_request,
+):
+    connection_config, manual_task, _, _ = connection_with_manual_access_task
+    request_task = _build_request_task(
+        db,
+        access_privacy_request,
+        connection_config,
+        ActionType.access,
+    )
+    resources = _build_task_resources(
+        db,
+        access_privacy_request,
+        access_privacy_request.policy,
+        connection_config,
+        request_task,
+    )
+    return manual_task, ManualTaskGraphTask(resources)
+
+
+@pytest.fixture()
+def build_erasure_graph_task(
+    db: Session,
+    connection_with_manual_erasure_task,
+    erasure_privacy_request,
+):
+    connection_config, manual_task, _, _ = connection_with_manual_erasure_task
+    request_task = _build_request_task(
+        db,
+        erasure_privacy_request,
+        connection_config,
+        ActionType.erasure,
+    )
+    resources = _build_task_resources(
+        db,
+        erasure_privacy_request,
+        erasure_privacy_request.policy,
+        connection_config,
+        request_task,
+    )
+    return manual_task, ManualTaskGraphTask(resources)
 
 
 # =============================================================================
@@ -739,3 +846,192 @@ def complete_manual_task_setup_with_attachment(
         "submission": manual_task_submission_attachment,
         "attachment": attachment_for_access_package,
     }
+
+
+# =============================================================================
+# Manual Task Conditional Dependency Fixtures
+# =============================================================================
+
+
+@pytest.fixture
+def mock_dataset_graph():
+    """Create a mock dataset graph with collections and fields that match conditional dependencies"""
+    from fides.api.graph.config import Collection, GraphDataset, ScalarField
+    from fides.api.graph.graph import DatasetGraph
+
+    # Create collections with fields that match the conditional dependencies
+    customer_collection = Collection(
+        name="customer",
+        fields=[
+            ScalarField(name="profile.age"),  # matches "user.profile.age"
+            ScalarField(name="age"),  # also matches "user.profile.age"
+            ScalarField(name="role"),  # matches "user.role"
+        ],
+    )
+
+    payment_card_collection = Collection(
+        name="payment_card",
+        fields=[
+            ScalarField(
+                name="subscription.status"
+            ),  # matches "billing.subscription.status"
+            ScalarField(name="status"),  # also matches "billing.subscription.status"
+        ],
+    )
+
+    # Create dataset graphs
+    postgres_dataset = GraphDataset(
+        name="postgres_example",
+        collections=[customer_collection, payment_card_collection],
+        connection_key="postgres_example",
+    )
+
+    # Create the mock dataset graph
+    return DatasetGraph(postgres_dataset)
+
+
+def create_condition_gt_18(
+    db: Session, manual_task: ManualTask, parent_id: int = None, sort_order: int = 1
+):
+    return ManualTaskConditionalDependency.create(
+        db=db,
+        data={
+            "manual_task_id": manual_task.id,
+            "condition_type": ManualTaskConditionalDependencyType.leaf,
+            "parent_id": parent_id,
+            "field_address": "profile.age",
+            "operator": "gte",
+            "value": 18,
+            "sort_order": sort_order,
+        },
+    )
+
+
+def create_condition_age_lt_65(
+    db: Session, manual_task: ManualTask, parent_id: int = None, sort_order: int = 2
+):
+    return ManualTaskConditionalDependency.create(
+        db=db,
+        data={
+            "manual_task_id": manual_task.id,
+            "condition_type": ManualTaskConditionalDependencyType.leaf,
+            "parent_id": parent_id,
+            "field_address": "profile.age",
+            "operator": "lt",
+            "value": 65,
+            "sort_order": sort_order,
+        },
+    )
+
+
+def create_condition_eq_active(
+    db: Session, manual_task: ManualTask, parent_id: int = None, sort_order: int = 1
+):
+    return ManualTaskConditionalDependency.create(
+        db=db,
+        data={
+            "manual_task_id": manual_task.id,
+            "condition_type": ManualTaskConditionalDependencyType.leaf,
+            "parent_id": parent_id,
+            "field_address": "subscription.status",
+            "operator": "eq",
+            "value": "active",
+            "sort_order": sort_order,
+        },
+    )
+
+
+def create_condition_eq_admin(
+    db: Session, manual_task: ManualTask, parent_id: int = None, sort_order: int = 1
+):
+    return ManualTaskConditionalDependency.create(
+        db=db,
+        data={
+            "manual_task_id": manual_task.id,
+            "condition_type": ManualTaskConditionalDependencyType.leaf,
+            "field_address": "role",
+            "operator": "eq",
+            "value": "admin",
+            "sort_order": sort_order,
+            "parent_id": parent_id,
+        },
+    )
+
+
+@pytest.fixture()
+def condition_gt_18(db: Session, manual_task: ManualTask):
+    """Create a conditional dependency with field_address 'user.age' and operator 'gte' and value 18"""
+    condition = create_condition_gt_18(db, manual_task, None)
+    yield condition
+    condition.delete(db)
+
+
+@pytest.fixture()
+def condition_age_lt_65(db: Session, manual_task: ManualTask):
+    """Create a conditional dependency with field_address 'user.age' and operator 'lt' and value 65"""
+    condition = create_condition_age_lt_65(db, manual_task, None)
+    yield condition
+    condition.delete(db)
+
+
+@pytest.fixture()
+def condition_eq_active(db: Session, manual_task: ManualTask):
+    """Create a conditional dependency with field_address 'billing.subscription.status' and operator 'eq' and value 'active'"""
+    condition = create_condition_eq_active(db, manual_task, None)
+    yield condition
+    condition.delete(db)
+
+
+@pytest.fixture()
+def condition_eq_admin(db: Session, manual_task: ManualTask):
+    """Create a conditional dependency with field_address 'user.role' and operator 'eq' and value 'admin'"""
+    condition = create_condition_eq_admin(db, manual_task, None)
+    yield condition
+    condition.delete(db)
+
+
+@pytest.fixture()
+def group_condition(db: Session, manual_task: ManualTask):
+    """Create a group conditional dependency with logical_operator 'and'"""
+    root_condition = ManualTaskConditionalDependency.create(
+        db=db,
+        data={
+            "manual_task_id": manual_task.id,
+            "condition_type": ManualTaskConditionalDependencyType.group,
+            "logical_operator": "and",
+            "sort_order": 1,
+        },
+    )
+    create_condition_gt_18(db, manual_task, root_condition.id, 2)
+    create_condition_eq_active(db, manual_task, root_condition.id, 3)
+    yield root_condition
+    root_condition.delete(db)
+
+
+@pytest.fixture()
+def nested_group_condition(db: Session, manual_task: ManualTask):
+    """Create a nested group conditional dependency with logical_operator 'or'"""
+    root_condition = ManualTaskConditionalDependency.create(
+        db=db,
+        data={
+            "manual_task_id": manual_task.id,
+            "condition_type": ManualTaskConditionalDependencyType.group,
+            "logical_operator": "and",
+            "sort_order": 1,
+        },
+    )
+    nested_group = ManualTaskConditionalDependency.create(
+        db=db,
+        data={
+            "manual_task_id": manual_task.id,
+            "condition_type": ManualTaskConditionalDependencyType.group,
+            "parent_id": root_condition.id,
+            "logical_operator": "or",
+            "sort_order": 2,
+        },
+    )
+    create_condition_gt_18(db, manual_task, nested_group.id, 3)
+    create_condition_eq_active(db, manual_task, nested_group.id, 4)
+    create_condition_eq_admin(db, manual_task, nested_group.id, 5)
+    yield root_condition
+    root_condition.delete(db)
