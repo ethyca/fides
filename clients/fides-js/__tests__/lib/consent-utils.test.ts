@@ -12,6 +12,7 @@ import {
 } from "~/lib/consent-types";
 import {
   applyOverridesToConsent,
+  createConsentProxy,
   decodeNoticeConsentString,
   encodeNoticeConsentString,
   getWindowObjFromPath,
@@ -662,5 +663,102 @@ describe("isValidAcString", () => {
     expect(isValidAcString("2~1.2.3~dv.4.5~dv.6.7")).toBe(false);
     expect(isValidAcString("")).toBe(false);
     expect(isValidAcString("1.2.3")).toBe(false);
+  });
+});
+
+describe("createConsentProxy", () => {
+  describe("when fidesConsentFlagType is BOOLEAN", () => {
+    const options = { fidesConsentFlagType: ConsentFlagType.BOOLEAN };
+
+    it("should return existing values from the consent object", () => {
+      const consentObject = { advertising: true, analytics: false };
+      const proxy = createConsentProxy(consentObject, options, true);
+
+      expect(proxy.advertising).toBe(true);
+      expect(proxy.analytics).toBe(false);
+    });
+
+    it("should return false for unknown consent properties when privacy notices exist", () => {
+      const consentObject = { advertising: true };
+      const proxy = createConsentProxy(consentObject, options, true);
+
+      expect(proxy.unknown_property).toBe(false);
+      expect(proxy.another_unknown).toBe(false);
+    });
+
+    it("should return true for 'essential' when no privacy notices exist", () => {
+      const consentObject = {};
+      const proxy = createConsentProxy(consentObject, options, false);
+
+      expect(proxy.essential).toBe(true);
+    });
+
+    it("should return false for non-essential unknown properties when no privacy notices exist", () => {
+      const consentObject = {};
+      const proxy = createConsentProxy(consentObject, options, false);
+
+      expect(proxy.advertising).toBe(false);
+      expect(proxy.analytics).toBe(false);
+    });
+  });
+
+  describe("when fidesConsentFlagType is CONSENT_MECHANISM", () => {
+    const options = { fidesConsentFlagType: ConsentFlagType.CONSENT_MECHANISM };
+
+    it("should return existing values from the consent object", () => {
+      const consentObject = {
+        advertising: UserConsentPreference.OPT_IN,
+        analytics: UserConsentPreference.OPT_OUT,
+      };
+      const proxy = createConsentProxy(consentObject, options, true);
+
+      expect(proxy.advertising).toBe(UserConsentPreference.OPT_IN);
+      expect(proxy.analytics).toBe(UserConsentPreference.OPT_OUT);
+    });
+
+    it("should return ConsentMechanism.OPT_OUT for unknown consent properties when privacy notices exist", () => {
+      const consentObject = { advertising: UserConsentPreference.OPT_IN };
+      const proxy = createConsentProxy(consentObject, options, true);
+
+      expect(proxy.unknown_property).toBe(ConsentMechanism.OPT_OUT);
+      expect(proxy.another_unknown).toBe(ConsentMechanism.OPT_OUT);
+    });
+
+    it("should return ConsentMechanism.NOTICE_ONLY for 'essential' when no privacy notices exist", () => {
+      const consentObject = {};
+      const proxy = createConsentProxy(consentObject, options, false);
+
+      expect(proxy.essential).toBe(ConsentMechanism.NOTICE_ONLY);
+    });
+
+    it("should return ConsentMechanism.OPT_OUT for non-essential unknown properties when no privacy notices exist", () => {
+      const consentObject = {};
+      const proxy = createConsentProxy(consentObject, options, false);
+
+      expect(proxy.advertising).toBe(ConsentMechanism.OPT_OUT);
+      expect(proxy.analytics).toBe(ConsentMechanism.OPT_OUT);
+    });
+  });
+
+  describe("edge cases", () => {
+    it("should handle UserConsentPreference string values correctly", () => {
+      const consentObject = { stringProp: UserConsentPreference.OPT_IN };
+      const options = { fidesConsentFlagType: ConsentFlagType.BOOLEAN };
+      const proxy = createConsentProxy(consentObject, options, true);
+
+      expect(proxy.stringProp).toBe(UserConsentPreference.OPT_IN);
+      expect(proxy.unknown).toBe(false);
+    });
+
+    it("should handle undefined values correctly", () => {
+      const consentObject = {
+        undefinedValue: undefined,
+      } as unknown as NoticeConsent;
+      const options = { fidesConsentFlagType: ConsentFlagType.BOOLEAN };
+      const proxy = createConsentProxy(consentObject, options, true);
+
+      // undefinedValue should trigger the default behavior since it's undefined
+      expect(proxy.undefinedValue).toBe(false);
+    });
   });
 });

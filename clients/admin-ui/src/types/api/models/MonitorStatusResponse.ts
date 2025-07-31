@@ -2,6 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { BigQueryMonitorParams } from "./BigQueryMonitorParams";
 import type { DynamoDBMonitorParams } from "./DynamoDBMonitorParams";
 import type { MonitorClassifyParams } from "./MonitorClassifyParams";
 import type { MonitorExecution } from "./MonitorExecution";
@@ -27,6 +28,7 @@ export type MonitorStatusResponse = {
     | DynamoDBMonitorParams
     | S3MonitorParams
     | WebsiteMonitorParams
+    | BigQueryMonitorParams
     | null;
   /**
    * The databases that the monitor is scoped to actively monitor

@@ -11,8 +11,7 @@ import {
   SystemResponse,
   TestStatusMessage,
 } from "~/types/api";
-import { PaginationQueryParams } from "~/types/common/PaginationQueryParams";
-import { SearchQueryParams } from "~/types/common/SearchQueryParams";
+import { PaginationQueryParams, SearchQueryParams } from "~/types/query-params";
 
 interface SystemDeleteResponse {
   message: string;

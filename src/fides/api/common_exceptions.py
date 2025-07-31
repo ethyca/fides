@@ -151,6 +151,10 @@ class NotSupportedForCollection(BaseException):
     """The given action is not supported for this type of collection"""
 
 
+class TableNotFound(BaseException):
+    """Table or collection does not exist in the database/system"""
+
+
 class PrivacyRequestExit(BaseException):
     """Privacy request exiting processing waiting on subtasks to complete"""
 

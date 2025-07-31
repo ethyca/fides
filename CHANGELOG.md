@@ -19,12 +19,18 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.66.2...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.67.0...main)
+
+### Changed
+- Replaced some duplicated data formatting functionality with a single utility function. Additional maintainability updates on Manual Tasks. [#6390](https://github.com/ethyca/fides/pull/6390)
+
+## [2.67.0](https://github.com/ethyca/fides/compare/2.66.2...2.67.0)
 
 ### Added
 - Added the ability to edit more fields for GVL vendors [#6341](https://github.com/ethyca/fides/pull/6341)
 - Added `release_version` to the global `window.Fides` object in FidesJS [#6239](https://github.com/ethyca/fides/pull/6239)
 - Added new Conditional Dependencies and Evaluator data structures for eventual use with Manual Tasks on DSRs. [#6354](https://github.com/ethyca/fides/pull/6354)
+- Added a memory watcher for Celery tasks on Privacy Requests and a configuration to enable (memory_watchdog_enabled) [#6375](https://github.com/ethyca/fides/pull/6375)
 - Added display of special-purpose-only vendors in a separate list within the FidesJS overlay. [#6358](https://github.com/ethyca/fides/pull/6358)
 - Added Manual Task Conditional Dependencies table [#6356](https://github.com/ethyca/fides/pull/6356)
 - Added record counts to the privacy request event log entries in the Admin UI [#6374](https://github.com/ethyca/fides/pull/6374)
@@ -32,6 +38,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added support for Internal Respondent users to manage their own profile and change password [#6377] (https://github.com/ethyca/fides/pull/6377)
 - Introduce manual finalization step in privacy request lifecycle [#6301](https://github.com/ethyca/fides/pull/6301) https://github.com/ethyca/fides/labels/db-migration
 - Added vendor id to the vendors page [#6348](https://github.com/ethyca/fides/pull/6348)
+- Added filtering and sorting capabilities to discovered assets table in action center [#6401](https://github.com/ethyca/fides/pull/6401)
 
 ### Changed
 - Removes `data-testid` attributes from FidesJS production builds [#6351](https://github.com/ethyca/fides/pull/6351)
@@ -42,6 +49,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Pass `IS_TEST` build parameter to Dockfile for dev builds to preserve dev `data-testid` attributes [#6382] (https://github.com/ethyca/fides/pull/6382)
 - Migrated datamap lineage visualization from Cytoscape.js to ReactFlow with Dagre layout engine [#6381](https://github.com/ethyca/fides/pull/6381)
 - Created new module for ManualTaskAddress and updated ManualTaskGraphTask functionality using unique constraints on ManualTask parent_entity. [#6383](https://github.com/ethyca/fides/pull/6383)
+- Enhanced privacy request handling with retry limits and cancellation logic for interrupted tasks [#6396](https://github.com/ethyca/fides/pull/6396)
+- Collections with missing tables are now skipped instead of causing privacy requests to error [#6397](https://github.com/ethyca/fides/pull/6397)
 
 
 ### Developer Experience
@@ -50,8 +59,11 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Fixed
 - Fixed an issue where row selections in Action Center tables did not persist across pages [#6357](https://github.com/ethyca/fides/pull/6357)
 - Fixed bug where an error toast appeared in a privacy request page when running Fides OSS [#6364](https://github.com/ethyca/fides/pull/6364)
+- Enhanced TCF API loading and failure handling [#6387](https://github.com/ethyca/fides/pull/6387)
 - Escaping column names with spaces for BigQuery [#6380](https://github.com/ethyca/fides/pull/6380)
 - Fixed horizontal scroll appearing in the privacy request detail page when datasets with very long names are used [#6389](https://github.com/ethyca/fides/pull/6389)
+- Fixed performance issues with large dataset traversals [#6353](https://github.com/ethyca/fides/pull/6353)
+- Fixing S3 KMS presigned URLs by configuring signature version 4 for all S3 client connections [#6365](https://github.com/ethyca/fides/pull/6365)
 
 ## [2.66.2](https://github.com/ethyca/fides/compare/2.66.1...2.66.2)
 

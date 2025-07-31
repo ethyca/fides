@@ -8,6 +8,7 @@ import {
   ButtonType,
   ConsentMechanism,
   ConsentMethod,
+  EmptyExperience,
   FidesCookie,
   FidesExperienceTranslationOverrides,
   FidesModalDefaultView,
@@ -33,7 +34,11 @@ import {
   FidesEventDetailsServingComponent,
   FidesEventTargetType,
 } from "../../lib/events";
-import { useNoticesServed } from "../../lib/hooks";
+import {
+  FetchState,
+  useNoticesServed,
+  useRetryableFetch,
+} from "../../lib/hooks";
 import {
   DEFAULT_LOCALE,
   detectUserLocale,
@@ -199,6 +204,40 @@ export const TcfOverlay = () => {
    */
   const [experienceFull, setExperienceFull] = useState<PrivacyExperience>();
 
+  const { fetchState: fullExperienceState } = useRetryableFetch<
+    PrivacyExperience | EmptyExperience
+  >({
+    fetcher: () =>
+      fetchExperience({
+        userLocationString: fidesRegionString,
+        fidesApiUrl: options.fidesApiUrl,
+        apiOptions: options.apiOptions,
+        propertyId: experienceMinimal.property_id,
+        requestMinimalTCF: false,
+      }),
+    validator: (result) =>
+      isPrivacyExperience(result) &&
+      Object.keys(result).length > 0 &&
+      experienceIsValid(result),
+    onSuccess: (result) => {
+      if (isPrivacyExperience(result)) {
+        // include user preferences from the cookie
+        const userPrefs = buildUserPrefs(result, cookie);
+        const fullExperience: PrivacyExperience = {
+          ...result,
+          ...userPrefs,
+        };
+        fullExperience.minimal_tcf = false;
+        window.Fides.experience = {
+          ...window.Fides.experience,
+          ...fullExperience,
+        };
+        setFidesGlobal(window.Fides as InitializedFidesGlobal);
+        setExperienceFull(fullExperience);
+      }
+    },
+  });
+
   useEffect(() => {
     if (!!userlocale && bestLocale !== minExperienceLocale) {
       // The minimal experience translation is different from the user's language.
@@ -221,29 +260,6 @@ export const TcfOverlay = () => {
       });
     }
     fidesDebugger("Fetching full TCF experience...");
-    fetchExperience({
-      userLocationString: fidesRegionString,
-      fidesApiUrl: options.fidesApiUrl,
-      apiOptions: options.apiOptions,
-      propertyId: experienceMinimal.property_id,
-      requestMinimalTCF: false,
-    }).then((result) => {
-      if (isPrivacyExperience(result)) {
-        // include user preferences from the cookie
-        const userPrefs = buildUserPrefs(result, cookie);
-
-        if (experienceIsValid(result)) {
-          const fullExperience: PrivacyExperience = { ...result, ...userPrefs };
-          window.Fides.experience = {
-            ...window.Fides.experience,
-            ...fullExperience,
-          };
-          window.Fides.experience.minimal_tcf = false;
-
-          setExperienceFull(fullExperience);
-        }
-      }
-    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -680,63 +696,63 @@ export const TcfOverlay = () => {
           </ConsentBanner>
         );
       }}
-      renderModalContent={
-        !experienceFull
-          ? undefined
-          : () => (
-              <TcfTabs
-                experience={experienceFull}
-                customNotices={privacyNoticesWithBestTranslation}
-                enabledIds={draftIds}
-                onChange={handleToggleChange}
-                activeTabIndex={activeTabIndex}
-                onTabChange={handleTabChange}
+      renderModalContent={() => (
+        <TcfTabs
+          experience={experienceFull || experienceMinimal}
+          customNotices={privacyNoticesWithBestTranslation}
+          enabledIds={draftIds}
+          onChange={handleToggleChange}
+          activeTabIndex={activeTabIndex}
+          onTabChange={handleTabChange}
+          fullExperienceState={fullExperienceState}
+        />
+      )}
+      renderModalFooter={({ onClose }) => {
+        const onSave = (consentMethod: ConsentMethod, keys: EnabledIds) => {
+          handleUpdateAllPreferences(consentMethod, keys);
+          onClose();
+        };
+        return (
+          <TcfConsentButtons
+            experience={experienceFull || experienceMinimal}
+            onAcceptAll={() => {
+              handleAcceptAll();
+              onClose();
+            }}
+            onRejectAll={() => {
+              handleRejectAll();
+              onClose();
+            }}
+            renderFirstButton={() => (
+              <Button
+                buttonType={ButtonType.SECONDARY}
+                label={
+                  experienceFull ? i18n.t("exp.save_button_label") : "Save"
+                }
+                onClick={() => {
+                  setTrigger({
+                    type: FidesEventTargetType.BUTTON,
+                    label: i18n.t("exp.save_button_label"),
+                  });
+                  onSave(ConsentMethod.SAVE, draftIds);
+                }}
+                className="fides-save-button"
+                id="fides-save-button"
+                disabled={
+                  (!experienceFull &&
+                    fullExperienceState === FetchState.Loading) ||
+                  fullExperienceState === FetchState.Error
+                }
+                loading={
+                  !experienceFull && fullExperienceState === FetchState.Loading
+                }
               />
-            )
-      }
-      renderModalFooter={
-        !experienceFull
-          ? undefined
-          : ({ onClose }) => {
-              const onSave = (
-                consentMethod: ConsentMethod,
-                keys: EnabledIds,
-              ) => {
-                handleUpdateAllPreferences(consentMethod, keys);
-                onClose();
-              };
-              return (
-                <TcfConsentButtons
-                  experience={experienceFull}
-                  onAcceptAll={() => {
-                    handleAcceptAll();
-                    onClose();
-                  }}
-                  onRejectAll={() => {
-                    handleRejectAll();
-                    onClose();
-                  }}
-                  renderFirstButton={() => (
-                    <Button
-                      buttonType={ButtonType.SECONDARY}
-                      label={i18n.t("exp.save_button_label")}
-                      onClick={() => {
-                        setTrigger({
-                          type: FidesEventTargetType.BUTTON,
-                          label: i18n.t("exp.save_button_label"),
-                        });
-                        onSave(ConsentMethod.SAVE, draftIds);
-                      }}
-                      className="fides-save-button"
-                      id="fides-save-button"
-                    />
-                  )}
-                  isInModal
-                  options={options}
-                />
-              );
-            }
-      }
+            )}
+            isInModal
+            options={options}
+          />
+        );
+      }}
     />
   );
 };

@@ -31,16 +31,15 @@ const useURLHashedTabs = ({ tabKeys, initialTab }: UseURLHashedTabsProps) => {
   const onTabChange = useCallback(
     async (tab: string) => {
       if (!tabKeys.includes(tab)) {
-        setActiveTab(tabKeys[0]);
         await router.replace({
           pathname: router.pathname,
           query: router.query,
           hash: undefined,
         });
+        setActiveTab(tabKeys[0]);
         return;
       }
 
-      setActiveTab(tab);
       if (router.isReady) {
         await router.replace(
           {
@@ -51,6 +50,7 @@ const useURLHashedTabs = ({ tabKeys, initialTab }: UseURLHashedTabsProps) => {
           undefined,
           { shallow: true },
         );
+        setActiveTab(tab);
       }
     },
     [router, tabKeys],

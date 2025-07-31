@@ -383,15 +383,13 @@ class ManualTaskInstance(Base):
 
     @property
     def incomplete_fields(self) -> list["ManualTaskConfigField"]:
-        """Get all fields that haven't been completed yet.
-        A field is considered incomplete if:
-        1. It's required and has no submission
+        """Get all fields that have no submission.
         Returns:
             list[ManualTaskConfigField]: List of incomplete fields
         """
         return [
             field
-            for field in self.required_fields
+            for field in self.config.field_definitions
             if not self.get_submission_for_field(field.id)
         ]
 
@@ -401,8 +399,7 @@ class ManualTaskInstance(Base):
         return [
             field
             for field in self.config.field_definitions
-            if field.field_metadata.get("required", False)
-            and self.get_submission_for_field(field.id)
+            if self.get_submission_for_field(field.id)
         ]
 
     def get_submission_for_field(

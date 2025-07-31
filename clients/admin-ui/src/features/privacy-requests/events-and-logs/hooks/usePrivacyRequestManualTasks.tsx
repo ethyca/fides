@@ -80,7 +80,7 @@ export const usePrivacyRequestManualTasks = (privacyRequestId: string) => {
             isSkipped,
             isAwaitingInput: false,
             id: `manual-task-${task.manual_field_id}`,
-            attachments,
+            attachments: attachments as { id: string; file_name: string }[],
           };
         });
 
