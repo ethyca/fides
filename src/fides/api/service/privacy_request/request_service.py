@@ -370,13 +370,13 @@ def initiate_async_tasks_status_polling() -> None:
 
     logger.info("Initiating scheduler for async tasks status polling")
     scheduler.add_job(
-        func=poll_async_tasks_status, # TODO: Finish this function
+        func=poll_async_tasks_status,
         trigger="interval",
         kwargs={},
         id=ASYNC_TASKS_STATUS_POLLING,
         coalesce=True,
         replace_existing=True,
-        seconds=CONFIG.execution.async_tasks_status_polling_interval, # TODO: Implement this interval
+        seconds=CONFIG.execution.async_tasks_status_polling_interval,
     )
 
 
@@ -703,10 +703,4 @@ def poll_async_tasks_status(self: DatabaseTask) -> None:
         )
 
         for async_task in async_tasks:
-
-            privacy_request = async_task.privacy_request
-            try:
-                _requeue_polling_request(db, privacy_request)
-            except PrivacyRequestError as exc:
-                logger.error(exc.message)
-            pass
+             _requeue_polling_request(db, async_task)

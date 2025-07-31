@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+from fides.api.task.execute_request_tasks import queue_request_task
 from loguru import logger
 from sqlalchemy.orm import Session
 
@@ -49,6 +50,8 @@ from fides.service.messaging.messaging_service import (
     send_privacy_request_receipt_message_to_user,
     send_verification_code_to_user,
 )
+
+from fides.api.service.connectors.saas_connector import SaaSConnector
 
 
 class PrivacyRequestError(Exception):
@@ -676,11 +679,11 @@ def _requeue_privacy_request(
 
 def _requeue_polling_request(
     db: Session,
-    privacy_request: PrivacyRequest,
     async_task: RequestTask,
 ) -> None:
     """Re-queue a Privacy request that polling async tasks for a given privacy request"""
     # Check that the privacy request is approved or in processing
+    privacy_request: PrivacyRequest = async_task.privacy_request
     # TODO Extract into method
     if privacy_request.status not in [
         PrivacyRequestStatus.approved,
@@ -689,20 +692,19 @@ def _requeue_polling_request(
         raise PrivacyRequestError(
             f"Cannot re-queue privacy request {privacy_request.id} with status {privacy_request.status.value}"
         )
-    elif async_task.action_type == ActionType.erasure:
-        resume_step = CurrentStep.erasure
-    elif async_task.action_type == ActionType.access:
-        resume_step = CurrentStep.access
-    else:
-        raise PrivacyRequestError(
-            f"Cannot run polling request for {privacy_request.id} with action type {async_task.action_type}. Only Access and erasure are supported."
-        )
 
-    return _process_privacy_request_restart(
-        privacy_request,
-        resume_step,
-        db,
+    logger.info(
+        "Polling starting for {} task {} {}",
+        async_task.action_type,
+        async_task.collection_address,
+        async_task.id,
     )
+
+    #Queue task back again? option 1
+    # And we manage all the logic regarding the connector on saasConnector
+    queue_request_task(async_task, privacy_request_proceed=True)
+
+
 
 def _process_privacy_request_restart(
     privacy_request: PrivacyRequest,
