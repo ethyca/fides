@@ -4,6 +4,7 @@ from fideslang.models import MaskingStrategies
 
 from fides.api.graph.graph import *
 from fides.api.models.datasetconfig import convert_dataset_to_graph
+from fides.api.task.manual.manual_task_address import ManualTaskAddress
 
 from .graph_test_util import *
 
@@ -739,3 +740,219 @@ def test_different_seed_alters_traversal() -> None:
         len(Traversal(graph, {"ssn": "1", "email": 1, "user_id": 1}).root_node.children)
         == 4
     )
+
+
+def test_manual_task_edge_creation_without_dependencies() -> None:
+    """Test that manual task edges are created correctly when manual task has no dependencies"""
+    # Create a simple graph with one regular node and a manual task node
+    t = generate_graph_resources(1)  # Only one node to avoid unreachable nodes
+    field(t, "dr_1", "ds_1", "f1").identity = "email"
+
+    # Add a manual task collection with no dependencies
+    manual_collection = Collection(
+        name="manual_data", fields=[], after=set()  # No dependencies
+    )
+    manual_dataset = GraphDataset(
+        name="manual_connection",
+        collections=[manual_collection],
+        connection_key="manual_connection",
+    )
+    t.append(manual_dataset)
+
+    # Create the graph
+    graph = DatasetGraph(*t)
+
+    # Create traversal with seed data
+    seed_data = {"email": "test@example.com"}
+    traversal = Traversal(graph, seed_data)
+
+    # Verify manual task address exists in traversal
+    manual_address = ManualTaskAddress.create("manual_connection")
+    assert manual_address in traversal.traversal_node_dict
+
+    # Verify only the basic ROOT to manual task edge was created
+    root_to_manual_edge = Edge(
+        FieldAddress("__ROOT__", "__ROOT__", "id"),
+        FieldAddress("manual_connection", "manual_data", "id"),
+    )
+    assert root_to_manual_edge in traversal.edges
+
+    # Verify the manual task node only has ROOT as parent
+    manual_node = traversal.traversal_node_dict[manual_address]
+    assert CollectionAddress("__ROOT__", "__ROOT__") in manual_node.parents
+    assert len(manual_node.parents) == 1  # Only ROOT
+
+
+def test_manual_task_edge_creation_with_dependencies() -> None:
+    """Test that manual task edges are created correctly when manual task has dependencies"""
+    # Create a simple graph with one regular node and a manual task node
+    t = generate_graph_resources(1)  # Only one node to avoid unreachable nodes
+    field(t, "dr_1", "ds_1", "f1").identity = "email"
+
+    # Add a manual task collection that depends on the node with seed data
+    manual_collection = Collection(
+        name="manual_data",
+        fields=[],
+        after={CollectionAddress("dr_1", "ds_1")},  # Manual task depends on dr_1:ds_1
+    )
+    manual_dataset = GraphDataset(
+        name="manual_connection",
+        collections=[manual_collection],
+        connection_key="manual_connection",
+    )
+    t.append(manual_dataset)
+
+    # Create the graph
+    graph = DatasetGraph(*t)
+
+    # Create traversal with seed data
+    seed_data = {"email": "test@example.com"}
+    traversal = Traversal(graph, seed_data)
+
+    # Verify manual task address exists in traversal
+    manual_address = ManualTaskAddress.create("manual_connection")
+    assert manual_address in traversal.traversal_node_dict
+
+    # Verify edges were created correctly
+    # 1. Edge from ROOT to manual task
+    root_to_manual_edge = Edge(
+        FieldAddress("__ROOT__", "__ROOT__", "id"),
+        FieldAddress("manual_connection", "manual_data", "id"),
+    )
+    assert root_to_manual_edge in traversal.edges
+
+    # 2. Edge from dependency (dr_1:ds_1) to manual task
+    dependency_to_manual_edge = Edge(
+        FieldAddress("dr_1", "ds_1", "id"),
+        FieldAddress("manual_connection", "manual_data", "id"),
+    )
+    assert dependency_to_manual_edge in traversal.edges
+
+    # 3. Edge from ROOT to dependency (since dependency has seed data)
+    root_to_dependency_edge = Edge(
+        FieldAddress("__ROOT__", "__ROOT__", "email"),
+        FieldAddress("dr_1", "ds_1", "f1"),
+    )
+    assert root_to_dependency_edge in traversal.edges
+
+    # Verify the manual task node has the correct parent relationships
+    manual_node = traversal.traversal_node_dict[manual_address]
+    assert CollectionAddress("__ROOT__", "__ROOT__") in manual_node.parents
+    assert CollectionAddress("dr_1", "ds_1") in manual_node.parents
+
+    # Verify the dependency node has the correct child relationships
+    dependency_node = traversal.traversal_node_dict[CollectionAddress("dr_1", "ds_1")]
+    assert manual_address in dependency_node.children
+
+
+def test_manual_task_edge_creation_with_unconnected_dependency() -> None:
+    """Test that manual task edges are created when dependency nodes aren't connected via seed data"""
+    # Create a graph with two nodes, but only one has seed data
+    t = generate_graph_resources(2)
+    field(t, "dr_1", "ds_1", "f1").identity = "email"
+    # dr_2:ds_2 has no seed data and no references, so it would be unreachable
+    # But the manual task edge creation should connect it to ROOT
+
+    # Add a manual task collection that depends on a node without seed data
+    manual_collection = Collection(
+        name="manual_data",
+        fields=[],
+        after={
+            CollectionAddress("dr_2", "ds_2")
+        },  # Manual task depends on dr_2:ds_2 (no seed data)
+    )
+    manual_dataset = GraphDataset(
+        name="manual_connection",
+        collections=[manual_collection],
+        connection_key="manual_connection",
+    )
+    t.append(manual_dataset)
+
+    # Create the graph
+    graph = DatasetGraph(*t)
+
+    # Create traversal with seed data (only for dr_1:ds_1)
+    seed_data = {"email": "test@example.com"}
+    traversal = Traversal(graph, seed_data)
+
+    # Verify manual task address exists in traversal
+    manual_address = ManualTaskAddress.create("manual_connection")
+    assert manual_address in traversal.traversal_node_dict
+
+    # Verify edges were created correctly
+    # 1. Edge from ROOT to manual task
+    root_to_manual_edge = Edge(
+        FieldAddress("__ROOT__", "__ROOT__", "id"),
+        FieldAddress("manual_connection", "manual_data", "id"),
+    )
+    assert root_to_manual_edge in traversal.edges
+
+    # 2. Edge from dependency (dr_2:ds_2) to manual task
+    dependency_to_manual_edge = Edge(
+        FieldAddress("dr_2", "ds_2", "id"),
+        FieldAddress("manual_connection", "manual_data", "id"),
+    )
+    assert dependency_to_manual_edge in traversal.edges
+
+    # 3. Edge from ROOT to dependency (since dependency wasn't connected via seed data)
+    root_to_dependency_edge = Edge(
+        FieldAddress("__ROOT__", "__ROOT__", "id"), FieldAddress("dr_2", "ds_2", "id")
+    )
+    assert root_to_dependency_edge in traversal.edges
+
+    # Verify the manual task node has the correct parent relationships
+    manual_node = traversal.traversal_node_dict[manual_address]
+    assert CollectionAddress("__ROOT__", "__ROOT__") in manual_node.parents
+    assert CollectionAddress("dr_2", "ds_2") in manual_node.parents
+
+
+def test_manual_task_edge_creation_with_missing_dependency() -> None:
+    """Test that manual task edge creation handles missing dependency nodes gracefully"""
+    # Create a simple graph with just one node
+    t = generate_graph_resources(1)
+    field(t, "dr_1", "ds_1", "f1").identity = "email"
+
+    # Add a manual task collection that depends on a non-existent node
+    manual_collection = Collection(
+        name="manual_data",
+        fields=[],
+        after={
+            CollectionAddress("nonexistent", "node")
+        },  # This node doesn't exist in the graph
+    )
+    manual_dataset = GraphDataset(
+        name="manual_connection",
+        collections=[manual_collection],
+        connection_key="manual_connection",
+    )
+    t.append(manual_dataset)
+
+    # Create the graph
+    graph = DatasetGraph(*t)
+
+    # Create traversal with seed data
+    seed_data = {"email": "test@example.com"}
+    traversal = Traversal(graph, seed_data)
+
+    # Verify manual task address exists in traversal
+    manual_address = ManualTaskAddress.create("manual_connection")
+    assert manual_address in traversal.traversal_node_dict
+
+    # Verify only the basic ROOT to manual task edge was created
+    root_to_manual_edge = Edge(
+        FieldAddress("__ROOT__", "__ROOT__", "id"),
+        FieldAddress("manual_connection", "manual_data", "id"),
+    )
+    assert root_to_manual_edge in traversal.edges
+
+    # Verify no edge was created to the non-existent dependency
+    nonexistent_to_manual_edge = Edge(
+        FieldAddress("nonexistent", "node", "id"),
+        FieldAddress("manual_connection", "manual_data", "id"),
+    )
+    assert nonexistent_to_manual_edge not in traversal.edges
+
+    # Verify the manual task node only has ROOT as parent
+    manual_node = traversal.traversal_node_dict[manual_address]
+    assert CollectionAddress("__ROOT__", "__ROOT__") in manual_node.parents
+    assert len(manual_node.parents) == 1  # Only ROOT, no dependency

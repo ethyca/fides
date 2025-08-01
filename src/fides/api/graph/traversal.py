@@ -151,7 +151,6 @@ class BaseTraversal:
         # Ensure manual_task collections execute right after ROOT
         for addr in self.traversal_node_dict.keys():
             if ManualTaskAddress.is_manual_task_address(addr):
-                logger.info(f"Processing manual task address: {addr}")
                 # Add a simple synthetic edge ROOT.id -> manual_data.id
                 edge = Edge(
                     FieldAddress(
@@ -166,15 +165,28 @@ class BaseTraversal:
                 self.edges_by_node[ROOT_COLLECTION_ADDRESS].append(edge)
                 self.edges_by_node[addr].append(edge)
 
-                # Create edges from ROOT to dependency nodes so they can be executed
+                # Create edges from dependency nodes TO the manual task so it receives their data
                 # The 'after' dependencies in the collection configuration will handle execution order
                 manual_node = self.traversal_node_dict[addr]
-                logger.info(
-                    f"Manual node after dependencies: {manual_node.node.collection.after}"
-                )
                 for dependency_addr in manual_node.node.collection.after:
-                    logger.info(f"Processing dependency: {dependency_addr}")
                     if dependency_addr in self.traversal_node_dict:
+                        # Create edge from dependency TO manual task so manual task receives dependency data
+                        dependency_to_manual_edge = Edge(
+                            FieldAddress(
+                                dependency_addr.dataset,
+                                dependency_addr.collection,
+                                "id",
+                            ),
+                            addr.field_address(FieldPath("id")),
+                        )
+                        self.edges.add(dependency_to_manual_edge)
+                        # Add to edge index
+                        self.edges_by_node[dependency_addr].append(
+                            dependency_to_manual_edge
+                        )
+                        self.edges_by_node[addr].append(dependency_to_manual_edge)
+
+                        # Also ensure dependency node is connected to ROOT if it's not already
                         # Check if dependency node is already connected through seed data
                         dependency_has_seed_connection = any(
                             edge.f2.collection_address() == dependency_addr
@@ -182,20 +194,25 @@ class BaseTraversal:
                             if edge.f1.collection_address() == ROOT_COLLECTION_ADDRESS
                         )
                         if not dependency_has_seed_connection:
-                            logger.info(f"Creating edge from ROOT to {dependency_addr}")
-                            self.edges.add(
-                                Edge(
-                                    FieldAddress(
-                                        ROOT_COLLECTION_ADDRESS.dataset,
-                                        ROOT_COLLECTION_ADDRESS.collection,
-                                        "id",
-                                    ),
-                                    FieldAddress(
-                                        dependency_addr.dataset,
-                                        dependency_addr.collection,
-                                        "id",
-                                    ),
-                                )
+                            root_to_dependency_edge = Edge(
+                                FieldAddress(
+                                    ROOT_COLLECTION_ADDRESS.dataset,
+                                    ROOT_COLLECTION_ADDRESS.collection,
+                                    "id",
+                                ),
+                                FieldAddress(
+                                    dependency_addr.dataset,
+                                    dependency_addr.collection,
+                                    "id",
+                                ),
+                            )
+                            self.edges.add(root_to_dependency_edge)
+                            # Add to edge index
+                            self.edges_by_node[ROOT_COLLECTION_ADDRESS].append(
+                                root_to_dependency_edge
+                            )
+                            self.edges_by_node[dependency_addr].append(
+                                root_to_dependency_edge
                             )
                     else:
                         logger.warning(
