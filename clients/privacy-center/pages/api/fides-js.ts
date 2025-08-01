@@ -353,9 +353,12 @@ export default async function handler(
   };
   const fidesConfigJSON = JSON.stringify(fidesConfig);
 
+  const forcedHeadless = req.query.headless === "true";
+
   log.debug("Bundling js & Privacy Center configuration together...");
   const isHeadlessExperience =
-    experience?.experience_config?.component === ComponentType.HEADLESS;
+    experience?.experience_config?.component === ComponentType.HEADLESS ||
+    forcedHeadless;
   let fidesJsFile = "public/lib/fides.js";
   if (tcfEnabled) {
     log.debug("TCF extension enabled, bundling fides-tcf.js...");
