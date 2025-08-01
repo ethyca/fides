@@ -283,9 +283,7 @@ async def test_saas_erasure_order_request_task_resume_from_error(
         keys=["refunds_to_orders_id"],
     )
 
-    # mock the mask_data function so we can force an exception on the "refunds_to_orders"
-    # collection to simulate resuming from error
-    def side_effect(node, policy, privacy_request, request_task, rows):
+    def side_effect(node, policy, privacy_request, request_task, rows, input_data):
         if node.address.collection == "refunds_to_orders":
             raise Exception("Error executing refunds_to_orders task")
         request_task.rows_masked = 1
@@ -320,7 +318,7 @@ async def test_saas_erasure_order_request_task_resume_from_error(
         )
 
     # "fix" the refunds_to_orders collection and resume the erasure
-    def side_effect(node, policy, privacy_request, request_task, rows):
+    def side_effect(node, policy, privacy_request, request_task, rows, input_data):
         request_task.rows_masked = 1
         if request_task.id:
             session = Session.object_session(request_task)
