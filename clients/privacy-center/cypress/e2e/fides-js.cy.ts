@@ -213,6 +213,117 @@ describe("fides.js API route", () => {
       });
     });
   });
+
+  describe("when handling multiple script loading", () => {
+    it("prevents execution when script is loaded multiple times on the same page", () => {
+      cy.visit("/fides-js-demo.html");
+
+      // Wait for initial Fides to load
+      cy.window().should("have.property", "Fides");
+
+      // Spy on console.error to capture the warning message
+      cy.window().then((win) => {
+        cy.spy(win.console, "error").as("consoleError");
+
+        // Inject a second script tag to simulate multiple loading
+        const script = win.document.createElement("script");
+        script.src = "/fides.js";
+        win.document.head.appendChild(script);
+
+        // Wait for script to load and check that error was logged
+        cy.get("@consoleError").should("have.been.called");
+      });
+    });
+
+    it("allows reloading when fides_unsupported_repeated_script_loading is enabled", () => {
+      cy.visit(
+        "/fides-js-demo.html?fides_unsupported_repeated_script_loading=enabled_acknowledge_not_supported",
+      );
+
+      // Wait for initial Fides to load
+      cy.window().should("have.property", "Fides");
+
+      cy.window().then((win) => {
+        cy.spy(win.console, "error").as("consoleError");
+
+        // Inject a second script tag
+        const script = win.document.createElement("script");
+        script.src =
+          "/fides.js?fides_unsupported_repeated_script_loading=enabled_acknowledge_not_supported";
+        win.document.head.appendChild(script);
+
+        // Should NOT log the error message when the option is enabled
+        cy.get("@consoleError").should("not.have.been.called");
+      });
+    });
+
+    it("handles script removal and re-addition scenario", () => {
+      cy.visit("/fides-js-demo.html");
+
+      // Wait for initial Fides to load
+      cy.window().should("have.property", "Fides");
+
+      cy.window().then((win) => {
+        // Store reference to original Fides
+        const originalFides = win.Fides;
+
+        // Find and remove the existing fides script tag
+        const existingScript = win.document.querySelector(
+          'script[src*="/fides.js"]',
+        );
+        if (existingScript) {
+          existingScript.remove();
+        }
+
+        cy.spy(win.console, "error").as("consoleError");
+
+        // Add a new script tag (simulating customer removing and re-adding)
+        const newScript = win.document.createElement("script");
+        newScript.src = "/fides.js";
+        win.document.head.appendChild(newScript);
+
+        // Should prevent re-execution since Fides object still exists
+        cy.get("@consoleError").should("have.been.called");
+
+        // Verify that the original Fides object is still intact
+        expect(win.Fides).to.equal(originalFides);
+      });
+    });
+
+    it("handles multiple script tags present from page load", () => {
+      // Create a custom test page with multiple script tags
+      cy.visit("/fides-js-demo.html").then(() => {
+        cy.window().then((win) => {
+          // Clear the page and add multiple script tags
+          win.document.body.innerHTML = `
+            <div>
+              <h1>Multiple Scripts Test</h1>
+              <script src="/fides.js"></script>
+              <script src="/fides.js"></script>
+            </div>
+          `;
+
+          cy.spy(win.console, "error").as("consoleError");
+
+          // Force execution of the scripts by creating new ones
+          const script1 = win.document.createElement("script");
+          script1.src = "/fides.js";
+          const script2 = win.document.createElement("script");
+          script2.src = "/fides.js";
+
+          win.document.head.appendChild(script1);
+
+          // Wait a bit then add the second script
+          setTimeout(() => {
+            win.document.head.appendChild(script2);
+          }, 100);
+
+          // The second script should be prevented from executing
+          cy.get("@consoleError").should("have.been.called");
+        });
+      });
+    });
+  });
 });
 
 // Convert this to a module instead of script (allows import/export)
