@@ -24,7 +24,8 @@ async def _get_or_create_client():
     global _async_client
     if _async_client is None:
         if not params["SAAS_OP_SERVICE_ACCOUNT_TOKEN"]:
-            raise FidesopsException("Missing SAAS_OP_SERVICE_ACCOUNT_TOKEN")
+            logger.error("Missing SAAS_OP_SERVICE_ACCOUNT_TOKEN. ")
+            return None
 
         _async_client = await Client.authenticate(
             auth=params["SAAS_OP_SERVICE_ACCOUNT_TOKEN"],
@@ -41,29 +42,30 @@ async def _initialize_mappings():
     if _mappings_initialized:
         return
 
-    try:
-        client = await _get_or_create_client()
 
-        logger.info("Initializing vault and item mappings...")
+    client = await _get_or_create_client()
+    if client is None:
+        logger.error("Failed to initialize 1Password Mappings.")
+        return
 
-        # Get items in the SaaS Secrets vault
-        items = await client.items.list(vault_id=params["SAAS_SECRETS_OP_VAULT_ID"])
+    logger.info("Initializing vault and item mappings...")
 
-        for item in items:
-            logger.debug(f"Processing item: {item.title}")
+    # Get items in the SaaS Secrets vault
+    items = await client.items.list(vault_id=params["SAAS_SECRETS_OP_VAULT_ID"])
 
-            # Create id mappings (store metadata, not secrets)
-            _title_to_id_mapping[item.title] = {
-                "item_id": item.id,
-                "category": item.category,
-            }
+    for item in items:
+        logger.debug(f"Processing item: {item.title}")
 
-        _mappings_initialized = True
-        logger.info(f"Initialized mappings for {len(_title_to_id_mapping)} items")
+        # Create id mappings (store metadata, not secrets)
+        _title_to_id_mapping[item.title] = {
+            "item_id": item.id,
+            "category": item.category,
+        }
 
-    except Exception as exc:
-        logger.error(f"Error initializing mappings: {exc}")
-        raise FidesopsException(f"Failed to initialize 1Password mappings: {exc}")
+    _mappings_initialized = True
+    logger.info(f"Initialized mappings for {len(_title_to_id_mapping)} items")
+
+
 
 
 async def get_item_by_title(title: str) -> Optional[Dict[str, Any]]:
@@ -84,38 +86,40 @@ async def get_item_by_title(title: str) -> Optional[Dict[str, Any]]:
 
     info = _title_to_id_mapping[title]
 
-    try:
-        client = await _get_or_create_client()
-        item = await client.items.get(
-            item_id=info["item_id"], vault_id=params["SAAS_SECRETS_OP_VAULT_ID"]
-        )
 
-        # Convert to dictionary format
-        item_dict = {
-            "id": item.id,
-            "title": item.title,
-            "category": item.category,
-            "fields": [],
-        }
-
-        # Add field information
-        if hasattr(item, "fields") and item.fields:
-            for field in item.fields:
-                field_info = {
-                    "id": getattr(field, "id", ""),
-                    "title": getattr(field, "title", ""),
-                    "type": getattr(field, "field_type", ""),
-                    "value": getattr(field, "value", ""),
-                    "purpose": getattr(field, "purpose", ""),
-                }
-                item_dict["fields"].append(field_info)
-
-        logger.info(f"Retrieved item '{title}' with {len(item_dict['fields'])} fields")
-        return item_dict
-
-    except Exception as exc:
-        logger.error(f"Error retrieving item '{title}': {exc}")
+    client = await _get_or_create_client()
+    if client is None:
+        logger.error("Failed to initialize 1Password client.")
         return None
+
+    item = await client.items.get(
+        item_id=info["item_id"], vault_id=params["SAAS_SECRETS_OP_VAULT_ID"]
+    )
+
+    # Convert to dictionary format
+    item_dict = {
+        "id": item.id,
+        "title": item.title,
+        "category": item.category,
+        "fields": [],
+    }
+
+    # Add field information
+    if hasattr(item, "fields") and item.fields:
+        for field in item.fields:
+            field_info = {
+                "id": getattr(field, "id", ""),
+                "title": getattr(field, "title", ""),
+                "type": getattr(field, "field_type", ""),
+                "value": getattr(field, "value", ""),
+                "purpose": getattr(field, "purpose", ""),
+            }
+            item_dict["fields"].append(field_info)
+
+    logger.info(f"Retrieved item '{title}' with {len(item_dict['fields'])} fields")
+    return item_dict
+
+
 
 
 async def list_available_items() -> List[str]:
