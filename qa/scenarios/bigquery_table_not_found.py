@@ -232,6 +232,24 @@ class BigQueryTableNotFound(QATestScenario):
                 elif key == 'field' and old_table and new_table and isinstance(value, str) and value.startswith(f"{old_table}."):
                     # Update field references like "customer.id" to "customer_missing.id"
                     result[key] = value.replace(f"{old_table}.", f"{new_table}.")
+                elif key == "erase_after" and isinstance(value, list):
+                    # Update erase_after references like ["bigquery_example_test_dataset.employee"]
+                    updated_erase_after = []
+                    for item in value:
+                        if isinstance(item, str) and item.startswith(f"{old_dataset}."):
+                            updated_item = item.replace(
+                                f"{old_dataset}.", f"{new_dataset}."
+                            )
+                            # Also update table references if needed
+                            if old_table and new_table:
+                                updated_item = updated_item.replace(
+                                    f"{new_dataset}.{old_table}",
+                                    f"{new_dataset}.{new_table}",
+                                )
+                            updated_erase_after.append(updated_item)
+                        else:
+                            updated_erase_after.append(item)
+                    result[key] = updated_erase_after
                 else:
                     result[key] = self._deep_copy_and_update_references(value, old_dataset, new_dataset, old_table, new_table)
             return result
