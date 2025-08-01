@@ -319,7 +319,7 @@ export interface FidesOptions {
    *
    * Defaults to `"disabled"`.
    */
-  fides_unsupported_repeated_script_loading:
+  fides_unsupported_repeated_script_loading?:
     | "enabled_acknowledge_not_supported"
     | "disabled";
 }
