@@ -346,6 +346,8 @@ export default async function handler(
       fidesConsentFlagType: environment.settings.FIDES_CONSENT_FLAG_TYPE,
       fidesInitializedEventMode:
         environment.settings.FIDES_INITIALIZED_EVENT_MODE,
+      fidesUnsupportedRepeatedScriptLoading:
+        environment.settings.FIDES_UNSUPPORTED_REPEATED_SCRIPT_LOADING,
     },
     experience: experience || undefined,
     geolocation: geolocation || undefined,
