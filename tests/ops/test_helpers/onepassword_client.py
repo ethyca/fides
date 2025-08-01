@@ -42,7 +42,6 @@ async def _initialize_mappings():
     if _mappings_initialized:
         return
 
-
     client = await _get_or_create_client()
     if client is None:
         logger.error("Failed to initialize 1Password Mappings.")
@@ -66,8 +65,6 @@ async def _initialize_mappings():
     logger.info(f"Initialized mappings for {len(_title_to_id_mapping)} items")
 
 
-
-
 async def get_item_by_title(title: str) -> Optional[Dict[str, Any]]:
     """
     Retrieve a 1Password item by its title
@@ -85,7 +82,6 @@ async def get_item_by_title(title: str) -> Optional[Dict[str, Any]]:
         return None
 
     info = _title_to_id_mapping[title]
-
 
     client = await _get_or_create_client()
     if client is None:
@@ -118,8 +114,6 @@ async def get_item_by_title(title: str) -> Optional[Dict[str, Any]]:
 
     logger.info(f"Retrieved item '{title}' with {len(item_dict['fields'])} fields")
     return item_dict
-
-
 
 
 async def list_available_items() -> List[str]:
