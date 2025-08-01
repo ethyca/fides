@@ -5,6 +5,14 @@ from io import BytesIO
 import pytest
 from sqlalchemy.orm import Session
 
+from fides.api.graph.config import (
+    Collection,
+    FieldAddress,
+    GraphDataset,
+    ObjectField,
+    ScalarField,
+)
+from fides.api.graph.graph import DatasetGraph
 from fides.api.models.attachment import (
     Attachment,
     AttachmentReference,
@@ -47,9 +55,9 @@ from fides.api.task.task_resources import TaskResources
 
 def _create_rule(db: Session, policy: Policy, action_type: ActionType, rule_name: str):
     """Create a rule for a policy"""
-    key = "_".join(rule_name.lower().split(" "))
+    key = f"{policy.key}_{action_type.value}_{rule_name.lower().replace(' ', '_')}"
     data = {
-        "name": rule_name,
+        "name": f"{policy.name} {rule_name}",
         "key": key,
         "policy_id": policy.id,
         "action_type": action_type,
@@ -385,13 +393,13 @@ def _build_request_task(
 
     if manual_task:
         # Get conditional dependency field addresses
-        from fides.api.task.manual.manual_task_utils import (
-            _extract_field_addresses_from_conditional_dependencies,
-        )
-
-        field_addresses = _extract_field_addresses_from_conditional_dependencies(
-            db, manual_task
-        )
+        field_addresses = []
+        for dependency in manual_task.conditional_dependencies:
+            if (
+                dependency.condition_type == ManualTaskConditionalDependencyType.leaf
+                and dependency.field_address
+            ):
+                field_addresses.append(dependency.field_address)
 
         # For testing, we'll create input keys and edges based on the field addresses
         # In a real scenario, these would be determined by the graph traversal
@@ -856,37 +864,131 @@ def complete_manual_task_setup_with_attachment(
 @pytest.fixture
 def mock_dataset_graph():
     """Create a mock dataset graph with collections and fields that match conditional dependencies"""
-    from fides.api.graph.config import Collection, GraphDataset, ScalarField
-    from fides.api.graph.graph import DatasetGraph
 
     # Create collections with fields that match the conditional dependencies
     customer_collection = Collection(
         name="customer",
         fields=[
-            ScalarField(name="profile.age"),  # matches "user.profile.age"
-            ScalarField(name="age"),  # also matches "user.profile.age"
+            ScalarField(name="name"),  # simple field for basic testing
+            ScalarField(name="email"),  # simple field for basic testing
+            ScalarField(name="age"),  # simple field that also matches nested patterns
             ScalarField(name="role"),  # matches "user.role"
+            # Add reference to user collection to make it reachable
+            ScalarField(
+                name="user_id",
+                references=[(FieldAddress("postgres_example", "user", "id"), "to")],
+            ),
+            # Create nested structure for profile
+            ObjectField(
+                name="profile",
+                fields={
+                    "age": ScalarField(name="age"),
+                    "email": ScalarField(name="email"),
+                },
+            ),
+            # Create nested structure for user
+            ObjectField(
+                name="user",
+                fields={
+                    "profile": ObjectField(
+                        name="profile",
+                        fields={
+                            "age": ScalarField(name="age"),
+                        },
+                    ),
+                    "role": ScalarField(name="role"),
+                },
+            ),
         ],
     )
 
     payment_card_collection = Collection(
         name="payment_card",
         fields=[
+            ScalarField(name="card_number"),  # simple field for basic testing
+            ScalarField(name="expiry_date"),  # simple field for basic testing
             ScalarField(
-                name="subscription.status"
-            ),  # matches "billing.subscription.status"
-            ScalarField(name="status"),  # also matches "billing.subscription.status"
+                name="status"
+            ),  # simple field that also matches nested patterns
+            # Add reference to customer collection to make it reachable
+            ScalarField(
+                name="customer_id",
+                references=[
+                    (FieldAddress("postgres_example", "customer", "name"), "to")
+                ],
+            ),
+            # Create nested structure for subscription
+            ObjectField(
+                name="subscription",
+                fields={
+                    "status": ScalarField(name="status"),
+                },
+            ),
+            # Create nested structure for billing
+            ObjectField(
+                name="billing",
+                fields={
+                    "subscription": ObjectField(
+                        name="subscription",
+                        fields={
+                            "status": ScalarField(name="status"),
+                        },
+                    ),
+                },
+            ),
+        ],
+    )
+
+    # Create a third collection for more comprehensive testing
+    user_collection = Collection(
+        name="user",
+        fields=[
+            ScalarField(name="id"),  # simple field
+            ScalarField(name="username"),  # simple field
+            # Add reference to payment_card collection to make it reachable
+            ScalarField(
+                name="payment_card_id",
+                references=[
+                    (
+                        FieldAddress("postgres_example", "payment_card", "card_number"),
+                        "to",
+                    )
+                ],
+            ),
+            # Create nested structure for profile
+            ObjectField(
+                name="profile",
+                fields={
+                    "age": ScalarField(name="age"),
+                    "email": ScalarField(name="email"),
+                },
+            ),
+            # Create nested structure for billing
+            ObjectField(
+                name="billing",
+                fields={
+                    "subscription": ObjectField(
+                        name="subscription",
+                        fields={
+                            "status": ScalarField(name="status"),
+                        },
+                    ),
+                },
+            ),
         ],
     )
 
     # Create dataset graphs
     postgres_dataset = GraphDataset(
         name="postgres_example",
-        collections=[customer_collection, payment_card_collection],
+        collections=[customer_collection, payment_card_collection, user_collection],
         connection_key="postgres_example",
     )
 
     # Create the mock dataset graph
+    # Note: This creates a simple graph without references between collections
+    # In a real scenario, collections would have references to other collections
+    # which would create edges in the graph and make all nodes reachable
     return DatasetGraph(postgres_dataset)
 
 
@@ -899,7 +1001,7 @@ def create_condition_gt_18(
             "manual_task_id": manual_task.id,
             "condition_type": ManualTaskConditionalDependencyType.leaf,
             "parent_id": parent_id,
-            "field_address": "profile.age",
+            "field_address": "customer.profile.age",
             "operator": "gte",
             "value": 18,
             "sort_order": sort_order,
@@ -916,7 +1018,7 @@ def create_condition_age_lt_65(
             "manual_task_id": manual_task.id,
             "condition_type": ManualTaskConditionalDependencyType.leaf,
             "parent_id": parent_id,
-            "field_address": "profile.age",
+            "field_address": "customer.profile.age",
             "operator": "lt",
             "value": 65,
             "sort_order": sort_order,
@@ -933,7 +1035,7 @@ def create_condition_eq_active(
             "manual_task_id": manual_task.id,
             "condition_type": ManualTaskConditionalDependencyType.leaf,
             "parent_id": parent_id,
-            "field_address": "subscription.status",
+            "field_address": "payment_card.subscription.status",
             "operator": "eq",
             "value": "active",
             "sort_order": sort_order,
@@ -949,7 +1051,7 @@ def create_condition_eq_admin(
         data={
             "manual_task_id": manual_task.id,
             "condition_type": ManualTaskConditionalDependencyType.leaf,
-            "field_address": "role",
+            "field_address": "customer.role",
             "operator": "eq",
             "value": "admin",
             "sort_order": sort_order,

@@ -151,6 +151,9 @@ def create_collection_for_connection_key(
     )
 
     # Only create collection if there are fields
+    if not fields:
+        return None
+
     return Collection(
         name=ManualTaskAddress.MANUAL_DATA_COLLECTION,
         fields=fields,

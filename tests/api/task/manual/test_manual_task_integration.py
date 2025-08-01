@@ -1,10 +1,7 @@
-import json
-from unittest.mock import Mock
+from datetime import datetime
 
 import pytest
 
-from fides.api.graph.config import Collection, ScalarField
-from fides.api.graph.data_type import DataType
 from fides.api.graph.graph import CollectionAddress, DatasetGraph
 from fides.api.models.connectionconfig import (
     AccessLevel,
@@ -24,12 +21,7 @@ from fides.api.models.manual_task import (
     ManualTaskType,
     StatusType,
 )
-from fides.api.models.policy import ActionType, Policy
-from fides.api.models.privacy_request import (
-    PrivacyRequest,
-    RequestTask,
-    TraversalDetails,
-)
+from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.manual.manual_task_address import ManualTaskAddress
 from fides.api.task.manual.manual_task_graph_task import ManualTaskGraphTask
@@ -39,34 +31,9 @@ from fides.api.task.manual.manual_task_utils import (
     get_manual_task_addresses,
     get_manual_task_for_connection_config,
 )
-from fides.api.task.task_resources import TaskResources
-
-
-class TestManualTaskTraversalNode:
-
-    def test_get_manual_task_for_connection_config(
-        self, db, connection_with_manual_access_task
-    ):
-        """Test retrieving manual tasks for a connection config"""
-        connection_config, manual_task, _, _ = connection_with_manual_access_task
-
-        task = get_manual_task_for_connection_config(db, connection_config.key)
-        assert task.id == manual_task.id
-
-        # Test non-existent connection
-        task = get_manual_task_for_connection_config(db, "non_existent")
-        assert task is None
 
 
 class TestManualTaskGraphTask:
-
-    @pytest.fixture
-    def mock_task_resources(self, db, access_privacy_request):
-        """Create mock task resources"""
-        resources = Mock(spec=TaskResources)
-        resources.session = db
-        resources.request = access_privacy_request
-        return resources
 
     def test_manual_task_graph_task_initialization(self):
         """Test that ManualTaskGraphTask can be initialized"""
@@ -94,134 +61,83 @@ class TestManualTaskGraphTask:
 class TestManualTaskSimulatedEndToEnd:
     """Simplified end-to-end test for manual task flow without complex database setup"""
 
+    @pytest.fixture
+    def manual_task_submission(
+        self, db, manual_task_instance, connection_with_manual_access_task
+    ):
+        _, manual_task, manual_config, email_field = connection_with_manual_access_task
+
+        return ManualTaskSubmission.create(
+            db=db,
+            data={
+                "task_id": manual_task.id,
+                "config_id": manual_config.id,
+                "field_id": email_field.id,
+                "instance_id": manual_task_instance.id,
+                "data": {"value": "manually-entered@example.com"},
+            },
+        )
+
     def test_manual_task_workflow_simulation(
-        self, db, access_policy, connection_with_manual_access_task
+        self,
+        db,
+        connection_with_manual_access_task,
+        access_privacy_request,
+        manual_task_instance,
+        manual_task_submission,
     ):
         """Test the manual task workflow: create privacy request -> requires_input -> submit -> complete"""
         connection_config, manual_task, manual_config, email_field = (
             connection_with_manual_access_task
         )
 
-        # 1. Create privacy request
-        privacy_request = PrivacyRequest.create(
-            db=db,
-            data={
-                "external_id": "test_manual_workflow_123",
-                "started_processing_at": None,
-                "status": PrivacyRequestStatus.pending,
-                "policy_id": access_policy.id,
-            },
-        )
+        # Set privacy request to requires_input (simulating what the task would do)
+        access_privacy_request.status = PrivacyRequestStatus.requires_input
+        access_privacy_request.save(db)
 
-        # 2. Instead of testing the full graph task execution, let's test the core logic directly
-        # Create a mock request task
-        request_task = Mock()
-        request_task.request_task_address = ManualTaskAddress.create(
-            connection_config.key
-        )
-
-        # Test the ManualTaskGraphTask logic by calling its methods directly
-        # This avoids complex constructor issues while still testing the core functionality
-
-        # Create manual task instances (simulating what the graph task would do)
-        manual_instance = ManualTaskInstance.create(
-            db=db,
-            data={
-                "task_id": manual_task.id,
-                "config_id": manual_config.id,
-                "entity_id": privacy_request.id,
-                "entity_type": ManualTaskEntityType.privacy_request.value,
-                "status": StatusType.pending.value,
-            },
-        )
-
-        # 3. Set privacy request to requires_input (simulating what the task would do)
-        privacy_request.status = PrivacyRequestStatus.requires_input
-        privacy_request.save(db)
-
-        # 4. Verify privacy request is now in requires_input state
-        db.refresh(privacy_request)
-        assert privacy_request.status == PrivacyRequestStatus.requires_input
-
-        # 4. Verify manual task instance was created
-        assert manual_instance is not None
-        assert manual_instance.status == StatusType.pending
-
-        # 5. Simulate manual data submission (this would normally come from the admin UI)
-        submission = ManualTaskSubmission.create(
-            db=db,
-            data={
-                "task_id": manual_task.id,
-                "config_id": manual_config.id,
-                "field_id": email_field.id,
-                "instance_id": manual_instance.id,
-                "data": {"value": "manually-entered@example.com"},
-            },
-        )
+        # Verify privacy request is now in requires_input state
+        db.refresh(access_privacy_request)
+        assert access_privacy_request.status == PrivacyRequestStatus.requires_input
 
         # 6. Update manual task instance to completed
-        manual_instance.status = StatusType.completed
-        manual_instance.save(db)
+        manual_task_instance.status = StatusType.completed
+        manual_task_instance.save(db)
 
         # 7. Test that we can now get the submitted data using the utility functions
         manual_task = get_manual_task_for_connection_config(db, connection_config.key)
         assert manual_task.id == manual_task.id
 
         # 8. Verify manual task instance is completed
-        db.refresh(manual_instance)
-        assert manual_instance.status == StatusType.completed
+        db.refresh(manual_task_instance)
+        assert manual_task_instance.status == StatusType.completed
 
         # 9. Verify submission data is correct
-        assert submission.data["value"] == "manually-entered@example.com"
-        assert submission.field_id == email_field.id
-        assert submission.instance_id == manual_instance.id
+        assert manual_task_submission.data["value"] == "manually-entered@example.com"
+        assert manual_task_submission.field_id == email_field.id
+        assert manual_task_submission.instance_id == manual_task_instance.id
 
         # 10. Verify we can retrieve the submission via the instance
-        db.refresh(manual_instance)
-        instance_submissions = manual_instance.submissions
+        db.refresh(manual_task_instance)
+        instance_submissions = manual_task_instance.submissions
         assert len(instance_submissions) == 1
         assert instance_submissions[0].data["value"] == "manually-entered@example.com"
 
+    @pytest.mark.usefixtures("connection_with_manual_access_task")
     def test_manual_task_with_missing_required_field(
-        self, db, access_policy, connection_with_manual_access_task
+        self, db, access_privacy_request, manual_task_instance
     ):
         """Test that manual task stays in requires_input when required fields are missing"""
-        _, manual_task, manual_config, email_field = connection_with_manual_access_task
-
-        # Create privacy request
-        privacy_request = PrivacyRequest.create(
-            db=db,
-            data={
-                "external_id": "test_missing_field_123",
-                "started_processing_at": None,
-                "status": PrivacyRequestStatus.pending,
-                "policy_id": access_policy.id,
-            },
-        )
-
-        # Simulate manual task setup - create instance without submissions
-        manual_instance = ManualTaskInstance.create(
-            db=db,
-            data={
-                "task_id": manual_task.id,
-                "config_id": manual_config.id,
-                "entity_id": privacy_request.id,
-                "entity_type": ManualTaskEntityType.privacy_request.value,
-                "status": StatusType.pending.value,
-            },
-        )
-
         # Set privacy request to requires_input (simulating what the task would do)
-        privacy_request.status = PrivacyRequestStatus.requires_input
-        privacy_request.save(db)
+        access_privacy_request.status = PrivacyRequestStatus.requires_input
+        access_privacy_request.save(db)
 
         # Verify instance was created
-        assert manual_instance is not None
-        assert manual_instance.status == StatusType.pending
+        assert manual_task_instance is not None
+        assert manual_task_instance.status == StatusType.pending
 
         # Privacy request should still be in requires_input
-        db.refresh(privacy_request)
-        assert privacy_request.status == PrivacyRequestStatus.requires_input
+        db.refresh(access_privacy_request)
+        assert access_privacy_request.status == PrivacyRequestStatus.requires_input
 
 
 @pytest.mark.integration
@@ -260,11 +176,11 @@ class TestManualTaskInstanceCreation:
         for instance in created_instances:
             instance.delete(db)
 
+    @pytest.mark.usefixtures("connection_with_manual_access_task")
     def test_no_duplicate_manual_task_instances_created(
-        self, db, access_privacy_request, connection_with_manual_access_task
+        self, db, access_privacy_request
     ):
         """Test that duplicate manual task instances are not created"""
-        _, manual_task, _, _ = connection_with_manual_access_task
 
         # Create instances first time
         connection_configs_with_manual_tasks = get_connection_configs_with_manual_tasks(
@@ -289,95 +205,21 @@ class TestManualTaskInstanceCreation:
         assert len(all_instances) == 1
 
 
-@pytest.fixture
-def mock_execution_node():
-    class MockExecutionNode:
-        def __init__(self, address):
-            self.address = CollectionAddress.from_string(address)
-            self.connection_key = "test_connection"
-
-    return MockExecutionNode("test_connection:manual_data")
-
-
-def build_mock_request_task(
-    privacy_request, action_type, connection_key="test_connection"
-):
-    request_task = RequestTask(
-        privacy_request_id=privacy_request.id,
-        collection_address=f"{connection_key}:manual_data",
-        dataset_name=connection_key,
-        collection_name="manual_data",
-        action_type=action_type,
-    )
-    # Create a valid collection and serialize it to dict format for SQLAlchemy
-    collection = Collection(
-        name="manual_data",
-        fields=[
-            ScalarField(name="dummy", data_type_converter=DataType.no_op.value)
-        ],  # minimal valid field
-    )
-    # Serialize the collection to dict format that SQLAlchemy expects
-    request_task.collection = json.loads(
-        collection.model_dump_json(serialize_as_any=True)
-    )
-
-    # Create valid traversal details and serialize to dict format
-    traversal_details = TraversalDetails.create_empty_traversal(connection_key)
-    request_task.traversal_details = traversal_details.model_dump(mode="json")
-
-    return request_task
-
-
-@pytest.fixture
-def build_task_resources(db):
-    def _build(privacy_request, action_type, connection_key="test_connection"):
-        from fides.api.task.task_resources import TaskResources
-
-        connection_configs = db.query(ConnectionConfig).all()
-        mock_request_task = build_mock_request_task(
-            privacy_request, action_type, connection_key
-        )
-        return TaskResources(
-            request=privacy_request,
-            policy=privacy_request.policy,
-            connection_configs=connection_configs,
-            privacy_request_task=mock_request_task,
-            session=db,
-        )
-
-    return _build
-
-
 @pytest.mark.integration
 class TestManualTaskGraphTaskInstanceCreation:
     """Test that ManualTaskGraphTask creates the correct number of instances for access and erasure"""
 
-    @pytest.mark.usefixtures("manual_setup")
+    @pytest.mark.usefixtures("connection_with_manual_access_task")
     def test_access_request_creates_access_instances_only(
         self,
         db,
-        manual_setup,
         access_privacy_request,
-        build_task_resources,
+        build_graph_task,
     ):
         """Test that access_request creates only access instances"""
 
         # Get the actual connection key from the fixture
-        connection_config = manual_setup["connection_config"]
-
-        # Create execution node with the actual connection key
-        class MockExecutionNode:
-            def __init__(self, address):
-                self.address = CollectionAddress.from_string(address)
-                self.connection_key = connection_config.key
-
-        mock_execution_node = MockExecutionNode(f"{connection_config.key}:manual_data")
-
-        task_resources = build_task_resources(
-            access_privacy_request, ActionType.access, connection_config.key
-        )
-        graph_task = ManualTaskGraphTask(task_resources)
-        graph_task.execution_node = mock_execution_node
+        _, graph_task = build_graph_task
 
         # Count instances before
         initial_instances = (
@@ -420,32 +262,17 @@ class TestManualTaskGraphTaskInstanceCreation:
         assert access_instances == 1
         assert erasure_instances == 0
 
-    @pytest.mark.usefixtures("manual_setup")
+    @pytest.mark.usefixtures("connection_with_manual_erasure_task")
     def test_erasure_request_creates_erasure_instances_only(
         self,
         db,
-        manual_setup,
         erasure_privacy_request,
-        build_task_resources,
+        build_erasure_graph_task,
     ):
         """Test that erasure_request creates only erasure instances"""
 
         # Get the actual connection key from the fixture
-        connection_config = manual_setup["connection_config"]
-
-        # Create execution node with the actual connection key
-        class MockExecutionNode:
-            def __init__(self, address):
-                self.address = CollectionAddress.from_string(address)
-                self.connection_key = connection_config.key
-
-        mock_execution_node = MockExecutionNode(f"{connection_config.key}:manual_data")
-
-        task_resources = build_task_resources(
-            erasure_privacy_request, ActionType.erasure, connection_config.key
-        )
-        graph_task = ManualTaskGraphTask(task_resources)
-        graph_task.execution_node = mock_execution_node
+        _, graph_task = build_erasure_graph_task
 
         # Count instances before
         initial_instances = (
@@ -492,28 +319,15 @@ class TestManualTaskGraphTaskInstanceCreation:
         self,
         db,
         access_privacy_request,
-        manual_setup,
-        build_task_resources,
+        connection_with_manual_access_task,
+        build_graph_task,
     ):
         """Test that access_request skips configs that are not current"""
-        access_config = manual_setup["access_config"]
-        connection_config = manual_setup["connection_config"]
+        _, _, access_config, _ = connection_with_manual_access_task
         access_config.is_current = False
         db.commit()
 
-        # Create execution node with the actual connection key
-        class MockExecutionNode:
-            def __init__(self, address):
-                self.address = CollectionAddress.from_string(address)
-                self.connection_key = connection_config.key
-
-        mock_execution_node = MockExecutionNode(f"{connection_config.key}:manual_data")
-
-        task_resources = build_task_resources(
-            access_privacy_request, ActionType.access, connection_config.key
-        )
-        graph_task = ManualTaskGraphTask(task_resources)
-        graph_task.execution_node = mock_execution_node
+        _, graph_task = build_graph_task
 
         # Call access_request - should complete immediately since no valid configs
         result = graph_task.access_request()
@@ -530,29 +344,27 @@ class TestManualTaskGraphTaskInstanceCreation:
     def test_erasure_request_skips_deleted_configs(
         self,
         db,
-        erasure_privacy_request,
-        manual_setup,
-        build_task_resources,
+        erasure_policy,
+        connection_with_manual_erasure_task,
+        build_erasure_graph_task,
     ):
         """Test that erasure_request skips configs that are not current"""
-        erasure_config = manual_setup["erasure_config"]
-        connection_config = manual_setup["connection_config"]
+        _, _, erasure_config, _ = connection_with_manual_erasure_task
+
+        # Set config to not current BEFORE creating the privacy request
         erasure_config.is_current = False
         db.commit()
 
-        # Create execution node with the actual connection key
-        class MockExecutionNode:
-            def __init__(self, address):
-                self.address = CollectionAddress.from_string(address)
-                self.connection_key = connection_config.key
-
-        mock_execution_node = MockExecutionNode(f"{connection_config.key}:manual_data")
-
-        task_resources = build_task_resources(
-            erasure_privacy_request, ActionType.erasure, connection_config.key
+        # Create a new privacy request AFTER marking the config as not current
+        privacy_request = PrivacyRequest.create(
+            db=db,
+            data={
+                "requested_at": datetime.utcnow(),
+                "policy_id": erasure_policy.id,
+                "status": PrivacyRequestStatus.pending,
+            },
         )
-        graph_task = ManualTaskGraphTask(task_resources)
-        graph_task.execution_node = mock_execution_node
+        _, graph_task = build_erasure_graph_task
 
         # Call erasure_request - should complete immediately since no valid configs
         result = graph_task.erasure_request([])
@@ -561,54 +373,64 @@ class TestManualTaskGraphTaskInstanceCreation:
         # No instances should be created
         instances = (
             db.query(ManualTaskInstance)
-            .filter(ManualTaskInstance.entity_id == erasure_privacy_request.id)
+            .filter(ManualTaskInstance.entity_id == privacy_request.id)
             .count()
         )
         assert instances == 0
 
-    @pytest.mark.usefixtures("manual_setup")
     def test_access_and_erasure_instances_coexist(
         self,
         db,
-        manual_setup,
         mixed_privacy_request,
-        build_task_resources,
+        connection_with_manual_access_task,
+        connection_with_manual_erasure_task,
     ):
         """Test that access and erasure instances can coexist for the same privacy request"""
 
-        # Get the actual connection key from the fixture
-        connection_config = manual_setup["connection_config"]
+        # Get connection configs and manual tasks
+        _, access_manual_task, _, _ = connection_with_manual_access_task
+        _, erasure_manual_task, _, _ = connection_with_manual_erasure_task
 
-        # Create execution node with the actual connection key
-        class MockExecutionNode:
-            def __init__(self, address):
-                self.address = CollectionAddress.from_string(address)
-                self.connection_key = connection_config.key
+        # Create manual task instances directly for the mixed privacy request
+        # This simulates what would happen when both access and erasure tasks run
 
-        mock_execution_node = MockExecutionNode(f"{connection_config.key}:manual_data")
-
-        # Access instance
-        access_task_resources = build_task_resources(
-            mixed_privacy_request, ActionType.access, connection_config.key
+        # Create access instance
+        access_config = next(
+            config
+            for config in access_manual_task.configs
+            if config.config_type == ManualTaskConfigurationType.access_privacy_request
+            and config.is_current
         )
-        access_graph_task = ManualTaskGraphTask(access_task_resources)
-        access_graph_task.execution_node = mock_execution_node
-        try:
-            access_graph_task.access_request()
-        except Exception:
-            pass
-        # Erasure instance
-        erasure_task_resources = build_task_resources(
-            mixed_privacy_request, ActionType.erasure, connection_config.key
+        ManualTaskInstance.create(
+            db=db,
+            data={
+                "task_id": access_manual_task.id,
+                "config_id": access_config.id,
+                "entity_id": mixed_privacy_request.id,
+                "entity_type": ManualTaskEntityType.privacy_request.value,
+                "status": StatusType.pending.value,
+            },
         )
-        erasure_graph_task = ManualTaskGraphTask(erasure_task_resources)
-        erasure_graph_task.execution_node = mock_execution_node
-        try:
-            erasure_graph_task.erasure_request([])
-        except Exception:
-            pass
 
-        # Should have both access and erasure instances
+        # Create erasure instance
+        erasure_config = next(
+            config
+            for config in erasure_manual_task.configs
+            if config.config_type == ManualTaskConfigurationType.erasure_privacy_request
+            and config.is_current
+        )
+        ManualTaskInstance.create(
+            db=db,
+            data={
+                "task_id": erasure_manual_task.id,
+                "config_id": erasure_config.id,
+                "entity_id": mixed_privacy_request.id,
+                "entity_type": ManualTaskEntityType.privacy_request.value,
+                "status": StatusType.pending.value,
+            },
+        )
+
+        # Should have both access and erasure instances for the same privacy request
         access_instances = (
             db.query(ManualTaskInstance)
             .join(ManualTaskConfig)
@@ -773,10 +595,13 @@ class TestManualTaskTraversalExecution:
             db, mock_dataset_graph
         )
         # Extract the datasets from mock_dataset_graph and combine with manual task graphs
+        # mock_dataset_graph is a DatasetGraph, extract unique datasets from its nodes
         regular_datasets = []
+        seen_dataset_names = set()
         for node in mock_dataset_graph.nodes.values():
-            if node.dataset not in regular_datasets:
+            if node.dataset.name not in seen_dataset_names:
                 regular_datasets.append(node.dataset)
+                seen_dataset_names.add(node.dataset.name)
 
         return DatasetGraph(*regular_datasets, *manual_task_graphs)
 
@@ -785,18 +610,7 @@ class TestManualTaskTraversalExecution:
         self, db, access_policy, connection_with_manual_access_task, mock_dataset_graph
     ):
         """Test that manual tasks execute in correct order when they have conditional dependencies"""
-        connection_config, manual_task, _, _ = connection_with_manual_access_task
-
-        # Create privacy request
-        privacy_request = PrivacyRequest.create(
-            db=db,
-            data={
-                "external_id": "test_traversal_conditional_123",
-                "started_processing_at": None,
-                "status": PrivacyRequestStatus.pending,
-                "policy_id": access_policy.id,
-            },
-        )
+        connection_config, _, _, _ = connection_with_manual_access_task
 
         # Create combined graph using helper method
         combined_graph = self._create_combined_graph(db, mock_dataset_graph)
@@ -839,23 +653,12 @@ class TestManualTaskTraversalExecution:
         )
         assert root_to_manual_edge_exists, "ROOT -> manual_data edge not found"
 
-    @pytest.mark.usefixtures("group_condition")
+    @pytest.mark.usefixtures("group_condition", "privacy_request")
     def test_manual_task_traversal_with_group_conditional_dependencies(
-        self, db, access_policy, connection_with_manual_access_task, mock_dataset_graph
+        self, db, connection_with_manual_access_task, mock_dataset_graph
     ):
         """Test that manual tasks with group conditional dependencies execute correctly"""
-        connection_config, manual_task, _, _ = connection_with_manual_access_task
-
-        # Create privacy request
-        privacy_request = PrivacyRequest.create(
-            db=db,
-            data={
-                "external_id": "test_traversal_group_123",
-                "started_processing_at": None,
-                "status": PrivacyRequestStatus.pending,
-                "policy_id": access_policy.id,
-            },
-        )
+        connection_config, _, _, _ = connection_with_manual_access_task
 
         # Create combined graph using helper method
         combined_graph = self._create_combined_graph(db, mock_dataset_graph)
@@ -880,33 +683,25 @@ class TestManualTaskTraversalExecution:
         }
         assert expected_dependencies.issubset(manual_node.node.collection.after)
 
-    @pytest.mark.usefixtures("nested_group_condition")
+    @pytest.mark.usefixtures("nested_group_condition", "privacy_request")
     def test_manual_task_traversal_with_nested_group_conditional_dependencies(
-        self, db, access_policy, connection_with_manual_access_task, mock_dataset_graph
+        self, db, connection_with_manual_access_task, mock_dataset_graph
     ):
         """Test that manual tasks with nested group conditional dependencies execute correctly"""
-        connection_config, manual_task, _, _ = connection_with_manual_access_task
-
-        # Create privacy request
-        privacy_request = PrivacyRequest.create(
-            db=db,
-            data={
-                "external_id": "test_traversal_nested_123",
-                "started_processing_at": None,
-                "status": PrivacyRequestStatus.pending,
-                "policy_id": access_policy.id,
-            },
-        )
+        connection_config, _, _, _ = connection_with_manual_access_task
 
         # Create artificial graphs
         manual_task_graphs = create_manual_task_artificial_graphs(
             db, mock_dataset_graph
         )
         # Extract the datasets from mock_dataset_graph and combine with manual task graphs
+        # mock_dataset_graph is a DatasetGraph, extract unique datasets from its nodes
         regular_datasets = []
+        seen_dataset_names = set()
         for node in mock_dataset_graph.nodes.values():
-            if node.dataset not in regular_datasets:
+            if node.dataset.name not in seen_dataset_names:
                 regular_datasets.append(node.dataset)
+                seen_dataset_names.add(node.dataset.name)
 
         combined_graph = DatasetGraph(*regular_datasets, *manual_task_graphs)
 
@@ -932,9 +727,11 @@ class TestManualTaskTraversalExecution:
 
         # Verify collection has fields from nested group children
         field_names = [field.name for field in manual_node.node.collection.fields]
-        assert "role" in field_names  # from "user.role"
-        assert "age" in field_names  # from "user.profile.age"
-        assert "status" in field_names  # from "billing.subscription.status"
+        assert "customer.role" in field_names  # from "customer.role"
+        assert "customer.profile.age" in field_names  # from "customer.profile.age"
+        assert (
+            "payment_card.subscription.status" in field_names
+        )  # from "payment_card.subscription.status"
 
 
 @pytest.mark.integration
@@ -947,30 +744,24 @@ class TestManualTaskUpstreamDataFlow:
             db, mock_dataset_graph
         )
         # Extract the datasets from mock_dataset_graph and combine with manual task graphs
+        # mock_dataset_graph is a DatasetGraph, extract unique datasets from its nodes
         regular_datasets = []
+        seen_dataset_names = set()
         for node in mock_dataset_graph.nodes.values():
-            if node.dataset not in regular_datasets:
+            if node.dataset.name not in seen_dataset_names:
                 regular_datasets.append(node.dataset)
+                seen_dataset_names.add(node.dataset.name)
 
         return DatasetGraph(*regular_datasets, *manual_task_graphs)
 
-    @pytest.mark.usefixtures("condition_gt_18", "condition_eq_active")
+    @pytest.mark.usefixtures(
+        "condition_gt_18", "condition_eq_active", "privacy_request"
+    )
     def test_manual_task_receives_upstream_data_from_conditional_dependencies(
-        self, db, access_policy, connection_with_manual_access_task, mock_dataset_graph
+        self, db, connection_with_manual_access_task, mock_dataset_graph
     ):
         """Test that manual tasks receive data from upstream nodes that provide conditional dependency fields"""
-        connection_config, manual_task, _, _ = connection_with_manual_access_task
-
-        # Create privacy request
-        privacy_request = PrivacyRequest.create(
-            db=db,
-            data={
-                "external_id": "test_upstream_data_123",
-                "started_processing_at": None,
-                "status": PrivacyRequestStatus.pending,
-                "policy_id": access_policy.id,
-            },
-        )
+        connection_config, _, _, _ = connection_with_manual_access_task
 
         # Create combined graph using helper method
         combined_graph = self._create_combined_graph(db, mock_dataset_graph)
@@ -995,26 +786,17 @@ class TestManualTaskUpstreamDataFlow:
 
         # Verify manual task has fields that correspond to conditional dependency field addresses
         field_names = [field.name for field in manual_node.node.collection.fields]
-        assert "age" in field_names  # from "user.profile.age"
-        assert "status" in field_names  # from "billing.subscription.status"
+        assert "customer.profile.age" in field_names  # from "customer.profile.age"
+        assert (
+            "payment_card.subscription.status" in field_names
+        )  # from "payment_card.subscription.status"
 
-    @pytest.mark.usefixtures("group_condition")
+    @pytest.mark.usefixtures("group_condition", "privacy_request")
     def test_manual_task_upstream_data_with_group_conditions(
-        self, db, access_policy, connection_with_manual_access_task, mock_dataset_graph
+        self, db, connection_with_manual_access_task, mock_dataset_graph
     ):
         """Test that manual tasks with group conditions receive data from multiple upstream nodes"""
-        connection_config, manual_task, _, _ = connection_with_manual_access_task
-
-        # Create privacy request
-        privacy_request = PrivacyRequest.create(
-            db=db,
-            data={
-                "external_id": "test_upstream_group_123",
-                "started_processing_at": None,
-                "status": PrivacyRequestStatus.pending,
-                "policy_id": access_policy.id,
-            },
-        )
+        connection_config, _, _, _ = connection_with_manual_access_task
 
         # Create combined graph using helper method
         combined_graph = self._create_combined_graph(db, mock_dataset_graph)
@@ -1041,8 +823,10 @@ class TestManualTaskUpstreamDataFlow:
 
         # Verify collection has fields from group condition dependencies
         field_names = [field.name for field in manual_node.node.collection.fields]
-        assert "age" in field_names  # from "user.profile.age"
-        assert "status" in field_names  # from "billing.subscription.status"
+        assert "customer.profile.age" in field_names  # from "customer.profile.age"
+        assert (
+            "payment_card.subscription.status" in field_names
+        )  # from "payment_card.subscription.status"
 
 
 @pytest.mark.integration
@@ -1055,30 +839,24 @@ class TestManualTaskExecutionOrder:
             db, mock_dataset_graph
         )
         # Extract the datasets from mock_dataset_graph and combine with manual task graphs
+        # mock_dataset_graph is a DatasetGraph, extract unique datasets from its nodes
         regular_datasets = []
+        seen_dataset_names = set()
         for node in mock_dataset_graph.nodes.values():
-            if node.dataset not in regular_datasets:
+            if node.dataset.name not in seen_dataset_names:
                 regular_datasets.append(node.dataset)
+                seen_dataset_names.add(node.dataset.name)
 
         return DatasetGraph(*regular_datasets, *manual_task_graphs)
 
-    @pytest.mark.usefixtures("condition_gt_18", "condition_eq_active")
+    @pytest.mark.usefixtures(
+        "condition_gt_18", "condition_eq_active", "privacy_request"
+    )
     def test_manual_task_executes_after_dependencies(
-        self, db, access_policy, connection_with_manual_access_task, mock_dataset_graph
+        self, db, connection_with_manual_access_task, mock_dataset_graph
     ):
         """Test that manual tasks execute after their conditional dependency nodes"""
-        connection_config, manual_task, _, _ = connection_with_manual_access_task
-
-        # Create privacy request
-        privacy_request = PrivacyRequest.create(
-            db=db,
-            data={
-                "external_id": "test_execution_order_123",
-                "started_processing_at": None,
-                "status": PrivacyRequestStatus.pending,
-                "policy_id": access_policy.id,
-            },
-        )
+        connection_config, _, _, _ = connection_with_manual_access_task
 
         # Create combined graph using helper method
         combined_graph = self._create_combined_graph(db, mock_dataset_graph)
@@ -1104,23 +882,12 @@ class TestManualTaskExecutionOrder:
         # Note: ROOT is an artificial node and not in traversal_node_dict
         assert len(dependencies) > 0
 
-    @pytest.mark.usefixtures("group_condition")
+    @pytest.mark.usefixtures("group_condition", "privacy_request")
     def test_manual_task_execution_order_with_multiple_dependencies(
-        self, db, access_policy, connection_with_manual_access_task, mock_dataset_graph
+        self, db, connection_with_manual_access_task, mock_dataset_graph
     ):
         """Test that manual tasks with multiple dependencies execute after all dependencies"""
-        connection_config, manual_task, _, _ = connection_with_manual_access_task
-
-        # Create privacy request
-        privacy_request = PrivacyRequest.create(
-            db=db,
-            data={
-                "external_id": "test_execution_multiple_123",
-                "started_processing_at": None,
-                "status": PrivacyRequestStatus.pending,
-                "policy_id": access_policy.id,
-            },
-        )
+        connection_config, _, _, _ = connection_with_manual_access_task
 
         # Create combined graph using helper method
         combined_graph = self._create_combined_graph(db, mock_dataset_graph)
@@ -1157,30 +924,24 @@ class TestManualTaskTraversalIntegration:
             db, mock_dataset_graph
         )
         # Extract the datasets from mock_dataset_graph and combine with manual task graphs
+        # mock_dataset_graph is a DatasetGraph, extract unique datasets from its nodes
         regular_datasets = []
+        seen_dataset_names = set()
         for node in mock_dataset_graph.nodes.values():
-            if node.dataset not in regular_datasets:
+            if node.dataset.name not in seen_dataset_names:
                 regular_datasets.append(node.dataset)
+                seen_dataset_names.add(node.dataset.name)
 
         return DatasetGraph(*regular_datasets, *manual_task_graphs)
 
-    @pytest.mark.usefixtures("condition_gt_18", "condition_eq_active")
+    @pytest.mark.usefixtures(
+        "condition_gt_18", "condition_eq_active", "privacy_request"
+    )
     def test_manual_task_traversal_integration_with_conditional_dependencies(
-        self, db, access_policy, connection_with_manual_access_task, mock_dataset_graph
+        self, db, connection_with_manual_access_task, mock_dataset_graph
     ):
         """Integration test: manual task traversal with conditional dependencies in a complete graph"""
-        connection_config, manual_task, _, _ = connection_with_manual_access_task
-
-        # Create privacy request
-        privacy_request = PrivacyRequest.create(
-            db=db,
-            data={
-                "external_id": "test_integration_conditional_123",
-                "started_processing_at": None,
-                "status": PrivacyRequestStatus.pending,
-                "policy_id": access_policy.id,
-            },
-        )
+        connection_config, _, _, _ = connection_with_manual_access_task
 
         # Create combined graph using helper method
         combined_graph = self._create_combined_graph(db, mock_dataset_graph)
@@ -1226,33 +987,25 @@ class TestManualTaskTraversalIntegration:
         # This tests that the graph structure is sound
         assert traversal is not None
 
-    @pytest.mark.usefixtures("nested_group_condition")
+    @pytest.mark.usefixtures("nested_group_condition", "privacy_request")
     def test_manual_task_traversal_integration_with_nested_groups(
-        self, db, access_policy, connection_with_manual_access_task, mock_dataset_graph
+        self, db, connection_with_manual_access_task, mock_dataset_graph
     ):
         """Integration test: manual task traversal with nested group conditional dependencies"""
-        connection_config, manual_task, _, _ = connection_with_manual_access_task
-
-        # Create privacy request
-        privacy_request = PrivacyRequest.create(
-            db=db,
-            data={
-                "external_id": "test_integration_nested_123",
-                "started_processing_at": None,
-                "status": PrivacyRequestStatus.pending,
-                "policy_id": access_policy.id,
-            },
-        )
+        connection_config, _, _, _ = connection_with_manual_access_task
 
         # Create artificial graphs
         manual_task_graphs = create_manual_task_artificial_graphs(
             db, mock_dataset_graph
         )
         # Extract GraphDataset objects from mock_dataset_graph
+        # mock_dataset_graph is a DatasetGraph, extract unique datasets from its nodes
         regular_datasets = []
+        seen_dataset_names = set()
         for node in mock_dataset_graph.nodes.values():
-            if node.dataset not in regular_datasets:
+            if node.dataset.name not in seen_dataset_names:
                 regular_datasets.append(node.dataset)
+                seen_dataset_names.add(node.dataset.name)
         combined_graph = DatasetGraph(*regular_datasets, *manual_task_graphs)
 
         # Create traversal
@@ -1270,9 +1023,9 @@ class TestManualTaskTraversalIntegration:
 
         # Verify manual task has fields from nested group children
         field_names = [field.name for field in manual_node.node.collection.fields]
-        assert "role" in field_names
-        assert "age" in field_names
-        assert "status" in field_names
+        assert "customer.role" in field_names
+        assert "customer.profile.age" in field_names
+        assert "payment_card.subscription.status" in field_names
 
         # Verify traversal is valid
         assert traversal is not None
