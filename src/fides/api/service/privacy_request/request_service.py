@@ -25,11 +25,7 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestStatus,
 )
 from fides.api.schemas.redis_cache import Identity
-from fides.service.privacy_request.privacy_request_service import (
-    PrivacyRequestError,
-    _requeue_privacy_request,
-    _requeue_polling_request,
-)
+
 from fides.api.tasks import DSR_QUEUE_NAME, DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.api.util.cache import (
@@ -683,15 +679,9 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
 
                 # Requeue the privacy request if needed
                 if should_requeue:
-<<<<<<< HEAD
                     _handle_privacy_request_requeue(db, privacy_request)
 
-=======
-                    try:
-                        _requeue_privacy_request(db, privacy_request)
-                    except PrivacyRequestError as exc:
-                        logger.error(exc.message)
->>>>>>> 105865beb (Setting up queue for polling)
+
 
 @celery_app.task(base=DatabaseTask, bind=True)
 def poll_async_tasks_status(self: DatabaseTask) -> None:
@@ -708,6 +698,9 @@ def poll_async_tasks_status(self: DatabaseTask) -> None:
             .filter(RequestTask.polling_async_task == True)
             .all()
         )
-
-        for async_task in async_tasks:
-             _requeue_polling_request(db, async_task)
+        if async_tasks:
+            from fides.service.privacy_request.privacy_request_service import (
+                _requeue_polling_request,
+            )
+            for async_task in async_tasks:
+                _requeue_polling_request(db, async_task)
