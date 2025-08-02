@@ -236,9 +236,25 @@ class SQLConnector(BaseConnector[Engine]):
                     logger.warning(f"SQL DRY RUN - Would execute SQL: {update_stmt}")
                 else:
                     with client.connect() as connection:
-                        self.set_schema(connection)
-                        results: LegacyCursorResult = connection.execute(update_stmt)
-                        update_ct = update_ct + results.rowcount
+                        try:
+                            self.set_schema(connection)
+                            results: LegacyCursorResult = connection.execute(
+                                update_stmt
+                            )
+                            update_ct = update_ct + results.rowcount
+                        except Exception as exc:
+                            # Check if table exists using qualified table name
+                            qualified_table_name = self.get_qualified_table_name(node)
+                            if not self.table_exists(qualified_table_name):
+                                # Central decision point - will raise TableNotFound or ConnectionException
+                                self.handle_table_not_found(
+                                    node=node,
+                                    table_name=qualified_table_name,
+                                    operation_context="data erasure",
+                                    original_exception=exc,
+                                )
+                            # Table exists or can't check - re-raise original exception
+                            raise
         return update_ct
 
     def close(self) -> None:
