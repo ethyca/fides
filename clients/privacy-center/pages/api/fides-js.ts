@@ -346,6 +346,8 @@ export default async function handler(
       fidesConsentFlagType: environment.settings.FIDES_CONSENT_FLAG_TYPE,
       fidesInitializedEventMode:
         environment.settings.FIDES_INITIALIZED_EVENT_MODE,
+      fidesUnsupportedRepeatedScriptLoading:
+        environment.settings.FIDES_UNSUPPORTED_REPEATED_SCRIPT_LOADING,
     },
     experience: experience || undefined,
     geolocation: geolocation || undefined,
@@ -353,9 +355,12 @@ export default async function handler(
   };
   const fidesConfigJSON = JSON.stringify(fidesConfig);
 
+  const forcedHeadless = req.query.headless === "true";
+
   log.debug("Bundling js & Privacy Center configuration together...");
   const isHeadlessExperience =
-    experience?.experience_config?.component === ComponentType.HEADLESS;
+    experience?.experience_config?.component === ComponentType.HEADLESS ||
+    forcedHeadless;
   let fidesJsFile = "public/lib/fides.js";
   if (tcfEnabled) {
     log.debug("TCF extension enabled, bundling fides-tcf.js...");
@@ -392,8 +397,24 @@ export default async function handler(
   const { initialize: initializeQuery } = req.query;
   const skipInitialization = initializeQuery === "false";
 
+  // Check if fides.js is being loaded multiple times on the same page
+  const multipleLoadingMessage =
+    "FidesJS detected that it was already loaded on this page, aborting execution! Please use Fides.init() to reinitialize Fides, or disable this check to allow reloading with the 'fides_unsupported_repeated_script_loading' option";
+  const multiLoadCheck = `
+    if (
+      typeof window !== "undefined" &&
+      !!window.Fides &&
+      !!window.Fides.options &&
+      window.Fides.options.fidesUnsupportedRepeatedScriptLoading !==
+        "enabled_acknowledge_not_supported"
+    ) {
+      console.error("${multipleLoadingMessage}");
+      return;
+    }
+  `.replace(/(\r\n|\n|\r)/gm, ""); // remove newlines to avoid sourcemap issues!
+
   // keep fidesJS on the first line to avoid sourcemap issues!
-  const script = `(function () {${fidesJS}
+  const script = `(function(){${multiLoadCheck}${fidesJS}
   ${fidesGPP}
   ${
     customFidesCss

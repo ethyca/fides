@@ -3,9 +3,11 @@
  * @param isDebugMode boolean whether or not to enable the debugger
  */
 export const initializeDebugger = (isDebugMode: boolean) => {
-  if (typeof window !== "undefined" && !window.fidesDebugger) {
-    // eslint-disable-next-line no-console
-    window.fidesDebugger = isDebugMode ? console.log : () => {};
+  if (typeof window !== "undefined") {
+    if (!window.fidesDebugger) {
+      // eslint-disable-next-line no-console
+      window.fidesDebugger = isDebugMode ? console.log : () => {};
+    }
   } else {
     // avoid any errors if window is not defined
     (globalThis as any).fidesDebugger = () => {};

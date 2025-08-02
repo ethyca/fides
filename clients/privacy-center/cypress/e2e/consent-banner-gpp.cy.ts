@@ -11,6 +11,8 @@ import {
   ConsentMethod,
   FidesCookie,
   FidesEndpointPaths,
+  FidesGlobal,
+  FidesOptions,
   PrivacyExperience,
 } from "fides-js";
 
@@ -111,6 +113,51 @@ describe("Fides-js GPP extension", () => {
         win.Fides.init(win.Fides.config);
         cy.waitUntilFidesInitialized().then(() => {
           expect(win.__gpp).to.not.eql(undefined);
+        });
+      });
+    });
+  });
+
+  describe("GPP extension multiple initialization protection", () => {
+    it("does not initialize GPP extension multiple times when Fides is already initialized", () => {
+      visitDemoWithGPP({});
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.window().then((win) => {
+          expect(win.__gpp).to.not.eql(undefined);
+
+          // Spy on addEventListener to track if duplicate listeners are added
+          const addEventListenerSpy = cy
+            .spy(win, "addEventListener")
+            .as("addEventListenerSpy");
+
+          // Dispatch another FidesInitializing event to simulate multiple initialization attempts
+          const initializingEvent = new CustomEvent("FidesInitializing", {
+            detail: {
+              extraDetails: { gppEnabled: true },
+            },
+          });
+          win.dispatchEvent(initializingEvent);
+
+          // Verify that addEventListener was NOT called for GPP-related events
+          // since Fides.initialized should prevent re-initialization
+          const gppEventTypes = [
+            "FidesReady",
+            "FidesUIShown",
+            "FidesModalClosed",
+            "FidesUpdated",
+          ];
+          gppEventTypes.forEach((eventType) => {
+            expect(addEventListenerSpy).to.not.have.been.calledWith(eventType);
+          });
+
+          // Additional verification: check that we can still call GPP functions normally
+          win.__gpp("ping", cy.stub().as("gppPingAfterSecondInit"));
+          cy.get("@gppPingAfterSecondInit")
+            .should("have.been.calledOnce")
+            .its("lastCall.args")
+            .then(([, success]) => {
+              expect(success).to.eql(true);
+            });
         });
       });
     });
