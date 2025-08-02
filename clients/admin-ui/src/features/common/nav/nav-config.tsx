@@ -134,12 +134,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         path: routes.DATASTORE_CONNECTION_ROUTE,
         scopes: [ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE],
       },
-      {
-        title: "Configuration",
-        path: routes.PRIVACY_REQUESTS_CONFIGURATION_ROUTE,
-        requiresFlag: "privacyRequestsConfiguration",
-        scopes: [ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE],
-      },
     ],
   },
   {
@@ -188,6 +182,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.MESSAGING_TEMPLATE_UPDATE],
       },
+
       {
         title: "Users",
         path: routes.USER_MANAGEMENT_ROUTE,
@@ -291,6 +286,13 @@ export const NAV_CONFIG: NavConfigGroup[] = [
           ScopeRegistryEnum.TCF_PUBLISHER_OVERRIDE_READ,
           ScopeRegistryEnum.TCF_PUBLISHER_OVERRIDE_UPDATE,
         ],
+      },
+      {
+        title: "Messaging providers",
+        path: routes.MESSAGING_PROVIDERS_ROUTE,
+        requiresFlag: "messagingConfiguration",
+        // requiresPlus: true, TODO: add support for plus
+        scopes: [ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE],
       },
       {
         title: "About Fides",
