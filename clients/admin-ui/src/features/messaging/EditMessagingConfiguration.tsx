@@ -1,12 +1,11 @@
 import { AntCard as Card, Box, Heading, Spinner, Text } from "fidesui";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import { useAPIHelper } from "~/features/common/hooks";
 
 import { messagingProviders } from "./constants";
 import { useGetMessagingConfigurationByKeyQuery } from "./messaging.slice";
 import MessagingConfiguration from "./MessagingConfiguration";
-import { TestMessagingProviderModal } from "./TestMessagingProviderModal";
 
 interface EditMessagingConfigurationProps {
   configKey: string;
@@ -16,7 +15,6 @@ export const EditMessagingConfiguration = ({
   configKey,
 }: EditMessagingConfigurationProps) => {
   const { handleError } = useAPIHelper();
-  const [isTestModalOpen, setIsTestModalOpen] = useState(false);
 
   const {
     data: messagingConfig,
@@ -70,11 +68,7 @@ export const EditMessagingConfiguration = ({
         <Text color="red.500">Unsupported service type: {serviceType}</Text>
       )}
 
-      <TestMessagingProviderModal
-        serviceType={messagingConfig?.service_type}
-        isOpen={isTestModalOpen}
-        onClose={() => setIsTestModalOpen(false)}
-      />
+
     </Box>
   );
 };

@@ -4,12 +4,14 @@ import {
   AntInput as Input,
   AntMessage as message,
   Box,
+  GreenCheckCircleIcon,
   Heading,
   HStack,
 } from "fidesui";
-import { isEmpty, isUndefined, mapValues, omitBy } from "lodash";
+import { formatDistance } from "date-fns";
+import { isEmpty, isUndefined, mapValues, omitBy, isEqual } from "lodash";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { isErrorResult } from "~/features/common/helpers";
 import { useAPIHelper } from "~/features/common/hooks";
@@ -18,9 +20,9 @@ import {
   MESSAGING_PROVIDERS_ROUTE,
 } from "~/features/common/nav/routes";
 import MailgunIcon from "~/features/messaging/MailgunIcon";
-import { TestMessagingProviderModal } from "~/features/messaging/TestMessagingProviderModal";
-
 import { messagingProviders } from "./constants";
+import { SendTestMessageModal } from "./SendTestMessageModal";
+import { useVerifyConfiguration } from "./useVerifyConfiguration";
 import {
   useCreateMessagingConfigurationMutation,
   useGetMessagingConfigurationByKeyQuery,
@@ -35,7 +37,9 @@ interface MailgunMessagingFormProps {
 const MailgunMessagingForm = ({ configKey }: MailgunMessagingFormProps) => {
   const router = useRouter();
   const { handleError } = useAPIHelper();
-  const [isTestModalOpen, setIsTestModalOpen] = useState(false);
+  const { verifyConfiguration, isVerifying, getVerificationData } = useVerifyConfiguration();
+  const [isTestMessageModalOpen, setIsTestMessageModalOpen] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
   const [form] = Form.useForm();
 
   const [createMessagingConfiguration] =
@@ -48,10 +52,85 @@ const MailgunMessagingForm = ({ configKey }: MailgunMessagingFormProps) => {
   const isEditMode = !!configKey;
 
   // Fetch existing config data in edit mode
-  const { data: existingConfig } = useGetMessagingConfigurationByKeyQuery(
+  const { data: existingConfig, refetch: refetchConfig } = useGetMessagingConfigurationByKeyQuery(
     { key: configKey! },
     { skip: !configKey },
   );
+
+  // Memoized initial values to prevent unnecessary re-renders
+  const initialValues = {
+    domain: existingConfig?.details?.domain || "",
+    mailgun_api_key: isEditMode ? "**********" : "",
+  };
+
+  // Update form when existingConfig changes
+  useEffect(() => {
+    if (existingConfig) {
+      const newValues = {
+        domain: existingConfig.details?.domain || "",
+        mailgun_api_key: "**********", // Always show placeholder in edit mode
+      };
+      form.setFieldsValue(newValues);
+      setIsDirty(false); // Reset dirty state when loading existing config
+    }
+  }, [existingConfig, form]);
+
+  const getVerificationStatus = () => {
+    // Prefer local verification data first
+    const verificationData = getVerificationData(messagingProviders.mailgun);
+    if (verificationData) {
+      if (!verificationData.success) {
+        return { isVerified: false, status: "Verify configuration" } as const;
+      }
+      const testTime = new Date(verificationData.timestamp);
+      const formattedDistance = formatDistance(testTime, new Date(), {
+        addSuffix: true,
+      });
+      return {
+        isVerified: true,
+        status: `Verified ${formattedDistance}`,
+        timestamp: verificationData.timestamp,
+      } as const;
+    }
+
+    // Next, use backend data
+    if (existingConfig) {
+      const { last_test_succeeded, last_test_timestamp } = existingConfig;
+      if (last_test_timestamp) {
+        const testTime = new Date(last_test_timestamp);
+        const formattedDistance = formatDistance(testTime, new Date(), {
+          addSuffix: true,
+        });
+        return {
+          isVerified: last_test_succeeded,
+          status: last_test_succeeded
+            ? `Verified ${formattedDistance}`
+            : "Verify configuration",
+          timestamp: last_test_timestamp,
+        } as const;
+      }
+    }
+
+    // Fallback to router query values (from table navigation)
+    const querySucceededRaw = router.query.last_test_succeeded as string | undefined;
+    const queryTimestamp = router.query.last_test_timestamp as string | undefined;
+    if (queryTimestamp) {
+      const succeeded = querySucceededRaw === "true" || querySucceededRaw === "1";
+      const testTime = new Date(queryTimestamp);
+      const formattedDistance = formatDistance(testTime, new Date(), {
+        addSuffix: true,
+      });
+      return {
+        isVerified: succeeded,
+        status: succeeded ? `Verified ${formattedDistance}` : "Verify configuration",
+        timestamp: queryTimestamp,
+      } as const;
+    }
+
+    return { isVerified: false, status: "Verify configuration" } as const;
+  };
+
+  const verificationStatus = getVerificationStatus();
 
   // Exclude secrets that haven't changed from placeholder values
   const excludeUnchangedSecrets = (secretsValues: any) =>
@@ -119,6 +198,11 @@ const MailgunMessagingForm = ({ configKey }: MailgunMessagingFormProps) => {
           handleError(errorResult?.error);
         } else {
           message.success("Mailgun configuration successfully updated.");
+          setIsDirty(false);
+          // Refetch to get updated data
+          if (refetchConfig) {
+            refetchConfig();
+          }
         }
       } else {
         // Create mode
@@ -139,6 +223,7 @@ const MailgunMessagingForm = ({ configKey }: MailgunMessagingFormProps) => {
           handleError(result.error);
         } else {
           message.success("Mailgun configuration successfully created.");
+          setIsDirty(false);
           // Redirect to edit page with the created config key
           const createdConfigKey = result.data?.key;
           if (createdConfigKey) {
@@ -153,22 +238,48 @@ const MailgunMessagingForm = ({ configKey }: MailgunMessagingFormProps) => {
         }
       }
     } catch (error) {
+      console.error("Error in handleMailgunConfiguration:", error);
       handleError(error);
     }
   };
 
-  const initialValues = {
-    domain: existingConfig?.details?.domain || "",
-    mailgun_api_key: isEditMode ? "**********" : "",
+  const handleVerifyConfiguration = async () => {
+    try {
+      const success = await verifyConfiguration(messagingProviders.mailgun);
+      if (success && refetchConfig) {
+        // Add a small delay to allow backend to update the record
+        setTimeout(() => {
+          console.log('Refetching config after verification...');
+          refetchConfig();
+        }, 500);
+      }
+    } catch (error) {
+      console.error("Error verifying configuration:", error);
+      handleError(error);
+    }
+  };
+
+  const handleFormValuesChange = (changedValues: any, allValues: any) => {
+    // Compare current values with initial values, accounting for placeholder
+    const currentValues = { ...allValues };
+    const compareValues = { ...initialValues };
+
+    // If in edit mode and API key hasn't changed from placeholder, consider it unchanged
+    if (isEditMode && currentValues.mailgun_api_key === "**********") {
+      currentValues.mailgun_api_key = compareValues.mailgun_api_key;
+    }
+
+    setIsDirty(!isEqual(currentValues, compareValues));
   };
 
   return (
-    <Box>
+    <Box position="relative">
       <Form
         form={form}
         layout="vertical"
         initialValues={initialValues}
         onFinish={handleMailgunConfiguration}
+        onValuesChange={handleFormValuesChange}
       >
         <Box
           maxWidth="720px"
@@ -225,38 +336,61 @@ const MailgunMessagingForm = ({ configKey }: MailgunMessagingFormProps) => {
               />
             </Form.Item>
 
-            <Box mt={6}>
-              {isEditMode ? (
+            <Box mt={6} className="flex justify-between">
+              <Box>
+                {isEditMode && verificationStatus.isVerified && (
+                  <Button
+                    type="default"
+                    onClick={() => setIsTestMessageModalOpen(true)}
+                    data-testid="send-test-message-btn"
+                  >
+                    Send test email
+                  </Button>
+                )}
+              </Box>
+              <Box className="flex">
+                {isEditMode ? (
+                  <Button
+                    onClick={handleVerifyConfiguration}
+                    className="mr-2"
+                    data-testid="test-btn"
+                    loading={isVerifying}
+                    icon={verificationStatus.isVerified && !isVerifying ? <GreenCheckCircleIcon /> : undefined}
+                  >
+                    {isVerifying
+                      ? "Verifying configuration"
+                      : verificationStatus.isVerified
+                      ? "Verified"
+                      : verificationStatus.status}
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={() => router.push(MESSAGING_PROVIDERS_ROUTE)}
+                    className="mr-2"
+                  >
+                    Cancel
+                  </Button>
+                )}
                 <Button
-                  onClick={() => setIsTestModalOpen(true)}
-                  className="mr-2"
-                  data-testid="test-btn"
+                  htmlType="submit"
+                  type="primary"
+                  data-testid="save-btn"
+                  disabled={!isDirty}
                 >
-                  Test configuration
+                  Save
                 </Button>
-              ) : (
-                <Button
-                  onClick={() => router.push(MESSAGING_PROVIDERS_ROUTE)}
-                  className="mr-2"
-                >
-                  Cancel
-                </Button>
-              )}
-              <Button htmlType="submit" type="primary" data-testid="save-btn">
-                Save
-              </Button>
+              </Box>
             </Box>
           </Box>
         </Box>
       </Form>
 
-      {isEditMode && (
-        <TestMessagingProviderModal
-          serviceType={messagingProviders.mailgun}
-          isOpen={isTestModalOpen}
-          onClose={() => setIsTestModalOpen(false)}
-        />
-      )}
+      {/* Send test message modal */}
+      <SendTestMessageModal
+        serviceType={messagingProviders.mailgun}
+        isOpen={isTestMessageModalOpen}
+        onClose={() => setIsTestMessageModalOpen(false)}
+      />
     </Box>
   );
 };

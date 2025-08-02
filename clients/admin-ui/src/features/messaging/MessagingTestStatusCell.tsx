@@ -8,7 +8,7 @@ interface MessagingTestStatusCellProps {
   messagingConfig: MessagingConfigResponse;
 }
 
-const MessagingTestStatusCell = ({
+const MessagingVerificationStatusCell = ({
   messagingConfig,
 }: MessagingTestStatusCellProps) => {
   const {
@@ -18,7 +18,7 @@ const MessagingTestStatusCell = ({
 
   // If no test has been run yet
   if (!lastTestTimestamp) {
-    return <Tag>Not tested</Tag>;
+    return <Tag>Verify configuration</Tag>;
   }
 
   const testTime = new Date(lastTestTimestamp);
@@ -28,15 +28,15 @@ const MessagingTestStatusCell = ({
   });
 
   return (
-    <Tooltip title={`Last tested: ${formattedTime}`}>
+    <Tooltip title={`Last verified: ${formattedTime}`}>
       <Tag
         color={lastTestSucceeded ? "success" : "error"}
         data-testid={lastTestSucceeded ? "test-success" : "test-error"}
       >
-        {lastTestSucceeded ? "Success" : "Failed"} {formattedDistance}
+        {lastTestSucceeded ? "Succeeded" : "Failed"} {formattedDistance}
       </Tag>
     </Tooltip>
   );
 };
 
-export default MessagingTestStatusCell;
+export default MessagingVerificationStatusCell;

@@ -4,12 +4,14 @@ import {
   AntInput as Input,
   AntMessage as message,
   Box,
+  GreenCheckCircleIcon,
   Heading,
   HStack,
 } from "fidesui";
-import { isEmpty, isUndefined, mapValues, omitBy } from "lodash";
+import { formatDistance } from "date-fns";
+import { isEmpty, isUndefined, mapValues, omitBy, isEqual } from "lodash";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 import {
   isErrorResult,
@@ -20,10 +22,11 @@ import {
   MESSAGING_PROVIDERS_EDIT_ROUTE,
   MESSAGING_PROVIDERS_ROUTE,
 } from "~/features/common/nav/routes";
-import { TestMessagingProviderModal } from "~/features/messaging/TestMessagingProviderModal";
 import TwilioIcon from "~/features/messaging/TwilioIcon";
 
 import { messagingProviders } from "./constants";
+import { SendTestMessageModal } from "./SendTestMessageModal";
+import { useVerifyConfiguration } from "./useVerifyConfiguration";
 import {
   useCreateMessagingConfigurationMutation,
   useGetMessagingConfigurationByKeyQuery,
@@ -41,7 +44,9 @@ interface TwilioSMSMessagingFormProps {
 
 const TwilioSMSMessagingForm = ({ configKey }: TwilioSMSMessagingFormProps) => {
   const router = useRouter();
-  const [isTestModalOpen, setIsTestModalOpen] = useState(false);
+  const { verifyConfiguration, isVerifying, getVerificationData } = useVerifyConfiguration();
+  const [isTestMessageModalOpen, setIsTestMessageModalOpen] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
   const [form] = Form.useForm();
 
   const [createMessagingConfiguration] =
@@ -52,10 +57,93 @@ const TwilioSMSMessagingForm = ({ configKey }: TwilioSMSMessagingFormProps) => {
   const isEditMode = !!configKey;
 
   // Fetch existing config data in edit mode
-  useGetMessagingConfigurationByKeyQuery(
+  const { data: existingConfig, refetch: refetchConfig } = useGetMessagingConfigurationByKeyQuery(
     { key: configKey! },
     { skip: !configKey },
   );
+
+  // Memoized initial values
+  const initialValues = {
+    // NOTE: All Twilio SMS fields are stored as secrets in the backend,
+    // and the API doesn't return secret values. All fields use placeholder
+    // values in edit mode and are treated consistently as password inputs.
+    account_sid: isEditMode ? "**********" : "",
+    auth_token: isEditMode ? "**********" : "",
+    messaging_service_sid: isEditMode ? "**********" : "",
+    phone: isEditMode ? "**********" : "",
+  };
+
+  // Update form when existingConfig changes
+  useEffect(() => {
+    if (existingConfig) {
+      const newValues = {
+        account_sid: "**********", // Always show placeholder in edit mode
+        auth_token: "**********",
+        messaging_service_sid: "**********",
+        phone: "**********",
+      };
+      form.setFieldsValue(newValues);
+      setIsDirty(false); // Reset dirty state when loading existing config
+    }
+  }, [existingConfig, form]);
+
+  // Check verification status using actual config data like the table does
+  const getVerificationStatus = () => {
+    // First preference: local verification data
+    const localData = getVerificationData(messagingProviders.twilio_text);
+    if (localData) {
+      if (!localData.success) {
+        return { isVerified: false, status: "Verify configuration" } as const;
+      }
+      const testTime = new Date(localData.timestamp);
+      const formattedDistance = formatDistance(testTime, new Date(), {
+        addSuffix: true,
+      });
+      return {
+        isVerified: true,
+        status: `Verified ${formattedDistance}`,
+        timestamp: localData.timestamp,
+      } as const;
+    }
+
+    // Next preference: backend data
+    if (existingConfig) {
+      const { last_test_succeeded, last_test_timestamp } = existingConfig;
+      if (last_test_timestamp) {
+        const testTime = new Date(last_test_timestamp);
+        const formattedDistance = formatDistance(testTime, new Date(), {
+          addSuffix: true,
+        });
+        return {
+          isVerified: last_test_succeeded,
+          status: last_test_succeeded
+            ? `Verified ${formattedDistance}`
+            : "Verify configuration",
+          timestamp: last_test_timestamp,
+        } as const;
+      }
+    }
+
+    // Fallback to router query values (from table navigation)
+    const querySucceededRaw = router.query.last_test_succeeded as string | undefined;
+    const queryTimestamp = router.query.last_test_timestamp as string | undefined;
+    if (queryTimestamp) {
+      const succeeded = querySucceededRaw === "true" || querySucceededRaw === "1";
+      const testTime = new Date(queryTimestamp);
+      const formattedDistance = formatDistance(testTime, new Date(), {
+        addSuffix: true,
+      });
+      return {
+        isVerified: succeeded,
+        status: succeeded ? `Verified ${formattedDistance}` : "Verify configuration",
+        timestamp: queryTimestamp,
+      } as const;
+    }
+
+    return { isVerified: false, status: "Verify configuration" } as const;
+  };
+
+  const verificationStatus = getVerificationStatus();
 
   // Exclude secrets that haven't changed from placeholder values
   const excludeUnchangedSecrets = (secretsValues: any) =>
@@ -77,6 +165,32 @@ const TwilioSMSMessagingForm = ({ configKey }: TwilioSMSMessagingFormProps) => {
     }
     return errorMsg;
   };
+
+  // Custom validator to ensure either messaging service SID or phone number is provided
+  const validateTwilioConfig = useCallback(() => {
+    const formValues = form.getFieldsValue();
+    const messagingServiceSid = formValues.messaging_service_sid;
+    const phoneNumber = formValues.phone;
+
+    // Check if values are provided and not just placeholders
+    const hasMessagingService =
+      messagingServiceSid &&
+      messagingServiceSid.trim() !== "" &&
+      messagingServiceSid !== "**********";
+    const hasPhoneNumber =
+      phoneNumber && phoneNumber.trim() !== "" && phoneNumber !== "**********";
+
+    // At least one must be provided
+    if (!hasMessagingService && !hasPhoneNumber) {
+      return Promise.reject(
+        new Error(
+          "Either messaging service SID or phone number must be provided",
+        ),
+      );
+    }
+
+    return Promise.resolve();
+  }, [form]);
 
   const handleTwilioSMSConfiguration = async (values: {
     account_sid: string;
@@ -110,6 +224,11 @@ const TwilioSMSMessagingForm = ({ configKey }: TwilioSMSMessagingFormProps) => {
           message.error(getErrorMessage(result.error));
         } else {
           message.success("Twilio SMS configuration successfully updated.");
+          setIsDirty(false);
+          // Refetch to get updated data
+          if (refetchConfig) {
+            refetchConfig();
+          }
         }
       } else {
         // Create mode
@@ -129,6 +248,7 @@ const TwilioSMSMessagingForm = ({ configKey }: TwilioSMSMessagingFormProps) => {
           message.error(getErrorMessage(result.error));
         } else {
           message.success("Twilio SMS configuration successfully created.");
+          setIsDirty(false);
           // Redirect to edit page with the created config key
           const createdConfigKey = result.data?.key;
           if (createdConfigKey) {
@@ -143,53 +263,60 @@ const TwilioSMSMessagingForm = ({ configKey }: TwilioSMSMessagingFormProps) => {
         }
       }
     } catch (error) {
+      console.error("Error in handleTwilioSMSConfiguration:", error);
       message.error("An unexpected error occurred. Please try again.");
     }
   };
 
-  // Custom validator to ensure either messaging service SID or phone number is provided
-  const validateTwilioConfig = () => {
-    const formValues = form.getFieldsValue();
-    const messagingServiceSid = formValues.messaging_service_sid;
-    const phoneNumber = formValues.phone;
-
-    // Check if values are provided and not just placeholders
-    const hasMessagingService =
-      messagingServiceSid &&
-      messagingServiceSid.trim() !== "" &&
-      messagingServiceSid !== "**********";
-    const hasPhoneNumber =
-      phoneNumber && phoneNumber.trim() !== "" && phoneNumber !== "**********";
-
-    // At least one must be provided
-    if (!hasMessagingService && !hasPhoneNumber) {
-      return Promise.reject(
-        new Error(
-          "Either messaging service SID or phone number must be provided",
-        ),
-      );
+  const handleVerifyConfiguration = async () => {
+    try {
+      const success = await verifyConfiguration(messagingProviders.twilio_text);
+      if (success && refetchConfig) {
+        // Add a small delay to allow backend to update the record
+        setTimeout(() => {
+          console.log('Refetching config after verification...');
+          refetchConfig();
+        }, 500);
+      }
+    } catch (error) {
+      console.error("Error verifying configuration:", error);
+      message.error("An unexpected error occurred during verification.");
     }
-
-    return Promise.resolve();
   };
 
-  const initialValues = {
-    // NOTE: All Twilio SMS fields are stored as secrets in the backend,
-    // and the API doesn't return secret values. All fields use placeholder
-    // values in edit mode and are treated consistently as password inputs.
-    account_sid: isEditMode ? "**********" : "",
-    auth_token: isEditMode ? "**********" : "",
-    messaging_service_sid: isEditMode ? "**********" : "",
-    phone: isEditMode ? "**********" : "",
+  const handleFormValuesChange = (changedValues: any, allValues: any) => {
+    // Compare current values with initial values, accounting for placeholders
+    const currentValues = { ...allValues };
+    const compareValues = { ...initialValues };
+
+    // If in edit mode and any field hasn't changed from placeholder, consider it unchanged
+    if (isEditMode) {
+      Object.keys(currentValues).forEach(key => {
+        if (currentValues[key] === "**********") {
+          currentValues[key] = compareValues[key];
+        }
+      });
+    }
+
+    setIsDirty(!isEqual(currentValues, compareValues));
+  };
+
+  const handleFieldChange = (fieldName: string) => {
+    // Trigger validation on both messaging_service_sid and phone fields
+    // when either one changes, since they have interdependent validation
+    form.validateFields(["messaging_service_sid", "phone"]).catch(() => {
+      // Ignore validation errors here as they'll be shown in the UI
+    });
   };
 
   return (
-    <Box>
+    <Box position="relative">
       <Form
         form={form}
         layout="vertical"
         initialValues={initialValues}
         onFinish={handleTwilioSMSConfiguration}
+        onValuesChange={handleFormValuesChange}
       >
         <Box
           maxWidth="720px"
@@ -271,10 +398,7 @@ const TwilioSMSMessagingForm = ({ configKey }: TwilioSMSMessagingFormProps) => {
                     ? "Enter new messaging service SID"
                     : "Enter messaging service SID"
                 }
-                onChange={() => {
-                  // Trigger validation on the phone field when this changes
-                  form.validateFields(["phone"]);
-                }}
+                onChange={() => handleFieldChange("messaging_service_sid")}
               />
             </Form.Item>
 
@@ -287,45 +411,65 @@ const TwilioSMSMessagingForm = ({ configKey }: TwilioSMSMessagingFormProps) => {
                 placeholder={
                   isEditMode ? "Enter new phone number" : "Enter phone number"
                 }
-                onChange={() => {
-                  // Trigger validation on the messaging_service_sid field when this changes
-                  form.validateFields(["messaging_service_sid"]);
-                }}
+                onChange={() => handleFieldChange("phone")}
               />
             </Form.Item>
 
-            <Box mt={6}>
-              {isEditMode ? (
+            <Box mt={6} className="flex justify-between">
+              <Box>
+                {isEditMode && verificationStatus.isVerified && (
+                  <Button
+                    type="default"
+                    onClick={() => setIsTestMessageModalOpen(true)}
+                    data-testid="send-test-message-btn"
+                  >
+                    Send test SMS
+                  </Button>
+                )}
+              </Box>
+              <Box className="flex">
+                {isEditMode ? (
+                  <Button
+                    onClick={handleVerifyConfiguration}
+                    className="mr-2"
+                    data-testid="test-btn"
+                    loading={isVerifying}
+                    icon={verificationStatus.isVerified && !isVerifying ? <GreenCheckCircleIcon /> : undefined}
+                  >
+                    {isVerifying
+                      ? "Verifying configuration"
+                      : verificationStatus.isVerified
+                      ? "Verified"
+                      : verificationStatus.status}
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={() => router.push(MESSAGING_PROVIDERS_ROUTE)}
+                    className="mr-2"
+                  >
+                    Cancel
+                  </Button>
+                )}
                 <Button
-                  onClick={() => setIsTestModalOpen(true)}
-                  className="mr-2"
-                  data-testid="test-btn"
+                  htmlType="submit"
+                  type="primary"
+                  data-testid="save-btn"
+                  disabled={!isDirty}
                 >
-                  Test configuration
+                  Save
                 </Button>
-              ) : (
-                <Button
-                  onClick={() => router.push(MESSAGING_PROVIDERS_ROUTE)}
-                  className="mr-2"
-                >
-                  Cancel
-                </Button>
-              )}
-              <Button htmlType="submit" type="primary" data-testid="save-btn">
-                Save
-              </Button>
+              </Box>
             </Box>
           </Box>
         </Box>
       </Form>
 
-      {isEditMode && (
-        <TestMessagingProviderModal
-          serviceType={messagingProviders.twilio_text}
-          isOpen={isTestModalOpen}
-          onClose={() => setIsTestModalOpen(false)}
-        />
-      )}
+      {/* Send test message modal */}
+      <SendTestMessageModal
+        serviceType={messagingProviders.twilio_text}
+        isOpen={isTestMessageModalOpen}
+        onClose={() => setIsTestMessageModalOpen(false)}
+      />
     </Box>
   );
 };

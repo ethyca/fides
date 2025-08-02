@@ -109,7 +109,7 @@ const TestMessagingProviderConnectionButton = ({
                   type="primary"
                   data-testid="save-btn"
                 >
-                  Test configuration
+                  Verify configuration
                 </Button>
               </Box>
             </Form>

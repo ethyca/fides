@@ -41,8 +41,9 @@ import {
   useGetMessagingConfigurationsQuery,
 } from "./messaging.slice";
 import MessagingTestStatusCell from "./MessagingTestStatusCell";
-import { TestMessagingProviderModal } from "./TestMessagingProviderModal";
+
 import TwilioIcon from "./TwilioIcon";
+import MessagingVerificationStatusCell from "./MessagingTestStatusCell";
 
 const EmptyTableNotice = () => {
   return (
@@ -84,8 +85,7 @@ export const MessagingConfigurations = () => {
     ScopeRegistryEnum.MESSAGING_CREATE_OR_UPDATE,
   ]);
 
-  const [selectedServiceType, setSelectedServiceType] =
-    useState<MessagingConfigResponse["service_type"]>();
+
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [configToDelete, setConfigToDelete] = useState<{
     key: string;
@@ -136,7 +136,13 @@ export const MessagingConfigurations = () => {
         "[key]",
         messagingConfig.key,
       );
-      router.push(editPath);
+      router.push({
+        pathname: editPath,
+        query: {
+          last_test_succeeded: messagingConfig.last_test_succeeded ?? "",
+          last_test_timestamp: messagingConfig.last_test_timestamp ?? "",
+        },
+      });
     },
     [router],
   );
@@ -191,10 +197,10 @@ export const MessagingConfigurations = () => {
         ),
       },
       {
-        title: "Test status",
-        key: "test_status",
+        title: "Verification status",
+        key: "verification_status",
         render: (_, record: MessagingConfigResponse) => (
-          <MessagingTestStatusCell messagingConfig={record} />
+          <MessagingVerificationStatusCell messagingConfig={record} />
         ),
       },
       {
@@ -209,9 +215,10 @@ export const MessagingConfigurations = () => {
             record.last_test_succeeded === false;
           const isDisabled = Boolean(hasFailedTest);
 
+          // If the switch is disabled (due to a failed test), always show it in the off position
           const switchElement = (
             <Switch
-              checked={isEnabled}
+              checked={isDisabled ? false : isEnabled}
               disabled={isDisabled}
               onChange={(checked) => {
                 if (checked) {
@@ -337,13 +344,7 @@ export const MessagingConfigurations = () => {
           />
         )}
       </Flex>
-      {!!selectedServiceType && (
-        <TestMessagingProviderModal
-          serviceType={selectedServiceType}
-          isOpen={!!selectedServiceType}
-          onClose={() => setSelectedServiceType(undefined)}
-        />
-      )}
+
       <Modal
         title="Delete messaging configuration"
         open={deleteModalOpen}
