@@ -213,12 +213,12 @@ export const MessagingConfigurations = () => {
             Boolean(record.last_test_timestamp) &&
             record.last_test_timestamp !== "" &&
             record.last_test_succeeded === false;
-          const isDisabled = Boolean(hasFailedTest);
+          // Disable switch only if last test failed AND the provider is currently OFF (can't enable)
+          const isDisabled = hasFailedTest && !isEnabled;
 
-          // If the switch is disabled (due to a failed test), always show it in the off position
           const switchElement = (
             <Switch
-              checked={isDisabled ? false : isEnabled}
+              checked={isEnabled}
               disabled={isDisabled}
               onChange={(checked) => {
                 if (checked) {
