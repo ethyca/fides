@@ -24,7 +24,7 @@ async def _get_or_create_client():
     global _async_client
     if _async_client is None:
         if not params["SAAS_OP_SERVICE_ACCOUNT_TOKEN"]:
-            logger.error("Missing SAAS_OP_SERVICE_ACCOUNT_TOKEN. ")
+            logger.error("Missing SAAS_OP_SERVICE_ACCOUNT_TOKEN.")
             return None
 
         _async_client = await Client.authenticate(
