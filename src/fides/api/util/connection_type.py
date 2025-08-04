@@ -411,13 +411,13 @@ def infer_category_from_saas_type(saas_type: str) -> ConnectionCategory:
     ]):
         return ConnectionCategory.COMMUNICATION
 
-    # Payment platforms (note: some overlap with ecommerce)
+    # Payment platforms are now part of ECOMMERCE category
     if any(keyword in type_lower for keyword in [
         "boostr"
     ]) and not any(keyword in type_lower for keyword in [
         "shopify", "saleor", "aftership", "shipstation", "vend", "doordash"
     ]):
-        return ConnectionCategory.PAYMENTS
+        return ConnectionCategory.ECOMMERCE
 
     # Data warehouse/storage
     if any(keyword in type_lower for keyword in [
@@ -437,7 +437,7 @@ def infer_category_from_saas_type(saas_type: str) -> ConnectionCategory:
     ]):
         return ConnectionCategory.WEBSITE
 
-    # Default to CUSTOM for unknown types
+    # Default to CUSTOM for unknown/uncategorized integrations
     return ConnectionCategory.CUSTOM
 
 def get_default_saas_display_info(saas_type: str) -> tuple[ConnectionCategory, List[str], List[IntegrationFeature]]:

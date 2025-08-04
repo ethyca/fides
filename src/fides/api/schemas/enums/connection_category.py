@@ -15,7 +15,6 @@ class ConnectionCategory(str, Enum):
     MANUAL = "Manual"
     MARKETING = "Marketing"
     ANALYTICS = "Analytics"
-    ECOMMERCE = "E-commerce"
+    ECOMMERCE = "E-commerce"  # Includes payments and commerce platforms
     COMMUNICATION = "Communication"
-    PAYMENTS = "Payments"
-    CUSTOM = "Custom"  # Default for uncategorized integrations
+    CUSTOM = "Custom"  # Fallback for uncategorized integrations
