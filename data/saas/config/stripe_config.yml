@@ -6,6 +6,12 @@ saas_config:
   description: A sample schema representing the Stripe connector for Fides
   version: 0.0.9
 
+  # Optional display information for enhanced frontend presentation
+  display_info:
+    category: "ECOMMERCE"
+    tags: ["API", "DSR Automation"]
+    enabled_features: ["DSR_AUTOMATION"]
+
   connector_params:
     - name: domain
       default_value: api.stripe.com

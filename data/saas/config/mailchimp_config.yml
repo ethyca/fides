@@ -6,6 +6,12 @@ saas_config:
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/mailchimp
   version: 0.0.3
 
+  # Optional display information for enhanced frontend presentation
+  display_info:
+    category: "MARKETING"
+    tags: ["API", "DSR Automation"]
+    enabled_features: ["DSR_AUTOMATION"]
+
   connector_params:
     - name: domain
       description: Your Mailchimp URL
