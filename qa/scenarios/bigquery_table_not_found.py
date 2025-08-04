@@ -123,7 +123,7 @@ class BigQueryTableNotFound(QATestScenario):
             self.final_error(f"Teardown failed: {e}")
             return False
 
-    def _load_bigquery_credentials(self) -> tuple[Dict[str, Any], Optional[str]]:
+    def _load_bigquery_credentials(self) -> tuple[Dict[str, Any], str]:
         """Load BigQuery credentials from environment variables."""
         # Load keyfile credentials
         keyfile_creds_str = os.environ.get("BIGQUERY_KEYFILE_CREDS")
@@ -148,14 +148,16 @@ class BigQueryTableNotFound(QATestScenario):
         if missing_fields:
             raise ValueError(f"Missing required fields in BIGQUERY_KEYFILE_CREDS: {missing_fields}")
 
-        # Load dataset (optional)
+        # Load dataset (required)
         dataset = os.environ.get("BIGQUERY_DATASET")
+        if not dataset:
+            raise ValueError(
+                "BIGQUERY_DATASET environment variable not found. "
+                "Please set this environment variable with your BigQuery dataset name."
+            )
 
         self.success("BigQuery credentials loaded successfully")
-        if dataset:
-            self.success(f"Using dataset: {dataset}")
-        else:
-            self.info("No specific dataset provided - will use default project access")
+        self.success(f"Using dataset: {dataset}")
 
         return keyfile_creds, dataset
 
@@ -232,6 +234,24 @@ class BigQueryTableNotFound(QATestScenario):
                 elif key == 'field' and old_table and new_table and isinstance(value, str) and value.startswith(f"{old_table}."):
                     # Update field references like "customer.id" to "customer_missing.id"
                     result[key] = value.replace(f"{old_table}.", f"{new_table}.")
+                elif key == "erase_after" and isinstance(value, list):
+                    # Update erase_after references like ["bigquery_example_test_dataset.employee"]
+                    updated_erase_after = []
+                    for item in value:
+                        if isinstance(item, str) and item.startswith(f"{old_dataset}."):
+                            updated_item = item.replace(
+                                f"{old_dataset}.", f"{new_dataset}."
+                            )
+                            # Also update table references if needed
+                            if old_table and new_table:
+                                updated_item = updated_item.replace(
+                                    f"{new_dataset}.{old_table}",
+                                    f"{new_dataset}.{new_table}",
+                                )
+                            updated_erase_after.append(updated_item)
+                        else:
+                            updated_erase_after.append(item)
+                    result[key] = updated_erase_after
                 else:
                     result[key] = self._deep_copy_and_update_references(value, old_dataset, new_dataset, old_table, new_table)
             return result
@@ -269,13 +289,13 @@ class BigQueryTableNotFound(QATestScenario):
             self.error(f"Failed to create system: {e}")
             raise
 
-    def _create_bigquery_connection(self, keyfile_creds: Dict[str, Any], dataset: Optional[str]) -> bool:
+    def _create_bigquery_connection(
+        self, keyfile_creds: Dict[str, Any], dataset: str
+    ) -> bool:
         """Create BigQuery connection linked to system."""
         try:
             # Prepare the connection secrets
-            secrets = {"keyfile_creds": keyfile_creds}
-            if dataset:
-                secrets["dataset"] = dataset
+            secrets = {"keyfile_creds": keyfile_creds, "dataset": dataset}
 
             connection_data = {
                 "name": "QA BigQuery Table Not Found Connection",

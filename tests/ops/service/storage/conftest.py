@@ -97,6 +97,42 @@ def kms_encrypted_s3_bucket(aws_credentials):
 
 
 @pytest.fixture(scope="function")
+def regular_s3_bucket(aws_credentials):
+    """Fixture that creates a temporary S3 bucket without KMS encryption."""
+    bucket_name = f"fides-test-regular-{uuid4()}"
+
+    # Create S3 client for bucket management
+    s3_client = boto3.client(
+        "s3",
+        aws_access_key_id=aws_credentials["aws_access_key_id"],
+        aws_secret_access_key=aws_credentials["aws_secret_access_key"],
+        region_name=aws_credentials["region"],
+    )
+
+    try:
+        # Create bucket without encryption
+        s3_client.create_bucket(Bucket=bucket_name)
+
+        yield bucket_name
+
+    finally:
+        # Cleanup: Delete all objects first, then the bucket
+        try:
+            # List and delete all objects
+            objects = s3_client.list_objects_v2(Bucket=bucket_name)
+            if "Contents" in objects:
+                for obj in objects["Contents"]:
+                    s3_client.delete_object(Bucket=bucket_name, Key=obj["Key"])
+
+            # Delete the bucket
+            s3_client.delete_bucket(Bucket=bucket_name)
+        except Exception as cleanup_error:
+            logger.warning(
+                f"Warning: Failed to clean up bucket {bucket_name}: {cleanup_error}"
+            )
+
+
+@pytest.fixture(scope="function")
 def test_object_key():
     """Fixture that provides a unique test object key."""
     return f"test-kms-signature-version-{uuid4()}.txt"

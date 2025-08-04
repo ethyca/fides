@@ -111,9 +111,6 @@ export const useDiscoveredAssetsColumns = ({
         dataIndex: DiscoveredAssetsColumnKeys.SYSTEM,
         key: DiscoveredAssetsColumnKeys.SYSTEM,
         width: 200,
-        sorter: true,
-        sortOrder:
-          sortField === DiscoveredAssetsColumnKeys.SYSTEM ? sortOrder : null,
         render: (_, record) =>
           !!record.monitor_config_id && (
             <SystemCell
@@ -131,9 +128,6 @@ export const useDiscoveredAssetsColumns = ({
           filterOptions?.data_uses?.filter((use) => isConsentCategory(use)),
         ),
         filteredValue: columnFilters?.data_uses || null,
-        sorter: true,
-        sortOrder:
-          sortField === DiscoveredAssetsColumnKeys.DATA_USES ? sortOrder : null,
         render: (_, record) => (
           <DiscoveredAssetDataUseCell asset={record} readonly={readonly} />
         ),
@@ -158,9 +152,6 @@ export const useDiscoveredAssetsColumns = ({
         dataIndex: DiscoveredAssetsColumnKeys.LOCATIONS,
         key: DiscoveredAssetsColumnKeys.LOCATIONS,
         width: 250,
-        sorter: true,
-        sortOrder:
-          sortField === DiscoveredAssetsColumnKeys.LOCATIONS ? sortOrder : null,
         filters: convertToAntFilters(
           filterOptions?.locations,
           (location) =>
@@ -187,9 +178,6 @@ export const useDiscoveredAssetsColumns = ({
         title: "Domain",
         dataIndex: DiscoveredAssetsColumnKeys.DOMAIN,
         key: DiscoveredAssetsColumnKeys.DOMAIN,
-        sorter: true,
-        sortOrder:
-          sortField === DiscoveredAssetsColumnKeys.DOMAIN ? sortOrder : null,
         // Domain filtering will be handled via search instead of column filters
       },
       {
@@ -211,9 +199,6 @@ export const useDiscoveredAssetsColumns = ({
         ),
         dataIndex: DiscoveredAssetsColumnKeys.PAGE,
         key: DiscoveredAssetsColumnKeys.PAGE,
-        sorter: true,
-        sortOrder:
-          sortField === DiscoveredAssetsColumnKeys.PAGE ? sortOrder : null,
         render: (pages: string[]) => (
           <ListExpandableCell
             values={pages}
