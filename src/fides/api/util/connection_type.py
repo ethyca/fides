@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Set
+from typing import Any, Dict, Set, List, Optional
 
 from fides.api.common_exceptions import NoSuchConnectionTypeSecretSchemaError
 from fides.api.models.connectionconfig import ConnectionType
@@ -24,6 +24,8 @@ from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
 )
 from fides.api.util.saas_util import load_config_from_string
+from fides.api.schemas.enums.connection_category import ConnectionCategory
+from fides.api.schemas.enums.integration_feature import IntegrationFeature
 
 
 def transform_v2_to_v1_in_place(schema: Dict[str, Any]) -> None:
@@ -265,6 +267,26 @@ def get_connection_types(
         for item in saas_types:
             connector_template = ConnectorRegistry.get_connector_template(item)
             if connector_template is not None:
+                # Get display info from SAAS config or use smart defaults
+                category, tags, enabled_features = get_default_saas_display_info(item)
+
+                # If the connector has display_info in its config, use that instead
+                try:
+                    from fides.api.util.saas_util import load_config_from_string
+                    from fides.api.schemas.saas.saas_config import SaaSConfig
+
+                    saas_config = SaaSConfig(**load_config_from_string(connector_template.config))
+                    if saas_config.display_info:
+                        if saas_config.display_info.category is not None:
+                            category = saas_config.display_info.category
+                        if saas_config.display_info.tags is not None:
+                            tags = saas_config.display_info.tags
+                        if saas_config.display_info.enabled_features is not None:
+                            enabled_features = saas_config.display_info.enabled_features
+                except Exception:
+                    # If config parsing fails, use defaults
+                    pass
+
                 connection_system_types.append(
                     ConnectionSystemTypeMap(
                         identifier=item,
@@ -274,6 +296,9 @@ def get_connection_types(
                         authorization_required=connector_template.authorization_required,
                         user_guide=connector_template.user_guide,
                         supported_actions=connector_template.supported_actions,
+                        category=category,
+                        tags=tags,
+                        enabled_features=enabled_features,
                     )
                 )
 
@@ -340,3 +365,93 @@ def get_connection_types(
         )
 
     return connection_system_types
+
+
+def infer_category_from_saas_type(saas_type: str) -> ConnectionCategory:
+    """
+    Infer the appropriate category for a SAAS integration based on its type identifier.
+    Returns ConnectionCategory.CUSTOM as default for unknown types.
+    """
+    type_lower = saas_type.lower()
+
+    # CRM systems
+    if any(keyword in type_lower for keyword in [
+        "salesforce", "hubspot", "pipedrive", "zendesk", "intercom",
+        "freshworks", "kustomer", "gorgias", "gladly", "outreach", "greenhouse"
+    ]):
+        return ConnectionCategory.CRM
+
+    # E-commerce platforms
+    if any(keyword in type_lower for keyword in [
+        "shopify", "stripe", "square", "braintree", "adyen", "recurly",
+        "recharge", "saleor", "aftership", "shipstation", "vend", "doordash"
+    ]):
+        return ConnectionCategory.ECOMMERCE
+
+    # Marketing/Email platforms
+    if any(keyword in type_lower for keyword in [
+        "mailchimp", "sendgrid", "klaviyo", "braze", "iterable", "attentive",
+        "sparkpost", "oracle_responsys", "marigold", "mailchimp_transactional",
+        "friendbuy", "talkable", "yotpo", "powerreviews", "unbounce", "digioh", "snap"
+    ]):
+        return ConnectionCategory.MARKETING
+
+    # Analytics platforms
+    if any(keyword in type_lower for keyword in [
+        "analytics", "amplitude", "heap", "segment", "datadog", "sentry",
+        "fullstory", "statsig", "google_analytics", "universal_analytics",
+        "rollbar", "domo", "appsflyer", "simon_data", "splash"
+    ]):
+        return ConnectionCategory.ANALYTICS
+
+    # Communication platforms
+    if any(keyword in type_lower for keyword in [
+        "slack", "twilio", "aircall", "gong", "ada_chatbot", "sprig",
+        "typeform", "surveymonkey", "alchemer", "qualtrics", "delighted", "iterate"
+    ]):
+        return ConnectionCategory.COMMUNICATION
+
+    # Payment platforms (note: some overlap with ecommerce)
+    if any(keyword in type_lower for keyword in [
+        "boostr"
+    ]) and not any(keyword in type_lower for keyword in [
+        "shopify", "saleor", "aftership", "shipstation", "vend", "doordash"
+    ]):
+        return ConnectionCategory.PAYMENTS
+
+    # Data warehouse/storage
+    if any(keyword in type_lower for keyword in [
+        "warehouse", "bigquery"
+    ]) and "analytics" not in type_lower:
+        return ConnectionCategory.DATA_WAREHOUSE
+
+    # Identity providers
+    if any(keyword in type_lower for keyword in [
+        "auth0", "firebase_auth", "stytch"
+    ]):
+        return ConnectionCategory.IDENTITY_PROVIDER
+
+    # Website/tracking
+    if any(keyword in type_lower for keyword in [
+        "website", "tracking", "web"
+    ]):
+        return ConnectionCategory.WEBSITE
+
+    # Default to CUSTOM for unknown types
+    return ConnectionCategory.CUSTOM
+
+def get_default_saas_display_info(saas_type: str) -> tuple[ConnectionCategory, List[str], List[IntegrationFeature]]:
+    """
+    Generate default display information for SAAS integrations without explicit display_info.
+    Returns tuple of (category, tags, enabled_features)
+    """
+    category = infer_category_from_saas_type(saas_type)
+    tags = ["DSR Automation"]
+    enabled_features = [IntegrationFeature.DSR_AUTOMATION]
+
+    # Special case for Salesforce - gets additional data discovery feature
+    if saas_type.lower() == "salesforce":
+        enabled_features.append(IntegrationFeature.DATA_DISCOVERY)
+        tags.append("Discovery")
+
+    return category, tags, enabled_features
