@@ -691,19 +691,8 @@ class TestManualTaskTraversalExecution:
         connection_config, _, _, _ = connection_with_manual_access_task
 
         # Create artificial graphs
-        manual_task_graphs = create_manual_task_artificial_graphs(
-            db, mock_dataset_graph
-        )
-        # Extract the datasets from mock_dataset_graph and combine with manual task graphs
-        # mock_dataset_graph is a DatasetGraph, extract unique datasets from its nodes
-        regular_datasets = []
-        seen_dataset_names = set()
-        for node in mock_dataset_graph.nodes.values():
-            if node.dataset.name not in seen_dataset_names:
-                regular_datasets.append(node.dataset)
-                seen_dataset_names.add(node.dataset.name)
-
-        combined_graph = DatasetGraph(*regular_datasets, *manual_task_graphs)
+        # Create combined graph using helper method
+        combined_graph = self._create_combined_graph(db, mock_dataset_graph)
 
         # Create traversal
         from fides.api.graph.traversal import Traversal
