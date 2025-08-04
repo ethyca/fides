@@ -94,8 +94,12 @@ class SecuritySettings(FidesSettings):
         description="The number of requests from a single IP address allowed to hit a public endpoint within the specified time period",
     )
     rate_limit_prefix: str = Field(
-        default="fides-",
+        default="rate-limit",
         description="The prefix given to keys in the Redis cache used by the rate limiter.",
+    )
+    rate_limit_client_ip_header: Optional[str] = Field(
+        default=None,
+        description="The header used to determine the client IP address for rate limiting. If not set or set to empty string, rate limiting will be disabled.",
     )
     request_rate_limit: str = Field(
         default="1000/minute",
