@@ -19,6 +19,7 @@ enum IntegrationCategoryFilter {
   WEBSITE = "Website",
   CRM = "CRM",
   MANUAL = "Manual",
+  TASK_MANAGEMENT = "Task Management",
 }
 
 type Props = {

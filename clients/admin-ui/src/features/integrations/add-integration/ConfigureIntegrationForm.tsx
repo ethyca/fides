@@ -19,6 +19,7 @@ import {
 } from "~/features/datastore-connections";
 import { useDatasetConfigField } from "~/features/datastore-connections/system_portal_config/forms/fields/DatasetConfigField/useDatasetConfigField";
 import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
+import JiraConfigurationForm from "~/features/integrations/configure-jira/JiraConfigurationForm";
 import {
   useGetAllSystemsQuery,
   usePatchSystemConnectionConfigsMutation,
@@ -286,6 +287,11 @@ const ConfigureIntegrationForm = ({
         />
       );
     });
+
+  // Handle Jira integration with custom form
+  if (connectionOption.identifier === ConnectionType.JIRA) {
+    return <JiraConfigurationForm />;
+  }
 
   return (
     <>

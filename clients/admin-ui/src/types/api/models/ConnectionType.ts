@@ -37,4 +37,5 @@ export enum ConnectionType {
   TIMESCALE = "timescale",
   WEBSITE = "website",
   TEST_WEBSITE = "test_website",
+  JIRA = "jira",
 }

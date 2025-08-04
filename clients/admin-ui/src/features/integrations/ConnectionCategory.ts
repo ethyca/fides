@@ -6,4 +6,5 @@ export enum ConnectionCategory {
   WEBSITE = "Website",
   CRM = "CRM",
   MANUAL = "Manual",
+  TASK_MANAGEMENT = "Task Management",
 }
