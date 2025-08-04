@@ -346,3 +346,21 @@ Whether to show the modal immediately on page load.
 
 - "immediate" = skips banner and shows the modal immediately on page load
 - "default" = shows the modal when the "manage preferences" link is clicked (default behavior)
+
+***
+
+### fides\_unsupported\_repeated\_script\_loading?
+
+> `optional` **fides\_unsupported\_repeated\_script\_loading**: `"enabled_acknowledge_not_supported"` \| `"disabled"`
+
+Controls handling of unsupported repeated script loading scenarios. When
+FidesJS is loaded multiple times on the same page, this setting determines
+the behavior.
+
+- "enabled_acknowledge_not_supported" = allows repeated loading but acknowledges
+  this is not a supported configuration
+- "disabled" = prevents repeated script loading entirely
+
+See [Troubleshooting](/docs/dev-docs/js/troubleshooting) for more information.
+
+Defaults to `"disabled"`.
