@@ -48,9 +48,9 @@ from fides.api.service.saas_request.override_implementations import *
 from fides.api.util.api_router import APIRouter
 from fides.api.util.cache import get_cache
 from fides.api.util.consent_util import create_default_tcf_purpose_overrides_on_startup
-from fides.api.util.endpoint_utils import fides_limiter
 from fides.api.util.errors import FidesError
 from fides.api.util.logger import setup as setup_logging
+from fides.api.util.rate_limit import fides_limiter
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
 
@@ -88,7 +88,16 @@ def create_fides_app(
     for handler in ExceptionHandlers.get_handlers():
         # Starlette bug causing this to fail mypy
         fastapi_app.add_exception_handler(RedisNotConfigured, handler)  # type: ignore
-    fastapi_app.add_middleware(SlowAPIMiddleware)
+
+    if (
+        CONFIG.security.rate_limit_client_ip_header is None
+        or CONFIG.security.rate_limit_client_ip_header == ""
+    ):
+        logger.warning(
+            "Rate limiting client IPs is disabled because the FIDES__SECURITY__RATE_LIMIT_CLIENT_IP_HEADER env var is not configured."
+        )
+        fastapi_app.add_middleware(SlowAPIMiddleware)
+
     fastapi_app.add_middleware(
         GZipMiddleware, minimum_size=1000, compresslevel=5
     )  # minimum_size is in bytes
