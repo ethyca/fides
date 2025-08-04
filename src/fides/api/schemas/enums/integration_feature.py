@@ -8,16 +8,16 @@ class IntegrationFeature(str, Enum):
     """
 
     # Enables data discovery and monitoring functionality - shows "Data discovery" tab
-    DATA_DISCOVERY = "data_discovery"
+    DATA_DISCOVERY = "DATA_DISCOVERY"
 
     # Enables data synchronization to external systems - shows "Data sync" tab
-    DATA_SYNC = "data_sync"
+    DATA_SYNC = "DATA_SYNC"
 
     # Enables task/workflow management for manual processes - shows "Tasks" tab
-    TASKS = "tasks"
+    TASKS = "TASKS"
 
     # Indicates integration doesn't require connection testing - shows "Details" tab instead of "Connection" tab
-    WITHOUT_CONNECTION = "without_connection"
+    WITHOUT_CONNECTION = "WITHOUT_CONNECTION"
 
     # Enables Data Subject Request automation for SAAS integrations
-    DSR_AUTOMATION = "dsr_automation"
+    DSR_AUTOMATION = "DSR_AUTOMATION"

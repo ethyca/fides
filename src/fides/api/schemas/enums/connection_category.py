@@ -6,15 +6,15 @@ class ConnectionCategory(str, Enum):
     Categories for connection types, matching frontend ConnectionCategory enum
     """
 
-    DATA_CATALOG = "Data Catalog"
-    DATA_WAREHOUSE = "Data Warehouse"
-    DATABASE = "Database"
-    IDENTITY_PROVIDER = "Identity Provider"
-    WEBSITE = "Website"
+    DATA_CATALOG = "DATA_CATALOG"
+    DATA_WAREHOUSE = "DATA_WAREHOUSE"
+    DATABASE = "DATABASE"
+    IDENTITY_PROVIDER = "IDENTITY_PROVIDER"
+    WEBSITE = "WEBSITE"
     CRM = "CRM"
-    MANUAL = "Manual"
-    MARKETING = "Marketing"
-    ANALYTICS = "Analytics"
-    ECOMMERCE = "E-commerce"  # Includes payments and commerce platforms
-    COMMUNICATION = "Communication"
-    CUSTOM = "Custom"  # Fallback for uncategorized integrations
+    MANUAL = "MANUAL"
+    MARKETING = "MARKETING"
+    ANALYTICS = "ANALYTICS"
+    ECOMMERCE = "ECOMMERCE"  # Includes payments and commerce platforms
+    COMMUNICATION = "COMMUNICATION"
+    CUSTOM = "CUSTOM"  # Fallback for uncategorized integrations

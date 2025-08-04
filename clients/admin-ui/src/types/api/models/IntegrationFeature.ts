@@ -7,9 +7,9 @@
  * These control which tabs and functionality are available in the integration detail view.
  */
 export enum IntegrationFeature {
-  DATA_DISCOVERY = "data_discovery",
-  DATA_SYNC = "data_sync",
-  TASKS = "tasks",
-  WITHOUT_CONNECTION = "without_connection",
-  DSR_AUTOMATION = "dsr_automation",
+  DATA_DISCOVERY = "DATA_DISCOVERY",
+  DATA_SYNC = "DATA_SYNC",
+  TASKS = "TASKS",
+  WITHOUT_CONNECTION = "WITHOUT_CONNECTION",
+  DSR_AUTOMATION = "DSR_AUTOMATION",
 }
