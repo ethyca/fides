@@ -39,7 +39,7 @@ task_always_eager = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "dde98a1b8ef2cd486d2ee3809fd0a906" # string
+analytics_id = "a45ce16577d27ffc6d3d276d4d7bd5f3" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -197,8 +197,16 @@ state_polling_interval = 30 # integer
 # Seconds between polling for interrupted tasks to requeue
 interrupted_task_requeue_interval = 300 # integer
 
+# The number of times a privacy request will be requeued when its tasks
+# are interrupted before being marked as error
+privacy_request_requeue_retry_count = 3 # integer
+
 # Temporary flag to switch to using DSR 3.0 to process your tasks.
 use_dsr_3_0 = false # boolean
+
+# Whether erasure requests require an additional finalization step
+# after all collections have been executed.
+erasure_request_finalization_required = false # boolean
 
 # Whether fuzzy search is enabled for privacy request lookups.
 fuzzy_search_enabled = true # boolean
@@ -209,6 +217,10 @@ email_send_cron_expression = "0 12 * * mon" # string
 
 # The timezone to send batch emails for DSR email integration.
 email_send_timezone = "US/Eastern" # string
+
+# Whether the memory watchdog is enabled to monitor and gracefully
+# terminate tasks that approach memory limits.
+memory_watchdog_enabled = false # boolean
 
 #-------------#
 #-- LOGGING --#

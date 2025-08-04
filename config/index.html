@@ -1548,7 +1548,19 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">433</span>
 <span class="normal">434</span>
 <span class="normal">435</span>
-<span class="normal">436</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">436</span>
+<span class="normal">437</span>
+<span class="normal">438</span>
+<span class="normal">439</span>
+<span class="normal">440</span>
+<span class="normal">441</span>
+<span class="normal">442</span>
+<span class="normal">443</span>
+<span class="normal">444</span>
+<span class="normal">445</span>
+<span class="normal">446</span>
+<span class="normal">447</span>
+<span class="normal">448</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -1589,7 +1601,7 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># A fully anonymized unique identifier that is automatically generated</span>
 <span class="c1"># by the application. Used for anonymous analytics when opted-in.</span>
-<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;dde98a1b8ef2cd486d2ee3809fd0a906&quot;</span><span class="w"> </span><span class="c1"># string</span>
+<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;a45ce16577d27ffc6d3d276d4d7bd5f3&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># When set to True, disables functionality that requires making calls</span>
 <span class="c1"># to a Fides webserver.</span>
@@ -1747,8 +1759,16 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1"># Seconds between polling for interrupted tasks to requeue</span>
 <span class="n">interrupted_task_requeue_interval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">300</span><span class="w"> </span><span class="c1"># integer</span>
 
+<span class="c1"># The number of times a privacy request will be requeued when its tasks</span>
+<span class="c1"># are interrupted before being marked as error</span>
+<span class="n">privacy_request_requeue_retry_count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="c1"># integer</span>
+
 <span class="c1"># Temporary flag to switch to using DSR 3.0 to process your tasks.</span>
 <span class="n">use_dsr_3_0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="c1"># boolean</span>
+
+<span class="c1"># Whether erasure requests require an additional finalization step</span>
+<span class="c1"># after all collections have been executed.</span>
+<span class="n">erasure_request_finalization_required</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="c1"># boolean</span>
 
 <span class="c1"># Whether fuzzy search is enabled for privacy request lookups.</span>
 <span class="n">fuzzy_search_enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="c1"># boolean</span>
@@ -1759,6 +1779,10 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># The timezone to send batch emails for DSR email integration.</span>
 <span class="n">email_send_timezone</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;US/Eastern&quot;</span><span class="w"> </span><span class="c1"># string</span>
+
+<span class="c1"># Whether the memory watchdog is enabled to monitor and gracefully</span>
+<span class="c1"># terminate tasks that approach memory limits.</span>
+<span class="n">memory_watchdog_enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="c1"># boolean</span>
 
 <span class="c1">#-------------#</span>
 <span class="c1">#-- LOGGING --#</span>
