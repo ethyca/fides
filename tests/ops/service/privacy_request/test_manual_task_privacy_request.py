@@ -148,7 +148,7 @@ def conditional_name_exists(
         data={
             "manual_task_id": manual_task.id,
             "condition_type": ManualTaskConditionalDependencyType.leaf,
-            "field_address": "postgres_example_test_dataset:customer.name",
+            "field_address": "postgres_example_test_dataset:customer:name",
             "operator": "exists",
             "value": None,  # exists operator doesn't need a value
             "sort_order": 1,
@@ -409,7 +409,7 @@ def test_manual_task_with_conditional_dependencies(
         # ------------------------------------------------------------------
         # 4. Test Case: Verify data flows through manual task graph task (OR logic)
         # ------------------------------------------------------------------
-        # Create a new manual task with OR condition: (customer.name exists OR postgres_example_test_dataset:customer.email contains 'premium')
+        # Create a new manual task with OR condition: (customer.name exists OR postgres_example_test_dataset:customer:email contains 'premium')
 
         manual_connection_or = ConnectionConfig.create(
             db=db,
@@ -442,13 +442,13 @@ def test_manual_task_with_conditional_dependencies(
             },
         )
 
-        # Email condition (postgres_example_test_dataset:customer.email contains 'premium')
+        # Email condition (postgres_example_test_dataset:customer:email contains 'premium')
         ManualTaskConditionalDependency.create(
             db=db,
             data={
                 "manual_task_id": manual_task_or.id,
                 "condition_type": ManualTaskConditionalDependencyType.leaf,
-                "field_address": "postgres_example_test_dataset:customer.email",
+                "field_address": "postgres_example_test_dataset:customer:email",
                 "operator": "list_contains",
                 "value": "premium",
                 "sort_order": 3,
@@ -710,7 +710,7 @@ def test_manual_tasks_are_integrated_into_dag(
         "verification_required" in manual_fields
     ), "Manual task should have its own field"
     assert (
-        "postgres_example_test_dataset:customer.name" in manual_fields
+        "postgres_example_test_dataset:customer:name" in manual_fields
     ), "Manual task should have conditional dependency field from source"
 
     # ------------------------------------------------------------------

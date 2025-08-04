@@ -35,7 +35,7 @@ from fides.api.task.manual.manual_task_utils import (
 )
 
 
-def create_combined_graph(self, db, mock_dataset_graph):
+def create_combined_graph(db, mock_dataset_graph):
     """Helper method to create a combined graph from mock dataset and manual task graphs"""
     manual_task_graphs = create_manual_task_artificial_graphs(db, mock_dataset_graph)
     # Extract the datasets from mock_dataset_graph and combine with manual task graphs
@@ -614,7 +614,7 @@ class TestManualTaskTraversalExecution:
         connection_config, _, _, _ = connection_with_manual_access_task
 
         # Create combined graph using helper method
-        combined_graph = self.create_combined_graph(db, mock_dataset_graph)
+        combined_graph = create_combined_graph(db, mock_dataset_graph)
 
         traversal = Traversal(combined_graph, data={})
 
@@ -652,7 +652,7 @@ class TestManualTaskTraversalExecution:
         connection_config, _, _, _ = connection_with_manual_access_task
 
         # Create combined graph using helper method
-        combined_graph = self.create_combined_graph(db, mock_dataset_graph)
+        combined_graph = create_combined_graph(db, mock_dataset_graph)
 
         traversal = Traversal(combined_graph, data={})
 
@@ -680,7 +680,7 @@ class TestManualTaskTraversalExecution:
 
         # Create artificial graphs
         # Create combined graph using helper method
-        combined_graph = self._create_combined_graph(db, mock_dataset_graph)
+        combined_graph = create_combined_graph(db, mock_dataset_graph)
 
         traversal = Traversal(combined_graph, data={})
 
@@ -722,7 +722,7 @@ class TestManualTaskUpstreamDataFlow:
         connection_config, _, _, _ = connection_with_manual_access_task
 
         # Create combined graph using helper method
-        combined_graph = self.create_combined_graph(db, mock_dataset_graph)
+        combined_graph = create_combined_graph(db, mock_dataset_graph)
 
         traversal = Traversal(combined_graph, data={})
 
@@ -754,7 +754,7 @@ class TestManualTaskUpstreamDataFlow:
         connection_config, _, _, _ = connection_with_manual_access_task
 
         # Create combined graph using helper method
-        combined_graph = self.create_combined_graph(db, mock_dataset_graph)
+        combined_graph = create_combined_graph(db, mock_dataset_graph)
 
         traversal = Traversal(combined_graph, data={})
 
@@ -795,7 +795,7 @@ class TestManualTaskExecutionOrder:
         connection_config, _, _, _ = connection_with_manual_access_task
 
         # Create combined graph using helper method
-        combined_graph = self.create_combined_graph(db, mock_dataset_graph)
+        combined_graph = create_combined_graph(db, mock_dataset_graph)
 
         traversal = Traversal(combined_graph, data={})
 
@@ -823,7 +823,7 @@ class TestManualTaskExecutionOrder:
         connection_config, _, _, _ = connection_with_manual_access_task
 
         # Create combined graph using helper method
-        combined_graph = self.create_combined_graph(db, mock_dataset_graph)
+        combined_graph = create_combined_graph(db, mock_dataset_graph)
 
         traversal = Traversal(combined_graph, data={})
 
@@ -858,7 +858,7 @@ class TestManualTaskTraversalIntegration:
         connection_config, _, _, _ = connection_with_manual_access_task
 
         # Create combined graph using helper method
-        combined_graph = self.create_combined_graph(db, mock_dataset_graph)
+        combined_graph = create_combined_graph(db, mock_dataset_graph)
 
         traversal = Traversal(combined_graph, data={})
 
