@@ -1,6 +1,5 @@
 import { ReactNode } from "react";
 
-import { ConnectionCategory } from "~/features/integrations/ConnectionCategory";
 import BIGQUERY_TYPE_INFO from "~/features/integrations/integration-type-info/bigqueryInfo";
 import DATAHUB_TYPE_INFO from "~/features/integrations/integration-type-info/datahubInfo";
 import DYNAMO_TYPE_INFO from "~/features/integrations/integration-type-info/dynamoInfo";
@@ -18,22 +17,20 @@ import SALESFORCE_TYPE_INFO from "~/features/integrations/integration-type-info/
 import SCYLLA_TYPE_INFO from "~/features/integrations/integration-type-info/scyllaInfo";
 import SNOWFLAKE_TYPE_INFO from "~/features/integrations/integration-type-info/snowflakeInfo";
 import WEBSITE_INTEGRATION_TYPE_INFO from "~/features/integrations/integration-type-info/websiteInfo";
-import { IntegrationFeatureEnum } from "~/features/integrations/IntegrationFeatureEnum";
-import {
-  AccessLevel,
-  ConnectionConfigurationResponse,
-  ConnectionSystemTypeMap,
-  ConnectionType,
-} from "~/types/api";
+import { AccessLevel, ConnectionConfigurationResponse } from "~/types/api";
+import { ConnectionCategory } from "~/types/api/models/ConnectionCategory";
+import { ConnectionSystemTypeMap } from "~/types/api/models/ConnectionSystemTypeMap";
+import { ConnectionType } from "~/types/api/models/ConnectionType";
+import { IntegrationFeature } from "~/types/api/models/IntegrationFeature";
 
 export type IntegrationTypeInfo = {
   placeholder: ConnectionConfigurationResponse;
   category: ConnectionCategory;
+  instructions?: ReactNode;
   overview?: ReactNode;
   description?: ReactNode;
-  instructions?: ReactNode;
   tags: string[];
-  enabledFeatures: IntegrationFeatureEnum[];
+  enabledFeatures: IntegrationFeature[];
 };
 
 // Define SaaS integrations
@@ -73,141 +70,137 @@ export const SUPPORTED_INTEGRATIONS = [
  * Infer category from SAAS integration identifier/type
  */
 const inferCategoryFromType = (identifier: string): ConnectionCategory => {
-  const type = identifier.toLowerCase();
+  const id = identifier.toLowerCase();
 
   // CRM systems
   if (
-    type.includes("salesforce") ||
-    type.includes("hubspot") ||
-    type.includes("pipedrive") ||
-    type.includes("zendesk") ||
-    type.includes("intercom") ||
-    type.includes("freshworks") ||
-    type.includes("kustomer") ||
-    type.includes("gorgias") ||
-    type.includes("gladly") ||
-    type.includes("outreach") ||
-    type.includes("greenhouse")
+    id.includes("salesforce") ||
+    id.includes("hubspot") ||
+    id.includes("pipedrive") ||
+    id.includes("zendesk") ||
+    id.includes("intercom") ||
+    id.includes("freshworks") ||
+    id.includes("kustomer") ||
+    id.includes("gorgias") ||
+    id.includes("gladly") ||
+    id.includes("outreach") ||
+    id.includes("greenhouse")
   ) {
     return ConnectionCategory.CRM;
   }
 
   // E-commerce platforms
   if (
-    type.includes("shopify") ||
-    type.includes("stripe") ||
-    type.includes("square") ||
-    type.includes("braintree") ||
-    type.includes("adyen") ||
-    type.includes("recurly") ||
-    type.includes("recharge") ||
-    type.includes("saleor") ||
-    type.includes("aftership") ||
-    type.includes("shipstation") ||
-    type.includes("vend") ||
-    type.includes("doordash")
+    [
+      "shopify",
+      "stripe",
+      "square",
+      "recharge",
+      "braintree",
+      "recurly",
+      "adyen",
+      "saleor",
+      "aftership",
+      "friendbuy",
+    ].some((term) => id.includes(term))
   ) {
-    return ConnectionCategory.ECOMMERCE;
+    return ConnectionCategory.E_COMMERCE;
   }
 
   // Marketing/Email platforms
   if (
-    type.includes("mailchimp") ||
-    type.includes("sendgrid") ||
-    type.includes("klaviyo") ||
-    type.includes("braze") ||
-    type.includes("iterable") ||
-    type.includes("attentive") ||
-    type.includes("sparkpost") ||
-    type.includes("oracle_responsys") ||
-    type.includes("marigold") ||
-    type.includes("mailchimp_transactional") ||
-    type.includes("friendbuy") ||
-    type.includes("talkable") ||
-    type.includes("yotpo") ||
-    type.includes("powerreviews") ||
-    type.includes("unbounce") ||
-    type.includes("digioh") ||
-    type.includes("wunderkind") ||
-    type.includes("snap")
+    id.includes("mailchimp") ||
+    id.includes("sendgrid") ||
+    id.includes("klaviyo") ||
+    id.includes("braze") ||
+    id.includes("iterable") ||
+    id.includes("attentive") ||
+    id.includes("sparkpost") ||
+    id.includes("oracle_responsys") ||
+    id.includes("marigold") ||
+    id.includes("mailchimp_transactional") ||
+    id.includes("friendbuy") ||
+    id.includes("talkable") ||
+    id.includes("yotpo") ||
+    id.includes("powerreviews") ||
+    id.includes("unbounce") ||
+    id.includes("digioh") ||
+    id.includes("wunderkind") ||
+    id.includes("snap")
   ) {
     return ConnectionCategory.MARKETING;
   }
 
   // Analytics platforms
   if (
-    type.includes("analytics") ||
-    type.includes("amplitude") ||
-    type.includes("heap") ||
-    type.includes("segment") ||
-    type.includes("datadog") ||
-    type.includes("sentry") ||
-    type.includes("fullstory") ||
-    type.includes("statsig") ||
-    type.includes("google_analytics") ||
-    type.includes("universal_analytics") ||
-    type.includes("rollbar") ||
-    type.includes("domo") ||
-    type.includes("appsflyer") ||
-    type.includes("simon_data") ||
-    type.includes("splash")
+    id.includes("analytics") ||
+    id.includes("amplitude") ||
+    id.includes("heap") ||
+    id.includes("segment") ||
+    id.includes("datadog") ||
+    id.includes("sentry") ||
+    id.includes("fullstory") ||
+    id.includes("statsig") ||
+    id.includes("google_analytics") ||
+    id.includes("universal_analytics") ||
+    id.includes("rollbar") ||
+    id.includes("domo") ||
+    id.includes("appsflyer") ||
+    id.includes("simon_data") ||
+    id.includes("splash")
   ) {
     return ConnectionCategory.ANALYTICS;
   }
 
   // Communication platforms
   if (
-    type.includes("slack") ||
-    type.includes("twilio") ||
-    type.includes("aircall") ||
-    type.includes("gong") ||
-    type.includes("ada_chatbot") ||
-    type.includes("sprig") ||
-    type.includes("typeform") ||
-    type.includes("surveymonkey") ||
-    type.includes("alchemer") ||
-    type.includes("qualtrics") ||
-    type.includes("delighted") ||
-    type.includes("iterate")
+    id.includes("slack") ||
+    id.includes("twilio") ||
+    id.includes("aircall") ||
+    id.includes("gong") ||
+    id.includes("ada_chatbot") ||
+    id.includes("sprig") ||
+    id.includes("typeform") ||
+    id.includes("surveymonkey") ||
+    id.includes("alchemer") ||
+    id.includes("qualtrics") ||
+    id.includes("delighted") ||
+    id.includes("iterate")
   ) {
     return ConnectionCategory.COMMUNICATION;
   }
 
-  // Payment platforms
+  // Payment platforms - map to E_COMMERCE since PAYMENTS doesn't exist in auto-generated enum
   if (
-    type.includes("stripe") ||
-    type.includes("square") ||
-    type.includes("braintree") ||
-    type.includes("adyen") ||
-    type.includes("recurly") ||
-    type.includes("boostr")
+    id.includes("stripe") ||
+    id.includes("square") ||
+    id.includes("braintree") ||
+    id.includes("adyen") ||
+    id.includes("recurly") ||
+    id.includes("boostr")
   ) {
-    return ConnectionCategory.PAYMENTS;
+    return ConnectionCategory.E_COMMERCE;
   }
 
   // Data warehouse/storage
   if (
-    type.includes("warehouse") ||
-    type.includes("domo") ||
-    type.includes("bigquery")
+    id.includes("warehouse") ||
+    id.includes("domo") ||
+    id.includes("bigquery")
   ) {
     return ConnectionCategory.DATA_WAREHOUSE;
   }
 
   // Website/tracking
-  if (
-    type.includes("website") ||
-    type.includes("tracking") ||
-    type.includes("web")
-  ) {
+  if (id.includes("website") || id.includes("tracking") || id.includes("web")) {
     return ConnectionCategory.WEBSITE;
   }
 
   // Identity providers
   if (
-    type.includes("auth0") ||
-    type.includes("firebase_auth") ||
-    type.includes("stytch")
+    id.includes("auth0") ||
+    id.includes("firebase_auth") ||
+    id.includes("stytch")
   ) {
     return ConnectionCategory.IDENTITY_PROVIDER;
   }
@@ -242,7 +235,7 @@ const generateSaasIntegrationInfo = (
       inferCategoryFromType(connectionType.identifier),
     tags: connectionType.tags || ["API", "Integration"], // Basic default tags if not provided
     enabledFeatures: connectionType.enabled_features || [
-      IntegrationFeatureEnum.DSR_AUTOMATION,
+      IntegrationFeature.DSR_AUTOMATION,
     ], // Default to DSR automation
   };
 };
@@ -257,7 +250,7 @@ const EMPTY_TYPE = {
   },
   category: ConnectionCategory.DATA_WAREHOUSE,
   tags: [],
-  enabledFeatures: [] as IntegrationFeatureEnum[],
+  enabledFeatures: [] as IntegrationFeature[],
 };
 
 const getIntegrationTypeInfo = (

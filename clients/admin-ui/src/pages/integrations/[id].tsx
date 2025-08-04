@@ -29,8 +29,8 @@ import ConfigureIntegrationModal from "~/features/integrations/ConfigureIntegrat
 import ConnectionStatusNotice from "~/features/integrations/ConnectionStatusNotice";
 import { useIntegrationAuthorization } from "~/features/integrations/hooks/useIntegrationAuthorization";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
-import { IntegrationFeatureEnum } from "~/features/integrations/IntegrationFeatureEnum";
 import { IntegrationSetupSteps } from "~/features/integrations/setup-steps/IntegrationSetupSteps";
+import { IntegrationFeatureEnum } from "~/features/integrations/types";
 import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
 import { ConnectionType } from "~/types/api";

@@ -1,6 +1,6 @@
 import { useGetMonitorsByIntegrationQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import getIntegrationTypeInfo from "~/features/integrations/add-integration/allIntegrationTypes";
-import { IntegrationFeatureEnum } from "~/features/integrations/IntegrationFeatureEnum";
+import { IntegrationFeatureEnum } from "~/features/integrations/types";
 
 import { BaseStepHookParams, Step } from "./types";
 

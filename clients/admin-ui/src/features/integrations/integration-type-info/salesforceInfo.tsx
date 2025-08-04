@@ -7,12 +7,11 @@ import {
   InfoUnorderedList,
 } from "~/features/common/copy/components";
 import ShowMoreContent from "~/features/common/copy/ShowMoreContent";
-import { ConnectionCategory } from "~/features/integrations/ConnectionCategory";
 import { SaasConnectionTypes } from "~/features/integrations/types/SaasConnectionTypes";
 import { AccessLevel } from "~/types/api";
+import { ConnectionCategory } from "~/types/api/models/ConnectionCategory";
 import { ConnectionType } from "~/types/api/models/ConnectionType";
-
-import { IntegrationFeatureEnum } from "../IntegrationFeatureEnum";
+import { IntegrationFeature } from "~/types/api/models/IntegrationFeature";
 
 export const SALESFORCE_PLACEHOLDER = {
   name: "Salesforce",
@@ -144,7 +143,10 @@ const SALESFORCE_TYPE_INFO = {
   category: ConnectionCategory.CRM,
   overview: <SalesforceOverview />,
   tags: SALESFORCE_TAGS,
-  enabledFeatures: [IntegrationFeatureEnum.DATA_DISCOVERY],
+  enabledFeatures: [
+    IntegrationFeature.DATA_DISCOVERY,
+    IntegrationFeature.DSR_AUTOMATION,
+  ],
 };
 
 export default SALESFORCE_TYPE_INFO;

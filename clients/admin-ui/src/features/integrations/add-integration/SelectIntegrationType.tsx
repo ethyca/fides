@@ -8,9 +8,9 @@ import getIntegrationTypeInfo, {
   INTEGRATION_TYPE_LIST,
   IntegrationTypeInfo,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
-import { ConnectionCategory } from "~/features/integrations/ConnectionCategory";
 import SelectableIntegrationBox from "~/features/integrations/SelectableIntegrationBox";
 import { ConnectionType } from "~/types/api";
+import { ConnectionCategory } from "~/types/api/models/ConnectionCategory";
 
 enum IntegrationCategoryFilter {
   ALL = "All",
