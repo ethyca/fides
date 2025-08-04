@@ -14,4 +14,7 @@ export enum IntegrationFeatureEnum {
 
   /** Indicates integration doesn't require connection testing - shows "Details" tab instead of "Connection" tab */
   WITHOUT_CONNECTION = "without_connection",
+
+  /** Enables Data Subject Request automation for SAAS integrations */
+  DSR_AUTOMATION = "dsr_automation",
 }

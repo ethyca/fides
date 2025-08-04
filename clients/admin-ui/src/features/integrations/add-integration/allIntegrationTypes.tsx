@@ -218,6 +218,7 @@ const inferCategoryFromType = (identifier: string): ConnectionCategory => {
 
 /**
  * Generate IntegrationTypeInfo from ConnectionSystemTypeMap data
+ * Now leverages enhanced display metadata from backend SAAS configs
  */
 const generateSaasIntegrationInfo = (
   connectionType: ConnectionSystemTypeMap,
@@ -235,9 +236,14 @@ const generateSaasIntegrationInfo = (
       access: AccessLevel.WRITE,
       created_at: "",
     },
-    category: inferCategoryFromType(connectionType.identifier),
-    tags: ["API", "Integration"], // Basic default tags
-    enabledFeatures: [IntegrationFeatureEnum.DATA_DISCOVERY], // All SAAS get data discovery like Salesforce
+    // Use backend-provided display metadata with smart fallbacks
+    category:
+      connectionType.category ||
+      inferCategoryFromType(connectionType.identifier),
+    tags: connectionType.tags || ["API", "Integration"], // Basic default tags if not provided
+    enabledFeatures: connectionType.enabled_features || [
+      IntegrationFeatureEnum.DSR_AUTOMATION,
+    ], // Default to DSR automation
   };
 };
 
@@ -264,22 +270,37 @@ const getIntegrationTypeInfo = (
   }
 
   if (type === ConnectionType.SAAS && saasType) {
-    // First, check if there's a hardcoded integration (like Salesforce)
-    const saasIntegration = SAAS_INTEGRATIONS.find(
-      (integration) => integration.placeholder.saas_config?.type === saasType,
-    );
-    if (saasIntegration) {
-      return saasIntegration;
-    }
-
-    // If not found in hardcoded integrations, generate from connection types data
+    // First, check if backend provides enhanced config-based data
     if (connectionTypes) {
       const connectionType = connectionTypes.find(
         (ct) => ct.identifier === saasType,
       );
       if (connectionType) {
-        return generateSaasIntegrationInfo(connectionType);
+        const configBasedInfo = generateSaasIntegrationInfo(connectionType);
+
+        // If there's a hardcoded integration (like Salesforce), merge in the overview component
+        // but prefer backend config data for category, tags, and features
+        const saasIntegration = SAAS_INTEGRATIONS.find(
+          (integration) =>
+            integration.placeholder.saas_config?.type === saasType,
+        );
+        if (saasIntegration && saasIntegration.overview) {
+          return {
+            ...configBasedInfo,
+            overview: saasIntegration.overview, // Keep rich React content for complex integrations
+          };
+        }
+
+        return configBasedInfo;
       }
+    }
+
+    // Fallback to hardcoded integrations if backend data is not available
+    const saasIntegration = SAAS_INTEGRATIONS.find(
+      (integration) => integration.placeholder.saas_config?.type === saasType,
+    );
+    if (saasIntegration) {
+      return saasIntegration;
     }
   }
 
