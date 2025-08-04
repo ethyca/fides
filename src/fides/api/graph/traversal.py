@@ -149,8 +149,8 @@ class BaseTraversal:
             self.edges_by_node[start_field_address.collection_address()].append(edge)
 
         # Ensure manual_task collections execute right after ROOT
-        # Cache nodes already connected to ROOT for O(1) lookups
-        root_connected_nodes = {
+        # Build set of nodes already connected to ROOT for O(1) lookups
+        self.root_connected_nodes = {
             edge.f2.collection_address()
             for edge in self.edges_by_node.get(ROOT_COLLECTION_ADDRESS, [])
         }
@@ -194,7 +194,7 @@ class BaseTraversal:
 
                         # Also ensure dependency node is connected to ROOT if it's not already
                         # Check if dependency node is already connected through seed data using cached set
-                        if dependency_addr not in root_connected_nodes:
+                        if dependency_addr not in self.root_connected_nodes:
                             root_to_dependency_edge = Edge(
                                 FieldAddress(
                                     ROOT_COLLECTION_ADDRESS.dataset,
@@ -216,7 +216,7 @@ class BaseTraversal:
                                 root_to_dependency_edge
                             )
                             # Update cache to include this new connection
-                            root_connected_nodes.add(dependency_addr)
+                            self.root_connected_nodes.add(dependency_addr)
                     else:
                         logger.warning(
                             f"Manual task {addr} references dependency {dependency_addr} not found in traversal_node_dict"
