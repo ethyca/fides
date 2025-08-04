@@ -148,7 +148,7 @@ def conditional_name_exists(
         data={
             "manual_task_id": manual_task.id,
             "condition_type": ManualTaskConditionalDependencyType.leaf,
-            "field_address": "postgres_example_test_dataset:customer:name",
+            "field_address": "postgres_example_test_dataset:customer.name",
             "operator": "exists",
             "value": None,  # exists operator doesn't need a value
             "sort_order": 1,
@@ -329,9 +329,6 @@ def test_manual_task_with_conditional_dependencies(
         # Let's use the existing customer data instead of inserting new data
         # Existing customers: customer-1@example.com, customer-2@example.com
 
-        # Debug: Check what customer data already exists
-        from sqlalchemy import text
-
         result = postgres_integration_db.execute(
             text("SELECT email, name FROM customer")
         )
@@ -412,7 +409,7 @@ def test_manual_task_with_conditional_dependencies(
         # ------------------------------------------------------------------
         # 4. Test Case: Verify data flows through manual task graph task (OR logic)
         # ------------------------------------------------------------------
-        # Create a new manual task with OR condition: (customer.name exists OR customer.email contains 'premium')
+        # Create a new manual task with OR condition: (customer.name exists OR postgres_example_test_dataset:customer.email contains 'premium')
 
         manual_connection_or = ConnectionConfig.create(
             db=db,
@@ -445,13 +442,13 @@ def test_manual_task_with_conditional_dependencies(
             },
         )
 
-        # Email condition (customer.email contains 'premium')
+        # Email condition (postgres_example_test_dataset:customer.email contains 'premium')
         ManualTaskConditionalDependency.create(
             db=db,
             data={
                 "manual_task_id": manual_task_or.id,
                 "condition_type": ManualTaskConditionalDependencyType.leaf,
-                "field_address": "customer.email",
+                "field_address": "postgres_example_test_dataset:customer.email",
                 "operator": "list_contains",
                 "value": "premium",
                 "sort_order": 3,
@@ -559,21 +556,6 @@ def test_manual_task_with_conditional_dependencies(
             timeout=PRIVACY_REQUEST_TASK_TIMEOUT
         )
         db.refresh(privacy_request_or)
-
-        if privacy_request_or.status != PrivacyRequestStatus.complete:
-            # Check what manual task instances still exist
-            remaining_instances = (
-                db.query(ManualTaskInstance)
-                .filter(ManualTaskInstance.entity_id == privacy_request_or.id)
-                .all()
-            )
-            for instance in remaining_instances:
-                # Check if this instance has submissions
-                submissions = (
-                    db.query(ManualTaskSubmission)
-                    .filter(ManualTaskSubmission.instance_id == instance.id)
-                    .all()
-                )
 
         assert (
             privacy_request_or.status == PrivacyRequestStatus.complete
@@ -728,7 +710,7 @@ def test_manual_tasks_are_integrated_into_dag(
         "verification_required" in manual_fields
     ), "Manual task should have its own field"
     assert (
-        "postgres_example_test_dataset:customer:name" in manual_fields
+        "postgres_example_test_dataset:customer.name" in manual_fields
     ), "Manual task should have conditional dependency field from source"
 
     # ------------------------------------------------------------------

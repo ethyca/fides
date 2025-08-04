@@ -219,7 +219,6 @@ def _find_collections_for_conditional_dependencies(
     manual task to provide the required field data.
 
     Args:
-        db: Database session
         manual_task: The manual task to analyze
         dataset_graph: The actual graph being executed (optional for backward compatibility)
 

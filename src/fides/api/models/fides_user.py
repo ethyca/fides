@@ -32,7 +32,6 @@ if TYPE_CHECKING:
         FidesUserRespondentEmailVerification,
     )
     from fides.api.models.sql_models import System  # type: ignore[attr-defined]
-    from fides.api.models.system_manager import SystemManager
 
 
 class FidesUser(Base):

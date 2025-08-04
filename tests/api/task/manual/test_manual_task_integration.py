@@ -2,7 +2,9 @@ from datetime import datetime
 
 import pytest
 
+from fides.api.graph.config import ROOT_COLLECTION_ADDRESS, FieldAddress, FieldPath
 from fides.api.graph.graph import CollectionAddress, DatasetGraph
+from fides.api.graph.traversal import Traversal
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -34,20 +36,19 @@ from fides.api.task.manual.manual_task_utils import (
 
 
 def create_combined_graph(self, db, mock_dataset_graph):
-        """Helper method to create a combined graph from mock dataset and manual task graphs"""
-        manual_task_graphs = create_manual_task_artificial_graphs(
-            db, mock_dataset_graph
-        )
-        # Extract the datasets from mock_dataset_graph and combine with manual task graphs
-        # mock_dataset_graph is a DatasetGraph, extract unique datasets from its nodes
-        regular_datasets = []
-        seen_dataset_names = set()
-        for node in mock_dataset_graph.nodes.values():
-            if node.dataset.name not in seen_dataset_names:
-                regular_datasets.append(node.dataset)
-                seen_dataset_names.add(node.dataset.name)
+    """Helper method to create a combined graph from mock dataset and manual task graphs"""
+    manual_task_graphs = create_manual_task_artificial_graphs(db, mock_dataset_graph)
+    # Extract the datasets from mock_dataset_graph and combine with manual task graphs
+    # mock_dataset_graph is a DatasetGraph, extract unique datasets from its nodes
+    regular_datasets = []
+    seen_dataset_names = set()
+    for node in mock_dataset_graph.nodes.values():
+        if node.dataset.name not in seen_dataset_names:
+            regular_datasets.append(node.dataset)
+            seen_dataset_names.add(node.dataset.name)
 
-        return DatasetGraph(*regular_datasets, *manual_task_graphs)
+    return DatasetGraph(*regular_datasets, *manual_task_graphs)
+
 
 class TestManualTaskGraphTask:
 
@@ -615,9 +616,6 @@ class TestManualTaskTraversalExecution:
         # Create combined graph using helper method
         combined_graph = self.create_combined_graph(db, mock_dataset_graph)
 
-        # Create traversal
-        from fides.api.graph.traversal import Traversal
-
         traversal = Traversal(combined_graph, data={})
 
         # Verify manual task node is present in traversal
@@ -634,13 +632,6 @@ class TestManualTaskTraversalExecution:
             CollectionAddress("postgres_example", "payment_card"),
         }
         assert expected_dependencies.issubset(manual_node.node.collection.after)
-
-        # Verify ROOT -> manual_data edge exists
-        from fides.api.graph.config import (
-            ROOT_COLLECTION_ADDRESS,
-            FieldAddress,
-            FieldPath,
-        )
 
         expected_root_edge = FieldAddress(
             ROOT_COLLECTION_ADDRESS.dataset, ROOT_COLLECTION_ADDRESS.collection, "id"
@@ -662,9 +653,6 @@ class TestManualTaskTraversalExecution:
 
         # Create combined graph using helper method
         combined_graph = self.create_combined_graph(db, mock_dataset_graph)
-
-        # Create traversal
-        from fides.api.graph.traversal import Traversal
 
         traversal = Traversal(combined_graph, data={})
 
@@ -693,9 +681,6 @@ class TestManualTaskTraversalExecution:
         # Create artificial graphs
         # Create combined graph using helper method
         combined_graph = self._create_combined_graph(db, mock_dataset_graph)
-
-        # Create traversal
-        from fides.api.graph.traversal import Traversal
 
         traversal = Traversal(combined_graph, data={})
 
@@ -739,9 +724,6 @@ class TestManualTaskUpstreamDataFlow:
         # Create combined graph using helper method
         combined_graph = self.create_combined_graph(db, mock_dataset_graph)
 
-        # Create traversal
-        from fides.api.graph.traversal import Traversal
-
         traversal = Traversal(combined_graph, data={})
 
         # Get manual task node
@@ -773,9 +755,6 @@ class TestManualTaskUpstreamDataFlow:
 
         # Create combined graph using helper method
         combined_graph = self.create_combined_graph(db, mock_dataset_graph)
-
-        # Create traversal
-        from fides.api.graph.traversal import Traversal
 
         traversal = Traversal(combined_graph, data={})
 
@@ -818,9 +797,6 @@ class TestManualTaskExecutionOrder:
         # Create combined graph using helper method
         combined_graph = self.create_combined_graph(db, mock_dataset_graph)
 
-        # Create traversal
-        from fides.api.graph.traversal import Traversal
-
         traversal = Traversal(combined_graph, data={})
 
         # Get manual task node
@@ -848,9 +824,6 @@ class TestManualTaskExecutionOrder:
 
         # Create combined graph using helper method
         combined_graph = self.create_combined_graph(db, mock_dataset_graph)
-
-        # Create traversal
-        from fides.api.graph.traversal import Traversal
 
         traversal = Traversal(combined_graph, data={})
 
@@ -887,9 +860,6 @@ class TestManualTaskTraversalIntegration:
         # Create combined graph using helper method
         combined_graph = self.create_combined_graph(db, mock_dataset_graph)
 
-        # Create traversal
-        from fides.api.graph.traversal import Traversal
-
         traversal = Traversal(combined_graph, data={})
 
         # Verify all nodes are present
@@ -905,13 +875,6 @@ class TestManualTaskTraversalIntegration:
 
         # Verify manual task has proper fields
         assert len(manual_node.node.collection.fields) > 0
-
-        # Verify manual task has proper edges
-        from fides.api.graph.config import (
-            ROOT_COLLECTION_ADDRESS,
-            FieldAddress,
-            FieldPath,
-        )
 
         expected_root_edge = FieldAddress(
             ROOT_COLLECTION_ADDRESS.dataset, ROOT_COLLECTION_ADDRESS.collection, "id"
@@ -948,9 +911,6 @@ class TestManualTaskTraversalIntegration:
                 regular_datasets.append(node.dataset)
                 seen_dataset_names.add(node.dataset.name)
         combined_graph = DatasetGraph(*regular_datasets, *manual_task_graphs)
-
-        # Create traversal
-        from fides.api.graph.traversal import Traversal
 
         traversal = Traversal(combined_graph, data={})
 

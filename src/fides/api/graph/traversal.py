@@ -216,7 +216,7 @@ class BaseTraversal:
                             )
                     else:
                         logger.warning(
-                            f"Dependency {dependency_addr} not found in traversal_node_dict"
+                            f"Manual task {addr} references dependency {dependency_addr} not found in traversal_node_dict"
                         )
 
         self._verify_traversal()

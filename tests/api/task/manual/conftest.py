@@ -376,12 +376,13 @@ def _build_request_task(
     connection_config,
     action_type=ActionType.access,
 ):
-    """Helper to create a minimal RequestTask for the manual_data collection"""
+    """Helper to build RequestTask object"""
     # Use the standard manual data collection address
     collection_address = f"{connection_config.key}:manual_data"
 
     # Get the manual task for this connection config to determine input keys and edges
     from fides.api.task.manual.manual_task_utils import (
+        _get_collection_for_field_address,
         get_manual_task_for_connection_config,
     )
 
@@ -404,35 +405,47 @@ def _build_request_task(
         # For testing, we'll create input keys and edges based on the field addresses
         # In a real scenario, these would be determined by the graph traversal
         if field_addresses:
+            # Create a mock dataset graph for field address parsing
+            from tests.api.task.manual.conftest import mock_dataset_graph
+
+            dataset_graph = mock_dataset_graph()
+
+            # Use the existing field address parsing utilities to create mappings
             for field_address in field_addresses:
-                # Parse field address to determine collection and create edges
-                # The incoming edges map from source field addresses to target field addresses
-                # e.g., "postgres_example:customer:profile.age" -> "manual_data:manual_data:profile.age"
-                # e.g., "postgres_example:payment_card:subscription.status" -> "manual_data:manual_data:subscription.status"
-                if "profile.age" in field_address:
-                    input_keys.append("postgres_example:customer")
-                    incoming_edges.append(
-                        [
-                            "postgres_example:customer:profile.age",
-                            f"{connection_config.key}:manual_data:profile.age",
-                        ]
-                    )
-                elif "subscription.status" in field_address:
-                    input_keys.append("postgres_example:payment_card")
-                    incoming_edges.append(
-                        [
-                            "postgres_example:payment_card:subscription.status",
-                            f"{connection_config.key}:manual_data:subscription.status",
-                        ]
-                    )
-                elif "role" in field_address:
-                    input_keys.append("postgres_example:customer")
-                    incoming_edges.append(
-                        [
-                            "postgres_example:customer:role",
-                            f"{connection_config.key}:manual_data:role",
-                        ]
-                    )
+                # Use the existing field address parsing utilities to determine collection
+                collection_address = _get_collection_for_field_address(
+                    field_address, dataset_graph
+                )
+
+                if collection_address:
+                    # Add the collection as an input key
+                    input_keys.append(str(collection_address))
+
+                    # Create incoming edge from source field to manual data field
+                    # Extract the field path from the field address
+                    if ":" in field_address:
+                        # Full format: "dataset:collection:field"
+                        from fides.api.graph.config import FieldAddress
+
+                        field_addr = FieldAddress.from_string(field_address)
+                        source_field_address = field_address
+                        target_field_address = f"{connection_config.key}:manual_data:{field_addr.field_path.string_path}"
+                    else:
+                        # Simplified format: "collection.field"
+                        parts = field_address.split(".", 1)
+                        if len(parts) == 2:
+                            collection_name, field_path = parts
+                            source_field_address = (
+                                f"postgres_example:{collection_name}:{field_path}"
+                            )
+                            target_field_address = (
+                                f"{connection_config.key}:manual_data:{field_path}"
+                            )
+                        else:
+                            # Skip invalid field addresses
+                            continue
+
+                    incoming_edges.append([source_field_address, target_field_address])
 
             # Remove duplicates and sort for consistency
             input_keys = sorted(list(set(input_keys)))
