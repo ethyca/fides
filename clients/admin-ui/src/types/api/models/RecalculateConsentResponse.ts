@@ -9,5 +9,5 @@ export type RecalculateConsentResponse = {
   /**
    * Number of resources updated
    */
-  updated_count: number;
+  updated: number;
 };

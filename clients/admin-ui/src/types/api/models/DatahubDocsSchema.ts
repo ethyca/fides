@@ -17,7 +17,7 @@ export type DatahubDocsSchema = {
    */
   datahub_token: string;
   /**
-   * The frequency at which the integration should run. Available options are daily, weekly, and monthly.
+   * The frequency at which the integration should run. Available options are daily, weekly, monthly, and not scheduled.
    */
   frequency: PeriodicIntegrationFrequency;
   /**

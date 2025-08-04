@@ -151,3 +151,41 @@ export const formatUser = (user: {
   const fullName = `${user.first_name || ""} ${user.last_name || ""}`.trim();
   return fullName || user.email_address || "Unknown User";
 };
+
+/**
+ * Converts an array of values to an array of Ant Design filter objects.
+ * @param values - The `values` parameter is an array of strings that contains the values to be converted.
+ * @param getDisplayName - The `getDisplayName` parameter is an optional function that can be used to customize the display name of the values.
+ * @returns an array of Ant Design filter objects.
+ */
+export const convertToAntFilters = (
+  values?: string[] | null,
+  getDisplayName?: (value: string) => string,
+) => {
+  if (!values || values.length === 0) {
+    return [];
+  }
+  return values.map((value) => ({
+    text: getDisplayName ? getDisplayName(value) : value,
+    value,
+  }));
+};
+
+/**
+ * Builds URLSearchParams from an object containing array-based query parameters.
+ * @param arrayParams - Object where keys are parameter names and values are arrays of strings
+ * @returns URLSearchParams instance with all array values properly appended
+ */
+export const buildArrayQueryParams = (
+  arrayParams: Record<string, string[] | undefined>,
+): URLSearchParams => {
+  const urlParams = new URLSearchParams();
+
+  Object.entries(arrayParams).forEach(([key, values]) => {
+    if (values && values.length > 0) {
+      values.forEach((value) => urlParams.append(key, value));
+    }
+  });
+
+  return urlParams;
+};
