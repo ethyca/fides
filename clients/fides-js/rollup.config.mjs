@@ -13,7 +13,6 @@ import replace from "@rollup/plugin-replace";
 import fs from "fs";
 import jsxRemoveAttributes from "rollup-plugin-jsx-remove-attributes";
 import { importFidesPackageVersion } from "../build-utils.js";
-import { preventDoubleLoad } from "./custom-rollup-plugins/prevent-double-load.js";
 
 const GLOBAL_NAME = "Fides";
 const FILE_NAME = "fides";
@@ -33,6 +32,8 @@ const GZIP_SIZE_HEADLESS_WARN_KB = 20;
 // GPP
 const GZIP_SIZE_GPP_ERROR_KB = 40;
 const GZIP_SIZE_GPP_WARN_KB = 35;
+
+const multipleLoadingMessage = `${GLOBAL_NAME} detected that it was already loaded on this page, aborting execution! See https://www.ethyca.com/docs/dev-docs/js/troubleshooting for more information.`;
 
 const preactAliases = {
   entries: [
@@ -65,7 +66,6 @@ const fidesScriptPlugins = (stripDebugger = false) => [
     preventAssignment: true,
     include: ["src/lib/init-utils.ts"],
   }),
-  preventDoubleLoad(GLOBAL_NAME),
 ];
 
 const fidesScriptsJSPlugins = ({ name, gzipWarnSizeKb, gzipErrorSizeKb }) => [
@@ -178,6 +178,15 @@ SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
         amd: {
           define: undefined, // prevent the bundle from registering itself as an AMD module, even if an AMD loader (like RequireJS) is present on the page. This allows FidesJS to use Rollup's `umd` format to support both `iife` and `cjs` modules, but excludes AMD.
         },
+        banner: isExtension
+          ? undefined
+          : `(function(){if(typeof ${GLOBAL_NAME}==="undefined" || (${GLOBAL_NAME}.options && ${GLOBAL_NAME}.options.fidesUnsupportedRepeatedScriptLoading === "enabled_acknowledge_not_supported")) {console.log('worked once');`,
+        footer: isExtension
+          ? undefined
+          : `} else {
+          console.log(${GLOBAL_NAME}.options);
+          console.error("${multipleLoadingMessage}");
+        }})()`,
       },
     ],
     onLog,
