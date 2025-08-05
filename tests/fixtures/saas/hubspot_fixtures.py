@@ -24,20 +24,11 @@ from tests.ops.integration_tests.saas.connector_runner import (
 from tests.ops.test_helpers.onepassword_client import get_secrets
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 
-# Lazy loading of secrets to avoid 1Password authentication during module import
-_secrets = None
-
-
-def _get_secrets():
-    global _secrets
-    if _secrets is None:
-        _secrets = get_secrets("hubspot")
-    return _secrets
+secrets = get_secrets("hubspot")
 
 
 @pytest.fixture(scope="session")
 def hubspot_secrets(saas_config):
-    secrets = _get_secrets()
     return {
         "domain": pydash.get(saas_config, "hubspot.domain") or secrets["domain"],
         "private_app_token": pydash.get(saas_config, "hubspot.private_app_token")
