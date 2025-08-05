@@ -172,6 +172,7 @@ jobs:
           - "docs_check"
           - "minimal_config_startup"
           - "check_migrations"
+          - "validate_test_coverage"
 
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -223,6 +224,11 @@ jobs:
           - "ops-integration"
           - "api"
           - "lib"
+          - "service"
+          - "task"
+          - "util"
+          - "qa"
+          - "misc-integration"
 
     runs-on: ubuntu-latest
     timeout-minutes: 45
