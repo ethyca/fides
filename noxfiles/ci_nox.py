@@ -22,13 +22,13 @@ from setup_tests_nox import (
     pytest_api,
     pytest_ctl,
     pytest_lib,
+    pytest_misc_integration,
     pytest_nox,
     pytest_ops,
+    pytest_qa,
     pytest_service,
     pytest_task,
     pytest_util,
-    pytest_qa,
-    pytest_misc_integration,
 )
 from utils_nox import db, install_requirements
 
