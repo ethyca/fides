@@ -35,7 +35,7 @@ import { SystemCell } from "../tables/cells/SystemCell";
 import isConsentCategory from "../utils/isConsentCategory";
 import { ActionCenterTabHash } from "./useActionCenterTabs";
 
-export const useDiscoveredAssetsColumns = ({
+export const useDiscoveredAssetsTable = ({
   readonly,
   aggregatedConsent,
   onTabChange,

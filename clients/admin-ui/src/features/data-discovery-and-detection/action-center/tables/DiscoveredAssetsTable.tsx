@@ -24,6 +24,7 @@ import {
   SYSTEM_ROUTE,
   UNCATEGORIZED_SEGMENT,
 } from "~/features/common/nav/routes";
+import { useTableState } from "~/features/common/table/hooks";
 import { SelectedText } from "~/features/common/table/SelectedText";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
@@ -49,7 +50,7 @@ import { DiscoveredAssetsColumnKeys } from "../constants";
 import useActionCenterTabs, {
   ActionCenterTabHash,
 } from "../hooks/useActionCenterTabs";
-import { useDiscoveredAssetsColumns } from "../hooks/useDiscoveredAssetsColumns";
+import { useDiscoveredAssetsTable } from "../hooks/useDiscoveredAssetsTable";
 import { SuccessToastContent } from "../SuccessToastContent";
 
 interface DiscoveredAssetsTableProps {
@@ -78,14 +79,6 @@ export const DiscoveredAssetsTable = ({
   const [columnFilters, setColumnFilters] = useState<
     Record<string, FilterValue | null>
   >({});
-
-  // Sorting state
-  const [sortField, setSortField] = useState<
-    DiscoveredAssetsColumnKeys | undefined
-  >();
-  const [sortOrder, setSortOrder] = useState<
-    "ascend" | "descend" | undefined
-  >();
 
   // Selection state
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
@@ -132,7 +125,22 @@ export const DiscoveredAssetsTable = ({
   const disableAddAll =
     anyBulkActionIsLoading || systemId === UNCATEGORIZED_SEGMENT;
 
-  const [searchQuery, setSearchQuery] = useState("");
+  // Table state with URL synchronization for search and sorting (iterative implementation)
+  const tableState = useTableState({
+    urlSync: {
+      pagination: false, // Will implement later
+      sorting: true, // Now implementing sorting
+      filtering: false, // Will implement later
+      search: true, // Already implemented
+    },
+  });
+
+  // Use tableState sorting instead of local state
+  const { sortField: tableSortField, sortOrder } = tableState;
+  const sortField = tableSortField as DiscoveredAssetsColumnKeys | undefined;
+
+  // Use tableState.searchQuery instead of local state
+  const searchQuery = tableState.searchQuery || "";
 
   const toast = useToast();
 
@@ -141,7 +149,7 @@ export const DiscoveredAssetsTable = ({
 
   useEffect(() => {
     setPageIndex(1);
-  }, [monitorId, searchQuery, activeTab]);
+  }, [monitorId, tableState.searchQuery, activeTab]);
 
   useEffect(() => {
     resetSelections();
@@ -151,11 +159,11 @@ export const DiscoveredAssetsTable = ({
     key: monitorId,
     page: pageIndex,
     size: pageSize,
-    search: searchQuery,
+    search: tableState.searchQuery,
     sort_by: sortField
-      ? [sortField]
-      : [DiscoveredAssetsColumnKeys.CONSENT_AGGREGATED, "urn"],
-    sort_asc: sortOrder !== "descend",
+      ? [sortField] // User selected a column to sort by
+      : [DiscoveredAssetsColumnKeys.CONSENT_AGGREGATED, "urn"], // Default
+    sort_asc: tableState.sortOrder !== "descend",
     ...activeParams,
     ...columnFilters,
   });
@@ -191,7 +199,7 @@ export const DiscoveredAssetsTable = ({
     setConsentBreakdownModalData(null);
   };
 
-  const { columns } = useDiscoveredAssetsColumns({
+  const { columns } = useDiscoveredAssetsTable({
     readonly: actionsDisabled ?? false,
     onTabChange,
     aggregatedConsent: firstItemConsentStatus,
@@ -202,7 +210,7 @@ export const DiscoveredAssetsTable = ({
     columnFilters,
     sortField,
     sortOrder,
-    searchQuery,
+    searchQuery: tableState.searchQuery,
   });
 
   // Get selected URNs from the map instead of selectedRows
@@ -420,7 +428,7 @@ export const DiscoveredAssetsTable = ({
     setPageSize(pagination.pageSize || 25);
     setColumnFilters(filters || {});
 
-    // Handle sorting
+    // Handle sorting with tableState
     const newSortField =
       sorter && !Array.isArray(sorter)
         ? (sorter.field as DiscoveredAssetsColumnKeys)
@@ -429,8 +437,7 @@ export const DiscoveredAssetsTable = ({
       sorter && !Array.isArray(sorter) && sorter.order !== null
         ? sorter.order
         : undefined;
-    setSortField(newSortField);
-    setSortOrder(newSortOrder);
+    tableState.updateSorting(newSortField, newSortOrder);
   };
 
   if (!monitorId || !systemId) {
@@ -450,7 +457,7 @@ export const DiscoveredAssetsTable = ({
       <Flex justify="space-between" align="center" className="mb-4">
         <DebouncedSearchInput
           value={searchQuery}
-          onChange={setSearchQuery}
+          onChange={tableState.updateSearch}
           placeholder="Search by asset name..."
         />
         <Space size="large">
@@ -461,9 +468,8 @@ export const DiscoveredAssetsTable = ({
             <Button
               onClick={() => {
                 setColumnFilters({});
-                setSearchQuery("");
-                setSortField(undefined);
-                setSortOrder(undefined);
+                tableState.updateSearch(""); // Clear search using tableState
+                tableState.updateSorting(undefined, undefined); // Clear sorting using tableState
               }}
               data-testid="clear-filters"
             >
