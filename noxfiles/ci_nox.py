@@ -1,6 +1,7 @@
 """Contains the nox sessions used during CI checks."""
 
 from functools import partial
+from pathlib import Path
 from typing import Callable, Dict
 
 import nox
@@ -330,6 +331,27 @@ TEST_MATRIX: Dict[str, Callable] = {
     "nox": pytest_nox,
 }
 
+# Define the mapping of test directories to test groups
+# This maps actual test directories to the test groups that cover them
+TEST_DIRECTORY_COVERAGE = {
+    "tests/api/": ["api"],
+    "tests/ctl/": ["ctl-unit", "ctl-not-external", "ctl-integration", "ctl-external"],
+    "tests/lib/": ["lib"],
+    "tests/ops/": [
+        "ops-unit",
+        "ops-unit-api",
+        "ops-unit-non-api",
+        "ops-integration",
+        "ops-external-datastores",
+        "ops-saas",
+    ],
+    "tests/service/": ["api"],  # service tests are covered by api tests
+    "tests/task/": ["api"],  # task tests are covered by api tests
+    "tests/util/": ["lib"],  # util tests are covered by lib tests
+    "tests/qa/": ["api"],  # qa tests are covered by api tests
+    "tests/fixtures/": [],  # fixtures are not test files, just test data
+}
+
 
 def validate_test_matrix(session: nox.Session) -> None:
     """
@@ -354,6 +376,7 @@ def collect_tests(session: nox.Session) -> None:
     install_requirements(session, True)
     command = ("pytest", "tests/", "--collect-only")
     session.run(*command)
+    validate_test_coverage(session)
 
 
 @nox.session()
@@ -435,3 +458,110 @@ def check_worker_startup(session: Session) -> None:
         session.run(
             *cleanup_command, external=True, silent=True
         )  # silent=True avoids extra noise if already down
+
+
+def _check_test_directory_coverage(
+    test_dir: str,
+) -> tuple[list[str], list[str], list[str]]:
+    """
+    Check coverage for a single test directory.
+
+    Returns:
+        tuple of (missing_coverage, uncovered_dirs, excluded_dirs)
+    """
+    missing_coverage = []
+    uncovered_dirs = []
+    excluded_dirs = []
+
+    if test_dir not in TEST_DIRECTORY_COVERAGE:
+        uncovered_dirs.append(f"{test_dir} - No coverage mapping defined")
+    elif not TEST_DIRECTORY_COVERAGE[test_dir]:
+        # Directory is explicitly marked as not needing coverage (like fixtures)
+        excluded_dirs.append(
+            f"{test_dir} - Explicitly excluded from coverage (fixtures/data)"
+        )
+    else:
+        # Check that all required test groups exist in TEST_MATRIX
+        required_groups = TEST_DIRECTORY_COVERAGE[test_dir]
+        missing_groups = [
+            group for group in required_groups if group not in TEST_MATRIX
+        ]
+        if missing_groups:
+            missing_coverage.append(
+                f"{test_dir} - Missing test groups: {', '.join(missing_groups)}"
+            )
+
+    return missing_coverage, uncovered_dirs, excluded_dirs
+
+
+def _find_unused_test_groups() -> list[str]:
+    """Find test groups in TEST_MATRIX that don't correspond to actual directories."""
+    all_required_groups = set()
+    for groups in TEST_DIRECTORY_COVERAGE.values():
+        all_required_groups.update(groups)
+
+    unused_groups = []
+    for group in TEST_MATRIX:
+        if group not in all_required_groups:
+            unused_groups.append(f"{group} - No test directory mapping defined")
+
+    return unused_groups
+
+
+@nox.session()
+def validate_test_coverage(session: nox.Session) -> None:
+    """
+    Validates that all test directories are being run in CI.
+
+    This session checks that all test directories (i.e., those under `/tests/`) have corresponding CI sessions
+    and fails if any are missing.
+    """
+    # Check which test directories actually exist
+    tests_dir = Path("tests")
+    existing_test_dirs = []
+
+    for item in tests_dir.iterdir():
+        if (
+            item.is_dir()
+            and not item.name.startswith("__")
+            and not item.name.startswith(".")
+        ):
+            existing_test_dirs.append(f"tests/{item.name}/")
+
+    # Check coverage for each test directory
+    all_missing_coverage = []
+    all_uncovered_dirs = []
+    all_excluded_dirs = []
+
+    for test_dir in existing_test_dirs:
+        missing_coverage, uncovered_dirs, excluded_dirs = (
+            _check_test_directory_coverage(test_dir)
+        )
+        all_missing_coverage.extend(missing_coverage)
+        all_uncovered_dirs.extend(uncovered_dirs)
+        all_excluded_dirs.extend(excluded_dirs)
+
+    # Find unused test groups
+    unused_groups = _find_unused_test_groups()
+
+    # Report results
+    for excluded_dir in all_excluded_dirs:
+        session.log(f"ℹ️  {excluded_dir}")
+
+    if all_uncovered_dirs:
+        session.warn(
+            "Test directories without coverage mapping:\n"
+            + "\n".join(all_uncovered_dirs)
+        )
+
+    if unused_groups:
+        session.warn(
+            "Test groups without directory mapping:\n" + "\n".join(unused_groups)
+        )
+
+    if all_missing_coverage:
+        session.error(
+            "Test directories not covered by CI:\n" + "\n".join(all_missing_coverage)
+        )
+    else:
+        session.log("✅ All test directories are covered by CI sessions")
