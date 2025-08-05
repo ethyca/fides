@@ -28,11 +28,20 @@ from tests.ops.integration_tests.saas.connector_runner import (
 )
 from tests.ops.test_helpers.onepassword_client import get_secrets
 
-secrets = get_secrets("stripe")
+# Lazy loading of secrets to avoid 1Password authentication during module import
+_secrets = None
+
+
+def _get_secrets():
+    global _secrets
+    if _secrets is None:
+        _secrets = get_secrets("stripe")
+    return _secrets
 
 
 @pytest.fixture(scope="session")
 def stripe_secrets(saas_config):
+    secrets = _get_secrets()
     return {
         "domain": pydash.get(saas_config, "stripe.domain") or secrets["domain"],
         "api_key": pydash.get(saas_config, "stripe.api_key") or secrets["api_key"],

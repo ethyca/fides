@@ -22,11 +22,20 @@ from fides.api.util.saas_util import (
 )
 from tests.ops.test_helpers.onepassword_client import get_secrets
 
-secrets = get_secrets("mailchimp")
+# Lazy loading of secrets to avoid 1Password authentication during module import
+_secrets = None
+
+
+def _get_secrets():
+    global _secrets
+    if _secrets is None:
+        _secrets = get_secrets("mailchimp")
+    return _secrets
 
 
 @pytest.fixture(scope="session")
 def mailchimp_secrets(saas_config):
+    secrets = _get_secrets()
     return {
         "domain": pydash.get(saas_config, "mailchimp.domain") or secrets["domain"],
         "username": pydash.get(saas_config, "mailchimp.username")
