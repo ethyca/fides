@@ -315,58 +315,14 @@ def pytest_api(session: Session, coverage_arg: str) -> None:
     session.run(*run_command, external=True)
 
 
-def pytest_service(session: Session, coverage_arg: str) -> None:
-    """Runs tests under /tests/service/"""
-    session.notify("teardown")
-    session.run(*START_APP, external=True)
-    run_command = (
-        *EXEC,
-        "pytest",
-        coverage_arg,
-        "tests/service/",
-        "-m",
-        "not integration and not integration_external and not integration_saas",
-    )
-    session.run(*run_command, external=True)
-
-
-def pytest_task(session: Session, coverage_arg: str) -> None:
-    """Runs tests under /tests/task/"""
-    session.notify("teardown")
-    session.run(*START_APP, external=True)
-    run_command = (
-        *EXEC,
-        "pytest",
-        coverage_arg,
-        "tests/task/",
-        "-m",
-        "not integration and not integration_external and not integration_saas",
-    )
-    session.run(*run_command, external=True)
-
-
-def pytest_util(session: Session, coverage_arg: str) -> None:
-    """Runs tests under /tests/util/"""
-    session.notify("teardown")
-    session.run(*START_APP, external=True)
-    run_command = (
-        *EXEC,
-        "pytest",
-        coverage_arg,
-        "tests/util/",
-        "-m",
-        "not integration and not integration_external and not integration_saas",
-    )
-    session.run(*run_command, external=True)
-
-
 def pytest_misc_integration(session: Session, coverage_arg: str) -> None:
-    """Runs integration tests from smaller test directories."""
+    """Runs all tests from smaller test directories."""
     session.notify("teardown")
-    # Use the integration infrastructure to run integration tests from multiple directories
+    # Use the integration infrastructure to run all tests from multiple directories
+    # Need PostgreSQL for service integration tests and BigQuery for QA tests
     run_infrastructure(
         run_tests=True,
         analytics_opt_out=True,
-        datastores=[],
-        pytest_path="tests/service/ tests/task/ tests/qa/",
+        datastores=["postgres", "bigquery"],
+        pytest_path="tests/service/ tests/task/ tests/util/ tests/qa/",
     )

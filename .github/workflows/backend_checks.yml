@@ -223,9 +223,6 @@ jobs:
           - "ops-integration"
           - "api"
           - "lib"
-          - "service"
-          - "task"
-          - "util"
           - "misc-integration"
 
     runs-on: ubuntu-latest

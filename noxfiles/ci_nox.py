@@ -25,9 +25,6 @@ from setup_tests_nox import (
     pytest_misc_integration,
     pytest_nox,
     pytest_ops,
-    pytest_service,
-    pytest_task,
-    pytest_util,
 )
 from utils_nox import db, install_requirements
 
@@ -322,9 +319,6 @@ TEST_GROUPS = [
     nox.param("ops-saas", id="ops-saas"),
     nox.param("api", id="api"),
     nox.param("lib", id="lib"),
-    nox.param("service", id="service"),
-    nox.param("task", id="task"),
-    nox.param("util", id="util"),
     nox.param("misc-integration", id="misc-integration"),
     nox.param("nox", id="nox"),
 ]
@@ -342,9 +336,6 @@ TEST_MATRIX: Dict[str, Callable] = {
     "ops-saas": partial(pytest_ops, mark="saas"),
     "api": pytest_api,
     "lib": pytest_lib,
-    "service": pytest_service,
-    "task": pytest_task,
-    "util": pytest_util,
     "misc-integration": pytest_misc_integration,
     "nox": pytest_nox,
 }
@@ -363,9 +354,9 @@ TEST_DIRECTORY_COVERAGE = {
         "ops-external-datastores",
         "ops-saas",
     ],
-    "tests/service/": ["service", "misc-integration"],
-    "tests/task/": ["task", "misc-integration"],
-    "tests/util/": ["util"],
+    "tests/service/": ["misc-integration"],
+    "tests/task/": ["misc-integration"],
+    "tests/util/": ["misc-integration"],
     "tests/qa/": ["misc-integration"],
     "tests/fixtures/": [],  # fixtures are not test files, just test data
 }
