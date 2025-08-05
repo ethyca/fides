@@ -59,6 +59,7 @@
     "next": "^14.2.25",
     "next-swagger-doc": "^0.4.0",
     "next-transpile-modules": "^10.0.0",
+    "nuqs": "^2.4.3",
     "papaparse": "^5.5.3",
     "query-string": "^9.0.0",
     "react": "^18.3.1",

@@ -9,6 +9,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { defaultAntTheme, FidesUIProvider, Flex } from "fidesui";
 import type { AppProps } from "next/app";
+import { NuqsAdapter } from "nuqs/adapters/next/pages";
 import React, { ReactNode } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -43,23 +44,25 @@ const MyApp = ({ Component, pageProps }: AppProps) => (
       <PersistGate loading={null} persistor={persistor}>
         <FidesUIProvider theme={theme} antTheme={defaultAntTheme}>
           <DndProvider backend={HTML5Backend}>
-            {Component === Login || Component === LoginWithOIDC ? (
-              // Only the login page is accessible while logged out. If there is
-              // a use case for more unprotected routes, Next has a guide for
-              // per-page layouts:
-              // https://nextjs.org/docs/basic-features/layouts#per-page-layouts
-              <Component {...pageProps} />
-            ) : (
-              <ProtectedRoute>
-                <CommonSubscriptions />
-                <Flex width="100%" height="100%" flex={1}>
-                  <MainSideNav />
-                  <Flex direction="column" width="100%">
-                    <Component {...pageProps} />
+            <NuqsAdapter>
+              {Component === Login || Component === LoginWithOIDC ? (
+                // Only the login page is accessible while logged out. If there is
+                // a use case for more unprotected routes, Next has a guide for
+                // per-page layouts:
+                // https://nextjs.org/docs/basic-features/layouts#per-page-layouts
+                <Component {...pageProps} />
+              ) : (
+                <ProtectedRoute>
+                  <CommonSubscriptions />
+                  <Flex width="100%" height="100%" flex={1}>
+                    <MainSideNav />
+                    <Flex direction="column" width="100%">
+                      <Component {...pageProps} />
+                    </Flex>
                   </Flex>
-                </Flex>
-              </ProtectedRoute>
-            )}
+                </ProtectedRoute>
+              )}
+            </NuqsAdapter>
           </DndProvider>
         </FidesUIProvider>
       </PersistGate>
