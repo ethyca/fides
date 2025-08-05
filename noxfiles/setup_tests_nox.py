@@ -360,21 +360,6 @@ def pytest_util(session: Session, coverage_arg: str) -> None:
     session.run(*run_command, external=True)
 
 
-def pytest_qa(session: Session, coverage_arg: str) -> None:
-    """Runs tests under /tests/qa/"""
-    session.notify("teardown")
-    session.run(*START_APP, external=True)
-    run_command = (
-        *EXEC,
-        "pytest",
-        coverage_arg,
-        "tests/qa/",
-        "-m",
-        "not integration and not integration_external and not integration_saas",
-    )
-    session.run(*run_command, external=True)
-
-
 def pytest_misc_integration(session: Session, coverage_arg: str) -> None:
     """Runs integration tests from smaller test directories."""
     session.notify("teardown")

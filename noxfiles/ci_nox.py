@@ -25,7 +25,6 @@ from setup_tests_nox import (
     pytest_misc_integration,
     pytest_nox,
     pytest_ops,
-    pytest_qa,
     pytest_service,
     pytest_task,
     pytest_util,
@@ -326,7 +325,6 @@ TEST_GROUPS = [
     nox.param("service", id="service"),
     nox.param("task", id="task"),
     nox.param("util", id="util"),
-    nox.param("qa", id="qa"),
     nox.param("misc-integration", id="misc-integration"),
     nox.param("nox", id="nox"),
 ]
@@ -347,7 +345,6 @@ TEST_MATRIX: Dict[str, Callable] = {
     "service": pytest_service,
     "task": pytest_task,
     "util": pytest_util,
-    "qa": pytest_qa,
     "misc-integration": pytest_misc_integration,
     "nox": pytest_nox,
 }
@@ -369,7 +366,7 @@ TEST_DIRECTORY_COVERAGE = {
     "tests/service/": ["service", "misc-integration"],
     "tests/task/": ["task", "misc-integration"],
     "tests/util/": ["util"],
-    "tests/qa/": ["qa", "misc-integration"],
+    "tests/qa/": ["misc-integration"],
     "tests/fixtures/": [],  # fixtures are not test files, just test data
 }
 

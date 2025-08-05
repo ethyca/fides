@@ -226,7 +226,6 @@ jobs:
           - "service"
           - "task"
           - "util"
-          - "qa"
           - "misc-integration"
 
     runs-on: ubuntu-latest
