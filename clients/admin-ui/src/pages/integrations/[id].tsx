@@ -81,8 +81,6 @@ const IntegrationDetailView: NextPage = () => {
     supportsConnectionTest,
   });
 
-  console.log("tabs", tabs);
-
   const { activeTab, onTabChange } = useURLHashedTabs({
     tabKeys: tabs.map((tab) => tab.key),
   });
