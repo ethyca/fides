@@ -59,10 +59,8 @@ async def create_resource(
                 query = _insert(sql_model.__table__).values(resource_dict)
                 await async_session.execute(query)
             except SQLAlchemyError:
+                log.exception("Failed to create resource")
                 sa_error = errors.QueryError()
-                log.bind(error=sa_error.detail["error"]).info(  # type: ignore[index]
-                    "Failed to create resource"
-                )
                 raise sa_error
 
         return await get_resource(sql_model, resource_dict["fides_key"], async_session)
@@ -109,9 +107,7 @@ async def get_custom_fields_filtered(
                 return result.mappings().all()
             except SQLAlchemyError:
                 sa_error = errors.QueryError()
-                log.bind(error=sa_error.detail["error"]).error(  # type: ignore[index]
-                    "Failed to fetch custom fields"
-                )
+                log.exception("Failed to fetch custom fields")
                 raise sa_error
 
 
@@ -134,9 +130,7 @@ async def get_resource(
                 result = await async_session.execute(query)
             except SQLAlchemyError:
                 sa_error = errors.QueryError()
-                log.bind(error=sa_error.detail["error"]).info(  # type: ignore[index]
-                    "Failed to fetch resource"
-                )
+                log.exception("Failed to fetch resource")
                 raise sa_error
 
             sql_resource = result.scalars().first()
@@ -180,9 +174,7 @@ async def get_resource_with_custom_fields(
                 result = await async_session.execute(query)
             except SQLAlchemyError:
                 sa_error = errors.QueryError()
-                log.bind(error=sa_error.detail["error"]).info(  # type: ignore[index]
-                    "Failed to fetch custom fields"
-                )
+                log.exception("Failed to fetch custom fields")
                 raise sa_error
 
             custom_fields = result.mappings().all()
@@ -226,11 +218,9 @@ async def list_resource_query(
                 result = await async_session.execute(query)
                 sql_resources = result.scalars().all()
             except SQLAlchemyError:
-                error = errors.QueryError()
-                log.bind(error=error.detail["error"]).info(  # type: ignore[index]
-                    "Failed to fetch resources"
-                )
-                raise error
+                log.exception("Failed to fetch resources")
+                sa_error = errors.QueryError()
+                raise sa_error
 
             return sql_resources
 
@@ -254,11 +244,9 @@ async def update_resource(
                     .values(resource_dict)
                 )
             except SQLAlchemyError:
-                error = errors.QueryError()
-                log.bind(error=error.detail["error"]).info(  # type: ignore[index]
-                    "Failed to update resource"
-                )
-                raise error
+                log.exception("Failed to update resource")
+                sa_error = errors.QueryError()
+                raise sa_error
 
         return await get_resource(sql_model, resource_dict["fides_key"], async_session)
 
@@ -307,12 +295,9 @@ async def upsert_resources(
                 return (inserts, updates)
 
             except SQLAlchemyError:
-                error = errors.QueryError()
-                log.bind(error=error.detail["error"]).info(  # type: ignore[index]
-                    "Failed to upsert resources"
-                )
-                log.exception(error)
-                raise error
+                log.exception("Failed to upsert resources")
+                sa_error = errors.QueryError()
+                raise sa_error
 
 
 async def delete_resource(
@@ -362,10 +347,8 @@ async def delete_resource(
                     detail=error_message,
                 )
             except SQLAlchemyError:
-                error = errors.QueryError()
-                log.bind(error=error.detail["error"]).info(  # type: ignore[index]
-                    "Failed to delete resource"
-                )
-                raise error
+                log.exception("Failed to delete resource")
+                sa_error = errors.QueryError()
+                raise sa_error
 
         return sql_resource
