@@ -30,6 +30,10 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Developer Experience
 - Switching from Vault to 1password for SaaS test credentials [#6363](https://github.com/ethyca/fides/pull/6363)
 
+### Fixed
+- Fix default tab not being set in the integration detail page for Manual Tasks integrations [#6417](https://github.com/ethyca/fides/pull/6417)
+
+
 ## [2.67.0](https://github.com/ethyca/fides/compare/2.66.2...2.67.0)
 
 ### Added

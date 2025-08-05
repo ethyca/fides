@@ -4,6 +4,7 @@ import pytest
 from pydantic import BaseModel
 from sqlalchemy import text
 
+from fides.api.common_exceptions import ConnectionException, TableNotFound
 from fides.api.graph.execution import ExecutionNode
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.service.connectors.sql_connector import SQLConnector
@@ -381,3 +382,135 @@ class TestSQLConnectorDryRun:
             assert affected_rows == 1
             assert "SQL DRY RUN - Would execute SQL:" not in loguru_caplog.text
             mock_connection.execute.assert_called_once()
+
+    def test_mask_data_table_not_found_leaf_collection(
+        self,
+        mock_connector,
+        mock_execution_node,
+        mock_privacy_request,
+        mock_request_task,
+        db,
+    ):
+        """Test that mask_data raises TableNotFound when table doesn't exist for leaf collection"""
+        mock_query_config = MagicMock()
+        mock_query_config.generate_update_stmt.return_value = text(
+            "UPDATE test_table SET name = NULL WHERE id = :id"
+        )
+
+        mock_connection = MagicMock()
+        mock_connection.execute.side_effect = Exception("Table doesn't exist")
+
+        # Mock as leaf collection (no dependencies)
+        mock_execution_node.has_outgoing_dependencies.return_value = False
+
+        with (
+            patch.object(
+                mock_connector, "query_config", return_value=mock_query_config
+            ),
+            patch.object(mock_connector, "client") as mock_client,
+            patch.object(mock_connector, "set_schema"),
+            patch.object(
+                mock_connector, "get_qualified_table_name", return_value="test_table"
+            ),
+            patch.object(mock_connector, "table_exists", return_value=False),
+        ):
+            mock_client.return_value.connect.return_value.__enter__.return_value = (
+                mock_connection
+            )
+
+            with pytest.raises(TableNotFound):
+                mock_connector.mask_data(
+                    node=mock_execution_node,
+                    policy=MagicMock(),
+                    privacy_request=mock_privacy_request,
+                    request_task=mock_request_task,
+                    rows=[{"id": 1, "name": "test"}],
+                )
+
+    def test_mask_data_table_not_found_collection_with_dependencies(
+        self,
+        mock_connector,
+        mock_execution_node,
+        mock_privacy_request,
+        mock_request_task,
+        db,
+    ):
+        """Test that mask_data raises ConnectionException when table doesn't exist for collection with dependencies"""
+        mock_query_config = MagicMock()
+        mock_query_config.generate_update_stmt.return_value = text(
+            "UPDATE customer SET name = NULL WHERE id = :id"
+        )
+
+        mock_connection = MagicMock()
+        mock_connection.execute.side_effect = Exception("Table doesn't exist")
+
+        # Mock as collection with dependencies
+        mock_execution_node.has_outgoing_dependencies.return_value = True
+
+        with (
+            patch.object(
+                mock_connector, "query_config", return_value=mock_query_config
+            ),
+            patch.object(mock_connector, "client") as mock_client,
+            patch.object(mock_connector, "set_schema"),
+            patch.object(
+                mock_connector, "get_qualified_table_name", return_value="customer"
+            ),
+            patch.object(mock_connector, "table_exists", return_value=False),
+        ):
+            mock_client.return_value.connect.return_value.__enter__.return_value = (
+                mock_connection
+            )
+
+            with pytest.raises(ConnectionException):
+                mock_connector.mask_data(
+                    node=mock_execution_node,
+                    policy=MagicMock(),
+                    privacy_request=mock_privacy_request,
+                    request_task=mock_request_task,
+                    rows=[{"id": 1, "name": "test"}],
+                )
+
+    def test_mask_data_table_exists_error_passthrough(
+        self,
+        mock_connector,
+        mock_execution_node,
+        mock_privacy_request,
+        mock_request_task,
+        db,
+    ):
+        """Test that mask_data re-raises original exception when table exists but other error occurs"""
+        mock_query_config = MagicMock()
+        mock_query_config.generate_update_stmt.return_value = text(
+            "UPDATE test_table SET name = NULL WHERE id = :id"
+        )
+
+        mock_connection = MagicMock()
+        mock_connection.execute.side_effect = Exception("Permission denied")
+
+        with (
+            patch.object(
+                mock_connector, "query_config", return_value=mock_query_config
+            ),
+            patch.object(mock_connector, "client") as mock_client,
+            patch.object(mock_connector, "set_schema"),
+            patch.object(
+                mock_connector, "get_qualified_table_name", return_value="test_table"
+            ),
+            patch.object(
+                mock_connector, "table_exists", return_value=True
+            ),  # Table exists
+        ):
+            mock_client.return_value.connect.return_value.__enter__.return_value = (
+                mock_connection
+            )
+
+            # Should re-raise original exception when table exists
+            with pytest.raises(Exception, match="Permission denied"):
+                mock_connector.mask_data(
+                    node=mock_execution_node,
+                    policy=MagicMock(),
+                    privacy_request=mock_privacy_request,
+                    request_task=mock_request_task,
+                    rows=[{"id": 1, "name": "test"}],
+                )
