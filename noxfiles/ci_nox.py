@@ -18,7 +18,18 @@ from constants_nox import (
     START_APP,
     WITH_TEST_CONFIG,
 )
-from setup_tests_nox import pytest_api, pytest_ctl, pytest_lib, pytest_nox, pytest_ops
+from setup_tests_nox import (
+    pytest_api,
+    pytest_ctl,
+    pytest_lib,
+    pytest_nox,
+    pytest_ops,
+    pytest_service,
+    pytest_task,
+    pytest_util,
+    pytest_qa,
+    pytest_misc_integration,
+)
 from utils_nox import db, install_requirements
 
 
@@ -312,6 +323,11 @@ TEST_GROUPS = [
     nox.param("ops-saas", id="ops-saas"),
     nox.param("api", id="api"),
     nox.param("lib", id="lib"),
+    nox.param("service", id="service"),
+    nox.param("task", id="task"),
+    nox.param("util", id="util"),
+    nox.param("qa", id="qa"),
+    nox.param("misc-integration", id="misc-integration"),
     nox.param("nox", id="nox"),
 ]
 
@@ -328,6 +344,11 @@ TEST_MATRIX: Dict[str, Callable] = {
     "ops-saas": partial(pytest_ops, mark="saas"),
     "api": pytest_api,
     "lib": pytest_lib,
+    "service": partial(pytest_service, mark="unit"),
+    "task": partial(pytest_task, mark="unit"),
+    "util": pytest_util,
+    "qa": pytest_qa,
+    "misc-integration": pytest_misc_integration,
     "nox": pytest_nox,
 }
 
@@ -345,10 +366,10 @@ TEST_DIRECTORY_COVERAGE = {
         "ops-external-datastores",
         "ops-saas",
     ],
-    "tests/service/": ["api"],  # service tests are covered by api tests
-    "tests/task/": ["api"],  # task tests are covered by api tests
-    "tests/util/": ["lib"],  # util tests are covered by lib tests
-    "tests/qa/": ["api"],  # qa tests are covered by api tests
+    "tests/service/": ["service", "misc-integration"],
+    "tests/task/": ["task", "misc-integration"],
+    "tests/util/": ["util"],
+    "tests/qa/": ["qa", "misc-integration"],
     "tests/fixtures/": [],  # fixtures are not test files, just test data
 }
 
@@ -475,11 +496,14 @@ def _check_test_directory_coverage(
 
     if test_dir not in TEST_DIRECTORY_COVERAGE:
         uncovered_dirs.append(f"{test_dir} - No coverage mapping defined")
-    elif not TEST_DIRECTORY_COVERAGE[test_dir]:
+    elif test_dir == "tests/fixtures/":
         # Directory is explicitly marked as not needing coverage (like fixtures)
         excluded_dirs.append(
             f"{test_dir} - Explicitly excluded from coverage (fixtures/data)"
         )
+    elif not TEST_DIRECTORY_COVERAGE[test_dir]:
+        # Directory is marked as not covered by any test group
+        uncovered_dirs.append(f"{test_dir} - No test group covers this directory")
     else:
         # Check that all required test groups exist in TEST_MATRIX
         required_groups = TEST_DIRECTORY_COVERAGE[test_dir]
@@ -562,6 +586,10 @@ def validate_test_coverage(session: nox.Session) -> None:
     if all_missing_coverage:
         session.error(
             "Test directories not covered by CI:\n" + "\n".join(all_missing_coverage)
+        )
+    elif all_uncovered_dirs:
+        session.error(
+            "Test directories not covered by CI:\n" + "\n".join(all_uncovered_dirs)
         )
     else:
         session.log("✅ All test directories are covered by CI sessions")
