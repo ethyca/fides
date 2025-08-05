@@ -21,6 +21,10 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.67.0...main)
 
+### Fixed
+- Fix default tab not being set in the integration detail page for Manual Tasks integrations [#6417](https://github.com/ethyca/fides/pull/6417)
+
+
 ## [2.67.0](https://github.com/ethyca/fides/compare/2.66.2...2.67.0)
 
 ### Added
