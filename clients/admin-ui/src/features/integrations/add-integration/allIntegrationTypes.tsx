@@ -32,7 +32,7 @@ export type IntegrationTypeInfo = {
   description?: ReactNode;
   instructions?: ReactNode;
   tags: string[];
-  enabledFeatures: IntegrationFeatureEnum[];
+  enabledFeatures?: IntegrationFeatureEnum[];
 };
 
 // Define SaaS integrations
@@ -78,7 +78,7 @@ const EMPTY_TYPE = {
   },
   category: ConnectionCategory.DATA_WAREHOUSE,
   tags: [],
-  enabledFeatures: [] as IntegrationFeatureEnum[],
+  enabledFeatures: undefined,
 };
 
 const getIntegrationTypeInfo = (
