@@ -909,6 +909,7 @@ def bigquery_enterprise_erasure_policy(
     except ObjectDeletedError:
         pass
 
+
 @pytest.fixture(scope="function")
 def erasure_policy_aes(
     db: Session,

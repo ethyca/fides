@@ -23,6 +23,7 @@ from setup_tests_nox import (
     pytest_ctl,
     pytest_lib,
     pytest_misc_integration,
+    pytest_misc_unit,
     pytest_nox,
     pytest_ops,
 )

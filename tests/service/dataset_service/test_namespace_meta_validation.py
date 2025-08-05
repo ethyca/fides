@@ -14,6 +14,7 @@ from fides.service.dataset.validation_steps.namespace_meta import (
     NamespaceMetaValidationStep,
 )
 
+
 @pytest.mark.integration_snowflake
 def test_validate_no_connection_config():
     """Test validation when no connection config is provided"""
