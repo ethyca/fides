@@ -328,7 +328,7 @@ def pytest_misc_unit(session: Session, coverage_arg: str) -> None:
         "tests/util/",
         "tests/qa/",
         "-m",
-        "not integration and not integration_external and not integration_saas",
+        "not integration and not integration_external and not integration_saas and not integration_snowflake and not integration_bigquery and not integration_postgres",
     )
     session.run(*run_command, external=True)
 

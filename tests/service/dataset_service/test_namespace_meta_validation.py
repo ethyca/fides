@@ -15,7 +15,6 @@ from fides.service.dataset.validation_steps.namespace_meta import (
 )
 
 
-@pytest.mark.integration_snowflake
 def test_validate_no_connection_config():
     """Test validation when no connection config is provided"""
     dataset = FideslangDataset(fides_key="test_dataset", collections=[])
@@ -25,7 +24,6 @@ def test_validate_no_connection_config():
     validator.validate(context)  # Should not raise any exceptions
 
 
-@pytest.mark.integration_snowflake
 def test_validate_unsupported_connection_type():
     """Test validation with a connection type that doesn't require namespace metadata"""
     dataset = FideslangDataset(fides_key="test_dataset", collections=[])
@@ -42,7 +40,6 @@ def test_validate_unsupported_connection_type():
     validator.validate(context)
 
 
-@pytest.mark.integration_snowflake
 def test_validate_snowflake_missing_namespace_and_secrets():
     """Test validation fails when Snowflake dataset has no namespace metadata and missing required secrets"""
     dataset = FideslangDataset(fides_key="test_dataset", collections=[])
@@ -66,7 +63,6 @@ def test_validate_snowflake_missing_namespace_and_secrets():
     ) in str(exc.value)
 
 
-@pytest.mark.integration_snowflake
 def test_validate_snowflake_with_valid_namespace():
     """Test validation succeeds with valid Snowflake namespace metadata"""
     dataset = FideslangDataset(
@@ -93,7 +89,6 @@ def test_validate_snowflake_with_valid_namespace():
     validator.validate(context)
 
 
-@pytest.mark.integration_snowflake
 def test_validate_snowflake_with_invalid_namespace():
     """Test validation fails with invalid Snowflake namespace metadata"""
     dataset = FideslangDataset(
@@ -122,7 +117,6 @@ def test_validate_snowflake_with_invalid_namespace():
     assert "Invalid namespace metadata for snowflake" in str(exc.value)
 
 
-@pytest.mark.integration_bigquery
 def test_validate_bigquery_with_valid_namespace():
     """Test validation succeeds with valid BigQuery namespace metadata"""
     dataset = FideslangDataset(
@@ -149,7 +143,6 @@ def test_validate_bigquery_with_valid_namespace():
     validator.validate(context)
 
 
-@pytest.mark.integration_bigquery
 def test_validate_bigquery_with_invalid_namespace():
     """Test validation fails with invalid BigQuery namespace metadata"""
     dataset = FideslangDataset(
@@ -178,7 +171,6 @@ def test_validate_bigquery_with_invalid_namespace():
     assert "Invalid namespace metadata for bigquery" in str(exc.value)
 
 
-@pytest.mark.integration_snowflake
 def test_validate_with_connection_defaults():
     """Test validation succeeds when connection has required secret fields"""
     dataset = FideslangDataset(fides_key="test_dataset", collections=[])
@@ -199,7 +191,6 @@ def test_validate_with_connection_defaults():
     validator.validate(context)
 
 
-@pytest.mark.integration_bigquery
 @pytest.mark.parametrize(
     "falsy_value",
     [None, ""],
@@ -227,7 +218,6 @@ def test_validate_bigquery_with_missing_dataset(falsy_value):
     ) in str(exc.value)
 
 
-@pytest.mark.integration_snowflake
 @pytest.mark.parametrize(
     "field,falsy_value",
     [
