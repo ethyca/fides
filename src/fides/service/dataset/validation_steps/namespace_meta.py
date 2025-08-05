@@ -33,7 +33,7 @@ class NamespaceMetaValidationStep(DatasetValidationStep):
 
         if not namespace_meta and not has_connection_defaults:
             field_descriptions = ", ".join(
-                sorted(field_label for _, field_label in required_fields)
+                field_label for _, field_label in required_fields
             )
             raise ValidationError(
                 f"Dataset for {connection_type} connection must either have namespace metadata "

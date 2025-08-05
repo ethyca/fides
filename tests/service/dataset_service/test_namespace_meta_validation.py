@@ -59,7 +59,7 @@ def test_validate_snowflake_missing_namespace_and_secrets():
 
     assert (
         "Dataset for snowflake connection must either have namespace metadata "
-        "or the connection must have values for the following fields: Schema, Database"
+        "or the connection must have values for the following fields: Database, Schema"
     ) in str(exc.value)
 
 
@@ -252,5 +252,5 @@ def test_validate_snowflake_with_missing_required_fields(field, falsy_value):
 
     assert (
         "Dataset for snowflake connection must either have namespace metadata "
-        "or the connection must have values for the following fields: Schema, Database"
+        "or the connection must have values for the following fields: Database, Schema"
     ) in str(exc.value)

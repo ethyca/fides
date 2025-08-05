@@ -88,7 +88,7 @@ def pytest_ctl(session: Session, mark: str, coverage_arg: str) -> None:
             coverage_arg,
             "-m",
             "external",
-            "tests/ctl",
+            "tests/ctl tests/qa",
             "--tb=no",
         )
         session.run(*run_command, external=True)
