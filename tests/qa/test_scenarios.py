@@ -34,7 +34,6 @@ def create_scenario_instance(scenario_class: Type[QATestScenario]) -> QATestScen
 SCENARIOS = discover_scenarios()
 
 
-@pytest.mark.integration_bigquery
 @pytest.mark.parametrize("scenario_name,scenario_class", list(SCENARIOS.items()))
 def test_scenario_setup_and_teardown(scenario_name, scenario_class):
     """Test each scenario's setup and teardown methods."""
