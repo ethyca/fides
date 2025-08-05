@@ -2,10 +2,16 @@
 """
 QA scenario for testing ManualTask and ManualTaskConditionalDependencies with postgres-example database.
 """
+# Enable DSR 3.0 execution BEFORE any other imports
+from fides.config import CONFIG
+CONFIG.execution.use_dsr_3_0 = True
+print(f"🔧 DSR 3.0 enabled at startup: {CONFIG.execution.use_dsr_3_0}")
 
-import psycopg2
 import sys
+import argparse
+from datetime import datetime
 from pathlib import Path
+from sqlalchemy.orm import Session, sessionmaker
 from uuid import uuid4
 
 # Add project root and qa directory to path for imports
@@ -17,13 +23,10 @@ if str(project_root) not in sys.path:
 if str(qa_dir) not in sys.path:
     sys.path.insert(0, str(qa_dir))
 
-# Enable DSR 3.0 execution BEFORE any other imports
-from fides.config import CONFIG
-CONFIG.execution.use_dsr_3_0 = True
-print(f"🔧 DSR 3.0 enabled at startup: {CONFIG.execution.use_dsr_3_0}")
 
 from qa.utils import QATestScenario, Argument
 
+from fides.api.db.ctl_session import sync_engine
 from fides.api.db.base import *
 from fides.api.db.database import seed_db
 from fides.api.models.connectionconfig import (
@@ -48,14 +51,131 @@ from fides.api.models.storage import StorageConfig
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.models.datasetconfig import DatasetConfig
-from datetime import datetime
-from sqlalchemy.orm import Session, sessionmaker
-from fides.api.db.ctl_session import sync_engine
+from fides.api.task.manual.manual_task_utils import get_manual_task_addresses, get_connection_configs_with_manual_tasks
 
 # Set up the manual test with python qa/scenarios/manual_task_with_conditional_dependencies.py
 # Teardown with python python qa/scenarios/manual_task_with_conditional_dependencies.py --teardown
 
 POSTGRES_DATASET_KEY = "postgres_example_test_dataset"
+POSTGRES_HOST = "postgres_example"
+POSTGRES_PORT = 5432
+POSTGRES_DBNAME = "postgres_example"
+POSTGRES_USERNAME = "postgres"
+POSTGRES_PASSWORD = "postgres"
+
+DATA_CATEGORIES = [
+    "user.contact.email",
+    "user.name",
+    "user.unique_id",
+    "user.contact.address.city",
+    "user.contact.address.street",
+    "user.contact.address.state",
+    "user.contact.address.postal_code"
+]
+
+FIELDS_DATA = [
+    {
+        "field_key": "customer_verification",
+        "field_type": ManualTaskFieldType.checkbox,
+        "field_metadata": {
+            "label": "Customer Verification Required",
+            "required": True,
+            "help_text": "Check if customer identity needs verification"
+        }
+    },
+    {
+        "field_key": "data_scope",
+        "field_type": ManualTaskFieldType.text,
+        "field_metadata": {
+            "label": "Data Scope Description",
+            "required": False,
+            "help_text": "Describe the scope of data to be processed"
+        }
+    },
+    {
+        "field_key": "approval_notes",
+        "field_type": ManualTaskFieldType.text,
+        "field_metadata": {
+            "label": "Approval Notes",
+            "required": False,
+            "help_text": "Additional notes for approval process"
+        }
+    }
+]
+
+DEPENDENCIES_DATA = [
+    # Root group condition (AND)
+    {
+        "parent_id": None,
+        "condition_type": ManualTaskConditionalDependencyType.group,
+        "logical_operator": "and",
+        "sort_order": 0
+    },
+    # Customer name exists condition (leaf) - references postgres dataset field
+    {
+        "parent_id": None,  # Will be updated after root group is created
+        "condition_type": ManualTaskConditionalDependencyType.leaf,
+        "field_address": f"{POSTGRES_DATASET_KEY}:customer:name",
+        "operator": "exists",
+        "value": None,  # exists operator doesn't need a value
+        "sort_order": 0
+    },
+    # Customer email contains specific value condition (leaf) - references postgres dataset field
+    {
+        "parent_id": None,  # Will be updated after root group is created
+        "condition_type": ManualTaskConditionalDependencyType.leaf,
+        "field_address": f"{POSTGRES_DATASET_KEY}:customer:email",
+        "operator": "list_contains",
+        "value": "customer-1",
+        "sort_order": 1
+    },
+    # Nested group condition (OR)
+    {
+        "parent_id": None,  # Will be updated after root group is created
+        "condition_type": ManualTaskConditionalDependencyType.group,
+        "logical_operator": "or",
+        "sort_order": 2
+    },
+    # Customer ID condition (leaf) - references postgres dataset field
+    {
+        "parent_id": None,  # Will be updated after nested group is created
+        "condition_type": ManualTaskConditionalDependencyType.leaf,
+        "field_address": f"{POSTGRES_DATASET_KEY}:customer:id",
+        "operator": ">",
+        "value": 0,
+        "sort_order": 0
+    },
+    # Customer email not empty condition (leaf) - references postgres dataset field
+    {
+        "parent_id": None,  # Will be updated after nested group is created
+        "condition_type": ManualTaskConditionalDependencyType.leaf,
+        "field_address": f"{POSTGRES_DATASET_KEY}:customer:email",
+        "operator": "!=",
+        "value": "",
+        "sort_order": 1
+    }
+]
+
+
+def create_dependencies_data(manual_task_id: str) -> list[dict]:
+    return [
+        {
+            "manual_task_id": manual_task_id,
+            **dependency_data,
+        }
+        for dependency_data in DEPENDENCIES_DATA
+    ]
+
+
+def create_fields_data(manual_task_id: str, manual_task_config_id: str) -> list[dict]:
+    return [
+        {
+            "task_id": manual_task_id,
+            "config_id": manual_task_config_id,
+            **field_data,
+        }
+        for field_data in FIELDS_DATA
+    ]
 
 # Initialize database
 SessionLocal = sessionmaker(bind=sync_engine)
@@ -109,62 +229,57 @@ class ManualTaskWithConditionalDependencies(QATestScenario):
         print(f"Setting up ManualTask with conditional dependencies for connection: {self.connection_key}")
 
         try:
-            # Step 1: Setup postgres database and sample data
-            self.step(1, "Setting up postgres database and sample data")
-            if not self._setup_postgres_database():
-                self.error("Failed to setup postgres database")
-                return False
 
-            # Step 2: Create or verify postgres connection exists
-            self.step(2, "Creating/verifying postgres connection")
+            # Step 1: Create or verify postgres connection exists
+            self.step(1, "Creating/verifying postgres connection")
             if not self._create_or_verify_postgres_connection():
                 self.error(f"Failed to create/verify postgres connection {self.postgres_connection_key}")
                 return False
 
-            # Step 3: Create or verify ManualTask connection exists
-            self.step(3, "Creating/verifying ManualTask connection")
-            if not self._create_or_verify_connection():
+            # Step 2: Create or verify ManualTask connection exists
+            self.step(2, "Creating/verifying ManualTask connection")
+            if not self._create_or_verify_manual_task_connection():
                 self.error(f"Failed to create/verify connection {self.connection_key}")
                 return False
 
-            # Step 4: Create ManualTask
-            self.step(4, "Creating ManualTask")
+            # Step 3: Create ManualTask
+            self.step(3, "Creating ManualTask")
             if not self._create_manual_task():
                 self.error("Failed to create ManualTask")
                 return False
 
-            # Step 5: Create ManualTaskConfig
-            self.step(5, "Creating ManualTaskConfig")
+            # Step 4: Create ManualTaskConfig
+            self.step(4, "Creating ManualTaskConfig")
             if not self._create_manual_task_config():
                 self.error("Failed to create ManualTaskConfig")
                 return False
 
-            # Step 6: Create ManualTaskConfigFields
-            self.step(6, "Creating ManualTaskConfigFields")
+            # Step 5: Create ManualTaskConfigFields
+            self.step(5, "Creating ManualTaskConfigFields")
             if not self._create_manual_task_config_fields():
                 self.error("Failed to create ManualTaskConfigFields")
                 return False
 
-            # Step 7: Create ManualTaskConditionalDependencies
-            self.step(7, "Creating ManualTaskConditionalDependencies")
+            # Step 6: Create ManualTaskConditionalDependencies
+            self.step(6, "Creating ManualTaskConditionalDependencies")
             if not self._create_conditional_dependencies():
                 self.error("Failed to create ManualTaskConditionalDependencies")
                 return False
 
-            # Step 8: Create Policy
-            self.step(8, "Creating Policy")
+            # Step 7: Create Policy
+            self.step(7, "Creating Policy")
             if not self._create_policy():
                 self.error("Failed to create Policy")
                 return False
 
-            # Step 9: Create Privacy Request
-            self.step(9, "Creating Privacy Request")
+            # Step 8: Create Privacy Request
+            self.step(8, "Creating Privacy Request")
             if not self._create_privacy_request():
                 self.error("Failed to create Privacy Request")
                 return False
 
-            # Step 10: Debug - Check manual task integration
-            self.step(10, "Debug - Checking manual task integration")
+            # Step 9: Debug - Check manual task integration
+            self.step(9, "Debug - Checking manual task integration")
             self._debug_manual_task_integration()
 
             self.final_success("Setup completed successfully!")
@@ -245,144 +360,99 @@ class ManualTaskWithConditionalDependencies(QATestScenario):
             self.final_error(f"Cleanup failed: {e}")
             return False
 
-    def _setup_postgres_database(self) -> bool:
-        """Setup postgres database and load sample data."""
-        try:
-            self.info("📦 Assuming postgres database is already set up (running in Docker)")
-
-            # Try to connect to the database to verify it's working
-            try:
-                # Try connecting to the database
-                conn = psycopg2.connect(
-                    host="postgres_example",  # Docker service name
-                    port=5432,
-                    database="postgres_example",
-                    user="postgres",
-                    password="postgres"
-                )
-
-                # Check if customer table exists and has data
-                cursor = conn.cursor()
-                cursor.execute("SELECT COUNT(*) FROM customer;")
-                count = cursor.fetchone()[0]
-                cursor.close()
-                conn.close()
-
-                if count > 0:
-                    self.success(f"✅ Postgres database is ready with {count} customers")
-                    return True
-                else:
-                    self.warning("⚠️ Postgres database exists but has no customer data")
-                    return True  # Continue anyway
-
-            except psycopg2.OperationalError as e:
-                if "database \"postgres_example\" does not exist" in str(e):
-                    self.warning("⚠️ postgres_example database doesn't exist, but continuing...")
-                    self.info("💡 The database will be created when the connection is first used")
-                    return True
-                else:
-                    self.warning(f"⚠️ Could not connect to postgres: {e}")
-                    self.info("💡 Continuing anyway - the connection will be tested later")
-                    return True
-            except ImportError:
-                self.warning("⚠️ psycopg2 not available, skipping database verification")
-                self.info("💡 Continuing anyway - the connection will be tested later")
-                return True
-
-        except Exception as e:
-            self.error(f"Error setting up postgres database: {e}")
-            return False
+    def _get_db_session(self) -> Session:
+        SessionLocal = sessionmaker(bind=sync_engine)
+        with SessionLocal() as db:
+            return db
 
     def _create_or_verify_postgres_connection(self) -> bool:
         """Create or verify that the postgres-example connection exists."""
         try:
-            SessionLocal = sessionmaker(bind=sync_engine)
-            with SessionLocal() as db:
-                # First check if connection already exists
-                connection = db.query(ConnectionConfig).filter_by(key=self.postgres_connection_key).first()
-                if connection:
-                    self.success(f"Found existing connection: {self.postgres_connection_key}")
-                    self.postgres_connection_config_id = connection.id
-                    return True
-
-                # Connection doesn't exist, create it
-                self.info(f"Connection {self.postgres_connection_key} not found, creating it...")
-
-                connection_data = {
-                    "name": "Postgres Example Connection",
-                    "key": self.postgres_connection_key,
-                    "connection_type": ConnectionType.postgres,
-                    "access": AccessLevel.write,
-                    "secrets": {
-                        "host": "postgres_example",  # Docker service name
-                        "port": 5432,  # Internal Docker port
-                        "dbname": "postgres_example",
-                        "username": "postgres",
-                        "password": "postgres",
-                    },
-                    "disabled": False,
-                    "description": "Postgres example database for testing"
-                }
-
-                # Create connection first
-                connection = ConnectionConfig.create(db=db, data=connection_data)
+            db = self._get_db_session()
+            # First check if connection already exists
+            connection = db.query(ConnectionConfig).filter_by(key=self.postgres_connection_key).first()
+            if connection:
+                self.success(f"Found existing connection: {self.postgres_connection_key}")
                 self.postgres_connection_config_id = connection.id
-
-                # Get the CTL dataset
-                ctl_dataset = db.query(CtlDataset).filter_by(
-                    fides_key=POSTGRES_DATASET_KEY
-                ).first()
-
-                if not ctl_dataset:
-                    self.error("CTL dataset not found")
-                    return False
-
-                # Create dataset config linked to both
-                dataset_config = DatasetConfig.create(
-                    db=db,
-                    data={
-                        "fides_key": POSTGRES_DATASET_KEY,
-                        "connection_config_id": connection.id,
-                        "ctl_dataset_id": ctl_dataset.id,
-                    },
-                )
-
-                self.success(f"Created postgres connection config: {self.postgres_connection_key}")
                 return True
+
+            # Connection doesn't exist, create it
+            self.info(f"Connection {self.postgres_connection_key} not found, creating it...")
+
+            connection_data = {
+                "name": "Postgres Example Connection",
+                "key": self.postgres_connection_key,
+                "connection_type": ConnectionType.postgres,
+                "access": AccessLevel.write,
+                "secrets": {
+                    "host": POSTGRES_HOST,  # Docker service name
+                    "port": POSTGRES_PORT,  # Internal Docker port
+                    "dbname": POSTGRES_DBNAME,
+                    "username": POSTGRES_USERNAME,
+                    "password": POSTGRES_PASSWORD,
+                },
+                "disabled": False,
+                "description": "Postgres example database for testing"
+            }
+
+            # Create connection first
+            connection = ConnectionConfig.create(db=db, data=connection_data)
+            self.postgres_connection_config_id = connection.id
+
+            # Get the CTL dataset
+            ctl_dataset = db.query(CtlDataset).filter_by(
+                fides_key=POSTGRES_DATASET_KEY
+            ).first()
+
+            if not ctl_dataset:
+                self.error("CTL dataset not found")
+                return False
+
+            # Create dataset config linked to both
+            DatasetConfig.create(
+                db=db,
+                data={
+                    "fides_key": POSTGRES_DATASET_KEY,
+                    "connection_config_id": connection.id,
+                    "ctl_dataset_id": ctl_dataset.id,
+                },
+            )
+
+            self.success(f"Created postgres connection config: {self.postgres_connection_key}")
+            return True
 
         except Exception as e:
             self.error(f"Error creating/verifying postgres connection: {e}")
             return False
 
-    def _create_or_verify_connection(self) -> bool:
+    def _create_or_verify_manual_task_connection(self) -> bool:
         """Create or verify that the ManualTask connection exists."""
         try:
-            SessionLocal = sessionmaker(bind=sync_engine)
-            with SessionLocal() as db:
-                # First check if connection already exists
-                connection = db.query(ConnectionConfig).filter_by(key=self.connection_key).first()
-                if connection:
-                    self.success(f"Found existing connection: {self.connection_key}")
-                    self.connection_config_id = connection.id
-                    return True
-
-                # Connection doesn't exist, create it
-                self.info(f"Connection {self.connection_key} not found, creating it...")
-
-                connection_data = {
-                    "name": "Manual Task Connection",
-                    "key": self.connection_key,
-                    "connection_type": ConnectionType.manual_task,
-                    "access": AccessLevel.write,
-                    "secrets": {},  # ManualTask connections don't need secrets
-                    "disabled": False,
-                    "description": "ManualTask connection for testing ManualTask and ManualTaskConditionalDependencies",
-                }
-
-                connection = ConnectionConfig.create(db=db, data=connection_data)
+            db = self._get_db_session()
+            # First check if connection already exists
+            connection = db.query(ConnectionConfig).filter_by(key=self.connection_key).first()
+            if connection:
+                self.success(f"Found existing connection: {self.connection_key}")
                 self.connection_config_id = connection.id
-                self.success(f"Created ManualTask connection config: {self.connection_key}")
                 return True
+
+            # Connection doesn't exist, create it
+            self.info(f"Connection {self.connection_key} not found, creating it...")
+
+            connection_data = {
+                "name": "Manual Task Connection",
+                "key": self.connection_key,
+                "connection_type": ConnectionType.manual_task,
+                "access": AccessLevel.write,
+                "secrets": {},  # ManualTask connections don't need secrets
+                "disabled": False,
+                "description": "ManualTask connection for testing ManualTask and ManualTaskConditionalDependencies",
+            }
+
+            connection = ConnectionConfig.create(db=db, data=connection_data)
+            self.connection_config_id = connection.id
+            self.success(f"Created ManualTask connection config: {self.connection_key}")
+            return True
 
         except Exception as e:
             self.error(f"Error creating/verifying connection: {e}")
@@ -391,29 +461,28 @@ class ManualTaskWithConditionalDependencies(QATestScenario):
     def _create_manual_task(self) -> bool:
         """Create a ManualTask for the ManualTask connection."""
         try:
-            SessionLocal = sessionmaker(bind=sync_engine)
-            with SessionLocal() as db:
-                # First check if manual task already exists
-                existing_task = db.query(ManualTask).filter(
-                    ManualTask.parent_entity_id == self.connection_config_id,
-                    ManualTask.parent_entity_type == ManualTaskParentEntityType.connection_config
-                ).first()
+            db = self._get_db_session()
+            # First check if manual task already exists
+            existing_task = db.query(ManualTask).filter(
+                ManualTask.parent_entity_id == self.connection_config_id,
+                ManualTask.parent_entity_type == ManualTaskParentEntityType.connection_config
+            ).first()
 
-                if existing_task:
-                    self.manual_task = existing_task
-                    self.success(f"Found existing ManualTask: {self.manual_task.id}")
-                    return True
-
-                # Create new manual task if it doesn't exist
-                manual_task_data = {
-                    "task_type": ManualTaskType.privacy_request,
-                    "parent_entity_id": self.connection_config_id,
-                    "parent_entity_type": ManualTaskParentEntityType.connection_config
-                }
-
-                self.manual_task = ManualTask.create(db=db, data=manual_task_data)
-                self.success(f"Created new ManualTask: {self.manual_task.id}")
+            if existing_task:
+                self.manual_task = existing_task
+                self.success(f"Found existing ManualTask: {self.manual_task.id}")
                 return True
+
+            # Create new manual task if it doesn't exist
+            manual_task_data = {
+                "task_type": ManualTaskType.privacy_request,
+                "parent_entity_id": self.connection_config_id,
+                "parent_entity_type": ManualTaskParentEntityType.connection_config
+            }
+
+            self.manual_task = ManualTask.create(db=db, data=manual_task_data)
+            self.success(f"Created new ManualTask: {self.manual_task.id}")
+            return True
 
         except Exception as e:
             self.error(f"Error creating ManualTask: {e}")
@@ -422,19 +491,18 @@ class ManualTaskWithConditionalDependencies(QATestScenario):
     def _create_manual_task_config(self) -> bool:
         """Create a ManualTaskConfig for the ManualTask."""
         try:
-            SessionLocal = sessionmaker(bind=sync_engine)
-            with SessionLocal() as db:
-                config_data = {
-                    "task_id": self.manual_task.id,
-                    "config_type": ManualTaskConfigurationType.access_privacy_request,
-                    "version": 1,
-                    "is_current": True,
-                    "execution_timing": ManualTaskExecutionTiming.post_execution
-                }
+            db = self._get_db_session()
+            config_data = {
+                "task_id": self.manual_task.id,
+                "config_type": ManualTaskConfigurationType.access_privacy_request,
+                "version": 1,
+                "is_current": True,
+                "execution_timing": ManualTaskExecutionTiming.post_execution
+            }
 
-                self.manual_task_config = ManualTaskConfig.create(db=db, data=config_data)
-                self.success(f"Created ManualTaskConfig: {self.manual_task_config.id}")
-                return True
+            self.manual_task_config = ManualTaskConfig.create(db=db, data=config_data)
+            self.success(f"Created ManualTaskConfig: {self.manual_task_config.id}")
+            return True
 
         except Exception as e:
             self.error(f"Error creating ManualTaskConfig: {e}")
@@ -443,52 +511,16 @@ class ManualTaskWithConditionalDependencies(QATestScenario):
     def _create_manual_task_config_fields(self) -> bool:
         """Create ManualTaskConfigFields for the config."""
         try:
-            SessionLocal = sessionmaker(bind=sync_engine)
-            with SessionLocal() as db:
-                # Create fields based on ManualTask requirements
-                fields_data = [
-                    {
-                        "task_id": self.manual_task.id,
-                        "config_id": self.manual_task_config.id,
-                        "field_key": "customer_verification",
-                        "field_type": ManualTaskFieldType.checkbox,
-                        "field_metadata": {
-                            "label": "Customer Verification Required",
-                            "required": True,
-                            "help_text": "Check if customer identity needs verification"
-                        }
-                    },
-                    {
-                        "task_id": self.manual_task.id,
-                        "config_id": self.manual_task_config.id,
-                        "field_key": "data_scope",
-                        "field_type": ManualTaskFieldType.text,
-                        "field_metadata": {
-                            "label": "Data Scope Description",
-                            "required": False,
-                            "help_text": "Describe the scope of data to be processed"
-                        }
-                    },
-                    {
-                        "task_id": self.manual_task.id,
-                        "config_id": self.manual_task_config.id,
-                        "field_key": "approval_notes",
-                        "field_type": ManualTaskFieldType.text,
-                        "field_metadata": {
-                            "label": "Approval Notes",
-                            "required": False,
-                            "help_text": "Additional notes for approval process"
-                        }
-                    }
-                ]
+            db = self._get_db_session()
+            # Create fields based on ManualTask requirements
+            fields_data = create_fields_data(self.manual_task.id, self.manual_task_config.id)
+            for field_data in fields_data:
+                field = ManualTaskConfigField.create(db=db, data=field_data)
+                self.manual_task_fields.append(field)
+                self.info(f"Created field: {field.field_key}")
 
-                for field_data in fields_data:
-                    field = ManualTaskConfigField.create(db=db, data=field_data)
-                    self.manual_task_fields.append(field)
-                    self.info(f"Created field: {field.field_key}")
-
-                self.success(f"Created {len(self.manual_task_fields)} ManualTaskConfigFields")
-                return True
+            self.success(f"Created {len(self.manual_task_fields)} ManualTaskConfigFields")
+            return True
 
         except Exception as e:
             self.error(f"Error creating ManualTaskConfigFields: {e}")
@@ -497,99 +529,41 @@ class ManualTaskWithConditionalDependencies(QATestScenario):
     def _create_conditional_dependencies(self) -> bool:
         """Create ManualTaskConditionalDependencies based on ManualTask fields."""
         try:
-            SessionLocal = sessionmaker(bind=sync_engine)
-            with SessionLocal() as db:
+            db = self._get_db_session()
 
-                dependencies_data = [
-                    # Root group condition (AND)
-                    {
-                        "manual_task_id": self.manual_task.id,
-                        "parent_id": None,
-                        "condition_type": ManualTaskConditionalDependencyType.group,
-                        "logical_operator": "and",
-                        "sort_order": 0
-                    },
-                    # Customer name exists condition (leaf) - references postgres dataset field
-                    {
-                        "manual_task_id": self.manual_task.id,
-                        "parent_id": None,  # Will be updated after root group is created
-                        "condition_type": ManualTaskConditionalDependencyType.leaf,
-                        "field_address": f"{POSTGRES_DATASET_KEY}:customer:name",
-                        "operator": "exists",
-                        "value": None,  # exists operator doesn't need a value
-                        "sort_order": 0
-                    },
-                    # Customer email contains specific value condition (leaf) - references postgres dataset field
-                    {
-                        "manual_task_id": self.manual_task.id,
-                        "parent_id": None,  # Will be updated after root group is created
-                        "condition_type": ManualTaskConditionalDependencyType.leaf,
-                        "field_address": f"{POSTGRES_DATASET_KEY}:customer:email",
-                        "operator": "list_contains",
-                        "value": "customer-1",
-                        "sort_order": 1
-                    },
-                    # Nested group condition (OR)
-                    {
-                        "manual_task_id": self.manual_task.id,
-                        "parent_id": None,  # Will be updated after root group is created
-                        "condition_type": ManualTaskConditionalDependencyType.group,
-                        "logical_operator": "or",
-                        "sort_order": 2
-                    },
-                    # Customer ID condition (leaf) - references postgres dataset field
-                    {
-                        "manual_task_id": self.manual_task.id,
-                        "parent_id": None,  # Will be updated after nested group is created
-                        "condition_type": ManualTaskConditionalDependencyType.leaf,
-                        "field_address": f"{POSTGRES_DATASET_KEY}:customer:id",
-                        "operator": ">",
-                        "value": 0,
-                        "sort_order": 0
-                    },
-                    # Customer email not empty condition (leaf) - references postgres dataset field
-                    {
-                        "manual_task_id": self.manual_task.id,
-                        "parent_id": None,  # Will be updated after nested group is created
-                        "condition_type": ManualTaskConditionalDependencyType.leaf,
-                        "field_address": f"{POSTGRES_DATASET_KEY}:customer:email",
-                        "operator": "!=",
-                        "value": "",
-                        "sort_order": 1
-                    }
-                ]
+            dependencies_data = create_dependencies_data(self.manual_task.id)
 
-                # Create dependencies in order and establish parent-child relationships
-                root_group = None
-                nested_group = None
+            # Create dependencies in order and establish parent-child relationships
+            root_group = None
+            nested_group = None
 
-                for i, dep_data in enumerate(dependencies_data):
-                    dep = ManualTaskConditionalDependency.create(db=db, data=dep_data)
-                    self.conditional_dependencies.append(dep)
+            for i, dep_data in enumerate(dependencies_data):
+                dep = ManualTaskConditionalDependency.create(db=db, data=dep_data)
+                self.conditional_dependencies.append(dep)
 
-                    # Set up parent-child relationships
-                    if i == 0:  # Root group
-                        root_group = dep
-                        self.info(f"Created root group dependency: {dep.id}")
-                    elif i == 3:  # Nested group
-                        nested_group = dep
-                        # Update parent to root group
-                        dep.parent_id = root_group.id
-                        db.commit()
-                        self.info(f"Created nested group dependency: {dep.id}")
-                    elif i in [1, 2]:  # Leaf conditions under root group
-                        # Update parent to root group
-                        dep.parent_id = root_group.id
-                        db.commit()
-                        self.info(f"Created leaf dependency under root: {dep.id}")
-                    elif i in [4, 5]:  # Leaf conditions under nested group
-                        # Update parent to nested group
-                        dep.parent_id = nested_group.id
-                        db.commit()
-                        self.info(f"Created leaf dependency under nested group: {dep.id}")
+                # Set up parent-child relationships
+                if i == 0:  # Root group
+                    root_group = dep
+                    self.info(f"Created root group dependency: {dep.id}")
+                elif i == 3:  # Nested group
+                    nested_group = dep
+                    # Update parent to root group
+                    dep.parent_id = root_group.id
+                    db.commit()
+                    self.info(f"Created nested group dependency: {dep.id}")
+                elif i in [1, 2]:  # Leaf conditions under root group
+                    # Update parent to root group
+                    dep.parent_id = root_group.id
+                    db.commit()
+                    self.info(f"Created leaf dependency under root: {dep.id}")
+                elif i in [4, 5]:  # Leaf conditions under nested group
+                    # Update parent to nested group
+                    dep.parent_id = nested_group.id
+                    db.commit()
+                    self.info(f"Created leaf dependency under nested group: {dep.id}")
 
-                self.success(f"Created {len(self.conditional_dependencies)} ManualTaskConditionalDependencies")
-                return True
+            self.success(f"Created {len(self.conditional_dependencies)} ManualTaskConditionalDependencies")
+            return True
 
         except Exception as e:
             self.error(f"Error creating ManualTaskConditionalDependencies: {e}")
@@ -598,14 +572,13 @@ class ManualTaskWithConditionalDependencies(QATestScenario):
     def _delete_manual_task(self) -> bool:
         """Delete the ManualTask."""
         try:
-            SessionLocal = sessionmaker(bind=sync_engine)
-            with SessionLocal() as db:
-                if self.manual_task:
-                    db.delete(self.manual_task)
-                    db.commit()
-                    self.success(f"Deleted ManualTask: {self.manual_task.id}")
-                    return True
-                return False
+            db = self._get_db_session()
+            if self.manual_task:
+                db.delete(self.manual_task)
+                db.commit()
+                self.success(f"Deleted ManualTask: {self.manual_task.id}")
+                return True
+            return False
         except Exception as e:
             self.error(f"Error deleting ManualTask: {e}")
             return False
@@ -613,12 +586,11 @@ class ManualTaskWithConditionalDependencies(QATestScenario):
     def _delete_conditional_dependency(self, dep) -> bool:
         """Delete a conditional dependency."""
         try:
-            SessionLocal = sessionmaker(bind=sync_engine)
-            with SessionLocal() as db:
-                db.delete(dep)
-                db.commit()
-                self.success(f"Deleted conditional dependency: {dep.id}")
-                return True
+            db = self._get_db_session()
+            db.delete(dep)
+            db.commit()
+            self.success(f"Deleted conditional dependency: {dep.id}")
+            return True
         except Exception as e:
             self.error(f"Error deleting conditional dependency {dep.id}: {e}")
             return False
@@ -626,18 +598,17 @@ class ManualTaskWithConditionalDependencies(QATestScenario):
     def _delete_connection_config(self, connection_key: str) -> bool:
         """Delete a connection config."""
         try:
-            SessionLocal = sessionmaker(bind=sync_engine)
-            with SessionLocal() as db:
-                connection = db.query(ConnectionConfig).filter_by(key=connection_key).first()
-                if connection:
-                    db.delete(connection)
-                    db.commit()
-                    self.success(f"Deleted connection config: {connection_key}")
-                    return True
-                else:
-                    self.warning(f"Connection config {connection_key} was already deleted")
-                    return True
-            return False
+            db = self._get_db_session()
+            connection = db.query(ConnectionConfig).filter_by(key=connection_key).first()
+            if connection:
+                db.delete(connection)
+                db.commit()
+                self.success(f"Deleted connection config: {connection_key}")
+                return True
+            else:
+                self.warning(f"Connection config {connection_key} was already deleted")
+                return True
+
         except Exception as e:
             self.error(f"Error deleting connection config: {e}")
             return False
@@ -648,18 +619,16 @@ class ManualTaskWithConditionalDependencies(QATestScenario):
             if not self.storage_config:
                 return False
 
-            SessionLocal = sessionmaker(bind=sync_engine)
-            with SessionLocal() as db:
-                storage_config = db.query(StorageConfig).filter_by(id=self.storage_config.id).first()
-                if storage_config:
-                    db.delete(storage_config)
-                    db.commit()
-                    self.success(f"Deleted storage config: {storage_config.key}")
-                    return True
-                else:
-                    self.warning(f"Storage config was already deleted")
-                    return True
-            return False
+            db = self._get_db_session()
+            storage_config = db.query(StorageConfig).filter_by(id=self.storage_config.id).first()
+            if storage_config:
+                db.delete(storage_config)
+                db.commit()
+                self.success(f"Deleted storage config: {storage_config.key}")
+                return True
+            else:
+                self.warning(f"Storage config was already deleted")
+                return True
         except Exception as e:
             self.error(f"Error deleting storage config: {e}")
             return False
@@ -670,18 +639,16 @@ class ManualTaskWithConditionalDependencies(QATestScenario):
             if not self.policy:
                 return False
 
-            SessionLocal = sessionmaker(bind=sync_engine)
-            with SessionLocal() as db:
-                policy = db.query(Policy).filter_by(id=self.policy.id).first()
-                if policy:
-                    db.delete(policy)
-                    db.commit()
-                    self.success(f"Deleted policy: {policy.key}")
-                    return True
-                else:
-                    self.warning(f"Policy was already deleted")
-                    return True
-            return False
+            db = self._get_db_session()
+            policy = db.query(Policy).filter_by(id=self.policy.id).first()
+            if policy:
+                db.delete(policy)
+                db.commit()
+                self.success(f"Deleted policy: {policy.key}")
+                return True
+            else:
+                self.warning(f"Policy was already deleted")
+                return True
         except Exception as e:
             self.error(f"Error deleting policy: {e}")
             return False
@@ -692,18 +659,16 @@ class ManualTaskWithConditionalDependencies(QATestScenario):
             if not self.access_rule:
                 return False
 
-            SessionLocal = sessionmaker(bind=sync_engine)
-            with SessionLocal() as db:
-                rule = db.query(Rule).filter_by(id=self.access_rule.id).first()
-                if rule:
-                    db.delete(rule)
-                    db.commit()
-                    self.success(f"Deleted rule: {rule.key}")
-                    return True
-                else:
-                    self.warning(f"Rule was already deleted")
-                    return True
-            return False
+            db = self._get_db_session()
+            rule = db.query(Rule).filter_by(id=self.access_rule.id).first()
+            if rule:
+                db.delete(rule)
+                db.commit()
+                self.success(f"Deleted rule: {rule.key}")
+                return True
+            else:
+                self.warning(f"Rule was already deleted")
+                return True
         except Exception as e:
             self.error(f"Error deleting rule: {e}")
             return False
@@ -711,67 +676,56 @@ class ManualTaskWithConditionalDependencies(QATestScenario):
     def _create_policy(self) -> bool:
         """Create a policy for the privacy request."""
         try:
-            SessionLocal = sessionmaker(bind=sync_engine)
-            with SessionLocal() as db:
-                # Create storage config for access rule
-                storage_config = StorageConfig.create(
+            db = self._get_db_session()
+            # Create storage config for access rule
+            storage_config = StorageConfig.create(
+                db=db,
+                data={
+                    "name": f"Test Storage Config {str(uuid4())[:8]}",
+                    "type": "local",
+                    "details": {
+                        "naming": "request_id",
+                    },
+                    "key": f"test_storage_config_{str(uuid4())[:8]}",
+                    "format": "json",
+                },
+            )
+            self.storage_config = storage_config
+
+            # Create policy
+            policy = Policy.create(
+                db=db,
+                data={
+                    "name": f"Test Policy {str(uuid4())[:8]}",
+                    "key": f"test_policy_{str(uuid4())[:8]}",
+                },
+            )
+            self.policy = policy
+
+            # Create access rule
+            self.access_rule = Rule.create(
+                db=db,
+                data={
+                    "action_type": ActionType.access.value,
+                    "name": f"Access Rule {str(uuid4())[:8]}",
+                    "key": f"access_rule_{str(uuid4())[:8]}",
+                    "policy_id": policy.id,
+                    "storage_destination_id": storage_config.id,
+                },
+            )
+
+            # Create rule targets for all relevant data categories
+            for category in DATA_CATEGORIES:
+                RuleTarget.create(
                     db=db,
                     data={
-                        "name": f"Test Storage Config {str(uuid4())[:8]}",
-                        "type": "local",
-                        "details": {
-                            "naming": "request_id",
-                        },
-                        "key": f"test_storage_config_{str(uuid4())[:8]}",
-                        "format": "json",
-                    },
-                )
-                self.storage_config = storage_config
-
-                # Create policy
-                policy = Policy.create(
-                    db=db,
-                    data={
-                        "name": f"Test Policy {str(uuid4())[:8]}",
-                        "key": f"test_policy_{str(uuid4())[:8]}",
-                    },
-                )
-                self.policy = policy
-
-                # Create access rule
-                self.access_rule = Rule.create(
-                    db=db,
-                    data={
-                        "action_type": ActionType.access.value,
-                        "name": f"Access Rule {str(uuid4())[:8]}",
-                        "key": f"access_rule_{str(uuid4())[:8]}",
-                        "policy_id": policy.id,
-                        "storage_destination_id": storage_config.id,
+                        "data_category": category,
+                        "rule_id": self.access_rule.id,
                     },
                 )
 
-                                # Create rule targets for all relevant data categories
-                data_categories = [
-                    "user.contact.email",
-                    "user.name",
-                    "user.unique_id",
-                    "user.contact.address.city",
-                    "user.contact.address.street",
-                    "user.contact.address.state",
-                    "user.contact.address.postal_code"
-                ]
-
-                for category in data_categories:
-                    RuleTarget.create(
-                        db=db,
-                        data={
-                            "data_category": category,
-                            "rule_id": self.access_rule.id,
-                        },
-                    )
-
-                self.success(f"Created policy: {policy.id}")
-                return True
+            self.success(f"Created policy: {policy.id}")
+            return True
 
         except Exception as e:
             self.error(f"Error creating policy: {e}")
@@ -780,32 +734,31 @@ class ManualTaskWithConditionalDependencies(QATestScenario):
     def _create_privacy_request(self) -> bool:
         """Create a privacy request."""
         try:
-            SessionLocal = sessionmaker(bind=sync_engine)
-            with SessionLocal() as db:
-                # Create privacy request
-                privacy_request = PrivacyRequest.create(
-                    db=db,
-                    data={
-                        "external_id": f"ext-{str(uuid4())}",
-                        "started_processing_at": datetime.utcnow(),
-                        "requested_at": datetime.utcnow(),
-                        "status": "pending",
-                        "origin": "https://example.com/",
-                        "policy_id": self.policy.id,
-                        "client_id": self.policy.client_id,
-                    },
-                )
+            db = self._get_db_session()
+            # Create privacy request
+            privacy_request = PrivacyRequest.create(
+                db=db,
+                data={
+                    "external_id": f"ext-{str(uuid4())}",
+                    "started_processing_at": datetime.utcnow(),
+                    "requested_at": datetime.utcnow(),
+                    "status": "pending",
+                    "origin": "https://example.com/",
+                    "policy_id": self.policy.id,
+                    "client_id": self.policy.client_id,
+                },
+            )
 
-                # Cache identity - this email exists in the postgres example data and matches our conditional dependencies
-                identity_kwargs = {"email": "customer-1@example.com"}
-                privacy_request.cache_identity(identity_kwargs)
-                privacy_request.persist_identity(
-                    db=db,
-                    identity={"email": "customer-1@example.com"},
-                )
+            # Cache identity - this email exists in the postgres example data and matches our conditional dependencies
+            identity_kwargs = {"email": "customer-1@example.com"}
+            privacy_request.cache_identity(identity_kwargs)
+            privacy_request.persist_identity(
+                db=db,
+                identity={"email": "customer-1@example.com"},
+            )
 
-                self.success(f"Created privacy request: {privacy_request.id}")
-                return True
+            self.success(f"Created privacy request: {privacy_request.id}")
+            return True
 
         except Exception as e:
             self.error(f"Error creating privacy request: {e}")
@@ -814,75 +767,21 @@ class ManualTaskWithConditionalDependencies(QATestScenario):
     def _debug_manual_task_integration(self) -> None:
         """Debug method to check manual task integration."""
         try:
-            SessionLocal = sessionmaker(bind=sync_engine)
-            with SessionLocal() as db:
-                # Check if manual task exists
-                manual_task = db.query(ManualTask).filter(
-                    ManualTask.parent_entity_id == self.connection_config_id,
-                    ManualTask.parent_entity_type == ManualTaskParentEntityType.connection_config
-                ).first()
+            db = self._get_db_session()
+            # Check if manual task addresses are being generated
+            manual_addresses = get_manual_task_addresses(db)
+            self.info(f"🎯 Manual task addresses found: {len(manual_addresses)}")
+            for addr in manual_addresses:
+                self.info(f"   - {addr.value}")
 
-                if manual_task:
-                    self.info(f"✅ Manual task found: {manual_task.id}")
+            # Check if our connection has manual tasks
+            connections_with_manual_tasks = get_connection_configs_with_manual_tasks(db)
+            self.info(f"🔗 Connections with manual tasks: {len(connections_with_manual_tasks)}")
+            for conn in connections_with_manual_tasks:
+                self.info(f"   - {conn.key} (type: {conn.connection_type})")
 
-                    # Check manual task configs
-                    configs = manual_task.configs
-                    self.info(f"📋 Manual task has {len(configs)} configs")
-                    for config in configs:
-                        self.info(f"   - Config {config.id}: type={config.config_type}, current={config.is_current}")
-
-                    # Check manual task fields
-                    fields = db.query(ManualTaskConfigField).filter_by(task_id=manual_task.id).all()
-                    self.info(f"📝 Manual task has {len(fields)} fields")
-                    for field in fields:
-                        self.info(f"   - Field {field.field_key}: type={field.field_type}")
-
-                    # Check conditional dependencies
-                    deps = manual_task.conditional_dependencies
-                    self.info(f"🔗 Manual task has {len(deps)} conditional dependencies")
-                    for dep in deps:
-                        self.info(f"   - Dependency {dep.id}: type={dep.condition_type}, field_address={dep.field_address}")
-
-                    # Check if manual task address is recognized
-                    from fides.api.task.manual.manual_task_address import ManualTaskAddress
-                    manual_address = ManualTaskAddress.create(self.connection_key)
-                    self.info(f"📍 Manual task address: {manual_address.value}")
-                    self.info(f"🔍 Is manual task address: {ManualTaskAddress.is_manual_task_address(manual_address.value)}")
-
-                    # Check if manual task address is recognized as string
-                    manual_address_str = f"{self.connection_key}:manual_data"
-                    self.info(f"📍 Manual task address string: {manual_address_str}")
-                    self.info(f"🔍 Is manual task address (string): {ManualTaskAddress.is_manual_task_address(manual_address_str)}")
-
-                    # Check if manual task address is recognized as CollectionAddress
-                    self.info(f"🔍 Is manual task address (CollectionAddress): {ManualTaskAddress.is_manual_task_address(manual_address)}")
-
-                else:
-                    self.error("❌ Manual task not found!")
-
-                # Check connection config
-                connection = db.query(ConnectionConfig).filter_by(key=self.connection_key).first()
-                if connection:
-                    self.info(f"🔌 Connection config found: {connection.key} (type: {connection.connection_type})")
-                else:
-                    self.error("❌ Connection config not found!")
-
-                # Check if manual task addresses are being generated
-                from fides.api.task.manual.manual_task_utils import get_manual_task_addresses
-                manual_addresses = get_manual_task_addresses(db)
-                self.info(f"🎯 Manual task addresses found: {len(manual_addresses)}")
-                for addr in manual_addresses:
-                    self.info(f"   - {addr.value}")
-
-                # Check if our connection has manual tasks
-                from fides.api.task.manual.manual_task_utils import get_connection_configs_with_manual_tasks
-                connections_with_manual_tasks = get_connection_configs_with_manual_tasks(db)
-                self.info(f"🔗 Connections with manual tasks: {len(connections_with_manual_tasks)}")
-                for conn in connections_with_manual_tasks:
-                    self.info(f"   - {conn.key} (type: {conn.connection_type})")
-
-                # Check DSR 3.0 configuration
-                self.info(f"🔧 DSR 3.0 configuration: {CONFIG.execution.use_dsr_3_0}")
+            # Check DSR 3.0 configuration
+            self.info(f"🔧 DSR 3.0 configuration: {CONFIG.execution.use_dsr_3_0}")
 
         except Exception as e:
             self.error(f"Error in debug method: {e}")
@@ -890,8 +789,6 @@ class ManualTaskWithConditionalDependencies(QATestScenario):
 
 if __name__ == "__main__":
     """Run the scenario directly."""
-    import argparse
-
     parser = argparse.ArgumentParser(description="Run ManualTask with Conditional Dependencies QA Scenario")
     parser.add_argument("--teardown", action="store_true", help="Run teardown only")
     parser.add_argument("--setup", action="store_true", help="Run setup only (default)")
