@@ -134,11 +134,11 @@ export const useTableState = (config: TableStateConfig = {}) => {
         ? (queryState.size ?? defaultPageSize)
         : internalState.pageSize,
       sortField: urlSync.sorting
-        ? (queryState.sortField ?? defaultSortField)
+        ? queryState.sortField || defaultSortField // Use || not ?? because NuQS defaults to empty string, not null/undefined
         : internalState.sortField,
       sortOrder: urlSync.sorting
-        ? ((queryState.sortOrder as "ascend" | "descend" | undefined) ??
-          defaultSortOrder)
+        ? (queryState.sortOrder as "ascend" | "descend" | undefined) ||
+          defaultSortOrder // Use || not ?? because NuQS defaults to empty string, not null/undefined
         : internalState.sortOrder,
       columnFilters: urlSync.filtering
         ? (queryState.filters ?? {})
@@ -192,9 +192,9 @@ export const useTableState = (config: TableStateConfig = {}) => {
     (sortField?: string, sortOrder?: "ascend" | "descend") => {
       if (urlSync.sorting) {
         setQueryState({
-          sortField,
-          sortOrder,
-          ...(urlSync.pagination && { page: DEFAULT_PAGE_INDEX }), // Reset to first page when sorting changes, if pagination is URL synced
+          sortField: sortField ?? null,
+          sortOrder: sortOrder ?? null,
+          ...(urlSync.pagination && { page: DEFAULT_PAGE_INDEX }), // Reset to first page when sorting changes, if pagination is URL synced. TODO: if we clear page when it's set to 1, this may not be needed.
         });
       } else {
         setInternalState((prev) => ({
