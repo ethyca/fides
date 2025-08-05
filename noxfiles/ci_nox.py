@@ -319,6 +319,7 @@ TEST_GROUPS = [
     nox.param("ops-saas", id="ops-saas"),
     nox.param("api", id="api"),
     nox.param("lib", id="lib"),
+    nox.param("misc-unit", id="misc-unit"),
     nox.param("misc-integration", id="misc-integration"),
     nox.param("nox", id="nox"),
 ]
@@ -336,6 +337,7 @@ TEST_MATRIX: Dict[str, Callable] = {
     "ops-saas": partial(pytest_ops, mark="saas"),
     "api": pytest_api,
     "lib": pytest_lib,
+    "misc-unit": pytest_misc_unit,
     "misc-integration": pytest_misc_integration,
     "nox": pytest_nox,
 }
@@ -354,10 +356,10 @@ TEST_DIRECTORY_COVERAGE = {
         "ops-external-datastores",
         "ops-saas",
     ],
-    "tests/service/": ["misc-integration"],
-    "tests/task/": ["misc-integration"],
-    "tests/util/": ["misc-integration"],
-    "tests/qa/": ["misc-integration"],
+    "tests/service/": ["misc-unit", "misc-integration"],
+    "tests/task/": ["misc-unit", "misc-integration"],
+    "tests/util/": ["misc-unit", "misc-integration"],
+    "tests/qa/": ["misc-unit", "misc-integration"],
     "tests/fixtures/": [],  # fixtures are not test files, just test data
 }
 

@@ -315,14 +315,32 @@ def pytest_api(session: Session, coverage_arg: str) -> None:
     session.run(*run_command, external=True)
 
 
+def pytest_misc_unit(session: Session, coverage_arg: str) -> None:
+    """Runs unit tests from smaller test directories."""
+    session.notify("teardown")
+    session.run(*START_APP, external=True)
+    run_command = (
+        *EXEC,
+        "pytest",
+        coverage_arg,
+        "tests/service/",
+        "tests/task/",
+        "tests/util/",
+        "tests/qa/",
+        "-m",
+        "not integration and not integration_external and not integration_saas",
+    )
+    session.run(*run_command, external=True)
+
+
 def pytest_misc_integration(session: Session, coverage_arg: str) -> None:
-    """Runs all tests from smaller test directories."""
+    """Runs integration tests from smaller test directories."""
     session.notify("teardown")
     # Use the integration infrastructure to run all tests from multiple directories
-    # Need PostgreSQL for service integration tests and BigQuery for QA tests
+    # Need PostgreSQL for service integration tests, BigQuery for QA tests, and Snowflake for service tests
     run_infrastructure(
         run_tests=True,
         analytics_opt_out=True,
-        datastores=["postgres", "bigquery"],
+        datastores=["postgres", "bigquery", "snowflake"],
         pytest_path="tests/service/ tests/task/ tests/util/ tests/qa/",
     )

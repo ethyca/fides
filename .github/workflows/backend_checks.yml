@@ -223,6 +223,7 @@ jobs:
           - "ops-integration"
           - "api"
           - "lib"
+          - "misc-unit"
           - "misc-integration"
 
     runs-on: ubuntu-latest
