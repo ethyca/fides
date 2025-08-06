@@ -425,11 +425,12 @@ jobs:
           S3_AWS_ACCESS_KEY_ID: op://github-actions/s3/S3_AWS_ACCESS_KEY_ID
           S3_AWS_SECRET_ACCESS_KEY: op://github-actions/s3/S3_AWS_SECRET_ACCESS_KEY
 
+      - name: Integration Tests (Misc)
+        run: nox -s "pytest(misc-integration-external)"
+
       - name: Integration Tests (External)
         run: nox -s "pytest(ops-external-datastores)"
 
-      - name: Integration Tests (Misc)
-        run: nox -s "pytest(misc-integration-external)"
 
   External-SaaS-Connectors:
     needs: Check-Container-Startup
