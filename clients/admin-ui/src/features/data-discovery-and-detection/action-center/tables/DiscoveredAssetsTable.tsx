@@ -116,27 +116,20 @@ export const DiscoveredAssetsTable = ({
   const disableAddAll =
     anyBulkActionIsLoading || systemId === UNCATEGORIZED_SEGMENT;
 
-  // Table state with URL synchronization for search, sorting, filtering, and pagination (complete implementation)
-  const tableState = useTableState<DiscoveredAssetsColumnKeys>({
-    urlSync: {
-      pagination: true, // Now implementing pagination
-      sorting: true, // Already implemented
-      filtering: true, // Already implemented
-      search: true, // Already implemented
-    },
-    pagination: {
-      defaultPageSize: 10, // Start with 10 per page for testing
-    },
-  });
+  const tableState = useTableState<DiscoveredAssetsColumnKeys>();
 
-  // Use tableState values instead of local state
-  const { columnFilters, pageIndex, pageSize } = tableState;
-
-  // Use tableState sorting instead of local state - now properly typed!
-  const { sortField, sortOrder } = tableState;
-
-  // Use tableState.searchQuery instead of local state
-  const searchQuery = tableState.searchQuery || "";
+  const {
+    columnFilters,
+    pageIndex,
+    pageSize,
+    sortField,
+    sortOrder,
+    searchQuery,
+    updateSearch,
+    updateFilters,
+    updateSorting,
+    updatePagination,
+  } = tableState;
 
   const toast = useToast();
 
@@ -147,21 +140,21 @@ export const DiscoveredAssetsTable = ({
     key: monitorId,
     page: pageIndex,
     size: pageSize,
-    search: tableState.searchQuery,
+    search: searchQuery,
     sort_by: sortField
       ? [sortField] // User selected a column to sort by
       : [DiscoveredAssetsColumnKeys.CONSENT_AGGREGATED, "urn"], // Default
-    sort_asc: tableState.sortOrder !== "descend",
+    sort_asc: sortOrder !== "descend",
     ...activeParams,
     ...columnFilters,
   });
 
   const resetTableState = () => {
     resetSelections();
-    tableState.updateFilters({}); // Clear filters using tableState
-    tableState.updateSearch(""); // Clear search using tableState
-    tableState.updateSorting(undefined, undefined); // Clear sorting using tableState
-    tableState.updatePagination(1); // Reset to page 1
+    updateFilters({}); // Clear filters using tableState
+    updateSearch(""); // Clear search using tableState
+    updateSorting(undefined, undefined); // Clear sorting using tableState
+    updatePagination(1); // Reset to page 1
   };
 
   useEffect(() => {
@@ -206,7 +199,7 @@ export const DiscoveredAssetsTable = ({
     columnFilters,
     sortField,
     sortOrder,
-    searchQuery: tableState.searchQuery,
+    searchQuery,
   });
 
   // Get selected URNs from the map instead of selectedRows
@@ -416,11 +409,11 @@ export const DiscoveredAssetsTable = ({
 
     // Handle pagination with tableState
     if (isPaginationChange) {
-      tableState.updatePagination(pagination.current || 1, pagination.pageSize);
+      updatePagination(pagination.current || 1, pagination.pageSize);
     } else {
-      tableState.updatePagination(1); // Reset to page 1 for sorting/filtering changes
+      updatePagination(1); // Reset to page 1 for sorting/filtering changes
       // Only update filters when it's not a pagination change
-      tableState.updateFilters(filters || {});
+      updateFilters(filters || {});
     }
 
     // Handle sorting with tableState (only if sorting actually changed)
@@ -435,7 +428,7 @@ export const DiscoveredAssetsTable = ({
 
     // Only update sorting if this is not just a pagination change
     if (!isPaginationChange) {
-      tableState.updateSorting(newSortField, newSortOrder);
+      updateSorting(newSortField, newSortOrder);
     }
   };
 
@@ -456,7 +449,7 @@ export const DiscoveredAssetsTable = ({
       <Flex justify="space-between" align="center" className="mb-4">
         <DebouncedSearchInput
           value={searchQuery}
-          onChange={tableState.updateSearch}
+          onChange={updateSearch}
           placeholder="Search by asset name..."
         />
         <Space size="large">
