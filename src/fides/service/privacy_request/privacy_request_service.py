@@ -151,6 +151,7 @@ class PrivacyRequestService:
             "consent_preferences",
             "property_id",
             "source",
+            "location",
         ]
 
         for field in OPTIONAL_FIELDS:
