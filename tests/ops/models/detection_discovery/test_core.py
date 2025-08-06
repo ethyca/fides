@@ -1015,51 +1015,75 @@ class TestStagedResourceAncestorModel:
         )
         return resource
 
-    def test_create_staged_resource_ancestor_links(
+    def test_create_all_staged_resource_ancestor_links(
         self,
         db: Session,
         staged_resource_1: StagedResource,
         staged_resource_2: StagedResource,
         staged_resource_3: StagedResource,
     ):
-        """Test creating ancestor links for a staged resource."""
-        descendant_urn = staged_resource_3.urn
-        ancestor_urns = {staged_resource_1.urn, staged_resource_2.urn}
+        """Test creating ancestor links for multiple staged resources in bulk."""
+        # Test bulk creation with multiple descendant-ancestor mappings
+        ancestor_links = {
+            staged_resource_2.urn: {staged_resource_1.urn},
+            staged_resource_3.urn: {staged_resource_1.urn, staged_resource_2.urn},
+        }
 
-        StagedResourceAncestor.create_staged_resource_ancestor_links(
-            db=db, resource_urn=descendant_urn, ancestor_urns=ancestor_urns
+        StagedResourceAncestor.create_all_staged_resource_ancestor_links(
+            db=db, ancestor_links=ancestor_links
         )
 
-        links = (
+        # Verify links for resource_2
+        links_for_resource_2 = (
             db.query(StagedResourceAncestor)
-            .filter_by(descendant_urn=descendant_urn)
+            .filter_by(descendant_urn=staged_resource_2.urn)
             .all()
         )
-        assert len(links) == 2
-        created_ancestor_urns = {link.ancestor_urn for link in links}
-        assert created_ancestor_urns == ancestor_urns
+        assert len(links_for_resource_2) == 1
+        assert links_for_resource_2[0].ancestor_urn == staged_resource_1.urn
+
+        # Verify links for resource_3
+        links_for_resource_3 = (
+            db.query(StagedResourceAncestor)
+            .filter_by(descendant_urn=staged_resource_3.urn)
+            .all()
+        )
+        assert len(links_for_resource_3) == 2
+        created_ancestor_urns = {link.ancestor_urn for link in links_for_resource_3}
+        assert created_ancestor_urns == {staged_resource_1.urn, staged_resource_2.urn}
 
         # Verify relationships
+        sr2 = StagedResource.get_urn(db, staged_resource_2.urn)
+        assert len(sr2.ancestors()) == 1
+        assert sr2.ancestors()[0].urn == staged_resource_1.urn
+
         sr3 = StagedResource.get_urn(db, staged_resource_3.urn)
         assert len(sr3.ancestors()) == 2
         ancestor_resources_from_descendant = {
             ancestor.urn for ancestor in sr3.ancestors()
         }
-        assert ancestor_resources_from_descendant == ancestor_urns
+        assert ancestor_resources_from_descendant == {
+            staged_resource_1.urn,
+            staged_resource_2.urn,
+        }
 
         sr1 = StagedResource.get_urn(db, staged_resource_1.urn)
-        assert len(sr1.descendants()) == 1
-        assert sr1.descendants()[0].urn == descendant_urn
+        assert len(sr1.descendants()) == 2  # Both resource_2 and resource_3
+        descendant_urns_from_ancestor = {desc.urn for desc in sr1.descendants()}
+        assert descendant_urns_from_ancestor == {
+            staged_resource_2.urn,
+            staged_resource_3.urn,
+        }
 
-    def test_create_staged_resource_ancestor_links_empty_ancestors(
+    def test_create_all_staged_resource_ancestor_links_empty_ancestors(
         self, db: Session, staged_resource_1: StagedResource
     ):
         """Test creating links when the ancestor set is empty."""
         descendant_urn = staged_resource_1.urn
         ancestor_urns = set()
 
-        StagedResourceAncestor.create_staged_resource_ancestor_links(
-            db=db, resource_urn=descendant_urn, ancestor_urns=ancestor_urns
+        StagedResourceAncestor.create_all_staged_resource_ancestor_links(
+            db=db, ancestor_links={descendant_urn: ancestor_urns}
         )
 
         links = (
@@ -1069,7 +1093,7 @@ class TestStagedResourceAncestorModel:
         )
         assert len(links) == 0
 
-    def test_create_staged_resource_ancestor_links_idempotent(
+    def test_create_all_staged_resource_ancestor_links_idempotent(
         self,
         db: Session,
         staged_resource_1: StagedResource,
@@ -1080,8 +1104,8 @@ class TestStagedResourceAncestorModel:
         ancestor_urns = {staged_resource_1.urn}
 
         # Create links for the first time
-        StagedResourceAncestor.create_staged_resource_ancestor_links(
-            db=db, resource_urn=descendant_urn, ancestor_urns=ancestor_urns
+        StagedResourceAncestor.create_all_staged_resource_ancestor_links(
+            db=db, ancestor_links={descendant_urn: ancestor_urns}
         )
         links_first_call = (
             db.query(StagedResourceAncestor)
@@ -1091,8 +1115,8 @@ class TestStagedResourceAncestorModel:
         assert len(links_first_call) == 1
 
         # Create links for the second time with the same data
-        StagedResourceAncestor.create_staged_resource_ancestor_links(
-            db=db, resource_urn=descendant_urn, ancestor_urns=ancestor_urns
+        StagedResourceAncestor.create_all_staged_resource_ancestor_links(
+            db=db, ancestor_links={descendant_urn: ancestor_urns}
         )
         links_second_call = (
             db.query(StagedResourceAncestor)
@@ -1120,11 +1144,12 @@ class TestStagedResourceAncestorModel:
         other_descendant_urn = staged_resource_3.urn
 
         # Link ancestor to both descendants
-        StagedResourceAncestor.create_staged_resource_ancestor_links(
-            db=db, resource_urn=descendant_to_delete_urn, ancestor_urns={ancestor_urn}
-        )
-        StagedResourceAncestor.create_staged_resource_ancestor_links(
-            db=db, resource_urn=other_descendant_urn, ancestor_urns={ancestor_urn}
+        StagedResourceAncestor.create_all_staged_resource_ancestor_links(
+            db=db,
+            ancestor_links={
+                descendant_to_delete_urn: {ancestor_urn},
+                other_descendant_urn: {ancestor_urn},
+            },
         )
         db.commit()  # Commit to ensure links are queryable for relationship loading
 
@@ -1199,10 +1224,11 @@ class TestStagedResourceAncestorModel:
         descendant_urn = staged_resource_3.urn
 
         # Link both ancestors to the descendant
-        StagedResourceAncestor.create_staged_resource_ancestor_links(
+        StagedResourceAncestor.create_all_staged_resource_ancestor_links(
             db=db,
-            resource_urn=descendant_urn,
-            ancestor_urns={ancestor_to_delete_urn, other_ancestor_urn},
+            ancestor_links={
+                descendant_urn: {ancestor_to_delete_urn, other_ancestor_urn}
+            },
         )
         db.commit()  # Commit to ensure links are queryable for relationship loading
 

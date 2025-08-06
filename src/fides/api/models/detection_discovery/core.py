@@ -380,26 +380,31 @@ class StagedResourceAncestor(Base):
     )
 
     @classmethod
-    def create_staged_resource_ancestor_links(
+    def create_all_staged_resource_ancestor_links(
         cls,
         db: Session,
-        resource_urn: str,
-        ancestor_urns: Set[str],
+        ancestor_links: Dict[str, Set[str]],
     ) -> None:
         """
-        Bulk inserts entries in the StagedResourceAncestor table
-        based on the provided resource URN and the set of its ancestor URNs.
+        Bulk inserts all entries in the StagedResourceAncestor table
+        based on the provided mapping of descendant URNs to their ancestor URN sets.
 
         We execute the bulk INSERT with the provided (synchronous) db session,
         but the transaction is _not_ committed, so the caller must commit the transaction
         to persist the changes.
+
+        Args:
+            db: Database session
+            ancestor_links: Dict mapping descendant URNs to sets of ancestor URNs
         """
         links_to_insert = []
 
-        for ancestor_urn in ancestor_urns:
-            links_to_insert.append(
-                {"ancestor_urn": ancestor_urn, "descendant_urn": resource_urn}
-            )
+        for descendant_urn, ancestor_urns in ancestor_links.items():
+            if ancestor_urns:  # Only create links if there are ancestors
+                for ancestor_urn in ancestor_urns:
+                    links_to_insert.append(
+                        {"ancestor_urn": ancestor_urn, "descendant_urn": descendant_urn}
+                    )
 
         if links_to_insert:
             # Using raw SQL for ON CONFLICT with parameters for safety
