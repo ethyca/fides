@@ -381,15 +381,9 @@ def pytest_misc_integration(session: Session, mark: str, coverage_arg: str) -> N
     else:
         # Use the mark parameter for non-external integration tests
         session.run(*START_APP, external=True)
-        run_command = (
-            *EXEC,
-            "pytest",
-            coverage_arg,
-            "tests/qa/",
-            "tests/service/",
-            "tests/task/",
-            "tests/util/",
-            "-m",
-            mark,
+        run_infrastructure(
+            run_tests=True,
+            analytics_opt_out=True,
+            datastores=["postgres", "bigquery", "snowflake"],
+            pytest_path="tests/qa/ tests/service/ tests/task/ tests/util/",
         )
-        session.run(*run_command, external=True)
