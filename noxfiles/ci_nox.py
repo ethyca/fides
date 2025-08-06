@@ -322,6 +322,7 @@ TEST_GROUPS = [
     nox.param("lib", id="lib"),
     nox.param("misc-unit", id="misc-unit"),
     nox.param("misc-integration", id="misc-integration"),
+    nox.param("misc-integration-external", id="misc-integration-external"),
     nox.param("nox", id="nox"),
 ]
 
@@ -361,10 +362,10 @@ TEST_DIRECTORY_COVERAGE = {
         "ops-external-datastores",
         "ops-saas",
     ],
-    "tests/service/": ["misc-unit", "misc-integration"],
-    "tests/task/": ["misc-unit", "misc-integration"],
-    "tests/util/": ["misc-unit", "misc-integration"],
-    "tests/qa/": ["misc-unit", "misc-integration"],
+    "tests/service/": ["misc-unit", "misc-integration", "misc-integration-external"],
+    "tests/task/": ["misc-unit", "misc-integration", "misc-integration-external"],
+    "tests/util/": ["misc-unit", "misc-integration", "misc-integration-external"],
+    "tests/qa/": ["misc-unit", "misc-integration", "misc-integration-external"],
     "tests/fixtures/": [],  # fixtures are not test files, just test data
 }
 
