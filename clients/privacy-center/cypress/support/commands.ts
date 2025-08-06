@@ -304,9 +304,9 @@ declare global {
        * This sets up an uncaught exception handler that will allow the test to continue
        * when Fides.js detects it's already loaded, but will still fail on other errors.
        *
-       * @example cy.handleFidesAlreadyLoadedException();
+       * @example cy.expectFidesAlreadyLoadedException();
        */
-      handleFidesAlreadyLoadedException(): Chainable<any>;
+      expectFidesAlreadyLoadedException(): Chainable<any>;
     }
   }
 }
@@ -333,7 +333,7 @@ declare global {
   }
 }
 
-Cypress.Commands.add("handleFidesAlreadyLoadedException", () => {
+Cypress.Commands.add("expectFidesAlreadyLoadedException", () => {
   cy.on("uncaught:exception", (e) => {
     if (e.message.includes("already loaded on this page")) {
       // we expected this error

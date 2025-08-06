@@ -223,7 +223,7 @@ describe("fides.js API route", () => {
     };
 
     it("prevents execution when script is loaded multiple times on the same page", () => {
-      cy.handleFidesAlreadyLoadedException();
+      cy.expectFidesAlreadyLoadedException();
       cy.visit("/fides-js-demo.html");
 
       // Wait for initial Fides to load
@@ -257,13 +257,13 @@ describe("fides.js API route", () => {
           "/fides.js?fides_unsupported_repeated_script_loading=enabled_acknowledge_not_supported";
         win.document.head.appendChild(script);
         waitForScriptToRun();
-        // an exception will automatically fail the test here because we didn't include cy.handleFidesAlreadyLoadedException()
+        // an exception will automatically fail the test here because we didn't include cy.expectFidesAlreadyLoadedException()
         // If nothing happens, the test will pass. no further action is needed.
       });
     });
 
     it("handles script removal and re-addition scenario", () => {
-      cy.handleFidesAlreadyLoadedException();
+      cy.expectFidesAlreadyLoadedException();
       cy.visit("/fides-js-demo.html");
 
       // Wait for initial Fides to load
@@ -298,7 +298,7 @@ describe("fides.js API route", () => {
     it("handles multiple script tags present from page load", () => {
       // Create a custom test page with multiple script tags
       cy.visit("/fides-js-demo.html").then(() => {
-        cy.handleFidesAlreadyLoadedException();
+        cy.expectFidesAlreadyLoadedException();
         cy.window().then((win) => {
           // Clear the page and add multiple script tags
           win.document.body.innerHTML = `
