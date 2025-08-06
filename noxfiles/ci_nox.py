@@ -339,7 +339,11 @@ TEST_MATRIX: Dict[str, Callable] = {
     "api": pytest_api,
     "lib": pytest_lib,
     "misc-unit": pytest_misc_unit,
-    "misc-integration": pytest_misc_integration,
+    "misc-integration-external": partial(pytest_misc_integration, mark="external"),
+    "misc-integration": partial(
+        pytest_misc_integration,
+        mark="integration_bigquery or integration_snowflake or integration_postgres or integration",
+    ),
     "nox": pytest_nox,
 }
 
