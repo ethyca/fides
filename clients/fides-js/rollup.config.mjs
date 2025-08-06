@@ -178,9 +178,10 @@ SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
         amd: {
           define: undefined, // prevent the bundle from registering itself as an AMD module, even if an AMD loader (like RequireJS) is present on the page. This allows FidesJS to use Rollup's `umd` format to support both `iife` and `cjs` modules, but excludes AMD.
         },
+        // Use the "banner" option to prepend a defensive check into the code to guard against loading FidesJS multiple times on the same page
         banner: isExtension
           ? undefined
-          : `if(typeof ${GLOBAL_NAME}!=="undefined" && ${GLOBAL_NAME}.options && ${GLOBAL_NAME}.options.fidesUnsupportedRepeatedScriptLoading!=="enabled_acknowledge_not_supported") {throw new Error("${multipleLoadingMessage}");}`,
+          : `if(typeof ${GLOBAL_NAME}!=="undefined" && ${GLOBAL_NAME}.options?.fidesUnsupportedRepeatedScriptLoading!=="enabled_acknowledge_not_supported") {throw new Error("${multipleLoadingMessage}");}`,
       },
     ],
     onLog,
