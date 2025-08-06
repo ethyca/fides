@@ -75,11 +75,6 @@ export const DiscoveredAssetsTable = ({
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(25);
 
-  // Filter state for server-side filtering
-  const [columnFilters, setColumnFilters] = useState<
-    Record<string, FilterValue | null>
-  >({});
-
   // Selection state
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [selectedRowsMap, setSelectedRowsMap] = useState<
@@ -125,15 +120,18 @@ export const DiscoveredAssetsTable = ({
   const disableAddAll =
     anyBulkActionIsLoading || systemId === UNCATEGORIZED_SEGMENT;
 
-  // Table state with URL synchronization for search and sorting (iterative implementation)
+  // Table state with URL synchronization for search, sorting, and filtering (iterative implementation)
   const tableState = useTableState({
     urlSync: {
       pagination: false, // Will implement later
-      sorting: true, // Now implementing sorting
-      filtering: false, // Will implement later
+      sorting: true, // Already implemented
+      filtering: true, // Now implementing filtering
       search: true, // Already implemented
     },
   });
+
+  // Use tableState values instead of local state
+  const { columnFilters } = tableState;
 
   // Use tableState sorting instead of local state
   const { sortField: tableSortField, sortOrder } = tableState;
@@ -426,7 +424,7 @@ export const DiscoveredAssetsTable = ({
     }
 
     setPageSize(pagination.pageSize || 25);
-    setColumnFilters(filters || {});
+    tableState.updateFilters(filters || {});
 
     // Handle sorting with tableState
     const newSortField =
@@ -467,7 +465,7 @@ export const DiscoveredAssetsTable = ({
           <Space size="small">
             <Button
               onClick={() => {
-                setColumnFilters({});
+                tableState.updateFilters({}); // Clear filters using tableState
                 tableState.updateSearch(""); // Clear search using tableState
                 tableState.updateSorting(undefined, undefined); // Clear sorting using tableState
               }}
