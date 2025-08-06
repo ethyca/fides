@@ -356,8 +356,8 @@ def initiate_interrupted_task_requeue_poll() -> None:
 
 def initiate_async_tasks_status_polling() -> None:
     """Initiates scheduler to check for and requeue pending polling async tasks"""
-
-    if CONFIG.test_mode or not CONFIG.execution.use_dsr_3_0:
+    # TODO: maybe check that we are in dev mode when merged on main?
+    if CONFIG.test_mode:
         return
 
     assert (
@@ -687,10 +687,11 @@ def poll_async_tasks_status(self: DatabaseTask) -> None:
     """
     Poll the status of async tasks that are awaiting processing.
     """
+
     with self.get_new_session() as db:
         logger.debug("Polling for async tasks status")
 
-        # Get all async tasks that are awaiting processing and are from polling async tasks
+        # Get all tasks that are awaiting processing and are from polling async tasks
         async_tasks = (
             db.query(RequestTask)
             .filter(RequestTask.status == ExecutionLogStatus.awaiting_processing)
@@ -698,8 +699,8 @@ def poll_async_tasks_status(self: DatabaseTask) -> None:
             .all()
         )
         if async_tasks:
-            from fides.service.privacy_request.privacy_request_service import (
-                _requeue_polling_request,
+            from fides.api.service.async_dsr.async_dsr_service import (
+                requeue_polling_request,
             )
             for async_task in async_tasks:
-                _requeue_polling_request(db, async_task)
+                requeue_polling_request(db, async_task)
