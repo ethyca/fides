@@ -290,8 +290,7 @@ def _run_tests(
     if analytics_opt_out:
         environment_variables += "-e ANALYTICS_OPT_OUT"
 
-    if pytest_markers:
-        pytest_path += f' -m "{pytest_markers}"'
+    pytest_path += f' -m "{pytest_markers}"'
 
     _run_cmd_or_err(
         f'echo "running pytest for conditions: {pytest_path} with environment variables: {environment_variables}"'
