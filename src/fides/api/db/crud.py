@@ -58,8 +58,8 @@ async def create_resource(
                 log.debug("Creating resource")
                 query = _insert(sql_model.__table__).values(resource_dict)
                 await async_session.execute(query)
-            except SQLAlchemyError:
-                log.exception("Failed to create resource")
+            except SQLAlchemyError as e:
+                log.exception(f"Failed to create resource with error: '{e}'")
                 sa_error = errors.QueryError()
                 raise sa_error
 
@@ -105,9 +105,9 @@ async def get_custom_fields_filtered(
                 query = query.where(or_(False, *criteria))
                 result = await async_session.execute(query)
                 return result.mappings().all()
-            except SQLAlchemyError:
+            except SQLAlchemyError as e:
                 sa_error = errors.QueryError()
-                log.exception("Failed to fetch custom fields")
+                log.exception(f"Failed to fetch custom fields with error: '{e}'")
                 raise sa_error
 
 
@@ -128,9 +128,9 @@ async def get_resource(
                 log.debug("Fetching resource")
                 query = select(sql_model).where(sql_model.fides_key == fides_key)
                 result = await async_session.execute(query)
-            except SQLAlchemyError:
+            except SQLAlchemyError as e:
                 sa_error = errors.QueryError()
-                log.exception("Failed to fetch resource")
+                log.exception(f"Failed to fetch resource with error: '{e}'")
                 raise sa_error
 
             sql_resource = result.scalars().first()
@@ -172,9 +172,9 @@ async def get_resource_with_custom_fields(
                     )
                 )
                 result = await async_session.execute(query)
-            except SQLAlchemyError:
+            except SQLAlchemyError as e:
                 sa_error = errors.QueryError()
-                log.exception("Failed to fetch custom fields")
+                log.exception(f"Failed to fetch custom fields with error: '{e}'")
                 raise sa_error
 
             custom_fields = result.mappings().all()
@@ -217,8 +217,8 @@ async def list_resource_query(
                 log.debug("Fetching resources")
                 result = await async_session.execute(query)
                 sql_resources = result.scalars().all()
-            except SQLAlchemyError:
-                log.exception("Failed to fetch resources")
+            except SQLAlchemyError as e:
+                log.exception(f"Failed to fetch resources with error: '{e}'")
                 sa_error = errors.QueryError()
                 raise sa_error
 
@@ -243,8 +243,8 @@ async def update_resource(
                     .where(sql_model.fides_key == resource_dict["fides_key"])
                     .values(resource_dict)
                 )
-            except SQLAlchemyError:
-                log.exception("Failed to update resource")
+            except SQLAlchemyError as e:
+                log.exception(f"Failed to update resource with error: '{e}'")
                 sa_error = errors.QueryError()
                 raise sa_error
 
@@ -294,8 +294,8 @@ async def upsert_resources(
 
                 return (inserts, updates)
 
-            except SQLAlchemyError:
-                log.exception("Failed to upsert resources")
+            except SQLAlchemyError as e:
+                log.exception(f"Failed to upsert resources with error: '{e}'")
                 sa_error = errors.QueryError()
                 raise sa_error
 
@@ -346,8 +346,8 @@ async def delete_resource(
                     status_code=HTTP_422_UNPROCESSABLE_ENTITY,
                     detail=error_message,
                 )
-            except SQLAlchemyError:
-                log.exception("Failed to delete resource")
+            except SQLAlchemyError as e:
+                log.exception(f"Failed to delete resource with error: '{e}'")
                 sa_error = errors.QueryError()
                 raise sa_error
 
