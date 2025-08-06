@@ -19,7 +19,17 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.67.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.67.1...main)
+
+
+## [2.67.1](https://github.com/ethyca/fides/compare/2.67.0...2.67.1)
+
+### Added
+- Added protection against multiple FidesJS script loading on the same page with configurable override option [#6416](https://github.com/ethyca/fides/pull/6416)
+
+### Fixed
+- Fix default tab not being set in the integration detail page for Manual Tasks integrations [#6417](https://github.com/ethyca/fides/pull/6417)
+
 
 ## [2.67.0](https://github.com/ethyca/fides/compare/2.66.2...2.67.0)
 

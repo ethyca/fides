@@ -299,6 +299,14 @@ declare global {
       overrideSettings(
         settings: Partial<PrivacyCenterClientSettings>,
       ): Chainable<any>;
+      /**
+       * Custom command to handle expected "already loaded on this page" exceptions from Fides.js
+       * This sets up an uncaught exception handler that will allow the test to continue
+       * when Fides.js detects it's already loaded, but will still fail on other errors.
+       *
+       * @example cy.expectFidesAlreadyLoadedException();
+       */
+      expectFidesAlreadyLoadedException(): Chainable<any>;
     }
   }
 }
@@ -324,6 +332,16 @@ declare global {
     ) => void;
   }
 }
+
+Cypress.Commands.add("expectFidesAlreadyLoadedException", () => {
+  cy.on("uncaught:exception", (e) => {
+    if (e.message.includes("already loaded on this page")) {
+      // we expected this error
+      return false;
+    }
+    // on any other error message the test fails
+  });
+});
 
 // Convert this to a module instead of script (allows import/export)
 export {};

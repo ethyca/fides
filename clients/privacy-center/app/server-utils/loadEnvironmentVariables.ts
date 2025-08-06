@@ -146,6 +146,11 @@ const loadEnvironmentVariables = () => {
         | "multiple"
         | "once"
         | "disable") || "once",
+    FIDES_UNSUPPORTED_REPEATED_SCRIPT_LOADING:
+      (process.env
+        .FIDES_PRIVACY_CENTER__FIDES_UNSUPPORTED_REPEATED_SCRIPT_LOADING as
+        | "enabled_acknowledge_not_supported"
+        | "disabled") || "disabled",
   };
   return settings;
 };
