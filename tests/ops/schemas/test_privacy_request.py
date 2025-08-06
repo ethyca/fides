@@ -107,3 +107,68 @@ class TestPrivacyRequestCreate:
                 "policy_key": DEFAULT_ACCESS_POLICY,
             }
         )
+
+
+class TestPrivacyRequestResponse:
+    """Test the PrivacyRequestResponse schema."""
+
+    def test_location_display_name_serialization(self, policy):
+        """Test that location_display_name is properly serialized from location field."""
+        from fides.api.schemas.policy import PolicyResponse
+        from fides.api.schemas.privacy_request import PrivacyRequestResponse
+
+        # Test with US country code
+        response_data = {
+            "id": "test_id",
+            "status": "pending",
+            "location": "US",
+            "policy": PolicyResponse.model_validate(policy),
+        }
+        response = PrivacyRequestResponse(**response_data)
+        # The serializer should compute the display name
+        serialized = response.model_dump()
+        assert serialized["location_display_name"] == "United States"
+
+        # Test with US subdivision code
+        response_data["location"] = "US-CA"
+        response = PrivacyRequestResponse(**response_data)
+        serialized = response.model_dump()
+        assert serialized["location_display_name"] == "United States (California)"
+
+        # Test with special EEA code
+        response_data["location"] = "EEA"
+        response = PrivacyRequestResponse(**response_data)
+        serialized = response.model_dump()
+        assert serialized["location_display_name"] == "European Economic Area"
+
+    def test_location_display_name_with_null_location(self, policy):
+        """Test that location_display_name is None when location is None."""
+        from fides.api.schemas.policy import PolicyResponse
+        from fides.api.schemas.privacy_request import PrivacyRequestResponse
+
+        response_data = {
+            "id": "test_id",
+            "status": "pending",
+            "location": None,
+            "policy": PolicyResponse.model_validate(policy),
+        }
+        response = PrivacyRequestResponse(**response_data)
+        serialized = response.model_dump()
+        assert serialized["location_display_name"] is None
+
+    def test_location_display_name_explicit_value(self, policy):
+        """Test that explicitly set location_display_name is preserved."""
+        from fides.api.schemas.policy import PolicyResponse
+        from fides.api.schemas.privacy_request import PrivacyRequestResponse
+
+        response_data = {
+            "id": "test_id",
+            "status": "pending",
+            "location": "US",
+            "location_display_name": "Custom Display Name",
+            "policy": PolicyResponse.model_validate(policy),
+        }
+        response = PrivacyRequestResponse(**response_data)
+        serialized = response.model_dump()
+        # Should preserve the explicitly set value
+        assert serialized["location_display_name"] == "Custom Display Name"
