@@ -1,20 +1,21 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import List, Optional, Set
+from typing import Any, Dict, List, Optional, Type
 
 from sqlalchemy import (
     BOOLEAN,
-    JSON,
     Column,
     ForeignKey,
+    ForeignKeyConstraint,
     Index,
     String,
     Text,
     UniqueConstraint,
 )
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.orm import RelationshipProperty, relationship
+from sqlalchemy.orm import RelationshipProperty, Session, relationship
 
 from fides.api.db.base_class import Base
 from fides.api.models.sql_models import FidesBase  # type: ignore[attr-defined]
@@ -30,48 +31,110 @@ class TargetType(str, Enum):
     PRIVACY_DECLARATION = "privacy_declaration"
     TAXONOMY = "taxonomy"  # For taxonomy-to-taxonomy relationships
 
-    @classmethod
-    def generic_types(cls) -> Set[str]:
-        """Returns all target types except TAXONOMY."""
-        return {t.value for t in cls if t != cls.TAXONOMY}
-
 
 class Taxonomy(Base, FidesBase):
+    """The SQL model for taxonomy resources."""
+
+    _allowed_usages: RelationshipProperty[List[TaxonomyAllowedUsage]] = relationship(
+        "TaxonomyAllowedUsage",
+        back_populates="source_taxonomy",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
+
+    # Association proxy to simplify access to target_type values
+    # This allows getting a list of strings while the actual storage
+    # is handled through the TaxonomyAllowedUsage model
+    # Updates should be done through the create/update methods
+    applies_to: List[str] = association_proxy("_allowed_usages", "target_type")
+
+    @classmethod
+    def create(
+        cls: Type["Taxonomy"],
+        db: Session,
+        *,
+        data: Dict[str, Any],
+        check_name: bool = True,
+    ) -> "Taxonomy":
+        """Create a new Taxonomy with proper handling of applies_to."""
+        applies_to = data.pop("applies_to", [])
+
+        # Create the taxonomy
+        taxonomy: Taxonomy = super().create(db=db, data=data, check_name=check_name)
+
+        # Create TaxonomyAllowedUsage objects for each applies_to value
+        allowed_usages = [
+            TaxonomyAllowedUsage(  # type: ignore
+                source_taxonomy_key=taxonomy.fides_key, target_type=target_type
+            )
+            for target_type in set(applies_to)
+        ]
+        taxonomy._allowed_usages = allowed_usages  # pylint: disable=protected-access
+
+        return cls.persist_obj(db, taxonomy)
+
+    def update(self, db: Session, *, data: Dict[str, Any]) -> "Taxonomy":
+        """Update a Taxonomy with proper handling of applies_to."""
+        applies_to = data.pop("applies_to", None)
+
+        # Update the base fields
+        super().update(db=db, data=data)
+
+        # If applies_to was provided, update it
+        if applies_to is not None:
+            existing_usages = {
+                usage.target_type: usage for usage in self._allowed_usages
+            }
+            updated_types = set(applies_to)
+
+            # Delete TaxonomyAllowedUsage instances that are not in the updated list
+            for target_type in set(existing_usages.keys()) - updated_types:
+                db.delete(existing_usages[target_type])
+
+            # Create new TaxonomyAllowedUsage instances for types that don't exist
+            for target_type in updated_types - set(existing_usages.keys()):
+                self._allowed_usages.append(
+                    TaxonomyAllowedUsage(  # type: ignore
+                        source_taxonomy_key=self.fides_key, target_type=target_type
+                    )
+                )
+
+        return self
+
+
+class TaxonomyAllowedUsage(Base):
     """
-    The SQL model for taxonomy resources.
+    The SQL model for taxonomy allowed usage.
+    Defines what types of targets a taxonomy can be applied to.
+
+    target_type can be either:
+    - A generic type: "system", "dataset", "field", "collection", "privacy_declaration"
+    - A taxonomy key: "data_categories", "data_uses", etc.
     """
 
     @declared_attr
     def __tablename__(self) -> str:
-        return "taxonomy"
+        return "taxonomy_allowed_usage"
 
-    # Store what this taxonomy can be applied to as JSON
-    # Format: ["system", "dataset", "data_categories"] where taxonomy keys represent taxonomy-to-taxonomy relationships
-    applies_to = Column(JSON, server_default="[]", nullable=False)
+    source_taxonomy: RelationshipProperty[Taxonomy] = relationship(
+        "Taxonomy",
+        back_populates="_allowed_usages",
+    )
 
-    def add_applies_to(self, value: str) -> None:
-        """Add a target type or taxonomy key to applies_to."""
-        current = set(self.applies_to or [])
-        current.add(value)
-        self.applies_to = list(current)
+    source_taxonomy_key = Column(
+        String,
+        ForeignKey("taxonomy.fides_key", ondelete="CASCADE"),
+        primary_key=True,
+        index=True,
+    )
+    target_type = Column(
+        String, primary_key=True
+    )  # Can be "system", "dataset", OR a taxonomy key like "data_categories"
 
-    def remove_applies_to(self, value: str) -> None:
-        """Remove a target type or taxonomy key from applies_to."""
-        current = set(self.applies_to or [])
-        current.discard(value)
-        self.applies_to = list(current)
-
-    def can_apply_to_type(self, target_type: str) -> bool:
-        """Check if this taxonomy can be applied to a given target type."""
-        return target_type in (self.applies_to or [])
-
-    def can_apply_to_taxonomy(self, taxonomy_key: str) -> bool:
-        """Check if this taxonomy can be applied to another taxonomy."""
-        # Check if the taxonomy key is in applies_to AND it's not a generic type
-        return (
-            taxonomy_key in (self.applies_to or [])
-            and taxonomy_key not in TargetType.generic_types()
-        )
+    __table_args__ = (
+        # Simple two-column index for queries
+        Index("ix_allowed_usage_lookup", "source_taxonomy_key", "target_type"),
+    )
 
 
 class TaxonomyElement(Base, FidesBase):
@@ -113,14 +176,17 @@ class TaxonomyElement(Base, FidesBase):
 class TaxonomyUsage(Base):
     """
     The SQL model for taxonomy usage.
-    Tracks actual applications of taxonomy elements to any target type.
+    Tracks the application of taxonomy elements to other taxonomy elements.
+
+    Example: Applying a "high" tag (from risk taxonomy) to
+             "user.contact.email" (from data_categories taxonomy).
     """
 
     @declared_attr
     def __tablename__(self) -> str:
         return "taxonomy_usage"
 
-    # Source (the taxonomy element being applied)
+    # The taxonomy element being applied (e.g., risk)
     source_element_key = Column(
         String,
         ForeignKey(
@@ -132,22 +198,52 @@ class TaxonomyUsage(Base):
         index=True,
     )
 
-    taxonomy_type = Column(String, nullable=False, index=True)
+    # The taxonomy element it's being applied to (e.g., a data category)
+    target_element_key = Column(
+        String,
+        ForeignKey(
+            "taxonomy_element.fides_key",
+            ondelete="CASCADE",
+            name="fk_taxonomy_usage_target_element",
+        ),
+        nullable=False,
+        index=True,
+    )
 
-    # Target (what the taxonomy is being applied to)
-    target_type = Column(String, nullable=False)  # "system", "dataset", "field", etc.
-    target_identifier = Column(String, nullable=False)  # The ID/key of the target
+    # Denormalized taxonomy types for validation and performance
+    source_taxonomy = Column(String, nullable=False, index=True)
+    target_taxonomy = Column(String, nullable=False, index=True)
+
+    # Relationships for easier access
+    source_element: RelationshipProperty[TaxonomyElement] = relationship(
+        "TaxonomyElement",
+        foreign_keys=[source_element_key],
+        backref="usages_as_source",
+    )
+
+    target_element: RelationshipProperty[TaxonomyElement] = relationship(
+        "TaxonomyElement",
+        foreign_keys=[target_element_key],
+        backref="usages_as_target",
+    )
 
     __table_args__ = (
-        # Unique constraint to prevent duplicate applications
+        # Validate that this type of usage is allowed
+        ForeignKeyConstraint(
+            ["source_taxonomy", "target_taxonomy"],
+            [
+                "taxonomy_allowed_usage.source_taxonomy_key",
+                "taxonomy_allowed_usage.target_type",
+            ],
+            ondelete="RESTRICT",
+            name="fk_taxonomy_usage_allowed",
+        ),
+        # Prevent duplicate applications
         UniqueConstraint(
             "source_element_key",
-            "target_type",
-            "target_identifier",
-            name="uq_taxonomy_usage_application",
+            "target_element_key",
+            name="uq_taxonomy_usage",
         ),
-        # Composite index for common queries
-        Index("ix_taxonomy_usage_lookup", "target_type", "target_identifier"),
-        # Index for finding all usages by taxonomy type
-        Index("ix_taxonomy_usage_by_taxonomy", "taxonomy_type", "target_type"),
+        # Index for finding all usages by taxonomy combination
+        Index("ix_taxonomy_usage_by_taxonomies", "source_taxonomy", "target_taxonomy"),
     )
