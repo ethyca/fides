@@ -62,19 +62,14 @@ def validate_default_taxonomy_restrictions(
 
     # For updates, check if trying to modify is_default field
     if action == "update" and resource:
-        if (
-            hasattr(resource, "is_default")
-            and data.get("is_default") != resource.is_default
-        ):
-            raise ForbiddenIsDefaultTaxonomyError(
-                "resource", data.get("fides_key", resource.fides_key), action="modify"
-            )
-
-        # Check if trying to modify a default taxonomy item
-        if hasattr(resource, "is_default") and resource.is_default:
-            raise ForbiddenIsDefaultTaxonomyError(
-                "resource", resource.fides_key, action="modify"
-            )
+        # Only check if is_default is explicitly present in the data and is being changed
+        if "is_default" in data and hasattr(resource, "is_default"):
+            if data["is_default"] != resource.is_default:
+                raise ForbiddenIsDefaultTaxonomyError(
+                    "resource",
+                    data.get("fides_key", resource.fides_key),
+                    action="modify",
+                )
 
 
 def validate_parent_key_exists(
