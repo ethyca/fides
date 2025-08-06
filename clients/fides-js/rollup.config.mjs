@@ -180,11 +180,10 @@ SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
         },
         banner: isExtension
           ? undefined
-          : `(function(){if(typeof ${GLOBAL_NAME}==="undefined" || (${GLOBAL_NAME}.options && ${GLOBAL_NAME}.options.fidesUnsupportedRepeatedScriptLoading === "enabled_acknowledge_not_supported")) {console.log('worked once');`,
+          : `(function(){if(typeof ${GLOBAL_NAME}==="undefined" || (${GLOBAL_NAME}.options && ${GLOBAL_NAME}.options.fidesUnsupportedRepeatedScriptLoading === "enabled_acknowledge_not_supported")) {`,
         footer: isExtension
           ? undefined
           : `} else {
-          console.log(${GLOBAL_NAME}.options);
           console.error("${multipleLoadingMessage}");
         }})()`,
       },
