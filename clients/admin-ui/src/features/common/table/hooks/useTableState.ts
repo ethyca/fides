@@ -24,10 +24,15 @@ const DEFAULT_URL_SYNC: TableUrlSyncConfig = {
 /**
  * NuQS parsers for table state - only for features that should sync to URL
  */
-const createTableParsers = (urlSync: TableUrlSyncConfig) => ({
+const createTableParsers = (
+  urlSync: TableUrlSyncConfig,
+  defaults: {
+    pageSize?: number;
+  } = {},
+) => ({
   ...(urlSync.pagination && {
     page: parseAsInteger.withDefault(DEFAULT_PAGE_INDEX),
-    size: parseAsInteger.withDefault(DEFAULT_PAGE_SIZE),
+    size: parseAsInteger.withDefault(defaults.pageSize ?? DEFAULT_PAGE_SIZE),
   }),
   ...(urlSync.sorting && {
     sortField: parseAsString.withDefault(""),
@@ -116,7 +121,13 @@ export const useTableState = (config: TableStateConfig = {}) => {
   });
 
   // Create parsers only for features that should sync to URL
-  const parsers = useMemo(() => createTableParsers(urlSync), [urlSync]);
+  // Note: Parsers must be stable across renders for NuQS to work properly
+  const parsers = useMemo(() => {
+    const createdParsers = createTableParsers(urlSync, {
+      pageSize: defaultPageSize,
+    });
+    return createdParsers;
+  }, [urlSync, defaultPageSize]);
 
   // Use NuQS for URL state management (only for enabled features)
   const [queryState, setQueryState] = useQueryStates(parsers, {
@@ -125,8 +136,8 @@ export const useTableState = (config: TableStateConfig = {}) => {
   });
 
   // Merge URL state with internal state, prioritizing URL when available
-  const currentState: TableState = useMemo(
-    () => ({
+  const currentState: TableState = useMemo(() => {
+    const state = {
       pageIndex: urlSync.pagination
         ? (queryState.page ?? DEFAULT_PAGE_INDEX)
         : internalState.pageIndex,
@@ -147,16 +158,17 @@ export const useTableState = (config: TableStateConfig = {}) => {
         ? queryState.search
         : internalState.searchQuery,
       selectedRowKeys: [], // Selection is not synced to URL by default
-    }),
-    [
-      queryState,
-      internalState,
-      urlSync,
-      defaultPageSize,
-      defaultSortField,
-      defaultSortOrder,
-    ],
-  );
+    };
+
+    return state;
+  }, [
+    queryState,
+    internalState,
+    urlSync,
+    defaultPageSize,
+    defaultSortField,
+    defaultSortOrder,
+  ]);
 
   // Update functions that handle both URL sync and internal state
   const updatePagination = useCallback(
@@ -168,7 +180,7 @@ export const useTableState = (config: TableStateConfig = {}) => {
 
       if (urlSync.pagination) {
         const updates: any = { page: newPageIndex };
-        if (pageSize !== undefined && pageSize !== currentState.pageSize) {
+        if (pageSize !== undefined) {
           updates.size = pageSize;
         }
         setQueryState(updates);
