@@ -1,5 +1,8 @@
 from typing import List
 
+from fides.api.schemas.policy import ActionType
+from fides.api.service.async_dsr.async_dsr_strategy import AsyncDSRStrategy
+from fides.api.service.connectors.query_configs.saas_query_config import SaaSQueryConfig
 from loguru import logger
 from sqlalchemy.orm import Session
 
@@ -51,16 +54,12 @@ def requeue_polling_request(
         db,
     ) as resources:
         graph_task: GraphTask = create_graph_task(db, async_task, resources)
-        # Currently, upstream tasks and "input keys" (which are built by data dependencies)
-        # are the same, but they may not be the same in the future.
-        upstream_tasks = async_task.upstream_tasks_objects(db)
-        upstream_access_data: List[List[Row]] = _build_upstream_access_data(
-            graph_task.execution_node.input_keys, upstream_tasks
-        )
-        # Run the main access function
-        graph_task.access_request(*upstream_access_data)
-        #From the access request we can implement the polling strategy?
-        # And
+        # From the graph task get the strategy?
+        query_config: SaaSQueryConfig = graph_task.connector.query_config(graph_task.execution_node)
+        if async_task.action_type == ActionType.access:
+            execute_read_polling_requests(db, async_task, query_config)
+        elif async_task.action_type == ActionType.erasure:
+            execute_erasure_polling_requests(db, async_task, query_config)
 
     # And then we requeue the task and move forward from that point
     # TODO: Verify that we are not going to duplicate the access request
@@ -78,3 +77,38 @@ def get_connection_config_from_task(db: Session, request_task: RequestTask) -> C
             f"DatasetConfig with fides_key {request_task.dataset_name} not found."
         )
     return ConnectionConfig.get(db=db, object_id=dataset_config.connection_config_id)
+
+def execute_read_polling_requests(
+    db: Session,
+    async_task: RequestTask,
+    query_config: SaaSQueryConfig,
+) -> None:
+    """Execute the read polling requests for a given privacy request"""
+    read_requests = query_config.get_read_requests_by_identity()
+    for read_request in read_requests:
+        if read_request.async_config:
+            strategy = AsyncDSRStrategy.get_strategy(
+                read_request.async_config.strategy,
+                read_request.async_config.configuration,
+            )
+
+            status_request = strategy.get_status_request(
+                read_request.async_config.request_params,
+                read_request.async_config.connector_params,
+                read_request.async_config.response,
+                read_request.async_config.data_path,
+            )
+
+
+
+def execute_erasure_polling_requests(
+    db: Session,
+    async_task: RequestTask,
+    query_config: SaaSQueryConfig,
+) -> None:
+    """Execute the erasure polling requests for a given privacy request"""
+    erasure_requests = query_config.get_erasure_request_by_action(ActionType.erasure)
+    for erasure_request in erasure_requests:
+        if erasure_request.async_config:
+            # TODO: Implement the polling strategy
+            pass
