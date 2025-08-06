@@ -33,6 +33,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [2.67.1](https://github.com/ethyca/fides/compare/2.67.0...2.67.1)
 
+### Added
+- Improved logging of underlying errors when raising generic exceptions [#6420](https://github.com/ethyca/fides/pull/6420)
+
 ### Fixed
 - Fix default tab not being set in the integration detail page for Manual Tasks integrations [#6417](https://github.com/ethyca/fides/pull/6417)
 
