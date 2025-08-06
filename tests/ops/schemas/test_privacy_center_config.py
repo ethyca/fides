@@ -7,6 +7,7 @@ from fides.api.schemas.privacy_center_config import (
     ConsentConfigPage,
     CustomPrivacyRequestField,
     IdentityInputs,
+    LocationCollectionConfig,
     PrivacyCenterConfig,
 )
 from fides.api.util.saas_util import load_as_string
@@ -102,3 +103,56 @@ class TestPrivacyCenterConfig:
             .default.model_dump(by_alias=True)
             .keys()
         )
+
+    def test_valid_location_collection_required(self):
+        """Test that location collection with 'required' setting is valid."""
+        location_config = LocationCollectionConfig(
+            collection="required", ip_geolocation_hint=True
+        )
+        assert location_config.collection == "required"
+        assert location_config.ip_geolocation_hint is True
+
+    def test_valid_location_collection_optional(self):
+        """Test that location collection with 'optional' setting is valid."""
+        location_config = LocationCollectionConfig(
+            collection="optional", ip_geolocation_hint=False
+        )
+        assert location_config.collection == "optional"
+        assert location_config.ip_geolocation_hint is False
+
+    def test_location_collection_default_values(self):
+        """Test that ip_geolocation_hint defaults to False."""
+        location_config = LocationCollectionConfig(collection="required")
+        assert location_config.collection == "required"
+        assert location_config.ip_geolocation_hint is False
+
+    def test_invalid_location_collection_value(self):
+        """Test that invalid collection values are rejected."""
+        with pytest.raises(ValidationError) as exc:
+            LocationCollectionConfig(collection="invalid_value")
+        assert "Input should be 'optional' or 'required'" in str(exc.value)
+
+    def test_privacy_center_config_with_location(self):
+        """Test that PrivacyCenterConfig accepts location configuration."""
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
+        )
+        # Add location configuration
+        config_data["location"] = {
+            "collection": "required",
+            "ip_geolocation_hint": True
+        }
+        
+        config = PrivacyCenterConfig(**config_data)
+        assert config.location is not None
+        assert config.location.collection == "required"
+        assert config.location.ip_geolocation_hint is True
+
+    def test_privacy_center_config_without_location(self):
+        """Test that PrivacyCenterConfig works without location configuration."""
+        config_data = json.loads(
+            load_as_string("tests/ops/resources/privacy_center_config.json")
+        )
+        
+        config = PrivacyCenterConfig(**config_data)
+        assert config.location is None

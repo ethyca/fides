@@ -130,6 +130,15 @@ class PolicyUnavailableMessages(FidesSchema):
     action_link: str
 
 
+class LocationCollectionConfig(FidesSchema):
+    """
+    Configuration for collecting user location in privacy requests.
+    """
+
+    collection: RequiredType
+    ip_geolocation_hint: bool = False
+
+
 class PrivacyCenterConfig(FidesSchema):
     """
     NOTE: Add to this schema with care. Any fields added to
@@ -153,6 +162,7 @@ class PrivacyCenterConfig(FidesSchema):
     privacy_policy_url: Optional[str] = None
     privacy_policy_url_text: Optional[str] = None
     policy_unavailable_messages: Optional[PolicyUnavailableMessages] = None
+    location: Optional[LocationCollectionConfig] = None
 
 
 class PartialPrivacyRequestOption(FidesSchema):
