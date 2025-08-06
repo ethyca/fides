@@ -32,6 +32,7 @@ import {
 } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import Restrict from "~/features/common/Restrict";
+import { ListExpandableCell } from "~/features/common/table/cells";
 import {
   DefaultCell,
   DefaultHeaderCell,
@@ -42,12 +43,14 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
+import { ListCellExpandable } from "~/features/common/table/v2/cells";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   setActiveSystem,
   useDeleteSystemMutation,
   useGetSystemsQuery,
 } from "~/features/system";
+import { DEFAULT_SYSTEMS_WITH_GROUPS } from "~/mocks/TEMP-system-groups/endpoints/systems-with-groups-response";
 import { BasicSystemResponse, ScopeRegistryEnum } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
@@ -98,8 +101,10 @@ const Systems: NextPage = () => {
     [resetPageIndexToDefault, setGlobalFilter],
   );
 
+  const systemsResponse = DEFAULT_SYSTEMS_WITH_GROUPS;
+
   const {
-    data: systemsResponse,
+    // data: systemsResponse,
     isLoading,
     isFetching,
   } = useGetSystemsQuery({
