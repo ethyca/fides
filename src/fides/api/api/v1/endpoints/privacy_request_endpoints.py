@@ -403,6 +403,7 @@ def _filter_privacy_request_queryset(
     errored_lt: Optional[datetime] = None,
     errored_gt: Optional[datetime] = None,
     external_id: Optional[str] = None,
+    location: Optional[str] = None,
     action_type: Optional[ActionType] = None,
     include_consent_webhook_requests: Optional[bool] = False,
     include_deleted_requests: Optional[bool] = False,
@@ -539,6 +540,21 @@ def _filter_privacy_request_queryset(
         query = query.filter(PrivacyRequest.id.ilike(f"%{request_id}%"))
     if external_id:
         query = query.filter(PrivacyRequest.external_id.ilike(f"{external_id}%"))
+    if location:
+        # Support filtering by exact location match or country prefix
+        # e.g., "US" matches both "US" and "US-CA", "US-NY", etc.
+        # "US-CA" matches only "US-CA"
+        if "-" in location:
+            # Exact match for subdivision codes
+            query = query.filter(PrivacyRequest.location == location.upper())
+        else:
+            # Country code - match country or any subdivision of that country
+            query = query.filter(
+                or_(
+                    PrivacyRequest.location == location.upper(),
+                    PrivacyRequest.location.ilike(f"{location.upper()}-%"),
+                )
+            )
     if status:
         query = query.filter(PrivacyRequest.status.in_(status))
     if created_lt:
@@ -685,6 +701,7 @@ def _shared_privacy_request_search(
     errored_lt: Optional[datetime] = None,
     errored_gt: Optional[datetime] = None,
     external_id: Optional[str] = None,
+    location: Optional[str] = None,
     action_type: Optional[ActionType] = None,
     verbose: Optional[bool] = False,
     include_identities: Optional[bool] = False,
@@ -723,6 +740,7 @@ def _shared_privacy_request_search(
         errored_lt,
         errored_gt,
         external_id,
+        location,
         action_type,
         None,
         include_deleted_requests,
@@ -796,6 +814,7 @@ def get_request_status(
     errored_lt: Optional[datetime] = None,
     errored_gt: Optional[datetime] = None,
     external_id: Optional[str] = None,
+    location: Optional[str] = None,
     action_type: Optional[ActionType] = None,
     verbose: Optional[bool] = False,
     include_identities: Optional[bool] = False,
@@ -836,6 +855,7 @@ def get_request_status(
         errored_lt=errored_lt,
         errored_gt=errored_gt,
         external_id=external_id,
+        location=location,
         action_type=action_type,
         verbose=verbose,
         include_identities=include_identities,
@@ -890,6 +910,7 @@ def privacy_request_search(
         errored_lt=privacy_request_filter.errored_lt,
         errored_gt=privacy_request_filter.errored_gt,
         external_id=privacy_request_filter.external_id,
+        location=privacy_request_filter.location,
         action_type=privacy_request_filter.action_type,
         verbose=privacy_request_filter.verbose,
         include_identities=privacy_request_filter.include_identities,
