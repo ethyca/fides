@@ -132,7 +132,6 @@ export const useTableState = (config: TableStateConfig = {}) => {
   // Use NuQS for URL state management (only for enabled features)
   const [queryState, setQueryState] = useQueryStates(parsers, {
     history: "push",
-    shallow: false,
   });
 
   // Merge URL state with internal state, prioritizing URL when available
