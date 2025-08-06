@@ -275,6 +275,15 @@ const TaskConfigTab = ({ integration }: TaskConfigTabProps) => {
               </Button>
             </div>
           </div>
+          <div className="mt-4">
+            <Typography.Text strong>Task creation conditions:</Typography.Text>
+            <Typography.Paragraph className="w-2/3">
+              Configure conditions that must be met before a task is created. If
+              no conditions are set, manual tasks will created for every
+              incoming privacy request of the correspding type (access or
+              erasure).
+            </Typography.Paragraph>
+          </div>
         </Box>
 
         <AddManualTaskModal
