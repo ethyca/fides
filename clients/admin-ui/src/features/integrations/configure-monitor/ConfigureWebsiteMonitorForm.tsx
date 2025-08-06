@@ -1,5 +1,12 @@
 import { format, parseISO } from "date-fns";
-import { AntButton as Button, AntFlex as Flex, Text } from "fidesui";
+import {
+  AntButton as Button,
+  AntFlex as Flex,
+  AntForm,
+  LocationSelect,
+  Text,
+} from "fidesui";
+import { isoCodesToOptions } from "fidesui/src/components/select/LocationSelect";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import * as Yup from "yup";
@@ -171,18 +178,24 @@ const ConfigureWebsiteMonitorForm = ({
                 disabled
                 variant="stacked"
               />
-              <ControlledSelect
-                mode="multiple"
-                isRequired
-                name="datasource_params.locations"
-                id="locations"
+              <AntForm.Item
                 label="Locations"
-                loading={locationsLoading}
-                options={regionOptions}
-                optionFilterProp="label"
+                required
+                layout="vertical"
                 tooltip={REGIONS_TOOLTIP_COPY}
-                layout="stacked"
-              />
+                htmlFor="datasource_params.locations"
+              >
+                <LocationSelect
+                  mode="multiple"
+                  id="locations"
+                  data-testid="controlled-select-datasource_params.locations"
+                  loading={locationsLoading}
+                  options={isoCodesToOptions(
+                    regionOptions.map((option) => option.value),
+                  )}
+                  optionFilterProp="label"
+                />
+              </AntForm.Item>
               <SharedConfigSelect
                 name="shared_config_id"
                 id="shared_config_id"

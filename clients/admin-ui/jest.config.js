@@ -35,6 +35,7 @@ module.exports = {
     "<rootDir>/.next/",
     "jest.setup.ts",
     "test-utils.tsx",
+    "<rootDir>/__tests__/utils/",
   ],
   testEnvironment: "jsdom",
   transform: {

@@ -1,11 +1,12 @@
+import { AntModal as Modal } from "fidesui";
 import { useParams, useRouter } from "next/navigation";
 import React, { useCallback, useState } from "react";
 
 import { useLocalStorage } from "~/common/hooks";
+import { useConfig } from "~/features/common/config.slice";
 
-import RequestModal from "../RequestModal";
 import { ModalViews, VerificationType } from "../types";
-import VerificationForm from "../VerificationForm";
+import VerificationForm from "../verification-request/VerificationForm";
 import ConsentRequestForm from "./ConsentRequestForm";
 
 export const useConsentRequestModal = () => {
@@ -75,38 +76,50 @@ export const ConsentRequestModal = ({
   isVerificationRequired,
   successHandler,
 }: ConsentRequestModalProps) => {
-  let form = null;
+  const config = useConfig();
 
-  if (currentView === ModalViews.ConsentRequest) {
-    form = (
-      <ConsentRequestForm
-        isOpen={isOpen}
-        onClose={onClose}
-        setCurrentView={setCurrentView}
-        setConsentRequestId={setConsentRequestId}
-        isVerificationRequired={isVerificationRequired}
-        successHandler={successHandler}
-      />
-    );
-  }
-
-  if (currentView === ModalViews.IdentityVerification) {
-    form = (
-      <VerificationForm
-        isOpen={isOpen}
-        onClose={onClose}
-        requestId={consentRequestId}
-        setCurrentView={setCurrentView}
-        resetView={ModalViews.ConsentRequest}
-        verificationType={VerificationType.ConsentRequest}
-        successHandler={successHandler}
-      />
-    );
-  }
+  const modalProps: Record<ModalViews, React.ComponentProps<typeof Modal>> = {
+    identityVerification: {
+      title: "Enter verification code",
+      children: (
+        <VerificationForm
+          isOpen={isOpen}
+          onClose={onClose}
+          requestId={consentRequestId}
+          setCurrentView={setCurrentView}
+          resetView={ModalViews.ConsentRequest}
+          verificationType={VerificationType.ConsentRequest}
+          successHandler={successHandler}
+        />
+      ),
+    },
+    privacyRequest: {
+      open: false,
+    },
+    requestSubmitted: {
+      open: false,
+    },
+    consentRequest: {
+      title: config.consent?.button.modalTitle || config.consent?.button.title,
+      children: (
+        <ConsentRequestForm
+          isOpen={isOpen}
+          onClose={onClose}
+          setCurrentView={setCurrentView}
+          setConsentRequestId={setConsentRequestId}
+          isVerificationRequired={isVerificationRequired}
+          successHandler={successHandler}
+        />
+      ),
+    },
+  };
 
   return (
-    <RequestModal isOpen={isOpen} onClose={onClose}>
-      {form}
-    </RequestModal>
+    <Modal
+      open={isOpen}
+      footer={null}
+      {...modalProps[currentView]}
+      onCancel={onClose}
+    />
   );
 };

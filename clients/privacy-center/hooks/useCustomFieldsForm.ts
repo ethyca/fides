@@ -1,21 +1,10 @@
 import * as Yup from "yup";
-
-import { FormValues, MultiselectFieldValue } from "~/types/forms";
-
-// Use the existing config types to maintain compatibility
-interface CustomPrivacyRequestField {
-  label: string;
-  field_type?: "text" | "select" | "multiselect" | "location" | null;
-  required?: boolean | null;
-  options?: string[] | null;
-  default_value?: string | string[] | null;
-  hidden?: boolean | null;
-  query_param_key?: string | null;
-  ip_geolocation_hint?: boolean | null;
-}
+import { CustomConfigField } from "~/types/config";
+import { useAppSelector } from "~/app/hooks";
+import { selectUserLocation } from "~/features/consent/consent.slice";
 
 interface UseCustomFieldsFormProps {
-  customPrivacyRequestFields: Record<string, CustomPrivacyRequestField>;
+  customPrivacyRequestFields: Record<string, CustomConfigField>;
   searchParams?: URLSearchParams | null;
 }
 
@@ -23,36 +12,41 @@ export const useCustomFieldsForm = ({
   customPrivacyRequestFields,
   searchParams,
 }: UseCustomFieldsFormProps) => {
-  const getInitialValues = (): FormValues => {
+  const userLocation = useAppSelector(selectUserLocation);
+
+  const getInitialValues = () => {
     const values = Object.fromEntries(
       Object.entries(customPrivacyRequestFields)
-        .filter(([, field]) => !field.hidden)
+        .filter(([, field]) => !field?.hidden)
         .map(([key, field]) => {
           const valueFromQueryParam =
-            field.query_param_key &&
+            field?.query_param_key &&
             searchParams &&
             searchParams.get(field.query_param_key);
 
-          let value: string | MultiselectFieldValue;
-          if (field.field_type === "multiselect") {
-            // For multiselect fields, default to empty array or convert to array
-            if (valueFromQueryParam) {
-              value = [valueFromQueryParam];
-            } else if (
-              field.default_value &&
-              Array.isArray(field.default_value)
-            ) {
-              value = field.default_value;
-            } else if (field.default_value) {
-              value = [field.default_value];
-            } else {
-              value = [];
-            }
-          } else {
-            value = valueFromQueryParam || field.default_value || "";
-          }
+          const defaultLocationValue =
+            field?.field_type === "location" && field.ip_geolocation_hint
+              ? userLocation?.code
+              : null;
 
-          return [key, value];
+          switch (field.field_type) {
+            case "multiselect":
+              const value =
+                [valueFromQueryParam] || Array.isArray(field?.default_value)
+                  ? field.default_value
+                  : (field.default_value ?? []);
+              return [key, value];
+            case "location":
+              return [
+                key,
+                valueFromQueryParam ||
+                  field?.default_value ||
+                  defaultLocationValue ||
+                  "",
+              ];
+            default:
+              return [key, valueFromQueryParam || field?.default_value || ""];
+          }
         }),
     );
 

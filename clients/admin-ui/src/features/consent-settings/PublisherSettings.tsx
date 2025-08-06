@@ -1,4 +1,9 @@
-import { AntSelect as Select, AntTypography as Typography } from "fidesui";
+import {
+  AntForm as Form,
+  AntTypography as Typography,
+  LocationSelect,
+} from "fidesui";
+import { isoCodesToOptions } from "fidesui/src/components/select/LocationSelect";
 import { useFormikContext } from "formik";
 
 import { useFeatures } from "~/features/common/features";
@@ -31,30 +36,28 @@ const PublisherSettings = () => {
         compliance. This setting will determine the &apos;Publisher Country Code
         &apos; transmitted in the Transparency and Consent (TC) Data.
       </Typography.Paragraph>
-      {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
-      <label htmlFor="publisher_country_code" className="mb-1 block">
-        <Typography.Text className="font-semibold">
-          Publisher country
-        </Typography.Text>
-      </label>
-      <Select
-        data-testid="input-publisher_settings.publisher_country_code"
-        id="publisher_country_code"
-        loading={locationsLoading}
-        allowClear
-        options={allSelectedCountries?.map((location) => ({
-          value: location.id,
-          label: location.name,
-        }))}
-        showSearch
-        optionFilterProp="label"
-        placeholder="Select a country"
-        value={values.tcfPublisherSettings.publisher_country_code}
-        onChange={(value) =>
-          setFieldValue("tcfPublisherSettings.publisher_country_code", value)
-        }
-        className="w-80"
-      />
+      <Form.Item label="Publisher country" htmlFor="publisher_country_code">
+        <LocationSelect
+          data-testid="input-publisher_settings.publisher_country_code"
+          id="publisher_country_code"
+          loading={locationsLoading}
+          allowClear
+          options={isoCodesToOptions(
+            allSelectedCountries?.map((location) => location.id),
+          )}
+          placeholder="Select a country"
+          value={values.tcfPublisherSettings.publisher_country_code
+            ?.replace("_", "-")
+            .toUpperCase()}
+          onChange={(value) =>
+            setFieldValue(
+              "tcfPublisherSettings.publisher_country_code",
+              value.toLowerCase(),
+            )
+          }
+          className="w-80"
+        />
+      </Form.Item>
     </SettingsBox>
   ) : null;
 };
