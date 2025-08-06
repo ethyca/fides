@@ -144,20 +144,6 @@ export const DiscoveredAssetsTable = ({
   const { filterTabs, activeTab, onTabChange, activeParams, actionsDisabled } =
     useActionCenterTabs(systemId);
 
-  useEffect(() => {
-    tableState.updatePagination(1); // Reset to page 1 when monitor, search, or tab changes
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- Intentionally excluding tableState to prevent rendering loop
-  }, [
-    monitorId,
-    tableState.searchQuery,
-    activeTab,
-    tableState.updatePagination,
-  ]);
-
-  useEffect(() => {
-    resetSelections();
-  }, [monitorId, activeTab]);
-
   const { data, isLoading, isFetching } = useGetDiscoveredAssetsQuery({
     key: monitorId,
     page: pageIndex,
@@ -170,6 +156,14 @@ export const DiscoveredAssetsTable = ({
     ...activeParams,
     ...columnFilters,
   });
+
+  const resetTableState = () => {
+    resetSelections();
+    tableState.updateFilters({}); // Clear filters using tableState
+    tableState.updateSearch(""); // Clear search using tableState
+    tableState.updateSorting(undefined, undefined); // Clear sorting using tableState
+    tableState.updatePagination(1); // Reset to page 1
+  };
 
   useEffect(() => {
     if (data) {
@@ -366,9 +360,9 @@ export const DiscoveredAssetsTable = ({
     }
   };
 
-  const handleTabChange = (tab: ActionCenterTabHash) => {
-    onTabChange(tab);
-    resetSelections();
+  const handleTabChange = async (tab: ActionCenterTabHash) => {
+    await onTabChange(tab);
+    resetTableState();
   };
 
   // Update selectedRowKeys to only show current page selections when data changes
@@ -471,14 +465,7 @@ export const DiscoveredAssetsTable = ({
             <SelectedText count={selectedUrns.length} />
           )}
           <Space size="small">
-            <Button
-              onClick={() => {
-                tableState.updateFilters({}); // Clear filters using tableState
-                tableState.updateSearch(""); // Clear search using tableState
-                tableState.updateSorting(undefined, undefined); // Clear sorting using tableState
-              }}
-              data-testid="clear-filters"
-            >
+            <Button onClick={resetTableState} data-testid="clear-filters">
               Clear filters
             </Button>
             <Dropdown
