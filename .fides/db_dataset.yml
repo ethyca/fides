@@ -2884,8 +2884,8 @@ dataset:
     - name: updated_at
       description: 'Fides Generated Description for Column: updated_at'
       data_categories: [system.operations]
-  - name: taxonomy_usage
-    description: 'Fides Generated Description for Table: taxonomy_usage'
+  - name: taxonomy_allowed_usage
+    description: 'Fides Generated Description for Table: taxonomy_allowed_usage'
     fields:
     - name: created_at
       description: 'Fides Generated Description for Column: created_at'
@@ -2893,18 +2893,24 @@ dataset:
     - name: id
       description: 'Fides Generated Description for Column: id'
       data_categories: [system.operations]
-    - name: source_element_key
-      description: 'Fides Generated Description for Column: source_element_key'
-      data_categories: [system.operations]
-    - name: target_identifier
-      description: 'Fides Generated Description for Column: target_identifier'
+    - name: source_taxonomy_key
+      description: 'Fides Generated Description for Column: source_taxonomy_key'
       data_categories: [system.operations]
     - name: target_type
       description: 'Fides Generated Description for Column: target_type'
       data_categories: [system.operations]
-    - name: taxonomy_type
-      description: 'Fides Generated Description for Column: taxonomy_type'
-      data_categories: [system.operations]
     - name: updated_at
       description: 'Fides Generated Description for Column: updated_at'
+      data_categories: [system.operations]
+  - name: taxonomy_usage
+    description: 'Fides Generated Description for Table: taxonomy_usage'
+    fields:
+    - name: source_taxonomy
+      description: 'Fides Generated Description for Column: source_taxonomy'
+      data_categories: [system.operations]
+    - name: target_element_key
+      description: 'Fides Generated Description for Column: target_element_key'
+      data_categories: [system.operations]
+    - name: target_taxonomy
+      description: 'Fides Generated Description for Column: target_taxonomy'
       data_categories: [system.operations]
