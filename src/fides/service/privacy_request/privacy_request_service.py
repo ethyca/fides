@@ -51,8 +51,6 @@ from fides.service.messaging.messaging_service import (
     send_verification_code_to_user,
 )
 
-from fides.api.service.connectors.saas_connector import SaaSConnector
-
 
 class PrivacyRequestError(Exception):
     """Base exception for privacy request operations."""
@@ -676,34 +674,6 @@ def _requeue_privacy_request(
         resume_step,
         db,
     )
-
-def _requeue_polling_request(
-    db: Session,
-    async_task: RequestTask,
-) -> None:
-    """Re-queue a Privacy request that polling async tasks for a given privacy request"""
-    # Check that the privacy request is approved or in processing
-    privacy_request: PrivacyRequest = async_task.privacy_request
-    # TODO Extract into method
-    if privacy_request.status not in [
-        PrivacyRequestStatus.approved,
-        PrivacyRequestStatus.in_processing,
-    ]:
-        raise PrivacyRequestError(
-            f"Cannot re-queue privacy request {privacy_request.id} with status {privacy_request.status.value}"
-        )
-
-    logger.info(
-        "Polling starting for {} task {} {}",
-        async_task.action_type,
-        async_task.collection_address,
-        async_task.id,
-    )
-
-    #Queue task back again? option 1
-    # And we manage all the logic regarding the connector on saasConnector
-    queue_request_task(async_task, privacy_request_proceed=True)
-
 
 
 def _process_privacy_request_restart(

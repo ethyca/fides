@@ -1,0 +1,80 @@
+from typing import List
+
+from loguru import logger
+from sqlalchemy.orm import Session
+
+from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.privacy_request import PrivacyRequest, RequestTask
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
+from fides.api.service.privacy_request.privacy_request_service import PrivacyRequestError
+from fides.api.task.execute_request_tasks import (
+    _build_upstream_access_data,
+    create_graph_task,
+    queue_request_task,
+)
+from fides.api.task.graph_task import GraphTask
+from fides.api.task.task_resources import TaskResources
+from fides.api.util.collection_util import Row
+
+#TODO update tests to this reference
+def requeue_polling_request(
+    db: Session,
+    async_task: RequestTask,
+) -> None:
+    """Re-queue a Privacy request that polling async tasks for a given privacy request"""
+    # Check that the privacy request is approved or in processing
+    privacy_request: PrivacyRequest = async_task.privacy_request
+
+    if privacy_request.status not in [
+        PrivacyRequestStatus.approved,
+        PrivacyRequestStatus.in_processing,
+    ]:
+        raise PrivacyRequestError(
+            f"Cannot re-queue privacy request {privacy_request.id} with status {privacy_request.status.value}"
+        )
+
+    logger.info(
+        "Polling starting for {} task {} {}",
+        async_task.action_type,
+        async_task.collection_address,
+        async_task.id,
+    )
+
+    connection_config = get_connection_config_from_task(db, async_task)
+
+    with TaskResources(
+        privacy_request,
+        privacy_request.policy,
+        [connection_config],
+        async_task,
+        db,
+    ) as resources:
+        graph_task: GraphTask = create_graph_task(db, async_task, resources)
+        # Currently, upstream tasks and "input keys" (which are built by data dependencies)
+        # are the same, but they may not be the same in the future.
+        upstream_tasks = async_task.upstream_tasks_objects(db)
+        upstream_access_data: List[List[Row]] = _build_upstream_access_data(
+            graph_task.execution_node.input_keys, upstream_tasks
+        )
+        # Run the main access function
+        graph_task.access_request(*upstream_access_data)
+        #From the access request we can implement the polling strategy?
+        # And
+
+    # And then we requeue the task and move forward from that point
+    # TODO: Verify that we are not going to duplicate the access request
+    queue_request_task(async_task, privacy_request_proceed=True)
+
+
+
+def get_connection_config_from_task(db: Session, request_task: RequestTask) -> ConnectionConfig:
+    dataset_config = DatasetConfig.filter(
+        db=db,
+        conditions=(DatasetConfig.fides_key == request_task.dataset_name),
+    ).first()
+    if not dataset_config:
+        raise PrivacyRequestError(
+            f"DatasetConfig with fides_key {request_task.dataset_name} not found."
+        )
+    return ConnectionConfig.get(db=db, object_id=dataset_config.connection_config_id)
