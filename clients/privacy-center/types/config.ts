@@ -75,6 +75,11 @@ export type LegacyConfig = {
   consent?: LegacyConsentConfig | ConsentConfig;
 };
 
+export type LocationCollectionConfig = {
+  collection: "required" | "optional";
+  ip_geolocation_hint: boolean;
+};
+
 export type Config = {
   title: string;
   description: string;
@@ -90,6 +95,7 @@ export type Config = {
   consent?: ConsentConfig;
   privacy_policy_url?: string;
   privacy_policy_url_text?: string;
+  location?: LocationCollectionConfig;
 };
 
 export type LegacyConsentConfig = {
