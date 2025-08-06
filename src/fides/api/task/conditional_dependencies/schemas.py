@@ -15,6 +15,9 @@ class Operator(str, Enum):
     not_exists = "not_exists"
     list_contains = "list_contains"
     not_in_list = "not_in_list"
+    starts_with = "starts_with"
+    ends_with = "ends_with"
+    contains = "contains"
 
 
 class GroupOperator(str, Enum):
