@@ -374,6 +374,6 @@ def pytest_misc_integration(session: Session, coverage_arg: str) -> None:
         "tests/task/",
         "tests/util/",
         "-m",
-        "integration_external or integration_bigquery or integration_snowflake or integration_postgres",
+        "integration_external or integration_bigquery or integration_snowflake or integration_postgres or integration",
     )
     session.run(*run_command, external=True)
