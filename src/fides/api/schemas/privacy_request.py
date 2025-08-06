@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional, Type, Union
@@ -19,6 +20,17 @@ from fides.api.util.collection_util import Row
 from fides.api.util.encryption.aes_gcm_encryption_scheme import verify_encryption_key
 from fides.api.util.enums import ColumnSort
 from fides.config import CONFIG
+
+# Regex to validate a ISO 3166-2 code:
+# 1. Starts with a 2 letter country code (e.g. "US", "GB") (see ISO 3166-1 alpha-2)
+# 2. (Optional) Ends with a 1-3 alphanumeric character region code (e.g. "CA", "123", "X") (see ISO 3166-2)
+# 3. Country & region codes must be separated by a hyphen (e.g. "US-CA")
+#
+# Fides also supports a special `EEA` geolocation code to denote the European
+# Economic Area; this is not part of ISO 3166-2, but is supported for convenience.
+VALID_ISO_3166_LOCATION_REGEX = re.compile(
+    r"^(?:([a-z]{2})(-[a-z0-9]{1,3})?|(eea))$", re.IGNORECASE
+)
 
 
 class PrivacyRequestDRPStatus(EnumType):
@@ -103,6 +115,7 @@ class PrivacyRequestCreate(FidesSchema):
     property_id: Optional[str] = None
     consent_preferences: Optional[List[Consent]] = None  # TODO Slated for deprecation
     source: Optional[PrivacyRequestSource] = None
+    location: Optional[str] = None
 
     @field_validator("encryption_key")
     @classmethod
@@ -112,6 +125,19 @@ class PrivacyRequestCreate(FidesSchema):
         """Validate encryption key where applicable"""
         if value:
             verify_encryption_key(value.encode(CONFIG.security.encoding))
+        return value
+
+    @field_validator("location")
+    @classmethod
+    def validate_location(
+        cls: Type["PrivacyRequestCreate"], value: Optional[str] = None
+    ) -> Optional[str]:
+        """Validate location follows ISO 3166 format"""
+        if value is not None and not VALID_ISO_3166_LOCATION_REGEX.match(value):
+            raise ValueError(
+                f"Invalid location format '{value}'. Must follow ISO 3166 format "
+                "(e.g., 'US', 'US-CA', 'GB', 'CA-ON', 'EEA')"
+            )
         return value
 
 
@@ -321,6 +347,7 @@ class PrivacyRequestResponse(FidesSchema):
     custom_privacy_request_fields_approved_by: Optional[str] = None
     custom_privacy_request_fields_approved_at: Optional[datetime] = None
     source: Optional[PrivacyRequestSource] = None
+    location: Optional[str] = None
     deleted_at: Optional[datetime] = None
     deleted_by: Optional[str] = None
     finalized_at: Optional[datetime] = None
