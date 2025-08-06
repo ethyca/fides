@@ -335,6 +335,7 @@ def pytest_misc_unit(session: Session, coverage_arg: str) -> None:
 def pytest_misc_integration(session: Session, coverage_arg: str) -> None:
     """Runs integration tests from smaller test directories."""
     session.notify("teardown")
+    session.run(*START_APP, external=True)
     # Use the integration infrastructure to run all tests from multiple directories
     # Need PostgreSQL for service integration tests, BigQuery for QA tests, and Snowflake for service tests
     run_command = (
