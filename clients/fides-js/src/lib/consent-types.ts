@@ -185,6 +185,11 @@ export interface FidesInitOptions {
    *
    */
   fidesModalDisplay?: "immediate" | "default";
+
+  // Controls handling of unsupported repeated script loading
+  fidesUnsupportedRepeatedScriptLoading?:
+    | "enabled_acknowledge_not_supported"
+    | "disabled";
 }
 
 /**
@@ -838,6 +843,7 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesInitializedEventMode"
   | "fidesModalDefaultView"
   | "fidesModalDisplay"
+  | "fidesUnsupportedRepeatedScriptLoading"
 >;
 
 export type FidesExperienceTranslationOverrides = {
