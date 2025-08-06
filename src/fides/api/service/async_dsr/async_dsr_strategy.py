@@ -21,10 +21,12 @@ class AsyncDSRStrategy(Strategy):
 
     def get_status_request(
         self,
-        request_params: SaaSRequestParams,
-        connector_params: Dict[str, Any],
-        response: Response,
-        data_path: Optional[str],
+        client: AuthenticatedClient,
+        node: TraversalNode,
+        policy: Policy,
+        privacy_request: PrivacyRequest,
+        input_data: Dict[str, List[Any]],
+        secrets: Dict[str, Any],
     ) -> Optional[SaaSRequestParams]:
         """Build request to get the status of the async DSR process"""
 

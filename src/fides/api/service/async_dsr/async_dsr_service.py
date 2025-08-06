@@ -1,15 +1,19 @@
 from typing import List
 
+from fides.api.graph.execution import ExecutionNode
 from fides.api.schemas.policy import ActionType
 from fides.api.service.async_dsr.async_dsr_strategy import AsyncDSRStrategy
+from fides.api.service.connectors.saas_connector import SaaSConnector
 from fides.api.service.connectors.query_configs.saas_query_config import SaaSQueryConfig
 from loguru import logger
+from requests import Response
 from sqlalchemy.orm import Session
 
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
+from fides.api.service.connectors.base_connector import AuthenticatedClient
 from fides.api.service.privacy_request.privacy_request_service import PrivacyRequestError
 from fides.api.task.execute_request_tasks import (
     _build_upstream_access_data,
@@ -18,9 +22,10 @@ from fides.api.task.execute_request_tasks import (
 )
 from fides.api.task.graph_task import GraphTask
 from fides.api.task.task_resources import TaskResources
-from fides.api.util.collection_util import Row
+from fides.api.util.collection_util import NodeInput, Row
 
-#TODO update tests to this reference
+
+# TODO update tests to this reference
 def requeue_polling_request(
     db: Session,
     async_task: RequestTask,
@@ -55,9 +60,25 @@ def requeue_polling_request(
     ) as resources:
         graph_task: GraphTask = create_graph_task(db, async_task, resources)
         # From the graph task get the strategy?
-        query_config: SaaSQueryConfig = graph_task.connector.query_config(graph_task.execution_node)
+        query_config: SaaSQueryConfig = graph_task.connector.query_config(
+            graph_task.execution_node
+        )
         if async_task.action_type == ActionType.access:
-            execute_read_polling_requests(db, async_task, query_config)
+            upstream_tasks = async_task.upstream_tasks_objects(db)
+            upstream_access_data: List[List[Row]] = _build_upstream_access_data(
+                graph_task.execution_node.input_keys, upstream_tasks
+            )
+            input_data: NodeInput = graph_task.pre_process_input_data(
+                *upstream_access_data, group_dependent_fields=True
+            )
+            execute_read_polling_requests(
+                db,
+                async_task,
+                query_config,
+                graph_task.connector,
+                graph_task.execution_node,
+                input_data,
+            )
         elif async_task.action_type == ActionType.erasure:
             execute_erasure_polling_requests(db, async_task, query_config)
 
@@ -66,8 +87,9 @@ def requeue_polling_request(
     queue_request_task(async_task, privacy_request_proceed=True)
 
 
-
-def get_connection_config_from_task(db: Session, request_task: RequestTask) -> ConnectionConfig:
+def get_connection_config_from_task(
+    db: Session, request_task: RequestTask
+) -> ConnectionConfig:
     dataset_config = DatasetConfig.filter(
         db=db,
         conditions=(DatasetConfig.fides_key == request_task.dataset_name),
@@ -76,12 +98,23 @@ def get_connection_config_from_task(db: Session, request_task: RequestTask) -> C
         raise PrivacyRequestError(
             f"DatasetConfig with fides_key {request_task.dataset_name} not found."
         )
-    return ConnectionConfig.get(db=db, object_id=dataset_config.connection_config_id)
+    connection_config = ConnectionConfig.get(
+        db=db, object_id=dataset_config.connection_config_id
+    )
+    if not connection_config:
+        raise PrivacyRequestError(
+            f"ConnectionConfig with id {dataset_config.connection_config_id} not found."
+        )
+    return connection_config
+
 
 def execute_read_polling_requests(
     db: Session,
     async_task: RequestTask,
     query_config: SaaSQueryConfig,
+    connector: SaaSConnector,
+    node: ExecutionNode,
+    input_data: NodeInput,
 ) -> None:
     """Execute the read polling requests for a given privacy request"""
     read_requests = query_config.get_read_requests_by_identity()
@@ -91,14 +124,15 @@ def execute_read_polling_requests(
                 read_request.async_config.strategy,
                 read_request.async_config.configuration,
             )
-
+            client: AuthenticatedClient = connector.get_client()
             status_request = strategy.get_status_request(
-                read_request.async_config.request_params,
-                read_request.async_config.connector_params,
-                read_request.async_config.response,
-                read_request.async_config.data_path,
+                client,
+                node,
+                async_task.privacy_request.policy,
+                async_task.privacy_request,
+                input_data,
+                async_task.privacy_request.get_secrets(db),
             )
-
 
 
 def execute_erasure_polling_requests(
