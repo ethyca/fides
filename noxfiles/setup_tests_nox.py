@@ -341,5 +341,5 @@ def pytest_misc_integration(session: Session, coverage_arg: str) -> None:
         run_tests=True,
         analytics_opt_out=True,
         datastores=["postgres", "bigquery", "snowflake"],
-        pytest_path="tests/service/ tests/task/ tests/util/ tests/qa/ -m integration or external",
+        pytest_path="tests/service/ tests/task/ tests/util/ tests/qa/ -m external",
     )
