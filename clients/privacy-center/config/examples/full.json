@@ -4,6 +4,10 @@
   "server_url_development": "http://localhost:8080/api/v1",
   "server_url_production": "http://localhost:8080/api/v1",
   "logo_path": "/logo.svg",
+  "location": {
+    "collection": "required",
+    "ip_geolocation_hint": true
+  },
   "actions": [
     {
       "policy_key": "default_access_policy",
