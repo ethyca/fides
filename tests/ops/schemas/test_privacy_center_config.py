@@ -140,9 +140,9 @@ class TestPrivacyCenterConfig:
         # Add location configuration
         config_data["location"] = {
             "collection": "required",
-            "ip_geolocation_hint": True
+            "ip_geolocation_hint": True,
         }
-        
+
         config = PrivacyCenterConfig(**config_data)
         assert config.location is not None
         assert config.location.collection == "required"
@@ -153,6 +153,6 @@ class TestPrivacyCenterConfig:
         config_data = json.loads(
             load_as_string("tests/ops/resources/privacy_center_config.json")
         )
-        
+
         config = PrivacyCenterConfig(**config_data)
         assert config.location is None
