@@ -3,13 +3,13 @@ import { AntFilterValue as FilterValue } from "fidesui";
 /**
  * Base interface for table state that can be synchronized with URL
  */
-export interface TableState {
+export interface TableState<TSortField extends string = string> {
   // Pagination
   pageIndex: number;
   pageSize: number;
 
   // Sorting
-  sortField?: string;
+  sortField?: TSortField;
   sortOrder?: "ascend" | "descend";
 
   // Filtering
@@ -42,8 +42,8 @@ export interface PaginationConfig {
 /**
  * Configuration for table sorting
  */
-export interface SortingConfig {
-  defaultSortField?: string;
+export interface SortingConfig<TSortField extends string = string> {
+  defaultSortField?: TSortField;
   defaultSortOrder?: "ascend" | "descend";
   allowMultiSort?: boolean;
 }
@@ -51,24 +51,29 @@ export interface SortingConfig {
 /**
  * Base configuration for table state management
  */
-export interface TableStateConfig {
+export interface TableStateConfig<TSortField extends string = string> {
   // URL synchronization
   urlSync?: TableUrlSyncConfig;
 
   // Default values
   pagination?: PaginationConfig;
-  sorting?: SortingConfig;
+  sorting?: SortingConfig<TSortField>;
 
   // Callbacks
-  onStateChange?: (state: TableState) => void;
+  onStateChange?: (state: TableState<TSortField>) => void;
 }
 
 /**
  * Generic server table configuration
  */
-export interface ServerTableConfig<TData = unknown> {
+export interface ServerTableConfig<
+  TData = unknown,
+  TSortField extends string = string,
+> {
   queryKey: string | string[];
-  queryFn: (params: TableState & Record<string, unknown>) => Promise<{
+  queryFn: (
+    params: TableState<TSortField> & Record<string, unknown>,
+  ) => Promise<{
     items: TData[];
     total: number;
     page: number;

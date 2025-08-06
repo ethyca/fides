@@ -56,16 +56,16 @@ export interface AntTableConfig<TData = any> {
  * return <Table {...tableProps} rowSelection={selectionProps} />;
  * ```
  */
-export const useAntTable = <TData = any>(
+export const useAntTable = <TData = any, TSortField extends string = string>(
   tableState: {
     pageIndex: number;
     pageSize: number;
-    sortField?: string;
+    sortField?: TSortField;
     sortOrder?: "ascend" | "descend";
     columnFilters: Record<string, FilterValue | null>;
     updatePagination: (pageIndex: number, pageSize?: number) => void;
     updateSorting: (
-      sortField?: string,
+      sortField?: TSortField,
       sortOrder?: "ascend" | "descend",
     ) => void;
     updateFilters: (filters: Record<string, any>) => void;
@@ -195,7 +195,7 @@ export const useAntTable = <TData = any>(
 
       // Handle sorting
       if (enableSorting && sorter && !Array.isArray(sorter)) {
-        const newSortField = sorter.field as string;
+        const newSortField = sorter.field as TSortField;
         const newSortOrder = sorter.order;
 
         if (
