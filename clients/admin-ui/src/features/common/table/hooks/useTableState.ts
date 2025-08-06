@@ -211,8 +211,12 @@ export const useTableState = (config: TableStateConfig = {}) => {
   const updateFilters = useCallback(
     (filters: Record<string, any>) => {
       if (urlSync.filtering) {
+        // Clean up filters by removing null/undefined values before syncing to URL
+        const cleanFilters = Object.fromEntries(
+          Object.entries(filters).filter(([, value]) => value != null),
+        );
         setQueryState({
-          filters,
+          filters: Object.keys(cleanFilters).length > 0 ? cleanFilters : null, // Use null to remove from URL when empty
           ...(urlSync.pagination && { page: DEFAULT_PAGE_INDEX }), // Reset to first page when filters change, if pagination is URL synced
         });
       } else {
