@@ -215,7 +215,15 @@ describe("fides.js API route", () => {
   });
 
   describe("when handling multiple script loading", () => {
+    const waitForScriptToRun = () => {
+      // wait for script to run before finishing the test
+      // without this, the test will end without waiting for the thrown error to be caught resulting in a false positive!!
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(50);
+    };
+
     it("prevents execution when script is loaded multiple times on the same page", () => {
+      cy.handleFidesAlreadyLoadedException();
       cy.visit("/fides-js-demo.html");
 
       // Wait for initial Fides to load
@@ -223,15 +231,12 @@ describe("fides.js API route", () => {
 
       // Spy on console.error to capture the warning message
       cy.window().then((win) => {
-        cy.spy(win.console, "error").as("consoleError");
-
         // Inject a second script tag to simulate multiple loading
         const script = win.document.createElement("script");
+        script.setAttribute("data-testid", "fides-js-test-script");
         script.src = "/fides.js";
         win.document.head.appendChild(script);
-
-        // Wait for script to load and check that error was logged
-        cy.get("@consoleError").should("have.been.called");
+        waitForScriptToRun();
       });
     });
 
@@ -251,13 +256,14 @@ describe("fides.js API route", () => {
         script.src =
           "/fides.js?fides_unsupported_repeated_script_loading=enabled_acknowledge_not_supported";
         win.document.head.appendChild(script);
-
-        // Should NOT log the error message when the option is enabled
-        cy.get("@consoleError").should("not.have.been.called");
+        waitForScriptToRun();
+        // an exception will automatically fail the test here because we didn't include cy.handleFidesAlreadyLoadedException()
+        // If nothing happens, the test will pass. no further action is needed.
       });
     });
 
     it("handles script removal and re-addition scenario", () => {
+      cy.handleFidesAlreadyLoadedException();
       cy.visit("/fides-js-demo.html");
 
       // Wait for initial Fides to load
@@ -282,8 +288,7 @@ describe("fides.js API route", () => {
         newScript.src = "/fides.js";
         win.document.head.appendChild(newScript);
 
-        // Should prevent re-execution since Fides object still exists
-        cy.get("@consoleError").should("have.been.called");
+        waitForScriptToRun();
 
         // Verify that the original Fides object is still intact
         expect(win.Fides).to.equal(originalFides);
@@ -293,6 +298,7 @@ describe("fides.js API route", () => {
     it("handles multiple script tags present from page load", () => {
       // Create a custom test page with multiple script tags
       cy.visit("/fides-js-demo.html").then(() => {
+        cy.handleFidesAlreadyLoadedException();
         cy.window().then((win) => {
           // Clear the page and add multiple script tags
           win.document.body.innerHTML = `
@@ -303,7 +309,7 @@ describe("fides.js API route", () => {
             </div>
           `;
 
-          cy.spy(win.console, "error").as("consoleError");
+          waitForScriptToRun();
 
           // Force execution of the scripts by creating new ones
           const script1 = win.document.createElement("script");
@@ -311,15 +317,13 @@ describe("fides.js API route", () => {
           const script2 = win.document.createElement("script");
           script2.src = "/fides.js";
 
+          waitForScriptToRun();
           win.document.head.appendChild(script1);
 
-          // Wait a bit then add the second script
-          setTimeout(() => {
-            win.document.head.appendChild(script2);
-          }, 100);
+          waitForScriptToRun();
+          win.document.head.appendChild(script2);
 
-          // The second script should be prevented from executing
-          cy.get("@consoleError").should("have.been.called");
+          waitForScriptToRun();
         });
       });
     });

@@ -180,12 +180,7 @@ SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
         },
         banner: isExtension
           ? undefined
-          : `(function(){if(typeof ${GLOBAL_NAME}==="undefined" || (${GLOBAL_NAME}.options && ${GLOBAL_NAME}.options.fidesUnsupportedRepeatedScriptLoading === "enabled_acknowledge_not_supported")) {`,
-        footer: isExtension
-          ? undefined
-          : `} else {
-          console.error("${multipleLoadingMessage}");
-        }})()`,
+          : `if(typeof ${GLOBAL_NAME}!=="undefined" && ${GLOBAL_NAME}.options && ${GLOBAL_NAME}.options.fidesUnsupportedRepeatedScriptLoading!=="enabled_acknowledge_not_supported") {throw new Error("${multipleLoadingMessage}");}`,
       },
     ],
     onLog,
