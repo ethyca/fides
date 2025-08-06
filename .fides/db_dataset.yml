@@ -2905,12 +2905,24 @@ dataset:
   - name: taxonomy_usage
     description: 'Fides Generated Description for Table: taxonomy_usage'
     fields:
+    - name: id
+      description: 'Fides Generated Description for Column: id'
+      data_categories: [system.operations]
     - name: source_taxonomy
       description: 'Fides Generated Description for Column: source_taxonomy'
+      data_categories: [system.operations]
+    - name: source_element_key
+      description: 'Fides Generated Description for Column: source_element_key'
+      data_categories: [system.operations]
+    - name: target_taxonomy
+      description: 'Fides Generated Description for Column: target_taxonomy'
       data_categories: [system.operations]
     - name: target_element_key
       description: 'Fides Generated Description for Column: target_element_key'
       data_categories: [system.operations]
-    - name: target_taxonomy
-      description: 'Fides Generated Description for Column: target_taxonomy'
+    - name: created_at
+      description: 'Fides Generated Description for Column: created_at'
+      data_categories: [system.operations]
+    - name: updated_at
+      description: 'Fides Generated Description for Column: updated_at'
       data_categories: [system.operations]
