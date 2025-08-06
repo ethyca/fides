@@ -1,3 +1,4 @@
+import numbers
 import operator as py_operator
 from typing import Any, Union
 
@@ -18,13 +19,38 @@ operator_methods = {
     Operator.not_exists: lambda a, _: a is None,
     Operator.eq: py_operator.eq,
     Operator.neq: py_operator.ne,
-    Operator.lt: lambda a, b: a < b if a is not None else False,
-    Operator.lte: lambda a, b: a <= b if a is not None else False,
-    Operator.gt: lambda a, b: a > b if a is not None else False,
-    Operator.gte: lambda a, b: a >= b if a is not None else False,
+    Operator.lt: lambda a, b: (
+        a < b if a is not None and isinstance(a, numbers.Number) else False
+    ),
+    Operator.lte: lambda a, b: (
+        a <= b if a is not None and isinstance(a, numbers.Number) else False
+    ),
+    Operator.gt: lambda a, b: (
+        a > b if a is not None and isinstance(a, numbers.Number) else False
+    ),
+    Operator.gte: lambda a, b: (
+        a >= b if a is not None and isinstance(a, numbers.Number) else False
+    ),
     Operator.list_contains: lambda a, b: b in a if isinstance(a, list) else False,
-    Operator.not_in_list: lambda a, b: a not in b if isinstance(b, list) else True,
+    Operator.not_in_list: lambda a, b: (
+        not any(item in b for item in (a if isinstance(a, list) else [a]))
+        if isinstance(b, list)
+        else True
+    ),
+    Operator.starts_with: lambda a, b: (
+        a.startswith(b) if isinstance(a, str) and isinstance(b, str) else False
+    ),
+    Operator.ends_with: lambda a, b: (
+        a.endswith(b) if isinstance(a, str) and isinstance(b, str) else False
+    ),
+    Operator.contains: lambda a, b: (
+        b in a if isinstance(a, str) and isinstance(b, str) else False
+    ),
 }
+
+
+class ConditionEvaluationError(Exception):
+    """Error raised when a condition evaluation fails"""
 
 
 class ConditionEvaluator:
@@ -104,6 +130,8 @@ class ConditionEvaluator:
         operator_method = operator_methods.get(operator)
         if operator_method is None:
             logger.warning(f"Unknown operator: {operator}")
-            return False
-
-        return operator_method(actual_value, expected_value)
+            raise ConditionEvaluationError(f"Unknown operator: {operator}")
+        try:
+            return operator_method(actual_value, expected_value)
+        except (TypeError, ValueError) as e:
+            raise ConditionEvaluationError(f"Error evaluating condition: {e}") from e
