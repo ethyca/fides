@@ -63,7 +63,7 @@ export const useDiscoveredAssetsTable = ({
     useActionCenterTabs(systemId);
 
   // Table state with URL synchronization
-  const tableState = useTableState({
+  const tableState = useTableState<DiscoveredAssetsColumnKeys>({
     urlSync: {
       pagination: true,
       sorting: true,
@@ -236,7 +236,10 @@ export const useDiscoveredAssetsTable = ({
     );
 
   // Ant Design table integration
-  const antTable = useAntTable(
+  const antTable = useAntTable<
+    StagedResourceAPIResponse,
+    DiscoveredAssetsColumnKeys
+  >(
     {
       ...tableState,
       paginationConfig: tableState.paginationConfig,

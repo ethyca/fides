@@ -117,7 +117,7 @@ export const DiscoveredAssetsTable = ({
     anyBulkActionIsLoading || systemId === UNCATEGORIZED_SEGMENT;
 
   // Table state with URL synchronization for search, sorting, filtering, and pagination (complete implementation)
-  const tableState = useTableState({
+  const tableState = useTableState<DiscoveredAssetsColumnKeys>({
     urlSync: {
       pagination: true, // Now implementing pagination
       sorting: true, // Already implemented
@@ -132,9 +132,8 @@ export const DiscoveredAssetsTable = ({
   // Use tableState values instead of local state
   const { columnFilters, pageIndex, pageSize } = tableState;
 
-  // Use tableState sorting instead of local state
-  const { sortField: tableSortField, sortOrder } = tableState;
-  const sortField = tableSortField as DiscoveredAssetsColumnKeys | undefined;
+  // Use tableState sorting instead of local state - now properly typed!
+  const { sortField, sortOrder } = tableState;
 
   // Use tableState.searchQuery instead of local state
   const searchQuery = tableState.searchQuery || "";

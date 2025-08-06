@@ -83,7 +83,9 @@ const createTableParsers = (
  * });
  * ```
  */
-export const useTableState = (config: TableStateConfig = {}) => {
+export const useTableState = <TSortField extends string = string>(
+  config: TableStateConfig<TSortField> = {},
+) => {
   const {
     urlSync: urlSyncConfig = {},
     pagination: paginationConfig = {},
@@ -111,13 +113,13 @@ export const useTableState = (config: TableStateConfig = {}) => {
   const { defaultSortField, defaultSortOrder } = sortingConfig;
 
   // Internal state for features not synced to URL
-  const [internalState, setInternalState] = useState({
+  const [internalState, setInternalState] = useState<TableState<TSortField>>({
     pageIndex: DEFAULT_PAGE_INDEX,
     pageSize: defaultPageSize,
     sortField: defaultSortField,
     sortOrder: defaultSortOrder,
     columnFilters: {},
-    searchQuery: undefined as string | undefined,
+    searchQuery: undefined,
   });
 
   // Create parsers only for features that should sync to URL
@@ -135,7 +137,7 @@ export const useTableState = (config: TableStateConfig = {}) => {
   });
 
   // Merge URL state with internal state, prioritizing URL when available
-  const currentState: TableState = useMemo(() => {
+  const currentState: TableState<TSortField> = useMemo(() => {
     const state = {
       pageIndex: urlSync.pagination
         ? (queryState.page ?? DEFAULT_PAGE_INDEX)
@@ -144,7 +146,7 @@ export const useTableState = (config: TableStateConfig = {}) => {
         ? (queryState.size ?? defaultPageSize)
         : internalState.pageSize,
       sortField: urlSync.sorting
-        ? queryState.sortField || defaultSortField // Use || not ?? because NuQS defaults to empty string, not null/undefined
+        ? (queryState.sortField as TSortField) || defaultSortField // Use || not ?? because NuQS defaults to empty string, not null/undefined
         : internalState.sortField,
       sortOrder: urlSync.sorting
         ? (queryState.sortOrder as "ascend" | "descend" | undefined) ||
@@ -200,10 +202,10 @@ export const useTableState = (config: TableStateConfig = {}) => {
   );
 
   const updateSorting = useCallback(
-    (sortField?: string, sortOrder?: "ascend" | "descend") => {
+    (sortField?: TSortField, sortOrder?: "ascend" | "descend") => {
       if (urlSync.sorting) {
         setQueryState({
-          sortField: sortField ?? null,
+          sortField: sortField ? String(sortField) : null,
           sortOrder: sortOrder ?? null,
           ...(urlSync.pagination && { page: DEFAULT_PAGE_INDEX }), // Reset to first page when sorting changes, if pagination is URL synced. TODO: if we clear page when it's set to 1, this may not be needed.
         });
