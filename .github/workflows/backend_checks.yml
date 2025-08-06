@@ -428,6 +428,9 @@ jobs:
       - name: Integration Tests (External)
         run: nox -s "pytest(ops-external-datastores)"
 
+      - name: Integration Tests (Misc)
+        run: nox -s "pytest(misc-integration-external)"
+
   External-SaaS-Connectors:
     needs: Check-Container-Startup
     runs-on: ubuntu-latest

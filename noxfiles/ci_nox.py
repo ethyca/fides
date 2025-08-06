@@ -321,8 +321,8 @@ TEST_GROUPS = [
     nox.param("api", id="api"),
     nox.param("lib", id="lib"),
     nox.param("misc-unit", id="misc-unit"),
-    nox.param("misc-integration", id="misc-integration"),
     nox.param("misc-integration-external", id="misc-integration-external"),
+    nox.param("misc-integration", id="misc-integration"),
     nox.param("nox", id="nox"),
 ]
 
