@@ -8,6 +8,10 @@
   "privacy_policy_url": "https://fid.es/privacy",
   "privacy_policy_url_text": "Privacy Policy",
   "favicon_path": "/favicon.ico",
+  "location": {
+    "collection": "required",
+    "ip_geolocation_hint": true
+  },
   "actions": [
     {
       "policy_key": "default_access_policy",
