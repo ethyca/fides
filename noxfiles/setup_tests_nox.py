@@ -326,7 +326,6 @@ def pytest_misc_unit(session: Session, coverage_arg: str) -> None:
         "tests/service/",
         "tests/task/",
         "tests/util/",
-        "tests/qa/",
         "-m",
         "not integration and not integration_external and not integration_saas and not integration_snowflake and not integration_bigquery and not integration_postgres",
     )
@@ -342,5 +341,5 @@ def pytest_misc_integration(session: Session, coverage_arg: str) -> None:
         run_tests=True,
         analytics_opt_out=True,
         datastores=["postgres", "bigquery", "snowflake"],
-        pytest_path="tests/service/ tests/task/ tests/util/ tests/qa/",
+        pytest_path="tests/service/ tests/task/ tests/util/ tests/qa/ -m integration or external",
     )

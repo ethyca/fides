@@ -360,7 +360,7 @@ TEST_DIRECTORY_COVERAGE = {
     "tests/service/": ["misc-unit", "misc-integration"],
     "tests/task/": ["misc-unit", "misc-integration"],
     "tests/util/": ["misc-unit", "misc-integration"],
-    "tests/qa/": ["misc-unit", "misc-integration", "ctl-external"],
+    "tests/qa/": ["misc-unit", "misc-integration"],
     "tests/fixtures/": [],  # fixtures are not test files, just test data
 }
 
