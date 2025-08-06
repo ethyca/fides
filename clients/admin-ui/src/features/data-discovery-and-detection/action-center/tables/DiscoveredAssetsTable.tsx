@@ -71,10 +71,6 @@ export const DiscoveredAssetsTable = ({
 
   const [systemName, setSystemName] = useState(systemId);
 
-  // Pagination state
-  const [pageIndex, setPageIndex] = useState(1);
-  const [pageSize, setPageSize] = useState(25);
-
   // Selection state
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [selectedRowsMap, setSelectedRowsMap] = useState<
@@ -120,18 +116,21 @@ export const DiscoveredAssetsTable = ({
   const disableAddAll =
     anyBulkActionIsLoading || systemId === UNCATEGORIZED_SEGMENT;
 
-  // Table state with URL synchronization for search, sorting, and filtering (iterative implementation)
+  // Table state with URL synchronization for search, sorting, filtering, and pagination (complete implementation)
   const tableState = useTableState({
     urlSync: {
-      pagination: false, // Will implement later
+      pagination: true, // Now implementing pagination
       sorting: true, // Already implemented
-      filtering: true, // Now implementing filtering
+      filtering: true, // Already implemented
       search: true, // Already implemented
+    },
+    pagination: {
+      defaultPageSize: 10, // Start with 10 per page for testing
     },
   });
 
   // Use tableState values instead of local state
-  const { columnFilters } = tableState;
+  const { columnFilters, pageIndex, pageSize } = tableState;
 
   // Use tableState sorting instead of local state
   const { sortField: tableSortField, sortOrder } = tableState;
@@ -146,8 +145,14 @@ export const DiscoveredAssetsTable = ({
     useActionCenterTabs(systemId);
 
   useEffect(() => {
-    setPageIndex(1);
-  }, [monitorId, tableState.searchQuery, activeTab]);
+    tableState.updatePagination(1); // Reset to page 1 when monitor, search, or tab changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Intentionally excluding tableState to prevent rendering loop
+  }, [
+    monitorId,
+    tableState.searchQuery,
+    activeTab,
+    tableState.updatePagination,
+  ]);
 
   useEffect(() => {
     resetSelections();
@@ -416,17 +421,16 @@ export const DiscoveredAssetsTable = ({
     const isPaginationChange =
       pagination.current !== pageIndex || pagination.pageSize !== pageSize;
 
-    // If it's a pagination change, use the new page; otherwise reset to page 1
+    // Handle pagination with tableState
     if (isPaginationChange) {
-      setPageIndex(pagination.current || 1);
+      tableState.updatePagination(pagination.current || 1, pagination.pageSize);
     } else {
-      setPageIndex(1);
+      tableState.updatePagination(1); // Reset to page 1 for sorting/filtering changes
+      // Only update filters when it's not a pagination change
+      tableState.updateFilters(filters || {});
     }
 
-    setPageSize(pagination.pageSize || 25);
-    tableState.updateFilters(filters || {});
-
-    // Handle sorting with tableState
+    // Handle sorting with tableState (only if sorting actually changed)
     const newSortField =
       sorter && !Array.isArray(sorter)
         ? (sorter.field as DiscoveredAssetsColumnKeys)
@@ -435,7 +439,11 @@ export const DiscoveredAssetsTable = ({
       sorter && !Array.isArray(sorter) && sorter.order !== null
         ? sorter.order
         : undefined;
-    tableState.updateSorting(newSortField, newSortOrder);
+
+    // Only update sorting if this is not just a pagination change
+    if (!isPaginationChange) {
+      tableState.updateSorting(newSortField, newSortOrder);
+    }
   };
 
   if (!monitorId || !systemId) {
