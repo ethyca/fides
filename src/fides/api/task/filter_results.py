@@ -122,6 +122,10 @@ def select_and_save_field(saved: Any, row: Row, target_path: FieldPath) -> Dict:
         """Helper for building new nested resource - can return an empty dict, empty array or resource itself"""
         return type(resource)() if isinstance(resource, (list, dict)) else resource
 
+    # If we've reached the end of the field path, return the entire current object/array
+    if not target_path.levels:
+        return row
+
     if isinstance(row, list):
         for i, elem in enumerate(row):
             try:
