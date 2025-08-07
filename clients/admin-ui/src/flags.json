@@ -59,5 +59,11 @@
     "development": true,
     "test": true,
     "production": false
+  },
+  "alphaManualTaskConditions": {
+    "description": "Enables UI to specify conditions for manual task creation",
+    "development": true,
+    "test": true,
+    "production": false
   }
 }
