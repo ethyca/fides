@@ -24,7 +24,7 @@ COMPOSE_FILE_LIST = {
 # Image Names & Tags
 REGISTRY = "ethyca"
 IMAGE_NAME = "fides"
-CONTAINER_NAME = "fides"
+CONTAINER_NAME = "fides-1"
 COMPOSE_SERVICE_NAME = "fides"
 
 # Image Names & Tags

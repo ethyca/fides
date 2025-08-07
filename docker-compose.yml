@@ -1,6 +1,6 @@
 services:
-  fides:
-    container_name: fides
+  fides-1:
+    container_name: fides-1
     image: ethyca/fides:local
     command: uvicorn --host 0.0.0.0 --port 8080 --reload --reload-dir src --reload-dir data --reload-include='*.yml' fides.api.main:app
     healthcheck:
@@ -9,7 +9,7 @@ services:
       timeout: 5s
       retries: 10
     ports:
-      - "8080:8080"
+      - "8081:8080"
     depends_on:
       fides-db:
         condition: service_healthy
@@ -38,6 +38,60 @@ services:
         source: .
         target: /fides
         read_only: False
+
+  fides-2:
+    container_name: fides-2
+    image: ethyca/fides:local
+    command: uvicorn --host 0.0.0.0 --port 8080 --reload --reload-dir src --reload-dir data --reload-include='*.yml' fides.api.main:app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://0.0.0.0:8080/health"]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "8082:8080"
+    depends_on:
+      fides-db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    expose:
+      - 8080
+    env_file:
+      - .env
+    environment:
+      FIDES__CONFIG_PATH: ${FIDES__CONFIG_PATH:-/fides/.fides/fides.toml}
+      FIDES__CLI__ANALYTICS_ID: ${FIDES__CLI__ANALYTICS_ID-}
+      FIDES__CLI__SERVER_HOST: "fides"
+      FIDES__CLI__SERVER_PORT: "8080"
+      FIDES__DATABASE__SERVER: "fides-db"
+      FIDES__DEV_MODE: "True"
+      FIDES__LOGGING__COLORIZE: "True"
+      FIDES__USER__ANALYTICS_OPT_OUT: "True"
+      FIDES__SECURITY__BASTION_SERVER_HOST: ${FIDES__SECURITY__BASTION_SERVER_HOST-}
+      FIDES__SECURITY__BASTION_SERVER_SSH_USERNAME: ${FIDES__SECURITY__BASTION_SERVER_SSH_USERNAME-}
+      FIDES__SECURITY__BASTION_SERVER_SSH_PRIVATE_KEY: ${FIDES__SECURITY__BASTION_SERVER_SSH_PRIVATE_KEY-}
+      SAAS_OP_SERVICE_ACCOUNT_TOKEN: ${SAAS_OP_SERVICE_ACCOUNT_TOKEN-}
+      SAAS_SECRETS_OP_VAULT_ID: ${SAAS_SECRETS_OP_VAULT_ID-}
+    volumes:
+      - type: bind
+        source: .
+        target: /fides
+        read_only: False
+
+  fides:
+    container_name: fides-proxy
+    image: nginx:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      fides-1:
+        condition: service_healthy
+      fides-2:
+        condition: service_healthy
+
 
   fides-ui:
     image: ethyca/fides:local-ui
@@ -193,7 +247,7 @@ services:
     # AUTH option #1: no authentication at all
     # command: redis-server
     # AUTH option #2: require password
-    command: redis-server --requirepass redispassword
+    command: redis-server --requirepass "4MTXaKNqbomjJKxvj<n45xVQCLMwPi5w!bTjl5&wdG8!Ve!yDLTM7NzVDGnvyg^&"
     # AUTH option #3: Redis ACL defined in redis.conf
     # command: redis-server /usr/local/etc/redis/redis.conf
     expose:
