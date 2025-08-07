@@ -282,9 +282,11 @@
       <script>
         setTimeout(() => {
           const app = document.getElementById("render-embed-here");
-          const container = document.createElement("div");
-          container.id = "fides-embed-container";
-          app.appendChild(container);
+          if (app) {
+            const container = document.createElement("div");
+            container.id = "fides-embed-container";
+            app.appendChild(container);
+          }
         }, window.render_delay || 0);
       </script>
 
@@ -299,11 +301,13 @@
       <script>
         setTimeout(() => {
           const app = document.getElementById("render-link-here");
-          const button = document.createElement("button");
-          // Display the fides configured modal link label (if any).
-          button.textContent = Fides.getModalLinkLabel();
-          button.id = "fides-modal-link";
-          app.appendChild(button);
+          if (app) {
+            const button = document.createElement("button");
+            // Display the fides configured modal link label (if any).
+            button.textContent = Fides.getModalLinkLabel();
+            button.id = "fides-modal-link";
+            app.appendChild(button);
+          }
         }, window.render_delay || 0);
       </script>
 
