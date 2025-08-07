@@ -104,7 +104,7 @@ export interface ServerTableResult<TData = unknown> {
  */
 export interface SelectionState<TData = unknown> {
   selectedRowKeys: React.Key[];
-  selectedRowsMap: Map<string, TData>;
+  selectedRows: TData[];
   resetSelections: () => void;
 }
 

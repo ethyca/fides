@@ -2,10 +2,19 @@ import {
   AntColumnsType as ColumnsType,
   AntSpace as Space,
   AntText as Text,
+  useToast,
 } from "fidesui";
-import { useMemo, useState } from "react";
+import { uniq } from "lodash";
+import { useRouter } from "next/router";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useFeatures } from "~/features/common/features/features.slice";
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import {
+  ACTION_CENTER_ROUTE,
+  SYSTEM_ROUTE,
+  UNCATEGORIZED_SEGMENT,
+} from "~/features/common/nav/routes";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import {
   expandCollapseAllMenuItems,
@@ -13,70 +22,172 @@ import {
   MenuHeaderCell,
   TagExpandableCell,
 } from "~/features/common/table/cells";
+import { useAntTable, useTableState } from "~/features/common/table/hooks";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { convertToAntFilters } from "~/features/common/utils";
 import {
   AlertLevel,
   ConsentStatus,
-  DiffStatus,
   PrivacyNoticeRegion,
   StagedResourceAPIResponse,
 } from "~/types/api";
 
-import { useGetWebsiteMonitorResourceFiltersQuery } from "../action-center.slice";
+import {
+  useAddMonitorResultAssetsMutation,
+  useAddMonitorResultSystemsMutation,
+  useGetDiscoveredAssetsQuery,
+  useGetWebsiteMonitorResourceFiltersQuery,
+  useIgnoreMonitorResultAssetsMutation,
+  useRestoreMonitorResultAssetsMutation,
+  useUpdateAssetsMutation,
+  useUpdateAssetsSystemMutation,
+} from "../action-center.slice";
 import {
   DiscoveredAssetsColumnKeys,
   DiscoveryStatusDisplayNames,
 } from "../constants";
 import { DiscoveryStatusIcon } from "../DiscoveryStatusIcon";
+import { SuccessToastContent } from "../SuccessToastContent";
 import { DiscoveredAssetActionsCell } from "../tables/cells/DiscoveredAssetActionsCell";
 import DiscoveredAssetDataUseCell from "../tables/cells/DiscoveredAssetDataUseCell";
 import { DiscoveryStatusBadgeCell } from "../tables/cells/DiscoveryStatusBadgeCell";
 import { SystemCell } from "../tables/cells/SystemCell";
 import isConsentCategory from "../utils/isConsentCategory";
-import { ActionCenterTabHash } from "./useActionCenterTabs";
+import useActionCenterTabs, {
+  ActionCenterTabHash,
+} from "./useActionCenterTabs";
 
-export const useDiscoveredAssetsTable = ({
-  readonly,
-  aggregatedConsent,
-  onTabChange,
-  onShowBreakdown,
-  monitorConfigId,
-  resolvedSystemId,
-  diffStatus,
-  columnFilters,
-  sortField,
-  sortOrder,
-  searchQuery,
-}: {
-  readonly: boolean;
-  aggregatedConsent: ConsentStatus | null | undefined;
-  onTabChange: (tab: ActionCenterTabHash) => void;
+interface UseDiscoveredAssetsTableConfig {
+  monitorId: string;
+  systemId: string;
+  onSystemName?: (name: string) => void;
   onShowBreakdown?: (
     stagedResource: StagedResourceAPIResponse,
     status: ConsentStatus,
   ) => void;
-  monitorConfigId: string;
-  resolvedSystemId: string;
-  diffStatus?: DiffStatus[];
-  columnFilters?: Record<string, any>;
-  sortField?: string;
-  sortOrder?: "ascend" | "descend";
-  searchQuery?: string;
-}) => {
-  const { flags } = useFeatures();
-  const { assetConsentStatusLabels } = flags;
+}
 
+export const useDiscoveredAssetsTable = ({
+  monitorId,
+  systemId,
+  onSystemName,
+  onShowBreakdown,
+}: UseDiscoveredAssetsTableConfig) => {
+  const router = useRouter();
+  const toast = useToast();
+  // Local state
+  const [systemName, setSystemName] = useState(systemId);
+  const [firstItemConsentStatus, setFirstItemConsentStatus] = useState<
+    ConsentStatus | null | undefined
+  >();
   const [isLocationsExpanded, setIsLocationsExpanded] = useState(false);
   const [isPagesExpanded, setIsPagesExpanded] = useState(false);
 
-  // if there's an error here it won't matter because the filters just won't show up
+  // Features
+  const { flags } = useFeatures();
+  const { assetConsentStatusLabels } = flags;
+
+  // Tab management
+  const { filterTabs, activeTab, onTabChange, activeParams, actionsDisabled } =
+    useActionCenterTabs(systemId);
+
+  // Table state
+  const tableState = useTableState<DiscoveredAssetsColumnKeys>({
+    pagination: {
+      defaultPageSize: 5,
+      pageSizeOptions: [5, 10],
+    },
+  });
+
+  const {
+    columnFilters,
+    pageIndex,
+    pageSize,
+    sortField,
+    sortOrder,
+    searchQuery,
+    updateSearch,
+    updateFilters,
+    updateSorting,
+    updatePagination,
+  } = tableState;
+
+  // API query
+  const { data, isLoading, isFetching } = useGetDiscoveredAssetsQuery({
+    key: monitorId,
+    page: pageIndex,
+    size: pageSize,
+    search: searchQuery,
+    sort_by: sortField
+      ? [sortField] // User selected a column to sort by
+      : [DiscoveredAssetsColumnKeys.CONSENT_AGGREGATED, "urn"], // Default
+    sort_asc: sortOrder !== "descend",
+    ...activeParams,
+    ...columnFilters,
+  });
+
+  // Mutations
+  const [addMonitorResultAssetsMutation, { isLoading: isAddingResults }] =
+    useAddMonitorResultAssetsMutation();
+  const [ignoreMonitorResultAssetsMutation, { isLoading: isIgnoringResults }] =
+    useIgnoreMonitorResultAssetsMutation();
+  const [addMonitorResultSystemsMutation, { isLoading: isAddingAllResults }] =
+    useAddMonitorResultSystemsMutation();
+  const [updateAssetsSystemMutation, { isLoading: isBulkUpdatingSystem }] =
+    useUpdateAssetsSystemMutation();
+  const [updateAssetsMutation, { isLoading: isBulkAddingDataUses }] =
+    useUpdateAssetsMutation();
+  const [
+    restoreMonitorResultAssetsMutation,
+    { isLoading: isRestoringResults },
+  ] = useRestoreMonitorResultAssetsMutation();
+
+  const anyBulkActionIsLoading =
+    isAddingResults ||
+    isIgnoringResults ||
+    isAddingAllResults ||
+    isBulkUpdatingSystem ||
+    isRestoringResults;
+
+  const disableAddAll =
+    anyBulkActionIsLoading || systemId === UNCATEGORIZED_SEGMENT;
+
+  // Filter options query
   const { data: filterOptions } = useGetWebsiteMonitorResourceFiltersQuery({
-    monitor_config_id: monitorConfigId,
-    resolved_system_id: resolvedSystemId,
-    diff_status: diffStatus,
+    monitor_config_id: monitorId,
+    resolved_system_id: systemId,
+    diff_status: activeParams?.diff_status,
     search: searchQuery,
     ...columnFilters,
   });
+
+  // Memoize the configuration object to prevent useAntTable from re-running unnecessarily
+  const antTableConfig = useMemo(
+    () => ({
+      enableSelection: activeTab !== ActionCenterTabHash.RECENT_ACTIVITY,
+      getRowKey: (record: StagedResourceAPIResponse) => record.urn,
+      isLoading,
+      isFetching,
+      dataSource: data?.items || [],
+      totalRows: data?.total || 0,
+      customTableProps: {
+        locale: {
+          emptyText: (
+            <div>
+              <div>All caught up!</div>
+            </div>
+          ),
+        },
+      },
+    }),
+    [activeTab, isLoading, isFetching, data?.items, data?.total],
+  );
+
+  // Integrate with useAntTable for standardized table management
+  const antTable = useAntTable<
+    StagedResourceAPIResponse,
+    DiscoveredAssetsColumnKeys
+  >(tableState, antTableConfig);
 
   const columns: ColumnsType<StagedResourceAPIResponse> = useMemo(() => {
     const baseColumns: ColumnsType<StagedResourceAPIResponse> = [
@@ -116,7 +227,7 @@ export const useDiscoveredAssetsTable = ({
             <SystemCell
               aggregateSystem={record}
               monitorConfigId={record.monitor_config_id}
-              readonly={readonly}
+              readonly={actionsDisabled ?? false}
             />
           ),
       },
@@ -129,7 +240,10 @@ export const useDiscoveredAssetsTable = ({
         ),
         filteredValue: columnFilters?.data_uses || null,
         render: (_, record) => (
-          <DiscoveredAssetDataUseCell asset={record} readonly={readonly} />
+          <DiscoveredAssetDataUseCell
+            asset={record}
+            readonly={actionsDisabled ?? false}
+          />
         ),
       },
       {
@@ -217,7 +331,7 @@ export const useDiscoveredAssetsTable = ({
         title: () => (
           <Space>
             <div>Compliance</div>
-            {aggregatedConsent === ConsentStatus.WITHOUT_CONSENT && (
+            {firstItemConsentStatus === ConsentStatus.WITHOUT_CONSENT && (
               <DiscoveryStatusIcon
                 consentStatus={{
                   status: AlertLevel.ALERT,
@@ -260,7 +374,7 @@ export const useDiscoveredAssetsTable = ({
     }
 
     // Add actions column if not readonly
-    if (!readonly) {
+    if (!actionsDisabled) {
       baseColumns.push({
         title: "Actions",
         key: DiscoveredAssetsColumnKeys.ACTIONS,
@@ -281,13 +395,300 @@ export const useDiscoveredAssetsTable = ({
     sortField,
     sortOrder,
     assetConsentStatusLabels,
-    readonly,
+    actionsDisabled,
     isLocationsExpanded,
     isPagesExpanded,
-    aggregatedConsent,
+    firstItemConsentStatus,
     onShowBreakdown,
     onTabChange,
   ]);
 
-  return { columns };
+  // Business logic effects
+  useEffect(() => {
+    if (data) {
+      const firstSystemName =
+        data.items[0]?.system || systemName || systemId || "";
+      setSystemName(firstSystemName);
+      onSystemName?.(firstSystemName);
+    }
+  }, [data, systemId, onSystemName, systemName]);
+
+  useEffect(() => {
+    if (data?.items && !firstItemConsentStatus) {
+      // this ensures that the column header remembers the consent status
+      // even when the user navigates to a different paginated page
+      const consentStatus = data.items.find(
+        (item) => item.consent_aggregated === ConsentStatus.WITHOUT_CONSENT,
+      )?.consent_aggregated;
+      setFirstItemConsentStatus(consentStatus);
+    }
+  }, [data, firstItemConsentStatus]);
+
+  // Get selected data from antTable
+  const {
+    selectedKeys: selectedUrns,
+    selectedRows,
+    resetSelections,
+  } = antTable;
+
+  const resetTableState = useCallback(() => {
+    resetSelections();
+    updateFilters({}); // Clear filters using tableState
+    updateSearch(""); // Clear search using tableState
+    updateSorting(undefined, undefined); // Clear sorting using tableState
+    updatePagination(1); // Reset to page 1
+  }, [
+    resetSelections,
+    updateFilters,
+    updateSearch,
+    updateSorting,
+    updatePagination,
+  ]);
+
+  const handleBulkAdd = useCallback(async () => {
+    const result = await addMonitorResultAssetsMutation({
+      urnList: selectedUrns,
+    });
+
+    const systemKey =
+      selectedRows[0]?.user_assigned_system_key || selectedRows[0]?.system_key;
+    const allAssetsHaveSameSystemKey = selectedRows.every((a) => {
+      const assetKey = a.user_assigned_system_key || a.system_key;
+      return assetKey === systemKey;
+    });
+
+    const systemToLink = allAssetsHaveSameSystemKey ? systemKey : undefined;
+
+    if (isErrorResult(result)) {
+      toast(errorToastParams(getErrorMessage(result.error)));
+    } else {
+      toast(
+        successToastParams(
+          SuccessToastContent(
+            `${selectedUrns.length} assets from ${systemName} have been added to the system inventory.`,
+            systemToLink
+              ? () =>
+                  router.push(
+                    `${SYSTEM_ROUTE}/configure/${systemToLink}#assets`,
+                  )
+              : () => router.push(SYSTEM_ROUTE),
+          ),
+        ),
+      );
+      resetSelections();
+    }
+  }, [
+    addMonitorResultAssetsMutation,
+    selectedUrns,
+    selectedRows,
+    systemName,
+    toast,
+    router,
+    resetSelections,
+  ]);
+
+  const handleBulkAssignSystem = useCallback(
+    async (selectedSystem?: any) => {
+      if (typeof selectedSystem?.value === "string") {
+        const result = await updateAssetsSystemMutation({
+          monitorId,
+          urnList: selectedUrns,
+          systemKey: selectedSystem.value,
+        });
+        if (isErrorResult(result)) {
+          toast(errorToastParams(getErrorMessage(result.error)));
+        } else {
+          toast(
+            successToastParams(
+              `${selectedUrns.length} assets have been assigned to ${selectedSystem.label}.`,
+              `Confirmed`,
+            ),
+          );
+        }
+      }
+    },
+    [updateAssetsSystemMutation, monitorId, selectedUrns, toast],
+  );
+
+  const handleBulkAddDataUse = useCallback(
+    async (newDataUses: string[]) => {
+      if (!selectedRows.length) {
+        return;
+      }
+      const assets = selectedRows.map((asset) => {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const user_assigned_data_uses = uniq([
+          ...(asset.user_assigned_data_uses || asset.data_uses || []),
+          ...newDataUses,
+        ]);
+        return {
+          urn: asset.urn,
+          user_assigned_data_uses,
+        };
+      });
+      const result = await updateAssetsMutation({
+        monitorId,
+        assets,
+      });
+      if (isErrorResult(result)) {
+        toast(errorToastParams(getErrorMessage(result.error)));
+      } else {
+        toast(
+          successToastParams(
+            `Consent categories added to ${selectedUrns.length} assets${
+              systemName ? ` from ${systemName}` : ""
+            }.`,
+            `Confirmed`,
+          ),
+        );
+      }
+    },
+    [
+      selectedRows,
+      updateAssetsMutation,
+      monitorId,
+      selectedUrns,
+      systemName,
+      toast,
+    ],
+  );
+
+  const handleBulkIgnore = useCallback(async () => {
+    const result = await ignoreMonitorResultAssetsMutation({
+      urnList: selectedUrns,
+    });
+    if (isErrorResult(result)) {
+      toast(errorToastParams(getErrorMessage(result.error)));
+    } else {
+      toast(
+        successToastParams(
+          systemName === UNCATEGORIZED_SEGMENT
+            ? `${selectedUrns.length} uncategorized assets have been ignored and will not appear in future scans.`
+            : `${selectedUrns.length} assets from ${systemName} have been ignored and will not appear in future scans.`,
+          `Confirmed`,
+        ),
+      );
+      resetSelections();
+    }
+  }, [
+    ignoreMonitorResultAssetsMutation,
+    selectedUrns,
+    systemName,
+    toast,
+    resetSelections,
+  ]);
+
+  const handleBulkRestore = useCallback(async () => {
+    const result = await restoreMonitorResultAssetsMutation({
+      urnList: selectedUrns,
+    });
+    if (isErrorResult(result)) {
+      toast(errorToastParams(getErrorMessage(result.error)));
+    } else {
+      toast(
+        successToastParams(
+          `${selectedUrns.length} assets have been restored and will appear in future scans.`,
+          `Confirmed`,
+        ),
+      );
+      resetSelections();
+    }
+  }, [
+    restoreMonitorResultAssetsMutation,
+    selectedUrns,
+    toast,
+    resetSelections,
+  ]);
+
+  const handleAddAll = useCallback(async () => {
+    const assetCount = data?.items.length || 0;
+    const result = await addMonitorResultSystemsMutation({
+      monitor_config_key: monitorId,
+      resolved_system_ids: [systemId],
+    });
+
+    if (isErrorResult(result)) {
+      toast(errorToastParams(getErrorMessage(result.error)));
+    } else {
+      router.push(`${ACTION_CENTER_ROUTE}/${monitorId}`);
+      toast(
+        successToastParams(
+          `${assetCount} assets from ${systemName} have been added to the system inventory.`,
+          `Confirmed`,
+        ),
+      );
+      resetSelections();
+    }
+  }, [
+    data?.items.length,
+    addMonitorResultSystemsMutation,
+    monitorId,
+    systemId,
+    router,
+    toast,
+    systemName,
+    resetSelections,
+  ]);
+
+  const handleTabChange = useCallback(
+    async (tab: ActionCenterTabHash) => {
+      await onTabChange(tab);
+      resetTableState();
+    },
+    [onTabChange, resetTableState],
+  );
+
+  return {
+    // Table state and data
+    columns,
+    data,
+    isLoading,
+    isFetching,
+    tableState,
+    searchQuery,
+    updateSearch,
+    updateFilters,
+    updateSorting,
+    updatePagination,
+    resetTableState,
+
+    // Ant Design table integration
+    tableProps: antTable.tableProps,
+    selectionProps: antTable.selectionProps,
+
+    // Tab management
+    filterTabs,
+    activeTab,
+    handleTabChange,
+    activeParams,
+    actionsDisabled,
+
+    // Selection (from antTable)
+    selectedRows,
+    selectedUrns,
+    hasSelectedRows: antTable.hasSelectedRows,
+    resetSelections,
+
+    // Business state
+    systemName,
+    firstItemConsentStatus,
+
+    // Business actions
+    handleBulkAdd,
+    handleBulkAssignSystem,
+    handleBulkAddDataUse,
+    handleBulkIgnore,
+    handleBulkRestore,
+    handleAddAll,
+
+    // Loading states
+    anyBulkActionIsLoading,
+    isAddingResults,
+    isIgnoringResults,
+    isAddingAllResults,
+    isBulkUpdatingSystem,
+    isBulkAddingDataUses,
+    isRestoringResults,
+    disableAddAll,
+  };
 };
