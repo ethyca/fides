@@ -18,10 +18,6 @@ export interface AntTableConfig<TData = any> {
   // Bulk actions
   bulkActions?: BulkActionsConfig<TData>;
 
-  // Table behavior
-  enableSorting?: boolean;
-  enableFiltering?: boolean;
-
   // Loading states
   isLoading?: boolean;
   isFetching?: boolean;
@@ -29,28 +25,38 @@ export interface AntTableConfig<TData = any> {
   // Data
   dataSource?: TData[];
   totalRows?: number;
+
+  // Pagination overrides (optional - defaults to tableState values)
+  currentPage?: number;
+  pageSize?: number;
+
+  // Custom table props
+  customTableProps?: any;
 }
 
 /**
  * Hook for Ant Design table integration with table state management
  *
- * @param tableState - Table state from useTableState or useServerTable
+ * @param tableState - Table state from useTableState hook
  * @param config - Ant Design specific configuration
  * @returns Ant Design table props and utilities
  *
  * @example
  * ```tsx
- * const serverTable = useServerTable(serverConfig);
+ * const tableState = useTableState<MyColumnKeys>();
+ * const { data, isLoading } = useGetMyDataQuery(tableState.queryParams);
+ *
  * const {
  *   tableProps,
  *   selectionProps,
  *   selectedRows,
  *   resetSelections
- * } = useAntTable(serverTable, {
+ * } = useAntTable(tableState, {
  *   enableSelection: true,
  *   getRowKey: (record) => record.id,
- *   dataSource: serverTable.data?.items,
- *   totalRows: serverTable.totalRows
+ *   dataSource: data?.items || [],
+ *   totalRows: data?.total || 0,
+ *   isLoading
  * });
  *
  * return <Table {...tableProps} rowSelection={selectionProps} />;
@@ -78,34 +84,42 @@ export const useAntTable = <TData = any, TSortField extends string = string>(
 ) => {
   const {
     enableSelection = false,
-    getRowKey = (record: any) => record.id || record.key,
+    getRowKey: providedGetRowKey,
     bulkActions,
-    enableSorting = true,
-    enableFiltering = true,
     isLoading = false,
     isFetching = false,
     dataSource = [],
     totalRows = 0,
+    currentPage,
+    pageSize: configPageSize,
+    customTableProps = {},
   } = config;
 
-  // Selection state management
-  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-  const [selectedRowsMap, setSelectedRowsMap] = useState<Map<string, TData>>(
-    new Map(),
+  // Memoize the getRowKey function to prevent recreation
+  const getRowKey = useMemo(
+    () => providedGetRowKey || ((record: any) => record.id || record.key),
+    [providedGetRowKey],
   );
+
+  // Selection state management (simplified to match original working pattern)
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const [selectedRows, setSelectedRows] = useState<TData[]>([]);
 
   const resetSelections = useCallback(() => {
     setSelectedRowKeys([]);
-    setSelectedRowsMap(new Map());
+    setSelectedRows([]);
   }, []);
 
-  const selectionState: SelectionState<TData> = {
-    selectedRowKeys,
-    selectedRowsMap,
-    resetSelections,
-  };
+  const selectionState: SelectionState<TData> = useMemo(
+    () => ({
+      selectedRowKeys,
+      selectedRows,
+      resetSelections,
+    }),
+    [selectedRowKeys, selectedRows, resetSelections],
+  );
 
-  // Selection props for Ant Design Table
+  // Selection props for Ant Design Table (simplified to match original working pattern)
   const selectionProps = useMemo(() => {
     if (!enableSelection) {
       return undefined;
@@ -115,44 +129,10 @@ export const useAntTable = <TData = any, TSortField extends string = string>(
       selectedRowKeys,
       onChange: (newSelectedRowKeys: React.Key[], newSelectedRows: TData[]) => {
         setSelectedRowKeys(newSelectedRowKeys);
-
-        // Update the map with current page selections
-        const newMap = new Map(selectedRowsMap);
-
-        // Remove deselected items from current page
-        dataSource.forEach((item) => {
-          const key = getRowKey(item);
-          if (!newSelectedRowKeys.includes(key)) {
-            newMap.delete(key);
-          }
-        });
-
-        // Add newly selected items
-        newSelectedRows.forEach((row) => {
-          const key = getRowKey(row);
-          newMap.set(key, row);
-        });
-
-        setSelectedRowsMap(newMap);
+        setSelectedRows(newSelectedRows);
       },
     };
-  }, [
-    enableSelection,
-    selectedRowKeys,
-    selectedRowsMap,
-    dataSource,
-    getRowKey,
-  ]);
-
-  // Update selectedRowKeys to only show current page selections when data changes
-  useMemo(() => {
-    if (dataSource.length > 0) {
-      const currentPageSelectedKeys = dataSource
-        .filter((item) => selectedRowsMap.has(getRowKey(item)))
-        .map((item) => getRowKey(item));
-      setSelectedRowKeys(currentPageSelectedKeys);
-    }
-  }, [dataSource, selectedRowsMap, getRowKey]);
+  }, [enableSelection, selectedRowKeys]);
 
   // Table change handler
   const handleTableChange = useCallback(
@@ -161,59 +141,46 @@ export const useAntTable = <TData = any, TSortField extends string = string>(
       filters: Record<string, FilterValue | null>,
       sorter: SorterResult<TData> | SorterResult<TData>[],
     ) => {
-      // Handle pagination
-      const newPageIndex = pagination.current || 1;
-      const newPageSize = pagination.pageSize || tableState.pageSize;
-
-      // Check if this is just a pagination change
+      // Check if this is just a pagination change (page or pageSize changed)
       const isPaginationChange =
-        newPageIndex !== tableState.pageIndex ||
-        newPageSize !== tableState.pageSize;
+        pagination.current !== tableState.pageIndex ||
+        pagination.pageSize !== tableState.pageSize;
 
-      if (
-        isPaginationChange &&
-        JSON.stringify(filters) === JSON.stringify(tableState.columnFilters) &&
-        (!sorter ||
-          Array.isArray(sorter) ||
-          (sorter.field === tableState.sortField &&
-            sorter.order === tableState.sortOrder))
-      ) {
-        // Only pagination changed
-        tableState.updatePagination(newPageIndex, newPageSize);
+      // Handle pagination with tableState
+      if (isPaginationChange) {
+        tableState.updatePagination(
+          pagination.current || 1,
+          pagination.pageSize,
+        );
       } else {
-        // Other changes occurred, reset to first page
-        tableState.updatePagination(1, newPageSize);
-      }
-
-      // Handle filtering
-      if (
-        enableFiltering &&
-        JSON.stringify(filters) !== JSON.stringify(tableState.columnFilters)
-      ) {
+        tableState.updatePagination(1); // Reset to page 1 for sorting/filtering changes
+        // Only update filters when it's not a pagination change
         tableState.updateFilters(filters || {});
       }
 
-      // Handle sorting
-      if (enableSorting && sorter && !Array.isArray(sorter)) {
-        const newSortField = sorter.field as TSortField;
-        const newSortOrder = sorter.order;
+      // Handle sorting with tableState (only if sorting actually changed)
+      const newSortField =
+        sorter && !Array.isArray(sorter)
+          ? (sorter.field as TSortField)
+          : undefined;
+      const newSortOrder =
+        sorter && !Array.isArray(sorter) && sorter.order !== null
+          ? sorter.order
+          : undefined;
 
-        if (
-          newSortField !== tableState.sortField ||
-          newSortOrder !== tableState.sortOrder
-        ) {
-          tableState.updateSorting(newSortField, newSortOrder || undefined);
-        }
+      // Only update sorting if this is not just a pagination change
+      if (!isPaginationChange) {
+        tableState.updateSorting(newSortField, newSortOrder);
       }
     },
-    [tableState, enableFiltering, enableSorting],
+    [tableState],
   );
 
   // Pagination configuration
   const paginationProps = useMemo(
     () => ({
-      current: tableState.pageIndex,
-      pageSize: tableState.pageSize,
+      current: currentPage ?? tableState.pageIndex,
+      pageSize: configPageSize ?? tableState.pageSize,
       total: totalRows,
       showSizeChanger: tableState.paginationConfig?.showSizeChanger ?? true,
       pageSizeOptions: tableState.paginationConfig?.pageSizeOptions?.map(
@@ -224,29 +191,48 @@ export const useAntTable = <TData = any, TSortField extends string = string>(
         `${range[0]}-${range[1]} of ${total} items`,
     }),
     [
+      currentPage,
       tableState.pageIndex,
+      configPageSize,
       tableState.pageSize,
       totalRows,
       tableState.paginationConfig,
     ],
   );
 
-  // Main table props
-  const tableProps = {
-    dataSource,
-    loading: isLoading || isFetching,
-    pagination: paginationProps,
-    onChange: handleTableChange,
-    rowKey: getRowKey,
-    scroll: { x: "max-content", scrollToFirstRowOnChange: true },
-    size: "small" as const,
-    bordered: true,
-  };
+  // Main table props (memoized)
+  const tableProps = useMemo(
+    () => ({
+      dataSource,
+      loading: isLoading || isFetching,
+      pagination: paginationProps,
+      onChange: handleTableChange,
+      rowKey: getRowKey,
+      scroll: { x: "max-content", scrollToFirstRowOnChange: true },
+      size: "small" as const,
+      bordered: true,
+      ...customTableProps,
+    }),
+    [
+      dataSource,
+      isLoading,
+      isFetching,
+      paginationProps,
+      handleTableChange,
+      getRowKey,
+      customTableProps,
+    ],
+  );
 
-  // Selected data helpers
-  const selectedRows = Array.from(selectedRowsMap.values());
-  const selectedKeys = Array.from(selectedRowsMap.keys());
-  const hasSelectedRows = selectedRows.length > 0;
+  // Selected data helpers (simplified to match original working pattern)
+  const selectedKeys = useMemo(
+    () => selectedRowKeys.map(String),
+    [selectedRowKeys],
+  );
+  const hasSelectedRows = useMemo(
+    () => selectedRows.length > 0,
+    [selectedRows],
+  );
 
   // Bulk actions helpers
   const getBulkActionProps = useCallback(
@@ -267,23 +253,38 @@ export const useAntTable = <TData = any, TSortField extends string = string>(
     [bulkActions, hasSelectedRows, selectedRows],
   );
 
-  return {
-    // Main table props
-    tableProps,
+  return useMemo(
+    () => ({
+      // Main table props
+      tableProps,
 
-    // Selection
-    selectionProps,
-    selectionState,
-    selectedRows,
-    selectedKeys,
-    hasSelectedRows,
-    resetSelections,
+      // Selection
+      selectionProps,
+      selectionState,
+      selectedRows,
+      selectedKeys,
+      hasSelectedRows,
+      resetSelections,
 
-    // Bulk actions
-    getBulkActionProps,
+      // Bulk actions
+      getBulkActionProps,
 
-    // Utilities
-    isLoadingOrFetching: isLoading || isFetching,
-    hasData: dataSource.length > 0,
-  };
+      // Utilities
+      isLoadingOrFetching: isLoading || isFetching,
+      hasData: dataSource.length > 0,
+    }),
+    [
+      tableProps,
+      selectionProps,
+      selectionState,
+      selectedRows,
+      selectedKeys,
+      hasSelectedRows,
+      resetSelections,
+      getBulkActionProps,
+      isLoading,
+      isFetching,
+      dataSource.length,
+    ],
+  );
 };
